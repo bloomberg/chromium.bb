@@ -139,7 +139,7 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const uint8_t* init_data,
   decryptor_.GenerateKeyRequest("", init_data, init_data_size);
 
   if (client_.status() != Client::kKeyMessage)
-    return cdm::kError;
+    return cdm::kSessionError;
 
   DCHECK(key_request);
   key_request->set_session_id(client_.session_id().data(),
@@ -172,7 +172,7 @@ cdm::Status ClearKeyCdm::AddKey(const char* session_id,
                     std::string(session_id, session_id_size));
 
   if (client_.status() != Client::kKeyAdded)
-    return cdm::kError;
+    return cdm::kSessionError;
 
   return cdm::kSuccess;
 }
@@ -210,7 +210,7 @@ cdm::Status ClearKeyCdm::Decrypt(
                      base::Bind(&CopyDecryptResults, &status, &buffer));
 
   if (status == media::Decryptor::kError)
-    return cdm::kError;
+    return cdm::kDecryptError;
 
   if (status == media::Decryptor::kNoKey)
     return cdm::kNoKey;
@@ -230,14 +230,16 @@ cdm::Status ClearKeyCdm::Decrypt(
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig& video_decoder_config) {
   NOTIMPLEMENTED();
-  return cdm::kError;
+  // TODO(tomfinegan): Determine the proper error to return here once there
+  // are callers for this method.
+  return cdm::kSessionError;
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeVideo(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::VideoFrame* video_frame) {
   NOTIMPLEMENTED();
-  return cdm::kError;
+  return cdm::kDecryptError;
 }
 
 void ClearKeyCdm::ResetVideoDecoder() {

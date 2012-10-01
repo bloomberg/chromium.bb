@@ -37,7 +37,9 @@ enum Status {
   kSuccess = 0,
   kNeedMoreData,  // Decoder needs more data to produce a decoded frame/sample.
   kNoKey,  // The required decryption key is not available.
-  kError
+  kSessionError,  // Session management error.
+  kDecryptError,  // Decryption failed.
+  kDecodeError  // Error decoding audio or video.
 };
 
 // An input buffer can be split into several continuous subsamples.

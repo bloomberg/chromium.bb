@@ -302,7 +302,7 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
       reinterpret_cast<const uint8_t*>(init_data.Map()),
       init_data.ByteLength(),
       key_request.get());
-
+  PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
   if (status != cdm::kSuccess ||
       !key_request->message() ||
       key_request->message()->size() == 0) {
@@ -338,7 +338,7 @@ void CdmWrapper::AddKey(const std::string& session_id,
   cdm::Status status = cdm_->AddKey(session_id.data(), session_id.size(),
                                     key_ptr, key_size,
                                     init_data_ptr, init_data_size);
-
+  PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
   if (status != cdm::kSuccess) {
     CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError,
                                              session_id));
@@ -352,6 +352,7 @@ void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
   PP_DCHECK(cdm_);
   cdm::Status status = cdm_->CancelKeyRequest(session_id.data(),
                                               session_id.size());
+  PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
   if (status != cdm::kSuccess) {
     CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError,
                                              session_id));
@@ -444,8 +445,10 @@ void CdmWrapper::DeliverBlock(int32_t result,
     case cdm::kNoKey:
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_NOKEY;
       break;
+    case cdm::kSessionError:
     default:
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
+      PP_DCHECK(false);
   }
 
   const pp::Buffer_Dev& buffer =
