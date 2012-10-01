@@ -12,20 +12,29 @@
 
 namespace webkit_media {
 
+static bool IsEitherYV12OrYV16(media::VideoFrame::Format format) {
+  return format == media::VideoFrame::YV12 || format == media::VideoFrame::YV16;
+}
+
+static bool IsEitherYV12OrYV16OrNative(media::VideoFrame::Format format) {
+  return IsEitherYV12OrYV16(format) ||
+      format == media::VideoFrame::NATIVE_TEXTURE;
+}
+
 // CanFastPaint is a helper method to determine the conditions for fast
 // painting. The conditions are:
 // 1. No skew in canvas matrix.
 // 2. No flipping nor mirroring.
 // 3. Canvas has pixel format ARGB8888.
 // 4. Canvas is opaque.
+// 5. Frame format is YV12 or YV16.
 //
 // TODO(hclam): The fast paint method should support flipping and mirroring.
 // Disable the flipping and mirroring checks once we have it.
 static bool CanFastPaint(SkCanvas* canvas, const gfx::Rect& dest_rect,
-                         uint8_t alpha) {
-  if (alpha != 0xFF) {
+                         uint8_t alpha, media::VideoFrame::Format format) {
+  if (alpha != 0xFF || !IsEitherYV12OrYV16(format))
     return false;
-  }
 
   const SkMatrix& total_matrix = canvas->getTotalMatrix();
   // Perform the following checks here:
@@ -45,10 +54,6 @@ static bool CanFastPaint(SkCanvas* canvas, const gfx::Rect& dest_rect,
   }
 
   return false;
-}
-
-static bool IsEitherYV12OrYV16(media::VideoFrame::Format format) {
-  return format == media::VideoFrame::YV12 || format == media::VideoFrame::YV16;
 }
 
 // Fast paint does YUV => RGB, scaling, blitting all in one step into the
@@ -165,9 +170,12 @@ static void FastPaint(
 static void ConvertVideoFrameToBitmap(
     const scoped_refptr<media::VideoFrame>& video_frame,
     SkBitmap* bitmap) {
-  DCHECK(IsEitherYV12OrYV16(video_frame->format())) << video_frame->format();
-  DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
-         video_frame->stride(media::VideoFrame::kVPlane));
+  DCHECK(IsEitherYV12OrYV16OrNative(video_frame->format()))
+      << video_frame->format();
+  if (IsEitherYV12OrYV16(video_frame->format())) {
+    DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
+              video_frame->stride(media::VideoFrame::kVPlane));
+  }
 
   // Check if |bitmap| needs to be (re)allocated.
   if (bitmap->isNull() ||
@@ -181,19 +189,24 @@ static void ConvertVideoFrameToBitmap(
   }
 
   bitmap->lockPixels();
-  media::YUVType yuv_type =
-      (video_frame->format() == media::VideoFrame::YV12) ?
-      media::YV12 : media::YV16;
-  media::ConvertYUVToRGB32(video_frame->data(media::VideoFrame::kYPlane),
-                           video_frame->data(media::VideoFrame::kUPlane),
-                           video_frame->data(media::VideoFrame::kVPlane),
-                           static_cast<uint8*>(bitmap->getPixels()),
-                           video_frame->data_size().width(),
-                           video_frame->data_size().height(),
-                           video_frame->stride(media::VideoFrame::kYPlane),
-                           video_frame->stride(media::VideoFrame::kUPlane),
-                           bitmap->rowBytes(),
-                           yuv_type);
+  if (IsEitherYV12OrYV16(video_frame->format())) {
+    media::YUVType yuv_type =
+        (video_frame->format() == media::VideoFrame::YV12) ?
+        media::YV12 : media::YV16;
+    media::ConvertYUVToRGB32(video_frame->data(media::VideoFrame::kYPlane),
+                             video_frame->data(media::VideoFrame::kUPlane),
+                             video_frame->data(media::VideoFrame::kVPlane),
+                             static_cast<uint8*>(bitmap->getPixels()),
+                             video_frame->data_size().width(),
+                             video_frame->data_size().height(),
+                             video_frame->stride(media::VideoFrame::kYPlane),
+                             video_frame->stride(media::VideoFrame::kUPlane),
+                             bitmap->rowBytes(),
+                             yuv_type);
+  } else {
+    DCHECK_EQ(video_frame->format(), media::VideoFrame::NATIVE_TEXTURE);
+    video_frame->ReadPixelsFromNativeTexture(bitmap->getPixels());
+  }
   bitmap->notifyPixelsChanged();
   bitmap->unlockPixels();
 }
@@ -219,16 +232,15 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
   SkPaint paint;
   paint.setAlpha(alpha);
 
-  // Paint black rectangle if there isn't a frame available or if the format is
-  // unexpected (can happen e.g. when normally painting to HW textures but
-  // during shutdown path).
-  if (!video_frame || !IsEitherYV12OrYV16(video_frame->format())) {
+  // Paint black rectangle if there isn't a frame available or the
+  // frame has an unexpected format.
+  if (!video_frame || !IsEitherYV12OrYV16OrNative(video_frame->format())) {
     canvas->drawRect(dest, paint);
     return;
   }
 
   // Scale and convert to RGB in one step if we can.
-  if (CanFastPaint(canvas, dest_rect, alpha)) {
+  if (CanFastPaint(canvas, dest_rect, alpha, video_frame->format())) {
     FastPaint(video_frame, canvas, dest_rect);
     return;
   }

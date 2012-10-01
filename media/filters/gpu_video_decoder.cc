@@ -411,6 +411,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
       pb.texture_id(), decoder_texture_target_, pb.size(), natural_size,
       timestamp,
+      base::Bind(&Factories::ReadPixels, factories_, pb.texture_id(),
+                 decoder_texture_target_, pb.size()),
       base::Bind(&GpuVideoDecoder::ReusePictureBuffer, this,
                  picture.picture_buffer_id())));
 

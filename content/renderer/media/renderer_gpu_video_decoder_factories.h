@@ -49,6 +49,9 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
 
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
 
+  virtual void ReadPixels(uint32 texture_id, uint32 texture_target,
+                          const gfx::Size& size, void* pixels) OVERRIDE;
+
   virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
 
  protected:
@@ -75,6 +78,9 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
       int32 count, const gfx::Size& size, std::vector<uint32>* texture_ids,
       uint32 texture_target, bool* success, base::WaitableEvent* waiter);
   void AsyncDeleteTexture(uint32 texture_id);
+  void AsyncReadPixels(uint32 texture_id, uint32 texture_target,
+                       const gfx::Size& size,
+                       void* pixels, base::WaitableEvent* waiter);
   void AsyncCreateSharedMemory(
       size_t size, base::SharedMemory** shm, base::WaitableEvent* waiter);
 

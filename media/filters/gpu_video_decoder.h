@@ -47,6 +47,10 @@ class MEDIA_EXPORT GpuVideoDecoder
                                 uint32 texture_target) = 0;
     virtual void DeleteTexture(uint32 texture_id) = 0;
 
+    // Read pixels from a native texture and store into |*pixels| as RGBA.
+    virtual void ReadPixels(uint32 texture_id, uint32 texture_target,
+                            const gfx::Size& size, void* pixels) = 0;
+
     // Allocate & return a shared memory segment.  Caller is responsible for
     // Close()ing the returned pointer.
     virtual base::SharedMemory* CreateSharedMemory(size_t size) = 0;
