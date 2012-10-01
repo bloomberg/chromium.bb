@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -22,7 +22,7 @@ extern void *mmap(void *start, size_t length, int prot, int flags,
                   int desc, off_t offset);
 
 /** Description of munmap. More details... */
-extern int munmap(void *start, size_t length);
+extern int munmap(void const *start, size_t length);
 
 /** Description of mprotect. More details... */
 extern int mprotect(void *start, size_t length, int prot);

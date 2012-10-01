@@ -13,7 +13,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/gio/gio_shm.h"
-#include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"

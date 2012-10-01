@@ -14,9 +14,9 @@
 # include <mach/mach.h>
 #endif
 
+#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
-#include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/shared/gio/gio.h"
