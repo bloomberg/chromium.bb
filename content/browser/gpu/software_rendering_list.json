@@ -73,7 +73,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "3.4",
+  "version": "3.5",
   "entries": [
     {
       "id": 1,
@@ -759,6 +759,33 @@
       "blacklist": [
         "flash_stage3d"
       ]
+    },
+    {
+      "id": 54,
+      "description": "Force to use discrete GPU on older MacBookPro models.",
+      "cr_bugs": [113703],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": ">=",
+          "number": "10.7"
+        }
+      },
+      "machine_model": {
+        "name": {
+          "op": "=",
+          "value": "MacBookPro"
+        },
+        "version": {
+          "op": "<",
+          "number": "8"
+        }
+      },
+      "gpu_count": {
+        "op": "=",
+        "value": "2"
+      },
+      "gpu_switching": "force_discrete"
     }
   ]
 }

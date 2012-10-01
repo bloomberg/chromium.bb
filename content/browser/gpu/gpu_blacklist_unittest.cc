@@ -81,10 +81,10 @@ TEST_F(GpuBlacklistTest, DefaultBlacklistSettings) {
   Version os_version("10.6.4");
   scoped_ptr<GpuBlacklist> blacklist(Create());
   // Default blacklist settings: all feature are allowed.
-  GpuFeatureType type = blacklist->MakeBlacklistDecision(
-      GpuBlacklist::kOsMacosx, &os_version,
-      gpu_info()).blacklisted_features;
-  EXPECT_EQ(type, 0);
+  GpuBlacklist::Decision decision = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsMacosx, &os_version, gpu_info());
+  EXPECT_EQ(decision.blacklisted_features, 0);
+  EXPECT_EQ(decision.gpu_switching, content::GPU_SWITCHING_OPTION_UNKNOWN);
 }
 
 TEST_F(GpuBlacklistTest, EmptyBlacklist) {
@@ -102,10 +102,10 @@ TEST_F(GpuBlacklistTest, EmptyBlacklist) {
   EXPECT_TRUE(blacklist->LoadGpuBlacklist(
       empty_list_json, GpuBlacklist::kAllOs));
   EXPECT_EQ(blacklist->GetVersion(), std::string("2.5"));
-  GpuFeatureType type = blacklist->MakeBlacklistDecision(
-      GpuBlacklist::kOsMacosx, &os_version,
-      gpu_info()).blacklisted_features;
-  EXPECT_EQ(type, 0);
+  GpuBlacklist::Decision decision = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsMacosx, &os_version, gpu_info());
+  EXPECT_EQ(decision.blacklisted_features, 0);
+  EXPECT_EQ(decision.gpu_switching, content::GPU_SWITCHING_OPTION_UNKNOWN);
 }
 
 TEST_F(GpuBlacklistTest, DetailedEntryAndInvalidJson) {

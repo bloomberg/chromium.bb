@@ -113,6 +113,10 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // gpu info is collected.
   void UpdatePreliminaryBlacklistedFeatures();
 
+  // Update the GPU switching status.
+  // This should only be called once at initialization time.
+  void UpdateGpuSwitchingManager();
+
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
 

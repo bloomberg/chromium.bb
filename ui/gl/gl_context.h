@@ -71,8 +71,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   static bool LosesAllContextsOnContextLost();
 
-  static bool SupportsDualGpus();
-
   static GLContext* GetCurrent();
 
   virtual bool WasAllocatedUsingRobustnessExtension();

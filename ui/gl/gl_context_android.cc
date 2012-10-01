@@ -27,8 +27,4 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   return context;
 }
 
-bool GLContext::SupportsDualGpus() {
-  return false;
-}
-
 }

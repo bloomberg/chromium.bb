@@ -27,6 +27,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gpu_switching_manager.h"
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
@@ -128,14 +129,6 @@ void GpuDataManagerImpl::InitializeForTesting(
 void GpuDataManagerImpl::InitializeImpl(
     const std::string& gpu_blacklist_json,
     const content::GPUInfo& gpu_info) {
-  {
-    // This function should only be called in testing.
-    // We need clean up the gpu_info_ for a clean initialization.
-    const content::GPUInfo empty_gpu_info;
-    base::AutoLock auto_lock(gpu_info_lock_);
-    gpu_info_ = empty_gpu_info;
-  }
-
   if (!gpu_blacklist_json.empty()) {
     std::string browser_version_string = ProcessVersionString(
         content::GetContentClient()->GetProduct());
@@ -149,6 +142,7 @@ void GpuDataManagerImpl::InitializeImpl(
   }
 
   UpdateGpuInfo(gpu_info);
+  UpdateGpuSwitchingManager();
   UpdatePreliminaryBlacklistedFeatures();
 }
 
@@ -171,9 +165,6 @@ bool GpuDataManagerImpl::IsCompleteGpuInfoAvailable() const {
 }
 
 void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
-  if (gpu_info_.finalized)
-    return;
-
   content::GetContentClient()->SetGpuInfo(gpu_info);
 
   if (gpu_blacklist_.get()) {
@@ -185,8 +176,12 @@ void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
                             decision.blacklisted_features);
     }
     UpdateBlacklistedFeatures(decision.blacklisted_features);
-    if (decision.gpu_switching != content::GPU_SWITCHING_OPTION_UNKNOWN)
-      gpu_switching_ = decision.gpu_switching;
+    if (decision.gpu_switching != content::GPU_SWITCHING_OPTION_UNKNOWN) {
+      // Blacklist decision should not overwrite commandline switch from users.
+      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      if (!command_line->HasSwitch(switches::kGpuSwitching))
+        gpu_switching_ = decision.gpu_switching;
+    }
   }
 
   {
@@ -348,17 +343,23 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   } else if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
-  switch (gpu_switching_) {
-    case content::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
-      command_line->AppendSwitchASCII(switches::kGpuSwitching,
-          switches::kGpuSwitchingOptionNameForceDiscrete);
-      break;
-    case content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
-      command_line->AppendSwitchASCII(switches::kGpuSwitching,
-          switches::kGpuSwitchingOptionNameForceIntegrated);
-      break;
-    default:
-      break;
+  if (gfx::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+    command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "true");
+    switch (gpu_switching_) {
+      case content::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
+        command_line->AppendSwitchASCII(switches::kGpuSwitching,
+            switches::kGpuSwitchingOptionNameForceDiscrete);
+        break;
+      case content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
+        command_line->AppendSwitchASCII(switches::kGpuSwitching,
+            switches::kGpuSwitchingOptionNameForceIntegrated);
+        break;
+      case content::GPU_SWITCHING_OPTION_AUTOMATIC:
+      case content::GPU_SWITCHING_OPTION_UNKNOWN:
+        break;
+    }
+  } else {
+    command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "false");
   }
 
   if (!swiftshader_path.empty())
@@ -471,6 +472,22 @@ void GpuDataManagerImpl::UpdateBlacklistedFeatures(
   gpu_feature_type_ = static_cast<GpuFeatureType>(flags);
 
   EnableSoftwareRenderingIfNecessary();
+}
+
+void GpuDataManagerImpl::UpdateGpuSwitchingManager() {
+  if (gfx::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+    switch (gpu_switching_) {
+      case content::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
+        gfx::GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
+        break;
+      case content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
+        gfx::GpuSwitchingManager::GetInstance()->ForceUseOfIntegratedGpu();
+        break;
+      case content::GPU_SWITCHING_OPTION_AUTOMATIC:
+      case content::GPU_SWITCHING_OPTION_UNKNOWN:
+        break;
+    }
+  }
 }
 
 void GpuDataManagerImpl::RegisterSwiftShaderPath(const FilePath& path) {

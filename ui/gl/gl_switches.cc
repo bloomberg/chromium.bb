@@ -43,6 +43,9 @@ const char kGpuNoContextLost[]              = "gpu-no-context-lost";
 // Simulates a slow GPU.
 const char kGpuSwapDelay[]                  = "gpu-swap-delay";
 
+// Indicates whether the dual GPU switching is supported or not.
+const char kSupportsDualGpus[]              = "supports-dual-gpus";
+
 // Overwrite the default GPU automatic switching behavior to force on
 // integrated GPU or discrete GPU.
 const char kGpuSwitching[]                  = "gpu-switching";

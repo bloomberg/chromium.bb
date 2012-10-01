@@ -8,11 +8,12 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
-#if defined(OS_MACOSX)
-#include "ui/gl/gl_context_cgl.h"
-#endif  // OS_MACOSX
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gpu_preference.h"
+
+#if defined(OS_MACOSX)
+#include <OpenGL/OpenGL.h>
+#endif  // OS_MACOSX
 
 namespace gfx {
 
@@ -21,16 +22,21 @@ class GL_EXPORT GpuSwitchingManager {
   // Getter for the singleton. This will return NULL on failure.
   static GpuSwitchingManager* GetInstance();
 
-  // Set the switching option, but don't take any actions until later
-  // we access GPU.
+  // Set the switching option to PreferIntegratedGpu.
   void ForceUseOfIntegratedGpu();
+  // Set the switching option to PreferDiscreteGpu; switch to discrete GPU
+  // immediately on Mac where dual GPU switching is supported.
   void ForceUseOfDiscreteGpu();
 
   // If no GPU is forced, return the original GpuPreference; otherwise, return
   // the forced GPU.
-  // If forcing discrete GPU on Mac, we set up a pixel format, which keeps
-  // Chrome on the discrete GPU throughout the rest of Chrome's lifetime.
   GpuPreference AdjustGpuPreference(GpuPreference gpu_preference);
+
+  // In the browser process, the value for this flag is computed the first time
+  // this function is called.
+  // In the GPU process, the value is passed from the browser process using the
+  // --supports-dual-gpus commandline switch.
+  bool SupportsDualGpus();
 
  private:
   friend struct DefaultSingletonTraits<GpuSwitchingManager>;
@@ -38,7 +44,17 @@ class GL_EXPORT GpuSwitchingManager {
   GpuSwitchingManager();
   virtual ~GpuSwitchingManager();
 
-  std::vector<GpuPreference> gpu_switching_option_;
+#if defined(OS_MACOSX)
+  void SwitchToDiscreteGpuMac();
+
+  CGLPixelFormatObj discrete_pixel_format_;
+#endif  // OS_MACOSX
+
+  GpuPreference gpu_switching_option_;
+  bool gpu_switching_option_set_;
+
+  bool supports_dual_gpus_;
+  bool supports_dual_gpus_set_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuSwitchingManager);
 };

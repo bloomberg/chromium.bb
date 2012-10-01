@@ -37,7 +37,7 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
   std::vector<CGLPixelFormatAttribute> attribs;
   // If the system supports dual gpus then allow offline renderers for every
   // context, so that they can all be in the same share group.
-  if (SupportsDualGpus())
+  if (GpuSwitchingManager::GetInstance()->SupportsDualGpus())
     attribs.push_back(kCGLPFAAllowOfflineRenderers);
   if (GetGLImplementation() == kGLImplementationAppleGL) {
     attribs.push_back(kCGLPFARendererID);
@@ -61,7 +61,8 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 
   // If using the discrete gpu, create a pixel format requiring it before we
   // create the context.
-  if (!SupportsDualGpus() || gpu_preference == PreferDiscreteGpu) {
+  if (!GpuSwitchingManager::GetInstance()->SupportsDualGpus() ||
+      gpu_preference == PreferDiscreteGpu) {
     std::vector<CGLPixelFormatAttribute> discrete_attribs;
     discrete_attribs.push_back((CGLPixelFormatAttribute) 0);
     GLint num_pixel_formats;
@@ -72,7 +73,6 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
       return false;
     }
   }
-
 
   CGLError res = CGLCreateContext(
       format,
@@ -222,17 +222,6 @@ GpuPreference GLContextCGL::GetGpuPreference() {
 
 void ScopedCGLDestroyRendererInfo::operator()(CGLRendererInfoObj x) const {
   CGLDestroyRendererInfo(x);
-}
-
-void GLContextCGL::ForceUseOfDiscreteGPU() {
-  static CGLPixelFormatObj format = NULL;
-  if (format)
-    return;
-  CGLPixelFormatAttribute attribs[1];
-  attribs[0] = static_cast<CGLPixelFormatAttribute>(0);
-  GLint num_pixel_formats = 0;
-  CGLChoosePixelFormat(attribs, &format, &num_pixel_formats);
-  // format is deliberately leaked.
 }
 
 }  // namespace gfx

@@ -75,7 +75,8 @@ int GpuMain(const content::MainFunctionParams& parameters) {
 #endif
   }
 
-  if (command_line.HasSwitch(switches::kGpuSwitching)) {
+  if (command_line.HasSwitch(switches::kSupportsDualGpus) &&
+      command_line.HasSwitch(switches::kGpuSwitching)) {
     std::string option = command_line.GetSwitchValueASCII(
         switches::kGpuSwitching);
     if (option == switches::kGpuSwitchingOptionNameForceDiscrete)

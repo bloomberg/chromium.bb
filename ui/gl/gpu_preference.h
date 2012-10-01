@@ -9,7 +9,7 @@ namespace gfx {
 
 // On dual-GPU systems, expresses a preference for using the integrated
 // or discrete GPU. On systems that have dual-GPU support (see
-// GLContext::SupportsDualGpus), resource sharing only works between
+// GpuDataManagerImpl), resource sharing only works between
 // contexts that are created with the same GPU preference.
 //
 // This API will likely need to be adjusted as the functionality is

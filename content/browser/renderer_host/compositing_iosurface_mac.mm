@@ -18,6 +18,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gpu_switching_manager.h"
 #include "ui/surface/io_surface_support_mac.h"
 
 #ifdef NDEBUG
@@ -177,7 +178,7 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
   attributes.push_back(NSOpenGLPFADoubleBuffer);
   // We don't need a depth buffer - try setting its size to 0...
   attributes.push_back(NSOpenGLPFADepthSize); attributes.push_back(0);
-  if (gfx::GLContext::SupportsDualGpus())
+  if (gfx::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
     attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
   attributes.push_back(0);
 

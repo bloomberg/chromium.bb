@@ -29,6 +29,7 @@ GL_EXPORT extern const char kEnableGPUClientLogging[];
 GL_EXPORT extern const char kGpuNoContextLost[];
 GL_EXPORT extern const char kGpuSwapDelay[];
 
+GL_EXPORT extern const char kSupportsDualGpus[];
 GL_EXPORT extern const char kGpuSwitching[];
 
 // The GPU switching names that can be passed to --gpu-switching.

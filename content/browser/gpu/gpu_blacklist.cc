@@ -1177,7 +1177,7 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
     const content::GPUInfo& gpu_info) {
   active_entries_.clear();
   int type = 0;
-  GpuSwitchingOption switching = content::GPU_SWITCHING_OPTION_AUTOMATIC;
+  GpuSwitchingOption switching = content::GPU_SWITCHING_OPTION_UNKNOWN;
 
   if (os == kOsAny)
     os = GetOsType();
@@ -1199,7 +1199,7 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
       if (!blacklist_[i]->disabled()) {
         type |= blacklist_[i]->GetGpuFeatureType();
         if (blacklist_[i]->GetGpuSwitchingOption() !=
-                content::GPU_SWITCHING_OPTION_AUTOMATIC)
+                content::GPU_SWITCHING_OPTION_UNKNOWN)
           switching = blacklist_[i]->GetGpuSwitchingOption();
       }
       active_entries_.push_back(blacklist_[i]);

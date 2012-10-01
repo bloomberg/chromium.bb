@@ -58,8 +58,4 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   }
 }
 
-bool GLContext::SupportsDualGpus() {
-  return false;
-}
-
 }  // namespace gfx
