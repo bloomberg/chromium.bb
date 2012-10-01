@@ -31,7 +31,7 @@ def main():
       '-v', '--verbose', action='count', default=0,
       help='Prints debugging infos')
   parser.add_option(
-      '-e', '--email', default='',
+      '-e', '--email',
       help='Email address to access rietveld.  If not specified, anonymous '
            'access will be used.')
   parser.add_option(
@@ -67,13 +67,32 @@ def main():
   if options.password == '-':
     options.password = sys.stdin.readline().strip()
 
-  obj = rietveld.Rietveld(options.server, options.email, options.password)
+  # Always try un-authenticated first.
+  # TODO(maruel): Use OAuth2 properly so we don't hit rate-limiting on login
+  # attempts.
+  # Bad except clauses order (HTTPError is an ancestor class of
+  # ClientLoginError)
+  # pylint: disable=E0701
+  obj = rietveld.Rietveld(options.server, '', None)
+  properties = None
   try:
     properties = obj.get_issue_properties(options.issue, False)
+  except urllib2.HTTPError, e:
+    if e.getcode() != 302:
+      raise
+    # TODO(maruel): A few 'Invalid username or password.' are printed first, we
+    # should get rid of those.
   except rietveld.upload.ClientLoginError, e:
-    if sys.stdout.closed:
-      print >> sys.stderr, 'Accessing the issue requires login.'
-      return 1
+    # Fine, we'll do proper authentication.
+    pass
+  if properties is None:
+    if options.email is not None:
+      try:
+        obj = rietveld.Rietveld(options.server, options.email, options.password)
+      except rietveld.upload.ClientLoginError, e:
+        if sys.stdout.closed:
+          print >> sys.stderr, 'Accessing the issue requires login.'
+          return 1
     print('Accessing the issue requires login.')
     obj = rietveld.Rietveld(options.server, None, None)
     properties = obj.get_issue_properties(options.issue, False)
