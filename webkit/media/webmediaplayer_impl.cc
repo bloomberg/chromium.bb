@@ -720,7 +720,8 @@ void WebMediaPlayerImpl::sourceEndOfStream(
   }
 
   float old_duration = duration();
-  chunk_demuxer_->EndOfStream(pipeline_status);
+  if (!chunk_demuxer_->EndOfStream(pipeline_status))
+    DVLOG(1) << "EndOfStream call failed.";
 
   if (old_duration != duration())
     GetClient()->durationChanged();
