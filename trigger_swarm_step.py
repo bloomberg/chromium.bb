@@ -145,7 +145,8 @@ class Manifest(object):
     test_case = {
       'test_case_name': self.test_name,
       'data': [
-        self.data_server_retrieval + urllib.quote(self.zip_file_hash),
+        [self.data_server_retrieval + urllib.quote(self.zip_file_hash),
+         'swarm_data.zip'],
       ],
       'tests': self.tasks,
       'env_vars': {
