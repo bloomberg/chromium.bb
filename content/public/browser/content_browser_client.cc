@@ -72,7 +72,7 @@ std::string ContentBrowserClient::GetCanonicalEncodingNameByAliasName(
 }
 
 std::string ContentBrowserClient::GetApplicationLocale() {
-  return std::string();
+  return "en-US";
 }
 
 std::string ContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
