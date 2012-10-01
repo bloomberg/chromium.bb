@@ -90,27 +90,19 @@ cr.define('ntp', function() {
         a.textContent = data.title;
       }
 
-      function onActivated(e) {
+      function onClick(e) {
         ntp.logTimeToClick('RecentlyClosed');
         chrome.send('recordAppLaunchByURL',
                     [encodeURIComponent(data.url),
                      ntp.APP_LAUNCH.NTP_RECENTLY_CLOSED]);
         var index = Array.prototype.indexOf.call(a.parentNode.children, a);
-        var orig = e.originalEvent;
-        var params = [data.sessionId,
-                      index,
-                      orig.type == 'click' ? orig.button : 0,
-                      orig.altKey,
-                      orig.ctrlKey,
-                      orig.metaKey,
-                      orig.shiftKey];
-        chrome.send('reopenTab', params);
-
+        chrome.send('reopenTab', [data.sessionId, index,
+            e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
         // We are likely deleted by this point!
-        e.stopPropagation();
+
         e.preventDefault();
       }
-      a.addEventListener('activate', onActivated);
+      a.addEventListener('click', onClick);
 
       this.menu.appendChild(a);
       cr.ui.decorate(a, MenuItem);
