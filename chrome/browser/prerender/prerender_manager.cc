@@ -420,7 +420,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // If the tab has finished loading, record a PPLT of 0.
   // If the tab is still loading, reset its start time to the current time.
   PrerenderTabHelper* prerender_tab_helper =
-      new_tab_contents->prerender_tab_helper();
+      PrerenderTabHelper::FromWebContents(new_tab_contents->web_contents());
   DCHECK(prerender_tab_helper != NULL);
   prerender_tab_helper->PrerenderSwappedIn();
 

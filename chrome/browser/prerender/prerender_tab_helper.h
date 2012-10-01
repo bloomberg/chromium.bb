@@ -7,10 +7,9 @@
 
 #include "base/time.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
-
-class TabContents;
 
 namespace prerender {
 
@@ -18,9 +17,9 @@ class PrerenderManager;
 
 // PrerenderTabHelper is responsible for recording perceived pageload times
 // to compare PLT's with prerendering enabled and disabled.
-class PrerenderTabHelper : public content::WebContentsObserver {
+class PrerenderTabHelper : public content::WebContentsObserver,
+                           public WebContentsUserData<PrerenderTabHelper> {
  public:
-  explicit PrerenderTabHelper(TabContents* tab);
   virtual ~PrerenderTabHelper();
 
   // content::WebContentsObserver implementation.
@@ -46,6 +45,9 @@ class PrerenderTabHelper : public content::WebContentsObserver {
   void PrerenderSwappedIn();
 
  private:
+  explicit PrerenderTabHelper(content::WebContents* web_contents);
+  friend class WebContentsUserData<PrerenderTabHelper>;
+
   // Helper class to compute pixel-based stats on the paint progress
   // between when a prerendered page is swapped in and when the onload event
   // fires.

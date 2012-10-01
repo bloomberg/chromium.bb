@@ -63,7 +63,6 @@ class WebAuthFlow;
 
 namespace prerender {
 class PrerenderContents;
-class PrerenderTabHelper;
 }
 
 // Wraps WebContents and all of its supporting objects in order to control
@@ -159,10 +158,6 @@ class TabContents : public content::WebContentsObserver {
   PasswordManager* password_manager() { return password_manager_.get(); }
   PrefsTabHelper* prefs_tab_helper() { return prefs_tab_helper_.get(); }
 
-  prerender::PrerenderTabHelper* prerender_tab_helper() {
-    return prerender_tab_helper_.get();
-  }
-
   browser_sync::SyncedTabDelegate* synced_tab_delegate() {
     return synced_tab_delegate_.get();
   }
@@ -204,7 +199,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<PasswordManager> password_manager_;
 
   scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
-  scoped_ptr<prerender::PrerenderTabHelper> prerender_tab_helper_;
 
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;
 

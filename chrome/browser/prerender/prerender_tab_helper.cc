@@ -11,8 +11,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -21,6 +19,8 @@
 #include "ui/gfx/rect.h"
 
 using content::WebContents;
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(prerender::PrerenderTabHelper)
 
 namespace prerender {
 
@@ -130,8 +130,8 @@ class PrerenderTabHelper::PixelStats {
   PrerenderTabHelper* tab_helper_;
 };
 
-PrerenderTabHelper::PrerenderTabHelper(TabContents* tab)
-    : content::WebContentsObserver(tab->web_contents()) {
+PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
 }
 
 PrerenderTabHelper::~PrerenderTabHelper() {

@@ -148,7 +148,7 @@ TabContents::TabContents(WebContents* contents)
   PepperBrokerObserver::CreateForWebContents(contents);
   PluginObserver::CreateForWebContents(contents);
   prefs_tab_helper_.reset(new PrefsTabHelper(contents));
-  prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
+  prerender::PrerenderTabHelper::CreateForWebContents(contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(contents);
   SearchEngineTabHelper::CreateForWebContents(contents);
   chrome::search::SearchTabHelper::CreateForWebContents(contents);
