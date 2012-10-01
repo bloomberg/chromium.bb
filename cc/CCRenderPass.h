@@ -10,7 +10,6 @@
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/scoped_ptr_vector.h"
 #include "CCDrawQuad.h"
-#include "CCOcclusionTracker.h"
 #include "CCSharedQuadState.h"
 #include "FloatRect.h"
 #include "SkColor.h"
@@ -21,9 +20,13 @@
 namespace cc {
 
 class CCLayerImpl;
+template<typename LayerType, typename SurfaceType>
+class CCOcclusionTrackerBase;
 class CCRenderSurface;
 
 struct CCAppendQuadsData;
+
+typedef CCOcclusionTrackerBase<CCLayerImpl, CCRenderSurface> CCOcclusionTrackerImpl;
 
 // A list of CCDrawQuad objects, sorted internally in front-to-back order.
 class CCQuadList : public ScopedPtrVector<CCDrawQuad> {
