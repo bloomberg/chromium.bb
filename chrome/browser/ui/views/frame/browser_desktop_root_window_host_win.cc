@@ -6,10 +6,12 @@
 
 #include <dwmapi.h>
 
+#include "base/command_line.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/theme_provider.h"
+#include "ui/views/views_switches.h"
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -130,7 +132,11 @@ bool BrowserDesktopRootWindowHostWin::IsUsingCustomFrame() const {
 
   // Otherwise, we use the native frame when we're told we should by the theme
   // provider (e.g. no custom theme is active).
-  return !GetWidget()->GetThemeProvider()->ShouldUseNativeFrame();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      views::switches::kEnableNativeFrame)) {
+    return !GetWidget()->GetThemeProvider()->ShouldUseNativeFrame();
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

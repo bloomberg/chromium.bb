@@ -25,7 +25,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #include "ui/base/win/shell.h"
 #endif
 
@@ -318,7 +318,7 @@ bool ThemeService::GetDisplayProperty(int id, int* result) const {
 bool ThemeService::ShouldUseNativeFrame() const {
   if (HasCustomImage(IDR_THEME_FRAME))
     return false;
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   return ui::win::IsAeroGlassEnabled();
 #else
   return false;

@@ -31,6 +31,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/window/client_view.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#endif
+
 HICON GlassBrowserFrameView::throbber_icons_[
     GlassBrowserFrameView::kThrobberIconCount];
 
@@ -67,6 +71,14 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 // How far to indent the tabstrip from the left side of the screen when there
 // is no avatar icon.
 const int kTabStripIndent = -6;
+
+HWND GetFrameHWND(BrowserFrame* frame) {
+#if defined(USE_AURA)
+  return frame->GetNativeWindow()->GetRootWindow()->GetAcceleratedWidget();
+#else
+  return frame->GetNativeWindow();
+#endif
+}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,7 +183,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForClientView() const {
 
 gfx::Rect GlassBrowserFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  HWND hwnd = frame()->GetNativeWindow();
+  HWND hwnd = GetFrameHWND(frame());
   if (!browser_view()->IsTabStripVisible() && hwnd) {
     // If we don't have a tabstrip, we're either a popup or an app window, in
     // which case we have a standard size non-client area and can just use
@@ -461,7 +473,7 @@ void GlassBrowserFrameView::StartThrobber() {
     throbber_running_ = true;
     throbber_frame_ = 0;
     InitThrobberIcons();
-    SendMessage(frame()->GetNativeWindow(), WM_SETICON,
+    SendMessage(GetFrameHWND(frame()), WM_SETICON,
                 static_cast<WPARAM>(ICON_SMALL),
                 reinterpret_cast<LPARAM>(throbber_icons_[throbber_frame_]));
   }
@@ -483,13 +495,13 @@ void GlassBrowserFrameView::StopThrobber() {
     // Fallback to class icon.
     if (!frame_icon) {
       frame_icon = reinterpret_cast<HICON>(GetClassLongPtr(
-          frame()->GetNativeWindow(), GCLP_HICONSM));
+          GetFrameHWND(frame()), GCLP_HICONSM));
     }
 
     // This will reset the small icon which we set in the throbber code.
     // WM_SETICON with NULL icon restores the icon for title bar but not
     // for taskbar. See http://crbug.com/29996
-    SendMessage(frame()->GetNativeWindow(), WM_SETICON,
+    SendMessage(GetFrameHWND(frame()), WM_SETICON,
                 static_cast<WPARAM>(ICON_SMALL),
                 reinterpret_cast<LPARAM>(frame_icon));
   }
@@ -497,7 +509,7 @@ void GlassBrowserFrameView::StopThrobber() {
 
 void GlassBrowserFrameView::DisplayNextThrobberFrame() {
   throbber_frame_ = (throbber_frame_ + 1) % kThrobberIconCount;
-  SendMessage(frame()->GetNativeWindow(), WM_SETICON,
+  SendMessage(GetFrameHWND(frame()), WM_SETICON,
               static_cast<WPARAM>(ICON_SMALL),
               reinterpret_cast<LPARAM>(throbber_icons_[throbber_frame_]));
 }

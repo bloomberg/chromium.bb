@@ -2203,8 +2203,6 @@
             ['exclude', '^browser/ui/views/frame/browser_frame_win.cc'],
             ['exclude', '^browser/ui/views/frame/browser_frame_win.h'],
             ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_win.cc'],
-            ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.cc'],
-            ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.h'],
             ['exclude', '^browser/ui/views/frame/system_menu_model.cc'],
             ['exclude', '^browser/ui/views/frame/system_menu_model.h'],
             ['exclude', '^browser/ui/views/importer/import_progress_dialog_view.cc'],
@@ -2250,6 +2248,11 @@
                 ['include', 'browser/ui/browser_win.cc'],
                 ['include', 'browser/ui/webui/help/version_updater_basic.cc'],
                 ['include', 'browser/ui/webui/help/version_updater_basic.h'],
+              ],
+            }, {
+              'sources/': [
+                ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.cc'],
+                ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.h'],
               ],
             }],
           ],

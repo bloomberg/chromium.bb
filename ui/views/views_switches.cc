@@ -10,5 +10,8 @@ namespace switches {
 // Run in desktop mode using the aura framework.
 const char kDesktopAura[] = "desktop-aura";
 
+// Use the native system frame when applicable.
+const char kEnableNativeFrame[] = "enable-native-frame";
+
 }  // namespace switches
 }  // namespace views

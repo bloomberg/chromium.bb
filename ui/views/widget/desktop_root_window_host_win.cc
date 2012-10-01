@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_root_window_host_win.h"
 
+#include "base/command_line.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
@@ -17,9 +18,11 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
 #include "ui/views/ime/input_method_win.h"
+#include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler.h"
 #include "ui/views/window/native_frame_view.h"
@@ -47,8 +50,12 @@ DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
 
 void DesktopRootWindowHostWin::Init(aura::Window* content_window,
                                     const Widget::InitParams& params) {
-  // TODO(beng): SetInitParams().
   content_window_ = content_window;
+
+  ConfigureWindowStyles(message_handler_.get(), params,
+                        GetWidget()->widget_delegate(),
+                        native_widget_delegate_);
+
   message_handler_->Init(NULL, params.bounds);
 
   message_handler_->set_remove_standard_frame(!ShouldUseNativeFrame());
@@ -231,9 +238,8 @@ void DesktopRootWindowHostWin::SetVisibilityChangedAnimationsEnabled(
 }
 
 bool DesktopRootWindowHostWin::ShouldUseNativeFrame() {
-  return false;
-  // TODO(beng): allow BFW customizations.
-  // return ui::win::IsAeroGlassEnabled();
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNativeFrame) ? ui::win::IsAeroGlassEnabled() : false;
 }
 
 void DesktopRootWindowHostWin::FrameTypeChanged() {

@@ -146,7 +146,8 @@ views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
 bool ChromeViewsDelegate::UseTransparentWindows() const {
 #if defined(USE_ASH)
   // Ash uses transparent window frames above.
-  return true;
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      views::switches::kDesktopAura);
 #else
   return false;
 #endif

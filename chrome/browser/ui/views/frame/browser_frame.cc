@@ -61,10 +61,6 @@ void BrowserFrame::InitBrowserFrame() {
     // activation.
     params.type = views::Widget::InitParams::TYPE_PANEL;
   }
-#if defined(USE_AURA)
-  // Aura frames are translucent.
-  params.transparent = true;
-#endif
   Init(params);
 
   native_browser_frame_->InitSystemContextMenu();
@@ -113,16 +109,8 @@ views::internal::RootView* BrowserFrame::CreateRootView() {
 }
 
 views::NonClientFrameView* BrowserFrame::CreateNonClientFrameView() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  if (ShouldUseNativeFrame()) {
-    browser_frame_view_ = new GlassBrowserFrameView(this, browser_view_);
-  } else {
-#endif
-    browser_frame_view_ =
-        chrome::CreateBrowserNonClientFrameView(this, browser_view_);
-#if defined(OS_WIN) && !defined(USE_AURA)
-  }
-#endif
+  browser_frame_view_ =
+      chrome::CreateBrowserNonClientFrameView(this, browser_view_);
   return browser_frame_view_;
 }
 

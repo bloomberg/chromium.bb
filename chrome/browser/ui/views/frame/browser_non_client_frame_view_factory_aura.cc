@@ -13,15 +13,23 @@
 #include "chrome/browser/ui/views/frame/app_non_client_frame_view_aura.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
+#endif
+
 namespace chrome {
 
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
-
 #if defined(USE_AURA)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-        views::switches::kDesktopAura))
+        views::switches::kDesktopAura)) {
+#if defined(OS_WIN)
+    if (frame->ShouldUseNativeFrame())
+      return new GlassBrowserFrameView(frame, browser_view);
+#endif
     return new OpaqueBrowserFrameView(frame, browser_view);
+  }
 #endif
 #if defined(USE_ASH)
   // If this is an app window and it's maximized, use the special frame_view.
@@ -34,11 +42,10 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
   BrowserNonClientFrameViewAsh* frame_view =
       new BrowserNonClientFrameViewAsh(frame, browser_view);
   frame_view->Init();
-#else
-  OpaqueBrowserFrameView* frame_view =
-      new OpaqueBrowserFrameView(frame, browser_view);
-#endif
   return frame_view;
+#else
+  return new OpaqueBrowserFrameView(frame, browser_view);
+#endif
 }
 
 }  // namespace chrome

@@ -854,87 +854,8 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
   // Set non-style attributes.
   ownership_ = params.ownership;
 
-  DWORD style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-  DWORD ex_style = 0;
-  DWORD class_style = CS_DBLCLKS;
-
-  // Set type-independent style attributes.
-  if (params.child)
-    style |= WS_CHILD;
-  if (params.show_state == ui::SHOW_STATE_MAXIMIZED)
-    style |= WS_MAXIMIZE;
-  if (params.show_state == ui::SHOW_STATE_MINIMIZED)
-    style |= WS_MINIMIZE;
-  if (!params.accept_events)
-    ex_style |= WS_EX_TRANSPARENT;
-  if (!params.can_activate)
-    ex_style |= WS_EX_NOACTIVATE;
-  if (params.keep_on_top)
-    ex_style |= WS_EX_TOPMOST;
-  if (params.mirror_origin_in_rtl)
-    ex_style |= l10n_util::GetExtendedTooltipStyles();
-  if (params.transparent)
-    ex_style |= WS_EX_LAYERED;
-  if (params.has_dropshadow) {
-    class_style |= (base::win::GetVersion() < base::win::VERSION_XP) ?
-        0 : CS_DROPSHADOW;
-  }
-
-  // Set type-dependent style attributes.
-  switch (params.type) {
-    case Widget::InitParams::TYPE_PANEL:
-      ex_style |= WS_EX_TOPMOST;
-      // No break. Fall through to TYPE_WINDOW.
-    case Widget::InitParams::TYPE_WINDOW: {
-      style |= WS_SYSMENU | WS_CAPTION;
-      bool can_resize = GetWidget()->widget_delegate()->CanResize();
-      bool can_maximize = GetWidget()->widget_delegate()->CanMaximize();
-      if (can_maximize) {
-        style |= WS_OVERLAPPEDWINDOW;
-      } else if (can_resize) {
-        style |= WS_OVERLAPPED | WS_THICKFRAME;
-      }
-      if (delegate_->IsDialogBox()) {
-        style |= DS_MODALFRAME;
-        // NOTE: Turning this off means we lose the close button, which is bad.
-        // Turning it on though means the user can maximize or size the window
-        // from the system menu, which is worse. We may need to provide our own
-        // menu to get the close button to appear properly.
-        // style &= ~WS_SYSMENU;
-
-        // Set the WS_POPUP style for modal dialogs. This ensures that the owner
-        // window is activated on destruction. This style should not be set for
-        // non-modal non-top-level dialogs like constrained windows.
-        style |= delegate_->IsModal() ? WS_POPUP : 0;
-      }
-      ex_style |= delegate_->IsDialogBox() ? WS_EX_DLGMODALFRAME : 0;
-      break;
-    }
-    case Widget::InitParams::TYPE_CONTROL:
-      style |= WS_VISIBLE;
-      break;
-    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
-      style |= WS_POPUP;
-      break;
-    case Widget::InitParams::TYPE_BUBBLE:
-      style |= WS_POPUP;
-      style |= WS_CLIPCHILDREN;
-      break;
-    case Widget::InitParams::TYPE_POPUP:
-      style |= WS_POPUP;
-      ex_style |= WS_EX_TOOLWINDOW;
-      break;
-    case Widget::InitParams::TYPE_MENU:
-      style |= WS_POPUP;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  message_handler_->set_initial_class_style(class_style);
-  message_handler_->set_window_style(message_handler_->window_style() | style);
-  message_handler_->set_window_ex_style(
-      message_handler_->window_ex_style() | ex_style);
+  ConfigureWindowStyles(message_handler_.get(), params,
+                        GetWidget()->widget_delegate(), delegate_);
 
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);

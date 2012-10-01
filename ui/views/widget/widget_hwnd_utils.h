@@ -7,14 +7,28 @@
 
 #include <windows.h>
 
-// Functions shared by native_widget_win.cc and widget_message_filter.cc:
+#include "ui/views/widget/widget.h"
+
+// Functions shared by native_widget_win.cc and desktop_root_window_host_win.cc:
 
 namespace views {
+class HWNDMessageHandler;
+class WidgetDelegate;
+namespace internal {
+class NativeWidgetDelegate;
+}
 
 // Returns true if the WINDOWPOS data provided indicates the client area of
 // the window may have changed size. This can be caused by the window being
 // resized or its frame changing.
 bool DidClientAreaSizeChange(const WINDOWPOS* window_pos);
+
+// Sets styles appropriate for |params| on |handler|.
+void ConfigureWindowStyles(
+    HWNDMessageHandler* handler,
+    const Widget::InitParams& params,
+    WidgetDelegate* widget_delegate,
+    internal::NativeWidgetDelegate* native_widget_delegate);
 
 }  // namespace views
 
