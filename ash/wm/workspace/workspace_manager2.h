@@ -124,6 +124,10 @@ class ASH_EXPORT WorkspaceManager2
                                       aura::Window* stack_beneath,
                                       AnimateType animate_type);
 
+  // Moves the children of |window| to the desktop. This excludes certain
+  // windows. If |stack_beneath| is non-NULL the windows are stacked beneath it.
+  void MoveChildrenToDesktop(aura::Window* window, aura::Window* stack_beneath);
+
   // Selects the next workspace.
   void SelectNextWorkspace(AnimateType animate_type);
 

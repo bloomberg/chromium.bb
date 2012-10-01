@@ -1078,5 +1078,32 @@ TEST_F(WorkspaceManager2Test, TrackedByWorkspace) {
   EXPECT_NE(w1->parent(), w2->parent());
 }
 
+// Verifies a window marked as persisting across all workspaces ends up in its
+// own workspace when maximized.
+TEST_F(WorkspaceManager2Test, DeactivateDropsToDesktop) {
+  // Create a window maximized.
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+  EXPECT_TRUE(w1->IsVisible());
+
+  // Create another window that persists across all workspaces. It should end
+  // up with the same parent as |w1|.
+  scoped_ptr<Window> w2(CreateTestWindow());
+  SetPersistsAcrossAllWorkspaces(
+      w2.get(),
+      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  w2->Show();
+  wm::ActivateWindow(w2.get());
+  EXPECT_EQ(w1->parent(), w2->parent());
+  ASSERT_EQ("0 M2 active=1", StateString());
+
+  // Activate |w1|, should result in dropping |w2| to the desktop.
+  wm::ActivateWindow(w1.get());
+  ASSERT_EQ("1 M1 active=1", StateString());
+}
+
 }  // namespace internal
 }  // namespace ash

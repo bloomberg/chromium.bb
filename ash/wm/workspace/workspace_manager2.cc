@@ -222,6 +222,11 @@ void WorkspaceManager2::SetActiveWorkspaceByWindow(Window* window) {
       SetActiveWorkspace(workspace, ANIMATE_OLD_AND_NEW);
     }
   }
+  if (workspace->is_maximized() && IsMaximized(window)) {
+    // Clicking on the maximized window in a maximized workspace. Force all
+    // other windows to drop to the desktop.
+    MoveChildrenToDesktop(workspace->window(), NULL);
+  }
 }
 
 Window* WorkspaceManager2::GetParentForNewWindow(Window* window) {
@@ -392,29 +397,7 @@ void WorkspaceManager2::MoveWorkspaceToPendingOrDelete(
 
   AutoReset<bool> setter(&in_move_, true);
 
-  // Move all non-maximized/fullscreen windows to the desktop.
-  {
-    // Build the list of windows to move. Exclude maximized/fullscreen and
-    // windows with transient parents.
-    Window::Windows to_move;
-    Window* w_window = workspace->window();
-    for (size_t i = 0; i < w_window->children().size(); ++i) {
-      Window* child = w_window->children()[i];
-      if (!child->transient_parent() && !IsMaximized(child) &&
-          !WillRestoreMaximized(child)) {
-        to_move.push_back(child);
-      }
-    }
-    // Move the windows, but make sure the window is still a child of |w_window|
-    // before moving (moving may cascade and cause other windows to move).
-    for (size_t i = 0; i < to_move.size(); ++i) {
-      if (std::find(w_window->children().begin(), w_window->children().end(),
-                    to_move[i]) != w_window->children().end()) {
-        ReparentWindow(to_move[i], desktop_workspace()->window(),
-                       stack_beneath);
-      }
-    }
-  }
+  MoveChildrenToDesktop(workspace->window(), stack_beneath);
 
   {
     Workspaces::iterator workspace_i(FindWorkspace(workspace));
@@ -429,6 +412,29 @@ void WorkspaceManager2::MoveWorkspaceToPendingOrDelete(
     ScheduleDelete(workspace);
   } else {
     pending_workspaces_.insert(workspace);
+  }
+}
+
+void WorkspaceManager2::MoveChildrenToDesktop(aura::Window* window,
+                                              aura::Window* stack_beneath) {
+  // Build the list of windows to move. Exclude maximized/fullscreen and windows
+  // with transient parents.
+  Window::Windows to_move;
+  for (size_t i = 0; i < window->children().size(); ++i) {
+    Window* child = window->children()[i];
+    if (!child->transient_parent() && !IsMaximized(child) &&
+        !WillRestoreMaximized(child)) {
+      to_move.push_back(child);
+    }
+  }
+  // Move the windows, but make sure the window is still a child of |window|
+  // (moving may cascade and cause other windows to move).
+  for (size_t i = 0; i < to_move.size(); ++i) {
+    if (std::find(window->children().begin(), window->children().end(),
+                  to_move[i]) != window->children().end()) {
+      ReparentWindow(to_move[i], desktop_workspace()->window(),
+                     stack_beneath);
+    }
   }
 }
 
