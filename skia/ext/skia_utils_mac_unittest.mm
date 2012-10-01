@@ -126,7 +126,8 @@ void SkiaUtilsMacTest::RunBitLockerTest(BitLockerTest test) {
   if (!(test & TestNoBits)) {
     bitmap.setPixels(bits);
   }
-  SkCanvas canvas(bitmap);
+  SkCanvas canvas;
+  canvas.setBitmapDevice(bitmap);
   if (test & TestTranslate)
     canvas.translate(width / 2, 0);
   if (test & TestClip) {
@@ -140,6 +141,14 @@ void SkiaUtilsMacTest::RunBitLockerTest(BitLockerTest test) {
     CGContextSetFillColorWithColor(cgContext, testColor);
     CGRect cgRect = {{0, 0}, {width, height}};
     CGContextFillRect(cgContext, cgRect);
+    if (test & TestNoBits) {
+      bitmap.setPixels(bits);
+      canvas.setBitmapDevice(bitmap);
+      if (test & TestClip) {
+        SkRect clipRect = {0, height / 2, width, height};
+        canvas.clipRect(clipRect);
+      }
+    }
   }
   const unsigned results[][storageSize] = {
     {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}, // identity
