@@ -587,6 +587,29 @@ public class ContentViewCore implements MotionEventDelegate {
         return (int) (mContentWidth / mNativePageScaleFactor);
     }
 
+    public Bitmap getBitmap() {
+        return getBitmap(getWidth(), getHeight());
+    }
+
+    public Bitmap getBitmap(int width, int height) {
+        return getBitmap(width, height, Bitmap.Config.ARGB_8888);
+    }
+
+    public Bitmap getBitmap(int width, int height, Bitmap.Config config) {
+        // TODO(nileshagrawal): Implement this.
+        return null;
+    }
+
+    /**
+     * @return Whether the ContentView is covered by an overlay that is more than half
+     *         of it's surface. This is used to determine if we need to do a slow bitmap capture or
+     *         to show the ContentView without them.
+     */
+    public boolean hasLargeOverlay() {
+        // TODO(nileshagrawal): Implement this.
+        return false;
+    }
+
     /**
      * @return Whether the current WebContents has a previous navigation entry.
      */
@@ -814,6 +837,12 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private void hidePopupDialog() {
         SelectPopupDialog.hide(this);
+    }
+
+    void hideSelectActionBar() {
+        if (mActionMode != null) {
+            mActionMode.finish();
+        }
     }
 
     /**
@@ -1529,6 +1558,25 @@ public class ContentViewCore implements MotionEventDelegate {
         }
     }
 
+    /**
+     * If the view is ready to draw contents to the screen. In hardware mode,
+     * the initialization of the surface texture may not occur until after the
+     * view has been added to the layout. This method will return {@code true}
+     * once the texture is actually ready.
+     */
+    public boolean isReady() {
+        // TODO(nileshagrawal): Implement this.
+        return false;
+    }
+
+    /**
+     * @return Whether or not the texture view is available or not.
+     */
+    public boolean isAvailable() {
+        // TODO(nileshagrawal): Implement this.
+        return false;
+    }
+
     @CalledByNative
     private void startContentIntent(String contentUrl) {
         getContentViewClient().onStartContentIntent(getContext(), contentUrl);
@@ -1579,10 +1627,24 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
+     * Returns whether or not accessibility injection is being used.
+     */
+    public boolean isInjectingAccessibilityScript() {
+        return mAccessibilityInjector.accessibilityIsAvailable();
+    }
+
+    /**
      * Enable or disable accessibility features.
      */
     public void setAccessibilityState(boolean state) {
         mAccessibilityInjector.setScriptEnabled(state);
+    }
+
+    /**
+     * Stop any TTS notifications that are currently going on.
+     */
+    public void stopCurrentAccessibilityNotifications() {
+        mAccessibilityInjector.onPageLostFocus();
     }
 
     /**

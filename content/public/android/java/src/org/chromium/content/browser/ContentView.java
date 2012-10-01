@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -208,6 +209,10 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         return mContentViewCore.getContentViewClient();
     }
 
+    public int getBackgroundColor() {
+        return mContentViewCore.getBackgroundColor();
+    }
+
     /**
      * Load url without fixing up the url string. Consumers of ContentView are responsible for
      * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
@@ -246,6 +251,27 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public String getTitle() {
         return mContentViewCore.getTitle();
+    }
+
+    public Bitmap getBitmap() {
+        return getBitmap(getWidth(), getHeight());
+    }
+
+    public Bitmap getBitmap(int width, int height) {
+        return getBitmap(width, height, Bitmap.Config.ARGB_8888);
+    }
+
+    public Bitmap getBitmap(int width, int height, Bitmap.Config config) {
+        return mContentViewCore.getBitmap(width, height, config);
+    }
+
+    /**
+     * @return Whether the ContentView is covered by an overlay that is more than half
+     *         of it's surface. This is used to determine if we need to do a slow bitmap capture or
+     *         to show the ContentView without them.
+     */
+    public boolean hasLargeOverlay() {
+        return mContentViewCore.hasLargeOverlay();
     }
 
     /**
@@ -349,6 +375,21 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     /**
+     * Injects the passed JavaScript code in the current page and evaluates it.
+     * Once evaluated, an asynchronous call to
+     * ContentViewClient.onJavaScriptEvaluationResult is made. Used in automation
+     * tests.
+     *
+     * @return an id that is passed along in the asynchronous onJavaScriptEvaluationResult callback
+     * @throws IllegalStateException If the ContentView has been destroyed.
+     *
+     * TODO(nileshagrawal): Remove this method from the public interface.
+     */
+    public int evaluateJavaScript(String script) throws IllegalStateException {
+        return mContentViewCore.evaluateJavaScript(script);
+    }
+
+    /**
      * This method should be called when the containing activity is paused.
      **/
     public void onActivityPause() {
@@ -388,6 +429,13 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public ContentSettings getContentSettings() {
         return mContentViewCore.getContentSettings();
+    }
+
+    /**
+     * Hides the select action bar.
+     */
+    public void hideSelectActionBar() {
+        mContentViewCore.hideSelectActionBar();
     }
 
     // FrameLayout overrides.
@@ -434,6 +482,14 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     @Override
     public boolean awakenScrollBars() {
         return super.awakenScrollBars();
+    }
+
+    public int getSingleTapX()  {
+        return mContentViewCore.getContentViewGestureHandler().getSingleTapX();
+    }
+
+    public int getSingleTapY()  {
+        return mContentViewCore.getContentViewGestureHandler().getSingleTapY();
     }
 
     @Override
@@ -524,6 +580,20 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     /**
+     * In order to make sure we don't show white when we have a bitmap containing the previously
+     * drawn frame of this ContentView before it was hidden, we want to show the bitmap while we
+     * render the content and then swap them out, so the user perceived latency is shorter.  In
+     * software rendering mode we can just prime the backing store at the native level.  However
+     * for hardware rendering mode we have to show an ImageView in front of the TextureView, but
+     * behind the NTP Toolbar View.
+     *
+     * @param bitmap The bitmap to show while this ContentView is rendering content.
+     */
+    public void usePrimeBitmap(Bitmap bitmap) {
+        // TODO(nileshagrawal): Implement this.
+    }
+
+    /**
      * @return Whether a reload happens when this ContentView is activated.
      */
     public boolean needsReload() {
@@ -596,6 +666,44 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     // this method returns built-in zoom controls. This method is used in tests.
     public View getZoomControlsForTest() {
         return mContentViewCore.getZoomControlsForTest();
+    }
+
+    /**
+     * If the view is ready to draw contents to the screen. In hardware mode,
+     * the initialization of the surface texture may not occur until after the
+     * view has been added to the layout. This method will return {@code true}
+     * once the texture is actually ready.
+     */
+    public boolean isReady() {
+        return mContentViewCore.isReady();
+    }
+
+    /**
+     * @return Whether or not the texture view is available or not.
+     */
+    public boolean isAvailable() {
+        return mContentViewCore.isAvailable();
+    }
+
+    /**
+     * Returns whether or not accessibility injection is being used.
+     */
+    public boolean isInjectingAccessibilityScript() {
+        return mContentViewCore.isInjectingAccessibilityScript();
+    }
+
+    /**
+     * Enable or disable accessibility features.
+     */
+    public void setAccessibilityState(boolean state) {
+        mContentViewCore.setAccessibilityState(state);
+    }
+
+    /**
+     * Stop any TTS notifications that are currently going on.
+     */
+    public void stopCurrentAccessibilityNotifications() {
+        mContentViewCore.stopCurrentAccessibilityNotifications();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
