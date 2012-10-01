@@ -12,6 +12,7 @@ class Page(object):
       raise Exception('urls must be fully qualified: %s' % url)
     self.interactions = 'scroll'
     self.credentials = None
+    self.is_gmail = False
     self.wait_time_after_navigate = 2
     self.scroll_is_infinite = False
 

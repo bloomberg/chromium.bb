@@ -5,8 +5,8 @@ from chrome_remote_control import multi_page_benchmark
 from gpu_tools import scrolling_benchmark
 
 class TextureUploadBenchmark(scrolling_benchmark.ScrollingBenchmark):
-  def MeasurePage(self, _, tab):
-    rendering_stats_deltas = self.ScrollPageFully(tab)
+  def MeasurePage(self, page, tab):
+    rendering_stats_deltas = self.ScrollPageFully(page, tab)
 
     if (('totalCommitCount' not in rendering_stats_deltas)
         or rendering_stats_deltas['totalCommitCount'] == 0) :

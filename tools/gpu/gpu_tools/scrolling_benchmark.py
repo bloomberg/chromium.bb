@@ -39,7 +39,7 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
                       help='Reports all data collected, not just FPS')
 
   @staticmethod
-  def ScrollPageFully(tab):
+  def ScrollPageFully(page, tab):
     scroll_js_path = os.path.join(os.path.dirname(__file__), 'scroll.js')
     scroll_js = open(scroll_js_path, 'r').read()
 
@@ -49,8 +49,8 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
       window.__renderingStatsDeltas = null;
       new __ScrollTest(function(rendering_stats_deltas) {
         window.__renderingStatsDeltas = rendering_stats_deltas;
-      });
-    """)
+      }, %s);
+    """ % str(page.is_gmail).lower())
 
     # Poll for scroll benchmark completion.
     util.WaitFor(lambda: tab.runtime.Evaluate(
@@ -67,8 +67,8 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     if not options.no_gpu_benchmarking_extension:
       options.extra_browser_args.append('--enable-gpu-benchmarking')
 
-  def MeasurePage(self, _, tab):
-    rendering_stats_deltas = self.ScrollPageFully(tab)
+  def MeasurePage(self, page, tab):
+    rendering_stats_deltas = self.ScrollPageFully(page, tab)
     scroll_results = CalcScrollResults(rendering_stats_deltas)
     if self.options.report_all_results:
       all_results = {}
