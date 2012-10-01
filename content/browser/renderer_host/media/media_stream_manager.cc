@@ -59,6 +59,7 @@ DeviceThread::DeviceThread(const char* name) : base::Thread(name) {
 }
 
 DeviceThread::~DeviceThread() {
+  Stop();
 }
 
 void DeviceThread::Init() {
