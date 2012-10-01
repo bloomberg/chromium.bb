@@ -75,14 +75,6 @@ class SK_API PlatformCanvas : public SkCanvas {
   // Helper method used internally by the initialize() methods.
   bool initializeWithDevice(SkDevice* device);
 
-  // Unimplemented. This is to try to prevent people from calling this function
-  // on SkCanvas. SkCanvas' version is not virtual, so we can't prevent this
-  // 100%, but hopefully this will make people notice and not use the function.
-  // Calling SkCanvas' version will create a new device which is not compatible
-  // with us and we will crash if somebody tries to draw into it with
-  // CoreGraphics.
-  virtual SkDevice* setBitmapDevice(const SkBitmap& bitmap);
-
   // Disallow copy and assign
   PlatformCanvas(const PlatformCanvas&);
   PlatformCanvas& operator=(const PlatformCanvas&);

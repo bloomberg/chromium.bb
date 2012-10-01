@@ -11,11 +11,6 @@ namespace skia {
 
 PlatformCanvas::PlatformCanvas() {}
 
-SkDevice* PlatformCanvas::setBitmapDevice(const SkBitmap&) {
-  SkASSERT(false);  // Should not be called.
-  return NULL;
-}
-
 // static
 size_t PlatformCanvas::StrideForWidth(unsigned width) {
   return 4 * width;
