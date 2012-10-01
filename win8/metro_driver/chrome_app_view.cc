@@ -4,6 +4,7 @@
 
 #include "win8/metro_driver/stdafx.h"
 #include "win8/metro_driver/chrome_app_view.h"
+#include "win8/metro_driver/direct3d_helper.h"
 
 #include <algorithm>
 #include <windows.applicationModel.datatransfer.h>
@@ -13,10 +14,18 @@
 #include "base/message_loop.h"
 #include "base/win/metro.h"
 
+#include "base/threading/thread.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_sender.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/metro_viewer/metro_viewer_messages.h"
+
 // This include allows to send WM_SYSCOMMANDs to chrome.
 #include "chrome/app/chrome_command_ids.h"
 #include "win8/metro_driver/winrt_utils.h"
 #include "ui/base/ui_base_switches.h"
+
 
 typedef winfoundtn::ITypedEventHandler<
     winapp::Core::CoreApplicationView*,
@@ -281,6 +290,26 @@ void FlipFrameWindowsInternal() {
     globals.host_windows.push_back(current_top_window);
   }
 }
+
+class ChromeChannelListener : public IPC::Listener {
+ public:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    DVLOG(1) << "Received ipc message " << message.type();
+    return true;
+  }
+
+  virtual void OnChannelError() OVERRIDE {
+    DVLOG(1) << "Channel error";
+    MessageLoop::current()->Quit();
+  }
+
+  void Init(IPC::Sender* s) {
+    sender_ = s;
+  }
+
+ private:
+  IPC::Sender* sender_;
+};
 
 }  // namespace
 
@@ -715,6 +744,10 @@ ChromeAppView::SetWindow(winui::Core::ICoreWindow* window) {
 
   DVLOG(1) << "Created appview instance.";
 
+  direct3d_helper_.Initialize(window);
+
+  DVLOG(1) << "Initialized Direct3D.";
+
   hr = devices_handler_.Initialize(window);
   // Don't check or return the failure here, we need to let the app
   // initialization succeed. Even if we won't be able to access devices
@@ -786,7 +819,7 @@ void ChromeAppView::CheckForOSKActivation() {
 
 IFACEMETHODIMP
 ChromeAppView::Run() {
-  DVLOG(1) << __FUNCTION__ << ", hwnd=" << LONG_PTR(window_.Get());
+  DVLOG(1) << __FUNCTION__;
   mswr::ComPtr<winui::Core::ICoreDispatcher> dispatcher;
   HRESULT hr = window_->get_Dispatcher(&dispatcher);
   CheckHR(hr, "Dispatcher failed.");
@@ -803,6 +836,21 @@ ChromeAppView::Run() {
 
   // Announce our message loop to the world.
   globals.appview_msg_loop = msg_loop.message_loop_proxy();
+
+  // The thread needs to out-live the ChannelProxy.
+  base::Thread thread("metro_IO_thread");
+  base::Thread::Options options;
+  options.message_loop_type = MessageLoop::TYPE_IO;
+  thread.StartWithOptions(options);
+
+  ChromeChannelListener channel_listener;
+  IPC::ChannelProxy chan("viewer", IPC::Channel::MODE_NAMED_CLIENT,
+                         &channel_listener, thread.message_loop_proxy());
+  channel_listener.Init(&chan);
+  chan.Send(new MetroViewerHostMsg_SetTargetSurface(
+        gfx::NativeViewId(globals.core_window)));
+
+  DVLOG(1) << "ICoreWindow sent " << globals.core_window;
 
   // And post the task that'll do the inner Metro message pumping to it.
   msg_loop.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
@@ -912,17 +960,20 @@ HRESULT ChromeAppView::OnActivate(winapp::Core::ICoreApplicationView*,
 
   DVLOG(1) << "CoreWindow found: " << std::hex << globals.core_window;
 
+
+#if !defined(USE_AURA)
   if (!globals.host_thread) {
     DWORD chrome_ui_thread_id = 0;
     globals.host_thread =
         ::CreateThread(NULL, 0, HostMainThreadProc, NULL, 0,
-                       &chrome_ui_thread_id);
+                      &chrome_ui_thread_id);
 
     if (!globals.host_thread) {
       NOTREACHED() << "thread creation failed.";
       return E_UNEXPECTED;
     }
   }
+#endif
 
   if (RegisterHotKey(globals.core_window, kFlipWindowsHotKeyId,
                      MOD_CONTROL, VK_F12)) {

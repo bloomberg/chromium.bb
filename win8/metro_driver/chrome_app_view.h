@@ -20,6 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "win8/metro_driver/chrome_url_launch_handler.h"
 #include "win8/metro_driver/devices_handler.h"
+#include "win8/metro_driver/direct3d_helper.h"
 #include "win8/metro_driver/metro_dialog_box.h"
 #include "win8/metro_driver/settings_handler.h"
 #include "win8/metro_driver/toast_notification_handler.h"
@@ -132,6 +133,8 @@ class ChromeAppView
   int osk_offset_adjustment_;
 
   MetroDialogBox dialog_box_;
+
+  metro_driver::Direct3DHelper direct3d_helper_;
 };
 
 class ChromeAppViewFactory

@@ -138,6 +138,12 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
     return S_OK;
   }
 
+  if (GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(VK_F11)) {
+    AtlTrace("Using Shift-F11 debug hook, returning AHE_IMMERSIVE\n");
+    *pahe = AHE_IMMERSIVE;
+    return S_OK;
+  }
+
   FilePath user_data_dir;
   if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))  {
     AtlTrace("Failed to get chrome's data dir path, E_FAIL\n");

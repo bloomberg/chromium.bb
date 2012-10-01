@@ -27,8 +27,6 @@
 #include "base/message_pump_aurax11.h"
 #endif
 
-extern int ViewerProcessMain();
-
 namespace {
 
 // Trivial WindowDelegate implementation that draws a colored background.
@@ -163,15 +161,6 @@ int DemoMain() {
   return 0;
 }
 
-int RunMain() {
-  // TODO(scottmg): Something not crappy.
-  if (CommandLine::ForCurrentProcess()->HasSwitch("viewer")) {
-    return ViewerProcessMain();
-  } else {
-    return DemoMain();
-  }
-}
-
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -184,5 +173,5 @@ int main(int argc, char** argv) {
   icu_util::Initialize();
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
-  return RunMain();
+  return DemoMain();
 }

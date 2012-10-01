@@ -219,7 +219,6 @@
         '../compositor/compositor.gyp:compositor_test_support',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        '../viewer/viewer.gyp:viewer',
         '../../ipc/ipc.gyp:ipc',
         'aura',
       ],

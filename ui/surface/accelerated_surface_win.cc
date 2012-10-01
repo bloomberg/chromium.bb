@@ -412,6 +412,10 @@ void AcceleratedPresenterMap::RemovePresenter(
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::GetPresenter(
     gfx::PluginWindowHandle window) {
   base::AutoLock locked(lock_);
+
+  if (!window)
+    return presenters_.begin()->second;
+
   PresenterMap::iterator it = presenters_.find(window);
   if (it == presenters_.end())
     return scoped_refptr<AcceleratedPresenter>();
@@ -660,6 +664,12 @@ void AcceleratedPresenter::Invalidate() {
   base::AutoLock locked(lock_);
   window_ = NULL;
 }
+
+#if defined(USE_AURA)
+void AcceleratedPresenter::SetNewTargetWindow(gfx::PluginWindowHandle window) {
+  window_ = window;
+}
+#endif
 
 AcceleratedPresenter::~AcceleratedPresenter() {
 }

@@ -2339,6 +2339,10 @@
             ['exclude', '^browser/tab_contents/web_drag_bookmark_handler_win.cc'],
             ['exclude', '^browser/tab_contents/web_drag_bookmark_handler_win.h'],
           ],
+          'sources': [
+            'browser/metro_viewer/metro_viewer_process_host_win.cc',
+            'browser/metro_viewer/metro_viewer_process_host_win.h',
+          ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
             '../ui/compositor/compositor.gyp:compositor',
@@ -2349,6 +2353,9 @@
                 ['exclude', '^browser/background/background_mode_manager_aura.cc'],
                 ['exclude', '^browser/lifetime/application_lifetime_win.cc'],
                 ['exclude', '^browser/fullscreen_win.cc'],
+              ],
+              'dependencies': [
+                '../ui/metro_viewer/metro_viewer.gyp:metro_viewer',
               ],
             }],
           ],

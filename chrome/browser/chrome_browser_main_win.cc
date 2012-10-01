@@ -49,6 +49,10 @@
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
 
+#if defined(USE_AURA)
+#include "chrome/browser/metro_viewer/metro_viewer_process_host_win.h"
+#endif
+
 
 namespace {
 
@@ -211,6 +215,9 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopRun() {
   ChromeBrowserMainParts::PreMainMessageLoopRun();
 
   removable_device_notifications_window_->Init();
+#if defined(USE_AURA)
+  metro_viewer_process_host_.reset(new MetroViewerProcessHost);
+#endif
 }
 
 // static

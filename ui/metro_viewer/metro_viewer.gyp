@@ -8,22 +8,16 @@
   },
   'targets': [
     {
-      'target_name': 'viewer',
+      'target_name': 'metro_viewer',
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
       ],
       'sources': [
-        'viewer_host_win.cc',
-        'viewer_host_win.h',
-        'viewer_ipc_server.cc',
-        'viewer_ipc_server.h',
-        'viewer_main.cc',
-        'viewer_message_generator.cc',
-        'viewer_message_generator.h',
-        'viewer_process.cc',
-        'viewer_process.h',
+        'metro_viewer_message_generator.cc',
+        'metro_viewer_message_generator.h',
+        'metro_viewer_messages.h',
       ],
       'include_dirs': [
         '..',

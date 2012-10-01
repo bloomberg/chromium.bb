@@ -31,10 +31,12 @@
           'type': 'shared_library',
           'dependencies': [
             '../../base/base.gyp:base',
-	    '../../build/temp_gyp/googleurl.gyp:googleurl',
+            '../../build/temp_gyp/googleurl.gyp:googleurl',
             '../../crypto/crypto.gyp:crypto',
-            '../../sandbox/sandbox.gyp:sandbox',
             '../../google_update/google_update.gyp:google_update',
+            '../../ipc/ipc.gyp:ipc',
+            '../../sandbox/sandbox.gyp:sandbox',
+            '../../ui/metro_viewer/metro_viewer.gyp:metro_viewer',
             '../win8.gyp:check_sdk_patch',
           ],
           'sources': [
@@ -46,6 +48,8 @@
             '../delegate_execute/chrome_util.h',
             'devices_handler.cc',
             'devices_handler.h',
+            'direct3d_helper.cc',
+            'direct3d_helper.h',
             'file_picker.h',
             'file_picker.cc',
             'metro_dialog_box.cc',
