@@ -746,7 +746,7 @@ env.AddNodeToTestSuite(
 node = env.CommandTest(
     'dcheck_test_never_death.out',
     command=[check_test_exe, '-s', '0', '-d'])  # no abort
-env.AddNodeToTestSuite(node, ['small_tests'], 'dcheck_test_never_death')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_dcheck_test_never_death')
 
 
 node = env.CommandTest(

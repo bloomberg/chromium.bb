@@ -6,6 +6,7 @@
 import atexit
 import os
 import platform
+import re
 import subprocess
 import sys
 import zlib
@@ -782,6 +783,10 @@ def AddNodeToTestSuite(env, node, suite_name, node_name, is_broken=False,
     return
 
   assert node_name is not None
+  test_name_regex = r'run_.*_(unit)?test.*$'
+  assert re.match(test_name_regex, node_name), (
+      'test %r does not match "run_..._test" naming convention '
+      '(precise regex is %s)' % (node_name, test_name_regex))
 
   ValidateTestSuiteNames(suite_name, node_name)
 

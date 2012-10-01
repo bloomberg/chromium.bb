@@ -9,4 +9,4 @@ nexe = env.ComponentProgram('bundle_size',
                             'bundle_size.c',
                             EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
 node = env.CommandSelLdrTestNacl('bundle_size.out', nexe)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_bundle_size')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_bundle_size_test')

@@ -45,10 +45,10 @@ if env.Bit('target_x86_64'):
   node = env.CommandTest(
     'vdiff.out', command=[vdiff, '--easydiff'],
     capture_output=0, time_warning=2500, time_error=5000)
-  env.AddNodeToTestSuite(node, ['validator_diff_tests'], 'vdiff_test')
+  env.AddNodeToTestSuite(node, ['validator_diff_tests'], 'run_vdiff_test')
 
 if env.Bit('target_x86_32'):
   # No golden output for 32-bit until more diffs are fixed
   node = env.CommandTest('vdiff.out', command=[vdiff],
                          time_warning=2500, time_error=5000)
-  env.AddNodeToTestSuite(node, ['validator_diff_tests'], 'vdiff_test')
+  env.AddNodeToTestSuite(node, ['validator_diff_tests'], 'run_vdiff_test')

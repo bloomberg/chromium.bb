@@ -39,4 +39,6 @@ node = env.SelUniversalTest('mandel_test.out',
                             mandel_nexe,
                             stdin=env.File('test.stdin'),
                             stdout_golden=env.File('test.stdout'))
-env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_mandel')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_mandel_test')

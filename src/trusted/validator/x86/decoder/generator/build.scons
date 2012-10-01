@@ -228,41 +228,42 @@ def __GoldenBases(ext):
 def __BaseTestFile(base, ext):
   return test_env.File(TESTDATA_SUBARCH_DIR + base + '.' + ext)
 
-# Generates the corresponding test name from the given base.
-def __BaseTestName(test, base, ext):
-  return test + '_' + base + '_' + ext
-
 # Generates the corresponding output file from the given base.
 def __OutTestFile(test, base, ext):
   return test + '_' + base + '.' + ext + '.out'
 
 def __AddTest(test, test_env, base, ext, command, groups):
-  test_env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
+  test_env.AddNodeToTestSuite(command,
+                              groups,
+                              'run_%s_%s_%s_test' % (test, base, ext))
 
 #------------------------------------------------------------------
 # Generate the header files containing the modeled x86 instructions.
 
 def TestGeneratedInstructionTables(target_subarch, golden_filename,
                                    validator_decoder, groups):
-  test_name = 'ncdecode_tablegen_' + golden_filename + "_" + target_subarch + '.out'
+
+  test_name = 'ncdecode_tablegen_%s_%s' % (golden_filename, target_subarch)
   golden_output = env.File('%s/%s_%s.h'
                            % (tables_src_dir,  golden_filename, target_subarch))
   cmd_line = [ncdecode_tablegen, '-m%s' % (target_subarch,)]
   if validator_decoder:
     cmd_line += ['-validator_decoder']
-  test = test_env.CommandTest(test_name, cmd_line, stdout_golden = golden_output)
-  test_env.AddNodeToTestSuite(test, groups, test_name)
+  test = test_env.CommandTest(test_name + '.out',
+                              cmd_line,
+                              stdout_golden = golden_output)
+  test_env.AddNodeToTestSuite(test, groups, 'run_%s_test' % test_name)
 
 
 def TestGeneratedSubregisterTables(target_subarch, golden_filename, groups):
-  test_name = 'ncdecode_tablegen_subreg_tables_' + "_" + target_subarch + '.out'
+  test_name = 'ncdecode_tablegen_subreg_tables_' + target_subarch
   golden_output = env.File('%s/%s_%s.h'
                            % (tables_src_dir, golden_filename, target_subarch))
   test = test_env.CommandTest(
-      test_name,
+      test_name + '.out',
       [ncdecode_tablegen, '-m%s -nacl_subregs' % (target_subarch,)],
       stdout_golden = golden_output)
-  test_env.AddNodeToTestSuite(test, groups, test_name)
+  test_env.AddNodeToTestSuite(test, groups, 'run_%s_test' % test_name)
 
 
 # The following verifies that we generate the same source files, independent of

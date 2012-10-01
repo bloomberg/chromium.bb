@@ -10,7 +10,7 @@ nexe = env.ComponentProgram('tls_perf',
                             'tls_perf.c',
                             EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
 node = env.CommandSelLdrTestNacl('tls_perf.out', nexe)
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_tls_perf')
+env.AddNodeToTestSuite(node, ['large_tests'], 'run_tls_perf_test')
 
 # TODO(bsy,jvoung): this seems like it should be in performance_tests,
 # except that we may want to separate out performance tests that fire

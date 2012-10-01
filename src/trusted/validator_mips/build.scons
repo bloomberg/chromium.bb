@@ -85,7 +85,7 @@ if env.Bit('linux'):
 
   gtest_env.AddNodeToTestSuite(address_set_test,
                                ['small_tests'],
-                               'mips_address_set_test')
+                               'run_mips_address_set_test')
 
   validator_tests = {
     'test_forbidden_instructions': 1,
