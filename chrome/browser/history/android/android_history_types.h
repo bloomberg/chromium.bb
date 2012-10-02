@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/common/url_database/template_url_id.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 #include "sql/statement.h"
 
 namespace sql {

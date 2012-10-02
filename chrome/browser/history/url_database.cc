@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/common/url_database/url_database.h"
+#include "chrome/browser/history/url_database.h"
 
 #include <algorithm>
 #include <limits>
@@ -18,7 +18,7 @@
 
 namespace history {
 
-const char URLDatabase::kURLRowFields[] = URL_DATABASE_ROW_FIELDS;
+const char URLDatabase::kURLRowFields[] = HISTORY_URL_ROW_FIELDS;
 const int URLDatabase::kNumURLRowFields = 9;
 
 URLDatabase::URLEnumeratorBase::URLEnumeratorBase()
@@ -47,7 +47,7 @@ bool URLDatabase::IconMappingEnumerator::GetNextIconMapping(IconMapping* r) {
     return false;
 
   r->page_url = GURL(statement_.ColumnString(0));
-  r->icon_id = statement_.ColumnInt64(1);
+  r->icon_id =  statement_.ColumnInt64(1);
   return true;
 }
 
@@ -89,7 +89,7 @@ bool URLDatabase::GetURLRow(URLID url_id, URLRow* info) {
   // we added any checks. We should eventually be able to remove it
   // when all inputs are using GURL (which prohibit empty input).
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT" URL_DATABASE_ROW_FIELDS "FROM urls WHERE id=?"));
+      "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE id=?"));
   statement.BindInt64(0, url_id);
 
   if (statement.Step()) {
@@ -101,7 +101,7 @@ bool URLDatabase::GetURLRow(URLID url_id, URLRow* info) {
 
 bool URLDatabase::GetAllTypedUrls(URLRows* urls) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT" URL_DATABASE_ROW_FIELDS "FROM urls WHERE typed_count > 0"));
+      "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE typed_count > 0"));
 
   while (statement.Step()) {
     URLRow info;
@@ -113,7 +113,7 @@ bool URLDatabase::GetAllTypedUrls(URLRows* urls) {
 
 URLID URLDatabase::GetRowForURL(const GURL& url, history::URLRow* info) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT" URL_DATABASE_ROW_FIELDS "FROM urls WHERE url=?"));
+      "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE url=?"));
   std::string url_string = GURLToDatabaseURL(url);
   statement.BindString(0, url_string);
 
@@ -145,7 +145,7 @@ URLID URLDatabase::AddURLInternal(const history::URLRow& info,
                                   bool is_temporary) {
   // This function is used to insert into two different tables, so we have to
   // do some shuffling. Unfortinately, we can't use the macro
-  // URL_DATABASE_ROW_FIELDS because that specifies the table name which is
+  // HISTORY_URL_ROW_FIELDS because that specifies the table name which is
   // invalid in the insert syntax.
   #define ADDURL_COMMON_SUFFIX \
       " (url, title, visit_count, typed_count, "\
@@ -274,13 +274,13 @@ bool URLDatabase::AutocompleteForPrefix(const std::string& prefix,
   const char* sql;
   int line;
   if (typed_only) {
-    sql = "SELECT" URL_DATABASE_ROW_FIELDS "FROM urls "
+    sql = "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls "
         "WHERE url >= ? AND url < ? AND hidden = 0 AND typed_count > 0 "
         "ORDER BY typed_count DESC, visit_count DESC, last_visit_time DESC "
         "LIMIT ?";
     line = __LINE__;
   } else {
-    sql = "SELECT" URL_DATABASE_ROW_FIELDS "FROM urls "
+    sql = "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls "
         "WHERE url >= ? AND url < ? AND hidden = 0 "
         "ORDER BY typed_count DESC, visit_count DESC, last_visit_time DESC "
         "LIMIT ?";
