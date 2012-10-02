@@ -150,7 +150,7 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const uint8_t* init_data,
 
   DCHECK(key_request->message());
   DCHECK_EQ(key_request->message()->size(), client_.key_message_length());
-  memcpy(reinterpret_cast<void*>(key_request->message()->buffer()),
+  memcpy(reinterpret_cast<void*>(key_request->message()->data()),
          reinterpret_cast<const void*>(client_.key_message()),
          client_.key_message_length());
 
@@ -197,7 +197,7 @@ static void CopyDecryptResults(
 
 cdm::Status ClearKeyCdm::Decrypt(
     const cdm::InputBuffer& encrypted_buffer,
-    cdm::OutputBuffer* decrypted_buffer) {
+    cdm::DecryptedBlock* decrypted_block) {
   DVLOG(1) << "Decrypt()";
 
   scoped_refptr<media::DecoderBuffer> decoder_buffer =
@@ -218,12 +218,12 @@ cdm::Status ClearKeyCdm::Decrypt(
   DCHECK(buffer);
   int data_size = buffer->GetDataSize();
 
-  decrypted_buffer->set_buffer(allocator_->Allocate(data_size));
-  memcpy(reinterpret_cast<void*>(decrypted_buffer->buffer()->buffer()),
+  decrypted_block->set_buffer(allocator_->Allocate(data_size));
+  memcpy(reinterpret_cast<void*>(decrypted_block->buffer()->data()),
          buffer->GetData(),
          data_size);
 
-  decrypted_buffer->set_timestamp(buffer->GetTimestamp().InMicroseconds());
+  decrypted_block->set_timestamp(buffer->GetTimestamp().InMicroseconds());
   return cdm::kSuccess;
 }
 

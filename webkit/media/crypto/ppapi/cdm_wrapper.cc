@@ -66,7 +66,7 @@ class PpbBuffer : public cdm::Buffer {
   // cdm::Buffer methods.
   virtual void Destroy() OVERRIDE { delete this; }
 
-  virtual uint8_t* buffer() OVERRIDE {
+  virtual uint8_t* data() OVERRIDE {
     return static_cast<uint8_t*>(buffer_.data());
   }
 
@@ -102,6 +102,24 @@ class PpbBufferAllocator : public cdm::Allocator {
   DISALLOW_COPY_AND_ASSIGN(PpbBufferAllocator);
 };
 
+class DecryptedBlockImpl : public cdm::DecryptedBlock {
+ public:
+  DecryptedBlockImpl() : buffer_(NULL), timestamp_(0) {}
+  virtual ~DecryptedBlockImpl();
+
+  virtual void set_buffer(cdm::Buffer* buffer) OVERRIDE;
+  virtual cdm::Buffer* buffer() OVERRIDE;
+
+  virtual void set_timestamp(int64_t timestamp) OVERRIDE;
+  virtual int64_t timestamp() const OVERRIDE;
+
+ private:
+  PpbBuffer* buffer_;
+  int64_t timestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(DecryptedBlockImpl);
+};
+
 class KeyMessageImpl : public cdm::KeyMessage {
  public:
   KeyMessageImpl() : message_(NULL) {}
@@ -113,7 +131,7 @@ class KeyMessageImpl : public cdm::KeyMessage {
   virtual int32_t session_id_length() const OVERRIDE;
 
   virtual void set_message(cdm::Buffer* message) OVERRIDE;
-  virtual cdm::Buffer* message() const OVERRIDE;
+  virtual cdm::Buffer* message() OVERRIDE;
 
   virtual void set_default_url(const char* default_url,
                                int32_t length) OVERRIDE;
@@ -131,23 +149,26 @@ class KeyMessageImpl : public cdm::KeyMessage {
   DISALLOW_COPY_AND_ASSIGN(KeyMessageImpl);
 };
 
-class OutputBufferImpl : public cdm::OutputBuffer {
- public:
-  OutputBufferImpl() : buffer_(NULL), timestamp_(0) {}
-  virtual ~OutputBufferImpl();
+DecryptedBlockImpl::~DecryptedBlockImpl() {
+  if (buffer_)
+    buffer_->Destroy();
+}
 
-  virtual void set_buffer(cdm::Buffer* buffer) OVERRIDE;
-  virtual cdm::Buffer* buffer() const OVERRIDE;
+void DecryptedBlockImpl::set_buffer(cdm::Buffer* buffer) {
+  buffer_ = static_cast<PpbBuffer*>(buffer);
+}
 
-  virtual void set_timestamp(int64_t timestamp) OVERRIDE;
-  virtual int64_t timestamp() const OVERRIDE;
+cdm::Buffer* DecryptedBlockImpl::buffer() {
+  return buffer_;
+}
 
- private:
-  PpbBuffer* buffer_;
-  int64_t timestamp_;
+void DecryptedBlockImpl::set_timestamp(int64_t timestamp) {
+  timestamp_ = timestamp;
+}
 
-  DISALLOW_COPY_AND_ASSIGN(OutputBufferImpl);
-};
+int64_t DecryptedBlockImpl::timestamp() const {
+  return timestamp_;
+}
 
 KeyMessageImpl::~KeyMessageImpl() {
   if (message_)
@@ -170,7 +191,7 @@ void KeyMessageImpl::set_message(cdm::Buffer* buffer) {
   message_ = static_cast<PpbBuffer*>(buffer);
 }
 
-cdm::Buffer* KeyMessageImpl::message() const {
+cdm::Buffer* KeyMessageImpl::message() {
   return message_;
 }
 
@@ -184,27 +205,6 @@ const char* KeyMessageImpl::default_url() const {
 
 int32_t KeyMessageImpl::default_url_length() const {
   return default_url_.length();
-}
-
-OutputBufferImpl::~OutputBufferImpl() {
-  if (buffer_)
-    buffer_->Destroy();
-}
-
-void OutputBufferImpl::set_buffer(cdm::Buffer* buffer) {
-  buffer_ = static_cast<PpbBuffer*>(buffer);
-}
-
-cdm::Buffer* OutputBufferImpl::buffer() const {
-  return buffer_;
-}
-
-void OutputBufferImpl::set_timestamp(int64_t timestamp) {
-  timestamp_ = timestamp;
-}
-
-int64_t OutputBufferImpl::timestamp() const {
-  return timestamp_;
 }
 
 // A wrapper class for abstracting away PPAPI interaction and threading for a
@@ -237,8 +237,8 @@ class CdmWrapper : public pp::Instance,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
 
  private:
+  typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
   typedef linked_ptr<KeyMessageImpl> LinkedKeyMessage;
-  typedef linked_ptr<OutputBufferImpl> LinkedOutputBuffer;
 
   // <code>PPB_ContentDecryptor_Private</code> dispatchers. These are passed to
   // <code>callback_factory_</code> to ensure that calls into
@@ -248,7 +248,7 @@ class CdmWrapper : public pp::Instance,
   void KeyError(int32_t result, const std::string& session_id);
   void DeliverBlock(int32_t result,
                     const cdm::Status& status,
-                    const LinkedOutputBuffer& output_buffer,
+                    const LinkedDecryptedBlock& decrypted_block,
                     const PP_DecryptTrackingInfo& tracking_info);
 
   PpbBufferAllocator allocator_;
@@ -390,13 +390,13 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
 
   input_buffer.timestamp = encrypted_block_info.tracking_info.timestamp;
 
-  LinkedOutputBuffer output_buffer(new OutputBufferImpl());
-  cdm::Status status = cdm_->Decrypt(input_buffer, output_buffer.get());
+  LinkedDecryptedBlock decrypted_block(new DecryptedBlockImpl());
+  cdm::Status status = cdm_->Decrypt(input_buffer, decrypted_block.get());
 
   CallOnMain(callback_factory_.NewCallback(
       &CdmWrapper::DeliverBlock,
       status,
-      output_buffer,
+      decrypted_block,
       encrypted_block_info.tracking_info));
 }
 
@@ -431,16 +431,16 @@ void CdmWrapper::KeyError(int32_t result, const std::string& session_id) {
 
 void CdmWrapper::DeliverBlock(int32_t result,
                               const cdm::Status& status,
-                              const LinkedOutputBuffer& output_buffer,
+                              const LinkedDecryptedBlock& decrypted_block,
                               const PP_DecryptTrackingInfo& tracking_info) {
   PP_DecryptedBlockInfo decrypted_block_info;
   decrypted_block_info.tracking_info.request_id = tracking_info.request_id;
-  decrypted_block_info.tracking_info.timestamp = output_buffer->timestamp();
+  decrypted_block_info.tracking_info.timestamp = decrypted_block->timestamp();
 
   switch (status) {
     case cdm::kSuccess:
       decrypted_block_info.result = PP_DECRYPTRESULT_SUCCESS;
-      PP_DCHECK(output_buffer.get() && output_buffer->buffer());
+      PP_DCHECK(decrypted_block.get() && decrypted_block->buffer());
       break;
     case cdm::kNoKey:
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_NOKEY;
@@ -452,8 +452,8 @@ void CdmWrapper::DeliverBlock(int32_t result,
   }
 
   const pp::Buffer_Dev& buffer =
-      output_buffer.get() && output_buffer->buffer() ?
-      static_cast<PpbBuffer*>(output_buffer->buffer())->buffer_dev() :
+      decrypted_block.get() && decrypted_block->buffer() ?
+      static_cast<PpbBuffer*>(decrypted_block->buffer())->buffer_dev() :
       pp::Buffer_Dev();
 
   pp::ContentDecryptor_Private::DeliverBlock(buffer, decrypted_block_info);

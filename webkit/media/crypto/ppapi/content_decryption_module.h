@@ -20,8 +20,8 @@ namespace cdm {
 class Allocator;
 class Buffer;
 class ContentDecryptionModule;
+class DecryptedBlock;
 class KeyMessage;
-class OutputBuffer;
 }
 
 extern "C" {
@@ -226,7 +226,7 @@ class ContentDecryptionModule {
   // allocated memory over library boundaries. Fix it after related PPAPI change
   // and sample CDM are landed.
   virtual Status Decrypt(const InputBuffer& encrypted_buffer,
-                         OutputBuffer* decrypted_buffer) = 0;
+                         DecryptedBlock* decrypted_buffer) = 0;
 
   // Initializes the CDM video decoder with |video_decoder_config|. This
   // function must be called before DecryptAndDecodeVideo() is called.
@@ -282,7 +282,7 @@ class Buffer {
   // Destroys the buffer in the same context as it was created.
   virtual void Destroy() = 0;
 
-  virtual uint8_t* buffer() = 0;
+  virtual uint8_t* data() = 0;
   virtual int32_t size() const = 0;
 
  protected:
@@ -307,6 +307,22 @@ class Allocator {
   virtual ~Allocator() {}
 };
 
+// Represents a decrypted block that has not been decoded.
+class DecryptedBlock {
+ public:
+  virtual void set_buffer(Buffer* buffer) = 0;
+  virtual Buffer* buffer() = 0;
+
+  // TODO(tomfinegan): Figure out if timestamp is really needed. If it is not,
+  // we can just pass Buffer pointers around.
+  virtual void set_timestamp(int64_t timestamp) = 0;
+  virtual int64_t timestamp() const = 0;
+
+ protected:
+  DecryptedBlock() {}
+  virtual ~DecryptedBlock() {}
+};
+
 // Represents a key message sent by the CDM.
 class KeyMessage {
  public:
@@ -315,7 +331,7 @@ class KeyMessage {
   virtual int32_t session_id_length() const = 0;
 
   virtual void set_message(Buffer* message) = 0;
-  virtual Buffer* message() const = 0;
+  virtual Buffer* message() = 0;
 
   virtual void set_default_url(const char* default_url, int32_t length) = 0;
   virtual const char* default_url() const = 0;
@@ -324,22 +340,6 @@ class KeyMessage {
  protected:
   KeyMessage() {}
   virtual ~KeyMessage() {}
-};
-
-// Represents an output decrypted buffer.
-class OutputBuffer {
- public:
-  virtual void set_buffer(Buffer* buffer) = 0;
-  virtual Buffer* buffer() const = 0;
-
-  // TODO(tomfinegan): Figure out if timestamp is really needed. If it is not,
-  // we can just pass Buffer*s around.
-  virtual void set_timestamp(int64_t timestamp) = 0;
-  virtual int64_t timestamp() const = 0;
-
- protected:
-  OutputBuffer() {}
-  virtual ~OutputBuffer() {}
 };
 
 }  // namespace cdm
