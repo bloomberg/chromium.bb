@@ -485,7 +485,33 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
 
 def GenerateMasterMakefile(in_path, out_path, projects):
   """Generate a Master Makefile that builds all examples. """
-  replace = { '__PROJECT_LIST__' : SetVar('PROJECTS', projects) }
+  project_names = [project['NAME'] for project in projects]
+
+  # TODO(binji): This is kind of a hack; we use the target's LIBS to determine
+  # dependencies. This project-level dependency is then injected into the
+  # master Makefile.
+  dependencies = []
+  for project in projects:
+    project_deps_set = set()
+    for target in project['TARGETS']:
+      target_libs = target.get('LIBS', [])
+      dependent_libs = set(target_libs) & set(project_names)
+      project_deps_set.update(dependent_libs)
+
+    if project_deps_set:
+      # If project foo depends on projects bar and baz, generate:
+      #   "foo_TARGET: bar_TARGET baz_TARGET"
+      # _TARGET is appended for all targets in the master makefile template.
+      project_deps = ' '.join(p + '_TARGET' for p in project_deps_set)
+      project_deps_string = '%s_TARGET: %s' % (project['NAME'], project_deps)
+      dependencies.append(project_deps_string)
+
+  dependencies_string = '\n'.join(dependencies)
+
+  replace = {
+      '__PROJECT_LIST__' : SetVar('PROJECTS', project_names),
+      '__DEPENDENCIES__': dependencies_string,
+  }
 
   WriteReplaced(in_path, out_path, replace)
 
@@ -554,7 +580,7 @@ def main(argv):
 
     # Create a list of projects for each DEST. This will be used to generate a
     # master makefile.
-    master_projects.setdefault(desc['DEST'], []).append(desc['NAME'])
+    master_projects.setdefault(desc['DEST'], []).append(desc)
 
   if options.master:
     if use_gyp:

@@ -34,6 +34,7 @@ endef
 # Define the various targets via the Macro
 $(foreach proj,$(PROJECTS),$(eval $(call TARGET,$(proj))))
 
+__DEPENDENCIES__
 
 all: $(TARGET_LIST)
 	echo "Done building targets."
