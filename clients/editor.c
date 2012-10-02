@@ -500,7 +500,8 @@ text_entry_update_layout(struct text_entry *entry)
 {
 	char *text;
 
-	assert(((unsigned int)entry->cursor) <= strlen(entry->text));
+	assert(((unsigned int)entry->cursor) <= strlen(entry->text) +
+	       (entry->preedit_text ? strlen(entry->preedit_text) : 0));
 
 	if (!entry->preedit_text) {
 		text_layout_set_text(entry->layout, entry->text);
