@@ -49,7 +49,7 @@ public:
     virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
     virtual bool needMoreUpdates() OVERRIDE;
 
-    virtual void setOpaque(bool) OVERRIDE;
+    virtual void setContentsOpaque(bool) OVERRIDE;
 
 protected:
     explicit ContentLayerChromium(ContentLayerChromiumClient*);

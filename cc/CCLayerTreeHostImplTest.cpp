@@ -785,7 +785,7 @@ TEST_F(CCLayerTreeHostImplTest, willDrawNotCalledOnOccludedLayer)
     // This layer covers the occludedLayer above. Make this layer large so it can occlude.
     topLayer->setBounds(bigSize);
     topLayer->setContentBounds(bigSize);
-    topLayer->setOpaque(true);
+    topLayer->setContentsOpaque(true);
 
     CCLayerTreeHostImpl::FrameData frame;
 
@@ -1403,7 +1403,7 @@ public:
         m_quadsAppended = true;
 
         IntRect opaqueRect;
-        if (opaque() || m_opaqueContents)
+        if (contentsOpaque())
             opaqueRect = m_quadRect;
         else
             opaqueRect = m_opaqueContentRect;
@@ -1427,7 +1427,6 @@ public:
 
     void setQuadRect(const IntRect& rect) { m_quadRect = rect; }
     void setQuadVisibleRect(const IntRect& rect) { m_quadVisibleRect = rect; }
-    void setOpaqueContents(bool opaque) { m_opaqueContents = opaque; }
     void setOpaqueContentRect(const IntRect& rect) { m_opaqueContentRect = rect; }
 
 private:
@@ -1436,7 +1435,6 @@ private:
         , m_blend(false)
         , m_hasRenderSurface(false)
         , m_quadsAppended(false)
-        , m_opaqueContents(false)
         , m_quadRect(5, 5, 5, 5)
         , m_quadVisibleRect(5, 5, 5, 5)
         , m_resourceId(resourceProvider->createResource(CCRenderer::ContentPool, IntSize(1, 1), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny))
@@ -1450,7 +1448,6 @@ private:
     bool m_blend;
     bool m_hasRenderSurface;
     bool m_quadsAppended;
-    bool m_opaqueContents;
     IntRect m_quadRect;
     IntRect m_opaqueContentRect;
     IntRect m_quadVisibleRect;
@@ -1476,17 +1473,7 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     CCLayerTreeHostImpl::FrameData frame;
 
     // Opaque layer, drawn without blending.
-    layer1->setOpaque(true);
-    layer1->setOpaqueContents(true);
-    layer1->setExpectation(false, false);
-    EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
-    m_hostImpl->drawLayers(frame);
-    EXPECT_TRUE(layer1->quadsAppended());
-    m_hostImpl->didDrawAllLayers(frame);
-
-    // Layer with translucent content, but opaque content, so drawn without blending.
-    layer1->setOpaque(false);
-    layer1->setOpaqueContents(true);
+    layer1->setContentsOpaque(true);
     layer1->setExpectation(false, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
@@ -1494,8 +1481,7 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     m_hostImpl->didDrawAllLayers(frame);
 
     // Layer with translucent content and painting, so drawn with blending.
-    layer1->setOpaque(false);
-    layer1->setOpaqueContents(false);
+    layer1->setContentsOpaque(false);
     layer1->setExpectation(true, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
@@ -1503,8 +1489,7 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     m_hostImpl->didDrawAllLayers(frame);
 
     // Layer with translucent opacity, drawn with blending.
-    layer1->setOpaque(true);
-    layer1->setOpaqueContents(true);
+    layer1->setContentsOpaque(true);
     layer1->setOpacity(0.5);
     layer1->setExpectation(true, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1513,8 +1498,7 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     m_hostImpl->didDrawAllLayers(frame);
 
     // Layer with translucent opacity and painting, drawn with blending.
-    layer1->setOpaque(true);
-    layer1->setOpaqueContents(false);
+    layer1->setContentsOpaque(true);
     layer1->setOpacity(0.5);
     layer1->setExpectation(true, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1527,12 +1511,10 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     layer2->setPosition(FloatPoint(4, 4));
 
     // 2 opaque layers, drawn without blending.
-    layer1->setOpaque(true);
-    layer1->setOpaqueContents(true);
+    layer1->setContentsOpaque(true);
     layer1->setOpacity(1);
     layer1->setExpectation(false, false);
-    layer2->setOpaque(true);
-    layer2->setOpaqueContents(true);
+    layer2->setContentsOpaque(true);
     layer2->setOpacity(1);
     layer2->setExpectation(false, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1543,8 +1525,7 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
 
     // Parent layer with translucent content, drawn with blending.
     // Child layer with opaque content, drawn without blending.
-    layer1->setOpaque(false);
-    layer1->setOpaqueContents(false);
+    layer1->setContentsOpaque(false);
     layer1->setExpectation(true, false);
     layer2->setExpectation(false, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1555,8 +1536,7 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
 
     // Parent layer with translucent content but opaque painting, drawn without blending.
     // Child layer with opaque content, drawn without blending.
-    layer1->setOpaque(false);
-    layer1->setOpaqueContents(true);
+    layer1->setContentsOpaque(true);
     layer1->setExpectation(false, false);
     layer2->setExpectation(false, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1570,8 +1550,7 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     // so it's itself drawn without blending.
     // Child layer with opaque content, drawn without blending (parent surface
     // carries the inherited opacity).
-    layer1->setOpaque(true);
-    layer1->setOpaqueContents(true);
+    layer1->setContentsOpaque(true);
     layer1->setOpacity(0.5);
     layer1->setExpectation(false, true);
     layer2->setExpectation(false, false);
@@ -1583,12 +1562,10 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
 
     // Draw again, but with child non-opaque, to make sure
     // layer1 not culled.
-    layer1->setOpaque(true);
-    layer1->setOpaqueContents(true);
+    layer1->setContentsOpaque(true);
     layer1->setOpacity(1);
     layer1->setExpectation(false, false);
-    layer2->setOpaque(true);
-    layer2->setOpaqueContents(true);
+    layer2->setContentsOpaque(true);
     layer2->setOpacity(0.5);
     layer2->setExpectation(true, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1598,11 +1575,10 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     m_hostImpl->didDrawAllLayers(frame);
 
     // A second way of making the child non-opaque.
-    layer1->setOpaque(true);
+    layer1->setContentsOpaque(true);
     layer1->setOpacity(1);
     layer1->setExpectation(false, false);
-    layer2->setOpaque(false);
-    layer2->setOpaqueContents(false);
+    layer2->setContentsOpaque(false);
     layer2->setOpacity(1);
     layer2->setExpectation(true, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1612,11 +1588,10 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     m_hostImpl->didDrawAllLayers(frame);
 
     // And when the layer says its not opaque but is painted opaque, it is not blended.
-    layer1->setOpaque(true);
+    layer1->setContentsOpaque(true);
     layer1->setOpacity(1);
     layer1->setExpectation(false, false);
-    layer2->setOpaque(false);
-    layer2->setOpaqueContents(true);
+    layer2->setContentsOpaque(true);
     layer2->setOpacity(1);
     layer2->setExpectation(false, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1626,10 +1601,9 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     m_hostImpl->didDrawAllLayers(frame);
 
     // Layer with partially opaque contents, drawn with blending.
-    layer1->setOpaque(false);
+    layer1->setContentsOpaque(false);
     layer1->setQuadRect(IntRect(5, 5, 5, 5));
     layer1->setQuadVisibleRect(IntRect(5, 5, 5, 5));
-    layer1->setOpaqueContents(false);
     layer1->setOpaqueContentRect(IntRect(5, 5, 2, 5));
     layer1->setExpectation(true, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1638,10 +1612,9 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     m_hostImpl->didDrawAllLayers(frame);
 
     // Layer with partially opaque contents partially culled, drawn with blending.
-    layer1->setOpaque(false);
+    layer1->setContentsOpaque(false);
     layer1->setQuadRect(IntRect(5, 5, 5, 5));
     layer1->setQuadVisibleRect(IntRect(5, 5, 5, 2));
-    layer1->setOpaqueContents(false);
     layer1->setOpaqueContentRect(IntRect(5, 5, 2, 5));
     layer1->setExpectation(true, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1650,10 +1623,9 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     m_hostImpl->didDrawAllLayers(frame);
 
     // Layer with partially opaque contents culled, drawn with blending.
-    layer1->setOpaque(false);
+    layer1->setContentsOpaque(false);
     layer1->setQuadRect(IntRect(5, 5, 5, 5));
     layer1->setQuadVisibleRect(IntRect(7, 5, 3, 5));
-    layer1->setOpaqueContents(false);
     layer1->setOpaqueContentRect(IntRect(5, 5, 2, 5));
     layer1->setExpectation(true, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1662,10 +1634,9 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
     m_hostImpl->didDrawAllLayers(frame);
 
     // Layer with partially opaque contents and translucent contents culled, drawn without blending.
-    layer1->setOpaque(false);
+    layer1->setContentsOpaque(false);
     layer1->setQuadRect(IntRect(5, 5, 5, 5));
     layer1->setQuadVisibleRect(IntRect(5, 5, 2, 5));
-    layer1->setOpaqueContents(false);
     layer1->setOpaqueContentRect(IntRect(5, 5, 2, 5));
     layer1->setExpectation(false, false);
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
@@ -1686,7 +1657,7 @@ TEST_F(CCLayerTreeHostImplTest, viewportCovered)
     m_hostImpl->setRootLayer(BlendStateCheckLayer::create(1, m_hostImpl->resourceProvider()));
     BlendStateCheckLayer* root = static_cast<BlendStateCheckLayer*>(m_hostImpl->rootLayer());
     root->setExpectation(false, true);
-    root->setOpaque(true);
+    root->setContentsOpaque(true);
 
     // No gutter rects
     {
@@ -2840,7 +2811,7 @@ static void addDrawingLayerTo(CCLayerImpl* parent, int id, const IntRect& layerR
     layerPtr->setBounds(layerRect.size());
     layerPtr->setContentBounds(layerRect.size());
     layerPtr->setDrawsContent(true); // only children draw content
-    layerPtr->setOpaque(true);
+    layerPtr->setContentsOpaque(true);
     parent->addChild(layer.release());
     if (result)
         *result = layerPtr;

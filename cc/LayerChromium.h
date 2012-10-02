@@ -106,8 +106,8 @@ public:
     void setBackgroundFilters(const WebKit::WebFilterOperations&);
     const WebKit::WebFilterOperations& backgroundFilters() const { return m_backgroundFilters; }
 
-    virtual void setOpaque(bool);
-    bool opaque() const { return m_opaque; }
+    virtual void setContentsOpaque(bool);
+    bool contentsOpaque() const { return m_contentsOpaque; }
 
     void setPosition(const FloatPoint&);
     FloatPoint position() const { return m_position; }
@@ -344,7 +344,7 @@ private:
     bool m_fixedToContainerLayer;
     bool m_isDrawable;
     bool m_masksToBounds;
-    bool m_opaque;
+    bool m_contentsOpaque;
     bool m_doubleSided;
     bool m_useLCDText;
     bool m_preserves3D;

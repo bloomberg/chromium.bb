@@ -672,7 +672,7 @@ Region TiledLayerChromium::visibleContentOpaqueRegion() const
 {
     if (m_skipsDraw)
         return Region();
-    if (opaque())
+    if (contentsOpaque())
         return visibleContentRect();
     return m_tiler->opaqueRegionInContentRect(visibleContentRect());
 }

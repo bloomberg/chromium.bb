@@ -61,7 +61,7 @@ void WebExternalTextureLayerImpl::setUVRect(const WebFloatRect& rect)
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque)
 {
-    static_cast<TextureLayerChromium*>(m_layer->layer())->setOpaque(opaque);
+    static_cast<TextureLayerChromium*>(m_layer->layer())->setContentsOpaque(opaque);
 }
 
 void WebExternalTextureLayerImpl::setPremultipliedAlpha(bool premultipliedAlpha)

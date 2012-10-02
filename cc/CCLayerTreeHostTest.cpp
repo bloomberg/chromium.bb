@@ -1473,7 +1473,7 @@ static void setLayerPropertiesForTesting(LayerChromium* layer, LayerChromium* pa
     layer->setAnchorPoint(anchor);
     layer->setPosition(position);
     layer->setBounds(bounds);
-    layer->setOpaque(opaque);
+    layer->setContentsOpaque(opaque);
 }
 
 class CCLayerTreeHostTestAtomicCommitWithPartialUpdate : public CCLayerTreeHostTest {

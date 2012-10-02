@@ -114,8 +114,8 @@ public:
     void setMasksToBounds(bool);
     bool masksToBounds() const { return m_masksToBounds; }
 
-    void setOpaque(bool);
-    bool opaque() const { return m_opaque; }
+    void setContentsOpaque(bool);
+    bool contentsOpaque() const { return m_contentsOpaque; }
 
     void setOpacity(float);
     bool opacityIsAnimating() const;
@@ -319,7 +319,7 @@ private:
     // Uses layer's content space.
     IntRect m_visibleContentRect;
     bool m_masksToBounds;
-    bool m_opaque;
+    bool m_contentsOpaque;
     float m_opacity;
     FloatPoint m_position;
     bool m_preserves3D;

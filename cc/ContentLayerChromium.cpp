@@ -95,16 +95,16 @@ void ContentLayerChromium::createTextureUpdaterIfNeeded()
         m_textureUpdater = BitmapSkPictureCanvasLayerTextureUpdater::create(ContentLayerPainter::create(m_client));
     else
         m_textureUpdater = BitmapCanvasLayerTextureUpdater::create(ContentLayerPainter::create(m_client));
-    m_textureUpdater->setOpaque(opaque());
+    m_textureUpdater->setOpaque(contentsOpaque());
 
     GC3Denum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
     setTextureFormat(textureFormat);
     setSampledTexelFormat(textureUpdater()->sampledTexelFormat(textureFormat));
 }
 
-void ContentLayerChromium::setOpaque(bool opaque)
+void ContentLayerChromium::setContentsOpaque(bool opaque)
 {
-    LayerChromium::setOpaque(opaque);
+    LayerChromium::setContentsOpaque(opaque);
     if (m_textureUpdater)
         m_textureUpdater->setOpaque(opaque);
 }

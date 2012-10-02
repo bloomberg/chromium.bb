@@ -192,9 +192,9 @@ protected:
         setProperties(layerPtr, transform, position, bounds);
 
         if (opaqueLayers)
-            layerPtr->setOpaque(opaque);
+            layerPtr->setContentsOpaque(opaque);
         else {
-            layerPtr->setOpaque(false);
+            layerPtr->setContentsOpaque(false);
             if (opaque)
                 layerPtr->setOpaqueContentsRect(IntRect(IntPoint(), bounds));
             else

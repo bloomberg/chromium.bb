@@ -51,7 +51,7 @@ static PassOwnPtr<CCTiledLayerImpl> makeLayer(CCTiledLayerImpl* parent, const We
     layer->setScreenSpaceTransform(drawTransform);
     layer->setVisibleContentRect(layerRect);
     layer->setDrawOpacity(opacity);
-    layer->setOpaque(opaque);
+    layer->setContentsOpaque(opaque);
     layer->setBounds(layerRect.size());
     layer->setContentBounds(layerRect.size());
 

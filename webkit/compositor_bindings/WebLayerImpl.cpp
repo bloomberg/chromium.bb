@@ -184,12 +184,12 @@ float WebLayerImpl::opacity() const
 
 void WebLayerImpl::setOpaque(bool opaque)
 {
-    m_layer->setOpaque(opaque);
+    m_layer->setContentsOpaque(opaque);
 }
 
 bool WebLayerImpl::opaque() const
 {
-    return m_layer->opaque();
+    return m_layer->contentsOpaque();
 }
 
 void WebLayerImpl::setPosition(const WebFloatPoint& position)

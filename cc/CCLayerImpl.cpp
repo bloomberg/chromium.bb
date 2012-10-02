@@ -37,7 +37,7 @@ CCLayerImpl::CCLayerImpl(int id)
     , m_layerPropertyChanged(false)
     , m_layerSurfacePropertyChanged(false)
     , m_masksToBounds(false)
-    , m_opaque(false)
+    , m_contentsOpaque(false)
     , m_opacity(1.0)
     , m_preserves3D(false)
     , m_useParentBackfaceVisibility(false)
@@ -124,7 +124,7 @@ bool CCLayerImpl::descendantDrawsContent()
 
 scoped_ptr<CCSharedQuadState> CCLayerImpl::createSharedQuadState() const
 {
-    return CCSharedQuadState::create(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_drawOpacity, m_opaque);
+    return CCSharedQuadState::create(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_drawOpacity, m_contentsOpaque);
 }
 
 void CCLayerImpl::willDraw(CCResourceProvider*)
@@ -492,12 +492,12 @@ void CCLayerImpl::setMasksToBounds(bool masksToBounds)
     noteLayerPropertyChangedForSubtree();
 }
 
-void CCLayerImpl::setOpaque(bool opaque)
+void CCLayerImpl::setContentsOpaque(bool opaque)
 {
-    if (m_opaque == opaque)
+    if (m_contentsOpaque == opaque)
         return;
 
-    m_opaque = opaque;
+    m_contentsOpaque = opaque;
     noteLayerPropertyChangedForSubtree();
 }
 
@@ -627,7 +627,7 @@ void CCLayerImpl::setDoubleSided(bool doubleSided)
 
 Region CCLayerImpl::visibleContentOpaqueRegion() const
 {
-    if (opaque())
+    if (contentsOpaque())
         return visibleContentRect();
     return Region();
 }

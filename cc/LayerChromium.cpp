@@ -50,7 +50,7 @@ LayerChromium::LayerChromium()
     , m_fixedToContainerLayer(false)
     , m_isDrawable(false)
     , m_masksToBounds(false)
-    , m_opaque(false)
+    , m_contentsOpaque(false)
     , m_doubleSided(true)
     , m_useLCDText(false)
     , m_preserves3D(false)
@@ -348,11 +348,11 @@ bool LayerChromium::opacityIsAnimating() const
     return m_layerAnimationController->isAnimatingProperty(CCActiveAnimation::Opacity);
 }
 
-void LayerChromium::setOpaque(bool opaque)
+void LayerChromium::setContentsOpaque(bool opaque)
 {
-    if (m_opaque == opaque)
+    if (m_contentsOpaque == opaque)
         return;
-    m_opaque = opaque;
+    m_contentsOpaque = opaque;
     setNeedsDisplay();
 }
 
@@ -545,7 +545,7 @@ void LayerChromium::pushPropertiesTo(CCLayerImpl* layer)
         layer->setNonFastScrollableRegion(m_nonFastScrollableRegion);
         m_nonFastScrollableRegionChanged = false;
     }
-    layer->setOpaque(m_opaque);
+    layer->setContentsOpaque(m_contentsOpaque);
     if (!opacityIsAnimating())
         layer->setOpacity(m_opacity);
     layer->setPosition(m_position);
@@ -768,7 +768,7 @@ void LayerChromium::notifyAnimationFinished(double wallClockTime)
 
 Region LayerChromium::visibleContentOpaqueRegion() const
 {
-    if (opaque())
+    if (contentsOpaque())
         return visibleContentRect();
     return Region();
 }

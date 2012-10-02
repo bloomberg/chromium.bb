@@ -100,7 +100,7 @@ TEST(CCLayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(arbitraryFilters));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMaskLayer(CCLayerImpl::create(4)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMasksToBounds(true));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setOpaque(true));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setContentsOpaque(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setReplicaLayer(CCLayerImpl::create(5)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPosition(arbitraryFloatPoint));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPreserves3D(true));
@@ -148,7 +148,7 @@ TEST(CCLayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setScrollPosition(arbitraryIntPoint));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setPageScaleDelta(arbitraryNumber));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setContentBounds(arbitraryIntSize));
-    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setOpaque(true));
+    EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setContentsOpaque(true));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setOpacity(arbitraryNumber));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDebugBorderColor(arbitraryColor));
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setDebugBorderWidth(arbitraryNumber));
