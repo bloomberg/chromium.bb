@@ -84,6 +84,8 @@ class WebrtcTestBase(pyauto.PyUITest):
     self.AssertNoFailures(tab_index)
 
   def EstablishCall(self, from_tab_with_index):
+    self.WaitUntilPeerConnects(tab_index=from_tab_with_index)
+
     self.assertEquals('ok-got-remote-stream', self.ExecuteJavascript(
         'call()', tab_index=from_tab_with_index))
     self.AssertNoFailures(from_tab_with_index)
@@ -101,6 +103,14 @@ class WebrtcTestBase(pyauto.PyUITest):
         'hangUp()', tab_index=from_tab_with_index))
     self.WaitUntilHangUpVerified(tab_index=from_tab_with_index)
     self.AssertNoFailures(tab_index=from_tab_with_index)
+
+  def WaitUntilPeerConnects(self, tab_index):
+    peer_connected = self.WaitUntil(
+        function=lambda: self.ExecuteJavascript('remotePeerIsConnected()',
+                                                tab_index=tab_index),
+        expect_retval='peer-connected')
+    self.assertTrue(peer_connected,
+                    msg='Timed out while waiting for peer to connect.')
 
   def WaitUntilHangUpVerified(self, tab_index):
     hung_up = self.WaitUntil(

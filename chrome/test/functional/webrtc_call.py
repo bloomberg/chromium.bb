@@ -124,22 +124,27 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     # TODO(perkj): Verify that audio is muted.
 
     self._SetupCall('webrtc_jsep01_test.html')
-    self.assertEquals('ok-toggled-to-false', self.ExecuteJavascript(
-        'toggleLocalStream()', tab_index=0));
-    self._WaitForVideo(tab_index=1, expect_playing=False);
+    select_video_function = 'function(local) { return local.videoTracks[0]; }'
+    self.assertEquals('ok-video-toggled-to-false', self.ExecuteJavascript(
+        'toggleLocalStream(' + select_video_function + ', "video")',
+        tab_index=0))
+    self._WaitForVideo(tab_index=1, expect_playing=False)
 
-    self.assertEquals('ok-toggled-to-true', self.ExecuteJavascript(
-        'toggleLocalStream()', tab_index=0));
-    self._WaitForVideo(tab_index=1, expect_playing=True);
+    self.assertEquals('ok-video-toggled-to-true', self.ExecuteJavascript(
+        'toggleLocalStream(' + select_video_function + ', "video")',
+        tab_index=0))
+    self._WaitForVideo(tab_index=1, expect_playing=True)
 
     # Test disabling a remote stream. The remote video is not played."""
-    self.assertEquals('ok-toggled-to-false', self.ExecuteJavascript(
-        'toggleRemoteStream()', tab_index=1));
-    self._WaitForVideo(tab_index=1, expect_playing=False);
+    self.assertEquals('ok-video-toggled-to-false', self.ExecuteJavascript(
+        'toggleRemoteStream(' + select_video_function + ', "video")',
+        tab_index=1))
+    self._WaitForVideo(tab_index=1, expect_playing=False)
 
-    self.assertEquals('ok-toggled-to-true', self.ExecuteJavascript(
-        'toggleRemoteStream()', tab_index=1));
-    self._WaitForVideo(tab_index=1, expect_playing=True);
+    self.assertEquals('ok-video-toggled-to-true', self.ExecuteJavascript(
+        'toggleRemoteStream(' + select_video_function + ', "video")',
+        tab_index=1))
+    self._WaitForVideo(tab_index=1, expect_playing=True)
 
   def _SetupCall(self, test_page):
     url = self.GetFileURLForDataPath('webrtc', test_page)

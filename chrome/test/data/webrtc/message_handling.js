@@ -89,6 +89,17 @@ function connect(serverUrl, clientName) {
 }
 
 /**
+ * Checks if the remote peer has connected. Returns peer-connected if that is
+ * the case, otherwise no-peer-connected.
+ */
+function remotePeerIsConnected() {
+  if (gRemotePeerId == null)
+    returnToTest('no-peer-connected');
+  else
+    returnToTest('peer-connected');
+}
+
+/**
  * Initiates a call. We must be connected first, and we must have gotten hold
  * of a peer as well (e.g. precisely one peer must also have connected to the
  * server at this point). Note that this function only sets up the call: it
