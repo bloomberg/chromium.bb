@@ -280,6 +280,11 @@ class Instruction {
     return bits_;
   }
 
+  // Mask for the lowest bits.
+  static uint32_t LowestBitsMask(int bit_count) {
+    return (~(uint32_t)0) >> (32 - bit_count);
+  }
+
   // Extracts a range of contiguous bits, right-justifies it, and returns it.
   // Note that the range follows hardware convention, with the high bit first.
   uint32_t Bits(int hi, int lo) const {
@@ -294,8 +299,7 @@ class Instruction {
     //           could speed up validation quite a bit.
     uint32_t right_justified = bits_ >> lo;
     int bit_count = hi - lo + 1;
-    uint32_t mask = (1 << bit_count) - 1;
-    return right_justified & mask;
+    return right_justified & LowestBitsMask(bit_count);
   }
 
   // Changes the range of contiguous bits, with the given value.
@@ -306,7 +310,7 @@ class Instruction {
     //
     // Compute bit mask for range of bits.
     int bit_count = hi - lo + 1;
-    uint32_t clear_mask = (1 << bit_count) - 1;
+    uint32_t clear_mask = LowestBitsMask(bit_count);
     // Remove from the value any bits out of range, then shift to location
     // to add.
     value = (value & clear_mask) << lo;
