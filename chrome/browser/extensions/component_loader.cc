@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -42,6 +43,31 @@
 
 namespace extensions {
 
+namespace {
+
+std::string GenerateId(const DictionaryValue* manifest, const FilePath& path) {
+  std::string raw_key;
+  std::string id_input;
+  std::string id;
+  CHECK(manifest->GetString(extension_manifest_keys::kPublicKey, &raw_key));
+  CHECK(Extension::ParsePEMKeyBytes(raw_key, &id_input));
+  CHECK(Extension::GenerateId(id_input, &id));
+  return id;
+}
+
+}  // namespace
+
+ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
+    const DictionaryValue* manifest, const FilePath& directory)
+    : manifest(manifest),
+      root_directory(directory) {
+  if (!root_directory.IsAbsolute()) {
+    CHECK(PathService::Get(chrome::DIR_RESOURCES, &root_directory));
+    root_directory = root_directory.Append(directory);
+  }
+  extension_id = GenerateId(manifest, root_directory);
+}
+
 ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
                                  PrefService* prefs,
                                  PrefService* local_state)
@@ -57,6 +83,13 @@ ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
 
 ComponentLoader::~ComponentLoader() {
   ClearAllRegistered();
+}
+
+const Extension* ComponentLoader::GetScriptBubble() const {
+  if (script_bubble_id_.empty())
+    return NULL;
+
+  return extension_service_->extensions()->GetByID(script_bubble_id_);
 }
 
 void ComponentLoader::LoadAll() {
@@ -90,9 +123,8 @@ void ComponentLoader::ClearAllRegistered() {
   component_extensions_.clear();
 }
 
-const Extension* ComponentLoader::Add(
-    int manifest_resource_id,
-    const FilePath& root_directory) {
+std::string ComponentLoader::Add(int manifest_resource_id,
+                                 const FilePath& root_directory) {
   std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           manifest_resource_id,
@@ -100,29 +132,26 @@ const Extension* ComponentLoader::Add(
   return Add(manifest_contents, root_directory);
 }
 
-const Extension* ComponentLoader::Add(
-    const std::string& manifest_contents,
-    const FilePath& root_directory) {
+std::string ComponentLoader::Add(const std::string& manifest_contents,
+                                 const FilePath& root_directory) {
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.
   DictionaryValue* manifest = ParseManifest(manifest_contents);
   if (manifest)
     return Add(manifest, root_directory);
-  return NULL;
+  return "";
 }
 
-const Extension* ComponentLoader::Add(
-    const DictionaryValue* parsed_manifest,
-    const FilePath& root_directory) {
-  CHECK(!Exists(GenerateId(parsed_manifest)));
+std::string ComponentLoader::Add(const DictionaryValue* parsed_manifest,
+                                 const FilePath& root_directory) {
   ComponentExtensionInfo info(parsed_manifest, root_directory);
   component_extensions_.push_back(info);
   if (extension_service_->is_ready())
-    return Load(info);
-  return NULL;
+    Load(info);
+  return info.extension_id;
 }
 
-const Extension* ComponentLoader::AddOrReplace(const FilePath& path) {
+std::string ComponentLoader::AddOrReplace(const FilePath& path) {
   FilePath absolute_path = path;
   file_util::AbsolutePath(&absolute_path);
   std::string error;
@@ -133,7 +162,7 @@ const Extension* ComponentLoader::AddOrReplace(const FilePath& path) {
                   absolute_path.value() << "'. " << error;
     return NULL;
   }
-  Remove(GenerateId(manifest.get()));
+  Remove(GenerateId(manifest.get(), absolute_path));
 
   return Add(manifest.release(), absolute_path);
 }
@@ -142,7 +171,7 @@ void ComponentLoader::Reload(const std::string& extension_id) {
   for (RegisteredComponentExtensions::iterator it =
          component_extensions_.begin(); it != component_extensions_.end();
          ++it) {
-    if (GenerateId(it->manifest) == extension_id) {
+    if (it->extension_id == extension_id) {
       Load(*it);
       break;
     }
@@ -156,18 +185,8 @@ const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
 
   std::string error;
 
-  // Get the absolute path to the extension.
-  FilePath absolute_path(info.root_directory);
-  if (!absolute_path.IsAbsolute()) {
-    if (PathService::Get(chrome::DIR_RESOURCES, &absolute_path)) {
-      absolute_path = absolute_path.Append(info.root_directory);
-    } else {
-      NOTREACHED();
-    }
-  }
-
   scoped_refptr<const Extension> extension(Extension::Create(
-      absolute_path,
+      info.root_directory,
       Extension::COMPONENT,
       *info.manifest,
       flags,
@@ -176,6 +195,7 @@ const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
     LOG(ERROR) << error;
     return NULL;
   }
+  CHECK_EQ(info.extension_id, extension->id()) << extension->name();
   extension_service_->AddExtension(extension);
   return extension;
 }
@@ -185,7 +205,7 @@ void ComponentLoader::Remove(const FilePath& root_directory) {
   RegisteredComponentExtensions::iterator it = component_extensions_.begin();
   for (; it != component_extensions_.end(); ++it) {
     if (it->root_directory == root_directory) {
-      Remove(GenerateId(it->manifest));
+      Remove(GenerateId(it->manifest, root_directory));
       break;
     }
   }
@@ -194,7 +214,7 @@ void ComponentLoader::Remove(const FilePath& root_directory) {
 void ComponentLoader::Remove(const std::string& id) {
   RegisteredComponentExtensions::iterator it = component_extensions_.begin();
   for (; it != component_extensions_.end(); ++it) {
-    if (GenerateId(it->manifest) == id) {
+    if (it->extension_id == id) {
       delete it->manifest;
       it = component_extensions_.erase(it);
       if (extension_service_->is_ready())
@@ -209,22 +229,9 @@ bool ComponentLoader::Exists(const std::string& id) const {
   RegisteredComponentExtensions::const_iterator it =
       component_extensions_.begin();
   for (; it != component_extensions_.end(); ++it)
-    if (GenerateId(it->manifest) == id)
+    if (it->extension_id == id)
       return true;
   return false;
-}
-
-std::string ComponentLoader::GenerateId(const DictionaryValue* manifest) {
-  std::string public_key;
-  std::string public_key_bytes;
-  std::string id;
-  if (!manifest->GetString(
-          extension_manifest_keys::kPublicKey, &public_key) ||
-      !Extension::ParsePEMKeyBytes(public_key, &public_key_bytes) ||
-      !Extension::GenerateId(public_key_bytes, &id)) {
-    return std::string();
-  }
-  return id;
 }
 
 void ComponentLoader::AddFileManagerExtension() {
@@ -300,6 +307,14 @@ void ComponentLoader::AddChromeApp() {
   if (manifest)
     Add(manifest, FilePath(FILE_PATH_LITERAL("chrome_app")));
 #endif
+}
+
+void ComponentLoader::AddScriptBubble() {
+  if (FeatureSwitch::GetScriptBubble()->IsEnabled()) {
+    script_bubble_id_ =
+        Add(IDR_SCRIPT_BUBBLE_MANIFEST,
+            FilePath(FILE_PATH_LITERAL("script_bubble")));
+  }
 }
 
 void ComponentLoader::AddDefaultComponentExtensions() {
@@ -380,6 +395,8 @@ void ComponentLoader::AddDefaultComponentExtensions() {
 #if defined(USE_ASH)
   AddChromeApp();
 #endif
+
+  AddScriptBubble();
 }
 
 void ComponentLoader::Observe(

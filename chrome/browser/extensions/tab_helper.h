@@ -31,6 +31,7 @@ namespace extensions {
 class Extension;
 class LocationBarController;
 class ScriptBadgeController;
+class ScriptBubbleController;
 
 // Per-tab extension helper. Also handles non-extension apps.
 class TabHelper : public content::WebContentsObserver,
@@ -70,7 +71,6 @@ class TabHelper : public content::WebContentsObserver,
    protected:
     virtual ~ContentScriptObserver();
 
-   private:
     TabHelper* tab_helper_;
   };
 
@@ -137,6 +137,10 @@ class TabHelper : public content::WebContentsObserver,
 
   ActiveTabPermissionGranter* active_tab_permission_granter() {
     return active_tab_permission_granter_.get();
+  }
+
+  ScriptBubbleController* script_bubble_controller() {
+    return script_bubble_controller_.get();
   }
 
   // Sets a non-extension app icon associated with WebContents and fires an
@@ -253,6 +257,8 @@ class TabHelper : public content::WebContentsObserver,
   scoped_ptr<LocationBarController> location_bar_controller_;
 
   scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
+
+  scoped_ptr<ScriptBubbleController> script_bubble_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TabHelper);
 };

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
+#include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -91,6 +93,9 @@ TabHelper::TabHelper(content::WebContents* web_contents)
     location_bar_controller_.reset(
         new PageActionController(web_contents));
   }
+
+  if (FeatureSwitch::GetScriptBubble()->IsEnabled())
+    script_bubble_controller_.reset(new ScriptBubbleController(this));
 
   // If more classes need to listen to global content script activity, then
   // a separate routing class with an observer interface should be written.
