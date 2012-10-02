@@ -11,7 +11,6 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppp_instance.h"
-#include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 
 #include "ppapi/c/ppp.h"
 
@@ -20,7 +19,7 @@ int32_t PPP_InitializeModule(PP_Module module_id,
   printf("PPP_InitializeModule\n");
 
   // Request an unsupported interface.
-  CHECK(NULL == get_browser_interface(PPB_LAYER_COMPOSITOR_DEV_INTERFACE));
+  CHECK(NULL == get_browser_interface("UnimplementedInterface;1.0"));
   // Request a supported interface with a bad revision number.
   CHECK(NULL == get_browser_interface("PPB_Instance;0.0"));
 

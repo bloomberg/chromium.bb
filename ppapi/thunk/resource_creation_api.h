@@ -7,7 +7,6 @@
 
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
-#include "ppapi/c/dev/ppb_video_layer_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -155,8 +154,6 @@ class ResourceCreationAPI {
       PP_Instance instance,
       PP_Resource context3d_id,
       PP_VideoDecoder_Profile profile) = 0;
-  virtual PP_Resource CreateVideoLayer(PP_Instance instance,
-                                       PP_VideoLayerMode_Dev mode) = 0;
   virtual PP_Resource CreateWebSocket(PP_Instance instance) = 0;
 #endif  // !defined(OS_NACL)
 

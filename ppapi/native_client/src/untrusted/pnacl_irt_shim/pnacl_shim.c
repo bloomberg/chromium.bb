@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Mon Oct  1 14:26:12 2012. */
+/* Last generated from IDL: Tue Oct  2 11:33:39 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -28,7 +28,6 @@
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
-#include "ppapi/c/dev/ppb_video_layer_dev.h"
 #include "ppapi/c/dev/ppb_view_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
@@ -188,7 +187,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoLayer_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Widget_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Widget_Dev_0_4;
@@ -1923,8 +1921,6 @@ void Pnacl_M14_PPB_VideoDecoder_Dev_Destroy(PP_Resource video_decoder) {
 }
 
 /* End wrapper methods for PPB_VideoDecoder_Dev_0_16 */
-
-/* Not generating wrapper methods for PPB_VideoLayer_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_View_Dev_0_1 */
 
@@ -3787,8 +3783,6 @@ struct PPB_VideoDecoder_Dev_0_16 Pnacl_Wrappers_PPB_VideoDecoder_Dev_0_16 = {
     .Destroy = (void (*)(PP_Resource video_decoder))&Pnacl_M14_PPB_VideoDecoder_Dev_Destroy
 };
 
-/* Not generating wrapper interface for PPB_VideoLayer_Dev_0_1 */
-
 /* Not generating wrapper interface for PPB_View_Dev_0_1 */
 
 /* Not generating wrapper interface for PPB_Widget_Dev_0_3 */
@@ -4590,12 +4584,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoLayer_Dev_0_1 = {
-  .iface_macro = PPB_VIDEOLAYER_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_Dev_0_1 = {
   .iface_macro = PPB_VIEW_DEV_INTERFACE_0_1,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -4951,7 +4939,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16,
-  &Pnacl_WrapperInfo_PPB_VideoLayer_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_View_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Widget_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_Widget_Dev_0_4,

@@ -26,7 +26,6 @@
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_graphics_2d_dev.h"
-#include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_opengles2ext_dev.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
@@ -38,7 +37,6 @@
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
-#include "ppapi/c/dev/ppb_video_layer_dev.h"
 #include "ppapi/c/dev/ppb_view_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
@@ -117,14 +115,12 @@
 #include "webkit/plugins/ppapi/ppb_gpu_blacklist_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
 #include "webkit/plugins/ppapi/ppb_proxy_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_uma_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_var_deprecated_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
-#include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
 
 using ppapi::InputEventData;
 using ppapi::PpapiGlobals;

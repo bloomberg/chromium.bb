@@ -12,7 +12,6 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppp_instance.h"
-#include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 
 #include "ppapi/c/ppp.h"
 

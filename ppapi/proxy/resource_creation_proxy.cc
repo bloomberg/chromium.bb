@@ -351,13 +351,6 @@ PP_Resource ResourceCreationProxy::CreateVideoDecoder(
       instance, context3d_id, profile);
 }
 
-PP_Resource ResourceCreationProxy::CreateVideoLayer(
-    PP_Instance instance,
-    PP_VideoLayerMode_Dev mode) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 PP_Resource ResourceCreationProxy::CreateWebSocket(PP_Instance instance) {
   NOTIMPLEMENTED();
   return 0;
