@@ -51,25 +51,10 @@ ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
  * Return a blob with the encoded image with metadata inserted.
  * @param {HTMLCanvasElement} canvas The canvas with the image to be encoded.
  * @param {ImageEncoder.MetadataEncoder} metadataEncoder Encoder to use.
- * @param {number} quality Encoding quality.
+ * @param {Number} quality (0..1], Encoding quality, defaults to 0.9.
  * @return {Blob} encoded data.
  */
 ImageEncoder.getBlob = function(canvas, metadataEncoder, quality) {
-  var blobBuilder = new WebKitBlobBuilder();
-  ImageEncoder.buildBlob(blobBuilder, canvas, metadataEncoder, quality);
-  return blobBuilder.getBlob(metadataEncoder.getMetadata().mimeType);
-};
-
-/**
- * Build a blob containing the encoded image with metadata inserted.
- * @param {BlobBuilder} blobBuilder Blob builder to build blob.
- * @param {HTMLCanvasElement} canvas The canvas with the image to be encoded.
- * @param {ImageEncoder.MetadataEncoder} metadataEncoder Encoder to use.
- * @param {Number} quality (0..1], Encoding quality, defaults to 0.9.
- */
-ImageEncoder.buildBlob = function(
-    blobBuilder, canvas, metadataEncoder, quality) {
-
   // Contrary to what one might think 1.0 is not a good default. Opening and
   // saving an typical photo taken with consumer camera increases its file size
   // by 50-100%.
@@ -88,21 +73,31 @@ ImageEncoder.buildBlob = function(
 
   var encodedMetadata = metadataEncoder.encode();
 
+  var slices = [];
+
+  // TODO(kaznacheev): refactor |stringToArrayBuffer| and |encode| to return
+  // arrays instead of array buffers.
+  function appendSlice(arrayBuffer) {
+    slices.push(new DataView(arrayBuffer));
+  }
+
   ImageUtil.trace.resetTimer('blob');
   if (encodedMetadata.byteLength != 0) {
     var metadataRange = metadataEncoder.findInsertionRange(encodedImage);
-    blobBuilder.append(ImageEncoder.stringToArrayBuffer(
+    appendSlice(ImageEncoder.stringToArrayBuffer(
         encodedImage, 0, metadataRange.from));
 
-    blobBuilder.append(metadataEncoder.encode());
+    appendSlice(metadataEncoder.encode());
 
-    blobBuilder.append(ImageEncoder.stringToArrayBuffer(
+    appendSlice(ImageEncoder.stringToArrayBuffer(
         encodedImage, metadataRange.to, encodedImage.length));
   } else {
-    blobBuilder.append(ImageEncoder.stringToArrayBuffer(
+    appendSlice(ImageEncoder.stringToArrayBuffer(
         encodedImage, 0, encodedImage.length));
   }
+  var blob = new Blob(slices, {type: metadataEncoder.getMetadata().mimeType});
   ImageUtil.trace.reportTimer('blob');
+  return blob;
 };
 
 /**
