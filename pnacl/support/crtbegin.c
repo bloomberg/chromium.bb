@@ -54,6 +54,8 @@ static char __EH_FRAME_BEGIN__[]
     = { };
 
 
+#if defined(SHARED)
+
 /*
  * Registration and deregistration of exception handling tables are done
  * by .init_array and .fini_array elements added here.
@@ -78,10 +80,22 @@ static void __attribute__((destructor)) __do_eh_dtor(void) {
   __deregister_frame_info (__EH_FRAME_BEGIN__);
 }
 
-#if !defined(SHARED)
+#else
+
+static void __do_eh_ctor(void) {
+  static struct object object;
+  __register_frame_info (__EH_FRAME_BEGIN__, &object);
+}
 
 /* This defines the entry point for a nexe produced by the PNaCl translator. */
 void __pnacl_start(uint32_t *info) {
+  /*
+   * We must register exception handling unwind info before calling
+   * any user code.  Note that we do not attempt to deregister the
+   * unwind info at exit, but there is no particular need to do so.
+   */
+  __do_eh_ctor();
+
   /*
    * TODO(mseaborn): Change the PPAPI shims to define
    * _pnacl_wrapper_start() on all architectures so that we can remove
