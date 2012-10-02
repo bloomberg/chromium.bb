@@ -4,6 +4,7 @@
 
 package org.chromium.content.common;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
@@ -46,6 +47,9 @@ public abstract class CommandLine {
     // Whether Chromium should use a mobile user agent.
     public static final String USE_MOBILE_UA = "use-mobile-user-agent";
 
+    // Change the url of the JavaScript that gets injected when accessibility mode is enabled.
+    public static final String ACCESSIBILITY_JAVASCRIPT_URL = "accessibility-js-url";
+
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**
@@ -60,6 +64,18 @@ public abstract class CommandLine {
      * @return switch value, or null if the switch is not set or set to empty.
      */
     public abstract String getSwitchValue(String switchString);
+
+    /**
+     * Return the value associated with the given switch, or {@code defaultValue} if the switch
+     * was not specified.
+     * @param switchString The switch key to lookup. It should NOT start with '--' !
+     * @param defaultValue The default value to return if the switch isn't set.
+     * @return Switch value, or {@code defaultValue} if the switch is not set or set to empty.
+     */
+    public String getSwitchValue(String switchString, String defaultValue) {
+        String value = getSwitchValue(switchString);
+        return TextUtils.isEmpty(value) ? defaultValue : value;
+    }
 
     /**
      * Append a switch to the command line.  There is no guarantee

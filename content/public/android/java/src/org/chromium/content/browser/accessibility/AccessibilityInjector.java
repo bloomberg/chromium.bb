@@ -7,7 +7,6 @@ package org.chromium.content.browser.accessibility;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
@@ -20,6 +19,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.JavascriptInterface;
 import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content.common.CommandLine;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,9 +27,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Responsible for accessibility injection and management of a {@link ContentViewCore}.
@@ -49,6 +47,8 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
     protected boolean mInjectedScriptEnabled;
     protected boolean mScriptInjected;
 
+    private final String mAccessibilityScreenReaderUrl;
+
     // constants for determining script injection strategy
     private static final int ACCESSIBILITY_SCRIPT_INJECTION_UNDEFINED = -1;
     private static final int ACCESSIBILITY_SCRIPT_INJECTION_OPTED_OUT = 0;
@@ -57,7 +57,7 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
     private static final String ALIAS_ACCESSIBILITY_JS_INTERFACE_2 = "accessibility2";
 
     // Template for JavaScript that injects a screen-reader.
-    private static final String ACCESSIBILITY_SCREEN_READER_URL =
+    private static final String DEFAULT_ACCESSIBILITY_SCREEN_READER_URL =
             "https://ssl.gstatic.com/accessibility/javascript/android/chromeandroidvox.js";
 
     private static final String ACCESSIBILITY_SCREEN_READER_JAVASCRIPT_TEMPLATE =
@@ -96,6 +96,9 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
     protected AccessibilityInjector(ContentViewCore view) {
         super(view);
         mContentViewCore = view;
+
+        mAccessibilityScreenReaderUrl = CommandLine.getInstance().getSwitchValue(
+                CommandLine.ACCESSIBILITY_JAVASCRIPT_URL, DEFAULT_ACCESSIBILITY_SCREEN_READER_URL);
     }
 
     /**
@@ -137,8 +140,9 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
     /**
      * Handles adding or removing accessibility related Java objects ({@link TextToSpeech} and
      * {@link Vibrator}) interfaces from Javascript.  This method should be called at a time when it
-     * is safe to add or remove these interfaces, specifically when the {@link ContentView} is first
-     * initialized or right before the {@link ContentView} is about to navigate to a URL or reload.
+     * is safe to add or remove these interfaces, specifically when the {@link ContentViewCore} is
+     * first initialized or right before the {@link ContentViewCore} is about to navigate to a URL
+     * or reload.
      * <p>
      * If this method is called at other times, the interfaces might not be correctly removed,
      * meaning that Javascript can still access these Java objects that may have been already
@@ -299,7 +303,7 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
 
     private String getScreenReaderInjectingJs() {
         return String.format(ACCESSIBILITY_SCREEN_READER_JAVASCRIPT_TEMPLATE,
-                ACCESSIBILITY_SCREEN_READER_URL);
+                mAccessibilityScreenReaderUrl);
     }
 
     private AccessibilityManager getAccessibilityManager() {
