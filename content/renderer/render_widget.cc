@@ -534,6 +534,15 @@ void RenderWidget::OnSwapBuffersComplete() {
     return;
   }
 
+  // Do not call DoDeferredUpdate unless there's animation work to be done or
+  // a real invalidation. This prevents rendering in response to a swapbuffers
+  // callback coming back after we've navigated away from the page that
+  // generated it.
+  if (!animation_update_pending_ && !paint_aggregator_.HasPendingUpdate()) {
+    TRACE_EVENT0("renderer", "EarlyOut_NoPendingUpdate");
+    return;
+  }
+
   // Continue painting if necessary...
   DoDeferredUpdateAndSendInputAck();
 }
