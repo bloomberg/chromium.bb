@@ -150,6 +150,23 @@ void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {
   libusb_free_transfer(handle);
 }
 
+void UsbDevice::ClaimInterface(const int interface_number,
+                               const UsbInterfaceCallback& callback) {
+  CheckDevice();
+
+  const int claim_result = libusb_claim_interface(handle_, interface_number);
+  callback.Run(claim_result == 0);
+}
+
+void UsbDevice::ReleaseInterface(const int interface_number,
+                                 const UsbInterfaceCallback& callback) {
+  CheckDevice();
+
+  const int release_result = libusb_release_interface(handle_,
+                                                      interface_number);
+  callback.Run(release_result == 0);
+}
+
 void UsbDevice::ControlTransfer(const TransferDirection direction,
     const TransferRequestType request_type, const TransferRecipient recipient,
     const uint8 request, const uint16 value, const uint16 index,
