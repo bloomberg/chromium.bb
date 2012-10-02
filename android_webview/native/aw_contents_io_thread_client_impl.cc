@@ -171,6 +171,10 @@ AwContentsIoThreadClientImpl::AwContentsIoThreadClientImpl(
   : java_object_(obj) {
 }
 
+AwContentsIoThreadClientImpl::~AwContentsIoThreadClientImpl() {
+  // explict, out-of-line destructor.
+}
+
 scoped_ptr<InterceptedRequestData>
 AwContentsIoThreadClientImpl::ShouldInterceptRequest(
     const net::URLRequest* request) {
