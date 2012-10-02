@@ -714,6 +714,10 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kWebSocketProxyPrivate);
   skip.insert(APIPermission::kWebstorePrivate);
 
+  // Available only on trunk.
+  // TODO(kinuko) add a string for this permission.
+  skip.insert(APIPermission::kSyncFileSystem);
+
   // Warned as part of host permissions.
   skip.insert(APIPermission::kDevtools);
 

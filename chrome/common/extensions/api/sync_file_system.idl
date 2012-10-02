@@ -1,0 +1,18 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+namespace syncFileSystem {
+  // [nodoc] A callback type for requestFileSystem.
+  callback GetFileSystemCallback =
+      void ([instanceOf=DOMFileSystem] object fileSystem);
+
+  interface Functions {
+    // Get a sync file system backed by |serviceName|.
+    // Calling this multiple times from the same app with the same |serviceName|
+    // will return the same handle to the same file system.
+    static void requestFileSystem(DOMString serviceName,
+                                  GetFileSystemCallback callback);
+  };
+};
+

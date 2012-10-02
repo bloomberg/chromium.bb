@@ -89,6 +89,7 @@ class APIPermission {
     kSerial,
     kSocket,
     kStorage,
+    kSyncFileSystem,
     kSystemPrivate,
     kTab,
     kTerminalPrivate,

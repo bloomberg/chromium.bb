@@ -44,6 +44,7 @@
 #include "chrome/renderer/extensions/runtime_custom_bindings.h"
 #include "chrome/renderer/extensions/send_request_natives.h"
 #include "chrome/renderer/extensions/set_icon_natives.h"
+#include "chrome/renderer/extensions/sync_file_system_custom_bindings.h"
 #include "chrome/renderer/extensions/tab_finder.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
 #include "chrome/renderer/extensions/tts_custom_bindings.h"
@@ -593,6 +594,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("extension",
       scoped_ptr<NativeHandler>(
           new ExtensionCustomBindings(this)));
+  module_system->RegisterNativeHandler("sync_file_system",
+      scoped_ptr<NativeHandler>(new SyncFileSystemCustomBindings()));
   module_system->RegisterNativeHandler("experimental_usb",
       scoped_ptr<NativeHandler>(new ExperimentalUsbCustomBindings()));
   module_system->RegisterNativeHandler("file_browser_handler",
@@ -677,6 +680,8 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("storage", IDR_STORAGE_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("syncFileSystem",
+                             IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);

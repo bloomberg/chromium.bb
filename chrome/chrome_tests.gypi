@@ -2867,6 +2867,7 @@
         'browser/extensions/api/socket/socket_apitest.cc',
         'browser/extensions/api/system_info_cpu/system_info_cpu_apitest.cc',
         'browser/extensions/api/system_info_storage/system_info_storage_apitest.cc',
+        'browser/extensions/api/sync_file_system/sync_file_system_apitest.cc',
         'browser/extensions/api/tabs/tabs_test.cc',
         'browser/extensions/api/terminal/terminal_private_apitest.cc',
         'browser/extensions/api/test/apitest_apitest.cc',

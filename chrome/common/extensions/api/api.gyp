@@ -61,6 +61,7 @@
           'rtc_private.idl',
           'serial.idl',
           'socket.idl',
+          'sync_file_system.idl',
         ],
         'cc_dir': 'chrome/common/extensions/api',
         'root_namespace': 'extensions::api',
