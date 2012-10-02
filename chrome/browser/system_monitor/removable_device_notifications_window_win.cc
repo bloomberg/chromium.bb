@@ -7,12 +7,16 @@
 #include <windows.h>
 #include <dbt.h>
 #include <fileapi.h>
+#include <setupapi.h>
+#include <Winioctl.h>
 
 #include "base/file_path.h"
-#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
@@ -31,40 +35,243 @@ const char16 kWindowClassName[] = L"Chrome_RemovableDeviceNotificationWindow";
 static chrome::RemovableDeviceNotificationsWindowWin*
     g_removable_device_notifications_window_win = NULL;
 
+// On success, returns true and fills in |device_number| with the storage number
+// of the device present at |path|.
+// |path| can be a volume name path(E.g.: \\?\Volume{GUID})  or a
+// device path(E.g.: \\?\usb#vid_FF&pid_000F#32&2&1#{abcd-1234-ffde-1112-9172})
+bool GetDeviceNumberForDevice(const string16& path, int* device_number) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (path.empty())
+    return false;
+
+  base::win::ScopedHandle device_handle(
+      CreateFile(path.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                 NULL, OPEN_EXISTING, 0, NULL));
+  if (!device_handle.IsValid())
+    return false;
+
+  STORAGE_DEVICE_NUMBER storage_device_num;
+  DWORD bytes_returned = 0;
+  if (DeviceIoControl(device_handle, IOCTL_STORAGE_GET_DEVICE_NUMBER,
+                      NULL, 0, &storage_device_num, sizeof(storage_device_num),
+                      &bytes_returned, NULL)) {
+    *device_number = static_cast<int>(storage_device_num.DeviceNumber);
+    return true;
+  }
+  return false;
+}
+
+// Extracts volume guid path details for the device present at |mount_point|.
+// On success, returns true and fills in |volume_guid_path|.
+// E.g: If the |mount_point| is "C:\mount_point" then volume guid path is
+// something similar to "\\?\Volume{GUID}\".
+bool GetVolumeGUIDPathFromMountPoint(const string16& mount_point,
+                                     string16* volume_guid_path) {
+  char16 guid[kMaxPathBufLen];
+  if (!GetVolumeNameForVolumeMountPoint(mount_point.c_str(), guid,
+                                        kMaxPathBufLen)) {
+    return false;
+  }
+  // In case it has two GUID's (see the blog
+  // http://blogs.msdn.com/b/adioltean/archive/2005/04/16/408947.aspx), do it
+  // again.
+  if (!GetVolumeNameForVolumeMountPoint(guid, guid, kMaxPathBufLen))
+    return false;
+
+  *volume_guid_path = string16(guid);
+  return true;
+}
+
+// On success, returns true and fills in |device_number| with the storage number
+// of the device present at |mount_point|.
+bool GetDeviceNumberFromMountPoint(const string16& mount_point,
+                                   int* device_number) {
+  if (mount_point.empty())
+    return false;
+
+  string16 volume_guid_path;
+  if (!GetVolumeGUIDPathFromMountPoint(mount_point, &volume_guid_path))
+    return false;
+
+  size_t guid_path_len = volume_guid_path.length();
+
+  if (!EndsWith(volume_guid_path, L"\\", false))
+    return false;
+
+  // Remove the trailing backslash from volume guid path.
+  string16 volume_name_path = volume_guid_path.substr(0, guid_path_len - 1);
+  return GetDeviceNumberForDevice(volume_name_path.c_str(), device_number);
+}
+
+// This is a thin wrapper around SetupDiGetDeviceRegistryProperty function.
+// Returns false if unable to get |property_key| value.
+bool GetDeviceRegistryPropertyValue(HDEVINFO device_info_set,
+                                    SP_DEVINFO_DATA* device_info_data,
+                                    DWORD property_key,
+                                    string16* value) {
+  // Get the size of the buffer.
+  DWORD property_buffer_size = 0;
+  if (!SetupDiGetDeviceRegistryProperty(device_info_set, device_info_data,
+                                        property_key, NULL, NULL, NULL,
+                                        &property_buffer_size)) {
+    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+      return false;
+  }
+  scoped_array<char16> property_buffer(new char16[property_buffer_size]);
+  ZeroMemory(property_buffer.get(), property_buffer_size);
+  if (!SetupDiGetDeviceRegistryProperty(
+          device_info_set, device_info_data, property_key, NULL,
+          reinterpret_cast<BYTE*>(property_buffer.get()),
+          property_buffer_size,
+          &property_buffer_size)) {
+    return false;
+  }
+
+  *value = string16(property_buffer.get());
+  return !value->empty();
+}
+
+// On success, returns the volume name of the device present at |mount_point|.
+// or an empty string otherwise.
+string16 GetVolumeNameFromMountPoint(const FilePath& mount_point) {
+  string16 device_name;
+  char16 volume_name[kMaxPathBufLen];
+  if (GetVolumeInformation(mount_point.value().c_str(), volume_name,
+                           kMaxPathBufLen, NULL, NULL, NULL, NULL, 0)) {
+    device_name = string16(volume_name);
+  }
+  return device_name;
+}
+
+// On success, returns the friendly name of the device present at
+// |mount_point| or an empty string otherwise.
+string16 GetDeviceFriendlyNameFromMountPoint(const FilePath& mount_point) {
+  string16 device_name;
+  int device_number = 0;
+  if (!GetDeviceNumberFromMountPoint(mount_point.value(), &device_number))
+    return device_name;  // Unable to get the device number.
+
+  // Query only about disk drives (CDROM's and Floppy's are not included).
+  const GUID* guid = reinterpret_cast<const GUID *>(&GUID_DEVINTERFACE_DISK);
+
+  // Get a "device information set" handle for all devices attached to the
+  // system.
+  HDEVINFO device_info_set = SetupDiGetClassDevs(
+      guid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+
+  if (device_info_set == INVALID_HANDLE_VALUE)
+    return device_name;
+
+  SP_DEVICE_INTERFACE_DATA interface_data;
+  interface_data.cbSize = sizeof(interface_data);
+  for (DWORD index = 0;
+       SetupDiEnumDeviceInterfaces(device_info_set, NULL, guid, index,
+                                   &interface_data); ++index) {
+    // Get the interface detail size.
+    DWORD interface_detail_size = 0;
+    if (!SetupDiGetDeviceInterfaceDetail(device_info_set, &interface_data,
+                                         NULL, 0, &interface_detail_size,
+                                         NULL)) {
+      if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+        continue;
+    }
+
+    scoped_array<char> interface_detail_buffer(new char[interface_detail_size]);
+    ZeroMemory(interface_detail_buffer.get(), interface_detail_size);
+    SP_DEVICE_INTERFACE_DETAIL_DATA* interface_detail =
+        reinterpret_cast<SP_DEVICE_INTERFACE_DETAIL_DATA*>(
+            interface_detail_buffer.get());
+    interface_detail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
+    SP_DEVINFO_DATA device_info_data;
+    device_info_data.cbSize = sizeof(device_info_data);
+
+    // Retrieve a context structure for a device interface of a device
+    // information set.
+    if (!SetupDiGetDeviceInterfaceDetail(device_info_set, &interface_data,
+                                         interface_detail,
+                                         interface_detail_size,
+                                         0,
+                                         &device_info_data)) {
+      continue;
+    }
+
+    int storage_device_number = 0;
+    if (!GetDeviceNumberForDevice(interface_detail->DevicePath,
+                                  &storage_device_number)) {
+      continue;
+    }
+
+    if (device_number != storage_device_number) {
+      // |device_info_data| does not correspond to the device present at
+      // |device_location|.
+      continue;
+    }
+
+    // Matching device info found. Get the friendly name of the device.
+    bool success = GetDeviceRegistryPropertyValue(device_info_set,
+                                                  &device_info_data,
+                                                  SPDRP_FRIENDLYNAME,
+                                                  &device_name);
+    if (!success) {
+      success = GetDeviceRegistryPropertyValue(device_info_set,
+                                               &device_info_data,
+                                               SPDRP_DEVICEDESC, &device_name);
+    }
+    break;
+  }
+  SetupDiDestroyDeviceInfoList(device_info_set);
+  return device_name;
+}
+
+// Returns the display name of the device present at |mount_point|.
+string16 GetDeviceDisplayName(const FilePath& mount_point) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  string16 device_name = GetVolumeNameFromMountPoint(mount_point);
+  if (device_name.empty())
+    device_name = GetDeviceFriendlyNameFromMountPoint(mount_point);
+
+  if (device_name.empty()) {
+    device_name = mount_point.LossyDisplayName();
+  } else {
+    // Append the mount point(E.g.: "H:\") to the friendly name
+    // or volume name (E.g.: "USB Disk Device") to construct
+    // "USB Disk Device (H:\)".
+    device_name = base::StringPrintf(L"%ls (%ls)", device_name.c_str(),
+                                     mount_point.LossyDisplayName().c_str());
+  }
+  return device_name;
+}
+
 // The following msdn blog entry is helpful for understanding disk volumes
 // and how they are treated in Windows:
 // http://blogs.msdn.com/b/adioltean/archive/2005/04/16/408947.aspx
 bool GetDeviceInfo(const FilePath& device_path, string16* device_location,
-                   std::string* unique_id, string16* name, bool* removable) {
+                   std::string* unique_id, bool* removable) {
   char16 mount_point[kMaxPathBufLen];
   if (!GetVolumePathName(device_path.value().c_str(), mount_point,
                          kMaxPathBufLen)) {
     return false;
   }
+
+  char16 fs_name[kMaxPathBufLen];
+  if (!GetVolumeInformation(mount_point, NULL, NULL, NULL, NULL, NULL, fs_name,
+                            kMaxPathBufLen)) {
+      // Unknown file system.
+      // E.g: When the user attaches a USB 4-in-1 memory card reader, Windows
+      // displays the card reader as 4 removable devices. All the empty slots
+      // volumes are shown as unknown file systems.
+      return false;
+  }
+
   if (device_location)
     *device_location = string16(mount_point);
 
   if (unique_id) {
-     char16 guid[kMaxPathBufLen];
-     if (!GetVolumeNameForVolumeMountPoint(mount_point, guid, kMaxPathBufLen))
-       return false;
-     // In case it has two GUID's (see above mentioned blog), do it again.
-     if (!GetVolumeNameForVolumeMountPoint(guid, guid, kMaxPathBufLen))
-       return false;
-     WideToUTF8(guid, wcslen(guid), unique_id);
-   }
-
-  if (name) {
-    char16 volume_name[kMaxPathBufLen];
-    if (!GetVolumeInformation(mount_point, volume_name, kMaxPathBufLen, NULL,
-                              NULL, NULL, NULL, 0)) {
+    string16 guid;
+    if (!GetVolumeGUIDPathFromMountPoint(mount_point, &guid))
       return false;
-    }
-    if (wcslen(volume_name) > 0) {
-      *name = string16(volume_name);
-    } else {
-      *name = device_path.LossyDisplayName();
-    }
+    *unique_id = UTF16ToUTF8(guid);
   }
 
   if (removable)
@@ -124,7 +331,8 @@ RemovableDeviceNotificationsWindowWin::RemovableDeviceNotificationsWindowWin()
     : window_class_(0),
       instance_(NULL),
       window_(NULL),
-      get_device_info_func_(&GetDeviceInfo) {
+      get_device_info_func_(&GetDeviceInfo),
+      get_device_name_func_(&GetDeviceDisplayName) {
   DCHECK(!g_removable_device_notifications_window_win);
   g_removable_device_notifications_window_win = this;
 }
@@ -145,9 +353,8 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
     base::SystemMonitor::RemovableStorageInfo* device_info) {
   string16 location;
   std::string unique_id;
-  string16 name;
   bool removable;
-  if (!get_device_info_func_(path, &location, &unique_id, &name, &removable))
+  if (!get_device_info_func_(path, &location, &unique_id, &removable))
     return false;
 
   // To compute the device id, the device type is needed.  For removable
@@ -155,6 +362,7 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
   // require bouncing over to the file thread.  Instead, just iterate the
   // devices in SystemMonitor.
   std::string device_id;
+  string16 name;
   if (removable) {
     std::vector<SystemMonitor::RemovableStorageInfo> attached_devices =
         SystemMonitor::Get()->GetAttachedRemovableStorage();
@@ -167,6 +375,7 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
       if (id == unique_id) {
         found = true;
         device_id = attached_devices[i].device_id;
+        name = attached_devices[i].name;
         break;
       }
     }
@@ -175,6 +384,7 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
   } else {
     device_id = MediaStorageUtil::MakeDeviceId(
         MediaStorageUtil::FIXED_MASS_STORAGE, unique_id);
+    name = path.LossyDisplayName();
   }
 
   if (device_info) {
@@ -187,8 +397,10 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
 
 void RemovableDeviceNotificationsWindowWin::InitForTest(
     GetDeviceInfoFunc get_device_info_func,
+    GetDeviceNameFunc get_device_name_func,
     GetAttachedDevicesFunc get_attached_devices_func) {
   get_device_info_func_ = get_device_info_func;
+  get_device_name_func_ = get_device_name_func;
   DoInit(get_attached_devices_func);
 }
 
@@ -287,12 +499,9 @@ void RemovableDeviceNotificationsWindowWin::DoInit(
 void RemovableDeviceNotificationsWindowWin::AddNewDevice(
     const FilePath& device_path) {
   std::string unique_id;
-  string16 device_name;
   bool removable;
-  if (!get_device_info_func_(device_path, NULL, &unique_id, &device_name,
-                             &removable)) {
+  if (!get_device_info_func_(device_path, NULL, &unique_id, &removable))
     return;
-  }
 
   if (!removable)
     return;
@@ -302,7 +511,7 @@ void RemovableDeviceNotificationsWindowWin::AddNewDevice(
       FROM_HERE,
       base::Bind(
           &RemovableDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread,
-          this, unique_id, device_name, device_path));
+          this, unique_id, device_path));
 }
 
 void RemovableDeviceNotificationsWindowWin::AddExistingDevicesOnFileThread(
@@ -315,7 +524,6 @@ void RemovableDeviceNotificationsWindowWin::AddExistingDevicesOnFileThread(
 
 void RemovableDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
     const std::string& unique_id,
-    const FilePath::StringType& device_name,
     const FilePath& device) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -323,7 +531,12 @@ void RemovableDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
   if (IsMediaDevice(device.value()))
     type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
+
+  DCHECK(!unique_id.empty());
   std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
+
+  string16 device_name = get_device_name_func_(device);
+  DCHECK(!device_name.empty());
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &RemovableDeviceNotificationsWindowWin::ProcessDeviceAttachedOnUIThread,
@@ -332,11 +545,9 @@ void RemovableDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
 
 void RemovableDeviceNotificationsWindowWin::ProcessDeviceAttachedOnUIThread(
     const std::string& device_id,
-    const FilePath::StringType& device_name,
+    const string16& device_name,
     const FilePath& device) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(kmadhusu) Record device info histogram.
   device_ids_[device] = device_id;
   SystemMonitor::Get()->ProcessRemovableStorageAttached(device_id,
                                                         device_name,
