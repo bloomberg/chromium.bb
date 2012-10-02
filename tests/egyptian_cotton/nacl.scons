@@ -114,9 +114,16 @@ tests = [ ('egyptian_cotton_test', high_thread_count_args),
 if env.IsRunningUnderValgrind():
   tests = [t for t in tests if t[0] != 'thread_stack_alloc_test']
 
+# Increase verbosity to get more information in the event of a test
+# failure.  See http://code.google.com/p/nativeclient/issues/detail?id=3054
+osenv = []
+if env.Bit('host_windows'):
+  osenv.append('NACLVERBOSITY=4')
+
 def ThreadTestNode(name, args):
   return env.CommandSelLdrTestNacl(name + '.out',
                                    egyptian_cotton_nexe,
+                                   osenv=osenv,
                                    size='large',
                                    args=args)
 
