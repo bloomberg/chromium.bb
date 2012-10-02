@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -273,7 +274,7 @@ void GetResourceIdentifiersFunction::OnGotPlugins(
   ListValue* list = new ListValue();
   for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
-    PluginMetadata* plugin_metadata = finder->GetPluginMetadata(*it);
+    scoped_ptr<PluginMetadata> plugin_metadata(finder->GetPluginMetadata(*it));
     const std::string& group_identifier = plugin_metadata->identifier();
     if (group_identifiers.find(group_identifier) != group_identifiers.end())
       continue;

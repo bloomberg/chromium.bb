@@ -84,7 +84,7 @@ void PluginFinder::Init() {
       identifier_plugin_[identifier] = metadata;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-      installers_[identifier] = new PluginInstaller(metadata);
+      installers_[identifier] = new PluginInstaller();
 #endif
     }
   }
@@ -122,10 +122,13 @@ PluginFinder::~PluginFinder() {
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-PluginInstaller* PluginFinder::FindPlugin(const std::string& mime_type,
-                                          const std::string& language) {
+bool PluginFinder::FindPlugin(
+    const std::string& mime_type,
+    const std::string& language,
+    PluginInstaller** installer,
+    scoped_ptr<PluginMetadata>* plugin_metadata) {
   if (g_browser_process->local_state()->GetBoolean(prefs::kDisablePluginFinder))
-    return NULL;
+    return false;
   for (DictionaryValue::Iterator plugin_it(*plugin_list_);
        plugin_it.HasNext(); plugin_it.Advance()) {
     const DictionaryValue* plugin = NULL;
@@ -149,26 +152,40 @@ PluginInstaller* PluginFinder::FindPlugin(const std::string& mime_type,
         std::string identifier = plugin_it.key();
         {
           base::AutoLock lock(mutex_);
-          std::map<std::string, PluginInstaller*>::const_iterator installer =
+          std::map<std::string, PluginMetadata*>::const_iterator metadata_it =
+              identifier_plugin_.find(identifier);
+          DCHECK(metadata_it != identifier_plugin_.end());
+          *plugin_metadata = metadata_it->second->Clone();
+
+          std::map<std::string, PluginInstaller*>::const_iterator installer_it =
               installers_.find(identifier);
-          DCHECK(installer != installers_.end());
-          return installer->second;
+          DCHECK(installer_it != installers_.end());
+          *installer = installer_it->second;
+          return true;
         }
       }
     }
   }
-  return NULL;
+  return false;
 }
 
-PluginInstaller* PluginFinder::FindPluginWithIdentifier(
-    const std::string& identifier) {
+bool PluginFinder::FindPluginWithIdentifier(
+    const std::string& identifier,
+    PluginInstaller** installer,
+    scoped_ptr<PluginMetadata>* plugin_metadata) {
   base::AutoLock lock(mutex_);
   std::map<std::string, PluginInstaller*>::const_iterator it =
       installers_.find(identifier);
-  if (it != installers_.end())
-    return it->second;
+  if (it != installers_.end()) {
+    *installer = it->second;
+    std::map<std::string, PluginMetadata*>::const_iterator metadata_it =
+        identifier_plugin_.find(identifier);
+    DCHECK(metadata_it != identifier_plugin_.end());
+    *plugin_metadata = metadata_it->second->Clone();
+    return true;
+  }
 
-  return NULL;
+  return false;
 }
 #endif
 
@@ -233,11 +250,11 @@ PluginMetadata* PluginFinder::CreatePluginMetadata(
   return plugin;
 }
 
-PluginMetadata* PluginFinder::GetPluginMetadata(
+scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
     const webkit::WebPluginInfo& plugin) {
   base::AutoLock lock(mutex_);
   if (name_plugin_.find(plugin.name) != name_plugin_.end())
-    return name_plugin_[plugin.name];
+    return name_plugin_[plugin.name]->Clone();
 
   // Use the group name matcher to find the plug-in metadata we want.
   for (std::map<std::string, PluginMetadata*>::const_iterator it =
@@ -246,7 +263,7 @@ PluginMetadata* PluginFinder::GetPluginMetadata(
       continue;
 
     name_plugin_[plugin.name] = it->second;
-    return it->second;
+    return it->second->Clone();
   }
 
   // The plug-in metadata was not found, create a dummy one holding
@@ -259,5 +276,5 @@ PluginMetadata* PluginFinder::GetPluginMetadata(
 
   name_plugin_[plugin.name] = metadata;
   identifier_plugin_[identifier] = metadata;
-  return metadata;
+  return metadata->Clone();
 }

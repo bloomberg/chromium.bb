@@ -39,20 +39,28 @@ class PluginFinder {
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   // Finds a plug-in for the given MIME type and language (specified as an IETF
-  // language tag, i.e. en-US) and returns the PluginInstaller for the plug-in,
-  // or NULL if no plug-in is found.
-  PluginInstaller* FindPlugin(const std::string& mime_type,
-                              const std::string& language);
+  // language tag, i.e. en-US). If found, sets |installer| to the
+  // corresponding PluginInstaller and |plugin_metadata| to a copy of the
+  // corresponding PluginMetadata.
+  bool FindPlugin(const std::string& mime_type,
+                  const std::string& language,
+                  PluginInstaller** installer,
+                  scoped_ptr<PluginMetadata>* plugin_metadata);
 
-  // Returns the plug-in with the given identifier.
-  PluginInstaller* FindPluginWithIdentifier(const std::string& identifier);
+  // Finds the plug-in with the given identifier. If found, sets |installer|
+  // to the corresponding PluginInstaller and |plugin_metadata| to a copy
+  // of the corresponding PluginMetadata.
+  bool FindPluginWithIdentifier(const std::string& identifier,
+                                PluginInstaller** installer,
+                                scoped_ptr<PluginMetadata>* plugin_metadata);
 #endif
 
   // Returns the plug-in name with the given identifier.
   string16 FindPluginNameWithIdentifier(const std::string& identifier);
 
   // Gets plug-in metadata using |plugin|.
-  PluginMetadata* GetPluginMetadata(const webkit::WebPluginInfo& plugin);
+  scoped_ptr<PluginMetadata> GetPluginMetadata(
+      const webkit::WebPluginInfo& plugin);
 
  private:
   friend struct DefaultSingletonTraits<PluginFinder>;

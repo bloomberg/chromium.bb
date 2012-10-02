@@ -129,7 +129,7 @@ void PluginPrefs::EnablePluginGroupInternal(
 
   // Update the state for all plug-ins in the group.
   for (size_t i = 0; i < plugins.size(); ++i) {
-    PluginMetadata* plugin = finder->GetPluginMetadata(plugins[i]);
+    scoped_ptr<PluginMetadata> plugin(finder->GetPluginMetadata(plugins[i]));
     if (group_name != plugin->name())
       continue;
     plugin_state_.Set(plugins[i].path, enabled);
@@ -148,7 +148,8 @@ void PluginPrefs::EnablePlugin(
   webkit::WebPluginInfo plugin;
   bool can_enable = true;
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &plugin)) {
-    PluginMetadata* plugin_metadata = finder->GetPluginMetadata(plugin);
+    scoped_ptr<PluginMetadata> plugin_metadata(
+        finder->GetPluginMetadata(plugin));
     PolicyStatus plugin_status =
         PolicyStatusForPlugin(plugin.name, plugin.version);
     PolicyStatus group_status =
@@ -191,8 +192,8 @@ void PluginPrefs::EnablePluginInternal(
   string16 group_name;
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (plugins[i].path == path) {
-      PluginMetadata* plugin_metadata =
-          plugin_finder->GetPluginMetadata(plugins[i]);
+      scoped_ptr<PluginMetadata> plugin_metadata(
+          plugin_finder->GetPluginMetadata(plugins[i]));
       // set the group name for this plug-in.
       group_name = plugin_metadata->name();
       DCHECK_EQ(enabled, IsPluginEnabled(plugins[i]));
@@ -202,8 +203,8 @@ void PluginPrefs::EnablePluginInternal(
 
   bool all_disabled = true;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    PluginMetadata* plugin_metadata =
-        plugin_finder->GetPluginMetadata(plugins[i]);
+    scoped_ptr<PluginMetadata> plugin_metadata(
+        plugin_finder->GetPluginMetadata(plugins[i]));
     DCHECK(!plugin_metadata->name().empty());
     if (group_name == plugin_metadata->name()) {
       all_disabled = all_disabled && !IsPluginEnabled(plugins[i]);
@@ -265,8 +266,9 @@ PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPluginByVersion(
 }
 
 bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
-  PluginFinder* finder = PluginFinder::GetInstance();
-  string16 group_name = finder->GetPluginMetadata(plugin)->name();
+  scoped_ptr<PluginMetadata> plugin_metadata(
+      PluginFinder::GetInstance()->GetPluginMetadata(plugin));
+  string16 group_name = plugin_metadata->name();
 
   PolicyStatus plugin_status =
       PolicyStatusForPlugin(plugin.name, plugin.version);
@@ -689,7 +691,8 @@ void PluginPrefs::OnUpdatePreferences(
     summary->SetBoolean("enabled", enabled);
     plugins_list->Append(summary);
 
-    PluginMetadata* plugin_metadata = finder->GetPluginMetadata(plugins[i]);
+    scoped_ptr<PluginMetadata> plugin_metadata(
+        finder->GetPluginMetadata(plugins[i]));
     // Insert into a set of all group names.
     group_names.insert(plugin_metadata->name());
   }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PLUGINS_PLUGIN_OBSERVER_H_
 #define CHROME_BROWSER_PLUGINS_PLUGIN_OBSERVER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -16,6 +17,8 @@
 class GURL;
 class InfoBarDelegate;
 class PluginFinder;
+class PluginMetadata;
+class TabContents;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 class PluginInstaller;
@@ -42,7 +45,8 @@ class PluginObserver : public content::WebContentsObserver,
   class PluginPlaceholderHost;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  void InstallMissingPlugin(PluginInstaller* installer);
+  void InstallMissingPlugin(PluginInstaller* installer,
+                            scoped_ptr<PluginMetadata> plugin_metadata);
 #endif
 
   // Message handlers:

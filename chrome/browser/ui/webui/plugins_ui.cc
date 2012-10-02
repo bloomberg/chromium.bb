@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -339,7 +340,8 @@ void PluginsDOMHandler::PluginsLoaded(
   // the plug-ins in UI in a grouped fashion.
   PluginGroups groups;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    PluginMetadata* plugin = plugin_finder->GetPluginMetadata(plugins[i]);
+    scoped_ptr<PluginMetadata> plugin(
+        plugin_finder->GetPluginMetadata(plugins[i]));
     groups[plugin->identifier()].push_back(&plugins[i]);
   }
 
@@ -349,8 +351,8 @@ void PluginsDOMHandler::PluginsLoaded(
       it != groups.end(); ++it) {
     const std::vector<const WebPluginInfo*>& group_plugins = it->second;
     ListValue* plugin_files = new ListValue();
-    PluginMetadata* plugin_metadata =
-        plugin_finder->GetPluginMetadata(*group_plugins[0]);
+    scoped_ptr<PluginMetadata> plugin_metadata(
+        plugin_finder->GetPluginMetadata(*group_plugins[0]));
     string16 group_name = plugin_metadata->name();
     std::string group_identifier = plugin_metadata->identifier();
     bool group_enabled = false;
