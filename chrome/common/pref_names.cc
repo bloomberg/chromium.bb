@@ -1579,6 +1579,11 @@ const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";
 // Integer location of the vertical split bar in the browser view.
 const char kDevToolsVSplitLocation[] = "devtools.v_split_location";
 
+#if defined(OS_ANDROID)
+// A boolean specifying whether a SPDY proxy is enabled.
+const char kSpdyProxyEnabled[] = "spdy_proxy.enabled";
+#endif
+
 // 64-bit integer serialization of the base::Time when the last sync occurred.
 const char kSyncLastSyncedTime[] = "sync.last_synced_time";
 

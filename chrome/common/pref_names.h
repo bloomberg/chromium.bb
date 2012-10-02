@@ -555,7 +555,10 @@ extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsRemoteEnabled[];
 #endif
 extern const char kDevToolsVSplitLocation[];
-
+#if defined(OS_ANDROID)
+// Used by Chrome Mobile closed source.
+extern const char kSpdyProxyEnabled[];
+#endif
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncHasSetupCompleted[];
 extern const char kSyncKeepEverythingSynced[];

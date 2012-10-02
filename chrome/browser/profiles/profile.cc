@@ -100,6 +100,9 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDevToolsRemoteEnabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSpdyProxyEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
 #endif
 
 }
