@@ -262,10 +262,7 @@ void ExtensionHelper::DraggableRegionsChanged(WebKit::WebFrame* frame) {
   for (size_t i = 0; i < webregions.size(); ++i) {
     extensions::DraggableRegion region;
     region.bounds = webregions[i].bounds;
-
-    // TODO(jianli): to be uncommented after WebKit patch that changes the
-    // draggable region syntax is landed.
-    // region.draggable = webregions[i].draggable;
+    region.draggable = webregions[i].draggable;
 
     // TODO(jianli): to be removed after WebKit patch that changes the draggable
     // region syntax is landed.
