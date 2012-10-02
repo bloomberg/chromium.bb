@@ -88,7 +88,7 @@ public:
     base::TimeTicks anticipatedDrawTime();
 
     // CCFrameRateControllerClient implementation
-    virtual void vsyncTick() OVERRIDE;
+    virtual void vsyncTick(bool throttled) OVERRIDE;
 
 private:
     CCScheduler(CCSchedulerClient*, PassOwnPtr<CCFrameRateController>);

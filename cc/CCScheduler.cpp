@@ -129,12 +129,14 @@ base::TimeTicks CCScheduler::anticipatedDrawTime()
     return m_frameRateController->nextTickTime();
 }
 
-void CCScheduler::vsyncTick()
+void CCScheduler::vsyncTick(bool throttled)
 {
-    TRACE_EVENT0("cc", "CCScheduler::vsyncTick");
-    m_stateMachine.didEnterVSync();
+    TRACE_EVENT1("cc", "CCScheduler::vsyncTick", "throttled", throttled);
+    if (!throttled)
+        m_stateMachine.didEnterVSync();
     processScheduledActions();
-    m_stateMachine.didLeaveVSync();
+    if (!throttled)
+        m_stateMachine.didLeaveVSync();
 }
 
 void CCScheduler::processScheduledActions()

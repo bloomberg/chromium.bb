@@ -22,7 +22,7 @@ public:
     void reset() { m_vsyncTicked = false; }
     bool vsyncTicked() const { return m_vsyncTicked; }
 
-    virtual void vsyncTick() { m_vsyncTicked = true; }
+    virtual void vsyncTick(bool throttled) { m_vsyncTicked = !throttled; }
 
 protected:
     bool m_vsyncTicked;

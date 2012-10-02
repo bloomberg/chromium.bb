@@ -18,7 +18,8 @@ class CCTimeSource;
 
 class CCFrameRateControllerClient {
 public:
-    virtual void vsyncTick() = 0;
+    // Throttled is true when we have a maximum number of frames pending.
+    virtual void vsyncTick(bool throttled) = 0;
 
 protected:
     virtual ~CCFrameRateControllerClient() { }
