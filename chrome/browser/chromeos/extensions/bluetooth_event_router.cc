@@ -11,7 +11,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter_factory.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_device_chromeos.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -24,7 +25,7 @@ namespace chromeos {
 
 ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
     : profile_(profile),
-      adapter_(chromeos::BluetoothAdapter::DefaultAdapter()),
+      adapter_(chromeos::BluetoothAdapterFactory::DefaultAdapter()),
       next_socket_id_(1) {
   DCHECK(profile_);
   DCHECK(adapter_.get());

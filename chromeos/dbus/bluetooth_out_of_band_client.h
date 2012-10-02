@@ -18,18 +18,7 @@ class Bus;
 
 namespace chromeos {
 
-const size_t kBluetoothOutOfBandPairingDataSize = 16;
-
-// A simple structure representing the data required to perform Out Of Band
-// Pairing.  See
-// http://mclean-linsky.net/joel/cv/Simple%20Pairing_WP_V10r00.pdf
-struct BluetoothOutOfBandPairingData {
-  // Simple Pairing Hash C.
-  uint8_t hash[kBluetoothOutOfBandPairingDataSize];
-
-  // Simple Pairing Randomizer R.
-  uint8_t randomizer[kBluetoothOutOfBandPairingDataSize];
-};
+struct BluetoothOutOfBandPairingData;
 
 // BluetoothOutOfBandClient is used to manage Out Of Band Pairing
 // Data for the local adapter and remote devices.

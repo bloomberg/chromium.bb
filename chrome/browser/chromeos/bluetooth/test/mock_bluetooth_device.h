@@ -9,6 +9,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
+#include "chromeos/dbus/bluetooth_out_of_band_pairing_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -25,14 +26,38 @@ class MockBluetoothDevice : public BluetoothDevice {
 
   MOCK_CONST_METHOD0(address, const std::string&());
   MOCK_CONST_METHOD0(GetName, string16());
+  MOCK_CONST_METHOD0(GetDeviceType, BluetoothDevice::DeviceType());
   MOCK_CONST_METHOD0(IsPaired, bool());
   MOCK_CONST_METHOD0(IsBonded, bool());
   MOCK_CONST_METHOD0(IsConnected, bool());
+  MOCK_CONST_METHOD0(GetServices, const ServiceList&());
+  MOCK_METHOD2(GetServiceRecords,
+               void(const BluetoothDevice::ServiceRecordsCallback&,
+                    const BluetoothDevice::ErrorCallback&));
   MOCK_CONST_METHOD1(ProvidesServiceWithUUID, bool(const std::string&));
-
   MOCK_METHOD2(ProvidesServiceWithName,
-      void(const std::string&,
-           const ProvidesServiceCallback& callback));
+               void(const std::string&,
+                    const BluetoothDevice::ProvidesServiceCallback&));
+  MOCK_CONST_METHOD0(ExpectingPinCode, bool());
+  MOCK_CONST_METHOD0(ExpectingPasskey, bool());
+  MOCK_CONST_METHOD0(ExpectingConfirmation, bool());
+  MOCK_METHOD3(Connect,
+               void(BluetoothDevice::PairingDelegate* pairnig_delegate,
+                    const base::Closure& callback,
+                    const BluetoothDevice::ErrorCallback& error_callback));
+  MOCK_METHOD1(SetPinCode, void(const std::string&));
+  MOCK_METHOD1(SetPasskey, void(uint32));
+  MOCK_METHOD0(ConfirmPairing, void());
+  MOCK_METHOD0(RejectPairing, void());
+  MOCK_METHOD0(CancelPairing, void());
+  MOCK_METHOD2(Disconnect,
+               void(const base::Closure& callback,
+                    const BluetoothDevice::ErrorCallback& error_callback));
+  MOCK_METHOD1(Forget, void(const BluetoothDevice::ErrorCallback&));
+  MOCK_METHOD2(ConnectToService,
+               void(const std::string&,
+                    const BluetoothDevice::SocketCallback&));
+
   MOCK_METHOD3(SetOutOfBandPairingData,
       void(const chromeos::BluetoothOutOfBandPairingData& data,
            const base::Closure& callback,
@@ -44,6 +69,7 @@ class MockBluetoothDevice : public BluetoothDevice {
  private:
   string16 name_;
   std::string address_;
+  BluetoothDevice::ServiceList service_list_;
 };
 
 }  // namespace chromeos

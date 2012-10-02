@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter_factory.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
@@ -166,7 +167,7 @@ void BluetoothOptionsHandler::RegisterMessages() {
 }
 
 void BluetoothOptionsHandler::InitializeHandler() {
-  adapter_ = BluetoothAdapter::DefaultAdapter();
+  adapter_ = BluetoothAdapterFactory::DefaultAdapter();
   adapter_->AddObserver(this);
 }
 

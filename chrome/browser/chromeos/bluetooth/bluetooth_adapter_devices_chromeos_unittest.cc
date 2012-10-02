@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter_chromeos.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter_factory.h"
 #include "chrome/browser/chromeos/bluetooth/test/mock_bluetooth_adapter.h"
 #include "chromeos/dbus/mock_bluetooth_adapter_client.h"
 #include "chromeos/dbus/mock_bluetooth_device_client.h"
@@ -18,7 +20,7 @@ using ::testing::SaveArg;
 
 namespace chromeos {
 
-class BluetoothAdapterDevicesTest : public testing::Test {
+class BluetoothAdapterDevicesChromeOsTest : public testing::Test {
  public:
   virtual void SetUp() {
     MockDBusThreadManager* mock_dbus_thread_manager = new MockDBusThreadManager;
@@ -46,7 +48,7 @@ class BluetoothAdapterDevicesTest : public testing::Test {
     EXPECT_CALL(*mock_adapter_client_, AddObserver(_))
         .Times(1);
 
-    adapter_ = BluetoothAdapter::DefaultAdapter();
+    adapter_ = BluetoothAdapterFactory::DefaultAdapter();
 
     // Call the adapter callback;
     // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -76,11 +78,13 @@ class BluetoothAdapterDevicesTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    EXPECT_CALL(*mock_device_client_, RemoveObserver(adapter_.get()))
+    BluetoothAdapterChromeOs* adapter_chromeos =
+        static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+    EXPECT_CALL(*mock_device_client_, RemoveObserver(adapter_chromeos))
         .Times(1);
-    EXPECT_CALL(*mock_adapter_client_, RemoveObserver(adapter_.get()))
+    EXPECT_CALL(*mock_adapter_client_, RemoveObserver(adapter_chromeos))
         .Times(1);
-    EXPECT_CALL(*mock_manager_client_, RemoveObserver(adapter_.get()))
+    EXPECT_CALL(*mock_manager_client_, RemoveObserver(adapter_chromeos))
         .Times(1);
 
     adapter_ = NULL;
@@ -99,12 +103,12 @@ class BluetoothAdapterDevicesTest : public testing::Test {
   MockBluetoothAdapter::Observer adapter_observer_;
 };
 
-const dbus::ObjectPath BluetoothAdapterDevicesTest::adapter_path_(
+const dbus::ObjectPath BluetoothAdapterDevicesChromeOsTest::adapter_path_(
     "/fake/hci0");
-const std::string BluetoothAdapterDevicesTest::adapter_address_ =
+const std::string BluetoothAdapterDevicesChromeOsTest::adapter_address_ =
     "CA:FE:4A:C0:FE:FE";
 
-TEST_F(BluetoothAdapterDevicesTest, DeviceRemovedAfterFound) {
+TEST_F(BluetoothAdapterDevicesChromeOsTest, DeviceRemovedAfterFound) {
   const dbus::ObjectPath device_path("/fake/hci0/dev_ba_c0_11_00_00_01");
   const std::string device_address = "BA:C0:11:00:00:01";
 
@@ -128,7 +132,9 @@ TEST_F(BluetoothAdapterDevicesTest, DeviceRemovedAfterFound) {
       .Times(1)
       .WillOnce(SaveArg<1>(&device));
 
-  static_cast<BluetoothAdapterClient::Observer*>(adapter_.get())
+  BluetoothAdapterChromeOs* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->DeviceFound(adapter_path_, device_address, device_properties);
 
   // Now inform the adapter that the device has been added and assigned an
@@ -139,10 +145,10 @@ TEST_F(BluetoothAdapterDevicesTest, DeviceRemovedAfterFound) {
   EXPECT_CALL(*mock_device_client_, GetProperties(device_path))
       .WillRepeatedly(Return(&device_properties));
 
-  EXPECT_CALL(adapter_observer_, DeviceChanged(adapter_.get(), device))
+  EXPECT_CALL(adapter_observer_, DeviceChanged(adapter_chromeos, device))
       .Times(1);
 
-  static_cast<BluetoothAdapterClient::Observer*>(adapter_.get())
+  static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->DeviceCreated(adapter_path_, device_path);
 
   // Finally remove the adapter again; since this is a supported device
@@ -153,7 +159,7 @@ TEST_F(BluetoothAdapterDevicesTest, DeviceRemovedAfterFound) {
   EXPECT_CALL(adapter_observer_, DeviceChanged(adapter_.get(), device))
       .Times(1);
 
-  static_cast<BluetoothAdapterClient::Observer*>(adapter_.get())
+  static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->DeviceRemoved(adapter_path_, device_path);
 
   // Verify that the device is still visible, just no longer paired.
@@ -161,7 +167,8 @@ TEST_F(BluetoothAdapterDevicesTest, DeviceRemovedAfterFound) {
   EXPECT_FALSE(device->IsPaired());
 }
 
-TEST_F(BluetoothAdapterDevicesTest, UnsupportedDeviceRemovedAfterFound) {
+TEST_F(BluetoothAdapterDevicesChromeOsTest,
+       UnsupportedDeviceRemovedAfterFound) {
   const dbus::ObjectPath device_path("/fake/hci0/dev_ba_c0_11_00_00_02");
   const std::string device_address = "BA:C0:11:00:00:02";
 
@@ -176,7 +183,9 @@ TEST_F(BluetoothAdapterDevicesTest, UnsupportedDeviceRemovedAfterFound) {
   EXPECT_CALL(adapter_observer_, DeviceAdded(adapter_.get(), _))
       .Times(0);
 
-  static_cast<BluetoothAdapterClient::Observer*>(adapter_.get())
+  BluetoothAdapterChromeOs* adapter_chromeos =
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
+  static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->DeviceFound(adapter_path_, device_address, device_properties);
 
   // Now inform the adapter the device has been added and assigned an
@@ -192,7 +201,7 @@ TEST_F(BluetoothAdapterDevicesTest, UnsupportedDeviceRemovedAfterFound) {
       .Times(1)
       .WillOnce(SaveArg<1>(&device));
 
-  static_cast<BluetoothAdapterClient::Observer*>(adapter_.get())
+  static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->DeviceCreated(adapter_path_, device_path);
 
   // Finally remove the device again;
@@ -201,7 +210,7 @@ TEST_F(BluetoothAdapterDevicesTest, UnsupportedDeviceRemovedAfterFound) {
   EXPECT_CALL(adapter_observer_, DeviceRemoved(adapter_.get(), device))
       .Times(1);
 
-  static_cast<BluetoothAdapterClient::Observer*>(adapter_.get())
+  static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->DeviceRemoved(adapter_path_, device_path);
 }
 

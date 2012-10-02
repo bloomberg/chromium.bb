@@ -13,7 +13,7 @@ class XmlReader;
 
 namespace chromeos {
 
-// The BluetoothServiceRecord represents an SDP service record.
+// BluetoothServiceRecord represents an SDP service record.
 //
 // This implementation is currently incomplete: it only supports those fields
 // that have been necessary so far.

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -88,8 +89,7 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   // but not display, such as keyboards. The Passkey is a numeric in the
   // range 0-999999 and should be always presented zero-padded to six
   // digits.
-  virtual void DisplayPasskey(BluetoothDevice* device,
-                              uint32 passkey) OVERRIDE;
+  virtual void DisplayPasskey(BluetoothDevice* device, uint32 passkey) OVERRIDE;
 
   // BluetoothDevice::PairingDelegate override.
   //
@@ -102,8 +102,7 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   // such as other computers or phones. The Passkey is a numeric in the
   // range 0-999999 and should be always present zero-padded to six
   // digits.
-  virtual void ConfirmPasskey(BluetoothDevice* device,
-                              uint32 passkey) OVERRIDE;
+  virtual void ConfirmPasskey(BluetoothDevice* device, uint32 passkey) OVERRIDE;
 
   // BluetoothDevice::PairingDelegate override.
   //
@@ -131,28 +130,28 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
                              BluetoothDevice* device) OVERRIDE;
 
  private:
-  // Called by BluetoothAdapter in response to a failure to change the
-  // power status of the adapter.
+  // Called by BluetoothAdapter in response to a failure to change the power
+  // status of the adapter.
   void EnableChangeError();
 
-  // Called by BluetoothAdapter in response to a failure to set the adapter
-  // into discovery mode.
+  // Called by BluetoothAdapter in response to a failure to set the adapter into
+  // discovery mode.
   void FindDevicesError();
 
   // Called by BluetoothAdapter in response to a failure to remove the adapter
   // from discovery mode.
   void StopDiscoveryError();
 
-  // Called by BluetoothDevice in response to a failure to connect to the
-  // device with bluetooth address |address|.
+  // Called by BluetoothDevice in response to a failure to connect to the device
+  // with bluetooth address |address|.
   void ConnectError(const std::string& address);
 
-  // Called by BluetoothDevice in response to a failure to disconnect the
-  // device with bluetooth address |address|.
+  // Called by BluetoothDevice in response to a failure to disconnect the device
+  // with bluetooth address |address|.
   void DisconnectError(const std::string& address);
 
-  // Called by BluetoothDevice in response to a failure to disconnect and
-  // unpair the device with bluetooth address |address|.
+  // Called by BluetoothDevice in response to a failure to disconnect and unpair
+  // the device with bluetooth address |address|.
   void ForgetError(const std::string& address);
 
   // Called when the 'Enable bluetooth' checkbox value is changed.

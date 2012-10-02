@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_socket_chromeos.h"
 
 #include <vector>
 
@@ -14,24 +14,26 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "base/logging.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_service_record.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_utils.h"
 
 namespace chromeos {
 
-BluetoothSocket::BluetoothSocket(const std::string& address, int fd)
+BluetoothSocketChromeOs::BluetoothSocketChromeOs(
+    const std::string& address, int fd)
   : address_(address),
     fd_(fd) {
 }
 
-BluetoothSocket::~BluetoothSocket() {
+BluetoothSocketChromeOs::~BluetoothSocketChromeOs() {
   close(fd_);
 }
 
 // static
-scoped_refptr<BluetoothSocket> BluetoothSocket::CreateBluetoothSocket(
+scoped_refptr<BluetoothSocket> BluetoothSocketChromeOs::CreateBluetoothSocket(
     const BluetoothServiceRecord& service_record) {
-  BluetoothSocket* bluetooth_socket = NULL;
+  BluetoothSocketChromeOs* bluetooth_socket = NULL;
   if (service_record.SupportsRfcomm()) {
     int socket_fd = socket(
         AF_BLUETOOTH, SOCK_STREAM | SOCK_NONBLOCK, BTPROTO_RFCOMM);
@@ -45,7 +47,7 @@ scoped_refptr<BluetoothSocket> BluetoothSocket::CreateBluetoothSocket(
         sizeof(socket_address));
     int errsv = errno;
     if (status == 0 || errno == EINPROGRESS) {
-      bluetooth_socket = new BluetoothSocket(service_record.address(),
+      bluetooth_socket = new BluetoothSocketChromeOs(service_record.address(),
           socket_fd);
     } else {
       LOG(ERROR) << "Failed to connect bluetooth socket "
@@ -56,7 +58,11 @@ scoped_refptr<BluetoothSocket> BluetoothSocket::CreateBluetoothSocket(
   }
   // TODO(bryeung): add support for L2CAP sockets as well.
 
-  return scoped_refptr<BluetoothSocket>(bluetooth_socket);
+  return scoped_refptr<BluetoothSocketChromeOs>(bluetooth_socket);
+}
+
+int BluetoothSocketChromeOs::fd() const {
+  return fd_;
 }
 
 }  // namespace chromeos

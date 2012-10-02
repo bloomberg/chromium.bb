@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter_factory.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -216,7 +217,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
     network_icon_dark_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
 
-    bluetooth_adapter_ = BluetoothAdapter::DefaultAdapter();
+    bluetooth_adapter_ = BluetoothAdapterFactory::DefaultAdapter();
     bluetooth_adapter_->AddObserver(this);
   }
 

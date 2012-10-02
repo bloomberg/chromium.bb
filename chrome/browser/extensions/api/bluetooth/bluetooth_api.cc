@@ -22,10 +22,12 @@
 #include "base/safe_strerror_posix.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_service_record.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_utils.h"
 #include "chrome/browser/chromeos/extensions/bluetooth_event_router.h"
 #include "chromeos/dbus/bluetooth_out_of_band_client.h"
+#include "chromeos/dbus/bluetooth_out_of_band_pairing_data.h"
 
 namespace {
 

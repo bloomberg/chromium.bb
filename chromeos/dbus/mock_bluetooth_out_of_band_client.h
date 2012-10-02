@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/dbus/bluetooth_out_of_band_client.h"
+#include "chromeos/dbus/bluetooth_out_of_band_pairing_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {

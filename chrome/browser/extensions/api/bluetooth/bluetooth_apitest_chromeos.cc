@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
 #include "chromeos/dbus/bluetooth_out_of_band_client.h"
+#include "chromeos/dbus/bluetooth_out_of_band_pairing_data.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -44,6 +45,10 @@ class BluetoothApiTest : public PlatformAppApiTest {
     device2_.reset(new testing::NiceMock<chromeos::MockBluetoothDevice>(
         mock_adapter_, "d2", "21:22:23:24:25:26",
         false /* paired */, true /* bonded */, false /* connected */));
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_));
   }
 
   void expectBooleanResult(bool expected,
@@ -108,9 +113,9 @@ static bool CallClosure(const base::Closure& callback) {
 }
 
 static void CallOutOfBandPairingDataCallback(
-      const chromeos::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
-          callback,
-      const chromeos::BluetoothAdapter::ErrorCallback& error_callback) {
+    const chromeos::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
+        callback,
+    const chromeos::BluetoothAdapter::ErrorCallback& error_callback) {
   callback.Run(GetOutOfBandPairingData());
 }
 

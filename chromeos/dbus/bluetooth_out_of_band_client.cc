@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
+#include "chromeos/dbus/bluetooth_out_of_band_pairing_data.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"

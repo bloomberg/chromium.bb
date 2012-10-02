@@ -24,30 +24,35 @@ class MockBluetoothAdapter : public BluetoothAdapter {
 
     MOCK_METHOD2(AdapterPresentChanged, void(BluetoothAdapter*, bool));
     MOCK_METHOD2(AdapterPoweredChanged, void(BluetoothAdapter*, bool));
-    MOCK_METHOD2(AdapterDiscoveringChanged, void(BluetoothAdapter *, bool));
-    MOCK_METHOD2(DeviceAdded, void(BluetoothAdapter *, BluetoothDevice *));
-    MOCK_METHOD2(DeviceChanged, void(BluetoothAdapter *, BluetoothDevice *));
-    MOCK_METHOD2(DeviceRemoved, void(BluetoothAdapter *, BluetoothDevice *));
+    MOCK_METHOD2(AdapterDiscoveringChanged, void(BluetoothAdapter*, bool));
+    MOCK_METHOD2(DeviceAdded, void(BluetoothAdapter*, BluetoothDevice*));
+    MOCK_METHOD2(DeviceChanged, void(BluetoothAdapter*, BluetoothDevice*));
+    MOCK_METHOD2(DeviceRemoved, void(BluetoothAdapter*, BluetoothDevice*));
   };
 
   MockBluetoothAdapter(const std::string& address, const std::string& name);
 
+  MOCK_METHOD1(AddObserver, void(BluetoothAdapter::Observer*));
+  MOCK_METHOD1(RemoveObserver, void(BluetoothAdapter::Observer*));
   MOCK_CONST_METHOD0(IsPresent, bool());
   MOCK_CONST_METHOD0(IsPowered, bool());
+  MOCK_METHOD3(SetPowered,
+               void(bool discovering,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback));
   MOCK_CONST_METHOD0(IsDiscovering, bool());
   MOCK_METHOD3(SetDiscovering,
                void(bool discovering,
                     const base::Closure& callback,
-                    const BluetoothAdapter::ErrorCallback& error_callback));
-  MOCK_CONST_METHOD0(GetDevices, ConstDeviceList());
+                    const ErrorCallback& error_callback));
+  MOCK_CONST_METHOD0(GetDevices, BluetoothAdapter::ConstDeviceList());
   MOCK_METHOD1(GetDevice, BluetoothDevice*(const std::string& address));
   MOCK_CONST_METHOD1(GetDevice,
                      const BluetoothDevice*(const std::string& address));
   MOCK_METHOD2(
       ReadLocalOutOfBandPairingData,
-      void(const BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
-               callback,
-           const BluetoothAdapter::ErrorCallback& error_callback));
+      void(const BluetoothOutOfBandPairingDataCallback& callback,
+           const ErrorCallback& error_callback));
  protected:
   virtual ~MockBluetoothAdapter();
 };

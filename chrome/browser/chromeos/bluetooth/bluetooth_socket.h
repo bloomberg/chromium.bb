@@ -5,36 +5,24 @@
 #ifndef CHROME_BROWSER_CHROMEOS_BLUETOOTH_BLUETOOTH_SOCKET_H_
 #define CHROME_BROWSER_CHROMEOS_BLUETOOTH_BLUETOOTH_SOCKET_H_
 
-#include <string>
-
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_service_record.h"
+#include "base/memory/ref_counted.h"
 
 namespace chromeos {
 
-class BluetoothDevice;
-
-// The BluetoothSocket class represents a socket to a specific service on
-// a BluetoothDevice.  BluetoothSocket objects are ref counted and may outlive
+// BluetoothSocket represents a socket to a specific service on a
+// BluetoothDevice.  BluetoothSocket objects are ref counted and may outlive
 // both the BluetoothDevice and BluetoothAdapter that were involved in their
 // creation.
 class BluetoothSocket : public base::RefCounted<BluetoothSocket> {
  public:
-  static scoped_refptr<BluetoothSocket> CreateBluetoothSocket(
-      const BluetoothServiceRecord& service_record);
+  // TODO(youngki): Replace this with an opaque id when read/write calls are
+  // added. This interface is platform-independent and file descriptor is
+  // linux-specific hence this method has to be renamed.
+  virtual int fd() const = 0;
 
-  int fd() const { return fd_; }
-
- private:
+ protected:
   friend class base::RefCounted<BluetoothSocket>;
-
-  BluetoothSocket(const std::string& address, int fd);
-  virtual ~BluetoothSocket();
-
-  const std::string address_;
-  const int fd_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocket);
+  virtual ~BluetoothSocket() {}
 };
 
 }  // namespace chromeos
