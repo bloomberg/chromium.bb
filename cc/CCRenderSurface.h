@@ -8,6 +8,7 @@
 #if USE(ACCELERATED_COMPOSITING)
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "CCRenderPass.h"
 #include "CCSharedQuadState.h"
 #include "FloatRect.h"
@@ -114,7 +115,7 @@ private:
     // to move pixels within the surface (such as with a blur). This can point to itself.
     CCRenderSurface* m_nearestAncestorThatMovesPixels;
 
-    OwnPtr<CCDamageTracker> m_damageTracker;
+    scoped_ptr<CCDamageTracker> m_damageTracker;
 
     // For CCLayerIteratorActions
     int m_targetRenderSurfaceLayerIndexHistory;

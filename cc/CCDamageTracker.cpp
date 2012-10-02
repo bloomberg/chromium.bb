@@ -18,16 +18,16 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-PassOwnPtr<CCDamageTracker> CCDamageTracker::create()
+scoped_ptr<CCDamageTracker> CCDamageTracker::create()
 {
-    return adoptPtr(new CCDamageTracker());
+    return scoped_ptr<CCDamageTracker>(new CCDamageTracker());
 }
 
 CCDamageTracker::CCDamageTracker()
-    : m_forceFullDamageNextUpdate(false)
+    : m_forceFullDamageNextUpdate(false),
+      m_currentRectHistory(new RectMap),
+      m_nextRectHistory(new RectMap)
 {
-    m_currentRectHistory = adoptPtr(new RectMap);
-    m_nextRectHistory = adoptPtr(new RectMap);
 }
 
 CCDamageTracker::~CCDamageTracker()

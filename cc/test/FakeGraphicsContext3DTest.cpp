@@ -4,24 +4,22 @@
 
 #include "config.h"
 
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "FakeWebGraphicsContext3D.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
-using namespace WebCore;
-using namespace WebKit;
-
-class ContextThatCountsMakeCurrents : public FakeWebGraphicsContext3D {
+class ContextThatCountsMakeCurrents : public WebKit::FakeWebGraphicsContext3D {
 public:
     ContextThatCountsMakeCurrents() : m_makeCurrentCount(0) { }
-    virtual bool makeContextCurrent()
+    virtual bool makeContextCurrent() OVERRIDE
     {
         m_makeCurrentCount++;
         return true;
     }
-    int makeCurrentCount() { return m_makeCurrentCount; }
+    int makeCurrentCount() const { return m_makeCurrentCount; }
+
 private:
     int m_makeCurrentCount;
 };
@@ -29,7 +27,7 @@ private:
 
 TEST(FakeGraphicsContext3DTest, ContextCreationShouldNotMakeCurrent)
 {
-    OwnPtr<ContextThatCountsMakeCurrents> context(adoptPtr(new ContextThatCountsMakeCurrents));
-    EXPECT_TRUE(context);
+    scoped_ptr<ContextThatCountsMakeCurrents> context(new ContextThatCountsMakeCurrents);
+    EXPECT_TRUE(context.get());
     EXPECT_EQ(0, context->makeCurrentCount());
 }

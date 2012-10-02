@@ -5,12 +5,11 @@
 #ifndef FakeWebCompositorSoftwareOutputDevice_h
 #define FakeWebCompositorSoftwareOutputDevice_h
 
+#include "base/memory/scoped_ptr.h"
 #include "SkDevice.h"
 #include <public/WebCompositorSoftwareOutputDevice.h>
 #include <public/WebImage.h>
 #include <public/WebSize.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 
@@ -18,7 +17,7 @@ class FakeWebCompositorSoftwareOutputDevice : public WebCompositorSoftwareOutput
 public:
     virtual WebImage* lock(bool forWrite) OVERRIDE
     {
-        ASSERT(m_device);
+        ASSERT(m_device.get());
         m_image = m_device->accessBitmap(forWrite);
         return &m_image;
     }
@@ -32,11 +31,11 @@ public:
         if (m_device.get() && size.width == m_device->width() && size.height == m_device->height())
             return;
 
-        m_device = adoptPtr(new SkDevice(SkBitmap::kARGB_8888_Config, size.width, size.height, true));
+        m_device.reset(new SkDevice(SkBitmap::kARGB_8888_Config, size.width, size.height, true));
     }
 
 private:
-    OwnPtr<SkDevice> m_device;
+    scoped_ptr<SkDevice> m_device;
     WebImage m_image;
 };
 
