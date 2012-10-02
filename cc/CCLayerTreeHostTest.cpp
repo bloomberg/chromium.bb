@@ -19,7 +19,7 @@
 #include "ContentLayerChromiumClient.h"
 #include "Extensions3DChromium.h"
 #include "FakeWebCompositorOutputSurface.h"
-#include <gmock/gmock.h>
+#include "testing/gmock/include/gmock/gmock.h"
 #include <public/Platform.h>
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>

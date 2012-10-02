@@ -9,7 +9,7 @@
 #include "CCLayerImpl.h"
 #include "CCMathUtil.h"
 #include "CCSingleThreadProxy.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
 using namespace cc;

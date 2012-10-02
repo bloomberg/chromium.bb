@@ -11,7 +11,7 @@
 #include "CompositorFakeWebGraphicsContext3D.h"
 #include "Extensions3DChromium.h"
 #include "FakeWebCompositorOutputSurface.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/HashMap.h>
 #include <wtf/OwnArrayPtr.h>

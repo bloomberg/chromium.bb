@@ -11,7 +11,7 @@
 #include "CCRenderingStats.h"
 #include "ContentLayerChromiumClient.h"
 #include "skia/ext/platform_canvas.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebFloatRect.h>
 #include <public/WebRect.h>
 #include <wtf/OwnPtr.h>

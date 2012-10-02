@@ -12,7 +12,7 @@
 #include "CCLayerTreeHostCommon.h"
 #include "CCMathUtil.h"
 #include "CCSingleThreadProxy.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 

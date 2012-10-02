@@ -16,7 +16,7 @@
 #include "CCTextureDrawQuad.h"
 #include "CCTileDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;

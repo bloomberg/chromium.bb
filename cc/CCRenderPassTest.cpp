@@ -8,7 +8,7 @@
 
 #include "CCCheckerboardDrawQuad.h"
 #include "CCGeometryTestUtils.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 

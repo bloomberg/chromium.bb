@@ -19,8 +19,8 @@
 #include "ContentLayerChromiumClient.h"
 #include "LayerChromium.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
 using namespace cc;

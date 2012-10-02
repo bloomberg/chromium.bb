@@ -8,7 +8,7 @@
 
 #include "CCSchedulerTestCommon.h"
 #include "CCThread.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <wtf/RefPtr.h>
 
 using namespace cc;

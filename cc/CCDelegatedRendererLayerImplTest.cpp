@@ -19,7 +19,7 @@
 #include "FakeWebGraphicsContext3D.h"
 #include "MockCCQuadCuller.h"
 #include "cc/scoped_ptr_vector.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::FakeWebCompositorOutputSurface;

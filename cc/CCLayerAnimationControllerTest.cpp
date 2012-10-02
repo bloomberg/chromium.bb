@@ -9,8 +9,8 @@
 #include "CCActiveAnimation.h"
 #include "CCAnimationCurve.h"
 #include "CCAnimationTestCommon.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 #include <wtf/Vector.h>
 

@@ -12,7 +12,7 @@
 #include "FakeWebCompositorOutputSurface.h"
 #include "FakeWebGraphicsContext3D.h"
 #include "WebCompositorInitializer.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebThread.h>
 #include <wtf/RefPtr.h>
 

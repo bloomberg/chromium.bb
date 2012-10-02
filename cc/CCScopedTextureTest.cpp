@@ -11,7 +11,7 @@
 #include "CCTiledLayerTestCommon.h"
 #include "FakeCCGraphicsContext.h"
 #include "GraphicsContext3D.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
 using namespace WebKit;

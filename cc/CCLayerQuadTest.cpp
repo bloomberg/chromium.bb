@@ -6,7 +6,7 @@
 
 #include "CCLayerQuad.h"
 
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
 

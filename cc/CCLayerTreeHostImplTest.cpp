@@ -32,8 +32,8 @@
 #include "FakeWebCompositorOutputSurface.h"
 #include "FakeWebGraphicsContext3D.h"
 #include "FakeWebScrollbarThemeGeometry.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebVideoFrame.h>
 #include <public/WebVideoFrameProvider.h>
 

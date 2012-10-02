@@ -7,7 +7,7 @@
 #include "CCFrameRateController.h"
 
 #include "CCSchedulerTestCommon.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
 using namespace WebKitTests;

@@ -8,7 +8,7 @@
 
 #include "CCScrollbarLayerImpl.h"
 #include "CCSingleThreadProxy.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <wtf/OwnPtr.h>
 
 using namespace cc;

@@ -5,8 +5,8 @@
 #include "config.h"
 
 #include "FakeWebGraphicsContext3D.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

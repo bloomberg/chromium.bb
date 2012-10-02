@@ -12,7 +12,7 @@
 #include "CCTiledLayerTestCommon.h"
 #include "FakeCCGraphicsContext.h"
 #include "WebCompositorInitializer.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
 using namespace WebKitTests;

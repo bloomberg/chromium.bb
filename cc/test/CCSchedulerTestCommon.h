@@ -9,7 +9,7 @@
 #include "CCFrameRateController.h"
 #include "CCThread.h"
 #include "base/threading/platform_thread.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebKitTests {

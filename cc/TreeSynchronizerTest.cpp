@@ -13,7 +13,7 @@
 #include "CCSingleThreadProxy.h"
 #include "LayerChromium.h"
 #include "Region.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
 using namespace WebKitTests;

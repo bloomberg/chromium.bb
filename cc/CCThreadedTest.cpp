@@ -23,7 +23,7 @@
 #include "FakeWebCompositorOutputSurface.h"
 #include "FakeWebGraphicsContext3D.h"
 #include "LayerChromium.h"
-#include <gmock/gmock.h>
+#include "testing/gmock/include/gmock/gmock.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebFilterOperation.h>

@@ -11,7 +11,7 @@
 #include "CCSingleThreadProxy.h"
 #include "FakeWebScrollbarThemeGeometry.h"
 #include "TreeSynchronizer.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebScrollbar.h>
 #include <public/WebScrollbarThemeGeometry.h>
 #include <public/WebScrollbarThemePainter.h>

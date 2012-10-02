@@ -6,7 +6,7 @@
 
 #include "CCMathUtil.h"
 #include "FloatQuad.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
 using namespace cc;

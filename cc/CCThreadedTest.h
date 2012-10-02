@@ -9,7 +9,7 @@
 #include "CCLayerTreeHostImpl.h"
 #include "CCScopedThreadProxy.h"
 #include "CompositorFakeWebGraphicsContext3D.h"
-#include <gtest/gtest.h>
+#include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebAnimationDelegate.h>
 #include <public/WebThread.h>
 
