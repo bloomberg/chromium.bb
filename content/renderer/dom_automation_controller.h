@@ -113,10 +113,6 @@ class DomAutomationController : public webkit_glue::CppBoundClass {
     sender_ = sender;
   }
 
-  // Retrieves a histogram and returns a JSON representation of it.
-  void GetHistogram(const webkit_glue::CppArgumentList& args,
-                    webkit_glue::CppVariant* result);
-
  private:
   IPC::Sender* sender_;
 
