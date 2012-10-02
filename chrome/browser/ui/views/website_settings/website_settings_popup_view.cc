@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
+#include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
@@ -100,12 +101,6 @@ const int kPopupWidth = 310;
 
 const int kSiteDataIconColumnWidth = 20;
 const int kSiteDataSectionRowSpacing = 11;
-
-// Returns true if the passed |url| refers to an internal chrome page.
-bool InternalChromePage(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeInternalScheme) ||
-         url.SchemeIs(chrome::kChromeUIScheme);
-}
 
 }  // namespace
 
