@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/minimize_button_metrics_win.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/native_widget_win.h"
@@ -100,11 +101,6 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   // Called when the frame is closed. Only applies to Windows 8 metro mode.
   void CloseImmersiveFrame();
 
-  // Calculates and caches the minimize button delta, i.e. the offset to be
-  // applied to the left/right coordinates of the client rectangle in case
-  // we fail to retrieve the offset of the minimize button.
-  void CacheMinimizeButtonDelta();
-
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
 
@@ -118,8 +114,7 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   // The wrapped system menu itself.
   scoped_ptr<views::NativeMenuWin> system_menu_;
 
-  // See CacheMinimizeButtonDelta() for details about this member.
-  int cached_minimize_button_x_delta_;
+  MinimizeButtonMetrics minimize_button_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameWin);
 };

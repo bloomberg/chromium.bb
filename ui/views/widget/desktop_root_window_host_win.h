@@ -188,7 +188,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
 
   Widget* GetWidget();
   const Widget* GetWidget() const;
-  HWND GetHWND();
+  HWND GetHWND() const;
 
  private:
   scoped_ptr<aura::RootWindow> root_window_;

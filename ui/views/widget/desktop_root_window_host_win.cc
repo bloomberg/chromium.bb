@@ -688,7 +688,7 @@ const Widget* DesktopRootWindowHostWin::GetWidget() const {
   return native_widget_delegate_->AsWidget();
 }
 
-HWND DesktopRootWindowHostWin::GetHWND() {
+HWND DesktopRootWindowHostWin::GetHWND() const {
   return message_handler_->hwnd();
 }
 

@@ -92,20 +92,6 @@ views::Button* MakeWindowSwitcherButton(views::ButtonListener* listener,
   return switcher_button;
 }
 
-static int GetMinimizeButtonOffsetForWindow(gfx::NativeView window) {
-  // The WM_GETTITLEBARINFOEX message can fail if we are not active/visible.
-  TITLEBARINFOEX titlebar_info = {0};
-  titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
-  SendMessage(window, WM_GETTITLEBARINFOEX, 0,
-              reinterpret_cast<WPARAM>(&titlebar_info));
-
-  CPoint minimize_button_corner(titlebar_info.rgrect[2].left,
-                                titlebar_info.rgrect[2].top);
-  MapWindowPoints(HWND_DESKTOP, window, &minimize_button_corner, 1);
-  return minimize_button_corner.x;
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, public:
 
@@ -115,8 +101,7 @@ BrowserFrameWin::BrowserFrameWin(BrowserFrame* browser_frame,
       browser_view_(browser_view),
       browser_frame_(browser_frame),
       system_menu_delegate_(new SystemMenuModelDelegate(browser_view,
-          browser_view->browser())),
-      cached_minimize_button_x_delta_(0) {
+          browser_view->browser())) {
   if (base::win::IsMetroProcess()) {
     browser_view->SetWindowSwitcherButton(
         MakeWindowSwitcherButton(this, browser_view->IsOffTheRecord()));
@@ -219,7 +204,7 @@ bool BrowserFrameWin::PreHandleMSG(UINT message,
   switch (message) {
   case WM_ACTIVATE:
     if (LOWORD(w_param) != WA_INACTIVE)
-      CacheMinimizeButtonDelta();
+      minimize_button_metrics_.OnHWNDActivated();
     return false;
   case WM_PRINT:
     if (base::win::IsMetroProcess()) {
@@ -252,6 +237,9 @@ void BrowserFrameWin::PostHandleMSG(UINT message,
                                     WPARAM w_param,
                                     LPARAM l_param) {
   switch (message) {
+  case WM_CREATE:
+    minimize_button_metrics_.Init(GetNativeView());
+    break;
   case WM_WINDOWPOSCHANGED:
     UpdateDWMFrame();
 
@@ -392,25 +380,7 @@ void BrowserFrameWin::InitSystemContextMenu() {
 }
 
 int BrowserFrameWin::GetMinimizeButtonOffset() const {
-  int minimize_button_offset =
-      GetMinimizeButtonOffsetForWindow(GetNativeView());
-
-  if (minimize_button_offset > 0)
-    return minimize_button_offset;
-
-  // If we fail to get the minimize button offset via the WM_GETTITLEBARINFOEX
-  // message then calculate and return this via the
-  // cached_minimize_button_x_delta_ member value. Please see
-  // CacheMinimizeButtonDelta() for more details.
-  DCHECK(cached_minimize_button_x_delta_);
-
-  RECT client_rect = {0};
-  GetClientRect(GetNativeView(), &client_rect);
-
-  if (base::i18n::IsRTL())
-    return cached_minimize_button_x_delta_;
-  else
-    return client_rect.right - cached_minimize_button_x_delta_;
+  return minimize_button_metrics_.GetMinimizeButtonOffsetX();
 }
 
 void BrowserFrameWin::TabStripDisplayModeChanged() {
@@ -623,24 +593,6 @@ void BrowserFrameWin::GetMetroCurrentTabInfo(WPARAM w_param) {
 
   current_tab_info->url = base::win::LocalAllocAndCopyString(
       UTF8ToWide(current_tab->GetURL().spec()));
-}
-
-void BrowserFrameWin::CacheMinimizeButtonDelta() {
-  int minimize_offset = GetMinimizeButtonOffsetForWindow(GetNativeView());
-  if (!minimize_offset)
-    return;
-
-  RECT rect = {0};
-  GetClientRect(GetNativeView(), &rect);
-  // Calculate and cache the value of the minimize button delta, i.e. the
-  // offset to be applied to the left or right edge of the client rect
-  // depending on whether the language is RTL or not.
-  // This cached value is only used if the WM_GETTITLEBARINFOEX message fails
-  // to get the offset of the minimize button.
-  if (base::i18n::IsRTL())
-    cached_minimize_button_x_delta_ = minimize_offset;
-  else
-    cached_minimize_button_x_delta_ = rect.right - minimize_offset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

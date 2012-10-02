@@ -6,11 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_ROOT_WINDOW_HOST_WIN_H_
 
 #include "ui/views/widget/desktop_root_window_host_win.h"
+#include "chrome/browser/ui/views/frame/browser_desktop_root_window_host.h"
+#include "chrome/browser/ui/views/frame/minimize_button_metrics_win.h"
 
 class BrowserFrame;
 class BrowserView;
 
-class BrowserDesktopRootWindowHostWin : public views::DesktopRootWindowHostWin {
+class BrowserDesktopRootWindowHostWin : public BrowserDesktopRootWindowHost,
+                                        public views::DesktopRootWindowHostWin {
  public:
   BrowserDesktopRootWindowHostWin(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
@@ -20,6 +23,10 @@ class BrowserDesktopRootWindowHostWin : public views::DesktopRootWindowHostWin {
   virtual ~BrowserDesktopRootWindowHostWin();
 
  private:
+  // Overridden from BrowserDesktopRootWindowHost:
+  virtual DesktopRootWindowHost* AsDesktopRootWindowHost() OVERRIDE;
+  virtual int GetMinimizeButtonOffset() const OVERRIDE;
+
   // Overridden from DesktopRootWindowHostWin:
   virtual int GetInitialShowState() const OVERRIDE;
   virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
@@ -37,6 +44,8 @@ class BrowserDesktopRootWindowHostWin : public views::DesktopRootWindowHostWin {
 
   BrowserView* browser_view_;
   BrowserFrame* browser_frame_;
+
+  MinimizeButtonMetrics minimize_button_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDesktopRootWindowHostWin);
 };

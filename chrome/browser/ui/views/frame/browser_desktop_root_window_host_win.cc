@@ -41,6 +41,18 @@ BrowserDesktopRootWindowHostWin::~BrowserDesktopRootWindowHostWin() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// BrowserDesktopRootWindowHostWin, BrowserDesktopRootWindowHost implementation:
+
+views::DesktopRootWindowHost*
+    BrowserDesktopRootWindowHostWin::AsDesktopRootWindowHost() {
+  return this;
+}
+
+int BrowserDesktopRootWindowHostWin::GetMinimizeButtonOffset() const {
+  return minimize_button_metrics_.GetMinimizeButtonOffsetX();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopRootWindowHostWin, views::DesktopRootWindowHostWin overrides:
 
 int BrowserDesktopRootWindowHostWin::GetInitialShowState() const {
@@ -83,6 +95,10 @@ bool BrowserDesktopRootWindowHostWin::PreHandleMSG(UINT message,
                                                    LPARAM l_param,
                                                    LRESULT* result) {
   switch (message) {
+  case WM_ACTIVATE:
+    if (LOWORD(w_param) != WA_INACTIVE)
+      minimize_button_metrics_.OnHWNDActivated();
+    return false;
   case WM_ENDSESSION:
     browser::SessionEnding();
     return true;
@@ -94,6 +110,9 @@ void BrowserDesktopRootWindowHostWin::PostHandleMSG(UINT message,
                                                     WPARAM w_param,
                                                     LPARAM l_param) {
   switch (message) {
+  case WM_CREATE:
+    minimize_button_metrics_.Init(GetHWND());
+    break;
   case WM_WINDOWPOSCHANGED:
     UpdateDWMFrame();
 
@@ -181,3 +200,18 @@ void BrowserDesktopRootWindowHostWin::UpdateDWMFrame() {
   DwmExtendFrameIntoClientArea(GetHWND(), &margins);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// BrowserDesktopRootWindowHost, public:
+
+// static
+BrowserDesktopRootWindowHost*
+    BrowserDesktopRootWindowHost::CreateBrowserDesktopRootWindowHost(
+        views::internal::NativeWidgetDelegate* native_widget_delegate,
+        const gfx::Rect& initial_bounds,
+        BrowserView* browser_view,
+        BrowserFrame* browser_frame) {
+  return new BrowserDesktopRootWindowHostWin(native_widget_delegate,
+                                             initial_bounds,
+                                             browser_view,
+                                             browser_frame);
+}
