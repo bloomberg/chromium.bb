@@ -27,6 +27,12 @@
 
 typedef std::list<gfx::NativeWindow> WindowList;
 
+#if defined(OS_WIN)
+namespace ui {
+class ScopedOleInitializer;
+}
+#endif
+
 namespace webkit_glue {
 struct WebPreferences;
 }
@@ -308,7 +314,6 @@ protected:
 
     static void PlatformShutdown();
 
-protected:
     gfx::NativeWindow       m_mainWnd;
     gfx::NativeEditView     m_editWnd;
     scoped_ptr<WebViewHost> m_webViewHost;
@@ -330,6 +335,8 @@ private:
 
 #if defined(OS_WIN)
     static HINSTANCE instance_handle_;
+
+    static ui::ScopedOleInitializer* ole_initializer_;
 #endif
 
     // True if developer extras should be enabled.

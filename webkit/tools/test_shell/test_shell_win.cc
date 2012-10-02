@@ -29,6 +29,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/base/win/scoped_ole_initializer.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -140,8 +141,9 @@ static base::StringPiece GetRawDataResource(HMODULE module, int resource_id) {
 
 }  // namespace
 
-// Initialize static member variable
+// static
 HINSTANCE TestShell::instance_handle_;
+ui::ScopedOleInitializer* TestShell::ole_initializer_;
 
 /////////////////////////////////////////////////////////////////////////////
 // static methods on TestShell
@@ -153,9 +155,7 @@ const MINIDUMP_TYPE kFullDumpType = static_cast<MINIDUMP_TYPE>(
 
 void TestShell::InitializeTestShell(bool layout_test_mode,
                                     bool allow_external_pages) {
-  // Start COM stuff.
-  HRESULT res = OleInitialize(NULL);
-  DCHECK(SUCCEEDED(res));
+  ole_initializer_ = new ui::ScopedOleInitializer();
 
   window_list_ = new WindowList;
   instance_handle_ = ::GetModuleHandle(NULL);
@@ -208,7 +208,8 @@ void TestShell::DestroyWindow(gfx::NativeWindow windowHandle) {
 }
 
 void TestShell::PlatformShutdown() {
-  OleUninitialize();
+  delete ole_initializer_;
+  ole_initializer_ = NULL;
 }
 
 ATOM TestShell::RegisterWindowClass() {

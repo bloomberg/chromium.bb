@@ -30,6 +30,7 @@
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/layout.h"
+#include "ui/base/win/scoped_ole_initializer.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
@@ -104,26 +105,27 @@ bool IsBackgroundDraggingSupportEnabled() {
 class DragDropThread : public base::Thread {
  public:
   explicit DragDropThread(WebContentsDragWin* drag_handler)
-       : base::Thread("Chrome_DragDropThread"),
+       : Thread("Chrome_DragDropThread"),
          drag_handler_(drag_handler) {
   }
 
   virtual ~DragDropThread() {
-    Thread::Stop();
+    Stop();
   }
 
  protected:
   // base::Thread implementations:
   virtual void Init() {
-    int ole_result = OleInitialize(NULL);
-    DCHECK(ole_result == S_OK);
+    ole_initializer_.reset(new ui::ScopedOleInitializer());
   }
 
   virtual void CleanUp() {
-    OleUninitialize();
+    ole_initializer_.reset();
   }
 
  private:
+  scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
+
   // Hold a reference count to WebContentsDragWin to make sure that it is always
   // alive in the thread lifetime.
   scoped_refptr<WebContentsDragWin> drag_handler_;
