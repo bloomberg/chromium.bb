@@ -253,6 +253,7 @@ class PageCyclerTest : public UIPerfTest {
       PrintIOPerfInfo(suffix);
       perf_test::PrintSystemCommitCharge(suffix, stop_size - start_size,
                                          false /* not important */);
+      ASSERT_NO_FATAL_FAILURE(PrintMemoryHistograms());
     }
 
     std::string trace_name = "t" + std::string(suffix);
@@ -265,6 +266,31 @@ class PageCyclerTest : public UIPerfTest {
 
   void RunTest(const char* graph, const char* name, bool use_http) {
     RunTestWithSuffix(graph, name, use_http, "");
+  }
+
+ private:
+  void PrintMemoryHistogram(const std::string& name) {
+    scoped_refptr<TabProxy> tab(GetActiveTab());
+    ASSERT_TRUE(tab.get());
+    std::wstring whistogram;
+    ASSERT_TRUE(tab->ExecuteAndExtractString(
+        L"",
+        L"window.domAutomationController.send("
+        L"window.domAutomationController.getHistogram(\"" +
+        base::SysUTF8ToWide(name) + L"\"))",
+        &whistogram));
+    std::string histogram = base::SysWideToNativeMB(whistogram);
+    printf("HISTOGRAM %s: %s = %s\n",
+           name.c_str(), name.c_str(), histogram.c_str());
+  }
+
+  void PrintMemoryHistograms() {
+    ASSERT_NO_FATAL_FAILURE(PrintMemoryHistogram(
+        "V8.MemoryExternalFragmentationTotal"));
+    ASSERT_NO_FATAL_FAILURE(PrintMemoryHistogram(
+        "V8.MemoryHeapSampleTotalCommitted"));
+    ASSERT_NO_FATAL_FAILURE(PrintMemoryHistogram(
+        "V8.MemoryHeapSampleTotalUsed"));
   }
 
  protected:
