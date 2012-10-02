@@ -1148,10 +1148,6 @@ const char kSavePageAsMHTML[] = "save-page-as-mhtml";
 // malware.
 const char kSbURLPrefix[] = "safebrowsing-url-prefix";
 
-// Enable an icon in the URL bar that tells you how many extensions are running
-// scripts on a page.
-const char kScriptBubbleEnabled[] = "script-bubble-enabled";
-
 // If present, safebrowsing only performs update when
 // SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
 // This is used for testing only.

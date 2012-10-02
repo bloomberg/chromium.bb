@@ -187,8 +187,8 @@ const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
                                    &manifest))
     return NULL;
 
-  std::string extension_id = service->component_loader()->Add(manifest, path);
-  const Extension* extension = service->extensions()->GetByID(extension_id);
+  const Extension* extension =
+      service->component_loader()->Add(manifest, path);
   if (!extension)
     return NULL;
   last_loaded_extension_id_ = extension->id();

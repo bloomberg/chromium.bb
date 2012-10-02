@@ -38,25 +38,17 @@ class ComponentLoader : public content::NotificationObserver {
 
   // Registers and possibly loads a component extension. If ExtensionService
   // has been initialized, the extension is loaded; otherwise, the load is
-  // deferred until LoadAll is called. The ID of the added extension is
-  // returned.
-  //
-  // Component extension manifests must contain a "key" property with a unique
-  // public key, serialized in base64. You can create a suitable value with the
-  // following commands on a unixy system:
-  //
-  //   ssh-keygen -t rsa -b 1024 -N '' -f /tmp/key.pem
-  //   openssl rsa -pubout -outform DER < /tmp/key.pem 2>/dev/null | base64 -w 0
-  std::string Add(const std::string& manifest_contents,
-                  const FilePath& root_directory);
+  // deferred until LoadAll is called.
+  const Extension* Add(const std::string& manifest_contents,
+                       const FilePath& root_directory);
 
   // Convenience method for registering a component extension by resource id.
-  std::string Add(int manifest_resource_id,
-                  const FilePath& root_directory);
+  const Extension* Add(int manifest_resource_id,
+                       const FilePath& root_directory);
 
   // Loads a component extension from file system. Replaces previously added
   // extension with the same ID.
-  std::string AddOrReplace(const FilePath& path);
+  const Extension* AddOrReplace(const FilePath& path);
 
   // Returns true if an extension with the specified id has been added.
   bool Exists(const std::string& id) const;
@@ -67,6 +59,13 @@ class ComponentLoader : public content::NotificationObserver {
   void Remove(const std::string& id);
 
   // Adds the default component extensions.
+  //
+  // Component extension manifests must contain a 'key' property with a unique
+  // public key, serialized in base64. You can create a suitable value with the
+  // following commands on a unixy system:
+  //
+  //   ssh-keygen -t rsa -b 1024 -N '' -f /tmp/key.pem
+  //   openssl rsa -pubout -outform DER < /tmp/key.pem 2>/dev/null | base64 -w 0
   void AddDefaultComponentExtensions();
 
   // content::NotificationObserver implementation
@@ -86,31 +85,24 @@ class ComponentLoader : public content::NotificationObserver {
   // Reloads a registered component extension.
   void Reload(const std::string& extension_id);
 
-  // Adds the "Script Bubble" component extension, which puts an icon in the
-  // omnibox indiciating the number of extensions running script in a tab.
-  void AddScriptBubble();
-
-  // Returns the extension previously added by AddScriptBubble(), if any.
-  const Extension* GetScriptBubble() const;
-
  private:
   // Information about a registered component extension.
   struct ComponentExtensionInfo {
     ComponentExtensionInfo(const DictionaryValue* manifest,
-                           const FilePath& root_directory);
+                           const FilePath& root_directory)
+        : manifest(manifest),
+          root_directory(root_directory) {
+    }
 
     // The parsed contents of the extensions's manifest file.
     const DictionaryValue* manifest;
 
     // Directory where the extension is stored.
     FilePath root_directory;
-
-    // The component extension's ID.
-    std::string extension_id;
   };
 
-  std::string Add(const DictionaryValue* parsed_manifest,
-                  const FilePath& root_directory);
+  const Extension* Add(const DictionaryValue* parsed_manifest,
+                       const FilePath& root_directory);
 
   // Loads a registered component extension.
   const Extension* Load(const ComponentExtensionInfo& info);
@@ -126,6 +118,9 @@ class ComponentLoader : public content::NotificationObserver {
 
   void AddChromeApp();
 
+  // Determine the extension id.
+  static std::string GenerateId(const base::DictionaryValue* manifest);
+
   PrefService* prefs_;
   PrefService* local_state_;
 
@@ -136,8 +131,6 @@ class ComponentLoader : public content::NotificationObserver {
   RegisteredComponentExtensions component_extensions_;
 
   PrefChangeRegistrar pref_change_registrar_;
-
-  std::string script_bubble_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentLoader);
 };
