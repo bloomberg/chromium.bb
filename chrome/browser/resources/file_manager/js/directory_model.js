@@ -192,7 +192,8 @@ DirectoryModel.prototype.isSearching = function() {
 DirectoryModel.prototype.isPathReadOnly = function(path) {
   switch (PathUtil.getRootType(path)) {
     case RootType.REMOVABLE:
-      return !!this.volumeManager_.isReadOnly(PathUtil.getRootPath(path));
+      return !!this.volumeManager_.isReadOnly(PathUtil.getRootPath(path)) ||
+             !!this.volumeManager_.getMountError(PathUtil.getRootPath(path));
     case RootType.ARCHIVE:
       return true;
     case RootType.DOWNLOADS:

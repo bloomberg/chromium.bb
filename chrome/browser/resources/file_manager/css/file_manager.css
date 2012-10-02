@@ -1337,7 +1337,8 @@ div.shade[fadein] {
 }
 
 /* Message panel for unmounted GData */
-#unmounted-panel {
+#unmounted-panel,
+#format-panel {
   bottom: 0;
   color: #333;
   display: none;
@@ -1350,28 +1351,28 @@ div.shade[fadein] {
 }
 
 .dialog-container[gdata='mounting'] #unmounted-panel,
-.dialog-container[gdata='error'] #unmounted-panel {
+.dialog-container[gdata='error'] #unmounted-panel,
+.dialog-container[unformatted] #format-panel {
   display: block;
 }
 
 .dialog-container[gdata='unmounted'] .filelist-panel,
 .dialog-container[gdata='mounting'] .filelist-panel,
-.dialog-container[gdata='error'] .filelist-panel {
+.dialog-container[gdata='error'] .filelist-panel,
+.dialog-container[unformatted] .filelist-panel {
   /* Hide file list when GData is not mounted.
      Use opacity to avoid manual resizing.*/
   opacity: 0;
 }
 
-#unmounted-panel > * {
-  height: 22px;
-  margin-bottom: 10px;
-}
-
-#unmounted-panel > * {
+#unmounted-panel > *,
+#format-panel > * {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
   display: none;
+  height: 22px;
+  margin-bottom: 10px;
 }
 
 #unmounted-panel > .loading {
@@ -1386,9 +1387,11 @@ div.shade[fadein] {
   width: 40px;
 }
 
+[unformatted] #format-panel > .error,
 [gdata='mounting'] #unmounted-panel > .loading,
 [gdata='mounting'] #unmounted-panel > .progress,
 [gdata='error'] #unmounted-panel > .error,
+#format-panel > #format-button,
 #unmounted-panel.retry-enabled > .retry,
 #unmounted-panel.retry-enabled > .learn-more {
   display: -webkit-box;
