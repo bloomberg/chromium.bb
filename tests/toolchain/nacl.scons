@@ -96,6 +96,21 @@ if env.Bit('nacl_glibc') and not env.Bit('nacl_disable_shared'):
   AddInitFiniTest(env, 'initfini_shared', ['initfini_s'])
 
 
+nexe = env.ComponentProgram(
+    'initfini_attributes', ['initfini_attributes.c'],
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl(
+    'initfini_attributes.out', nexe,
+    stdout_golden=env.File('initfini_attributes.stdout'))
+env.AddNodeToTestSuite(
+    node, ['toolchain_tests', 'small_tests'],
+    'run_initfini_attributes_test',
+    # __attribute__((destructor)) is broken in nacl-glibc on x86-64.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=3056
+    # TODO(mseaborn): Enable this test there when this is fixed.
+    is_broken=env.Bit('nacl_glibc') and env.Bit('target_x86_64'))
+
+
 if env.Bit('nacl_glibc'):
   bias_env = env.Clone()
   # PNaCl bias is needed until __jmp_buf (defined in bits/setjmp.h) has
