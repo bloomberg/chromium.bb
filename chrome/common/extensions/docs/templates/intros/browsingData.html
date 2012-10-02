@@ -86,7 +86,7 @@ chrome.browsingData.removeCookies({
 <h2 id="origin_types">Origin Types</h2>
 
 <p>
-  Adding an <code>originType</code> property to the API's options object allows
+  Adding an <code>originTypes</code> property to the API's options object allows
   you to specify which types of origins ought to be effected. Currently, origins
   are divided into three categories:
 </p>
@@ -94,7 +94,7 @@ chrome.browsingData.removeCookies({
   <li>
     <code>unprotectedWeb</code> covers the general case of websites that users
     visit without taking any special action. If you don't specify an
-    <code>originType</code>, the API defaults to removing data from unprotected
+    <code>originTypes</code>, the API defaults to removing data from unprotected
     web origins.
   </li>
   <li>
@@ -125,7 +125,7 @@ var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
 chrome.browsingData.remove({
   "since": oneWeekAgo,
-  <b>"originType": {
+  <b>"originTypes": {
     "protectedWeb": true
   }</b>
 }, {
