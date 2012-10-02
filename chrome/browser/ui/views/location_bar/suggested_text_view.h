@@ -17,7 +17,8 @@ class OmniboxEditModel;
 class SuggestedTextView : public views::Label,
                           public ui::AnimationDelegate {
  public:
-  explicit SuggestedTextView(OmniboxEditModel* edit_model);
+  SuggestedTextView(OmniboxEditModel* edit_model,
+                    bool instant_extended_api_enabled);
   virtual ~SuggestedTextView();
 
   // Starts the animation. If the animation is currently running it is stopped
@@ -46,10 +47,12 @@ class SuggestedTextView : public views::Label,
 
   OmniboxEditModel* edit_model_;
 
+  // True if Instant Extended API is enabled.
+  const bool instant_extended_api_enabled_;
+
   scoped_ptr<ui::Animation> animation_;
 
   SkColor bg_color_;
-
   DISALLOW_COPY_AND_ASSIGN(SuggestedTextView);
 };
 

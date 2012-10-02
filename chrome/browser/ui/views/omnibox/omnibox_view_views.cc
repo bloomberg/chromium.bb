@@ -273,12 +273,10 @@ void OmniboxViewViews::Init(views::View* popup_parent_view) {
   textfield_ = new AutocompleteTextfield(this, location_bar_view_);
   textfield_->SetController(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
-  if (chrome::search::IsInstantExtendedAPIEnabled(
-          location_bar_view_->profile())) {
-    textfield_->SetBackgroundColor(chrome::search::kOmniboxBackgroundColor);
-  } else {
-    textfield_->SetBackgroundColor(LocationBarView::kOmniboxBackgroundColor);
-  }
+  textfield_->SetBackgroundColor(LocationBarView::GetColor(
+      chrome::search::IsInstantExtendedAPIEnabled(
+          location_bar_view_->profile()),
+      ToolbarModel::NONE, LocationBarView::BACKGROUND));
 
   if (popup_window_mode_)
     textfield_->SetReadOnly(true);
@@ -895,14 +893,19 @@ void OmniboxViewViews::EmphasizeURLComponents() {
                                                  &scheme, &host);
   const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
 
+  bool instant_extended_api_enabled =
+      chrome::search::IsInstantExtendedAPIEnabled(
+          location_bar_view_->profile());
   SkColor base_color = LocationBarView::GetColor(
+      instant_extended_api_enabled,
       security_level_,
       emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT);
   ApplyURLStyle(textfield_, 0, text.length(), base_color, false);
 
   if (emphasize) {
     SkColor normal_color =
-        LocationBarView::GetColor(security_level_, LocationBarView::TEXT);
+        LocationBarView::GetColor(instant_extended_api_enabled, security_level_,
+                                  LocationBarView::TEXT);
     ApplyURLStyle(textfield_, host.begin, host.end(), normal_color, false);
   }
 
@@ -910,7 +913,8 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   if (!model()->user_input_in_progress() && scheme.is_nonempty() &&
       (security_level_ != ToolbarModel::NONE)) {
     SkColor security_color = LocationBarView::GetColor(
-        security_level_, LocationBarView::SECURITY_TEXT);
+        instant_extended_api_enabled, security_level_,
+        LocationBarView::SECURITY_TEXT);
     bool use_strikethrough = (security_level_ == ToolbarModel::SECURITY_ERROR);
     ApplyURLStyle(textfield_, scheme.begin, scheme.end(),
                   security_color, use_strikethrough);

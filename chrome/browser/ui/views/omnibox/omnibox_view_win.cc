@@ -474,6 +474,7 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
       drop_highlight_position_(-1),
       ime_candidate_window_open_(false),
       background_color_(skia::SkColorToCOLORREF(LocationBarView::GetColor(
+          chrome::search::IsInstantExtendedAPIEnabled(parent_view_->profile()),
           ToolbarModel::NONE, LocationBarView::BACKGROUND))),
       security_level_(ToolbarModel::NONE),
       text_object_model_(NULL) {
@@ -2289,6 +2290,9 @@ void OmniboxViewWin::EmphasizeURLComponents() {
       GetText(), model()->GetDesiredTLD(), &scheme, &host);
   const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
 
+  bool instant_extended_api_enabled =
+      chrome::search::IsInstantExtendedAPIEnabled(parent_view_->profile());
+
   // Set the baseline emphasis.
   CHARFORMAT cf = {0};
   cf.dwMask = CFM_COLOR;
@@ -2296,6 +2300,7 @@ void OmniboxViewWin::EmphasizeURLComponents() {
   // should be "de-emphasized".  If not, then everything should be rendered in
   // the standard text color.
   cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(
+      instant_extended_api_enabled,
       security_level_,
       emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
   // NOTE: Don't use SetDefaultCharFormat() instead of the below; that sets the
@@ -2307,7 +2312,7 @@ void OmniboxViewWin::EmphasizeURLComponents() {
   if (emphasize) {
     // We've found a host name, give it more emphasis.
     cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(
-        security_level_, LocationBarView::TEXT));
+        instant_extended_api_enabled, security_level_, LocationBarView::TEXT));
     SetSelection(host.begin, host.end());
     SetSelectionCharFormat(cf);
   }
@@ -2321,7 +2326,8 @@ void OmniboxViewWin::EmphasizeURLComponents() {
       insecure_scheme_component_.len = scheme.len;
     }
     cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(
-        security_level_, LocationBarView::SECURITY_TEXT));
+        instant_extended_api_enabled, security_level_,
+        LocationBarView::SECURITY_TEXT));
     SetSelection(scheme.begin, scheme.end());
     SetSelectionCharFormat(cf);
   }
@@ -2413,11 +2419,15 @@ void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
       SkIntToScalar(PosFromChar(sel.cpMax).x - scheme_rect.left),
       SkIntToScalar(scheme_rect.Height()) };
 
+  bool instant_extended_api_enabled =
+      chrome::search::IsInstantExtendedAPIEnabled(parent_view_->profile());
+
   // Draw the unselected portion of the stroke.
   sk_canvas->save();
   if (selection_rect.isEmpty() ||
       sk_canvas->clipRect(selection_rect, SkRegion::kDifference_Op)) {
-    paint.setColor(LocationBarView::GetColor(security_level_,
+    paint.setColor(LocationBarView::GetColor(instant_extended_api_enabled,
+                                             security_level_,
                                              LocationBarView::SECURITY_TEXT));
     sk_canvas->drawLine(start_point.fX, start_point.fY,
                         end_point.fX, end_point.fY, paint);
@@ -2426,7 +2436,8 @@ void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
 
   // Draw the selected portion of the stroke.
   if (!selection_rect.isEmpty() && sk_canvas->clipRect(selection_rect)) {
-    paint.setColor(LocationBarView::GetColor(security_level_,
+    paint.setColor(LocationBarView::GetColor(instant_extended_api_enabled,
+                                             security_level_,
                                              LocationBarView::SELECTED_TEXT));
     sk_canvas->drawLine(start_point.fX, start_point.fY,
                         end_point.fX, end_point.fY, paint);

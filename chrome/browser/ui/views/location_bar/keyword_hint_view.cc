@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -131,9 +132,13 @@ void KeywordHintView::Layout() {
 
 views::Label* KeywordHintView::CreateLabel() {
   views::Label* label = new views::Label();
-  label->SetBackgroundColor(LocationBarView::GetColor(ToolbarModel::NONE,
+  bool instant_extended_api_enabled =
+      chrome::search::IsInstantExtendedAPIEnabled(profile_);
+  label->SetBackgroundColor(LocationBarView::GetColor(
+      instant_extended_api_enabled, ToolbarModel::NONE,
       LocationBarView::BACKGROUND));
-  label->SetEnabledColor(LocationBarView::GetColor(ToolbarModel::NONE,
+  label->SetEnabledColor(LocationBarView::GetColor(
+      instant_extended_api_enabled, ToolbarModel::NONE,
       LocationBarView::DEEMPHASIZED_TEXT));
   AddChildView(label);
   return label;

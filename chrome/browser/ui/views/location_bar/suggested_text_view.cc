@@ -11,13 +11,15 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 
-SuggestedTextView::SuggestedTextView(OmniboxEditModel* edit_model)
+SuggestedTextView::SuggestedTextView(OmniboxEditModel* edit_model,
+                                     bool instant_extended_api_enabled)
     : edit_model_(edit_model),
+      instant_extended_api_enabled_(instant_extended_api_enabled),
       bg_color_(0) {
   SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   SetAutoColorReadabilityEnabled(false);
-  SetEnabledColor(LocationBarView::GetColor(ToolbarModel::NONE,
-      LocationBarView::DEEMPHASIZED_TEXT));
+  SetEnabledColor(LocationBarView::GetColor(instant_extended_api_enabled_,
+      ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT));
 }
 
 SuggestedTextView::~SuggestedTextView() {
@@ -36,8 +38,8 @@ void SuggestedTextView::StopAnimation() {
     // Reset the delegate so that we don't attempt to commit in AnimationEnded.
     animation_->set_delegate(NULL);
     animation_.reset(NULL);
-    SetEnabledColor(LocationBarView::GetColor(ToolbarModel::NONE,
-        LocationBarView::DEEMPHASIZED_TEXT));
+    SetEnabledColor(LocationBarView::GetColor(instant_extended_api_enabled_,
+        ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT));
     SchedulePaint();
   }
 }
@@ -57,10 +59,11 @@ void SuggestedTextView::AnimationEnded(const ui::Animation* animation) {
 void SuggestedTextView::AnimationProgressed(const ui::Animation* animation) {
   UpdateBackgroundColor();
 
-  SkColor fg_color = LocationBarView::GetColor(
+  SkColor fg_color = LocationBarView::GetColor(instant_extended_api_enabled_,
       ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT);
   SkColor sel_fg_color = LocationBarView::GetColor(
-      ToolbarModel::NONE, LocationBarView::SELECTED_TEXT);
+      instant_extended_api_enabled_, ToolbarModel::NONE,
+      LocationBarView::SELECTED_TEXT);
   SetEnabledColor(color_utils::AlphaBlend(sel_fg_color, fg_color,
       ui::Tween::ValueBetween(animation->GetCurrentValue(), 0, 255)));
 
@@ -89,8 +92,8 @@ void SuggestedTextView::UpdateBackgroundColor() {
   }
 
   double value = animation_->GetCurrentValue();
-  SkColor bg_color = LocationBarView::GetColor(ToolbarModel::NONE,
-                                               LocationBarView::BACKGROUND);
+  SkColor bg_color = LocationBarView::GetColor(instant_extended_api_enabled_,
+      ToolbarModel::NONE, LocationBarView::BACKGROUND);
 #if defined(OS_WIN)
   SkColor s_color = color_utils::GetSysSkColor(COLOR_HIGHLIGHT);
 #else
