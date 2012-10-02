@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -57,6 +58,22 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * Cap on the maximum number of renderer processes that can be requested.
      */
     public static final int MAX_RENDERERS_LIMIT = AndroidBrowserProcess.MAX_RENDERERS_LIMIT;
+
+    /**
+     * Allow a callback to be notified when the SurfaceTexture of the TextureView has been
+     * updated.
+     *
+     * TODO(nileshagrawal): Remove this interface.
+     */
+    public static interface SurfaceTextureUpdatedListener {
+        /**
+         * Called when the {@link SurfaceTexture} of the {@link TextureView} held in this
+         * ContentView has been updated.
+         *
+         * @param view The ContentView that was updated.
+         */
+        public void onSurfaceTextureUpdated(ContentView view);
+    }
 
     /**
      * Enable multi-process ContentView. This should be called by the application before
@@ -166,6 +183,18 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public ContentViewCore getContentViewCore() {
         return mContentViewCore;
+    }
+
+    /**
+     * Returns true if the given Activity has hardware acceleration enabled
+     * in its manifest, or in its foreground window.
+     *
+     * TODO(husky): Remove when ContentViewCore.initialize() is refactored (see TODO there)
+     * TODO(dtrainor) This is still used by other classes.  Make sure to pull some version of this
+     * out before removing it.
+     */
+    public static boolean hasHardwareAcceleration(Activity activity) {
+        return ContentViewCore.hasHardwareAcceleration(activity);
     }
 
     /**
