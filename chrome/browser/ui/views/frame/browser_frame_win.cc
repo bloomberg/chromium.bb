@@ -13,10 +13,12 @@
 #include "base/win/metro.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -420,12 +422,35 @@ void BrowserFrameWin::ButtonPressed(views::Button* sender,
   HMODULE metro = base::win::GetMetroModule();
   if (!metro)
     return;
-  // Tell the metro_driver to flip our window. This causes the current
-  // browser window to be hidden and the next window to be shown.
-  static FlipFrameWindows flip_window_fn = reinterpret_cast<FlipFrameWindows>(
-      ::GetProcAddress(metro, "FlipFrameWindows"));
-  if (flip_window_fn)
-    flip_window_fn();
+
+  // Toggle the profile and switch to the corresponding browser window in the
+  // profile. The GetOffTheRecordProfile function is documented to create an
+  // incognito profile if one does not exist. That is not a concern as the
+  // windows 8 window switcher button shows up on the caption only when a
+  // normal window and an incognito window are open simultaneously.
+  Profile* profile_to_switch_to = NULL;
+  Profile* current_profile = browser_view()->browser()->profile();
+  if (current_profile->IsOffTheRecord())
+    profile_to_switch_to = current_profile->GetOriginalProfile();
+  else
+    profile_to_switch_to = current_profile->GetOffTheRecordProfile();
+
+  DCHECK(profile_to_switch_to);
+
+  Browser* browser_to_switch_to =
+      browser::FindTabbedBrowser(profile_to_switch_to, false);
+
+  DCHECK(browser_to_switch_to);
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(
+      browser_to_switch_to);
+
+  // Tell the metro_driver to switch to the Browser we found above. This
+  // causes the current browser window to be hidden.
+  SetFrameWindow set_frame_window = reinterpret_cast<SetFrameWindow>(
+      ::GetProcAddress(metro, "SetFrameWindow"));
+  set_frame_window(browser_view->frame()->GetNativeWindow());
+  ::ShowWindow(browser_view->frame()->GetNativeWindow(), SW_SHOWNORMAL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
