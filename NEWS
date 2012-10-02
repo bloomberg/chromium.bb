@@ -1,16 +1,21 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 2.6.0 (????-??-??)
+
+** Bug Fixes
+- Update gnulib
+
 * Noteworthy changes in release 2.5.1 (2012-9-24)
 
 ** Braille Table Improvements
-   - Fix encoding problem in italian table and added more character
-     definitions. Thanks to Simone Dal Maso <simone.dalmaso@juvox.it>.
-   - Rename it-it-g1.utb to it-it-comp6.utb and it-it-g1.utb2 to
-     it-it-comp8.utb.
+- Fix encoding problem in italian table and added more character
+  definitions. Thanks to Simone Dal Maso <simone.dalmaso@juvox.it>.
+- Rename it-it-g1.utb to it-it-comp6.utb and it-it-g1.utb2 to
+  it-it-comp8.utb.
 
 ** Bug fixes
- - Fix outputPos and inlen where an input character generates multiple
-   output characters.
+- Fix outputPos and inlen where an input character generates multiple
+  output characters.
 
 * Noteworthy changes in release 2.5.0 (2012-9-10)
 

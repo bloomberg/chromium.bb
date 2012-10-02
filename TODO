@@ -74,8 +74,6 @@ using Berts new java bindings mentioned above
 ** Use portable malloc from gnulib 
 to get rid of the windows #ifdefs
 
-** Update gnulib
-
 ** Enhance translation table compiler to issue warnings
 [jb]: It should be an error to define the same single-cell dot pattern
 for two different characters. I am considering issuing an error
@@ -99,7 +97,6 @@ essentially linear.
 
 There was a discussion about this on the mailing list
 (http://www.freelists.org/post/liblouis-liblouisxml/Improved-hash-function-for-tables).
-
 
 ** apply the the patch by Igor B. Poretsky
 
