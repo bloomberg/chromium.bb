@@ -1,20 +1,24 @@
 @hex:
   # Example of legal add. Uses both lock and DATA16 prefixes.
   66 f0 83 05 bb 05 5e 00 ff
+  f0 66 83 05 bb 05 5e 00 ff
 @val:
-  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking jump targets: 0 to 12
   VALIDATOR: Checking that basic blocks are aligned
   *** <input> is safe ***
 @rval:
-  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking jump targets: 0 to 12
   VALIDATOR: Checking that basic blocks are aligned
   *** <input> is safe ***
 @rvald:
-  VALIDATOR: Checking block alignment and jump targets: 0 to 9
+  VALIDATOR: Checking block alignment and jump targets: 0 to 12
   *** <input> is safe ***
 @vd-rval:
-  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking jump targets: 0 to 12
   VALIDATOR: Checking that basic blocks are aligned
   *** <input> is safe ***
 @dis:
   0000000000000000: 66 f0 83 05 bb 05 5e 00 ff                   add [%rip+0x5e05bb], 0xff
+  0000000000000009: f0 66 83 05 bb 05 5e 00 ff                   add [%rip+0x5e05bb], 0xff
+@rdfa_output:
+  return code: 0
