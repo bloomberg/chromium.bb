@@ -83,8 +83,18 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   // will be automatically called when requested by the renderer side. The
   // module ID will be set upon receipt of the InitializeModule message.
   //
+  // Note about permissions: On the plugin side, the dispatcher and the plugin
+  // run in the same address space (including in nacl). This means that the
+  // permissions here are subject to malicious modification and bypass, and
+  // an exploited or malicious plugin could send any IPC messages and just
+  // bypass the permissions. All permissions must be checked "for realz" in the
+  // host process when receiving messages. We check them on the plugin side
+  // primarily to keep honest plugins honest, especially with respect to
+  // dev interfaces that they "shouldn't" be using.
+  //
   // You must call InitPluginWithChannel after the constructor.
   PluginDispatcher(PP_GetInterface_Func get_interface,
+                   const PpapiPermissions& permissions,
                    bool incognito);
   virtual ~PluginDispatcher();
 

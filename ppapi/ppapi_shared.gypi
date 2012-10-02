@@ -40,6 +40,8 @@
           'shared_impl/ppapi_permissions.h',
           'shared_impl/ppapi_preferences.cc',
           'shared_impl/ppapi_preferences.h',
+          'shared_impl/ppapi_switches.cc',
+          'shared_impl/ppapi_switches.h',
           'shared_impl/ppb_audio_config_shared.cc',
           'shared_impl/ppb_audio_config_shared.h',
           'shared_impl/ppb_audio_input_shared.cc',

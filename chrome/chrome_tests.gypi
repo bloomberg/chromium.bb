@@ -62,6 +62,7 @@
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
+        '../ppapi/ppapi_internal.gyp:ppapi_shared',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

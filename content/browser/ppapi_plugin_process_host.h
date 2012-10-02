@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "ipc/ipc_sender.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 
 class BrowserChildProcessHostImpl;
 
@@ -138,6 +139,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   // Handles most requests from the plugin. May be NULL.
   scoped_refptr<PepperMessageFilter> filter_;
 
+  ppapi::PpapiPermissions permissions_;
   scoped_refptr<content::BrowserPpapiHostImpl> host_impl_;
 
   // Handles filesystem requests from flash plugins. May be NULL.

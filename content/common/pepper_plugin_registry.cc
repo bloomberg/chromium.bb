@@ -71,9 +71,7 @@ void ComputePluginsFromCommandLine(
     }
 
     // Command-line plugins get full permissions.
-    plugin.permissions = ppapi::PERMISSION_DEV |
-                         ppapi::PERMISSION_PRIVATE |
-                         ppapi::PERMISSION_BYPASS_USER_GESTURE;
+    plugin.permissions = ppapi::PERMISSION_ALL_BITS;
 
     plugins->push_back(plugin);
   }

@@ -36,6 +36,7 @@
 #include "media/audio/audio_manager.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 

@@ -6,9 +6,6 @@
 
 namespace switches {
 
-// Enables the testing interface for PPAPI.
-const char kEnablePepperTesting[] = "enable-pepper-testing";
-
 // Dumps extra logging about plugin loading to the log file.
 const char kDebugPluginLoading[] = "debug-plugin-loading";
 

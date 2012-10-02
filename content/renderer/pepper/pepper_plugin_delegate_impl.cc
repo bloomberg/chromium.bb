@@ -133,7 +133,7 @@ class HostDispatcherWrapper
 
     dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
     dispatcher_.reset(new ppapi::proxy::HostDispatcher(
-        module_->pp_module(), local_get_interface, filter));
+        module_->pp_module(), local_get_interface, filter, permissions_));
 
     if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
                                           channel_handle,
@@ -369,7 +369,9 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
     // In-process plugin not preloaded, it probably couldn't be initialized.
     return scoped_refptr<webkit::ppapi::PluginModule>();
   }
-  ppapi::PpapiPermissions permissions(info->permissions);
+
+  ppapi::PpapiPermissions permissions =
+      ppapi::PpapiPermissions::GetForCommandLine(info->permissions);
 
   // Out of process: have the browser start the plugin process for us.
   IPC::ChannelHandle channel_handle;

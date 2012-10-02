@@ -4,7 +4,9 @@
 
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 
 namespace ppapi {
 
@@ -19,10 +21,22 @@ PpapiPermissions::~PpapiPermissions() {
 
 // static
 PpapiPermissions PpapiPermissions::AllPermissions() {
-  return PpapiPermissions(
-      PERMISSION_DEV |
-      PERMISSION_PRIVATE |
-      PERMISSION_BYPASS_USER_GESTURE);
+  return PpapiPermissions(PERMISSION_ALL_BITS);
+}
+
+// static
+PpapiPermissions PpapiPermissions::GetForCommandLine(uint32 base_perms) {
+  uint32 additional_permissions = 0;
+
+#if !defined(OS_NACL)
+  // Testing permissions. The testing flag implies all permissions since the
+  // test plugin needs to test all interfaces.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePepperTesting))
+    additional_permissions |= ppapi::PERMISSION_ALL_BITS;
+#endif
+
+  return PpapiPermissions(base_perms | additional_permissions);
 }
 
 bool PpapiPermissions::HasPermission(Permission perm) const {
@@ -31,6 +45,8 @@ bool PpapiPermissions::HasPermission(Permission perm) const {
   // represented in the future so don't want callers making assumptions about
   // bits.
   uint32 perm_int = static_cast<uint32>(perm);
+  if (!perm_int)
+    return true;  // You always have "no permission".
   DCHECK((perm_int & (perm_int - 1)) == 0);
   return !!(permissions_ & perm_int);
 }

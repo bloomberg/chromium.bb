@@ -131,8 +131,10 @@ bool NaClProcessHost::PluginListener::OnMessageReceived(
   return host_->OnUntrustedMessageForwarded(msg);
 }
 
+// TODO(brettw) bug 153036 set the pepper permissions up for dev interfaces.
 NaClProcessHost::NaClProcessHost(const GURL& manifest_url, bool off_the_record)
     : manifest_url_(manifest_url),
+      permissions_(ppapi::PpapiPermissions::GetForCommandLine(0)),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
 #elif defined(OS_LINUX)
@@ -758,6 +760,7 @@ void NaClProcessHost::OnPpapiChannelCreated(
     ipc_proxy_channel_->Send(
         new PpapiMsg_CreateNaClChannel(
             chrome_render_message_filter_->render_process_id(),
+            permissions_,
             chrome_render_message_filter_->off_the_record(),
             SerializedHandle(SerializedHandle::CHANNEL_HANDLE,
                              IPC::InvalidPlatformFileForTransit())));

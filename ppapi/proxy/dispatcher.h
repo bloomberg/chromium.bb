@@ -83,8 +83,11 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
     return local_get_interface_;
   }
 
+  const PpapiPermissions& permissions() const { return permissions_; }
+
  protected:
-  explicit Dispatcher(PP_GetInterface_Func local_get_interface);
+  explicit Dispatcher(PP_GetInterface_Func local_get_interface,
+                      const PpapiPermissions& permissions);
 
   // Setter for the derived classes to set the appropriate var serialization.
   // Takes one reference of the given pointer, which must be on the heap.
@@ -93,10 +96,6 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   // Called when an invalid message is received from the remote site. The
   // default implementation does nothing, derived classes can override.
   virtual void OnInvalidMessageReceived();
-
-  bool disallow_trusted_interfaces() const {
-    return disallow_trusted_interfaces_;
-  }
 
  protected:
   std::vector<IPC::Listener*> filters_;
@@ -113,6 +112,8 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   PP_GetInterface_Func local_get_interface_;
 
   scoped_refptr<VarSerializationRules> serialization_rules_;
+
+  PpapiPermissions permissions_;
 
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };

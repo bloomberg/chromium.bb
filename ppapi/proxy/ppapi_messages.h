@@ -259,7 +259,9 @@ IPC_STRUCT_TRAITS_END()
 
 // These are from the browser to the plugin.
 // Loads the given plugin.
-IPC_MESSAGE_CONTROL1(PpapiMsg_LoadPlugin, FilePath /* path */)
+IPC_MESSAGE_CONTROL2(PpapiMsg_LoadPlugin,
+                     FilePath /* path */,
+                     ppapi::PpapiPermissions /* permissions */)
 
 // Creates a channel to talk to a renderer. The plugin will respond with
 // PpapiHostMsg_ChannelCreated.
@@ -270,8 +272,9 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_CreateChannel,
 // Creates a channel to talk to a renderer. This message is only used by the
 // NaCl IPC proxy. It is intercepted by NaClIPCAdapter, which creates the
 // actual channel and rewrites the message for the untrusted side.
-IPC_MESSAGE_CONTROL3(PpapiMsg_CreateNaClChannel,
+IPC_MESSAGE_CONTROL4(PpapiMsg_CreateNaClChannel,
                      int /* renderer_id */,
+                     ppapi::PpapiPermissions /* permissions */,
                      bool /* incognito */,
                      ppapi::proxy::SerializedHandle /* channel_handle */)
 

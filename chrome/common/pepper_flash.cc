@@ -34,6 +34,7 @@ bool IsPepperFlashEnabledByDefault() {
 
 int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
                                 ppapi::PERMISSION_PRIVATE |
-                                ppapi::PERMISSION_BYPASS_USER_GESTURE;
+                                ppapi::PERMISSION_BYPASS_USER_GESTURE |
+                                ppapi::PERMISSION_FLASH;
 
 

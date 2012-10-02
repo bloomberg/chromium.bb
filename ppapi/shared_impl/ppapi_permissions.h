@@ -11,17 +11,34 @@
 namespace ppapi {
 
 enum Permission {
+  // Placeholder/uninitialized permission.
+  PERMISSION_NONE = 0,
+
   // Allows access to dev interfaces.
   PERMISSION_DEV = 1 << 0,
 
   // Allows access to Browser-internal interfaces.
-  PERMISSION_PRIVATE = 1 << 2,
+  PERMISSION_PRIVATE = 1 << 1,
 
   // Allows ability to bypass user-gesture checks for showing things like
   // file select dialogs.
-  PERMISSION_BYPASS_USER_GESTURE = 1 << 3,
+  PERMISSION_BYPASS_USER_GESTURE = 1 << 2,
 
-  // NOTE: If you add stuff be sure to update AllPermissions().
+  // Testing-only interfaces.
+  PERMISSION_TESTING = 1 << 3,
+
+  // Flash-related interfaces.
+  PERMISSION_FLASH = 1 << 4,
+
+  // NOTE: If you add stuff be sure to update PERMISSION_ALL_BITS.
+
+  // Meta permission for initializing plugins registered on the command line
+  // that get all permissions.
+  PERMISSION_ALL_BITS = PERMISSION_DEV |
+                        PERMISSION_PRIVATE |
+                        PERMISSION_BYPASS_USER_GESTURE |
+                        PERMISSION_TESTING |
+                        PERMISSION_FLASH
 };
 
 class PPAPI_SHARED_EXPORT PpapiPermissions {
@@ -38,7 +55,15 @@ class PPAPI_SHARED_EXPORT PpapiPermissions {
   // and manually registered plugins.
   static PpapiPermissions AllPermissions();
 
+  // Returns the effective permissions given the "base" permissions granted
+  // to the given plugin and the current command line flags, which may enable
+  // more features.
+  static PpapiPermissions GetForCommandLine(uint32 base_perms);
+
   bool HasPermission(Permission perm) const;
+
+  // Returns the internal permission bits. Use for serialization only.
+  uint32 GetBits() const { return permissions_; }
 
  private:
   uint32 permissions_;

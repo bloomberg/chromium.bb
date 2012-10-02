@@ -312,6 +312,29 @@ void ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Log(
     std::string* l) {
 }
 
+// ppapi::PpapiPermissions -----------------------------------------------------
+
+void ParamTraits<ppapi::PpapiPermissions>::Write(Message* m,
+                                                 const param_type& p) {
+  ParamTraits<uint32_t>::Write(m, p.GetBits());
+}
+
+// static
+bool ParamTraits<ppapi::PpapiPermissions>::Read(const Message* m,
+                                                PickleIterator* iter,
+                                                param_type* r) {
+  uint32_t bits;
+  if (!ParamTraits<uint32_t>::Read(m, iter, &bits))
+    return false;
+  *r = ppapi::PpapiPermissions(bits);
+  return true;
+}
+
+// static
+void ParamTraits<ppapi::PpapiPermissions>::Log(const param_type& p,
+                                               std::string* l) {
+}
+
 // SerializedHandle ------------------------------------------------------------
 
 // static

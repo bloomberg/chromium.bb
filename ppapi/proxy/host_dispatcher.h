@@ -50,7 +50,8 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   // You must call InitHostWithChannel after the constructor.
   HostDispatcher(PP_Module module,
                  PP_GetInterface_Func local_get_interface,
-                 SyncMessageStatusReceiver* sync_status);
+                 SyncMessageStatusReceiver* sync_status,
+                 const PpapiPermissions& permissions);
   ~HostDispatcher();
 
   // You must call this function before anything else. Returns true on success.

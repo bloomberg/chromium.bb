@@ -169,6 +169,7 @@ void PluginProxyTestHarness::SetUpHarness() {
 
   plugin_dispatcher_.reset(new PluginDispatcher(
       &MockGetInterface,
+      PpapiPermissions(),
       false));
   plugin_dispatcher_->InitWithTestSink(&sink());
   plugin_dispatcher_->DidCreateInstance(pp_instance());
@@ -195,6 +196,7 @@ void PluginProxyTestHarness::SetUpHarnessWithChannel(
 
   plugin_dispatcher_.reset(new PluginDispatcher(
       &MockGetInterface,
+      PpapiPermissions(),
       false));
   plugin_dispatcher_->InitPluginWithChannel(&plugin_delegate_mock_,
                                             channel_handle,
@@ -314,7 +316,8 @@ void HostProxyTestHarness::SetUpHarness() {
   host_dispatcher_.reset(new HostDispatcher(
       pp_module(),
       &MockGetInterface,
-      status_receiver_.release()));
+      status_receiver_.release(),
+      PpapiPermissions()));
   host_dispatcher_->InitWithTestSink(&sink());
   HostDispatcher::SetForInstance(pp_instance(), host_dispatcher_.get());
 }
@@ -333,7 +336,8 @@ void HostProxyTestHarness::SetUpHarnessWithChannel(
   host_dispatcher_.reset(new HostDispatcher(
       pp_module(),
       &MockGetInterface,
-      status_receiver_.release()));
+      status_receiver_.release(),
+      PpapiPermissions()));
   ppapi::Preferences preferences;
   host_dispatcher_->InitHostWithChannel(&delegate_mock_, channel_handle,
                                         is_client, preferences);

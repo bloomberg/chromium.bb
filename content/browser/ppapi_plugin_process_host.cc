@@ -161,7 +161,9 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
     const content::PepperPluginInfo& info,
     const FilePath& profile_data_directory,
     net::HostResolver* host_resolver)
-    : network_observer_(new PluginNetworkObserver(this)),
+    : permissions_(
+          ppapi::PpapiPermissions::GetForCommandLine(info.permissions)),
+      network_observer_(new PluginNetworkObserver(this)),
       profile_data_directory_(profile_data_directory),
       is_broker_(false) {
   process_.reset(new BrowserChildProcessHostImpl(
@@ -170,8 +172,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   filter_ = new PepperMessageFilter(PepperMessageFilter::PLUGIN,
                                     host_resolver);
 
-  ppapi::PpapiPermissions permissions(info.permissions);
-  host_impl_ = new content::BrowserPpapiHostImpl(this, permissions);
+  host_impl_ = new content::BrowserPpapiHostImpl(this, permissions_);
 
   file_filter_ = new PepperTrustedFileMessageFilter(
       process_->GetData().id, info.name, profile_data_directory);
@@ -315,7 +316,7 @@ void PpapiPluginProcessHost::OnChannelConnected(int32 peer_pid) {
   // This will actually load the plugin. Errors will actually not be reported
   // back at this point. Instead, the plugin will fail to establish the
   // connections when we request them on behalf of the renderer(s).
-  Send(new PpapiMsg_LoadPlugin(plugin_path_));
+  Send(new PpapiMsg_LoadPlugin(plugin_path_, permissions_));
 
   // Process all pending channel requests from the renderers.
   for (size_t i = 0; i < pending_requests_.size(); i++)

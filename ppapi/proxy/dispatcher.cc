@@ -17,9 +17,10 @@
 namespace ppapi {
 namespace proxy {
 
-Dispatcher::Dispatcher(PP_GetInterface_Func local_get_interface)
-    : disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
-      local_get_interface_(local_get_interface) {
+Dispatcher::Dispatcher(PP_GetInterface_Func local_get_interface,
+                       const PpapiPermissions& permissions)
+    : local_get_interface_(local_get_interface),
+      permissions_(permissions) {
 }
 
 Dispatcher::~Dispatcher() {

@@ -102,6 +102,9 @@ PP_Resource PPB_Flash_Menu_Proxy::CreateProxyResource(
 }
 
 bool PPB_Flash_Menu_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_FLASH))
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Flash_Menu_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlashMenu_Create,

@@ -14,6 +14,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppb_file_ref_shared.h"
 
 struct PP_FileInfo;
@@ -151,6 +152,14 @@ template<>
 struct PPAPI_PROXY_EXPORT ParamTraits< std::vector<
     ppapi::PPB_FileRef_CreateInfo> > {
   typedef std::vector<ppapi::PPB_FileRef_CreateInfo> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::PpapiPermissions> {
+  typedef ppapi::PpapiPermissions param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/interface_list.h"
 
+#include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
@@ -157,6 +158,8 @@ InterfaceProxy* ProxyFactory(Dispatcher* dispatcher) {
   return new ProxyClass(dispatcher);
 }
 
+base::LazyInstance<PpapiPermissions> g_process_global_permissions;
+
 }  // namespace
 
 InterfaceList::InterfaceList() {
@@ -168,19 +171,34 @@ InterfaceList::InterfaceList() {
       AddProxy(PROXY_API_ID(api_name), &PROXY_FACTORY_NAME(api_name));
 
   // Register each proxied interface by calling AddPPB for each supported
-  // interface.
+  // interface. Set current_required_permission to the appropriate value for
+  // the value you want expanded by this macro.
   #define PROXIED_IFACE(api_name, iface_str, iface_struct) \
       AddPPB(iface_str, PROXY_API_ID(api_name), \
-             INTERFACE_THUNK_NAME(iface_struct)());
+             INTERFACE_THUNK_NAME(iface_struct)(), \
+             current_required_permission);
 
-  #include "ppapi/thunk/interfaces_ppb_public_stable.h"
+  {
+    Permission current_required_permission = PERMISSION_NONE;
+    #include "ppapi/thunk/interfaces_ppb_public_stable.h"
+  }
+
 #if !defined(OS_NACL)
-  #include "ppapi/thunk/interfaces_ppb_public_dev.h"
-  #include "ppapi/thunk/interfaces_ppb_private.h"
+  {
+    Permission current_required_permission = PERMISSION_DEV;
+    #include "ppapi/thunk/interfaces_ppb_public_dev.h"
+  }
+  {
+    Permission current_required_permission = PERMISSION_PRIVATE;
+    #include "ppapi/thunk/interfaces_ppb_private.h"
+  }
 #endif
 
   #if !defined(OS_NACL)
-  #include "ppapi/thunk/interfaces_ppb_private_flash.h"
+  {
+    Permission current_required_permission = PERMISSION_FLASH;
+    #include "ppapi/thunk/interfaces_ppb_private_flash.h"
+  }
   #endif
 
   #undef PROXIED_API
@@ -193,44 +211,48 @@ InterfaceList::InterfaceList() {
   AddProxy(API_ID_RESOURCE_CREATION, &ResourceCreationProxy::Create);
   AddProxy(API_ID_PPP_CLASS, &PPP_Class_Proxy::Create);
   AddPPB(PPB_CORE_INTERFACE_1_0, API_ID_PPB_CORE,
-         PPB_Core_Proxy::GetPPB_Core_Interface());
+         PPB_Core_Proxy::GetPPB_Core_Interface(), PERMISSION_NONE);
   AddPPB(PPB_MESSAGELOOP_DEV_INTERFACE_0_1, API_ID_NONE,
-         PPB_MessageLoop_Proxy::GetInterface());
+         PPB_MessageLoop_Proxy::GetInterface(), PERMISSION_DEV);
   AddPPB(PPB_OPENGLES2_INTERFACE_1_0, API_ID_NONE,
-         PPB_OpenGLES2_Shared::GetInterface());
+         PPB_OpenGLES2_Shared::GetInterface(), PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_INSTANCEDARRAYS_INTERFACE_1_0, API_ID_NONE,
-         PPB_OpenGLES2_Shared::GetInstancedArraysInterface());
+         PPB_OpenGLES2_Shared::GetInstancedArraysInterface(), PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_FRAMEBUFFERBLIT_INTERFACE_1_0, API_ID_NONE,
-         PPB_OpenGLES2_Shared::GetFramebufferBlitInterface());
+         PPB_OpenGLES2_Shared::GetFramebufferBlitInterface(), PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_INTERFACE_1_0, API_ID_NONE,
-         PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface());
+         PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface(),
+         PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_CHROMIUMENABLEFEATURE_INTERFACE_1_0, API_ID_NONE,
-         PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface());
+         PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface(),
+         PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_CHROMIUMMAPSUB_INTERFACE_1_0, API_ID_NONE,
-         PPB_OpenGLES2_Shared::GetChromiumMapSubInterface());
+         PPB_OpenGLES2_Shared::GetChromiumMapSubInterface(), PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE_1_0, API_ID_NONE,
-         PPB_OpenGLES2_Shared::GetChromiumMapSubInterface());
+         PPB_OpenGLES2_Shared::GetChromiumMapSubInterface(), PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_QUERY_INTERFACE_1_0, API_ID_NONE,
-         PPB_OpenGLES2_Shared::GetQueryInterface());
+         PPB_OpenGLES2_Shared::GetQueryInterface(), PERMISSION_NONE);
 #if !defined(OS_NACL)
   AddPPB(PPB_FLASH_PRINT_INTERFACE_1_0, API_ID_PPB_FLASH,
-         PPB_Flash_Proxy::GetFlashPrintInterface());
+         PPB_Flash_Proxy::GetFlashPrintInterface(),
+         PERMISSION_FLASH);
 #endif
   AddPPB(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0, API_ID_NONE,
-         PPB_Var_Shared::GetVarArrayBufferInterface1_0());
+         PPB_Var_Shared::GetVarArrayBufferInterface1_0(),
+         PERMISSION_DEV);
   AddPPB(PPB_VAR_INTERFACE_1_1, API_ID_NONE,
-         PPB_Var_Shared::GetVarInterface1_1());
+         PPB_Var_Shared::GetVarInterface1_1(), PERMISSION_NONE);
   AddPPB(PPB_VAR_INTERFACE_1_0, API_ID_NONE,
-         PPB_Var_Shared::GetVarInterface1_0());
+         PPB_Var_Shared::GetVarInterface1_0(), PERMISSION_NONE);
 
 #if !defined(OS_NACL)
   // PPB (browser) interfaces.
   // Do not add more stuff here, they should be added to interface_list*.h
   // TODO(brettw) remove these.
-  AddPPB(PPB_Instance_Proxy::GetInfoPrivate());
-  AddPPB(PPB_PDF_Proxy::GetInfo());
-  AddPPB(PPB_URLLoader_Proxy::GetTrustedInfo());
-  AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
+  AddPPB(PPB_Instance_Proxy::GetInfoPrivate(), PERMISSION_PRIVATE);
+  AddPPB(PPB_PDF_Proxy::GetInfo(), PERMISSION_PRIVATE);
+  AddPPB(PPB_URLLoader_Proxy::GetTrustedInfo(), PERMISSION_PRIVATE);
+  AddPPB(PPB_Var_Deprecated_Proxy::GetInfo(), PERMISSION_DEV);
 
   // TODO(tomfinegan): Figure out where to put these once we refactor things
   // to load the PPP interface struct from the PPB interface.
@@ -240,7 +262,7 @@ InterfaceList::InterfaceList() {
          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
          PPP_ContentDecryptor_Private_Proxy::GetProxyInterface());
 #endif
-  AddPPB(PPB_Testing_Proxy::GetInfo());
+  AddPPB(PPB_Testing_Proxy::GetInfo(), PERMISSION_TESTING);
 
   // PPP (plugin) interfaces.
   // TODO(brettw) move these to interface_list*.h
@@ -276,6 +298,12 @@ InterfaceList* InterfaceList::GetInstance() {
   return Singleton<InterfaceList>::get();
 }
 
+// static
+void InterfaceList::SetProcessGlobalPermissions(
+    const PpapiPermissions& permissions) {
+  g_process_global_permissions.Get() = permissions;
+}
+
 ApiID InterfaceList::GetIDForPPBInterface(const std::string& name) const {
   NameToInterfaceInfoMap::const_iterator found =
       name_to_browser_info_.find(name);
@@ -305,7 +333,11 @@ const void* InterfaceList::GetInterfaceForPPB(const std::string& name) const {
       name_to_browser_info_.find(name);
   if (found == name_to_browser_info_.end())
     return NULL;
-  return found->second.iface;
+
+  if (g_process_global_permissions.Get().HasPermission(
+          found->second.required_permission))
+    return found->second.iface;
+  return NULL;
 }
 
 const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
@@ -334,21 +366,22 @@ void InterfaceList::AddProxy(ApiID id,
 
 void InterfaceList::AddPPB(const char* name,
                            ApiID id,
-                           const void* iface) {
+                           const void* iface,
+                           Permission perm) {
   DCHECK(name_to_browser_info_.find(name) == name_to_browser_info_.end());
-  name_to_browser_info_[name] = InterfaceInfo(id, iface);
+  name_to_browser_info_[name] = InterfaceInfo(id, iface, perm);
 }
 
 void InterfaceList::AddPPP(const char* name,
                            ApiID id,
                            const void* iface) {
   DCHECK(name_to_plugin_info_.find(name) == name_to_plugin_info_.end());
-  name_to_plugin_info_[name] = InterfaceInfo(id, iface);
+  name_to_plugin_info_[name] = InterfaceInfo(id, iface, PERMISSION_NONE);
 }
 
-void InterfaceList::AddPPB(const InterfaceProxy::Info* info) {
+void InterfaceList::AddPPB(const InterfaceProxy::Info* info, Permission perm) {
   AddProxy(info->id, info->create_proxy);
-  AddPPB(info->name, info->id, info->interface_ptr);
+  AddPPB(info->name, info->id, info->interface_ptr, perm);
 }
 
 void InterfaceList::AddPPP(const InterfaceProxy::Info* info) {

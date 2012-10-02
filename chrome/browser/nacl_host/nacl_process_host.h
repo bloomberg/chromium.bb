@@ -18,6 +18,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/tcp_listen_socket.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 
 class ChromeRenderMessageFilter;
 class CommandLine;
@@ -144,6 +145,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   bool OnUntrustedMessageForwarded(const IPC::Message& msg);
 
   GURL manifest_url_;
+  ppapi::PpapiPermissions permissions_;
 
 #if defined(OS_WIN)
   // This field becomes true when the broker successfully launched

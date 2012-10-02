@@ -17,8 +17,10 @@ const int kPluginReleaseTimeSeconds = 30;
 
 PluginProcessDispatcher::PluginProcessDispatcher(
     PP_GetInterface_Func get_interface,
+    const ppapi::PpapiPermissions& permissions,
     bool incognito)
     : ppapi::proxy::PluginDispatcher(get_interface,
+                                     permissions,
                                      incognito) {
   ChildProcess::current()->AddRefProcess();
 }

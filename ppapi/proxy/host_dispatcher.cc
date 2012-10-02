@@ -61,8 +61,9 @@ class BoolRestorer {
 
 HostDispatcher::HostDispatcher(PP_Module module,
                                PP_GetInterface_Func local_get_interface,
-                               SyncMessageStatusReceiver* sync_status)
-    : Dispatcher(local_get_interface),
+                               SyncMessageStatusReceiver* sync_status,
+                               const PpapiPermissions& permissions)
+    : Dispatcher(local_get_interface, permissions),
       sync_status_(sync_status),
       pp_module_(module),
       ppb_proxy_(NULL),

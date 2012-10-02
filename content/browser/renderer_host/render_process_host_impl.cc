@@ -114,6 +114,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"

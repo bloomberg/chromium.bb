@@ -161,10 +161,11 @@ class OutOfProcessProxy : public PluginDelegate::OutOfProcessProxy {
             PP_Module pp_module,
             PP_GetInterface_Func local_get_interface,
             const ppapi::Preferences& preferences,
-            SyncMessageStatusReceiver* status_receiver) {
+            SyncMessageStatusReceiver* status_receiver,
+            const ppapi::PpapiPermissions& permissions) {
     dispatcher_delegate_.reset(new ProxyChannelDelegate);
     dispatcher_.reset(new ppapi::proxy::HostDispatcher(
-        pp_module, local_get_interface, status_receiver));
+        pp_module, local_get_interface, status_receiver, permissions));
 
     if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
                                           channel_handle,
@@ -229,12 +230,17 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
     scoped_refptr<PluginModule> nacl_plugin_module(
         plugin_module->CreateModuleForNaClInstance());
 
+    // TODO(brettw) bug 153036 set NaCl permissions to allow dev interface
+    // usage when necessary.
+    ppapi::PpapiPermissions permissions;
+
     if (out_of_process_proxy->Init(
             channel_handle,
             nacl_plugin_module->pp_module(),
             PluginModule::GetLocalGetInterfaceFunc(),
             ppapi::Preferences(render_view->GetWebkitPreferences()),
-            status_receiver.get())) {
+            status_receiver.get(),
+            permissions)) {
       nacl_plugin_module->InitAsProxiedNaCl(
           out_of_process_proxy.PassAs<PluginDelegate::OutOfProcessProxy>(),
           instance);

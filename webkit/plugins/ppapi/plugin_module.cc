@@ -99,6 +99,7 @@
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/shared_impl/callback_tracker.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_opengles2_shared.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"

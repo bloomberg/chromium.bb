@@ -28,7 +28,7 @@ namespace old {
 GuestToEmbedderChannel::GuestToEmbedderChannel(
     const std::string& embedder_channel_name,
     const IPC::ChannelHandle& embedder_channel_handle)
-    : Dispatcher(NULL),
+    : Dispatcher(NULL, ppapi::PpapiPermissions()),
       embedder_channel_name_(embedder_channel_name),
       embedder_channel_handle_(embedder_channel_handle) {
   SetSerializationRules(new BrowserPluginVarSerializationRules());
