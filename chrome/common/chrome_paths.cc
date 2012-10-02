@@ -15,6 +15,10 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "ui/base/ui_base_paths.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/path_utils.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
@@ -188,15 +192,23 @@ bool PathProvider(int key, FilePath* result) {
       // Fall through for all other platforms.
 #endif
     case chrome::DIR_DEFAULT_DOWNLOADS:
+#if defined(OS_ANDROID)
+      if (!base::android::GetDownloadsDirectory(&cur))
+        return false;
+#else
       if (!GetUserDownloadsDirectory(&cur))
         return false;
       // Do not create the download directory here, we have done it twice now
       // and annoyed a lot of users.
+#endif
       break;
     case chrome::DIR_CRASH_DUMPS:
 #if defined(OS_CHROMEOS)
       // ChromeOS uses a separate directory. See http://crosbug.com/25089
       cur = FilePath("/var/log/chrome");
+#elif defined(OS_ANDROID)
+      if (!base::android::GetCacheDirectory(&cur))
+        return false;
 #else
       // The crash reports are always stored relative to the default user data
       // directory.  This avoids the problem of having to re-initialize the

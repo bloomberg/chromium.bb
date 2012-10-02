@@ -65,6 +65,14 @@ const FilePath::CharType kHelperProcessExecutableNameChromium[] =
     FPL(CHROMIUM_PRODUCT_STRING " Helper");
 const FilePath::CharType kHelperProcessExecutableName[] =
     FPL(PRODUCT_STRING " Helper");
+#elif defined(OS_ANDROID)
+// NOTE: Keep it synced with the process names defined in AndroidManifest.xml.
+const FilePath::CharType kBrowserProcessExecutableName[] = FPL("chrome");
+const FilePath::CharType kBrowserProcessExecutableNameChromium[] =
+    FPL("");
+const FilePath::CharType kHelperProcessExecutableName[] =
+    FPL("sandboxed_process");
+const FilePath::CharType kHelperProcessExecutableNameChromium[] = FPL("");
 #elif defined(OS_POSIX)
 const FilePath::CharType kBrowserProcessExecutableNameChromium[] =
     FPL("chrome");
@@ -92,6 +100,12 @@ const FilePath::CharType kHelperProcessExecutablePathChromium[] =
         CHROMIUM_PRODUCT_STRING " Helper");
 const FilePath::CharType kHelperProcessExecutablePath[] =
     FPL(PRODUCT_STRING " Helper.app/Contents/MacOS/" PRODUCT_STRING " Helper");
+#elif defined(OS_ANDROID)
+const FilePath::CharType kBrowserProcessExecutablePath[] = FPL("chrome");
+const FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
+const FilePath::CharType kBrowserProcessExecutablePathChromium[] =
+    FPL("chrome");
+const FilePath::CharType kHelperProcessExecutablePathChromium[] = FPL("chrome");
 #elif defined(OS_POSIX)
 const FilePath::CharType kBrowserProcessExecutablePathChromium[] =
     FPL("chrome");
@@ -203,7 +217,11 @@ const char* const kUnknownLanguageCode = "und";
 
 const int kJavascriptMessageExpectedDelay = 1000;
 
+#if defined(OS_ANDROID)
+const bool kEnableTouchIcon = true;
+#else
 const bool kEnableTouchIcon = false;
+#endif
 
 const float kMaxShareOfExtensionProcesses = 0.30f;
 
