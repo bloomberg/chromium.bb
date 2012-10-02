@@ -209,7 +209,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	struct window *window = data;
 
 	paint_pixels(window->shm_data, window->width, window->height, time);
-	wl_surface_attach(window->surface, window->buffer, 0, 0);
 	wl_surface_damage(window->surface,
 			  0, 0, window->width, window->height);
 
@@ -330,6 +329,7 @@ main(int argc, char **argv)
 	sigint.sa_flags = SA_RESETHAND;
 	sigaction(SIGINT, &sigint, NULL);
 
+	wl_surface_attach(window->surface, window->buffer, 0, 0);
 	redraw(window, NULL, 0);
 
 	while (running)
