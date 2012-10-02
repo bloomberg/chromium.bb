@@ -74,9 +74,16 @@ class WtsSessionProcessLauncher
   // |true| if this object is currently attached to the console session.
   bool attached_;
 
-  // The specific code knowing how to launch and control a child process
-  // implemented by |WtsSessionProcessLauncherImpl|.
+  // Path to the host binary to launch.
+  FilePath host_binary_;
+
+  // OS version dependent WorkerProcessLauncher::Delegate implementation
+  // instance for the currently-running child process.
   scoped_refptr<WtsSessionProcessLauncherImpl> impl_;
+
+  // WorkerProcessLauncher::Delegate implementation that will be used to launch
+  // the new child process after a session switch.
+  scoped_refptr<WtsSessionProcessLauncherImpl> new_impl_;
 
   // Time of the last launch attempt.
   base::Time launch_time_;
