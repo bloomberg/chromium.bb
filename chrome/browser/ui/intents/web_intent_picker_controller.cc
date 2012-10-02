@@ -904,7 +904,7 @@ void WebIntentPickerController::SourceDispatcherReplied(
   // TODO(gbillock): redraw location bar to kill button
 }
 
-bool WebIntentPickerController::ShowLocationBarPickerTool() {
+bool WebIntentPickerController::ShowLocationBarPickerButton() {
   return window_disposition_source_ || source_intents_dispatcher_;
 }
 
@@ -952,7 +952,7 @@ void WebIntentPickerController::OnPickerEvent(WebIntentPickerEvent event) {
   }
 }
 
-void WebIntentPickerController::LocationBarPickerToolClicked() {
+void WebIntentPickerController::LocationBarPickerButtonClicked() {
   DCHECK(web_contents_);
   if (window_disposition_source_ && source_intents_dispatcher_) {
     Browser* service_browser =

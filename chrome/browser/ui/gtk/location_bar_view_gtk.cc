@@ -346,7 +346,7 @@ void WebIntentsButtonViewGtk::Update(TabContents* tab_contents) {
                          tab_contents->web_contents())
                    : NULL;
   if (!web_intent_picker_controller ||
-      !web_intent_picker_controller->ShowLocationBarPickerTool()) {
+      !web_intent_picker_controller->ShowLocationBarPickerButton()) {
     gtk_widget_hide(widget());
     return;
   }
@@ -367,7 +367,7 @@ void WebIntentsButtonViewGtk::OnClick(GtkWidget* sender) {
     return;
 
   WebIntentPickerController::FromWebContents(tab_contents->web_contents())->
-      LocationBarPickerToolClicked();
+      LocationBarPickerButtonClicked();
 }
 
 GdkColor WebIntentsButtonViewGtk::button_border_color() const {

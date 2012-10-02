@@ -52,7 +52,6 @@ class WebIntentsButtonDecoration : public BubbleDecoration {
   scoped_nsobject<WebIntentsButtonAnimationState> animation_;
   CGFloat textWidth_;
   scoped_nsobject<NSAttributedString> animatedText_;
-  bool ranAnimation_;
   scoped_nsobject<NSImage> leftImage_;
   scoped_nsobject<NSImage> centerImage_;
   scoped_nsobject<NSImage> rightImage_;

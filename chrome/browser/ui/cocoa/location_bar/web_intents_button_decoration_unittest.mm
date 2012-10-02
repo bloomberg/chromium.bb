@@ -30,10 +30,6 @@ class WebIntentsButtonDecorationTest : public CocoaProfileTest {
     controller->SetWindowDispositionSource(contents, dispatcher);
   }
 
-  void SetRanAnimation() {
-    decoration_.ranAnimation_ = true;
-  }
-
   WebIntentsButtonDecoration decoration_;
 };
 
@@ -53,7 +49,7 @@ TEST_F(WebIntentsButtonDecorationTest, IdentifiesWebIntentService) {
       WebIntentPickerController::FromWebContents(contents->web_contents());
   SetWindowDispositionSource(web_intent_picker_controller,
                              contents->web_contents(), dispatcher);
-  SetRanAnimation();
+  web_intent_picker_controller->SetLocationBarPickerButtonIndicated();
 
   decoration_.Update(contents.get());
   EXPECT_TRUE(decoration_.IsVisible());

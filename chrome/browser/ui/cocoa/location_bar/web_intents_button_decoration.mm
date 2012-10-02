@@ -126,8 +126,7 @@ WebIntentsButtonDecoration::WebIntentsButtonDecoration(
     LocationBarViewMac* owner, NSFont* font)
     : BubbleDecoration(font),
       owner_(owner),
-      textWidth_(0.0),
-      ranAnimation_(false) {
+      textWidth_(0.0) {
   NSColor* border_color =
       [NSColor colorWithCalibratedRed:0.63 green:0.63 blue:0.63 alpha:1.0];
   NSColor* background_color =
@@ -157,8 +156,7 @@ bool WebIntentsButtonDecoration::OnMousePressed(NSRect frame) {
     return true;
 
   WebIntentPickerController::FromWebContents(tabContents->web_contents())->
-      LocationBarPickerToolClicked();
-
+      LocationBarPickerButtonClicked();
   return true;
 }
 
@@ -212,13 +210,14 @@ void WebIntentsButtonDecoration::DrawInFrame(
 }
 
 void WebIntentsButtonDecoration::Update(TabContents* tab_contents) {
-  WebIntentPickerController* intents_controller =
+  WebIntentPickerController* intentsController =
       WebIntentPickerController::FromWebContents(tab_contents->web_contents());
-  SetVisible(intents_controller->ShowLocationBarPickerTool());
+  SetVisible(intentsController->ShowLocationBarPickerButton());
 
   if (IsVisible()) {
-    if (!ranAnimation_ && !animation_) {
-      ranAnimation_ = true;
+    if (!animation_ &&
+        !intentsController->location_bar_picker_button_indicated()) {
+      intentsController->SetLocationBarPickerButtonIndicated();
       animation_.reset(
           [[WebIntentsButtonAnimationState alloc] initWithOwner:this]);
       animatedText_ = CreateAnimatedText();

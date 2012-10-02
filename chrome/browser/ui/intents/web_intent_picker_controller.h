@@ -81,11 +81,21 @@ class WebIntentPickerController
 
   // Called by the location bar to see whether the web intents picker button
   // should be shown.
-  bool ShowLocationBarPickerTool();
+  bool ShowLocationBarPickerButton();
+
+  // Record that the location bar button has been animated.
+  void SetLocationBarPickerButtonIndicated() {
+    location_bar_button_indicated_ = true;
+  }
+
+  // Check whether the location bar button has been animated.
+  bool location_bar_picker_button_indicated() const {
+    return location_bar_button_indicated_;
+  }
 
   // Called by the location bar to notify picker that the button was clicked.
   // Called in the controller of the tab which is displaying the service.
-  void LocationBarPickerToolClicked();
+  void LocationBarPickerButtonClicked();
 
   // Called to notify a controller for a page hosting a web intents service
   // that the source WebContents has been destroyed.
@@ -306,6 +316,10 @@ class WebIntentPickerController
   // intent. Contains the intent data and a way to signal back to the
   // client page.
   content::WebIntentsDispatcher* intents_dispatcher_;
+
+  // Saves whether the use-another-service button has been
+  // animated on the location bar.
+  bool location_bar_button_indicated_;
 
   // Weak pointer to the tab servicing the intent. Remembered in order to
   // close it when a reply is sent.
