@@ -275,16 +275,25 @@ bool ExtensionService::IsInstalledApp(const GURL& url) const {
   return !!GetInstalledApp(url);
 }
 
-void ExtensionService::SetInstalledAppForRenderer(int renderer_child_id,
-                                                  const Extension* app) {
-  installed_app_hosts_[renderer_child_id] = app;
-}
-
-const Extension* ExtensionService::GetInstalledAppForRenderer(
+const Extension* ExtensionService::GetIsolatedAppForRenderer(
     int renderer_child_id) const {
-  InstalledAppMap::const_iterator i =
-      installed_app_hosts_.find(renderer_child_id);
-  return i == installed_app_hosts_.end() ? NULL : i->second;
+  std::set<std::string> extension_ids =
+      process_map_.GetExtensionsInProcess(renderer_child_id);
+  // All apps in one process share the same partition.
+  // It is only possible for the app to have isolated storage
+  // if there is only 1 app in the process.
+  if (extension_ids.size() != 1)
+    return NULL;
+
+  const extensions::Extension* extension =
+      extensions_.GetByID(*(extension_ids.begin()));
+  // We still need to check is_storage_isolated(),
+  // because it's common for there to be one extension in a process
+  // with is_storage_isolated() == false.
+  if (extension && extension->is_storage_isolated())
+    return extension;
+
+  return NULL;
 }
 
 // static
@@ -2457,8 +2466,6 @@ void ExtensionService::Observe(int type,
           Profile::FromBrowserContext(process->GetBrowserContext());
       if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
           break;
-
-      installed_app_hosts_.erase(process->GetID());
 
       process_map_.RemoveAllFromProcess(process->GetID());
       BrowserThread::PostTask(

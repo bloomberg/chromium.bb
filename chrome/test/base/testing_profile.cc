@@ -613,10 +613,10 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(this)->extension_service();
   if (extension_service) {
-    const extensions::Extension* installed_app = extension_service->
-        GetInstalledAppForRenderer(renderer_child_id);
-    if (installed_app != NULL && installed_app->is_storage_isolated())
-      return GetRequestContextForStoragePartition(installed_app->id());
+    const extensions::Extension* extension =
+        extension_service->GetIsolatedAppForRenderer(renderer_child_id);
+    if (extension)
+      return GetRequestContextForStoragePartition(extension->id());
   }
 
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(

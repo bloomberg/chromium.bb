@@ -53,10 +53,17 @@ class IsolatedAppTest : public ExtensionBrowserTest {
         Profile::FromBrowserContext(contents->GetBrowserContext());
     ExtensionService* service = profile->GetExtensionService();
     if (service) {
-      installed_app = service->GetInstalledAppForRenderer(
-          contents->GetRenderProcessHost()->GetID());
+      std::set<std::string> extension_ids =
+          service->process_map()->GetExtensionsInProcess(
+              contents->GetRenderViewHost()->GetProcess()->GetID());
+      for (std::set<std::string>::iterator iter = extension_ids.begin();
+           iter != extension_ids.end(); ++iter) {
+        installed_app = service->extensions()->GetByID(*iter);
+        if (installed_app && installed_app->is_app())
+          return installed_app;
+      }
     }
-    return installed_app;
+    return NULL;
   }
 
  private:

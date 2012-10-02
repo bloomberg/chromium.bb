@@ -92,15 +92,6 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
 
   content::RenderProcessHost* process = render_view_host()->GetProcess();
 
-  if (extension->is_app()) {
-    // Though we already record the associated process ID for the renderer in
-    // InitRenderViewHostForExtensions, the process might have crashed and been
-    // restarted (hence the re-initialization), so we need to update that
-    // mapping.
-    profile_->GetExtensionService()->SetInstalledAppForRenderer(
-        process->GetID(), extension);
-  }
-
   // Some extensions use chrome:// URLs.
   Extension::Type type = extension->GetType();
   if (type == Extension::TYPE_EXTENSION ||

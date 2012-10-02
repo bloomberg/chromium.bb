@@ -677,10 +677,10 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(this)->extension_service();
   if (extension_service) {
-    const extensions::Extension* installed_app = extension_service->
-        GetInstalledAppForRenderer(renderer_child_id);
-    if (installed_app && installed_app->is_storage_isolated())
-      return GetRequestContextForStoragePartition(installed_app->id());
+    const extensions::Extension* extension =
+        extension_service->GetIsolatedAppForRenderer(renderer_child_id);
+    if (extension)
+      return GetRequestContextForStoragePartition(extension->id());
   }
 
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
@@ -709,10 +709,10 @@ ProfileImpl::GetMediaRequestContextForRenderProcess(
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(this)->extension_service();
   if (extension_service) {
-    const extensions::Extension* installed_app = extension_service->
-        GetInstalledAppForRenderer(renderer_child_id);
-    if (installed_app && installed_app->is_storage_isolated())
-      return io_data_.GetIsolatedMediaRequestContextGetter(installed_app->id());
+    const extensions::Extension* extension =
+        extension_service->GetIsolatedAppForRenderer(renderer_child_id);
+    if (extension)
+      return io_data_.GetIsolatedMediaRequestContextGetter(extension->id());
   }
 
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(

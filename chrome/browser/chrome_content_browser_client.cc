@@ -468,10 +468,15 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForChildProcess(
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (extension_service) {
-    extension = extension_service->GetInstalledAppForRenderer(
-        child_process_id);
+    std::set<std::string> extension_ids =
+        extension_service->process_map()->
+            GetExtensionsInProcess(child_process_id);
+    if (!extension_ids.empty())
+      // Since All the apps in a process share the same storage partition,
+      // we can pick any of them to retrieve the storage partition id.
+      extension =
+          extension_service->extensions()->GetByID(*(extension_ids.begin()));
   }
-
   return GetStoragePartitionIdForExtension(browser_context, extension);
 }
 
