@@ -865,13 +865,15 @@ def BuildStepArchiveBundle(pepper_ver, revision, tarfile):
 
 
 def BuildStepArchiveSDKTools():
-  # Only push up sdk_tools.tgz on the linux buildbot.
+  # Only push up sdk_tools.tgz and nacl_sdk.zip on the linux buildbot.
   builder_name = os.getenv('BUILDBOT_BUILDERNAME','')
   if builder_name == 'linux-sdk-multi':
     buildbot_common.BuildStep('Archive SDK Tools')
     bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s' % (
         build_utils.ChromeVersion(),)
     buildbot_common.Archive('sdk_tools.tgz', bucket_path, OUT_DIR,
+                            step_link=False)
+    buildbot_common.Archive('nacl_sdk.zip', bucket_path, OUT_DIR,
                             step_link=False)
 
 
