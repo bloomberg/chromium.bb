@@ -40,6 +40,10 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // Keeps track of whether clearing LSO data is supported.
   BooleanPrefMember clear_plugin_lso_data_enabled_;
 
+  // Keeps track of whether Pepper Flash is enabled and thus Flapper-specific
+  // settings and removal options (e.g. Content Licenses) are available.
+  BooleanPrefMember pepper_flash_settings_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(ClearBrowserDataHandler);
 };
 
