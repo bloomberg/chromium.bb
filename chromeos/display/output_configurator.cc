@@ -255,11 +255,9 @@ static int GetDualOutputs(Display* display,
       to_populate->mirror_mode = 0;
 
       // See if this output refers to an internal display.
-      // TODO(oshmia): Use |IsInternalOutputName| once the change is merged
-      // to m23. crbug.com/152003.
-      const std::string name(output_info->name);
       to_populate->is_internal =
-          name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0;
+          OutputConfigurator::IsInternalOutputName(
+              std::string(output_info->name));
 
       VLOG(1) << "Found display #" << found_count
               << " with output " << (int)to_populate->output
@@ -377,13 +375,8 @@ static OutputState GetNextState(Display* display,
           (0 != outputs[1].mirror_mode);
       switch (current_state) {
         case STATE_DUAL_PRIMARY_ONLY:
-          // TODO(oshima): Temporarily disable extended
-          // desktop. crbug.com/152003.
-          state = STATE_DUAL_SECONDARY_ONLY;
-          break;
-        case STATE_DUAL_SECONDARY_ONLY:
-          state = mirror_supported ?
-              STATE_DUAL_MIRROR : STATE_DUAL_PRIMARY_ONLY;
+          state =
+              mirror_supported ? STATE_DUAL_MIRROR : STATE_DUAL_PRIMARY_ONLY;
           break;
         case STATE_DUAL_MIRROR:
           state = STATE_DUAL_PRIMARY_ONLY;
@@ -841,9 +834,7 @@ void OutputConfigurator::RemoveObserver(Observer* observer) {
 
 // static
 bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
-  // TODO(oshima): There is only one display for m23 and no need to
-  // distinguish internal display.
-  return false;
+  return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0;
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
