@@ -238,7 +238,6 @@ static bool FilterCallbackReturnTrue(void* context) {
 // redelivered to this handler. If the child dies with SIGSEGV then it wasn't.
 static void RaiseSIGKILL(int sig) {
   raise(SIGKILL);
-  return false;
 }
 
 static bool InstallRaiseSIGKILL() {
