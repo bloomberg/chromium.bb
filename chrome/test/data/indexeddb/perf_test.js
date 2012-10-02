@@ -96,7 +96,13 @@ var tests = [
   [testReadCache, 50, kUseIndex],
 // Create and delete an index on a store that already contains data [produces
 // a timing result for each of creation and deletion].
-  [testCreateAndDeleteIndex, 5000]
+  [testCreateAndDeleteIndex, 5000],
+// Walk through multiple cursors into the same object store, round-robin, until
+// you've reached the end of each of them.
+  [testWalkingMultipleCursors, 5],
+// Walk through many cursors into the same object store, round-robin, until
+// you've reached the end of each of them.
+  [testWalkingMultipleCursors, 50],
 ];
 
 var currentTest = 0;
@@ -107,15 +113,19 @@ function test() {
 
 function runNextTest() {
   var filter = window.location.hash.slice(1);
-  do {
-    var test = tests[currentTest++].slice();
-    var f = test.shift();
-  } while (currentTest < tests.length &&
-           filter && f.name != filter)
+  var test, f;
+  while (currentTest < tests.length) {
+    test = tests[currentTest];
+    f = test.shift();
+    if (!filter || f.name == filter)
+      break;
+    ++currentTest;
+  }
 
   if (currentTest < tests.length) {
     test.push(runNextTest);
     f.apply(null, test);
+    ++currentTest;
   } else {
     onAllTestsComplete();
   }
@@ -497,3 +507,92 @@ function testSporadicWrites(
     }
   }
 }
+
+function testWalkingMultipleCursors(numCursors, onTestComplete) {
+  var numKeys = 1000;
+  var numHitsPerKey = 10;
+  var testName = getDisplayName(arguments);
+  var objectStoreNames = ["input store"];
+  var indexName = "index name";
+
+  automation.setStatus("Creating database.");
+  var options = [{
+    indexName: indexName,
+    indexKeyPath: "",
+    indexIsUnique: false,
+    indexIsMultiEntry: false,
+  }];
+  createDatabase(testName, objectStoreNames, onCreated, onError, options);
+
+  function onCreated(db) {
+    automation.setStatus("Setting up test database.");
+    var transaction = getTransaction(db, objectStoreNames, "readwrite",
+        function() { onSetupComplete(db); });
+    // This loop adds the same value numHitsPerKey times for each key.
+    for (var i = 0; i < numHitsPerKey; ++i) {
+      putLinearValues(transaction, objectStoreNames, numKeys, getKeyFunc(i),
+          getSimpleValue);
+    }
+  }
+  // While the value is the same each time through the putLinearValues loop, we
+  // want the key to keep increaasing for each copy.
+  function getKeyFunc(k) {
+    return function(i) {
+      return getSimpleKey(k * numKeys + i);
+    }
+  }
+  var completionFunc;
+  function onSetupComplete(db) {
+    automation.setStatus("Setup complete.");
+    completionFunc =
+        getCompletionFunc(db, testName, Date.now(), onTestComplete);
+    var transaction =
+        getTransaction(db, objectStoreNames, "readonly", verifyComplete);
+
+    walkSeveralCursors(transaction, numKeys);
+  }
+  var responseCounts = [];
+  var cursorsRunning = numCursors;
+  function walkSeveralCursors(transaction, numKeys) {
+    var source = transaction.objectStore(objectStoreNames[0]).index(indexName);
+    var requests = [];
+    var continueCursorIndex = 0;
+    for (var i = 0; i < numCursors; ++i) {
+      var rand = Math.floor(Math.random() * numKeys);
+      // Since we have numHitsPerKey copies of each value in the database,
+      // IDBKeyRange.only will return numHitsPerKey results, each referring to a
+      // different key with the matching value.
+      var request = source.openCursor(IDBKeyRange.only(getSimpleValue(rand)));
+      responseCounts.push(0);
+      request.onerror = onError;
+      request.onsuccess = function(event) {
+        assert(cursorsRunning);
+        var request = event.target;
+        if (!("requestIndex" in request)) {
+          assert(requests.length < numCursors);
+          request.requestIndex = requests.length;
+          requests.push(request);
+        }
+        var cursor = event.target.result;
+        if (cursor) {
+          assert(responseCounts[request.requestIndex] < numHitsPerKey);
+          ++responseCounts[request.requestIndex];
+        } else {
+          assert(responseCounts[request.requestIndex] == numHitsPerKey);
+          --cursorsRunning;
+        }
+        if (cursorsRunning) {
+          if (requests.length == numCursors) {
+            requests[continueCursorIndex++].result.continue();
+            continueCursorIndex %= numCursors;
+          }
+        }
+      }
+    }
+  }
+  function verifyComplete() {
+    assert(!cursorsRunning);
+    completionFunc();
+  }
+}
+

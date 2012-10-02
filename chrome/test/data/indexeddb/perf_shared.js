@@ -198,7 +198,7 @@ function getCompletionFunc(db, testName, startTime, onTestComplete) {
 function getDisplayName(args) {
   // The last arg is the completion callback the test runner tacks on.
   // TODO(ericu): Make test errors delete the database automatically.
-  return getDisplayName.caller.name + "_" +
+  return getDisplayName.caller.name + (args.length > 1 ? "_" : "") +
       Array.prototype.slice.call(args, 0, args.length - 1).join("_");
 }
 
