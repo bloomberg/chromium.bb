@@ -10,7 +10,7 @@ sys.path.append(
     os.path.abspath(
         os.path.join(os.path.dirname(__file__),
                      '../../../chrome/test/functional')))
-import webpagereplay
+import webpagereplay  # pylint: disable=F0401
 
 CHROME_FLAGS = webpagereplay.CHROME_FLAGS
 
