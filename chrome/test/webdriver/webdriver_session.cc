@@ -267,6 +267,8 @@ Error* Session::SendKeys(const ElementId& element, const string16& keys) {
   //     the body, sometimes we still need to focus the body element for send
   //     keys to work. Not sure why
   //   - You cannot focus a descendant of a content editable node
+  //   - V8 throws a TypeError when calling setSelectionRange for a non-text
+  //     input, which still have setSelectionRange defined.
   // TODO(jleyba): Update this to use the correct atom.
   const char* kFocusScript =
       "function(elem) {"
@@ -277,7 +279,13 @@ Error* Session::SendKeys(const ElementId& element, const string16& keys) {
       "  elem.focus();"
       "  if (elem != prevActiveElem && elem.value && elem.value.length &&"
       "      elem.setSelectionRange) {"
-      "    elem.setSelectionRange(elem.value.length, elem.value.length);"
+      "    try {"
+      "      elem.setSelectionRange(elem.value.length, elem.value.length);"
+      "    } catch (error) {"
+      "      if (!(error instanceof TypeError)) {"
+      "        throw error;"
+      "      }"
+      "    }"
       "  }"
       "  if (elem != doc.activeElement)"
       "    throw new Error('Failed to send keys because cannot focus element');"
