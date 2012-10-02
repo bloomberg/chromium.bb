@@ -813,8 +813,14 @@ const char HTML5FileWriter::kURLRequestContextToreDown[] =
 
 }  // namespace
 
+// Flaky test.  http://crbug.com/153499
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadExtensionTest_PauseResumeCancel DISABLED_DownloadExtensionTest_PauseResumeCancel
+#else
+#define MAYBE_DownloadExtensionTest_PauseResumeCancel DownloadExtensionTest_PauseResumeCancel
+#endif
 IN_PROC_BROWSER_TEST_F(
-    DownloadExtensionTest, DownloadExtensionTest_PauseResumeCancel) {
+    DownloadExtensionTest, MAYBE_DownloadExtensionTest_PauseResumeCancel) {
   DownloadItem* download_item = CreateSlowTestDownload();
   ASSERT_TRUE(download_item);
 
