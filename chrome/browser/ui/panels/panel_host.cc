@@ -63,7 +63,7 @@ void PanelHost::Init(const GURL& url) {
   SessionTabHelper::FromWebContents(web_contents_.get())->SetWindowID(
       panel_->session_id());
 
-  favicon_tab_helper_.reset(new FaviconTabHelper(web_contents_.get()));
+  FaviconTabHelper::CreateForWebContents(web_contents_.get());
   prefs_tab_helper_.reset(new PrefsTabHelper(web_contents_.get()));
 
   web_contents_->GetController().LoadURL(
@@ -71,14 +71,17 @@ void PanelHost::Init(const GURL& url) {
 }
 
 void PanelHost::DestroyWebContents() {
-  favicon_tab_helper_.reset();
   prefs_tab_helper_.reset();
   web_contents_.reset();
 }
 
 gfx::Image PanelHost::GetPageIcon() const {
-  return favicon_tab_helper_.get() ?
-      favicon_tab_helper_->GetFavicon() : gfx::Image();
+  if (!web_contents_.get())
+    return gfx::Image();
+
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(web_contents_.get());
+  return favicon_tab_helper->GetFavicon();
 }
 
 content::WebContents* PanelHost::OpenURLFromTab(

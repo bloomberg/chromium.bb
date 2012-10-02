@@ -148,13 +148,13 @@ void UpdateShortcutWorker::DownloadIcon() {
     return;
   }
 
-  tab_contents_->favicon_tab_helper()->DownloadImage(
-      unprocessed_icons_.back().url,
-      std::max(unprocessed_icons_.back().width,
-               unprocessed_icons_.back().height),
-      history::FAVICON,
-      base::Bind(&UpdateShortcutWorker::OnIconDownloaded,
-                 base::Unretained(this)));
+  FaviconTabHelper::FromWebContents(tab_contents_->web_contents())->
+      DownloadImage(unprocessed_icons_.back().url,
+                    std::max(unprocessed_icons_.back().width,
+                             unprocessed_icons_.back().height),
+                    history::FAVICON,
+                    base::Bind(&UpdateShortcutWorker::OnIconDownloaded,
+                               base::Unretained(this)));
   unprocessed_icons_.pop_back();
 }
 
@@ -308,6 +308,8 @@ void GetShortcutInfoForTab(TabContents* tab_contents,
   DCHECK(info);  // Must provide a valid info.
   const WebContents* web_contents = tab_contents->web_contents();
 
+  const FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(web_contents);
   const extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(web_contents);
   const WebApplicationInfo& app_info = extensions_tab_helper->web_app_info();
@@ -319,8 +321,7 @@ void GetShortcutInfoForTab(TabContents* tab_contents,
                                           web_contents->GetTitle()) :
       app_info.title;
   info->description = app_info.description;
-  info->favicon =
-      gfx::Image(tab_contents->favicon_tab_helper()->GetFavicon());
+  info->favicon = gfx::Image(favicon_tab_helper->GetFavicon());
 
   info->profile_path = tab_contents->profile()->GetPath();
 }

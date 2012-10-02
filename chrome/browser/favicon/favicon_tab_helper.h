@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/favicon/favicon_handler_delegate.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/favicon_url.h"
@@ -33,9 +34,9 @@ class SkBitmap;
 // callback.
 //
 class FaviconTabHelper : public content::WebContentsObserver,
-                         public FaviconHandlerDelegate {
+                         public FaviconHandlerDelegate,
+                         public WebContentsUserData<FaviconTabHelper> {
  public:
-  explicit FaviconTabHelper(content::WebContents* web_contents);
   virtual ~FaviconTabHelper();
 
   // Initiates loading the favicon for the specified url.
@@ -82,6 +83,9 @@ class FaviconTabHelper : public content::WebContentsObserver,
   virtual void NotifyFaviconUpdated() OVERRIDE;
 
  private:
+  explicit FaviconTabHelper(content::WebContents* web_contents);
+  friend class WebContentsUserData<FaviconTabHelper>;
+
   // content::WebContentsObserver overrides.
   virtual void NavigateToPendingEntry(
       const GURL& url,

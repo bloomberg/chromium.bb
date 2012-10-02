@@ -1181,8 +1181,8 @@ void LocationBarView::OnSetFocus() {
 }
 
 gfx::Image LocationBarView::GetFavicon() const {
-  return delegate_->GetTabContents()->favicon_tab_helper()->
-             GetFavicon();
+  return FaviconTabHelper::FromWebContents(
+      delegate_->GetTabContents()->web_contents())->GetFavicon();
 }
 
 string16 LocationBarView::GetTitle() const {
@@ -1417,16 +1417,15 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   DCHECK_NE(GetDragOperationsForView(sender, press_pt),
             ui::DragDropTypes::DRAG_NONE);
 
-  TabContents* tab_contents = GetTabContents();
-  DCHECK(tab_contents);
-  gfx::ImageSkia favicon =
-      tab_contents->favicon_tab_helper()->GetFavicon().AsImageSkia();
-  button_drag_utils::SetURLAndDragImage(
-      tab_contents->web_contents()->GetURL(),
-      tab_contents->web_contents()->GetTitle(),
-      favicon,
-      data,
-      sender->GetWidget());
+  WebContents* web_contents = GetTabContents()->web_contents();
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(web_contents);
+  gfx::ImageSkia favicon = favicon_tab_helper->GetFavicon().AsImageSkia();
+  button_drag_utils::SetURLAndDragImage(web_contents->GetURL(),
+                                        web_contents->GetTitle(),
+                                        favicon,
+                                        data,
+                                        sender->GetWidget());
 }
 
 int LocationBarView::GetDragOperationsForView(views::View* sender,

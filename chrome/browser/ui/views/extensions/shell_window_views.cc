@@ -595,7 +595,9 @@ gfx::ImageSkia ShellWindowViews::GetWindowAppIcon() {
 gfx::ImageSkia ShellWindowViews::GetWindowIcon() {
   TabContents* contents = shell_window_->tab_contents();
   if (contents) {
-    gfx::Image app_icon = contents->favicon_tab_helper()->GetFavicon();
+    FaviconTabHelper* favicon_tab_helper =
+        FaviconTabHelper::FromWebContents(contents->web_contents());
+    gfx::Image app_icon = favicon_tab_helper->GetFavicon();
     if (!app_icon.IsEmpty())
       return *app_icon.ToImageSkia();
   }

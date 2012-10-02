@@ -12,8 +12,11 @@
 namespace mac {
 
 NSImage* FaviconForTabContents(TabContents* contents) {
-  if (contents && contents->favicon_tab_helper()->FaviconIsValid()) {
-    NSImage* image = contents->favicon_tab_helper()->GetFavicon().AsNSImage();
+  FaviconTabHelper* favicon_tab_helper =
+      contents ? FaviconTabHelper::FromWebContents(contents->web_contents())
+               : NULL;
+  if (favicon_tab_helper && favicon_tab_helper->FaviconIsValid()) {
+    NSImage* image = favicon_tab_helper->GetFavicon().AsNSImage();
     // The |image| could be nil if the bitmap is null. In that case, fallback
     // to the default image.
     if (image) {

@@ -24,7 +24,6 @@ class ConstrainedWebDialogDelegateBase;
 class ConstrainedWindowTabHelper;
 class ExtensionTabUtil;
 class ExternalTabContainerWin;
-class FaviconTabHelper;
 class GeolocationPermissionContextTests;
 class InfoBarControllerContentsCreator;
 class InfoBarTabHelper;
@@ -152,7 +151,6 @@ class TabContents : public content::WebContentsObserver {
     return constrained_window_tab_helper_.get();
   }
 
-  FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
 
   PasswordManager* password_manager() { return password_manager_.get(); }
@@ -190,7 +188,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_refptr<AutofillManager> autofill_manager_;
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
-  scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,

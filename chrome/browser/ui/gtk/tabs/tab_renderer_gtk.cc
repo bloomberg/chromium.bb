@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -325,7 +324,8 @@ void TabRendererGtk::UpdateData(WebContents* contents,
                                 bool app,
                                 bool loading_only) {
   DCHECK(contents);
-  TabContents* tab_contents = TabContents::FromWebContents(contents);
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(contents);
 
   if (!loading_only) {
     data_.title = contents->GetTitle();
@@ -337,8 +337,7 @@ void TabRendererGtk::UpdateData(WebContents* contents,
     if (app_icon) {
       data_.favicon = *app_icon;
     } else {
-      data_.favicon =
-          tab_contents->favicon_tab_helper()->GetFavicon().AsBitmap();
+      data_.favicon = favicon_tab_helper->GetFavicon().AsBitmap();
     }
 
     data_.app = app;
@@ -402,7 +401,7 @@ void TabRendererGtk::UpdateData(WebContents* contents,
   // Loading state also involves whether we show the favicon, since that's where
   // we display the throbber.
   data_.loading = contents->IsLoading();
-  data_.show_icon = tab_contents->favicon_tab_helper()->ShouldDisplayFavicon();
+  data_.show_icon = favicon_tab_helper->ShouldDisplayFavicon();
 }
 
 void TabRendererGtk::UpdateFromModel() {

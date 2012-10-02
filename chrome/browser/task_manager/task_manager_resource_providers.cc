@@ -340,7 +340,8 @@ string16 TaskManagerTabContentsResource::GetProfileName() const {
 gfx::ImageSkia TaskManagerTabContentsResource::GetIcon() const {
   if (IsPrerendering())
     return *prerender_icon_;
-  return tab_contents_->favicon_tab_helper()->GetFavicon().AsImageSkia();
+  return FaviconTabHelper::FromWebContents(tab_contents_->web_contents())->
+      GetFavicon().AsImageSkia();
 }
 
 WebContents* TaskManagerTabContentsResource::GetWebContents() const {

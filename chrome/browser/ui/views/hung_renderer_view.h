@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_HUNG_RENDERER_VIEW_H_
 
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -63,7 +64,7 @@ class HungPagesTableModel : public views::GroupTableModel {
     }
 
     FaviconTabHelper* favicon_tab_helper() {
-      return tab_->favicon_tab_helper();
+      return FaviconTabHelper::FromWebContents(web_contents());
     }
 
     // WebContentsObserver overrides:

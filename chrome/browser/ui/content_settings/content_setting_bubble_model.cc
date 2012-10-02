@@ -477,10 +477,9 @@ void ContentSettingPopupBubbleModel::SetPopups() {
     PopupItem popup_item;
     popup_item.title = title;
     // TODO: Make this use gfx::Image.
-    TabContents* tab_contents = TabContents::FromWebContents(*i);
     popup_item.bitmap =
-        tab_contents->favicon_tab_helper()->GetFavicon().AsBitmap();
-    popup_item.tab_contents = tab_contents;
+        FaviconTabHelper::FromWebContents(*i)->GetFavicon().AsBitmap();
+    popup_item.tab_contents = TabContents::FromWebContents(*i);
     add_popup(popup_item);
   }
 }

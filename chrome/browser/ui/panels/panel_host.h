@@ -111,7 +111,6 @@ class PanelHost : public content::WebContentsDelegate,
   base::WeakPtrFactory<PanelHost> weak_factory_;
 
   scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
-  scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelHost);

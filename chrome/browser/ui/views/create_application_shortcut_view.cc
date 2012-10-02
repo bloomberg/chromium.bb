@@ -463,13 +463,13 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
   pending_download_ = new IconDownloadCallbackFunctor(this);
   DCHECK(pending_download_);
 
-  tab_contents_->favicon_tab_helper()->DownloadImage(
-      unprocessed_icons_.back().url,
-      std::max(unprocessed_icons_.back().width,
-               unprocessed_icons_.back().height),
-      history::FAVICON,
-      base::Bind(&IconDownloadCallbackFunctor::Run,
-                 base::Unretained(pending_download_)));
+  FaviconTabHelper::FromWebContents(tab_contents_->web_contents())->
+      DownloadImage(unprocessed_icons_.back().url,
+                    std::max(unprocessed_icons_.back().width,
+                             unprocessed_icons_.back().height),
+                    history::FAVICON,
+                    base::Bind(&IconDownloadCallbackFunctor::Run,
+                               base::Unretained(pending_download_)));
 
   unprocessed_icons_.pop_back();
 }

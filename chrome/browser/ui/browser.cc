@@ -545,11 +545,12 @@ bool Browser::is_devtools() const {
 // Browser, State Storage and Retrieval for UI:
 
 gfx::Image Browser::GetCurrentPageIcon() const {
-  TabContents* contents = chrome::GetActiveTabContents(this);
-  // |contents| can be NULL since GetCurrentPageIcon() is called by the window
-  // during the window's creation (before tabs have been added).
-  return contents ?
-      contents->favicon_tab_helper()->GetFavicon() : gfx::Image();
+  WebContents* web_contents = chrome::GetActiveWebContents(this);
+  // |web_contents| can be NULL since GetCurrentPageIcon() is called by the
+  // window during the window's creation (before tabs have been added).
+  FaviconTabHelper* favicon_tab_helper =
+      web_contents ? FaviconTabHelper::FromWebContents(web_contents) : NULL;
+  return favicon_tab_helper ? favicon_tab_helper->GetFavicon() : gfx::Image();
 }
 
 string16 Browser::GetWindowTitleForCurrentTab() const {

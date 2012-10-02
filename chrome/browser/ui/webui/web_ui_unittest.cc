@@ -45,6 +45,8 @@ class WebUITest : public TabContentsTestHarness {
   static void DoNavigationTest(TabContents* tab_contents, int page_id) {
     WebContents* contents = tab_contents->web_contents();
     NavigationController* controller = &contents->GetController();
+    FaviconTabHelper* favicon_tab_helper =
+        FaviconTabHelper::FromWebContents(contents);
 
     // Start a pending load.
     GURL new_tab_url(chrome::kChromeUINewTabURL);
@@ -57,7 +59,7 @@ class WebUITest : public TabContentsTestHarness {
     ASSERT_FALSE(controller->GetLastCommittedEntry());
 
     // Check the things the pending Web UI should have set.
-    EXPECT_FALSE(tab_contents->favicon_tab_helper()->ShouldDisplayFavicon());
+    EXPECT_FALSE(favicon_tab_helper->ShouldDisplayFavicon());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
     // Now commit the load.
@@ -65,7 +67,7 @@ class WebUITest : public TabContentsTestHarness {
         contents->GetRenderViewHost())->SendNavigate(page_id, new_tab_url);
 
     // The same flags should be set as before now that the load has committed.
-    EXPECT_FALSE(tab_contents->favicon_tab_helper()->ShouldDisplayFavicon());
+    EXPECT_FALSE(favicon_tab_helper->ShouldDisplayFavicon());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
     // Start a pending navigation to a regular page.
@@ -76,7 +78,7 @@ class WebUITest : public TabContentsTestHarness {
 
     // Check the flags. Some should reflect the new page (URL, title), some
     // should reflect the old one (bookmark bar) until it has committed.
-    EXPECT_TRUE(tab_contents->favicon_tab_helper()->ShouldDisplayFavicon());
+    EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
 
     // Commit the regular page load. Note that we must send it to the "pending"
@@ -95,7 +97,7 @@ class WebUITest : public TabContentsTestHarness {
     }
 
     // The state should now reflect a regular page.
-    EXPECT_TRUE(tab_contents->favicon_tab_helper()->ShouldDisplayFavicon());
+    EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
   }
 
@@ -138,7 +140,9 @@ TEST_F(WebUITest, WebUIToWebUI) {
   rvh_tester()->SendNavigate(2, new_tab_url);
 
   // The flags should be the same as the non-pending state.
-  EXPECT_FALSE(tab_contents()->favicon_tab_helper()->ShouldDisplayFavicon());
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(contents());
+  EXPECT_FALSE(favicon_tab_helper->ShouldDisplayFavicon());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 }
 
@@ -150,13 +154,15 @@ TEST_F(WebUITest, StandardToWebUI) {
                        content::PAGE_TRANSITION_LINK,
                        std::string());
 
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(contents());
   // The state should now reflect the default.
-  EXPECT_TRUE(tab_contents()->favicon_tab_helper()->ShouldDisplayFavicon());
+  EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
   // Commit the load, the state should be the same.
   rvh_tester()->SendNavigate(1, std_url);
-  EXPECT_TRUE(tab_contents()->favicon_tab_helper()->ShouldDisplayFavicon());
+  EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
   // Start a pending load for a WebUI.
@@ -164,7 +170,7 @@ TEST_F(WebUITest, StandardToWebUI) {
   controller().LoadURL(new_tab_url, content::Referrer(),
                        content::PAGE_TRANSITION_LINK,
                        std::string());
-  EXPECT_TRUE(tab_contents()->favicon_tab_helper()->ShouldDisplayFavicon());
+  EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 
   // Committing Web UI is tested above.

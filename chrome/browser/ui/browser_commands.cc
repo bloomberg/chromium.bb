@@ -598,13 +598,13 @@ void BookmarkCurrentPage(Browser* browser) {
 
   GURL url;
   string16 title;
-  TabContents* tab = GetActiveTabContents(browser);
-  bookmark_utils::GetURLAndTitleToBookmark(tab->web_contents(), &url, &title);
+  WebContents* web_contents = GetActiveWebContents(browser);
+  bookmark_utils::GetURLAndTitleToBookmark(web_contents, &url, &title);
   bool was_bookmarked = model->IsBookmarked(url);
-  if (!was_bookmarked && browser->profile()->IsOffTheRecord()) {
+  if (!was_bookmarked && web_contents->GetBrowserContext()->IsOffTheRecord()) {
     // If we're incognito the favicon may not have been saved. Save it now
     // so that bookmarks have an icon for the page.
-    tab->favicon_tab_helper()->SaveFavicon();
+    FaviconTabHelper::FromWebContents(web_contents)->SaveFavicon();
   }
   bookmark_utils::AddIfNotBookmarked(model, url, title);
   // Make sure the model actually added a bookmark before showing the star. A

@@ -135,7 +135,7 @@ TabContents::TabContents(WebContents* contents)
   extensions::TabHelper::CreateForWebContents(contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(contents);
   ExternalProtocolObserver::CreateForWebContents(contents);
-  favicon_tab_helper_.reset(new FaviconTabHelper(contents));
+  FaviconTabHelper::CreateForWebContents(contents);
   FindTabHelper::CreateForWebContents(contents);
   HistoryTabHelper::CreateForWebContents(contents);
   HungPluginTabHelper::CreateForWebContents(contents);

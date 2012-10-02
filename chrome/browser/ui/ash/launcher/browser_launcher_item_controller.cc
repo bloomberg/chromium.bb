@@ -183,8 +183,10 @@ void BrowserLauncherItemController::TabChangedAt(
     return;
   }
 
-  if (tab->favicon_tab_helper()->FaviconIsValid() ||
-      !tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(tab->web_contents());
+  if (favicon_tab_helper->FaviconIsValid() ||
+      !favicon_tab_helper->ShouldDisplayFavicon()) {
     // We have the favicon, update immediately.
     UpdateLauncher(tab);
   } else {
@@ -267,8 +269,10 @@ void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
   } else {
     DCHECK_EQ(TYPE_TABBED, type());
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
-      item.image = tab->favicon_tab_helper()->GetFavicon().AsImageSkia();
+    FaviconTabHelper* favicon_tab_helper =
+        FaviconTabHelper::FromWebContents(tab->web_contents());
+    if (favicon_tab_helper->ShouldDisplayFavicon()) {
+      item.image = favicon_tab_helper->GetFavicon().AsImageSkia();
       if (item.image.isNull()) {
         item.image = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
       }

@@ -411,9 +411,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   if (!icon_url.is_empty()) {
     std::vector<FaviconURL> urls;
     urls.push_back(FaviconURL(icon_url, FaviconURL::FAVICON));
-    new_tab_contents->favicon_tab_helper()->OnUpdateFaviconURL(
-        prerender_contents->page_id(),
-        urls);
+    FaviconTabHelper::FromWebContents(new_tab_contents->web_contents())->
+        OnUpdateFaviconURL(prerender_contents->page_id(), urls);
   }
 
   // Update PPLT metrics:

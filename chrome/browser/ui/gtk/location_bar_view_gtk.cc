@@ -887,7 +887,7 @@ void LocationBarViewGtk::OnSetFocus() {
 }
 
 gfx::Image LocationBarViewGtk::GetFavicon() const {
-  return GetTabContents()->favicon_tab_helper()->GetFavicon();
+  return FaviconTabHelper::FromWebContents(GetWebContents())->GetFavicon();
 }
 
 string16 LocationBarViewGtk::GetTitle() const {
