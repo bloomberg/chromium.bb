@@ -19,7 +19,8 @@ aura::Window* CreateCaptureWindow(aura::RootWindow* root_window) {
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetParent(NULL);
-  window->SetBoundsInScreen(root_window->GetBoundsInScreen(),
+  window->SetBoundsInScreen(gfx::Rect(root_window->GetBoundsInScreen().origin(),
+                                      gfx::Size()),
                             gfx::Screen::GetDisplayNearestWindow(root_window));
   window->Show();
   return window;
