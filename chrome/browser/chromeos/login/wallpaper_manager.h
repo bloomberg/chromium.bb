@@ -104,6 +104,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Removes all |email| related wallpaper info and saved wallpapers.
+  void RemoveUserWallpaperInfo(const std::string& email);
+
   // Resizes |wallpaper| to a resolution which is nearest to |preferred_width|
   // and |preferred_height| while maintaining aspect ratio. And saves the
   // resized wallpaper to |path|.
@@ -194,6 +197,12 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   void CacheThumbnail(const std::string& email,
                       const gfx::ImageSkia& wallpaper);
 
+  // Deletes a list of wallpaper files in |file_list|.
+  void DeleteWallpaperInList(const std::vector<FilePath>& file_list);
+
+  // Deletes all |email| related custom or converted wallpapers.
+  void DeleteUserWallpapers(const std::string& email);
+
   // Loads |email|'s wallpaper. When |update_wallpaper| is true, sets wallpaper
   // to the loaded wallpaper.
   void LoadWallpaper(const std::string& email,
@@ -262,6 +271,12 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // will create a deadlock. (issue 142440)
   bool ShouldPersistDataForUser(const std::string& email);
 
+  // Starts to load wallpaper at |wallpaper_path|. Must be called on UI thread.
+  void StartLoad(const std::string& email,
+                 const WallpaperInfo& info,
+                 bool update_wallpaper,
+                 const FilePath& wallpaper_path);
+
   // Sets wallpaper to image in |user_image| with |layout|.
   void OnWallpaperLoaded(ash::WallpaperLayout layout,
                          const UserImage& user_image);
@@ -271,6 +286,18 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Overridden from system::TimezoneSettings::Observer.
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
+
+  // Validates |wallpaper path| and loads corresponding wallpaper. If
+  // |wallpaper_path| is not valid, appends png extension to it before loading.
+  // Old wallpaper names have a png extension name. However all new wallpapers
+  // are saved in jpeg format. We have removed file extension to avoid
+  // confusion in this CL (https://codereview.chromium.org/10950014).
+  // For wallpapers saved before it, we still need to append png extension to
+  // file name.
+  void ValidateAndLoadWallpaper(const std::string& email,
+                                const WallpaperInfo& info,
+                                bool update_wallpaper,
+                                const FilePath& wallpaper_path);
 
   // Loads user wallpaper from its file.
   scoped_refptr<UserImageLoader> wallpaper_loader_;

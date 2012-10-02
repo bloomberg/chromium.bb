@@ -1300,44 +1300,7 @@ void UserManagerImpl::RemoveUserFromListInternal(const std::string& email) {
       user_to_remove = it;
   }
 
-  DictionaryPrefUpdate prefs_wallpapers_update(prefs,
-                                               kUserWallpapersProperties);
-  prefs_wallpapers_update->RemoveWithoutPathExpansion(email, NULL);
-
-  bool new_wallpaper_ui_disabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewWallpaperUI);
-  if (!new_wallpaper_ui_disabled) {
-    DictionaryPrefUpdate prefs_wallpapers_info_update(prefs,
-        prefs::kUsersWallpaperInfo);
-    prefs_wallpapers_info_update->RemoveWithoutPathExpansion(email, NULL);
-  }
-
-  // Remove user wallpaper thumbnail
-  FilePath wallpaper_thumb_path = WallpaperManager::Get()->
-      GetWallpaperPathForUser(email, true);
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UserManagerImpl::DeleteUserImage,
-                 base::Unretained(this),
-                 wallpaper_thumb_path));
-  // Remove user wallpaper
-  FilePath wallpaper_path = WallpaperManager::Get()->
-      GetWallpaperPathForUser(email, false);
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UserManagerImpl::DeleteUserImage,
-                 base::Unretained(this),
-                 wallpaper_path));
-  FilePath wallpaper_original_path = WallpaperManager::Get()->
-      GetOriginalWallpaperPathForUser(email);
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UserManagerImpl::DeleteUserImage,
-                 base::Unretained(this),
-                 wallpaper_original_path));
+  WallpaperManager::Get()->RemoveUserWallpaperInfo(email);
 
   DictionaryPrefUpdate prefs_images_update(prefs, kUserImages);
   std::string image_path_string;
