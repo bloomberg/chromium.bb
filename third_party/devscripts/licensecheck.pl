@@ -434,6 +434,10 @@ sub parselicense($) {
 	$license = "MIT/X11 (BSD like) $license";
     }
 
+    if ($licensetext  =~ /This file is distributed under the University of Illinois Open Source License/){
+	$license = "University of Illinois/NCSA Open Source License (BSD like) $license";
+    }
+
     if ($licensetext  =~ /Permission to use, copy, modify, and(\/or)? distribute this software (and its documentation )?for any purpose (with or )?without fee is hereby granted, provided.*(copyright|entire) notice.*all copies/) {
 	$license = "ISC $license";
     }

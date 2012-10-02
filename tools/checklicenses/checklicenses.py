@@ -83,6 +83,7 @@ WHITELISTED_LICENSES = [
     'libpng',
     'zlib/libpng',
     'SGI Free Software License B',
+    'University of Illinois/NCSA Open Source License (BSD like)',
 ]
 
 
