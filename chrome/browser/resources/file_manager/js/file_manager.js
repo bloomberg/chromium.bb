@@ -96,6 +96,13 @@ FileManager.prototype = {
   var MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
 
   /**
+   * Some UI elements react on a single click and standard double click handling
+   * leads to confusing results. We ignore a second click if it comes soon
+   * after the first.
+   */
+  var DOUBLE_CLICK_TIMEOUT = 200;
+
+  /**
    * Item for the Grid View.
    * @param {FileManager} fileManager FileManager instance.
    * @param {boolean} showCheckbox True if select checkbox should be visible
@@ -1429,10 +1436,12 @@ FileManager.prototype = {
     input.addEventListener('mouseup', stopEventPropagation);
     input.addEventListener('dblclick', stopEventPropagation);
 
+    var self = this;
     input.addEventListener('click', function(event) {
-      // Revert default action if shift pressed.
-      if (event.shiftKey)
+      // Revert default action if this is a double click or Shift is pressed.
+      if (self.checkForIgnoredClick_(event) || event.shiftKey)
         this.checked = !this.checked;
+      self.ignoreNextClick_();
     });
     return input;
   };
@@ -2042,13 +2051,25 @@ FileManager.prototype = {
       selection.totalCount++;
     }
 
+    selection.tasks = new FileTasks(this, [] /* do not fetch the tasks yet */);
+
     // The rest of the selection properties are computed via (sometimes lengthy)
     // asynchronous calls. We initiate these calls after a timeout. If the
     // selection is changing quickly we only do this once when it slows down.
+
+    var updateDelay = 200;
+    var now = Date.now();
+    if (now > (this.lastSelectionTime_ || 0) + updateDelay) {
+      // The previous selection change happened a while ago. Update the UI soon.
+      updateDelay = 0;
+    }
+    this.lastSelectionTime_ = now;
+
     this.selectionUpdateTimer_ = setTimeout(function() {
       this.selectionUpdateTimer_ = null;
-      this.updateUIForSelection(selection);
-    }.bind(this), 200);
+      if (this.selection == selection)
+        this.updateUIForSelection(selection);
+    }.bind(this), updateDelay);
   };
 
   FileManager.prototype.updateUIForSelection = function(selection) {
@@ -2141,11 +2162,20 @@ FileManager.prototype = {
         FileManager.THUMBNAIL_SHOW_DELAY);
     onThumbnailLoaded();
 
+    this.createTasksForSelection_(selection);
+  }
+
+  FileManager.prototype.createTasksForSelection_ = function(selection) {
+    var self = this;
     function getTasksAndFinish() {
+      if (self.selection != selection)
+        return;
+
       if (self.dialogType_ == FileManager.DialogType.FULL_PAGE &&
           selection.directoryCount == 0 && selection.fileCount > 0) {
-        selection.tasks = new FileTasks(self, selection.urls,
-            selection.mimeTypes).display(self.taskItems_).updateMenuItem();
+        selection.tasks.init(selection.urls, selection.mimeTypes);
+        selection.tasks.display(self.taskItems_);
+        selection.tasks.updateMenuItem();
       } else {
         self.taskItems_.hidden = true;
       }
@@ -2153,8 +2183,7 @@ FileManager.prototype = {
       self.metadataCache_.get(selection.entries, 'filesystem', function(props) {
         for (var index = 0; index < selection.entries.length; index++) {
           var filesystem = props[index];
-
-          if (entry.isFile) {
+          if (selection.entries[index].isFile) {
             selection.bytes += filesystem.size;
           }
         }
@@ -2747,11 +2776,36 @@ FileManager.prototype = {
   };
 
   /**
+   * Ignore click/tap events for a brief interval.
+   * @private
+   */
+  FileManager.prototype.ignoreNextClick_ = function() {
+    this.ignoreClickTimeout_ = Date.now() + DOUBLE_CLICK_TIMEOUT;
+  };
+
+  /**
+   * @param {Event} e Event
+   * @return {boolean} True if the click/tap event is ignored.
+   * @private
+   */
+  FileManager.prototype.checkForIgnoredClick_ = function(e) {
+    if (Date.now() > (this.ignoreClickTimeout_ || 0))
+      return false;
+
+    e.preventDefault();
+    e.stopPropagation();
+    return true;
+  };
+
+  /**
    * Handle a double-click or tap event on an entry in the detail list.
    *
    * @param {Event} event The click event.
    */
   FileManager.prototype.onDetailDoubleClick_ = function(event) {
+    if (this.checkForIgnoredClick_(event))
+      return;
+
     if (this.isRenamingInProgress()) {
       // Don't pay attention to double clicks during a rename.
       return;
@@ -2787,6 +2841,7 @@ FileManager.prototype = {
     if (event.target.parentElement.classList.contains('filename-label') ||
         event.target.classList.contains('detail-icon')) {
       this.onDetailDoubleClick_(event);
+      this.ignoreNextClick_();
       event.stopPropagation();
       event.preventDefault();
     }

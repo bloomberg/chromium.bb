@@ -12,7 +12,6 @@
  */
 function FileTasks(fileManager, urls, opt_mimeTypes, opt_params) {
   this.fileManager_ = fileManager;
-  this.urls_ = urls;
   this.params_ = opt_params;
   this.tasks_ = null;
   this.defaultTask_ = null;
@@ -22,9 +21,10 @@ function FileTasks(fileManager, urls, opt_mimeTypes, opt_params) {
    */
   this.pendingInvocations_ = [];
 
-  if (urls.length > 0)
-    chrome.fileBrowserPrivate.getFileTasks(urls, opt_mimeTypes || [],
-      this.onTasks_.bind(this));
+  /* TODO(kaznacheev): Remove urls and opt_mimeTypes from parameters and
+     call init directly from the client code.
+   */
+  this.init(urls, opt_mimeTypes);
 }
 
 /**
@@ -37,6 +37,20 @@ FileTasks.CHROME_WEB_STORE_URL = 'https://chrome.google.com/webstore';
 */
 FileTasks.NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
     'answer.py?answer=1700055&topic=29026&ctx=topic';
+
+/**
+ * Complete the initialization.
+ *
+ * @param {Array.<string>} urls List of file urls.
+ * @param {Array.<string>=} opt_mimeTypes List of MIME types for each
+ *     of the files.
+ */
+FileTasks.prototype.init = function(urls, opt_mimeTypes) {
+  this.urls_ = urls;
+  if (urls.length > 0)
+    chrome.fileBrowserPrivate.getFileTasks(urls, opt_mimeTypes || [],
+      this.onTasks_.bind(this));
+};
 
 /**
  * Returns amount of tasks.
