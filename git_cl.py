@@ -92,6 +92,41 @@ def ask_for_data(prompt):
     sys.exit(1)
 
 
+def add_git_similarity(parser):
+  parser.add_option(
+      '--similarity', metavar='SIM', type='int', action='store', default=None,
+      help='Sets the percentage that a pair of files need to match in order to'
+           ' be considered copies (default 50)')
+
+  old_parser_args = parser.parse_args
+  def Parse(args):
+    options, args = old_parser_args(args)
+
+    branch = Changelist().GetBranch()
+    key = 'branch.%s.git-cl-similarity' % branch
+    if options.similarity is None:
+      if branch:
+        (_, stdout) = RunGitWithCode(['config', '--int', '--get', key])
+        try:
+          options.similarity = int(stdout.strip())
+        except ValueError:
+          pass
+      options.similarity = options.similarity or 50
+    else:
+      if branch:
+        print('Note: Saving similarity of %d%% in git config.'
+              % options.similarity)
+        RunGit(['config', '--int', key, str(options.similarity)])
+
+    options.similarity = max(1, min(options.similarity, 100))
+
+    print('Using %d%% similarity for rename/copy detection. '
+          'Override with --similarity.' % options.similarity)
+
+    return options, args
+  parser.parse_args = Parse
+
+
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
   """Return the corresponding git ref if |base_url| together with |glob_spec|
   matches the full |url|.
@@ -134,7 +169,7 @@ def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
   return None
 
 
-def print_stats(args):
+def print_stats(similarity, args):
   """Prints statistics about the change to the user."""
   # --no-ext-diff is broken in some versions of Git, so try to work around
   # this by overriding the environment (but there is still a problem if the
@@ -144,7 +179,7 @@ def print_stats(args):
     del env['GIT_EXTERNAL_DIFF']
   return subprocess2.call(
       ['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-        '-l100000'] + args, env=env)
+       '-C%s' % similarity, '-l100000'] + args, env=env)
 
 
 class Settings(object):
@@ -1037,6 +1072,8 @@ def RietveldUpload(options, args, cl):
     if cc:
       upload_args.extend(['--cc', cc])
 
+  upload_args.extend(['--git_similarity', str(options.similarity)])
+
   # Include the upstream repo's URL in the change -- this is useful for
   # projects that have their source spread across multiple repos.
   remote_url = cl.GetGitBaseUrlFromConfig()
@@ -1103,6 +1140,7 @@ def CMDupload(parser, args):
   if settings.GetIsGerrit():
     parser.add_option('--target_branch', dest='target_branch', default='master',
                       help='target branch to upload')
+  add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
 
   # Print warning if the user used the -m/--message argument.  This will soon
@@ -1138,7 +1176,7 @@ def CMDupload(parser, args):
     if not options.reviewers and hook_results.reviewers:
       options.reviewers = hook_results.reviewers
 
-  print_stats(args)
+  print_stats(options.similarity, args)
   if settings.GetIsGerrit():
     return GerritUpload(options, args, cl)
   return RietveldUpload(options, args, cl)
@@ -1170,6 +1208,7 @@ def SendUpstream(parser, args, cmd):
                     help="external contributor for patch (appended to " +
                          "description and used as author for git). Should be " +
                          "formatted as 'First Last <email@example.com>'")
+  add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
   cl = Changelist()
 
@@ -1271,7 +1310,7 @@ def SendUpstream(parser, args, cmd):
 
   branches = [base_branch, cl.GetBranchRef()]
   if not options.force:
-    print_stats(branches)
+    print_stats(options.similarity, branches)
     ask_for_data('About to commit; enter to confirm.')
 
   # We want to squash all this branch's commits into one commit with the proper
@@ -1320,6 +1359,7 @@ def SendUpstream(parser, args, cmd):
     else:
       # dcommit the merge branch.
       retcode, output = RunGitWithCode(['svn', 'dcommit',
+                                        '-C%s' % options.similarity,
                                         '--no-rebase', '--rmdir'])
   finally:
     # And then swap back to the original branch and clean up.
