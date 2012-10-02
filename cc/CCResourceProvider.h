@@ -147,8 +147,8 @@ public:
 
     // Temporary functions for debugging crashes in issue 151428 in canary.
     // Do not use these!
-    static void debugNotifyEnterOutOfCommitFlowZone();
-    static void debugNotifyLeaveOutOfCommitFlowZone();
+    static void debugNotifyEnterZone(unsigned int index);
+    static void debugNotifyLeaveZone();
 
     // The following lock classes are part of the CCResourceProvider API and are
     // needed to read and write the resource contents. The user must ensure

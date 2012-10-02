@@ -29,12 +29,10 @@ using WebKit::WebGraphicsContext3D;
 namespace {
     // Temporary variables for debugging crashes in issue 151428 in canary.
     // Do not use these!
-    const int g_debugMaxResourcesTracked = 16;
-    bool g_debugOutOfCommitFlow = false;
+    const int g_debugMaxResourcesTracked = 64;
+    unsigned int g_debugZone = 0;
     int64 g_debugResDestroyedCount = 0;
-    int64 g_debugResDestroyedCountOutOfCommitFlow = 0;
     cc::CCResourceProvider::ResourceId g_debugResDestroyed[g_debugMaxResourcesTracked] = { 0 };
-    cc::CCResourceProvider::ResourceId g_debugResDestroyedOutOfCommitFlow[g_debugMaxResourcesTracked] = { 0 };
 }
 
 namespace cc {
@@ -239,9 +237,8 @@ void CCResourceProvider::deleteResource(ResourceId id)
     if (resource->pixels)
         delete resource->pixels;
 
-    g_debugResDestroyed[(g_debugResDestroyedCount++) % g_debugMaxResourcesTracked] = id;
-    if (g_debugOutOfCommitFlow)
-        g_debugResDestroyedOutOfCommitFlow[(g_debugResDestroyedCountOutOfCommitFlow++) % g_debugMaxResourcesTracked] = id;
+    g_debugResDestroyed[g_debugResDestroyedCount % g_debugMaxResourcesTracked] = id | g_debugZone;
+    g_debugResDestroyedCount += 1;
 
     m_resources.remove(it);
 }
@@ -338,27 +335,18 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId i
     if (it == m_resources.end()) {
         int resourceCount = m_resources.size();
         int64 resDestroyedCount = g_debugResDestroyedCount;
-        int64 resDestroyedCountOutOfCommitFlow = g_debugResDestroyedCountOutOfCommitFlow;
         ResourceId resDestroyed[g_debugMaxResourcesTracked];
-        ResourceId resDestroyedOutOfCommitFlow[g_debugMaxResourcesTracked];
         for (int64 i = 0; i < g_debugMaxResourcesTracked; ++i) {
             resDestroyed[i] = g_debugResDestroyed[i];
-            resDestroyedOutOfCommitFlow[i] = g_debugResDestroyedOutOfCommitFlow[i];
         }
         ResourceId resToDestroy = id;
-        ResourceId resLastDestroyedOutOfCommitFlow = g_debugResDestroyedOutOfCommitFlow[
-            (g_debugResDestroyedCountOutOfCommitFlow + g_debugMaxResourcesTracked - 1) %
-                g_debugMaxResourcesTracked];
 
         base::debug::Alias(&resourceCount);
         base::debug::Alias(&resDestroyedCount);
-        base::debug::Alias(&resDestroyedCountOutOfCommitFlow);
         for (int64 i = 0; i < g_debugMaxResourcesTracked; ++i) {
             base::debug::Alias(&resDestroyed[i]);
-            base::debug::Alias(&resDestroyedOutOfCommitFlow[i]);
         }
         base::debug::Alias(&resToDestroy);
-        base::debug::Alias(&resLastDestroyedOutOfCommitFlow);
         CHECK(it != m_resources.end());
     }
 
@@ -744,14 +732,14 @@ void CCResourceProvider::trimMailboxDeque()
         m_mailboxes.removeFirst();
 }
 
-void CCResourceProvider::debugNotifyEnterOutOfCommitFlowZone()
+void CCResourceProvider::debugNotifyEnterZone(unsigned int zone)
 {
-    g_debugOutOfCommitFlow = true;
+    g_debugZone = zone;
 }
 
-void CCResourceProvider::debugNotifyLeaveOutOfCommitFlowZone()
+void CCResourceProvider::debugNotifyLeaveZone()
 {
-    g_debugOutOfCommitFlow = false;
+    g_debugZone = 0;
 }
 
 }
