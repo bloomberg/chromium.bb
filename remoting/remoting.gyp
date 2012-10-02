@@ -1026,10 +1026,13 @@
         'host/setup/daemon_controller_linux.cc',
         'host/setup/daemon_controller_mac.cc',
         'host/setup/daemon_controller_win.cc',
+        'host/setup/daemon_installer_win.cc',
+        'host/setup/daemon_installer_win.h',
       ],
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
+            '../google_update/google_update.gyp:google_update',
             'remoting_elevated_controller',
           ],
         }],
@@ -1056,8 +1059,6 @@
         'host/branding.cc',
         'host/branding.h',
         'host/host_ui_resource.h',
-        'host/plugin/daemon_installer_win.cc',
-        'host/plugin/daemon_installer_win.h',
         'host/plugin/host_log_handler.cc',
         'host/plugin/host_log_handler.h',
         'host/plugin/host_plugin.cc',
@@ -1102,7 +1103,6 @@
         }],  # OS=="mac"
         [ 'OS=="win"', {
           'dependencies': [
-            '../google_update/google_update.gyp:google_update',
             'remoting_elevated_controller',
             'remoting_version_resources',
           ],
