@@ -153,18 +153,26 @@ text_layout_xy_to_index(struct text_layout *layout, double x, double y)
 {
 	cairo_text_extents_t extents;
 	int i;
+	double d;
+
+	if (layout->num_glyphs == 0)
+		return 0;
 
 	cairo_scaled_font_glyph_extents(layout->font,
 					layout->glyphs, layout->num_glyphs,
 					&extents);
 
-	for (i = 1; i < layout->num_glyphs; i++) {
-		if (layout->glyphs[i].x >= x) {
-			return i - 1;
-		}
+	if (x < 0)
+		return 0;
+
+	for (i = 0; i < layout->num_glyphs - 1; ++i) {
+		d = layout->glyphs[i + 1].x - layout->glyphs[i].x;
+		if (x < layout->glyphs[i].x + d/2)
+			return i;
 	}
 
-	if (x >= layout->glyphs[layout->num_glyphs - 1].x && x < extents.width)
+	d = extents.width - layout->glyphs[layout->num_glyphs - 1].x;
+	if (x < layout->glyphs[layout->num_glyphs - 1].x + d/2)
 		return layout->num_glyphs - 1;
 
 	return layout->num_glyphs;
