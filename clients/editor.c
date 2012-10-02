@@ -700,6 +700,8 @@ text_entry_draw_preedit(struct text_entry *entry, cairo_t *cr)
 	cairo_restore (cr);
 }
 
+static const int text_offset_left = 10;
+
 static void
 text_entry_redraw_handler(struct widget *widget, void *data)
 {
@@ -735,7 +737,7 @@ text_entry_redraw_handler(struct widget *widget, void *data)
 
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 
-	cairo_translate(cr, 10, allocation.height / 2);
+	cairo_translate(cr, text_offset_left, allocation.height / 2);
 	text_layout_draw(entry->layout, cr);
 
 	text_entry_draw_selection(entry, cr);
@@ -762,8 +764,8 @@ text_entry_motion_handler(struct widget *widget,
 	widget_get_allocation(entry->widget, &allocation);
 
 	text_entry_set_cursor_position(entry,
-				       x - allocation.x,
-				       y - allocation.y);
+				       x - allocation.x - text_offset_left,
+				       y - allocation.y - text_offset_left);
 
 	return CURSOR_IBEAM;
 }
@@ -786,8 +788,8 @@ text_entry_button_handler(struct widget *widget,
 	}
 
 	text_entry_set_cursor_position(entry,
-				       x - allocation.x,
-				       y - allocation.y);
+				       x - allocation.x - text_offset_left,
+				       y - allocation.y - text_offset_left);
 
 	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		struct wl_seat *seat = input_get_seat(input);
@@ -795,8 +797,8 @@ text_entry_button_handler(struct widget *widget,
 		text_entry_activate(entry, seat);
 
 		text_entry_set_anchor_position(entry,
-					       x - allocation.x,
-					       y - allocation.y);
+					       x - allocation.x - text_offset_left,
+					       y - allocation.y - text_offset_left);
 
 		widget_set_motion_handler(entry->widget, text_entry_motion_handler);
 	} else {
