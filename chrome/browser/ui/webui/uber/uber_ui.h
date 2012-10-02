@@ -34,9 +34,6 @@ class UberUI : public content::WebUIController {
       content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
-  // Clear a virtual URL from the pending navigation entry.
-  void ClearPendingVirtualURL();
-
   // A map from URL origin to WebUI instance.
   typedef std::map<std::string, content::WebUI*> SubpageMap;
 
