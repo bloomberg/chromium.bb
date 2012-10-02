@@ -49,17 +49,22 @@ void DesktopBackgroundWidgetController::SetBounds(gfx::Rect bounds) {
     layer_->SetBounds(bounds);
 }
 
-void DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
+bool DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
                                                  int src_container,
                                                  int dest_container) {
   if (widget_) {
     views::Widget::ReparentNativeView(widget_->GetNativeView(),
         root_window->GetChildById(dest_container));
-  } else if (layer_.get()) {
+    return true;
+  }
+  if (layer_.get()) {
     ui::Layer* layer = layer_.get();
     root_window->GetChildById(src_container)->layer()->Remove(layer);
     root_window->GetChildById(dest_container)->layer()->Add(layer);
+    return true;
   }
+  // Nothing to reparent.
+  return false;
 }
 
 ComponentWrapper::ComponentWrapper(

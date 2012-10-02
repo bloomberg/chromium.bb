@@ -120,10 +120,12 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   WallpaperResolution GetAppropriateResolution();
 
   // Move all desktop widgets to locked container.
-  void MoveDesktopToLockedContainer();
+  // Returns true if the desktop moved.
+  bool MoveDesktopToLockedContainer();
 
   // Move all desktop widgets to unlocked container.
-  void MoveDesktopToUnlockedContainer();
+  // Returns true if the desktop moved.
+  bool MoveDesktopToUnlockedContainer();
 
   // WindowObserver implementation.
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
@@ -155,9 +157,9 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // all root windows.
   void InstallComponentForAllWindows();
 
-  // Moves all descktop components from one container to other across all root
-  // windows.
-  void ReparentBackgroundWidgets(int src_container, int dst_container);
+  // Moves all desktop components from one container to other across all root
+  // windows. Returns true if a desktop moved.
+  bool ReparentBackgroundWidgets(int src_container, int dst_container);
 
   // Returns id for background container for unlocked and locked states.
   int GetBackgroundContainerId(bool locked);

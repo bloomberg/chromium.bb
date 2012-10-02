@@ -237,20 +237,20 @@ WallpaperResolution DesktopBackgroundController::GetAppropriateResolution() {
   return resolution;
 }
 
-void DesktopBackgroundController::MoveDesktopToLockedContainer() {
+bool DesktopBackgroundController::MoveDesktopToLockedContainer() {
   if (locked_)
-    return;
+    return false;
   locked_ = true;
-  ReparentBackgroundWidgets(GetBackgroundContainerId(false),
-                            GetBackgroundContainerId(true));
+  return ReparentBackgroundWidgets(GetBackgroundContainerId(false),
+                                   GetBackgroundContainerId(true));
 }
 
-void DesktopBackgroundController::MoveDesktopToUnlockedContainer() {
+bool DesktopBackgroundController::MoveDesktopToUnlockedContainer() {
   if (!locked_)
-    return;
+    return false;
   locked_ = false;
-  ReparentBackgroundWidgets(GetBackgroundContainerId(true),
-                            GetBackgroundContainerId(false));
+  return ReparentBackgroundWidgets(GetBackgroundContainerId(true),
+                                   GetBackgroundContainerId(false));
 }
 
 void DesktopBackgroundController::OnWindowDestroying(aura::Window* window) {
@@ -336,8 +336,9 @@ void DesktopBackgroundController::InstallComponentForAllWindows() {
   }
 }
 
-void DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
+bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
                                                             int dst_container) {
+  bool moved = false;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
     iter != root_windows.end(); ++iter) {
@@ -352,11 +353,12 @@ void DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
             GetComponent(false);
       }
       DCHECK(component);
-      component->Reparent(root_window,
-                          src_container,
-                          dst_container);
+      moved = moved || component->Reparent(root_window,
+                                           src_container,
+                                           dst_container);
     }
   }
+  return moved;
 }
 
 int DesktopBackgroundController::GetBackgroundContainerId(bool locked) {
