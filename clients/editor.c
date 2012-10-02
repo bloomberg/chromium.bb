@@ -639,7 +639,7 @@ text_entry_draw_selection(struct text_entry *entry, cairo_t *cr)
 
 	cairo_save (cr);
 
-	cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 1.0);
+	cairo_set_source_rgba(cr, 0.3, 0.3, 1.0, 0.5);
 	cairo_rectangle(cr,
 			start.x, extents.y_bearing + extents.height + 2,
 			end.x - start.x, -extents.height - 4);
