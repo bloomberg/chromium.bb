@@ -151,23 +151,30 @@ class ThemeSyncableServiceTest : public testing::Test {
   ThemeSyncableServiceTest()
       : loop_(MessageLoop::TYPE_DEFAULT),
         ui_thread_(BrowserThread::UI, &loop_),
+        file_thread_(BrowserThread::FILE, &loop_),
         fake_theme_service_(NULL) {}
 
   ~ThemeSyncableServiceTest() {}
 
   virtual void SetUp() {
-    fake_theme_service_ = BuildForProfile(&profile_);
-    theme_sync_service_.reset(new ThemeSyncableService(&profile_,
+    profile_.reset(new TestingProfile);
+    fake_theme_service_ = BuildForProfile(profile_.get());
+    theme_sync_service_.reset(new ThemeSyncableService(profile_.get(),
                                                        fake_theme_service_));
     fake_change_processor_.reset(new FakeSyncChangeProcessor);
     SetUpExtension();
+  }
+
+  virtual void TearDown() {
+    profile_.reset();
+    loop_.RunAllPending();
   }
 
   void SetUpExtension() {
     CommandLine command_line(CommandLine::NO_PROGRAM);
     extensions::TestExtensionSystem* test_ext_system =
         static_cast<extensions::TestExtensionSystem*>(
-                extensions::ExtensionSystem::Get(&profile_));
+                extensions::ExtensionSystem::Get(profile_.get()));
     ExtensionService* service =
         test_ext_system->CreateExtensionService(&command_line,
                                                 FilePath(kExtensionFilePath),
@@ -205,8 +212,9 @@ class ThemeSyncableServiceTest : public testing::Test {
   // Needed for setting up extension service.
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
   FakeThemeService* fake_theme_service_;
   scoped_refptr<extensions::Extension> theme_extension_;
   scoped_ptr<ThemeSyncableService> theme_sync_service_;
