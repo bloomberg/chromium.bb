@@ -604,6 +604,14 @@ void MenuGtk::OnMenuItemActivated(GtkWidget* menu_item) {
 
   ui::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(menu_item));
 
+  if (!model) {
+    // There won't be a model for "native" submenus like the "Input Methods"
+    // context menu. We don't need to handle activation messages for submenus
+    // anyway, so we can just return here.
+    DCHECK(gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item)));
+    return;
+  }
+
   // The activate signal is sent to radio items as they get deselected;
   // ignore it in this case.
   if (GTK_IS_RADIO_MENU_ITEM(menu_item) &&
