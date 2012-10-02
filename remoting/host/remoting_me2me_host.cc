@@ -128,9 +128,11 @@ class HostProcess
         restarting_(false),
         shutting_down_(false),
 #if defined(OS_WIN)
-        desktop_environment_factory_(new SessionDesktopEnvironmentFactory()),
+        desktop_environment_factory_(new SessionDesktopEnvironmentFactory(
+            context_->input_task_runner(), context_->ui_task_runner())),
 #else  // !defined(OS_WIN)
-        desktop_environment_factory_(new DesktopEnvironmentFactory()),
+        desktop_environment_factory_(new DesktopEnvironmentFactory(
+            context_->input_task_runner(), context_->ui_task_runner())),
 #endif  // !defined(OS_WIN)
         desktop_resizer_(DesktopResizer::Create()),
         exit_code_(kSuccessExitCode)
@@ -311,9 +313,10 @@ class HostProcess
   void ShutdownHostProcess() {
     DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
+    // Tear down resources that use ChromotingHostContext threads.
     config_watcher_.reset();
-
     daemon_channel_.reset();
+    desktop_environment_factory_.reset();
     host_user_interface_.reset();
 
     if (policy_watcher_.get()) {
@@ -558,10 +561,13 @@ class HostProcess
     }
 
     host_ = new ChromotingHost(
-        context_.get(), signal_strategy_.get(),
+        signal_strategy_.get(),
         desktop_environment_factory_.get(),
         CreateHostSessionManager(network_settings,
-                                 context_->url_request_context_getter()));
+                                 context_->url_request_context_getter()),
+        context_->capture_task_runner(),
+        context_->encode_task_runner(),
+        context_->network_task_runner());
 
     // TODO(simonmorris): Get the maximum session duration from a policy.
 #if defined(OS_LINUX)

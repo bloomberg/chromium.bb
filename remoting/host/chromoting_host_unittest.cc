@@ -71,21 +71,20 @@ class MockDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   MockDesktopEnvironmentFactory();
   virtual ~MockDesktopEnvironmentFactory();
 
-  virtual scoped_ptr<DesktopEnvironment> Create(
-      ChromotingHostContext* context) OVERRIDE;
+  virtual scoped_ptr<DesktopEnvironment> Create() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDesktopEnvironmentFactory);
 };
 
-MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {
+MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory()
+    : DesktopEnvironmentFactory(NULL, NULL) {
 }
 
 MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {
 }
 
-scoped_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create(
-    ChromotingHostContext* context) {
+scoped_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create() {
   scoped_ptr<EventExecutor> event_executor(new EventExecutorFake());
   scoped_ptr<VideoFrameCapturer> video_capturer(new VideoFrameCapturerFake());
   return scoped_ptr<DesktopEnvironment>(new DesktopEnvironment(
@@ -122,8 +121,12 @@ class ChromotingHostTest : public testing::Test {
     session_manager_ = new protocol::MockSessionManager();
 
     host_ = new ChromotingHost(
-        &context_, &signal_strategy_, desktop_environment_factory_.get(),
-        scoped_ptr<protocol::SessionManager>(session_manager_));
+        &signal_strategy_,
+        desktop_environment_factory_.get(),
+        scoped_ptr<protocol::SessionManager>(session_manager_),
+        context_.capture_task_runner(),
+        context_.encode_task_runner(),
+        context_.network_task_runner());
     host_->AddStatusObserver(&host_status_observer_);
 
     disconnect_window_ = new MockDisconnectWindow();
@@ -223,7 +226,7 @@ class ChromotingHostTest : public testing::Test {
         PassAs<protocol::ConnectionToClient>();
     protocol::ConnectionToClient* connection_ptr = connection.get();
     scoped_ptr<DesktopEnvironment> desktop_environment =
-        host_->desktop_environment_factory_->Create(&context_);
+        host_->desktop_environment_factory_->Create();
     connection_ptr->set_input_stub(desktop_environment->event_executor());
 
     scoped_refptr<ClientSession> client = new ClientSession(
@@ -232,7 +235,7 @@ class ChromotingHostTest : public testing::Test {
         context_.encode_task_runner(),
         context_.network_task_runner(),
         connection.Pass(),
-        host_->desktop_environment_factory_->Create(&context_),
+        desktop_environment.Pass(),
         base::TimeDelta());
     connection_ptr->set_host_stub(client);
 

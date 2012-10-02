@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "net/base/backoff_entry.h"
@@ -22,6 +23,10 @@
 #include "remoting/protocol/connection_to_client.h"
 #include "third_party/skia/include/core/SkSize.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace remoting {
 
 namespace protocol {
@@ -30,7 +35,6 @@ class SessionConfig;
 class CandidateSessionConfig;
 }  // namespace protocol
 
-class ChromotingHostContext;
 class DesktopEnvironmentFactory;
 
 // A class to implement the functionality of a host process.
@@ -61,13 +65,16 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public protocol::SessionManager::Listener,
                        public MouseMoveObserver {
  public:
-  // The caller must ensure that |context|, |signal_strategy| and
-  // |environment| out-live the host.
+  // The caller must ensure that |signal_strategy| and
+  // |desktop_environment_factory| remain valid at least until the
+  // |shutdown_task| supplied to Shutdown() has been notified.
   ChromotingHost(
-      ChromotingHostContext* context,
       SignalStrategy* signal_strategy,
       DesktopEnvironmentFactory* desktop_environment_factory,
-      scoped_ptr<protocol::SessionManager> session_manager);
+      scoped_ptr<protocol::SessionManager> session_manager,
+      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
   // Asynchronously start the host process.
   //
@@ -171,9 +178,11 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // used on the network thread only.
 
   // Parameters specified when the host was created.
-  ChromotingHostContext* context_;
   DesktopEnvironmentFactory* desktop_environment_factory_;
   scoped_ptr<protocol::SessionManager> session_manager_;
+  scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   // Connection objects.
   SignalStrategy* signal_strategy_;

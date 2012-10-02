@@ -93,7 +93,6 @@ HostNPScriptObject::HostNPScriptObject(
       np_thread_id_(base::PlatformThread::CurrentId()),
       plugin_task_runner_(
           new PluginThreadTaskRunner(plugin_thread_delegate)),
-      desktop_environment_factory_(new DesktopEnvironmentFactory()),
       failed_login_attempts_(0),
       nat_traversal_enabled_(false),
       policy_received_(false),
@@ -134,6 +133,7 @@ bool HostNPScriptObject::Init() {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
   VLOG(2) << "Init";
 
+  // Create threads for the Chromoting host & desktop environment to use.
   scoped_refptr<AutoThreadTaskRunner> auto_plugin_task_runner =
       new AutoThreadTaskRunner(plugin_task_runner_,
                                base::Bind(&PluginThreadTaskRunner::Quit,
@@ -145,6 +145,11 @@ bool HostNPScriptObject::Init() {
     return false;
   }
 
+  // Create the desktop environment factory.
+  desktop_environment_factory_.reset(new DesktopEnvironmentFactory(
+      host_context_->input_task_runner(), host_context_->ui_task_runner()));
+
+  // Start monitoring configured policies.
   policy_watcher_.reset(
       policy_hack::PolicyWatcher::Create(host_context_->network_task_runner()));
   policy_watcher_->StartWatching(
@@ -561,10 +566,13 @@ void HostNPScriptObject::FinishConnect(
 
   // Create the host.
   host_ = new ChromotingHost(
-      host_context_.get(), signal_strategy_.get(),
+      signal_strategy_.get(),
       desktop_environment_factory_.get(),
       CreateHostSessionManager(network_settings,
-                               host_context_->url_request_context_getter()));
+                               host_context_->url_request_context_getter()),
+      host_context_->capture_task_runner(),
+      host_context_->encode_task_runner(),
+      host_context_->network_task_runner());
   host_->AddStatusObserver(this);
   log_to_server_.reset(
       new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get()));
@@ -913,6 +921,9 @@ void HostNPScriptObject::OnShutdownFinished() {
   // registered as status observer for the host, and we can't
   // unregister it from this thread).
   it2me_host_user_interface_.reset();
+
+  // Destroy the DesktopEnvironmentFactory, to free thread references.
+  desktop_environment_factory_.reset();
 
   // Release the context's TaskRunner references for the threads, so they can
   // exit when no objects need them.

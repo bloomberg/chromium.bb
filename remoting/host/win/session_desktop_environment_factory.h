@@ -11,11 +11,12 @@ namespace remoting {
 
 class SessionDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
  public:
-  SessionDesktopEnvironmentFactory();
+  SessionDesktopEnvironmentFactory(
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   virtual ~SessionDesktopEnvironmentFactory();
 
-  virtual scoped_ptr<DesktopEnvironment> Create(
-      ChromotingHostContext* context) OVERRIDE;
+  virtual scoped_ptr<DesktopEnvironment> Create() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionDesktopEnvironmentFactory);

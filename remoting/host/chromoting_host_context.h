@@ -18,6 +18,7 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace remoting {
+
 class AutoThreadTaskRunner;
 
 // A class that manages threads and running context for the chromoting host
@@ -45,12 +46,6 @@ class ChromotingHostContext {
   // the screen.
   virtual base::SingleThreadTaskRunner* capture_task_runner();
 
-  // Task runner for the thread that is used by the EventExecutor.
-  //
-  // TODO(sergeyu): Do we need a separate thread for EventExecutor?
-  // Can we use some other thread instead?
-  virtual base::SingleThreadTaskRunner* desktop_task_runner();
-
   // Task runner for the thread used to encode video streams.
   virtual base::SingleThreadTaskRunner* encode_task_runner();
 
@@ -58,6 +53,12 @@ class ChromotingHostContext {
   // IO. This thread is used by the URLRequestContext to read proxy
   // configuration and by NatConfig to read policy configs.
   virtual base::SingleThreadTaskRunner* file_task_runner();
+
+  // Task runner for the thread that is used by the EventExecutor.
+  //
+  // TODO(sergeyu): Do we need a separate thread for EventExecutor?
+  // Can we use some other thread instead?
+  virtual base::SingleThreadTaskRunner* input_task_runner();
 
   // Task runner for the thread used for network IO. This thread runs
   // a libjingle message loop, and is the only thread on which
@@ -80,14 +81,14 @@ class ChromotingHostContext {
   // A thread that hosts screen capture.
   base::Thread capture_thread_;
 
-  // A thread that hosts input injection.
-  base::Thread desktop_thread_;
-
   // A thread that hosts all encode operations.
   base::Thread encode_thread_;
 
   // Thread for blocking IO operations.
   base::Thread file_thread_;
+
+  // A thread that hosts input injection.
+  base::Thread input_thread_;
 
   // A thread that hosts all network operations.
   base::Thread network_thread_;
@@ -96,9 +97,9 @@ class ChromotingHostContext {
   // the corresponding threads to guarantee proper order of destruction.
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> desktop_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;

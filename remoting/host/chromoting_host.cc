@@ -57,13 +57,17 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 }  // namespace
 
 ChromotingHost::ChromotingHost(
-    ChromotingHostContext* context,
     SignalStrategy* signal_strategy,
     DesktopEnvironmentFactory* desktop_environment_factory,
-    scoped_ptr<protocol::SessionManager> session_manager)
-    : context_(context),
-      desktop_environment_factory_(desktop_environment_factory),
+    scoped_ptr<protocol::SessionManager> session_manager,
+    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+    : desktop_environment_factory_(desktop_environment_factory),
       session_manager_(session_manager.Pass()),
+      capture_task_runner_(capture_task_runner),
+      encode_task_runner_(encode_task_runner),
+      network_task_runner_(network_task_runner),
       signal_strategy_(signal_strategy),
       clients_count_(0),
       state_(kInitial),
@@ -71,9 +75,8 @@ ChromotingHost::ChromotingHost(
       login_backoff_(&kDefaultBackoffPolicy),
       authenticating_client_(false),
       reject_authenticating_client_(false) {
-  DCHECK(context_);
   DCHECK(signal_strategy);
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   if (!desktop_environment_factory_->SupportsAudioCapture()) {
     protocol::CandidateSessionConfig::DisableAudioChannel(
@@ -86,7 +89,7 @@ ChromotingHost::~ChromotingHost() {
 }
 
 void ChromotingHost::Start(const std::string& xmpp_login) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   LOG(INFO) << "Starting host";
 
@@ -104,8 +107,8 @@ void ChromotingHost::Start(const std::string& xmpp_login) {
 
 // This method is called when we need to destroy the host process.
 void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
-  if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(
+  if (!network_task_runner_->BelongsToCurrentThread()) {
+    network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ChromotingHost::Shutdown, this, shutdown_task));
     return;
   }
@@ -116,7 +119,7 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
       // Nothing to do if we are not started.
       state_ = kStopped;
       if (!shutdown_task.is_null())
-        context_->network_task_runner()->PostTask(FROM_HERE, shutdown_task);
+        network_task_runner_->PostTask(FROM_HERE, shutdown_task);
       break;
 
     case kStopping:
@@ -144,12 +147,12 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
 }
 
 void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   status_observers_.AddObserver(observer);
 }
 
 void ChromotingHost::RemoveStatusObserver(HostStatusObserver* observer) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   status_observers_.RemoveObserver(observer);
 }
 
@@ -160,7 +163,7 @@ void ChromotingHost::RejectAuthenticatingClient() {
 
 void ChromotingHost::SetAuthenticatorFactory(
     scoped_ptr<protocol::AuthenticatorFactory> authenticator_factory) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   session_manager_->set_authenticator_factory(authenticator_factory.Pass());
 }
 
@@ -172,7 +175,7 @@ void ChromotingHost::SetMaximumSessionDuration(
 ////////////////////////////////////////////////////////////////////////////
 // protocol::ClientSession::EventHandler implementation.
 void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   login_backoff_.Reset();
 
@@ -206,7 +209,7 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 }
 
 void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   // Notify observers.
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
@@ -214,7 +217,7 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   // Notify observers.
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
@@ -222,7 +225,7 @@ void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
 }
 
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   ClientList::iterator it = clients_.begin();
   for (; it != clients_.end(); ++it) {
@@ -243,14 +246,14 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
 
 void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
                                              int64 sequence_number) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 }
 
 void ChromotingHost::OnSessionRouteChange(
     ClientSession* session,
     const std::string& channel_name,
     const protocol::TransportRoute& route) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnClientRouteChange(session->client_jid(), channel_name,
                                         route));
@@ -258,13 +261,13 @@ void ChromotingHost::OnSessionRouteChange(
 
 void ChromotingHost::OnClientDimensionsChanged(ClientSession* session,
                                                const SkISize& size) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnClientDimensionsChanged(session->client_jid(), size));
 }
 
 void ChromotingHost::OnSessionManagerReady() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   // Don't need to do anything here, just wait for incoming
   // connections.
 }
@@ -272,7 +275,7 @@ void ChromotingHost::OnSessionManagerReady() {
 void ChromotingHost::OnIncomingSession(
       protocol::Session* session,
       protocol::SessionManager::IncomingSessionResponse* response) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   if (state_ != kStarted) {
     *response = protocol::SessionManager::DECLINE;
@@ -306,16 +309,16 @@ void ChromotingHost::OnIncomingSession(
 
   // Create the desktop integration implementation for the client to use.
   scoped_ptr<DesktopEnvironment> desktop_environment =
-      desktop_environment_factory_->Create(context_);
+      desktop_environment_factory_->Create();
 
   // Create a client object.
   scoped_ptr<protocol::ConnectionToClient> connection(
       new protocol::ConnectionToClient(session));
   scoped_refptr<ClientSession> client = new ClientSession(
       this,
-      context_->capture_task_runner(),
-      context_->encode_task_runner(),
-      context_->network_task_runner(),
+      capture_task_runner_,
+      encode_task_runner_,
+      network_task_runner_,
       connection.Pass(),
       desktop_environment.Pass(),
       max_session_duration_);
@@ -325,15 +328,15 @@ void ChromotingHost::OnIncomingSession(
 
 void ChromotingHost::set_protocol_config(
     scoped_ptr<protocol::CandidateSessionConfig> config) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK(config.get());
   DCHECK_EQ(state_, kInitial);
   protocol_config_ = config.Pass();
 }
 
 void ChromotingHost::OnLocalMouseMoved(const SkIPoint& new_pos) {
-  if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(
+  if (!network_task_runner_->BelongsToCurrentThread()) {
+    network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ChromotingHost::OnLocalMouseMoved,
                               this, new_pos));
     return;
@@ -346,8 +349,8 @@ void ChromotingHost::OnLocalMouseMoved(const SkIPoint& new_pos) {
 }
 
 void ChromotingHost::PauseSession(bool pause) {
-  if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(
+  if (!network_task_runner_->BelongsToCurrentThread()) {
+    network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ChromotingHost::PauseSession, this, pause));
     return;
   }
@@ -359,8 +362,8 @@ void ChromotingHost::PauseSession(bool pause) {
 }
 
 void ChromotingHost::DisconnectAllClients() {
-  if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(
+  if (!network_task_runner_->BelongsToCurrentThread()) {
+    network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ChromotingHost::DisconnectAllClients, this));
     return;
   }
@@ -373,14 +376,14 @@ void ChromotingHost::DisconnectAllClients() {
 }
 
 void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kInitial);
 
   ui_strings_ = ui_strings;
 }
 
 void ChromotingHost::OnClientStopped() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   --clients_count_;
   if (state_ == kStopping && !clients_count_)
@@ -388,13 +391,18 @@ void ChromotingHost::OnClientStopped() {
 }
 
 void ChromotingHost::ShutdownFinish() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kStopping);
+
+  state_ = kStopped;
 
   // Destroy session manager.
   session_manager_.reset();
 
-  state_ = kStopped;
+  // Clear |desktop_environment_factory_| and |signal_strategy_| to
+  // ensure we don't try to touch them after running shutdown tasks
+  desktop_environment_factory_ = NULL;
+  signal_strategy_ = NULL;
 
   // Keep reference to |this|, so that we don't get destroyed while
   // sending notifications.

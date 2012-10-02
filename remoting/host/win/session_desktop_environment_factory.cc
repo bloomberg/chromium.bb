@@ -13,21 +13,21 @@
 
 namespace remoting {
 
-SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory() {
+SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : DesktopEnvironmentFactory(input_task_runner, ui_task_runner) {
 }
 
 SessionDesktopEnvironmentFactory::~SessionDesktopEnvironmentFactory() {
 }
 
-scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
-    ChromotingHostContext* context) {
+scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create() {
   scoped_ptr<AudioCapturer> audio_capturer = AudioCapturer::Create();
   scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
-      context->desktop_task_runner(),
-      context->ui_task_runner());
+      input_task_runner_, ui_task_runner_);
   event_executor.reset(new SessionEventExecutorWin(
-      context->desktop_task_runner(),
-      event_executor.Pass()));
+      input_task_runner_, event_executor.Pass()));
   scoped_ptr<VideoFrameCapturer> video_capturer(VideoFrameCapturer::Create());
   return scoped_ptr<DesktopEnvironment>(new DesktopEnvironment(
       audio_capturer.Pass(),
