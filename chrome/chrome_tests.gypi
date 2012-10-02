@@ -3006,6 +3006,7 @@
         'browser/safe_browsing/safe_browsing_blocking_page_v2_test.cc',
         'browser/safe_browsing/safe_browsing_service_browsertest.cc',
         'browser/service/service_process_control_browsertest.cc',
+        'browser/sessions/better_session_restore_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
         'browser/sessions/tab_restore_service_browsertest.cc',
         'browser/speech/extension_api/tts_extension_apitest.cc',
