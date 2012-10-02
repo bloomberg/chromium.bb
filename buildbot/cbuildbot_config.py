@@ -936,12 +936,14 @@ _release.add_config('lumpy-release',
 
 _release.add_config('link-release',
   boards=['link'],
+  hw_tests=['bvt'],
   useflags=official['useflags'] + ['highdpi'],
   prebuilts=False,
 )
 
 _release.add_config('kiev-release',
   boards=['kiev'],
+  hw_tests=['bvt'],
 )
 
 _release.add_config('parrot-release',
