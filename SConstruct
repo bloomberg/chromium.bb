@@ -2166,7 +2166,6 @@ def MakeUnixLikeEnv():
         '-fstack-protector',
         ] + werror_flags,
     CXXFLAGS=['-std=c++98'],
-    LIBPATH=['/usr/lib'],
     # NOTE: pthread is only neeeded for libppNaClPlugin.so and on arm
     LIBS = ['pthread'],
     CPPDEFINES = [['__STDC_LIMIT_MACROS', '1'],
