@@ -692,15 +692,17 @@ def BuildStepMakeAll(pepperdir, platform, directory, step_name, clean=False):
     if platform == 'win':
       # We need to modify the environment to build host on Windows.
       env = GetWindowsEnvironment()
+      make = os.path.join(make_dir, 'make.bat')
     else:
       env = os.environ
+      make = 'make'
 
-    buildbot_common.Run(['make', '-j8'],
-                        cwd=os.path.abspath(make_dir), shell=True, env=env)
+    buildbot_common.Run([make, '-j8'],
+                        cwd=os.path.abspath(make_dir), env=env)
     if clean:
       # Clean to remove temporary files but keep the built libraries.
-      buildbot_common.Run(['make', '-j8', 'clean'],
-                          cwd=os.path.abspath(make_dir), shell=True)
+      buildbot_common.Run([make, '-j8', 'clean'],
+                          cwd=os.path.abspath(make_dir))
 
 
 def BuildStepBuildLibraries(pepperdir, platform, directory):
