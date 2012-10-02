@@ -422,11 +422,11 @@ class IntentRowView : public views::View,
   class Delegate {
    public:
     // Called when the user clicks the "Add to Chrome" button.
-    virtual void OnExtensionInstallClicked(const string16& extension_id) = 0;
+    virtual void OnExtensionInstallClicked(const std::string& extension_id) = 0;
 
     // Called when the user clicks the extension title link.
     virtual void OnExtensionLinkClicked(
-        const string16& extension_id,
+        const std::string& extension_id,
         WindowOpenDisposition disposition) = 0;
 
     // Called when the action button is clicked. |type| indicates the requested
@@ -460,7 +460,7 @@ class IntentRowView : public views::View,
   // install button.
   void StartThrobber();
 
-  void MarkBusy(const string16& extension_id);
+  void MarkBusy(const std::string& extension_id);
 
   // Stop the throbber for this row, and show the star rating and the install
   // button.
@@ -478,7 +478,7 @@ class IntentRowView : public views::View,
   string16 GetActionButtonMessage();
 
   // Identifier for the suggested extension displayed in this row.
-  string16 extension_id_;
+  std::string extension_id_;
 
   // A delegate to respond to button presses and clicked links.
   Delegate* delegate_;
@@ -598,7 +598,7 @@ void IntentRowView::LinkClicked(views::Link* source,
       chrome::DispositionFromEventFlags(event_flags));
 }
 
-void IntentRowView::MarkBusy(const string16& extension_id) {
+void IntentRowView::MarkBusy(const std::string& extension_id) {
   SetEnabled(false);
   if (extension_id == extension_id_)
     StartThrobber();
@@ -659,7 +659,7 @@ class IntentsView : public views::View {
 
   // Show the install throbber for the row containing |extension_id|. This
   // function also hides hides and disables other buttons and links.
-  void StartThrobber(const string16& extension_id);
+  void StartThrobber(const std::string& extension_id);
 
   // Hide the install throbber. This function re-enables all buttons and links.
   void StopThrobber();
@@ -731,7 +731,7 @@ void IntentsView::Update() {
   }
 }
 
-void IntentsView::StartThrobber(const string16& extension_id) {
+void IntentsView::StartThrobber(const std::string& extension_id) {
   for (int i = 0; i < child_count(); ++i)
     static_cast<IntentRowView*>(child_at(i))->MarkBusy(extension_id);
 }
@@ -803,14 +803,15 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual void OnFaviconChanged(WebIntentPickerModel* model,
                                 size_t index) OVERRIDE;
   virtual void OnExtensionIconChanged(WebIntentPickerModel* model,
-                                      const string16& extension_id) OVERRIDE;
+                                      const std::string& extension_id) OVERRIDE;
   virtual void OnInlineDisposition(const string16& title,
                                    const GURL& url) OVERRIDE;
 
   // SuggestedExtensionsRowView::Delegate implementation.
-  virtual void OnExtensionInstallClicked(const string16& extension_id) OVERRIDE;
+  virtual void OnExtensionInstallClicked(
+      const std::string& extension_id) OVERRIDE;
   virtual void OnExtensionLinkClicked(
-      const string16& extension_id,
+      const std::string& extension_id,
       WindowOpenDisposition disposition) OVERRIDE;
   virtual void OnActionButtonClicked(
       IntentRowView::ActionType type,
@@ -1161,7 +1162,7 @@ void WebIntentPickerViews::OnFaviconChanged(WebIntentPickerModel* model,
 
 void WebIntentPickerViews::OnExtensionIconChanged(
     WebIntentPickerModel* model,
-    const string16& extension_id) {
+    const std::string& extension_id) {
   if (extensions_)
     extensions_->Update();
 
@@ -1205,18 +1206,18 @@ void WebIntentPickerViews::OnInlineDisposition(
 }
 
 void WebIntentPickerViews::OnExtensionInstallClicked(
-    const string16& extension_id) {
+    const std::string& extension_id) {
   can_close_ = false;
   extensions_->StartThrobber(extension_id);
   more_suggestions_link_->SetEnabled(false);
   contents_->Layout();
-  delegate_->OnExtensionInstallRequested(UTF16ToUTF8(extension_id));
+  delegate_->OnExtensionInstallRequested(extension_id);
 }
 
 void WebIntentPickerViews::OnExtensionLinkClicked(
-    const string16& extension_id,
+    const std::string& extension_id,
     WindowOpenDisposition disposition) {
-  delegate_->OnExtensionLinkClicked(UTF16ToUTF8(extension_id), disposition);
+  delegate_->OnExtensionLinkClicked(extension_id, disposition);
 }
 
 void WebIntentPickerViews::OnActionButtonClicked(

@@ -123,7 +123,7 @@ string16 WebIntentPickerModel::GetSuggestionsLinkText() const {
 }
 
 void WebIntentPickerModel::SetSuggestedExtensionIconWithId(
-    const string16& id,
+    const std::string& id,
     const gfx::Image& image) {
   for (size_t i = 0; i < suggested_extensions_.size(); ++i) {
     SuggestedExtension& extension = suggested_extensions_[i];
@@ -180,7 +180,7 @@ WebIntentPickerModel::InstalledService::~InstalledService() {
 
 WebIntentPickerModel::SuggestedExtension::SuggestedExtension(
     const string16& title,
-    const string16& id,
+    const std::string& id,
     double average_rating)
     : title(title),
       id(id),

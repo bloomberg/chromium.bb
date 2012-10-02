@@ -166,7 +166,7 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionRow) {
   WebIntentPickerModel model;
   std::vector<WebIntentPickerModel::SuggestedExtension> suggestions;
   suggestions.push_back(WebIntentPickerModel::SuggestedExtension(
-      string16(), string16(), 2.5));
+      string16(), std::string(), 2.5));
   model.AddSuggestedExtensions(suggestions);
   model.SetWaitingForSuggestions(false);
 
@@ -195,7 +195,7 @@ TEST_F(WebIntentPickerSheetControllerTest, MixedIntentView) {
   WebIntentPickerModel model;
   std::vector<WebIntentPickerModel::SuggestedExtension> suggestions;
   suggestions.push_back(WebIntentPickerModel::SuggestedExtension(
-      string16(), string16(), 2.5));
+      string16(), std::string(), 2.5));
   model.AddSuggestedExtensions(suggestions);
   model.AddInstalledService(string16(), GURL("http://example.org/intent.html"),
       webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);

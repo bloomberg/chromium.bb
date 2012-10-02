@@ -21,12 +21,12 @@ const string16 kTitle6(ASCIIToUTF16("Lulz"));
 const GURL kUrl1("http://www.example.com/foo");
 const GURL kUrl2("http://www.example.com/bar");
 const GURL kUrl3("http://www.example.com/baz");
-const string16 kId1(ASCIIToUTF16("nhkckhebbbncbkefhcpcgepcgfaclehe"));
-const string16 kId2(ASCIIToUTF16("hcpcgepcgfaclehenhkckhebbbncbkef"));
-const string16 kId3(ASCIIToUTF16("aclehenhkckhebbbncbkefhcpcgepcgf"));
-const string16 kId4(ASCIIToUTF16("bclehenhkckhebbbncbkefhcpcgepcgf"));
-const string16 kId5(ASCIIToUTF16("cclehenhkckhebbbncbkefhcpcgepcgf"));
-const string16 kId6(ASCIIToUTF16("dclehenhkckhebbbncbkefhcpcgepcgf"));
+const std::string kId1("nhkckhebbbncbkefhcpcgepcgfaclehe");
+const std::string kId2("hcpcgepcgfaclehenhkckhebbbncbkef");
+const std::string kId3("aclehenhkckhebbbncbkefhcpcgepcgf");
+const std::string kId4("bclehenhkckhebbbncbkefhcpcgepcgf");
+const std::string kId5("cclehenhkckhebbbncbkefhcpcgepcgf");
+const std::string kId6("dclehenhkckhebbbncbkefhcpcgepcgf");
 const webkit_glue::WebIntentServiceData::Disposition kWindowDisposition(
     webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
 const webkit_glue::WebIntentServiceData::Disposition kInlineDisposition(
@@ -40,7 +40,8 @@ class WebIntentPickerModelObserverMock : public WebIntentPickerModelObserver {
   MOCK_METHOD2(OnFaviconChanged,
                void(WebIntentPickerModel* model, size_t index));
   MOCK_METHOD2(OnExtensionIconChanged,
-               void(WebIntentPickerModel* model, const string16& extension_id));
+               void(WebIntentPickerModel* model,
+                    const std::string& extension_id));
   MOCK_METHOD2(OnInlineDisposition,
                void(const string16& title, const GURL& url));
 };

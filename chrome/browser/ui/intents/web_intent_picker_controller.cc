@@ -729,10 +729,8 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
     const CWSIntentsRegistry::IntentExtensionInfo& info = extensions[i];
 
     // Do not include suggestions for already installed extensions.
-    if (extension_service->GetExtensionById(UTF16ToUTF8(info.id),
-                                            true)) {
+    if (extension_service->GetExtensionById(info.id, true))
       continue;
-    }
 
     suggestions.push_back(WebIntentPickerModel::SuggestedExtension(
         info.name, info.id, info.average_rating));
@@ -761,7 +759,7 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
 }
 
 void WebIntentPickerController::OnExtensionIconURLFetchComplete(
-    const string16& extension_id, const net::URLFetcher* source) {
+    const std::string& extension_id, const net::URLFetcher* source) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (source->GetResponseCode() != 200) {
     AsyncOperationFinished();
@@ -861,14 +859,14 @@ void WebIntentPickerController::DecodeExtensionIconAndResize(
 }
 
 void WebIntentPickerController::OnExtensionIconAvailable(
-    const string16& extension_id,
+    const std::string& extension_id,
     const gfx::Image& icon_image) {
   picker_model_->SetSuggestedExtensionIconWithId(extension_id, icon_image);
   AsyncOperationFinished();
 }
 
 void WebIntentPickerController::OnExtensionIconUnavailable(
-    const string16& extension_id) {
+    const std::string& extension_id) {
   AsyncOperationFinished();
 }
 

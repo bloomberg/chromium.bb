@@ -208,8 +208,7 @@ TEST_F(CWSIntentsRegistryTest, ValidQuery) {
   EXPECT_EQ(0, extensions_[0].num_ratings);
   EXPECT_EQ(0.0, extensions_[0].average_rating);
   EXPECT_EQ(std::string(kValidManifest), UTF16ToUTF8(extensions_[0].manifest));
-  EXPECT_EQ(std::string("nhkckhebbbncbkefhcpcgepcgfaclehe"),
-            UTF16ToUTF8(extensions_[0].id) );
+  EXPECT_EQ(std::string("nhkckhebbbncbkefhcpcgepcgfaclehe"), extensions_[0].id);
   EXPECT_EQ(std::string("Sidd's Intent App"),
             UTF16ToUTF8(extensions_[0].name));
   EXPECT_EQ(std::string(kValidIconURL), extensions_[0].icon_url.spec());

@@ -207,7 +207,7 @@ class WebIntentPickerController
       const CWSIntentsRegistry::IntentExtensionList& extensions);
 
   // Called when a suggested extension's icon is fetched.
-  void OnExtensionIconURLFetchComplete(const string16& extension_id,
+  void OnExtensionIconURLFetchComplete(const std::string& extension_id,
                                        const net::URLFetcher* source);
 
   // Called whenever intent data (both from registry and CWS) arrives.
@@ -225,11 +225,11 @@ class WebIntentPickerController
       const base::Closure& unavailable_callback);
 
   // Called when an extension's icon is successfully decoded and resized.
-  void OnExtensionIconAvailable(const string16& extension_id,
+  void OnExtensionIconAvailable(const std::string& extension_id,
                                 const gfx::Image& icon_image);
 
   // Called when an extension's icon failed to be decoded or resized.
-  void OnExtensionIconUnavailable(const string16& extension_id);
+  void OnExtensionIconUnavailable(const std::string& extension_id);
 
   // Signals that a picker event has occurred.
   void OnPickerEvent(WebIntentPickerEvent event);

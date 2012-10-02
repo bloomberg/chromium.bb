@@ -152,7 +152,7 @@ void WebIntentPickerCocoa::OnFaviconChanged(WebIntentPickerModel* model,
 
 void WebIntentPickerCocoa::OnExtensionIconChanged(
     WebIntentPickerModel* model,
-    const string16& extension_id) {
+    const std::string& extension_id) {
   // We don't handle individual icon changes - just redo the whole model.
   PerformLayout();
 }

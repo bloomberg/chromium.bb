@@ -278,8 +278,9 @@ void WebIntentPickerGtk::OnFaviconChanged(WebIntentPickerModel* model,
   UpdateInstalledServices();
 }
 
-void WebIntentPickerGtk::OnExtensionIconChanged(WebIntentPickerModel* model,
-                                                const string16& extension_id) {
+void WebIntentPickerGtk::OnExtensionIconChanged(
+    WebIntentPickerModel* model,
+    const std::string& extension_id) {
   UpdateSuggestedExtensions();
 }
 
@@ -467,7 +468,7 @@ void WebIntentPickerGtk::OnExtensionLinkClick(GtkWidget* link) {
   size_t index = GetExtensionWidgetRow(link);
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt(index);
-  delegate_->OnExtensionLinkClicked(UTF16ToUTF8(extension.id),
+  delegate_->OnExtensionLinkClicked(extension.id,
       event_utils::DispositionForCurrentButtonPressEvent());
 }
 
@@ -476,7 +477,7 @@ void WebIntentPickerGtk::OnExtensionInstallButtonClick(GtkWidget* button) {
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt(index);
 
-  delegate_->OnExtensionInstallRequested(UTF16ToUTF8(extension.id));
+  delegate_->OnExtensionInstallRequested(extension.id);
   SetWidgetsEnabled(false);
 
   // Re-enable the clicked extension row.

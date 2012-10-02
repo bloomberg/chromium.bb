@@ -58,7 +58,7 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   virtual void OnFaviconChanged(WebIntentPickerModel* model,
                                 size_t index) OVERRIDE;
   virtual void OnExtensionIconChanged(WebIntentPickerModel* model,
-                                      const string16& extension_id) OVERRIDE;
+                                      const std::string& extension_id) OVERRIDE;
   virtual void OnInlineDisposition(const string16& title,
                                    const GURL& url) OVERRIDE;
 

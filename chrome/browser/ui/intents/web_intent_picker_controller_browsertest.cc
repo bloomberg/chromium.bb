@@ -135,7 +135,7 @@ class WebIntentPickerMock : public WebIntentPicker,
     num_icons_changed_++;
   }
   virtual void OnExtensionIconChanged(
-      WebIntentPickerModel* model, const string16& extension_id) OVERRIDE {
+      WebIntentPickerModel* model, const std::string& extension_id) OVERRIDE {
     num_extension_icons_changed_++;
   }
   virtual void OnInlineDisposition(

@@ -23,7 +23,7 @@ class WebIntentPickerModelObserver {
 
   // Called when the extension with |extension_id| has its icon changed.
   virtual void OnExtensionIconChanged(WebIntentPickerModel* model,
-                                      const string16& extension_id) = 0;
+                                      const std::string& extension_id) = 0;
 
   // Called when the inline disposition should be displayed for |model|.
   virtual void OnInlineDisposition(const string16& title,

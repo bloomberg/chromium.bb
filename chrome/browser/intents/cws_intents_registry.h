@@ -29,7 +29,7 @@ class CWSIntentsRegistry : public ProfileKeyedService,
     IntentExtensionInfo();
     ~IntentExtensionInfo();
 
-    string16 id;  // The id of the extension.
+    std::string id;  // The id of the extension.
     string16 name;  // The name of the extension.
     int num_ratings;  // Number of ratings in CWS store.
     double average_rating;  // The average CWS rating.

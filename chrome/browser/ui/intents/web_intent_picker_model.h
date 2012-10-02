@@ -42,7 +42,7 @@ class WebIntentPickerModel {
   // A suggested extension to display in the picker.
   struct SuggestedExtension {
     SuggestedExtension(const string16& title,
-                       const string16& id,
+                       const std::string& id,
                        double average_rating);
     ~SuggestedExtension();
 
@@ -50,7 +50,7 @@ class WebIntentPickerModel {
     string16 title;
 
     // The id of the extension that provides the intent service.
-    string16 id;
+    std::string id;
 
     // The average rating of the extension.
     double average_rating;
@@ -124,7 +124,7 @@ class WebIntentPickerModel {
   string16 GetSuggestionsLinkText() const;
 
   // Set the icon image for the suggested extension with |id|.
-  void SetSuggestedExtensionIconWithId(const string16& id,
+  void SetSuggestedExtensionIconWithId(const std::string& id,
                                        const gfx::Image& image);
 
   // Set the picker to display the intent service with |url| inline.
