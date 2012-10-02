@@ -22,6 +22,19 @@
 
 namespace em = enterprise_management;
 
+namespace {
+
+// Delay between load retries when there was a validation error.
+// NOTE: This code is here to mitigate clock loss on some devices where policy
+// loads will fail with a validation error caused by RTC clock bing reset when
+// the battery is drained.
+int kLoadRetryDelayMs = 1000 * 5;
+// Maximal number of retries before we give up. Calculated to allow for 10 min
+// of retry time.
+int kMaxLoadRetries = (1000 * 60 * 10) / kLoadRetryDelayMs;
+
+}  // namespace
+
 namespace chromeos {
 
 static base::LazyInstance<DeviceSettingsService> g_device_settings_service =
@@ -39,7 +52,8 @@ DeviceSettingsService::Observer::~Observer() {}
 DeviceSettingsService::DeviceSettingsService()
     : session_manager_client_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      store_status_(STORE_SUCCESS) {}
+      store_status_(STORE_SUCCESS),
+      load_retries_left_(kMaxLoadRetries) {}
 
 DeviceSettingsService::~DeviceSettingsService() {
   DCHECK(pending_operations_.empty());
@@ -235,8 +249,22 @@ void DeviceSettingsService::HandleCompletedOperation(
   if (status == STORE_SUCCESS) {
     policy_data_ = operation->policy_data().Pass();
     device_settings_ = operation->device_settings().Pass();
+    load_retries_left_ = kMaxLoadRetries;
   } else if (status != STORE_KEY_UNAVAILABLE) {
     LOG(ERROR) << "Session manager operation failed: " << status;
+    // Validation errors can be temprary if the rtc has went on holiday for a
+    // short while. So we will retry such loads for up to 10 minutes.
+    if (status == STORE_TEMP_VALIDATION_ERROR) {
+      if (load_retries_left_ > 0) {
+        load_retries_left_--;
+        LOG(ERROR) << "A re-load has been scheduled due to a validation error.";
+        content::BrowserThread::PostDelayedTask(
+            content::BrowserThread::UI,
+            FROM_HERE,
+            base::Bind(&DeviceSettingsService::Load, base::Unretained(this)),
+            base::TimeDelta::FromMilliseconds(kLoadRetryDelayMs));
+      }
+    }
   }
 
   if (new_owner_key) {

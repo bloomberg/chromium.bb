@@ -89,12 +89,13 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Status codes for Store().
   enum Status {
     STORE_SUCCESS,
-    STORE_KEY_UNAVAILABLE,   // Owner key not yet configured.
-    STORE_POLICY_ERROR,      // Failure constructing the settings blob.
-    STORE_OPERATION_FAILED,  // IPC to session_manager daemon failed.
-    STORE_NO_POLICY,         // No settings blob present.
-    STORE_INVALID_POLICY,    // Invalid settings blob.
-    STORE_VALIDATION_ERROR,  // Policy validation failure.
+    STORE_KEY_UNAVAILABLE,       // Owner key not yet configured.
+    STORE_POLICY_ERROR,          // Failure constructing the settings blob.
+    STORE_OPERATION_FAILED,      // IPC to session_manager daemon failed.
+    STORE_NO_POLICY,             // No settings blob present.
+    STORE_INVALID_POLICY,        // Invalid settings blob.
+    STORE_VALIDATION_ERROR,      // Unrecoverable policy validation failure.
+    STORE_TEMP_VALIDATION_ERROR, // Temporary policy validation failure.
   };
 
   // Observer interface.
@@ -228,6 +229,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   std::deque<SessionManagerOperation*> pending_operations_;
 
   ObserverList<Observer, true> observers_;
+
+  // For recoverable load errors how many retries are left before we give up.
+  int load_retries_left_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsService);
 };

@@ -702,6 +702,13 @@ bool DeviceSettingsProvider::UpdateFromService() {
                  << device_settings_service_->status();
       trusted_status_ = PERMANENTLY_UNTRUSTED;
       break;
+    case DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
+      // The policy has failed to validate due to temporary error but it might
+      // take a long time until we recover so behave as it is a permanent error.
+      LOG(ERROR) << "Failed to retrieve cros policies because a temporary "
+                 << "validation error has occurred. Retrying might succeed.";
+      trusted_status_ = PERMANENTLY_UNTRUSTED;
+      break;
   }
 
   // Notify the observers we are done.

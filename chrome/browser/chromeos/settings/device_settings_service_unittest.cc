@@ -137,6 +137,23 @@ TEST_F(DeviceSettingsServiceTest, LoadValidationError) {
   EXPECT_FALSE(device_settings_service_.device_settings());
 }
 
+TEST_F(DeviceSettingsServiceTest, LoadValidationErrorFutureTimestamp) {
+  base::Time timestamp(base::Time::NowFromSystemTime() +
+                       base::TimeDelta::FromDays(5000));
+  policy_.policy_data().set_timestamp(
+      (timestamp - base::Time::UnixEpoch()).InMilliseconds());
+  policy_.Build();
+  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
+  owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
+  device_settings_service_.Load();
+  device_settings_test_helper_.Flush();
+
+  EXPECT_EQ(DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR,
+            device_settings_service_.status());
+  EXPECT_FALSE(device_settings_service_.policy_data());
+  EXPECT_FALSE(device_settings_service_.device_settings());
+}
+
 TEST_F(DeviceSettingsServiceTest, LoadSuccess) {
   owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
   device_settings_service_.Load();

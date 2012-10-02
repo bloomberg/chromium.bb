@@ -153,6 +153,7 @@ void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
     case chromeos::DeviceSettingsService::STORE_NO_POLICY:
     case chromeos::DeviceSettingsService::STORE_INVALID_POLICY:
     case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR:
+    case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
       status_ = STATUS_LOAD_ERROR;
       break;
   }

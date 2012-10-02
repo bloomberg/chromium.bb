@@ -172,6 +172,12 @@ void SessionManagerOperation::ReportValidatorStatus(
     device_settings_ = validator->payload().Pass();
   } else {
     LOG(ERROR) << "Policy validation failed: " << validator->status();
+
+    // Those are mostly caused by RTC loss and are recoverable.
+    if (validator->status() ==
+        policy::DeviceCloudPolicyValidator::VALIDATION_BAD_TIMESTAMP) {
+      status = DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR;
+    }
   }
 
   ReportResult(status);
