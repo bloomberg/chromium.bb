@@ -197,8 +197,6 @@ deps_os = {
             None,
         'src/native_client/src/third_party/ppapi':
             None,
-        'src/native_client_sdk/src/site_scons':
-            None,
         'src/sandbox/linux/seccomp-legacy':
             None,
         'src/testing/iossim/third_party/class-dump':
