@@ -449,7 +449,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
 // link from that iframe to a new window to a URL in the app's extent (path1/
 // empty.html) results in the new window being in an app process. See
 // http://crbug.com/89272 for more details.
-IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/153513
+#define MAYBE_OpenAppFromIframe DISABLED_OpenAppFromIframe
+#else
+#define MAYBE_OpenAppFromIframe OpenAppFromIframe
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_OpenAppFromIframe) {
   extensions::ProcessMap* process_map =
       browser()->profile()->GetExtensionService()->process_map();
 
