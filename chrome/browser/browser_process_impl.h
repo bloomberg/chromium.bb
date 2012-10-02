@@ -28,6 +28,10 @@ class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
 class RemoteDebuggingServer;
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+class PluginsResourceService;
+#endif
+
 namespace policy {
 class BrowserPolicyConnector;
 class PolicyService;
@@ -253,6 +257,9 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
 #endif
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  scoped_refptr<PluginsResourceService> plugins_resource_service_;
+#endif
   // TODO(eroman): Remove this when done debugging 113031. This tracks
   // the callstack which released the final module reference count.
   base::debug::StackTrace release_last_reference_callstack_;

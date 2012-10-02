@@ -38,6 +38,8 @@ class PluginFinder {
   void Init();
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
+  void ReinitializePlugins(const base::DictionaryValue& json_metadata);
+
   // Finds a plug-in for the given MIME type and language (specified as an IETF
   // language tag, i.e. en-US). If found, sets |installer| to the
   // corresponding PluginInstaller and |plugin_metadata| to a copy of the
@@ -75,12 +77,8 @@ class PluginFinder {
   // Returns NULL if the plug-in list couldn't be parsed.
   static base::DictionaryValue* LoadPluginList();
 
-  PluginMetadata* CreatePluginMetadata(
-      const std::string& identifier,
-      const base::DictionaryValue* plugin_dict);
+  void InitInternal();
 
-  // Initialized in |Init()| method and is read-only after that.
-  // No need to be synchronized.
   scoped_ptr<base::DictionaryValue> plugin_list_;
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   std::map<std::string, PluginInstaller*> installers_;
@@ -93,9 +91,8 @@ class PluginFinder {
   // in |identifier_plugin_| (Double De-allocation).
   std::map<string16, PluginMetadata*> name_plugin_;
 
-  // Synchronization for |installers_|, |identifier_plugin_| and
-  // |name_plugin_| are required since multiple threads
-  // can be accessing them concurrently.
+  // Synchronization for the above member variables is
+  // required since multiple threads can be accessing them concurrently.
   base::Lock mutex_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginFinder);

@@ -319,6 +319,10 @@ extern const char kPluginsMigratedToPepperFlash[];
 extern const char kPluginsShowDetails[];
 extern const char kPluginsAllowOutdated[];
 extern const char kPluginsAlwaysAuthorize[];
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+extern const char kPluginsMetadata[];
+extern const char kPluginsResourceCacheUpdate[];
+#endif
 extern const char kCheckDefaultBrowser[];
 #if defined(OS_WIN)
 extern const char kSuppressSwitchToMetroModeOnSetDefault[];

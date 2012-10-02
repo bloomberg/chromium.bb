@@ -359,6 +359,10 @@ extern const char kWindowPosition[];
 extern const char kWindowSize[];
 extern const char kWinHttpProxyResolver[];
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+extern const char kPluginsMetadataServerURL[];
+#endif
+
 #if defined(OS_ANDROID)
 extern const char kTabletUI[];
 #endif

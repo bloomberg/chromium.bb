@@ -120,6 +120,10 @@
 #include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
 #endif
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+#include "chrome/browser/web_resource/plugins_resource_service.h"
+#endif
+
 namespace {
 
 enum MigratedPreferences {
@@ -152,6 +156,10 @@ void RegisterLocalState(PrefService* local_state) {
   chrome_variations::VariationsService::RegisterPrefs(local_state);
   WebCacheManager::RegisterPrefs(local_state);
   chrome::RegisterScreenshotPrefs(local_state);
+
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  PluginsResourceService::RegisterPrefs(local_state);
+#endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::CloudPolicySubsystem::RegisterPrefs(local_state);

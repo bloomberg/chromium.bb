@@ -100,6 +100,10 @@
 #include "chrome/browser/chromeos/oom_priority_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+#include "chrome/browser/web_resource/plugins_resource_service.h"
+#endif
+
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 // How often to check if the persistent instance of Chrome needs to restart
 // to install an update.
@@ -795,6 +799,13 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 
   // Triggers initialization of the singleton instance on UI thread.
   PluginFinder::GetInstance()->Init();
+
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  if (!plugins_resource_service_) {
+    plugins_resource_service_ = new PluginsResourceService(local_state());
+    plugins_resource_service_->StartAfterDelay();
+  }
+#endif
 }
 
 void BrowserProcessImpl::CreateIconManager() {

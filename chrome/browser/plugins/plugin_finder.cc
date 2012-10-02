@@ -54,157 +54,9 @@ static string16 GetGroupName(const webkit::WebPluginInfo& plugin) {
 #endif
 }
 
-}  // namespace
-
-// static
-PluginFinder* PluginFinder::GetInstance() {
-  // PluginFinder::GetInstance() is the only method that's allowed to call
-  // Singleton<PluginFinder>::get().
-  return Singleton<PluginFinder>::get();
-}
-
-PluginFinder::PluginFinder() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-}
-
-// TODO(ibraaaa): initialize |plugin_list_| from Local State.
-// http://crbug.com/124396
-void PluginFinder::Init() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  plugin_list_.reset(LoadPluginList());
-  if (!plugin_list_.get())
-    plugin_list_.reset(new DictionaryValue());
-
-  for (DictionaryValue::Iterator plugin_it(*plugin_list_);
-      plugin_it.HasNext(); plugin_it.Advance()) {
-    DictionaryValue* plugin = NULL;
-    const std::string& identifier = plugin_it.key();
-    if (plugin_list_->GetDictionaryWithoutPathExpansion(identifier, &plugin)) {
-      PluginMetadata* metadata = CreatePluginMetadata(identifier, plugin);
-      identifier_plugin_[identifier] = metadata;
-
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-      installers_[identifier] = new PluginInstaller();
-#endif
-    }
-  }
-}
-
-// static
-DictionaryValue* PluginFinder::LoadPluginList() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  base::StringPiece json_resource(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_PLUGIN_DB_JSON, ui::SCALE_FACTOR_NONE));
-  std::string error_str;
-  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-      json_resource,
-      base::JSON_PARSE_RFC,
-      NULL,
-      &error_str));
-  if (!value.get()) {
-    DLOG(ERROR) << error_str;
-    return NULL;
-  }
-  if (value->GetType() != base::Value::TYPE_DICTIONARY)
-    return NULL;
-  return static_cast<base::DictionaryValue*>(value.release());
-#else
-  return new DictionaryValue();
-#endif
-}
-
-PluginFinder::~PluginFinder() {
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  STLDeleteValues(&installers_);
-#endif
-  STLDeleteValues(&identifier_plugin_);
-}
-
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-bool PluginFinder::FindPlugin(
-    const std::string& mime_type,
-    const std::string& language,
-    PluginInstaller** installer,
-    scoped_ptr<PluginMetadata>* plugin_metadata) {
-  if (g_browser_process->local_state()->GetBoolean(prefs::kDisablePluginFinder))
-    return false;
-  for (DictionaryValue::Iterator plugin_it(*plugin_list_);
-       plugin_it.HasNext(); plugin_it.Advance()) {
-    const DictionaryValue* plugin = NULL;
-    if (!plugin_it.value().GetAsDictionary(&plugin)) {
-      NOTREACHED();
-      continue;
-    }
-    std::string language_str;
-    bool success = plugin->GetString("lang", &language_str);
-    if (language_str != language)
-      continue;
-    const ListValue* mime_types = NULL;
-    plugin->GetList("mime_types", &mime_types);
-    DCHECK(success);
-    for (ListValue::const_iterator mime_type_it = mime_types->begin();
-         mime_type_it != mime_types->end(); ++mime_type_it) {
-      std::string mime_type_str;
-      success = (*mime_type_it)->GetAsString(&mime_type_str);
-      DCHECK(success);
-      if (mime_type_str == mime_type) {
-        std::string identifier = plugin_it.key();
-        {
-          base::AutoLock lock(mutex_);
-          std::map<std::string, PluginMetadata*>::const_iterator metadata_it =
-              identifier_plugin_.find(identifier);
-          DCHECK(metadata_it != identifier_plugin_.end());
-          *plugin_metadata = metadata_it->second->Clone();
-
-          std::map<std::string, PluginInstaller*>::const_iterator installer_it =
-              installers_.find(identifier);
-          DCHECK(installer_it != installers_.end());
-          *installer = installer_it->second;
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
-
-bool PluginFinder::FindPluginWithIdentifier(
-    const std::string& identifier,
-    PluginInstaller** installer,
-    scoped_ptr<PluginMetadata>* plugin_metadata) {
-  base::AutoLock lock(mutex_);
-  std::map<std::string, PluginInstaller*>::const_iterator it =
-      installers_.find(identifier);
-  if (it != installers_.end()) {
-    *installer = it->second;
-    std::map<std::string, PluginMetadata*>::const_iterator metadata_it =
-        identifier_plugin_.find(identifier);
-    DCHECK(metadata_it != identifier_plugin_.end());
-    *plugin_metadata = metadata_it->second->Clone();
-    return true;
-  }
-
-  return false;
-}
-#endif
-
-string16 PluginFinder::FindPluginNameWithIdentifier(
-    const std::string& identifier) {
-  base::AutoLock lock(mutex_);
-  std::map<std::string, PluginMetadata*>::const_iterator it =
-      identifier_plugin_.find(identifier);
-  string16 name;
-  if (it != identifier_plugin_.end())
-    name = it->second->name();
-
-  return name.empty() ? UTF8ToUTF16(identifier) : name;
-}
-
-PluginMetadata* PluginFinder::CreatePluginMetadata(
+PluginMetadata* CreatePluginMetadata(
     const std::string& identifier,
     const DictionaryValue* plugin_dict) {
-  DCHECK(!identifier_plugin_[identifier]);
   std::string url;
   bool success = plugin_dict->GetString("url", &url);
   std::string help_url;
@@ -250,6 +102,153 @@ PluginMetadata* PluginFinder::CreatePluginMetadata(
   return plugin;
 }
 
+}  // namespace
+
+// static
+PluginFinder* PluginFinder::GetInstance() {
+  // PluginFinder::GetInstance() is the only method that's allowed to call
+  // Singleton<PluginFinder>::get().
+  return Singleton<PluginFinder>::get();
+}
+
+PluginFinder::PluginFinder() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+}
+
+void PluginFinder::Init() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  const base::DictionaryValue* metadata =
+      g_browser_process->local_state()->GetDictionary(prefs::kPluginsMetadata);
+  plugin_list_.reset(
+      metadata->empty() ? LoadPluginList() : metadata->DeepCopy());
+#endif
+  if (!plugin_list_.get())
+    plugin_list_.reset(new DictionaryValue());
+
+  InitInternal();
+}
+
+// static
+DictionaryValue* PluginFinder::LoadPluginList() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  base::StringPiece json_resource(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_PLUGIN_DB_JSON, ui::SCALE_FACTOR_NONE));
+  std::string error_str;
+  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
+      json_resource,
+      base::JSON_PARSE_RFC,
+      NULL,
+      &error_str));
+  if (!value.get()) {
+    DLOG(ERROR) << error_str;
+    return NULL;
+  }
+  if (value->GetType() != base::Value::TYPE_DICTIONARY)
+    return NULL;
+  return static_cast<base::DictionaryValue*>(value.release());
+#else
+  return new DictionaryValue();
+#endif
+}
+
+PluginFinder::~PluginFinder() {
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  STLDeleteValues(&installers_);
+#endif
+  STLDeleteValues(&identifier_plugin_);
+}
+
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+bool PluginFinder::FindPlugin(
+    const std::string& mime_type,
+    const std::string& language,
+    PluginInstaller** installer,
+    scoped_ptr<PluginMetadata>* plugin_metadata) {
+  base::AutoLock lock(mutex_);
+  if (g_browser_process->local_state()->GetBoolean(prefs::kDisablePluginFinder))
+    return false;
+  for (DictionaryValue::Iterator plugin_it(*plugin_list_);
+       plugin_it.HasNext(); plugin_it.Advance()) {
+    const DictionaryValue* plugin = NULL;
+    if (!plugin_it.value().GetAsDictionary(&plugin)) {
+      NOTREACHED();
+      continue;
+    }
+    std::string language_str;
+    bool success = plugin->GetString("lang", &language_str);
+    if (language_str != language)
+      continue;
+    const ListValue* mime_types = NULL;
+    if (plugin->GetList("mime_types", &mime_types)) {
+      for (ListValue::const_iterator mime_type_it = mime_types->begin();
+           mime_type_it != mime_types->end(); ++mime_type_it) {
+        std::string mime_type_str;
+        success = (*mime_type_it)->GetAsString(&mime_type_str);
+        DCHECK(success);
+        if (mime_type_str == mime_type) {
+          std::string identifier = plugin_it.key();
+          std::map<std::string, PluginMetadata*>::const_iterator metadata_it =
+              identifier_plugin_.find(identifier);
+          DCHECK(metadata_it != identifier_plugin_.end());
+          *plugin_metadata = metadata_it->second->Clone();
+
+          std::map<std::string, PluginInstaller*>::const_iterator installer_it =
+              installers_.find(identifier);
+          DCHECK(installer_it != installers_.end());
+          *installer = installer_it->second;
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool PluginFinder::FindPluginWithIdentifier(
+    const std::string& identifier,
+    PluginInstaller** installer,
+    scoped_ptr<PluginMetadata>* plugin_metadata) {
+  base::AutoLock lock(mutex_);
+  std::map<std::string, PluginInstaller*>::const_iterator it =
+      installers_.find(identifier);
+  if (it != installers_.end()) {
+    *installer = it->second;
+    std::map<std::string, PluginMetadata*>::const_iterator metadata_it =
+        identifier_plugin_.find(identifier);
+    DCHECK(metadata_it != identifier_plugin_.end());
+    *plugin_metadata = metadata_it->second->Clone();
+    return true;
+  }
+
+  return false;
+}
+
+void PluginFinder::ReinitializePlugins(
+    const base::DictionaryValue& json_metadata) {
+  base::AutoLock lock(mutex_);
+  STLDeleteValues(&identifier_plugin_);
+  identifier_plugin_.clear();
+  name_plugin_.clear();
+
+  plugin_list_.reset(json_metadata.DeepCopy());
+  InitInternal();
+}
+#endif
+
+string16 PluginFinder::FindPluginNameWithIdentifier(
+    const std::string& identifier) {
+  base::AutoLock lock(mutex_);
+  std::map<std::string, PluginMetadata*>::const_iterator it =
+      identifier_plugin_.find(identifier);
+  string16 name;
+  if (it != identifier_plugin_.end())
+    name = it->second->name();
+
+  return name.empty() ? UTF8ToUTF16(identifier) : name;
+}
+
 scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
     const webkit::WebPluginInfo& plugin) {
   base::AutoLock lock(mutex_);
@@ -277,4 +276,21 @@ scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
   name_plugin_[plugin.name] = metadata;
   identifier_plugin_[identifier] = metadata;
   return metadata->Clone();
+}
+
+void PluginFinder::InitInternal() {
+  for (DictionaryValue::Iterator plugin_it(*plugin_list_);
+      plugin_it.HasNext(); plugin_it.Advance()) {
+    DictionaryValue* plugin = NULL;
+    const std::string& identifier = plugin_it.key();
+    if (plugin_list_->GetDictionaryWithoutPathExpansion(identifier, &plugin)) {
+      DCHECK(!identifier_plugin_[identifier]);
+      identifier_plugin_[identifier] = CreatePluginMetadata(identifier, plugin);
+
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+      if (installers_.find(identifier) == installers_.end())
+        installers_[identifier] = new PluginInstaller();
+#endif
+    }
+  }
 }

@@ -882,6 +882,14 @@ const char kPluginsAllowOutdated[] = "plugins.allow_outdated";
 // be always allowed or not.
 const char kPluginsAlwaysAuthorize[] = "plugins.always_authorize";
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+// Dictionary holding plug-ins metadata.
+const char kPluginsMetadata[] = "plugins.metadata";
+
+// Last update time of plug-ins resource cache.
+const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
+#endif
+
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";

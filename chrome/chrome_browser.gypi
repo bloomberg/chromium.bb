@@ -2053,6 +2053,8 @@
         'browser/web_resource/json_asynchronous_unpacker.h',
         'browser/web_resource/notification_promo.cc',
         'browser/web_resource/notification_promo.h',
+        'browser/web_resource/plugins_resource_service.cc',
+        'browser/web_resource/plugins_resource_service.h',
         'browser/web_resource/promo_resource_service.cc',
         'browser/web_resource/promo_resource_service.h',
         'browser/web_resource/web_resource_service.cc',
@@ -2679,6 +2681,8 @@
             'browser/plugins/plugin_installer.h',
             'browser/plugins/plugin_installer_observer.cc',
             'browser/plugins/plugin_installer_observer.h',
+            'browser/web_resource/plugins_resource_service.cc',
+            'browser/web_resource/plugins_resource_service.h',
           ],
         }],
         ['enable_protector_service==0', {

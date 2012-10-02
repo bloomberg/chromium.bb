@@ -1345,6 +1345,11 @@ const char kWindowSize[]                    = "window-size";
 // use Chromium's network stack to fetch, and V8 to evaluate.
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+// Specifies a custom URL for fetching plug-ins metadata. Used for testing.
+const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
+#endif
+
 #if defined(OS_ANDROID)
 // Use the tablet specific UI components when available.
 const char kTabletUI[]                      = "tablet-ui";
