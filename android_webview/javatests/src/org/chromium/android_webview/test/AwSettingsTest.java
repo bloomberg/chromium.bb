@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.test.FlakyTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AndroidProtocolHandler;
@@ -1148,8 +1149,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     // Verify that the current UA override setting has a priority over UA
     // overrides in navigation history entries.
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testUserAgentStringOverrideForHistory() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final ContentViewCore contentView =
@@ -1186,8 +1191,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         assertEquals(page2Title + defaultUserAgentString, getTitleOnUiThread(contentView));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testUserAgentStringNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1195,8 +1204,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsUserAgentStringTestHelper(views.getView1(), views.getClient1()));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testUserAgentStringIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1204,8 +1217,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsUserAgentStringTestHelper(views.getView1(), views.getClient1()));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testUserAgentStringBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1345,8 +1362,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsFileAccessFromFilesXhrTestHelper(views.getView1(), views.getClient1()));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testFileUrlAccessNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1354,8 +1375,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsFileUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testFileUrlAccessIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1363,8 +1388,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsFileUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testFileUrlAccessBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1372,8 +1401,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsFileUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testContentUrlAccessNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1381,8 +1414,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsContentUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testContentUrlAccessIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1390,8 +1427,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsContentUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testContentUrlAccessBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1445,15 +1486,23 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences", "Navigation"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences", "Navigation"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testContentUrlFromFile() throws Throwable {
         doTestContentUrlFromFile(false);
     }
 
     // Verify that the query parameters are ignored with content URLs.
-    @SmallTest
-    @Feature({"Android-WebView", "Preferences", "Navigation"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "Preferences", "Navigation"})
+     * BUG=153516
+     */
+    @FlakyTest
     public void testContentUrlWithQueryParametersFromFile() throws Throwable {
         doTestContentUrlFromFile(true);
     }
