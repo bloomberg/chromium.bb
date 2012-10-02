@@ -54,7 +54,6 @@ class PasswordChangeProcessor : public ChangeProcessor,
 
  protected:
   virtual void StartImpl(Profile* profile) OVERRIDE;
-  virtual void StopImpl() OVERRIDE;
 
  private:
   friend class ScopedStopObserving<PasswordChangeProcessor>;
@@ -76,8 +75,6 @@ class PasswordChangeProcessor : public ChangeProcessor,
   PasswordModelAssociator::PasswordVector deleted_passwords_;
 
   content::NotificationRegistrar notification_registrar_;
-
-  bool observing_;
 
   MessageLoop* expected_loop_;
 

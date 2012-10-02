@@ -42,7 +42,6 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(CalledOnValidThread());
-  DCHECK(running());
   DCHECK(syncer_changes_.empty());
   for (syncer::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
@@ -77,8 +76,6 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
 
 void GenericChangeProcessor::CommitChangesFromSyncModel() {
   DCHECK(CalledOnValidThread());
-  if (!running())
-    return;
   if (syncer_changes_.empty())
     return;
   if (!local_service_) {
@@ -482,10 +479,6 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary(syncer::ModelType type) {
 
 void GenericChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(CalledOnValidThread());
-}
-
-void GenericChangeProcessor::StopImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 syncer::UserShare* GenericChangeProcessor::share_handle() const {

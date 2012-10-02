@@ -36,7 +36,6 @@ PasswordChangeProcessor::PasswordChangeProcessor(
     : ChangeProcessor(error_handler),
       model_associator_(model_associator),
       password_store_(password_store),
-      observing_(false),
       expected_loop_(MessageLoop::current()) {
   DCHECK(model_associator);
   DCHECK(error_handler);
@@ -45,7 +44,6 @@ PasswordChangeProcessor::PasswordChangeProcessor(
 #else
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 #endif
-  StartObserving();
 }
 
 PasswordChangeProcessor::~PasswordChangeProcessor() {
@@ -58,10 +56,6 @@ void PasswordChangeProcessor::Observe(
     const content::NotificationDetails& details) {
   DCHECK(expected_loop_ == MessageLoop::current());
   DCHECK(chrome::NOTIFICATION_LOGINS_CHANGED == type);
-  if (!observing_)
-    return;
-
-  DCHECK(running());
 
   syncer::WriteTransaction trans(FROM_HERE, share_handle());
 
@@ -168,8 +162,6 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(expected_loop_ == MessageLoop::current());
-  if (!running())
-    return;
 
   syncer::ReadNode password_root(trans);
   if (password_root.InitByTagLookup(kPasswordTag) !=
@@ -228,8 +220,6 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
 
 void PasswordChangeProcessor::CommitChangesFromSyncModel() {
   DCHECK(expected_loop_ == MessageLoop::current());
-  if (!running())
-    return;
   ScopedStopObserving<PasswordChangeProcessor> stop_observing(this);
 
   syncer::SyncError error = model_associator_->WriteToPasswordStore(
@@ -249,14 +239,8 @@ void PasswordChangeProcessor::CommitChangesFromSyncModel() {
 
 void PasswordChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(expected_loop_ == MessageLoop::current());
-  observing_ = true;
+  StartObserving();
 }
-
-void PasswordChangeProcessor::StopImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  observing_ = false;
-}
-
 
 void PasswordChangeProcessor::StartObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());

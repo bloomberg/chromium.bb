@@ -88,7 +88,6 @@ void SessionChangeProcessor::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(running());
   DCHECK(profile_);
 
   // Track which windows and/or tabs are modified.
@@ -255,9 +254,6 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
     const syncer::ImmutableChangeRecordList& changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!running()) {
-    return;
-  }
 
   ScopedStopObserving<SessionChangeProcessor> stop_observing(this);
 
@@ -333,12 +329,6 @@ void SessionChangeProcessor::StartImpl(Profile* profile) {
   DCHECK(profile_ == NULL);
   profile_ = profile;
   StartObserving();
-}
-
-void SessionChangeProcessor::StopImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  StopObserving();
-  profile_ = NULL;
 }
 
 void SessionChangeProcessor::StartObserving() {

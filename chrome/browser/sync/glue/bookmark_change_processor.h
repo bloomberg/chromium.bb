@@ -30,7 +30,7 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
  public:
   BookmarkChangeProcessor(BookmarkModelAssociator* model_associator,
                           DataTypeErrorHandler* error_handler);
-  virtual ~BookmarkChangeProcessor() {}
+  virtual ~BookmarkChangeProcessor();
 
   // BookmarkModelObserver implementation.
   // BookmarkModel -> sync API model change application.
@@ -106,7 +106,6 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
 
  protected:
   virtual void StartImpl(Profile* profile) OVERRIDE;
-  virtual void StopImpl() OVERRIDE;
 
  private:
   enum MoveOrCreate {

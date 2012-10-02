@@ -172,7 +172,6 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(change_processor_mock, CommitChangesFromSyncModel());
-  EXPECT_CALL(change_processor_mock, StopImpl());
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(false));
 
@@ -220,7 +219,6 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(change_processor_mock, CommitChangesFromSyncModel());
-  EXPECT_CALL(change_processor_mock, StopImpl());
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(false));
 

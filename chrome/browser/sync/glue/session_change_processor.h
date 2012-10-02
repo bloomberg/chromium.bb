@@ -53,7 +53,6 @@ class SessionChangeProcessor : public ChangeProcessor,
  protected:
   // ChangeProcessor implementation.
   virtual void StartImpl(Profile* profile) OVERRIDE;
-  virtual void StopImpl() OVERRIDE;
 
  private:
   friend class ScopedStopObserving<SessionChangeProcessor>;
