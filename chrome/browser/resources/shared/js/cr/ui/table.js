@@ -168,17 +168,17 @@ cr.define('cr.ui', function() {
      */
     decorate: function() {
       this.list_ = this.ownerDocument.createElement('list');
+      this.appendChild(this.list_);
       TableList.decorate(this.list_);
       this.list_.selectionModel = new ListSelectionModel(this);
       this.list_.table = this;
 
       this.header_ = this.ownerDocument.createElement('div');
+      this.appendChild(this.header_);
       TableHeader.decorate(this.header_);
       this.header_.table = this;
 
       this.classList.add('table');
-      this.appendChild(this.header_);
-      this.appendChild(this.list_);
       this.ownerDocument.defaultView.addEventListener(
           'resize', this.header_.updateWidth.bind(this.header_));
 
