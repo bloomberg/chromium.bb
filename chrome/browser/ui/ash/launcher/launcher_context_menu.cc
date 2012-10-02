@@ -79,14 +79,17 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
       }
     }
     AddSeparator(ui::NORMAL_SEPARATOR);
-  }
-  std::string app_id = controller->GetAppIDForLauncherID(item_.id);
-  if (!app_id.empty()) {
-    int index = 0;
-    extension_items_->AppendExtensionItems(
-        app_id, string16(), &index);
-    if (index > 0)
-      AddSeparator(ui::NORMAL_SEPARATOR);
+    if (item_.type == ash::TYPE_APP_SHORTCUT ||
+        item_.type == ash::TYPE_PLATFORM_APP) {
+      std::string app_id = controller->GetAppIDForLauncherID(item_.id);
+      if (!app_id.empty()) {
+        int index = 0;
+        extension_items_->AppendExtensionItems(
+            app_id, string16(), &index);
+        if (index > 0)
+          AddSeparator(ui::NORMAL_SEPARATOR);
+      }
+    }
   }
   AddCheckItemWithStringId(
       MENU_AUTO_HIDE, ash::LauncherContextMenu::GetAutoHideResourceStringId());

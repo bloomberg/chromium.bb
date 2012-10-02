@@ -406,8 +406,7 @@ ash::LauncherID ChromeLauncherController::GetLauncherIDForAppID(
 
 std::string ChromeLauncherController::GetAppIDForLauncherID(
     ash::LauncherID id) {
-  DCHECK(id_to_item_controller_map_.find(id) !=
-      id_to_item_controller_map_.end());
+  DCHECK(HasItemController(id));
   return id_to_item_controller_map_[id]->app_id();
 }
 
