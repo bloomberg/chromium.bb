@@ -22,12 +22,7 @@ NativeViewHostAura::~NativeViewHostAura() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostAura, NativeViewHostWrapper implementation:
-void NativeViewHostAura::NativeViewAttached() {
-  if (host_->native_view()->parent())
-    host_->native_view()->parent()->RemoveChild(host_->native_view());
-  host_->GetWidget()->GetNativeView()->AddChild(host_->native_view());
-  host_->Layout();
-
+void NativeViewHostAura::NativeViewWillAttach() {
   host_->native_view()->AddObserver(this);
 }
 
@@ -36,7 +31,7 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
     host_->native_view()->RemoveObserver(this);
     host_->native_view()->Hide();
     if (host_->native_view()->parent())
-      host_->native_view()->parent()->RemoveChild(host_->native_view());
+      Widget::ReparentNativeView(host_->native_view(), NULL);
   }
 }
 

@@ -31,24 +31,17 @@ NativeViewHostWin::~NativeViewHostWin() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostWin, NativeViewHostWrapper implementation:
-void NativeViewHostWin::NativeViewAttached() {
-  DCHECK(host_->native_view())
-      << "Impossible detatched tab case; See crbug.com/6316";
-
+void NativeViewHostWin::NativeViewWillAttach() {
   // First hide the new window. We don't want anything to draw (like sub-hwnd
-  // borders), when we change the parent below.
+  // borders), when NativeViewHost changes the parent.
   ShowWindow(host_->native_view(), SW_HIDE);
-
-  Widget::ReparentNativeView(host_->native_view(),
-                             host_->GetWidget()->GetNativeView());
-  host_->Layout();
 }
 
 void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
   if (!destroyed) {
     if (installed_clip_)
       UninstallClip();
-    SetParent(host_->native_view(), ui::GetHiddenWindow());
+    Widget::ReparentNativeView(host_->native_view(), ui::GetHiddenWindow());
   }
   installed_clip_ = false;
 }

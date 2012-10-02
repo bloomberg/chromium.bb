@@ -45,7 +45,9 @@ void NativeViewHost::Attach(gfx::NativeView native_view) {
   // be seen as focused when the native view receives focus.
   if (!focus_view_)
     focus_view_ = this;
-  native_wrapper_->NativeViewAttached();
+  native_wrapper_->NativeViewWillAttach();
+  Widget::ReparentNativeView(native_view_, GetWidget()->GetNativeView());
+  Layout();
 }
 
 void NativeViewHost::Detach() {
