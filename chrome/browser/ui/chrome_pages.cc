@@ -152,10 +152,6 @@ void ShowImportDialog(Browser* browser) {
   ShowSettingsSubPage(browser, kImportDataSubPage);
 }
 
-void ShowInstantConfirmDialog(Browser* browser) {
-  ShowSettingsSubPage(browser, kInstantConfirmPage);
-}
-
 void ShowAboutChrome(Browser* browser) {
   content::RecordAction(UserMetricsAction("AboutChrome"));
   NavigateParams params(

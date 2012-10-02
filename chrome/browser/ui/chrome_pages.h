@@ -51,7 +51,6 @@ void ShowContentSettings(Browser* browser,
 void ShowClearBrowsingDataDialog(Browser* browser);
 void ShowPasswordManager(Browser* browser);
 void ShowImportDialog(Browser* browser);
-void ShowInstantConfirmDialog(Browser* browser);
 void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
 void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source);

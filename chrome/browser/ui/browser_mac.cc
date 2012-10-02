@@ -58,12 +58,6 @@ void OpenImportSettingsDialogWindow(Profile* profile) {
   browser->window()->Show();
 }
 
-void OpenInstantConfirmDialogWindow(Profile* profile) {
-  Browser* browser = new Browser(Browser::CreateParams(profile));
-  ShowInstantConfirmDialog(browser);
-  browser->window()->Show();
-}
-
 void OpenBookmarkManagerWindow(Profile* profile) {
   Browser* browser = new Browser(Browser::CreateParams(profile));
   ShowBookmarkManager(browser);
