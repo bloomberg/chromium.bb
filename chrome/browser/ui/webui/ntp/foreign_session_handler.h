@@ -57,6 +57,10 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
 
   void HandleSetForeignSessionCollapsed(const ListValue* args);
 
+  // Show a popup listing the devices's tabs.
+  // This handler was introduced for NTP5.
+  void HandleShowOtherDeviceSessionPopup(const ListValue* args);
+
   // Helper methods to create JSON compatible objects from Session objects.
   bool SessionTabToValue(const SessionTab& tab, DictionaryValue* dictionary);
   bool SessionWindowToValue(const SessionWindow& window,

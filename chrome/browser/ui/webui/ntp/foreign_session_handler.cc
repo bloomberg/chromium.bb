@@ -71,6 +71,9 @@ void ForeignSessionHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("setForeignSessionCollapsed",
       base::Bind(&ForeignSessionHandler::HandleSetForeignSessionCollapsed,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("showOtherDeviceSessionPopup",
+      base::Bind(&ForeignSessionHandler::HandleShowOtherDeviceSessionPopup,
+                 base::Unretained(this)));
 }
 
 void ForeignSessionHandler::Init() {
@@ -289,6 +292,27 @@ void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
     update.Get()->SetBoolean(session_tag, true);
   else
     update.Get()->Remove(session_tag, NULL);
+}
+
+void ForeignSessionHandler::HandleShowOtherDeviceSessionPopup(
+    const ListValue* args) {
+  CHECK(args->GetSize() == 3U);
+
+  // Extract the session tag.
+  std::string session_string_value;
+  CHECK(args->GetString(0, &session_string_value));
+
+  // Extract horizontal coordinate of the click within the application's client
+  // area.
+  double client_x;
+  CHECK(args->GetDouble(1, &client_x));
+
+  // Extract vertical coordinate of the click within the application's client
+  // area.
+  double client_y;
+  CHECK(args->GetDouble(2, &client_y));
+
+  // TODO(vadimt): implement this method.
 }
 
 bool ForeignSessionHandler::SessionTabToValue(

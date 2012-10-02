@@ -52,6 +52,10 @@ cr.define('ntp', function() {
       // correct number for devices.
       chrome.send('metricsHandler:recordInHistogram',
                   ['NewTabPage.OtherDevice', this.index, 8]);
+
+      // Ask the native side to show a popup listing the devices's tabs.
+      chrome.send('showOtherDeviceSessionPopup',
+                  [this.data.tag, e.clientX, e.clientY]);
     },
   };
 
