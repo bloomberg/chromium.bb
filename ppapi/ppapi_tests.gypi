@@ -157,6 +157,13 @@
         'shared_impl/tracked_callback_unittest.cc',
         'shared_impl/var_tracker_unittest.cc',
       ],
+      'conditions': [
+        [ 'linux_use_tcmalloc==1', {
+            'dependencies': [
+              '../base/allocator/allocator.gyp:allocator',
+            ],
+        }],
+      ],
     },
     {
       'target_name': 'ppapi_example_skeleton',
