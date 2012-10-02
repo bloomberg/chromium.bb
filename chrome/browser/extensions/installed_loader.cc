@@ -312,6 +312,9 @@ int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
     flags |= Extension::FROM_WEBSTORE;
   if (extension_prefs_->IsFromBookmark(info->extension_id))
     flags |= Extension::FROM_BOOKMARK;
+  if (extension_prefs_->WasInstalledByDefault(info->extension_id)) {
+    flags |= Extension::WAS_INSTALLED_BY_DEFAULT;
+  }
   return flags;
 }
 
