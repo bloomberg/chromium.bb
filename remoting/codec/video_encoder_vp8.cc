@@ -42,7 +42,7 @@ VideoEncoderVp8::~VideoEncoderVp8() {
 void VideoEncoderVp8::Destroy() {
   if (initialized_) {
     vpx_codec_err_t ret = vpx_codec_destroy(codec_.get());
-    DCHECK(ret == VPX_CODEC_OK) << "Failed to destroy codec";
+    DCHECK_EQ(ret, VPX_CODEC_OK) << "Failed to destroy codec";
     initialized_ = false;
   }
 }
@@ -147,7 +147,7 @@ bool VideoEncoderVp8::Init(const SkISize& size) {
 void VideoEncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
                                    SkRegion* updated_region) {
   // Perform RGB->YUV conversion.
-  CHECK_EQ(capture_data->pixel_format(), media::VideoFrame::RGB32)
+  DCHECK_EQ(capture_data->pixel_format(), media::VideoFrame::RGB32)
     << "Only RGB32 is supported";
 
   const SkRegion& region = capture_data->dirty_region();
@@ -176,7 +176,7 @@ void VideoEncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
   const uint8* rgb_data = capture_data->data_planes().data[0];
   const int rgb_stride = capture_data->data_planes().strides[0];
   const int y_stride = image_->stride[0];
-  DCHECK(image_->stride[1] == image_->stride[2]);
+  DCHECK_EQ(image_->stride[1], image_->stride[2]);
   const int uv_stride = image_->stride[1];
   uint8* y_data = image_->planes[0];
   uint8* u_data = image_->planes[1];
@@ -201,8 +201,8 @@ void VideoEncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
     int right = (rect.right() - 1) / kMacroBlockSize;
     int top = rect.top() / kMacroBlockSize;
     int bottom = (rect.bottom() - 1) / kMacroBlockSize;
-    CHECK(right < active_map_width_);
-    CHECK(bottom < active_map_height_);
+    DCHECK_LT(right, active_map_width_);
+    DCHECK_LT(bottom, active_map_height_);
 
     uint8* map = active_map_.get() + top * active_map_width_;
     for (int y = top; y <= bottom; ++y) {
