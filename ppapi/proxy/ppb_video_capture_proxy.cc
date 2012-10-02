@@ -11,7 +11,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
-#include "ppapi/c/dev/ppp_video_capture_dev.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -45,7 +44,7 @@ void OnDeviceInfo(PP_Instance instance,
                   PP_Resource resource,
                   const PP_VideoCaptureDeviceInfo_Dev* info,
                   uint32_t buffer_count,
-                  const PP_Resource* resources) {
+                  const PP_Resource resources[]) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();

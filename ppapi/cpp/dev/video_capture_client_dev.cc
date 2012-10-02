@@ -19,7 +19,7 @@ void OnDeviceInfo(PP_Instance instance,
                   PP_Resource resource,
                   const struct PP_VideoCaptureDeviceInfo_Dev* info,
                   uint32_t buffer_count,
-                  const PP_Resource* buffers) {
+                  const PP_Resource buffers[]) {
   VideoCaptureClient_Dev* client = static_cast<VideoCaptureClient_Dev*>(
       Instance::GetPerInstanceObject(instance, kPPPVideoCaptureInterface));
   if (!client)

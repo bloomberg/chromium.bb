@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ppapi/c/dev/ppp_video_capture_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
@@ -15,7 +16,6 @@
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
-struct PPP_VideoCapture_Dev;
 struct PP_VideoCaptureDeviceInfo_Dev;
 
 namespace ppapi {
