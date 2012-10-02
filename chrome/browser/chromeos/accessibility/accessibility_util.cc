@@ -120,9 +120,11 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
   FilePath path = FilePath(extension_misc::kAccessExtensionPath)
       .AppendASCII(extension_misc::kChromeVoxDirectoryName);
   if (enabled) {  // Load ChromeVox
-    const extensions::Extension* extension =
+    std::string extension_id =
         extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,
                                                    path);
+    const extensions::Extension* extension =
+        extension_service->extensions()->GetByID(extension_id);
 
     if (login_web_ui) {
       RenderViewHost* render_view_host =

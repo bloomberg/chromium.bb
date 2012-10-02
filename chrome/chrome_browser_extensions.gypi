@@ -530,6 +530,8 @@
         'browser/extensions/sandboxed_unpacker.h',
         'browser/extensions/script_badge_controller.cc',
         'browser/extensions/script_badge_controller.h',
+        'browser/extensions/script_bubble_controller.cc',
+        'browser/extensions/script_bubble_controller.h',
         'browser/extensions/script_executor.cc',
         'browser/extensions/script_executor.h',
         'browser/extensions/settings/leveldb_settings_storage_factory.cc',

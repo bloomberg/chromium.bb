@@ -305,6 +305,7 @@ extern const char kSavePageAsMHTML[];
 extern const char kSbURLPrefix[];
 extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];
+extern const char kScriptBubbleEnabled[];
 extern const char kSearchInOmniboxHint[];
 extern const char kServiceAccountLsid[];
 extern const char kSetToken[];
