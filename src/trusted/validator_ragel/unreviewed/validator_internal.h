@@ -14,7 +14,7 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/decoding.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
 
 /* Maximum set of R-DFA allowable CPUID features.  */
