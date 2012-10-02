@@ -34,30 +34,39 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
   if (!IsXPSP2OrLater())
     return true;
 
+  base::win::Version version = base::win::GetVersion();
   HMODULE module = ::GetModuleHandleA("kernel32.dll");
 
-  if (flags & MITIGATION_DLL_SEARCH_ORDER) {
+  if (version >= base::win::VERSION_VISTA &&
+      (flags & MITIGATION_DLL_SEARCH_ORDER)) {
     SetDefaultDllDirectoriesFunction set_default_dll_directories =
         reinterpret_cast<SetDefaultDllDirectoriesFunction>(
             ::GetProcAddress(module, "SetDefaultDllDirectories"));
 
     // Check for SetDefaultDllDirectories since it requires KB2533623.
     if (set_default_dll_directories) {
-      if (!set_default_dll_directories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS))
+      if (!set_default_dll_directories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS) &&
+          ERROR_ACCESS_DENIED != ::GetLastError()) {
         return false;
+      }
     }
   }
 
   // Set the heap to terminate on corruption
-  if (flags & MITIGATION_HEAP_TERMINATE) {
+  if (version >= base::win::VERSION_VISTA &&
+      (flags & MITIGATION_HEAP_TERMINATE)) {
     if (!::HeapSetInformation(NULL, HeapEnableTerminationOnCorruption,
-                              NULL, 0))
+                              NULL, 0) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
       return false;
+    }
   }
 
 #if !defined(_WIN64)  // DEP is always enabled on 64-bit.
   if (flags & MITIGATION_DEP) {
     DWORD dep_flags = PROCESS_DEP_ENABLE;
+    // DEP support is quirky on XP, so don't force a failure in that case.
+    const bool return_on_fail = version >= base::win::VERSION_VISTA;
 
     if (flags & MITIGATION_DEP_NO_ATL_THUNK)
       dep_flags |= PROCESS_DEP_DISABLE_ATL_THUNK_EMULATION;
@@ -67,7 +76,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
             ::GetProcAddress(module, "SetProcessDEPPolicy"));
     if (set_process_dep_policy) {
       if (!set_process_dep_policy(dep_flags) &&
-          ERROR_ACCESS_DENIED != ::GetLastError()) {
+          ERROR_ACCESS_DENIED != ::GetLastError() && return_on_fail) {
         return false;
       }
     } else {
@@ -89,7 +98,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
       if (!SUCCEEDED(set_information_process(GetCurrentProcess(),
                                              ProcessExecuteFlags,
                                              &dep, sizeof(dep))) &&
-          ERROR_ACCESS_DENIED != ::GetLastError()) {
+          ERROR_ACCESS_DENIED != ::GetLastError() && return_on_fail) {
         return false;
       }
     }
@@ -97,7 +106,6 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 #endif
 
   // This is all we can do in Win7 and below.
-  base::win::Version version = base::win::GetVersion();
   if (version < base::win::VERSION_WIN8)
     return true;
 
