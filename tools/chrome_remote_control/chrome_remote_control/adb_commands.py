@@ -20,7 +20,7 @@ try:
   from pylib import forwarder # pylint: disable=F0401
   from pylib import valgrind_tools # pylint: disable=F0401
 except Exception:
-  real_android_commands = None
+  android_commands = None
 
 def IsAndroidSupported():
   return android_commands != None
