@@ -1,0 +1,54 @@
+<p id="classSummary">
+Use the <code>chrome.input.ime</code> module to implement a custom IME for
+Chrome OS.
+
+This allows your extension to handle keystrokes, set the composition, and
+manage the candidate window.
+</p>
+
+<h2 id="manifest">Manifest</h2>
+<p>You must declare the "input" permission
+in the <a href="manifest.html">extension manifest</a>
+to use the input.ime API.
+For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "input"
+  ]</b>,
+  ...
+}</pre>
+
+<h2 id="overview-examples">Examples</h2>
+
+<p>
+The following code creates an IME that converts typed letters to upper case.
+</p>
+
+<pre>
+var context_id = -1;
+
+chrome.input.ime.onFocus.addListener(function(context) {
+  context_id = context.contextID;
+});
+
+chrome.input.ime.onKeyEventAsync.addListener(
+  function(engineID, keyData) {
+    if (keyData.type == "keydown" && keyData.key.match(/^[a-z]$/)) {
+      chrome.input.ime.commitText({"contextID": context_id,
+                                   "text": keyData.key.toUpperCase()});
+      return true;
+    } else {
+      return false;
+    }
+  });
+</pre>
+
+<p>
+For an example of using this API, see the
+<a
+  href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/input.ime/basic/">basic input.ime sample</a>.
+For other examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.
+</p>
