@@ -7,6 +7,10 @@
 
 #include "base/string16.h"
 
+namespace content {
+struct LoadCommittedDetails;
+}
+
 class OpenPDFInReaderPromptDelegate {
  public:
   virtual ~OpenPDFInReaderPromptDelegate() {}
@@ -16,6 +20,9 @@ class OpenPDFInReaderPromptDelegate {
   virtual string16 GetAcceptButtonText() const = 0;
 
   virtual string16 GetCancelButtonText() const = 0;
+
+  virtual bool ShouldExpire(
+      const content::LoadCommittedDetails& details) const = 0;
 
   virtual void Accept() = 0;
 

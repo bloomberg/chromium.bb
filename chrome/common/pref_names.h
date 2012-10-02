@@ -316,7 +316,6 @@ extern const char kPluginsDisabledPluginsByVersion[];
 extern const char kPluginsEnabledInternalPDF[];
 extern const char kPluginsEnabledNaCl[];
 extern const char kPluginsMigratedToPepperFlash[];
-extern const char kPluginsShowSetReaderDefaultInfobar[];
 extern const char kPluginsShowDetails[];
 extern const char kPluginsAllowOutdated[];
 extern const char kPluginsAlwaysAuthorize[];

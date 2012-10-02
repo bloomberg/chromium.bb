@@ -495,9 +495,6 @@ void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPluginsShowDetails,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPluginsShowSetReaderDefaultInfobar,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kContentSettingsPluginWhitelist,
                                 PrefService::SYNCABLE_PREF);
 }

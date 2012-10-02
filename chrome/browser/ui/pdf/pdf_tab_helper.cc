@@ -41,8 +41,8 @@ bool PDFTabHelper::OnMessageReceived(const IPC::Message& message) {
 void PDFTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (!details.is_in_page) {
-    // Clear "blocked" flags.
+  if (open_in_reader_prompt_.get() &&
+      open_in_reader_prompt_->ShouldExpire(details)) {
     open_in_reader_prompt_.reset();
     UpdateLocationBar();
   }

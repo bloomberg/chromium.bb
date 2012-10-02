@@ -871,9 +871,6 @@ const char kPluginsEnabledNaCl[] = "plugins.enabled_nacl";
 const char kPluginsMigratedToPepperFlash[] = "plugins.migrated_to_pepper_flash";
 
 #if !defined(OS_ANDROID)
-const char kPluginsShowSetReaderDefaultInfobar[] =
-    "plugins.show_set_reader_default";
-
 // Whether about:plugins is shown in the details mode or not.
 const char kPluginsShowDetails[] = "plugins.show_details";
 #endif
