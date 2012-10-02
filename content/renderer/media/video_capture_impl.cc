@@ -238,6 +238,14 @@ void VideoCaptureImpl::DoBufferCreatedOnCaptureThread(
     base::SharedMemoryHandle handle,
     int length, int buffer_id) {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
+
+  // In case client calls StopCapture before the arrival of created buffer,
+  // just close this buffer and return.
+  if (state_ != video_capture::kStarted) {
+    base::SharedMemory::CloseHandle(handle);
+    return;
+  }
+
   DCHECK(device_info_available_);
 
   media::VideoCapture::VideoFrameBuffer* buffer;
