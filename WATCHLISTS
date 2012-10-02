@@ -92,7 +92,7 @@
     },
     'cc': {
       'filepath': 'cc/|'\
-                  'webkit/compositor_bindings/',
+                  'webkit/compositor_bindings/|'
     },
     'chrome_frame': {
       'filepath': 'chrome_frame/',
@@ -182,6 +182,12 @@
     },
     'gfx_image': {
       'filepath': 'ui/gfx/image/',
+    },
+    'gfx_geometry': {
+      'filepath': 'ui/gfx/rect|'\
+                  'ui/gfx/point|'\
+                  'ui/gfx/size|'\
+                  'ui/gfx/transform|',
     },
     'gpu': {
       'filepath': 'gpu/',
@@ -373,6 +379,11 @@
     'tools_emacs': {
       'filepath': 'tools/emacs/',
     },
+    'ui_compositor': {
+      'filepath': 'ui/compositor/layer\.|'\
+                  'ui/compositor/layer_unittest|'\
+                  'ui/compositor/compositor',
+    },
     'ui_resources': {
       'filepath': 'ui/resources/'\
                   '|ui/base/native_theme/resources/'\
@@ -492,6 +503,7 @@
     'ftp': ['phajdan.jr@chromium.org'],
     'fullscreen_controller': ['scheib+watch@chromium.org'],
     'gdata': ['achuith+watch@chromium.org'],
+    'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
     'history_ui': ['dubroy@chromium.org'],
@@ -568,6 +580,7 @@
     'tools': ['pam+watch@chromium.org'],
     'tools_emacs': ['fischman+watch@chromium.org',
                     'dhollowa+watch@chromium.org'],
+    'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
                  'glider+watch@chromium.org',
