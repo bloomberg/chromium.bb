@@ -33,8 +33,7 @@ class InfobarTest(pyauto.PyUITest):
   def setUp(self):
     pyauto.PyUITest.setUp(self)
     self._flash_plugin_type = 'Plug-in'
-    if ((self.IsLinux() or self.IsWin()) and
-        self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
+    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
       self._flash_plugin_type = 'Pepper Plugin'
     # Forcibly trigger all plugins to get registered.  crbug.com/94123
     # Sometimes flash files loaded too quickly after firing browser
