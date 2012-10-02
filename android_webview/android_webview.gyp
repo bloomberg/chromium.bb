@@ -177,8 +177,14 @@
         'package_name': 'android_webview_test',
         'apk_name': 'AndroidWebViewTest',
         'java_in_dir': '../android_webview/javatests',
-        'resource_dir': '../res',
+        'resource_dir': 'res',
       },
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/android_webview_test/assets',
+          'files': [ '<!@(find <(java_in_dir)/assets -type f -name "*")' ]
+        },
+      ],
       'includes': [ '../build/java_apk.gypi' ],
     },
   ],

@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * A test suite for ContentSettings class. The key objective is to verify that each
  * settings applies either to each individual view or to all views of the
- * application.
+ * application
  */
 public class AwSettingsTest extends AndroidWebViewTestBase {
     private static final long TEST_TIMEOUT = 20000L;
