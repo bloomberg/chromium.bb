@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -105,6 +105,9 @@ class Packet {
 
   // Returns true and the sequence number, or false if it is unset.
   bool GetSequence(int32_t *seq) const;
+
+  // Parses sequence number in package data and moves read pointer past it.
+  void ParseSequence();
 
   // Set the sequence number.
   void SetSequence(int32_t seq);

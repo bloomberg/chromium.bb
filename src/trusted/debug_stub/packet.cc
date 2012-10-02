@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -383,6 +383,21 @@ bool Packet::GetSequence(int32_t *ch) const {
   }
 
   return false;
+}
+
+void Packet::ParseSequence() {
+  size_t saved_read_index = read_index_;
+  unsigned char seq;
+  char ch;
+  if (GetWord8(&seq) &&
+      GetRawChar(&ch)) {
+    if (ch == ':') {
+      SetSequence(seq);
+      return;
+    }
+  }
+  // No sequence number present, so reset to original position.
+  read_index_ = saved_read_index;
 }
 
 void Packet::SetSequence(int32_t val) {

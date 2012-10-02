@@ -140,7 +140,6 @@ bool Session::SendPacketOnly(Packet *pkt) {
 bool Session::GetPacket(Packet *pkt) {
   char run_xsum, fin_xsum, ch;
   std::string in;
-  int has_seq, offs;
 
   // Toss characters until we see a start of command
   do {
@@ -149,9 +148,6 @@ bool Session::GetPacket(Packet *pkt) {
   } while (ch != '$');
 
  retry:
-  has_seq = 1;
-  offs    = 0;
-
   // Clear the stream
   pkt->Clear();
 
@@ -164,18 +160,6 @@ bool Session::GetPacket(Packet *pkt) {
     if (!GetChar(&ch)) return false;
 
     in += ch;
-     // Check SEQ statemachine  xx:
-    switch (offs) {
-      case 0:
-      case 1:
-        if (!NibbleToInt(ch, 0)) has_seq = 0;
-        break;
-
-      case 2:
-        if (ch != ':') has_seq = 0;
-        break;
-    }
-    offs++;
 
     // If we see a '#' we must be done with the data
     if (ch == '#') break;
@@ -206,19 +190,7 @@ bool Session::GetPacket(Packet *pkt) {
 
   if (GetFlags() & DEBUG_RECV) NaClLog(LOG_INFO, "RX %s\n", in.data());
 
-  // Pull off teh sequence number if we have one
-  if (has_seq) {
-    uint8_t seq;
-    char ch;
-
-    pkt->GetWord8(&seq);
-    pkt->SetSequence(seq);
-    pkt->GetRawChar(&ch);
-    if (ch != ':') {
-      NaClLog(LOG_ERROR, "RX mismatched SEQ.\n");
-      return false;
-    }
-  }
+  pkt->ParseSequence();
 
   // If ACKs are off, we are done.
   if (GetFlags() & IGNORE_ACK) return true;
