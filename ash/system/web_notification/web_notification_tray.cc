@@ -121,6 +121,7 @@ void WebNotificationTray::SetNotificationImage(const std::string& id,
   if (!notification_list_->SetNotificationImage(id, image))
     return;
   UpdateTrayAndBubble();
+  popup_bubble()->set_dirty(true);
   ShowPopupBubble();
 }
 

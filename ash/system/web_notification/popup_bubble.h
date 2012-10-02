@@ -25,6 +25,9 @@ class PopupBubble : public WebNotificationBubble {
 
   size_t NumMessageViewsForTest() const;
 
+  bool dirty() const { return dirty_; }
+  void set_dirty(bool dirty) { dirty_ = dirty; }
+
   // Overridden from TrayBubbleView::Host.
   virtual void BubbleViewDestroyed() OVERRIDE;
 
@@ -45,6 +48,7 @@ class PopupBubble : public WebNotificationBubble {
   base::OneShotTimer<PopupBubble> autoclose_;
   PopupBubbleContentsView* contents_view_;
   size_t num_popups_;
+  bool dirty_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBubble);
 };

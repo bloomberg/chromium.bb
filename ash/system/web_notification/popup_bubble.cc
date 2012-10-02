@@ -69,7 +69,8 @@ class PopupBubbleContentsView : public WebNotificationContentsView {
 PopupBubble::PopupBubble(WebNotificationTray* tray) :
     WebNotificationBubble(tray),
     contents_view_(NULL),
-    num_popups_(0) {
+    num_popups_(0),
+    dirty_(false) {
   TrayBubbleView::InitParams init_params = GetInitParams();
   init_params.arrow_color = kBackgroundColor;
   init_params.close_on_deactivate = false;
@@ -110,7 +111,8 @@ void PopupBubble::UpdateBubbleView() {
   }
   // Only update the popup tray if the number of visible popup notifications
   // has changed.
-  if (popup_notifications.size() != num_popups_) {
+  if (popup_notifications.size() != num_popups_ || dirty()) {
+    set_dirty(false);
     num_popups_ = popup_notifications.size();
     contents_view_->Update(popup_notifications);
     bubble_view_->Show();
