@@ -81,6 +81,7 @@ class WrapperGen(Generator):
     """Get the corresponding ppapi .h file from each IDL filename.
     """
     name = os.path.splitext(name)[0] + '.h'
+    name = name.replace(os.sep, '/')
     return 'ppapi/c/' + name
 
 
