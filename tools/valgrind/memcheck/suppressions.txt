@@ -6192,3 +6192,9 @@
    fun:_ZN7fileapi22LocalFileChangeTracker17OnCreateDirectoryERKNS_13FileSystemURLE
    fun:_ZN7fileapi42LocalFileChangeTrackerTest_GetChanges_Test8TestBodyEv
 }
+{
+   bug_153538
+   Memcheck:Leak
+   ...
+   fun:_ZN5views50NativeViewHostTest_NativeViewHierarchyChanged_Test8TestBodyEv
+}
