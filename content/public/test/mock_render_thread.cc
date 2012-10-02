@@ -65,7 +65,7 @@ IPC::SyncChannel* MockRenderThread::GetChannel() {
 }
 
 std::string MockRenderThread::GetLocale() {
-  return std::string();
+  return "en-US";
 }
 
 IPC::SyncMessageFilter* MockRenderThread::GetSyncMessageFilter() {
