@@ -14,5 +14,5 @@ class PossibleBrowser(object):
   def __repr__(self):
     return 'PossibleBrowser(browser_type=%s)' % self.browser_type
 
-  def Create(self):
+  def Create(self, extra_browser_args=None):
     raise NotImplementedError()

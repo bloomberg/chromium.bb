@@ -7,7 +7,9 @@ import time
 import traceback
 import urlparse
 
+from chrome_remote_control import browser
 from chrome_remote_control import page_test
+from chrome_remote_control import replay_server
 from chrome_remote_control import util
 
 class PageRunner(object):
@@ -26,10 +28,23 @@ class PageRunner(object):
     self.Close()
 
   def Run(self, options, possible_browser, test, results):
-    with possible_browser.Create() as browser:
-      with browser.ConnectToNthTab(0) as tab:
-        for page in self.page_set:
-          self._RunPage(options, page, tab, test, results)
+    archive_path = os.path.abspath(os.path.join(os.path.dirname(
+        self.page_set.file_path), self.page_set.archive_path))
+    if browser.Browser.CanUseReplayServer(archive_path, options.record):
+      extra_browser_args = replay_server.CHROME_FLAGS
+    else:
+      extra_browser_args = []
+      logging.warning('\n' + 80 * '*' + """\n
+      Page set archive does not exist, benchmarking against live sites!
+      Results won't be repeatable or comparable. To correct this, check out the
+      archives from src-internal or create a new archive using --record.
+      \n""" + 80 * '*' + '\n')
+
+    with possible_browser.Create(extra_browser_args) as b:
+      with b.CreateReplayServer(archive_path, options.record):
+        with b.ConnectToNthTab(0) as tab:
+          for page in self.page_set:
+            self._RunPage(options, page, tab, test, results)
 
   def _RunPage(self, options, page, tab, test, results):
     logging.info('Running %s' % page.url)

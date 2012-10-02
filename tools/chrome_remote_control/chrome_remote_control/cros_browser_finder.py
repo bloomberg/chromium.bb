@@ -24,9 +24,9 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
   def __repr__(self):
     return 'PossibleCrOSBrowser(browser_type=%s)' % self.browser_type
 
-  def Create(self):
+  def Create(self, extra_browser_args=None):
     backend = cros_browser_backend.CrOSBrowserBackend(
-        self.browser_type, self._options, *self._args)
+        self.browser_type, self._options, extra_browser_args, *self._args)
     return browser.Browser(backend)
 
 def FindAllAvailableBrowsers(options):

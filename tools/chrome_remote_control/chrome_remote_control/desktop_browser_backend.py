@@ -15,7 +15,7 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
   """The backend for controlling a locally-executed browser instance, on Linux,
   Mac or Windows.
   """
-  def __init__(self, options, executable, is_content_shell):
+  def __init__(self, options, executable, is_content_shell, extra_browser_args):
     super(DesktopBrowserBackend, self).__init__(is_content_shell)
 
     # Initialize fields so that an explosion during init doesn't break in Close.
@@ -34,11 +34,13 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
     if not options.dont_override_profile:
       self._tmpdir = tempfile.mkdtemp()
       args.append('--user-data-dir=%s' % self._tmpdir)
+    if extra_browser_args:
+      args.extend(extra_browser_args)
     args.extend(options.extra_browser_args)
     if not options.show_stdout:
       self._devnull = open(os.devnull, 'w')
       self._proc = subprocess.Popen(
-        args,stdout=self._devnull, stderr=self._devnull)
+        args, stdout=self._devnull, stderr=self._devnull)
     else:
       self._devnull = None
       self._proc = subprocess.Popen(args)

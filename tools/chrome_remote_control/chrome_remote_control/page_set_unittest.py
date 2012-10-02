@@ -8,6 +8,7 @@ from chrome_remote_control import page_set
 
 simple_set = """
 {"description": "hello",
+ "archive_path": "foo.wpr",
  "pages": [
    {"url": "http://www.foo.com/"}
  ]
@@ -22,5 +23,6 @@ class TestPageSet(unittest.TestCase):
       ps = page_set.PageSet.FromFile(f.name)
 
     self.assertEquals('hello', ps.description)
+    self.assertEquals('foo.wpr', ps.archive_path)
     self.assertEquals(1, len(ps.pages))
     self.assertEquals('http://www.foo.com/', ps.pages[0].url)

@@ -12,7 +12,8 @@ from chrome_remote_control import cros_interface
 class CrOSBrowserBackend(browser_backend.BrowserBackend):
   """The backend for controlling a browser instance running on CrOS.
   """
-  def __init__(self, browser_type, options, is_content_shell, cri):
+  def __init__(self, browser_type, options, extra_browser_args,
+               is_content_shell, cri):
     super(CrOSBrowserBackend, self).__init__(is_content_shell)
     # Initialize fields so that an explosion during init doesn't break in Close.
     self._options = options
@@ -65,6 +66,8 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
       args.append('--user-data-dir=%s' % self._tmpdir)
 
     # Final bits of command line prep.
+    if extra_browser_args:
+      args.extend(extra_browser_args)
     args.extend(options.extra_browser_args)
     prevent_output = not options.show_stdout
 

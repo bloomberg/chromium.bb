@@ -81,6 +81,13 @@ class BrowserOptions(optparse.Values):
         help='When possible, will display the stdout of the process')
     parser.add_option_group(group)
 
+    # Page set options
+    group = optparse.OptionGroup(parser, 'Page set options')
+    group.add_option('--record', action='store_true',
+        dest='record',
+        help='Record to the page set archive')
+    parser.add_option_group(group)
+
     # Debugging options
     group = optparse.OptionGroup(parser, 'When things go wrong')
     group.add_option(

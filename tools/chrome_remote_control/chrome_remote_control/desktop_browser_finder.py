@@ -32,9 +32,10 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
   def __repr__(self):
     return 'PossibleDesktopBrowser(browser_type=%s)' % self.browser_type
 
-  def Create(self):
+  def Create(self, extra_browser_args=None):
     backend = desktop_browser_backend.DesktopBrowserBackend(
-        self._options, self._local_executable, self._is_content_shell)
+        self._options, self._local_executable, self._is_content_shell,
+        extra_browser_args)
     return browser.Browser(backend)
 
 def FindAllAvailableBrowsers(options):
