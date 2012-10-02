@@ -30,6 +30,7 @@ ThrottledTextureUploader::Query::Query(WebKit::WebGraphicsContext3D* context)
     , m_value(0)
     , m_hasValue(false)
     , m_texturesUploaded(0)
+    , m_isNonBlocking(false)
 {
     m_queryId = m_context->createQueryEXT();
 }
@@ -42,6 +43,7 @@ ThrottledTextureUploader::Query::~Query()
 void ThrottledTextureUploader::Query::begin()
 {
     m_hasValue = false;
+    m_isNonBlocking = false;
     m_context->beginQueryEXT(Extensions3DChromium::COMMANDS_ISSUED_CHROMIUM, m_queryId);
 }
 
@@ -78,11 +80,21 @@ size_t ThrottledTextureUploader::Query::texturesUploaded()
     return m_texturesUploaded;
 }
 
+void ThrottledTextureUploader::Query::markAsNonBlocking()
+{
+    m_isNonBlocking = true;
+}
+
+bool ThrottledTextureUploader::Query::isNonBlocking()
+{
+    return m_isNonBlocking;
+}
+
 ThrottledTextureUploader::ThrottledTextureUploader(WebKit::WebGraphicsContext3D* context)
     : m_context(context)
     , m_texturesPerSecondHistory(uploadHistorySize, estimatedTexturesPerSecondGlobal)
     , m_texturesUploaded(0)
-    , m_numPendingTextureUploads(0)
+    , m_numBlockingTextureUploads(0)
 {
 }
 
@@ -90,11 +102,25 @@ ThrottledTextureUploader::~ThrottledTextureUploader()
 {
 }
 
-size_t ThrottledTextureUploader::numPendingUploads()
+size_t ThrottledTextureUploader::numBlockingUploads()
 {
     processQueries();
 
-    return m_numPendingTextureUploads;
+    return m_numBlockingTextureUploads;
+}
+
+void ThrottledTextureUploader::markPendingUploadsAsNonBlocking()
+{
+    for (Deque<OwnPtr<Query> >::iterator it = m_pendingQueries.begin();
+         it != m_pendingQueries.end(); ++it) {
+        if (it->get()->isNonBlocking())
+            continue;
+
+        m_numBlockingTextureUploads -= it->get()->texturesUploaded();
+        it->get()->markAsNonBlocking();
+    }
+
+    ASSERT(!m_numBlockingTextureUploads);
 }
 
 double ThrottledTextureUploader::estimatedTexturesPerSecond()
@@ -129,7 +155,7 @@ void ThrottledTextureUploader::endUploads()
 {
     m_availableQueries.first()->end(m_texturesUploaded);
     m_pendingQueries.append(m_availableQueries.takeFirst());
-    m_numPendingTextureUploads += m_texturesUploaded;
+    m_numBlockingTextureUploads += m_texturesUploaded;
 }
 
 void ThrottledTextureUploader::uploadTexture(CCResourceProvider* resourceProvider, Parameters upload)
@@ -149,12 +175,14 @@ void ThrottledTextureUploader::processQueries()
         double texturesPerSecond = static_cast<double>(texturesUploaded) /
             (usElapsed * 1e-6);
 
+        if (!m_pendingQueries.first()->isNonBlocking())
+            m_numBlockingTextureUploads -= texturesUploaded;
+
         // Remove the oldest values from our history and insert the new one
         m_texturesPerSecondHistory.pop_back();
         m_texturesPerSecondHistory.push_front(texturesPerSecond);
 
         m_availableQueries.append(m_pendingQueries.takeFirst());
-        m_numPendingTextureUploads -= texturesUploaded;
     }
 }
 

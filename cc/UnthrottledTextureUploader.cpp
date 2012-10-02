@@ -8,9 +8,13 @@
 
 namespace cc {
 
-size_t UnthrottledTextureUploader::numPendingUploads()
+size_t UnthrottledTextureUploader::numBlockingUploads()
 {
     return 0;
+}
+
+void UnthrottledTextureUploader::markPendingUploadsAsNonBlocking()
+{
 }
 
 double UnthrottledTextureUploader::estimatedTexturesPerSecond()

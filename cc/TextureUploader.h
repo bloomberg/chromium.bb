@@ -19,7 +19,8 @@ public:
 
     virtual ~TextureUploader() { }
 
-    virtual size_t numPendingUploads() = 0;
+    virtual size_t numBlockingUploads() = 0;
+    virtual void markPendingUploadsAsNonBlocking() = 0;
 
     // Returns our throughput on the GPU process
     virtual double estimatedTexturesPerSecond() = 0;

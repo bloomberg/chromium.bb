@@ -52,7 +52,7 @@ protected:
 
     static size_t maxFullUpdatesPerTick(TextureUploader*);
 
-    size_t maxPendingUpdates() const;
+    size_t maxBlockingUpdates() const;
 
     // This returns true when there were textures left to update.
     bool updateMoreTexturesIfEnoughTimeRemaining();

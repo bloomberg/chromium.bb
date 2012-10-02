@@ -137,9 +137,13 @@ cc::IntSize FakeTiledLayerWithScaledBounds::contentBounds() const
     return m_forcedContentBounds;
 }
 
-size_t FakeTextureUploader::numPendingUploads()
+size_t FakeTextureUploader::numBlockingUploads()
 {
     return 0;
+}
+
+void FakeTextureUploader::markPendingUploadsAsNonBlocking()
+{
 }
 
 void FakeTextureUploader::uploadTexture(cc::CCResourceProvider* resourceProvider, Parameters upload)

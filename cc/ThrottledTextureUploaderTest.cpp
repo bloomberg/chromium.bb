@@ -52,7 +52,7 @@ public:
 };
 
 
-TEST(ThrottledTextureUploaderTest, NumPendingUploads)
+TEST(ThrottledTextureUploaderTest, NumBlockingUploads)
 {
     OwnPtr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(adoptPtr(new FakeWebGraphicsContext3DWithQueryTesting));
     OwnPtr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
@@ -63,27 +63,61 @@ TEST(ThrottledTextureUploaderTest, NumPendingUploads)
     upload.destOffset = IntSize();
 
     fakeContext->setResultAvailable(0);
-    EXPECT_EQ(0, uploader->numPendingUploads());
+    EXPECT_EQ(0, uploader->numBlockingUploads());
     uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
     uploader->endUploads();
-    EXPECT_EQ(1, uploader->numPendingUploads());
+    EXPECT_EQ(1, uploader->numBlockingUploads());
     uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
     uploader->endUploads();
-    EXPECT_EQ(2, uploader->numPendingUploads());
+    EXPECT_EQ(2, uploader->numBlockingUploads());
 
     fakeContext->setResultAvailable(1);
-    EXPECT_EQ(0, uploader->numPendingUploads());
+    EXPECT_EQ(0, uploader->numBlockingUploads());
     uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
     uploader->endUploads();
-    EXPECT_EQ(0, uploader->numPendingUploads());
+    EXPECT_EQ(0, uploader->numBlockingUploads());
     uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
     uploader->uploadTexture(NULL, upload);
     uploader->endUploads();
-    EXPECT_EQ(0, uploader->numPendingUploads());
+    EXPECT_EQ(0, uploader->numBlockingUploads());
+}
+
+TEST(ThrottledTextureUploaderTest, MarkPendingUploadsAsNonBlocking)
+{
+    OwnPtr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(adoptPtr(new FakeWebGraphicsContext3DWithQueryTesting));
+    OwnPtr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
+    OwnPtr<FakeTexture> texture = adoptPtr(new FakeTexture);
+    TextureUploader::Parameters upload;
+    upload.texture = texture.get();
+    upload.sourceRect = IntRect();
+    upload.destOffset = IntSize();
+
+    fakeContext->setResultAvailable(0);
+    EXPECT_EQ(0, uploader->numBlockingUploads());
+    uploader->beginUploads();
+    uploader->uploadTexture(NULL, upload);
+    uploader->uploadTexture(NULL, upload);
+    uploader->endUploads();
+    EXPECT_EQ(2, uploader->numBlockingUploads());
+
+    uploader->markPendingUploadsAsNonBlocking();
+    EXPECT_EQ(0, uploader->numBlockingUploads());
+    uploader->beginUploads();
+    uploader->uploadTexture(NULL, upload);
+    uploader->endUploads();
+    EXPECT_EQ(1, uploader->numBlockingUploads());
+
+    fakeContext->setResultAvailable(1);
+    EXPECT_EQ(0, uploader->numBlockingUploads());
+    uploader->beginUploads();
+    uploader->uploadTexture(NULL, upload);
+    uploader->endUploads();
+    uploader->markPendingUploadsAsNonBlocking();
+    EXPECT_EQ(0, uploader->numBlockingUploads());
 }
 
 } // namespace
