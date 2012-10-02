@@ -160,10 +160,10 @@ destroy_window(struct window *window)
 }
 
 static void
-paint_pixels(void *image, int width, int height, uint32_t time)
+paint_pixels(void *image, int padding, int width, int height, uint32_t time)
 {
-	const int halfh = height / 2;
-	const int halfw = width / 2;
+	const int halfh = padding + (height - padding * 2) / 2;
+	const int halfw = padding + (width  - padding * 2) / 2;
 	int ir, or;
 	uint32_t *pixel = image;
 	int y;
@@ -174,11 +174,13 @@ paint_pixels(void *image, int width, int height, uint32_t time)
 	or *= or;
 	ir *= ir;
 
-	for (y = 0; y < height; y++) {
+	pixel += padding * width;
+	for (y = padding; y < height - padding; y++) {
 		int x;
 		int y2 = (y - halfh) * (y - halfh);
 
-		for (x = 0; x < width; x++) {
+		pixel += padding;
+		for (x = padding; x < width - padding; x++) {
 			uint32_t v;
 
 			/* squared distance from center */
@@ -198,6 +200,8 @@ paint_pixels(void *image, int width, int height, uint32_t time)
 
 			*pixel++ = v;
 		}
+
+		pixel += padding;
 	}
 }
 
@@ -208,9 +212,9 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct window *window = data;
 
-	paint_pixels(window->shm_data, window->width, window->height, time);
+	paint_pixels(window->shm_data, 20, window->width, window->height, time);
 	wl_surface_damage(window->surface,
-			  0, 0, window->width, window->height);
+			  20, 20, window->width - 40, window->height - 40);
 
 	if (callback)
 		wl_callback_destroy(callback);
@@ -329,7 +333,9 @@ main(int argc, char **argv)
 	sigint.sa_flags = SA_RESETHAND;
 	sigaction(SIGINT, &sigint, NULL);
 
+	memset(window->shm_data, 0xff, window->width * window->height * 4);
 	wl_surface_attach(window->surface, window->buffer, 0, 0);
+
 	redraw(window, NULL, 0);
 
 	while (running)
