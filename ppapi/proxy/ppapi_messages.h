@@ -678,12 +678,10 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBUDPSocket_SendToACK,
                     bool /* succeeded */,
                     int32_t /* bytes_written */)
 
-#if !defined(OS_NACL) && !defined(NACL_WIN64)
 // PPB_URLLoader_Trusted
 IPC_MESSAGE_ROUTED1(
     PpapiMsg_PPBURLLoader_UpdateProgress,
     ppapi::proxy::PPBURLLoader_UpdateProgress_Params /* params */)
-#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 // PPB_TCPServerSocket_Private.
 

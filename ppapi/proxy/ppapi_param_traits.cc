@@ -399,6 +399,40 @@ void ParamTraits<ppapi::proxy::SerializedHandle>::Log(const param_type& p,
                                                       std::string* l) {
 }
 
+// PPBURLLoader_UpdateProgress_Params ------------------------------------------
+
+// static
+void ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params>::Write(
+    Message* m,
+    const param_type& p) {
+  ParamTraits<PP_Instance>::Write(m, p.instance);
+  ParamTraits<ppapi::HostResource>::Write(m, p.resource);
+  ParamTraits<int64_t>::Write(m, p.bytes_sent);
+  ParamTraits<int64_t>::Write(m, p.total_bytes_to_be_sent);
+  ParamTraits<int64_t>::Write(m, p.bytes_received);
+  ParamTraits<int64_t>::Write(m, p.total_bytes_to_be_received);
+}
+
+// static
+bool ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params>::Read(
+    const Message* m,
+    PickleIterator* iter,
+    param_type* r) {
+  return
+      ParamTraits<PP_Instance>::Read(m, iter, &r->instance) &&
+      ParamTraits<ppapi::HostResource>::Read(m, iter, &r->resource) &&
+      ParamTraits<int64_t>::Read(m, iter, &r->bytes_sent) &&
+      ParamTraits<int64_t>::Read(m, iter, &r->total_bytes_to_be_sent) &&
+      ParamTraits<int64_t>::Read(m, iter, &r->bytes_received) &&
+      ParamTraits<int64_t>::Read(m, iter, &r->total_bytes_to_be_received);
+}
+
+// static
+void ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params>::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 // PPBFlash_DrawGlyphs_Params --------------------------------------------------
 // static
@@ -455,40 +489,6 @@ bool ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Read(
 
 // static
 void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Log(
-    const param_type& p,
-    std::string* l) {
-}
-
-// PPBURLLoader_UpdateProgress_Params ------------------------------------------
-
-// static
-void ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  ParamTraits<PP_Instance>::Write(m, p.instance);
-  ParamTraits<ppapi::HostResource>::Write(m, p.resource);
-  ParamTraits<int64_t>::Write(m, p.bytes_sent);
-  ParamTraits<int64_t>::Write(m, p.total_bytes_to_be_sent);
-  ParamTraits<int64_t>::Write(m, p.bytes_received);
-  ParamTraits<int64_t>::Write(m, p.total_bytes_to_be_received);
-}
-
-// static
-bool ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params>::Read(
-    const Message* m,
-    PickleIterator* iter,
-    param_type* r) {
-  return
-      ParamTraits<PP_Instance>::Read(m, iter, &r->instance) &&
-      ParamTraits<ppapi::HostResource>::Read(m, iter, &r->resource) &&
-      ParamTraits<int64_t>::Read(m, iter, &r->bytes_sent) &&
-      ParamTraits<int64_t>::Read(m, iter, &r->total_bytes_to_be_sent) &&
-      ParamTraits<int64_t>::Read(m, iter, &r->bytes_received) &&
-      ParamTraits<int64_t>::Read(m, iter, &r->total_bytes_to_be_received);
-}
-
-// static
-void ParamTraits<ppapi::proxy::PPBURLLoader_UpdateProgress_Params>::Log(
     const param_type& p,
     std::string* l) {
 }

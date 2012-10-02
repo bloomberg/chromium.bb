@@ -424,10 +424,8 @@ bool PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgClose)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLLoader_GrantUniversalAccess,
                         OnMsgGrantUniversalAccess)
-#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBURLLoader_UpdateProgress,
                         OnMsgUpdateProgress)
-#endif
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
                         OnMsgReadResponseBodyAck)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBURLLoader_CallbackComplete,
