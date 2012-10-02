@@ -13,7 +13,7 @@ namespace gfx {
 // Returns the smallest Rect that encloses the given RectF.
 UI_EXPORT Rect ToEnclosingRect(const RectF& rect);
 
-// Returns the largest Rect that is enclosed by the given Rect.
+// Returns the largest Rect that is enclosed by the given RectF.
 UI_EXPORT Rect ToEnclosedRect(const RectF& rect);
 
 }  // namespace gfx
