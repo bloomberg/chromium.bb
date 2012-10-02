@@ -151,24 +151,19 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void Send(IPC::Message* message);
 
     void OnOpenObjectCursor(
-        const IndexedDBHostMsg_IndexOpenCursor_Params& params,
-        WebKit::WebExceptionCode* ec);
-    void OnOpenKeyCursor(const IndexedDBHostMsg_IndexOpenCursor_Params& params,
-                         WebKit::WebExceptionCode* ec);
-    void OnCount(const IndexedDBHostMsg_IndexCount_Params& params,
-                 WebKit::WebExceptionCode* ec);
+        const IndexedDBHostMsg_IndexOpenCursor_Params& params);
+    void OnOpenKeyCursor(const IndexedDBHostMsg_IndexOpenCursor_Params& params);
+    void OnCount(const IndexedDBHostMsg_IndexCount_Params& params);
     void OnGetObject(int idb_index_id,
                      int32 thread_id,
                      int32 response_id,
                      const content::IndexedDBKeyRange& key_range,
-                     int32 transaction_id,
-                     WebKit::WebExceptionCode* ec);
+                     int32 transaction_id);
     void OnGetKey(int idb_index_id,
                   int32 thread_id,
                   int32 response_id,
                   const content::IndexedDBKeyRange& key_range,
-                  int32 transaction_id,
-                  WebKit::WebExceptionCode* ec);
+                  int32 transaction_id);
     void OnDestroyed(int32 idb_index_id);
 
     IndexedDBDispatcherHost* parent_;
@@ -187,10 +182,8 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
                int32 thread_id,
                int32 response_id,
                const content::IndexedDBKeyRange& key_range,
-               int32 transaction_id,
-               WebKit::WebExceptionCode* ec);
-    void OnPut(const IndexedDBHostMsg_ObjectStorePut_Params& params,
-               WebKit::WebExceptionCode* ec);
+               int32 transaction_id);
+    void OnPut(const IndexedDBHostMsg_ObjectStorePut_Params& params);
     void OnSetIndexKeys(
         int32 idb_object_store_id,
         const content::IndexedDBKey& primary_key,
@@ -205,13 +198,11 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
                   int32 thread_id,
                   int32 response_id,
                   const content::IndexedDBKeyRange& key_range,
-                  int32 transaction_id,
-                  WebKit::WebExceptionCode* ec);
+                  int32 transaction_id);
     void OnClear(int idb_object_store_id,
                  int32 thread_id,
                  int32 response_id,
-                 int32 transaction_id,
-                 WebKit::WebExceptionCode* ec);
+                 int32 transaction_id);
     void OnCreateIndex(
         const IndexedDBHostMsg_ObjectStoreCreateIndex_Params& params,
         int32* index_id,
@@ -225,10 +216,8 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
                        int32 transaction_id,
                        WebKit::WebExceptionCode* ec);
     void OnOpenCursor(
-        const IndexedDBHostMsg_ObjectStoreOpenCursor_Params& params,
-        WebKit::WebExceptionCode* ec);
-    void OnCount(const IndexedDBHostMsg_ObjectStoreCount_Params& params,
-                 WebKit::WebExceptionCode* ec);
+        const IndexedDBHostMsg_ObjectStoreOpenCursor_Params& params);
+    void OnCount(const IndexedDBHostMsg_ObjectStoreCount_Params& params);
     void OnDestroyed(int32 idb_object_store_id);
 
     IndexedDBDispatcherHost* parent_;
@@ -246,29 +235,24 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnUpdate(int32 idb_object_store_id,
                   int32 thread_id,
                   int32 response_id,
-                  const content::SerializedScriptValue& value,
-                  WebKit::WebExceptionCode* ec);
+                  const content::SerializedScriptValue& value);
     void OnAdvance(int32 idb_object_store_id,
                    int32 thread_id,
                    int32 response_id,
-                   unsigned long count,
-                   WebKit::WebExceptionCode* ec);
+                   unsigned long count);
     void OnContinue(int32 idb_object_store_id,
                     int32 thread_id,
                     int32 response_id,
-                    const content::IndexedDBKey& key,
-                    WebKit::WebExceptionCode* ec);
+                    const content::IndexedDBKey& key);
     void OnPrefetch(int32 idb_cursor_id,
                     int32 thread_id,
                     int32 response_id,
-                    int n,
-                    WebKit::WebExceptionCode* ec);
+                    int n);
     void OnPrefetchReset(int32 idb_cursor_id, int used_prefetches,
                          int unused_prefetches);
     void OnDelete(int32 idb_object_store_id,
                   int32 thread_id,
-                  int32 response_id,
-                  WebKit::WebExceptionCode* ec);
+                  int32 response_id);
     void OnDestroyed(int32 idb_cursor_id);
 
     IndexedDBDispatcherHost* parent_;
