@@ -97,12 +97,7 @@ function onHostStateChanged_(state) {
     console.log('Host plugin state: CONNECTED');
     var element = document.getElementById('host-shared-message');
     var client = remoting.hostSession.getClient();
-    // The disconnect message depends on whether or not audio is supported.
-    var desktopSharedTag = /*i18n-content*/'MESSAGE_SHARED';
-    if (navigator.userAgent.search('Macintosh') != -1) {
-      desktopSharedTag =/*i18n-content*/'MESSAGE_SHARED_NO_AUDIO';
-    }
-    l10n.localizeElementFromTag(element, desktopSharedTag, client);
+    l10n.localizeElement(element, client);
     remoting.setMode(remoting.AppMode.HOST_SHARED);
     disableTimeoutCountdown_();
 

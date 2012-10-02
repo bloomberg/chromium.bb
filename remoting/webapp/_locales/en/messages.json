@@ -365,18 +365,8 @@
     "description": "Message displayed when the client or host has disconnected."
   },
   "MESSAGE_SHARED": {
-    "message": "Your desktop and any audio output are currently shared with $user$.",
-    "description": "Message shown on the host computers that support audio while a session is active informing them who is connected.",
-    "placeholders": {
-      "user": {
-        "content": "$1",
-        "example": "user@domain.com"
-      }
-    }
-  },
-  "MESSAGE_SHARED_NO_AUDIO": {
-    "message": "Your desktop is currently shared with $user$.",
-    "description": "Message shown on the host computers that do not support audio remoting while a session is active informing them who is connected.",
+    "message": "Your desktop is currently being shared with $user$.",
+    "description": "Message shown on the host computer while a session is active informing them who is connected.",
     "placeholders": {
       "user": {
         "content": "$1",

@@ -1125,16 +1125,9 @@ void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
                  &ui_strings.continue_button_text);
   LocalizeString(localize_func, /*i18n-content*/"STOP_SHARING_BUTTON",
                  &ui_strings.stop_sharing_button_text);
-  // The disconnect message depends on whether or not audio is supported.
-#if defined(OS_MACOSX)
-  LocalizeStringWithSubstitution(
-      localize_func, /*i18n-content*/"MESSAGE_SHARED_NO_AUDIO", "$1",
-      &ui_strings.disconnect_message);
-#else
-  LocalizeStringWithSubstitution(
-      localize_func, /*i18n-content*/"MESSAGE_SHARED", "$1",
-      &ui_strings.disconnect_message);
-#endif
+  LocalizeStringWithSubstitution(localize_func,
+                                 /*i18n-content*/"MESSAGE_SHARED", "$1",
+                                 &ui_strings.disconnect_message);
 
   base::AutoLock auto_lock(ui_strings_lock_);
   ui_strings_ = ui_strings;
