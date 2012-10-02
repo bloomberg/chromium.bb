@@ -75,6 +75,9 @@ class ProfileSyncServiceTestHarness {
 
   void TearDown() {
     // Kill the service before the profile.
+    if (service.get()) {
+      service->Shutdown();
+    }
     service.reset();
     profile.reset();
     // Pump messages posted by the sync thread (which may end up
@@ -370,6 +373,7 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
 
   // Stop the service so we can read the new Sync Data files that were
   // created.
+  harness_.service->Shutdown();
   harness_.service.reset();
 
   // This file should have been deleted when the whole directory was nuked.

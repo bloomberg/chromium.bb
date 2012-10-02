@@ -105,6 +105,7 @@ class ProfileSyncServicePreferenceTest
   }
 
   virtual void TearDown() {
+    service_->Shutdown();
     service_.reset();
     profile_.reset();
     AbstractProfileSyncServiceTest::TearDown();

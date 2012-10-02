@@ -200,6 +200,7 @@ class ProfileSyncServiceSessionTest
   }
 
   virtual void TearDown() {
+    sync_service_->Shutdown();
     sync_service_.reset();
     profile()->ResetRequestContext();
 

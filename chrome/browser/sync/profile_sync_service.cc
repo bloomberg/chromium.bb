@@ -166,7 +166,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
 
 ProfileSyncService::~ProfileSyncService() {
   sync_prefs_.RemoveSyncPrefObserver(this);
-  Shutdown();
+  // Shutdown() should have been called before destruction.
+  CHECK(!backend_initialized_);
 }
 
 bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {

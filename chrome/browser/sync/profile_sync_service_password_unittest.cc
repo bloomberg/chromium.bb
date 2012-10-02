@@ -157,6 +157,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
 
   virtual void TearDown() {
     password_store_->ShutdownOnUIThread();
+    service_->Shutdown();
     service_.reset();
     profile_.ResetRequestContext();
     AbstractProfileSyncServiceTest::TearDown();

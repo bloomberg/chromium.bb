@@ -185,6 +185,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   virtual void TearDown() {
     history_backend_ = NULL;
     history_service_ = NULL;
+    service_->Shutdown();
     service_.reset();
     history_thread_.Stop();
     profile_.ResetRequestContext();

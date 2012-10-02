@@ -71,6 +71,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   virtual void TearDown() {
     service_->RemoveObserver(&observer_);
+    service_->Shutdown();
     service_.reset();
     profile_.reset();
 

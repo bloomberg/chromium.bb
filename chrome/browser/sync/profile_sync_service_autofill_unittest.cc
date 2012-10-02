@@ -389,6 +389,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
   virtual void TearDown() OVERRIDE {
     // Note: The tear down order is important.
+    service_->Shutdown();
     service_.reset();
     web_data_service_->ShutdownSyncableService();
     profile_->ResetRequestContext();
