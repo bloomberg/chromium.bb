@@ -4,43 +4,30 @@
 
 #include "sync/engine/conflict_resolver.h"
 
-#include <algorithm>
 #include <list>
-#include <map>
 #include <set>
+#include <string>
 
-#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "sync/engine/conflict_util.h"
-#include "sync/engine/syncer.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/mutable_entry.h"
-#include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
 
 using std::list;
-using std::map;
 using std::set;
 
 namespace syncer {
 
-using sessions::ConflictProgress;
 using sessions::StatusController;
-using syncable::BaseTransaction;
 using syncable::Directory;
 using syncable::Entry;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::WriteTransaction;
-
-namespace {
-
-const int SYNC_CYCLES_BEFORE_ADMITTING_DEFEAT = 8;
-
-}  // namespace
 
 ConflictResolver::ConflictResolver() {
 }
@@ -291,16 +278,17 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
   }
 }
 
-bool ConflictResolver::ResolveConflicts(syncable::WriteTransaction* trans,
-                                        const Cryptographer* cryptographer,
-                                        const ConflictProgress& progress,
-                                        sessions::StatusController* status) {
+bool ConflictResolver::ResolveConflicts(
+    syncable::WriteTransaction* trans,
+    const Cryptographer* cryptographer,
+    const std::set<syncable::Id>& simple_conflict_ids,
+    sessions::StatusController* status) {
   bool forward_progress = false;
   // Iterate over simple conflict items.
   set<Id>::const_iterator conflicting_item_it;
   set<Id> processed_items;
-  for (conflicting_item_it = progress.SimpleConflictingItemsBegin();
-       conflicting_item_it != progress.SimpleConflictingItemsEnd();
+  for (conflicting_item_it = simple_conflict_ids.begin();
+       conflicting_item_it != simple_conflict_ids.end();
        ++conflicting_item_it) {
     Id id = *conflicting_item_it;
     if (processed_items.count(id) > 0)
@@ -331,7 +319,7 @@ bool ConflictResolver::ResolveConflicts(syncable::WriteTransaction* trans,
         break;
       prev_id = new_prev_id;
     } while (processed_items.count(prev_id) == 0 &&
-             progress.HasSimpleConflictItem(prev_id));  // Excludes root.
+             simple_conflict_ids.count(prev_id) > 0);  // Excludes root.
     while (!predecessors.empty()) {
       id = predecessors.back();
       predecessors.pop_back();

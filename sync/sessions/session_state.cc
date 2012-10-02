@@ -28,13 +28,8 @@ bool ConflictProgress::HasSimpleConflictItem(const syncable::Id& id) const {
   return simple_conflicting_item_ids_.count(id) > 0;
 }
 
-std::set<syncable::Id>::const_iterator
-ConflictProgress::SimpleConflictingItemsBegin() const {
-  return simple_conflicting_item_ids_.begin();
-}
-std::set<syncable::Id>::const_iterator
-ConflictProgress::SimpleConflictingItemsEnd() const {
-  return simple_conflicting_item_ids_.end();
+const std::set<syncable::Id>& ConflictProgress::SimpleConflictingItems() const {
+  return simple_conflicting_item_ids_;
 }
 
 void ConflictProgress::AddSimpleConflictingItemById(

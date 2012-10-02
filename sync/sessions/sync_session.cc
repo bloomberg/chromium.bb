@@ -215,8 +215,7 @@ std::set<ModelSafeGroup> SyncSession::GetEnabledGroupsWithConflicts() const {
     const sessions::ConflictProgress* conflict_progress =
         status_controller_->GetUnrestrictedConflictProgress(*it);
     if (conflict_progress &&
-        (conflict_progress->SimpleConflictingItemsBegin() !=
-         conflict_progress->SimpleConflictingItemsEnd())) {
+        conflict_progress->SimpleConflictingItemsSize() > 0) {
       enabled_groups_with_conflicts.insert(*it);
     }
   }

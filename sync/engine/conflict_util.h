@@ -7,11 +7,11 @@
 #ifndef SYNC_ENGINE_CONFLICT_UTIL_H_
 #define SYNC_ENGINE_CONFLICT_UTIL_H_
 
+namespace syncer {
+
 namespace syncable {
 class MutableEntry;
 }
-
-namespace syncer {
 
 // Marks the item as no longer requiring sync, allowing the server's version
 // to 'win' during the next update application step.

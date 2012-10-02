@@ -33,7 +33,8 @@ SyncerError ResolveConflictsCommand::ModelChangingExecuteImpl(
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   const Cryptographer* cryptographer = dir->GetCryptographer(&trans);
   status->update_conflicts_resolved(
-      resolver->ResolveConflicts(&trans, cryptographer, *progress, status));
+      resolver->ResolveConflicts(&trans, cryptographer,
+                                 progress->SimpleConflictingItems(), status));
 
   return SYNCER_OK;
 }

@@ -20,9 +20,14 @@
 
 namespace sync_pb {
 class SyncEntity;
-}
+}  // namespace sync_pb
 
 namespace syncer {
+
+namespace syncable {
+class BaseTransaction;
+}  // namespace syncable
+
 class Cryptographer;
 
 // If the server sent down a client-tagged entry, or an entry whose

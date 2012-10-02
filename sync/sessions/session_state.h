@@ -33,8 +33,7 @@ class ConflictProgress {
   // Various mutators for tracking commit conflicts.
   void AddSimpleConflictingItemById(const syncable::Id& the_id);
   void EraseSimpleConflictingItemById(const syncable::Id& the_id);
-  std::set<syncable::Id>::const_iterator SimpleConflictingItemsBegin() const;
-  std::set<syncable::Id>::const_iterator SimpleConflictingItemsEnd() const;
+  const std::set<syncable::Id>& SimpleConflictingItems() const;
   int SimpleConflictingItemsSize() const {
     return simple_conflicting_item_ids_.size();
   }
