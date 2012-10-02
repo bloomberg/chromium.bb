@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -37,7 +38,7 @@
 using content::BrowserThread;
 
 namespace {
-static const char kChannelIdSeparator[] = "/";
+const char kChannelIdSeparator[] = "/";
 }
 
 namespace extensions {
@@ -216,6 +217,7 @@ void PushMessagingGetChannelIdFunction::BuildAndSendResult(
   result.channel_id = channel_id;
   SetError(error_message);
   results_ = glue::GetChannelId::Results::Create(result);
+
   bool success = error_message.empty() && !gaia_id.empty();
   SendResponse(success);
 }
@@ -227,7 +229,14 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchSuccess(
 
 void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
       const GoogleServiceAuthError& error) {
-  ReportResult(std::string(), error.error_message());
+  std::string error_text = error.error_message();
+  // if the error message is blank, see if we can set it from the state
+  if (error_text.empty() &&
+      (0 != error.state())) {
+    error_text = base::IntToString(error.state());
+  }
+
+  ReportResult(std::string(), error_text);
 }
 
 }  // namespace extensions

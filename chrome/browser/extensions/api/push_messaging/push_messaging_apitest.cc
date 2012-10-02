@@ -137,4 +137,23 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, Restart) {
   EXPECT_EQ(1U, handler->GetRegisteredExtensionsForTest().size());
 }
 
+// Test the GetChannelId API.
+IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, GetChannelId) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  ExtensionTestMessageListener ready("ready", true);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("push_messaging"));
+  ASSERT_TRUE(extension);
+  GURL page_url = extension->GetResourceURL("get_channel_id.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+
+  // Just loading the page will cause a getChannelId call, so we check
+  // for a callback.  It should fail because there is no auth token.
+
+  // Make sure we got a failure (but we do get a result).
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 }  // namespace extensions
