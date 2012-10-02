@@ -81,6 +81,30 @@ class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
   SkPicture picture_;
 };
 
+class RenderingStatsEnumerator
+  : public WebRenderingStats::Enumerator,
+    public content::GpuRenderingStats::Enumerator {
+ public:
+  RenderingStatsEnumerator(v8::Handle<v8::Object> stats_object)
+      : stats_object_(stats_object) { }
+
+  virtual void addInt(const char* name, int value) {
+    stats_object_->Set(v8::String::New(name), v8::Integer::New(value));
+  }
+
+  virtual void addDouble(const char* name, double value) {
+    stats_object_->Set(v8::String::New(name), v8::Number::New(value));
+  }
+
+  virtual void addTimeDelta(const char* name, base::TimeDelta value) {
+    stats_object_->Set(v8::String::New(name),
+                       v8::Number::New(value.InSecondsF()));
+  }
+
+ private:
+  v8::Handle<v8::Object> stats_object_;
+};
+
 }  // namespace
 
 namespace content {
@@ -155,41 +179,11 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     content::GpuRenderingStats gpu_stats;
     render_view_impl->GetGpuRenderingStats(&gpu_stats);
-    v8::Handle<v8::Object> stats_object = v8::Object::New();
-    stats_object->Set(v8::String::New("numAnimationFrames"),
-                      v8::Integer::New(stats.numAnimationFrames));
-    stats_object->Set(v8::String::New("numFramesSentToScreen"),
-                      v8::Integer::New(stats.numFramesSentToScreen));
-    stats_object->Set(v8::String::New("droppedFrameCount"),
-                      v8::Integer::New(stats.droppedFrameCount));
-    stats_object->Set(v8::String::New("totalPaintTimeInSeconds"),
-                      v8::Number::New(stats.totalPaintTimeInSeconds));
-    stats_object->Set(v8::String::New("totalRasterizeTimeInSeconds"),
-                      v8::Number::New(stats.totalRasterizeTimeInSeconds));
-    stats_object->Set(v8::String::New("totalCommitTimeInSeconds"),
-                      v8::Number::New(stats.totalCommitTimeInSeconds));
-    stats_object->Set(v8::String::New("totalCommitCount"),
-                      v8::Integer::New(stats.totalCommitCount));
 
-    stats_object->Set(v8::String::New("globalTextureUploadCount"),
-                      v8::Number::New(gpu_stats.global_texture_upload_count));
-    stats_object->Set(
-        v8::String::New("globalTotalTextureUploadTimeInSeconds"),
-        v8::Number::New(
-            gpu_stats.global_total_texture_upload_time.InSecondsF()));
-    stats_object->Set(v8::String::New("textureUploadCount"),
-                      v8::Number::New(gpu_stats.texture_upload_count));
-    stats_object->Set(
-        v8::String::New("totalTextureUploadTimeInSeconds"),
-        v8::Number::New(gpu_stats.total_texture_upload_time.InSecondsF()));
-    stats_object->Set(
-        v8::String::New("globalTotalProcessingCommandsTimeInSeconds"),
-        v8::Number::New(
-            gpu_stats.global_total_processing_commands_time.InSecondsF()));
-    stats_object->Set(
-        v8::String::New("totalProcessingCommandsTimeInSeconds"),
-        v8::Number::New(
-            gpu_stats.total_processing_commands_time.InSecondsF()));
+    v8::Handle<v8::Object> stats_object = v8::Object::New();
+    RenderingStatsEnumerator enumerator(stats_object);
+    stats.enumerateFields(&enumerator);
+    gpu_stats.enumerateFields(&enumerator);
     return stats_object;
   }
 
