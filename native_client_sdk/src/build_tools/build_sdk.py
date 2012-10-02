@@ -705,9 +705,9 @@ def BuildStepMakeAll(pepperdir, platform, directory, step_name, clean=False):
                           cwd=os.path.abspath(make_dir))
 
 
-def BuildStepBuildLibraries(pepperdir, platform, directory):
+def BuildStepBuildLibraries(pepperdir, platform, directory, clean=True):
   BuildStepMakeAll(pepperdir, platform, directory, 'Build Libraries',
-      clean=True)
+      clean=clean)
 
 
 def BuildStepTarBundle(pepper_ver, tarfile):
@@ -937,7 +937,7 @@ def main(args):
   if options.only_examples:
     BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental,
                           options.clobber_examples)
-    BuildStepBuildLibraries(pepperdir, platform, 'src')
+    BuildStepBuildLibraries(pepperdir, platform, 'src', False)  # Don't clean.
     BuildStepBuildExamples(pepperdir, platform)
     BuildStepCopyTests(pepperdir, toolchains, options.build_experimental,
                        options.clobber_examples)
