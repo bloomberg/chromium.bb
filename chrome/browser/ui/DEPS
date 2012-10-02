@@ -5,7 +5,5 @@ include_rules = [
  "!chrome/browser/ui/views/find_bar_host.h",
  "!chrome/browser/ui/views/frame/browser_view.h",
  "!chrome/browser/ui/views/sad_tab_view.h",
- "!chrome/browser/ui/views/tab_icon_view.h",
- "!chrome/browser/ui/views/tab_icon_view_model.h",
  # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 ]
