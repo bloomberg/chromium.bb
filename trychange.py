@@ -777,6 +777,7 @@ def TryChange(argv,
       for checkout in checkouts:
         raw_diff = checkout.GenerateDiff()
         if not raw_diff:
+          logging.error('Empty or non-existant diff, exiting.')
           return 1
         diff = raw_diff.splitlines(True)
         path_diff = gclient_utils.PathDifference(root, checkout.checkout_root)
