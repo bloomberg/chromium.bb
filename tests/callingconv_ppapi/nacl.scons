@@ -18,57 +18,64 @@ if env.Bit('pnacl_generate_pexe'):
 if env.Bit('built_elsewhere'):
   Return()
 
-env.PNaClForceNative()
+env_pnacl_cc = env.Clone()
+env_pnacl_cc.PNaClForceNative()
 # for ppapi headers which include other ppapi headers
-env.Append(CPPPATH='${SCONSTRUCT_DIR}/tests/callingconv_ppapi')
-env_pnacl_calling = env.Clone()
-env_pnacl_calling.Append(
+env_pnacl_cc.Append(CPPPATH='${SCONSTRUCT_DIR}/tests/callingconv_ppapi')
+
+env_pnacl_cc_calling = env_pnacl_cc.Clone()
+env_pnacl_cc_calling.Append(
     CCFLAGS=['-Xtranslator', '--cc-rewrite'],
     # force invoked functions to have "gcc" prefix
     CPPDEFINES=['INVOCATION_PREFIX=gcc'])
-env_pnacl_called = env.Clone()
-env_pnacl_called.Append(
+env_pnacl_cc_called = env_pnacl_cc.Clone()
+env_pnacl_cc_called.Append(
     CCFLAGS=['-Xtranslator', '--cc-rewrite'],
     # force both defined and invoked functions to have the "pnacl" prefix
     CPPDEFINES=['FUNCTION_PREFIX=pnacl', 'INVOCATION_PREFIX=pnacl'])
 
-# hack to keep this file readable - most of the arm tests are
-# disabled via BROKEN_CONFIGS
-# This should be removed once we have access to a gcc/arm TC
 if env.Bit('target_arm'):
-  # the  gcc_env is bogus but we do not really use anything produced
-  # within it.
-  gcc_env = env.Clone()
+  # Note, this is not a true gcc environment but rather a
+  # clang environment being switched into "eabi" mode
+  # TODO: replace this by the nacl-gcc/arm TC as soon
+  # as it becomes available.
+  ARM_TRIPLE='armv7a-none-linux-gnueabihf'
+  gcc_cc_env = env_pnacl_cc.Clone()
+  gcc_cc_env.Append(CCFLAGS=['--pnacl-frontend-triple=' + ARM_TRIPLE,
+                             '-mfloat-abi=hard'],
+                    # without the proper triple we need to add this manually
+                    CPPDEFINES=['__native_client__'])
 else:
-  gcc_env = env.PNaClGetNNaClEnv()
-env_gcc_calling = gcc_env.Clone()
-env_gcc_calling.Append(
+  gcc_cc_env = env_pnacl_cc.PNaClGetNNaClEnv()
+
+env_gcc_cc_calling = gcc_cc_env.Clone()
+env_gcc_cc_calling.Append(
     # force invoked functions to have "pnacl" prefix
     CPPDEFINES=['INVOCATION_PREFIX=pnacl'])
-env_gcc_called = gcc_env.Clone()
-env_gcc_called.Append(
+env_gcc_cc_called = gcc_cc_env.Clone()
+env_gcc_cc_called.Append(
     # force both defined and invoked functions to have the "gcc" prefix
     CPPDEFINES=['FUNCTION_PREFIX=gcc', 'INVOCATION_PREFIX=gcc'])
 
 # Note: this file is alwyas built with the pnacl TC
-obj_support = env.ComponentObject('support.c')
+obj_support = env_pnacl_cc.ComponentObject('support.c')
 
-env_pnacl_called.ComponentObject('obj_pnacl_called',
-                                 'ppapi_callingconv_test.cpp')
+env_pnacl_cc_called.ComponentObject('obj_pnacl_called',
+                                    'ppapi_callingconv_test.cpp')
 
-env_pnacl_calling.ComponentObject('obj_pnacl_calling',
+env_pnacl_cc_calling.ComponentObject('obj_pnacl_calling',
+                                     'ppapi_callingconv_test.cpp')
+env_pnacl_cc.ComponentObject('obj_pnacl_both',
+                             'ppapi_callingconv_test.cpp')
+
+env_gcc_cc_called.ComponentObject('obj_gcc_called',
                                   'ppapi_callingconv_test.cpp')
-env.ComponentObject('obj_pnacl_both',
-                    'ppapi_callingconv_test.cpp')
 
-env_gcc_called.ComponentObject('obj_gcc_called',
-                               'ppapi_callingconv_test.cpp')
+env_gcc_cc_calling.ComponentObject('obj_gcc_calling',
+                                   'ppapi_callingconv_test.cpp')
 
-env_gcc_calling.ComponentObject('obj_gcc_calling',
-                                'ppapi_callingconv_test.cpp')
-
-gcc_env.ComponentObject('obj_gcc_both',
-                        'ppapi_callingconv_test.cpp')
+gcc_cc_env.ComponentObject('obj_gcc_both',
+                           'ppapi_callingconv_test.cpp')
 
 
 TARGETS = [
@@ -91,24 +98,14 @@ TARGETS = [
 ]
 
 
-BROKEN_CONFIGS = set([
-    # we need the nacl-gcc/arm TC or anything generating eabi calls
-    # before we can enable the ARM tests
-  ('arm', 'gcc_both'),
-  ('arm', 'gcc_calls_pnacl'),
-  ('arm', 'pnacl_calls_gcc'),
-  ])
-
 for name, objs in TARGETS:
-  is_broken = (env.get('TARGET_FULLARCH'), name) in BROKEN_CONFIGS
-  nexe = env.ComponentProgram('callingconv_ppapi_%s' % name,
-                              objs,
-                              EXTRA_LIBS=['${NONIRT_LIBS}'])
+  nexe = env_pnacl_cc.ComponentProgram('callingconv_ppapi_%s' % name,
+                                       objs,
+                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
   test= env.CommandSelLdrTestNacl('callingconv_ppapi_%s.out' % name,
                                   nexe,
                                   stdout_golden=env.File('golden.out'))
   env.AddNodeToTestSuite(test,
                          ['medium_tests', 'nonpexe_tests'],
-                         'run_callingconv_ppapi_%s_test' % name,
-                         is_broken=is_broken)
+                         'run_callingconv_ppapi_%s_test' % name)
 
