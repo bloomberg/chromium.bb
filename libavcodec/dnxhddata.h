@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include "avcodec.h"
+#include "symbols.h"
 
 typedef struct {
     int cid;
@@ -44,7 +45,7 @@ typedef struct {
     int bit_rates[5]; ///< Helpher to choose variants, rounded to nearest 5Mb/s
 } CIDEntry;
 
-extern const CIDEntry ff_dnxhd_cid_table[];
+extern AVCODEC_SYMBOL const CIDEntry ff_dnxhd_cid_table[];
 
 int ff_dnxhd_get_cid_table(int cid);
 int ff_dnxhd_find_cid(AVCodecContext *avctx, int bit_depth);

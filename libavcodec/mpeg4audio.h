@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include "get_bits.h"
 #include "put_bits.h"
+#include "symbols.h"
 
 typedef struct {
     int object_type;
@@ -40,7 +41,7 @@ typedef struct {
     int ps;  ///< -1 implicit, 1 presence
 } MPEG4AudioConfig;
 
-extern const int avpriv_mpeg4audio_sample_rates[16];
+extern AVCODEC_SYMBOL const int avpriv_mpeg4audio_sample_rates[16];
 extern const uint8_t ff_mpeg4audio_channels[8];
 
 /**

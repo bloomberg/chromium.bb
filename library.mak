@@ -20,6 +20,7 @@ $(SUBDIR)x86/%.o: $(SUBDIR)x86/%.asm
 	$(DEPYASM) $(YASMFLAGS) -I $(<D)/ -M -o $@ $< > $(@:.o=.d)
 	$(YASM) $(YASMFLAGS) -I $(<D)/ -o $@ $<
 
+$(OBJS): CPPFLAGS := -DCOMPILING_$(NAME)=1 $(CPPFLAGS)
 $(OBJS) $(OBJS:.o=.s) $(SUBDIR)%.h.o $(TESTOBJS): CPPFLAGS += -DHAVE_AV_CONFIG_H
 $(TESTOBJS): CPPFLAGS += -DTEST
 
@@ -94,7 +95,7 @@ endef
 
 $(eval $(RULES))
 
-$(EXAMPLES) $(TESTPROGS) $(TOOLS): $(THIS_LIB) $(DEP_LIBS)
+#$(EXAMPLES) $(TESTPROGS) $(TOOLS): $(THIS_LIB) $(DEP_LIBS)
 $(TESTPROGS): $(SUBDIR)$(LIBNAME)
 
 examples: $(EXAMPLES)

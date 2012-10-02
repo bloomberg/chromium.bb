@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include "config.h"
 #include "attributes.h"
+#include "symbols.h"
 
 /**
  * @addtogroup lavu_internal
@@ -55,7 +56,7 @@ extern const uint32_t ff_inverse[257];
 
 #include "common.h"
 
-extern const uint8_t ff_sqrt_tab[256];
+extern AVUTIL_SYMBOL const uint8_t ff_sqrt_tab[256];
 
 static inline av_const unsigned int ff_sqrt(unsigned int a)
 {

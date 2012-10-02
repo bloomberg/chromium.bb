@@ -27,6 +27,8 @@
 #ifndef AVUTIL_TREE_H
 #define AVUTIL_TREE_H
 
+#include "symbols.h"
+
 /**
  * @addtogroup lavu_tree AVTree
  * @ingroup lavu_data
@@ -40,7 +42,7 @@
 
 
 struct AVTreeNode;
-extern const int av_tree_node_size;
+extern AVUTIL_SYMBOL const int av_tree_node_size;
 
 /**
  * Find an element.

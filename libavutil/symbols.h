@@ -1,5 +1,5 @@
 /*
- * copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
+ * Copyright (c) 2012 Ronald S. Bultje <rsbultje@gmail.com>
  *
  * This file is part of FFmpeg.
  *
@@ -18,30 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef AVUTIL_MD5_H
-#define AVUTIL_MD5_H
+#ifndef AVUTIL_SYMBOLS_H
+#define AVUTIL_SYMBOLS_H
 
-#include <stdint.h>
+#include "libavutil/avconfig.h"
 
-#include "symbols.h"
+#if AV_HAVE_SHARED_LIBS && defined(_MSC_VER) && !defined(COMPILING_avutil)
+#define AVUTIL_SYMBOL __declspec(dllimport)
+#else
+#define AVUTIL_SYMBOL
+#endif
 
-/**
- * @defgroup lavu_md5 MD5
- * @ingroup lavu_crypto
- * @{
- */
-
-extern AVUTIL_SYMBOL const int av_md5_size;
-
-struct AVMD5;
-
-void av_md5_init(struct AVMD5 *ctx);
-void av_md5_update(struct AVMD5 *ctx, const uint8_t *src, const int len);
-void av_md5_final(struct AVMD5 *ctx, uint8_t *dst);
-void av_md5_sum(uint8_t *dst, const uint8_t *src, const int len);
-
-/**
- * @}
- */
-
-#endif /* AVUTIL_MD5_H */
+#endif /* AVUTIL_SYMBOLS_H */

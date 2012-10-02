@@ -23,13 +23,15 @@
 
 #include <stdint.h>
 
+#include "symbols.h"
+
 /**
  * @defgroup lavu_sha SHA
  * @ingroup lavu_crypto
  * @{
  */
 
-extern const int av_sha_size;
+extern AVUTIL_SYMBOL const int av_sha_size;
 
 struct AVSHA;
 

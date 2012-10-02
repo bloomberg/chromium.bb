@@ -2616,7 +2616,7 @@ probe_cc(){
         _cc_o='-Fo $@'
         _cc_e='-P -Fi $@'
         _flags_filter=msvc_flags
-        _ld_lib='lib%.a'
+        _ld_lib='%.lib'
         _ld_path='-libpath:'
         _flags='-nologo'
         _cflags='-D_USE_MATH_DEFINES -Dinline=__inline -FIstdlib.h -Dstrtoll=_strtoi64'
@@ -3078,11 +3078,13 @@ case $target_os in
         shlibdir_default="$bindir_default"
         SLIBPREF=""
         SLIBSUF=".dll"
+		LIBPREF=""
+		LIBSUF=".lib"
         SLIBNAME_WITH_VERSION='$(SLIBPREF)$(FULLNAME)-$(LIBVERSION)$(SLIBSUF)'
         SLIBNAME_WITH_MAJOR='$(SLIBPREF)$(FULLNAME)-$(LIBMAJOR)$(SLIBSUF)'
         dlltool="${cross_prefix}dlltool"
         if check_cmd lib.exe -list; then
-            SLIB_EXTRA_CMD='-lib.exe /machine:$(LIBTARGET) /def:$$(@:$(SLIBSUF)=.def) /out:$(SUBDIR)$(SLIBNAME:$(SLIBSUF)=.lib)'
+            SLIB_EXTRA_CMD='-lib.exe -machine:$(LIBTARGET) -def:$$(@:$(SLIBSUF)=.def) -out:$(SUBDIR)$(SLIBNAME:$(SLIBSUF)=.lib)'
             if enabled x86_64; then
                 LIBTARGET=x64
             fi
@@ -3092,8 +3094,8 @@ case $target_os in
         SLIB_INSTALL_NAME='$(SLIBNAME_WITH_MAJOR)'
         SLIB_INSTALL_LINKS=
         SLIB_INSTALL_EXTRA_SHLIB='$(SLIBNAME:$(SLIBSUF)=.lib)'
-        SLIB_INSTALL_EXTRA_LIB='lib$(SLIBNAME:$(SLIBSUF)=.dll.a) $(SLIBNAME_WITH_MAJOR:$(SLIBSUF)=.def)'
-        SHFLAGS='-shared -Wl,--output-def,$$(@:$(SLIBSUF)=.def) -Wl,--out-implib,$(SUBDIR)lib$(SLIBNAME:$(SLIBSUF)=.dll.a) -Wl,--enable-runtime-pseudo-reloc -Wl,--enable-auto-image-base'
+        SLIB_INSTALL_EXTRA_LIB='lib$(SLIBNAME:$(SLIBSUF)=.dll) $(SLIBNAME_WITH_MAJOR:$(SLIBSUF)=.def)'
+        SHFLAGS='-dll -def:$$(@:$(SLIBSUF)=.def) -implib:$(SUBDIR)lib$(SLIBNAME:$(SLIBSUF)=.dll.a)'
         objformat="win32"
         ranlib=:
         enable dos_paths

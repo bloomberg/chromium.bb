@@ -36,6 +36,7 @@
 #include <string.h>
 #include "attributes.h"
 #include "libavutil/avconfig.h"
+#include "symbols.h"
 
 #if AV_HAVE_BIGENDIAN
 #   define AV_NE(be, le) (be)
@@ -62,12 +63,12 @@
 #define FFALIGN(x, a) (((x)+(a)-1)&~((a)-1))
 
 /* misc math functions */
-extern const uint8_t ff_log2_tab[256];
+extern AVUTIL_SYMBOL const uint8_t ff_log2_tab[256];
 
 /**
  * Reverse the order of the bits of an 8-bits unsigned integer.
  */
-extern const uint8_t av_reverse[256];
+extern AVUTIL_SYMBOL const uint8_t av_reverse[256];
 
 static av_always_inline av_const int av_log2_c(unsigned int v)
 {
