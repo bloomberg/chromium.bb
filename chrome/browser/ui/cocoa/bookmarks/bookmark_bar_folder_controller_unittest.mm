@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -168,8 +169,8 @@ class BookmarkBarFolderControllerTest : public CocoaProfileTest {
     // Make parent frame for bookmark bar then open it.
     NSRect frame = [[test_window() contentView] frame];
     frame = NSMakeRect(frame.origin.x,
-                       frame.size.height - bookmarks::kNTPBookmarkBarHeight,
-                       frame.size.width, bookmarks::kNTPBookmarkBarHeight);
+                       frame.size.height - chrome::kNTPBookmarkBarHeight,
+                       frame.size.width, chrome::kNTPBookmarkBarHeight);
     NSView* fakeToolbarView = [[[NSView alloc] initWithFrame:frame]
                                 autorelease];
     [[test_window() contentView] addSubview:fakeToolbarView];

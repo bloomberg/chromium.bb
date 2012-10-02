@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell.h"
@@ -1947,7 +1948,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       // If this button is showing its menu then we need to move the menu, too.
       if (aButton == subButton)
         [folderController_ offsetFolderMenuWindow:NSMakeSize(0.0,
-         bookmarks::kBookmarkBarHeight)];
+         chrome::kBookmarkBarHeight)];
     }
   } else {
     // If all nodes have been removed from this folder then add in the
