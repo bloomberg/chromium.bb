@@ -121,13 +121,12 @@ bool WebContentsDelegateAndroid::ShouldIgnoreNavigation(
 
 void WebContentsDelegateAndroid::NavigationStateChanged(
     const WebContents* source, unsigned changed_flags) {
-  if (changed_flags & (
-      content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE)) {
+  if (changed_flags & content::INVALIDATE_TYPE_TITLE) {
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
     if (obj.is_null())
       return;
-    Java_WebContentsDelegateAndroid_onTabHeaderStateChanged(
+    Java_WebContentsDelegateAndroid_onTitleUpdated(
         env, obj.obj());
   }
 }

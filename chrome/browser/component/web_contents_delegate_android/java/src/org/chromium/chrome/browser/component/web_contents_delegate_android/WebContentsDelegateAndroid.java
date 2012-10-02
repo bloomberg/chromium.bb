@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.component.web_contents_delegate_android;
 
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.view.KeyEvent;
 
 import org.chromium.base.CalledByNative;
@@ -60,7 +59,7 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
-    public void onTabHeaderStateChanged() {
+    public void onTitleUpdated() {
     }
 
     @SuppressWarnings("unused")
