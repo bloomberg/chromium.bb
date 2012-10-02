@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
+#include "chrome/browser/download/test_download_shelf.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/test_location_bar.h"
@@ -146,6 +147,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void DestroyBrowser() OVERRIDE {}
 
  private:
+  TestDownloadShelf download_shelf_;
   TestLocationBar location_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindow);

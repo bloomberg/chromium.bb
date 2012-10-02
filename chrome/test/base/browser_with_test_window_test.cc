@@ -41,7 +41,11 @@ void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 
   set_profile(CreateProfile());
-  window_.reset(new TestBrowserWindow);
+
+  // Allow subclasses to specify a |window_| in their SetUp().
+  if (!window_.get())
+    window_.reset(new TestBrowserWindow);
+
   Browser::CreateParams params(profile());
   params.window = window_.get();
   browser_.reset(new Browser(params));

@@ -5,38 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/download/download_shelf.h"
-
-class TestDownloadShelf : public DownloadShelf {
- public:
-  TestDownloadShelf() : is_showing_(false) {}
-
-  virtual bool IsShowing() const OVERRIDE {
-    return is_showing_;
-  }
-
-  virtual bool IsClosing() const OVERRIDE {
-    return false;
-  }
-
-  virtual Browser* browser() const OVERRIDE {
-    return NULL;
-  }
-
- protected:
-  virtual void DoAddDownload(BaseDownloadItemModel* download_mode) OVERRIDE {}
-
-  virtual void DoShow() OVERRIDE {
-    is_showing_ = true;
-  }
-
-  virtual void DoClose() OVERRIDE {
-    is_showing_ = false;
-  }
-
- private:
-  bool is_showing_;
-};
+#include "chrome/browser/download/test_download_shelf.h"
 
 TEST(DownloadShelfTest, ClosesShelfWhenHidden) {
   TestDownloadShelf shelf;

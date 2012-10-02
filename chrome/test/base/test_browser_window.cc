@@ -103,7 +103,7 @@ bool TestBrowserWindow::IsDownloadShelfVisible() const {
 }
 
 DownloadShelf* TestBrowserWindow::GetDownloadShelf() {
-  return NULL;
+  return &download_shelf_;
 }
 
 int TestBrowserWindow::GetExtraRenderViewHeight() const {
