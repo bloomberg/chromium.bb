@@ -74,7 +74,9 @@ void GaiaOAuthClient::Core::GetTokensFromAuthCode(
                                                 true) +
       "&client_secret=" +
       net::EscapeUrlEncodedData(oauth_client_info.client_secret, true) +
-      "&redirect_uri=oob&grant_type=authorization_code";
+      "&redirect_uri=" +
+      net::EscapeUrlEncodedData(oauth_client_info.redirect_uri, true) +
+      "&grant_type=authorization_code";
   MakeGaiaRequest(post_body, max_retries, delegate);
 }
 

@@ -151,6 +151,7 @@ bool CloudPrintProxy::CreateBackend() {
     google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT);
   oauth_client_info.client_secret =
     google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_CLOUD_PRINT);
+  oauth_client_info.redirect_uri = "oob";
   backend_.reset(new CloudPrintProxyBackend(this, settings_, oauth_client_info,
                                             enable_job_poll));
   return true;

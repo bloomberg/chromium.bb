@@ -23,6 +23,7 @@ static const char kGaiaOAuth2Url[] =
 struct OAuthClientInfo {
   std::string client_id;
   std::string client_secret;
+  std::string redirect_uri;
 };
 
 class GaiaOAuthClient {

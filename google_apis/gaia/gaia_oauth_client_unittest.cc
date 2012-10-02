@@ -156,6 +156,7 @@ TEST_F(GaiaOAuthClientTest, NetworkFailure) {
   OAuthClientInfo client_info;
   client_info.client_id = "test_client_id";
   client_info.client_secret = "test_client_secret";
+  client_info.redirect_uri = "test_redirect_uri";
   GaiaOAuthClient auth(kGaiaOAuth2Url,
                        profile_.GetRequestContext());
   auth.GetTokensFromAuthCode(client_info, "auth_code", 2, &delegate);
@@ -178,6 +179,7 @@ TEST_F(GaiaOAuthClientTest, NetworkFailureRecover) {
   OAuthClientInfo client_info;
   client_info.client_id = "test_client_id";
   client_info.client_secret = "test_client_secret";
+  client_info.redirect_uri = "test_redirect_uri";
   GaiaOAuthClient auth(kGaiaOAuth2Url,
                        profile_.GetRequestContext());
   auth.GetTokensFromAuthCode(client_info, "auth_code", -1, &delegate);
@@ -199,6 +201,7 @@ TEST_F(GaiaOAuthClientTest, OAuthFailure) {
   OAuthClientInfo client_info;
   client_info.client_id = "test_client_id";
   client_info.client_secret = "test_client_secret";
+  client_info.redirect_uri = "test_redirect_uri";
   GaiaOAuthClient auth(kGaiaOAuth2Url,
                        profile_.GetRequestContext());
   auth.GetTokensFromAuthCode(client_info, "auth_code", -1, &delegate);
@@ -218,6 +221,7 @@ TEST_F(GaiaOAuthClientTest, GetTokensSuccess) {
   OAuthClientInfo client_info;
   client_info.client_id = "test_client_id";
   client_info.client_secret = "test_client_secret";
+  client_info.redirect_uri = "test_redirect_uri";
   GaiaOAuthClient auth(kGaiaOAuth2Url,
                        profile_.GetRequestContext());
   auth.GetTokensFromAuthCode(client_info, "auth_code", -1, &delegate);
@@ -236,6 +240,7 @@ TEST_F(GaiaOAuthClientTest, RefreshTokenSuccess) {
   OAuthClientInfo client_info;
   client_info.client_id = "test_client_id";
   client_info.client_secret = "test_client_secret";
+  client_info.redirect_uri = "test_redirect_uri";
   GaiaOAuthClient auth(kGaiaOAuth2Url,
                        profile_.GetRequestContext());
   auth.GetTokensFromAuthCode(client_info, "auth_code", -1, &delegate);
