@@ -365,7 +365,7 @@
     "description": "Message displayed when the client or host has disconnected."
   },
   "MESSAGE_SHARED": {
-    "message": "Your desktop is currently being shared with $user$.",
+    "message": "Your desktop is currently shared with $user$.",
     "description": "Message shown on the host computer while a session is active informing them who is connected.",
     "placeholders": {
       "user": {
