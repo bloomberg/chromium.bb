@@ -28,8 +28,10 @@
 using WebKit::WebCanvas;
 using WebKit::WebCompositionUnderline;
 using WebKit::WebCursorInfo;
+using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
+using WebKit::WebMouseWheelEvent;
 using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSize;
@@ -41,6 +43,9 @@ using WebKit::WebWidget;
 using WebKit::WGC3Dintptr;
 
 namespace {
+
+// See third_party/WebKit/Source/WebCore/dom/WheelEvent.h.
+const float kTickDivisor = 120.0f;
 
 class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
  public:
@@ -160,6 +165,74 @@ class PepperWidget : public WebWidget {
     // RenderWidgetFullscreenPepper::DidChangeCursor.
     WebCursorInfo cursor;
     bool result = widget_->plugin()->HandleInputEvent(event, &cursor);
+
+    // For normal web pages, WebCore::EventHandler converts selected
+    // gesture events into mouse and wheel events. We don't have a WebView
+    // so do this translation here.
+    if (!result && WebInputEvent::isGestureEventType(event.type)) {
+      switch (event.type) {
+        case WebInputEvent::GestureScrollUpdate: {
+          const WebGestureEvent* gesture_event =
+              static_cast<const WebGestureEvent*>(&event);
+          WebMouseWheelEvent wheel_event;
+          wheel_event.timeStampSeconds = gesture_event->timeStampSeconds;
+          wheel_event.type = WebInputEvent::MouseWheel;
+          wheel_event.modifiers = gesture_event->modifiers;
+
+          wheel_event.x = gesture_event->x;
+          wheel_event.y = gesture_event->y;
+          wheel_event.windowX = gesture_event->globalX;
+          wheel_event.windowY = gesture_event->globalX;
+          wheel_event.globalX = gesture_event->globalX;
+          wheel_event.globalY = gesture_event->globalY;
+          wheel_event.movementX = 0;
+          wheel_event.movementY = 0;
+
+          wheel_event.deltaX = gesture_event->data.scrollUpdate.deltaX;
+          wheel_event.deltaY = gesture_event->data.scrollUpdate.deltaY;
+          wheel_event.wheelTicksX =
+              gesture_event->data.scrollUpdate.deltaX / kTickDivisor;
+          wheel_event.wheelTicksY =
+              gesture_event->data.scrollUpdate.deltaY / kTickDivisor;
+          wheel_event.hasPreciseScrollingDeltas = 1;
+          wheel_event.phase = WebMouseWheelEvent::PhaseNone;
+          wheel_event.momentumPhase = WebMouseWheelEvent::PhaseNone;
+
+          result |= widget_->plugin()->HandleInputEvent(wheel_event, &cursor);
+          break;
+        }
+        case WebInputEvent::GestureTap: {
+          const WebGestureEvent* gesture_event =
+              static_cast<const WebGestureEvent*>(&event);
+          WebMouseEvent mouseEvent;
+
+          mouseEvent.timeStampSeconds = gesture_event->timeStampSeconds;
+          mouseEvent.type = WebInputEvent::MouseMove;
+          mouseEvent.modifiers = gesture_event->modifiers;
+
+          mouseEvent.x = gesture_event->x;
+          mouseEvent.y = gesture_event->y;
+          mouseEvent.windowX = gesture_event->globalX;
+          mouseEvent.windowY = gesture_event->globalX;
+          mouseEvent.globalX = gesture_event->globalX;
+          mouseEvent.globalY = gesture_event->globalY;
+          mouseEvent.movementX = 0;
+          mouseEvent.movementY = 0;
+          result |= widget_->plugin()->HandleInputEvent(mouseEvent, &cursor);
+
+          mouseEvent.type = WebInputEvent::MouseDown;
+          mouseEvent.button = WebMouseEvent::ButtonLeft;
+          mouseEvent.clickCount = gesture_event->data.tap.tapCount;
+          result |= widget_->plugin()->HandleInputEvent(mouseEvent, &cursor);
+
+          mouseEvent.type = WebInputEvent::MouseUp;
+          result |= widget_->plugin()->HandleInputEvent(mouseEvent, &cursor);
+          break;
+        }
+        default:
+          break;
+      }
+    }
 
     // For normal web pages, WebViewImpl does input event translations and
     // generates context menu events. Since we don't have a WebView, we need to
