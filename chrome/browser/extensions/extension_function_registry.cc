@@ -155,7 +155,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<RemoveHistoryFunction>();
   RegisterFunction<RemoveIndexedDBFunction>();
   RegisterFunction<RemoveLocalStorageFunction>();
-  RegisterFunction<RemoveServerBoundCertsFunction>();
   RegisterFunction<RemovePluginDataFunction>();
   RegisterFunction<RemovePasswordsFunction>();
   RegisterFunction<RemoveWebSQLFunction>();

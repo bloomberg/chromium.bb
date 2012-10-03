@@ -170,7 +170,7 @@
       },
       {
         "name": "removeCookies",
-        "description": "Clears the browser's cookies modified within a particular timeframe.",
+        "description": "Clears the browser's cookies and server-bound certificates modified within a particular timeframe.",
         "type": "function",
         "parameters": [
           {
@@ -180,7 +180,7 @@
           {
             "name": "callback",
             "type": "function",
-            "description": "Called when the browser's cookies have been cleared.",
+            "description": "Called when the browser's cookies and server-bound certificates have been cleared.",
             "optional": true,
             "parameters": []
           }

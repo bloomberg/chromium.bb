@@ -195,17 +195,6 @@ class RemoveLocalStorageFunction : public BrowsingDataExtensionFunction {
   virtual int GetRemovalMask() const OVERRIDE;
 };
 
-class RemoveServerBoundCertsFunction : public BrowsingDataExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeServerBoundCertificates")
-
- protected:
-  virtual ~RemoveServerBoundCertsFunction() {}
-
-  // BrowsingDataExtensionFunction:
-  virtual int GetRemovalMask() const OVERRIDE;
-};
-
 class RemovePluginDataFunction : public BrowsingDataExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removePluginData")
