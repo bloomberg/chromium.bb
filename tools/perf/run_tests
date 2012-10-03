@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """
-This script runs tests to verify that the gpu tools are working.
+This script runs tests to verify that the perf tools are working.
 
 The actual performance tools are not run by this script.
 """
@@ -11,13 +11,13 @@ The actual performance tools are not run by this script.
 import os
 import sys
 
-import gpu_tools
+import perf_tools
 import chrome_remote_control.run_tests
 
 if __name__ == '__main__':
   top_level_dir = os.path.abspath(
     os.path.dirname(__file__))
-  start_dir = 'gpu_tools'
+  start_dir = 'perf_tools'
   ret = chrome_remote_control.run_tests.Main(
     sys.argv[1:], start_dir, top_level_dir)
 

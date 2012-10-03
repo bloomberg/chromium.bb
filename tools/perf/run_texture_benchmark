@@ -5,7 +5,7 @@
 import os
 import sys
 
-import gpu_tools.texture_upload_benchmark
+import perf_tools.texture_upload_benchmark
 
 if __name__ == '__main__':
-  sys.exit(gpu_tools.texture_upload_benchmark.Main())
+  sys.exit(perf_tools.texture_upload_benchmark.Main())

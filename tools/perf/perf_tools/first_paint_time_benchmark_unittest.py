@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from chrome_remote_control import multi_page_benchmark_unittest_base
-from gpu_tools import first_paint_time_benchmark
+from perf_tools import first_paint_time_benchmark
 
 class FirstPaintTimeBenchmarkUnitTest(
   multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
