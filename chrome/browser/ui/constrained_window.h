@@ -26,12 +26,18 @@ class ConstrainedWindow {
   // Font style for dialog text.
   static const ui::ResourceBundle::FontStyle kTextFontStyle =
       ui::ResourceBundle::BaseFont;
+  // Font style for bold dialog text.
+  static const ui::ResourceBundle::FontStyle kBoldTextFontStyle =
+      ui::ResourceBundle::BoldFont;
   // Font style for dialog title.
   static const ui::ResourceBundle::FontStyle kTitleFontStyle =
       ui::ResourceBundle::MediumFont;
 
+  static int GetCloseButtonSize();  // Size of close button.
   static SkColor GetBackgroundColor();  // Dialog background color.
   static SkColor GetTextColor();  // Dialog text color.
+  static SkColor GetLinkColor();  // Dialog link color.
+  static SkColor GetSeparatorColor();  // Dialog separator color.
 
   // Makes the Constrained Window visible. Only one Constrained Window is shown
   // at a time per tab.

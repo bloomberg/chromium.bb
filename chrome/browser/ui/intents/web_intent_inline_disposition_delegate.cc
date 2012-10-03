@@ -112,8 +112,15 @@ void WebIntentInlineDispositionDelegate::OnRequest(
   extension_function_dispatcher_.Dispatch(params,
                                           web_contents_->GetRenderViewHost());
 }
+
 void WebIntentInlineDispositionDelegate::ResizeDueToAutoResize(
     content::WebContents* source, const gfx::Size& pref_size) {
   DCHECK(picker_);
   picker_->OnInlineDispositionAutoResize(pref_size);
+}
+
+void WebIntentInlineDispositionDelegate::HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) {
+  picker_->OnInlineDispositionHandleKeyboardEvent(event);
 }

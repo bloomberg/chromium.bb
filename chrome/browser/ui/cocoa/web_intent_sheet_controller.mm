@@ -56,7 +56,7 @@ const CGFloat kVerticalSpacing = 18;
 const CGFloat kCloseButtonSize = 16;
 
 // Width of the text fields.
-const CGFloat kTextWidth = WebIntentPicker::kWindowWidth -
+const CGFloat kTextWidth = WebIntentPicker::kWindowMinWidth -
     (WebIntentPicker::kContentAreaBorder * 2.0 + kCloseButtonSize);
 
 // Maximum number of intents (suggested and installed) displayed.
@@ -219,11 +219,11 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
         rb.GetNativeImageNamed(IDR_SPEECH_INPUT_SPINNER).ToNSImage();
     frame.size = [iconImage size];
     frame.size.width = NSHeight(frame);
-    frame.origin.x = (WebIntentPicker::kWindowWidth - NSWidth(frame))/2.0;
+    frame.origin.x = (WebIntentPicker::kWindowMinWidth - NSWidth(frame))/2.0;
     throbber_.reset([ThrobberView filmstripThrobberViewWithFrame:frame
                                                            image:iconImage]);
 
-    frame.size = NSMakeSize(WebIntentPicker::kWindowWidth,
+    frame.size = NSMakeSize(WebIntentPicker::kWindowMinWidth,
                             NSMaxY(frame) + kTopMargin);
     frame.origin = NSMakePoint(0, 0);
     [self setSubviews:@[throbber_, text_]];
@@ -260,7 +260,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 
 @implementation HeaderView
 - (id)init {
-  NSRect contentFrame = NSMakeRect(0, 0, WebIntentPicker::kWindowWidth, 1);
+  NSRect contentFrame = NSMakeRect(0, 0, WebIntentPicker::kWindowMinWidth, 1);
   if (self = [super initWithFrame:contentFrame]) {
     NSRect frame = NSMakeRect(WebIntentPicker::kContentAreaBorder, 0,
                               kTextWidth, 1);
@@ -279,7 +279,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     gfx::Font textFont = rb.GetFont(ConstrainedWindow::kTextFontStyle);
     [subtitleField_ setFont:textFont.GetNativeFont()];
 
-    frame = NSMakeRect(0, 0, WebIntentPicker::kWindowWidth, 1.0);
+    frame = NSMakeRect(0, 0, WebIntentPicker::kWindowMinWidth, 1.0);
     spacer_.reset([[NSBox alloc] initWithFrame:frame]);
     [spacer_ setBoxType:NSBoxSeparator];
     [spacer_ setBorderColor:[NSColor blackColor]];
@@ -438,7 +438,7 @@ const CGFloat kAddButtonWidth = 128.0;
 - (id)init {
   // Build the main view.
   NSRect contentFrame = NSMakeRect(
-      0, 0, WebIntentPicker::kWindowWidth, kMaxHeight);
+      0, 0, WebIntentPicker::kWindowMinWidth, kMaxHeight);
   if (self = [super initWithFrame:contentFrame]) {
     NSMutableArray* subviews = [NSMutableArray array];
     if (iconView_) [subviews addObject:iconView_];
@@ -660,7 +660,7 @@ const CGFloat kAddButtonWidth = 128.0;
 
     [self setSubviews:subviews];
     NSRect contentFrame = NSMakeRect(WebIntentPicker::kContentAreaBorder, 0,
-                                     WebIntentPicker::kWindowWidth, offset);
+                                     WebIntentPicker::kWindowMinWidth, offset);
     [self setFrame:contentFrame];
     controller_ = controller;
   }
@@ -711,7 +711,7 @@ const CGFloat kAddButtonWidth = 128.0;
 - (id)initWithPicker:(WebIntentPickerCocoa*)picker {
   // Use an arbitrary height because it will reflect the size of the content.
   NSRect contentRect = NSMakeRect(
-      0, 0, WebIntentPicker::kWindowWidth, kVerticalSpacing);
+      0, 0, WebIntentPicker::kWindowMinWidth, kVerticalSpacing);
 
   // |window| is retained by the ConstrainedWindowMacDelegateCustomSheet when
   // the sheet is initialized.
@@ -781,7 +781,7 @@ const CGFloat kAddButtonWidth = 128.0;
 
   // Ensure minimum container width.
   containerSize.width =
-      std::max(CGFloat(WebIntentPicker::kWindowWidth), containerSize.width);
+      std::max(CGFloat(WebIntentPicker::kWindowMinWidth), containerSize.width);
 
   // Resize web contents.
   [webContentView setFrame:contentFrame_];
@@ -1015,7 +1015,7 @@ const CGFloat kAddButtonWidth = 128.0;
 
     // Right-align the "use another service" button.
     frame = [button frame];
-    frame.origin.x = WebIntentPicker::kWindowWidth - NSWidth(frame) -
+    frame.origin.x = WebIntentPicker::kWindowMinWidth - NSWidth(frame) -
         2 * WebIntentPicker::kContentAreaBorder - kCloseButtonSize;
     [button setFrame:frame];
     [button setAutoresizingMask:NSViewMinXMargin];
@@ -1035,7 +1035,7 @@ const CGFloat kAddButtonWidth = 128.0;
 
   scoped_nsobject<NSBox> spacer;
 
-  NSRect frame = NSMakeRect(0, offset, WebIntentPicker::kWindowWidth, 1.0);
+  NSRect frame = NSMakeRect(0, offset, WebIntentPicker::kWindowMinWidth, 1.0);
   spacer.reset([[NSBox alloc] initWithFrame:frame]);
   [spacer setBoxType:NSBoxSeparator];
   [spacer setAlphaValue:0.2];
@@ -1137,7 +1137,7 @@ const CGFloat kAddButtonWidth = 128.0;
   offset += WebIntentPicker::kContentAreaBorder;
 
   // Resize to fit.
-  [self setContainerSize:NSMakeSize(WebIntentPicker::kWindowWidth, offset)];
+  [self setContainerSize:NSMakeSize(WebIntentPicker::kWindowMinWidth, offset)];
 
   [self addCloseButtonToSubviews:subviews];
 

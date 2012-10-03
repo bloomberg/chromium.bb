@@ -5,6 +5,19 @@
 #include "chrome/browser/ui/constrained_window.h"
 
 #include "base/logging.h"
+#include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
+
+// static
+int ConstrainedWindow::GetCloseButtonSize() {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  const SkBitmap* bitmap =
+      bundle.GetNativeImageNamed(IDR_TAB_CLOSE).ToSkBitmap();
+  DCHECK_EQ(bitmap->width(), bitmap->height());
+  return bitmap->width();
+}
 
 // static
 SkColor ConstrainedWindow::GetBackgroundColor() {
@@ -14,6 +27,16 @@ SkColor ConstrainedWindow::GetBackgroundColor() {
 // static
 SkColor ConstrainedWindow::GetTextColor() {
   return SkColorSetRGB(0x33, 0x33, 0x33);
+}
+
+// static
+SkColor ConstrainedWindow::GetLinkColor() {
+  return SkColorSetRGB(0x11, 0x55, 0xCC);
+}
+
+// static
+SkColor ConstrainedWindow::GetSeparatorColor() {
+  return SkColorSetRGB(0xE0, 0xE0, 0xE0);
 }
 
 void ConstrainedWindow::FocusConstrainedWindow() {

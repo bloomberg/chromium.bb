@@ -16,21 +16,53 @@ class WebIntentPickerDelegate;
 class WebIntentPickerModel;
 
 namespace content {
+struct NativeWebKeyboardEvent;
 class WebContents;
 }
 
 // Base class for the web intent picker dialog.
 class WebIntentPicker {
  public:
-  // The width of the window, in view coordinates. The height will be
-  // determined by the content.
-  static const int kWindowWidth = 400;
+  // The minimum width of the window.
+  static const int kWindowMinWidth = 400;
+
+  // The maximum width the window.
+  static const int kWindowMaxWidth = 900;
+
+  // The minimum height of the window.
+  static const int kWindowMinHeight = 145;
 
   // The maximum width in view units of a suggested extension's title link.
   static const int kTitleLinkMaxWidth = 130;
 
   // The space in pixels between the top-level groups and the dialog border.
   static const int kContentAreaBorder = 10;
+
+  // Vertical space above the separator.
+  static const int kHeaderSeparatorPaddingTop = 16;
+
+  // Vertical space below the separator.
+  static const int kHeaderSeparatorPaddingBottom = 7;
+
+  // Width of the service icon.
+  static const int kServiceIconWidth = 16;
+
+  // Height of the service icon.
+  static const int kServiceIconHeight = 16;
+
+  // Space between icon and text.
+  static const int kIconTextPadding = 6;
+
+  // Space between star rating and select button.
+  static const int kStarButtonPadding = 20;
+
+  // The height of the suggested and installed service row.
+  static const int kServiceRowHeight = 32;
+
+  // The maximum number of installed services + suggested servcies to show. Note
+  // that all installed services are always shown so the actual number of
+  // services shown maybe greater than this.
+  static const int kMaxServicesToShow = 4;
 
   // Platform specific factory function. This function will automatically show
   // the picker.
@@ -53,6 +85,9 @@ class WebIntentPicker {
 
   // Called when the inline disposition experiences an auto-resize.
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) = 0;
+
+  virtual void OnInlineDispositionHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) {}
 
   // Called when the controller has finished all pending asynchronous
   // activities.

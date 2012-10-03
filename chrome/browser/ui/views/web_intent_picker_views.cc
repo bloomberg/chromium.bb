@@ -281,7 +281,7 @@ class WaitingView : public views::View {
 WaitingView::WaitingView(views::ButtonListener* listener,
                          bool use_close_button) {
   views::GridLayout* layout = new views::GridLayout(this);
-  layout->set_minimum_size(gfx::Size(WebIntentPicker::kWindowWidth, 0));
+  layout->set_minimum_size(gfx::Size(WebIntentPicker::kWindowMinWidth, 0));
   layout->SetInsets(WebIntentPicker::kContentAreaBorder,
                     WebIntentPicker::kContentAreaBorder,
                     WebIntentPicker::kContentAreaBorder,
@@ -1066,8 +1066,8 @@ void WebIntentPickerViews::ShowNoServicesMessage() {
   body->SetText(l10n_util::GetStringUTF16(IDS_INTENT_PICKER_NO_SERVICES));
   grid_layout->AddView(body);
 
-  int height = contents_->GetHeightForWidth(kWindowWidth);
-  contents_->SetSize(gfx::Size(kWindowWidth, height));
+  int height = contents_->GetHeightForWidth(kWindowMinWidth);
+  contents_->SetSize(gfx::Size(kWindowMinWidth, height));
 }
 
 void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
@@ -1234,8 +1234,8 @@ void WebIntentPickerViews::UpdateContents() {
     contents_->SetLayoutManager(new views::FillLayout());
     waiting_view_ = new WaitingView(this, use_close_button_);
     contents_->AddChildView(waiting_view_);
-    int height = contents_->GetHeightForWidth(kWindowWidth);
-    contents_->SetSize(gfx::Size(kWindowWidth, height));
+    int height = contents_->GetHeightForWidth(kWindowMinWidth);
+    contents_->SetSize(gfx::Size(kWindowMinWidth, height));
     contents_->Layout();
   } else if (model_->GetInstalledServiceCount() ||
       model_->GetSuggestedExtensionCount()) {
@@ -1268,7 +1268,7 @@ void WebIntentPickerViews::ShowAvailableServices() {
   contents_->SetLayoutManager(grid_layout);
 
   grid_layout->set_minimum_size(
-      gfx::Size(extensions_->AdjustWidth(kWindowWidth), 0));
+      gfx::Size(extensions_->AdjustWidth(kWindowMinWidth), 0));
   grid_layout->SetInsets(kContentAreaBorder, kContentAreaBorder,
                          kContentAreaBorder, kContentAreaBorder);
   views::ColumnSet* header_cs = grid_layout->AddColumnSet(kHeaderRowColumnSet);

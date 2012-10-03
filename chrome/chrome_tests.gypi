@@ -3051,6 +3051,8 @@
         'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
         'browser/ui/gtk/view_id_util_browsertest.cc',
         'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
+        'browser/ui/intents/web_intent_picker_delegate_mock.cc',
+        'browser/ui/intents/web_intent_picker_delegate_mock.h',
         'browser/ui/login/login_prompt_browsertest.cc',
         'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
