@@ -85,10 +85,11 @@ body {
 .image-picker {
   -webkit-box-flex: 1;
   display: -webkit-box;
-  /* Set line height to 100% to remove the extra vertical margin between two
-   * rows of thumbnails.
+  /* Set font size to 0 to remove the extra vertical margin between two rows of
+   * thumbnails.
+   * TODO(bshe): Find the root cause of the margin.
    */
-  line-height: 100%;
+  font-size: 0;
   outline: none;
   overflow-y: auto;
 }

@@ -94,7 +94,7 @@ cr.define('cr.ui', function() {
       // inline-block elements according to css spec which are thumbnail items.
 
       var width = size.width + Math.min(size.marginLeft, size.marginRight);
-      var height = size.width + Math.min(size.marginTop, size.marginBottom);
+      var height = size.height + Math.min(size.marginTop, size.marginBottom);
 
       if (!width || !height)
         return 0;
