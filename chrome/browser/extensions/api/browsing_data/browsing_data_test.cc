@@ -99,6 +99,19 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
     EXPECT_EQ(expected_mask, GetOriginSetMask());
   }
 
+  template<class ShortcutFunction>
+  void RunAndCompareRemovalMask(int expected_mask) {
+    scoped_refptr<ShortcutFunction> function =
+        new ShortcutFunction();
+    SCOPED_TRACE(ShortcutFunction::function_name());
+    EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
+        function.get(),
+        std::string("[{\"since\": 1}]"),
+        browser()));
+    EXPECT_EQ(expected_mask, GetRemovalMask());
+    EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
+  }
+
  private:
   scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
   content::NotificationRegistrar registrar_;
@@ -196,3 +209,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataRemovalMask) {
   RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "webSQL", BrowsingDataRemover::REMOVE_WEBSQL);
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, ShortcutFunctionRemovalMask) {
+  RunAndCompareRemovalMask<RemoveAppCacheFunction>(
+      BrowsingDataRemover::REMOVE_APPCACHE);
+  RunAndCompareRemovalMask<RemoveCacheFunction>(
+      BrowsingDataRemover::REMOVE_CACHE);
+  RunAndCompareRemovalMask<RemoveCookiesFunction>(
+      BrowsingDataRemover::REMOVE_COOKIES |
+      BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS);
+  RunAndCompareRemovalMask<RemoveDownloadsFunction>(
+      BrowsingDataRemover::REMOVE_DOWNLOADS);
+  RunAndCompareRemovalMask<RemoveFileSystemsFunction>(
+      BrowsingDataRemover::REMOVE_FILE_SYSTEMS);
+  RunAndCompareRemovalMask<RemoveFormDataFunction>(
+      BrowsingDataRemover::REMOVE_FORM_DATA);
+  RunAndCompareRemovalMask<RemoveHistoryFunction>(
+      BrowsingDataRemover::REMOVE_HISTORY);
+  RunAndCompareRemovalMask<RemoveIndexedDBFunction>(
+      BrowsingDataRemover::REMOVE_INDEXEDDB);
+  RunAndCompareRemovalMask<RemoveLocalStorageFunction>(
+      BrowsingDataRemover::REMOVE_LOCAL_STORAGE);
+  // We can't remove plugin data inside a test profile.
+  RunAndCompareRemovalMask<RemovePasswordsFunction>(
+      BrowsingDataRemover::REMOVE_PASSWORDS);
+  RunAndCompareRemovalMask<RemoveWebSQLFunction>(
+      BrowsingDataRemover::REMOVE_WEBSQL);
+}
+
