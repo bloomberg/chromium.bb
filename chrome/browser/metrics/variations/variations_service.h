@@ -161,6 +161,10 @@ class VariationsService
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.
   scoped_ptr<ResourceRequestAllowedNotifier> resource_request_allowed_notifier_;
+
+  // The start time of the last seed request. This is used to measure the
+  // latency of seed requests. Initially zero.
+  base::TimeTicks last_request_started_time_;
 };
 
 }  // namespace chrome_variations

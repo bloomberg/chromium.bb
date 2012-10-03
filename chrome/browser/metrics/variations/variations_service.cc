@@ -183,6 +183,8 @@ void VariationsService::DoActualFetch() {
                                                  variations_serial_number_);
   }
   pending_seed_request_->Start();
+
+  last_request_started_time_ = base::TimeTicks::Now();
 }
 
 void VariationsService::FetchVariationsSeed() {
@@ -211,11 +213,19 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
       net::HttpUtil::MapStatusCodeForHistogram(request->GetResponseCode()),
       net::HttpUtil::GetStatusCodesForHistogram());
 
+  const base::TimeDelta latency =
+      base::TimeTicks::Now() - last_request_started_time_;
+
   if (request->GetResponseCode() != 200) {
     DVLOG(1) << "Variations server request returned non-200 response code: "
              << request->GetResponseCode();
+    if (request->GetResponseCode() == 304)
+      UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchNotModifiedLatency", latency);
+    else
+      UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchOtherLatency", latency);
     return;
   }
+  UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchSuccessLatency", latency);
 
   std::string seed_data;
   bool success = request->GetResponseAsString(&seed_data);
