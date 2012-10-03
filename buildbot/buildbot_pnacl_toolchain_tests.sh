@@ -30,7 +30,7 @@ ARCHIVED_PEXE_TRANSLATOR_REV=9326
 # to keep all our versions in one place
 # If we roll the archived toolchain past r9725 we will also need to change
 # PNACL_ARCHIVED_FRONTEND_LABEL below to pnacl_linux_x86
-ARCHIVED_TOOLCHAIN_REV=9576
+ARCHIVED_TOOLCHAIN_REV=9908
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
