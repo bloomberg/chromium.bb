@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/event_utils.h"
@@ -243,8 +244,7 @@ gboolean BookmarkMenuController::OnMenuButtonPressedOrReleased(
       menu_item ? GetNodeFromMenuItem(menu_item) : NULL;
 
   if (event->button == 2 && node && node->is_folder()) {
-    bookmark_utils::OpenAll(parent_window_, page_navigator_, node,
-                            NEW_BACKGROUND_TAB);
+    chrome::OpenAll(parent_window_, page_navigator_, node, NEW_BACKGROUND_TAB);
     gtk_menu_popdown(GTK_MENU(menu_));
     return TRUE;
   } else if (event->button == 3) {

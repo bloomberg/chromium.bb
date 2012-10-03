@@ -12,7 +12,6 @@
 #include "base/i18n/string_search.h"
 #include "base/metrics/histogram.h"
 #include "base/string16.h"
-#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/prefs/pref_service_base.h"
@@ -23,12 +22,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -52,8 +48,6 @@
 #endif
 
 using base::Time;
-using content::OpenURLParams;
-using content::PageNavigator;
 using content::WebContents;
 
 namespace {
@@ -71,79 +65,6 @@ void CloneBookmarkNodeImpl(BookmarkModel* model,
     for (int i = 0; i < static_cast<int>(element.children.size()); ++i)
       CloneBookmarkNodeImpl(model, element.children[i], new_folder, i);
   }
-}
-
-// Returns the number of children of |node| that are of type url.
-int ChildURLCount(const BookmarkNode* node) {
-  int result = 0;
-  for (int i = 0; i < node->child_count(); ++i) {
-    const BookmarkNode* child = node->GetChild(i);
-    if (child->is_url())
-      result++;
-  }
-  return result;
-}
-
-// Returns the total number of descendants nodes.
-int ChildURLCountTotal(const BookmarkNode* node) {
-  int result = 0;
-  for (int i = 0; i < node->child_count(); ++i) {
-    const BookmarkNode* child = node->GetChild(i);
-    result++;
-    if (child->is_folder())
-      result += ChildURLCountTotal(child);
-  }
-  return result;
-}
-
-// Implementation of OpenAll. Opens all nodes of type URL and any children of
-// |node| that are of type URL. |navigator| is the PageNavigator used to open
-// URLs. After the first url is opened |opened_url| is set to true and
-// |navigator| is set to the PageNavigator of the last active tab. This is done
-// to handle a window disposition of new window, in which case we want
-// subsequent tabs to open in that window.
-void OpenAllImpl(const BookmarkNode* node,
-                 WindowOpenDisposition initial_disposition,
-                 PageNavigator** navigator,
-                 bool* opened_url) {
-  if (node->is_url()) {
-    WindowOpenDisposition disposition;
-    if (*opened_url)
-      disposition = NEW_BACKGROUND_TAB;
-    else
-      disposition = initial_disposition;
-    WebContents* opened_tab = (*navigator)->OpenURL(
-        OpenURLParams(node->url(), content::Referrer(), disposition,
-                      content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
-    if (!*opened_url) {
-      *opened_url = true;
-      // We opened the first URL which may have opened a new window or clobbered
-      // the current page, reset the navigator just to be sure.
-      *navigator = opened_tab;
-    }
-  } else {
-    // For folders only open direct children.
-    for (int i = 0; i < node->child_count(); ++i) {
-      const BookmarkNode* child_node = node->GetChild(i);
-      if (child_node->is_url())
-        OpenAllImpl(child_node, initial_disposition, navigator, opened_url);
-    }
-  }
-}
-
-bool ShouldOpenAll(gfx::NativeWindow parent,
-                   const std::vector<const BookmarkNode*>& nodes) {
-  int child_count = 0;
-  for (size_t i = 0; i < nodes.size(); ++i)
-    child_count += ChildURLCount(nodes[i]);
-  if (child_count < bookmark_utils::num_urls_before_prompting)
-    return true;
-
-  return chrome::ShowMessageBox(parent,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
-                                 base::IntToString16(child_count)),
-      chrome::MESSAGE_BOX_TYPE_QUESTION) == chrome::MESSAGE_BOX_RESULT_YES;
 }
 
 // Comparison function that compares based on date modified of the two nodes.
@@ -365,27 +286,6 @@ void DragBookmarks(Profile* profile,
 #elif defined(TOOLKIT_GTK)
   BookmarkDrag::BeginDrag(profile, nodes);
 #endif
-}
-
-void OpenAll(gfx::NativeWindow parent,
-             PageNavigator* navigator,
-             const std::vector<const BookmarkNode*>& nodes,
-             WindowOpenDisposition initial_disposition) {
-  if (!ShouldOpenAll(parent, nodes))
-    return;
-
-  bool opened_url = false;
-  for (size_t i = 0; i < nodes.size(); ++i)
-    OpenAllImpl(nodes[i], initial_disposition, &navigator, &opened_url);
-}
-
-void OpenAll(gfx::NativeWindow parent,
-             PageNavigator* navigator,
-             const BookmarkNode* node,
-             WindowOpenDisposition initial_disposition) {
-  std::vector<const BookmarkNode*> nodes;
-  nodes.push_back(node);
-  OpenAll(parent, navigator, nodes, initial_disposition);
 }
 
 void CopyToClipboard(BookmarkModel* model,
@@ -665,16 +565,6 @@ bool NodeHasURLs(const BookmarkNode* node) {
       return true;
   }
   return false;
-}
-
-bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
-                               gfx::NativeWindow window) {
-  DCHECK(node && node->is_folder() && !node->empty());
-  return chrome::ShowMessageBox(window,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      l10n_util::GetStringFUTF16Int(IDS_BOOKMARK_EDITOR_CONFIRM_DELETE,
-                                    ChildURLCountTotal(node)),
-      chrome::MESSAGE_BOX_TYPE_QUESTION) == chrome::MESSAGE_BOX_RESULT_YES;
 }
 
 void DeleteBookmarkFolders(BookmarkModel* model,

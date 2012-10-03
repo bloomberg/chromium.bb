@@ -12,6 +12,7 @@
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/event_utils.h"
@@ -128,8 +129,7 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   std::vector<const BookmarkNode*> selection;
   selection.push_back(node);
 
-  bookmark_utils::OpenAll(
-      parent_->GetNativeWindow(), page_navigator_, selection,
+  chrome::OpenAll(parent_->GetNativeWindow(), page_navigator_, selection,
       chrome::DispositionFromEventFlags(mouse_event_flags));
   bookmark_utils::RecordBookmarkLaunch(location_);
 }

@@ -19,6 +19,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -170,7 +171,7 @@ class BookmarkEditorGtk::ContextMenuController
           // Deleting an existing bookmark folder. Confirm if it has other
           // bookmarks.
           if (!selected_node->empty()) {
-            if (!bookmark_utils::ConfirmDeleteBookmarkNode(selected_node,
+            if (!chrome::ConfirmDeleteBookmarkNode(selected_node,
                   GTK_WINDOW(editor_->dialog_)))
               break;
           }

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
+
 #include <string>
 #include <vector>
 
@@ -13,13 +15,13 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -129,7 +131,7 @@ TEST_F(BookmarkContextMenuTest, DeleteURL) {
 // Tests open all on a folder with a couple of bookmarks.
 TEST_F(BookmarkContextMenuTest, OpenAll) {
   const BookmarkNode* folder = model_->bookmark_bar_node()->GetChild(1);
-  bookmark_utils::OpenAll(NULL, &navigator_, folder, NEW_FOREGROUND_TAB);
+  chrome::OpenAll(NULL, &navigator_, folder, NEW_FOREGROUND_TAB);
 
   // Should have navigated to F1's child but not F11's child.
   ASSERT_EQ(static_cast<size_t>(1), navigator_.urls_.size());

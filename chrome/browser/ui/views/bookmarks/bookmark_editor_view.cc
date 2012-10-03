@@ -17,6 +17,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -240,7 +241,7 @@ void BookmarkEditorView::ExecuteCommand(int command_id) {
     if (node->value != 0) {
       const BookmarkNode* b_node = bb_model_->GetNodeByID(node->value);
       if (!b_node->empty() &&
-          !bookmark_utils::ConfirmDeleteBookmarkNode(b_node,
+          !chrome::ConfirmDeleteBookmarkNode(b_node,
             GetWidget()->GetNativeWindow())) {
         // The folder is not empty and the user didn't confirm.
         return;

@@ -210,6 +210,8 @@
         'browser/ui/bookmarks/bookmark_tab_helper_delegate.h',
         'browser/ui/bookmarks/bookmark_ui_constants.cc',
         'browser/ui/bookmarks/bookmark_ui_constants.h',
+        'browser/ui/bookmarks/bookmark_utils.cc',
+        'browser/ui/bookmarks/bookmark_utils.h',
         'browser/ui/browser.cc',
         'browser/ui/browser.h',
         'browser/ui/browser_adoption.cc',

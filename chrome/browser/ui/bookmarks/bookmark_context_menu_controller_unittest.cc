@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
+
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -11,7 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
@@ -119,7 +121,7 @@ TEST_F(BookmarkContextMenuControllerTest, DeleteURL) {
 // Tests open all on a folder with a couple of bookmarks.
 TEST_F(BookmarkContextMenuControllerTest, OpenAll) {
   const BookmarkNode* folder = model_->bookmark_bar_node()->GetChild(1);
-  bookmark_utils::OpenAll(NULL, &navigator_, folder, NEW_FOREGROUND_TAB);
+  chrome::OpenAll(NULL, &navigator_, folder, NEW_FOREGROUND_TAB);
 
   // Should have navigated to F1's child, but not F11's child.
   ASSERT_EQ(static_cast<size_t>(1), navigator_.urls_.size());

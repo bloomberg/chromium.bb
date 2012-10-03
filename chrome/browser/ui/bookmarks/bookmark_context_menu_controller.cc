@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -129,8 +130,8 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
         content::RecordAction(
             UserMetricsAction("BookmarkBar_ContextMenu_OpenAllIncognito"));
       }
-      bookmark_utils::OpenAll(parent_window_, navigator_, selection_,
-                              initial_disposition);
+      chrome::OpenAll(parent_window_, navigator_, selection_,
+                      initial_disposition);
       break;
     }
 

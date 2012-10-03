@@ -27,6 +27,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -1050,8 +1051,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
         content::PAGE_TRANSITION_AUTO_BOOKMARK, false);
     page_navigator_->OpenURL(params);
   } else {
-    bookmark_utils::OpenAll(
-        GetWidget()->GetNativeWindow(), page_navigator_, node,
+    chrome::OpenAll(GetWidget()->GetNativeWindow(), page_navigator_, node,
         disposition_from_event_flags);
   }
 

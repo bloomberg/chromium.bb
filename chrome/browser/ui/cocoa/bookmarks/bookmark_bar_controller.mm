@@ -19,6 +19,7 @@
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -2664,10 +2665,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)openAll:(const BookmarkNode*)node
     disposition:(WindowOpenDisposition)disposition {
   [self closeFolderAndStopTrackingMenus];
-  bookmark_utils::OpenAll([[self view] window],
-                          browser_,
-                          node,
-                          disposition);
+  chrome::OpenAll([[self view] window], browser_, node, disposition);
 }
 
 - (void)addButtonForNode:(const BookmarkNode*)node
