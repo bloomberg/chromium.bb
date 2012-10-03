@@ -65,6 +65,9 @@ message SystemProfileProto {
 
     // The version of the OS.  The meaning of this field is OS-dependent.
     optional string version = 2;
+
+    // The fingerprint of the build.  This field is used only on Android.
+    optional string fingerprint = 3;
   }
   optional OS os = 5;
 
