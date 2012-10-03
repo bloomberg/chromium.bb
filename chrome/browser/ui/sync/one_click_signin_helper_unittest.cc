@@ -133,7 +133,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoContents) {
 
 #if defined(OS_WIN)
 // See http://crbug.com/153741.
-#define MAYBE_CanOffer FLAKY_CanOffer
+#define MAYBE_CanOffer DISABLED_CanOffer
 #else
 #define MAYBE_CanOffer CanOffer
 #endif
