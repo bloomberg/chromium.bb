@@ -107,10 +107,6 @@ class NetworkPropertyUIData {
   // Initializes the object by calling Reset() with the provided ui_data.
   explicit NetworkPropertyUIData(const NetworkUIData& ui_data);
 
-  // Initializes the object with the given values. |default_value| may be NULL
-  // to specify no default value is present. Takes ownership of |default_value|.
-  NetworkPropertyUIData(Controller controller, base::Value* default_value);
-
   // Resets the property to the controller specified by the given |ui_data| and
   // clears the default value.
   void Reset(const NetworkUIData& ui_data);

@@ -993,8 +993,8 @@ void InternetOptionsHandler::RefreshNetworkData() {
 }
 
 void InternetOptionsHandler::UpdateCarrier(bool success) {
-  web_ui()->CallJavascriptFunction(kUpdateCarrierFunction,
-                                   *(Value::CreateBooleanValue(success)));
+  base::FundamentalValue success_value(success);
+  web_ui()->CallJavascriptFunction(kUpdateCarrierFunction, success_value);
 }
 
 void InternetOptionsHandler::OnNetworkManagerChanged(

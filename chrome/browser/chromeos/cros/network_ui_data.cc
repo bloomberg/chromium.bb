@@ -109,12 +109,6 @@ NetworkPropertyUIData::NetworkPropertyUIData()
 NetworkPropertyUIData::~NetworkPropertyUIData() {
 }
 
-NetworkPropertyUIData::NetworkPropertyUIData(Controller controller,
-                                             base::Value* default_value)
-    : controller_(controller),
-      default_value_(default_value) {
-}
-
 NetworkPropertyUIData::NetworkPropertyUIData(
     const NetworkUIData& ui_data) {
   Reset(ui_data);

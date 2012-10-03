@@ -59,7 +59,7 @@ const std::string HttpMethodName(OAuthRequestSigner::HttpMethod method) {
       return "POST";
   }
   NOTREACHED();
-  return *(new std::string());
+  return std::string();
 }
 
 const std::string SignatureMethodName(
@@ -73,7 +73,7 @@ const std::string SignatureMethodName(
       return "PLAINTEXT";
   }
   NOTREACHED();
-  return *(new std::string());
+  return std::string();
 }
 
 std::string BuildBaseString(const GURL& request_base_url,
