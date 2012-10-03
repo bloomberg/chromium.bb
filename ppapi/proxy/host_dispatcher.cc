@@ -170,9 +170,14 @@ bool HostDispatcher::Send(IPC::Message* msg) {
 }
 
 bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
+  // Prevent the dispatcher from going away during a message handler. This must
+  // be at the outermost scope so it's released last.
+  ScopedModuleReference death_grip(this);
+
   TRACE_EVENT2("ppapi proxy", "HostDispatcher::OnMessageReceived",
                "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
                "Line", IPC_MESSAGE_ID_LINE(msg.type()));
+
   // We only want to allow reentrancy when the most recent message from the
   // plugin was a scripting message. We save the old state of the flag on the
   // stack in case we're (we are the host) being reentered ourselves. The flag
@@ -196,6 +201,8 @@ bool HostDispatcher::OnMessageReceived(const IPC::Message& msg) {
   if (handled)
     return true;
   return Dispatcher::OnMessageReceived(msg);
+
+  // Note: |this| may be deleted once the death_grip goes out of scope!
 }
 
 void HostDispatcher::OnChannelError() {
