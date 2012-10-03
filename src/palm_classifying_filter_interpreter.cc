@@ -25,7 +25,13 @@ PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
       palm_eval_timeout_(prop_reg, "Palm Eval Timeout", 0.1),
       palm_stationary_time_(prop_reg, "Palm Stationary Time", 2.0),
-      palm_stationary_distance_(prop_reg, "Palm Stationary Distance", 4.0) {
+      palm_stationary_distance_(prop_reg, "Palm Stationary Distance", 4.0),
+      palm_pointing_min_dist_(prop_reg,
+                              "Palm Pointing Min Move Distance",
+                              8.0),
+      palm_pointing_max_reverse_dist_(prop_reg,
+          "Palm Pointing Max Reverse Move Distance", 0.3)
+{
   InitName();
   if (!finger_metrics_) {
     test_finger_metrics_.reset(new FingerMetrics(prop_reg));
@@ -37,9 +43,10 @@ Gesture* PalmClassifyingFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate,
     stime_t* timeout) {
   FillOriginInfo(*hwstate);
+  UpdateDistanceInfo(*hwstate);
   UpdatePalmState(*hwstate);
   UpdatePalmFlags(hwstate);
-  prev_time_ = hwstate->timestamp;
+  FillPrevInfo(*hwstate);
   if (next_.get())
     return next_->SyncInterpret(hwstate, timeout);
   return NULL;
@@ -62,6 +69,44 @@ void PalmClassifyingFilterInterpreter::FillOriginInfo(
       continue;
     origin_timestamps_[fs.tracking_id] = hwstate.timestamp;
     origin_fingerstates_[fs.tracking_id] = fs;
+  }
+}
+
+void PalmClassifyingFilterInterpreter::FillPrevInfo(
+    const HardwareState& hwstate) {
+  RemoveMissingIdsFromMap(&prev_fingerstates_, hwstate);
+  prev_time_ = hwstate.timestamp;
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    prev_fingerstates_[fs.tracking_id] = fs;
+  }
+}
+
+void PalmClassifyingFilterInterpreter::UpdateDistanceInfo(
+    const HardwareState& hwstate) {
+  RemoveMissingIdsFromMap(&distance_positive_[0], hwstate);
+  RemoveMissingIdsFromMap(&distance_positive_[1], hwstate);
+  RemoveMissingIdsFromMap(&distance_negative_[0], hwstate);
+  RemoveMissingIdsFromMap(&distance_negative_[1], hwstate);
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    int id = fs.tracking_id;
+    if (MapContainsKey(prev_fingerstates_, id)) {
+      float delta[2];
+      delta[0] = fs.position_x - prev_fingerstates_[id].position_x;
+      delta[1] = fs.position_y - prev_fingerstates_[id].position_y;
+      for (int i = 0; i < 2; i++) {
+        if (delta[i] > 0)
+          distance_positive_[i][id] += delta[i];
+        else
+          distance_negative_[i][id] -= delta[i];
+      }
+    } else {
+      distance_positive_[0][id] = 0;
+      distance_positive_[1][id] = 0;
+      distance_negative_[0][id] = 0;
+      distance_negative_[1][id] = 0;
+    }
   }
 }
 
@@ -97,8 +142,12 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
   RemoveMissingIdsFromSet(&palm_, hwstate);
   RemoveMissingIdsFromSet(&pointing_, hwstate);
   RemoveMissingIdsFromSet(&non_stationary_palm_, hwstate);
+  RemoveMissingIdsFromSet(&fingers_not_in_palm_envelope_, hwstate);
+
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
+    if (!FingerInPalmEnvelope(fs))
+      fingers_not_in_palm_envelope_.insert(fs.tracking_id);
     // Mark anything over the palm thresh as a palm
     if (fs.pressure >= palm_pressure_.val_ ||
         fs.touch_major >= palm_width_.val_) {
@@ -132,8 +181,27 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
     if (!prev_pointing && (FingerNearOtherFinger(hwstate, i) ||
                            !FingerInPalmEnvelope(fs))) {
       pointing_.insert(fs.tracking_id);
-
     }
+
+    // Check if fingers that only move within palm envelope are pointing.
+    if(!prev_pointing &&
+       !SetContainsValue(fingers_not_in_palm_envelope_, fs.tracking_id)) {
+      int id = fs.tracking_id;
+      float min_dist = palm_pointing_min_dist_.val_;
+      float max_reverse_dist = palm_pointing_max_reverse_dist_.val_;
+
+      // Ideally, we want to say that a finger is pointing if it moves only in
+      // one direction significantly without zig-zag. But due to touch sensor's
+      // inaccuratcy, we make the rule to be that a finger has to move in one
+      // direction significantly with little move in the opposite direction.
+      for (size_t i = 0; i < arraysize(distance_positive_); i++)
+        if ((distance_positive_[i][id] >= min_dist &&
+             distance_negative_[i][id] <= max_reverse_dist) ||
+            (distance_positive_[i][id] <= max_reverse_dist &&
+             distance_negative_[i][id] >= min_dist))
+          pointing_.insert(id);
+    }
+
     // However, if the contact has been stationary for a while since it
     // touched down, it is a palm. We track a potential palm closely for the
     // first amount of time to see if it fits this pattern.

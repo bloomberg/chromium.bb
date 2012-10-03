@@ -199,11 +199,14 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
   const float kMidWidth =
       (pci->palm_edge_min_width_.val_ + pci->palm_edge_width_.val_) / 2.0;
 
+  const float kBigMove = pci->palm_pointing_min_dist_.val_ + 1.0;
+  const float kSmallMove = pci->palm_pointing_min_dist_.val_ - 1.0;
+
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    // small contact movement in edge
+    // small contact with small movement in edge
     {0, 0, 0, 0, kSml, 0, 1, 40, 1, 0},
-    {0, 0, 0, 0, kSml, 0, 1, 50, 1, 0},
+    {0, 0, 0, 0, kSml, 0, 1, 40 + kSmallMove, 1, 0},
     // small contact movement in middle
     {0, 0, 0, 0, kSml, 0, 50, 40, 1, 0},
     {0, 0, 0, 0, kSml, 0, 50, 50, 1, 0},
@@ -213,13 +216,19 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
     // under mid-pressure contact move at mid-width
     {0, 0, 0, 0, kMid - 1.0f, 0, kMidWidth, 40, 1, 0},
     {0, 0, 0, 0, kMid - 1.0f, 0, kMidWidth, 50, 1, 0},
-    // over mid-pressure contact move at mid-width
+    // over mid-pressure contact move at mid-width with small movement
     {0, 0, 0, 0, kMid + 1.0f, 0, kMidWidth, 40, 1, 0},
-    {0, 0, 0, 0, kMid + 1.0f, 0, kMidWidth, 50, 1, 0},
+    {0, 0, 0, 0, kMid + 1.0f, 0, kMidWidth, 40 + kSmallMove, 1, 0},
+    // small contact with large movement in edge
+    {0, 0, 0, 0, kSml, 0, 1, 40, 1, 0},
+    {0, 0, 0, 0, kSml, 0, 1, 40 + kBigMove, 1, 0},
+    // over mid-pressure contact move at mid-width with large movement
+    {0, 0, 0, 0, kMid + 1.0f, 0, kMidWidth, 40, 1, 0},
+    {0, 0, 0, 0, kMid + 1.0f, 0, kMidWidth, 40 + kBigMove, 1, 0},
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
-    // slow movement at edge
+    // slow movement at edge with small movement
     { 0.0, 0, 1, 1, &finger_states[0] },
     { 1.0, 0, 1, 1, &finger_states[1] },
     // slow small contact movement in middle
@@ -234,6 +243,12 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
     // over mid-pressure at mid-width
     { 0.0, 0, 1, 1, &finger_states[8] },
     { 1.0, 0, 1, 1, &finger_states[9] },
+    // large movement at edge
+    { 0.0, 0, 1, 1, &finger_states[10] },
+    { 1.0, 0, 1, 1, &finger_states[11] },
+    // over mid-pressure at mid-width with large movement
+    { 0.0, 0, 1, 1, &finger_states[12] },
+    { 1.0, 0, 1, 1, &finger_states[13] },
   };
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
@@ -250,12 +265,18 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
       case 7:
         base_interpreter->expected_flags_ = 0;
         break;
+      case 11:
+      case 13:
+        base_interpreter->expected_flags_ = GESTURES_FINGER_POSSIBLE_PALM;
+        break;
       case 0:  // fallthrough
       case 1:
       case 4:
       case 5:
       case 8:
       case 9:
+      case 10:
+      case 12:
         base_interpreter->expected_flags_ = GESTURES_FINGER_PALM;
         break;
       default:

@@ -41,6 +41,7 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
 
  private:
   void FillOriginInfo(const HardwareState& hwstate);
+  void FillPrevInfo(const HardwareState& hwstate);
 
   // Part of palm detection. Returns true if the finger indicated by
   // |finger_idx| is near another finger, which must not be a palm, in the
@@ -59,6 +60,9 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   // Updates the hwstate based on the local state.
   void UpdatePalmFlags(HardwareState* hwstate);
 
+  // Updates the distance travelled for each finger along +- x/y direction.
+  void UpdateDistanceInfo(const HardwareState& hwstate);
+
   // Returns the length of time the contact has been on the pad. Returns -1
   // on error.
   stime_t FingerAge(short finger_id, stime_t now) const;
@@ -69,6 +73,17 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   // change.
   map<short, FingerState, kMaxFingers> origin_fingerstates_;
 
+  // FingerStates from the previous HardwareState.
+  map<short, FingerState, kMaxFingers> prev_fingerstates_;
+
+  // Accumulated distance travelled by each finger.
+  // _positive[0]  -->  positive direction along x axis
+  // _positive[1]  -->  positive direction along y axis
+  // _negative[0]  -->  negative direction along x axis
+  // _negative[1]  -->  negative direction along y axis
+  map<short, float, kMaxFingers> distance_positive_[2];
+  map<short, float, kMaxFingers> distance_negative_[2];
+
   // Same fingers state. This state is accumulated as fingers remain the same
   // and it's reset when fingers change.
   set<short, kMaxFingers> palm_;  // tracking ids of known palms
@@ -77,6 +92,9 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   set<short, kMaxFingers> non_stationary_palm_;
   // tracking ids of known fingers that are not palms.
   set<short, kMaxFingers> pointing_;
+
+  // tracking ids that have ever travelled out of the palm envelope.
+  set<short, kMaxFingers> fingers_not_in_palm_envelope_;
 
   FingerMetrics* finger_metrics_;
   scoped_ptr<FingerMetrics> test_finger_metrics_;
@@ -107,6 +125,11 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   // been on the pad for palm_stationary_time_ seconds.
   DoubleProperty palm_stationary_time_;
   DoubleProperty palm_stationary_distance_;
+  // For a finger in the palm envelope to be qualified as pointing, it has to
+  // move in one direction at least palm_pointing_min_dist_ and no more
+  // than palm_pointing_max_reverse_dist_ in the opposite direction.
+  DoubleProperty palm_pointing_min_dist_;
+  DoubleProperty palm_pointing_max_reverse_dist_;
 
   DISALLOW_COPY_AND_ASSIGN(PalmClassifyingFilterInterpreter);
 };
