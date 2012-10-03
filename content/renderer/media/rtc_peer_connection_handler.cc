@@ -193,31 +193,29 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     WebKit::WebRTCPeerConnectionHandlerClient* client,
     MediaStreamDependencyFactory* dependency_factory)
     : PeerConnectionHandlerBase(dependency_factory),
-      client_(client) {
+      client_(client),
+      frame_(NULL) {
 }
 
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
 }
 
+void RTCPeerConnectionHandler::associateWithFrame(WebKit::WebFrame* frame) {
+  DCHECK(frame);
+  frame_ = frame;
+}
+
 bool RTCPeerConnectionHandler::initialize(
     const WebKit::WebRTCConfiguration& server_configuration,
     const WebKit::WebMediaConstraints& options) {
+  DCHECK(frame_);
   webrtc::JsepInterface::IceServers servers;
   GetNativeIceServers(server_configuration, &servers);
-
-  // TODO(perkj) use a frame provided by WebKit to
-  // RTCPeerConnectionHandler::initialize when the new WebKit version has been
-  // rolled.
-  WebKit::WebFrame* frame = WebKit::WebFrame::frameForCurrentContext();
-  if (!frame)  {
-    LOG(ERROR) << "frame is NULL";
-    return false;
-  }
 
   RTCMediaConstraints constraints(options);
   native_peer_connection_ =
       dependency_factory_->CreatePeerConnection(
-          servers, &constraints, frame, this);
+          servers, &constraints, frame_, this);
   if (!native_peer_connection_) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;

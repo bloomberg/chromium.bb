@@ -681,6 +681,8 @@ class RenderViewImpl : public RenderWidget,
                               const WebKit::WebIntentRequest& intentRequest);
   virtual void willOpenSocketStream(
       WebKit::WebSocketStreamHandle* handle);
+  virtual void willStartUsingPeerConnectionHandler(WebKit::WebFrame* frame,
+      WebKit::WebRTCPeerConnectionHandler* handler) OVERRIDE;
   virtual bool willCheckAndDispatchMessageEvent(
       WebKit::WebFrame* sourceFrame,
       WebKit::WebFrame* targetFrame,

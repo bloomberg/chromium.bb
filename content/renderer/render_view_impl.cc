@@ -85,6 +85,7 @@
 #include "content/renderer/media/render_audiosourceprovider.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
+#include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/plugin_channel_host.h"
@@ -4200,6 +4201,13 @@ bool RenderViewImpl::willCheckAndDispatchMessageEvent(
 void RenderViewImpl::willOpenSocketStream(
     WebSocketStreamHandle* handle) {
   SocketStreamHandleData::AddToHandle(handle, routing_id_);
+}
+
+void RenderViewImpl::willStartUsingPeerConnectionHandler(
+    WebKit::WebFrame* frame, WebKit::WebRTCPeerConnectionHandler* handler) {
+#if defined(ENABLE_WEBRTC)
+  static_cast<RTCPeerConnectionHandler*>(handler)->associateWithFrame(frame);
+#endif
 }
 
 WebKit::WebString RenderViewImpl::userAgentOverride(
