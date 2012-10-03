@@ -150,6 +150,17 @@ public class AwContents {
     //  WebView[Provider] method implementations (where not provided by ContentViewCore)
     //--------------------------------------------------------------------------------------------
 
+    /**
+     * Clears the resource cache. Note that the cache is per-application, so this will clear the
+     * cache for all WebViews used.
+     *
+     * @param includeDiskFiles if false, only the RAM cache is cleared
+     * TODO(boliu): Clear disk cache part not implemented yet.
+     */
+    public void clearCache(boolean includeDiskFiles) {
+        nativeClearCache(mNativeAwContents, includeDiskFiles);
+    }
+
     public void documentHasImages(Message message) {
         nativeDocumentHasImages(mNativeAwContents, message);
     }
@@ -317,4 +328,5 @@ public class AwContents {
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
     private native void nativeFindNext(int nativeAwContents, boolean forward);
     private native void nativeClearMatches(int nativeAwContents);
+    private native void nativeClearCache(int nativeAwContents, boolean includeDiskFiles);
 }

@@ -5,6 +5,7 @@
 #include "android_webview/native/aw_contents.h"
 
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
+#include "android_webview/common/render_view_messages.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_container.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
@@ -241,6 +242,14 @@ void AwContents::FindNext(JNIEnv* env, jobject obj, jboolean forward) {
 
 void AwContents::ClearMatches(JNIEnv* env, jobject obj) {
   GetFindHelper()->ClearMatches();
+}
+
+void AwContents::ClearCache(
+    JNIEnv* env,
+    jobject obj,
+    jboolean include_disk_files) {
+  render_view_host_ext_->Send(new AwViewMsg_ClearCache);
+  // TODO(boliu): Implement clear network disk cache.
 }
 
 FindHelper* AwContents::GetFindHelper() {

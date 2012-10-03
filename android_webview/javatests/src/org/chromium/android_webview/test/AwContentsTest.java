@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.concurrent.Semaphore;
@@ -77,5 +78,22 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         loadDataSync(awContents.getContentViewCore(), loadHelper, imageDoc, mime, false);
         result = callDocumentHasImagesSync(awContents);
         assertEquals(1, result);
+    }
+
+    public void testClearCache() throws Throwable {
+        // TODO(boliu): Implement actual test.
+        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        loadUrlSync(
+                awContents.getContentViewCore(),
+                mContentsClient.getOnPageFinishedHelper(),
+                UrlUtils.getTestFileUrl("webview/hello_world.html"));
+
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              awContents.clearCache(false);
+            }
+        });
     }
 }

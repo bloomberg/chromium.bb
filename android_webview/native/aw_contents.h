@@ -71,6 +71,7 @@ class AwContents : public FindHelper::Listener {
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);
   void FindNext(JNIEnv* env, jobject obj, jboolean forward);
   void ClearMatches(JNIEnv* env, jobject obj);
+  void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
 
   FindHelper* GetFindHelper();
 

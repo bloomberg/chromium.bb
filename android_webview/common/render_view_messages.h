@@ -26,6 +26,9 @@ namespace IPC {
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
 
+// Tells the renderer to drop all WebCore memory cache.
+IPC_MESSAGE_CONTROL0(AwViewMsg_ClearCache);
+
 // Request for the renderer to determine if the document contains any image
 // elements.  The id should be passed in the response message so the response
 // can be associated with the request.

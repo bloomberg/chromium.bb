@@ -38,7 +38,7 @@ class AwRenderViewExt : public content::RenderViewObserver,
   // WebKit::WebPermissionClient implementation.
   virtual bool allowImage(WebKit::WebFrame* frame,
                           bool enabledPerSettings,
-                          const WebKit::WebURL& imageURL);
+                          const WebKit::WebURL& imageURL) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderViewExt);
 };
