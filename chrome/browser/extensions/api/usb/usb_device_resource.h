@@ -34,6 +34,10 @@ class UsbDeviceResource : public ApiResource {
                     ApiResourceEventNotifier* notifier, UsbDevice* device);
   virtual ~UsbDeviceResource();
 
+  UsbDevice* device() {
+    return device_.get();
+  }
+
   void Close();
 
   // All of the *Transfer variants that are exposed here adapt their arguments

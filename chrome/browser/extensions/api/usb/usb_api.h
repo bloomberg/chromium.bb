@@ -26,6 +26,7 @@ class UsbAsyncApiFunction : public AsyncApiFunction {
   virtual ~UsbAsyncApiFunction();
 
   virtual bool PrePrepare() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
 
   UsbDeviceResource* GetUsbDeviceResource(int api_resource_id);
   void RemoveUsbDeviceResource(int api_resource_id);
@@ -66,6 +67,44 @@ class UsbCloseDeviceFunction : public UsbAsyncApiFunction {
 
  private:
   scoped_ptr<extensions::api::experimental_usb::CloseDevice::Params>
+      parameters_;
+};
+
+class UsbClaimInterfaceFunction : public UsbAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.claimInterface");
+
+  UsbClaimInterfaceFunction();
+
+ protected:
+  virtual ~UsbClaimInterfaceFunction();
+
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+  void OnCompleted(bool success);
+
+ private:
+  scoped_ptr<extensions::api::experimental_usb::ClaimInterface::Params>
+      parameters_;
+};
+
+class UsbReleaseInterfaceFunction : public UsbAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.releaseInterface");
+
+  UsbReleaseInterfaceFunction();
+
+ protected:
+  virtual ~UsbReleaseInterfaceFunction();
+
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+  void OnCompleted(bool success);
+
+ private:
+  scoped_ptr<extensions::api::experimental_usb::ReleaseInterface::Params>
       parameters_;
 };
 

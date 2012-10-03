@@ -111,6 +111,8 @@ namespace experimental.usb {
     OnEventCallback? onEvent;
   };
 
+  callback VoidCallback = void ();
+
   callback FindDeviceCallback = void (optional Device device);
   callback TransferCallback = void ();
 
@@ -129,6 +131,20 @@ namespace experimental.usb {
     // has been closed is a safe operation, but causes no action to be taken.
     // |device|: The device to close.
     static void closeDevice(Device device);
+
+    // Claims an interface on the specified USB device.
+    // |device|: The device on which the interface is to be claimed.
+    // |interface|: The interface number to be claimed.
+    // |callback|: The callback to invoke once the interface is claimed.
+    static long claimInterface(Device device, long interfaceNumber,
+        VoidCallback callback);
+
+    // Releases a claim to an interface on the provided device.
+    // |device|: The device on which the interface is to be released.
+    // |interface|: The interface number to be released.
+    // |callback|: The callback to invoke once the interface is released.
+    static long releaseInterface(Device device, long interfaceNumber,
+        VoidCallback callback);
 
     // Performs a control transfer on the specified device. See the
     // ControlTransferInfo structure for the parameters required to make a

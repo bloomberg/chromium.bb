@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/api/experimental_usb.h"
 
 namespace BulkTransfer = extensions::api::experimental_usb::BulkTransfer;
+namespace ClaimInterface = extensions::api::experimental_usb::ClaimInterface;
 namespace CloseDevice = extensions::api::experimental_usb::CloseDevice;
 namespace ControlTransfer = extensions::api::experimental_usb::ControlTransfer;
 namespace FindDevice = extensions::api::experimental_usb::FindDevice;
@@ -22,10 +23,16 @@ namespace InterruptTransfer =
     extensions::api::experimental_usb::InterruptTransfer;
 namespace IsochronousTransfer =
     extensions::api::experimental_usb::IsochronousTransfer;
+namespace ReleaseInterface =
+    extensions::api::experimental_usb::ReleaseInterface;
 using extensions::api::experimental_usb::Device;
 using std::vector;
 
 namespace {
+
+static const char* kErrorNoDevice = "No such device.";
+static const char* kErrorCannotClaimInterface = "Error claiming interface.";
+static const char* kErrorCannotReleaseInterface = "Error releasing interface.";
 
 static UsbDevice* device_for_test_ = NULL;
 
@@ -43,6 +50,10 @@ UsbAsyncApiFunction::~UsbAsyncApiFunction() {
 bool UsbAsyncApiFunction::PrePrepare() {
   manager_ = ExtensionSystem::Get(profile())->usb_device_resource_manager();
   return manager_ != NULL;
+}
+
+bool UsbAsyncApiFunction::Respond() {
+  return error_.empty();
 }
 
 UsbDeviceResource* UsbAsyncApiFunction::GetUsbDeviceResource(
@@ -122,6 +133,62 @@ void UsbCloseDeviceFunction::Work() {
 
 bool UsbCloseDeviceFunction::Respond() {
   return true;
+}
+
+UsbClaimInterfaceFunction::UsbClaimInterfaceFunction() {}
+
+UsbClaimInterfaceFunction::~UsbClaimInterfaceFunction() {}
+
+bool UsbClaimInterfaceFunction::Prepare() {
+  parameters_ = ClaimInterface::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  return true;
+}
+
+void UsbClaimInterfaceFunction::AsyncWorkStart() {
+  UsbDeviceResource* device = GetUsbDeviceResource(parameters_->device.handle);
+  if (!device) {
+    SetError(kErrorNoDevice);
+    AsyncWorkCompleted();
+    return;
+  }
+
+  device->device()->ClaimInterface(parameters_->interface_number, base::Bind(
+      &UsbClaimInterfaceFunction::OnCompleted, this));
+}
+
+void UsbClaimInterfaceFunction::OnCompleted(bool success) {
+  if (!success)
+    SetError(kErrorCannotClaimInterface);
+  AsyncWorkCompleted();
+}
+
+UsbReleaseInterfaceFunction::UsbReleaseInterfaceFunction() {}
+
+UsbReleaseInterfaceFunction::~UsbReleaseInterfaceFunction() {}
+
+bool UsbReleaseInterfaceFunction::Prepare() {
+  parameters_ = ReleaseInterface::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  return true;
+}
+
+void UsbReleaseInterfaceFunction::AsyncWorkStart() {
+  UsbDeviceResource* device = GetUsbDeviceResource(parameters_->device.handle);
+  if (!device) {
+    SetError(kErrorNoDevice);
+    AsyncWorkCompleted();
+    return;
+  }
+
+  device->device()->ReleaseInterface(parameters_->interface_number, base::Bind(
+      &UsbReleaseInterfaceFunction::OnCompleted, this));
+}
+
+void UsbReleaseInterfaceFunction::OnCompleted(bool success) {
+  if (!success)
+    SetError(kErrorCannotReleaseInterface);
+  AsyncWorkCompleted();
 }
 
 UsbControlTransferFunction::UsbControlTransferFunction() {}
