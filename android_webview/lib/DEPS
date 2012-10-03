@@ -27,4 +27,7 @@ include_rules = [
 
   # Temporary until the javascript dialog creator is unpicked from WebView.
   "!chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h",
+
+  # Temporary until fixing bug 153758.
+  "!ui/base/ui_base_switches.h",
 ]

@@ -10,6 +10,7 @@
 #include "content/public/app/content_main.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/common/content_switches.h"
+#include "ui/base/ui_base_switches.h"
 
 // This is called by the VM when the shared library is first loaded.
 // Most of the initialization is done in LibraryLoadedOnMainThread(), not here.
@@ -26,6 +27,12 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   CommandLine::Init(0, NULL);
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableWebViewSynchronousAPIs);
+
+  // TODO: The default locale needs to be set in order to prevent assertion
+  // failures in WebKit. However, this is really a single process mode issue
+  // and should be properly fixed. See bug 153758.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kLang, "en-US");
 
   // TODO: The next two lines are temporarily required for the renderer
   // initialization to not crash.
