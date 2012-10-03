@@ -18,6 +18,7 @@ class DictionaryValue;
 namespace chromeos {
 class BaseScreenHandler;
 class CoreOobeHandler;
+class ErrorScreenHandler;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 }
@@ -75,7 +76,11 @@ class OobeUI : public OobeDisplay,
   EnterpriseEnrollmentScreenActor* enterprise_enrollment_screen_actor_;
   ResetScreenActor* reset_screen_actor_;
 
-  // Reference to SigninScreenHandler that handles sign-in screen requrests and
+  // Reference to ErrorScreenHandler that handles error screen
+  // requests and forward calls from native code to JS side.
+  ErrorScreenHandler* error_screen_handler_;
+
+  // Reference to SigninScreenHandler that handles sign-in screen requests and
   // forward calls from native code to JS side.
   SigninScreenHandler* signin_screen_handler_;
   UserImageScreenActor* user_image_screen_actor_;

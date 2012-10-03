@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
@@ -126,6 +127,7 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
       reset_screen_actor_(NULL),
+      error_screen_handler_(NULL),
       signin_screen_handler_(NULL),
       user_image_screen_actor_(NULL) {
   core_handler_ = new CoreOobeHandler(this);
@@ -160,6 +162,9 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       new UserImageScreenHandler();
   user_image_screen_actor_ = user_image_screen_handler;
   AddScreenHandler(user_image_screen_handler);
+
+  error_screen_handler_ = new ErrorScreenHandler();
+  AddScreenHandler(error_screen_handler_);
 
   signin_screen_handler_ = new SigninScreenHandler;
   AddScreenHandler(signin_screen_handler_);

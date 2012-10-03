@@ -191,6 +191,47 @@ cr.define('login', function() {
     },
 
     /**
+     * Prepares error screen to show proxy error.
+     */
+    showProxyError: function() {
+      this.classList.remove('show-offline-message');
+      this.classList.remove('show-captive-portal');
+      this.classList.add('show-proxy-error');
+    },
+
+    /**
+     * Prepares error screen to show captive portal error.
+     * @param {string} network Name of the current network
+     */
+    showCaptivePortalError: function(network) {
+      $(CURRENT_NETWORK_NAME_ID).textContent = network;
+      this.classList.remove('show-offline-message');
+      this.classList.remove('show-proxy-error');
+      this.classList.add('show-captive-portal');
+    },
+
+    /**
+     * Prepares error screen to show offline error.
+     */
+    showOfflineError: function() {
+      this.classList.remove('show-captive-portal');
+      this.classList.remove('show-proxy-error');
+      this.classList.add('show-offline-message');
+    },
+
+    /**
+     * Shows screen.
+     * @param {object} screen Screen that should be shown.
+     */
+    showScreen: function(screen) {
+      screen.classList.remove('hidden');
+      screen.classList.remove('faded');
+
+      if (Oobe.getInstance().isNewOobe())
+        Oobe.getInstance().updateInnerContainerSize_(screen);
+    },
+
+    /**
      * Shows or hides offline message based on network on/offline state.
      * @param {number} state Current state of the network (see NET_STATE).
      * @param {string} network Name of the current network.
@@ -307,27 +348,15 @@ cr.define('login', function() {
         }
 
         if (isUnderCaptivePortal) {
-          if (isProxyError) {
-            offlineMessage.classList.remove('show-offline-message');
-            offlineMessage.classList.remove('show-captive-portal');
-            offlineMessage.classList.add('show-proxy-error');
-          } else {
-            $(CURRENT_NETWORK_NAME_ID).textContent = network;
-            offlineMessage.classList.remove('show-offline-message');
-            offlineMessage.classList.remove('show-proxy-error');
-            offlineMessage.classList.add('show-captive-portal');
-          }
+          if (isProxyError)
+            offlineMessage.showProxyError();
+          else
+            offlineMessage.showCaptivePortalError(network);
         } else {
-          offlineMessage.classList.remove('show-captive-portal');
-          offlineMessage.classList.remove('show-proxy-error');
-          offlineMessage.classList.add('show-offline-message');
+          offlineMessage.showOfflineError();
         }
 
-        offlineMessage.classList.remove('hidden');
-        offlineMessage.classList.remove('faded');
-
-        if (Oobe.getInstance().isNewOobe())
-          Oobe.getInstance().updateInnerContainerSize_(offlineMessage);
+        offlineMessage.showScreen(offlineMessage);
 
         if (!currentScreen.classList.contains('faded')) {
           currentScreen.classList.add('faded');
@@ -364,11 +393,7 @@ cr.define('login', function() {
             offlineMessage.classList.add('hidden');
           }
 
-          currentScreen.classList.remove('hidden');
-          currentScreen.classList.remove('faded');
-
-          if (Oobe.getInstance().isNewOobe())
-            Oobe.getInstance().updateInnerContainerSize_(currentScreen);
+          offlineMessage.showScreen(currentScreen);
 
           // Forces a reload for Gaia screen on hiding error message.
           if (isGaiaSignin && !gaiaSigninReloaded) {
