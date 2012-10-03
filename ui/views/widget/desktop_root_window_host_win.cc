@@ -20,6 +20,7 @@
 #include "ui/views/ime/input_method_win.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_capture_client.h"
+#include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
@@ -34,10 +35,12 @@ namespace views {
 
 DesktopRootWindowHostWin::DesktopRootWindowHostWin(
     internal::NativeWidgetDelegate* native_widget_delegate,
+    DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           message_handler_(new HWNDMessageHandler(this))),
       native_widget_delegate_(native_widget_delegate),
+      desktop_native_widget_aura_(desktop_native_widget_aura),
       root_window_host_delegate_(NULL),
       content_window_(NULL) {
 }
@@ -48,8 +51,10 @@ DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, DesktopRootWindowHost implementation:
 
-void DesktopRootWindowHostWin::Init(aura::Window* content_window,
-                                    const Widget::InitParams& params) {
+aura::RootWindow* DesktopRootWindowHostWin::Init(
+    aura::Window* content_window,
+    const Widget::InitParams& params) {
+  // TODO(beng): SetInitParams().
   content_window_ = content_window;
 
   ConfigureWindowStyles(message_handler_.get(), params,
@@ -62,40 +67,42 @@ void DesktopRootWindowHostWin::Init(aura::Window* content_window,
 
   aura::RootWindow::CreateParams rw_params(params.bounds);
   rw_params.host = this;
-  root_window_.reset(new aura::RootWindow(rw_params));
+  root_window_ = new aura::RootWindow(rw_params);
   root_window_->Init();
   root_window_->AddChild(content_window_);
-  root_window_host_delegate_ = root_window_.get();
+  root_window_host_delegate_ = root_window_;
 
   native_widget_delegate_->OnNativeWidgetCreated();
 
   capture_client_.reset(new DesktopCaptureClient);
-  aura::client::SetCaptureClient(root_window_.get(), capture_client_.get());
+  aura::client::SetCaptureClient(root_window_, capture_client_.get());
 
   focus_manager_.reset(new aura::FocusManager);
   root_window_->set_focus_manager(focus_manager_.get());
 
   activation_client_.reset(
       new aura::DesktopActivationClient(root_window_->GetFocusManager()));
-  aura::client::SetActivationClient(root_window_.get(),
+  aura::client::SetActivationClient(root_window_,
                                     activation_client_.get());
 
   dispatcher_client_.reset(new aura::DesktopDispatcherClient);
-  aura::client::SetDispatcherClient(root_window_.get(),
+  aura::client::SetDispatcherClient(root_window_,
                                     dispatcher_client_.get());
 
-  cursor_client_.reset(new aura::DesktopCursorClient(root_window_.get()));
-  aura::client::SetCursorClient(root_window_.get(), cursor_client_.get());
+  cursor_client_.reset(new aura::DesktopCursorClient(root_window_));
+  aura::client::SetCursorClient(root_window_, cursor_client_.get());
 
 
   position_client_.reset(new DesktopScreenPositionClient());
-  aura::client::SetScreenPositionClient(root_window_.get(),
+  aura::client::SetScreenPositionClient(root_window_,
                                         position_client_.get());
 
   // CEF sets focus to the window the user clicks down on.
   // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
   //             handed way of accomplishing focus.
   root_window_->SetEventFilter(new aura::shared::CompoundEventFilter);
+
+  return root_window_;
 }
 
 void DesktopRootWindowHostWin::Close() {
@@ -295,7 +302,7 @@ void DesktopRootWindowHostWin::FlashFrame(bool flash_frame) {
 // DesktopRootWindowHostWin, RootWindowHost implementation:
 
 aura::RootWindow* DesktopRootWindowHostWin::GetRootWindow() {
-  return root_window_.get();
+  return root_window_;
 }
 
 gfx::AcceleratedWidget DesktopRootWindowHostWin::GetAcceleratedWidget() {
@@ -539,6 +546,7 @@ void DesktopRootWindowHostWin::HandleDestroying() {
 }
 
 void DesktopRootWindowHostWin::HandleDestroyed() {
+  desktop_native_widget_aura_->OnHostClosed();
 }
 
 bool DesktopRootWindowHostWin::HandleInitialFocus() {
@@ -698,8 +706,11 @@ HWND DesktopRootWindowHostWin::GetHWND() const {
 // static
 DesktopRootWindowHost* DesktopRootWindowHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,
+    DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds) {
-  return new DesktopRootWindowHostWin(native_widget_delegate, initial_bounds);
+  return new DesktopRootWindowHostWin(native_widget_delegate,
+                                      desktop_native_widget_aura,
+                                      initial_bounds);
 }
 
 }  // namespace views

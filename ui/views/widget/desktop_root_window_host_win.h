@@ -31,13 +31,14 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
  public:
   DesktopRootWindowHostWin(
       internal::NativeWidgetDelegate* native_widget_delegate,
+      DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds);
   virtual ~DesktopRootWindowHostWin();
 
  protected:
   // Overridden from DesktopRootWindowHost:
-  virtual void Init(aura::Window* content_window,
-                    const Widget::InitParams& params) OVERRIDE;
+  virtual aura::RootWindow* Init(aura::Window* content_window,
+                                 const Widget::InitParams& params) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
   virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
@@ -191,16 +192,21 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   HWND GetHWND() const;
 
  private:
-  scoped_ptr<aura::RootWindow> root_window_;
+  // We are owned by the RootWindow, but we have to have a back pointer to it.
+  aura::RootWindow* root_window_;
+
   scoped_ptr<HWNDMessageHandler> message_handler_;
   scoped_ptr<DesktopCaptureClient> capture_client_;
-  scoped_ptr<aura::DesktopActivationClient> activation_client_;
   scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::FocusManager> focus_manager_;
+  // Depends on focus_manager_.
+  scoped_ptr<aura::DesktopActivationClient> activation_client_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.
   internal::NativeWidgetDelegate* native_widget_delegate_;
+
+  DesktopNativeWidgetAura* desktop_native_widget_aura_;
 
   aura::RootWindowHostDelegate* root_window_host_delegate_;
   aura::Window* content_window_;

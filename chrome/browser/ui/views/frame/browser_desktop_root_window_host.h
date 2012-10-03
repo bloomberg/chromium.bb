@@ -11,6 +11,7 @@ namespace gfx {
 class Rect;
 }
 namespace views {
+class DesktopNativeWidgetAura;
 class DesktopRootWindowHost;
 namespace internal {
 class NativeWidgetDelegate;
@@ -24,6 +25,7 @@ class BrowserDesktopRootWindowHost {
   // BDRWH is owned by the RootWindow.
   static BrowserDesktopRootWindowHost* CreateBrowserDesktopRootWindowHost(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
+      views::DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds,
       BrowserView* browser_view,
       BrowserFrame* browser_frame);

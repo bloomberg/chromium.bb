@@ -11,12 +11,17 @@
 class BrowserFrame;
 class BrowserView;
 
+namespace views {
+class DesktopNativeWidgetAura;
+}
+
 class BrowserDesktopRootWindowHostLinux
     : public BrowserDesktopRootWindowHost,
       public views::DesktopRootWindowHostLinux {
  public:
   BrowserDesktopRootWindowHostLinux(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
+      views::DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds);
   virtual ~BrowserDesktopRootWindowHostLinux();
 

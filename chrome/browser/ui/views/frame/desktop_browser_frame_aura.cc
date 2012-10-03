@@ -44,6 +44,7 @@ void DesktopBrowserFrameAura::InitNativeWidget(
   browser_desktop_root_window_host_ =
       BrowserDesktopRootWindowHost::CreateBrowserDesktopRootWindowHost(
           browser_frame_,
+          this,
           params.bounds,
           browser_view_,
           browser_frame_);

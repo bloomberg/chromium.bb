@@ -235,7 +235,10 @@ class ShellWindowDelegateView : public WidgetDelegateView,
     return title_;
   }
   virtual void WindowClosing() OVERRIDE {
-    if (shell_) delete shell_;
+    if (shell_) {
+      delete shell_;
+      shell_ = NULL;
+    }
   }
   virtual View* GetContentsView() OVERRIDE { return this; }
 
@@ -288,6 +291,8 @@ void Shell::PlatformInitialize() {
   stacking_client_ = new aura::DesktopStackingClient();
   gfx::Screen::SetInstance(aura::CreateDesktopScreen());
   views_delegate_ = new ShellViewsDelegateAura();
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(views::switches::kDesktopAura);
 }
 
 void Shell::PlatformExit() {

@@ -12,11 +12,16 @@
 class BrowserFrame;
 class BrowserView;
 
+namespace views {
+class DesktopNativeWidgetAura;
+}
+
 class BrowserDesktopRootWindowHostWin : public BrowserDesktopRootWindowHost,
                                         public views::DesktopRootWindowHostWin {
  public:
   BrowserDesktopRootWindowHostWin(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
+      views::DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds,
       BrowserView* browser_view,
       BrowserFrame* browser_frame);

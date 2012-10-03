@@ -5,9 +5,17 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_NATIVE_WIDGET_AURA_H_
 #define UI_VIEWS_WIDGET_DESKTOP_NATIVE_WIDGET_AURA_H_
 
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
-#include "ui/views/widget/widget.h"
+
+namespace aura {
+class RootWindow;
+}
+
+namespace aura {
+class RootWindow;
+}
 
 namespace views {
 
@@ -19,6 +27,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
  public:
   explicit DesktopNativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~DesktopNativeWidgetAura();
+
+  // Called by our DesktopRootWindowHost after it has deleted native resources;
+  // this is the signal that we should start our shutdown.
+  void OnHostClosed();
 
  protected:
   // Overridden from internal::NativeWidgetPrivate:
@@ -135,10 +147,17 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
+  // The NativeWidget owns the RootWindow. Required because the RootWindow owns
+  // its RootWindowHost, so DesktopRootWindowHost can't own it.
+  scoped_ptr<aura::RootWindow> root_window_;
+
+  // The following factory is used for calls to close the NativeWidgetAura
+  // instance.
+  base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;
+
   // Ownership passed to RootWindow on Init.
   DesktopRootWindowHost* desktop_root_window_host_;
   aura::Window* window_;
-  Widget::InitParams::Ownership ownership_;
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);

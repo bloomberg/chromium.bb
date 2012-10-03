@@ -4,12 +4,14 @@
 
 #include "ui/views/widget/desktop_native_widget_aura.h"
 
+#include "base/bind.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/desktop_root_window_host.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -18,12 +20,19 @@ namespace views {
 
 DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
-      ownership_(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+      desktop_root_window_host_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       native_widget_delegate_(delegate) {
 }
 
 DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
+}
+
+void DesktopNativeWidgetAura::OnHostClosed() {
+  // This will, through a long list of callbacks, trigger |root_window_| going
+  // away. See OnWindowDestroyed()
+  delete window_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,8 +45,10 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   desktop_root_window_host_ = params.desktop_root_window_host ?
       params.desktop_root_window_host :
-      DesktopRootWindowHost::Create(native_widget_delegate_, params.bounds);
-  desktop_root_window_host_->Init(window_, params);
+      DesktopRootWindowHost::Create(native_widget_delegate_,
+                                    this, params.bounds);
+  root_window_.reset(
+      desktop_root_window_host_->Init(window_, params));
 }
 
 NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
@@ -386,9 +397,13 @@ void DesktopNativeWidgetAura::OnDeviceScaleFactorChanged(
 }
 
 void DesktopNativeWidgetAura::OnWindowDestroying() {
+  native_widget_delegate_->OnNativeWidgetDestroying();
 }
 
 void DesktopNativeWidgetAura::OnWindowDestroyed() {
+  window_ = NULL;
+  native_widget_delegate_->OnNativeWidgetDestroyed();
+  delete this;
 }
 
 void DesktopNativeWidgetAura::OnWindowTargetVisibilityChanged(bool visible) {

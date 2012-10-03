@@ -29,10 +29,13 @@ const int kDWMFrameTopOffset = 3;
 
 BrowserDesktopRootWindowHostWin::BrowserDesktopRootWindowHostWin(
     views::internal::NativeWidgetDelegate* native_widget_delegate,
+    views::DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds,
     BrowserView* browser_view,
     BrowserFrame* browser_frame)
-    : DesktopRootWindowHostWin(native_widget_delegate, initial_bounds),
+    : DesktopRootWindowHostWin(native_widget_delegate,
+                               desktop_native_widget_aura,
+                               initial_bounds),
       browser_view_(browser_view),
       browser_frame_(browser_frame) {
 }
@@ -207,10 +210,12 @@ void BrowserDesktopRootWindowHostWin::UpdateDWMFrame() {
 BrowserDesktopRootWindowHost*
     BrowserDesktopRootWindowHost::CreateBrowserDesktopRootWindowHost(
         views::internal::NativeWidgetDelegate* native_widget_delegate,
+        views::DesktopNativeWidgetAura* desktop_native_widget_aura,
         const gfx::Rect& initial_bounds,
         BrowserView* browser_view,
         BrowserFrame* browser_frame) {
   return new BrowserDesktopRootWindowHostWin(native_widget_delegate,
+                                             desktop_native_widget_aura,
                                              initial_bounds,
                                              browser_view,
                                              browser_frame);

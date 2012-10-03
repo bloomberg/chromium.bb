@@ -9,8 +9,11 @@
 
 BrowserDesktopRootWindowHostLinux::BrowserDesktopRootWindowHostLinux(
     views::internal::NativeWidgetDelegate* native_widget_delegate,
+    views::DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds)
-    : DesktopRootWindowHostLinux(native_widget_delegate, initial_bounds) {
+    : DesktopRootWindowHostLinux(native_widget_delegate,
+                                 desktop_native_widget_aura,
+                                 initial_bounds) {
 }
 
 BrowserDesktopRootWindowHostLinux::~BrowserDesktopRootWindowHostLinux() {
@@ -36,9 +39,11 @@ int BrowserDesktopRootWindowHostLinux::GetMinimizeButtonOffset() const {
 BrowserDesktopRootWindowHost*
     BrowserDesktopRootWindowHost::CreateBrowserDesktopRootWindowHost(
         views::internal::NativeWidgetDelegate* native_widget_delegate,
+        views::DesktopNativeWidgetAura* desktop_native_widget_aura,
         const gfx::Rect& initial_bounds,
         BrowserView* browser_view,
         BrowserFrame* browser_frame) {
   return new BrowserDesktopRootWindowHostLinux(native_widget_delegate,
+                                               desktop_native_widget_aura,
                                                initial_bounds);
 }

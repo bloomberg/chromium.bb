@@ -23,6 +23,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/widget/desktop_layout_manager.h"
+#include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/x11_desktop_handler.h"
 #include "ui/views/widget/x11_window_event_filter.h"
 
@@ -57,8 +58,10 @@ const char* kAtomsToCache[] = {
 
 DesktopRootWindowHostLinux::DesktopRootWindowHostLinux(
     internal::NativeWidgetDelegate* native_widget_delegate,
+    DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds)
-    : xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
+    : close_widget_factory_(this),
+      xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
@@ -68,12 +71,11 @@ DesktopRootWindowHostLinux::DesktopRootWindowHostLinux(
       cursor_loader_(),
       current_cursor_(ui::kCursorNull),
       cursor_shown_(true),
-      native_widget_delegate_(native_widget_delegate) {
+      native_widget_delegate_(native_widget_delegate),
+      desktop_native_widget_aura_(desktop_native_widget_aura) {
 }
 
 DesktopRootWindowHostLinux::~DesktopRootWindowHostLinux() {
-  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
-  XDestroyWindow(xdisplay_, xwindow_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -142,17 +144,17 @@ void DesktopRootWindowHostLinux::InitX11Window(
 
 // TODO(erg): This method should basically be everything I need form
 // RootWindowHostLinux::RootWindowHostLinux().
-void DesktopRootWindowHostLinux::InitRootWindow(
+aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
     const Widget::InitParams& params) {
   bounds_ = params.bounds;
 
   aura::RootWindow::CreateParams rw_params(bounds_);
   rw_params.host = this;
-  root_window_.reset(new aura::RootWindow(rw_params));
+  root_window_ = new aura::RootWindow(rw_params);
   root_window_->Init();
   root_window_->AddChild(content_window_);
-  root_window_->SetLayoutManager(new DesktopLayoutManager(root_window_.get()));
-  root_window_host_delegate_ = root_window_.get();
+  root_window_->SetLayoutManager(new DesktopLayoutManager(root_window_));
+  root_window_host_delegate_ = root_window_;
 
   // If we're given a parent, we need to mark ourselves as transient to another
   // window. Otherwise activation gets screwy.
@@ -163,7 +165,7 @@ void DesktopRootWindowHostLinux::InitRootWindow(
   native_widget_delegate_->OnNativeWidgetCreated();
 
   capture_client_.reset(new DesktopCaptureClient);
-  aura::client::SetCaptureClient(root_window_.get(), capture_client_.get());
+  aura::client::SetCaptureClient(root_window_, capture_client_.get());
 
   root_window_->set_focus_manager(
       X11DesktopHandler::get()->get_focus_manager());
@@ -171,10 +173,10 @@ void DesktopRootWindowHostLinux::InitRootWindow(
   aura::DesktopActivationClient* activation_client =
       X11DesktopHandler::get()->get_activation_client();
   aura::client::SetActivationClient(
-      root_window_.get(), activation_client);
+      root_window_, activation_client);
 
   dispatcher_client_.reset(new aura::DesktopDispatcherClient);
-  aura::client::SetDispatcherClient(root_window_.get(),
+  aura::client::SetDispatcherClient(root_window_,
                                     dispatcher_client_.get());
 
   // The cursor client is a curious thing; it proxies some, but not all, calls
@@ -183,7 +185,7 @@ void DesktopRootWindowHostLinux::InitRootWindow(
   //
   // TODO(erg): This is a code smell. I suspect that I'm working around the
   // CursorClient's interface being plain wrong.
-  aura::client::SetCursorClient(root_window_.get(), this);
+  aura::client::SetCursorClient(root_window_, this);
 
   // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
   root_window_event_filter_ = new aura::shared::CompoundEventFilter;
@@ -191,14 +193,16 @@ void DesktopRootWindowHostLinux::InitRootWindow(
   root_window_->SetEventFilter(root_window_event_filter_);
 
   input_method_filter_.reset(new aura::shared::InputMethodEventFilter());
-  input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_.get());
+  input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
   root_window_event_filter_->AddFilter(input_method_filter_.get());
 
   // TODO(erg): Unify this code once the other consumer goes away.
   x11_window_event_filter_.reset(
-      new X11WindowEventFilter(root_window_.get(), activation_client));
+      new X11WindowEventFilter(root_window_, activation_client));
   x11_window_event_filter_->SetUseHostWindowBorders(false);
   root_window_event_filter_->AddFilter(x11_window_event_filter_.get());
+
+  return root_window_;
 }
 
 bool DesktopRootWindowHostLinux::IsWindowManagerPresent() {
@@ -237,8 +241,9 @@ bool DesktopRootWindowHostLinux::HasWMSpecProperty(const char* property) const {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostLinux, DesktopRootWindowHost implementation:
 
-void DesktopRootWindowHostLinux::Init(aura::Window* content_window,
-                                      const Widget::InitParams& params) {
+aura::RootWindow* DesktopRootWindowHostLinux::Init(
+    aura::Window* content_window,
+    const Widget::InitParams& params) {
   content_window_ = content_window;
 
   // TODO(erg): Check whether we *should* be building a RootWindowHost here, or
@@ -253,20 +258,36 @@ void DesktopRootWindowHostLinux::Init(aura::Window* content_window,
     sanitized_params.bounds.set_height(100);
 
   InitX11Window(sanitized_params);
-  InitRootWindow(sanitized_params);
-
-  // This needs to be the intersection of:
-  // - NativeWidgetAura::InitNativeWidget()
-  // - DesktopNativeWidgetHelperAura::PreInitialize()
+  return InitRootWindow(sanitized_params);
 }
 
 void DesktopRootWindowHostLinux::Close() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  // TODO(erg): Might need to do additional hiding tasks here.
+
+  if (!close_widget_factory_.HasWeakPtrs()) {
+    // And we delay the close so that if we are called from an ATL callback,
+    // we don't destroy the window before the callback returned (as the caller
+    // may delete ourselves on destroy and the ATL callback would still
+    // dereference us when the callback returns).
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&DesktopRootWindowHostLinux::CloseNow,
+                   close_widget_factory_.GetWeakPtr()));
+  }
 }
 
 void DesktopRootWindowHostLinux::CloseNow() {
-  NOTIMPLEMENTED();
+  // Remove the event listeners we've installed. We need to remove these
+  // because otherwise we get assert during ~RootWindow().
+  root_window_event_filter_->RemoveFilter(x11_window_event_filter_.get());
+  root_window_event_filter_->RemoveFilter(input_method_filter_.get());
+
+  // Actually free our native resources.
+  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
+  XDestroyWindow(xdisplay_, xwindow_);
+  xwindow_ = None;
+
+  desktop_native_widget_aura_->OnHostClosed();
 }
 
 aura::RootWindowHost* DesktopRootWindowHostLinux::AsRootWindowHost() {
@@ -512,7 +533,7 @@ void DesktopRootWindowHostLinux::FlashFrame(bool flash_frame) {
 // DesktopRootWindowHostLinux, aura::RootWindowHost implementation:
 
 aura::RootWindow* DesktopRootWindowHostLinux::GetRootWindow() {
-  return root_window_.get();
+  return root_window_;
 }
 
 gfx::AcceleratedWidget DesktopRootWindowHostLinux::GetAcceleratedWidget() {
@@ -738,7 +759,7 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
           static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
         aura::client::UserActionClient* gesture_client =
-            aura::client::GetUserActionClient(root_window_.get());
+            aura::client::GetUserActionClient(root_window_);
         if (gesture_client) {
           gesture_client->OnUserAction(
               static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
@@ -943,8 +964,11 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
 // static
 DesktopRootWindowHost* DesktopRootWindowHost::Create(
     internal::NativeWidgetDelegate* native_widget_delegate,
+    DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds) {
-  return new DesktopRootWindowHostLinux(native_widget_delegate, initial_bounds);
+  return new DesktopRootWindowHostLinux(native_widget_delegate,
+                                        desktop_native_widget_aura,
+                                        initial_bounds);
 }
 
 }  // namespace views

@@ -11,11 +11,13 @@
 #undef RootWindow
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/gfx/rect.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/base/x/x11_atom_cache.h"
+#include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_root_window_host.h"
 
 namespace aura {
@@ -32,13 +34,15 @@ namespace views {
 class DesktopCaptureClient;
 class X11WindowEventFilter;
 
-class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
-                                   public aura::RootWindowHost,
-                                   public aura::client::CursorClient,
-                                   public MessageLoop::Dispatcher {
+class VIEWS_EXPORT DesktopRootWindowHostLinux
+    : public DesktopRootWindowHost,
+      public aura::RootWindowHost,
+      public aura::client::CursorClient,
+      public MessageLoop::Dispatcher {
  public:
   DesktopRootWindowHostLinux(
       internal::NativeWidgetDelegate* native_widget_delegate,
+      DesktopNativeWidgetAura* desktop_native_widget_aura,
       const gfx::Rect& initial_bounds);
   virtual ~DesktopRootWindowHostLinux();
 
@@ -49,7 +53,7 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
 
   // Creates an aura::RootWindow to contain the |content_window|, along with
   // all aura client objects that direct behavior.
-  void InitRootWindow(const Widget::InitParams& params);
+  aura::RootWindow* InitRootWindow(const Widget::InitParams& params);
 
   // Returns true if there's an X window manager present... in most cases.  Some
   // window managers (notably, ion3) don't implement enough of ICCCM for us to
@@ -68,8 +72,8 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   void SetCursorInternal(gfx::NativeCursor cursor);
 
   // Overridden from DesktopRootWindowHost:
-  virtual void Init(aura::Window* content_window,
-                    const Widget::InitParams& params) OVERRIDE;
+  virtual aura::RootWindow* Init(aura::Window* content_window,
+                                 const Widget::InitParams& params) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
   virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
@@ -152,6 +156,8 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   // Overridden from Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
+  base::WeakPtrFactory<DesktopRootWindowHostLinux> close_widget_factory_;
+
   // X11 things
   // The display and the native X window hosting the root window.
   Display* xdisplay_;
@@ -177,8 +183,10 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   // The window manager state bits.
   std::set< ::Atom> window_properties_;
 
+  // We are owned by the RootWindow, but we have to have a back pointer to it.
+  aura::RootWindow* root_window_;
+
   // aura:: objects that we own.
-  scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<DesktopCaptureClient> capture_client_;
   scoped_ptr<aura::DesktopActivationClient> activation_client_;
   scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;
@@ -205,6 +213,8 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost,
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.
   internal::NativeWidgetDelegate* native_widget_delegate_;
+
+  DesktopNativeWidgetAura* desktop_native_widget_aura_;
 
   aura::RootWindowHostDelegate* root_window_host_delegate_;
   aura::Window* content_window_;
