@@ -1354,6 +1354,8 @@
         'host/event_executor_win.cc',
         'host/gaia_oauth_client.cc',
         'host/gaia_oauth_client.h',
+        'host/gaia_user_email_fetcher.cc',
+        'host/gaia_user_email_fetcher.h',
         'host/heartbeat_sender.cc',
         'host/heartbeat_sender.h',
         'host/host_config.cc',
