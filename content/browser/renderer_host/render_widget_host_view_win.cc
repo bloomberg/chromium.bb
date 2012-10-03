@@ -311,6 +311,7 @@ WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
   MapWindowPoints(hwnd, HWND_DESKTOP, &screen_point, 1);
 
   WebKit::WebGestureEvent gesture_event;
+  gesture_event.timeStampSeconds = gesture.time_stamp().InSecondsF();
   gesture_event.type = ConvertToWebInputEvent(gesture.type());
   gesture_event.x = client_point.x;
   gesture_event.y = client_point.y;
@@ -2866,22 +2867,22 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
     // Send the event to the renderer before changing mouse capture, so that
     // the capturelost event arrives after mouseup.
     render_widget_host_->ForwardMouseEvent(event);
-  }
 
-  switch (event.type) {
-    case WebInputEvent::MouseMove:
-      TrackMouseLeave(true);
-      break;
-    case WebInputEvent::MouseLeave:
-      TrackMouseLeave(false);
-      break;
-    case WebInputEvent::MouseDown:
-      SetCapture();
-      break;
-    case WebInputEvent::MouseUp:
-      if (GetCapture() == m_hWnd)
-        ReleaseCapture();
-      break;
+    switch (event.type) {
+      case WebInputEvent::MouseMove:
+        TrackMouseLeave(true);
+        break;
+      case WebInputEvent::MouseLeave:
+        TrackMouseLeave(false);
+        break;
+      case WebInputEvent::MouseDown:
+        SetCapture();
+        break;
+      case WebInputEvent::MouseUp:
+        if (GetCapture() == m_hWnd)
+          ReleaseCapture();
+        break;
+    }
   }
 
   if (IsActivatable() && event.type == WebInputEvent::MouseDown) {
