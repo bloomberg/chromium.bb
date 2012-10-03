@@ -11,6 +11,10 @@
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
 #endif
@@ -171,6 +175,9 @@ class RenderViewHostTestHarness : public testing::Test {
   // web_contents() and SetContents() are virtual and may be
   // overridden by subclasses.
   scoped_ptr<WebContents> contents_;
+#if defined(OS_WIN)
+  scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
+#endif
 #if defined(USE_AURA)
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif

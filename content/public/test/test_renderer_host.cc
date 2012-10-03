@@ -127,6 +127,9 @@ void RenderViewHostTestHarness::Reload() {
 }
 
 void RenderViewHostTestHarness::SetUp() {
+#if defined(OS_WIN)
+  ole_initializer_.reset(new ui::ScopedOleInitializer());
+#endif
 #if defined(USE_AURA)
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
   aura_test_helper_->SetUp();
@@ -150,6 +153,10 @@ void RenderViewHostTestHarness::TearDown() {
   // Release the browser context on the UI thread.
   message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
   message_loop_.RunAllPending();
+
+#if defined(OS_WIN)
+  ole_initializer_.reset();
+#endif
 }
 
 void RenderViewHostTestHarness::SetRenderProcessHostFactory(
