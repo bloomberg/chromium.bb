@@ -8,6 +8,7 @@
 
 #include "CCAppendQuadsData.h"
 #include "CCQuadSink.h"
+#include "CCMathUtil.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCRenderPassSink.h"
 
@@ -146,19 +147,19 @@ void CCDelegatedRendererLayerImpl::appendRenderPassQuads(CCQuadSink& quadSink, C
         if (quad->sharedQuadState() != currentSharedQuadState) {
             currentSharedQuadState = quad->sharedQuadState();
             copiedSharedQuadState = quadSink.useSharedQuadState(currentSharedQuadState->copy());
+            bool targetIsFromDelegatedRendererLayer = appendQuadsData.renderPassId.layerId == id();
+            if (!targetIsFromDelegatedRendererLayer) {
+              // Should be the root render pass.
+              ASSERT(delegatedRenderPass == m_renderPassesInDrawOrder.last());
+              // This layer must be drawing to a renderTarget other than itself.
+              ASSERT(renderTarget() != this);
+
+              copiedSharedQuadState->clippedRectInTarget = CCMathUtil::mapClippedRect(drawTransform(), copiedSharedQuadState->clippedRectInTarget);
+              copiedSharedQuadState->quadTransform = copiedSharedQuadState->quadTransform * drawTransform();
+              copiedSharedQuadState->opacity *= drawOpacity();
+            }
         }
         ASSERT(copiedSharedQuadState);
-
-        bool targetIsFromDelegatedRendererLayer = appendQuadsData.renderPassId.layerId == id();
-        if (!targetIsFromDelegatedRendererLayer) {
-            // Should be the root render pass.
-            ASSERT(delegatedRenderPass == m_renderPassesInDrawOrder.last());
-            // This layer must be drawing to a renderTarget other than itself.
-            ASSERT(renderTarget() != this);
-
-            copiedSharedQuadState->quadTransform = copiedSharedQuadState->quadTransform * drawTransform();
-            copiedSharedQuadState->opacity *= drawOpacity();
-        }
 
         scoped_ptr<CCDrawQuad> copyQuad;
         if (quad->material() != CCDrawQuad::RenderPass)
