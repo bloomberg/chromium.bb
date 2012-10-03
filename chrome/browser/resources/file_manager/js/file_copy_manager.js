@@ -198,6 +198,17 @@ FileCopyManager.Error.FILESYSTEM_ERROR = 3;
 // FileCopyManager methods.
 
 /**
+ * Called before a new method is run in the manager. Prepares the manager's
+ * state for running a new method.
+ */
+FileCopyManager.prototype.willRunNewMethod = function() {
+  // Cancel any pending close actions so the file copy manager doesn't go away.
+  if (this.unloadTimeout_)
+    clearTimeout(this.unloadTimeout_);
+  this.unloadTimeout_ = null;
+};
+
+/**
  * @return {Object} Status object.
  */
 FileCopyManager.prototype.getStatus = function() {
@@ -277,7 +288,8 @@ FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
   if (this.copyTasks_.length === 0 && this.deleteTasks_.length === 0) {
     if (this.unloadTimeout_ === null)
       this.unloadTimeout_ = setTimeout(close, 5000);
-  } else {
+  } else if (this.unloadTimeout_) {
+    this.log_('Unload timeout is set, but all tasks have not finished yet.');
     this.unloadTimeout_ = null;
   }
 };

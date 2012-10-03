@@ -123,6 +123,7 @@ FileCopyManagerWrapper.decorateAsyncMethod = function(method) {
   FileCopyManagerWrapper.prototype[method] = function() {
     var args = Array.prototype.slice.call(arguments);
     this.getCopyManagerAsync_(function(cm) {
+      cm.willRunNewMethod();
       cm[method].apply(cm, args);
     });
   };
