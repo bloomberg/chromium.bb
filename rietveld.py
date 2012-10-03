@@ -136,11 +136,24 @@ class Rietveld(object):
                 filename, 'Deleted file shouldn\'t have property change.')
           out.append(patch.FilePatchDelete(filename, state['is_binary']))
         else:
-          out.append(patch.FilePatchBinary(
+          content = self.get_file_content(issue, patchset, state['id'])
+          if not content:
+            # As a precaution due to a bug in upload.py for git checkout, refuse
+            # empty files. If it's empty, it's not a binary file.
+            raise patch.UnsupportedPatchFormat(
+                filename,
+                'Binary file is empty. Maybe the file wasn\'t uploaded in the '
+                'first place?')
+          raise patch.UnsupportedPatchFormat(
               filename,
-              self.get_file_content(issue, patchset, state['id']),
-              svn_props,
-              is_new=(status[0] == 'A')))
+              'Binary file support is temporarilly disabled due to a bug. '
+              'Please commit blindly the binary files first then commit the '
+              'source change as a separate CL. Sorry for the annoyance.')
+          #out.append(patch.FilePatchBinary(
+          #    filename,
+          #    content,
+          #    svn_props,
+          #    is_new=(status[0] == 'A')))
         continue
 
       try:
