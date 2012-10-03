@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/session_state_animator.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -43,13 +42,47 @@ class ASH_EXPORT PowerButtonControllerDelegate {
 class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
                                          public ShellObserver {
  public:
+  // Animations that can be applied to groups of containers.
+  // Exposed here for TestApi::ContainersAreAnimated().
+  enum AnimationType {
+    ANIMATION_SLOW_CLOSE = 0,
+    ANIMATION_UNDO_SLOW_CLOSE,
+    ANIMATION_FAST_CLOSE,
+    ANIMATION_FADE_IN,
+    ANIMATION_HIDE,
+    ANIMATION_RESTORE,
+  };
+
+  // Specific containers or groups of containers that can be animated.
+  // Exposed here for TestApi::ContainersAreAnimated().
+  enum Container {
+    DESKTOP_BACKGROUND = 1 << 0,
+
+    LAUNCHER = 1 << 1,
+
+    // All user session related containers including system background but
+    // not including desktop background (wallpaper) and launcher.
+    NON_LOCK_SCREEN_CONTAINERS = 1 << 2,
+
+    // Desktop wallpaper is moved to this layer when screen is locked.
+    // This layer is excluded from lock animation so that wallpaper stays as is,
+    // user session windows are hidden and lock UI is shown on top of it.
+    // This layer is included in shutdown animation.
+    LOCK_SCREEN_BACKGROUND = 1 << 3,
+
+    // Lock screen and lock screen modal containers.
+    LOCK_SCREEN_CONTAINERS = 1 << 4,
+
+    // Multiple system layers belong here like status, menu, tooltip
+    // and overlay layers.
+    LOCK_SCREEN_RELATED_CONTAINERS = 1 << 5,
+  };
 
   // Helper class used by tests to access internal state.
   class ASH_EXPORT TestApi {
    public:
-    explicit TestApi(PowerButtonController* controller);
-
-    virtual ~TestApi();
+    explicit TestApi(PowerButtonController* controller)
+        : controller_(controller) {}
 
     bool lock_timer_is_running() const {
       return controller_->lock_timer_.IsRunning();
@@ -67,7 +100,7 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
       return controller_->real_shutdown_timer_.IsRunning();
     }
     bool hide_black_layer_timer_is_running() const {
-      return animator_api_->hide_black_layer_timer_is_running();
+      return controller_->hide_black_layer_timer_.IsRunning();
     }
 
     void trigger_lock_timeout() {
@@ -90,36 +123,35 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
       controller_->OnRealShutdownTimeout();
       controller_->real_shutdown_timer_.Stop();
     }
-    void TriggerHideBlackLayerTimeout() {
-      animator_api_->TriggerHideBlackLayerTimeout();
+    void trigger_hide_black_layer_timeout() {
+      controller_->HideBlackLayer();
+      controller_->hide_black_layer_timer_.Stop();
     }
 
     // Returns true if containers of a given |container_mask|
     // were last animated with |type| (probably; the analysis is fairly ad-hoc).
     // |container_mask| is a bitfield of a Container.
-    bool ContainersAreAnimated(int container_mask,
-        internal::SessionStateAnimator::AnimationType type) const {
-      return animator_api_->ContainersAreAnimated(container_mask, type);
-    }
+    bool ContainersAreAnimated(int container_mask, AnimationType type) const;
 
     // Returns true if |black_layer_| is non-NULL and visible.
-    bool BlackLayerIsVisible() {
-      return animator_api_->BlackLayerIsVisible();
-    }
+    bool BlackLayerIsVisible() const;
 
     // Returns |black_layer_|'s bounds, or an empty rect if the layer is
     // NULL.
-    gfx::Rect GetBlackLayerBounds() const {
-      return animator_api_->GetBlackLayerBounds();
-    }
+    gfx::Rect GetBlackLayerBounds() const;
 
    private:
     PowerButtonController* controller_;  // not owned
 
-    scoped_ptr<internal::SessionStateAnimator::TestApi> animator_api_;
-
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
+
+  // Helper method that returns a bitfield mask of all containers.
+  static int GetAllContainersMask();
+
+  // Helper method that returns a bitfield mask including LOCK_SCREEN_WALLPAPER,
+  // LOCK_SCREEN_CONTAINERS, and LOCK_SCREEN_RELATED_CONTAINERS.
+  static int GetAllLockScreenContainersMask();
 
   PowerButtonController();
   virtual ~PowerButtonController();
@@ -145,6 +177,9 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
   // Displays the shutdown animation and requests shutdown when it's done.
   void RequestShutdown();
 
+  // aura::RootWindowObserver overrides:
+  virtual void OnRootWindowResized(const aura::RootWindow* root,
+                                   const gfx::Size& old_size) OVERRIDE;
   virtual void OnRootWindowHostCloseRequested(
                                    const aura::RootWindow* root) OVERRIDE;
 
@@ -178,6 +213,11 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
   // Displays the shutdown animation and starts |real_shutdown_timer_|.
   void StartShutdownAnimationAndRequestShutdown();
 
+  // Shows or hides |black_layer_|.  The show method creates and
+  // initializes the layer if it doesn't already exist.
+  void ShowBlackLayer();
+  void HideBlackLayer();
+
   scoped_ptr<PowerButtonControllerDelegate> delegate_;
 
   // The current login status.
@@ -199,6 +239,13 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
   // Was a command-line switch set telling us that we're running on hardware
   // that misreports power button releases?
   bool has_legacy_power_button_;
+
+  // Layer that's stacked under all of the root window's children to provide a
+  // black background when we're scaling all of the other windows down.
+  // TODO(derat): Remove this in favor of having the compositor only clear the
+  // viewport when there are regions not covered by a layer:
+  // http://crbug.com/113445
+  scoped_ptr<ui::Layer> black_layer_;
 
   // Started when the user first presses the power button while in a
   // logged-in-as-a-non-guest-user, unlocked state.  When it fires, we lock the
@@ -223,7 +270,10 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
   // etc. are shut down.
   base::OneShotTimer<PowerButtonController> real_shutdown_timer_;
 
-  scoped_ptr<internal::SessionStateAnimator> animator_;
+  // Started when we abort the pre-lock state.  When it fires, we hide
+  // |black_layer_|, as the desktop background is now covering the whole
+  // screen.
+  base::OneShotTimer<PowerButtonController> hide_black_layer_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonController);
 };
