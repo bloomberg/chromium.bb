@@ -2224,6 +2224,14 @@ unsigned int WebTouchState::GetMappedTouch(unsigned int os_touch_id) {
 LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
                                               LPARAM lparam, BOOL& handled) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnTouchEvent");
+  // Finish the ongoing composition whenever a touch event happens.
+  // It matches IE's behavior.
+  if (base::win::IsTsfAwareRequired()) {
+    ui::TsfBridge::GetInstance()->CancelComposition();
+  } else {
+    ime_input_.CleanupComposition(m_hWnd);
+  }
+
   // TODO(jschuh): Add support for an arbitrary number of touchpoints.
   size_t total = std::min(static_cast<int>(LOWORD(wparam)),
       static_cast<int>(WebKit::WebTouchEvent::touchesLengthCap));
