@@ -146,7 +146,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   host_contents_->SetDelegate(this);
   chrome::SetViewType(host_contents_.get(), host_type);
 
-  prefs_tab_helper_.reset(new PrefsTabHelper(host_contents()));
+  PrefsTabHelper::CreateForWebContents(host_contents());
 
   render_view_host_ = host_contents_->GetRenderViewHost();
 

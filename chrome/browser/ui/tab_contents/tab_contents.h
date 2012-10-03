@@ -31,7 +31,6 @@ class OffscreenTabContentsCreator;
 class PanelHost;
 class PasswordManager;
 class PasswordManagerDelegate;
-class PrefsTabHelper;
 class Profile;
 class ShellWindow;
 class TabContentsTestHarness;
@@ -149,7 +148,6 @@ class TabContents : public content::WebContentsObserver {
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
 
   PasswordManager* password_manager() { return password_manager_.get(); }
-  PrefsTabHelper* prefs_tab_helper() { return prefs_tab_helper_.get(); }
 
   browser_sync::SyncedTabDelegate* synced_tab_delegate() {
     return synced_tab_delegate_.get();
@@ -188,8 +186,6 @@ class TabContents : public content::WebContentsObserver {
   // per documentation in password_manager.h.
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
-
-  scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
 
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;
 

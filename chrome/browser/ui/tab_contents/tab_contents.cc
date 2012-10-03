@@ -147,7 +147,7 @@ TabContents::TabContents(WebContents* contents)
       new PasswordManager(contents, password_manager_delegate_.get()));
   PepperBrokerObserver::CreateForWebContents(contents);
   PluginObserver::CreateForWebContents(contents);
-  prefs_tab_helper_.reset(new PrefsTabHelper(contents));
+  PrefsTabHelper::CreateForWebContents(contents);
   prerender::PrerenderTabHelper::CreateForWebContents(contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(contents);
   SearchEngineTabHelper::CreateForWebContents(contents);

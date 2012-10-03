@@ -64,14 +64,13 @@ void PanelHost::Init(const GURL& url) {
       panel_->session_id());
 
   FaviconTabHelper::CreateForWebContents(web_contents_.get());
-  prefs_tab_helper_.reset(new PrefsTabHelper(web_contents_.get()));
+  PrefsTabHelper::CreateForWebContents(web_contents_.get());
 
   web_contents_->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
 }
 
 void PanelHost::DestroyWebContents() {
-  prefs_tab_helper_.reset();
   web_contents_.reset();
 }
 

@@ -230,9 +230,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   // The host for our HTML content.
   scoped_ptr<content::WebContents> host_contents_;
 
-  // Helpers that take care of extra functionality for our host contents.
-  scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
-
   // A weak pointer to the current or pending RenderViewHost. We don't access
   // this through the host_contents because we want to deal with the pending
   // host, so we can send messages to it before it finishes loading.

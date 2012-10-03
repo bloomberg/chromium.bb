@@ -110,7 +110,6 @@ class PanelHost : public content::WebContentsDelegate,
   // The following factory is used to close the panel via the message loop.
   base::WeakPtrFactory<PanelHost> weak_factory_;
 
-  scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
   scoped_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelHost);
