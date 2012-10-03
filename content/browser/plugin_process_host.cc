@@ -226,6 +226,9 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
     switches::kDisableLogging,
     switches::kEnableDCHECK,
     switches::kEnableLogging,
+#if defined(OS_MACOSX)
+    switches::kEnableSandboxLogging,
+#endif
     switches::kEnableStatsTable,
     switches::kFullMemoryCrashReport,
     switches::kLoggingLevel,

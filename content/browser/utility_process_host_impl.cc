@@ -145,6 +145,10 @@ bool UtilityProcessHostImpl::StartProcess() {
     cmd_line->AppendSwitch(switches::kChromeFrame);
   if (no_sandbox_ || browser_command_line.HasSwitch(switches::kNoSandbox))
     cmd_line->AppendSwitch(switches::kNoSandbox);
+#if defined(OS_MACOSX)
+  if (browser_command_line.HasSwitch(switches::kEnableSandboxLogging))
+    cmd_line->AppendSwitch(switches::kEnableSandboxLogging);
+#endif
   if (browser_command_line.HasSwitch(switches::kDebugPluginLoading))
     cmd_line->AppendSwitch(switches::kDebugPluginLoading);
 

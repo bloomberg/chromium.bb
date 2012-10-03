@@ -236,10 +236,13 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
     // TODO(vtl): Stop passing flash args in the command line, on windows is
     // going to explode.
     static const char* kPluginForwardSwitches[] = {
-      switches::kNoSandbox,
       switches::kDisableSeccompFilterSandbox,
+#if defined(OS_MACOSX)
+      switches::kEnableSandboxLogging,
+#endif
+      switches::kNoSandbox,
       switches::kPpapiFlashArgs,
-      switches::kPpapiStartupDialog
+      switches::kPpapiStartupDialog,
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kPluginForwardSwitches,
                                arraysize(kPluginForwardSwitches));

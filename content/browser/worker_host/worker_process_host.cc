@@ -160,14 +160,17 @@ bool WorkerProcessHost::Init(int render_process_id) {
   static const char* const kSwitchNames[] = {
     switches::kDisableApplicationCache,
     switches::kDisableDatabases,
-    switches::kEnableLogging,
-    switches::kLoggingLevel,
-    switches::kDisableWebSockets,
 #if defined(OS_WIN)
     switches::kDisableDesktopNotifications,
 #endif
     switches::kDisableFileSystem,
     switches::kDisableSeccompFilterSandbox,
+    switches::kDisableWebSockets,
+    switches::kEnableLogging,
+#if defined(OS_MACOSX)
+    switches::kEnableSandboxLogging,
+#endif
+    switches::kLoggingLevel,
   };
   cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(), kSwitchNames,
                              arraysize(kSwitchNames));
