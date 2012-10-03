@@ -987,10 +987,22 @@
 
     <event name="axis">
       <description summary="axis event">
-	Scroll and other axis notifications.  The value parameter
-	is the length of a vector along an axis in a coordinate space
-	identical to those of motion events, representing the relative
-	movement along an axis.
+	Scroll and other axis notifications.
+
+	For scroll events (vertical and horizontal scroll axes), the
+	value parameter is the length of a vector along the specified
+	axis in a coordinate space identical to those of motion events,
+	representing a relative movement along the specified axis.
+
+	For devices that support movements non-parallel to axes multiple
+	axis events will be emitted.
+
+	When applicable, for example for touch pads, the server can
+	choose to emit scroll events where the motion vector is
+	equivalent to a motion event vector.
+
+	When applicable, clients can transform its view relative to the
+	scroll distance.
       </description>
 
       <arg name="time" type="uint"/>
