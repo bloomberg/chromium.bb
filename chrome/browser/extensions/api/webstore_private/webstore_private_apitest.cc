@@ -55,8 +55,10 @@ class WebstoreInstallListener : public WebstoreInstaller::Delegate {
     }
   }
 
-  void OnExtensionInstallFailure(const std::string& id,
-                                 const std::string& error) OVERRIDE {
+  void OnExtensionInstallFailure(
+      const std::string& id,
+      const std::string& error,
+      WebstoreInstaller::FailureReason reason) OVERRIDE {
     received_failure_ = true;
     id_ = id;
     error_ = error;

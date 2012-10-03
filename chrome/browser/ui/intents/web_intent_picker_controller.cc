@@ -39,6 +39,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -472,6 +473,8 @@ void WebIntentPickerController::OnInlineDispositionWebContentsCreated(
 
 void WebIntentPickerController::OnExtensionInstallRequested(
     const std::string& id) {
+  picker_model_->SetPendingExtensionInstallId(id);
+
   scoped_ptr<WebstoreInstaller::Approval> approval(
       WebstoreInstaller::Approval::CreateWithInstallPrompt(profile_));
 
@@ -529,10 +532,25 @@ void WebIntentPickerController::OnChooseAnotherService() {
 void WebIntentPickerController::OnClosing() {
   SetDialogState(kPickerHidden);
   picker_ = NULL;
+  picker_model_->ClearPendingExtensionInstall();
+  CancelDownload();
 #if defined(TOOLKIT_VIEWS)
   if (cancelled_)
     OnUserCancelledPickerDialog();
 #endif
+}
+
+void WebIntentPickerController::OnExtensionDownloadStarted(
+    const std::string& id,
+    content::DownloadItem* item) {
+  download_id_ = item->GetGlobalId();
+  picker_model_->UpdateExtensionDownloadState(item);
+}
+
+void WebIntentPickerController::OnExtensionDownloadProgress(
+    const std::string& id,
+    content::DownloadItem* item) {
+  picker_model_->UpdateExtensionDownloadState(item);
 }
 
 void WebIntentPickerController::OnExtensionInstallSuccess(
@@ -551,7 +569,12 @@ void WebIntentPickerController::OnExtensionInstallSuccess(
 void WebIntentPickerController::DispatchToInstalledExtension(
     const std::string& extension_id) {
   web_intents::RecordCWSExtensionInstalled(uma_bucket_);
-  picker_->OnExtensionInstallSuccess(extension_id);
+
+  download_id_ = content::DownloadId();
+  picker_model_->ClearPendingExtensionInstall();
+  if (picker_)
+    picker_->OnExtensionInstallSuccess(extension_id);
+
   WebIntentsRegistry::IntentServiceList services;
   GetWebIntentsRegistry(profile_)->GetIntentServicesForExtensionFilter(
       picker_model_->action(), picker_model_->type(),
@@ -574,8 +597,16 @@ void WebIntentPickerController::DispatchToInstalledExtension(
 
 void WebIntentPickerController::OnExtensionInstallFailure(
     const std::string& id,
-    const std::string& error) {
-  picker_->OnExtensionInstallFailure(id);
+    const std::string& error,
+    WebstoreInstaller::FailureReason reason) {
+  // If the user cancelled the install then don't show an error message.
+  if (reason == WebstoreInstaller::FAILURE_REASON_CANCELLED)
+    picker_model_->ClearPendingExtensionInstall();
+  else
+    picker_model_->SetPendingExtensionInstallStatusString(UTF8ToUTF16(error));
+
+  if (picker_)
+    picker_->OnExtensionInstallFailure(id);
   AsyncOperationFinished();
 }
 
@@ -1074,4 +1105,20 @@ void WebIntentPickerController::ClosePicker() {
   SetDialogState(kPickerHidden);
   if (picker_)
     picker_->Close();
+}
+
+void WebIntentPickerController::CancelDownload() {
+  if (!download_id_.IsValid())
+    return;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  content::DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(profile);
+  if (!download_manager)
+    return;
+  content::DownloadItem* item =
+      download_manager->GetDownload(download_id_.local());
+  if (item)
+    item->Cancel(true);
+  download_id_ = content::DownloadId();
 }

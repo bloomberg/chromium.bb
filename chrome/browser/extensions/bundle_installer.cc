@@ -327,8 +327,10 @@ void BundleInstaller::OnExtensionInstallSuccess(const std::string& id) {
   ShowInstalledBubbleIfDone();
 }
 
-void BundleInstaller::OnExtensionInstallFailure(const std::string& id,
-                                                const std::string& error) {
+void BundleInstaller::OnExtensionInstallFailure(
+    const std::string& id,
+    const std::string& error,
+    WebstoreInstaller::FailureReason reason) {
   items_[id].state = Item::STATE_FAILED;
 
   ExtensionList::iterator i = std::find_if(

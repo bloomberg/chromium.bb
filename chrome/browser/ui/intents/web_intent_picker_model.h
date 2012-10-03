@@ -13,6 +13,10 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+namespace content {
+class DownloadItem;
+}
+
 class WebIntentPickerModelObserver;
 
 // Model for the WebIntentPicker.
@@ -143,6 +147,37 @@ class WebIntentPickerModel {
   // GURL::EmptyGURL() if none.
   const GURL& inline_disposition_url() const { return inline_disposition_url_; }
 
+  // Sets the ID of the extension currently being installed.
+  void SetPendingExtensionInstallId(const std::string& id);
+
+  // Gets the ID of the extension currently being installed.
+  const std::string& pending_extension_install_id() const {
+    return pending_extension_install_id_;
+  }
+
+  // Updates the pending install download state.
+  void UpdateExtensionDownloadState(content::DownloadItem* item);
+
+  // Sets the download progress of the extension currently being downloaded.
+  void SetPendingExtensionInstallDownloadProgress(int progress);
+
+  // Gets the download progress of the extension currently being downloaded.
+  // Returns -1 if progress is indeterminate, otherwise a value from 0 to 100.
+  int pending_extension_install_download_progress() const {
+    return pending_extension_install_download_progress_;
+  }
+
+  // Sets the status of extension install process.
+  void SetPendingExtensionInstallStatusString(const string16& status);
+
+  // Gets the status of extension install process.
+  const string16& pending_extension_install_status_string() const {
+    return pending_extension_install_status_string_;
+  }
+
+  // Removes any pending extension install state.
+  void ClearPendingExtensionInstall();
+
  private:
   // Delete all elements in |installed_services_| and |suggested_extensions_|.
   // Note that this method does not reset the observer.
@@ -177,6 +212,11 @@ class WebIntentPickerModel {
 
   // The hash context for the default service, if there is one.
   int64 default_service_hash_;
+
+  // Information about the pending extension install.
+  std::string pending_extension_install_id_;
+  int pending_extension_install_download_progress_;
+  string16 pending_extension_install_status_string_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerModel);
 };

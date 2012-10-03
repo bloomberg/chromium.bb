@@ -445,9 +445,13 @@ void CompleteInstallFunction::OnExtensionInstallSuccess(
 }
 
 void CompleteInstallFunction::OnExtensionInstallFailure(
-    const std::string& id, const std::string& error) {
-  if (test_webstore_installer_delegate)
-    test_webstore_installer_delegate->OnExtensionInstallFailure(id, error);
+    const std::string& id,
+    const std::string& error,
+    WebstoreInstaller::FailureReason reason) {
+  if (test_webstore_installer_delegate) {
+    test_webstore_installer_delegate->OnExtensionInstallFailure(
+        id, error, reason);
+  }
 
   error_ = error;
   SendResponse(false);

@@ -112,7 +112,7 @@ TEST_F(WebIntentPickerModelTest, RemoveInstalledServiceAt) {
 }
 
 TEST_F(WebIntentPickerModelTest, Clear) {
-  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(3);
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(testing::AtLeast(3));
 
   model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
   model_.AddInstalledService(kTitle2, kUrl2, kWindowDisposition);
@@ -204,7 +204,7 @@ TEST_F(WebIntentPickerModelTest, SetSuggestedExtensionIconWithId) {
 }
 
 TEST_F(WebIntentPickerModelTest, SetInlineDisposition) {
-  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(3);
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(testing::AtLeast(3));
   EXPECT_CALL(observer_, OnInlineDisposition(kTitle2, testing::_)).Times(1);
 
   EXPECT_FALSE(model_.IsInlineDisposition());

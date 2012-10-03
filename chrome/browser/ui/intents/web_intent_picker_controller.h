@@ -124,9 +124,16 @@ class WebIntentPickerController
   virtual void OnClosing() OVERRIDE;
 
   // extensions::WebstoreInstaller::Delegate implementation.
+  virtual void OnExtensionDownloadStarted(const std::string& id,
+                                          content::DownloadItem* item) OVERRIDE;
+  virtual void OnExtensionDownloadProgress(
+      const std::string& id,
+      content::DownloadItem* item) OVERRIDE;
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
-  virtual void OnExtensionInstallFailure(const std::string& id,
-                                         const std::string& error) OVERRIDE;
+  virtual void OnExtensionInstallFailure(
+      const std::string& id,
+      const std::string& error,
+      extensions::WebstoreInstaller::FailureReason reason) OVERRIDE;
 
  private:
   explicit WebIntentPickerController(content::WebContents* web_contents);
@@ -258,6 +265,9 @@ class WebIntentPickerController
   // loading the picker model and showing the dialog.
   void ShowDialog(bool suppress_defaults);
 
+  // Cancel a pending download if any.
+  void CancelDownload();
+
   WebIntentPickerState dialog_state_;  // Current state of the dialog.
 
   // A weak pointer to the web contents that the picker is displayed on.
@@ -344,6 +354,9 @@ class WebIntentPickerController
   // multiple UMA calls. Should be recalculated each time
   // |intents_dispatcher_| is set.
   web_intents::UMABucket uma_bucket_;
+
+  // The ID of a pending extension download.
+  content::DownloadId download_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerController);
 };

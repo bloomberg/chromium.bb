@@ -44,11 +44,21 @@ class WebstoreInstaller :public content::NotificationObserver,
     FLAG_INLINE_INSTALL = 1 << 0
   };
 
+  enum FailureReason {
+    FAILURE_REASON_CANCELLED,
+    FAILURE_REASON_OTHER
+  };
+
   class Delegate {
    public:
+    virtual void OnExtensionDownloadStarted(const std::string& id,
+                                            content::DownloadItem* item);
+    virtual void OnExtensionDownloadProgress(const std::string& id,
+                                             content::DownloadItem* item);
     virtual void OnExtensionInstallSuccess(const std::string& id) = 0;
     virtual void OnExtensionInstallFailure(const std::string& id,
-                                           const std::string& error) = 0;
+                                           const std::string& error,
+                                           FailureReason reason) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -145,7 +155,7 @@ class WebstoreInstaller :public content::NotificationObserver,
 
   // Reports an install |error| to the delegate for the given extension if this
   // managed its installation. This also removes the associated PendingInstall.
-  void ReportFailure(const std::string& error);
+  void ReportFailure(const std::string& error, FailureReason reason);
 
   // Reports a successful install to the delegate for the given extension if
   // this managed its installation. This also removes the associated

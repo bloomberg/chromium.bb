@@ -153,8 +153,10 @@ class CompleteInstallFunction
 
   // WebstoreInstaller::Delegate:
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
-  virtual void OnExtensionInstallFailure(const std::string& id,
-                                         const std::string& error) OVERRIDE;
+  virtual void OnExtensionInstallFailure(
+      const std::string& id,
+      const std::string& error,
+      WebstoreInstaller::FailureReason reason) OVERRIDE;
  protected:
   virtual ~CompleteInstallFunction() {}
 

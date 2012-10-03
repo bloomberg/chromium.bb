@@ -423,7 +423,9 @@ void WebstoreInlineInstaller::OnExtensionInstallSuccess(const std::string& id) {
 }
 
 void WebstoreInlineInstaller::OnExtensionInstallFailure(
-    const std::string& id, const std::string& error) {
+    const std::string& id,
+    const std::string& error,
+    WebstoreInstaller::FailureReason cancelled) {
   CHECK_EQ(id_, id);
   CompleteInstall(error);
 }
