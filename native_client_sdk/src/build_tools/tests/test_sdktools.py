@@ -7,9 +7,11 @@ import os
 import re
 import subprocess
 import sys
+import tarfile
 import tempfile
 import test_server
 import unittest
+import zipfile
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
@@ -130,6 +132,33 @@ class TestSdkTools(SdkToolsTestCase):
     self.SetupWithBaseDirPrefix('sdk tools')
     self._WriteManifest()
     self._RunAndExtractRevision()
+
+
+class TestBuildUpdater(SdkToolsTestCase):
+  def setUp(self):
+    self.SetupDefault()
+
+  def testUpdaterPathsAreSane(self):
+    """Test that the paths to files in nacl_sdk.zip and sdktools.tgz are
+    relative to the output directory."""
+    nacl_sdk_zip_path = os.path.join(self.basedir, 'nacl_sdk.zip')
+    zip_stream = zipfile.ZipFile(nacl_sdk_zip_path, 'r')
+    try:
+      self.assertTrue(all(name.startswith('nacl_sdk')
+                          for name in zip_stream.namelist()))
+    finally:
+      zip_stream.close()
+
+    # sdktools.tgz has no built-in directories to look for. Instead, just look
+    # for some files that must be there.
+    sdktools_tgz_path = os.path.join(self.basedir, 'sdk_tools.tgz')
+    tar_stream = tarfile.open(sdktools_tgz_path, 'r:gz')
+    try:
+      names = [m.name for m in tar_stream.getmembers()]
+      self.assertTrue('LICENSE' in names)
+      self.assertTrue('sdk_update.py' in names)
+    finally:
+      tar_stream.close()
 
 
 class TestAutoUpdateSdkTools(SdkToolsTestCase):

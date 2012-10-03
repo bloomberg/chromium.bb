@@ -129,10 +129,12 @@ def BuildUpdater(out_dir, revision_number=None):
   buildbot_common.RemoveDir(os.path.join(out_dir, 'nacl_sdk'))
 
   updater_files = MakeUpdaterFilesAbsolute(out_dir)
-  out_files = [out_file for _, out_file in updater_files]
 
   CopyFiles(updater_files)
   UpdateRevisionNumber(out_dir, revision_number)
+
+  out_files = [os.path.relpath(out_file, out_dir)
+               for _, out_file in updater_files]
 
   # Make zip
   buildbot_common.RemoveFile(os.path.join(out_dir, 'nacl_sdk.zip'))
@@ -141,7 +143,7 @@ def BuildUpdater(out_dir, revision_number=None):
                       cwd=out_dir)
 
   # Tar of all files under nacl_sdk/sdk_tools
-  sdktoolsdir = os.path.join(out_dir, 'nacl_sdk/sdk_tools')
+  sdktoolsdir = 'nacl_sdk/sdk_tools'
   tarname = os.path.join(out_dir, 'sdk_tools.tgz')
   files_to_tar = [os.path.relpath(out_file, sdktoolsdir)
       for out_file in out_files if out_file.startswith(sdktoolsdir)]
