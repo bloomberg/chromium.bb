@@ -96,16 +96,7 @@ void __pnacl_start(uint32_t *info) {
    */
   __do_eh_ctor();
 
-  /*
-   * TODO(mseaborn): Change the PPAPI shims to define
-   * _pnacl_wrapper_start() on all architectures so that we can remove
-   * the conditional here.
-   */
-#if USE_PNACL_SHIMS
   _pnacl_wrapper_start(info);
-#else
-  _start(info);
-#endif
 }
 
 #endif
