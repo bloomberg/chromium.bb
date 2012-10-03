@@ -17,6 +17,7 @@ import sys
 
 import continuous_archive
 import java_tests
+import test_paths
 import util
 
 
@@ -24,12 +25,9 @@ def main():
   parser = optparse.OptionParser()
   parser.add_option(
       '', '--filter', type='string', default=None,
-      help='Filter for specifying what tests to run. E.g., MyClass#testMethod.')
+      help='Filter for specifying what tests to run. E.g., ' +
+           'ElementFindingTest#testShouldReturnTitleOfPageIfSet.')
   options, args = parser.parse_args()
-
-  if 'WEBDRIVER_CHECKOUT' not in os.environ:
-    raise RuntimeError('WEBDRIVER_CHECKOUT must be defined in the environment')
-  webdriver_checkout = os.environ['WEBDRIVER_CHECKOUT']
 
   print '@@@BUILD_STEP java_continuous_tests@@@'
   # We use the latest revision in the continuous archive instead of the
@@ -47,18 +45,16 @@ def main():
       revision, temp_dir)
 
   PrintTestResults(java_tests.Run(
-      test_target=java_tests.CHROME_TESTS,
+      src_dir=test_paths.SRC_PATH,
       test_filter=options.filter,
-      webdriver_dir=webdriver_checkout,
       chromedriver_path=chromedriver_path,
       chrome_path=chrome_path))
 
   print '@@@BUILD_STEP java_stable_tests@@@'
   print '@@@STEP_TEXT@chromedriver r%s@@@' % revision
   PrintTestResults(java_tests.Run(
-      test_target=java_tests.CHROME_TESTS,
+      src_dir=test_paths.SRC_PATH,
       test_filter=options.filter,
-      webdriver_dir=webdriver_checkout,
       chromedriver_path=chromedriver_path,
       chrome_path=None))
 
