@@ -13,6 +13,7 @@
 #import "chrome/browser/certificate_viewer.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -112,16 +113,6 @@ NSColor* IdentityVerifiedTextColor() {
 }
 
 }  // namespace
-
-// A simple container to hold all the contents of the website settings bubble.
-// It uses a flipped coordinate system to make text layout easier.
-@interface WebsiteSettingsContentView : NSView
-@end
-@implementation WebsiteSettingsContentView
-- (BOOL)isFlipped {
-  return YES;
-}
-@end
 
 @interface WebsiteSettingsTabSegmentedCell : NSSegmentedCell {
  @private
@@ -318,7 +309,7 @@ NSColor* IdentityVerifiedTextColor() {
     // Create the container view that uses flipped coordinates.
     NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, 300);
     contentView_.reset(
-        [[WebsiteSettingsContentView alloc] initWithFrame:contentFrame]);
+        [[FlippedView alloc] initWithFrame:contentFrame]);
 
     // Replace the window's content.
     [[[self window] contentView] setSubviews:
@@ -472,15 +463,15 @@ NSColor* IdentityVerifiedTextColor() {
   scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
   [tabView_ insertTabViewItem:item.get()
                       atIndex:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
-  scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
+  scoped_nsobject<NSView> contentView([[FlippedView alloc]
       initWithFrame:[tabView_ contentRect]]);
   [item setView:contentView.get()];
 
   // Initialize the two containers that hold the controls. The initial frames
   // are arbitrary, and will be adjusted after the controls are laid out.
-  cookiesView_ = [[[WebsiteSettingsContentView alloc]
+  cookiesView_ = [[[FlippedView alloc]
       initWithFrame:[tabView_ contentRect]] autorelease];
-  permissionsView_ = [[[WebsiteSettingsContentView alloc]
+  permissionsView_ = [[[FlippedView alloc]
       initWithFrame:[tabView_ contentRect]] autorelease];
 
   [contentView addSubview:cookiesView_];
@@ -528,7 +519,7 @@ NSColor* IdentityVerifiedTextColor() {
 // Returns a weak reference to the tab view item's view.
 - (NSView*)addConnectionTabToTabView:(NSTabView*)tabView {
   scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
-  scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
+  scoped_nsobject<NSView> contentView([[FlippedView alloc]
       initWithFrame:[tabView_ contentRect]]);
 
   // Place all the text and images at the same position. The positions will be

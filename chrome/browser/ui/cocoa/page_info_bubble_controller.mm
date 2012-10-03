@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -59,18 +60,6 @@ using content::WebContents;
                          atOffset:(CGFloat)offset;
 - (NSPoint)anchorPointForWindowWithHeight:(CGFloat)bubbleHeight
                              parentWindow:(NSWindow*)parent;
-@end
-
-// This simple NSView subclass is used as the single subview of the page info
-// bubble's window's contentView. Drawing is flipped so that layout of the
-// sections is easier. Apple recommends flipping the coordinate origin when
-// doing a lot of text layout because it's more natural.
-@interface PageInfoContentView : NSView
-@end
-@implementation PageInfoContentView
-- (BOOL)isFlipped {
-  return YES;
-}
 @end
 
 namespace {
@@ -248,7 +237,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   BOOL showHelpButton = !(sectionCount == 1 && model_->GetSectionInfo(0).type ==
       PageInfoModel::SECTION_INFO_INTERNAL_PAGE);
 
-  // The subviews will be attached to the PageInfoContentView, which has a
+  // The subviews will be attached to the FlippedView, which has a
   // flipped origin. This allows the code to build top-to-bottom.
   for (int i = 0; i < sectionCount; ++i) {
     PageInfoModel::SectionInfo info = model_->GetSectionInfo(i);
@@ -305,8 +294,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
   // Create the dummy view that uses flipped coordinates.
   NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, offset);
-  scoped_nsobject<PageInfoContentView> contentView(
-      [[PageInfoContentView alloc] initWithFrame:contentFrame]);
+  scoped_nsobject<FlippedView> contentView(
+      [[FlippedView alloc] initWithFrame:contentFrame]);
   [contentView setSubviews:subviews];
   [contentView setAutoresizingMask:NSViewMinYMargin];
 
