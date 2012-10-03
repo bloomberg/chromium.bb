@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
@@ -48,12 +48,33 @@ class CompositorOutputSurface
       const WebKit::WebCompositorFrame&) OVERRIDE;
 
  private:
+  class CompositorOutputSurfaceProxy :
+      public base::RefCountedThreadSafe<CompositorOutputSurfaceProxy> {
+   public:
+    explicit CompositorOutputSurfaceProxy(
+        CompositorOutputSurface* output_surface)
+        : output_surface_(output_surface) {}
+    void ClearOutputSurface() { output_surface_ = NULL; }
+    void OnMessageReceived(const IPC::Message& message) {
+      if (output_surface_)
+        output_surface_->OnMessageReceived(message);
+    }
+
+   private:
+    friend class base::RefCountedThreadSafe<CompositorOutputSurfaceProxy>;
+    ~CompositorOutputSurfaceProxy() {}
+    CompositorOutputSurface* output_surface_;
+
+    DISALLOW_COPY_AND_ASSIGN(CompositorOutputSurfaceProxy);
+  };
+
   void OnMessageReceived(const IPC::Message& message);
   void OnUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
 
   scoped_refptr<IPC::ForwardingMessageFilter> output_surface_filter_;
   WebKit::WebCompositorOutputSurfaceClient* client_;
+  scoped_refptr<CompositorOutputSurfaceProxy> output_surface_proxy_;
   int routing_id_;
   Capabilities capabilities_;
   scoped_ptr<WebKit::WebGraphicsContext3D> context3D_;
