@@ -50,6 +50,7 @@
 #include "common/dwarf_cu_to_module.h"
 #include "common/dwarf_line_to_module.h"
 #include "common/mac/file_id.h"
+#include "common/mac/arch_utilities.h"
 #include "common/mac/macho_reader.h"
 #include "common/module.h"
 #include "common/stabs_reader.h"
@@ -191,7 +192,8 @@ bool DumpSymbols::SetArchitecture(cpu_type_t cpu_type,
 
 bool DumpSymbols::SetArchitecture(const std::string &arch_name) {
   bool arch_set = false;
-  const NXArchInfo *arch_info = NXGetArchInfoFromName(arch_name.c_str());
+  const NXArchInfo *arch_info =
+      google_breakpad::BreakpadGetArchInfoFromName(arch_name.c_str());
   if (arch_info) {
     arch_set = SetArchitecture(arch_info->cputype, arch_info->cpusubtype);
   }
@@ -312,9 +314,8 @@ bool DumpSymbols::ReadCFI(google_breakpad::Module *module,
       register_names = DwarfCFIToModule::RegisterNames::ARM();
       break;
     default: {
-      const NXArchInfo *arch =
-          NXGetArchInfoFromCpuType(macho_reader.cpu_type(),
-                                   macho_reader.cpu_subtype());
+      const NXArchInfo *arch = google_breakpad::BreakpadGetArchInfoFromCpuType(
+          macho_reader.cpu_type(), macho_reader.cpu_subtype());
       fprintf(stderr, "%s: cannot convert DWARF call frame information for ",
               selected_object_name_.c_str());
       if (arch)
@@ -446,9 +447,9 @@ bool DumpSymbols::WriteSymbolFile(std::ostream &stream, bool cfi) {
 
   // Find the name of the selected file's architecture, to appear in
   // the MODULE record and in error messages.
-  const NXArchInfo *selected_arch_info
-      = NXGetArchInfoFromCpuType(selected_object_file_->cputype,
-                                 selected_object_file_->cpusubtype);
+  const NXArchInfo *selected_arch_info =
+      google_breakpad::BreakpadGetArchInfoFromCpuType(
+          selected_object_file_->cputype, selected_object_file_->cpusubtype);
 
   const char *selected_arch_name = selected_arch_info->name;
   if (strcmp(selected_arch_name, "i386") == 0)
