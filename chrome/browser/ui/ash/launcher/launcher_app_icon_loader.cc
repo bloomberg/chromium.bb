@@ -55,7 +55,10 @@ void LauncherAppIconLoader::FetchImage(const std::string& id) {
   // |map_| takes ownership of |image|.
   map_[image] = id;
 
-  host_->SetAppImage(id, image->image_skia());
+  // Triggers image loading now instead of depending on paint message. This
+  // makes the temp blank image be shown for shorter time and improves user
+  // experience. See http://crbug.com/146114.
+  image->image_skia().EnsureRepsForSupportedScaleFactors();
 }
 
 void LauncherAppIconLoader::ClearImage(const std::string& id) {
