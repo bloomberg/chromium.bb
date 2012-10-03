@@ -11,6 +11,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class BookmarkNode;
+class Browser;
 
 namespace content {
 class PageNavigator;
@@ -36,6 +37,10 @@ void OpenAll(gfx::NativeWindow parent,
 // Asks the user before deleting a non-empty bookmark folder.
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
                                gfx::NativeWindow window);
+
+
+// Shows the bookmark all tabs dialog.
+void ShowBookmarkAllTabsDialog(Browser* browser);
 
 }  // namespace chrome
 

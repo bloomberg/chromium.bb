@@ -105,9 +105,6 @@ class BookmarkEditor {
                    Profile* profile,
                    const EditDetails& details,
                    Configuration configuration);
-
-  // Shows the bookmark all tabs dialog.
-  static void ShowBookmarkAllTabsDialog(Browser* browser);
 };
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EDITOR_H_

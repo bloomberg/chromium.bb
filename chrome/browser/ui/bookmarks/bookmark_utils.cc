@@ -7,7 +7,11 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
@@ -123,6 +127,20 @@ bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
       l10n_util::GetStringFUTF16Int(IDS_BOOKMARK_EDITOR_CONFIRM_DELETE,
                                     ChildURLCountTotal(node)),
       chrome::MESSAGE_BOX_TYPE_QUESTION) == chrome::MESSAGE_BOX_RESULT_YES;
+}
+
+void ShowBookmarkAllTabsDialog(Browser* browser) {
+  Profile* profile = browser->profile();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+  DCHECK(model && model->IsLoaded());
+
+  BookmarkEditor::EditDetails details =
+      BookmarkEditor::EditDetails::AddFolder(model->GetParentForNewNodes(), -1);
+  bookmark_utils::GetURLsForOpenTabs(browser, &(details.urls));
+  DCHECK(!details.urls.empty());
+
+  BookmarkEditor::Show(browser->window()->GetNativeWindow(),
+                       profile, details, BookmarkEditor::SHOW_TREE);
 }
 
 }  // namespace chrome

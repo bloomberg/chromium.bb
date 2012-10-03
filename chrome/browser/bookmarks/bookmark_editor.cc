@@ -3,11 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/bookmarks/bookmark_editor.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
+
 #include "grit/generated_resources.h"
 
 BookmarkEditor::EditDetails::EditDetails(Type node_type)
@@ -86,18 +82,3 @@ BookmarkEditor::EditDetails BookmarkEditor::EditDetails::AddFolder(
 
 BookmarkEditor::EditDetails::~EditDetails() {
 }
-
-void BookmarkEditor::ShowBookmarkAllTabsDialog(Browser* browser) {
-  Profile* profile = browser->profile();
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
-  DCHECK(model && model->IsLoaded());
-
-  BookmarkEditor::EditDetails details =
-      BookmarkEditor::EditDetails::AddFolder(model->GetParentForNewNodes(), -1);
-  bookmark_utils::GetURLsForOpenTabs(browser, &(details.urls));
-  DCHECK(!details.urls.empty());
-
-  BookmarkEditor::Show(browser->window()->GetNativeWindow(),
-                       profile, details, BookmarkEditor::SHOW_TREE);
-}
-
