@@ -109,7 +109,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       case DOWNLOAD_UPDATES: {
         // TODO(akalin): We may want to propagate this switch up
         // eventually.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
         const bool kCreateMobileBookmarksFolder = true;
 #else
         const bool kCreateMobileBookmarksFolder = false;
