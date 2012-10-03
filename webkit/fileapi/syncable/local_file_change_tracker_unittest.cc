@@ -52,6 +52,12 @@ class LocalFileChangeTrackerTest : public testing::Test {
         FilePath());
   }
 
+  virtual void TearDown() OVERRIDE {
+    change_tracker_.reset();
+    sync_status_.reset();
+    message_loop_.RunAllPending();
+  }
+
  protected:
   LocalFileSyncStatus* sync_status() const {
     return sync_status_.get();
