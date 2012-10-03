@@ -225,8 +225,8 @@ class SyncInvalidationListenerTest : public testing::Test {
     return fake_tracker_.GetMaxVersion(id);
   }
 
-  std::string GetInvalidationState() const {
-    return fake_tracker_.GetInvalidationState();
+  std::string GetBootstrapData() const {
+    return fake_tracker_.GetBootstrapData();
   }
 
   ObjectIdSet GetRegisteredIds() const {
@@ -330,7 +330,7 @@ class SyncInvalidationListenerTest : public testing::Test {
 TEST_F(SyncInvalidationListenerTest, WriteState) {
   WriteState(kNewState);
 
-  EXPECT_EQ(kNewState, GetInvalidationState());
+  EXPECT_EQ(kNewState, GetBootstrapData());
 }
 
 // Invalidation tests.

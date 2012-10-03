@@ -42,7 +42,7 @@ class InvalidationNotifier
   InvalidationNotifier(
       scoped_ptr<notifier::PushClient> push_client,
       const InvalidationVersionMap& initial_max_invalidation_versions,
-      const std::string& initial_invalidation_state,
+      const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
       const std::string& client_info);
@@ -92,10 +92,10 @@ class InvalidationNotifier
   // The client ID to pass to |invalidation_listener_|.
   std::string client_id_;
 
-  // The state to pass to |invalidation_listener_|.
+  // The initial bootstrap data to pass to |invalidation_listener_|.
   // TODO(tim): This should be made const once migration is completed for bug
   // 124140.
-  std::string invalidation_state_;
+  std::string invalidation_bootstrap_data_;
 
   // The invalidation listener.
   SyncInvalidationListener invalidation_listener_;

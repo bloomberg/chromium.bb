@@ -226,20 +226,20 @@ void InvalidatorStorage::DeserializeMap(
   }
 }
 
-std::string InvalidatorStorage::GetInvalidationState() const {
-  std::string utf8_state(pref_service_ ?
-      pref_service_->GetString(prefs::kInvalidatorInvalidationState) : "");
-  std::string state_data;
-  base::Base64Decode(utf8_state, &state_data);
-  return state_data;
+void InvalidatorStorage::SetBootstrapData(const std::string& data) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::string base64_data;
+  base::Base64Encode(data, &base64_data);
+  pref_service_->SetString(prefs::kInvalidatorInvalidationState,
+                           base64_data);
 }
 
-void InvalidatorStorage::SetInvalidationState(const std::string& state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  std::string utf8_state;
-  base::Base64Encode(state, &utf8_state);
-  pref_service_->SetString(prefs::kInvalidatorInvalidationState,
-                           utf8_state);
+std::string InvalidatorStorage::GetBootstrapData() const {
+  std::string base64_data(pref_service_ ?
+      pref_service_->GetString(prefs::kInvalidatorInvalidationState) : "");
+  std::string data;
+  base::Base64Decode(base64_data, &data);
+  return data;
 }
 
 void InvalidatorStorage::Clear() {

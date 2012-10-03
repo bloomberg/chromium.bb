@@ -115,9 +115,9 @@ class InvalidatorTest : public testing::Test {
     // associated issues are fixed.
     invalidator->SetStateDeprecated("fake_state");
     this->delegate_.WaitForInvalidator();
-    // We don't expect |fake_tracker_|'s state to change, as we
-    // initialized with non-empty initial_invalidation_state above.
-    EXPECT_TRUE(this->fake_tracker_.GetInvalidationState().empty());
+    // We don't expect |fake_tracker_|'s bootstrap data to change, as we
+    // initialized with a non-empty value previously.
+    EXPECT_TRUE(this->fake_tracker_.GetBootstrapData().empty());
     invalidator->SetUniqueId("fake_id");
     this->delegate_.WaitForInvalidator();
     invalidator->UpdateCredentials("foo@bar.com", "fake_token");
@@ -383,10 +383,10 @@ TYPED_TEST_P(InvalidatorTest, GetInvalidatorStateAlwaysCurrent) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler.GetLastRetrievedState());
 }
 
-// Initialize the invalidator with an empty initial state.  Call the deprecated
+// Initialize the invalidator with no bootstrap data.  Call the deprecated
 // state setter function a number of times, destroying and re-creating the
-// invalidator in between.  Only the first one should take effect (i.e., state
-// migration should only happen once).
+// invalidator in between.  Only the first one should take effect (i.e.,
+// migration of bootstrap data should only happen once)
 TYPED_TEST_P(InvalidatorTest, MigrateState) {
   if (!this->delegate_.InvalidatorHandlesDeprecatedState()) {
     DLOG(INFO) << "This Invalidator doesn't handle deprecated state; "
@@ -400,12 +400,12 @@ TYPED_TEST_P(InvalidatorTest, MigrateState) {
 
   invalidator->SetStateDeprecated("fake_state");
   this->delegate_.WaitForInvalidator();
-  EXPECT_EQ("fake_state", this->fake_tracker_.GetInvalidationState());
+  EXPECT_EQ("fake_state", this->fake_tracker_.GetBootstrapData());
 
   // Should do nothing.
   invalidator->SetStateDeprecated("spurious_fake_state");
   this->delegate_.WaitForInvalidator();
-  EXPECT_EQ("fake_state", this->fake_tracker_.GetInvalidationState());
+  EXPECT_EQ("fake_state", this->fake_tracker_.GetBootstrapData());
 
   // Pretend that Chrome has shut down.
   this->delegate_.DestroyInvalidator();
@@ -416,7 +416,7 @@ TYPED_TEST_P(InvalidatorTest, MigrateState) {
   // Should do nothing.
   invalidator->SetStateDeprecated("more_spurious_fake_state");
   this->delegate_.WaitForInvalidator();
-  EXPECT_EQ("fake_state", this->fake_tracker_.GetInvalidationState());
+  EXPECT_EQ("fake_state", this->fake_tracker_.GetBootstrapData());
 }
 
 REGISTER_TYPED_TEST_CASE_P(InvalidatorTest,

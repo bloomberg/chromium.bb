@@ -31,7 +31,7 @@ class NonBlockingInvalidator::Core
   void Initialize(
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
-      const std::string& initial_invalidation_state,
+      const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
       const std::string& client_info);
   void Teardown();
@@ -73,7 +73,7 @@ NonBlockingInvalidator::Core::~Core() {
 void NonBlockingInvalidator::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const std::string& initial_invalidation_state,
+    const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     const std::string& client_info) {
   DCHECK(notifier_options.request_context_getter);
@@ -86,7 +86,7 @@ void NonBlockingInvalidator::Core::Initialize(
       new InvalidationNotifier(
           notifier::PushClient::CreateDefaultOnIOThread(notifier_options),
           initial_max_invalidation_versions,
-          initial_invalidation_state,
+          invalidation_bootstrap_data,
           invalidation_state_tracker,
           client_info));
   invalidation_notifier_->RegisterHandler(this);
@@ -140,7 +140,7 @@ void NonBlockingInvalidator::Core::OnIncomingInvalidation(
 NonBlockingInvalidator::NonBlockingInvalidator(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const std::string& initial_invalidation_state,
+    const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     const std::string& client_info)
@@ -158,7 +158,7 @@ NonBlockingInvalidator::NonBlockingInvalidator(
               core_.get(),
               notifier_options,
               initial_max_invalidation_versions,
-              initial_invalidation_state,
+              invalidation_bootstrap_data,
               invalidation_state_tracker,
               client_info))) {
     NOTREACHED();

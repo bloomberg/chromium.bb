@@ -41,13 +41,13 @@ void FakeInvalidationStateTracker::Forget(const ObjectIdSet& ids) {
   }
 }
 
-void FakeInvalidationStateTracker::SetInvalidationState(
-    const std::string& state) {
-  state_ = state;
+void FakeInvalidationStateTracker::SetBootstrapData(
+    const std::string& data) {
+  bootstrap_data_ = data;
 }
 
-std::string FakeInvalidationStateTracker::GetInvalidationState() const {
-  return state_;
+std::string FakeInvalidationStateTracker::GetBootstrapData() const {
+  return bootstrap_data_;
 }
 
 }  // namespace syncer

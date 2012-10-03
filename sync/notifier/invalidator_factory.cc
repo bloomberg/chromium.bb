@@ -18,7 +18,7 @@ namespace {
 Invalidator* CreateDefaultInvalidator(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const std::string& initial_invalidation_state,
+    const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     const std::string& client_info) {
   if (notifier_options.notification_method == notifier::NOTIFICATION_P2P) {
@@ -33,7 +33,7 @@ Invalidator* CreateDefaultInvalidator(
 
   return new NonBlockingInvalidator(
       notifier_options, initial_max_invalidation_versions,
-      initial_invalidation_state, invalidation_state_tracker, client_info);
+      invalidation_bootstrap_data, invalidation_state_tracker, client_info);
 }
 
 }  // namespace
@@ -50,9 +50,9 @@ InvalidatorFactory::InvalidatorFactory(
           invalidation_state_tracker.get() ?
           invalidation_state_tracker->GetAllMaxVersions() :
           InvalidationVersionMap()),
-      initial_invalidation_state_(
+      invalidation_bootstrap_data_(
           invalidation_state_tracker.get() ?
-          invalidation_state_tracker->GetInvalidationState() :
+          invalidation_state_tracker->GetBootstrapData() :
           std::string()),
       invalidation_state_tracker_(invalidation_state_tracker) {
 }
@@ -67,7 +67,7 @@ Invalidator* InvalidatorFactory::CreateInvalidator() {
 #else
   return CreateDefaultInvalidator(notifier_options_,
                                   initial_max_invalidation_versions_,
-                                  initial_invalidation_state_,
+                                  invalidation_bootstrap_data_,
                                   invalidation_state_tracker_,
                                   client_info_);
 #endif

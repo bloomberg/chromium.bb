@@ -91,14 +91,15 @@ TEST_F(InvalidatorStorageTest, Forget) {
   EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
 }
 
-// Clearing the storage should result in an empty version map.
+// Clearing the storage should erase all version map entries and the bootstrap
+// data.
 TEST_F(InvalidatorStorageTest, Clear) {
   InvalidatorStorage storage(&pref_service_);
   EXPECT_TRUE(storage.GetAllMaxVersions().empty());
-  EXPECT_TRUE(storage.GetInvalidationState().empty());
+  EXPECT_TRUE(storage.GetBootstrapData().empty());
 
-  storage.SetInvalidationState("test");
-  EXPECT_EQ("test", storage.GetInvalidationState());
+  storage.SetBootstrapData("test");
+  EXPECT_EQ("test", storage.GetBootstrapData());
   {
     InvalidationVersionMap expected_max_versions;
     expected_max_versions[kAppNotificationsId_] = 3;
@@ -109,7 +110,7 @@ TEST_F(InvalidatorStorageTest, Clear) {
   storage.Clear();
 
   EXPECT_TRUE(storage.GetAllMaxVersions().empty());
-  EXPECT_TRUE(storage.GetInvalidationState().empty());
+  EXPECT_TRUE(storage.GetBootstrapData().empty());
 }
 
 TEST_F(InvalidatorStorageTest, SerializeEmptyMap) {
@@ -330,13 +331,13 @@ TEST_F(InvalidatorStorageTest, MigrateLegacyPreferences) {
   EXPECT_EQ(54, map[kPreferencesId_]);
 }
 
-TEST_F(InvalidatorStorageTest, SetGetInvalidationState) {
+TEST_F(InvalidatorStorageTest, SetGetBootstrapData) {
   InvalidatorStorage storage(&pref_service_);
   const std::string mess("n\0tK\0\0l\344", 8);
   ASSERT_FALSE(IsStringUTF8(mess));
 
-  storage.SetInvalidationState(mess);
-  EXPECT_EQ(mess, storage.GetInvalidationState());
+  storage.SetBootstrapData(mess);
+  EXPECT_EQ(mess, storage.GetBootstrapData());
 }
 
 }  // namespace browser_sync

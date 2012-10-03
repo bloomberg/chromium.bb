@@ -73,7 +73,7 @@ class SyncInvalidationListener
       const CreateInvalidationClientCallback&
           create_invalidation_client_callback,
       const std::string& client_id, const std::string& client_info,
-      const std::string& state,
+      const std::string& invalidation_bootstrap_data,
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
       Delegate* delegate);

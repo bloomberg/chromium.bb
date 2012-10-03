@@ -51,7 +51,7 @@ void SyncInvalidationListener::Start(
     const CreateInvalidationClientCallback&
         create_invalidation_client_callback,
     const std::string& client_id, const std::string& client_info,
-    const std::string& state,
+    const std::string& invalidation_bootstrap_data,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     Delegate* delegate) {
@@ -64,7 +64,8 @@ void SyncInvalidationListener::Start(
   // The Storage resource is implemented as a write-through cache.  We populate
   // it with the initial state on startup, so subsequent writes go to disk and
   // update the in-memory cache, while reads just return the cached state.
-  sync_system_resources_.storage()->SetInitialState(state);
+  sync_system_resources_.storage()->SetInitialState(
+      invalidation_bootstrap_data);
 
   max_invalidation_versions_ = initial_max_invalidation_versions;
   if (max_invalidation_versions_.empty()) {
@@ -285,7 +286,7 @@ void SyncInvalidationListener::WriteState(const std::string& state) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "WriteState";
   invalidation_state_tracker_.Call(
-      FROM_HERE, &InvalidationStateTracker::SetInvalidationState, state);
+      FROM_HERE, &InvalidationStateTracker::SetBootstrapData, state);
 }
 
 void SyncInvalidationListener::DoRegistrationUpdate() {

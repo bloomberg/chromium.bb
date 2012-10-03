@@ -89,14 +89,14 @@ class NullInvalidationStateTracker
     }
   }
 
-  virtual std::string GetInvalidationState() const OVERRIDE {
+  virtual std::string GetBootstrapData() const OVERRIDE {
     return std::string();
   }
 
-  virtual void SetInvalidationState(const std::string& state) OVERRIDE {
-    std::string base64_state;
-    CHECK(base::Base64Encode(state, &base64_state));
-    VLOG(1) << "Setting invalidation state to: " << base64_state;
+  virtual void SetBootstrapData(const std::string& data) OVERRIDE {
+    std::string base64_data;
+    CHECK(base::Base64Encode(data, &base64_data));
+    VLOG(1) << "Setting bootstrap data to: " << base64_data;
   }
 };
 

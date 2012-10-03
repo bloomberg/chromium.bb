@@ -26,14 +26,14 @@ class FakeInvalidationStateTracker
   virtual void SetMaxVersion(const invalidation::ObjectId& id,
                              int64 max_version) OVERRIDE;
   virtual void Forget(const ObjectIdSet& ids) OVERRIDE;
-  virtual void SetInvalidationState(const std::string& state) OVERRIDE;
-  virtual std::string GetInvalidationState() const OVERRIDE;
+  virtual void SetBootstrapData(const std::string& data) OVERRIDE;
+  virtual std::string GetBootstrapData() const OVERRIDE;
 
   static const int64 kMinVersion;
 
  private:
   InvalidationVersionMap versions_;
-  std::string state_;
+  std::string bootstrap_data_;
 };
 
 }  // namespace syncer
