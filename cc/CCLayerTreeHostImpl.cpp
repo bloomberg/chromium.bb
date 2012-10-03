@@ -131,6 +131,8 @@ CCLayerTreeHostImpl::CCLayerTreeHostImpl(const CCLayerTreeSettings& settings, CC
     , m_pinchGestureActive(false)
     , m_fpsCounter(CCFrameRateCounter::create())
     , m_debugRectHistory(CCDebugRectHistory::create())
+    , m_numImplThreadScrolls(0)
+    , m_numMainThreadScrolls(0)
 {
     ASSERT(CCProxy::isImplThread());
     didVisibilityChange(this, m_visible);
@@ -925,8 +927,10 @@ CCInputHandlerClient::ScrollStatus CCLayerTreeHostImpl::scrollBegin(const IntPoi
     CCLayerImpl* potentiallyScrollingLayerImpl = 0;
     for (; layerImpl; layerImpl = layerImpl->parent()) {
         // The content layer can also block attempts to scroll outside the main thread.
-        if (layerImpl->tryScroll(deviceViewportPoint, type) == ScrollOnMainThread)
+        if (layerImpl->tryScroll(deviceViewportPoint, type) == ScrollOnMainThread) {
+            m_numMainThreadScrolls++;
             return ScrollOnMainThread;
+        }
 
         CCLayerImpl* scrollLayerImpl = findScrollLayerForContentLayer(layerImpl);
         if (!scrollLayerImpl)
@@ -935,8 +939,10 @@ CCInputHandlerClient::ScrollStatus CCLayerTreeHostImpl::scrollBegin(const IntPoi
         ScrollStatus status = scrollLayerImpl->tryScroll(viewportPoint, type);
 
         // If any layer wants to divert the scroll event to the main thread, abort.
-        if (status == ScrollOnMainThread)
+        if (status == ScrollOnMainThread) {
+            m_numMainThreadScrolls++;
             return ScrollOnMainThread;
+        }
 
         if (status == ScrollStarted && !potentiallyScrollingLayerImpl)
             potentiallyScrollingLayerImpl = scrollLayerImpl;
@@ -948,6 +954,7 @@ CCInputHandlerClient::ScrollStatus CCLayerTreeHostImpl::scrollBegin(const IntPoi
         // so that the scrolling contents exactly follow the user's finger. In contrast, wheel
         // events are already in local layer coordinates so we can just apply them directly.
         m_scrollDeltaIsInScreenSpace = (type == Gesture);
+        m_numImplThreadScrolls++;
         return ScrollStarted;
     }
     return ScrollIgnored;
@@ -1299,6 +1306,8 @@ void CCLayerTreeHostImpl::renderingStats(CCRenderingStats* stats) const
 {
     stats->numFramesSentToScreen = fpsCounter()->currentFrameNumber();
     stats->droppedFrameCount = fpsCounter()->droppedFrameCount();
+    stats->numImplThreadScrolls = m_numImplThreadScrolls;
+    stats->numMainThreadScrolls = m_numMainThreadScrolls;
 }
 
 void CCLayerTreeHostImpl::animateScrollbars(double monotonicTime)

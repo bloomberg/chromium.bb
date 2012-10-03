@@ -294,6 +294,9 @@ private:
     OwnPtr<CCFrameRateCounter> m_fpsCounter;
     OwnPtr<CCDebugRectHistory> m_debugRectHistory;
 
+    size_t m_numImplThreadScrolls;
+    size_t m_numMainThreadScrolls;
+
     DISALLOW_COPY_AND_ASSIGN(CCLayerTreeHostImpl);
 };
 

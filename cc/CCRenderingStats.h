@@ -16,6 +16,8 @@ struct CCRenderingStats {
     double totalRasterizeTimeInSeconds;
     double totalCommitTimeInSeconds;
     size_t totalCommitCount;
+    size_t numImplThreadScrolls;
+    size_t numMainThreadScrolls;
 
     CCRenderingStats()
         : numAnimationFrames(0)
@@ -25,6 +27,8 @@ struct CCRenderingStats {
         , totalRasterizeTimeInSeconds(0)
         , totalCommitTimeInSeconds(0)
         , totalCommitCount(0)
+        , numImplThreadScrolls(0)
+        , numMainThreadScrolls(0)
     {
     }
 };
