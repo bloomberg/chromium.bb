@@ -9,11 +9,11 @@
 #include "ScrollbarLayerChromium.h"
 
 #include "base/basictypes.h"
-#include "BitmapCanvasLayerTextureUpdater.h"
 #include "CCLayerTreeHost.h"
 #include "CCScrollbarLayerImpl.h"
 #include "CCTextureUpdateQueue.h"
 #include "LayerPainterChromium.h"
+#include "TraceEvent.h"
 #include <public/WebRect.h>
 
 using WebKit::WebRect;
@@ -193,25 +193,25 @@ void ScrollbarLayerChromium::createTextureUpdaterIfNeeded()
     m_textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
 
     if (!m_backTrackUpdater)
-        m_backTrackUpdater = BitmapCanvasLayerTextureUpdater::create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::BackTrackPart));
+        m_backTrackUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::BackTrackPart));
     if (!m_backTrack)
         m_backTrack = m_backTrackUpdater->createTexture(layerTreeHost()->contentsTextureManager());
 
     // Only create two-part track if we think the two parts could be different in appearance.
     if (m_scrollbar->isCustomScrollbar()) {
         if (!m_foreTrackUpdater)
-            m_foreTrackUpdater = BitmapCanvasLayerTextureUpdater::create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::ForwardTrackPart));
+            m_foreTrackUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::ForwardTrackPart));
         if (!m_foreTrack)
             m_foreTrack = m_foreTrackUpdater->createTexture(layerTreeHost()->contentsTextureManager());
     }
 
     if (!m_thumbUpdater)
-        m_thumbUpdater = BitmapCanvasLayerTextureUpdater::create(ScrollbarThumbPainter::create(m_scrollbar.get(), m_painter, m_geometry.get()));
+        m_thumbUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarThumbPainter::create(m_scrollbar.get(), m_painter, m_geometry.get()));
     if (!m_thumb)
         m_thumb = m_thumbUpdater->createTexture(layerTreeHost()->contentsTextureManager());
 }
 
-void ScrollbarLayerChromium::updatePart(LayerTextureUpdater* painter, LayerTextureUpdater::Texture* texture, const IntRect& rect, CCTextureUpdateQueue& queue, CCRenderingStats& stats)
+void ScrollbarLayerChromium::updatePart(CachingBitmapCanvasLayerTextureUpdater* painter, LayerTextureUpdater::Texture* texture, const IntRect& rect, CCTextureUpdateQueue& queue, CCRenderingStats& stats)
 {
     // Skip painting and uploading if there are no invalidations and
     // we already have valid texture data.
@@ -230,6 +230,11 @@ void ScrollbarLayerChromium::updatePart(LayerTextureUpdater* painter, LayerTextu
     float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
     IntRect paintedOpaqueRect;
     painter->prepareToUpdate(rect, rect.size(), widthScale, heightScale, paintedOpaqueRect, stats);
+    if (!painter->pixelsDidChange() && texture->texture()->haveBackingTexture()) {
+        TRACE_EVENT_INSTANT0("cc","ScrollbarLayerChromium::updatePart no texture upload needed");
+        return;
+    }
+
     texture->prepareRect(rect, stats);
 
     IntSize destOffset(0, 0);

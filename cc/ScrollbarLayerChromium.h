@@ -9,7 +9,7 @@
 #if USE(ACCELERATED_COMPOSITING)
 
 #include "LayerChromium.h"
-#include "LayerTextureUpdater.h"
+#include "caching_bitmap_canvas_layer_texture_updater.h"
 #include <public/WebScrollbar.h>
 #include <public/WebScrollbarThemeGeometry.h>
 #include <public/WebScrollbarThemePainter.h>
@@ -45,7 +45,7 @@ protected:
     ScrollbarLayerChromium(PassOwnPtr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
 
 private:
-    void updatePart(LayerTextureUpdater*, LayerTextureUpdater::Texture*, const IntRect&, CCTextureUpdateQueue&, CCRenderingStats&);
+    void updatePart(CachingBitmapCanvasLayerTextureUpdater*, LayerTextureUpdater::Texture*, const IntRect&, CCTextureUpdateQueue&, CCRenderingStats&);
     void createTextureUpdaterIfNeeded();
 
     OwnPtr<WebKit::WebScrollbar> m_scrollbar;
@@ -55,9 +55,9 @@ private:
 
     GC3Denum m_textureFormat;
 
-    RefPtr<LayerTextureUpdater> m_backTrackUpdater;
-    RefPtr<LayerTextureUpdater> m_foreTrackUpdater;
-    RefPtr<LayerTextureUpdater> m_thumbUpdater;
+    RefPtr<CachingBitmapCanvasLayerTextureUpdater> m_backTrackUpdater;
+    RefPtr<CachingBitmapCanvasLayerTextureUpdater> m_foreTrackUpdater;
+    RefPtr<CachingBitmapCanvasLayerTextureUpdater> m_thumbUpdater;
 
     // All the parts of the scrollbar except the thumb
     OwnPtr<LayerTextureUpdater::Texture> m_backTrack;

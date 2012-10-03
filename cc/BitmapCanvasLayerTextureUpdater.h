@@ -44,7 +44,7 @@ public:
 
     virtual void setOpaque(bool) OVERRIDE;
 
-private:
+protected:
     explicit BitmapCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium>);
 
     OwnPtr<SkCanvas> m_canvas;

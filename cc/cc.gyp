@@ -15,6 +15,8 @@
       'BitmapCanvasLayerTextureUpdater.h',
       'BitmapSkPictureCanvasLayerTextureUpdater.cpp',
       'BitmapSkPictureCanvasLayerTextureUpdater.h',
+      'caching_bitmap_canvas_layer_texture_updater.cc',
+      'caching_bitmap_canvas_layer_texture_updater.h',
       'CCActiveAnimation.cpp',
       'CCActiveAnimation.h',
       'CCAppendQuadsData.h',
