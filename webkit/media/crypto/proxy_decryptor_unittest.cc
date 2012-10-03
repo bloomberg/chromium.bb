@@ -73,19 +73,19 @@ class ProxyDecryptorTest : public testing::Test {
       : proxy_decryptor_(message_loop_.message_loop_proxy(),
                          &client_, NULL, NULL),
         real_decryptor_(new media::MockDecryptor()),
+        scoped_real_decryptor_(real_decryptor_),
+        decrypt_cb_(base::Bind(&ProxyDecryptorTest::DeliverBuffer,
+                               base::Unretained(this))),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
         decrypted_buffer_(DecoderBuffer::CopyFrom(kDecryptedData,
                                                   arraysize(kDecryptedData))),
-        null_buffer_(scoped_refptr<DecoderBuffer>()),
-        decrypt_cb_(base::Bind(&ProxyDecryptorTest::DeliverBuffer,
-                               base::Unretained(this))) {
+        null_buffer_(scoped_refptr<DecoderBuffer>()) {
   }
 
   // Instead of calling ProxyDecryptor::GenerateKeyRequest() here to create a
   // real Decryptor, inject a MockDecryptor for testing purpose.
   void GenerateKeyRequest() {
-    proxy_decryptor_.set_decryptor_for_testing(
-        scoped_ptr<Decryptor>(real_decryptor_));
+    proxy_decryptor_.set_decryptor_for_testing(scoped_real_decryptor_.Pass());
   }
 
   // Since we are using the MockDecryptor, we can simulate any decryption
@@ -110,11 +110,23 @@ class ProxyDecryptorTest : public testing::Test {
   MessageLoop message_loop_;
   StrictMock<media::MockDecryptorClient> client_;
   ProxyDecryptor proxy_decryptor_;
+
+  // Raw pointer to the real decryptor so that we can call EXPECT_CALL on the
+  // mock decryptor.
   media::MockDecryptor* real_decryptor_;
+
+  // Scoped pointer that takes ownership of |real_decryptor_|. When
+  // GenerateKeyRequest() is called, the ownership of |real_decryptor_| is
+  // passed from |scoped_real_decryptor_| to |proxy_decryptor_|. We need this
+  // to manage life time of |real_decryptor_| because not all tests call
+  // GenerateKeyRequest().
+  scoped_ptr<Decryptor> scoped_real_decryptor_;
+
+  Decryptor::DecryptCB decrypt_cb_;
+
   scoped_refptr<DecoderBuffer> encrypted_buffer_;
   scoped_refptr<DecoderBuffer> decrypted_buffer_;
   scoped_refptr<DecoderBuffer> null_buffer_;
-  Decryptor::DecryptCB decrypt_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyDecryptorTest);
