@@ -109,6 +109,15 @@ class ExtensionFunctionDispatcher
   Profile* profile() { return profile_; }
 
  private:
+  // Helper to check whether an ExtensionFunction has the required permissions.
+  // This should be called after the function is fully initialized.
+  static bool CheckPermissions(
+      ExtensionFunction* function,
+      const extensions::Extension* extension,
+      const ExtensionHostMsg_Request_Params& params,
+      IPC::Sender* ipc_sender,
+      int routing_id);
+
   // Helper to create an ExtensionFunction to handle the function given by
   // |params|. Can be called on any thread.
   // Does not set subclass properties, or include_incognito.
