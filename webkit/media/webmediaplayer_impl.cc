@@ -154,7 +154,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       audio_renderer_sink_(audio_renderer_sink),
       is_local_source_(false),
       supports_save_(true),
-      decryptor_(proxy_.get(), client, frame),
+      decryptor_(message_loop_factory_->GetMessageLoop(
+                     media::MessageLoopFactory::kDecoder),
+                 proxy_.get(),
+                 client,
+                 frame),
       starting_(false) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
