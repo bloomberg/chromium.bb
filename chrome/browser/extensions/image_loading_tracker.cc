@@ -184,11 +184,12 @@ class ImageLoadingTracker::ImageLoader
                                   int resource_id) {
     DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
     // TODO(xiyuan): Clean up to use SkBitmap here and in LoadOnBlockingPool.
-    scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-    *bitmap = ResourceBundle::GetSharedInstance().GetImageNamed(
-        resource_id).AsBitmap();
+    gfx::ImageSkia image(
+        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
+    image.MakeThreadSafe();
 
-    *bitmap = ResizeIfNeeded(*bitmap, image_info);
+    scoped_ptr<SkBitmap> bitmap(new SkBitmap);
+    *bitmap = ResizeIfNeeded(*image.bitmap(), image_info);
     ReportBack(bitmap.release(), image_info, image_info.desired_size, id);
   }
 
