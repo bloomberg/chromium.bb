@@ -33,8 +33,11 @@ class GLHelperThread : public base::Thread {
   GLHelperThread() : base::Thread(kGLHelperThreadName) {
     Start();
   }
-  virtual ~GLHelperThread() {}
+  virtual ~GLHelperThread() {
+    Stop();
+  }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GLHelperThread);
 };
 

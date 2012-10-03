@@ -67,6 +67,7 @@ const int kUnprivilegedTimeoutSec = 60;
 class ComThread : public base::Thread {
  public:
   explicit ComThread(const char* name);
+  virtual ~ComThread();
 
   bool Start();
 
@@ -169,6 +170,10 @@ class DaemonControllerWin : public remoting::DaemonController {
 };
 
 ComThread::ComThread(const char* name) : base::Thread(name) {
+}
+
+ComThread::~ComThread() {
+  Stop();
 }
 
 bool ComThread::Start() {

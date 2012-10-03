@@ -16,7 +16,6 @@
 namespace {
 
 void DeleteThread(base::Thread* thread) {
-  thread->Stop();
   delete thread;
 }
 
@@ -73,6 +72,7 @@ ProviderImpl::PollingThread::PollingThread(
 }
 
 ProviderImpl::PollingThread::~PollingThread() {
+  Stop();
 }
 
 void ProviderImpl::PollingThread::DoAddPollingDataType(DeviceData::Type type) {
