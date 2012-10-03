@@ -1544,3 +1544,12 @@
    fun:v8::V8::Initialize
    fun:WebKit::initialize
 }
+{
+   bug_153791
+   Heapcheck:Leak
+   ...
+   fun:PluginFinder::GetPluginMetadata
+   fun:PluginPrefs::EnablePlugin
+   fun:PluginPrefsTest::EnablePluginSynchronously
+   fun:PluginPrefsTest_UnifiedPepperFlashState_Test::TestBody
+}
