@@ -16,12 +16,12 @@ class Profile;
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including
-// ownership) to BookmarkStorage. BoomarkStorage loads the bookmarks (and index)
-// in the background thread, then calls back to the BookmarkModel (on the main
-// thread) when loading is done, passing ownership back to the BookmarkModel.
-// While loading BookmarkModel does not maintain references to the contents
-// of the BookmarkLoadDetails, this ensures we don't have any threading
-// problems.
+// ownership) to BookmarkStorage. BookmarkStorage loads the bookmarks (and
+// index) in the background thread, then calls back to the BookmarkModel (on
+// the main thread) when loading is done, passing ownership back to the
+// BookmarkModel. While loading BookmarkModel does not maintain references to
+// the contents of the BookmarkLoadDetails, this ensures we don't have any
+// threading problems.
 class BookmarkLoadDetails {
  public:
   BookmarkLoadDetails(BookmarkPermanentNode* bb_node,

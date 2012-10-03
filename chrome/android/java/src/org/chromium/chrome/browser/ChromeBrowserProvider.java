@@ -112,7 +112,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     public static final long INVALID_CONTENT_PROVIDER_ID = 0;
 
     // ID used to indicate an invalid id for bookmark nodes.
-    // Client API queries should use ChromeBrowserProviderClient.INVALID_BOOMARK_ID.
+    // Client API queries should use ChromeBrowserProviderClient.INVALID_BOOKMARK_ID.
     static final long INVALID_BOOKMARK_ID = -1;
 
     private static final String LAST_MODIFIED_BOOKMARK_FOLDER_ID_KEY = "last_bookmark_folder_id";

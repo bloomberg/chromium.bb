@@ -211,7 +211,7 @@ void RemoveAllBookmarks(BookmarkModel* model, const GURL& url);
 extern int num_urls_before_prompting;
 
 // This enum is used for the Bookmarks.EntryPoint histogram.
-enum BoomarkEntryPoint {
+enum BookmarkEntryPoint {
   ENTRY_POINT_ACCELERATOR,
   ENTRY_POINT_STAR_GESTURE,
   ENTRY_POINT_STAR_KEY,
