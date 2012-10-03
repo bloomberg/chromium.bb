@@ -10,12 +10,6 @@
 
 namespace {
 
-int QueryObjectTypeInformationFilter(EXCEPTION_POINTERS* exception_pointers,
-                                     NTSTATUS* exception_code) {
-  *exception_code = exception_pointers->ExceptionRecord->ExceptionCode;
-  return EXCEPTION_EXECUTE_HANDLER;
-}
-
 // Returns type infomation for an NT object. This routine is expected to be
 // called for invalid handles so it catches STATUS_INVALID_HANDLE exceptions
 // that can be generated when handle tracing is enabled.
@@ -26,13 +20,14 @@ NTSTATUS QueryObjectTypeInformation(HANDLE handle,
   if (!QueryObject)
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
 
-  NTSTATUS exception_code = STATUS_UNSUCCESSFUL;
+  NTSTATUS status = STATUS_UNSUCCESSFUL;
   __try {
-    return QueryObject(handle, ObjectTypeInformation, buffer, *size, size);
-  } __except(QueryObjectTypeInformationFilter(GetExceptionInformation(),
-                                              &exception_code)) {
-    return exception_code;
+    status = QueryObject(handle, ObjectTypeInformation, buffer, *size, size);
+  } __except(GetExceptionCode() == STATUS_INVALID_HANDLE ?
+                 EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+    status = STATUS_INVALID_HANDLE;
   }
+  return status;
 }
 
 }  // namespace
