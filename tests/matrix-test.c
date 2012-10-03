@@ -22,7 +22,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <GLES2/gl2.h>
 #include <math.h>
 #include <unistd.h>
 #include <signal.h>
@@ -54,7 +53,7 @@ read_timer(void)
 }
 
 static double
-det3x3(const GLfloat *c0, const GLfloat *c1, const GLfloat *c2)
+det3x3(const float *c0, const float *c1, const float *c2)
 {
 	return (double)
 		c0[0] * c1[1] * c2[2] +

@@ -30,7 +30,7 @@
 TEST(surface_transform)
 {
 	struct weston_surface *surface;
-	GLfloat x, y;
+	float x, y;
 
 	surface = weston_surface_create(compositor);
 	weston_surface_configure(surface, 100, 100, 200, 200);
