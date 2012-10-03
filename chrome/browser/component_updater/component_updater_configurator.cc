@@ -158,7 +158,7 @@ int ChromeConfigurator::InitialDelay() {
 }
 
 int ChromeConfigurator::NextCheckDelay() {
-  return fast_update_ ? 3 : (1 * kDelayOneHour);
+  return fast_update_ ? 3 : (2 * kDelayOneHour);
 }
 
 int ChromeConfigurator::StepDelay() {
@@ -166,7 +166,7 @@ int ChromeConfigurator::StepDelay() {
 }
 
 int ChromeConfigurator::MinimumReCheckWait() {
-  return fast_update_ ? 30 : (5 * kDelayOneHour);
+  return fast_update_ ? 30 : (6 * kDelayOneHour);
 }
 
 GURL ChromeConfigurator::UpdateUrl() {
