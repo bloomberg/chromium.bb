@@ -8,6 +8,7 @@
 #include <shellapi.h>
 #include <tchar.h>
 #include <userenv.h>
+#include <winternl.h>
 
 #include <algorithm>
 #include <vector>
@@ -145,6 +146,36 @@ DWORD WINAPI DumpForHangDebuggingThread(void*) {
 
 MSVC_POP_WARNING()
 MSVC_ENABLE_OPTIMIZE()
+
+// Enables tracing of all operations on kernel handles.
+void EnableHandleTracing() {
+  typedef NTSTATUS (WINAPI *NtSetInformationProcessFn)(
+      HANDLE ProcessHandle,
+      ULONG ProcessInformationClass,
+      PVOID ProcessInformation,
+      ULONG ProcessInformationLength);
+
+  typedef struct _PROCESS_HANDLE_TRACING_ENABLE_EX {
+    ULONG Flags;
+    ULONG TotalSlots;
+  } PROCESS_HANDLE_TRACING_ENABLE_EX, *PPROCESS_HANDLE_TRACING_ENABLE_EX;
+
+  const ULONG kProcessHandleTracing = 0x20;
+
+  NtSetInformationProcessFn set_information_process =
+    reinterpret_cast<NtSetInformationProcessFn>(
+        GetProcAddress(GetModuleHandle(L"ntdll.dll"),
+                                       "NtSetInformationProcess"));
+
+  // Enable handle tracing. It is OK to ignore the returned error code since
+  // failing ot enable handle tracing is debug-only facility and should not
+  // affect other functionality.
+  if (set_information_process != NULL) {
+    PROCESS_HANDLE_TRACING_ENABLE_EX info = { 0, 0x20000 };
+    set_information_process(GetCurrentProcess(), kProcessHandleTracing, &info,
+                            sizeof(info));
+  }
+}
 
 // Injects a thread into a remote process to dump state when there is no crash.
 extern "C" HANDLE __declspec(dllexport) __cdecl
@@ -911,19 +942,36 @@ void InitCrashReporter() {
   wchar_t temp_dir[MAX_PATH] = {0};
   ::GetTempPathW(MAX_PATH, temp_dir);
 
+  // Do not enable handle tracing (and do not generate STATUS_INVALID_HANDLE
+  // exceptions when using an invalid handle) by default.
+  bool enable_handle_tracing = false;
+
   MINIDUMP_TYPE dump_type = kSmallDumpType;
   // Capture full memory if explicitly instructed to.
   if (command.HasSwitch(switches::kFullMemoryCrashReport)) {
     dump_type = kFullDumpType;
+    enable_handle_tracing = true;
   } else {
     std::wstring channel_name(
         GoogleUpdateSettings::GetChromeChannel(!is_per_user_install));
 
-    // Capture more detail in crash dumps for beta and dev channel builds.
-    if (channel_name == L"dev" || channel_name == L"beta" ||
-        channel_name == GoogleChromeSxSDistribution::ChannelName())
+    // Enable handle tracing and capture more detail in crash dumps for canary
+    // and dev channel builds.
+    if (channel_name == L"dev" ||
+        channel_name == GoogleChromeSxSDistribution::ChannelName()) {
+      dump_type = kLargerDumpType;
+      enable_handle_tracing = true;
+    }
+
+    // Capture more detail in crash dumps for beta builds.
+    if (channel_name == L"beta")
       dump_type = kLargerDumpType;
   }
+
+#if !defined(NDEBUG)
+  // Enable handle tracing for all debug builds.
+  enable_handle_tracing = true;
+#endif  // !defined(NDEBUG)
 
   g_breakpad = new google_breakpad::ExceptionHandler(temp_dir, &FilterCallback,
                    callback, NULL,
@@ -950,6 +998,9 @@ void InitCrashReporter() {
     // generate a crashdump for these exceptions.
     g_breakpad->set_handle_debug_exceptions(true);
   }
+
+  if (enable_handle_tracing)
+    EnableHandleTracing();
 }
 
 void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {
