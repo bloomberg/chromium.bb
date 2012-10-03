@@ -372,6 +372,16 @@ clock_timer_reset(struct panel_clock *clock)
 }
 
 static void
+panel_destroy_clock(struct panel_clock *clock)
+{
+	widget_destroy(clock->widget);
+
+	close(clock->clock_fd);
+
+	free(clock);
+}
+
+static void
 panel_add_clock(struct panel *panel)
 {
 	struct panel_clock *clock;
@@ -445,6 +455,39 @@ panel_configure(void *data,
 	struct panel *panel = container_of(surface, struct panel, base);
 
 	window_schedule_resize(panel->window, width, 32);
+}
+
+static void
+panel_destroy_launcher(struct panel_launcher *launcher)
+{
+	wl_array_release(&launcher->argv);
+	wl_array_release(&launcher->envp);
+
+	free(launcher->path);
+
+	cairo_surface_destroy(launcher->icon);
+
+	widget_destroy(launcher->widget);
+	wl_list_remove(&launcher->link);
+
+	free(launcher);
+}
+
+static void
+panel_destroy(struct panel *panel)
+{
+	struct panel_launcher *tmp;
+	struct panel_launcher *launcher;
+
+	panel_destroy_clock(panel->clock);
+
+	wl_list_for_each_safe(launcher, tmp, &panel->launcher_list, link)
+		panel_destroy_launcher(launcher);
+
+	widget_destroy(panel->widget);
+	window_destroy(panel->window);
+
+	free(panel);
 }
 
 static struct panel *
@@ -885,6 +928,15 @@ static const struct desktop_shell_listener listener = {
 	desktop_shell_grab_cursor
 };
 
+static void
+background_destroy(struct background *background)
+{
+	widget_destroy(background->widget);
+	window_destroy(background->window);
+
+	free(background);
+}
+
 static struct background *
 background_create(struct desktop *desktop)
 {
@@ -912,6 +964,13 @@ grab_surface_enter_handler(struct widget *widget, struct input *input,
 }
 
 static void
+grab_surface_destroy(struct desktop *desktop)
+{
+	widget_destroy(desktop->grab_widget);
+	window_destroy(desktop->grab_window);
+}
+
+static void
 grab_surface_create(struct desktop *desktop)
 {
 	struct wl_surface *s;
@@ -930,6 +989,27 @@ grab_surface_create(struct desktop *desktop)
 
 	widget_set_enter_handler(desktop->grab_widget,
 				 grab_surface_enter_handler);
+}
+
+static void
+output_destroy(struct output *output)
+{
+	background_destroy(output->background);
+	panel_destroy(output->panel);
+	wl_output_destroy(output->output);
+	wl_list_remove(&output->link);
+
+	free(output);
+}
+
+static void
+desktop_destroy_outputs(struct desktop *desktop)
+{
+	struct output *tmp;
+	struct output *output;
+
+	wl_list_for_each_safe(output, tmp, &desktop->outputs, link)
+		output_destroy(output);
 }
 
 static void
@@ -1042,6 +1122,14 @@ int main(int argc, char *argv[])
 	signal(SIGCHLD, sigchild_handler);
 
 	display_run(desktop.display);
+
+	/* Cleanup */
+	grab_surface_destroy(&desktop);
+	desktop_destroy_outputs(&desktop);
+	if (desktop.unlock_dialog)
+		unlock_dialog_destroy(desktop.unlock_dialog);
+	desktop_shell_destroy(desktop.shell);
+	display_destroy(desktop.display);
 
 	return 0;
 }

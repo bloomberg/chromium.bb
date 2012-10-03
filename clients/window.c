@@ -84,6 +84,7 @@ struct display {
 	uint32_t serial;
 
 	int display_fd;
+	uint32_t display_fd_events;
 	uint32_t mask;
 	struct task display_task;
 
@@ -3727,7 +3728,14 @@ handle_display_data(struct task *task, uint32_t events)
 {
 	struct display *display =
 		container_of(task, struct display, display_task);
-	
+
+	display->display_fd_events = events;
+
+	if (events & EPOLLERR || events & EPOLLHUP) {
+		display_exit(display);
+		return;
+	}
+
 	wl_display_iterate(display->display, display->mask);
 }
 
@@ -3751,7 +3759,8 @@ display_create(int argc, char *argv[])
 	d->epoll_fd = os_epoll_create_cloexec();
 	d->display_fd = wl_display_get_fd(d->display, event_mask_update, d);
 	d->display_task.run = handle_display_data;
-	display_watch_fd(d, d->display_fd, EPOLLIN, &d->display_task);
+	display_watch_fd(d, d->display_fd, EPOLLIN | EPOLLERR | EPOLLHUP,
+			 &d->display_task);
 
 	wl_list_init(&d->deferred_list);
 	wl_list_init(&d->input_list);
@@ -3815,7 +3824,8 @@ void
 display_destroy(struct display *display)
 {
 	if (!wl_list_empty(&display->window_list))
-		fprintf(stderr, "toytoolkit warning: windows exist.\n");
+		fprintf(stderr, "toytoolkit warning: %d windows exist.\n",
+			wl_list_length(&display->window_list));
 
 	if (!wl_list_empty(&display->deferred_list))
 		fprintf(stderr, "toytoolkit warning: deferred tasks exist.\n");
@@ -3845,7 +3855,10 @@ display_destroy(struct display *display)
 
 	close(display->epoll_fd);
 
-	wl_display_flush(display->display);
+	if (!(display->display_fd_events & EPOLLERR) &&
+	    !(display->display_fd_events & EPOLLHUP))
+		wl_display_flush(display->display);
+
 	wl_display_disconnect(display->display);
 	free(display);
 }
