@@ -34,9 +34,10 @@ const int kShellWindowId_LockScreenRelatedContainersContainer = 2;
 const int kShellWindowId_UnparentedControlContainer = 3;
 
 // System level background. Sits beneach the desktop background and is only
-// visible when in a workspace other than the desktop. When switching from the
-// desktop workspace to to another workspace the desktop background scales
-// slightly. This exposes the system level background beneath it.
+// visible when the desktop background has not yet been loaded or a workspace
+// other than the desktop is being displayed. When switching from the desktop
+// workspace to to another workspace the desktop background scales slightly.
+// This exposes the system level background beneath it.
 const int kShellWindowId_SystemBackgroundContainer = 4;
 
 // The desktop background window.

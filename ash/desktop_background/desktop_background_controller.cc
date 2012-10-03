@@ -6,6 +6,7 @@
 
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -277,6 +278,7 @@ void DesktopBackgroundController::OnWallpaperLoadCompleted(
 
 void DesktopBackgroundController::NotifyAnimationFinished() {
   Shell* shell = Shell::GetInstance();
+  shell->GetPrimaryRootWindowController()->HandleDesktopBackgroundVisible();
   shell->user_wallpaper_delegate()->OnWallpaperAnimationFinished();
 }
 

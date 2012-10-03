@@ -21,6 +21,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/visibility_controller.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/workspace/system_background_controller.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
@@ -36,6 +37,12 @@
 
 namespace ash {
 namespace {
+
+#if defined(OS_CHROMEOS)
+// Color initially used for the system background after the system has first
+// booted.
+const SkColor kBootSystemBackgroundColor = 0xFFFEFEFE;
+#endif
 
 // Creates a new window for use as a container.
 aura::Window* CreateContainer(int window_id,
@@ -187,6 +194,21 @@ void RootWindowController::InitLayoutManagers() {
 
 void RootWindowController::CreateContainers() {
   CreateContainersInRootWindow(root_window_.get());
+}
+
+void RootWindowController::CreateSystemBackground(
+    bool is_first_run_after_boot) {
+  SkColor color = SK_ColorBLACK;
+#if defined(OS_CHROMEOS)
+  if (is_first_run_after_boot)
+    color = kBootSystemBackgroundColor;
+#endif
+  background_.reset(new SystemBackgroundController(root_window_.get(), color));
+}
+
+void RootWindowController::HandleDesktopBackgroundVisible() {
+  if (background_.get())
+    background_->SetColor(SK_ColorBLACK);
 }
 
 void RootWindowController::CloseChildWindows() {

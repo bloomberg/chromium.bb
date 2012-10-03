@@ -32,6 +32,10 @@ bool TestShellDelegate::IsSessionStarted() {
   return true;
 }
 
+bool TestShellDelegate::IsFirstRunAfterBoot() {
+  return false;
+}
+
 void TestShellDelegate::LockScreen() {
   locked_ = true;
 }

@@ -27,6 +27,7 @@ namespace internal {
 class EventClientImpl;
 class RootWindowLayoutManager;
 class ScreenDimmer;
+class SystemBackgroundController;
 class WorkspaceController;
 
 // This class maintains the per root window state for ash. This class
@@ -57,8 +58,15 @@ class RootWindowController {
 
   aura::Window* GetContainer(int container_id);
 
-  void CreateContainers();
   void InitLayoutManagers();
+  void CreateContainers();
+
+  // Initializes |background_|.  |is_first_run_after_boot| determines the
+  // background's initial color.
+  void CreateSystemBackground(bool is_first_run_after_boot);
+
+  // Updates |background_| to be black after the desktop background is visible.
+  void HandleDesktopBackgroundVisible();
 
   // Deletes associated objects and clears the state, but doesn't delete
   // the root window yet. This is used to delete a secondary displays'
@@ -82,6 +90,12 @@ class RootWindowController {
 
   scoped_ptr<aura::RootWindow> root_window_;
   internal::RootWindowLayoutManager* root_window_layout_;
+
+  // A background layer that's displayed beneath all other layers.  Without
+  // this, portions of the root window that aren't covered by layers will be
+  // painted white; this can show up if e.g. it takes a long time to decode the
+  // desktop background image when displaying the login screen.
+  scoped_ptr<SystemBackgroundController> background_;
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<internal::EventClientImpl> event_client_;

@@ -36,7 +36,6 @@ namespace ash {
 namespace internal {
 
 class ShelfLayoutManager;
-class SystemBackgroundController;
 class WorkspaceLayoutManager2;
 class WorkspaceManagerTest2;
 class Workspace2;
@@ -139,9 +138,6 @@ class ASH_EXPORT WorkspaceManager2
   // any layers.
   void ProcessDeletion();
 
-  // Deletes |background_controller_|. Called from |destroy_background_timer_|.
-  void DestroySystemBackground();
-
   // Sets |unminimizing_workspace_| to |workspace|.
   void SetUnminimizingWorkspace(Workspace2* workspace);
 
@@ -197,14 +193,6 @@ class ASH_EXPORT WorkspaceManager2
 
   // See comments in SetUnminimizingWorkspace() for details.
   base::WeakPtrFactory<WorkspaceManager2> clear_unminimizing_workspace_factory_;
-
-  // Used to show the system level background. Non-null when the background is
-  // visible.
-  scoped_ptr<SystemBackgroundController> background_controller_;
-
-  // Timer used to destroy the background. We wait to destroy until animations
-  // complete.
-  base::OneShotTimer<WorkspaceManager2> destroy_background_timer_;
 
   // See comments in SetUnminimizingWorkspace() for details.
   Workspace2* unminimizing_workspace_;

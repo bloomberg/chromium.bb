@@ -16,7 +16,6 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/system_background_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager2.h"
 #include "ash/wm/workspace/workspace2.h"
 #include "base/auto_reset.h"
@@ -331,21 +330,6 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
     contents_view_->StackChildAtTop(last_active->window());
   }
 
-  destroy_background_timer_.Stop();
-  if (active_workspace_ == desktop_workspace()) {
-    base::TimeDelta delay(GetSystemBackgroundDestroyDuration());
-    if (ui::LayerAnimator::slow_animation_mode())
-      delay *= ui::LayerAnimator::slow_animation_scale_factor();
-    // Delay an extra 100ms to make sure everything settles down before
-    // destroying the background.
-    delay += base::TimeDelta::FromMilliseconds(100);
-    destroy_background_timer_.Start(
-        FROM_HERE, delay, this, &WorkspaceManager2::DestroySystemBackground);
-  } else if (!background_controller_.get()) {
-    background_controller_.reset(new SystemBackgroundController(
-                                     contents_view_->GetRootWindow()));
-  }
-
   UpdateShelfVisibility();
 
   if (animate_type != ANIMATE_NONE) {
@@ -454,10 +438,6 @@ void WorkspaceManager2::ScheduleDelete(Workspace2* workspace) {
   delete_timer_.Stop();
   delete_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,
                       &WorkspaceManager2::ProcessDeletion);
-}
-
-void WorkspaceManager2::DestroySystemBackground() {
-  background_controller_.reset();
 }
 
 void WorkspaceManager2::SetUnminimizingWorkspace(Workspace2* workspace) {

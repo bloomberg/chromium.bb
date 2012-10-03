@@ -411,6 +411,8 @@ void Shell::Init() {
   internal::RootWindowController* root_window_controller =
       new internal::RootWindowController(root_window);
   root_window_controller->CreateContainers();
+  root_window_controller->CreateSystemBackground(
+      delegate_.get() ? delegate_->IsFirstRunAfterBoot() : false);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 

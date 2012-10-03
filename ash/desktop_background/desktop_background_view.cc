@@ -9,6 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
@@ -47,6 +48,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
     ash::Shell* shell = ash::Shell::GetInstance();
+    shell->GetPrimaryRootWindowController()->HandleDesktopBackgroundVisible();
     shell->user_wallpaper_delegate()->OnWallpaperAnimationFinished();
     // Only removes old component when wallpaper animation finished. If we
     // remove the old one too early, there will be a white flash during

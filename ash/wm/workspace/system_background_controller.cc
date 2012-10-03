@@ -5,6 +5,7 @@
 #include "ash/wm/workspace/system_background_controller.h"
 
 #include "ash/shell_window_ids.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
@@ -49,7 +50,8 @@ views::View* SystemBackgroundController::View::GetContentsView() {
   return this;
 }
 
-SystemBackgroundController::SystemBackgroundController(aura::RootWindow* root)
+SystemBackgroundController::SystemBackgroundController(aura::RootWindow* root,
+                                                       SkColor color)
     : ALLOW_THIS_IN_INITIALIZER_LIST(view_(new View(this))) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
@@ -62,7 +64,9 @@ SystemBackgroundController::SystemBackgroundController(aura::RootWindow* root)
   // flicker.
   params.layer_type = ui::LAYER_SOLID_COLOR;
   widget->Init(params);
-  widget->GetNativeView()->layer()->SetColor(SK_ColorBLACK);
+  widget->GetNativeView()->SetProperty(aura::client::kAnimationsDisabledKey,
+                                       true);
+  widget->GetNativeView()->layer()->SetColor(color);
   widget->SetBounds(params.parent->bounds());
   widget->Show();
   widget->GetNativeView()->SetName("SystemBackground");
@@ -71,6 +75,11 @@ SystemBackgroundController::SystemBackgroundController(aura::RootWindow* root)
 SystemBackgroundController::~SystemBackgroundController() {
   if (view_)
     view_->Close();
+}
+
+void SystemBackgroundController::SetColor(SkColor color) {
+  if (view_)
+    view_->GetWidget()->GetNativeView()->layer()->SetColor(color);
 }
 
 }  // namespace internal

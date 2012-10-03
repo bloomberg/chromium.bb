@@ -39,6 +39,10 @@ bool ShellDelegateImpl::IsSessionStarted() {
   return true;
 }
 
+bool ShellDelegateImpl::IsFirstRunAfterBoot() {
+  return false;
+}
+
 void ShellDelegateImpl::LockScreen() {
   ash::shell::CreateLockScreen();
   locked_ = true;

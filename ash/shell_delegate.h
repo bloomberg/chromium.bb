@@ -64,6 +64,11 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if we're logged in and browser has been started
   virtual bool IsSessionStarted() = 0;
 
+  // Returns true if this is the first time that the shell has been run after
+  // the system has booted.  false is returned after the shell has been
+  // restarted, typically due to logging in as a guest or logging out.
+  virtual bool IsFirstRunAfterBoot() = 0;
+
   // Invoked when a user locks the screen.
   virtual void LockScreen() = 0;
 

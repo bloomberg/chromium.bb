@@ -8,6 +8,8 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 
+typedef unsigned int SkColor;
+
 namespace aura {
 class RootWindow;
 };
@@ -20,8 +22,11 @@ namespace internal {
 // level background.
 class ASH_EXPORT SystemBackgroundController {
  public:
-  explicit SystemBackgroundController(aura::RootWindow* root);
+  SystemBackgroundController(aura::RootWindow* root, SkColor color);
   ~SystemBackgroundController();
+
+  // Changes the background color.
+  void SetColor(SkColor color);
 
  private:
   class View;

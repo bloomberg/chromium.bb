@@ -119,6 +119,14 @@ bool ChromeShellDelegate::IsSessionStarted() {
 #endif
 }
 
+bool ChromeShellDelegate::IsFirstRunAfterBoot() {
+#if defined(OS_CHROMEOS)
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot);
+#else
+  return false;
+#endif
+}
+
 void ChromeShellDelegate::LockScreen() {
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession) &&
