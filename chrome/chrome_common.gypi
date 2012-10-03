@@ -113,6 +113,7 @@
         'common/content_settings_types.h',
         'common/custom_handlers/protocol_handler.cc',
         'common/custom_handlers/protocol_handler.h',
+        'common/descriptors_android.h',
         'common/extensions/command.cc',
         'common/extensions/command.h',
         'common/extensions/csp_validator.cc',

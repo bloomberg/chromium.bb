@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/string_tokenizer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/breakpad_mac.h"
@@ -119,6 +120,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
 #include "chrome/browser/chrome_browser_main_android.h"
+#include "chrome/common/descriptors_android.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
@@ -130,6 +132,10 @@
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "ui/base/ui_base_paths.h"
 #endif
 
 #if defined(USE_NSS)
@@ -1747,6 +1753,34 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                                            FileDescriptor(crash_signal_fd,
                                                           false)));
   }
+#if defined(OS_ANDROID)
+  FilePath data_path;
+  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &data_path);
+  DCHECK(!data_path.empty());
+
+  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
+  FilePath chrome_pak = data_path.AppendASCII("chrome.pak");
+  base::PlatformFile f =
+      base::CreatePlatformFile(chrome_pak, flags, NULL, NULL);
+  DCHECK(f != base::kInvalidPlatformFileValue);
+  mappings->push_back(FileDescriptorInfo(kAndroidChromePakDescriptor,
+                                         FileDescriptor(f, true)));
+
+  FilePath chrome_resources_pak =
+      data_path.AppendASCII("chrome_100_percent.pak");
+  f = base::CreatePlatformFile(chrome_resources_pak, flags, NULL, NULL);
+  DCHECK(f != base::kInvalidPlatformFileValue);
+  mappings->push_back(FileDescriptorInfo(kAndroidUIResourcesPakDescriptor,
+                                         FileDescriptor(f, true)));
+
+  const std::string locale = GetApplicationLocale();
+  FilePath locale_pak = ResourceBundle::GetSharedInstance().
+      GetLocaleFilePath(locale, false);
+  f = base::CreatePlatformFile(locale_pak, flags, NULL, NULL);
+  DCHECK(f != base::kInvalidPlatformFileValue);
+  mappings->push_back(FileDescriptorInfo(kAndroidLocalePakDescriptor,
+                                         FileDescriptor(f, true)));
+#endif  // defined(OS_ANDROID)
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
