@@ -285,7 +285,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const std::vector<ui::ScaleFactor>& desired_scale_factors);
 
   void MergeFavicon(const GURL& page_url,
-                    const GURL& icon_url,
                     IconType icon_type,
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size);
@@ -503,7 +502,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                            SetFaviconsSameFaviconURLForTwoPages);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconPageURLNotInDB);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconPageURLInDB);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconIconURLInDB);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconMaxFaviconsPerPage);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            MergeFaviconMaxFaviconBitmapsPerIconURL);

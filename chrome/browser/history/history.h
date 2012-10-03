@@ -764,21 +764,14 @@ class HistoryService : public CancelableRequestProvider,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors);
 
-  // Used by FaviconService to set a favicon for |page_url| at |icon_url|.
-  // If the |icon_url| and |pixel_size| are consistent with the icons mapped
-  // to |page_url| and the pixel sizes of the bitmaps at |icon_url|:
-  //   The favicon bitmap for |icon_url| and |pixel_size| will be updated or
-  //   created if necessary.
-  // If |icon_url| and |pixel_size| are inconsistent:
-  //   A new favicon bitmap (and favicon if necessary) will be created. The
-  //   favicon sizes for |icon_url| will be set to the default favicon sizes to
-  //   indicate that the favicon sizes are no longer known.
-  //   Arbitrary favicons and favicon bitmaps associated to |page_url| and
-  //   |icon_url| may be deleted in order to maintain the restriction for the
-  //   max favicons per page, and max favicon bitmaps per icon URL.
+  // Used by FaviconService to set a favicon for |page_url| with |pixel_size|.
+  // If there is already a favicon bitmap of |pixel_size| for |page_url|, the
+  // favicon bitmap is overwritten. Otherwise, a new favicon and favicon bitmap
+  // is created using |page_url| as the fake icon URL. Arbitrary favicons and
+  // favicon bitmaps associated to |page_url| may be deleted in order to
+  // maintain the restriction for the max favicons per page.
   // TODO(pkotwicz): Remove once no longer required by sync.
   void MergeFavicon(const GURL& page_url,
-                    const GURL& icon_url,
                     history::IconType icon_type,
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size);

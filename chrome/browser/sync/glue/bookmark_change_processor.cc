@@ -619,13 +619,6 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
     const BookmarkNode* bookmark_node,
     Profile* profile,
     const std::vector<unsigned char>& icon_bytes_vector) {
-  // Registering a favicon requires that we provide a source URL, but we
-  // don't know where these came from.  Currently we just use the
-  // destination URL, which is not correct, but since the favicon URL
-  // is used as a key in the history's thumbnail DB, this gives us a value
-  // which does not collide with others.
-  GURL fake_icon_url = bookmark_node->url();
-
   HistoryService* history =
       HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
   FaviconService* favicon_service =
@@ -641,7 +634,6 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
       new base::RefCountedBytes(icon_bytes_vector));
   gfx::Size pixel_size(gfx::kFaviconSize, gfx::kFaviconSize);
   favicon_service->MergeFavicon(bookmark_node->url(),
-                                fake_icon_url,
                                 history::FAVICON,
                                 bitmap_data,
                                 pixel_size);
