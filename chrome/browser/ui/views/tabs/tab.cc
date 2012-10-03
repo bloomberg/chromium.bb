@@ -639,9 +639,8 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
 
   // And then the gradient on top of that.
   if (mini_title_animation_->current_part_index() == 2) {
-    canvas->SaveLayerAlpha(mini_title_animation_->CurrentValueBetween(255, 0));
-    canvas->DrawImageInt(hover_image, 0, 0);
-    canvas->Restore();
+    uint8 alpha = mini_title_animation_->CurrentValueBetween(255, 0);
+    canvas->DrawImageInt(hover_image, 0, 0, alpha);
   } else {
     canvas->DrawImageInt(hover_image, 0, 0);
   }

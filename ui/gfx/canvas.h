@@ -262,6 +262,10 @@ class UI_EXPORT Canvas {
   // Thus, x is 2 pixels if canvas scale = 2 & |x| = 1.
   void DrawImageInt(const gfx::ImageSkia&, int x, int y);
 
+  // Helper for DrawImageInt(..., paint) that constructs a temporary paint and
+  // calls paint.setAlpha(alpha).
+  void DrawImageInt(const gfx::ImageSkia&, int x, int y, uint8 alpha);
+
   // Draws an image with the origin at the specified location, using the
   // specified paint. The upper left corner of the bitmap is rendered at the
   // specified location.

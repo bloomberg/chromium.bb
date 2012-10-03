@@ -487,10 +487,9 @@ gfx::ImageSkia NewTabButton::GetImageForState(
   // Draw the button border with a slight alpha.
   const int kNativeFrameOverlayAlpha = 178;
   const int kOpaqueFrameOverlayAlpha = 230;
-  canvas.SaveLayerAlpha(ShouldUseNativeFrame() ?
-      kNativeFrameOverlayAlpha : kOpaqueFrameOverlayAlpha);
-  canvas.DrawImageInt(*overlay, 0, 0);
-  canvas.Restore();
+  uint8 alpha = ShouldUseNativeFrame() ?
+      kNativeFrameOverlayAlpha : kOpaqueFrameOverlayAlpha;
+  canvas.DrawImageInt(*overlay, 0, 0, alpha);
 
   return gfx::ImageSkia(canvas.ExtractImageRep());
 }

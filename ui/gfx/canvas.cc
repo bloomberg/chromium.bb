@@ -287,6 +287,12 @@ void Canvas::DrawImageInt(const gfx::ImageSkia& image, int x, int y) {
   DrawImageInt(image, x, y, paint);
 }
 
+void Canvas::DrawImageInt(const gfx::ImageSkia& image, int x, int y, uint8 a) {
+  SkPaint paint;
+  paint.setAlpha(a);
+  DrawImageInt(image, x, y, paint);
+}
+
 void Canvas::DrawImageInt(const gfx::ImageSkia& image,
                           int x, int y,
                           const SkPaint& paint) {
