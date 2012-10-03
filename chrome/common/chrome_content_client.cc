@@ -69,11 +69,15 @@ const char kO3DPluginName[] = "Google Talk Plugin Video Accelerator";
 const char kO3DPluginMimeType[] ="application/vnd.o3d.auto";
 const char kO3DPluginExtension[] = "";
 const char kO3DPluginDescription[] = "O3D MIME";
+const uint32 kO3DPluginPermissions = ppapi::PERMISSION_PRIVATE |
+                                     ppapi::PERMISSION_DEV;
 
 const char kGTalkPluginName[] = "Google Talk Plugin";
 const char kGTalkPluginMimeType[] ="application/googletalk";
 const char kGTalkPluginExtension[] = ".googletalk";
 const char kGTalkPluginDescription[] = "Google Talk Plugin";
+const uint32 kGTalkPluginPermissions = ppapi::PERMISSION_PRIVATE |
+                                       ppapi::PERMISSION_DEV;
 
 const char kInterposeLibraryPath[] =
     "@executable_path/../../../libplugin_carbon_interpose.dylib";
@@ -162,6 +166,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       o3d.name = kO3DPluginName;
       o3d.is_out_of_process = true;
       o3d.is_sandboxed = false;
+      o3d.permissions = kO3DPluginPermissions;
       webkit::WebPluginMimeType o3d_mime_type(kO3DPluginMimeType,
                                               kO3DPluginExtension,
                                               kO3DPluginDescription);
@@ -180,6 +185,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       gtalk.name = kGTalkPluginName;
       gtalk.is_out_of_process = true;
       gtalk.is_sandboxed = false;
+      gtalk.permissions = kGTalkPluginPermissions;
       webkit::WebPluginMimeType gtalk_mime_type(kGTalkPluginMimeType,
                                                 kGTalkPluginExtension,
                                                 kGTalkPluginDescription);
