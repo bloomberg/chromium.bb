@@ -1413,6 +1413,8 @@
         'host/screen_recorder.h',
         'host/server_log_entry.cc',
         'host/server_log_entry.h',
+        'host/service_client.cc',
+        'host/service_client.h',
         'host/session_manager_factory.cc',
         'host/session_manager_factory.h',
         'host/signaling_connector.cc',
