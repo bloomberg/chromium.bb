@@ -23,6 +23,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/widget/widget.h"
 
+using ash::internal::DesktopBackgroundWidgetController;
+using ash::internal::kComponentWrapper;
+using ash::internal::kWindowDesktopComponent;
+
 namespace ash {
 namespace {
 
@@ -345,17 +349,25 @@ bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
     iter != root_windows.end(); ++iter) {
     aura::RootWindow* root_window = *iter;
-    if (root_window->GetProperty(internal::kComponentWrapper)) {
-      internal::DesktopBackgroundWidgetController* component = root_window->
-          GetProperty(internal::kWindowDesktopComponent);
-      // Wallpaper animation may not finish at this point. Try to get component
-      // from kComponentWrapper instead.
-      if (!component) {
-        component = root_window->GetProperty(internal::kComponentWrapper)->
-            GetComponent(false);
-      }
-      DCHECK(component);
-      moved = moved || component->Reparent(root_window,
+    // In the steady state (no animation playing) the background widget
+    // controller exists in the kWindowDesktopComponent property.
+    DesktopBackgroundWidgetController* desktop_component = root_window->
+        GetProperty(kWindowDesktopComponent);
+    if (desktop_component) {
+      moved |= desktop_component->Reparent(root_window,
+                                           src_container,
+                                           dst_container);
+    }
+    // During desktop show animations the controller lives in kComponentWrapper.
+    // NOTE: If a wallpaper load happens during a desktop show animation there
+    // can temporarily be two desktop background widgets.  We must reparent
+    // both of them - one above and one here.
+    DesktopBackgroundWidgetController* wrapped_component =
+        root_window->GetProperty(kComponentWrapper) ?
+        root_window->GetProperty(kComponentWrapper)->GetComponent(false) :
+        NULL;
+    if (wrapped_component) {
+      moved |= wrapped_component->Reparent(root_window,
                                            src_container,
                                            dst_container);
     }

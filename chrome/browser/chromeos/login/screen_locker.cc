@@ -323,14 +323,8 @@ void ScreenLocker::InitClass() {
 ScreenLocker::~ScreenLocker() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   ClearErrors();
-  bool moved = ash::Shell::GetInstance()->
+  ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToUnlockedContainer();
-  // If we didn't reparent the desktop background then the screen would be
-  // unlocked but the user's windows are hidden, making the UI unusable.
-  // Similar symptoms are happening in the field. Check if this is the cause.
-  // See crbug.com/149043
-  CHECK(moved);
-  LOG(WARNING) << "JAMESDEBUG screen locked moved " << moved;
 
   screen_locker_ = NULL;
   bool state = false;
