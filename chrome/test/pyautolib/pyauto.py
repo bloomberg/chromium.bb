@@ -4907,7 +4907,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     def _GetServicePath():
       service_list = self.GetNetworkInfo().get('wifi_networks', [])
       for service_path, service_obj in service_list.iteritems():
-        service_encr = 'PSK' if service_obj['encryption'] in ['WPA', 'RSN'] \
+        if not (isinstance(service_obj, dict) and
+                'encryption' in service_obj and
+                'name' in service_obj):
+          continue
+
+        service_encr = 'PSK' if service_obj['encryption'] in ['WPA', 'RSN']\
                        else service_obj['encryption']
 
         if service_obj['name'] == ssid and \
