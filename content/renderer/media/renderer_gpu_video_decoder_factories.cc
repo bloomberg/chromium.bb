@@ -175,22 +175,26 @@ void RendererGpuVideoDecoderFactories::AsyncReadPixels(
 
   gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
 
-  gles2->ActiveTexture(GL_TEXTURE0);
-  gles2->BindTexture(texture_target, texture_id);
-  gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  GLuint tmp_texture;
+  gles2->GenTextures(1, &tmp_texture);
+  gles2->BindTexture(texture_target, tmp_texture);
+  gles2->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gles2->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  context_->copyTextureCHROMIUM(
+      texture_target, texture_id, tmp_texture, 0, GL_RGBA);
 
   GLuint fb;
   gles2->GenFramebuffers(1, &fb);
   gles2->BindFramebuffer(GL_FRAMEBUFFER, fb);
   gles2->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              texture_target, texture_id, 0);
+                              texture_target, tmp_texture, 0);
   gles2->PixelStorei(GL_PACK_ALIGNMENT, 4);
-  gles2->ReadPixels(0, 0, size.width(), size.height(), GL_RGBA,
+  gles2->ReadPixels(0, 0, size.width(), size.height(), GL_BGRA_EXT,
                     GL_UNSIGNED_BYTE, pixels);
   gles2->DeleteFramebuffers(1, &fb);
+  gles2->DeleteTextures(1, &tmp_texture);
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
   waiter->Signal();
 }
