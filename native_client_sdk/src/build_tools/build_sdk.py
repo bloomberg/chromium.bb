@@ -236,6 +236,9 @@ def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
     buildbot_common.MakeDir(compiler_dir)
     buildbot_common.CopyFile(wrapper, compiler_dir)
 
+    # Module 'os' has no 'symlink' member (on Windows).
+    # pylint: disable=E1101
+
     os.symlink('compiler-wrapper.py',
                os.path.join(compiler_dir, 'i686-nacl-g++'))
     os.symlink('compiler-wrapper.py',
