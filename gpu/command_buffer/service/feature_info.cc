@@ -504,6 +504,11 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_EXTERNAL_OES);
   }
 
+  if (ext.HaveAndDesire("GL_OES_compressed_ETC1_RGB8_texture")) {
+    AddExtensionString("GL_OES_compressed_ETC1_RGB8_texture");
+    validators_.compressed_texture_format.AddValue(GL_ETC1_RGB8_OES);
+  }
+
   if (ext.Desire("GL_CHROMIUM_stream_texture")) {
     AddExtensionString("GL_CHROMIUM_stream_texture");
     feature_flags_.chromium_stream_texture = true;

@@ -1866,7 +1866,7 @@ TEST_F(GLES2DecoderTest, GenerateMipmapHandlesOutOfMemory) {
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GenerateMipmapEXT(GL_TEXTURE_2D))
-       .Times(1);
+      .Times(1);
   EXPECT_CALL(*gl_, TexParameteri(
       GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR))
       .Times(1)
@@ -5291,6 +5291,124 @@ TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
   }
 }
 
+TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
+  InitDecoder(
+      "GL_OES_compressed_ETC1_RGB8_texture",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+  const uint32 kBucketId = 123;
+  CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+
+  const GLenum kFormat = GL_ETC1_RGB8_OES;
+  const size_t kBlockSize = 8;
+
+  CompressedTexImage2DBucket cmd;
+  // test small width.
+  DoCompressedTexImage2D(GL_TEXTURE_2D, 0, kFormat, 4, 8, 0, 16, kBucketId);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // test small height.
+  DoCompressedTexImage2D(GL_TEXTURE_2D, 0, kFormat, 8, 4, 0, 16, kBucketId);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // test size too large.
+  cmd.Init(GL_TEXTURE_2D, 0, kFormat, 4, 4, 0, kBucketId);
+  bucket->SetSize(kBlockSize * 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // test size too small.
+  cmd.Init(GL_TEXTURE_2D, 0, kFormat, 4, 4, 0, kBucketId);
+  bucket->SetSize(kBlockSize / 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Test a 16x16
+  DoCompressedTexImage2D(
+      GL_TEXTURE_2D, 0, kFormat, 16, 16, 0, kBlockSize * 16, kBucketId);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Test CompressedTexSubImage not allowed
+  CompressedTexSubImage2DBucket sub_cmd;
+  bucket->SetSize(kBlockSize);
+  sub_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 4, 4, kFormat, kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Test TexSubImage not allowed for ETC1 compressed texture
+  TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id_);
+  ASSERT_TRUE(info != NULL);
+  GLenum type, internal_format;
+  EXPECT_TRUE(info->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
+  EXPECT_EQ(kFormat, internal_format);
+  TexSubImage2D texsub_cmd;
+  texsub_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 4, 4, GL_RGBA, GL_UNSIGNED_BYTE,
+           kSharedMemoryId, kSharedMemoryOffset, GL_FALSE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(texsub_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Test CopyTexSubImage not allowed for ETC1 compressed texture
+  CopyTexSubImage2D copy_cmd;
+  copy_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 4, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(copy_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderManualInitTest, GetCompressedTextureFormatsETC1) {
+  InitDecoder(
+      "GL_OES_compressed_ETC1_RGB8_texture",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+
+  typedef GetIntegerv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  GetIntegerv cmd;
+  result->size = 0;
+  EXPECT_CALL(*gl_, GetIntegerv(_, _))
+      .Times(0)
+      .RetiresOnSaturation();
+  cmd.Init(
+      GL_NUM_COMPRESSED_TEXTURE_FORMATS,
+      shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(1, result->GetNumResults());
+  GLint num_formats = result->GetData()[0];
+  EXPECT_EQ(1, num_formats);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  result->size = 0;
+  cmd.Init(
+      GL_COMPRESSED_TEXTURE_FORMATS,
+      shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(num_formats, result->GetNumResults());
+
+  EXPECT_TRUE(ValueInArray(
+      GL_ETC1_RGB8_OES,
+      result->GetData(), result->GetNumResults()));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_F(GLES2DecoderWithShaderTest, GetProgramInfoCHROMIUMValidArgs) {
   const uint32 kBucketId = 123;
   GetProgramInfoCHROMIUM cmd;
@@ -5331,7 +5449,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
       true);   // bind generates resource
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_EXTERNAL_OES, kNewServiceId));
   EXPECT_CALL(*gl_, GenTextures(1, _))
-     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
   BindTexture cmd;
   cmd.Init(GL_TEXTURE_EXTERNAL_OES, kNewClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));

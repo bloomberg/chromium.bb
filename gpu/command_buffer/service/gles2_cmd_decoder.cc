@@ -7080,6 +7080,9 @@ const int kS3TCBlockWidth = 4;
 const int kS3TCBlockHeight = 4;
 const int kS3TCDXT1BlockSize = 8;
 const int kS3TCDXT3AndDXT5BlockSize = 16;
+const int kETC1BlockWidth = 4;
+const int kETC1BlockHeight = 4;
+const int kETC1BlockSize = 8;
 
 bool IsValidDXTSize(GLint level, GLsizei size) {
   return (size == 1) ||
@@ -7114,6 +7117,15 @@ bool GLES2DecoderImpl::ValidateCompressedTexFuncData(
         bytes_required = num_blocks * kS3TCDXT3AndDXT5BlockSize;
         break;
       }
+    case GL_ETC1_RGB8_OES: {
+        int num_blocks_across =
+            (width + kETC1BlockWidth - 1) / kETC1BlockWidth;
+        int num_blocks_down =
+            (height + kETC1BlockHeight - 1) / kETC1BlockHeight;
+        int num_blocks = num_blocks_across * num_blocks_down;
+        bytes_required = num_blocks * kETC1BlockSize;
+        break;
+      }
     default:
       SetGLErrorInvalidEnum(function_name, format, "format");
       return false;
@@ -7144,6 +7156,14 @@ bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
       }
       return true;
     }
+    case GL_ETC1_RGB8_OES:
+      if (width <= 0 || height <= 0) {
+        SetGLError(
+            GL_INVALID_OPERATION, function_name,
+            "width or height invalid for level");
+        return false;
+      }
+      return true;
     default:
       return false;
   }
@@ -7184,6 +7204,12 @@ bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
       }
       return ValidateCompressedTexDimensions(
           function_name, level, width, height, format);
+    }
+    case GL_ETC1_RGB8_OES: {
+      SetGLError(
+          GL_INVALID_OPERATION, function_name,
+          "TexsubImage2d not supported for ECT1_RGB8_OES textures");
+      return false;
     }
     default:
       return false;
@@ -7763,7 +7789,8 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   uint32 channels_exist = GLES2Util::GetChannelsForFormat(read_format);
   uint32 channels_needed = GLES2Util::GetChannelsForFormat(format);
 
-  if ((channels_needed & channels_exist) != channels_needed) {
+  if (!channels_needed ||
+      (channels_needed & channels_exist) != channels_needed) {
     SetGLError(
         GL_INVALID_OPERATION, "glCopyTexSubImage2D", "incompatible format");
     return;
