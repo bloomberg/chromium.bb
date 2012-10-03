@@ -130,7 +130,7 @@ class Forwarder(object):
   def __init__(self, adb, host_port):
     assert HasForwarder(adb)
 
-    port_pairs = [(0, host_port), ]
+    port_pairs = [(host_port, host_port), ]
     tool = valgrind_tools.BaseTool()
 
     self._host_port = host_port

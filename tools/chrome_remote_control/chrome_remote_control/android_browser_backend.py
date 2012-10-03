@@ -51,7 +51,9 @@ class AndroidBrowserBackend(browser_backend.BrowserBackend):
       args.extend(extra_browser_args)
     args.extend(options.extra_browser_args)
     with tempfile.NamedTemporaryFile() as f:
-      f.write(' '.join(args))
+      def EscapeIfNeeded(arg):
+        return arg.replace(' ', '" "')
+      f.write(' '.join([EscapeIfNeeded(arg) for arg in args]))
       f.flush()
       self._adb.Push(f.name, cmdline_file)
 
@@ -108,6 +110,7 @@ class AndroidBrowserBackend(browser_backend.BrowserBackend):
     self.Close()
 
   def Close(self):
+    self._adb.RunShellCommand('rm %s' % self._cmdline_file)
     self._adb.KillAll(self._package)
 
   def IsBrowserRunning(self):
