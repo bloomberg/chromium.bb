@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -326,6 +327,7 @@ bool VPNConfigView::Login() {
       case PROVIDER_TYPE_MAX:
         break;
     }
+    config_data.save_credentials = GetSaveCredentials();
     cros->ConnectToUnconfiguredVirtualNetwork(
         GetService(), GetServer(), provider_type_, config_data);
   } else {
@@ -363,6 +365,7 @@ bool VPNConfigView::Login() {
         CreateEnrollmentDelegate(GetWidget()->GetNativeWindow(),
                                  vpn->name(),
                                  ProfileManager::GetLastUsedProfile()));
+    vpn->SetSaveCredentials(GetSaveCredentials());
     cros->ConnectToVirtualNetwork(vpn);
   }
   // Connection failures are responsible for updating the UI, including
@@ -441,6 +444,10 @@ const std::string VPNConfigView::GetUserCertID() const {
   }
 }
 
+bool VPNConfigView::GetSaveCredentials() const {
+  return save_credentials_checkbox_->checked();
+}
+
 void VPNConfigView::Init(VirtualNetwork* vpn) {
   if (vpn) {
     ProviderType type = vpn->provider_type();
@@ -461,6 +468,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
                        onc::vpn::kUsername);
     ParseVPNUIProperty(&user_passphrase_ui_data_, vpn, credentials_dict_name,
                        onc::vpn::kPassword);
+    ParseVPNUIProperty(&save_credentials_ui_data_, vpn, credentials_dict_name,
+                       onc::vpn::kSaveCredentials);
   }
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
@@ -685,6 +694,19 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     group_name_label_ = NULL;
     group_name_textfield_ = NULL;
   }
+
+  // Save credentials
+  layout->StartRow(0, column_view_set_id);
+  save_credentials_checkbox_ = new views::Checkbox(
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS));
+  save_credentials_checkbox_->SetEnabled(save_credentials_ui_data_.editable());
+  bool save_credentials = vpn ? vpn->save_credentials() : false;
+  save_credentials_checkbox_->SetChecked(save_credentials);
+  layout->SkipColumns(1);
+  layout->AddView(save_credentials_checkbox_);
+  layout->AddView(
+      new ControlledSettingIndicatorView(save_credentials_ui_data_));
 
   // Error label.
   layout->StartRow(0, column_view_set_id);

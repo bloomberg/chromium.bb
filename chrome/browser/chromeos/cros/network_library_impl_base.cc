@@ -987,6 +987,7 @@ void NetworkLibraryImplBase::ConnectToUnconfiguredVirtualNetwork(
   connect_data_.passphrase = config.user_passphrase;
   connect_data_.otp = config.otp;
   connect_data_.group_name = config.group_name;
+  connect_data_.save_credentials = config.save_credentials;
   CallRequestVirtualNetworkAndConnect(
       service_name, server_hostname, provider_type);
 }
@@ -1086,6 +1087,7 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkUsingConnectData(
       NOTREACHED();
       break;
   }
+  vpn->SetSaveCredentials(data.save_credentials);
 
   NetworkConnectStartVPN(vpn);
 }

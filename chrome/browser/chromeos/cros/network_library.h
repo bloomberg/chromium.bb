@@ -1645,6 +1645,7 @@ class NetworkLibrary {
     std::string user_passphrase;
     std::string otp;
     std::string group_name;
+    bool save_credentials;
   };
   virtual void ConnectToUnconfiguredVirtualNetwork(
       const std::string& service_name,

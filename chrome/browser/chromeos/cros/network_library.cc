@@ -1339,7 +1339,9 @@ NetworkLibrary::EAPConfigData::EAPConfigData()
 
 NetworkLibrary::EAPConfigData::~EAPConfigData() {}
 
-NetworkLibrary::VPNConfigData::VPNConfigData() {}
+NetworkLibrary::VPNConfigData::VPNConfigData()
+    : save_credentials(false) {
+}
 
 NetworkLibrary::VPNConfigData::~VPNConfigData() {}
 
