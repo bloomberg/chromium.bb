@@ -101,6 +101,47 @@ class AutofillPopupView : public content::NotificationObserver {
   // Returns true if the given id refers to an element that can be deleted.
   bool CanDelete(int id);
 
+  // Get width of popup needed by values.
+  int GetPopupRequiredWidth();
+
+  // Get height of popup needed by values.
+  int GetPopupRequiredHeight();
+
+  // Convert a y-coordinate to the closest line.
+  int LineFromY(int y);
+
+  // Get the height of the given row.
+  int GetRowHeightFromId(int unique_id);
+
+  // Returns the rectangle containing the item at position |index| in the popup.
+  gfx::Rect GetRectForRow(size_t row, int width);
+
+  // Returns true if the given |x| and |y| coordinates refer to a point that
+  // hits the delete icon in the current selected line.
+  bool DeleteIconIsSelected(int x, int y);
+
+  // Constants that are needed by the subclasses.
+  // The size of the boarder around the entire results popup, in pixels.
+  static const size_t kBorderThickness;
+
+  // The amount of padding between icons in pixels.
+  static const size_t kIconPadding;
+
+  // The amount of padding at the end of the popup in pixels.
+  static const size_t kEndPadding;
+
+  // Height of the delete icon in pixels.
+  static const size_t kDeleteIconHeight;
+
+  // Width of the delete icon in pixels.
+  static const size_t kDeleteIconWidth;
+
+  // Height of the Autofill icons in pixels.
+  static const size_t kAutofillIconHeight;
+
+  // Width of the Autofill icons in pixels.
+  static const size_t kAutofillIconWidth;
+
  private:
   // Returns true if the given id refers to an element that can be accepted.
   bool CanAccept(int id);

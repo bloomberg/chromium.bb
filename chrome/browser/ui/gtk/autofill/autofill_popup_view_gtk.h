@@ -81,22 +81,6 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   // Set the bounds of the popup to show, including the placement of it.
   void SetBounds();
 
-  // Get width of popup needed by values.
-  int GetPopupRequiredWidth();
-
-  // Get height of popup needed by values.
-  int GetPopupRequiredHeight();
-
-  // Convert a y-coordinate to the closest line.
-  int LineFromY(int y);
-
-  // Returns the rectangle containing the item at position |index| in the popup.
-  gfx::Rect GetRectForRow(size_t row, int width);
-
-  // Returns true if the given |x| and |y| coordinates refer to a point that
-  // hits the delete icon in the current selected line.
-  bool DeleteIconIsSelected(int x, int y);
-
   GtkWidget* parent_;  // Weak reference.
   GtkWidget* window_;  // Strong reference.
   PangoLayout* layout_;  // Strong reference
