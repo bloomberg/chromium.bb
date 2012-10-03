@@ -184,15 +184,16 @@ void AppListController::ScheduleAnimation() {
   // Stop observing previous animation.
   StopObservingImplicitAnimations();
 
-  ui::Layer* layer = GetLayer(view_->GetWidget());
+  views::Widget* widget = view_->GetWidget();
+  ui::Layer* layer = GetLayer(widget);
   layer->GetAnimator()->StopAnimating();
 
   gfx::Rect target_bounds;
   if (is_visible_) {
-    target_bounds = layer->bounds();
-    layer->SetBounds(OffsetTowardsShelf(layer->bounds()));
+    target_bounds = widget->GetWindowBoundsInScreen();
+    widget->SetBounds(OffsetTowardsShelf(target_bounds));
   } else {
-    target_bounds = OffsetTowardsShelf(layer->bounds());
+    target_bounds = OffsetTowardsShelf(widget->GetWindowBoundsInScreen());
   }
 
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
@@ -201,7 +202,7 @@ void AppListController::ScheduleAnimation() {
   animation.AddObserver(this);
 
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
-  layer->SetBounds(target_bounds);
+  widget->SetBounds(target_bounds);
 }
 
 void AppListController::ProcessLocatedEvent(aura::Window* target,
@@ -335,10 +336,11 @@ void AppListController::TransitionChanged() {
   if (pagination_model_->is_valid_page(transition.target_page))
     return;
 
+  views::Widget* widget = view_->GetWidget();
   if (!pagination_model_->IsRevertingCurrentTransition()) {
     // Update cached |view_bounds_| before the first over-scroll move.
     if (!should_snap_back_)
-      view_bounds_ = view_->GetWidget()->GetNativeView()->bounds();
+      view_bounds_ = widget->GetWindowBoundsInScreen();
 
     const int current_page = pagination_model_->selected_page();
     const int dir = transition.target_page > current_page ? -1 : 1;
@@ -348,15 +350,14 @@ void AppListController::TransitionChanged() {
 
     gfx::Rect shifted(view_bounds_);
     shifted.set_x(shifted.x() + shift);
-    view_->GetWidget()->SetBounds(shifted);
+    widget->SetBounds(shifted);
     should_snap_back_ = true;
   } else if (should_snap_back_) {
     should_snap_back_ = false;
-    ui::Layer* layer = GetLayer(view_->GetWidget());
-    ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+    ui::ScopedLayerAnimationSettings animation(GetLayer(widget)->GetAnimator());
     animation.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kSnapBackAnimationDurationMs));
-    layer->SetBounds(view_bounds_);
+    widget->SetBounds(view_bounds_);
   }
 }
 

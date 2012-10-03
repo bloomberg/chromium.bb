@@ -320,9 +320,11 @@ void RootWindowController::CreateContainersInRootWindow(
                       non_lock_screen_containers);
   SetUsesScreenCoordinates(launcher_container);
 
-  CreateContainer(internal::kShellWindowId_AppListContainer,
-                  "AppListContainer",
-                  non_lock_screen_containers);
+  aura::Window* app_list_container =
+      CreateContainer(internal::kShellWindowId_AppListContainer,
+                      "AppListContainer",
+                      non_lock_screen_containers);
+  SetUsesScreenCoordinates(app_list_container);
 
   aura::Window* modal_container = CreateContainer(
       internal::kShellWindowId_SystemModalContainer,
