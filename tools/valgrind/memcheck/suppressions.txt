@@ -4848,16 +4848,6 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
-   bug_122249a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore23v8StringToWebCoreStringEN2v86HandleINS0_6StringEEE
-   fun:_ZN7WebCore22v8ValueToWebCoreStringEN2v86HandleINS0_5ValueEEE
-   fun:_ZN7WebCoreL21createIDBKeyFromValueEN2v86HandleINS0_5ValueEEERN3WTF6VectorINS1_INS0_5ArrayEEELm0EEE
-   fun:_ZN7WebCore21createIDBKeyFromValueEN2v86HandleINS0_5ValueEEE
-}
-{
    bug_122249b
    Memcheck:Leak
    fun:malloc
