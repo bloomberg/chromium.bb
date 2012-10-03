@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/threading/thread.h"
+#include "base/win/scoped_com_initializer.h"
 
 namespace {
 
@@ -17,11 +18,12 @@ class ShellDialogThread : public base::Thread {
   ShellDialogThread() : base::Thread("Chrome_ShellDialogThread") { }
   ~ShellDialogThread();
 
- protected:
+ private:
    void Init();
    void CleanUp();
 
- private:
+  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellDialogThread);
 };
 
@@ -30,14 +32,11 @@ ShellDialogThread::~ShellDialogThread() {
 }
 
 void ShellDialogThread::Init() {
-  // Initializes the COM library on the current thread.
-  CoInitialize(NULL);
+  com_initializer_.reset(new base::win::ScopedCOMInitializer());
 }
 
 void ShellDialogThread::CleanUp() {
-  // Closes the COM library on the current thread. CoInitialize must
-  // be balanced by a corresponding call to CoUninitialize.
-  CoUninitialize();
+  com_initializer_.reset();
 }
 
 }  // namespace

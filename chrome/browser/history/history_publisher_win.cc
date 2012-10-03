@@ -5,7 +5,6 @@
 #include "chrome/browser/history/history_publisher.h"
 
 #include <atlsafe.h>
-#include <objbase.h>
 #include <oleauto.h>
 #include <wtypes.h>
 
@@ -70,11 +69,9 @@ double HistoryPublisher::TimeToUTCVariantTime(const base::Time& time) {
 }
 
 HistoryPublisher::HistoryPublisher() {
-  CoInitialize(NULL);
 }
 
 HistoryPublisher::~HistoryPublisher() {
-  CoUninitialize();
 }
 
 bool HistoryPublisher::Init() {

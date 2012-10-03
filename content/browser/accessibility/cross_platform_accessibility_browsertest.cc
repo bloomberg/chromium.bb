@@ -19,6 +19,7 @@
 #if defined(OS_WIN)
 #include <atlbase.h>
 #include <atlcom.h>
+#include "base/win/scoped_com_initializer.h"
 #include "ui/base/win/atl_module.h"
 #endif
 
@@ -66,19 +67,26 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
                  const AccessibilityNodeData::IntAttribute attr);
   bool GetBoolAttr(const AccessibilityNodeData& node,
                    const AccessibilityNodeData::BoolAttribute attr);
+
+ private:
+#if defined(OS_WIN)
+  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(CrossPlatformAccessibilityBrowserTest);
 };
 
 void CrossPlatformAccessibilityBrowserTest::SetUpInProcessBrowserTestFixture() {
 #if defined(OS_WIN)
   ui::win::CreateATLModuleIfNeeded();
-  ::CoInitialize(NULL);
+  com_initializer_.reset(new base::win::ScopedCOMInitializer());
 #endif
 }
 
 void
 CrossPlatformAccessibilityBrowserTest::TearDownInProcessBrowserTestFixture() {
 #if defined(OS_WIN)
-  ::CoUninitialize();
+  com_initializer_.reset();
 #endif
 }
 

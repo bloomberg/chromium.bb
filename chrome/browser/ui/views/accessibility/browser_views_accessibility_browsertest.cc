@@ -5,6 +5,7 @@
 #include <oleacc.h>
 
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -55,15 +56,18 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
   void TestAccessibilityInfo(IAccessible* acc_obj,
                              std::wstring name,
                              int32 role);
+
+ private:
+  base::win::ScopedCOMInitializer com_initializer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserViewsAccessibilityTest);
 };
 
 BrowserViewsAccessibilityTest::BrowserViewsAccessibilityTest() {
   ui::win::CreateATLModuleIfNeeded();
-  ::CoInitialize(NULL);
 }
 
 BrowserViewsAccessibilityTest::~BrowserViewsAccessibilityTest() {
-  ::CoUninitialize();
 }
 
 BrowserWindowTesting* BrowserViewsAccessibilityTest::GetBrowserWindowTesting() {

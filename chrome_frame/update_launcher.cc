@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <Shellapi.h>
 
+#include "base/win/scoped_com_initializer.h"
 #include "google_update/google_update_idl.h"
 
 namespace {
@@ -54,15 +55,14 @@ std::wstring GetUpdateCommandFromArguments(const wchar_t* command_line) {
 DWORD LaunchUpdateCommand(const std::wstring& command) {
   DWORD exit_code = kLaunchFailureExitCode;
 
-  HRESULT hr = ::CoInitialize(NULL);
-
-  if (SUCCEEDED(hr)) {
+  base::win::ScopedCOMInitializer com_initializer;
+  if (com_initializer.succeeded()) {
     IProcessLauncher* ipl = NULL;
     HANDLE process = NULL;
 
-    hr = ::CoCreateInstance(__uuidof(ProcessLauncherClass), NULL,
-                            CLSCTX_ALL, __uuidof(IProcessLauncher),
-                            reinterpret_cast<void**>(&ipl));
+    HRESULT hr = ::CoCreateInstance(__uuidof(ProcessLauncherClass), NULL,
+                                    CLSCTX_ALL, __uuidof(IProcessLauncher),
+                                    reinterpret_cast<void**>(&ipl));
 
     if (SUCCEEDED(hr)) {
       ULONG_PTR phandle = NULL;
@@ -80,8 +80,6 @@ DWORD LaunchUpdateCommand(const std::wstring& command) {
       ::CloseHandle(process);
     if (ipl)
       ipl->Release();
-
-    ::CoUninitialize();
   }
 
   return exit_code;

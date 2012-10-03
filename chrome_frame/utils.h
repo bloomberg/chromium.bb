@@ -17,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string16.h"
 #include "base/threading/thread.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
@@ -399,22 +400,26 @@ STDMETHODIMP QueryInterfaceIfDelegateSupports(void* obj, REFIID iid,
 class STAThread : public base::Thread {
  public:
   explicit STAThread(const char *name) : Thread(name) {}
-  ~STAThread() {
+  virtual ~STAThread() {
     Stop();
   }
+
   bool Start() {
     return StartWithOptions(Options(MessageLoop::TYPE_UI, 0));
   }
- protected:
-  // Called just prior to starting the message loop
-  virtual void Init() {
-    ::CoInitialize(0);
+
+ private:
+  virtual void Init() OVERRIDE {
+    com_initializer_.reset(new base::win::ScopedCOMInitializer());
   }
 
-  // Called just after the message loop ends
-  virtual void CleanUp() {
-    ::CoUninitialize();
+  virtual void CleanUp() OVERRIDE {
+    com_initializer_.reset();
   }
+
+  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+
+  DISALLOW_COPY_AND_ASSIGN(STAThread);
 };
 
 std::wstring GuidToString(const GUID& guid);

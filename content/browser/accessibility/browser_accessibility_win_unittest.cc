@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -51,15 +52,17 @@ VARIANT CreateI4Variant(LONG value) {
 }
 
 class BrowserAccessibilityTest : public testing::Test {
- protected:
+ public:
+  BrowserAccessibilityTest() {}
+
+ private:
   virtual void SetUp() {
     ui::win::CreateATLModuleIfNeeded();
-    ::CoInitialize(NULL);
   }
 
-  virtual void TearDown() {
-    ::CoUninitialize();
-  }
+  base::win::ScopedCOMInitializer com_initializer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };
 
 // Test that BrowserAccessibilityManager correctly releases the tree of

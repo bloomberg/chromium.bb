@@ -16,6 +16,12 @@
 #include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/utils.h"
 
+namespace base {
+namespace win {
+class ScopedCOMInitializer;
+}
+}
+
 class UrlmonUrlRequest;
 
 class UrlmonUrlRequestManager
@@ -30,6 +36,11 @@ class UrlmonUrlRequestManager
 
     virtual void Init();
     virtual void CleanUp();
+
+   private:
+    scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+
+    DISALLOW_COPY_AND_ASSIGN(ResourceFetcherThread);
   };
 
   // Contains the privacy information for all requests issued by this instance.

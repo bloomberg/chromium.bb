@@ -21,6 +21,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
@@ -1317,26 +1318,6 @@ bool ShowRebootDialog() {
   return true;
 }
 
-// Class to manage COM initialization and uninitialization
-class AutoCom {
- public:
-  AutoCom() : initialized_(false) { }
-  ~AutoCom() {
-    if (initialized_) CoUninitialize();
-  }
-  bool Init(bool system_install) {
-    if (CoInitializeEx(NULL, COINIT_APARTMENTTHREADED) != S_OK) {
-      LOG(ERROR) << "COM initialization failed.";
-      return false;
-    }
-    initialized_ = true;
-    return true;
-  }
-
- private:
-  bool initialized_;
-};
-
 // Returns the Custom information for the client identified by the exe path
 // passed in. This information is used for crash reporting.
 google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* exe_path) {
@@ -1444,8 +1425,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   }
 
   // Initialize COM for use later.
-  AutoCom auto_com;
-  if (!auto_com.Init(system_install)) {
+  base::win::ScopedCOMInitializer com_initializer;
+  if (!com_initializer.succeeded()) {
     installer_state.WriteInstallerResult(
         installer::OS_ERROR, IDS_INSTALL_OS_ERROR_BASE, NULL);
     return installer::OS_ERROR;

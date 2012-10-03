@@ -22,6 +22,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "remoting/base/scoped_sc_handle_win.h"
@@ -71,9 +72,11 @@ class ComThread : public base::Thread {
 
   bool Start();
 
- protected:
+ private:
   virtual void Init() OVERRIDE;
   virtual void CleanUp() OVERRIDE;
+
+  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(ComThread);
 };
@@ -183,11 +186,11 @@ bool ComThread::Start() {
 }
 
 void ComThread::Init() {
-  CoInitialize(NULL);
+  com_initializer_.reset(new base::win::ScopedCOMInitializer());
 }
 
 void ComThread::CleanUp() {
-  CoUninitialize();
+  com_initializer_.reset();
 }
 
 DaemonControllerWin::DaemonControllerWin()

@@ -5,7 +5,6 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include <objbase.h>
 #include <windows.h>
 #endif
 
@@ -22,6 +21,7 @@
 #include "content/public/common/main_function_params.h"
 
 #if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
 #include "content/public/common/injection_test_win.h"
 #include "sandbox/win/src/sandbox.h"
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -118,7 +118,8 @@ int PluginMain(const content::MainFunctionParams& parameters) {
   sandbox::TargetServices* target_services =
       parameters.sandbox_info->target_services;
 
-  CoInitialize(NULL);
+  base::win::ScopedCOMInitializer com_initializer;
+
   DVLOG(1) << "Started plugin with "
            << parsed_command_line.GetCommandLineString();
 
@@ -183,7 +184,6 @@ int PluginMain(const content::MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   DestroyIMEForFlash();
-  CoUninitialize();
 #endif
 
   return 0;

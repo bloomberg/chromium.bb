@@ -1455,9 +1455,9 @@ UrlmonUrlRequestManager::ResourceFetcherThread::~ResourceFetcherThread() {
 }
 
 void UrlmonUrlRequestManager::ResourceFetcherThread::Init() {
-  CoInitialize(NULL);
+  com_initializer_.reset(new base::win::ScopedCOMInitializer());
 }
 
 void UrlmonUrlRequestManager::ResourceFetcherThread::CleanUp() {
-  CoUninitialize();
+  com_initializer_.reset();
 }
