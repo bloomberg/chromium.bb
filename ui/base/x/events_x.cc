@@ -603,7 +603,9 @@ gfx::Point CalibrateTouchCoordinates(
   const int kLeftBorder = 40;
   const int kRightBorder = 40;
   const int kBottomBorder = 30;
-  const int kTopBorder = -20;
+  // A negative border offset will scale the top portion over the top area
+  // and a positive number will cut off n pixels.
+  const int kTopBorder = 0;
   const int resolution_x = bounds.width();
   const int resolution_y = bounds.height();
   // The "grace area" (10% in this case) is to make it easier for the user to
