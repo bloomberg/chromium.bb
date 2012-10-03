@@ -94,8 +94,10 @@ TabHelper::TabHelper(content::WebContents* web_contents)
         new PageActionController(web_contents));
   }
 
-  if (FeatureSwitch::GetScriptBubble()->IsEnabled())
-    script_bubble_controller_.reset(new ScriptBubbleController(this));
+  if (FeatureSwitch::GetScriptBubble()->IsEnabled()) {
+    script_bubble_controller_.reset(
+        new ScriptBubbleController(web_contents, this));
+  }
 
   // If more classes need to listen to global content script activity, then
   // a separate routing class with an observer interface should be written.

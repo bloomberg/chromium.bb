@@ -99,6 +99,8 @@
         <include name="IDR_WALLPAPER_MANAGER_MAIN" file="chromeos/wallpaper_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_WALLPAPER_MANAGER_MAIN_JS" file="chromeos/wallpaper_manager/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
       </if>
+      <include name="IDR_SCRIPT_BUBBLE_POPUP_HTML" file="script_bubble/popup.html" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_SCRIPT_BUBBLE_POPUP_JS" file="script_bubble/popup.js" flattenhtml="false" type="BINDATA" />
     </includes>
   </release>
 </grit>

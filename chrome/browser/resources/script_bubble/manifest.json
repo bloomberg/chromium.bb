@@ -4,6 +4,9 @@
   "name": "Script Bubble",
   "description": "Shows the number of extensions running content script on the current tab.",
   "version": "1",
+  "permissions": [
+    "management"
+  ],
   "page_action": {
     "default_icon": "16.png"
   }

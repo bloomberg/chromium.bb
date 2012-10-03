@@ -28,7 +28,7 @@ scoped_refptr<Extension> ExtensionBuilder::Build() {
 }
 
 ExtensionBuilder& ExtensionBuilder::SetPath(const FilePath& path) {
-  path_ = path_;
+  path_ = path;
   return *this;
 }
 
