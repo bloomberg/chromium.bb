@@ -295,9 +295,9 @@ class Popen(subprocess.Popen):
       # This thread needs to be optimized for speed.
       while threads:
         item = queue.get()
-        if item[0] is 'stdout':
+        if item[0] == 'stdout':
           self.stdout_cb(item[1])
-        elif item[0] is 'stderr':
+        elif item[0] == 'stderr':
           self.stderr_cb(item[1])
         else:
           # A thread terminated.

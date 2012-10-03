@@ -574,7 +574,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         # Strip any leading path separators.
         while file_list[i].startswith(('\\', '/')):
           file_list[i] = file_list[i][1:]
-    elif command is 'recurse':
+    elif command == 'recurse':
       if not isinstance(parsed_url, self.FileImpl):
         # Skip file only checkout.
         scm = gclient_scm.GetScmName(parsed_url)
@@ -1018,7 +1018,7 @@ solutions = [
     if (sys.stdout.isatty() and not self._options.verbose):
       if command in ('update', 'revert'):
         pm = Progress('Syncing projects', 1)
-      elif command is 'recurse':
+      elif command == 'recurse':
         pm = Progress(' '.join(args), 1)
     work_queue = gclient_utils.ExecutionQueue(self._options.jobs, pm)
     for s in self.dependencies:
