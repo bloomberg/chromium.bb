@@ -30,6 +30,8 @@
 #include "compositor.h"
 #include "evdev.h"
 
+#define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
+
 void
 evdev_led_update(struct evdev_device *device, enum weston_led leds)
 {
@@ -161,17 +163,35 @@ evdev_process_relative(struct evdev_device *device,
 		device->pending_events |= EVDEV_RELATIVE_MOTION;
 		break;
 	case REL_WHEEL:
-		notify_axis(device->seat,
-			      time,
-			      WL_POINTER_AXIS_VERTICAL_SCROLL,
-			      wl_fixed_from_int(e->value));
+		switch (e->value) {
+		case -1:
+			/* Scroll down */
+		case 1:
+			/* Scroll up */
+			notify_axis(device->seat,
+				    time,
+				    WL_POINTER_AXIS_VERTICAL_SCROLL,
+				    -1 * e->value * DEFAULT_AXIS_STEP_DISTANCE);
+			break;
+		default:
+			break;
+		}
 		break;
 	case REL_HWHEEL:
-		notify_axis(device->seat,
-			      time,
-			      WL_POINTER_AXIS_HORIZONTAL_SCROLL,
-			      wl_fixed_from_int(e->value));
-		break;
+		switch (e->value) {
+		case -1:
+			/* Scroll left */
+		case 1:
+			/* Scroll right */
+			notify_axis(device->seat,
+				    time,
+				    WL_POINTER_AXIS_HORIZONTAL_SCROLL,
+				    e->value * DEFAULT_AXIS_STEP_DISTANCE);
+			break;
+		default:
+			break;
+
+		}
 	}
 }
 
