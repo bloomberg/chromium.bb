@@ -250,7 +250,7 @@ cr.define('cr.ui.login', function() {
               'webkitTransitionEnd', function f(e) {
                 innerContainer.removeEventListener('webkitTransitionEnd', f);
                 $('progress-dots').classList.remove('down');
-                chrome.send('loginVisible');
+                chrome.send('loginVisible', ['oobe']);
               });
         }
         newHeader.classList.remove('right');  // Old OOBE.

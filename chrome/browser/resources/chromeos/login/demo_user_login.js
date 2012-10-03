@@ -26,7 +26,7 @@ initialize = function() {
   chrome.send('demoWebuiReady');
   // Report back sign in UI being painted.
   window.webkitRequestAnimationFrame(function() {
-    chrome.send('loginVisible');
+    chrome.send('loginVisible', ['demo']);
   });
 };
 

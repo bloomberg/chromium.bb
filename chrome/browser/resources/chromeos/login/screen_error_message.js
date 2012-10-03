@@ -370,7 +370,7 @@ cr.define('login', function() {
         chrome.send('networkErrorShown');
         // Report back error screen UI being painted.
         window.webkitRequestAnimationFrame(function() {
-          chrome.send('loginVisible');
+          chrome.send('loginVisible', ['network-error']);
         });
       } else {
         chrome.send('hideCaptivePortal');

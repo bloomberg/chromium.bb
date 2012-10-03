@@ -117,7 +117,6 @@ WebUILoginView::WebUILoginView()
       login_window_(NULL),
       host_window_frozen_(false),
       is_hidden_(false),
-      login_visible_notification_fired_(false),
       login_prompt_visible_handled_(false),
       should_emit_login_prompt_visible_(true) {
   registrar_.Add(this,
@@ -239,11 +238,7 @@ void WebUILoginView::OpenProxySettings() {
 
 void WebUILoginView::OnPostponedShow() {
   set_is_hidden(false);
-  // If notification will happen later let it fire login-prompt-visible signal.
-  if (login_visible_notification_fired_) {
-    LOG(INFO) << "Login WebUI >> postponed show, login_visible already fired";
-    OnLoginPromptVisible();
-  }
+  OnLoginPromptVisible();
 }
 
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
@@ -285,7 +280,6 @@ void WebUILoginView::Observe(int type,
                              const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
-      login_visible_notification_fired_ = true;
       OnLoginPromptVisible();
       registrar_.RemoveAll();
       break;

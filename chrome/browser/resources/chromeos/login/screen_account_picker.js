@@ -100,7 +100,7 @@ cr.define('login', function() {
       // $('pod-row').startInitAnimation();
 
       chrome.send('accountPickerReady');
-      chrome.send('loginVisible');
+      chrome.send('loginVisible', ['pod-row']);
     },
 
      /**

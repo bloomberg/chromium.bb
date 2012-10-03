@@ -148,9 +148,6 @@ class WebUILoginView : public views::WidgetDelegateView,
   // True when WebUI is being initialized hidden.
   bool is_hidden_;
 
-  // True when NOTIFICATION_LOGIN_WEBUI_VISIBLE notification has fired.
-  bool login_visible_notification_fired_;
-
   // True is login-prompt-visible event has been already handled.
   bool login_prompt_visible_handled_;
 

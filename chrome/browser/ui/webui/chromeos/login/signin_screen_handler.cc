@@ -995,6 +995,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
 void SigninScreenHandler::HandleAccountPickerReady(
     const base::ListValue* args) {
+  LOG(INFO) << "Login WebUI >> AccountPickerReady";
 
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
@@ -1125,8 +1126,14 @@ void SigninScreenHandler::HandleOpenProxySettings(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
-  LOG(INFO) << "Login WebUI >> LoginVisible, webui_visible_: "
-            << webui_visible_;
+  std::string source;
+  if (!args->GetString(0, &source)) {
+    NOTREACHED();
+    return;
+  }
+
+  LOG(INFO) << "Login WebUI >> LoginVisible, source: " << source
+            << ", webui_visible_: " << webui_visible_;
   if (!webui_visible_) {
     // There might be multiple messages from OOBE UI so send notifications after
     // the first one only.
