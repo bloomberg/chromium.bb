@@ -573,13 +573,19 @@ void ChromeBrowserFieldTrials::SetUpCacheSensitivityAnalysisFieldTrial() {
 #if (defined(OS_ANDROID) || defined(OS_IOS))
   base::FieldTrial::Probability sensitivity_analysis_probability = 0;
 #else
-  base::FieldTrial::Probability sensitivity_analysis_probability = 20;
+  base::FieldTrial::Probability sensitivity_analysis_probability = 8;
 #endif
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial("CacheSensitivityAnalysis",
                                                  kDivisor, "No",
                                                  2012, 12, 31, NULL));
-  trial->AppendGroup("Control", sensitivity_analysis_probability);
-  trial->AppendGroup("100", sensitivity_analysis_probability);
+  trial->AppendGroup("ControlA", sensitivity_analysis_probability);
+  trial->AppendGroup("ControlB", sensitivity_analysis_probability);
+  trial->AppendGroup("100A", sensitivity_analysis_probability);
+  trial->AppendGroup("100B", sensitivity_analysis_probability);
+  trial->AppendGroup("200A", sensitivity_analysis_probability);
+  trial->AppendGroup("200B", sensitivity_analysis_probability);
+  trial->AppendGroup("400A", sensitivity_analysis_probability);
+  trial->AppendGroup("400B", sensitivity_analysis_probability);
 }
