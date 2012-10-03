@@ -5,6 +5,7 @@ import os
 
 from chrome_remote_control import replay_server
 from chrome_remote_control import temporary_http_server
+from chrome_remote_control import browser_credentials
 
 class Browser(object):
   """A running browser instance that can be controlled in a limited way.
@@ -19,6 +20,7 @@ class Browser(object):
   """
   def __init__(self, backend):
     self._backend = backend
+    self.credentials = browser_credentials.BrowserCredentials()
 
   def __enter__(self):
     return self
@@ -43,6 +45,7 @@ class Browser(object):
 
   def Close(self):
     self._backend.Close()
+    self.credentials = None
 
   def CreateTemporaryHTTPServer(self, path):
     return temporary_http_server.TemporaryHTTPServer(self._backend, path)

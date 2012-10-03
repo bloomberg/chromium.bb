@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import json
 import urlparse
+import os
 
 class Page(object):
   def __init__(self, url, attributes=None):
@@ -24,10 +25,20 @@ class Page(object):
     return self.url
 
 class PageSet(object):
-  def __init__(self, description='', archive_path='', file_path=''):
-    self.description = description
-    self.archive_path = archive_path
+  def __init__(self, file_path='', attributes=None):
+    self.description = ''
+    self.archive_path = ''
     self.file_path = file_path
+    self.credentials_path = None
+
+    if attributes:
+      for k, v in attributes.iteritems():
+        setattr(self, k, v)
+
+    if self.credentials_path is not None:
+      self.credentials_path = os.path.join(os.path.dirname(self.file_path),
+                                           self.credentials_path)
+
     self.pages = []
 
   @classmethod
@@ -39,7 +50,7 @@ class PageSet(object):
 
   @classmethod
   def FromDict(cls, data, file_path=''):
-    page_set = cls(data['description'], data['archive_path'], file_path)
+    page_set = cls(file_path, data)
     for page_attributes in data['pages']:
       url = page_attributes.pop('url')
       page = Page(url, page_attributes)

@@ -75,3 +75,9 @@ class Tab(object):
       rs = self._runtime.Evaluate('document.readyState')
       return rs == 'complete' or rs == 'interactive'
     util.WaitFor(IsReadyStateInteractiveOrBetter, timeout)
+
+  def LoginNeeded(self, credentials_type):
+    self.browser.credentials.LoginNeeded(credentials_type, self)
+
+  def LoginNoLongerNeeded(self, credentials_type):
+    self.browser.credentials.LoginNoLongerNeeded(credentials_type, self)

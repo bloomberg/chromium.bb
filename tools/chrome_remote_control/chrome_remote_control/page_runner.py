@@ -41,6 +41,7 @@ class PageRunner(object):
       \n""" + 80 * '*' + '\n')
 
     with possible_browser.Create(extra_browser_args) as b:
+      b.credentials.SetCredentialsConfigFile(self.page_set.credentials_path)
       with b.CreateReplayServer(archive_path, options.record):
         with b.ConnectToNthTab(0) as tab:
           for page in self.page_set:
@@ -56,7 +57,7 @@ class PageRunner(object):
                     page.url, traceback.format_exc())
       raise
     finally:
-      self.CleanUpPage()
+      self.CleanUpPage(page, tab)
 
     try:
       test.Run(options, page, tab, results)
@@ -73,7 +74,7 @@ class PageRunner(object):
                     page.url, traceback.format_exc())
       raise
     finally:
-      self.CleanUpPage()
+      self.CleanUpPage(page, tab)
 
   def Close(self):
     if self._server:
@@ -93,6 +94,9 @@ class PageRunner(object):
         self._server = tab.browser.CreateTemporaryHTTPServer(dirname)
       page.url = self._server.UrlOf(filename)
 
+    if page.credentials:
+      tab.LoginNeeded(page.credentials)
+
     tab.page.Navigate(page.url)
     # TODO(dtu): Detect HTTP redirects.
     if page.wait_time_after_navigate:
@@ -100,5 +104,6 @@ class PageRunner(object):
       time.sleep(page.wait_time_after_navigate)
     tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
 
-  def CleanUpPage(self):
-    pass
+  def CleanUpPage(self, page, tab): # pylint: disable=R0201
+    if page.credentials:
+      tab.LoginNoLongerNeeded(page.credentials)
