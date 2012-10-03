@@ -319,6 +319,21 @@ ButterBar.prototype.initiateDelete = function(entries) {
 };
 
 /**
+ * Hides the delete butter bar, and so forces the delete operation.
+ * We can safely force delete, since user has no access to undo button anymore.
+ * @return {boolean} Whether there was a delete task.
+ */
+ButterBar.prototype.forceDeleteAndHide = function() {
+  if (this.deleteTaskId_) {
+    this.copyManager_.forceDeleteTask(this.deleteTaskId_);
+    this.deleteTaskId_ = null;
+    this.hide_();
+    return true;
+  }
+  return false;
+};
+
+/**
  * 'delete' event handler. Shows information about deleting files.
  * @private
  * @param {cr.Event} event A 'delete' event from FileCopyManager.

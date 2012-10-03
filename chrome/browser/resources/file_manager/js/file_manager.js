@@ -629,6 +629,9 @@ FileManager.prototype = {
       e.preventDefault();
     });
 
+    this.document_.defaultView.addEventListener('beforeunload',
+        this.onBeforeUnload_.bind(this));
+
     this.dialogDom_.addEventListener('click',
                                      this.onExternalLinkClick_.bind(this));
     // Cache nodes we'll be manipulating.
@@ -1631,7 +1634,7 @@ FileManager.prototype = {
       eject.className = 'root-eject';
       eject.addEventListener('click', function(event) {
         event.stopPropagation();
-        this.unmountVolume(path);
+        this.dialogDom_.querySelector('command#unmount').execute(li);
       }.bind(this));
       // Block other mouse handlers.
       eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
@@ -3804,5 +3807,16 @@ FileManager.prototype = {
         call(this.openWithCommand_, !(defaultItem && isMultiple));
     this.defaultActionMenuItem_.hidden = !defaultItem;
     defaultActionSeparator.hidden = !defaultItem;
+  };
+
+
+  /**
+   * Window beforeunload handler.
+   * @return {string} Message to show. We don't need the message.
+   * @private
+   */
+  FileManager.prototype.onBeforeUnload_ = function() {
+    this.butterBar_.forceDeleteAndHide();
+    return null;
   };
 })();
