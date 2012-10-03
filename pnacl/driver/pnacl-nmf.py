@@ -18,10 +18,7 @@ from driver_log import Log, DriverOpen, TempFiles
 from collections import deque
 import hashlib
 
-try:
-  import json
-except Exception:
-  import simplejson as json
+import json
 
 EXTRA_ENV = {
   'INPUTS'   : '',

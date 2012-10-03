@@ -11,7 +11,6 @@ vars = {
   # Be sure to update them when updating chrome_rev, above.
   "gtest_rev": "617",
   "gyp_rev": "1486",
-  "jsoncpp_revision": "248",
   "lss_rev": "11",
 
   "lcov_rev": "54822",
@@ -37,16 +36,6 @@ deps = {
     Var("native_client_trunk") + "/src/validator_snapshots@" + Var("tools_rev"),
   "third_party/asan":
     Var("chromium_trunk") + "/deps/third_party/asan@" + Var("chrome_rev"),
-  "third_party/jsoncpp":
-    Var("chromium_trunk") + "/src/third_party/jsoncpp@" + Var("chrome_rev"),
-  # NOTE! These two for jsoncpp are taken verbatim from chromium/src/DEPS
-  # and must match what is used there.
-  "third_party/jsoncpp/source/include":
-    (Var("sourceforge_url") % {"repo": "jsoncpp"}) +
-        "/trunk/jsoncpp/include@" + Var("jsoncpp_revision"),
-  "third_party/jsoncpp/source/src/lib_json":
-    (Var("sourceforge_url") % {"repo": "jsoncpp"}) +
-        "/trunk/jsoncpp/src/lib_json@" + Var("jsoncpp_revision"),
   "third_party/lcov":
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
   "third_party/lss":
@@ -54,9 +43,6 @@ deps = {
      "/trunk/lss@" + Var("lss_rev")),
   "third_party/khronos":
     Var("chromium_trunk") + "/src/third_party/khronos@" + Var("chrome_rev"),
-  "third_party/simplejson":
-    (Var("chromium_trunk") + "/tools/build/third_party/simplejson@" +
-     Var("chrome_rev")),
   "tools/clang":
     Var("chromium_trunk") + "/src/tools/clang@" + Var("chrome_rev"),
   "tools/gyp":
