@@ -609,9 +609,12 @@ def GetPreferredTrySlaves(project, change):
     return ['android_dbg']
   if all(re.search('^native_client_sdk', f) for f in files):
     return ['linux_nacl_sdk', 'win_nacl_sdk', 'mac_nacl_sdk']
+  if all(re.search('[/_]ios[/_.]', f) for f in files):
+    return ['ios_rel_device', 'ios_dbg_simulator']
 
   trybots = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang:compile',
-             'linux_chromeos', 'android_dbg', 'linux_asan', 'mac_asan']
+             'linux_chromeos', 'android_dbg', 'linux_asan', 'mac_asan',
+             'ios_rel_device', 'ios_dbg_simulator']
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
   # Same for ash and chromeos.
