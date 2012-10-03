@@ -133,9 +133,7 @@ public:
     virtual size_t numBlockingUploads() OVERRIDE;
     virtual void markPendingUploadsAsNonBlocking() OVERRIDE;
     virtual double estimatedTexturesPerSecond() OVERRIDE;
-    virtual void beginUploads() OVERRIDE { }
-    virtual void endUploads() OVERRIDE { }
-    virtual void uploadTexture(cc::CCResourceProvider*, Parameters upload) OVERRIDE;
+    virtual void uploadTexture(cc::CCResourceProvider*, Parameters) OVERRIDE;
 };
 
 }

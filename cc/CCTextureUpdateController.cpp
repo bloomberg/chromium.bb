@@ -185,14 +185,12 @@ void CCTextureUpdateController::updateMoreTexturesNow()
         return;
 
     size_t uploadCount = 0;
-    m_uploader->beginUploads();
     while (m_queue->fullUploadSize() && uploadCount < uploads) {
         if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
             m_resourceProvider->shallowFlushIfSupported();
         m_uploader->uploadTexture(m_resourceProvider, m_queue->takeFirstFullUpload());
         uploadCount++;
     }
-    m_uploader->endUploads();
     m_resourceProvider->shallowFlushIfSupported();
 }
 

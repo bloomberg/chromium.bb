@@ -28,8 +28,6 @@ public:
     virtual size_t numBlockingUploads() OVERRIDE;
     virtual void markPendingUploadsAsNonBlocking() OVERRIDE;
     virtual double estimatedTexturesPerSecond() OVERRIDE;
-    virtual void beginUploads() OVERRIDE;
-    virtual void endUploads() OVERRIDE;
     virtual void uploadTexture(CCResourceProvider*, Parameters) OVERRIDE;
 
 private:
@@ -40,7 +38,7 @@ private:
         virtual ~Query();
 
         void begin();
-        void end(size_t texturesUploaded);
+        void end();
         bool isPending();
         void wait();
         unsigned value();
@@ -55,19 +53,19 @@ private:
         unsigned m_queryId;
         unsigned m_value;
         bool m_hasValue;
-        size_t m_texturesUploaded;
         bool m_isNonBlocking;
     };
 
     ThrottledTextureUploader(WebKit::WebGraphicsContext3D*);
 
+    void beginQuery();
+    void endQuery();
     void processQueries();
 
     WebKit::WebGraphicsContext3D* m_context;
     Deque<OwnPtr<Query> > m_pendingQueries;
     Deque<OwnPtr<Query> > m_availableQueries;
     std::deque<double> m_texturesPerSecondHistory;
-    size_t m_texturesUploaded;
     size_t m_numBlockingTextureUploads;
 
     DISALLOW_COPY_AND_ASSIGN(ThrottledTextureUploader);

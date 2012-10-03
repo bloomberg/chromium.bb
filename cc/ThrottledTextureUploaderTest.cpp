@@ -46,9 +46,11 @@ private:
 class FakeTexture : public cc::LayerTextureUpdater::Texture {
 public:
   FakeTexture() : LayerTextureUpdater::Texture(
-      PassOwnPtr<cc::CCPrioritizedTexture>()) { }
+      CCPrioritizedTexture::create(NULL, IntSize(256,256), GL_RGBA)) {
+  }
 
-    virtual void updateRect(cc::CCResourceProvider* , const cc::IntRect&, const cc::IntSize&) OVERRIDE { }
+  virtual void updateRect(cc::CCResourceProvider* , const cc::IntRect&, const cc::IntSize&) OVERRIDE { }
+
 };
 
 
@@ -59,30 +61,22 @@ TEST(ThrottledTextureUploaderTest, NumBlockingUploads)
     OwnPtr<FakeTexture> texture = adoptPtr(new FakeTexture);
     TextureUploader::Parameters upload;
     upload.texture = texture.get();
-    upload.sourceRect = IntRect();
+    upload.sourceRect = IntRect(IntPoint(0,0), texture->texture()->size());
     upload.destOffset = IntSize();
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
-    uploader->endUploads();
     EXPECT_EQ(1, uploader->numBlockingUploads());
-    uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
-    uploader->endUploads();
     EXPECT_EQ(2, uploader->numBlockingUploads());
 
     fakeContext->setResultAvailable(1);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
-    uploader->endUploads();
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
     uploader->uploadTexture(NULL, upload);
-    uploader->endUploads();
     EXPECT_EQ(0, uploader->numBlockingUploads());
 }
 
@@ -93,29 +87,23 @@ TEST(ThrottledTextureUploaderTest, MarkPendingUploadsAsNonBlocking)
     OwnPtr<FakeTexture> texture = adoptPtr(new FakeTexture);
     TextureUploader::Parameters upload;
     upload.texture = texture.get();
-    upload.sourceRect = IntRect();
+    upload.sourceRect = IntRect(IntPoint(0,0), texture->texture()->size());
     upload.destOffset = IntSize();
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
     uploader->uploadTexture(NULL, upload);
-    uploader->endUploads();
     EXPECT_EQ(2, uploader->numBlockingUploads());
 
     uploader->markPendingUploadsAsNonBlocking();
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
-    uploader->endUploads();
     EXPECT_EQ(1, uploader->numBlockingUploads());
 
     fakeContext->setResultAvailable(1);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->beginUploads();
     uploader->uploadTexture(NULL, upload);
-    uploader->endUploads();
     uploader->markPendingUploadsAsNonBlocking();
     EXPECT_EQ(0, uploader->numBlockingUploads());
 }
