@@ -28,8 +28,6 @@ ARCHIVED_PEXE_TRANSLATOR_REV=9326
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
 # to keep all our versions in one place
-# If we roll the archived toolchain past r9725 we will also need to change
-# PNACL_ARCHIVED_FRONTEND_LABEL below to pnacl_linux_x86
 ARCHIVED_TOOLCHAIN_REV=9908
 
 readonly PNACL_BUILD="pnacl/build.sh"
@@ -62,8 +60,6 @@ export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
 # how to find a 64-bit host toolchain.
 readonly SCONS_PICK_TC="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"
 
-export PNACL_ARCHIVED_FRONTEND_LABEL=pnacl_linux_x86_32
-
 # download-old-tc -
 # Download the archived frontend toolchain, if we haven't already
 download-old-tc() {
@@ -72,13 +68,14 @@ download-old-tc() {
   if [[ -f "${dst}/${ARCHIVED_TOOLCHAIN_REV}.stamp" ]]; then
     echo "Using existing tarball for archived frontend"
   else
+    mkdir -p "${dst}"
     rm -rf "${dst}/*"
     ${UP_DOWN_LOAD} DownloadPnaclToolchains ${ARCHIVED_TOOLCHAIN_REV} \
-      ${PNACL_ARCHIVED_FRONTEND_LABEL} \
-      ${dst}/${PNACL_ARCHIVED_FRONTEND_LABEL}.tgz
-    mkdir -p ${dst}/${PNACL_ARCHIVED_FRONTEND_LABEL}
-    tar xz -C ${dst}/${PNACL_ARCHIVED_FRONTEND_LABEL} \
-      -f ${dst}/${PNACL_ARCHIVED_FRONTEND_LABEL}.tgz
+      ${PNACL_TOOLCHAIN_LABEL} \
+      ${dst}/${PNACL_TOOLCHAIN_LABEL}.tgz
+    mkdir -p ${dst}/${PNACL_TOOLCHAIN_LABEL}
+    tar xz -C ${dst}/${PNACL_TOOLCHAIN_LABEL} \
+      -f ${dst}/${PNACL_TOOLCHAIN_LABEL}.tgz
     touch "${dst}/${ARCHIVED_TOOLCHAIN_REV}.stamp"
   fi
 }
@@ -184,7 +181,7 @@ archived-frontend-test() {
   download-old-tc toolchain/archived_tc
 
   # Build the pexes with the old frontend
-  local old_frontend=toolchain/archived_tc/${PNACL_ARCHIVED_FRONTEND_LABEL}
+  local old_frontend=toolchain/archived_tc/${PNACL_TOOLCHAIN_LABEL}
 
   ${SCONS_COMMON} "pnaclsdk_mode=custom:${old_frontend}" \
     do_not_run_tests=1 ${flags} ${targets} || handle-error
