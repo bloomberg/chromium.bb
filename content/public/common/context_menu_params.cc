@@ -4,8 +4,11 @@
 
 #include "content/public/common/context_menu_params.h"
 
+#include "base/logging.h"
 #include "content/common/ssl_status_serialization.h"
 #include "webkit/glue/glue_serialize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 
 namespace content {
 
@@ -70,6 +73,25 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
   if (!data.frameHistoryItem.isNull()) {
     frame_content_state =
         webkit_glue::HistoryItemToString(data.frameHistoryItem);
+  }
+
+  if (!link_url.is_empty()) {
+    WebKit::WebNode selectedNode = data.node;
+
+    // If there are other embedded tags (like <a ..>Some <b>text</b></a>)
+    // we need to extract the parent <a/> node.
+    while (!selectedNode.isLink() && !selectedNode.parentNode().isNull()) {
+      selectedNode = selectedNode.parentNode();
+    }
+
+    WebKit::WebElement selectedElement = selectedNode.to<WebKit::WebElement>();
+    if (selectedNode.isLink() && !selectedElement.isNull()) {
+      link_text = selectedElement.innerText();
+    } else {
+      LOG(ERROR) << "Creating a ContextMenuParams for a node that has a link"
+                 << "url but is not an ElementNode or does not have an"
+                 << "ancestor that is a link.";
+    }
   }
 
   // Deserialize the SSL info.

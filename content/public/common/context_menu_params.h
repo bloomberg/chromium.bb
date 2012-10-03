@@ -57,6 +57,11 @@ struct CONTENT_EXPORT ContextMenuParams {
   // invoked on.
   GURL link_url;
 
+  // The text associated with the link. May be an empty string if the contents
+  // of the link are an image.
+  // Will be empty if link_url is empty.
+  string16 link_text;
+
   // The link URL to be used ONLY for "copy link address". We don't validate
   // this field in the frontend process.
   GURL unfiltered_link_url;
