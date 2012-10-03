@@ -7,8 +7,10 @@
 
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/move.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/usb/usb_device.h"
@@ -35,27 +37,56 @@ class UsbService : public ProfileKeyedService {
   // it can be used to close the device later.
   UsbDevice* FindDevice(const uint16 vendor_id, const uint16 product_id);
 
+  // Find all of the devices attached to the system that are identified by
+  // |vendor_id| and |product_id|, inserting them into |devices|. Clears
+  // |devices| before use.
+  bool FindDevices(const uint16 vendor_id,
+                   const uint16 product_id,
+                   std::vector<scoped_refptr<UsbDevice> >* devices);
+
   // This function should not be called by normal code. It is invoked by a
   // UsbDevice's Close function and disposes of the associated platform handle.
   void CloseDevice(scoped_refptr<UsbDevice> device);
 
  private:
-  // Handles a single USB event. If the service is still running after the event
-  // is handled, posts another HandleEvent callback to the thread.
-  void HandleEvent();
+  // RefCountedPlatformUsbDevice takes care of managing the underlying reference
+  // count of a single PlatformUsbDevice. This allows us to construct things
+  // like vectors of RefCountedPlatformUsbDevices and not worry about having to
+  // explicitly unreference them after use.
+  class RefCountedPlatformUsbDevice {
+   public:
+    explicit RefCountedPlatformUsbDevice(PlatformUsbDevice device);
+    RefCountedPlatformUsbDevice(const RefCountedPlatformUsbDevice& other);
+    virtual ~RefCountedPlatformUsbDevice();
+    PlatformUsbDevice device();
 
-  // PlatformShutdown is invoked after event handling has been suspended and is
-  // used to free the platform resources associated with the service.
-  void PlatformShutdown();
+   private:
+    PlatformUsbDevice device_;
+  };
+
+  typedef std::vector<RefCountedPlatformUsbDevice> DeviceVector;
+
+  // Return true if |device|'s vendor and product identifiers match |vendor_id|
+  // and |product_id|.
+  static bool DeviceMatches(PlatformUsbDevice device,
+                            const uint16 vendor_id,
+                            const uint16 product_id);
+
+  // Populates |output| with the result of enumerating all attached USB devices.
+  void EnumerateDevices(DeviceVector* output);
+
+  // If a UsbDevice wrapper corresponding to |device| has already been created,
+  // returns it. Otherwise, opens the device, creates a wrapper, and associates
+  // the wrapper with the device internally.
+  UsbDevice* LookupOrCreateDevice(PlatformUsbDevice device);
 
   PlatformUsbContext context_;
-  UsbEventHandler *event_handler_;
+  UsbEventHandler* event_handler_;
 
   // The devices_ map contains scoped_refptrs to all open devices, indicated by
   // their vendor and product id. This allows for reusing an open device without
   // creating another platform handle for it.
-  typedef std::map<std::pair<uint16, uint16>, scoped_refptr<UsbDevice> >
-      DeviceMap;
+  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDevice> > DeviceMap;
   DeviceMap devices_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbService);
