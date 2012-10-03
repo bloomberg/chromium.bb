@@ -125,6 +125,11 @@ DEFINE_bool(only_mmap_profile,
 DEFINE_bool(deep_heap_profile,
             EnvToBool("DEEP_HEAP_PROFILE", false),
             "If heap-profiling is on, profile deeper (only on Linux)");
+#if defined(TYPE_PROFILING)
+DEFINE_bool(heap_profile_type_statistics,
+            EnvToBool("HEAP_PROFILE_TYPE_STATISTICS", false),
+            "If heap-profiling is on, dump type statistics.");
+#endif  // defined(TYPE_PROFILING)
 
 
 //----------------------------------------------------------------------
@@ -304,6 +309,15 @@ static void DumpProfileLocked(const char* reason) {
                                          kProfileBufferSize);
   RawWrite(fd, profile, strlen(profile));
   RawClose(fd);
+
+#if defined(TYPE_PROFILING)
+  if (FLAGS_heap_profile_type_statistics) {
+    snprintf(file_name, sizeof(file_name), "%s.%05d.%04d.type",
+             filename_prefix, getpid(), dump_count);
+    RAW_VLOG(0, "Dumping type statistics to %s", file_name);
+    heap_profile->DumpTypeStatistics(file_name);
+  }
+#endif  // defined(TYPE_PROFILING)
 
   dumping = false;
 }
