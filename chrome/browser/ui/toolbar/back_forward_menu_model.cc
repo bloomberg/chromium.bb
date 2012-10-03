@@ -286,8 +286,6 @@ void BackForwardMenuModel::OnFavIconDataAvailable(
     // it to the NavigationEntry.
     entry->GetFavicon().valid = true;
     entry->GetFavicon().url = image_result.icon_url;
-    // TODO: Once the history service returns more representations,
-    // use them all instead of having just the lodpi favicon.
     entry->GetFavicon().image = image_result.image;
     if (menu_model_delegate()) {
       menu_model_delegate()->OnIconChanged(model_index);
