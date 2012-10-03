@@ -18,12 +18,12 @@ test = TestGyp.TestGyp()
 test.run_gyp('mylib.gyp')
 test.build('mylib.gyp', target='prog')
 
-# Verify that the static library is copied to PRODUCT_DIR
+# Verify that the static library is copied to PRODUCT_DIR.
 built_lib = test.built_file_basename('mylib', type=test.STATIC_LIB)
 path = test.built_file_path(built_lib)
 test.must_exist(path)
 
-# Verify that the program runs properly
+# Verify that the program runs properly.
 expect = 'hello from mylib.c\n'
 test.run_built_executable('prog', stdout=expect)
 
