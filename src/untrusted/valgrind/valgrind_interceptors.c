@@ -582,6 +582,23 @@ static int handle_cond_wait(size_t cond, size_t mutex) {
   return ret;
 }
 
+static int handle_cond_timedwait(size_t cond, size_t mutex, size_t abstime) {
+  int ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  VG_CREQ_v_W(TSREQ_PTHREAD_RWLOCK_UNLOCK_PRE, VALGRIND_SANDBOX_PTR(mutex));
+
+  start_ignore_all_accesses();
+  CALL_FN_W_WWW(ret, fn, cond, mutex, abstime);
+  stop_ignore_all_accesses();
+
+  VG_CREQ_v_W(TSREQ_WAIT, VALGRIND_SANDBOX_PTR(cond));
+  VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST, VALGRIND_SANDBOX_PTR(mutex), 1);
+
+  return ret;
+}
+
 static int handle_cond_signal(size_t cond) {
   int ret;
   OrigFn fn;
@@ -604,6 +621,13 @@ int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZuwaitZAZa)(size_t cond,
   return handle_cond_wait(cond, mutex);
 }
 
+/* pthread_cond_timedwait */
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZutimedwaitZAZa)(size_t cond,
+                                                          size_t mutex,
+                                                          size_t abstime) {
+  return handle_cond_timedwait(cond, mutex, abstime);
+}
+
 /* pthread_cond_signal@* */
 int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZusignalZAZa)(size_t cond) {
   return handle_cond_signal(cond);
@@ -614,6 +638,13 @@ int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZusignalZAZa)(size_t cond) {
 /* pthread_cond_wait */
 int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZuwait)(size_t cond, size_t mutex) {
   return handle_cond_wait(cond, mutex);
+}
+
+/* pthread_cond_timedwait_abs */
+int VG_NACL_LIBPTHREAD_FUNC(pthreadZucondZutimedwaitZuabs)(size_t cond,
+                                                           size_t mutex,
+                                                           size_t abstime) {
+  return handle_cond_timedwait(cond, mutex, abstime);
 }
 
 /* pthread_cond_signal */

@@ -781,6 +781,15 @@ static void TestCondvar() {
   TEST_FUNCTION_END;
 }
 
+void AddNanosecondsToTimespec(struct timespec *time, unsigned int nanoseconds) {
+  EXPECT_LE(nanoseconds, 1000000000);
+  time->tv_nsec += nanoseconds;
+  if (time->tv_nsec > 1000000000) {
+    time->tv_nsec -= 1000000000;
+    time->tv_sec += 1;
+  }
+}
+
 static void TestCondvarTimeout() {
   int i = 0;
   pthread_cond_t cv;
@@ -802,11 +811,7 @@ static void TestCondvarTimeout() {
   res = clock_gettime(CLOCK_REALTIME, &t_start);
   EXPECT_EQ(res, 0);
   t_timeout = t_start;
-  t_timeout.tv_nsec += TIMEOUT_TIME_NS;
-  if (t_timeout.tv_nsec > 1000000000) {
-    t_timeout.tv_nsec -= 1000000000;
-    t_timeout.tv_sec += 1;
-  }
+  AddNanosecondsToTimespec(&t_timeout, TIMEOUT_TIME_NS);
 
   CHECK_OK(pthread_mutex_lock(&mu));
 
@@ -852,6 +857,77 @@ void TestStackSize() {
   EXPECT_EQ(stack_size, stack_size2);
 }
 
+struct MutexClaimerThreadArgs {
+  pthread_mutex_t *mutex;
+  int should_exit;
+};
+
+void *MutexClaimerThread(void *thread_arg) {
+  struct MutexClaimerThreadArgs *args = thread_arg;
+  for (;;) {
+    pthread_mutex_lock(args->mutex);
+    int should_exit = args->should_exit;
+    pthread_mutex_unlock(args->mutex);
+    if (should_exit)
+      break;
+  }
+  return NULL;
+}
+
+/*
+ * This is a regression test for
+ * http://code.google.com/p/nativeclient/issues/detail?id=3047
+ *
+ * The problem was that mutexes created with PTHREAD_MUTEX_ERRORCHECK
+ * didn't unlock successfully after pthread_cond_timedwait() had
+ * returned with ETIMEDOUT.  This problem occurred with NaCl's
+ * newlib-based libpthread.
+ */
+void TestErrorcheckMutexWorksWithCondvarTimeout() {
+  TEST_FUNCTION_START;
+
+  pthread_mutexattr_t attrs;
+  pthread_mutex_t mutex;
+  pthread_cond_t condvar;
+  CHECK_OK(pthread_mutexattr_init(&attrs));
+  CHECK_OK(pthread_mutexattr_settype(&attrs, PTHREAD_MUTEX_ERRORCHECK));
+  CHECK_OK(pthread_mutex_init(&mutex, &attrs));
+  CHECK_OK(pthread_mutexattr_destroy(&attrs));
+  CHECK_OK(pthread_cond_init(&condvar, NULL));
+  CHECK_OK(pthread_mutex_lock(&mutex));
+
+  struct MutexClaimerThreadArgs thread_args;
+  thread_args.mutex = &mutex;
+  thread_args.should_exit = 0;
+  pthread_t tid;
+  CHECK_OK(pthread_create(&tid, NULL, MutexClaimerThread, &thread_args));
+
+  struct timespec timeout;
+  EXPECT_EQ(clock_gettime(CLOCK_REALTIME, &timeout), 0);
+  /*
+   * Wait for 500 ms to give MutexClaimerThread() time to run and
+   * briefly claim and release the lock, which unsets the mutex's
+   * owner_thread_id.
+   */
+  AddNanosecondsToTimespec(&timeout, 500 * 1000);
+  /*
+   * The bug is that pthread_cond_timedwait() fails to update the
+   * mutex's owner_thread_id to the current thread in the ETIMEDOUT
+   * case.
+   */
+  EXPECT_EQ(pthread_cond_timedwait(&condvar, &mutex, &timeout), ETIMEDOUT);
+  thread_args.should_exit = 1;
+  /* The bug manifests itself by pthread_mutex_unlock() returning EPERM. */
+  CHECK_OK(pthread_mutex_unlock(&mutex));
+
+  /* Clean up. */
+  CHECK_OK(pthread_join(tid, NULL));
+  CHECK_OK(pthread_mutex_destroy(&mutex));
+  CHECK_OK(pthread_cond_destroy(&condvar));
+
+  TEST_FUNCTION_END;
+}
+
 int main(int argc, char *argv[]) {
   if (argc > 1) {
     g_num_test_loops = atoi(argv[1]);
@@ -878,13 +954,14 @@ int main(int argc, char *argv[]) {
   TestMallocSmall();
   TestMallocLarge();
   TestRealloc();
-  TestStackSize();
 
   /* We have disabled this test by default since it is flaky under VMWARE. */
   if (g_run_intrinsic) TestIntrinsics();
 
   TestCondvar();
   TestCondvarTimeout();
+  TestStackSize();
+  TestErrorcheckMutexWorksWithCondvarTimeout();
 
   return g_errors;
 }

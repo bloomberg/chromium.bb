@@ -87,7 +87,7 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
   int retval = __nc_irt_cond.cond_timed_wait_abs(cond->handle,
                                                  mutex->mutex_handle,
                                                  abstime);
-  if (retval == 0) {
+  if (retval == 0 || retval == ETIMEDOUT) {
     mutex->owner_thread_id = pthread_self();
     mutex->recursion_counter = 1;
   }
