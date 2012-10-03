@@ -402,7 +402,7 @@ void InstantLoader::SetupPreviewContents() {
   // preview prematurely).
   BlockedContentTabHelper::FromWebContents(new_contents)->
       SetAllContentsBlocked(true);
-  preview_contents_->constrained_window_tab_helper()->
+  ConstrainedWindowTabHelper::FromWebContents(new_contents)->
       set_delegate(new_delegate);
   TabSpecificContentSettings::FromWebContents(new_contents)->
       SetPopupsBlocked(true);
@@ -430,7 +430,7 @@ void InstantLoader::CleanupPreviewContents() {
 
   BlockedContentTabHelper::FromWebContents(old_contents)->
       SetAllContentsBlocked(false);
-  preview_contents_->constrained_window_tab_helper()->set_delegate(NULL);
+  ConstrainedWindowTabHelper::FromWebContents(old_contents)->set_delegate(NULL);
   TabSpecificContentSettings::FromWebContents(old_contents)->
       SetPopupsBlocked(false);
   CoreTabHelper::FromWebContents(old_contents)->set_delegate(NULL);

@@ -106,16 +106,16 @@ class ConstrainedWindowViewTest : public InProcessBrowserTest {
 // *) Constrained windows that are queued don't register themselves as
 //    accelerator targets until they are displayed.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
-  TabContents* tab_contents = chrome::GetActiveTabContents(browser());
-  ASSERT_TRUE(tab_contents != NULL);
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  ASSERT_TRUE(web_contents != NULL);
   ConstrainedWindowTabHelper* constrained_window_helper =
-      tab_contents->constrained_window_tab_helper();
+      ConstrainedWindowTabHelper::FromWebContents(web_contents);
   ASSERT_TRUE(constrained_window_helper != NULL);
 
   // Create a constrained dialog.  It will attach itself to tab_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog1(new TestConstrainedDialog);
   ConstrainedWindowViews* window1 =
-      new ConstrainedWindowViews(tab_contents, test_dialog1.get());
+      new ConstrainedWindowViews(web_contents, test_dialog1.get());
 
   views::FocusManager* focus_manager = window1->GetFocusManager();
   ASSERT_TRUE(focus_manager);
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // showing.
   scoped_ptr<TestConstrainedDialog> test_dialog2(new TestConstrainedDialog);
   ConstrainedWindowViews* window2 =
-      new ConstrainedWindowViews(tab_contents, test_dialog2.get());
+      new ConstrainedWindowViews(web_contents, test_dialog2.get());
   // Should be the same focus_manager.
   ASSERT_EQ(focus_manager, window2->GetFocusManager());
 

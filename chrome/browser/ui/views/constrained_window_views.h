@@ -11,8 +11,9 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
 
-class TabContents;
-
+namespace content {
+class WebContents;
+}
 namespace views {
 namespace internal {
 class NativeWidgetDelegate;
@@ -58,12 +59,12 @@ class ConstrainedWindowViews : public views::Widget,
                                public ConstrainedWindow,
                                public NativeConstrainedWindowDelegate {
  public:
-  ConstrainedWindowViews(TabContents* tab_contents,
+  ConstrainedWindowViews(content::WebContents* web_contents,
                          views::WidgetDelegate* widget_delegate);
   virtual ~ConstrainedWindowViews();
 
-  // Returns the TabContents that constrains this Constrained Window.
-  TabContents* owner() const { return tab_contents_; }
+  // Returns the WebContents that constrains this Constrained Window.
+  content::WebContents* owner() const { return web_contents_; }
 
   // Overridden from ConstrainedWindow:
   virtual void ShowConstrainedWindow() OVERRIDE;
@@ -82,7 +83,7 @@ class ConstrainedWindowViews : public views::Widget,
       AsNativeWidgetDelegate() OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) OVERRIDE;
 
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 
   NativeConstrainedWindow* native_constrained_window_;
 

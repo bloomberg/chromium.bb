@@ -305,8 +305,9 @@ void WebIntentPickerController::ShowDialog(bool suppress_defaults) {
 
   // As soon as the dialog is requested, block all input events
   // on the original tab.
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-  tab_contents->constrained_window_tab_helper()->BlockTabContent(true);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
+  constrained_window_tab_helper->BlockTabContent(true);
   SetDialogState(kPickerSetup);
 
   pending_async_count_++;
@@ -826,8 +827,9 @@ void WebIntentPickerController::Reset() {
   picker_shown_ = false;
 
   DCHECK(web_contents_);
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-  tab_contents->constrained_window_tab_helper()->BlockTabContent(false);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
+  constrained_window_tab_helper->BlockTabContent(false);
 }
 
 // static

@@ -17,10 +17,11 @@
 
 using content::WebContents;
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ConstrainedWindowTabHelper)
+
 ConstrainedWindowTabHelper::ConstrainedWindowTabHelper(
-    TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents->web_contents()),
-      tab_contents_(tab_contents),
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       delegate_(NULL) {
 }
 
@@ -85,7 +86,7 @@ void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
         host->GetRoutingID(), blocked));
   }
   if (delegate_)
-    delegate_->SetTabContentBlocked(tab_contents_, blocked);
+    delegate_->SetTabContentBlocked(contents, blocked);
 }
 
 void ConstrainedWindowTabHelper::DidNavigateMainFrame(

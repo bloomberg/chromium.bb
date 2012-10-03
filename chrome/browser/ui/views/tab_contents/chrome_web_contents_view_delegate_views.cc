@@ -68,15 +68,15 @@ bool ChromeWebContentsViewDelegateViews::Focus() {
     }
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-  if (tab_contents) {
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
+  if (constrained_window_tab_helper) {
     // TODO(erg): WebContents used to own constrained windows, which is why
     // this is here. Eventually this should be ported to a containing view
     // specializing in constrained window management.
-    ConstrainedWindowTabHelper* helper =
-        tab_contents->constrained_window_tab_helper();
-    if (helper->constrained_window_count() > 0) {
-      ConstrainedWindow* window = *helper->constrained_window_begin();
+    if (constrained_window_tab_helper->constrained_window_count() > 0) {
+      ConstrainedWindow* window =
+          *constrained_window_tab_helper->constrained_window_begin();
       DCHECK(window);
       window->FocusConstrainedWindow();
       return true;

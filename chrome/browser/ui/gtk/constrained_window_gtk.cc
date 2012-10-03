@@ -79,7 +79,10 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   g_signal_connect(widget(), "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
 
-  tab_contents_->constrained_window_tab_helper()->AddConstrainedDialog(this);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(
+          tab_contents_->web_contents());
+  constrained_window_tab_helper->AddConstrainedDialog(this);
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
@@ -100,7 +103,10 @@ void ConstrainedWindowGtk::CloseConstrainedWindow() {
   if (visible_)
     ContainingView()->RemoveConstrainedWindow(this);
   delegate_->DeleteDelegate();
-  tab_contents_->constrained_window_tab_helper()->WillClose(this);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(
+          tab_contents_->web_contents());
+  constrained_window_tab_helper->WillClose(this);
 
   delete this;
 }
@@ -113,7 +119,8 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
   // The user may have focused another tab. In this case do not grab focus
   // until this tab is refocused.
   ConstrainedWindowTabHelper* helper =
-      tab_contents_->constrained_window_tab_helper();
+      ConstrainedWindowTabHelper::FromWebContents(
+          tab_contents_->web_contents());
   if ((!helper->delegate() ||
        helper->delegate()->ShouldFocusConstrainedWindow()) &&
       gtk_util::IsWidgetAncestryVisible(focus_widget)) {

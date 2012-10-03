@@ -33,7 +33,10 @@ class ConstrainedWindowCloseTest : public ConstrainedWindow {
   virtual ~ConstrainedWindowCloseTest() {}
 
   virtual void CloseConstrainedWindow() {
-    tab_contents_->constrained_window_tab_helper()->WillClose(this);
+    ConstrainedWindowTabHelper* constrained_window_tab_helper =
+        ConstrainedWindowTabHelper::FromWebContents(
+            tab_contents_->web_contents());
+    constrained_window_tab_helper->WillClose(this);
     close_count++;
   }
 
@@ -44,13 +47,14 @@ class ConstrainedWindowCloseTest : public ConstrainedWindow {
 TEST_F(ConstrainedWindowTabHelperUnit, ConstrainedWindows) {
   ConstrainedWindowCloseTest window(tab_contents());
   window.close_count = 0;
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents());
 
   const int kWindowCount = 4;
-  for (int i = 0; i < kWindowCount; i++) {
-    tab_contents()->constrained_window_tab_helper()->AddConstrainedDialog(
-        &window);
-  }
+  for (int i = 0; i < kWindowCount; i++)
+    constrained_window_tab_helper->AddConstrainedDialog(&window);
   EXPECT_EQ(window.close_count, 0);
-  tab_contents()->constrained_window_tab_helper()->CloseConstrainedWindows();
+
+  constrained_window_tab_helper->CloseConstrainedWindows();
   EXPECT_EQ(window.close_count, kWindowCount);
 }

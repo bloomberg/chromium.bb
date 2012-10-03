@@ -942,7 +942,7 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
   model_->set_observer(this);
   contents_ = new views::View();
   // Show the dialog.
-  window_ = new ConstrainedWindowViews(tab_contents, this);
+  window_ = new ConstrainedWindowViews(tab_contents->web_contents(), this);
 
   UpdateContents();
 }

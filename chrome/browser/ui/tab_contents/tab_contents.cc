@@ -130,7 +130,7 @@ TabContents::TabContents(WebContents* contents)
   BlockedContentTabHelper::CreateForWebContents(contents);
   BookmarkTabHelper::CreateForWebContents(contents);
   chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(contents);
-  constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
+  ConstrainedWindowTabHelper::CreateForWebContents(contents);
   CoreTabHelper::CreateForWebContents(contents);
   extensions::TabHelper::CreateForWebContents(contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(contents);

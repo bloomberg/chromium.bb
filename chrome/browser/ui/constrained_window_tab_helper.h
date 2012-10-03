@@ -7,16 +7,17 @@
 
 #include <deque>
 
+#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class ConstrainedWindow;
 class ConstrainedWindowTabHelperDelegate;
-class TabContents;
 
 // Per-tab class to manage constrained windows.
-class ConstrainedWindowTabHelper : public content::WebContentsObserver {
+class ConstrainedWindowTabHelper
+    : public content::WebContentsObserver,
+      public WebContentsUserData<ConstrainedWindowTabHelper> {
  public:
-  explicit ConstrainedWindowTabHelper(TabContents* tab_contents);
   virtual ~ConstrainedWindowTabHelper();
 
   ConstrainedWindowTabHelperDelegate* delegate() const { return delegate_; }
@@ -35,31 +36,31 @@ class ConstrainedWindowTabHelper : public content::WebContentsObserver {
   // Blocks/unblocks interaction with renderer process.
   void BlockTabContent(bool blocked);
 
-  // Returns the number of constrained windows in this tab.  Used by tests.
+  // Returns the number of constrained windows in this tab.
   size_t constrained_window_count() { return child_windows_.size(); }
 
   typedef std::deque<ConstrainedWindow*> ConstrainedWindowList;
 
-  // Return an iterator for the first constrained window in this tab contents.
+  // Return an iterator for the first constrained window in this web contents.
   ConstrainedWindowList::iterator constrained_window_begin() {
     return child_windows_.begin();
   }
 
-  // Return an iterator for the last constrained window in this tab contents.
+  // Return an iterator for the last constrained window in this web contents.
   ConstrainedWindowList::iterator constrained_window_end() {
     return child_windows_.end();
   }
 
  private:
+  explicit ConstrainedWindowTabHelper(content::WebContents* web_contents);
+  friend class WebContentsUserData<ConstrainedWindowTabHelper>;
+
   // Overridden from content::WebContentsObserver:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetIgnoredUIEvent() OVERRIDE;
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
-
-  // Our owning TabContents.
-  TabContents* tab_contents_;
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   ConstrainedWindowTabHelperDelegate* delegate_;

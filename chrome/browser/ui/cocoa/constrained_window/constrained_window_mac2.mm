@@ -21,7 +21,9 @@ ConstrainedWindowMac2::ConstrainedWindowMac2(
       window_([window retain]) {
   DCHECK(tab_contents);
   DCHECK(window_.get());
-  tab_contents->constrained_window_tab_helper()->AddConstrainedDialog(this);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(tab_contents->web_contents());
+  constrained_window_tab_helper->AddConstrainedDialog(this);
 }
 
 void ConstrainedWindowMac2::ShowConstrainedWindow() {
@@ -39,7 +41,10 @@ void ConstrainedWindowMac2::ShowConstrainedWindow() {
 void ConstrainedWindowMac2::CloseConstrainedWindow() {
   [[ConstrainedWindowSheetController controllerForSheet:window_]
       closeSheet:window_];
-  tab_contents_->constrained_window_tab_helper()->WillClose(this);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(
+          tab_contents_->web_contents());
+  constrained_window_tab_helper->WillClose(this);
   delete this;
 }
 

@@ -21,7 +21,6 @@ class BrowserLauncherItemControllerContentsCreator;
 class BrowserTabstripTabContentsCreator;
 class ChromeWebContentsHandler;
 class ConstrainedWebDialogDelegateBase;
-class ConstrainedWindowTabHelper;
 class ExtensionTabUtil;
 class ExternalTabContainerWin;
 class GeolocationPermissionContextTests;
@@ -147,10 +146,6 @@ class TabContents : public content::WebContentsObserver {
 
   AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
-  ConstrainedWindowTabHelper* constrained_window_tab_helper() {
-    return constrained_window_tab_helper_.get();
-  }
-
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
 
   PasswordManager* password_manager() { return password_manager_.get(); }
@@ -187,7 +182,6 @@ class TabContents : public content::WebContentsObserver {
 
   scoped_refptr<AutofillManager> autofill_manager_;
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
-  scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
   scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,

@@ -1527,10 +1527,11 @@ enum {
   // between windows. Until then, we have to prevent having to move a tabsheet
   // between windows, e.g. no tearing off of tabs.
   int index = [tabStripController_ modelIndexForTabView:tabView];
-  TabContents* contents = chrome::GetTabContentsAt(browser_.get(), index);
+  WebContents* contents = chrome::GetWebContentsAt(browser_.get(), index);
   if (!contents)
     return NO;
-  return !contents->constrained_window_tab_helper()->constrained_window_count();
+  return ConstrainedWindowTabHelper::FromWebContents(contents)->
+      constrained_window_count() == 0;
 }
 
 // TabStripControllerDelegate protocol.

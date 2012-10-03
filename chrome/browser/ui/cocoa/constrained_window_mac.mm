@@ -97,7 +97,9 @@ ConstrainedWindowMac::ConstrainedWindowMac(
   DCHECK(tab_contents);
   DCHECK(delegate);
 
-  tab_contents->constrained_window_tab_helper()->AddConstrainedDialog(this);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(tab_contents->web_contents());
+  constrained_window_tab_helper->AddConstrainedDialog(this);
 }
 
 ConstrainedWindowMac::~ConstrainedWindowMac() {}
@@ -139,7 +141,10 @@ void ConstrainedWindowMac::CloseConstrainedWindow() {
   closing_ = true;
 
   delegate_->DeleteDelegate();
-  tab_contents_->constrained_window_tab_helper()->WillClose(this);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(
+          tab_contents_->web_contents());
+  constrained_window_tab_helper->WillClose(this);
 
   delete this;
 }

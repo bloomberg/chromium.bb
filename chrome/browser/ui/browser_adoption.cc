@@ -43,11 +43,11 @@ void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
   web_contents->SetDelegate(delegate);
 
   // ...and all the helpers.
-  TabContents* tab = TabContents::FromWebContents(web_contents);
   BlockedContentTabHelper::FromWebContents(web_contents)->
       set_delegate(delegate);
   BookmarkTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
-  tab->constrained_window_tab_helper()->set_delegate(delegate);
+  ConstrainedWindowTabHelper::FromWebContents(web_contents)->
+      set_delegate(delegate);
   CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   SearchEngineTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   ZoomController::FromWebContents(web_contents)->set_observer(delegate);

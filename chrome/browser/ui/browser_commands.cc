@@ -156,9 +156,13 @@ void ReloadInternal(Browser* browser,
 }
 
 bool HasConstrainedWindow(const Browser* browser) {
-  TabContents* tab_contents = GetActiveTabContents(browser);
-  return tab_contents && tab_contents->constrained_window_tab_helper()->
-      constrained_window_count();
+  WebContents* web_contents = GetActiveWebContents(browser);
+  if (!web_contents)
+    return false;
+
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents);
+  return constrained_window_tab_helper->constrained_window_count() > 0;
 }
 
 bool PrintPreviewShowing(const Browser* browser) {

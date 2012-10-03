@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/media_galleries_dialog_views.h"
 
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -54,7 +55,8 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
 
   // Ownership of |contents_| is handed off by this call. |window_| will take
   // care of deleting itself after calling DeleteDelegate().
-  window_ = new ConstrainedWindowViews(controller->tab_contents(), this);
+  window_ = new ConstrainedWindowViews(
+      controller->tab_contents()->web_contents(), this);
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {}

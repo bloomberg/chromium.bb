@@ -222,7 +222,7 @@ class ConstrainedWindowFrameView : public views::NonClientFrameView,
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
 
   SkColor GetTitleColor() const {
-    return container_->owner()->profile()->IsOffTheRecord()
+    return container_->owner()->GetBrowserContext()->IsOffTheRecord()
 #if defined(OS_WIN) && !defined(USE_AURA)
             || !ui::win::IsAeroGlassEnabled()
 #endif
@@ -575,16 +575,16 @@ class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
 // ConstrainedWindowViews, public:
 
 ConstrainedWindowViews::ConstrainedWindowViews(
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     views::WidgetDelegate* widget_delegate)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
-  params.parent = tab_contents->web_contents()->GetNativeView();
+  params.parent = web_contents->GetNativeView();
 #if defined(USE_ASH)
   // Ash window headers can be transparent.
   params.transparent = true;
@@ -598,7 +598,9 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 #endif
   Init(params);
 
-  tab_contents_->constrained_window_tab_helper()->AddConstrainedDialog(this);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
+  constrained_window_tab_helper->AddConstrainedDialog(this);
 #if defined(USE_ASH)
   GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
 #endif
@@ -611,28 +613,26 @@ ConstrainedWindowViews::~ConstrainedWindowViews() {
 // ConstrainedWindowViews, ConstrainedWindow implementation:
 
 void ConstrainedWindowViews::ShowConstrainedWindow() {
-  ConstrainedWindowTabHelper* helper =
-      tab_contents_->constrained_window_tab_helper();
-  if (helper && helper->delegate())
-    helper->delegate()->WillShowConstrainedWindow(tab_contents_);
   Show();
   FocusConstrainedWindow();
 }
 
 void ConstrainedWindowViews::CloseConstrainedWindow() {
 #if defined(USE_ASH)
-  gfx::NativeView view = tab_contents_->web_contents()->GetNativeView();
+  gfx::NativeView view = web_contents_->GetNativeView();
   // Allow the parent to animate again.
   if (view && view->parent())
     view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
 #endif
-  tab_contents_->constrained_window_tab_helper()->WillClose(this);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
+  constrained_window_tab_helper->WillClose(this);
   Close();
 }
 
 void ConstrainedWindowViews::FocusConstrainedWindow() {
   ConstrainedWindowTabHelper* helper =
-      tab_contents_->constrained_window_tab_helper();
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
   if ((!helper->delegate() ||
        helper->delegate()->ShouldFocusConstrainedWindow()) &&
       widget_delegate() &&
@@ -673,7 +673,9 @@ views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 // ConstrainedWindowViews, NativeConstrainedWindowDelegate implementation:
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowDestroyed() {
-  tab_contents_->constrained_window_tab_helper()->WillClose(this);
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
+  constrained_window_tab_helper->WillClose(this);
 }
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {

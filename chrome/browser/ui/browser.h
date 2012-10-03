@@ -659,7 +659,7 @@ class Browser : public TabStripModelObserver,
                                         Profile* profile) OVERRIDE;
 
   // Overridden from ConstrainedWindowTabHelperDelegate:
-  virtual void SetTabContentBlocked(TabContents* contents,
+  virtual void SetTabContentBlocked(content::WebContents* web_contents,
                                     bool blocked) OVERRIDE;
 
   // Overridden from BlockedContentTabHelperDelegate:

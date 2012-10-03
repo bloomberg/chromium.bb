@@ -568,16 +568,19 @@ private:
 
   // Make sure the new tabs's sheets are visible (necessary when a background
   // tab opened a sheet while it was in the background and now becomes active).
-  TabContents* newTab = tabStripModel_->GetTabContentsAt(modelIndex);
-  DCHECK(newTab);
+  TabContents* tabContents = tabStripModel_->GetTabContentsAt(modelIndex);
+  DCHECK(tabContents);
+  WebContents* newTab = tabContents->web_contents();
   if (newTab && ![sheetController sheetCount]) {
+    ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(newTab);
+
     ConstrainedWindowTabHelper::ConstrainedWindowList::iterator it, end;
-    end = newTab->constrained_window_tab_helper()->constrained_window_end();
+    end = constrained_window_tab_helper->constrained_window_end();
     NSWindowController* controller = [[newView window] windowController];
     DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
 
-    for (it = newTab->constrained_window_tab_helper()->
-              constrained_window_begin();
+    for (it = constrained_window_tab_helper->constrained_window_begin();
          it != end;
          ++it) {
       ConstrainedWindow* constrainedWindow = *it;

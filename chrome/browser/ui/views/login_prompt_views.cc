@@ -127,9 +127,7 @@ class LoginHandlerViews : public LoginHandler,
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
     WebContents* requesting_contents = GetWebContentsForLogin();
-    TabContents* tab_contents =
-        TabContents::FromWebContents(requesting_contents);
-    SetDialog(new ConstrainedWindowViews(tab_contents, this));
+    SetDialog(new ConstrainedWindowViews(requesting_contents, this));
     NotifyAuthNeeded();
   }
 

@@ -205,9 +205,9 @@ class SSLUITest : public InProcessBrowserTest {
     observer.Wait();
   }
 
-  int GetConstrainedWindowCount() const {
-    return static_cast<int>(chrome::GetActiveTabContents(browser())->
-        constrained_window_tab_helper()->constrained_window_count());
+  size_t GetConstrainedWindowCount() const {
+    return ConstrainedWindowTabHelper::FromWebContents(
+        chrome::GetActiveWebContents(browser()))->constrained_window_count();
   }
 
   static bool GetFilePathWithHostAndPortReplacement(
@@ -772,7 +772,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
   // opened (the iframe content opens one).
   // Note: because of bug 1115868, no constrained window is opened right now.
   //       Once the bug is fixed, this will do the real check.
-  EXPECT_EQ(0, GetConstrainedWindowCount());
+  EXPECT_EQ(0U, GetConstrainedWindowCount());
 
   int img_width;
   EXPECT_TRUE(content::ExecuteJavaScriptAndExtractInt(
@@ -1061,7 +1061,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
         FROM_HERE, MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(1));
     content::RunMessageLoop();
   }
-  ASSERT_EQ(1, GetConstrainedWindowCount());
+  ASSERT_EQ(1U, GetConstrainedWindowCount());
 
   // Let's add another tab to make sure the browser does not exit when we close
   // the first tab.
