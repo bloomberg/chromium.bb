@@ -130,6 +130,10 @@ FilePath GetUserDataTempDir();
 // TODO(skerner): Make a version of Delete that is not overloaded in file_util.
 void DeleteFile(const FilePath& path, bool recursive);
 
+bool IsComponentExtensionResource(const extensions::Extension* extension,
+                                  const FilePath& resource_path,
+                                  int* resource_id);
+
 }  // namespace extension_file_util
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_FILE_UTIL_H_

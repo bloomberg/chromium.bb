@@ -26,7 +26,9 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/message_bundle.h"
+#include "grit/component_extension_resources_map.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -789,6 +791,51 @@ FilePath GetUserDataTempDir() {
 
 void DeleteFile(const FilePath& path, bool recursive) {
   file_util::Delete(path, recursive);
+}
+
+bool IsComponentExtensionResource(const Extension* extension,
+                                  const FilePath& resource_path,
+                                  int* resource_id) {
+  static const GritResourceMap kExtraComponentExtensionResources[] = {
+    {"web_store/webstore_icon_128.png", IDR_WEBSTORE_ICON},
+    {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
+    {"chrome_app/product_logo_128.png", IDR_PRODUCT_LOGO_128},
+    {"chrome_app/product_logo_16.png", IDR_PRODUCT_LOGO_16},
+  };
+  static const size_t kExtraComponentExtensionResourcesSize =
+      arraysize(kExtraComponentExtensionResources);
+
+  if (extension->location() != Extension::COMPONENT)
+    return false;
+
+  FilePath directory_path = extension->path();
+  FilePath relative_path = directory_path.BaseName().Append(resource_path);
+  relative_path = relative_path.NormalizePathSeparators();
+
+  // TODO(tc): Make a map of FilePath -> resource ids so we don't have to
+  // covert to FilePaths all the time.  This will be more useful as we add
+  // more resources.
+  for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
+    FilePath resource_path =
+        FilePath().AppendASCII(kComponentExtensionResources[i].name);
+    resource_path = resource_path.NormalizePathSeparators();
+
+    if (relative_path == resource_path) {
+      *resource_id = kComponentExtensionResources[i].value;
+      return true;
+    }
+  }
+  for (size_t i = 0; i < kExtraComponentExtensionResourcesSize; ++i) {
+    FilePath resource_path =
+        FilePath().AppendASCII(kExtraComponentExtensionResources[i].name);
+    resource_path = resource_path.NormalizePathSeparators();
+
+    if (relative_path == resource_path) {
+      *resource_id = kExtraComponentExtensionResources[i].value;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace extension_file_util

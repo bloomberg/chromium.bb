@@ -3,6 +3,10 @@
   "name": "Chrome",
   "version": "0.1",
   "description": "Chrome as an app",
+  "icons": {
+    "16": "product_logo_16.png",
+    "128": "product_logo_128.png"
+  },
   "app": {
     "launch": {
       // Note this will be changed by special case to become chrome://newtab.

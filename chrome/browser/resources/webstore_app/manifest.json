@@ -4,6 +4,8 @@
   "version": "0.1",
   "description": "Web Store",
   "icons": {
+    "16": "webstore_icon_16.png",
+    "128": "webstore_icon_128.png"
   },
   "app": {
     "launch": {
