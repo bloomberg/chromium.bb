@@ -140,6 +140,9 @@ class ExternalFileSystemMountPointProvider
   virtual bool HasMountPoint(const FilePath& mount_point) = 0;
   // Adds a new local mount point.
   virtual void AddLocalMountPoint(const FilePath& mount_point) = 0;
+  // Adds a new local mount point that will be accessible only by extensions
+  // that have been granted full acess for all external file systems.
+  virtual void AddRestrictedLocalMountPoint(const FilePath& mount_point) = 0;
   // Adds a new remote mount point.
   virtual void AddRemoteMountPoint(
       const FilePath& mount_point,

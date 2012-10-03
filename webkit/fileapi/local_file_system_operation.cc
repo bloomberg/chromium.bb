@@ -738,6 +738,11 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
   if (!url.is_valid())
     return base::PLATFORM_FILE_ERROR_INVALID_URL;
 
+  // Restricted file system is read-only.
+  if (url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal &&
+      mode != SETUP_FOR_READ)
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
   if (!file_system_context()->GetMountPointProvider(
           url.type())->IsAccessAllowed(url))
     return base::PLATFORM_FILE_ERROR_SECURITY;

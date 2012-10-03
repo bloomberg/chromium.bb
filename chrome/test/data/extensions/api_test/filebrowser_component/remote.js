@@ -14,7 +14,7 @@
 // The feeds are located in chrome/test/data/chromeos/drive/.
 var kDirectoryPath = 'drive/Folder';
 var kFileName = 'File.aBc';
-var kExpectedContents = 'hello, world\0';
+var kExpectedContents = 'hello, world!';
 var kWriteOffset = 12;
 var kWriteData = '!!!';
 var kExpectedAfterWrite = 'hello, world!!!';

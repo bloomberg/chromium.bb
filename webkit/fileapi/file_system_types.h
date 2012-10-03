@@ -52,6 +52,11 @@ enum FileSystemType {
   // local path.
   kFileSystemTypeNativeLocal,
 
+  // Indicates a local filesystem where we can access files using native
+  // local path, but with restricted access.
+  // Restricted native local file system is in read-only mode.
+  kFileSystemTypeRestrictedNativeLocal,
+
   // Indicates a transient, isolated file system for dragged files (which could
   // contain multiple dragged paths in the virtual root).
   kFileSystemTypeDragged,

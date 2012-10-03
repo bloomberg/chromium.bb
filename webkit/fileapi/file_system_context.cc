@@ -123,6 +123,7 @@ FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
       return sandbox_provider_.get();
     case kFileSystemTypeExternal:
     case kFileSystemTypeDrive:
+    case kFileSystemTypeRestrictedNativeLocal:
       return external_provider_.get();
     case kFileSystemTypeIsolated:
     case kFileSystemTypeDragged:

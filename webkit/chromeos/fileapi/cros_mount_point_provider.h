@@ -89,6 +89,8 @@ class FILEAPI_EXPORT CrosMountPointProvider
       const std::string& extension_id) OVERRIDE;
   virtual bool HasMountPoint(const FilePath& mount_point) OVERRIDE;
   virtual void AddLocalMountPoint(const FilePath& mount_point) OVERRIDE;
+  virtual void AddRestrictedLocalMountPoint(
+      const FilePath& mount_point) OVERRIDE;
   virtual void AddRemoteMountPoint(
       const FilePath& mount_point,
       fileapi::RemoteFileSystemProxyInterface* remote_proxy) OVERRIDE;

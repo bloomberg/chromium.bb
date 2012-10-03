@@ -43,8 +43,8 @@ namespace {
 
 // These should match the counterparts in remote.js.
 // Also, the size of the file in |kTestRootFeed| has to be set to
-// |size(kTestFileContents)|.
-const char kTestFileContents[] = "hello, world";
+// length of kTestFileContent string.
+const char kTestFileContent[] = "hello, world!";
 
 // Contains a folder entry for the folder 'Folder' that will be 'created'.
 const char kTestDirectory[] = "new_folder_entry.json";
@@ -136,10 +136,10 @@ ACTION_P2(MockGetDocumentEntryCallback, status, value) {
 }
 
 // Creates a cache representation of the test file with predetermined content.
-void CreateDownloadFile(const FilePath& path) {
-  int file_content_size = static_cast<int>(sizeof(kTestFileContents));
-  ASSERT_EQ(file_content_size,
-            file_util::WriteFile(path, kTestFileContents, file_content_size));
+void CreateFileWithContent(const FilePath& path, const std::string& content) {
+  int content_size = static_cast<int>(content.length());
+  ASSERT_EQ(content_size,
+            file_util::WriteFile(path, content.c_str(), content_size));
 }
 
 // Action used to set mock expectations for DownloadFile().
@@ -147,7 +147,7 @@ ACTION_P(MockDownloadFileCallback, status) {
   ASSERT_TRUE(content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&CreateDownloadFile, arg1),
+      base::Bind(&CreateFileWithContent, arg1, kTestFileContent),
       base::Bind(arg3, status, arg2, arg1)));
 }
 
@@ -188,6 +188,56 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
  private:
   FilePath test_mount_point_;
 };
+
+class RestrictedFileSystemExtensionApiTest : public ExtensionApiTest {
+ public:
+  RestrictedFileSystemExtensionApiTest() {}
+
+  virtual ~RestrictedFileSystemExtensionApiTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    FilePath tmp_path;
+    PathService::Get(base::DIR_TEMP, &tmp_path);
+    ASSERT_TRUE(tmp_dir_.CreateUniqueTempDirUnderPath(tmp_path));
+    mount_point_dir_ = tmp_dir_.path().Append("mount");
+    // Create the mount point.
+    file_util::CreateDirectory(mount_point_dir_);
+
+    FilePath test_dir = mount_point_dir_.Append("test_dir");
+    file_util::CreateDirectory(test_dir);
+
+    FilePath test_file = test_dir.AppendASCII("test_file.foo");
+    CreateFileWithContent(test_file, kTestFileContent);
+
+    test_file = test_dir.AppendASCII("mutable_test_file.foo");
+    CreateFileWithContent(test_file, kTestFileContent);
+
+    test_file = test_dir.AppendASCII("test_file_to_delete.foo");
+    CreateFileWithContent(test_file, kTestFileContent);
+
+    test_file = test_dir.AppendASCII("test_file_to_move.foo");
+    CreateFileWithContent(test_file, kTestFileContent);
+
+    // Create test files.
+    ExtensionApiTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    ExtensionApiTest::TearDown();
+  }
+
+  void AddRestrictedMountPoint() {
+    fileapi::ExternalFileSystemMountPointProvider* provider =
+        BrowserContext::GetDefaultStoragePartition(
+            browser()->profile())->GetFileSystemContext()->external_provider();
+    provider->AddRestrictedLocalMountPoint(mount_point_dir_);
+  }
+
+ protected:
+  ScopedTempDir tmp_dir_;
+  FilePath mount_point_dir_;
+};
+
 
 class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
  public:
@@ -256,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserWebIntentTest) {
 
   // Create a test file inside the ScopedTempDir.
   FilePath test_file = tmp_dir.path().AppendASCII("text_file.xul");
-  CreateDownloadFile(test_file);
+  CreateFileWithContent(test_file, kTestFileContent);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("webintent_handler"))) << message_;
@@ -298,6 +348,12 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
       << message_;
   ASSERT_TRUE(RunExtensionSubtest(
       "filebrowser_component", "write.html", kComponentFlags)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(RestrictedFileSystemExtensionApiTest, Basic) {
+  AddRestrictedMountPoint();
+  ASSERT_TRUE(RunExtensionSubtest(
+      "filebrowser_component", "restricted.html", kComponentFlags)) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
