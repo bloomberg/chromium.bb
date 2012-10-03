@@ -234,9 +234,7 @@ bool RLZTracker::Init(bool first_run,
 void RLZTracker::ScheduleDelayedInit(int delay) {
   // The RLZTracker is a singleton object that outlives any runnable tasks
   // that will be queued up.
-  // TODO: Move to SequencedWorkerPool once http://crbug.com/119657 is fixed.
-  BrowserThread::PostDelayedTask(
-      BrowserThread::FILE,
+  BrowserThread::GetBlockingPool()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&RLZTracker::DelayedInit, base::Unretained(this)),
       base::TimeDelta::FromMilliseconds(delay));
