@@ -4,8 +4,11 @@
 window.addEventListener("message", messageReceived, false);
 
 function messageReceived(event) {
-  window.top.document.title = event.data;
-  event.source.postMessage(event.data, "*");
+  if (event.data === 'msg4') {
+    window.top.document.title = event.data;
+  } else {
+    event.source.postMessage("2-1-reply", "*");
+  }
 }
 </script>
 </head>

@@ -3905,12 +3905,13 @@ void RenderViewImpl::CreateFrameTree(WebKit::WebFrame* frame,
   }
 }
 
-WebKit::WebFrame* RenderViewImpl::GetFrameByMappedID(int frame_id) {
-  std::map<int, int>::iterator it = active_frame_id_map_.find(frame_id);
-  if (it == active_frame_id_map_.end())
-    return NULL;
-
-  return FindFrameByID(webview()->mainFrame(), it->second);
+WebKit::WebFrame* RenderViewImpl::GetFrameByRemoteID(int remote_frame_id) {
+  std::map<int, int>::const_iterator it = active_frame_id_map_.begin();
+  for (; it != active_frame_id_map_.end(); ++it) {
+    if (it->second == remote_frame_id)
+      return FindFrameByID(webview()->mainFrame(), it->first);
+  }
+  return NULL;
 }
 
 void RenderViewImpl::EnsureMediaStreamImpl() {
@@ -5016,7 +5017,7 @@ void RenderViewImpl::OnPostMessageEvent(
   if (params.source_routing_id != MSG_ROUTING_NONE) {
     RenderViewImpl* source_view = FromRoutingID(params.source_routing_id);
     if (source_view)
-      source_frame = source_view->GetFrameByMappedID(params.source_frame_id);
+      source_frame = source_view->GetFrameByRemoteID(params.source_frame_id);
   }
 
   // Create an event with the message.  The final parameter to initMessageEvent

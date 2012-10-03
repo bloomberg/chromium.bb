@@ -27,6 +27,9 @@
   window.addEventListener("message", messageReceived, false);
   function messageReceived(event) {
     receivedMessages++;
+    if (event.data === "2-1-reply") {
+      event.source.postMessage("msg4", "*");
+    }
     // Change the title to generate a notification.
     document.title = event.data;
   }

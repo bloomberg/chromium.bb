@@ -613,18 +613,19 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(ASCIIToUTF16("msg3"), new_shell->web_contents()->GetTitle());
 
   // 6) Lastly, verify that the _blank window can post a message to a subframe
-  // of the foo window. The subframe of foo will set the foo window title and
-  // will reply, setting the _blank window title.
+  // of the foo window. The subframe of foo will reply back to the _blank window
+  // with specific message, causing _blank to do one more round of replies.
+  // At the end, the foo window will set the window title.
   WindowedNotificationObserver title_observer4(
       NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-      Source<WebContents>(new_shell2->web_contents()));
+      Source<WebContents>(new_shell->web_contents()));
   EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
       new_contents->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(postToFooFrame('msg4'));",
       &success));
   EXPECT_TRUE(success);
   title_observer4.Wait();
-  EXPECT_EQ(ASCIIToUTF16("msg4"), new_shell2->web_contents()->GetTitle());
+  EXPECT_EQ(ASCIIToUTF16("msg4"), new_shell->web_contents()->GetTitle());
 }
 
 // Test for crbug.com/116192.  Navigations to a window's opener should
