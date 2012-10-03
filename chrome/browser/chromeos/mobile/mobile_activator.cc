@@ -541,6 +541,8 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
             } else {
               new_state = PLAN_ACTIVATION_DONE;
             }
+          } else {
+            LOG(WARNING) << "Unknown transition";
           }
           break;
         }
@@ -554,6 +556,8 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
           } else if (network->connected()) {
             DisconnectFromNetwork(network);
             return;
+          } else {
+            LOG(WARNING) << "Unknown transition";
           }
           break;
         }
@@ -568,6 +572,8 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
           } else if (network->connected()) {
             DisconnectFromNetwork(network);
             return;
+          } else {
+            LOG(WARNING) << "Unknown transition";
           }
           break;
         }
@@ -597,6 +603,7 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
           // Wait in this state until activation state changes.
           break;
         default:
+          LOG(WARNING) << "Unknown transition";
           break;
       }
       break;
@@ -617,8 +624,11 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
           break;
         case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
           if (network->connected()) {
-            if (network->restricted_pool())
+            if (network->restricted_pool()) {
               new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
+            } else {
+              LOG(WARNING) << "Unknown transition";
+            }
           } else {
             new_state = GetNextReconnectState(state_);
           }
@@ -628,6 +638,7 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
           // Wait in this state until activation state changes.
           break;
         default:
+          LOG(WARNING) << "Unknown transition";
           break;
       }
       break;
@@ -667,14 +678,19 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
             } else if (network->activation_state() ==
                            ACTIVATION_STATE_ACTIVATED) {
               new_state = PLAN_ACTIVATION_DONE;
+            } else {
+              LOG(WARNING) << "Unknown transition";
             }
             break;
           default:
+            LOG(WARNING) << "Unknown transition";
             break;
         }
       } else if (NeedsReconnecting(network, &new_state, &error_description)) {
         evaluating_ = false;
         return;
+      } else {
+        LOG(WARNING) << "Unknown transition";
       }
       break;
     }
@@ -698,19 +714,25 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
                 return;
               } else {
                 new_state = PLAN_ACTIVATION_ERROR;
+                LOG(WARNING) << "Plan activation error, logging UMA stat";
                 UMA_HISTOGRAM_COUNTS("Cellular.PostPaymentConnectFailure", 1);
                 error_description = GetErrorMessage(kFailedConnectivity);
               }
             } else if (network->online()) {
               new_state = PLAN_ACTIVATION_DONE;
+            } else {
+              LOG(WARNING) << "Unknown transition";
             }
             break;
           default:
+            LOG(WARNING) << "Unknown transition";
             break;
         }
       } else if (NeedsReconnecting(network, &new_state, &error_description)) {
         evaluating_ = false;
         return;
+      } else {
+        LOG(WARNING) << "Unknown transition";
       }
       break;
     }
