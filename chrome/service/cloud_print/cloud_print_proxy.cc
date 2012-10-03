@@ -136,10 +136,6 @@ void CloudPrintProxy::EnableForUserWithRobot(
 
 bool CloudPrintProxy::CreateBackend() {
   DCHECK(CalledOnValidThread());
-  // Temporary fix to disable CloudPrint for Chrome canary build.
-  return false;
-
-  /*
   if (backend_.get())
     return false;
 
@@ -159,7 +155,6 @@ bool CloudPrintProxy::CreateBackend() {
   backend_.reset(new CloudPrintProxyBackend(this, settings_, oauth_client_info,
                                             enable_job_poll));
   return true;
-  */
 }
 
 void CloudPrintProxy::UnregisterPrintersAndDisableForUser() {
