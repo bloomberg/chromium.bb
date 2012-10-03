@@ -435,6 +435,9 @@ const char kGpuVendorID[]                   = "gpu-vendor-id";
 // to run as a guest renderer instead of a regular renderer.
 const char kGuestRenderer[]                 = "guest-renderer";
 
+// These mappings only apply to the host resolver.
+const char kHostResolverRules[]             = "host-resolver-rules";
+
 // Ignores GPU blacklist.
 const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 
@@ -586,6 +589,10 @@ const char kTapDownDeferralTimeMs[]         = "tap-down-deferral-time";
 
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
+
+// Allows for forcing socket connections to http/https to use fixed ports.
+const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";
+const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 
 // Causes TRACE_EVENT flags to be recorded from startup. Optionally, can
 // specify the specific trace categories to include (e.g.

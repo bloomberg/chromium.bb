@@ -6,13 +6,16 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/shell_network_delegate.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/default_server_bound_cert_store.h"
 #include "net/base/host_resolver.h"
+#include "net/base/mapped_host_resolver.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/cookies/cookie_monster.h"
@@ -54,6 +57,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!url_request_context_.get()) {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
     url_request_context_.reset(new net::URLRequestContext());
     network_delegate_.reset(new ShellNetworkDelegate);
     url_request_context_->set_network_delegate(network_delegate_.get());
@@ -111,6 +116,25 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         url_request_context_->http_server_properties();
     network_session_params.ignore_certificate_errors =
         ignore_certificate_errors_;
+    if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
+      int value;
+      base::StringToInt(command_line.GetSwitchValueASCII(
+          switches::kTestingFixedHttpPort), &value);
+      network_session_params.testing_fixed_http_port = value;
+    }
+    if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
+      int value;
+      base::StringToInt(command_line.GetSwitchValueASCII(
+          switches::kTestingFixedHttpsPort), &value);
+      network_session_params.testing_fixed_https_port = value;
+    }
+    if (command_line.HasSwitch(switches::kHostResolverRules)) {
+      mapped_host_resolver_.reset(
+          new net::MappedHostResolver(network_session_params.host_resolver));
+      mapped_host_resolver_->SetRulesFromString(
+          command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+      network_session_params.host_resolver = mapped_host_resolver_.get();
+    }
 
     net::HttpCache* main_cache = new net::HttpCache(
         network_session_params, main_backend);
