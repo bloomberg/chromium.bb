@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -31,6 +30,30 @@ using content::BrowserThread;
 using extensions::Extension;
 
 namespace {
+
+struct ComponentExtensionResource {
+  const char* extension_id;
+  const int resource_id;
+};
+
+const ComponentExtensionResource kSpecialComponentExtensionResources[] = {
+  { extension_misc::kWebStoreAppId, IDR_WEBSTORE_ICON },
+  { extension_misc::kChromeAppId, IDR_PRODUCT_LOGO_128 },
+};
+
+// Finds special component extension resource id for given extension id.
+bool FindSpecialExtensionResourceId(const std::string& extension_id,
+                                    int* out_resource_id) {
+  for (size_t i = 0; i < arraysize(kSpecialComponentExtensionResources); ++i) {
+    if (extension_id == kSpecialComponentExtensionResources[i].extension_id) {
+      if (out_resource_id)
+        *out_resource_id = kSpecialComponentExtensionResources[i].resource_id;
+      return true;
+    }
+  }
+
+  return false;
+}
 
 bool ShouldResizeImageRepresentation(
     ImageLoadingTracker::ImageRepresentation::ResizeCondition resize_method,
@@ -224,6 +247,13 @@ class ImageLoadingTracker::ImageLoader
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoadingTracker
 
+// static
+bool ImageLoadingTracker::IsSpecialBundledExtensionId(
+    const std::string& extension_id) {
+  int resource_id = -1;
+  return FindSpecialExtensionResourceId(extension_id, &resource_id);
+}
+
 ImageLoadingTracker::ImageLoadingTracker(Observer* observer)
     : observer_(observer),
       next_id_(0) {
@@ -265,6 +295,16 @@ void ImageLoadingTracker::LoadImages(
 
   for (std::vector<ImageRepresentation>::const_iterator it = info_list.begin();
        it != info_list.end(); ++it) {
+    int resource_id = -1;
+
+    // Load resources for special component extensions.
+    if (FindSpecialExtensionResourceId(load_info.extension_id, &resource_id)) {
+      if (!loader_)
+        loader_ = new ImageLoader(this);
+      loader_->LoadResource(*it, id, resource_id);
+      continue;
+    }
+
     // If we don't have a path we don't need to do any further work, just
     // respond back.
     if (it->resource.relative_path().empty()) {
@@ -287,8 +327,7 @@ void ImageLoadingTracker::LoadImages(
     if (!loader_)
       loader_ = new ImageLoader(this);
 
-    int resource_id = -1;
-    if (IsComponentExtensionResource(extension, it->resource, &resource_id))
+    if (IsComponentExtensionResource(extension, it->resource, resource_id))
       loader_->LoadResource(*it, id, resource_id);
     else
       loader_->LoadImage(*it, id);
@@ -298,9 +337,25 @@ void ImageLoadingTracker::LoadImages(
 bool ImageLoadingTracker::IsComponentExtensionResource(
     const Extension* extension,
     const ExtensionResource& resource,
-    int* resource_id) const {
-  return extension_file_util::IsComponentExtensionResource(extension,
-      resource.relative_path(), resource_id);
+    int& resource_id) const {
+  if (extension->location() != Extension::COMPONENT)
+    return false;
+
+  FilePath directory_path = extension->path();
+  FilePath relative_path = directory_path.BaseName().Append(
+      resource.relative_path());
+
+  for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
+    FilePath resource_path =
+        FilePath().AppendASCII(kComponentExtensionResources[i].name);
+    resource_path = resource_path.NormalizePathSeparators();
+
+    if (relative_path == resource_path) {
+      resource_id = kComponentExtensionResources[i].value;
+      return true;
+    }
+  }
+  return false;
 }
 
 void ImageLoadingTracker::OnBitmapLoaded(

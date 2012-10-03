@@ -254,7 +254,7 @@ TEST_F(ImageLoadingTrackerTest, IsComponentExtensionResource) {
   ASSERT_EQ(true,
             loader.IsComponentExtensionResource(extension.get(),
                                                 resource,
-                                                &resource_id));
+                                                resource_id));
   ASSERT_EQ(IDR_FILE_MANAGER_ICON_16, resource_id);
 #endif
 }

@@ -135,6 +135,13 @@ ExtensionIconSource::~ExtensionIconSource() {
   STLDeleteValues(&request_map_);
 }
 
+const SkBitmap* ExtensionIconSource::GetWebStoreImage() {
+  if (!web_store_icon_data_.get())
+    web_store_icon_data_.reset(LoadImageByResourceId(IDR_WEBSTORE_ICON));
+
+  return web_store_icon_data_.get();
+}
+
 const SkBitmap* ExtensionIconSource::GetDefaultAppImage() {
   if (!default_app_data_.get())
     default_app_data_.reset(LoadImageByResourceId(IDR_APP_DEFAULT_ICON));
@@ -167,7 +174,9 @@ void ExtensionIconSource::LoadDefaultImage(int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
   const SkBitmap* default_image = NULL;
 
-  if (request->extension->is_app())
+  if (request->extension->id() == extension_misc::kWebStoreAppId)
+    default_image = GetWebStoreImage();
+  else if (request->extension->is_app())
     default_image = GetDefaultAppImage();
   else
     default_image = GetDefaultExtensionImage();

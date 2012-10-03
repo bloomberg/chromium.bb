@@ -70,12 +70,9 @@ bool ResourceRequestPolicy::CanRequestResource(
         !extension->devtools_url().is_empty();
     bool transition_allowed =
         !content::PageTransitionIsWebTriggerable(transition_type);
-    // - unreachable web page error page (to allow showing the icon of the
-    //   unreachable app on this page)
-    bool is_error_page = frame_url == GURL(content::kUnreachableWebDataURL);
 
     if (!is_empty_origin && !is_own_resource &&
-        !is_dev_tools && !transition_allowed && !is_error_page) {
+        !is_dev_tools && !transition_allowed) {
       std::string message = base::StringPrintf(
           "Denying load of %s. Resources must be listed in the "
           "web_accessible_resources manifest key in order to be loaded by "
