@@ -114,8 +114,13 @@ ui::EventResult SystemGestureEventFilter::PreHandleGestureEvent(
         SystemPinchHandler::kSystemGesturePoints) {
       ash::AcceleratorController* accelerator =
           ash::Shell::GetInstance()->accelerator_controller();
-      if (accelerator->PerformAction(CYCLE_FORWARD_MRU, ui::Accelerator()))
+      if (accelerator->PerformAction(CYCLE_FORWARD_MRU_PRESSED,
+                                     ui::Accelerator())) {
+        accelerator->PerformAction(CYCLE_FORWARD_MRU_RELEASED,
+                                   ui::Accelerator());
         return ui::ER_CONSUMED;
+      }
+      accelerator->PerformAction(CYCLE_FORWARD_MRU_RELEASED, ui::Accelerator());
     }
     return ui::ER_UNHANDLED;
   }

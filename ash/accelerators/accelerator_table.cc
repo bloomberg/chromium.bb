@@ -33,11 +33,18 @@ const AcceleratorData kAcceleratorData[] = {
   // Shortcut for Koren IME.
   { true, ui::VKEY_HANGUL, ui::EF_NONE, SWITCH_IME },
 
-  { true, ui::VKEY_TAB, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
+  { true, ui::VKEY_TAB, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU_PRESSED },
+  { false, ui::VKEY_TAB, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU_RELEASED },
   { true, ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-    CYCLE_BACKWARD_MRU },
-  { true, ui::VKEY_F5, ui::EF_NONE, CYCLE_FORWARD_LINEAR },
-  { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE, CYCLE_FORWARD_LINEAR },
+    CYCLE_BACKWARD_MRU_PRESSED },
+  { false, ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+    CYCLE_BACKWARD_MRU_RELEASED },
+  { true, ui::VKEY_F5, ui::EF_NONE, CYCLE_FORWARD_LINEAR_PRESSED },
+  { false, ui::VKEY_F5, ui::EF_NONE, CYCLE_FORWARD_LINEAR_RELEASED },
+  { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE,
+      CYCLE_FORWARD_LINEAR_PRESSED },
+  { false, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE,
+      CYCLE_FORWARD_LINEAR_RELEASED },
 #if defined(OS_CHROMEOS)
   { true, ui::VKEY_WLAN, ui::EF_NONE, TOGGLE_WIFI },
   { true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE, BRIGHTNESS_DOWN },
@@ -81,9 +88,12 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_F3,
     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     ROTATE_WINDOWS },
-  { true, ui::VKEY_F5, ui::EF_SHIFT_DOWN, CYCLE_BACKWARD_LINEAR },
+  { true, ui::VKEY_F5, ui::EF_SHIFT_DOWN, CYCLE_BACKWARD_LINEAR_PRESSED },
+  { false, ui::VKEY_F5, ui::EF_SHIFT_DOWN, CYCLE_BACKWARD_LINEAR_RELEASED },
   { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN,
-    CYCLE_BACKWARD_LINEAR },
+    CYCLE_BACKWARD_LINEAR_PRESSED },
+  { false, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN,
+    CYCLE_BACKWARD_LINEAR_RELEASED },
   { true, ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, RESTORE_TAB },
   { true, ui::VKEY_F5, ui::EF_CONTROL_DOWN, TAKE_SCREENSHOT },
   { true, ui::VKEY_F5, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
@@ -156,8 +166,12 @@ const AcceleratorData kDebugAcceleratorData[] = {
   { true, ui::VKEY_F11, ui::EF_CONTROL_DOWN, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
   { true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI },
   // For testing on systems where Alt-Tab is already mapped.
-  { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
-  { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU },
+  { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU_PRESSED },
+  { false, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU_RELEASED },
+  { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+      CYCLE_BACKWARD_MRU_PRESSED },
+  { false, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+      CYCLE_BACKWARD_MRU_RELEASED },
   { true, ui::VKEY_HOME, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     DISPLAY_TOGGLE_SCALE },
 #if !defined(NDEBUG)
@@ -174,9 +188,10 @@ const size_t kDebugAcceleratorDataLength = arraysize(kDebugAcceleratorData);
 
 const AcceleratorAction kReservedActions[] = {
   // Window cycling accelerators.
-  CYCLE_BACKWARD_MRU,  // Shift+Alt+Tab
-  CYCLE_FORWARD_MRU,  // Alt+Tab
-
+  CYCLE_BACKWARD_MRU_PRESSED,  // Shift+Alt+Tab
+  CYCLE_BACKWARD_MRU_RELEASED,
+  CYCLE_FORWARD_MRU_PRESSED,  // Alt+Tab
+  CYCLE_FORWARD_MRU_RELEASED,
 #if defined(OS_CHROMEOS)
   POWER_PRESSED,
   POWER_RELEASED,

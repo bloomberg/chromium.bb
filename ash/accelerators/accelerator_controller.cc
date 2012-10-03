@@ -333,7 +333,11 @@ bool HandlePrintWindowHierarchy() {
 
 AcceleratorController::AcceleratorController()
     : accelerator_manager_(new ui::AcceleratorManager),
-      toggle_maximized_suppressed_(false) {
+      toggle_maximized_suppressed_(false),
+      cycle_backward_linear_suppressed_(false),
+      cycle_forward_linear_suppressed_(false),
+      cycle_backward_mru_suppressed_(false),
+      cycle_forward_mru_suppressed_(false) {
   Init();
 }
 
@@ -431,25 +435,49 @@ bool AcceleratorController::PerformAction(int action,
   // function might be called *twice*, via BrowserView::PreHandleKeyboardEvent
   // and BrowserView::HandleKeyboardEvent, for a single accelerator press.
   switch (action) {
-    case CYCLE_BACKWARD_MRU:
+    case CYCLE_BACKWARD_MRU_PRESSED:
+      if (cycle_backward_mru_suppressed_)
+        return true;
+      cycle_backward_mru_suppressed_ = true;
       if (key_code == ui::VKEY_TAB && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,
                                   accelerator.IsAltDown());
-    case CYCLE_FORWARD_MRU:
+    case CYCLE_BACKWARD_MRU_RELEASED:
+      cycle_backward_mru_suppressed_ = false;
+      return true;
+    case CYCLE_FORWARD_MRU_PRESSED:
+      if (cycle_forward_mru_suppressed_)
+        return true;
+      cycle_forward_mru_suppressed_ = true;
       if (key_code == ui::VKEY_TAB && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_TAB);
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
                                   accelerator.IsAltDown());
-    case CYCLE_BACKWARD_LINEAR:
+    case CYCLE_FORWARD_MRU_RELEASED:
+      cycle_forward_mru_suppressed_ = false;
+      return true;
+    case CYCLE_BACKWARD_LINEAR_PRESSED:
+      if (cycle_backward_linear_suppressed_)
+        return true;
+      cycle_backward_linear_suppressed_ = true;
       if (key_code == ui::VKEY_F5 && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_BACKWARD);
       return true;
-    case CYCLE_FORWARD_LINEAR:
+    case CYCLE_BACKWARD_LINEAR_RELEASED:
+      cycle_backward_linear_suppressed_ = false;
+      return true;
+    case CYCLE_FORWARD_LINEAR_PRESSED:
+      if (cycle_forward_linear_suppressed_)
+        return true;
+      cycle_forward_linear_suppressed_ = true;
       if (key_code == ui::VKEY_F5 && shell->delegate())
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_F5);
       HandleCycleWindowLinear(CYCLE_FORWARD);
+      return true;
+    case CYCLE_FORWARD_LINEAR_RELEASED:
+      cycle_forward_linear_suppressed_ = false;
       return true;
 #if defined(OS_CHROMEOS)
     case CYCLE_DISPLAY_MODE:
