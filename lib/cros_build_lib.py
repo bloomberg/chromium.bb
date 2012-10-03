@@ -138,8 +138,12 @@ def SudoRunCommand(cmd, user='root', **kwds):
 
   # Pass these values down into the sudo environment, since sudo will
   # just strip them normally.
-  sudo_cmd.extend('%s=%s' % (k, v)
-                  for k, v in kwds.pop('extra_env', {}).iteritems())
+  extra_env = kwds.pop('extra_env', {}).copy()
+  for var in constants.ENV_PASSTHRU:
+    if var not in extra_env and var in os.environ:
+      extra_env[var] = os.environ[var]
+
+  sudo_cmd.extend('%s=%s' % (k, v) for k, v in extra_env.iteritems())
 
   # Finally, block people from passing options to sudo.
   sudo_cmd.append('--')
@@ -362,6 +366,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
 
   # If we are using enter_chroot we need to use enterchroot pass env through
   # to the final command.
+  env = env.copy() if env is not None else os.environ.copy()
   if enter_chroot:
     wrapper = ['cros_sdk']
 
@@ -374,12 +379,11 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     cmd = wrapper + ['--'] + cmd
 
   elif extra_env:
-    if env is not None:
-      env = env.copy()
-    else:
-      env = os.environ.copy()
-
     env.update(extra_env)
+
+  for var in constants.ENV_PASSTHRU:
+    if var not in env and var in os.environ:
+      env[var] = os.environ[var]
 
   # Print out the command before running.
   if print_cmd or log_output:

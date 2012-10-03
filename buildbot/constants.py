@@ -169,3 +169,6 @@ DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
 # acl (xml) file will be necessary in those cases. Make available well known
 # locations and standardize.
 KNOWN_ACL_FILES = {'slave': os.path.expanduser('~/slave_archive_acl')}
+
+# Environment variables that should be exposed to all children process.
+ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR)
