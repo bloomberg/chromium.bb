@@ -1141,3 +1141,63 @@ TEST_F(GpuBlacklistTest, DualGpuModel) {
   EXPECT_EQ(switching, content::GPU_SWITCHING_OPTION_FORCE_DISCRETE);
 }
 
+TEST_F(GpuBlacklistTest, Css3D) {
+  const std::string css_3d_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"macosx\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x10de\",\n"
+      "      \"device_id\": [\"0x0640\"],\n"
+      "      \"blacklist\": [\n"
+      "        \"3d_css\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  Version os_version("10.6.4");
+
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(
+      css_3d_json, GpuBlacklist::kAllOs));
+  GpuFeatureType type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsMacosx, &os_version,
+      gpu_info()).blacklisted_features;
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_3D_CSS);
+}
+
+TEST_F(GpuBlacklistTest, Video) {
+  const std::string video_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"macosx\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x10de\",\n"
+      "      \"device_id\": [\"0x0640\"],\n"
+      "      \"blacklist\": [\n"
+      "        \"accelerated_video\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+  Version os_version("10.6.4");
+
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(
+      video_json, GpuBlacklist::kAllOs));
+  GpuFeatureType type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsMacosx, &os_version,
+      gpu_info()).blacklisted_features;
+  EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO);
+}
+

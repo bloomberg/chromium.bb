@@ -84,6 +84,7 @@ cr.define('gpu', function() {
         'flash_stage3d': 'Flash Stage3D',
         'texture_sharing': 'Texture Sharing',
         'video_decode': 'Video Decode',
+        'video': 'Video',
         // GPU Switching
         'gpu_switching': 'GPU Switching',
       };

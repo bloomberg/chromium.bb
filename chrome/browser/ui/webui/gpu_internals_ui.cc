@@ -225,16 +225,19 @@ Value* GetFeatureStatus() {
       },
       {
           "3d_css",
-          flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
+          flags & (content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
+                   content::GPU_FEATURE_TYPE_3D_CSS),
           command_line.HasSwitch(switches::kDisableAcceleratedLayers),
           "Accelerated layers have been disabled at the command line.",
           false
       },
       {
           "css_animation",
-          flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
+          flags & (content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
+                   content::GPU_FEATURE_TYPE_3D_CSS),
           command_line.HasSwitch(switches::kDisableThreadedAnimation) ||
-          command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
+          command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
+          command_line.HasSwitch(switches::kDisableAcceleratedLayers),
           "Accelerated CSS animation has been disabled at the command line.",
           true
       },
@@ -287,6 +290,15 @@ Value* GetFeatureStatus() {
           command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
           "Accelerated video decode has been disabled, either via about:flags"
           " or command line.",
+          true
+      },
+      {
+          "video",
+          flags & content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO,
+          command_line.HasSwitch(switches::kDisableAcceleratedVideo) ||
+          command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
+          "Accelerated video presentation has been disabled, either via"
+          " about:flags or command line.",
           true
       }
   };

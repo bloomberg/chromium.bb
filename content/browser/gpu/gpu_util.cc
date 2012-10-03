@@ -28,6 +28,8 @@ const char kGpuFeatureNameFlash3d[] = "flash_3d";
 const char kGpuFeatureNameFlashStage3d[] = "flash_stage3d";
 const char kGpuFeatureNameTextureSharing[] = "texture_sharing";
 const char kGpuFeatureNameAcceleratedVideoDecode[] = "accelerated_video_decode";
+const char kGpuFeatureName3dCss[] = "3d_css";
+const char kGpuFeatureNameAcceleratedVideo[] = "accelerated_video";
 const char kGpuFeatureNameAll[] = "all";
 const char kGpuFeatureNameUnknown[] = "unknown";
 
@@ -103,6 +105,10 @@ GpuFeatureType StringToGpuFeatureType(const std::string& feature_string) {
     return content::GPU_FEATURE_TYPE_TEXTURE_SHARING;
   if (feature_string == kGpuFeatureNameAcceleratedVideoDecode)
     return content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE;
+  if (feature_string == kGpuFeatureName3dCss)
+    return content::GPU_FEATURE_TYPE_3D_CSS;
+  if (feature_string == kGpuFeatureNameAcceleratedVideo)
+    return content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO;
   if (feature_string == kGpuFeatureNameAll)
     return content::GPU_FEATURE_TYPE_ALL;
   return content::GPU_FEATURE_TYPE_UNKNOWN;
@@ -129,6 +135,10 @@ std::string GpuFeatureTypeToString(GpuFeatureType type) {
       matches.push_back(kGpuFeatureNameTextureSharing);
     if (type & content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE)
       matches.push_back(kGpuFeatureNameAcceleratedVideoDecode);
+    if (type & content::GPU_FEATURE_TYPE_3D_CSS)
+      matches.push_back(kGpuFeatureName3dCss);
+    if (type & content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO)
+      matches.push_back(kGpuFeatureNameAcceleratedVideo);
     if (!matches.size())
       matches.push_back(kGpuFeatureNameUnknown);
   }

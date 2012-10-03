@@ -616,6 +616,12 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       prefs.accelerated_2d_canvas_enabled = false;
     if (blacklist_type & content::GPU_FEATURE_TYPE_MULTISAMPLING)
       prefs.gl_multisampling_enabled = false;
+    if (blacklist_type & content::GPU_FEATURE_TYPE_3D_CSS) {
+      prefs.accelerated_layers_enabled = false;
+      prefs.accelerated_animation_enabled = false;
+    }
+    if (blacklist_type & content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO)
+      prefs.accelerated_video_enabled = false;
 
     // Accelerated video and animation are slower than regular when using a
     // software 3d rasterizer. 3D CSS may also be too slow to be worthwhile.

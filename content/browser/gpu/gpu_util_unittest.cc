@@ -26,6 +26,10 @@ TEST(GpuUtilsTest, GpuFeatureTypFromString) {
             content::GPU_FEATURE_TYPE_TEXTURE_SHARING);
   EXPECT_EQ(gpu_util::StringToGpuFeatureType("accelerated_video_decode"),
             content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE);
+  EXPECT_EQ(gpu_util::StringToGpuFeatureType("3d_css"),
+            content::GPU_FEATURE_TYPE_3D_CSS);
+  EXPECT_EQ(gpu_util::StringToGpuFeatureType("accelerated_video"),
+            content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO);
   EXPECT_EQ(gpu_util::StringToGpuFeatureType("all"),
             content::GPU_FEATURE_TYPE_ALL);
   EXPECT_EQ(gpu_util::StringToGpuFeatureType("xxx"),
@@ -66,6 +70,14 @@ TEST(GpuUtilsTest, GpuFeatureTypeToString) {
       gpu_util::GpuFeatureTypeToString(
           content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE).c_str(),
       "accelerated_video_decode");
+  EXPECT_STREQ(
+      gpu_util::GpuFeatureTypeToString(
+          content::GPU_FEATURE_TYPE_3D_CSS).c_str(),
+      "3d_css");
+  EXPECT_STREQ(
+      gpu_util::GpuFeatureTypeToString(
+          content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO).c_str(),
+      "accelerated_video");
   EXPECT_STREQ(
       gpu_util::GpuFeatureTypeToString(
           content::GPU_FEATURE_TYPE_ALL).c_str(),
