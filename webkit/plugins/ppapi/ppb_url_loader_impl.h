@@ -42,8 +42,10 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   virtual int32_t Open(
       PP_Resource request_id,
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
-  int32_t Open(const ::ppapi::URLRequestInfoData& data,
-               scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Open(
+      const ::ppapi::URLRequestInfoData& data,
+      int requestor_pid,
+      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t FollowRedirect(
       scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_Bool GetUploadProgress(int64_t* bytes_sent,

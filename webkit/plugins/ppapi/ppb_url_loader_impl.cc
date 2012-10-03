@@ -106,11 +106,12 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
         " else the request will be null.)");
     return PP_ERROR_BADARGUMENT;
   }
-  return Open(enter_request.object()->GetData(), callback);
+  return Open(enter_request.object()->GetData(), 0, callback);
 }
 
 int32_t PPB_URLLoader_Impl::Open(
     const ::ppapi::URLRequestInfoData& request_data,
+    int requestor_pid,
     scoped_refptr<TrackedCallback> callback) {
   // Main document loads are already open, so don't allow people to open them
   // again.
@@ -143,6 +144,7 @@ int32_t PPB_URLLoader_Impl::Open(
   WebURLRequest web_request;
   if (!CreateWebURLRequest(&filled_in_request_data, frame, &web_request))
     return PP_ERROR_FAILED;
+  web_request.setRequestorProcessID(requestor_pid);
 
   // Save a copy of the request info so the plugin can continue to use and
   // change it while we're doing the request without affecting us. We must do

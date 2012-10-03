@@ -94,6 +94,7 @@ class URLLoader : public Resource, public PPB_URLLoader_API {
   virtual int32_t Open(PP_Resource request_id,
                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Open(const URLRequestInfoData& data,
+                       int requestor_pid,
                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t FollowRedirect(
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
@@ -192,11 +193,14 @@ int32_t URLLoader::Open(PP_Resource request_id,
         " PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS.");
     return PP_ERROR_BADRESOURCE;
   }
-  return Open(enter.object()->GetData(), callback);
+  return Open(enter.object()->GetData(), 0, callback);
 }
 
 int32_t URLLoader::Open(const URLRequestInfoData& data,
+                        int requestor_pid,
                         scoped_refptr<TrackedCallback> callback) {
+  DCHECK_EQ(0, requestor_pid);  // Used in-process only.
+
   if (TrackedCallback::IsPending(current_callback_))
     return PP_ERROR_INPROGRESS;
 
@@ -459,9 +463,11 @@ void PPB_URLLoader_Proxy::OnMsgCreate(PP_Instance instance,
 
 void PPB_URLLoader_Proxy::OnMsgOpen(const HostResource& loader,
                                     const URLRequestInfoData& data) {
+  int peer_pid = dispatcher()->channel()->peer_pid();
+
   EnterHostFromHostResourceForceCallback<PPB_URLLoader_API> enter(
       loader, callback_factory_, &PPB_URLLoader_Proxy::OnCallback, loader);
-  enter.SetResult(enter.object()->Open(data, enter.callback()));
+  enter.SetResult(enter.object()->Open(data, peer_pid, enter.callback()));
   // TODO(brettw) bug 73236 register for the status callbacks.
 }
 

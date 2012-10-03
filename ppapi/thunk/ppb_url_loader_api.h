@@ -24,8 +24,11 @@ class PPB_URLLoader_API {
   virtual int32_t Open(PP_Resource request_id,
                        scoped_refptr<TrackedCallback> callback) = 0;
 
-  // Internal open given a URLRequestInfoData.
+  // Internal open given a URLRequestInfoData and requestor_pid, which
+  // indicates the process that requested and will consume the data.
+  // Pass 0 for requestor_pid to indicate the current process.
   virtual int32_t Open(const URLRequestInfoData& data,
+                       int requestor_pid,
                        scoped_refptr<TrackedCallback> callback) = 0;
 
   virtual int32_t FollowRedirect(scoped_refptr<TrackedCallback> callback) = 0;
