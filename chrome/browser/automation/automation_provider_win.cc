@@ -306,7 +306,8 @@ void AutomationProvider::OnTabReposition(
 void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
                                                              int command) {
   ExternalTabContainer* external_tab = GetExternalTabForHandle(tab_handle);
-  external_tab->ExecuteContextMenuCommand(command);
+  if (external_tab)
+    external_tab->ExecuteContextMenuCommand(command);
 }
 
 void AutomationProvider::ConnectExternalTab(
