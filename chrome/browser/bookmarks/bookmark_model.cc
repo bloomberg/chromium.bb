@@ -492,10 +492,10 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   }
 
   UErrorCode error = U_ZERO_ERROR;
-  const char* application_locale =
-      content::GetContentClient()->browser()->GetApplicationLocale().c_str();
+  icu::Locale application_locale(
+      content::GetContentClient()->browser()->GetApplicationLocale().c_str());
   scoped_ptr<icu::Collator> collator(
-      icu::Collator::createInstance(icu::Locale(application_locale), error));
+      icu::Collator::createInstance(application_locale, error));
   if (U_FAILURE(error))
     collator.reset(NULL);
   BookmarkNode* mutable_parent = AsMutable(parent);
