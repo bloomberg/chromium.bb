@@ -33,7 +33,4 @@ struct PP_ThreadFunctions {
   int (*thread_join)(uintptr_t tid);
 };
 
-typedef void (*PP_StartFunc)(const struct PP_StartFunctions *funcs);
-typedef void (*PP_RegisterThreadFuncs)(const struct PP_ThreadFunctions *funcs);
-
 #endif
