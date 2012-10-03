@@ -31,6 +31,8 @@ class TestBrowserPluginGuest : public BrowserPluginGuest,
                          RenderViewHost* render_view_host);
   virtual ~TestBrowserPluginGuest();
 
+  WebContentsImpl* web_contents() const;
+
   // NotificationObserver method override.
   virtual void Observe(int type,
                        const NotificationSource& source,

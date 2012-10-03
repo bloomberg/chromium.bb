@@ -38,4 +38,8 @@ void TestBrowserPluginEmbedder::WaitForGuestAdded() {
   message_loop_runner_->Run();
 }
 
+WebContentsImpl* TestBrowserPluginEmbedder::web_contents() const {
+  return static_cast<WebContentsImpl*>(BrowserPluginEmbedder::web_contents());
+}
+
 }  // namespace content

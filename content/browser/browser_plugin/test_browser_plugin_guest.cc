@@ -38,6 +38,10 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
 TestBrowserPluginGuest::~TestBrowserPluginGuest() {
 }
 
+WebContentsImpl* TestBrowserPluginGuest::web_contents() const {
+  return static_cast<WebContentsImpl*>(BrowserPluginGuest::web_contents());
+}
+
 void TestBrowserPluginGuest::Observe(int type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
