@@ -22,7 +22,6 @@ const int kThrobberDurationMs = 750;
 ThrobberGtk::ThrobberGtk(GtkThemeService* theme_service)
     : theme_service_(theme_service),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
-      frames_(NULL),
       num_frames_(0) {
   DCHECK(theme_service_);
   Init();
@@ -64,7 +63,7 @@ gboolean ThrobberGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
   gtk_widget_get_allocation(widget, &allocation);
   cairo_translate(cairo_context, allocation.x, allocation.y);
 
-  gfx::CairoCachedSurface* cairo_frames = frames_->ToCairo();
+  gfx::CairoCachedSurface* cairo_frames = frames_.ToCairo();
   const int frame =
       static_cast<int>(animation_.GetCurrentValue() * (num_frames_ - 1));
   const int image_size = cairo_frames->Height();
@@ -93,9 +92,9 @@ void ThrobberGtk::Init() {
 
 void ThrobberGtk::LoadFrames() {
   frames_ = theme_service_->GetImageNamed(IDR_THROBBER);
-  DCHECK(frames_);
-  const int width = frames_->ToCairo()->Width();
-  const int height = frames_->ToCairo()->Height();
+  DCHECK(!frames_.IsEmpty());
+  const int width = frames_.ToCairo()->Width();
+  const int height = frames_.ToCairo()->Height();
   DCHECK_EQ(0, width % height);
   num_frames_ = width / height;
 

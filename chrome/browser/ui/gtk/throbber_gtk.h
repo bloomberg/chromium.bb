@@ -63,7 +63,7 @@ class ThrobberGtk : public ui::AnimationDelegate,
   ui::SlideAnimation animation_;
 
   // The image containing the throbber frames.
-  const gfx::Image* frames_;
+  gfx::Image frames_;
 
   // The number of frames in |frames_|.
   int num_frames_;

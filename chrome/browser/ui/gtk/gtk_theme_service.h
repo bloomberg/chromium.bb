@@ -69,7 +69,7 @@ class GtkThemeService : public ThemeService {
   virtual void Init(Profile* profile) OVERRIDE;
   virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE;
-  virtual const gfx::Image* GetImageNamed(int id) const OVERRIDE;
+  virtual gfx::Image GetImageNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;
   virtual bool HasCustomImage(int id) const OVERRIDE;
   virtual void SetTheme(const extensions::Extension* extension) OVERRIDE;

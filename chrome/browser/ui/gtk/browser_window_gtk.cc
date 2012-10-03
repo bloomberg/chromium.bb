@@ -539,7 +539,7 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
   int image_name = GetThemeFrameResource();
 
   gfx::CairoCachedSurface* surface = theme_provider->GetImageNamed(
-      image_name)->ToCairo();
+      image_name).ToCairo();
   if (event->area.y < surface->Height()) {
     surface->SetSource(cr, widget, 0, GetVerticalOffset());
 
@@ -554,7 +554,7 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
       !browser()->profile()->IsOffTheRecord()) {
     gfx::CairoCachedSurface* theme_overlay = theme_provider->GetImageNamed(
         IsActive() ? IDR_THEME_FRAME_OVERLAY
-        : IDR_THEME_FRAME_OVERLAY_INACTIVE)->ToCairo();
+        : IDR_THEME_FRAME_OVERLAY_INACTIVE).ToCairo();
     theme_overlay->SetSource(cr, widget, 0, GetVerticalOffset());
     cairo_paint(cr);
   }

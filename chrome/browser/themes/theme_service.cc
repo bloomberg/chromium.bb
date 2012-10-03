@@ -240,7 +240,7 @@ void ThemeService::Init(Profile* profile) {
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
 }
 
-const gfx::Image* ThemeService::GetImageNamed(int id) const {
+gfx::Image ThemeService::GetImageNamed(int id) const {
   DCHECK(CalledOnValidThread());
 
   const gfx::Image* image = NULL;
@@ -257,24 +257,24 @@ const gfx::Image* ThemeService::GetImageNamed(int id) const {
   if (!image)
     image = &rb_.GetNativeImageNamed(id);
 
-  return image;
+  return image ? *image : gfx::Image();
 }
 
 SkBitmap* ThemeService::GetBitmapNamed(int id) const {
-  const gfx::Image* image = GetImageNamed(id);
-  if (!image)
+  gfx::Image image = GetImageNamed(id);
+  if (image.IsEmpty())
     return NULL;
 
-  return const_cast<SkBitmap*>(image->ToSkBitmap());
+  return const_cast<SkBitmap*>(image.ToSkBitmap());
 }
 
 gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
-  const gfx::Image* image = GetImageNamed(id);
-  if (!image)
+  gfx::Image image = GetImageNamed(id);
+  if (image.IsEmpty())
     return NULL;
   // TODO(pkotwicz): Remove this const cast.  The gfx::Image interface returns
   // its images const. GetImageSkiaNamed() also should but has many callsites.
-  return const_cast<gfx::ImageSkia*>(image->ToImageSkia());
+  return const_cast<gfx::ImageSkia*>(image.ToImageSkia());
 }
 
 SkColor ThemeService::GetColor(int id) const {

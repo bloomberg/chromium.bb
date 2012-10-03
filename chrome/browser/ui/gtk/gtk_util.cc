@@ -728,9 +728,9 @@ void DrawThemedToolbarBackground(GtkWidget* widget,
   // The toolbar is supposed to blend in with the active tab, so we have to pass
   // coordinates for the IDR_THEME_TOOLBAR bitmap relative to the top of the
   // tab strip.
-  const gfx::Image* background =
+  const gfx::Image background =
       theme_service->GetImageNamed(IDR_THEME_TOOLBAR);
-  background->ToCairo()->SetSource(cr, widget,
+  background.ToCairo()->SetSource(cr, widget,
                                    tabstrip_origin.x(), tabstrip_origin.y());
   // We tile the toolbar background in both directions.
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);

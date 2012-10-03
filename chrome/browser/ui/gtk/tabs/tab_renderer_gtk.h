@@ -305,7 +305,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // sides for the rounded tab shape.
   void DrawTabBackground(cairo_t* cr,
                          GtkWidget* widget,
-                         const gfx::Image* tab_bg,
+                         const gfx::Image& tab_bg,
                          int offset_x,
                          int offset_y);
 

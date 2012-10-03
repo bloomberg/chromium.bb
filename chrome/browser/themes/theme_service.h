@@ -161,7 +161,7 @@ class ThemeService : public base::NonThreadSafe,
   //
   // TODO(erg): Make this part of the ui::ThemeProvider and the main way to get
   // theme properties out of the theme provider since it's cross platform.
-  virtual const gfx::Image* GetImageNamed(int id) const;
+  virtual gfx::Image GetImageNamed(int id) const;
 
   // Overridden from ui::ThemeProvider:
   virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;

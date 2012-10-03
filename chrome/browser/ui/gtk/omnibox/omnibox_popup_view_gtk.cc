@@ -519,7 +519,7 @@ gfx::Image OmniboxPopupViewGtk::IconForMatch(
     }
   }
 
-  return *theme_service_->GetImageNamed(icon);
+  return theme_service_->GetImageNamed(icon);
 }
 
 void OmniboxPopupViewGtk::GetVisibleMatchForInput(
@@ -718,7 +718,7 @@ gboolean OmniboxPopupViewGtk::HandleExpose(GtkWidget* widget,
           kIconLeftPadding;
       // Draw the icon for this result.
       gtk_util::DrawFullImage(cr, widget,
-                              *theme_service_->GetImageNamed(
+                              theme_service_->GetImageNamed(
                                   is_selected ? IDR_OMNIBOX_TTS_DARK :
                                   IDR_OMNIBOX_TTS),
                               icon_start_x, line_rect.y() + kIconTopPadding);

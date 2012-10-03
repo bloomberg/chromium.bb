@@ -107,9 +107,9 @@ class PanelGtk : public NativePanel,
   void DisconnectAccelerators();
 
   // Returns the image to paint the frame.
-  const gfx::Image* GetFrameBackground() const;
-  const gfx::Image* GetDefaultFrameBackground() const;
-  const gfx::Image* GetThemedFrameBackground() const;
+  gfx::Image GetFrameBackground() const;
+  gfx::Image GetDefaultFrameBackground() const;
+  gfx::Image GetThemedFrameBackground() const;
 
   // Animation when panel is first shown.
   void RevealPanel();

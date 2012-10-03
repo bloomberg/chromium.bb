@@ -487,8 +487,8 @@ void TabRendererGtk::PaintFaviconArea(GtkWidget* widget, cairo_t* cr) {
   }
 
   // Paint the background behind the favicon.
-  const gfx::Image* tab_bg = theme_service_->GetImageNamed(theme_id);
-  tab_bg->ToCairo()->SetSource(cr, widget, -x(), -offset_y);
+  const gfx::Image tab_bg = theme_service_->GetImageNamed(theme_id);
+  tab_bg.ToCairo()->SetSource(cr, widget, -x(), -offset_y);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,
                   favicon_bounds_.x(), favicon_bounds_.y(),
@@ -499,9 +499,9 @@ void TabRendererGtk::PaintFaviconArea(GtkWidget* widget, cairo_t* cr) {
     double throb_value = GetThrobValue();
     if (throb_value > 0) {
       cairo_push_group(cr);
-      const gfx::Image* active_bg =
+      gfx::Image active_bg =
           theme_service_->GetImageNamed(IDR_THEME_TOOLBAR);
-      active_bg->ToCairo()->SetSource(cr, widget, -x(), 0);
+      active_bg.ToCairo()->SetSource(cr, widget, -x(), 0);
       cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
 
       cairo_rectangle(cr,
@@ -864,7 +864,7 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
 
   gfx::CairoCachedSurface* to_display = NULL;
   if (should_display_crashed_favicon_) {
-    to_display = theme_service_->GetImageNamed(IDR_SAD_FAVICON)->ToCairo();
+    to_display = theme_service_->GetImageNamed(IDR_SAD_FAVICON).ToCairo();
   } else if (!data_.favicon.isNull()) {
     if (data_.is_default_favicon && theme_service_->UsingNativeTheme()) {
       to_display = GtkThemeService::GetDefaultFavicon(true).ToCairo();
@@ -901,10 +901,10 @@ void TabRendererGtk::PaintTabBackground(GtkWidget* widget, cairo_t* cr) {
 void TabRendererGtk::DrawTabBackground(
     cairo_t* cr,
     GtkWidget* widget,
-    const gfx::Image* tab_bg,
+    const gfx::Image& tab_bg,
     int offset_x,
     int offset_y) {
-  tab_bg->ToCairo()->SetSource(cr, widget, -offset_x, -offset_y);
+  tab_bg.ToCairo()->SetSource(cr, widget, -offset_x, -offset_y);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -959,7 +959,7 @@ void TabRendererGtk::PaintInactiveTabBackground(GtkWidget* widget,
   int theme_id = data_.incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
 
-  const gfx::Image* tab_bg = theme_service_->GetImageNamed(theme_id);
+  gfx::Image tab_bg = theme_service_->GetImageNamed(theme_id);
 
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
@@ -975,7 +975,7 @@ void TabRendererGtk::PaintInactiveTabBackground(GtkWidget* widget,
 
 void TabRendererGtk::PaintActiveTabBackground(GtkWidget* widget,
                                               cairo_t* cr) {
-  const gfx::Image* tab_bg = theme_service_->GetImageNamed(IDR_THEME_TOOLBAR);
+  gfx::Image tab_bg = theme_service_->GetImageNamed(IDR_THEME_TOOLBAR);
 
   DrawTabBackground(cr, widget, tab_bg, background_offset_x_, 0);
   DrawTabShadow(cr, widget, IDR_TAB_ACTIVE_LEFT, IDR_TAB_ACTIVE_CENTER,
@@ -986,14 +986,14 @@ void TabRendererGtk::PaintLoadingAnimation(GtkWidget* widget,
                                            cairo_t* cr) {
   int id = loading_animation_.animation_state() == ANIMATION_WAITING ?
            IDR_THROBBER_WAITING : IDR_THROBBER;
-  const gfx::Image* throbber = theme_service_->GetImageNamed(id);
+  gfx::Image throbber = theme_service_->GetImageNamed(id);
 
-  const int image_size = throbber->ToCairo()->Height();
+  const int image_size = throbber.ToCairo()->Height();
   const int image_offset = loading_animation_.animation_frame() * image_size;
   DCHECK(image_size == favicon_bounds_.height());
   DCHECK(image_size == favicon_bounds_.width());
 
-  throbber->ToCairo()->SetSource(cr, widget, favicon_bounds_.x() - image_offset,
+  throbber.ToCairo()->SetSource(cr, widget, favicon_bounds_.x() - image_offset,
                                  favicon_bounds_.y());
   cairo_rectangle(cr, favicon_bounds_.x(), favicon_bounds_.y(),
                   image_size, image_size);

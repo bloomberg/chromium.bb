@@ -235,7 +235,7 @@ void ContentSettingImageViewGtk::Update(
 
   gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
       GtkThemeService::GetFrom(parent_->browser()->profile())->GetImageNamed(
-          content_setting_image_model_->get_icon())->ToGdkPixbuf());
+          content_setting_image_model_->get_icon()).ToGdkPixbuf());
 
   gtk_widget_set_tooltip_text(widget(),
       content_setting_image_model_->get_tooltip().c_str());
@@ -809,7 +809,7 @@ GtkWidget* LocationBarViewGtk::CreateIconButton(
     gboolean (click_callback)(GtkWidget*, GdkEventButton*, gpointer)) {
   *image = image_id ?
       gtk_image_new_from_pixbuf(
-          theme_service_->GetImageNamed(image_id)->ToGdkPixbuf()) :
+          theme_service_->GetImageNamed(image_id).ToGdkPixbuf()) :
       gtk_image_new();
 
   GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
@@ -1239,7 +1239,7 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
   int resource_id = location_entry_->GetIcon();
   gtk_image_set_from_pixbuf(
       GTK_IMAGE(location_icon_image_),
-      theme_service_->GetImageNamed(resource_id)->ToGdkPixbuf());
+      theme_service_->GetImageNamed(resource_id).ToGdkPixbuf());
 
   if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     if (!gtk_util::IsActingAsRoundedWindow(site_type_event_box_)) {
@@ -1584,7 +1584,7 @@ void LocationBarViewGtk::UpdateZoomIcon() {
 
   const int zoom_resource = zoom_controller->GetResourceForZoomLevel();
   gtk_image_set_from_pixbuf(GTK_IMAGE(zoom_image_),
-      theme_service_->GetImageNamed(zoom_resource)->ToGdkPixbuf());
+      theme_service_->GetImageNamed(zoom_resource).ToGdkPixbuf());
 
   string16 tooltip = l10n_util::GetStringFUTF16Int(
       IDS_TOOLTIP_ZOOM, zoom_controller->zoom_percent());
@@ -1609,7 +1609,7 @@ void LocationBarViewGtk::UpdateStarIcon() {
     gtk_widget_show_all(star_.get());
     int id = starred_ ? IDR_STAR_LIT : IDR_STAR;
     gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
-                              theme_service_->GetImageNamed(id)->ToGdkPixbuf());
+                              theme_service_->GetImageNamed(id).ToGdkPixbuf());
   } else {
     gtk_widget_hide_all(star_.get());
   }

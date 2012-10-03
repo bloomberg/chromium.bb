@@ -143,36 +143,36 @@ const AcceleratorGtkMap& GetAcceleratorTable() {
   return accelerator_table;
 }
 
-gfx::Image* CreateImageForColor(SkColor color) {
+gfx::Image CreateImageForColor(SkColor color) {
   gfx::Canvas canvas(gfx::Size(1, 1), ui::SCALE_FACTOR_100P, true);
   canvas.DrawColor(color);
-  return new gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
+  return gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
 }
 
-const gfx::Image* GetActiveBackgroundDefaultImage() {
-  static gfx::Image* image = NULL;
-  if (!image)
+const gfx::Image GetActiveBackgroundDefaultImage() {
+  CR_DEFINE_STATIC_LOCAL(gfx::Image, image, ());
+  if (image.IsEmpty())
     image = CreateImageForColor(kActiveBackgroundDefaultColor);
   return image;
 }
 
-const gfx::Image* GetInactiveBackgroundDefaultImage() {
-  static gfx::Image* image = NULL;
-  if (!image)
+gfx::Image GetInactiveBackgroundDefaultImage() {
+  CR_DEFINE_STATIC_LOCAL(gfx::Image, image, ());
+  if (image.IsEmpty())
     image = CreateImageForColor(kInactiveBackgroundDefaultColor);
   return image;
 }
 
-const gfx::Image* GetAttentionBackgroundDefaultImage() {
-  static gfx::Image* image = NULL;
-  if (!image)
+gfx::Image GetAttentionBackgroundDefaultImage() {
+  CR_DEFINE_STATIC_LOCAL(gfx::Image, image, ());
+  if (image.IsEmpty())
     image = CreateImageForColor(kAttentionBackgroundDefaultColor);
   return image;
 }
 
-const gfx::Image* GetMinimizeBackgroundDefaultImage() {
-  static gfx::Image* image = NULL;
-  if (!image)
+gfx::Image GetMinimizeBackgroundDefaultImage() {
+  CR_DEFINE_STATIC_LOCAL(gfx::Image, image, ());
+  if (image.IsEmpty())
     image = CreateImageForColor(kMinimizeBackgroundDefaultColor);
   return image;
 }
@@ -494,12 +494,12 @@ bool PanelGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) const {
   return true;
 }
 
-const gfx::Image* PanelGtk::GetFrameBackground() const {
+gfx::Image PanelGtk::GetFrameBackground() const {
   return UsingDefaultTheme() ?
       GetDefaultFrameBackground() : GetThemedFrameBackground();
 }
 
-const gfx::Image* PanelGtk::GetDefaultFrameBackground() const {
+gfx::Image PanelGtk::GetDefaultFrameBackground() const {
   switch (paint_state_) {
     case PAINT_AS_INACTIVE:
       return GetInactiveBackgroundDefaultImage();
@@ -515,7 +515,7 @@ const gfx::Image* PanelGtk::GetDefaultFrameBackground() const {
   }
 }
 
-const gfx::Image* PanelGtk::GetThemedFrameBackground() const {
+gfx::Image PanelGtk::GetThemedFrameBackground() const {
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(panel_->profile());
   return theme_provider->GetImageNamed(paint_state_ == PAINT_AS_ACTIVE ?
       IDR_THEME_TOOLBAR : IDR_THEME_TAB_BACKGROUND);
@@ -540,7 +540,7 @@ gboolean PanelGtk::OnCustomFrameExpose(GtkWidget* widget,
     paint_state_ = PAINT_AS_INACTIVE;
 
   // Draw the background.
-  gfx::CairoCachedSurface* surface = GetFrameBackground()->ToCairo();
+  gfx::CairoCachedSurface* surface = GetFrameBackground().ToCairo();
   surface->SetSource(cr, widget, 0, 0);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, event->area.x, event->area.y,
