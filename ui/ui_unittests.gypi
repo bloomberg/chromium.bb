@@ -114,6 +114,7 @@
         'gfx/display_unittest.cc',
         'gfx/font_list_unittest.cc',
         'gfx/font_unittest.cc',
+        'gfx/platform_font_mac_unittest.mm',
         'gfx/image/image_mac_unittest.mm',
         'gfx/image/image_util_unittest.cc',
         'gfx/rect_unittest.cc',
