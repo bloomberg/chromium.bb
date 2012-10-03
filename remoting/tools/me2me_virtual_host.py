@@ -54,6 +54,12 @@ FIRST_X_DISPLAY_NUMBER = 20
 X_AUTH_FILE = os.path.expanduser("~/.Xauthority")
 os.environ["XAUTHORITY"] = X_AUTH_FILE
 
+# Minimum amount of time to wait between relaunching processes.
+BACKOFF_TIME = 60
+
+# Maximum allowed consecutive times that a child process runs for less than
+# BACKOFF_TIME. This script exits if this limit is exceeded.
+MAX_LAUNCH_FAILURES = 10
 
 # Globals needed by the atexit cleanup() handler.
 g_desktops = []
@@ -611,9 +617,123 @@ class SignalHandler:
       raise SystemExit
 
 
+class RelaunchInhibitor:
+  """Helper class for inhibiting launch of a child process before a timeout has
+  elapsed.
+
+  A managed process can be in one of these states:
+    running, not inhibited (running == True)
+    stopped and inhibited (running == False and is_inhibited() == True)
+    stopped but not inhibited (running == False and is_inhibited() == False)
+
+  Attributes:
+    label: Name of the tracked process. Only used for logging.
+    running: Whether the process is currently running.
+    earliest_relaunch_time: Time before which the process should not be
+      relaunched, or 0 if there is no limit.
+    failures: The number of times that the process ran for less than a
+      specified timeout, and had to be inhibited.  This count is reset to 0
+      whenever the process has run for longer than the timeout.
+  """
+
+  def __init__(self, label):
+    self.label = label
+    self.running = False
+    self.earliest_relaunch_time = 0
+    self.failures = 0
+
+  def is_inhibited(self):
+    return (not self.running) and (time.time() < self.earliest_relaunch_time)
+
+  def record_started(self, timeout):
+    """Record that the process was launched, and set the inhibit time to
+    |timeout| seconds in the future."""
+    self.earliest_relaunch_time = time.time() + timeout
+    self.running = True
+
+  def record_stopped(self):
+    """Record that the process was stopped, and adjust the failure count
+    depending on whether the process ran long enough."""
+    self.running = False
+    if time.time() < self.earliest_relaunch_time:
+      self.failures += 1
+    else:
+      self.failures = 0
+    logging.info("Failure count for '%s' is now %d", self.label, self.failures)
+
+
 def relaunch_self():
   cleanup()
   os.execvp(sys.argv[0], sys.argv)
+
+
+def waitpid_with_timeout(pid, deadline):
+  """Wrapper around os.waitpid() which waits until either a child process dies
+  or the deadline elapses.
+
+  Args:
+    pid: Process ID to wait for, or -1 to wait for any child process.
+    deadline: Waiting stops when time.time() exceeds this value.
+
+  Returns:
+    (pid, status): Same as for os.waitpid(), except that |pid| is 0 if no child
+    changed state within the timeout.
+
+  Raises:
+    Same as for os.waitpid().
+  """
+  while time.time() < deadline:
+    pid, status = os.waitpid(pid, os.WNOHANG)
+    if pid != 0:
+      return (pid, status)
+    time.sleep(1)
+  return (0, 0)
+
+
+def waitpid_handle_exceptions(pid, deadline):
+  """Wrapper around os.waitpid()/waitpid_with_timeout(), which waits until
+  either a child process exits or the deadline elapses, and retries if certain
+  exceptions occur.
+
+  Args:
+    pid: Process ID to wait for, or -1 to wait for any child process.
+    deadline: If non-zero, waiting stops when time.time() exceeds this value.
+      If zero, waiting stops when a child process exits.
+
+  Returns:
+    (pid, status): Same as for waitpid_with_timeout(). |pid| is non-zero if and
+    only if a child exited during the wait.
+
+  Raises:
+    Same as for os.waitpid(), except:
+      OSError with errno==EINTR causes the wait to be retried (this can happen,
+      for example, if this parent process receives SIGHUP).
+      OSError with errno==ECHILD means there are no child processes, and so
+      this function sleeps until |deadline|. If |deadline| is zero, this is an
+      error and the OSError exception is raised in this case.
+  """
+  while True:
+    try:
+      if deadline == 0:
+        pid_result, status = os.waitpid(pid, 0)
+      else:
+        pid_result, status = waitpid_with_timeout(pid, deadline)
+      return (pid_result, status)
+    except OSError, e:
+      if e.errno == errno.EINTR:
+        continue
+      elif e.errno == errno.ECHILD:
+        now = time.time()
+        if deadline == 0:
+          # No time-limit and no child processes. This is treated as an error
+          # (see docstring).
+          raise
+        elif deadline > now:
+          time.sleep(deadline - now)
+        return (0, 0)
+      else:
+        # Anything else is an unexpected error.
+        raise
 
 
 def main():
@@ -772,16 +892,32 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   desktop = Desktop(sizes)
 
-  # Remember the time when the last session was launched, in order to enforce
-  # a minimum time between launches.  This avoids spinning in case of a
-  # misconfigured system, or other error that prevents a session from starting
-  # properly.
-  last_launch_time = 0
+  # Keep track of the number of consecutive failures of any child process to
+  # run for longer than a set period of time. The script will exit after a
+  # threshold is exceeded.
+  # There is no point in tracking the X session process separately, since it is
+  # launched at (roughly) the same time as the X server, and the termination of
+  # one of these triggers the termination of the other.
+  x_server_inhibitor = RelaunchInhibitor("X server")
+  host_inhibitor = RelaunchInhibitor("host")
+  all_inhibitors = [x_server_inhibitor, host_inhibitor]
+
+  # Don't allow relaunching the script on the first loop iteration.
+  allow_relaunch_self = False
 
   while True:
+    # Exit if a process failed too many times.
+    for inhibitor in all_inhibitors:
+      if inhibitor.failures >= MAX_LAUNCH_FAILURES:
+        logging.error("Too many launch failures of '%s', exiting."
+                      % inhibitor.label)
+        return 1
+
+    relaunch_times = []
+
     # If the session process or X server stops running (e.g. because the user
     # logged out), kill the other. This will trigger the next conditional block
-    # as soon as the os.wait() call (below) returns.
+    # as soon as os.waitpid() reaps its exit-code.
     if desktop.session_proc is None and desktop.x_proc is not None:
       logging.info("Terminating X server")
       desktop.x_proc.terminate()
@@ -789,48 +925,49 @@ Web Store: https://chrome.google.com/remotedesktop"""
       logging.info("Terminating X session")
       desktop.session_proc.terminate()
     elif desktop.x_proc is None and desktop.session_proc is None:
-      # Neither X server nor X session are running.
-      elapsed = time.time() - last_launch_time
-      if elapsed < 60:
-        logging.error("The session lasted less than 1 minute.  Waiting " +
-                      "before starting new session.")
-        time.sleep(60 - elapsed)
-
-      if last_launch_time == 0:
-        # Neither process has been started yet. Do so now.
-        logging.info("Launching X server and X session.")
-        last_launch_time = time.time()
-        desktop.launch_session(args)
-      else:
-        # Both processes have terminated. Since the user's desktop is already
-        # gone at this point, there's no state to lose and now is a good time
-        # to pick up any updates to this script that might have been installed.
+      # Both processes have terminated.
+      if (allow_relaunch_self and x_server_inhibitor.failures == 0 and
+          host_inhibitor.failures == 0):
+        # Since the user's desktop is already gone at this point, there's no
+        # state to lose and now is a good time to pick up any updates to this
+        # script that might have been installed.
         logging.info("Relaunching self")
         relaunch_self()
+      else:
+        # If there is a non-zero |failures| count, restarting the whole script
+        # would lose this information, so just launch the session as normal.
+        if x_server_inhibitor.is_inhibited():
+          logging.info("Waiting before launching X server")
+          relaunch_times.append(x_server_inhibitor.earliest_relaunch_time)
+        else:
+          logging.info("Launching X server and X session.")
+          desktop.launch_session(args)
+          x_server_inhibitor.record_started(BACKOFF_TIME)
+          allow_relaunch_self = True
 
     if desktop.host_proc is None:
-      logging.info("Launching host process")
-      desktop.launch_host(host_config)
-
-    try:
-      pid, status = os.wait()
-    except OSError, e:
-      if e.errno == errno.EINTR:
-        # Retry on EINTR, which can happen if a signal such as SIGHUP is
-        # received.
-        continue
+      if host_inhibitor.is_inhibited():
+        logging.info("Waiting before launching host process")
+        relaunch_times.append(host_inhibitor.earliest_relaunch_time)
       else:
-        # Anything else is an unexpected error.
-        raise
+        logging.info("Launching host process")
+        desktop.launch_host(host_config)
+        host_inhibitor.record_started(BACKOFF_TIME)
+
+    deadline = min(relaunch_times) if relaunch_times else 0
+    pid, status = waitpid_handle_exceptions(-1, deadline)
+    if pid == 0:
+      continue
 
     logging.info("wait() returned (%s,%s)" % (pid, status))
 
-    # When os.wait() notifies that a process has terminated, any Popen instance
-    # for that process is no longer valid.  Reset any affected instance to
-    # None.
+    # When a process has terminated, and we've reaped its exit-code, any Popen
+    # instance for that process is no longer valid. Reset any affected instance
+    # to None.
     if desktop.x_proc is not None and pid == desktop.x_proc.pid:
       logging.info("X server process terminated")
       desktop.x_proc = None
+      x_server_inhibitor.record_stopped()
 
     if desktop.session_proc is not None and pid == desktop.session_proc.pid:
       logging.info("Session process terminated")
@@ -839,6 +976,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
     if desktop.host_proc is not None and pid == desktop.host_proc.pid:
       logging.info("Host process terminated")
       desktop.host_proc = None
+      host_inhibitor.record_stopped()
 
       # These exit-codes must match the ones used by the host.
       # See remoting/host/host_error_codes.h.
@@ -867,6 +1005,8 @@ Web Store: https://chrome.google.com/remotedesktop"""
         return 0
       # Nothing to do for Mac-only status 6 (login screen unsupported)
 
+
 if __name__ == "__main__":
-  logging.basicConfig(level=logging.DEBUG)
+  logging.basicConfig(level=logging.DEBUG,
+                      format="%(asctime)s:%(levelname)s:%(message)s")
   sys.exit(main())
