@@ -5,6 +5,7 @@
 #ifndef CCHeadsUpDisplayLayerImpl_h
 #define CCHeadsUpDisplayLayerImpl_h
 
+#include "base/memory/scoped_ptr.h"
 #include "CCFontAtlas.h"
 #include "CCLayerImpl.h"
 #include "CCScopedTexture.h"
@@ -25,7 +26,7 @@ public:
     }
     virtual ~CCHeadsUpDisplayLayerImpl();
 
-    void setFontAtlas(PassOwnPtr<CCFontAtlas>);
+    void setFontAtlas(scoped_ptr<CCFontAtlas>);
 
     virtual void willDraw(CCResourceProvider*) OVERRIDE;
     virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
@@ -46,11 +47,11 @@ private:
     void drawFPSCounterText(SkCanvas*, CCFrameRateCounter*, int top, int width, int height);
     void drawDebugRects(SkCanvas*, CCDebugRectHistory*);
 
-    OwnPtr<CCFontAtlas> m_fontAtlas;
+    scoped_ptr<CCFontAtlas> m_fontAtlas;
     OwnPtr<CCScopedTexture> m_hudTexture;
     OwnPtr<SkCanvas> m_hudCanvas;
 };
 
-}
+}  // namespace cc
 
 #endif // CCHeadsUpDisplayLayerImpl_h

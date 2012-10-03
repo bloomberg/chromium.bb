@@ -7,12 +7,12 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "IntRect.h"
 #include "SkBitmap.h"
-#include <string>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 class SkCanvas;
 
@@ -27,9 +27,9 @@ class IntSize;
 // This class provides basic ability to draw text onto the heads-up display.
 class CCFontAtlas {
 public:
-    static PassOwnPtr<CCFontAtlas> create(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
+    static scoped_ptr<CCFontAtlas> create(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
     {
-        return adoptPtr(new CCFontAtlas(bitmap, asciiToRectTable, fontHeight));
+        return scoped_ptr<CCFontAtlas>(new CCFontAtlas(bitmap, asciiToRectTable, fontHeight));
     }
     ~CCFontAtlas();
 

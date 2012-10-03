@@ -48,9 +48,9 @@ CCHeadsUpDisplayLayerImpl::~CCHeadsUpDisplayLayerImpl()
 {
 }
 
-void CCHeadsUpDisplayLayerImpl::setFontAtlas(PassOwnPtr<CCFontAtlas> fontAtlas)
+void CCHeadsUpDisplayLayerImpl::setFontAtlas(scoped_ptr<CCFontAtlas> fontAtlas)
 {
-    m_fontAtlas = fontAtlas;
+    m_fontAtlas = fontAtlas.Pass();
 }
 
 void CCHeadsUpDisplayLayerImpl::willDraw(CCResourceProvider* resourceProvider)
@@ -153,7 +153,7 @@ void CCHeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
     if (settings.showFPSCounter)
         drawFPSCounter(canvas, layerTreeHostImpl()->fpsCounter(), fpsCounterTop, fpsCounterHeight);
 
-    if (settings.showPlatformLayerTree && m_fontAtlas) {
+    if (settings.showPlatformLayerTree && m_fontAtlas.get()) {
         std::string layerTree = layerTreeHostImpl()->layerTreeAsText();
         m_fontAtlas->drawText(canvas, createPaint(), layerTree, IntPoint(2, platformLayerTreeTop), bounds());
     }
@@ -229,7 +229,7 @@ void CCHeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, CCFrameRate
     canvas->drawRect(SkRect::MakeXYWH(2, top, width, height), paint);
 
     // Draw FPS text.
-    if (m_fontAtlas)
+    if (m_fontAtlas.get())
         m_fontAtlas->drawText(canvas, createPaint(), base::StringPrintf("FPS: %4.1f +/- %3.1f", averageFPS, stdDeviation), IntPoint(10, height / 3), IntSize(width, height));
 }
 

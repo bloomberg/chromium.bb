@@ -186,8 +186,8 @@ void WebLayerTreeViewImpl::setFontAtlas(SkBitmap bitmap, WebRect asciiToWebRectT
     IntRect asciiToRectTable[128];
     for (int i = 0; i < 128; ++i)
         asciiToRectTable[i] = convert(asciiToWebRectTable[i]);
-    OwnPtr<CCFontAtlas> fontAtlas = CCFontAtlas::create(bitmap, asciiToRectTable, fontHeight);
-    m_layerTreeHost->setFontAtlas(fontAtlas.release());
+    scoped_ptr<CCFontAtlas> fontAtlas = CCFontAtlas::create(bitmap, asciiToRectTable, fontHeight);
+    m_layerTreeHost->setFontAtlas(fontAtlas.Pass());
 }
 
 void WebLayerTreeViewImpl::loseCompositorContext(int numTimes)

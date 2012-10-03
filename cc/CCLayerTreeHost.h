@@ -6,6 +6,7 @@
 #define CCLayerTreeHost_h
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/own_ptr_vector.h"
 #include "CCAnimationEvents.h"
 #include "CCGraphicsContext.h"
@@ -204,7 +205,7 @@ public:
     void setDeviceScaleFactor(float);
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
 
-    void setFontAtlas(PassOwnPtr<CCFontAtlas>);
+    void setFontAtlas(scoped_ptr<CCFontAtlas>);
 
     HeadsUpDisplayLayerChromium* hudLayer() const { return m_hudLayer.get(); }
 
@@ -248,7 +249,7 @@ private:
 
     RefPtr<LayerChromium> m_rootLayer;
     RefPtr<HeadsUpDisplayLayerChromium> m_hudLayer;
-    OwnPtr<CCFontAtlas> m_fontAtlas;
+    scoped_ptr<CCFontAtlas> m_fontAtlas;
 
     OwnPtr<CCPrioritizedTextureManager> m_contentsTextureManager;
     OwnPtr<CCPrioritizedTexture> m_surfaceMemoryPlaceholder;
@@ -280,6 +281,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CCLayerTreeHost);
 };
 
-}
+}  // namespace cc
 
 #endif

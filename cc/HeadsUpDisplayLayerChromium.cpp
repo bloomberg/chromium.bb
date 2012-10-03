@@ -50,9 +50,9 @@ bool HeadsUpDisplayLayerChromium::drawsContent() const
     return true;
 }
 
-void HeadsUpDisplayLayerChromium::setFontAtlas(PassOwnPtr<CCFontAtlas> fontAtlas)
+void HeadsUpDisplayLayerChromium::setFontAtlas(scoped_ptr<CCFontAtlas> fontAtlas)
 {
-    m_fontAtlas = fontAtlas;
+    m_fontAtlas = fontAtlas.Pass();
     setNeedsCommit();
 }
 
@@ -65,11 +65,11 @@ void HeadsUpDisplayLayerChromium::pushPropertiesTo(CCLayerImpl* layerImpl)
 {
     LayerChromium::pushPropertiesTo(layerImpl);
 
-    if (!m_fontAtlas)
+    if (!m_fontAtlas.get())
         return;
 
     CCHeadsUpDisplayLayerImpl* hudLayerImpl = static_cast<CCHeadsUpDisplayLayerImpl*>(layerImpl);
-    hudLayerImpl->setFontAtlas(m_fontAtlas.release());
+    hudLayerImpl->setFontAtlas(m_fontAtlas.Pass());
 }
 
 }
