@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -62,6 +63,12 @@ class PowerButtonControllerTest : public AshTestBase {
   }
 
  protected:
+  void GenerateMouseMoveEvent() {
+    aura::test::EventGenerator generator(
+        Shell::GetPrimaryRootWindow());
+    generator.MoveMouseTo(10, 10);
+  }
+
   PowerButtonController* controller_;  // not owned
   TestPowerButtonControllerDelegate* delegate_;  // not owned
   scoped_ptr<PowerButtonController::TestApi> test_api_;
@@ -135,6 +142,8 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
       test_api_->ContainersAreAnimated(
           PowerButtonController::GetAllLockScreenContainersMask(),
           PowerButtonController::ANIMATION_FAST_CLOSE));
+  // Make sure a mouse move event won't show the cursor.
+  GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
   test_api_->trigger_real_shutdown_timeout();
@@ -511,6 +520,7 @@ TEST_F(PowerButtonControllerTest, ShutdownWithoutButton) {
           PowerButtonController::GetAllContainersMask(),
           PowerButtonController::ANIMATION_HIDE));
   EXPECT_TRUE(test_api_->BlackLayerIsVisible());
+  GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
 }
 
@@ -528,6 +538,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLoginScreen) {
           PowerButtonController::GetAllLockScreenContainersMask(),
           PowerButtonController::ANIMATION_FAST_CLOSE));
   EXPECT_TRUE(test_api_->BlackLayerIsVisible());
+  GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, delegate_->num_shutdown_requests());
@@ -549,6 +560,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLockScreen) {
           PowerButtonController::GetAllLockScreenContainersMask(),
           PowerButtonController::ANIMATION_FAST_CLOSE));
   EXPECT_TRUE(test_api_->BlackLayerIsVisible());
+  GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, delegate_->num_shutdown_requests());

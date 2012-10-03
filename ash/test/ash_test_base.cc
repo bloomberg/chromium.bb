@@ -54,6 +54,8 @@ AshTestBase::~AshTestBase() {
 }
 
 void AshTestBase::SetUp() {
+  // Disable animations during tests.
+  ui::LayerAnimator::set_disable_animations_for_test(true);
   ui::TextInputTestSupport::Initilaize();
   // Creates Shell and hook with Desktop.
   TestShellDelegate* delegate = new TestShellDelegate;
@@ -64,9 +66,6 @@ void AshTestBase::SetUp() {
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
   UpdateDisplay("800x600");
   Shell::GetInstance()->cursor_manager()->ShowCursor(true);
-
-  // Disable animations during tests.
-  ui::LayerAnimator::set_disable_animations_for_test(true);
 }
 
 void AshTestBase::TearDown() {
