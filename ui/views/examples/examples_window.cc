@@ -18,6 +18,7 @@
 #include "ui/views/examples/button_example.h"
 #include "ui/views/examples/combobox_example.h"
 #include "ui/views/examples/double_split_view_example.h"
+#include "ui/views/examples/label_example.h"
 #include "ui/views/examples/link_example.h"
 #include "ui/views/examples/menu_example.h"
 #include "ui/views/examples/message_box_example.h"
@@ -159,6 +160,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
     combobox_model_.AddExample(new ButtonExample);
     combobox_model_.AddExample(new ComboboxExample);
     combobox_model_.AddExample(new DoubleSplitViewExample);
+    combobox_model_.AddExample(new LabelExample);
     combobox_model_.AddExample(new LinkExample);
     combobox_model_.AddExample(new MenuExample);
     combobox_model_.AddExample(new MessageBoxExample);

@@ -11,8 +11,6 @@
 #include "ui/views/examples/example_base.h"
 
 namespace views {
-class View;
-
 namespace examples {
 
 class LinkExample : public ExampleBase, public LinkListener {

@@ -13,7 +13,6 @@
 namespace views {
 
 class ImageButton;
-class View;
 
 namespace examples {
 
