@@ -66,8 +66,7 @@ COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kMetricBounds) == METRIC_NUMBER_OF_METRICS,
 
 }  // namespace
 
-Metric::Metric() {
-  value = 0.0;
+Metric::Metric() : type(METRIC_UNDEFINED), value(0.0) {
 }
 
 Metric::Metric(MetricType metric_type,
