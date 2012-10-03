@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/common/content_export.h"
+#include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
-#include "ppapi/proxy/resource_message_params.h"
 
 namespace content {
 
@@ -34,7 +34,7 @@ class CONTENT_EXPORT PepperPrintingHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context);
 
   void PrintSettingsCallback(
-      ppapi::proxy::ResourceMessageReplyParams reply_params,
+      ppapi::host::ReplyMessageContext reply_context,
       PepperPrintSettingsManager::Result result);
 
   scoped_ptr<PepperPrintSettingsManager> print_settings_manager_;

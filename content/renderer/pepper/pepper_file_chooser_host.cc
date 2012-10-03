@@ -10,7 +10,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
-#include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
@@ -117,12 +116,12 @@ void PepperFileChooserHost::StoreChosenFiles(
     chosen_files.push_back(create_info);
   }
 
-  reply_params_.set_result((chosen_files.size() > 0) ? PP_OK
-                                                     : PP_ERROR_USERCANCEL);
-  host()->SendReply(reply_params_,
+  reply_context_.params.set_result(
+      (chosen_files.size() > 0) ? PP_OK : PP_ERROR_USERCANCEL);
+  host()->SendReply(reply_context_,
                     PpapiPluginMsg_FileChooser_ShowReply(chosen_files));
 
-  reply_params_ = ppapi::proxy::ResourceMessageReplyParams();
+  reply_context_ = ppapi::host::ReplyMessageContext();
   handler_ = NULL;  // Handler deletes itself.
 }
 
@@ -166,7 +165,7 @@ int32_t PepperFileChooserHost::OnMsgShow(
     return PP_ERROR_NOACCESS;
   }
 
-  reply_params_ = context->MakeReplyParams();
+  reply_context_ = context->MakeReplyMessageContext();
   return PP_OK_COMPLETIONPENDING;
 }
 

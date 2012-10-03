@@ -12,16 +12,38 @@
 namespace ppapi {
 namespace host {
 
+// This context structure provides information about outgoing resource message
+// replies.
+struct PPAPI_HOST_EXPORT ReplyMessageContext {
+  ReplyMessageContext();
+  ReplyMessageContext(
+      const ppapi::proxy::ResourceMessageReplyParams& cp,
+      IPC::Message* sync_reply_msg);
+  ~ReplyMessageContext();
+
+  // The "reply params" struct with the same resource and sequence number
+  // as the original resource message call.
+  ppapi::proxy::ResourceMessageReplyParams params;
+
+  // If this context is generated from a sync message, this will be set to the
+  // incoming sync message. Otherwise, it will be NULL. The plugin controls
+  // whether or not the resource call is synchronous or asynchronous so a
+  // ResoureHost cannot make any assumptions about whether or not this is NULL.
+  IPC::Message* sync_reply_msg;
+};
+
 // This context structure provides information about incoming resource message
 // call requests when passed to resources.
 struct PPAPI_HOST_EXPORT HostMessageContext {
   explicit HostMessageContext(
       const ppapi::proxy::ResourceMessageCallParams& cp);
+  HostMessageContext(
+      const ppapi::proxy::ResourceMessageCallParams& cp,
+      IPC::Message* sync_reply_msg);
   ~HostMessageContext();
 
-  // Returns a "reply params" struct with the same resource and sequence number
-  // as this request.
-  ppapi::proxy::ResourceMessageReplyParams MakeReplyParams() const;
+  // Returns a reply message context struct which includes the reply params.
+  ReplyMessageContext MakeReplyMessageContext() const;
 
   // The original call parameters passed to the resource message call.
   const ppapi::proxy::ResourceMessageCallParams& params;
@@ -31,6 +53,10 @@ struct PPAPI_HOST_EXPORT HostMessageContext {
   // handler wants to send something else, it should just assign the message
   // it wants to this value.
   IPC::Message reply_msg;
+
+  // If this context is generated from a sync message, this will be set to the
+  // incoming sync message. Otherwise, it will be NULL.
+  IPC::Message* sync_reply_msg;
 };
 
 }  // namespace host

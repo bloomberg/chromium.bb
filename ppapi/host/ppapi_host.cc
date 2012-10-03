@@ -47,6 +47,8 @@ bool PpapiHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiHost, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceCall,
                         OnHostMsgResourceCall)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(PpapiHostMsg_ResourceSyncCall,
+                                    OnHostMsgResourceSyncCall)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceCreated,
                         OnHostMsgResourceCreated)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_ResourceDestroyed,
@@ -66,9 +68,15 @@ bool PpapiHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PpapiHost::SendReply(const proxy::ResourceMessageReplyParams& params,
+void PpapiHost::SendReply(const ReplyMessageContext& context,
                           const IPC::Message& msg) {
-  Send(new PpapiPluginMsg_ResourceReply(params, msg));
+  if (context.sync_reply_msg) {
+    PpapiHostMsg_ResourceSyncCall::WriteReplyParams(context.sync_reply_msg,
+                                                    context.params, msg);
+    Send(context.sync_reply_msg);
+  } else {
+    Send(new PpapiPluginMsg_ResourceReply(context.params, msg));
+  }
 }
 
 void PpapiHost::AddHostFactoryFilter(scoped_ptr<HostFactory> filter) {
@@ -84,35 +92,55 @@ void PpapiHost::OnHostMsgResourceCall(
     const proxy::ResourceMessageCallParams& params,
     const IPC::Message& nested_msg) {
   HostMessageContext context(params);
-  proxy::ResourceMessageReplyParams reply_params(params.pp_resource(),
-                                                 params.sequence());
+  HandleResourceCall(params, nested_msg, &context);
+}
+
+void PpapiHost::OnHostMsgResourceSyncCall(
+    const proxy::ResourceMessageCallParams& params,
+    const IPC::Message& nested_msg,
+    IPC::Message* reply_msg) {
+  // Sync messages should always have callback set because they always expect
+  // a reply from the host.
+  DCHECK(params.has_callback());
+  // Stash the |reply_msg| in the context so that it can be used to reply
+  // to the sync message.
+  HostMessageContext context(params, reply_msg);
+  HandleResourceCall(params, nested_msg, &context);
+}
+
+void PpapiHost::HandleResourceCall(
+    const proxy::ResourceMessageCallParams& params,
+    const IPC::Message& nested_msg,
+    HostMessageContext* context) {
+  ReplyMessageContext reply_context = context->MakeReplyMessageContext();
 
   ResourceHost* resource_host = GetResourceHost(params.pp_resource());
   if (resource_host) {
-    reply_params.set_result(resource_host->OnResourceMessageReceived(
-        nested_msg, &context));
+    reply_context.params.set_result(
+        resource_host->OnResourceMessageReceived(nested_msg, context));
 
     // Sanity check the resource handler. Note if the result was
     // "completion pending" the resource host may have already sent the reply.
-    if (reply_params.result() == PP_OK_COMPLETIONPENDING) {
+    if (reply_context.params.result() == PP_OK_COMPLETIONPENDING) {
       // Message handler should have only returned a pending result if a
       // response will be sent to the plugin.
       DCHECK(params.has_callback());
 
       // Message handler should not have written a message to be returned if
       // completion is pending.
-      DCHECK(context.reply_msg.type() == 0);
+      DCHECK(context->reply_msg.type() == 0);
     } else if (!params.has_callback()) {
       // When no response is required, the message handler should not have
       // written a message to be returned.
-      DCHECK(context.reply_msg.type() == 0);
+      DCHECK(context->reply_msg.type() == 0);
     }
   } else {
-    reply_params.set_result(PP_ERROR_BADRESOURCE);
+    reply_context.params.set_result(PP_ERROR_BADRESOURCE);
   }
 
-  if (params.has_callback() && reply_params.result() != PP_OK_COMPLETIONPENDING)
-    SendReply(reply_params, context.reply_msg);
+  if (params.has_callback() &&
+      reply_context.params.result() != PP_OK_COMPLETIONPENDING)
+    SendReply(reply_context, context->reply_msg);
 }
 
 void PpapiHost::OnHostMsgResourceCreated(

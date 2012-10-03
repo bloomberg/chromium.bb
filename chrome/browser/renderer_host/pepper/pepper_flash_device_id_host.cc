@@ -15,7 +15,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
-#include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
@@ -136,14 +135,15 @@ int32_t PepperFlashDeviceIDHost::OnHostMsgGetDeviceID(
 
   fetcher_ = new Fetcher(factory_.GetWeakPtr());
   fetcher_->Start(browser_ppapi_host_);
-  reply_params_ = context->MakeReplyParams();
+  reply_context_ = context->MakeReplyMessageContext();
   return PP_OK_COMPLETIONPENDING;
 }
 
 void PepperFlashDeviceIDHost::GotDRMContents(const std::string& contents) {
   fetcher_ = NULL;
-  reply_params_.set_result(contents.empty() ? PP_ERROR_FAILED : PP_OK);
-  host()->SendReply(reply_params_,
+  reply_context_.params.set_result(
+      contents.empty() ? PP_ERROR_FAILED : PP_OK);
+  host()->SendReply(reply_context_,
                     PpapiPluginMsg_FlashDeviceID_GetDeviceIDReply(contents));
 }
 

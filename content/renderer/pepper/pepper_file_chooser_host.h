@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
 
@@ -54,7 +55,7 @@ class CONTENT_EXPORT PepperFileChooserHost
   // Non-owning pointer.
   RendererPpapiHost* renderer_ppapi_host_;
 
-  ppapi::proxy::ResourceMessageReplyParams reply_params_;
+  ppapi::host::ReplyMessageContext reply_context_;
   CompletionHandler* handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFileChooserHost);

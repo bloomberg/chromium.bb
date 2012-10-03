@@ -1541,6 +1541,12 @@ IPC_MESSAGE_CONTROL2(
     ppapi::proxy::ResourceMessageReplyParams /* reply_params */,
     IPC::Message /* nested_msg */)
 
+IPC_SYNC_MESSAGE_CONTROL2_2(PpapiHostMsg_ResourceSyncCall,
+    ppapi::proxy::ResourceMessageCallParams /* call_params */,
+    IPC::Message /* nested_msg */,
+    ppapi::proxy::ResourceMessageReplyParams /* reply_params */,
+    IPC::Message /* reply_msg */)
+
 //-----------------------------------------------------------------------------
 // Messages for resources using call/reply above.
 

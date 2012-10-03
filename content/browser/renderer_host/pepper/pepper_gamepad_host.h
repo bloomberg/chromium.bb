@@ -11,8 +11,8 @@
 #include "ppapi/host/resource_host.h"
 
 namespace ppapi {
-namespace proxy {
-class ResourceMessageReplyParams;
+namespace host {
+struct ReplyMessageContext;
 }
 }
 
@@ -43,7 +43,7 @@ class CONTENT_EXPORT PepperGamepadHost : public ppapi::host::ResourceHost {
  private:
   int32_t OnMsgRequestMemory(ppapi::host::HostMessageContext* context);
 
-  void GotUserGesture(const ppapi::proxy::ResourceMessageReplyParams& params);
+  void GotUserGesture(const ppapi::host::ReplyMessageContext& in_context);
 
   BrowserPpapiHost* browser_ppapi_host_;
 

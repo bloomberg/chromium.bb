@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"
+#include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
 
@@ -89,9 +90,9 @@ class PepperFlashDeviceIDHost : public ppapi::host::ResourceHost {
   content::BrowserPpapiHost* browser_ppapi_host_;
 
   // When a request is pending, the fetcher will be non-null, and the reply
-  // params will have the appropriate routing info set for the reply.
+  // context will have the appropriate routing info set for the reply.
   scoped_refptr<Fetcher> fetcher_;
-  ppapi::proxy::ResourceMessageReplyParams reply_params_;
+  ppapi::host::ReplyMessageContext reply_context_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashDeviceIDHost);
 };

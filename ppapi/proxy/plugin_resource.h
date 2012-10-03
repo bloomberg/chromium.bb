@@ -51,6 +51,11 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   int32_t CallBrowser(const IPC::Message& msg);
   int32_t CallRenderer(const IPC::Message& msg);
 
+  // Call the browser/renderer with sync messages. The pepper error code from
+  // the call is returned and the reply message is stored in |reply_msg|.
+  int32_t CallBrowserSync(const IPC::Message& msg, IPC::Message* reply_msg);
+  int32_t CallRendererSync(const IPC::Message& msg, IPC::Message* reply_msg);
+
  private:
   Connection connection_;
 
