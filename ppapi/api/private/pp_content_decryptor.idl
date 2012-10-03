@@ -130,16 +130,11 @@ enum PP_DecryptResult {
 };
 
 /**
- * The <code>PP_DecryptedBlockInfo</code> struct contains the tracking info and
- * the decryption (and/or decoding) result associated with the decrypted block.
+ * <code>PP_DecryptedBlockInfo</code> struct contains the decryption result and
+ * tracking info associated with the decrypted block.
  */
 [assert_size(24)]
 struct PP_DecryptedBlockInfo {
-  /**
-   * Information needed by the client to track the block to be decrypted.
-   */
-  PP_DecryptTrackingInfo tracking_info;
-
   /**
    * Result of the decryption (and/or decoding) operation.
    */
@@ -147,7 +142,78 @@ struct PP_DecryptedBlockInfo {
 
   /**
    * 4-byte padding to make the size of <code>PP_DecryptedBlockInfo</code>
-   * a multiple of 8 bytes. The value of this field should not be used.
+   * a multiple of 8 bytes and make sure |tracking_info| starts on an 8-byte
+   * boundary. The value of this field should not be used.
    */
   uint32_t padding;
+
+  /**
+   * Information needed by the client to track the block to be decrypted.
+   */
+  PP_DecryptTrackingInfo tracking_info;
+};
+
+/**
+ * <code>PP_DecryptedFrameFormat</code> contains video frame formats.
+ */
+[assert_size(4)]
+enum PP_DecryptedFrameFormat {
+  PP_DECRYPTEDFRAMEFORMAT_UNKNOWN = 0,
+  PP_DECRYPTEDFRAMEFORMAT_EMPTY = 1,
+  PP_DECRYPTEDFRAMEFORMAT_YV12 = 2,
+  PP_DECRYPTEDFRAMEFORMAT_I420 = 3
+};
+
+/**
+ * <code>PP_DecryptedFramePlanes</code> provides YUV plane index values for
+ * accessing plane offsets stored in <code>PP_DecryptedFrameInfo</code>.
+ */
+[assert_size(4)]
+enum PP_DecryptedFramePlanes {
+  PP_DECRYPTEDFRAMEPLANES_Y = 0,
+  PP_DECRYPTEDFRAMEPLANES_U = 1,
+  PP_DECRYPTEDFRAMEPLANES_V = 2
+};
+
+/**
+ * <code>PP_DecryptedFrameInfo</code> contains the result of the
+ * decrypt and decode operation on the associated frame, information required
+ * to access the frame data in buffer, and tracking info.
+ */
+[assert_size(56)]
+struct PP_DecryptedFrameInfo {
+  /**
+   * Result of the decrypt and decode operation.
+   */
+  PP_DecryptResult result;
+
+  /**
+   * Format of the decrypted frame.
+   */
+  PP_DecryptedFrameFormat format;
+
+  /**
+   * Offsets into the buffer resource for accessing video planes.
+   */
+  int32_t[3] plane_offsets;
+
+  /**
+   * Stride of each plane.
+   */
+  int32_t[3] strides;
+
+  /**
+   * Width of the video frame, in pixels.
+   */
+  int32_t width;
+
+  /**
+   * Height of the video frame, in pixels.
+   */
+  int32_t height;
+
+  /**
+   * Information needed by the client to track the decrypted frame.
+   */
+  PP_DecryptTrackingInfo tracking_info;
 };

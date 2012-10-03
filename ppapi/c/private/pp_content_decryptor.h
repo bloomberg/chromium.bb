@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Mon Sep 17 09:50:39 2012. */
+/* From private/pp_content_decryptor.idl modified Wed Oct  3 12:52:47 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -152,25 +152,99 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptResult, 4);
  * @{
  */
 /**
- * The <code>PP_DecryptedBlockInfo</code> struct contains the tracking info and
- * the decryption (and/or decoding) result associated with the decrypted block.
+ * <code>PP_DecryptedBlockInfo</code> struct contains the decryption result and
+ * tracking info associated with the decrypted block.
  */
 struct PP_DecryptedBlockInfo {
-  /**
-   * Information needed by the client to track the block to be decrypted.
-   */
-  struct PP_DecryptTrackingInfo tracking_info;
   /**
    * Result of the decryption (and/or decoding) operation.
    */
   PP_DecryptResult result;
   /**
    * 4-byte padding to make the size of <code>PP_DecryptedBlockInfo</code>
-   * a multiple of 8 bytes. The value of this field should not be used.
+   * a multiple of 8 bytes and make sure |tracking_info| starts on an 8-byte
+   * boundary. The value of this field should not be used.
    */
   uint32_t padding;
+  /**
+   * Information needed by the client to track the block to be decrypted.
+   */
+  struct PP_DecryptTrackingInfo tracking_info;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DecryptedBlockInfo, 24);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Enums
+ * @{
+ */
+/**
+ * <code>PP_DecryptedFrameFormat</code> contains video frame formats.
+ */
+typedef enum {
+  PP_DECRYPTEDFRAMEFORMAT_UNKNOWN = 0,
+  PP_DECRYPTEDFRAMEFORMAT_EMPTY = 1,
+  PP_DECRYPTEDFRAMEFORMAT_YV12 = 2,
+  PP_DECRYPTEDFRAMEFORMAT_I420 = 3
+} PP_DecryptedFrameFormat;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptedFrameFormat, 4);
+
+/**
+ * <code>PP_DecryptedFramePlanes</code> provides YUV plane index values for
+ * accessing plane offsets stored in <code>PP_DecryptedFrameInfo</code>.
+ */
+typedef enum {
+  PP_DECRYPTEDFRAMEPLANES_Y = 0,
+  PP_DECRYPTEDFRAMEPLANES_U = 1,
+  PP_DECRYPTEDFRAMEPLANES_V = 2
+} PP_DecryptedFramePlanes;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptedFramePlanes, 4);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
+/**
+ * <code>PP_DecryptedFrameInfo</code> contains the result of the
+ * decrypt and decode operation on the associated frame, information required
+ * to access the frame data in buffer, and tracking info.
+ */
+struct PP_DecryptedFrameInfo {
+  /**
+   * Result of the decrypt and decode operation.
+   */
+  PP_DecryptResult result;
+  /**
+   * Format of the decrypted frame.
+   */
+  PP_DecryptedFrameFormat format;
+  /**
+   * Offsets into the buffer resource for accessing video planes.
+   */
+  int32_t plane_offsets[3];
+  /**
+   * Stride of each plane.
+   */
+  int32_t strides[3];
+  /**
+   * Width of the video frame, in pixels.
+   */
+  int32_t width;
+  /**
+   * Height of the video frame, in pixels.
+   */
+  int32_t height;
+  /**
+   * Information needed by the client to track the decrypted frame.
+   */
+  struct PP_DecryptTrackingInfo tracking_info;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DecryptedFrameInfo, 56);
 /**
  * @}
  */

@@ -63,10 +63,10 @@ void DeliverBlock(PP_Instance instance,
 
 void DeliverFrame(PP_Instance instance,
                   PP_Resource decrypted_frame,
-                  const PP_DecryptedBlockInfo* block_info) {
+                  const PP_DecryptedFrameInfo* frame_info) {
   EnterInstance enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverFrame(instance, decrypted_frame, block_info);
+    enter.functions()->DeliverFrame(instance, decrypted_frame, frame_info);
 }
 
 void DeliverSamples(PP_Instance instance,
@@ -90,7 +90,7 @@ const PPB_ContentDecryptor_Private g_ppb_decryption_thunk = {
 }  // namespace
 
 const PPB_ContentDecryptor_Private*
-    GetPPB_ContentDecryptor_Private_0_1_Thunk() {
+    GetPPB_ContentDecryptor_Private_0_2_Thunk() {
   return &g_ppb_decryption_thunk;
 }
 

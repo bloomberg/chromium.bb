@@ -457,7 +457,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
-                            const PP_DecryptedBlockInfo* block_info) OVERRIDE;
+                            const PP_DecryptedFrameInfo* frame_info) OVERRIDE;
   virtual void DeliverSamples(PP_Instance instance,
                               PP_Resource decrypted_samples,
                               const PP_DecryptedBlockInfo* block_info) OVERRIDE;

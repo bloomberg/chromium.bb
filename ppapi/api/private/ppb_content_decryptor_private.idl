@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M23 = 0.1
+  M23 = 0.2
 };
 
 /**
@@ -137,7 +137,7 @@ interface PPB_ContentDecryptor_Private {
    * block.
    *
    * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
-   * contains the tracking info and result code associated with the
+   * contains the result code and tracking info associated with the
    * <code>decrypted_block</code>.
    */
   void DeliverBlock(
@@ -153,14 +153,14 @@ interface PPB_ContentDecryptor_Private {
    * @param[in] decrypted_frame A <code>PP_Resource</code> corresponding to a
    * <code>PPB_Buffer_Dev</code> resource that contains a video frame.
    *
-   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
-   * contains the tracking info and result code associated with the
-   * <code>decrypted_block</code>.
+   * @param[in] decrypted_frame_info A <code>PP_DecryptedFrameInfo</code> that
+   * contains the result code, tracking info, and buffer format associated with
+   * <code>decrypted_frame</code>.
    */
   void DeliverFrame(
       [in] PP_Instance instance,
       [in] PP_Resource decrypted_frame,
-      [in] PP_DecryptedBlockInfo decrypted_block_info);
+      [in] PP_DecryptedFrameInfo decrypted_frame_info);
 
   /**
    * Called after the <code>DecryptAndDecode()</code> method on the

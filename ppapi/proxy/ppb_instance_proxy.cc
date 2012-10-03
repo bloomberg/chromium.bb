@@ -510,14 +510,14 @@ void PPB_Instance_Proxy::DeliverBlock(PP_Instance instance,
 
 void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
                                       PP_Resource decrypted_frame,
-                                      const PP_DecryptedBlockInfo* block_info) {
+                                      const PP_DecryptedFrameInfo* frame_info) {
   Resource* object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(decrypted_frame);
   if (!object || object->pp_instance() != instance)
     return;
 
   std::string serialized_block_info;
-  if (!SerializeBlockInfo(*block_info, &serialized_block_info))
+  if (!SerializeBlockInfo(*frame_info, &serialized_block_info))
     return;
 
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_DeliverFrame(
@@ -931,14 +931,14 @@ void PPB_Instance_Proxy::OnHostMsgDeliverBlock(
 void PPB_Instance_Proxy::OnHostMsgDeliverFrame(
     PP_Instance instance,
     PP_Resource decrypted_frame,
-    const std::string& serialized_block_info) {
-  PP_DecryptedBlockInfo block_info;
-  if (!DeserializeBlockInfo(serialized_block_info, &block_info))
+    const std::string& serialized_frame_info) {
+  PP_DecryptedFrameInfo frame_info;
+  if (!DeserializeBlockInfo(serialized_frame_info, &frame_info))
     return;
 
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverFrame(instance, decrypted_frame, &block_info);
+    enter.functions()->DeliverFrame(instance, decrypted_frame, &frame_info);
 }
 
 void PPB_Instance_Proxy::OnHostMsgDeliverSamples(

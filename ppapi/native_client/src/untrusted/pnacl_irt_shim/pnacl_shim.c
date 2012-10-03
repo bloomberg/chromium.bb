@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Tue Oct  2 11:33:39 2012. */
+/* Last generated from IDL: Wed Oct  3 12:53:07 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -199,7 +199,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_10;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_11;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Widget_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Zoom_Dev_0_3;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRefPrivate_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_12_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_12_1;
@@ -1946,51 +1946,51 @@ void Pnacl_M14_PPB_VideoDecoder_Dev_Destroy(PP_Resource video_decoder) {
 
 /* Not generating wrapper methods for PPP_Zoom_Dev_0_3 */
 
-/* Begin wrapper methods for PPB_ContentDecryptor_Private_0_1 */
+/* Begin wrapper methods for PPB_ContentDecryptor_Private_0_2 */
 
 static __attribute__((pnaclcall))
 void Pnacl_M23_PPB_ContentDecryptor_Private_NeedKey(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, struct PP_Var init_data) {
-  const struct PPB_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPB_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2.real_iface;
   iface->NeedKey(instance, key_system, session_id, init_data);
 }
 
 static __attribute__((pnaclcall))
 void Pnacl_M23_PPB_ContentDecryptor_Private_KeyAdded(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id) {
-  const struct PPB_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPB_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2.real_iface;
   iface->KeyAdded(instance, key_system, session_id);
 }
 
 static __attribute__((pnaclcall))
 void Pnacl_M23_PPB_ContentDecryptor_Private_KeyMessage(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, PP_Resource message, struct PP_Var default_url) {
-  const struct PPB_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPB_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2.real_iface;
   iface->KeyMessage(instance, key_system, session_id, message, default_url);
 }
 
 static __attribute__((pnaclcall))
 void Pnacl_M23_PPB_ContentDecryptor_Private_KeyError(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, int32_t media_error, int32_t system_code) {
-  const struct PPB_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPB_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2.real_iface;
   iface->KeyError(instance, key_system, session_id, media_error, system_code);
 }
 
 static __attribute__((pnaclcall))
 void Pnacl_M23_PPB_ContentDecryptor_Private_DeliverBlock(PP_Instance instance, PP_Resource decrypted_block, const struct PP_DecryptedBlockInfo* decrypted_block_info) {
-  const struct PPB_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPB_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2.real_iface;
   iface->DeliverBlock(instance, decrypted_block, decrypted_block_info);
 }
 
 static __attribute__((pnaclcall))
-void Pnacl_M23_PPB_ContentDecryptor_Private_DeliverFrame(PP_Instance instance, PP_Resource decrypted_frame, const struct PP_DecryptedBlockInfo* decrypted_block_info) {
-  const struct PPB_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1.real_iface;
-  iface->DeliverFrame(instance, decrypted_frame, decrypted_block_info);
+void Pnacl_M23_PPB_ContentDecryptor_Private_DeliverFrame(PP_Instance instance, PP_Resource decrypted_frame, const struct PP_DecryptedFrameInfo* decrypted_frame_info) {
+  const struct PPB_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2.real_iface;
+  iface->DeliverFrame(instance, decrypted_frame, decrypted_frame_info);
 }
 
 static __attribute__((pnaclcall))
 void Pnacl_M23_PPB_ContentDecryptor_Private_DeliverSamples(PP_Instance instance, PP_Resource decrypted_samples, const struct PP_DecryptedBlockInfo* decrypted_block_info) {
-  const struct PPB_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPB_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2.real_iface;
   iface->DeliverSamples(instance, decrypted_samples, decrypted_block_info);
 }
 
-/* End wrapper methods for PPB_ContentDecryptor_Private_0_1 */
+/* End wrapper methods for PPB_ContentDecryptor_Private_0_2 */
 
 /* Begin wrapper methods for PPB_FileRefPrivate_0_1 */
 
@@ -3807,13 +3807,13 @@ struct PPB_VideoDecoder_Dev_0_16 Pnacl_Wrappers_PPB_VideoDecoder_Dev_0_16 = {
 
 /* Not generating wrapper interface for PPP_Zoom_Dev_0_3 */
 
-struct PPB_ContentDecryptor_Private_0_1 Pnacl_Wrappers_PPB_ContentDecryptor_Private_0_1 = {
+struct PPB_ContentDecryptor_Private_0_2 Pnacl_Wrappers_PPB_ContentDecryptor_Private_0_2 = {
     .NeedKey = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, struct PP_Var init_data))&Pnacl_M23_PPB_ContentDecryptor_Private_NeedKey,
     .KeyAdded = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id))&Pnacl_M23_PPB_ContentDecryptor_Private_KeyAdded,
     .KeyMessage = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, PP_Resource message, struct PP_Var default_url))&Pnacl_M23_PPB_ContentDecryptor_Private_KeyMessage,
     .KeyError = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, int32_t media_error, int32_t system_code))&Pnacl_M23_PPB_ContentDecryptor_Private_KeyError,
     .DeliverBlock = (void (*)(PP_Instance instance, PP_Resource decrypted_block, const struct PP_DecryptedBlockInfo* decrypted_block_info))&Pnacl_M23_PPB_ContentDecryptor_Private_DeliverBlock,
-    .DeliverFrame = (void (*)(PP_Instance instance, PP_Resource decrypted_frame, const struct PP_DecryptedBlockInfo* decrypted_block_info))&Pnacl_M23_PPB_ContentDecryptor_Private_DeliverFrame,
+    .DeliverFrame = (void (*)(PP_Instance instance, PP_Resource decrypted_frame, const struct PP_DecryptedFrameInfo* decrypted_frame_info))&Pnacl_M23_PPB_ContentDecryptor_Private_DeliverFrame,
     .DeliverSamples = (void (*)(PP_Instance instance, PP_Resource decrypted_samples, const struct PP_DecryptedBlockInfo* decrypted_block_info))&Pnacl_M23_PPB_ContentDecryptor_Private_DeliverSamples
 };
 
@@ -4656,9 +4656,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Zoom_Dev_0_3 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1 = {
-  .iface_macro = PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_ContentDecryptor_Private_0_1,
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2 = {
+  .iface_macro = PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_2,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_ContentDecryptor_Private_0_2,
   .real_iface = NULL
 };
 
@@ -4943,7 +4943,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Widget_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_Widget_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_Zoom_Dev_0_2,
-  &Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_1,
+  &Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_2,
   &Pnacl_WrapperInfo_PPB_FileRefPrivate_0_1,
   &Pnacl_WrapperInfo_PPB_Flash_12_0,
   &Pnacl_WrapperInfo_PPB_Flash_12_1,

@@ -58,7 +58,7 @@ class ContentDecryptor_Private {
   void DeliverBlock(pp::Buffer_Dev decrypted_block,
                     const PP_DecryptedBlockInfo& decrypted_block_info);
   void DeliverFrame(pp::Buffer_Dev decrypted_frame,
-                    const PP_DecryptedBlockInfo& decrypted_block_info);
+                    const PP_DecryptedFrameInfo& decrypted_frame_info);
   void DeliverSamples(pp::Buffer_Dev decrypted_samples,
                       const PP_DecryptedBlockInfo& decrypted_block_info);
 

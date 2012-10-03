@@ -27,6 +27,7 @@
 #endif
 
 struct PP_DecryptedBlockInfo;
+struct PP_DecryptedFrameInfo;
 
 namespace ppapi {
 
@@ -158,7 +159,7 @@ class PPB_Instance_API {
                             const PP_DecryptedBlockInfo* block_info) = 0;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
-                            const PP_DecryptedBlockInfo* block_info) = 0;
+                            const PP_DecryptedFrameInfo* frame_info) = 0;
   virtual void DeliverSamples(PP_Instance instance,
                               PP_Resource decrypted_samples,
                               const PP_DecryptedBlockInfo* block_info) = 0;

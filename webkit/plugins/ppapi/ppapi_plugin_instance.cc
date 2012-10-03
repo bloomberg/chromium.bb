@@ -2303,7 +2303,7 @@ void PluginInstance::DeliverBlock(PP_Instance instance,
 
 void PluginInstance::DeliverFrame(PP_Instance instance,
                                   PP_Resource decrypted_frame,
-                                  const PP_DecryptedBlockInfo* block_info) {
+                                  const PP_DecryptedFrameInfo* frame_info) {
   // TODO(tomfinegan): To be implemented after completion of v0.1 of the
   // EME/CDM work.
 }

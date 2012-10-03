@@ -14,8 +14,9 @@ namespace ppapi {
 namespace proxy {
 
 // Serialization/deserialization utility functions for storing/extracting
-// PP_{De|En}cryptedBlockInfo structs within std::string's for passing through
-// IPC. Both functions return true upon success, and false upon failure.
+// PP_DecryptedBlockInfo, PP_EncryptedBlockInfo, and PP_DecompressedFrameInfo
+// structs within std::string's for passing through IPC. Both functions return
+// true upon success, and false upon failure.
 //
 // Note, these functions check the size of |block_info| against the size of
 // the "serialized" data stored within |serialized_block_info|, and will report

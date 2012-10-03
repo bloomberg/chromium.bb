@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Thu Aug 16 20:19:22 2012.
+ *   modified Mon Oct 01 20:33:45 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_1 \
-    "PPB_ContentDecryptor_Private;0.1"
+#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_2 \
+    "PPB_ContentDecryptor_Private;0.2"
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_1
+    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_2
 
 /**
  * @file
@@ -42,7 +42,7 @@
  * browser side support for the Content Decryption Module (CDM) for v0.1 of the
  * proposed Encrypted Media Extensions: http://goo.gl/rbdnR
  */
-struct PPB_ContentDecryptor_Private_0_1 {
+struct PPB_ContentDecryptor_Private_0_2 {
   /**
    * The decryptor requires a key that has not been provided.
    *
@@ -152,7 +152,7 @@ struct PPB_ContentDecryptor_Private_0_1 {
    * block.
    *
    * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
-   * contains the tracking info and result code associated with the
+   * contains the result code and tracking info associated with the
    * <code>decrypted_block</code>.
    */
   void (*DeliverBlock)(
@@ -167,14 +167,14 @@ struct PPB_ContentDecryptor_Private_0_1 {
    * @param[in] decrypted_frame A <code>PP_Resource</code> corresponding to a
    * <code>PPB_Buffer_Dev</code> resource that contains a video frame.
    *
-   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
-   * contains the tracking info and result code associated with the
-   * <code>decrypted_block</code>.
+   * @param[in] decrypted_frame_info A <code>PP_DecryptedFrameInfo</code> that
+   * contains the result code, tracking info, and buffer format associated with
+   * <code>decrypted_frame</code>.
    */
   void (*DeliverFrame)(
       PP_Instance instance,
       PP_Resource decrypted_frame,
-      const struct PP_DecryptedBlockInfo* decrypted_block_info);
+      const struct PP_DecryptedFrameInfo* decrypted_frame_info);
   /**
    * Called after the <code>DecryptAndDecode()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to
@@ -195,7 +195,7 @@ struct PPB_ContentDecryptor_Private_0_1 {
       const struct PP_DecryptedBlockInfo* decrypted_block_info);
 };
 
-typedef struct PPB_ContentDecryptor_Private_0_1 PPB_ContentDecryptor_Private;
+typedef struct PPB_ContentDecryptor_Private_0_2 PPB_ContentDecryptor_Private;
 /**
  * @}
  */

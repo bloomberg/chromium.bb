@@ -22,6 +22,7 @@ class Buffer;
 class ContentDecryptionModule;
 class DecryptedBlock;
 class KeyMessage;
+class VideoFrame;
 }
 
 extern "C" {
@@ -119,28 +120,6 @@ struct Size {
 
   int32_t width;
   int32_t height;
-};
-
-struct VideoFrame {
-  static const int32_t kMaxPlanes = 3;
-
-  VideoFrame()
-      : timestamp(0) {
-    for (int i = 0; i < kMaxPlanes; ++i) {
-      strides[i] = 0;
-      data[i] = NULL;
-    }
-  }
-
-  // Array of strides for each plane, typically greater or equal to the width
-  // of the surface divided by the horizontal sampling period.  Note that
-  // strides can be negative.
-  int32_t strides[kMaxPlanes];
-
-  // Array of data pointers to each plane.
-  uint8_t* data[kMaxPlanes];
-
-  int64_t timestamp;  // Presentation timestamp in microseconds.
 };
 
 struct VideoDecoderConfig {
@@ -340,6 +319,35 @@ class KeyMessage {
  protected:
   KeyMessage() {}
   virtual ~KeyMessage() {}
+};
+
+class VideoFrame {
+ public:
+  enum VideoPlane {
+   kYPlane = 0,
+   kUPlane = 1,
+   kVPlane = 2,
+   kMaxPlanes = 3,
+  };
+
+  virtual void set_format(VideoFormat format) = 0;
+  virtual VideoFormat format() const = 0;
+
+  virtual void set_frame_buffer(Buffer* frame_buffer) = 0;
+  virtual Buffer* frame_buffer() = 0;
+
+  virtual void set_plane_offset(VideoPlane plane, int32_t offset) = 0;
+  virtual int32_t plane_offset(VideoPlane plane) = 0;
+
+  virtual void set_stride(VideoPlane plane, int32_t stride) = 0;
+  virtual int32_t stride(VideoPlane plane) = 0;
+
+  virtual void set_timestamp(int64_t timestamp) = 0;
+  virtual int64_t timestamp() const = 0;
+
+ protected:
+   VideoFrame() {}
+   virtual ~VideoFrame() {}
 };
 
 }  // namespace cdm

@@ -221,12 +221,12 @@ void ContentDecryptor_Private::DeliverBlock(
 
 void ContentDecryptor_Private::DeliverFrame(
     pp::Buffer_Dev decrypted_frame,
-    const PP_DecryptedBlockInfo& decrypted_block_info) {
+    const PP_DecryptedFrameInfo& decrypted_frame_info) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->DeliverFrame(
         associated_instance_.pp_instance(),
         decrypted_frame.pp_resource(),
-        &decrypted_block_info);
+        &decrypted_frame_info);
   }
 }
 

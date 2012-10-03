@@ -24,6 +24,7 @@
 #endif
 
 struct PP_DecryptedBlockInfo;
+struct PP_DecryptedFrameInfo;
 
 namespace ppapi {
 namespace proxy {
@@ -137,7 +138,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
-                            const PP_DecryptedBlockInfo* block_info) OVERRIDE;
+                            const PP_DecryptedFrameInfo* frame_info) OVERRIDE;
   virtual void DeliverSamples(PP_Instance instance,
                               PP_Resource decrypted_samples,
                               const PP_DecryptedBlockInfo* block_info) OVERRIDE;
