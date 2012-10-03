@@ -107,6 +107,11 @@ TEST_F(BufferManagerTest, SetRange) {
   EXPECT_FALSE(info->SetRange(0, sizeof(data) + 1, data));
   EXPECT_FALSE(info->SetRange(-1, sizeof(data), data));
   EXPECT_FALSE(info->SetRange(0, -1, data));
+  manager_.SetInfo(info, 1, GL_STATIC_DRAW);
+  const int size = 0x20000;
+  scoped_array<uint8> temp(new uint8[size]);
+  EXPECT_FALSE(info->SetRange(0 - size, size, temp.get()));
+  EXPECT_FALSE(info->SetRange(1, size / 2, temp.get()));
 }
 
 TEST_F(BufferManagerTest, GetRange) {
@@ -127,6 +132,10 @@ TEST_F(BufferManagerTest, GetRange) {
   EXPECT_TRUE(info->GetRange(0, sizeof(data) + 1) == NULL);
   EXPECT_TRUE(info->GetRange(-1, sizeof(data)) == NULL);
   EXPECT_TRUE(info->GetRange(-0, -1) == NULL);
+  const int size = 0x20000;
+  manager_.SetInfo(info, size / 2, GL_STATIC_DRAW);
+  EXPECT_TRUE(info->GetRange(0 - size, size) == NULL);
+  EXPECT_TRUE(info->GetRange(1, size / 2) == NULL);
 }
 
 TEST_F(BufferManagerTest, GetMaxValueForRangeUint8) {

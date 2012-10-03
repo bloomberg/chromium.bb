@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/buffer_manager.h"
+#include <limits>
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -105,9 +106,18 @@ void BufferManager::BufferInfo::SetInfo(
   }
 }
 
+bool BufferManager::BufferInfo::CheckRange(
+    GLintptr offset, GLsizeiptr size) const {
+  int32 end = 0;
+  return offset >= 0 && size >= 0 &&
+         offset <= std::numeric_limits<int32>::max() &&
+         size <= std::numeric_limits<int32>::max() &&
+         SafeAddInt32(offset, size, &end) && end <= size_;
+}
+
 bool BufferManager::BufferInfo::SetRange(
     GLintptr offset, GLsizeiptr size, const GLvoid * data) {
-  if (offset < 0 || offset + size < offset || offset + size > size_) {
+  if (!CheckRange(offset, size)) {
     return false;
   }
   if (shadowed_) {
@@ -122,7 +132,7 @@ const void* BufferManager::BufferInfo::GetRange(
   if (!shadowed_) {
     return NULL;
   }
-  if (offset < 0 || offset + size < offset || offset + size > size_) {
+  if (!CheckRange(offset, size)) {
     return NULL;
   }
   return shadow_.get() + offset;

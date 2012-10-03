@@ -126,6 +126,9 @@ class GPU_EXPORT BufferManager {
     // Clears any cache of index ranges.
     void ClearCache();
 
+    // Check if an offset, size range is valid for the current buffer.
+    bool CheckRange(GLintptr offset, GLsizeiptr size) const;
+
     // The manager that owns this BufferInfo.
     BufferManager* manager_;
 
