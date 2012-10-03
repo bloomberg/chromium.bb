@@ -113,6 +113,17 @@ const WebIntentPickerModel::SuggestedExtension&
   return suggested_extensions_[index];
 }
 
+const WebIntentPickerModel::SuggestedExtension*
+WebIntentPickerModel::GetSuggestedExtensionWithId(
+    const std::string& id) const {
+  for (size_t i = 0; i < suggested_extensions_.size(); ++i) {
+    const SuggestedExtension* extension = &suggested_extensions_[i];
+    if (extension->id == id)
+      return extension;
+  }
+  return NULL;
+}
+
 size_t WebIntentPickerModel::GetSuggestedExtensionCount() const {
   return std::min(suggested_extensions_.size(), kMaxSuggestionCount);
 }
@@ -143,7 +154,12 @@ void WebIntentPickerModel::SetSuggestedExtensionIconWithId(
 
 void WebIntentPickerModel::SetInlineDisposition(const GURL& url) {
   inline_disposition_url_ = url;
-  if (observer_) {
+  if (!observer_)
+    return;
+
+  if (url.is_empty()) {
+    observer_->OnModelChanged(this);
+  } else {
     const InstalledService* service = GetInstalledServiceWithURL(url);
     DCHECK(service);
     observer_->OnInlineDisposition(service->title, url);

@@ -120,6 +120,10 @@ class WebIntentPickerModel {
   // Return the suggested extension at |index|.
   const SuggestedExtension& GetSuggestedExtensionAt(size_t index) const;
 
+  // Return the suggested extension for the given id or NULL if none.
+  const SuggestedExtension* GetSuggestedExtensionWithId(
+      const std::string& id) const;
+
   // Return the number of suggested extensions to be displayed.
   size_t GetSuggestedExtensionCount() const;
 
@@ -132,6 +136,7 @@ class WebIntentPickerModel {
                                        const gfx::Image& image);
 
   // Set the picker to display the intent service with |url| inline.
+  // To clear the current inline disposition set |url| to an empty URL.
   void SetInlineDisposition(const GURL& url);
 
   // Returns true if the picker is currently displaying an inline service.

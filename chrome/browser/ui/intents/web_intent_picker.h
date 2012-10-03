@@ -63,14 +63,17 @@ class WebIntentPicker {
       content::WebContents* web_contents) {}
 
   // Get the minimum size of the inline disposition content container.
-  static gfx::Size GetMinInlineDispositionSize();
+  virtual gfx::Size GetMinInlineDispositionSize();
 
   // Get the maximum size of the inline disposition content container.
-  static gfx::Size GetMaxInlineDispositionSize();
+  virtual gfx::Size GetMaxInlineDispositionSize();
 
   // Get the star image IDs to use for the nth star (out of 5), given a
   // |rating| in the range [0, 5].
   static int GetNthStarImageIdFromCWSRating(double rating, int index);
+
+  // Returns the action-specific string to display for |action|.
+  static string16 GetDisplayStringForIntentAction(const string16& action16);
 
  protected:
   virtual ~WebIntentPicker() {}

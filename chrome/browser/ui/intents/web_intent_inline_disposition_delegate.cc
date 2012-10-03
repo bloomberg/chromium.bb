@@ -93,8 +93,8 @@ void WebIntentInlineDispositionDelegate::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   DCHECK(render_view_host);
   render_view_host->EnableAutoResize(
-      WebIntentPicker::GetMinInlineDispositionSize(),
-      WebIntentPicker::GetMaxInlineDispositionSize());
+      picker_->GetMinInlineDispositionSize(),
+      picker_->GetMaxInlineDispositionSize());
 }
 
 content::WebContents* WebIntentInlineDispositionDelegate::

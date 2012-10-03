@@ -944,7 +944,7 @@ const CGFloat kAddButtonWidth = 128.0;
     return 0;
 
   // Determine a good size for the inline disposition window.
-  gfx::Size size = WebIntentPicker::GetMinInlineDispositionSize();
+  gfx::Size size = picker_->GetMinInlineDispositionSize();
   contentFrame_ = NSMakeRect(
       WebIntentPicker::kContentAreaBorder,
       offset,
