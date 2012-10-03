@@ -675,6 +675,11 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 
+  // Disable compositing in guests until we have compositing path implemented
+  // for guests.
+  if (rvh->GetProcess()->IsGuest())
+    prefs.force_compositing_mode = false;
+
   return prefs;
 }
 
