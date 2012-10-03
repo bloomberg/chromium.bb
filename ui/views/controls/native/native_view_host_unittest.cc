@@ -86,8 +86,9 @@ TEST_F(NativeViewHostTest, NativeViewHierarchyChanged) {
   // And the child widget.
   NativeViewHierarchyChangedTestView* test_view =
       new NativeViewHierarchyChangedTestView;
-  Widget* child = new Widget; // Owned by |toplevel|.
+  scoped_ptr<Widget> child(new Widget);
   Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
+  child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent_widget = toplevel.get();
   child->Init(child_params);
   child->SetContentsView(test_view);
