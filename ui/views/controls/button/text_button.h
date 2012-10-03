@@ -170,6 +170,8 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   // current size.
   void ClearMaxTextSize();
 
+  void set_min_width(int min_width) { min_width_ = min_width; }
+  void set_min_height(int min_height) { min_height_ = min_height; }
   void set_max_width(int max_width) { max_width_ = max_width; }
   void SetFont(const gfx::Font& font);
   // Return the font used by this button.
@@ -278,6 +280,10 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   // Space between text and shadow. Defaults to (1,1).
   gfx::Point shadow_offset_;
 
+  // The dimensions of the button will be at least these values.
+  int min_width_;
+  int min_height_;
+
   // The width of the button will never be larger than this value. A value <= 0
   // indicates the width is not constrained.
   int max_width_;
@@ -344,7 +350,6 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from TextButtonBase:
   virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) OVERRIDE;
@@ -402,9 +407,6 @@ class VIEWS_EXPORT NativeTextButton : public TextButton {
 
   explicit NativeTextButton(ButtonListener* listener);
   NativeTextButton(ButtonListener* listener, const string16& text);
-
-  // Overridden from View:
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from TextButton:
   virtual gfx::Size GetMinimumSize() OVERRIDE;

@@ -1744,8 +1744,8 @@ class DefaultButtonTest : public ViewTest {
   FocusManager* focus_manager_;
   TestDialog* test_dialog_;
   DialogClientView* client_view_;
-  NativeTextButton* ok_button_;
-  NativeTextButton* cancel_button_;
+  TextButton* ok_button_;
+  TextButton* cancel_button_;
 };
 
 TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {

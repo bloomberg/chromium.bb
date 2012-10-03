@@ -603,6 +603,10 @@ FindBar* BrowserWindowCocoa::CreateFindBar() {
   return bridge;
 }
 
+int BrowserWindowCocoa::GetConstrainedWindowTopY() {
+  return -1;
+}
+
 void BrowserWindowCocoa::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {

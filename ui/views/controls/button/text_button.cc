@@ -13,6 +13,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/focus_border.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -267,6 +268,8 @@ TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
       inactive_text_shadow_color_(0),
       has_shadow_(false),
       shadow_offset_(gfx::Point(1, 1)),
+      min_width_(0),
+      min_height_(0),
       max_width_(0),
       show_multiple_icon_states_(true),
       is_default_(false),
@@ -373,6 +376,9 @@ gfx::Size TextButtonBase::GetPreferredSize() {
   if (max_width_ > 0)
     prefsize.set_width(std::min(max_width_, prefsize.width()));
 
+  prefsize.set_width(std::max(prefsize.height(), min_width_));
+  prefsize.set_height(std::max(prefsize.height(), min_height_));
+
   return prefsize;
 }
 
@@ -385,7 +391,9 @@ int TextButtonBase::GetHeightForWidth(int w) {
 
   gfx::Size text_size;
   CalculateTextSize(&text_size, w);
-  return text_size.height() + GetInsets().height();
+  int height = text_size.height() + GetInsets().height();
+
+  return std::max(height, min_height_);
 }
 
 void TextButtonBase::OnPaint(gfx::Canvas* canvas) {
@@ -672,6 +680,10 @@ TextButton::TextButton(ButtonListener* listener, const string16& text)
       icon_text_spacing_(kDefaultIconTextSpacing),
       ignore_minimum_size_(true) {
   set_border(new TextButtonBorder);
+  set_focus_border(FocusBorder::CreateDashedFocusBorder(kFocusRectInset,
+                                                        kFocusRectInset,
+                                                        kFocusRectInset,
+                                                        kFocusRectInset));
 }
 
 TextButton::~TextButton() {
@@ -720,6 +732,9 @@ gfx::Size TextButton::GetPreferredSize() {
   }
 #endif
 
+  prefsize.set_width(std::max(prefsize.height(), min_width_));
+  prefsize.set_height(std::max(prefsize.height(), min_height_));
+
   return prefsize;
 }
 
@@ -758,14 +773,6 @@ void TextButton::set_ignore_minimum_size(bool ignore_minimum_size) {
 
 std::string TextButton::GetClassName() const {
   return kViewClassName;
-}
-
-void TextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
-    gfx::Rect rect(GetLocalBounds());
-    rect.Inset(kFocusRectInset, kFocusRectInset);
-    canvas->DrawFocusRect(rect);
-  }
 }
 
 ui::NativeTheme::Part TextButton::GetThemePart() const {
@@ -834,6 +841,11 @@ void NativeTextButton::Init() {
   color_hover_ = color_ = color_enabled_;
 #endif
   set_border(new TextButtonNativeThemeBorder(this));
+#if !defined(OS_WIN)
+  // Paint nothing, focus will be indicated with a border highlight drawn by
+  // NativeThemeBase::PaintButton.
+  set_focus_border(NULL);
+#endif
   set_ignore_minimum_size(false);
   set_alignment(ALIGN_CENTER);
   set_focusable(true);
@@ -845,19 +857,6 @@ gfx::Size NativeTextButton::GetMinimumSize() {
 
 std::string NativeTextButton::GetClassName() const {
   return kViewClassName;
-}
-
-void NativeTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-#if defined(OS_WIN)
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
-    gfx::Rect rect(GetLocalBounds());
-    rect.Inset(kFocusRectInset, kFocusRectInset);
-    canvas->DrawFocusRect(rect);
-  }
-#else
-  // Paint nothing, focus will be indicated with a border highlight drawn by
-  // NativeThemeBase::PaintButton.
-#endif
 }
 
 void NativeTextButton::GetExtraParams(

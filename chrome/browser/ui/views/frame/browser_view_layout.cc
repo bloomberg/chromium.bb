@@ -35,6 +35,9 @@ const int kToolbarTabStripVerticalOverlap = 3;
 const int kSpacerBookmarkBarOverlap = 1;
 // The number of pixels the metro switcher is offset from the right edge.
 const int kWindowSwitcherOffsetX = 7;
+// The number of pixels the constrained window should overlap the bottom
+// of the omnibox.
+const int kConstrainedWindowOverlap = 3;
 
 // Combines View::ConvertPointToTarget and View::HitTest for a given |point|.
 // Converts |point| from |src| to |dst| and hit tests it against |dst|. The
@@ -65,6 +68,10 @@ BrowserViewLayout::BrowserViewLayout()
 }
 
 BrowserViewLayout::~BrowserViewLayout() {
+}
+
+int BrowserViewLayout::GetConstrainedWindowTopY() {
+  return constrained_window_top_y;
 }
 
 gfx::Size BrowserViewLayout::GetMinimumSize() {
@@ -368,6 +375,8 @@ int BrowserViewLayout::LayoutToolbar(int top) {
 }
 
 int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
+  constrained_window_top_y =
+      top + browser_view_->y() - kConstrainedWindowOverlap;
   find_bar_y_ = top + browser_view_->y() - 1;
   if (active_bookmark_bar_) {
     // If we're showing the Bookmark bar in detached style, then we

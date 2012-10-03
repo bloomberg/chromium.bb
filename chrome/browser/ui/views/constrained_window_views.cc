@@ -9,8 +9,10 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -40,6 +42,8 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
+#include "ui/views/window/dialog_client_view.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/views/window/window_resources.h"
@@ -584,7 +588,16 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
-  params.parent = web_contents->GetNativeView();
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableFramelessConstrainedDialogs)) {
+    Widget* parent_widget = Widget::GetTopLevelWidgetForNativeView(
+        web_contents->GetView()->GetNativeView());
+    params.parent_widget = parent_widget;
+  } else {
+    params.parent = web_contents->GetNativeView();
+  }
+
 #if defined(USE_ASH)
   // Ash window headers can be transparent.
   params.transparent = true;
@@ -597,6 +610,31 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   }
 #endif
   Init(params);
+
+  if (command_line->HasSwitch(switches::kEnableFramelessConstrainedDialogs)) {
+    // Set the dialog background color.
+    if (widget_delegate && widget_delegate->AsDialogDelegate()) {
+      views::Background* background = views::Background::CreateSolidBackground(
+          ConstrainedWindow::GetBackgroundColor());
+      views::DialogClientView* dialog_client_view =
+          widget_delegate->AsDialogDelegate()->GetDialogClientView();
+      if (dialog_client_view)
+        dialog_client_view->set_background(background);
+    }
+
+    // Set the top of the now-centered window to overlap the browser chrome.
+    gfx::Rect bounds = GetRootView()->bounds();
+    Widget::ConvertRect(this, params.parent_widget, &bounds);
+    ConstrainedWindowTabHelperDelegate* tab_helper_delegate =
+        ConstrainedWindowTabHelper::FromWebContents(web_contents_)->delegate();
+
+    BrowserWindow* browser_window =
+        tab_helper_delegate ? tab_helper_delegate->GetBrowserWindow() : NULL;
+    if (browser_window && browser_window->GetConstrainedWindowTopY() >= 0) {
+      bounds.set_y(browser_window->GetConstrainedWindowTopY());
+      SetBounds(bounds);
+    }
+  }
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);

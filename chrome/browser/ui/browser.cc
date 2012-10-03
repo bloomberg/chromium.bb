@@ -1750,6 +1750,10 @@ void Browser::SetTabContentBlocked(content::WebContents* web_contents,
     web_contents->Focus();
 }
 
+BrowserWindow* Browser::GetBrowserWindow() {
+  return window();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, BlockedContentTabHelperDelegate implementation:
 

@@ -8,6 +8,7 @@
 namespace content {
 class WebContents;
 }
+class BrowserWindow;
 
 class ConstrainedWindowTabHelperDelegate {
  public:
@@ -20,6 +21,9 @@ class ConstrainedWindowTabHelperDelegate {
   // currently displaying dialog.
   virtual void SetTabContentBlocked(content::WebContents* web_contents,
                                     bool blocked);
+
+  // Returns the window for this Browser.
+  virtual BrowserWindow* GetBrowserWindow();
 
  protected:
   virtual ~ConstrainedWindowTabHelperDelegate();

@@ -1164,6 +1164,10 @@ FindBar* BrowserWindowGtk::CreateFindBar() {
   return new FindBarGtk(this);
 }
 
+int BrowserWindowGtk::GetConstrainedWindowTopY() {
+  return -1;
+}
+
 void BrowserWindowGtk::ShowAvatarBubble(WebContents* web_contents,
                                         const gfx::Rect& rect) {
   GtkWidget* widget = web_contents->GetContentNativeView();

@@ -89,7 +89,8 @@ View* DialogDelegate::GetInitiallyFocusedView() {
 }
 
 ClientView* DialogDelegate::CreateClientView(Widget* widget) {
-  return new DialogClientView(widget, GetContentsView());
+  return new DialogClientView(widget, GetContentsView(),
+                              DialogClientView::StyleParams());
 }
 
 const DialogClientView* DialogDelegate::GetDialogClientView() const {

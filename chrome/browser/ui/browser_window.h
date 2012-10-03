@@ -347,6 +347,10 @@ class BrowserWindow : public BaseWindow {
   // Construct a FindBar implementation for the |browser|.
   virtual FindBar* CreateFindBar() = 0;
 
+  // Returns the y where the top of the constrained window should be
+  // positioned.
+  virtual int GetConstrainedWindowTopY() = 0;
+
   // Invoked when the preferred size of the contents in current tab has been
   // changed. We might choose to update the window size to accomodate this
   // change.

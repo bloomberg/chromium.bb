@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 #define UI_VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -13,7 +14,7 @@
 namespace views {
 
 class DialogDelegate;
-class NativeTextButton;
+class TextButton;
 class Widget;
 namespace internal {
 class RootView;
@@ -35,7 +36,27 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
                                       public ButtonListener,
                                       public FocusChangeListener {
  public:
-  DialogClientView(Widget* widget, View* contents_view);
+  typedef TextButton* (*TextButtonFactory)(ButtonListener* listener,
+                                           Widget* owner,
+                                           ui::DialogButton type,
+                                           const string16& title);
+
+  // Parameters for the internal dialog styling.  Default construction
+  // produces parameters for native dialog styling.
+  struct VIEWS_EXPORT StyleParams {
+    StyleParams();
+
+    int button_vedge_margin;
+    int button_hedge_margin;
+    int min_button_width;
+    int button_label_spacing;
+    int button_content_spacing;
+    TextButtonFactory text_button_factory;
+  };
+
+  DialogClientView(Widget* widget,
+                   View* contents_view,
+                   const StyleParams &params);
   virtual ~DialogClientView();
 
   // Adds the dialog buttons required by the supplied DialogDelegate to the
@@ -53,8 +74,18 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void CancelWindow();
 
   // Accessors in case the user wishes to adjust these buttons.
-  NativeTextButton* ok_button() const { return ok_button_; }
-  NativeTextButton* cancel_button() const { return cancel_button_; }
+  TextButton* ok_button() const { return ok_button_; }
+  TextButton* cancel_button() const { return cancel_button_; }
+
+  // Factory functions for creating buttons of the desired style.
+  static TextButton* CreateNativeStyleDialogButton(ButtonListener* listener,
+                                                   Widget* owner,
+                                                   ui::DialogButton type,
+                                                   const string16& title);
+  static TextButton* CreateChromeStyleDialogButton(ButtonListener* listener,
+                                                   Widget* owner,
+                                                   ui::DialogButton type,
+                                                   const string16& title);
 
   // Overridden from View:
   virtual void NativeViewHierarchyChanged(
@@ -77,7 +108,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
  protected:
   // View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
@@ -110,7 +140,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void LayoutContentsView();
 
   // Makes the specified button the default button.
-  void SetDefaultButton(NativeTextButton* button);
+  void SetDefaultButton(TextButton* button);
 
   bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
 
@@ -126,12 +156,15 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Updates focus listener.
   void UpdateFocusListener();
 
+  // Parameters for the internal dialog styling.
+  StyleParams style_params_;
+
   // The dialog buttons.
-  NativeTextButton* ok_button_;
-  NativeTextButton* cancel_button_;
+  TextButton* ok_button_;
+  TextButton* cancel_button_;
 
   // The button that is currently the default button if any.
-  NativeTextButton* default_button_;
+  TextButton* default_button_;
 
   // The button-level extra view, NULL unless the dialog delegate supplies one.
   View* extra_view_;

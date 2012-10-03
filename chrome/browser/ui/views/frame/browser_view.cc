@@ -1401,6 +1401,10 @@ FindBar* BrowserView::CreateFindBar() {
   return chrome::CreateFindBar(this);
 }
 
+int BrowserView::GetConstrainedWindowTopY() {
+  return GetBrowserViewLayout()->GetConstrainedWindowTopY();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
 
