@@ -83,7 +83,6 @@ base_non_configuration_keys = [
   'rules',
   'run_as',
   'sources',
-  'standalone_static_library',
   'suppress_wildcard',
   'target_name',
   'toolset',
@@ -107,7 +106,6 @@ invalid_configuration_keys = [
   'libraries',
   'link_settings',
   'sources',
-  'standalone_static_library',
   'target_name',
   'type',
 ]
@@ -2282,11 +2280,6 @@ def ValidateTargetType(target, target_dict):
     raise GypError("Target %s has an invalid target type '%s'.  "
                    "Must be one of %s." %
                    (target, target_type, '/'.join(VALID_TARGET_TYPES)))
-  if (target_dict.get('standalone_static_library', 0) and
-      not target_type == 'static_library'):
-    raise GypError('Target %s has type %s but standalone_static_library flag is'
-                   ' only valid for static_library type.' % (target,
-                                                             target_type))
 
 
 def ValidateSourcesInTarget(target, target_dict, build_file):

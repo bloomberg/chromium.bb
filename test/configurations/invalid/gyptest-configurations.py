@@ -20,7 +20,6 @@ invalid_configuration_keys = [
   'libraries',
   'link_settings',
   'sources',
-  'standalone_static_library',
   'target_name',
   'type',
 ]
