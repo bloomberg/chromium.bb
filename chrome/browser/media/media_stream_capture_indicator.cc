@@ -287,7 +287,7 @@ void MediaStreamCaptureIndicator::ShowBalloon(
   string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   string16 body = l10n_util::GetStringFUTF16(message_id,
       GetSecurityOrigin(render_process_id, render_view_id));
-  status_icon_->DisplayBalloon(*balloon_image_->bitmap(), title, body);
+  status_icon_->DisplayBalloon(*balloon_image_, title, body);
 }
 
 void MediaStreamCaptureIndicator::OnImageLoaded(
@@ -299,9 +299,9 @@ void MediaStreamCaptureIndicator::OnImageLoaded(
   pending_messages_.erase(index);
 
   const gfx::ImageSkia* image_skia = !image.IsEmpty() ? image.ToImageSkia() :
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_APP_DEFAULT_ICON);
-  status_icon_->DisplayBalloon(*image_skia->bitmap(), string16(), message);
+  status_icon_->DisplayBalloon(*image_skia, string16(), message);
 }
 
 void MediaStreamCaptureIndicator::Hide() {
@@ -375,13 +375,13 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconDisplay(
   int message_id = 0;
   if (audio && video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO;
-    status_icon_->SetImage(*camera_image_->bitmap());
+    status_icon_->SetImage(*camera_image_);
   } else if (audio && !video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_ONLY;
-    status_icon_->SetImage(*mic_image_->bitmap());
+    status_icon_->SetImage(*mic_image_);
   } else if (!audio && video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_VIDEO_ONLY;
-    status_icon_->SetImage(*camera_image_->bitmap());
+    status_icon_->SetImage(*camera_image_);
   }
 
   status_icon_->SetToolTip(l10n_util::GetStringFUTF16(

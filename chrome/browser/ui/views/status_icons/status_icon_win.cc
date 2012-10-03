@@ -83,19 +83,19 @@ void StatusIconWin::ResetIcon() {
     LOG(WARNING) << "Unable to re-create status tray icon.";
 }
 
-void StatusIconWin::SetImage(const SkBitmap& image) {
+void StatusIconWin::SetImage(const gfx::ImageSkia& image) {
   // Create the icon.
   NOTIFYICONDATA icon_data;
   InitIconData(&icon_data);
   icon_data.uFlags = NIF_ICON;
-  icon_.Set(IconUtil::CreateHICONFromSkBitmap(image));
+  icon_.Set(IconUtil::CreateHICONFromSkBitmap(*image.bitmap()));
   icon_data.hIcon = icon_.Get();
   BOOL result = Shell_NotifyIcon(NIM_MODIFY, &icon_data);
   if (!result)
     LOG(WARNING) << "Error setting status tray icon image";
 }
 
-void StatusIconWin::SetPressedImage(const SkBitmap& image) {
+void StatusIconWin::SetPressedImage(const gfx::ImageSkia& image) {
   // Ignore pressed images, since the standard on Windows is to not highlight
   // pressed status icons.
 }
@@ -111,7 +111,7 @@ void StatusIconWin::SetToolTip(const string16& tool_tip) {
     LOG(WARNING) << "Unable to set tooltip for status tray icon";
 }
 
-void StatusIconWin::DisplayBalloon(const SkBitmap& icon,
+void StatusIconWin::DisplayBalloon(const gfx::ImageSkia& icon,
                                    const string16& title,
                                    const string16& contents) {
   NOTIFYICONDATA icon_data;
@@ -123,8 +123,8 @@ void StatusIconWin::DisplayBalloon(const SkBitmap& icon,
   icon_data.uTimeout = 0;
 
   base::win::Version win_version = base::win::GetVersion();
-  if (!icon.empty() && win_version != base::win::VERSION_PRE_XP) {
-    balloon_icon_.Set(IconUtil::CreateHICONFromSkBitmap(icon));
+  if (!icon.isNull() && win_version != base::win::VERSION_PRE_XP) {
+    balloon_icon_.Set(IconUtil::CreateHICONFromSkBitmap(*icon.bitmap()));
     if (win_version >= base::win::VERSION_VISTA) {
       icon_data.hBalloonIcon = balloon_icon_.Get();
       icon_data.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;
@@ -172,11 +172,11 @@ StatusIconMetro::StatusIconMetro(UINT id)
 StatusIconMetro::~StatusIconMetro() {
 }
 
-void StatusIconMetro::SetImage(const SkBitmap& image) {
+void StatusIconMetro::SetImage(const gfx::ImageSkia& image) {
   DVLOG(1) << __FUNCTION__;
 }
 
-void StatusIconMetro::SetPressedImage(const SkBitmap& image) {
+void StatusIconMetro::SetPressedImage(const gfx::ImageSkia& image) {
   DVLOG(1) << __FUNCTION__;
 }
 
@@ -185,7 +185,7 @@ void StatusIconMetro::SetToolTip(const string16& tool_tip) {
   tool_tip_ = tool_tip;
 }
 
-void StatusIconMetro::DisplayBalloon(const SkBitmap& icon,
+void StatusIconMetro::DisplayBalloon(const gfx::ImageSkia& icon,
                                      const string16& title,
                                      const string16& contents) {
   DVLOG(1) << __FUNCTION__;

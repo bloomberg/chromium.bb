@@ -10,7 +10,9 @@
 #include "base/observer_list.h"
 #include "base/string16.h"
 
-class SkBitmap;
+namespace gfx {
+class ImageSkia;
+}
 
 namespace ui {
 class MenuModel;
@@ -24,17 +26,17 @@ class StatusIcon {
   virtual ~StatusIcon();
 
   // Sets the image associated with this status icon.
-  virtual void SetImage(const SkBitmap& image) = 0;
+  virtual void SetImage(const gfx::ImageSkia& image) = 0;
 
   // Sets the image associated with this status icon when pressed.
-  virtual void SetPressedImage(const SkBitmap& image) = 0;
+  virtual void SetPressedImage(const gfx::ImageSkia& image) = 0;
 
   // Sets the hover text for this status icon.
   virtual void SetToolTip(const string16& tool_tip) = 0;
 
   // Displays a notification balloon with the specified contents.
   // Depending on the platform it might not appear by the icon tray.
-  virtual void DisplayBalloon(const SkBitmap& icon,
+  virtual void DisplayBalloon(const gfx::ImageSkia& icon,
                               const string16& title,
                               const string16& contents) = 0;
 

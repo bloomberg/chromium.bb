@@ -31,10 +31,10 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
   // down.
   StatusTrayWin tray;
   StatusIcon* icon = tray.CreateStatusIcon();
-  SkBitmap* bitmap = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_STATUS_TRAY_ICON);
-  icon->SetImage(*bitmap);
-  icon->SetPressedImage(*bitmap);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
+  icon->SetImage(*image);
+  icon->SetPressedImage(*image);
   icon->SetToolTip(ASCIIToUTF16("tool tip"));
   ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(NULL);
   menu->AddItem(0, L"foo");

@@ -190,9 +190,7 @@ void SpeechRecognitionTrayIconController::ShowNotificationBalloon(
   string16 title = l10n_util::GetStringUTF16(
       IDS_SPEECH_INPUT_TRAY_BALLOON_TITLE);
   string16 message = l10n_util::GetStringFUTF16(
-          IDS_SPEECH_INPUT_TRAY_BALLOON_BODY,
-          text);
+      IDS_SPEECH_INPUT_TRAY_BALLOON_BODY, text);
 
-  tray_icon_->DisplayBalloon(*g_images.Get().balloon_icon()->bitmap(), title,
-      message);
+  tray_icon_->DisplayBalloon(*g_images.Get().balloon_icon(), title, message);
 }

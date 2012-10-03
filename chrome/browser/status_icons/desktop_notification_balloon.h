@@ -10,7 +10,10 @@
 #include "base/string16.h"
 
 class Notification;
-class SkBitmap;
+
+namespace gfx {
+class ImageSkia;
+}
 
 // Provides the notification balloon functionality by using desktop
 // notifications to platforms that don't have a specific native API.
@@ -19,7 +22,7 @@ class DesktopNotificationBalloon {
   DesktopNotificationBalloon();
   virtual ~DesktopNotificationBalloon();
 
-  void DisplayBalloon(const SkBitmap& icon,
+  void DisplayBalloon(const gfx::ImageSkia& icon,
                       const string16& title,
                       const string16& contents);
 

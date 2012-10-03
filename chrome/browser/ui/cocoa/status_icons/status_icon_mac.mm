@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 @interface StatusItemController : NSObject {
   StatusIconMac* statusIcon_; // weak
@@ -62,19 +63,19 @@ NSStatusItem* StatusIconMac::item() {
   return item_.get();
 }
 
-void StatusIconMac::SetImage(const SkBitmap& bitmap) {
-  if (!bitmap.isNull()) {
-    NSImage* image = gfx::SkBitmapToNSImage(bitmap);
-    if (image)
-      [item() setImage:image];
+void StatusIconMac::SetImage(const gfx::ImageSkia& image) {
+  if (!image.isNull()) {
+    NSImage* ns_image = gfx::SkBitmapToNSImage(*image.bitmap());
+    if (ns_image)
+      [item() setImage:ns_image];
   }
 }
 
-void StatusIconMac::SetPressedImage(const SkBitmap& bitmap) {
-  if (!bitmap.isNull()) {
-    NSImage* image = gfx::SkBitmapToNSImage(bitmap);
-    if (image)
-      [item() setAlternateImage:image];
+void StatusIconMac::SetPressedImage(const gfx::ImageSkia& image) {
+  if (!image.isNull()) {
+    NSImage* ns_image = gfx::SkBitmapToNSImage(*image.bitmap());
+    if (ns_image)
+      [item() setAlternateImage:ns_image];
   }
 }
 
@@ -90,7 +91,7 @@ void StatusIconMac::SetToolTip(const string16& tool_tip) {
   }
 }
 
-void StatusIconMac::DisplayBalloon(const SkBitmap& icon,
+void StatusIconMac::DisplayBalloon(const gfx::ImageSkia& icon,
                                    const string16& title,
                                    const string16& contents) {
   notification_.DisplayBalloon(icon, title, contents);

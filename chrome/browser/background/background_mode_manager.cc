@@ -666,9 +666,9 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
 
   // Set the image and add ourselves as a click observer on it.
   // TODO(rlp): Status tray icon should have submenus for each profile.
-  gfx::ImageSkia* image_skia = ResourceBundle::GetSharedInstance().
+  gfx::ImageSkia* image_skia = ui::ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
-  status_icon_->SetImage(*image_skia->bitmap());
+  status_icon_->SetImage(*image_skia);
   status_icon_->SetToolTip(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   UpdateStatusTrayIconContextMenu();
 }

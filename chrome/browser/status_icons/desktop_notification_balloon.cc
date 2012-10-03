@@ -71,7 +71,7 @@ DesktopNotificationBalloon::~DesktopNotificationBalloon() {
     CloseBalloon(notification_id_);
 }
 
-void DesktopNotificationBalloon::DisplayBalloon(const SkBitmap& icon,
+void DesktopNotificationBalloon::DisplayBalloon(const gfx::ImageSkia& icon,
                                                 const string16& title,
                                                 const string16& contents) {
   // Allowing IO access is required here to cover the corner case where
@@ -83,6 +83,6 @@ void DesktopNotificationBalloon::DisplayBalloon(const SkBitmap& icon,
     profile = ProfileManager::GetLastUsedProfile();
   }
   notification_id_ = DesktopNotificationService::AddIconNotification(
-      GURL(), title, contents, gfx::ImageSkia(icon), string16(),
+      GURL(), title, contents, icon, string16(),
       new DummyNotificationDelegate(base::IntToString(id_count_++)), profile);
 }

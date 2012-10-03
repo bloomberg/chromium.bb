@@ -14,7 +14,6 @@
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
-class SkBitmap;
 @class MenuController;
 @class NSStatusItem;
 @class StatusItemController;
@@ -25,10 +24,10 @@ class StatusIconMac : public StatusIcon {
   virtual ~StatusIconMac();
 
   // Overridden from StatusIcon.
-  virtual void SetImage(const SkBitmap& image) OVERRIDE;
-  virtual void SetPressedImage(const SkBitmap& image) OVERRIDE;
+  virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
+  virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
-  virtual void DisplayBalloon(const SkBitmap& icon,
+  virtual void DisplayBalloon(const gfx::ImageSkia& icon,
                               const string16& title,
                               const string16& contents) OVERRIDE;
 

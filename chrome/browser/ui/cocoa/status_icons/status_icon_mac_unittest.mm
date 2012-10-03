@@ -21,11 +21,10 @@ class StatusIconMacTest : public CocoaTest {
 TEST_F(StatusIconMacTest, Create) {
   // Create an icon, set the tool tip, then shut it down (checks for leaks).
   scoped_ptr<StatusIcon> icon(new StatusIconMac());
-  SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_STATUS_TRAY_ICON);
-  icon->SetImage(*bitmap);
-  SkBitmap* pressed = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_STATUS_TRAY_ICON_PRESSED);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
+  icon->SetImage(*image);
+  gfx::ImageSkia* pressed = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON_PRESSED);
   icon->SetPressedImage(*pressed);
   icon->SetToolTip(ASCIIToUTF16("tool tip"));
 }
