@@ -138,7 +138,8 @@ TEST_PPAPI_IN_PROCESS(Broker)
 // Flaky, http://crbug.com/111355
 TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Broker)
 
-IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Accept) {
+// Temporarily disabled: http://crbug.com/151734
+IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, DISABLED_Accept) {
   // Accepting the infobar should grant permission to access the PPAPI broker.
   InfoBarObserver observer;
   observer.ExpectInfoBarAndAccept(true);
@@ -154,7 +155,8 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Accept) {
                 url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
 }
 
-IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Deny) {
+// Temporarily disabled: http://crbug.com/151734
+IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, DISABLED_Deny) {
   // Canceling the infobar should deny permission to access the PPAPI broker.
   InfoBarObserver observer;
   observer.ExpectInfoBarAndAccept(false);

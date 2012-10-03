@@ -215,14 +215,7 @@ bool PepperBrokerObserver::RequestPpapiBrokerPermission(
     case CONTENT_SETTING_ASK: {
       content::RecordAction(
           content::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
-
-      InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-      std::string languages =
-          profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-      infobar_helper->AddInfoBar(
-          new PepperBrokerInfoBarDelegate(
-              infobar_helper, url, plugin_path, languages, content_settings,
-              callback));
+      callback.Run(true);
       break;
     }
     default:
