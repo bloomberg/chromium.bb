@@ -15,6 +15,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "ui/surface/transport_dib.h"
@@ -53,6 +54,7 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
     int instance_id,
     WebContentsImpl* web_contents,
     content::RenderViewHost* render_view_host) {
+  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Create"));
   if (factory_) {
     return factory_->CreateBrowserPluginGuest(instance_id,
                                               web_contents,
@@ -75,6 +77,7 @@ void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
   base::ProcessHandle process_handle =
       web_contents()->GetRenderProcessHost()->GetHandle();
   base::KillProcess(process_handle, RESULT_CODE_HUNG, false);
+  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Hung"));
 }
 
 void BrowserPluginGuest::SetIsAcceptingTouchEvents(bool accept) {
@@ -274,12 +277,14 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
     PageTransition transition_type,
     RenderViewHost* render_view_host) {
   // Inform its embedder of the updated URL.
-  if (is_main_frame)
+  if (is_main_frame) {
     SendMessageToEmbedder(
         new BrowserPluginMsg_DidNavigate(
             instance_id(),
             url,
             render_view_host->GetProcess()->GetID()));
+    RecordAction(UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
+  }
 }
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
@@ -295,6 +300,20 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
   while (!iter.IsAtEnd()) {
     pending_updates_.Remove(iter.GetCurrentKey());
     iter.Advance();
+  }
+
+  switch (status) {
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      RecordAction(UserMetricsAction("BrowserPlugin.Guest.Killed"));
+      break;
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      RecordAction(UserMetricsAction("BrowserPlugin.Guest.Crashed"));
+      break;
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+      RecordAction(UserMetricsAction("BrowserPlugin.Guest.AbnormalDeath"));
+      break;
+    default:
+      break;
   }
 }
 

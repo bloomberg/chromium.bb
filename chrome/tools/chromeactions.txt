@@ -195,6 +195,12 @@
 0xc7c989d7aa14f64d	BookmarkManager_Sync
 0xec92650848f88dda	BookmarkMenu_clicked
 0xd1cd299109c75a4c	Bookmarks_Search
+0xbd8c276496f8eb7a	BrowserPlugin.Guest.AbnormalDeath
+0x371d5e60b00738d9	BrowserPlugin.Guest.Crashed
+0x854cc1f139ba9418	BrowserPlugin.Guest.Create
+0xde8be5ce26955605	BrowserPlugin.Guest.Hung
+0xa369e99aa2e21969	BrowserPlugin.Guest.Killed
+0x428cf267aeb35e28	BrowserPlugin.Guest.Navigate
 0xea4788705e6873b4	Cancel
 0x89394b102e55da81	ClearAuthenticationCache
 0x6bd5f5b094096aa7	ClearBrowsingData_Autofill
