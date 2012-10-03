@@ -843,12 +843,13 @@ wayland_compositor_create(struct wl_display *display,
 	c->base.destroy = wayland_destroy;
 	c->base.restore = wayland_restore;
 
-	create_border(c);
 	if (wayland_compositor_create_output(c, width, height) < 0)
 		goto err_display;
 
 	if (gles2_renderer_init(&c->base) < 0)
 		goto err_display;
+
+	create_border(c);
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
 
