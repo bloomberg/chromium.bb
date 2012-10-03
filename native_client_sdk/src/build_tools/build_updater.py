@@ -143,7 +143,7 @@ def BuildUpdater(out_dir, revision_number=None):
                       cwd=out_dir)
 
   # Tar of all files under nacl_sdk/sdk_tools
-  sdktoolsdir = 'nacl_sdk/sdk_tools'
+  sdktoolsdir = os.path.join('nacl_sdk', 'sdk_tools')
   tarname = os.path.join(out_dir, 'sdk_tools.tgz')
   files_to_tar = [os.path.relpath(out_file, sdktoolsdir)
       for out_file in out_files if out_file.startswith(sdktoolsdir)]
