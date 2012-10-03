@@ -33,22 +33,13 @@
         }
       },
       {
-        "id": "RendererCrash",
+        "id": "RendererFailure",
         "type": "object",
-        "description": "The event to represent a renderer crash.",
-        "properties": {
-          "eventType": {"type": "integer", "description": "The type of the event."},
-          "time": {"type": "number", "description": "The time at which the event was recorded."}
-        }
-      },
-      {
-        "id": "RendererFreeze",
-        "type": "object",
-        "description": "The event to represent a frozen renderer (when the frozen tab popup comes up).",
+        "description": "The event to represent a renderer hanging, crashing, or being killed.",
         "properties": {
           "eventType": {"type": "integer", "description": "The type of the event."},
           "time": {"type": "number", "description": "The time at which the event was recorded."},
-          "url": {"type": "string", "description": "The crash url."}
+          "url": {"type": "string", "description": "The url (or urls) associated with the renderer failure, if available (if unavailable, this is empty)."}
         }
       },
       {

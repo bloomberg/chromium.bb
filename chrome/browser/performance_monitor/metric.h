@@ -17,16 +17,26 @@ namespace performance_monitor {
 // - Add the appropriate functions in
 //   chrome/browser/ui/webui/performance_monitor/performance_monitor_l10n.h.
 enum MetricType {
-METRIC_UNDEFINED,
-METRIC_CPU_USAGE,
-METRIC_PRIVATE_MEMORY_USAGE,
-METRIC_SHARED_MEMORY_USAGE,
-METRIC_STARTUP_TIME,
-METRIC_TEST_STARTUP_TIME,
-METRIC_SESSION_RESTORE_TIME,
-METRIC_PAGE_LOAD_TIME,
-METRIC_NETWORK_BYTES_READ,
-METRIC_NUMBER_OF_METRICS
+  METRIC_UNDEFINED,
+
+  // CPU and memory usage are combined for all Chrome-related processes.
+  METRIC_CPU_USAGE,
+  METRIC_PRIVATE_MEMORY_USAGE,
+  METRIC_SHARED_MEMORY_USAGE,
+
+  // Timing measurements; these are all independent metrics (e.g., session
+  // restore time is independent of startup time, even though they may happen
+  // in sequence). Test startup time refers to any non-normal startup time, e.g.
+  // when we run test suites.
+  METRIC_STARTUP_TIME,
+  METRIC_TEST_STARTUP_TIME,
+  METRIC_SESSION_RESTORE_TIME,
+  METRIC_PAGE_LOAD_TIME,
+
+  // Total number of bytes read since PerformanceMonitor first started running.
+  METRIC_NETWORK_BYTES_READ,
+
+  METRIC_NUMBER_OF_METRICS
 };
 
 struct Metric {

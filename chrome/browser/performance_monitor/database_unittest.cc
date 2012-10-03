@@ -311,8 +311,8 @@ TEST_F(PerformanceMonitorDatabaseEventTest, GetAllEventTypes) {
 
 TEST_F(PerformanceMonitorDatabaseEventTest, GetEventInTimeRange) {
   base::Time start_time = clock_->GetTime();
-  scoped_ptr<Event> crash_event = util::CreateRendererFreezeEvent(
-      clock_->GetTime(), "chrome://freeze");
+  scoped_ptr<Event> crash_event = util::CreateRendererFailureEvent(
+      clock_->GetTime(), EVENT_RENDERER_CRASH, "http://www.google.com/");
   db_->AddEvent(*crash_event.get());
   Database::EventVector events = db_->GetEvents(start_time, clock_->GetTime());
   ASSERT_EQ(1u, events.size());

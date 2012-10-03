@@ -4375,13 +4375,13 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_PERFORMANCE_MONITOR_EXCEPTIONS_EVENT_CATEGORY_DESCRIPTION" desc="Text displayed on mouseover of the Exceptions event category.">
         Events relating to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> crashes and failures
       </message>
-      <message name="IDS_PERFORMANCE_MONITOR_RENDERER_FREEZE_EVENT" desc="Text displayed for the Renderer Freeze event title.">
+      <message name="IDS_PERFORMANCE_MONITOR_RENDERER_HANG_EVENT" desc="Text displayed for the Renderer Freeze event title.">
         Renderer Freezes
       </message>
-      <message name="IDS_PERFORMANCE_MONITOR_RENDERER_FREEZE_EVENT_DESCRIPTION" desc="Text displayed on mouseover of the Renderer Freeze event checkbox.">
+      <message name="IDS_PERFORMANCE_MONITOR_RENDERER_HANG_EVENT_DESCRIPTION" desc="Text displayed on mouseover of the Renderer Freeze event checkbox.">
         Occurrences when a tab became unresponsive
       </message>
-      <message name="IDS_PERFORMANCE_MONITOR_RENDERER_FREEZE_EVENT_MOUSEOVER" desc="Text displayed on mouseover of a Renderer Freeze event.">
+      <message name="IDS_PERFORMANCE_MONITOR_RENDERER_HANG_EVENT_MOUSEOVER" desc="Text displayed on mouseover of a Renderer Freeze event.">
         Renderer Froze
       </message>
       <message name="IDS_PERFORMANCE_MONITOR_RENDERER_CRASH_EVENT" desc="Text displayed for the Renderer Crash event title.">
@@ -4393,13 +4393,13 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_PERFORMANCE_MONITOR_RENDERER_CRASH_EVENT_MOUSEOVER" desc="Text dispalyed on mouseover of a Renderer Crash event.">
         Renderer Crashed
       </message>
-      <message name="IDS_PERFORMANCE_MONITOR_KILLED_BY_OS_CRASH_EVENT" desc="Text displayed for the Killed By OS Crash event title.">
+      <message name="IDS_PERFORMANCE_MONITOR_RENDERER_KILLED_EVENT" desc="Text displayed for the Killed By OS Crash event title.">
         Process Kills
       </message>
-      <message name="IDS_PERFORMANCE_MONITOR_KILLED_BY_OS_CRASH_EVENT_DESCRIPTION" desc="Text displayed on mouseover of the Killed By OS Crash event checkbox.">
+      <message name="IDS_PERFORMANCE_MONITOR_RENDERER_KILLED_EVENT_DESCRIPTION" desc="Text displayed on mouseover of the Killed By OS Crash event checkbox.">
         Occurrences when the OS killed a tab's process ("<ph name="IDS_KILLED_TAB_TITLE">$1<ex>He's dead, Jim!</ex></ph>")
       </message>
-      <message name="IDS_PERFORMANCE_MONITOR_KILLED_BY_OS_CRASH_EVENT_MOUSEOVER" desc="Text displayed on mouseover of a Killed By OS Crash event.">
+      <message name="IDS_PERFORMANCE_MONITOR_RENDERER_KILLED_EVENT_MOUSEOVER" desc="Text displayed on mouseover of a Killed By OS Crash event.">
         Process Killed
       </message>
       <message name="IDS_PERFORMANCE_MONITOR_UNCLEAN_EXIT_EVENT" desc="Text displayed for the Unclean Exit event title.">

@@ -48,22 +48,13 @@ scoped_ptr<Event> CreateExtensionEvent(const EventType type,
       type, time, value.Pass()));
 }
 
-scoped_ptr<Event> CreateRendererFreezeEvent(const base::Time& time,
-                                            const std::string& url) {
-  events::RendererFreeze event;
-  event.event_type = EVENT_RENDERER_FREEZE;
-  event.time = static_cast<double>(time.ToInternalValue());
-  event.url = url;
-  scoped_ptr<base::DictionaryValue> value = event.ToValue();
-  return scoped_ptr<Event>(new Event(
-      EVENT_RENDERER_FREEZE, time, value.Pass()));
-}
-
-scoped_ptr<Event> CreateCrashEvent(const base::Time& time,
-                                   const EventType& type) {
-  events::RendererCrash event;
+scoped_ptr<Event> CreateRendererFailureEvent(const base::Time& time,
+                                             const EventType& type,
+                                             const std::string& url) {
+  events::RendererFailure event;
   event.event_type = type;
   event.time = static_cast<double>(time.ToInternalValue());
+  event.url = url;
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(type, time, value.Pass()));
 }

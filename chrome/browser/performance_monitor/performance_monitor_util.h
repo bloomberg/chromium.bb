@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_UTIL_H_
-#define CHROME_BROWSER_PERFORMANCE_MONITOR_UTIL_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_UTIL_H_
+#define CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_UTIL_H_
 
 #include "base/callback.h"
 #include "base/time.h"
@@ -37,11 +37,9 @@ scoped_ptr<Event> CreateExtensionEvent(const EventType type,
                                        const std::string& version,
                                        const std::string& description);
 
-scoped_ptr<Event> CreateRendererFreezeEvent(const base::Time& time,
-                                            const std::string& url);
-
-scoped_ptr<Event> CreateCrashEvent(const base::Time& time,
-                                   const EventType& type);
+scoped_ptr<Event> CreateRendererFailureEvent(const base::Time& time,
+                                             const EventType& type,
+                                             const std::string& url);
 
 scoped_ptr<Event> CreateUncleanExitEvent(const base::Time& time,
                                          const std::string& profile_name);
@@ -53,4 +51,4 @@ scoped_ptr<Event> CreateChromeUpdateEvent(const base::Time& time,
 }  // namespace util
 }  // namespace performance_monitor
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MONITOR_UTIL_H__
+#endif  // CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_UTIL_H_

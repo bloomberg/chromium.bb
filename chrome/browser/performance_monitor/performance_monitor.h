@@ -165,9 +165,10 @@ class PerformanceMonitor : public content::NotificationObserver {
   void AddExtensionEvent(EventType type,
                          const extensions::Extension* extension);
 
-  // Generate an appropriate CrashEvent for a renderer crash and insert it in
-  // the database.
-  void AddCrashEvent(
+  // Generate an appropriate RendererFailure for a renderer crash and insert it
+  // in the database.
+  void AddRendererClosedEvent(
+      content::RenderProcessHost* host,
       const content::RenderProcessHost::RendererClosedDetails& details);
 
   // Called on the IO thread, this will call InsertIOData on the background

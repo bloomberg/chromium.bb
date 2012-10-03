@@ -35,6 +35,8 @@
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
 
@@ -491,15 +493,23 @@ void PerformanceMonitor::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_HANG: {
-      content::WebContents* contents =
-          content::Source<content::WebContents>(source).ptr();
-      AddEvent(util::CreateRendererFreezeEvent(base::Time::Now(),
-                                               contents->GetURL().spec()));
+      std::string url;
+      content::RenderWidgetHost* widget =
+          content::Source<content::RenderWidgetHost>(source).ptr();
+      if (widget->IsRenderView()) {
+        url = content::WebContents::FromRenderViewHost(
+            content::RenderViewHost::From(widget))->GetURL().spec();
+      }
+      AddEvent(util::CreateRendererFailureEvent(base::Time::Now(),
+                                                EVENT_RENDERER_HANG,
+                                                url));
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      AddCrashEvent(*content::Details<
-          content::RenderProcessHost::RendererClosedDetails>(details).ptr());
+      AddRendererClosedEvent(
+          content::Source<content::RenderProcessHost>(source).ptr(),
+          *content::Details<content::RenderProcessHost::RendererClosedDetails>(
+              details).ptr());
       break;
     }
     case chrome::NOTIFICATION_PROFILE_ADDED: {
@@ -556,7 +566,8 @@ void PerformanceMonitor::AddExtensionEvent(EventType type,
                                       extension->description()));
 }
 
-void PerformanceMonitor::AddCrashEvent(
+void PerformanceMonitor::AddRendererClosedEvent(
+    content::RenderProcessHost* host,
     const content::RenderProcessHost::RendererClosedDetails& details) {
   // We only care if this is an invalid termination.
   if (details.status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
@@ -566,9 +577,32 @@ void PerformanceMonitor::AddCrashEvent(
   // Determine the type of crash.
   EventType type =
       details.status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
-      EVENT_KILLED_BY_OS_CRASH : EVENT_RENDERER_CRASH;
+      EVENT_RENDERER_KILLED : EVENT_RENDERER_CRASH;
 
-  AddEvent(util::CreateCrashEvent(base::Time::Now(), type));
+  content::RenderProcessHost::RenderWidgetHostsIterator iter =
+      host->GetRenderWidgetHostsIterator();
+
+  // A RenderProcessHost may contain multiple render views - for each valid
+  // render view, extract the url, and append it to the string, comma-separating
+  // the entries.
+  std::string url;
+  for (; !iter.IsAtEnd(); iter.Advance()) {
+    const content::RenderWidgetHost* widget = iter.GetCurrentValue();
+    DCHECK(widget);
+    if (!widget || !widget->IsRenderView())
+      continue;
+
+    content::RenderViewHost* view =
+        content::RenderViewHost::From(
+            const_cast<content::RenderWidgetHost*>(widget));
+
+    if (!url.empty())
+      url += ", ";
+
+    url += content::WebContents::FromRenderViewHost(view)->GetURL().spec();
+  }
+
+  AddEvent(util::CreateRendererFailureEvent(base::Time::Now(), type, url));
 }
 
 }  // namespace performance_monitor
