@@ -20,6 +20,11 @@ function Go(relativeIndex) {
   var plugin = document.getElementById('plugin');
   plugin.go(relativeIndex);
 }
+function SetTitle(str) {
+  document.title = str;
+}
+
+window.document.title = 'embedder';
 </script>
 
 <object id="plugin"

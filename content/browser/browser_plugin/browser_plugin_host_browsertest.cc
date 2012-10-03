@@ -795,5 +795,83 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
   }
 }
 
+// This tests verifies that reloading the embedder does not crash the browser
+// and that the guest is reset.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL test_url(test_server()->GetURL(
+      "files/browser_plugin_embedder.html"));
+  NavigateToURL(shell(), test_url);
+
+  WebContentsImpl* embedder_web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      embedder_web_contents->GetRenderViewHost());
+
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+
+  // Wait to make sure embedder is created/attached to WebContents.
+  TestBrowserPluginHostFactory::GetInstance()->WaitForEmbedderCreation();
+
+  TestBrowserPluginEmbedder* test_embedder =
+      static_cast<TestBrowserPluginEmbedder*>(
+          embedder_web_contents->GetBrowserPluginEmbedder());
+  ASSERT_TRUE(test_embedder);
+  test_embedder->WaitForGuestAdded();
+
+  // Verify that we have exactly one guest.
+  const BrowserPluginEmbedder::ContainerInstanceMap& instance_map =
+      test_embedder->guest_web_contents_for_testing();
+  EXPECT_EQ(1u, instance_map.size());
+
+  WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
+      instance_map.begin()->second);
+  TestBrowserPluginGuest* test_guest = static_cast<TestBrowserPluginGuest*>(
+      test_guest_web_contents->GetBrowserPluginGuest());
+
+  // Wait for the guest to send an UpdateRectMsg, meaning it is ready.
+  test_guest->WaitForUpdateRectMsg();
+
+  // Change the title of the page to 'modified' so that we know that
+  // the page has successfully reloaded when it goes back to 'embedder'
+  // in the next step.
+  {
+    const string16 expected_title = ASCIIToUTF16("modified");
+    content::TitleWatcher title_watcher(embedder_web_contents,
+                                        expected_title);
+
+    rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+        StringPrintf("SetTitle('%s');", "modified")));
+
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+
+  // Reload the embedder page, and verify that the reload was successful.
+  // Then navigate the guest to verify that the browser process does not crash.
+  {
+    const string16 expected_title = ASCIIToUTF16("embedder");
+    content::TitleWatcher title_watcher(embedder_web_contents,
+                                        expected_title);
+
+    embedder_web_contents->GetController().Reload(false);
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+
+    embedder_web_contents->GetRenderViewHost()->
+        ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+            StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+
+    WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
+        instance_map.begin()->second);
+    TestBrowserPluginGuest* test_guest = static_cast<TestBrowserPluginGuest*>(
+        test_guest_web_contents->GetBrowserPluginGuest());
+
+    // Wait for the guest to send an UpdateRectMsg, meaning it is ready.
+    test_guest->WaitForUpdateRectMsg();
+  }
+}
+
 
 }  // namespace content

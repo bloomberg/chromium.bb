@@ -574,10 +574,6 @@ class CONTENT_EXPORT WebContentsImpl
   void OnBrowserPluginCreateGuest(int instance_id,
                                   const std::string& storage_partition_id,
                                   bool persist_storage);
-  void OnBrowserPluginNavigateGuest(
-      int instance_id,
-      const std::string& src,
-      const BrowserPluginHostMsg_ResizeGuest_Params& resize_params);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

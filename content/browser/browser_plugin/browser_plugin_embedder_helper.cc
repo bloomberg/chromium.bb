@@ -33,6 +33,8 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginEmbedderHelper, message)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest,
+                        OnCreateGuest);
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest,
                         OnNavigateGuest);
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
@@ -95,6 +97,19 @@ void BrowserPluginEmbedderHelper::OnHandleInputEvent(
                               guest_screen_rect,
                               *input_event,
                               reply_message);
+}
+
+void BrowserPluginEmbedderHelper::OnCreateGuest(
+    int instance_id,
+    const std::string& storage_partition_id,
+    bool persist_storage) {
+  // The first BrowserPluginHostMsg_CreateGuest message is handled in
+  // WebContentsImpl. All subsequent BrowserPluginHostMsg_CreateGuest
+  // messages are handled here.
+  embedder_->CreateGuest(render_view_host(),
+                         instance_id,
+                         storage_partition_id,
+                         persist_storage);
 }
 
 void BrowserPluginEmbedderHelper::OnNavigateGuest(

@@ -2378,24 +2378,19 @@ void WebContentsImpl::OnBrowserPluginCreateGuest(
   // plugin renderer prior to CreateGuest will be ignored.
   // For more info, see comment above classes BrowserPluginEmbedder and
   // BrowserPluginGuest.
+  // The first BrowserPluginHostMsg_CreateGuest message from this WebContents'
+  // embedder render process is handled here. Once BrowserPluginEmbedder is
+  // created, all subsequent BrowserPluginHostMsg_CreateGuest messages are
+  // intercepted by the BrowserPluginEmbedderHelper and handled by the
+  // BrowserPluginEmbedder. Thus, this code will not be executed if a
+  // BrowserPluginEmbedder exists for this WebContents.
   CHECK(!browser_plugin_embedder_.get());
-
   browser_plugin_embedder_.reset(
       content::BrowserPluginEmbedder::Create(this, GetRenderViewHost()));
   browser_plugin_embedder_->CreateGuest(GetRenderViewHost(),
                                         instance_id,
                                         storage_partition_id,
                                         persist_storage);
-}
-
-void WebContentsImpl::OnBrowserPluginNavigateGuest(
-    int instance_id,
-    const std::string& src,
-    const BrowserPluginHostMsg_ResizeGuest_Params& resize_params) {
-  browser_plugin_embedder_->NavigateGuest(GetRenderViewHost(),
-                                          instance_id,
-                                          src,
-                                          resize_params);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
