@@ -654,6 +654,9 @@ bool OutputConfigurator::CycleDisplayMode() {
 
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
+
+  if (!did_change)
+    FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChangeFailed());
   return did_change;
 }
 
@@ -730,6 +733,9 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
       output_state_ == STATE_SINGLE)
     return false;
 
+  if (output_state_ == new_state)
+    return true;
+
   Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
   CHECK(display != NULL);
   XGrabServer(display);
@@ -751,6 +757,9 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
 
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
+
+  if (output_state_ != new_state)
+    FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChangeFailed());
   return true;
 }
 

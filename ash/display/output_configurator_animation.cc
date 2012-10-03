@@ -206,6 +206,11 @@ void OutputConfiguratorAnimation::OnDisplayModeChanged() {
     StartFadeInAnimation();
 }
 
+void OutputConfiguratorAnimation::OnDisplayModeChangeFailed() {
+  if (!hiding_layers_.empty())
+    StartFadeInAnimation();
+}
+
 void OutputConfiguratorAnimation::ClearHidingLayers() {
   if (timer_.get()) {
     timer_->Stop();

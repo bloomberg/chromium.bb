@@ -48,7 +48,10 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
    public:
     // Called when the change of the display mode finished.  It will usually
     // start the fading in the displays.
-    virtual void OnDisplayModeChanged() = 0;
+    virtual void OnDisplayModeChanged() {};
+
+    // Called when the change of the display mode is issued but failed.
+    virtual void OnDisplayModeChangeFailed() {};
   };
 
   OutputConfigurator();
