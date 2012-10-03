@@ -12,17 +12,13 @@ if not env.Bit('bitcode'):
   Return()
 
 # Override the IRT shim with the latest one built in scons-out.
-# Otherwise, there may be a mismatch between the latest pepper headers
-# and the IRT shim that we built in the toolchain tarball.
+# It is the version that matches the current version of PPAPI.
 #
 # We pick exactly that file for now, because the other files in
 # ${LIB_DIR} are bitcode and we don't want to pollute the CRX with those.
 arch = env['TARGET_FULLARCH']
-lib_override = ''
-lib_dep = []
-if arch == 'x86-64':
-  lib_override = ('--lib_override=%s,${LIB_DIR}/libpnacl_irt_shim.a ' % arch)
-  lib_dep = [env.File('${LIB_DIR}/libpnacl_irt_shim.a')]
+lib_override = ('--lib_override=%s,${LIB_DIR}/libpnacl_irt_shim.a ' % arch)
+lib_dep = [env.File('${LIB_DIR}/libpnacl_irt_shim.a')]
 
 output_dir = env.GetPnaclExtensionRootNode().abspath
 
