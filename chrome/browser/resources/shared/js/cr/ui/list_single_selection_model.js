@@ -146,19 +146,32 @@ cr.define('cr.ui', function() {
       this.changeCount_--;
       if (!this.changeCount_) {
         if (this.selectedIndexBefore_ != this.selectedIndex_) {
-          var e = new Event('change');
-          var indexes = [this.selectedIndexBefore_, this.selectedIndex_];
-          e.changes = indexes.filter(function(index) {
-            return index != -1;
-          }).map(function(index) {
-            return {
-              index: index,
-              selected: index == this.selectedIndex_
-            };
-          }, this);
-          this.dispatchEvent(e);
+          var beforeChange = this.createChangeEvent('beforeChange');
+          if (this.dispatchEvent(beforeChange))
+            this.dispatchEvent(this.createChangeEvent('change'));
+          else
+            this.selectedIndex_ = this.selectedIndexBefore_;
         }
       }
+    },
+
+    /**
+     * Creates event with specified name and fills its {changes} property.
+     * @param {String} name Event name.
+     */
+    createChangeEvent: function(eventName) {
+      var e = new Event(eventName);
+      var indexes = [this.selectedIndexBefore_, this.selectedIndex_];
+      e.changes = indexes.filter(function(index) {
+        return index != -1;
+      }).map(function(index) {
+        return {
+          index: index,
+          selected: index == this.selectedIndex_
+        };
+      }, this);
+
+      return e;
     },
 
     leadIndex_: -1,
