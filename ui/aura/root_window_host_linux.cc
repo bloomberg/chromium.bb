@@ -750,18 +750,18 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   float current_scale = delegate_->GetDeviceScaleFactor();
   float new_scale = gfx::Screen::GetDisplayNearestWindow(
       delegate_->AsRootWindow()).device_scale_factor();
-  bool size_changed = bounds_.size() != bounds.size() ||
-      current_scale != new_scale;
+  bool origin_changed = bounds_.origin() != bounds.origin();
+  bool size_changed = bounds_.size() != bounds.size();
   XWindowChanges changes = {0};
   unsigned value_mask = 0;
 
-  if (bounds.size() != bounds_.size()) {
+  if (size_changed) {
     changes.width = bounds.width();
     changes.height = bounds.height();
     value_mask = CWHeight | CWWidth;
   }
 
-  if (bounds.origin() != bounds_.origin()) {
+  if (origin_changed) {
     changes.x = bounds.x();
     changes.y = bounds.y();
     value_mask |= CWX | CWY;
@@ -775,7 +775,9 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
   bounds_ = bounds;
-  if (size_changed) {
+  if (origin_changed)
+    delegate_->OnHostMoved(bounds.origin());
+  if (size_changed || current_scale != new_scale) {
     delegate_->OnHostResized(bounds.size());
   } else {
     delegate_->AsRootWindow()->SchedulePaintInRect(
