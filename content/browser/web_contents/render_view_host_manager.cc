@@ -649,14 +649,8 @@ int RenderViewHostManager::CreateRenderView(
       // Don't show the view until we get a DidNavigate from it.
       new_render_view_host->GetView()->Hide();
 
-      // If we are creating a swapped out RVH, send a message to update its
-      // frame tree based on the active RVH for this RenderViewHostManager.
-      if (swapped_out) {
-        new_render_view_host->UpdateFrameTree(
-            current_host()->GetProcess()->GetID(),
-            current_host()->GetRoutingID(),
-            current_host()->frame_tree());
-      }
+      // TODO(nasko): Send a frame tree update when creating the RV
+      // once http://crbug.com/153701 is fixed.
     } else if (!swapped_out) {
       CancelPending();
     }

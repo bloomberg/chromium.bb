@@ -596,36 +596,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // SiteInstance in the target=_blank window.
   EXPECT_TRUE(new_manager->GetSwappedOutRenderViewHost(foo_site_instance));
 
-  NavigateToURL(new_shell, https_server.GetURL("files/post_message2.html"));
-
-  // 5) Now verify that posting a message from the foo window to a subframe of
-  // the opener window works fine. The opener subframe will reply, causing the
-  // foo window to update its own title.
-  WindowedNotificationObserver title_observer3(
-      NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-      Source<WebContents>(new_shell->web_contents()));
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      foo_contents->GetRenderViewHost(), L"",
-      L"window.domAutomationController.send(postToOpenerFrame('msg3','*'));",
-      &success));
-  EXPECT_TRUE(success);
-  title_observer3.Wait();
-  EXPECT_EQ(ASCIIToUTF16("msg3"), new_shell->web_contents()->GetTitle());
-
-  // 6) Lastly, verify that the _blank window can post a message to a subframe
-  // of the foo window. The subframe of foo will reply back to the _blank window
-  // with specific message, causing _blank to do one more round of replies.
-  // At the end, the foo window will set the window title.
-  WindowedNotificationObserver title_observer4(
-      NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-      Source<WebContents>(new_shell->web_contents()));
-  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
-      new_contents->GetRenderViewHost(), L"",
-      L"window.domAutomationController.send(postToFooFrame('msg4'));",
-      &success));
-  EXPECT_TRUE(success);
-  title_observer4.Wait();
-  EXPECT_EQ(ASCIIToUTF16("msg4"), new_shell->web_contents()->GetTitle());
+  // TODO(nasko): Test subframe targeting of postMessage once
+  // http://crbug.com/153701 is fixed.
 }
 
 // Test for crbug.com/116192.  Navigations to a window's opener should
@@ -1142,7 +1114,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
 // swapped out views must have a matching frame hierarchy. The test checks
 // that frame hierarchies are kept in sync through navigations, reloading, and
 // JavaScript manipulation of the frame tree.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, FrameTreeUpdates) {
+//
+// Disable the test until http://crbug.com/153701 is fixed.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DISABLED_FrameTreeUpdates) {
   // Start two servers to allow using different sites.
   EXPECT_TRUE(test_server()->Start());
   net::TestServer https_server(

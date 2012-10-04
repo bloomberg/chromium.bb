@@ -3862,17 +3862,15 @@ WebGraphicsContext3D* RenderViewImpl::CreateGraphicsContext3D(
 // the tree structure or the names of any frames.
 void RenderViewImpl::SendUpdatedFrameTree(
     WebKit::WebFrame* exclude_frame_subtree) {
-  std::string json;
-  base::DictionaryValue tree;
-
-  ConstructFrameTree(webview()->mainFrame(), exclude_frame_subtree, &tree);
-  base::JSONWriter::Write(&tree, &json);
-
-  Send(new ViewHostMsg_FrameTreeUpdated(routing_id_, json));
+  // TODO(nasko): Frame tree updates are causing issues with postMessage, as
+  // described in http://crbug.com/153701. Disable them until a proper fix is
+  // in place.
 }
 
 void RenderViewImpl::CreateFrameTree(WebKit::WebFrame* frame,
                                      DictionaryValue* frame_tree) {
+  // TODO(nasko): Remove once http://crbug.com/153701 is fixed.
+  DCHECK(false);
   NavigateToSwappedOutURL(frame);
 
   string16 name;
@@ -5018,17 +5016,18 @@ void RenderViewImpl::OnPostMessageEvent(
     const ViewMsg_PostMessage_Params& params) {
   // Find the target frame of this message. The source tags the message with
   // |target_frame_id|, so use it to locate the frame.
-  WebFrame* frame = FindFrameByID(webview()->mainFrame(),
-                                  params.target_frame_id);
-  if (!frame)
-    return;
+  // TODO(nasko): Lookup based on the frame id, once http://crbug.com/153701
+  // is fixed and we can rely on having frame tree updates again.
+  WebFrame* frame = webview()->mainFrame();
 
   // Find the source frame if it exists.
   WebFrame* source_frame = NULL;
   if (params.source_routing_id != MSG_ROUTING_NONE) {
     RenderViewImpl* source_view = FromRoutingID(params.source_routing_id);
+    // TODO(nasko): Lookup based on the frame id, once http://crbug.com/153701
+    // is fixed and we can rely on having frame tree updates again.
     if (source_view)
-      source_frame = source_view->GetFrameByRemoteID(params.source_frame_id);
+      source_frame = source_view->webview()->mainFrame();
   }
 
   // Create an event with the message.  The final parameter to initMessageEvent
@@ -6313,6 +6312,8 @@ void RenderViewImpl::OnUpdatedFrameTree(
     int process_id,
     int route_id,
     const std::string& frame_tree) {
+  // TODO(nasko): Remove once http://crbug.com/153701 is fixed.
+  DCHECK(false);
   // We should only act on this message if we are swapped out.  It's possible
   // for this to happen due to races.
   if (!is_swapped_out_)

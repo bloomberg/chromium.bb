@@ -1201,20 +1201,8 @@ void RenderViewHostImpl::OnMsgNavigate(const IPC::Message& msg) {
 
   delegate_->DidNavigate(this, validated_params);
 
-  // For top level navigations, if there is no frame tree present for this
-  // instance (for example when the window is first created), then create
-  // an unnamed one with the proper frame id from the renderer.
-  // This should be done after we called DidNavigate, since updating the frame
-  // tree expects the render view being updated to be the active one.
-  if (content::PageTransitionIsMainFrame(validated_params.transition)) {
-    if (frame_tree_.empty()) {
-      base::DictionaryValue tree;
-      tree.SetString(content::kFrameTreeNodeNameKey, std::string());
-      tree.SetInteger(content::kFrameTreeNodeIdKey, validated_params.frame_id);
-      base::JSONWriter::Write(&tree, &frame_tree_);
-      delegate_->DidUpdateFrameTree(this);
-    }
-  }
+  // TODO(nasko): Send frame tree update for the top level frame, once
+  // http://crbug.com/153701 is fixed.
 }
 
 void RenderViewHostImpl::OnMsgUpdateState(int32 page_id,
@@ -1962,6 +1950,8 @@ void RenderViewHostImpl::OnDomOperationResponse(
 }
 
 void RenderViewHostImpl::OnFrameTreeUpdated(const std::string& frame_tree) {
+  // TODO(nasko): Remove once http://crbug.com/153701 is fixed.
+  DCHECK(false);
   frame_tree_ = frame_tree;
   delegate_->DidUpdateFrameTree(this);
 }
