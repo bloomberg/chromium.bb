@@ -38,7 +38,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/find_bar_host.h"
+#include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 #elif defined(TOOLKIT_GTK)
