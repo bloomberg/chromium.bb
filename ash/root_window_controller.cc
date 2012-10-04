@@ -95,6 +95,7 @@ void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
     internal::kShellWindowId_AlwaysOnTopContainer,
     internal::kShellWindowId_SystemModalContainer,
     internal::kShellWindowId_LockSystemModalContainer,
+    internal::kShellWindowId_InputMethodContainer,
   };
   // For Workspace2 we need to manually reparent the windows. This way
   // Workspace2 can move the windows to the appropriate workspace.
