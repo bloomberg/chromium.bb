@@ -69,6 +69,8 @@ class PepperInProcessRouter::HostToPluginRouter : public IPC::Sender {
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
  private:
+  void DispatchMsg(IPC::Message* msg);
+
   void OnMsgResourceReply(
       const ppapi::proxy::ResourceMessageReplyParams& reply_params,
       const IPC::Message& nested_msg);
@@ -84,13 +86,21 @@ PepperInProcessRouter::HostToPluginRouter::HostToPluginRouter()
 
 bool PepperInProcessRouter::HostToPluginRouter::Send(
     IPC::Message* msg) {
+  // As in the PluginToHostRouter, dispatch from the message loop.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&HostToPluginRouter::DispatchMsg,
+                 weak_factory_.GetWeakPtr(),
+                 base::Owned(msg)));
+  return true;
+}
+
+void PepperInProcessRouter::HostToPluginRouter::DispatchMsg(
+    IPC::Message* msg) {
   // Emulate the proxy by dispatching the relevant message here.
-  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(HostToPluginRouter, *msg)
     IPC_MESSAGE_HANDLER(PpapiPluginMsg_ResourceReply, OnMsgResourceReply)
-    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void PepperInProcessRouter::HostToPluginRouter::OnMsgResourceReply(
