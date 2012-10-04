@@ -257,7 +257,8 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
     if (relative_path) {
       *relative_path = FilePath();
       FilePath mount_point(device_info.location);
-      mount_point.AppendRelativePath(path, relative_path);
+      bool success = mount_point.AppendRelativePath(path, relative_path);
+      DCHECK(success);
     }
     return true;
   }
