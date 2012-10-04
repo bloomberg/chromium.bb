@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Wed Oct  3 16:17:09 2012. */
+/* Last generated from IDL: Thu Oct  4 11:25:54 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -86,6 +86,7 @@
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
+#include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/c/trusted/ppb_audio_input_trusted_dev.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
@@ -234,6 +235,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_3;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_Private_0_1;
 /* END Declarations for all Wrapper Infos. */
 
 /* Not generating wrapper methods for PPB_Audio_1_0 */
@@ -3342,6 +3344,16 @@ static void Pnacl_M23_PPP_ContentDecryptor_Private_DecryptAndDecodeFrame(PP_Inst
 
 /* Not generating wrapper methods for PPP_Flash_BrowserOperations_1_3 */
 
+/* Begin wrapper methods for PPP_Instance_Private_0_1 */
+
+static struct PP_Var Pnacl_M18_PPP_Instance_Private_GetInstanceObject(PP_Instance instance) {
+  const struct PPP_Instance_Private_0_1 *iface = Pnacl_WrapperInfo_PPP_Instance_Private_0_1.real_iface;
+  struct PP_Var (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance) = ((struct PP_Var (__attribute__((pnaclcall)) *)(PP_Instance instance))iface->GetInstanceObject);
+  return temp_fp(instance);
+}
+
+/* End wrapper methods for PPP_Instance_Private_0_1 */
+
 /* Not generating wrapper interface for PPB_Audio_1_0 */
 
 /* Not generating wrapper interface for PPB_AudioConfig_1_0 */
@@ -4116,6 +4128,10 @@ struct PPP_ContentDecryptor_Private_0_2 Pnacl_Wrappers_PPP_ContentDecryptor_Priv
 
 /* Not generating wrapper interface for PPP_Flash_BrowserOperations_1_3 */
 
+struct PPP_Instance_Private_0_1 Pnacl_Wrappers_PPP_Instance_Private_0_1 = {
+    .GetInstanceObject = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M18_PPP_Instance_Private_GetInstanceObject
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Audio_1_0 = {
   .iface_macro = PPB_AUDIO_INTERFACE_1_0,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -4866,6 +4882,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_Private_0_1 = {
+  .iface_macro = PPP_INSTANCE_PRIVATE_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPP_Instance_Private_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Audio_1_0,
   &Pnacl_WrapperInfo_PPB_AudioConfig_1_0,
@@ -4996,6 +5018,7 @@ static struct __PnaclWrapperInfo *s_ppp_wrappers[] = {
   &Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_0,
   &Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_2,
   &Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_3,
+  &Pnacl_WrapperInfo_PPP_Instance_Private_0_1,
   NULL
 };
 
