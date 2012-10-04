@@ -37,11 +37,7 @@ enum TypeId {
 #define INTENT_UMA_BUCKET(ACTION, TYPE) \
  (ACTION_ID_##ACTION << 8) | TYPE_ID_##TYPE
 
-// NOTE: Adding new values in the middle of a UMA histogram will basically
-// mess up reporting. It is then advised that when adding entries here,
-// you update the related UMA histogram keys in |web_intents_reporting.cc|.
-// If new buckets are added in the middle, please update the ".v#" suffix
-// on histogram names in |web_intents_reporting.cc|.
+// UMA buckets for reporting the Web Intent action and type.
 enum UMABucket {
   BUCKET_CUSTOM_CUSTOM = INTENT_UMA_BUCKET(CUSTOM, CUSTOM),
   BUCKET_CUSTOM_APPLICATION = INTENT_UMA_BUCKET(CUSTOM, APPLICATION),
@@ -116,9 +112,6 @@ enum UMABucket {
 };
 
 #undef INTENT_UMA_BUCKET
-
-// Please update if new higher values are added to Bucket.
-const int kMaxActionTypeHistogramValue = BUCKET_VIEW_VIDEO;
 
 UMABucket ToUMABucket(const string16& action, const string16& type);
 void RecordIntentsDispatchDisabled();

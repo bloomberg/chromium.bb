@@ -44,9 +44,5 @@ TEST(WebIntentsReportingTest, CustomActionAndType) {
   EXPECT_EQ(BUCKET_CUSTOM_CUSTOM, ToBucket(kCustomAction, kCustomType));
 }
 
-TEST(WebIntentsUtilTest, MaxValueConstMatchesLastKnownMaxValue) {
-  EXPECT_EQ(kMaxActionTypeHistogramValue, BUCKET_VIEW_VIDEO);
-}
-
 }  // namespace reporting
 }  // namespace web_intents

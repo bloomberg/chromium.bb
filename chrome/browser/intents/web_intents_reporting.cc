@@ -42,6 +42,23 @@ const int kServiceActiveDurationMinSeconds = 1;
 // This bound is in seconds.
 const int kServiceActiveDurationMaxSeconds = 3600;
 
+// UMA bucket range for custom histograms.
+//
+// TODO(rouslan): Remove this once we've migrated to sparse histograms. See
+// http://crbug.com/153891 before changing anything.
+std::vector<int> GetUmaBucketsCustomRange() {
+  // Please update these numbers if you add more actions or types.
+  const int kNumActions = 7;
+  const int kNumTypes = 10;
+  std::vector<int> range;
+  for (int i = 1; i <= kNumActions; i++) {
+    for (int j = 1; j <= kNumTypes; j++) {
+      range.push_back(i << 8 | j);
+    }
+  }
+  return range;
+}
+
 // Returns the ActionMapping for |action| if one exists, or NULL.
 TypeId ToTypeId(const string16& type) {
   const std::string iana_type = net::GetIANAMediaType(UTF16ToASCII(type));
@@ -57,17 +74,17 @@ TypeId ToTypeId(const string16& type) {
 // is shown to the user. Drops the size into one of several buckets.
 void RecordInstalledServiceCount(const UMABucket bucket, size_t installed) {
   if (installed == 0) {
-    UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.NumInstalled.0.v0",
-        bucket, kMaxActionTypeHistogramValue);
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.Service.NumInstalled.0.v0",
+        bucket, GetUmaBucketsCustomRange());
   } else if (installed >= 1 && installed <= 4) {
-    UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.NumInstalled.1-4.v0",
-        bucket, kMaxActionTypeHistogramValue);
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.Service.NumInstalled.1-4.v0",
+        bucket, GetUmaBucketsCustomRange());
   } else if (installed >= 5 && installed <= 8) {
-    UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.NumInstalled.5-8.v0",
-        bucket, kMaxActionTypeHistogramValue);
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.Service.NumInstalled.5-8.v0",
+        bucket, GetUmaBucketsCustomRange());
   } else {
-    UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.NumInstalled.9+.v0",
-        bucket, kMaxActionTypeHistogramValue);
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.Service.NumInstalled.9+.v0",
+        bucket, GetUmaBucketsCustomRange());
   }
 }
 
@@ -90,34 +107,34 @@ void RecordIntentDispatchRequested() {
 }
 
 void RecordIntentDispatched(const UMABucket bucket) {
-  UMA_HISTOGRAM_ENUMERATION("WebIntents.IntentDispatched.v0",
-      bucket, kMaxActionTypeHistogramValue);
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.IntentDispatched.v0",
+      bucket, GetUmaBucketsCustomRange());
 }
 
 void RecordPickerShow(const UMABucket bucket, size_t installed) {
-  UMA_HISTOGRAM_ENUMERATION("WebIntents.Picker.Show.v0",
-      bucket, kMaxActionTypeHistogramValue);
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.Picker.Show.v0",
+      bucket, GetUmaBucketsCustomRange());
   RecordInstalledServiceCount(bucket, installed);
 }
 
 void RecordPickerCancel(const UMABucket bucket) {
-  UMA_HISTOGRAM_ENUMERATION("WebIntents.Picker.Cancel.v0",
-      bucket, kMaxActionTypeHistogramValue);
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.Picker.Cancel.v0",
+      bucket, GetUmaBucketsCustomRange());
 }
 
 void RecordServiceInvoke(const UMABucket bucket) {
-  UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.Invoked.v0",
-      bucket, kMaxActionTypeHistogramValue);
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.Service.Invoked.v0",
+      bucket, GetUmaBucketsCustomRange());
 }
 
 void RecordChooseAnotherService(const UMABucket bucket) {
-  UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.ChooseAnother.v0",
-      bucket, kMaxActionTypeHistogramValue);
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.Service.ChooseAnother.v0",
+      bucket, GetUmaBucketsCustomRange());
 }
 
 void RecordCWSExtensionInstalled(const UMABucket bucket) {
-  UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.CWSInstall.v0",
-      bucket, kMaxActionTypeHistogramValue);
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("WebIntents.Service.CWSInstall.v0",
+      bucket, GetUmaBucketsCustomRange());
 }
 
 void RecordServiceActiveDuration(
