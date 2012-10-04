@@ -81,7 +81,7 @@ fun! CrCompileFile()
   let l:oldmakepgr = &makeprg
   python set_makepgr_to_single_file_ninja()
   silent make | cwindow
-  if !has('gui')
+  if !has('gui_running')
     redraw!
   endif
   let &makeprg = l:oldmakepgr
@@ -95,5 +95,6 @@ if has('mac')
 elseif has('win32')
   map <C-F7> :CrCompileFile<cr>
   imap <C-F7> <esc>:CrCompileFile<cr>
+elseif has('unix')
+  map <Leader>o :CrCompileFile<cr>
 endif
-" TODO(linuxuser): Suggest a keyboard shortcut and send review to thakis@.
