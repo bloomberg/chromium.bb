@@ -102,7 +102,7 @@ TEST(IntegrationTestsTest, ForwardsArguments) {
                               L"fourth"));
 }
 
-TEST(IntegrationTestsTest, StuckChild) {
+TEST(IntegrationTestsTest, DISABLED_StuckChild) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
@@ -116,7 +116,7 @@ TEST(IntegrationTestsTest, StuckChild) {
   ASSERT_EQ(1, exit_code);
 }
 
-TEST(IntegrationTestsTest, StuckChildNoJob) {
+TEST(IntegrationTestsTest, DISABLED_StuckChildNoJob) {
   TestRunner runner(JOB_NONE, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
@@ -133,7 +133,7 @@ TEST(IntegrationTestsTest, StuckChildNoJob) {
   ::TerminateProcess(runner.process(), 0);
 }
 
-TEST(IntegrationTestsTest, TwoStuckChildrenSecondOneHasNoJob) {
+TEST(IntegrationTestsTest, DISABLED_TwoStuckChildrenSecondOneHasNoJob) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
@@ -159,7 +159,7 @@ TEST(IntegrationTestsTest, TwoStuckChildrenSecondOneHasNoJob) {
   ::TerminateProcess(runner2.process(), 0);
 }
 
-TEST(IntegrationTestsTest, TwoStuckChildrenFirstOneHasNoJob) {
+TEST(IntegrationTestsTest, DISABLED_TwoStuckChildrenFirstOneHasNoJob) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
@@ -185,7 +185,7 @@ TEST(IntegrationTestsTest, TwoStuckChildrenFirstOneHasNoJob) {
   ::TerminateProcess(runner2.process(), 0);
 }
 
-TEST(IntegrationTestsTest, MultipleStuckChildrenSequential) {
+TEST(IntegrationTestsTest, DISABLED_MultipleStuckChildrenSequential) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
