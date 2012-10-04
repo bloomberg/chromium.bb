@@ -726,7 +726,7 @@ movswl Ew Gd, 0x0f 0xbf, norexw nacl-amd64-zero-extends
 movswq Ew Gq, rexw 0x0f 0xbf, amd64
 movsww Ew Gw, data16 0x0f 0xbf, norexw
 ######## MOVSXD ################################################################
-movslq Ed Gv, 0x63, amd64
+movslq Ed Gv, 0x63, amd64 nacl-amd64-zero-extends
 ######## MOVZX #################################################################
 # Textbook definition of “movzx” as per AMD/Intel manuals looks like this:
 #  movzx Eb Gv, 0x0f 0xb6

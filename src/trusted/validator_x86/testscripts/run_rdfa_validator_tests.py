@@ -127,8 +127,8 @@ def RunRdfaWithNopPatching(options, data_chunks):
   run so the whole process stops. Finally the combined output looks like
   following:
 
-    0: [0] DFA error in validator    <- produced at stage 0
-    2: [1] DFA error in validator    <- produced at stage 1
+    0: [0] unrecognized instruction  <- produced at stage 0
+    2: [1] unrecognized instruction  <- produced at stage 1
     return code: 1                   <- return code at stage 0
 
   Args:
@@ -171,7 +171,7 @@ def RunRdfaWithNopPatching(options, data_chunks):
       messages.append((offset, stage, message))
       messages_set.add((offset, message))
 
-      if offset in offset_to_chunk and message == 'DFA error in validator':
+      if offset in offset_to_chunk and message == 'unrecognized instruction':
         chunk_no = offset_to_chunk[offset]
         nops_chunk = '\x90' * len(data_chunks[chunk_no])
         if nops_chunk != data_chunks[chunk_no]:

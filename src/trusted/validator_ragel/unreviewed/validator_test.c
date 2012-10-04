@@ -82,7 +82,7 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
   UNREFERENCED_PARAMETER(end);
 
   if (error_code & UNRECOGNIZED_INSTRUCTION)
-    printf("offset 0x%"NACL_PRIxS": DFA error in validator\n", offset);
+    printf("offset 0x%"NACL_PRIxS": unrecognized instruction\n", offset);
   if (error_code & DIRECT_JUMP_OUT_OF_RANGE)
     printf("offset 0x%"NACL_PRIxS": direct jump out of range\n", offset);
   if (error_code & CPUID_UNSUPPORTED_INSTRUCTION)
@@ -91,7 +91,7 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
     printf("offset 0x%"NACL_PRIxS": improper memory address - bad base\n",
                                                                         offset);
   if (error_code & UNRESTRICTED_INDEX_REGISTER)
-    printf("offset 0x%"NACL_PRIxS": improper memory address - bad base\n",
+    printf("offset 0x%"NACL_PRIxS": improper memory address - bad index\n",
                                                                         offset);
   if ((error_code & BAD_RSP_RBP_PROCESSING_MASK) == RESTRICTED_RBP_UNPROCESSED)
     printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n", offset);
@@ -267,32 +267,30 @@ int main(int argc, char **argv) {
   }
   while (initial_index < argc) {
     char *arg = argv[initial_index];
-    if (!strcmp(arg, "--repeat")) {
+    if (!strcmp(arg, "--compatible")) {
+      cpu_features = &validator_cpuid_features;
+      initial_index++;
+    } else if (!strcmp(argv[initial_index], "--detect-unaligned-calls")) {
+      options |= CALL_USER_CALLBACK_ON_EACH_INSTRUCTION;
+    } else if (!strcmp(arg, "--nobundles")) {
+      options |= PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM;
+      initial_index++;
+    } else if (!strcmp(arg, "--repeat")) {
       if (initial_index+1 >= argc) {
         printf("%s: no integer after --repeat\n", argv[0]);
         return 2;
       }
       repeat_count = atoi(argv[initial_index + 1]);
       initial_index += 2;
-    }
-    else if (!strcmp(arg, "--compatible")) {
-      cpu_features = &validator_cpuid_features;
-      initial_index++;
-    }
-    else if (!strcmp(arg, "--nobundles")) {
-      options |= PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM;
-      initial_index++;
-    }
-    else if (!strcmp(argv[initial_index], "--raw32")) {
+    } else if (!strcmp(argv[initial_index], "--raw32")) {
       raw_bitness = 32;
       initial_index++;
-    }
-    else if (!strcmp(argv[initial_index], "--raw64")) {
+    } else if (!strcmp(argv[initial_index], "--raw64")) {
       raw_bitness = 64;
       initial_index++;
-    }
-    else
+    } else {
       break;
+    }
   }
   for (index = initial_index; index < argc; ++index) {
     const char *filename = argv[index];

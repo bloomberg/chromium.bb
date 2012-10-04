@@ -91,8 +91,7 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
 	{
 tr0:
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -110,8 +109,7 @@ tr9:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -129,8 +127,7 @@ tr10:
     SET_DISP_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -148,8 +145,7 @@ tr11:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -167,8 +163,7 @@ tr15:
     SET_IMM_PTR(current_position - 3);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -183,8 +178,7 @@ tr15:
 tr19:
 	{ SET_CPU_FEATURE(CPUFeature_3DNOW); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -199,8 +193,7 @@ tr19:
 tr27:
 	{ SET_CPU_FEATURE(CPUFeature_TSC); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -215,8 +208,7 @@ tr27:
 tr36:
 	{ SET_CPU_FEATURE(CPUFeature_MMX); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -231,8 +223,7 @@ tr36:
 tr50:
 	{ SET_CPU_FEATURE(CPUFeature_MON); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -247,8 +238,7 @@ tr50:
 tr51:
 	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -263,8 +253,7 @@ tr51:
 tr52:
 	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -282,8 +271,7 @@ tr64:
   }
 	{ SET_CPU_FEATURE(CPUFeature_E3DNOW); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -301,8 +289,7 @@ tr65:
   }
 	{ SET_CPU_FEATURE(CPUFeature_3DNOW); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -317,8 +304,7 @@ tr65:
 tr71:
 	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -336,8 +322,7 @@ tr95:
                   &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -352,8 +337,7 @@ tr95:
 tr98:
 	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -368,8 +352,7 @@ tr98:
 tr107:
 	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -384,8 +367,7 @@ tr107:
 tr108:
 	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -400,8 +382,7 @@ tr108:
 tr115:
 	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -419,8 +400,7 @@ tr123:
                  &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -438,8 +418,7 @@ tr144:
     SET_IMM_PTR(current_position - 1);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -456,8 +435,7 @@ tr161:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -474,8 +452,7 @@ tr250:
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -490,8 +467,7 @@ tr250:
 tr263:
 	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -506,8 +482,7 @@ tr263:
 tr270:
 	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -522,8 +497,7 @@ tr270:
 tr304:
 	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -538,8 +512,7 @@ tr304:
 tr331:
 	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -557,8 +530,7 @@ tr357:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -573,8 +545,7 @@ tr357:
 tr381:
 	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -589,8 +560,7 @@ tr381:
 tr387:
 	{ SET_CPU_FEATURE(CPUFeature_CMOVx87); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -612,8 +582,7 @@ tr391:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -630,8 +599,7 @@ tr411:
     SET_REPZ_PREFIX(FALSE);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -654,8 +622,7 @@ tr419:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -674,8 +641,7 @@ tr420:
       instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -692,8 +658,7 @@ tr434:
        BitmapSetBit(valid_targets, current_position - data);
      }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -711,8 +676,7 @@ tr443:
      }
 	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -3820,8 +3784,7 @@ tr234:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -7318,8 +7281,7 @@ tr421:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -7521,8 +7483,7 @@ tr422:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -7724,8 +7685,7 @@ tr423:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -7927,8 +7887,7 @@ tr424:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -8130,8 +8089,7 @@ tr425:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -8333,8 +8291,7 @@ tr426:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
@@ -8536,8 +8493,7 @@ tr427:
     SET_IMM_PTR(current_position);
   }
 	{
-       if ((instruction_info_collected &
-                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
