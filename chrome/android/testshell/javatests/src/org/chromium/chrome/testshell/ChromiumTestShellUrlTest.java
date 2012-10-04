@@ -4,13 +4,16 @@
 
 package org.chromium.chrome.testshell;
 
-import org.chromium.base.test.util.DisabledTest;
+import android.test.suitebuilder.annotation.SmallTest;
+
+import org.chromium.base.test.util.Feature;
 
 public class ChromiumTestShellUrlTest extends ChromiumTestShellTestBase {
     // URL used for base tests.
     private static final String URL = "data:text";
 
-    @DisabledTest
+    @SmallTest
+    @Feature({"Main"})
     public void testBaseStartup() throws Exception {
         ChromiumTestShellActivity activity = launchChromiumTestShellWithUrl(URL);
 
