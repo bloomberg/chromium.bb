@@ -476,6 +476,14 @@ const char kNoReferrers[]                   = "no-referrers";
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
 
+// Enables the sandboxed processes to run without a job object assigned to them.
+// This flag is required to allow Chrome to run in RemoteApps or Citrix. This
+// flag can reduce the security of the sandboxed processes and allow them to do
+// certain API calls like shut down Windows or access the clipboard. Also we
+// lose the chance to kill some processes until the outer job that owns them
+// finishes.
+const char kAllowNoSandboxJob[]             = "allow-no-sandbox-job";
+
 // Specifies a command that should be used to launch the plugin process.  Useful
 // for running the plugin process through purify or quantify.  Ex:
 //   --plugin-launcher="path\to\purify /Run=yes"

@@ -357,4 +357,28 @@ TEST(ProcessPolicyTest, TestGetProcessTokenMaxAccess) {
             runner.RunTest(L"Process_GetChildProcessToken findstr.exe"));
 }
 
+TEST(ProcessPolicyTest, TestGetProcessTokenMinAccessNoJob) {
+  TestRunner runner(JOB_NONE, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  string16 exe_path = MakeFullPathToSystem32(L"findstr.exe");
+  ASSERT_TRUE(!exe_path.empty());
+  EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_PROCESS,
+                             TargetPolicy::PROCESS_MIN_EXEC,
+                             exe_path.c_str()));
+
+  EXPECT_EQ(SBOX_TEST_DENIED,
+            runner.RunTest(L"Process_GetChildProcessToken findstr.exe"));
+}
+
+TEST(ProcessPolicyTest, TestGetProcessTokenMaxAccessNoJob) {
+  TestRunner runner(JOB_NONE, USER_INTERACTIVE, USER_INTERACTIVE);
+  string16 exe_path = MakeFullPathToSystem32(L"findstr.exe");
+  ASSERT_TRUE(!exe_path.empty());
+  EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_PROCESS,
+                             TargetPolicy::PROCESS_ALL_EXEC,
+                             exe_path.c_str()));
+
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"Process_GetChildProcessToken findstr.exe"));
+}
+
 }  // namespace sandbox

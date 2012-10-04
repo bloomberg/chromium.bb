@@ -43,6 +43,17 @@ SBOX_TESTS_COMMAND int IntegrationTestsTest_state2(int argc, wchar_t **argv) {
   return state;
 }
 
+// Blocks the process for argv[0] milliseconds simulating stuck child.
+SBOX_TESTS_COMMAND int IntegrationTestsTest_stuck(int argc, wchar_t **argv) {
+  int timeout = 500;
+  if (argc > 0) {
+    timeout = _wtoi(argv[0]);
+  }
+
+  ::Sleep(timeout);
+  return 1;
+}
+
 // Returns the number of arguments
 SBOX_TESTS_COMMAND int IntegrationTestsTest_args(int argc, wchar_t **argv) {
   for (int i = 0; i < argc; i++) {
@@ -89,6 +100,124 @@ TEST(IntegrationTestsTest, ForwardsArguments) {
   ASSERT_EQ(1, runner.RunTest(L"IntegrationTestsTest_args first"));
   ASSERT_EQ(4, runner.RunTest(L"IntegrationTestsTest_args first second third "
                               L"fourth"));
+}
+
+TEST(IntegrationTestsTest, StuckChild) {
+  TestRunner runner;
+  runner.SetTimeout(2000);
+  runner.SetAsynchronous(true);
+  runner.SetKillOnDestruction(false);
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"IntegrationTestsTest_stuck 100"));
+  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
+  // In this case the process must have finished.
+  DWORD exit_code;
+  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
+  ASSERT_EQ(1, exit_code);
+}
+
+TEST(IntegrationTestsTest, StuckChildNoJob) {
+  TestRunner runner(JOB_NONE, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  runner.SetTimeout(2000);
+  runner.SetAsynchronous(true);
+  runner.SetKillOnDestruction(false);
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"IntegrationTestsTest_stuck 2000"));
+  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
+  // In this case the processes are not tracked by the broker and should be
+  // still active.
+  DWORD exit_code;
+  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
+  ASSERT_EQ(STILL_ACTIVE, exit_code);
+  // Terminate the test process now.
+  ::TerminateProcess(runner.process(), 0);
+}
+
+TEST(IntegrationTestsTest, TwoStuckChildrenSecondOneHasNoJob) {
+  TestRunner runner;
+  runner.SetTimeout(2000);
+  runner.SetAsynchronous(true);
+  runner.SetKillOnDestruction(false);
+  TestRunner runner2(JOB_NONE, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  runner2.SetTimeout(2000);
+  runner2.SetAsynchronous(true);
+  runner2.SetKillOnDestruction(false);
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"IntegrationTestsTest_stuck 100"));
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner2.RunTest(L"IntegrationTestsTest_stuck 2000"));
+  // Actually both runners share the same singleton broker.
+  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
+  // In this case the processes are not tracked by the broker and should be
+  // still active.
+  DWORD exit_code;
+  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
+  ASSERT_EQ(1, exit_code);
+  ASSERT_TRUE(::GetExitCodeProcess(runner2.process(), &exit_code));
+  ASSERT_EQ(STILL_ACTIVE, exit_code);
+  // Terminate the test process now.
+  ::TerminateProcess(runner2.process(), 0);
+}
+
+TEST(IntegrationTestsTest, TwoStuckChildrenFirstOneHasNoJob) {
+  TestRunner runner;
+  runner.SetTimeout(2000);
+  runner.SetAsynchronous(true);
+  runner.SetKillOnDestruction(false);
+  TestRunner runner2(JOB_NONE, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  runner2.SetTimeout(2000);
+  runner2.SetAsynchronous(true);
+  runner2.SetKillOnDestruction(false);
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner2.RunTest(L"IntegrationTestsTest_stuck 2000"));
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"IntegrationTestsTest_stuck 100"));
+  // Actually both runners share the same singleton broker.
+  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
+  // In this case the processes are not tracked by the broker and should be
+  // still active.
+  DWORD exit_code;
+  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
+  ASSERT_EQ(1, exit_code);
+  ASSERT_TRUE(::GetExitCodeProcess(runner2.process(), &exit_code));
+  ASSERT_EQ(STILL_ACTIVE, exit_code);
+  // Terminate the test process now.
+  ::TerminateProcess(runner2.process(), 0);
+}
+
+TEST(IntegrationTestsTest, MultipleStuckChildrenSequential) {
+  TestRunner runner;
+  runner.SetTimeout(2000);
+  runner.SetAsynchronous(true);
+  runner.SetKillOnDestruction(false);
+  TestRunner runner2(JOB_NONE, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  runner2.SetTimeout(2000);
+  runner2.SetAsynchronous(true);
+  runner2.SetKillOnDestruction(false);
+
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"IntegrationTestsTest_stuck 100"));
+  // Actually both runners share the same singleton broker.
+  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner2.RunTest(L"IntegrationTestsTest_stuck 2000"));
+  // Actually both runners share the same singleton broker.
+  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
+
+  DWORD exit_code;
+  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
+  ASSERT_EQ(1, exit_code);
+  ASSERT_TRUE(::GetExitCodeProcess(runner2.process(), &exit_code));
+  ASSERT_EQ(STILL_ACTIVE, exit_code);
+  // Terminate the test process now.
+  ::TerminateProcess(runner2.process(), 0);
+
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"IntegrationTestsTest_stuck 100"));
+  // Actually both runners share the same singleton broker.
+  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
+  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
+  ASSERT_EQ(1, exit_code);
 }
 
 }  // namespace sandbox

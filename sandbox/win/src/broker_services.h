@@ -101,7 +101,8 @@ class BrokerServicesBase : public BrokerServices,
   typedef std::map<DWORD, PeerTracker*> PeerTrackerMap;
   PeerTrackerMap peer_map_;
 
-  // Provides a fast lookup to identify sandboxed processes.
+  // Provides a fast lookup to identify sandboxed processes that belong to a
+  // job. Consult |jobless_process_handles_| for handles of pocess without job.
   std::set<DWORD> child_process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);

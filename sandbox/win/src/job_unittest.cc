@@ -145,9 +145,13 @@ TEST(JobTest, SecurityLevel) {
   Job job5;
   ASSERT_EQ(ERROR_SUCCESS, job5.Init(JOB_UNPROTECTED, L"job5", 0));
 
+  // JOB_NONE means we run without a job object so Init should fail.
   Job job6;
-  ASSERT_EQ(ERROR_BAD_ARGUMENTS, job6.Init(
-      static_cast<JobLevel>(JOB_UNPROTECTED+1), L"job6", 0));
+  ASSERT_EQ(ERROR_BAD_ARGUMENTS, job6.Init(JOB_NONE, L"job6", 0));
+
+  Job job7;
+  ASSERT_EQ(ERROR_BAD_ARGUMENTS, job7.Init(
+      static_cast<JobLevel>(JOB_NONE+1), L"job7", 0));
 }
 
 // Tests the method "AssignProcessToJob".

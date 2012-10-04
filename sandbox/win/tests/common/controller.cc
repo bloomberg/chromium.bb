@@ -108,6 +108,7 @@ void TestRunner::Init(JobLevel job_level, TokenLevel startup_token,
   timeout_ = kDefaultTimeout;
   state_ = AFTER_REVERT;
   is_async_= false;
+  kill_on_destruction_ = true;
   target_process_id_ = 0;
 
   broker_ = GetBroker();
@@ -129,7 +130,7 @@ TargetPolicy* TestRunner::GetPolicy() {
 }
 
 TestRunner::~TestRunner() {
-  if (target_process_)
+  if (target_process_ && kill_on_destruction_)
     ::TerminateProcess(target_process_, 0);
 
   if (policy_)

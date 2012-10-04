@@ -379,13 +379,24 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // We are going to keep a pointer to the policy because we'll call it when
   // the job object generates notifications using the completion port.
   policy_base->AddRef();
-  scoped_ptr<JobTracker> tracker(new JobTracker(job.Take(), policy_base));
-  if (!AssociateCompletionPort(tracker->job, job_port_, tracker.get()))
-    return SpawnCleanup(target, 0);
-  // Save the tracker because in cleanup we might need to force closing
-  // the Jobs.
-  tracker_list_.push_back(tracker.release());
-  child_process_ids_.insert(process_info.process_id());
+  if (job.IsValid()) {
+    scoped_ptr<JobTracker> tracker(new JobTracker(job.Take(), policy_base));
+    if (!AssociateCompletionPort(tracker->job, job_port_, tracker.get()))
+      return SpawnCleanup(target, 0);
+    // Save the tracker because in cleanup we might need to force closing
+    // the Jobs.
+    tracker_list_.push_back(tracker.release());
+    child_process_ids_.insert(process_info.process_id());
+  } else {
+    // We have to signal the event once here because the completion port will
+    // never get a message that this target is being terminated thus we should
+    // not block WaitForAllTargets until we have at least one target with job.
+    if (child_process_ids_.empty())
+      ::SetEvent(no_targets_);
+    // We can not track the life time of such processes and it is responsibility
+    // of the host application to make sure that spawned targets without jobs
+    // are terminated when the main application don't need them anymore.
+  }
 
   *target_info = process_info.Take();
   return SBOX_ALL_OK;

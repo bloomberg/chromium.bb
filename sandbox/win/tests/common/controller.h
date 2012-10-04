@@ -107,6 +107,10 @@ class TestRunner {
   // Sets the desired state for the test to run.
   void SetTestState(SboxTestsState desired_state);
 
+  // Sets a flag whether the process should be killed when the TestRunner is
+  // destroyed.
+  void SetKillOnDestruction(bool value) { kill_on_destruction_ = value; }
+
   // Returns the pointers to the policy object. It can be used to modify
   // the policy manually.
   TargetPolicy* GetPolicy();
@@ -135,6 +139,7 @@ class TestRunner {
   bool is_init_;
   bool is_async_;
   bool no_sandbox_;
+  bool kill_on_destruction_;
   base::win::ScopedHandle target_process_;
   DWORD target_process_id_;
 };

@@ -124,7 +124,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   if (startup_info.has_extended_startup_info())
     flags |= EXTENDED_STARTUPINFO_PRESENT;
 
-  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+  if (job_ && base::win::GetVersion() < base::win::VERSION_WIN8) {
     // Windows 8 implements nested jobs, but for older systems we need to
     // break out of any job we're in to enforce our restrictions.
     flags |= CREATE_BREAKAWAY_FROM_JOB;
@@ -149,13 +149,13 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
 
   DWORD win_result = ERROR_SUCCESS;
 
-  // Assign the suspended target to the windows job object.
-  if (!::AssignProcessToJobObject(job_, process_info.process_handle())) {
-    win_result = ::GetLastError();
-    // It might be a security breach if we let the target run outside the job
-    // so kill it before it causes damage.
-    ::TerminateProcess(process_info.process_handle(), 0);
-    return win_result;
+  if (job_) {
+    // Assign the suspended target to the windows job object.
+    if (!::AssignProcessToJobObject(job_, process_info.process_handle())) {
+      win_result = ::GetLastError();
+      ::TerminateProcess(process_info.process_handle(), 0);
+      return win_result;
+    }
   }
 
   if (initial_token_.IsValid()) {
@@ -165,6 +165,8 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     HANDLE temp_thread = process_info.thread_handle();
     if (!::SetThreadToken(&temp_thread, initial_token_)) {
       win_result = ::GetLastError();
+      // It might be a security breach if we let the target run outside the job
+      // so kill it before it causes damage.
       ::TerminateProcess(process_info.process_handle(), 0);
       return win_result;
     }

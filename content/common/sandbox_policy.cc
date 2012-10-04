@@ -277,6 +277,47 @@ string16 PrependWindowsSessionPath(const char16* object) {
   return base::StringPrintf(L"\\Sessions\\%d%ls", s_session_id, object);
 }
 
+// Checks if the sandbox should be let to run without a job object assigned.
+bool ShouldSetJobLevel(const CommandLine& cmd_line) {
+  if (!cmd_line.HasSwitch(switches::kAllowNoSandboxJob))
+    return true;
+
+  // Windows 8 allows nested jobs so we don't need to check if we are in other
+  // job.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return true;
+
+  BOOL in_job = true;
+  // Either there is no job yet associated so we must add our job,
+  if (!::IsProcessInJob(::GetCurrentProcess(), NULL, &in_job))
+    NOTREACHED() << "IsProcessInJob failed. " << GetLastError();
+  if (!in_job)
+    return true;
+
+  // ...or there is a job but the JOB_OBJECT_LIMIT_BREAKAWAY_OK limit is set.
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_info = {0};
+  if (!::QueryInformationJobObject(NULL,
+                                   JobObjectExtendedLimitInformation, &job_info,
+                                   sizeof(job_info), NULL)) {
+    NOTREACHED() << "QueryInformationJobObject failed. " << GetLastError();
+    return true;
+  }
+  if (job_info.BasicLimitInformation.LimitFlags & JOB_OBJECT_LIMIT_BREAKAWAY_OK)
+    return true;
+
+  return false;
+}
+
+void SetJobLevel(const CommandLine& cmd_line,
+                 sandbox::JobLevel job_level,
+                 uint32 ui_exceptions,
+                 sandbox::TargetPolicy* policy) {
+  if (ShouldSetJobLevel(cmd_line))
+    policy->SetJobLevel(job_level, ui_exceptions);
+  else
+    policy->SetJobLevel(sandbox::JOB_NONE, 0);
+}
+
 // Closes handles that are opened at process creation and initialization.
 void AddBaseHandleClosePolicy(sandbox::TargetPolicy* policy) {
   // Being able to manipulate anything BaseNamedObjects is bad.
@@ -353,7 +394,7 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
       // Open GL path.
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LIMITED);
-      policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
+      SetJobLevel(*cmd_line, sandbox::JOB_UNPROTECTED, 0, policy);
       policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     } else {
       if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
@@ -379,16 +420,18 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
       // turn blocks on the browser UI thread. So, instead we forgo a window
       // message pump entirely and just add job restrictions to prevent child
       // processes.
-      policy->SetJobLevel(sandbox::JOB_LIMITED_USER,
-                          JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
-                          JOB_OBJECT_UILIMIT_DESKTOP |
-                          JOB_OBJECT_UILIMIT_EXITWINDOWS |
-                          JOB_OBJECT_UILIMIT_DISPLAYSETTINGS);
+      SetJobLevel(*cmd_line,
+                  sandbox::JOB_LIMITED_USER,
+                  JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
+                  JOB_OBJECT_UILIMIT_DESKTOP |
+                  JOB_OBJECT_UILIMIT_EXITWINDOWS |
+                  JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
+                  policy);
 
       policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     }
   } else {
-    policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
+    SetJobLevel(*cmd_line, sandbox::JOB_UNPROTECTED, 0, policy);
     policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
                           sandbox::USER_LIMITED);
   }
@@ -448,8 +491,6 @@ bool AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
                            L"File");
   if (result != sandbox::SBOX_ALL_OK)
     return false;
-
-  policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
   if (base::win::GetVersion() > base::win::VERSION_XP) {
@@ -699,6 +740,12 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     }
   }
 
+  // Propagate the --allow-no-job flag if present.
+  if (browser_command_line.HasSwitch(switches::kAllowNoSandboxJob) &&
+      !cmd_line->HasSwitch(switches::kAllowNoSandboxJob)) {
+    cmd_line->AppendSwitch(switches::kAllowNoSandboxJob);
+  }
+
   bool child_needs_help =
       DebugFlags::ProcessDebugFlags(cmd_line, type, in_sandbox);
 
@@ -754,6 +801,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   if (policy->SetDelayedProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
     return 0;
+
+  SetJobLevel(*cmd_line, JOB_LOCKDOWN, 0, policy);
 
   if (type == content::PROCESS_TYPE_PLUGIN) {
     AddGenericDllEvictionPolicy(policy);

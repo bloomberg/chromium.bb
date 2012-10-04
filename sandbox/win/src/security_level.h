@@ -84,6 +84,9 @@ enum TokenLevel {
 //  JobLevel        |General                            |Quota               |
 //                  |restrictions                       |restrictions        |
 // -----------------|---------------------------------- |--------------------|
+// JOB_NONE         | No job is assigned to the         | None               |
+//                  | sandboxed process.                |                    |
+// -----------------|---------------------------------- |--------------------|
 // JOB_UNPROTECTED  | None                              | *Kill on Job close.|
 // -----------------|---------------------------------- |--------------------|
 // JOB_INTERACTIVE  | *Forbid system-wide changes using |                    |
@@ -119,7 +122,8 @@ enum JobLevel {
   JOB_RESTRICTED,
   JOB_LIMITED_USER,
   JOB_INTERACTIVE,
-  JOB_UNPROTECTED
+  JOB_UNPROTECTED,
+  JOB_NONE
 };
 
 // These flags correspond to various process-level mitigations (eg. ASLR and
