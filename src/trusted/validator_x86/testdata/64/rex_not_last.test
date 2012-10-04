@@ -40,3 +40,7 @@
 @vdis:
   0000000000000000: f0 48 0f c7 08                               [P] dontcare %rdx (su), %eax (su), [%rax] (su)
   0000000000000005: 48 f0 0f c7 08                               [P] dontcare %rdx (su), %eax (su), [%rax] (su)
+@rdfa_output:
+  0: [0] improper memory address - bad base
+  5: [0] unrecognized instruction
+  return code: 1

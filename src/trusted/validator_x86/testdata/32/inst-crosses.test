@@ -46,3 +46,7 @@
    e:	ed                  	in %eax, %dx
    f:	12 f4               	adc %esi, %esi
    11:	f4                  	hlt
+@rdfa_output:
+  0: [0] unrecognized instruction
+  e: [1] unrecognized instruction
+  return code: 1

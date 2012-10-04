@@ -34,3 +34,6 @@
   0000000000000000: 64 64 00 c0                                  add %al, %al
 @vdis:
   0000000000000000: 64 64 00 c0                                  add %al, %al
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

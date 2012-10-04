@@ -340,3 +340,5 @@
    6d:	f4                  	hlt
    6e:	f4                  	hlt
    6f:	f4                  	hlt
+@rdfa_output:
+  return code: 0

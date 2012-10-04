@@ -16,3 +16,5 @@
   0000000000000000: 0f a2                                        cpuid
 @vdis:
   0000000000000000: 0f a2                                        [P] dontcare %ebx (s), %edx (s), %eax (su), %ecx (su)
+@rdfa_output:
+  return code: 0

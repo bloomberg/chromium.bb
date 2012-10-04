@@ -33,3 +33,5 @@
   0000000000000009: 41 0f c7 0c 1f                               [P] dontcare %edx (su), %eax (su), [%r15+%rbx*1] (su)
   000000000000000e: 89 db                                        mov %ebx, %ebx
   0000000000000010: 49 0f c7 0c 1f                               [P] dontcare %rdx (su), %eax (su), [%r15+%rbx*1] (su)
+@rdfa_output:
+  return code: 0

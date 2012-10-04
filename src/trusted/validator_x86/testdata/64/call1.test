@@ -84,3 +84,6 @@
   0000000000000019: 90                                           [P] dontcare
   000000000000001a: 90                                           [P] dontcare
   000000000000001b: e8 21 fd fd ff                               call 0xfffffffffffdfd41
+@rdfa_output:
+  1b: [0] direct jump out of range
+  return code: 1

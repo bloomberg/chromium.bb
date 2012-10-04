@@ -28,3 +28,6 @@
   0000000000000000: 5d                                           pop %rbp
 @vdis:
   0000000000000000: 5d                                           pop %rbp
+@rdfa_output:
+  0: [0] error - %bpl or %bp is changed
+  return code: 1

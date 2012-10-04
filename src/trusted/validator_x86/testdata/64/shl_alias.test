@@ -40,3 +40,8 @@
   0000000000000007: d3 f7                                        shl %edi, %cl
   0000000000000009: d1 f7                                        shl %edi, 0x1
   000000000000000b: c1 f7 02                                     shl %edi, 0x2
+@rdfa_output:
+  7: [0] unrecognized instruction
+  9: [1] unrecognized instruction
+  b: [2] unrecognized instruction
+  return code: 1

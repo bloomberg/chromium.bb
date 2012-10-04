@@ -230,3 +230,12 @@
   0000000000000051: 01 ff                                        add %edi, %edi
   0000000000000053: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
   0000000000000057: a7                                           [P] dontcare [%rdi] (u), [%rsi] (u)
+@rdfa_output:
+  d: [0] unrecognized instruction
+  13: [1] unrecognized instruction
+  1a: [2] unrecognized instruction
+  25: [0] unrecognized instruction
+  30: [1] unrecognized instruction
+  4a: [0] unrecognized instruction
+  57: [1] unrecognized instruction
+  return code: 1

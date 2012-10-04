@@ -88,3 +88,5 @@
    20:	de c1               	faddp
    22:	d8 00               	fadd
    24:	dc 00               	fadd
+@rdfa_output:
+  return code: 0

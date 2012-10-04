@@ -43,3 +43,6 @@
    b:	90                  	nop
    c:	90                  	nop
    d:	f4                  	hlt
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

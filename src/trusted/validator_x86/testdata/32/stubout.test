@@ -37,3 +37,8 @@
    b:	90                  	nop
    c:	8d 74 26 00         	lea %esi, 0x0[%esi]
    10:	66 66 66 66 00 00   	add [%eax], %eax
+@rdfa_output:
+  2: [0] unrecognized instruction
+  5: [1] unrecognized instruction
+  10: [2] unrecognized instruction
+  return code: 1

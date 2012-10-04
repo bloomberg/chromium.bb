@@ -29,3 +29,5 @@
   0000000000000000: 89 ff                                        mov %edi, %edi
   0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
   0000000000000006: ab                                           [P] dontcare [%rdi] (s), %eax (u)
+@rdfa_output:
+  return code: 0

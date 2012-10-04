@@ -107,3 +107,5 @@
   0000000000000040: 0f 0f c8 0d                                  [P] dontcare %mmx0 (u)
   0000000000000044: 0f 0f c8 1c                                  [P] dontcare %mmx0 (u)
   0000000000000048: 66 0f 73 d8 01                               [P] dontcare %xmm0 (su), 0x1 (u)
+@rdfa_output:
+  return code: 0

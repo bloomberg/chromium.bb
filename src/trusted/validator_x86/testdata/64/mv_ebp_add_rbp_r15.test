@@ -29,3 +29,5 @@
 @vdis:
   0000000000000000: 44 89 dd                                     mov %ebp, %r11d
   0000000000000003: 4c 01 fd                                     add %rbp, %r15
+@rdfa_output:
+  return code: 0

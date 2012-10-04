@@ -26,3 +26,6 @@
   0000000000000000: 23 0c 25 ff ff ff ff                         and %ecx, [-0x1]
 @vdis:
   0000000000000000: 23 0c 25 ff ff ff ff                         and %ecx, [-0x1]
+@rdfa_output:
+  0: [0] improper memory address - bad base
+  return code: 1

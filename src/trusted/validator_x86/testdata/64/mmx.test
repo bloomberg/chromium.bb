@@ -49,3 +49,5 @@
   0000000000000011: 0f e2 c8                                     [P] dontcare %mmx0 (u)
   0000000000000014: 0f 68 c8                                     [P] dontcare %mmx0 (u)
   0000000000000017: 0f ef c8                                     [P] dontcare %mmx0 (u)
+@rdfa_output:
+  return code: 0

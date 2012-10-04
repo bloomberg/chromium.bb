@@ -25,3 +25,5 @@
 @vdis:
   0000000000000000: 89 cd                                        mov %ebp, %ecx
   0000000000000002: 4a 8d 6c 3d 00                               lea %rbp, [%rbp+%r15*1]
+@rdfa_output:
+  return code: 0

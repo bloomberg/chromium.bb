@@ -35,3 +35,6 @@
 @vdis:
   0000000000000000: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
   0000000000000004: ab                                           [P] dontcare [%rdi] (s), %eax (u)
+@rdfa_output:
+  4: [0] unrecognized instruction
+  return code: 1

@@ -155,3 +155,12 @@
    bf:	90                  	nop
    c0:	66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00	nop
    ce:	66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00	nop
+@rdfa_output:
+  6: [0] unrecognized instruction
+  12: [1] unrecognized instruction
+  16: [2] unrecognized instruction
+  2e: [0] unrecognized instruction
+  33: [1] unrecognized instruction
+  4e: [0] unrecognized instruction
+  53: [1] unrecognized instruction
+  return code: 1

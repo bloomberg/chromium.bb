@@ -28,3 +28,6 @@
 @vdis:
   0000000000000000: e9 1b 00 00 00                               [P] dontcarejump %rip (s), 0x20 (u)
   0000000000000005: e9 17 00 00 00                               [P] dontcarejump %rip (s), 0x21 (u)
+@rdfa_output:
+  5: [0] direct jump out of range
+  return code: 1

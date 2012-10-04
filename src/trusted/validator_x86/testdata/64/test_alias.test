@@ -34,3 +34,7 @@
   0000000000000003: f6 cb 00                                     test %bl, 0x0
   0000000000000006: f7 c3 00 00 00 00                            test %ebx, 0x0
   000000000000000c: f7 cb 00 00 00 00                            test %ebx, 0x0
+@rdfa_output:
+  3: [0] unrecognized instruction
+  c: [1] unrecognized instruction
+  return code: 1

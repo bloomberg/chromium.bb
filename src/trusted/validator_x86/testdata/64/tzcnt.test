@@ -7,3 +7,5 @@
   *** <input> is safe ***
 @dis:
   0000000000000000: f3 0f bc c3                                  tzcnt %eax, %ebx
+@rdfa_output:
+  return code: 0

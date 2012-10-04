@@ -159,3 +159,11 @@
   000000000000002c: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
   000000000000002f: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)
   0000000000000033: 66 66 66 2e 0f 1f 84 00 00 00 00 00          [P] dontcare
+@rdfa_output:
+  c: [0] unrecognized instruction
+  11: [1] unrecognized instruction
+  1c: [2] unrecognized instruction
+  26: [0] unrecognized instruction
+  2c: [1] unrecognized instruction
+  2f: [2] unrecognized instruction
+  return code: 1

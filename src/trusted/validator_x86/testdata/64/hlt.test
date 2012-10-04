@@ -349,3 +349,5 @@
   000000000000006d: f4                                           [P] dontcare
   000000000000006e: f4                                           [P] dontcare
   000000000000006f: f4                                           [P] dontcare
+@rdfa_output:
+  return code: 0

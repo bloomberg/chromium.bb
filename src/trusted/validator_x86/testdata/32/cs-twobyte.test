@@ -11,3 +11,6 @@
 @vdis:
    0:	0f 1f 84 00 00 00 00 00	nop
    8:	2e 0f 1f 84 00 00 00 00 00	nop
+@rdfa_output:
+  8: [0] unrecognized instruction
+  return code: 1

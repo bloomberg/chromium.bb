@@ -35,3 +35,6 @@
   0000000000000000: 6d                                           insd
 @vdis:
   0000000000000000: 6d                                           [P] dontcare(illegal)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

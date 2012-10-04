@@ -26,3 +26,5 @@
 @vdis:
   0000000000000000: 29 c4                                        sub %esp, %eax
   0000000000000002: 4c 01 fc                                     add %rsp, %r15
+@rdfa_output:
+  return code: 0

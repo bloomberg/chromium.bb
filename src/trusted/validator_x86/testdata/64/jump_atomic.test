@@ -30,3 +30,5 @@
   0000000000000002: 83 e2 e0                                     and %edx, 0xe0
   0000000000000005: 4c 01 fa                                     add %rdx, %r15
   0000000000000008: ff e2                                        [P] dontcarejump %rip (s), %rdx (u)
+@rdfa_output:
+  return code: 0

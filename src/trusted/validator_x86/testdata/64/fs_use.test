@@ -34,3 +34,6 @@
   0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
 @vdis:
   0000000000000000: 64 41 8b 07                                  mov %eax, %fs:[%r15]
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

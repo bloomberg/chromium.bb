@@ -36,3 +36,6 @@
   0000000000000000: 67 ab                                        stosd [%edi]
 @vdis:
   0000000000000000: 67 ab                                        [P] dontcare [%edi] (s), %eax (u)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

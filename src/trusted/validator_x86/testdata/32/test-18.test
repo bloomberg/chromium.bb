@@ -55,3 +55,6 @@
    5:	85 c0               	test %eax, %eax
    7:	e1 f8               	loope 0x1
    9:	f4                  	hlt
+@rdfa_output:
+  7: [0] unrecognized instruction
+  return code: 1

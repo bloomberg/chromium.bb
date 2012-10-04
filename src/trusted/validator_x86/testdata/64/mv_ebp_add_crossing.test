@@ -97,3 +97,6 @@
   000000000000001c: 90                                           [P] dontcare
   000000000000001d: 44 89 dd                                     mov %ebp, %r11d
   0000000000000020: 4c 01 fd                                     add %rbp, %r15
+@rdfa_output:
+  20: [0] improper %rbp sandboxing
+  return code: 1

@@ -9,3 +9,6 @@
   00000000: c3                                           ret
 @vdis:
    0:	c3                  	ret
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

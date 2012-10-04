@@ -29,3 +29,6 @@
   0000000000000000: 4c 01 fc                                     add %rsp, %r15
 @vdis:
   0000000000000000: 4c 01 fc                                     add %rsp, %r15
+@rdfa_output:
+  0: [0] improper %rsp sandboxing
+  return code: 1

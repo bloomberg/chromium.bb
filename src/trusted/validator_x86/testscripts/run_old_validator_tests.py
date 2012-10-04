@@ -11,7 +11,7 @@ import sys
 import test_format
 
 
-FIELDS_TO_IGNORE = set(['rdfa_output'])
+FIELDS_TO_IGNORE = set(['rdfa_output', 'validators_disagree'])
 
 
 def AssertEquals(actual, expected):

@@ -21,3 +21,6 @@
   0000000000000000: 66 e9                                        invalid
   0000000000000002: 05 00 90 90 90                               add %eax, 0x90909000
   0000000000000007: 90                                           nop
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

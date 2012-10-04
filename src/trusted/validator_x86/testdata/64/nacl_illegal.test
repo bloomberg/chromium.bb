@@ -35,3 +35,6 @@
   0000000000000000: c3                                           ret
 @vdis:
   0000000000000000: c3                                           [P] dontcare(illegal)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

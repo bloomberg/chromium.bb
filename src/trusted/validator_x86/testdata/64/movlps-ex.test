@@ -21,3 +21,5 @@
   0000000000000000: 0f 12 45 f0                                  movlps %xmm0, [%rbp-0x10]
 @vdis:
   0000000000000000: 0f 12 45 f0                                  [P] dontcare [%rbp-0x10] (u)
+@rdfa_output:
+  return code: 0

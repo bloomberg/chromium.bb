@@ -27,3 +27,5 @@
   0000000000000015: 41 89 c0                                     mov %r8d, %eax
   0000000000000018: 40 89 c0                                     mov %eax, %eax
   000000000000001b: 4f 89 c0                                     mov %r8, %r8
+@rdfa_output:
+  return code: 0

@@ -18,3 +18,6 @@
 @vdis:
   0000000000000000: 0f 18 21                                     invalid
   0000000000000003: 0f 18 1c 24                                  [P] dontcare [%rsp]
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

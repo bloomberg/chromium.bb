@@ -75,3 +75,5 @@
   000000000000001b: 90                                           [P] dontcare
   000000000000001c: 90                                           [P] dontcare
   000000000000001d: 90                                           [P] dontcare
+@rdfa_output:
+  return code: 0

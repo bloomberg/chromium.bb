@@ -283,7 +283,20 @@ env.AddNodeToTestSuite(
     STANDARD_TESTS,
     node_name='run_x86_rdfa_validator_testdata_tests')
 
+compare_validators = env.AutoDepsCommand(
+    'compare_x86_validators_tests.out',
+    ['${PYTHON}',
+     env.File('testscripts/compare_validators.py'),
+     '--bits', bits,
+     tests_mask] + update_option)
+
+env.AddNodeToTestSuite(
+    compare_validators,
+    STANDARD_TESTS,
+    node_name='run_compare_x86_validators_tests')
+
 if env.Bit('regenerate_golden'):
-  # Don't want these tests run in parallel because they both write
+  # Don't want these tests run in parallel because they write
   # to .test files.
   SideEffect(tests_mask, [old_testdata_tests, rdfa_testdata_tests])
+  Depends(compare_validators, [old_testdata_tests, rdfa_testdata_tests])

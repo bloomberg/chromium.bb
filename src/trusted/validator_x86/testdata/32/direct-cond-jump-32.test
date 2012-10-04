@@ -16,3 +16,5 @@
    0:	0f 84 01 00 00 00   	jz 0x7
    6:	90                  	nop
    7:	90                  	nop
+@rdfa_output:
+  return code: 0

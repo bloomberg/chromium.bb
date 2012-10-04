@@ -43,3 +43,8 @@
   0000000000000000: 66 29 c4                                     sub %sp, %ax
   0000000000000003: 66 29 c5                                     sub %bp, %ax
   0000000000000006: 47 29 c7                                     sub %r15d, %r8d
+@rdfa_output:
+  0: [0] error - %spl or %sp is changed
+  3: [0] error - %bpl or %bp is changed
+  6: [0] error - %r15 is changed
+  return code: 1

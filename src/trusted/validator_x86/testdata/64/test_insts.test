@@ -18,3 +18,6 @@
   0000000000000005: 41 b8 44 33 22 11                            mov %r8d, 0x11223344
   000000000000000b: 66 b8 88 77                                  mov %ax, 0x7788
   000000000000000f: a0 88 77 66 55 44 33 22 11                   mov %al, [0x1122334455667788]
+@rdfa_output:
+  f: [0] unrecognized instruction
+  return code: 1

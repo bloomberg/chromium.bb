@@ -27,3 +27,5 @@
 @vdis:
   0000000000000000: 89 f6                                        mov %esi, %esi
   0000000000000002: 41 89 54 37 08                               mov [%r15+%rsi*1+0x8], %edx
+@rdfa_output:
+  return code: 0

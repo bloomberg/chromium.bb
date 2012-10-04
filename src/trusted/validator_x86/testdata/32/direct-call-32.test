@@ -69,3 +69,5 @@
    19:	90                  	nop
    1a:	90                  	nop
    1b:	e8 f0 ff ff ff      	call 0x10
+@rdfa_output:
+  return code: 0

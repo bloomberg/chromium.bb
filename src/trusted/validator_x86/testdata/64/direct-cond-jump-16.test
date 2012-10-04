@@ -19,3 +19,6 @@
 @dis:
   0000000000000000: 66 0f 84                                     invalid
   0000000000000003: 05 00 90 90 90                               add %eax, 0x90909000
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

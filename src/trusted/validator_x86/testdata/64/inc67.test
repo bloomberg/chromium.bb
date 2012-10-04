@@ -37,3 +37,6 @@
   0000000000000000: 67 ff 05 a4 76 39 00                         inc [%rip+0x3976a4]
 @vdis:
   0000000000000000: 67 ff 05 a4 76 39 00                         [P] dontcare [%rip+0x3976a4] (suz)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

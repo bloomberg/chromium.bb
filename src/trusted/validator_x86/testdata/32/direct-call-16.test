@@ -81,3 +81,6 @@
    1c:	66 e8 f0 ff         	call 0x10
    20:	90                  	nop
    21:	90                  	nop
+@rdfa_output:
+  1c: [0] unrecognized instruction
+  return code: 1

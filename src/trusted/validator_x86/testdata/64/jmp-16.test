@@ -12,3 +12,6 @@
   *** <input> IS UNSAFE ***
 @dis:
   0000000000000000: 66 ff e0                                     jmp %ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

@@ -42,3 +42,5 @@
   0000000000000019: 90                                           nop
   000000000000001a: 90                                           nop
   000000000000001b: e8 f0 ff ff ff                               call 0x10
+@rdfa_output:
+  return code: 0

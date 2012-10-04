@@ -5,3 +5,5 @@
   *** <input> is safe ***
 @vdis:
    0:	f3 0f bc c3         	tzcnt %eax, %eax
+@rdfa_output:
+  return code: 0

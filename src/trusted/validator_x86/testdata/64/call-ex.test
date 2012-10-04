@@ -77,3 +77,5 @@
   0000000000000018: 83 e0 e0                                     and %eax, 0xe0
   000000000000001b: 4c 01 f8                                     add %rax, %r15
   000000000000001e: ff d0                                        call %rax
+@rdfa_output:
+  return code: 0

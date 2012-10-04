@@ -38,3 +38,6 @@
   0000000000000000: 8e 00                                        mov %es, [%rax]
 @vdis:
   0000000000000000: 8e 00                                        [P] dontcare(illegal)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

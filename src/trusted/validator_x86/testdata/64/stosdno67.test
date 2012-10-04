@@ -28,3 +28,6 @@
   0000000000000000: ab                                           stosd [%rdi]
 @vdis:
   0000000000000000: ab                                           [P] dontcare [%rdi] (s), %eax (u)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

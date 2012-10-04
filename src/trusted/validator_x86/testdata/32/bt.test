@@ -37,3 +37,10 @@
    10:	0f ba 34 24 01      	btr [%esp], 0x1
    15:	0f ba 2c 24 01      	bts [%esp], 0x1
    1a:	0f ba 3c 24 01      	btc [%esp], 0x1
+@rdfa_output:
+  0: [0] unrecognized instruction
+  b: [1] unrecognized instruction
+  10: [2] unrecognized instruction
+  15: [3] unrecognized instruction
+  1a: [4] unrecognized instruction
+  return code: 1

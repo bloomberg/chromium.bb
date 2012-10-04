@@ -21,3 +21,6 @@
    0:	66 e9 01 00         	jmp 0x5
    4:	90                  	nop
    5:	90                  	nop
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

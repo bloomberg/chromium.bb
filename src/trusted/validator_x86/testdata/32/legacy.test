@@ -66,3 +66,15 @@
    c:	d6                  	salc
    d:	9f                  	lahf
    e:	9e                  	sahf
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  3: [2] unrecognized instruction
+  5: [3] unrecognized instruction
+  6: [4] unrecognized instruction
+  8: [5] unrecognized instruction
+  9: [6] unrecognized instruction
+  a: [7] unrecognized instruction
+  b: [8] unrecognized instruction
+  c: [9] unrecognized instruction
+  return code: 1

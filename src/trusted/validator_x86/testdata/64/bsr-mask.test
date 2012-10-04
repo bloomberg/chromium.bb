@@ -25,3 +25,6 @@
 @vdis:
   0000000000000000: 0f bd c3                                     [P] dontcare %eax (s), %ebx (u)
   0000000000000003: 49 89 14 07                                  mov [%r15+%rax*1], %rdx
+@rdfa_output:
+  3: [0] improper memory address - bad index
+  return code: 1

@@ -28,3 +28,5 @@
   0000000000000000: dc c1                                        fadd %st1, %st0
 @vdis:
   0000000000000000: dc c1                                        [P] dontcare
+@rdfa_output:
+  return code: 0

@@ -11,3 +11,5 @@
 @dis:
   0000000000000000: 81 ec 20 00 00 00                            sub %esp, 0x20
   0000000000000006: 4c 01 fc                                     add %rsp, %r15
+@rdfa_output:
+  return code: 0

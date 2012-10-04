@@ -32,3 +32,6 @@
 @vdis:
   0000000000000000: 83 e1 e0                                     and %ecx, 0xe0
   0000000000000003: 49 89 44 cd 36                               mov [%r13+%rcx*8+0x36], %rax
+@rdfa_output:
+  3: [0] improper memory address - bad base
+  return code: 1

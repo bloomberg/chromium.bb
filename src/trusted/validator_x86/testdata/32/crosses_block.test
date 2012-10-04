@@ -43,3 +43,6 @@
   0000001c: 90                                           nop
   0000001d: 83 e0 e0                                     and %eax, 0xe0
   00000020: ff d0                                        call %eax
+@rdfa_output:
+  20: [0] unrecognized instruction
+  return code: 1

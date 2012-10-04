@@ -76,3 +76,5 @@
   0000000000000019: 90                                           [P] dontcare
   000000000000001a: 90                                           [P] dontcare
   000000000000001b: e8 20 fd fd ff                               call 0xfffffffffffdfd40
+@rdfa_output:
+  return code: 0

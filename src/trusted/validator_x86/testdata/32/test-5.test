@@ -331,3 +331,9 @@
    148:	b8 06 00 00 00      	mov %eax, 0x6
    14d:	29 d0               	sub %edx, %edx
    14f:	f4                  	hlt
+@rdfa_output:
+  4b: [0] direct jump out of range
+  4b: [0] warning - bad call alignment
+  eb: [0] direct jump out of range
+  eb: [0] warning - bad call alignment
+  return code: 1

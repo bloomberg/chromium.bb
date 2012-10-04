@@ -43,3 +43,5 @@
    a:	90                  	nop
    b:	90                  	nop
    c:	f4                  	hlt
+@rdfa_output:
+  return code: 0

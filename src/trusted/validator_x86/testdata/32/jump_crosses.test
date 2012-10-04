@@ -80,3 +80,6 @@
    1c:	90                  	nop
    1d:	83 e0 e0            	and %esp, 0xffffffffffffffe0
    20:	ff e0               	jmp * %esp
+@rdfa_output:
+  20: [0] unrecognized instruction
+  return code: 1

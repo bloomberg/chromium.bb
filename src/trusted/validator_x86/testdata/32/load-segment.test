@@ -25,3 +25,13 @@
   VALIDATOR: 10: Illegal instruction
   VALIDATOR: 13: Illegal instruction
   *** <input> IS UNSAFE ***
+@rdfa_output:
+  0: [0] unrecognized instruction
+  2: [1] unrecognized instruction
+  4: [2] unrecognized instruction
+  7: [3] unrecognized instruction
+  a: [4] unrecognized instruction
+  d: [5] unrecognized instruction
+  10: [6] unrecognized instruction
+  13: [7] unrecognized instruction
+  return code: 1

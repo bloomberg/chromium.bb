@@ -20,3 +20,5 @@
   0000000000000000: 90                                           nop
 @vdis:
   0000000000000000: 90                                           [P] dontcare
+@rdfa_output:
+  return code: 0

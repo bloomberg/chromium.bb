@@ -29,3 +29,6 @@
   0000000000000000: 40 41 01 c3                                  add %r11d, %eax
 @vdis:
   0000000000000000: 40 41 01 c3                                  add %r11d, %eax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1

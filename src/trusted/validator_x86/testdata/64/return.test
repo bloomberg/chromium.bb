@@ -33,3 +33,5 @@
   0000000000000002: 41 83 e3 e0                                  and %r11d, 0xe0
   0000000000000006: 4d 01 fb                                     add %r11, %r15
   0000000000000009: 41 ff e3                                     [P] dontcarejump %rip (s), %r11 (u)
+@rdfa_output:
+  return code: 0
