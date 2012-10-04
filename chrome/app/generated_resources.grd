@@ -663,9 +663,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
           No more suggestions from Google
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
-          &amp;Spell-checker options
-        </message>
         <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
           Select &amp;all
         </message>
@@ -875,9 +872,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
           No more suggestions from Google
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
-          &amp;Spell-checker Options
-        </message>
         <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
           &amp;Language Settings...
         </message>
@@ -954,9 +948,16 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
       </if>
       <if expr="not is_macosx">
-        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the spelling context menu">
-          &amp;Spell-checker options
-        </message>
+        <if expr="not pp_ifdef('use_titlecase')">
+          <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
+            &amp;Spell-checker options
+          </message>
+        </if>
+        <if expr="pp_ifdef('use_titlecase')">
+          <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
+            &amp;Spell-checker Options
+          </message>
+        </if>
         <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the Check Spelling while Typing field command in the spelling context menu">
           Check the spelling of text fields
         </message>
@@ -9490,11 +9491,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Relaunch
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
-          Restart
-        </message>
-      </if>
       <if expr="pp_ifdef('chromeos') and pp_ifdef('use_titlecase')">
         <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
           Restart
@@ -14436,13 +14432,7 @@ Press any key to continue exploring.
         Keyboard:
       </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
-        Keyboard settings...
-      </message>
-      <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
         Keyboard settings
-      </message>
-      <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
-        Pointer sensitivity:
       </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
         Pointer speed:
@@ -14452,9 +14442,6 @@ Press any key to continue exploring.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_TOUCHPAD_SPEED_DESCRIPTION">
         Touchpad speed:
-      </message>
-      <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
-        Pointer settings...
       </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
         Pointer settings
@@ -15141,42 +15128,6 @@ Press any key to continue exploring.
 
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME" desc="Cellular service name under network details in chrome:settings/internet.">
         Service name:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_NETWORK_TECHNOLOGY" desc="Cellular network technology label under network details in chrome:settings/internet.">
-        Network technology:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR" desc="Cellular network operator name label under network details in chrome:settings/internet.">
-        Operator:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR_CODE" desc="Cellular network operator code label under network details in chrome:settings/internet.">
-        Operator code:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACTIVATION_STATE" desc="Cellular network activation status label under network details in chrome:settings/internet.">
-        Activation:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ROAMING_STATE" desc="Cellular network roaming status label under network details in chrome:settings/internet.">
-        Roaming:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_RESTRICTED_POOL" desc="Cellular network restricted network status label under network details in chrome:settings/internet.">
-        Restricted pool:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ERROR_STATE" desc="Cellular network error status label under network details in chrome:settings/internet.">
-        Error info:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MANUFACTURER" desc="Cellular device manufacturer label under network details in chrome:settings/internet.">
-        Manufacturer:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MODEL_ID" desc="Cellular device model ID label under network details in chrome:settings/internet.">
-        Model:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_FIRMWARE_REVISION" desc="Cellular device firmware revision label under network details in chrome:settings/internet.">
-        Firmware:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION" desc="Cellular device hardware revision label under network details in chrome:settings/internet.">
-        Hardware:
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Cellular device PRL version label under network details in chrome:settings/internet.">
-        PRL version:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN" desc="Cellular device APN label under network details in chrome:settings/internet.">
         Access point name:
