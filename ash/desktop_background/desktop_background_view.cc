@@ -23,25 +23,26 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace ash {
 namespace internal {
 namespace {
 
 class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
-                                       public aura::WindowObserver {
+                                       public views::WidgetObserver {
  public:
   ShowWallpaperAnimationObserver(aura::RootWindow* root_window,
                                  views::Widget* desktop_widget)
       : root_window_(root_window),
         desktop_widget_(desktop_widget) {
-    desktop_widget_->GetNativeView()->AddObserver(this);
+    DCHECK(desktop_widget_);
+    desktop_widget_->AddObserver(this);
   }
 
   virtual ~ShowWallpaperAnimationObserver() {
     if (desktop_widget_)
-      desktop_widget_->GetNativeView()->RemoveObserver(this);
+      desktop_widget_->RemoveObserver(this);
   }
 
  private:
@@ -58,14 +59,13 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
           root_window_->GetProperty(kComponentWrapper)->GetComponent(true);
       root_window_->SetProperty(kWindowDesktopComponent, component);
     }
-    desktop_widget_->GetNativeView()->RemoveObserver(this);
     delete this;
   }
 
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
-    DCHECK_EQ(desktop_widget_->GetNativeView(), window);
-    desktop_widget_->GetNativeView()->layer()->GetAnimator()->StopAnimating();
+  // Overridden from views::WidgetObserver.
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
+    desktop_widget_->RemoveObserver(this);
+    desktop_widget_ = NULL;
   }
 
   aura::RootWindow* root_window_;
