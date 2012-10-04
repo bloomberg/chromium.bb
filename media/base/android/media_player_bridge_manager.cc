@@ -8,4 +8,4 @@ namespace media {
 
 MediaPlayerBridgeManager::~MediaPlayerBridgeManager() {}
 
-}
+}  // namespace media
