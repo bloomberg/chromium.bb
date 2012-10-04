@@ -50,6 +50,7 @@ class XServerClipboard {
   void OnPropertyNotify(XEvent* event);
   void OnSelectionNotify(XEvent* event);
   void OnSelectionRequest(XEvent* event);
+  void OnSelectionClear(XEvent* event);
 
   // Called when the selection owner has replied to a request for information
   // about a selection.

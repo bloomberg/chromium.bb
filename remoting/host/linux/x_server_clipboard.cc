@@ -117,6 +117,9 @@ void XServerClipboard::ProcessXEvent(XEvent* event) {
     case SelectionRequest:
       OnSelectionRequest(event);
       break;
+    case SelectionClear:
+      OnSelectionClear(event);
+      break;
     default:
       break;
   }
@@ -266,6 +269,10 @@ void XServerClipboard::OnSelectionRequest(XEvent* event) {
   }
   XSendEvent(display_, selection_event.requestor, False, 0,
              reinterpret_cast<XEvent*>(&selection_event));
+}
+
+void XServerClipboard::OnSelectionClear(XEvent* event) {
+  selections_owned_.erase(event->xselectionclear.selection);
 }
 
 void XServerClipboard::HandleSelectionNotify(XSelectionEvent* event,
