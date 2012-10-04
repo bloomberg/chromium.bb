@@ -45,6 +45,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   virtual void SetActionString(const string16& action) OVERRIDE;
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
+  virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
 
   // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
@@ -54,7 +55,6 @@ class WebIntentPickerGtk : public WebIntentPicker,
                                       const std::string& extension_id) OVERRIDE;
   virtual void OnInlineDisposition(const string16& title,
                                    const GURL& url) OVERRIDE;
-  virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
 
   virtual void OnPendingAsyncCompleted() OVERRIDE;
 
@@ -62,6 +62,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;
   virtual GtkWidget* GetFocusWidget() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
+  virtual bool GetBackgroundColor(GdkColor* color) OVERRIDE;
   virtual bool ShouldHaveBorderPadding() const OVERRIDE;
 
   // content::NotificationObserver implementation.
