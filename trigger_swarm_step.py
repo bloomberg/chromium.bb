@@ -22,22 +22,26 @@ and sends a swarm manifest file to the swarm server.  This is expected to be
 called as a build step with the cwd as the parent of the src/ directory.
 """
 
-CLEANUP_SCRIPT_NAME = 'swarm_cleanup.py'
-CLEANUP_SCRIPT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                   CLEANUP_SCRIPT_NAME)
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+TOOLS_PATH = os.path.join(ROOT_DIR, 'tools')
+BUILD_ROOT_PATH = os.path.join(ROOT_DIR, '..', '..')
 
+# TODO(maruel): This shouldn't be necessary here.
+CLEANUP_SCRIPT_NAME = 'swarm_cleanup.py'
+CLEANUP_SCRIPT_PATH = os.path.join(TOOLS_PATH, CLEANUP_SCRIPT_NAME)
+
+# TODO(maruel): This script shouldn't be necessary on swarm slave. Swarm slaves
+# need to make sure they don't have zombie processes left by themselves. Figure
+# out a way to make this cleaner.
 WINDOWS_SCRIPT_NAME = 'kill_processes.py'
-WINDOWS_SCRIPT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                   WINDOWS_SCRIPT_NAME)
+WINDOWS_SCRIPT_PATH = os.path.join(TOOLS_PATH, WINDOWS_SCRIPT_NAME)
 
 HANDLE_EXE = 'handle.exe'
-HANDLE_EXE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               '..', '..', 'third_party', 'psutils',
-                               HANDLE_EXE)
+HANDLE_EXE_PATH = os.path.join(
+    BUILD_ROOT_PATH, 'third_party', 'psutils', HANDLE_EXE)
 
 RUN_TEST_NAME = 'run_swarm_step.py'
-RUN_TEST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                             RUN_TEST_NAME)
+RUN_TEST_PATH = os.path.join(ROOT_DIR, RUN_TEST_NAME)
 
 
 class Manifest(object):
@@ -90,6 +94,7 @@ class Manifest(object):
     zip_file.write(CLEANUP_SCRIPT_PATH, CLEANUP_SCRIPT_NAME)
 
     if self.target_platform == 'Windows':
+      # TODO(maruel): Users with src.git checkout don't have these files.
       zip_file.write(WINDOWS_SCRIPT_PATH, WINDOWS_SCRIPT_NAME)
       zip_file.write(HANDLE_EXE_PATH, HANDLE_EXE)
 
