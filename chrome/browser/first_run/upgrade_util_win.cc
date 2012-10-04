@@ -84,7 +84,7 @@ FilePath GetMetroRelauncherPath(const FilePath& chrome_exe,
 
 namespace upgrade_util {
 
-bool RelaunchChromehelper(const CommandLine& command_line, bool mode_switch) {
+bool RelaunchChromeHelper(const CommandLine& command_line, bool mode_switch) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string version_str;
 
@@ -132,12 +132,10 @@ bool RelaunchChromehelper(const CommandLine& command_line, bool mode_switch) {
       ShellIntegration::GetStartMenuShortcut(chrome_exe));
   relaunch_cmd.AppendSwitchNative(switches::kWaitForMutex, mutex_name);
 
-  const char* flag;
-  if (base::win::IsMetroProcess())
-    flag = mode_switch ? switches::kForceDesktop : switches::kForceImmersive;
-  else
-    flag = mode_switch ? switches::kForceImmersive : switches::kForceDesktop;
-  relaunch_cmd.AppendSwitch(flag);
+  if (mode_switch) {
+    relaunch_cmd.AppendSwitch(base::win::IsMetroProcess() ?
+        switches::kForceDesktop : switches::kForceImmersive);
+  }
 
   string16 params(relaunch_cmd.GetCommandLineString());
   string16 path(GetMetroRelauncherPath(chrome_exe, version_str).value());
@@ -165,11 +163,11 @@ bool RelaunchChromehelper(const CommandLine& command_line, bool mode_switch) {
 }
 
 bool RelaunchChromeBrowser(const CommandLine& command_line) {
-  return RelaunchChromehelper(command_line, false);
+  return RelaunchChromeHelper(command_line, false);
 }
 
 bool RelaunchChromeWithModeSwitch(const CommandLine& command_line) {
-  return RelaunchChromehelper(command_line, true);
+  return RelaunchChromeHelper(command_line, true);
 }
 
 bool IsUpdatePendingRestart() {
