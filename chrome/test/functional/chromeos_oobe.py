@@ -52,10 +52,9 @@ class ChromeosOOBE(pyauto.PyUITest):
       # EULA (accepted) -> Update.
       ret = self.AcceptOOBEEula(accepted=True)
     # Update may have already been completed, so don't check for it.
-    else:  # Cancel the update check in non-official build.
-      # Update (canceled) -> Login.
-      ret = self.CancelOOBEUpdate()
-      self.assertEquals('login', ret['next_screen'])
+    # Update (canceled) -> Login.
+    ret = self.CancelOOBEUpdate()
+    self.assertEquals('login', ret['next_screen'])
     self._AssertCurrentScreen('login')
     # Login -> User picker.
     credentials = self.GetPrivateInfo()['test_google_account']
@@ -65,8 +64,8 @@ class ChromeosOOBE(pyauto.PyUITest):
     # User Picker -> normal browser session.
     ret = self.PickUserImage(3)
     self.assertEquals('session', ret['next_screen'])
-    # Should have 2 browser windows ("Getting started" and an empty one).
-    self.assertEqual(2, len(self.GetBrowserInfo()['windows']))
+    # Should have 1 browser windows ("Getting started").
+    self.assertEqual(1, len(self.GetBrowserInfo()['windows']))
     # Verify user image selection.
     self.assertEqual(3, self.GetLoginInfo()['user_image'])
 
