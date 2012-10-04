@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/events/event.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -270,6 +271,14 @@ void PageActionImageView::OnIconUpdated() {
 
 void PageActionImageView::OnIconChanged() {
   OnIconUpdated();
+}
+
+void PageActionImageView::PaintChildren(gfx::Canvas* canvas) {
+  View::PaintChildren(canvas);
+  if (current_tab_id_ >= 0) {
+    page_action_->PaintBadge(canvas, gfx::Rect(width(), height()),
+                             current_tab_id_);
+  }
 }
 
 void PageActionImageView::ShowPopupWithURL(

@@ -36,22 +36,26 @@ namespace {
 // Different platforms need slightly different constants to look good.
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
 const float kTextSize = 9.0;
-const int kBottomMargin = 0;
+const int kBottomMarginBrowserAction = 0;
+const int kBottomMarginPageAction = 2;
 const int kPadding = 2;
 const int kTopTextPadding = 0;
 #elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 const float kTextSize = 8.0;
-const int kBottomMargin = 5;
+const int kBottomMarginBrowserAction = 5;
+const int kBottomMarginPageAction = 2;
 const int kPadding = 2;
 const int kTopTextPadding = 1;
 #elif defined(OS_MACOSX)
 const float kTextSize = 9.0;
-const int kBottomMargin = 5;
+const int kBottomMarginBrowserAction = 5;
+const int kBottomMarginPageAction = 2;
 const int kPadding = 2;
 const int kTopTextPadding = 0;
 #else
 const float kTextSize = 10;
-const int kBottomMargin = 5;
+const int kBottomMarginBrowserAction = 5;
+const int kBottomMarginPageAction = 2;
 const int kPadding = 2;
 // The padding between the top of the badge and the top of the text.
 const int kTopTextPadding = -1;
@@ -124,13 +128,15 @@ class ExtensionAction::IconWithBadgeImageSource
                            const gfx::Size& spacing,
                            const std::string& text,
                            const SkColor& text_color,
-                           const SkColor& background_color)
+                           const SkColor& background_color,
+                           ExtensionAction::Type action_type)
       : gfx::CanvasImageSource(icon.size(), false),
         icon_(icon),
         spacing_(spacing),
         text_(text),
         text_color_(text_color),
-        background_color_(background_color) {
+        background_color_(background_color),
+        action_type_(action_type) {
   }
 
   virtual ~IconWithBadgeImageSource() {}
@@ -144,7 +150,8 @@ class ExtensionAction::IconWithBadgeImageSource
 
     // Draw a badge on the provided browser action icon's canvas.
     ExtensionAction::DoPaintBadge(canvas, bounds, text_, text_color_,
-        background_color_, size_.width());
+                                  background_color_, size_.width(),
+                                  action_type_);
   }
 
   // Browser action icon image.
@@ -157,6 +164,8 @@ class ExtensionAction::IconWithBadgeImageSource
   SkColor text_color_;
   // Color of the badge.
   SkColor background_color_;
+  // Type of extension action this is for.
+  ExtensionAction::Type action_type_;
 
   DISALLOW_COPY_AND_ASSIGN(IconWithBadgeImageSource);
 };
@@ -349,7 +358,8 @@ void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
       GetBadgeText(tab_id),
       GetBadgeTextColor(tab_id),
       GetBadgeBackgroundColor(tab_id),
-      GetIconWidth(tab_id));
+      GetIconWidth(tab_id),
+      action_type());
 }
 
 gfx::ImageSkia ExtensionAction::GetIconWithBadge(
@@ -364,7 +374,8 @@ gfx::ImageSkia ExtensionAction::GetIconWithBadge(
                                    spacing,
                                    GetBadgeText(tab_id),
                                    GetBadgeTextColor(tab_id),
-                                   GetBadgeBackgroundColor(tab_id)),
+                                   GetBadgeBackgroundColor(tab_id),
+                                   action_type()),
      icon.size());
 }
 
@@ -391,7 +402,8 @@ void ExtensionAction::DoPaintBadge(gfx::Canvas* canvas,
                                    const std::string& text,
                                    const SkColor& text_color_in,
                                    const SkColor& background_color_in,
-                                   int icon_width) {
+                                   int icon_width,
+                                   Type action_type) {
   if (text.empty())
     return;
 
@@ -425,7 +437,9 @@ void ExtensionAction::DoPaintBadge(gfx::Canvas* canvas,
   // Paint the badge background color in the right location. It is usually
   // right-aligned, but it can also be center-aligned if it is large.
   int rect_height = kBadgeHeight;
-  int rect_y = bounds.bottom() - kBottomMargin - kBadgeHeight;
+  int bottom_margin = action_type == TYPE_BROWSER ?
+      kBottomMarginBrowserAction : kBottomMarginPageAction;
+  int rect_y = bounds.bottom() - bottom_margin - kBadgeHeight;
   int rect_width = badge_width;
   int rect_x = (badge_width >= kCenterAlignThreshold) ?
       (bounds.x() + bounds.width() - badge_width) / 2 :

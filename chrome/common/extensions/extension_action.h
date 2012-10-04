@@ -270,7 +270,8 @@ class ExtensionAction {
                            const std::string& text,
                            const SkColor& text_color_in,
                            const SkColor& background_color_in,
-                           int icon_width);
+                           int icon_width,
+                           Type action_type);
 
   template <class T>
   struct ValueTraits {

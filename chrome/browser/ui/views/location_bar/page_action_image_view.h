@@ -90,6 +90,9 @@ class PageActionImageView : public views::ImageView,
   // Overridden from ExtensionAction::IconAnimation::Observer:
   virtual void OnIconChanged() OVERRIDE;
 
+  // Overridden from View.
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+
   // Shows the popup, with the given URL.
   void ShowPopupWithURL(const GURL& popup_url,
                         ExtensionPopup::ShowAction show_action);

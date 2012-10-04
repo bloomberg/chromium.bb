@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/page_action_controller.h"
 
 #include "chrome/browser/extensions/browser_event_router.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -30,14 +31,26 @@ std::vector<ExtensionAction*> PageActionController::GetCurrentActions() const {
   if (!service)
     return std::vector<ExtensionAction*>();
 
+  // Accumulate the list of all page actions to display.
   std::vector<ExtensionAction*> current_actions;
+
+  // The script bubble, if present, is always first. This will make it show up
+  // last in the omnibox.
+  const Extension* script_bubble =
+      service->component_loader()->GetScriptBubble();
+  if (script_bubble)
+    current_actions.push_back(script_bubble->page_action());
 
   for (ExtensionSet::const_iterator i = service->extensions()->begin();
        i != service->extensions()->end(); ++i) {
+    if (script_bubble && *i == script_bubble)
+      continue;
+
     ExtensionAction* action = (*i)->page_action();
     if (action)
       current_actions.push_back(action);
   }
+
   return current_actions;
 }
 
