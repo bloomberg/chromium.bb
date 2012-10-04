@@ -182,9 +182,7 @@ var ExportView = (function() {
      * Creates a blob url and starts downloading it.
      */
     onLogDumpCreated_: function(dumpText) {
-      var blobBuilder = new WebKitBlobBuilder();
-      blobBuilder.append(dumpText, 'native');
-      var textBlob = blobBuilder.getBlob('octet/stream');
+      var textBlob = new Blob([dumpText], {type: 'octet/stream'});
       this.lastBlobURL_ = window.webkitURL.createObjectURL(textBlob);
 
       // Update the anchor tag and simulate a click on it to start the

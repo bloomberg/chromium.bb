@@ -64,9 +64,8 @@ function writeToFile(entry, text) {
     };
     writer.onwrite = onSuccess.bind(this, text);
 
-    var bb = new WebKitBlobBuilder();
-    bb.append(text + text);
-    writer.write(bb.getBlob('text/plain'));
+    var blob = new Blob([text + text], {type: 'text/plain'});
+    writer.write(blob);
   });
 };
 

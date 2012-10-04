@@ -123,9 +123,8 @@ chrome.app.runtime.onLaunched(function(intent) {
       };
 
       // Create a new Blob and write it to log.txt.
-      var bb = new BlobBuilder(); // Note: window.WebKitBlobBuilder in Chrome 12.
-      bb.append('Lorem Ipsum');
-      writer.write(bb.getBlob('text/plain'));
+      var blob = new Blob(['Lorem Ipsum'], {type: 'text/plain'});
+      writer.write(blob);
     });
   }
 });

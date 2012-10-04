@@ -116,9 +116,8 @@ TestFileCreator.prototype.writeFile_ = function(file,
     callback(file, randomText);
   };
 
-  var bb = new WebKitBlobBuilder();
-  bb.append(randomText);
-  writer.write(bb.getBlob('text/plain'));
+  var blob = new Blob([randomText], {type: 'text/plain'});
+  writer.write(blob);
 };
 
 TestFileCreator.prototype.cleanupAndEndTest = function(successCallback,

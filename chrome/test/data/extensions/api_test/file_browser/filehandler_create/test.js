@@ -49,9 +49,8 @@ function writeToFile(entry) {
     };
     writer.onwrite = chrome.test.succeed;
 
-    var bb = new WebKitBlobBuilder();
-    bb.append(FILE_CONTENTS);
-    writer.write(bb.getBlob('text/plain'));
+    var blob = new Blob([FILE_CONTENTS], {type: 'text/plain'});
+    writer.write(blob);
   }, errorCallback);
 }
 

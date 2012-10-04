@@ -1799,9 +1799,7 @@ var MainView = (function() {
       };
 
       var dumpText = JSON.stringify(dump, null, ' ');
-      var blobBuilder = new WebKitBlobBuilder();
-      blobBuilder.append(dumpText, 'native');
-      var textBlob = blobBuilder.getBlob('octet/stream');
+      var blobBuilder = new Blob([dumpText, 'native'], {type: 'octet/stream'});
       var blobUrl = window.webkitURL.createObjectURL(textBlob);
       $(DOWNLOAD_IFRAME_ID).src = blobUrl;
     },
