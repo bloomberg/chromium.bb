@@ -31,8 +31,3 @@
 # Right?)
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
-
-# Need rebaselines because r160044 implements CSS3 hyphenation.
-crbug.com/47083 fast/text/hyphenate-character.html [ Failure ImageOnlyFailure ]
-crbug.com/47083 fast/text/hyphenate-limit-before-after.html [ Failure ImageOnlyFailure ]
-crbug.com/47083 fast/text/hyphens.html [ Failure ImageOnlyFailure ]
