@@ -17,7 +17,7 @@ const float kInactiveShadowOpacity = 0.2f;
 const float kSmallShadowOpacity = 1.0f;
 
 // Duration for opacity animation in milliseconds.
-const int64 kAnimationDurationMs = 200;
+const int kAnimationDurationMs = 120;
 
 float GetOpacityForStyle(ash::internal::Shadow::Style style) {
   switch (style) {
