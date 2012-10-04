@@ -12,6 +12,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/ui_export.h"
+#include "ui/base/x/x11_util.h"
 
 namespace ui {
 
@@ -49,7 +50,7 @@ class UI_EXPORT CursorLoaderX11 : public CursorLoader {
       AnimatedCursorMap;
   AnimatedCursorMap animated_cursors_;
 
-  ::Cursor invisible_cursor_;
+  const XScopedCursor invisible_cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderX11);
 };
