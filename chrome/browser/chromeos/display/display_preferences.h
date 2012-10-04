@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_PREFERENCES_H_
 #define CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_PREFERENCES_H_
 
+#include "base/basictypes.h"
+
 class PrefService;
 namespace gfx {
 class Display;
@@ -21,6 +23,9 @@ void SetDisplayLayoutPref(PrefService* pref_service,
                           const gfx::Display& display,
                           int layout,
                           int offset);
+
+// Sets or updates the primary display device by its ID.
+void SetPrimaryDisplayIDPref(PrefService* pref_service, int64 display_id);
 
 // Checks the current display settings values and notifies them to the system.
 void NotifyDisplayPrefChanged(PrefService* pref_service);
