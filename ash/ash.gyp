@@ -323,6 +323,8 @@
         'wm/root_window_layout_manager.h',
         'wm/screen_dimmer.cc',
         'wm/screen_dimmer.h',
+        'wm/session_state_animator.cc',
+        'wm/session_state_animator.h',
         'wm/shadow.cc',
         'wm/shadow.h',
         'wm/shadow_controller.cc',
