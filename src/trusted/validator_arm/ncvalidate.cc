@@ -22,7 +22,6 @@ using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;
 using nacl_arm_dec::Register;
 using nacl_arm_dec::RegisterList;
-using nacl_arm_dec::kRegisterStack;
 using std::vector;
 
 class EarlyExitProblemSink : public nacl_arm_val::ProblemSink {
@@ -85,8 +84,8 @@ static NaClValidationStatus ValidatorCopyArm(
       kBytesPerBundle,
       kBytesOfCodeSpace,
       kBytesOfDataSpace,
-      RegisterList(Register(9)),
-      RegisterList(kRegisterStack));
+      RegisterList(Register::Tp()),
+      RegisterList(Register::Sp()));
 
   bool success = validator.CopyCode(source_code, dest_code, copy_func,
                                     &sink);
@@ -108,8 +107,8 @@ static NaClValidationStatus ValidatorCodeReplacementArm(
       kBytesPerBundle,
       kBytesOfCodeSpace,
       kBytesOfDataSpace,
-      RegisterList(Register(9)),
-      RegisterList(kRegisterStack));
+      RegisterList(Register::Tp()),
+      RegisterList(Register::Sp()));
 
   bool success = validator.ValidateSegmentPair(old_code, new_code,
                                                &sink);
@@ -123,8 +122,8 @@ int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
       kBytesPerBundle,
       kBytesOfCodeSpace,
       kBytesOfDataSpace,
-      RegisterList(Register(9)),
-      RegisterList(kRegisterStack));
+      RegisterList(Register::Tp()),
+      RegisterList(Register::Sp()));
 
   EarlyExitProblemSink sink;
 

@@ -67,18 +67,18 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
                                               segment[kDefaultBaseAddr]));
 
     // Information obtained from the decoder itself.
-    bool defs_pc = inst.defs().Contains(nacl_arm_dec::kRegisterPc);
+    bool defs_pc = inst.defs().Contains(nacl_arm_dec::Register::Pc());
     bool is_may_be_safe = inst.safety() == nacl_arm_dec::MAY_BE_SAFE;
     bool is_relative_branch = inst.is_relative_branch();
     bool is_indirect_branch = !inst.branch_target_register()
-        .Equals(nacl_arm_dec::kRegisterNone);
+        .Equals(nacl_arm_dec::Register::None());
     bool is_branch = is_relative_branch || is_indirect_branch;
     uint32_t branch_target = inst.branch_target();
     uint32_t branch_target_register = inst.branch_target_register().number();
     bool is_literal_pool_head = inst.is_literal_pool_head();
     uint32_t base_address_register = inst.base_address_register().number();
     bool has_base_address_register = !inst.base_address_register()
-        .Equals(nacl_arm_dec::kRegisterNone);
+        .Equals(nacl_arm_dec::Register::None());
     bool is_literal_load = inst.is_literal_load();
     bool clears_code_bits = inst.clears_bits(code_address_mask);
     bool clears_data_bits = inst.clears_bits(data_address_mask);
@@ -105,7 +105,7 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
         (kDefaultBaseAddr + 8 + (((int32_t)i << 8) >> 6));
     uint32_t expected_branch_target_register = expect_bx_or_blx ?
         (i & 0xF) :  // When present, always Rm(3:0).
-        nacl_arm_dec::kRegisterNone.number();
+        nacl_arm_dec::Register::kNone;
     bool expect_literal_pool_head =
         (i == nacl_arm_dec::kLiteralPoolHeadInstruction);
     bool expect_load_store_or_unsafe = expect_unconditional ?
@@ -137,7 +137,7 @@ TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
              ((i & 0x01E00000) != 0x00400000)));
     uint32_t expected_base_address_register = expect_load_store_or_unsafe ?
         (i >> 16) & 0xF :  // When present, always Rn(19:16).
-        nacl_arm_dec::kRegisterNone.number();
+        nacl_arm_dec::Register::kNone;
     bool expect_literal_load_or_unsafe = !expect_unconditional &&
         (
             // Extra load/store instructions.

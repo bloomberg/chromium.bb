@@ -86,10 +86,10 @@ static const uint32_t kBytesPerBundle = 16;
 static const uint32_t kCodeRegionSize = 0x20000000;
 // Limit data to 1GiB.
 static const uint32_t kDataRegionSize = 0x40000000;
-// Untrusted code must not write to r9.
-static const RegisterList kAbiReadOnlyRegisters(Register(9));
+// Untrusted code must not write to the thread pointer.
+static const RegisterList kAbiReadOnlyRegisters(Register::Tp());
 // The stack pointer can be used for "free" loads and stores.
-static const RegisterList kAbiDataAddrRegisters(nacl_arm_dec::kRegisterStack);
+static const RegisterList kAbiDataAddrRegisters(nacl_arm_dec::Register::Sp());
 
 // Defines a buffer for error messages.
 static const size_t kBufferSize = 256;

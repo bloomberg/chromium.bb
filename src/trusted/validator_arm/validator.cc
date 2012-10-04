@@ -17,10 +17,6 @@ using nacl_arm_dec::Instruction;
 using nacl_arm_dec::ClassDecoder;
 using nacl_arm_dec::Register;
 using nacl_arm_dec::RegisterList;
-using nacl_arm_dec::kRegisterNone;
-using nacl_arm_dec::kConditions;
-using nacl_arm_dec::kRegisterPc;
-using nacl_arm_dec::kRegisterLink;
 
 using std::vector;
 
@@ -236,9 +232,9 @@ static ValidatorInstructionPairProblem GetPairConditionProblem(
     const DecodedInstruction& first,
     const DecodedInstruction& second) {
   UNREFERENCED_PARAMETER(second);
-  if (first.defines(nacl_arm_dec::kCondsDontCareFlag)) {
+  if (first.defines(nacl_arm_dec::Register::CondsDontCareFlag())) {
     return kFirstNotAllowsInInstructionPairs;
-  } else if (first.defines(kConditions)) {
+  } else if (first.defines(Register::Conditions())) {
     return kFirstSetsConditionFlags;
   } else {
     return kConditionsOnPairNotSafe;
@@ -260,7 +256,7 @@ static void check_loadstore_mask(
     InstructionPairMatchData* match_data) {
   match_data->problem_ = kProblemUnsafeLoadStore;
   if (second.base_address_register().
-      Equals(kRegisterNone) /* not a load/store */
+      Equals(Register::None()) /* not a load/store */
       || sfi.is_data_address_register(second.base_address_register())) {
     match_data->match_ = NO_MATCH;
     return;
@@ -320,7 +316,7 @@ static void check_loadstore_mask(
         kProblemUnsafeLoadStore,
         kEqConditionalOn,
         second.base_address_register(), first, second);
-  } else if (second.base_address_register().Equals(kRegisterPc)) {
+  } else if (second.base_address_register().Equals(Register::Pc())) {
     match_data->out_->ReportProblem(second.addr(), kProblemIllegalPcLoadStore);
   } else {
     match_data->out_->ReportProblemRegister(second.addr(),
@@ -339,7 +335,7 @@ static void check_branch_mask(
     const DecodedInstruction& second,
     InstructionPairMatchData* match_data) {
   match_data->problem_ = kProblemUnsafeBranch;
-  if (second.branch_target_register().Equals(kRegisterNone)) {
+  if (second.branch_target_register().Equals(Register::None())) {
     match_data->match_ = NO_MATCH;
     return;
   }
@@ -434,7 +430,7 @@ static PatternMatch check_call_position(const SfiValidator& sfi,
                                         const DecodedInstruction& inst,
                                         ProblemSink* out) {
   // Identify linking branches through their definitions:
-  if (inst.defines_all(RegisterList(kRegisterPc).Add(kRegisterLink))) {
+  if (inst.defines_all(RegisterList(Register::Pc()).Add(Register::Lr()))) {
     uint32_t last_slot = sfi.bundle_for_address(inst.addr()).end_addr() - 4;
     if (inst.addr() != last_slot) {
       out->ReportProblem(inst.addr(), kProblemMisalignedCall);
@@ -462,18 +458,19 @@ static PatternMatch check_pc_writes(const SfiValidator& sfi,
                                     const DecodedInstruction& inst,
                                     ProblemSink* out) {
   if (inst.is_relative_branch()
-      || !inst.branch_target_register().Equals(kRegisterNone)) {
+      || !inst.branch_target_register().Equals(Register::None())) {
     // It's a branch.
     return NO_MATCH;
   }
 
-  if (!inst.defines(nacl_arm_dec::kRegisterPc))
+  if (!inst.defines(nacl_arm_dec::Register::Pc()))
     return NO_MATCH;
 
   if (inst.clears_bits(sfi.code_address_mask())) {
     return PATTERN_SAFE;
   } else {
-    out->ReportProblemRegister(inst.addr(), kProblemUnsafeBranch, kRegisterPc);
+    out->ReportProblemRegister(inst.addr(), kProblemUnsafeBranch,
+                               Register::Pc());
     return PATTERN_UNSAFE;
   }
 }

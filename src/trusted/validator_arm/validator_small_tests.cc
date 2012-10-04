@@ -109,7 +109,7 @@ TEST_F(ValidatorTests, RecognizesDataAddressRegisters) {
   // functionality more deeply with pattern tests below.
   for (int i = 0; i < 16; i++) {
     Register r(i);
-    if (r.Equals(nacl_arm_dec::kRegisterStack)) {
+    if (r.Equals(nacl_arm_dec::Register::Sp())) {
       EXPECT_TRUE(_validator.is_data_address_register(r))
           << "Stack pointer must be a data address register.";
     } else {

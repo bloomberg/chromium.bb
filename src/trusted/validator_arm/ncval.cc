@@ -77,8 +77,8 @@ int validate(const ncfile *ncf) {
       //                verify that instructions are in right region
       kOneGig,  // code region size
       kOneGig,  // data region size
-      nacl_arm_dec::RegisterList(nacl_arm_dec::Register(9)),
-      nacl_arm_dec::RegisterList(nacl_arm_dec::kRegisterStack));
+      nacl_arm_dec::RegisterList(nacl_arm_dec::Register::Tp()),
+      nacl_arm_dec::RegisterList(nacl_arm_dec::Register::Sp()));
 
   NcvalProblemReporter reporter;
 

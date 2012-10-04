@@ -1011,9 +1011,9 @@ class MoveFromCoprocessor : public CoprocessorOp {
   // Defines the destination core register.
   Register Rt(const Instruction& i) const {
     Register rt(i.Reg(15, 12));
-    if (rt.Equals(kRegisterPc)) {
+    if (rt.Equals(Register::Pc())) {
       // Per ARM ISA spec: r15 here is a synonym for the flags register!
-      return kConditions;
+      return Register::Conditions();
     }
     return rt;
   }

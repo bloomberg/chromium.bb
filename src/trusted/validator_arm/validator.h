@@ -255,8 +255,8 @@ class DecodedInstruction {
   bool always_dominates(const DecodedInstruction& other) const {
     nacl_arm_dec::Instruction::Condition cond1 = inst_.GetCondition();
     nacl_arm_dec::Instruction::Condition cond2 = other.inst_.GetCondition();
-    return !defines(nacl_arm_dec::kConditions) &&
-         !defines(nacl_arm_dec::kCondsDontCareFlag) &&
+    return !defines(nacl_arm_dec::Register::Conditions()) &&
+         !defines(nacl_arm_dec::Register::CondsDontCareFlag()) &&
          SfiValidator::condition_implies[cond2][cond1];
   }
 
@@ -279,8 +279,8 @@ class DecodedInstruction {
   bool always_postdominates(const DecodedInstruction& other) const {
     nacl_arm_dec::Instruction::Condition cond1 = other.inst_.GetCondition();
     nacl_arm_dec::Instruction::Condition cond2 = inst_.GetCondition();
-    return !other.defines(nacl_arm_dec::kConditions) &&
-         !other.defines(nacl_arm_dec::kCondsDontCareFlag) &&
+    return !other.defines(nacl_arm_dec::Register::Conditions()) &&
+         !other.defines(nacl_arm_dec::Register::CondsDontCareFlag()) &&
          SfiValidator::condition_implies[cond1][cond2];
   }
 
@@ -290,7 +290,7 @@ class DecodedInstruction {
   bool is_eq_conditional_on(const DecodedInstruction& other) const {
     return inst_.GetCondition() == nacl_arm_dec::Instruction::EQ
         && other.inst_.GetCondition() == nacl_arm_dec::Instruction::AL
-        && other.defines(nacl_arm_dec::kConditions);
+        && other.defines(nacl_arm_dec::Register::Conditions());
   }
 
   // The methods below mirror those on ClassDecoder, but are cached and cheap.

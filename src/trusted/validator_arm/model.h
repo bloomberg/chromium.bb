@@ -75,25 +75,20 @@ class Register {
  public:
   typedef uint8_t Number;
   // RegisterMask wide enough for aarch32, including "special" registers.
+  // TODO(jfb) Update for aarch64.
   typedef uint32_t Mask;
+    // aarch32 only has 16 GPRs, we steal other registers for flags and such.
+  // TODO(jfb) Update for aarch64.
+  static const Mask kGprMask = 0xFFFF;
 
-  // TODO(jfb) Need different numbers for aarch64.
-  static const Number kTp = 9;   // Thread local pointer.
-  static const Number kSp = 13;  // Stack pointer.
-  static const Number kLr = 14;  // Link register.
-  static const Number kPc = 15;  // Program counter.
-  static const Number kNumberConditions = 16;
-  static const Number kNumberCondsDontCare = 17;
-  static const Number kNumberNone = 32;  // Out of GPR and FPR range.
-
-  Register() : number_(kNumberNone) {}
+  Register() : number_(kNone) {}
   explicit Register(Number number) : number_(number) {}
   Register(const Register& r) : number_(r.number_) {}
 
   // Produces the bitmask used to represent this register, in both RegisterList
   // and ARM's LDM instruction.
   Mask BitMask() const {
-    return (number_ == kNumberNone) ? 0 : (1u << number_);
+    return (number_ == kNone) ? 0 : (1u << number_);
   }
 
   Number number() const { return number_; }
@@ -104,42 +99,49 @@ class Register {
     return *this;
   }
 
+  // TODO(jfb) Need different numbers for aarch64.
+  static const Number kTp = 9;   // Thread local pointer.
+  static const Number kSp = 13;  // Stack pointer.
+  static const Number kLr = 14;  // Link register.
+  static const Number kPc = 15;  // Program counter.
+  static const Number kConditions = 16;
+  static const Number kCondsDontCareFlag = 17;
+  static const Number kNone = 32;  // Out of GPR and FPR range.
+
+  // A special value used to indicate that a register field is not used.
+  // This is specially chosen to ensure that bitmask() == 0, so it can be added
+  // to any RegisterList with no effect.
+  static Register None() { return Register(kNone); }
+
+  // The conditions (i.e. APSR N, Z, C, and V) are collectively modeled as
+  // a single register, out of the usual ARM GPR range.
+  // These bits of the APSR register are separately tracked, so we can
+  // test when any of the 4 bits (and hence conditional execution) is
+  // affected. If you need to track other bits in the APSR, add them as
+  // a separate register.
+  static Register Conditions() { return Register(kConditions); }
+
+  // For most class decoders, we don't care what the instruction does, other
+  // than if it is safe, and what general purpose registers are changed.
+  // Hence, we may have simplified the "defs" virtual of a class decoder
+  // to always return Register::Conditions() (rather than accurately modeling
+  // if and when it gets updated).
+  //
+  // Note: Do not add Register::CondsDontCareFlag() to a RegisterList. Rather,
+  // use the constant RegisterList::CondsDontCare().
+  static Register CondsDontCareFlag() { return Register(kCondsDontCareFlag); }
+
+  // Registers with special meaning in our model:
+  static Register Tp() { return Register(kTp); }
+  static Register Sp() { return Register(kSp); }
+  static Register Lr() { return Register(kLr); }
+  static Register Pc() { return Register(kPc); }
+
  private:
   Number number_;
   Register& operator=(const Register& r);  // Disallow assignment.
 };
 
-// A special (POD) value used in some cases to indicate that a register field
-// is not used.  This is specially chosen to ensure that bitmask() == 0, so
-// it can be added to any RegisterList with no effect.
-static const Register kRegisterNone(Register::kNumberNone);
-
-// The conditions (i.e. APSR N, Z, C, and V) are collectively modeled as r16.
-// These bits of the APSR register are separately tracked, so we can
-// test when any of the 4 bits (and hence conditional execution) is
-// affected. If you need to track other bits in the APSR, add them as
-// a separate register.
-//
-static const Register kConditions(Register::kNumberConditions);
-
-// Registers with special meaning in our model:
-// TODO(jfb) This is different in aarch64.
-static const Register kRegisterPc(Register::kPc);
-static const Register kRegisterLink(Register::kLr);
-static const Register kRegisterStack(Register::kSp);
-static const Register kRegisterThread(Register::kTp);
-
-// For most class decoders, we don't care what the instruction does, other
-// than if it is safe, and what general purpose registers are changed.
-// Hence, we may have simplified the "defs" virtual of a class decoder
-// to always return kConditions (rather than accurately modeling if and
-// when it gets updated).
-//
-// Note: Do not add kCondsDontCareFlag to a RegisterList. Rather,
-// use the constant kCondsDontCare.
-//
-// TODO(jfb) Need a different number for aarch64.
-static const Register kCondsDontCareFlag(Register::kNumberCondsDontCare);
 
 // A collection of Registers.  Used to describe the side effects of operations.
 //
@@ -214,11 +216,32 @@ class RegisterList {
   }
 
   // Number of ARM GPRs in the list.
-  // TODO(jfb) Update for aarch64.
   uint32_t numGPRs() const {
-    // aarch32 only has 16 GPRs, we steal other registers for flags and such.
-    uint16_t gprs = bits_ & 0xFFFF;
+    uint16_t gprs = bits_ & Register::kGprMask;
     return nacl::PopCount(gprs);
+  }
+
+  // A list containing every possible register, even some we don't define.
+  // Used exclusively as a bogus scary return value for forbidden instructions.
+  static RegisterList Everything() { return RegisterList(-1); }
+
+  // A special register list to communicate that we don't care about conditions
+  // for the given class decoder. Note: This should only be added to register
+  // lists returned from virtual ClassDecoder::defs, and only for actual
+  // class decoders. It is used to communicate to class decoder testers
+  // that the actual class decoder is not tracking conditions.
+  static RegisterList CondsDontCare() {
+    return RegisterList(((1 << Register::kConditions) |
+                         (1 << Register::kCondsDontCareFlag)));
+  }
+
+  // A special register list to communicate registers that can't be changed
+  // when doing dynamic code replacement.
+  static RegisterList DynCodeReplaceFrozenRegs() {
+    return RegisterList((1 << Register::kPc) |
+                        (1 << Register::kLr) |
+                        (1 << Register::kSp) |
+                        (1 << Register::kTp));
   }
 
  private:
@@ -226,23 +249,6 @@ class RegisterList {
   RegisterList& operator=(const RegisterList& r);  // Disallow assignment.
 };
 
-// A list containing every possible register, even some we don't define.
-// Used exclusively as a bogus scary return value for forbidden instructions.
-static const RegisterList kRegisterListEverything(-1);
-
-// A special register list to communicate that we don't care about conditions
-// for the given class decoder. Note: This should only be added to register
-// lists returned from virtual ClassDecoder::defs, and only for actual
-// class decoders. It is used to communicate to class decoder testers
-// that the actual class decoder is not tracking conditions.
-static const RegisterList kCondsDontCare((1 << Register::kNumberConditions) |
-                                         (1 << Register::kNumberCondsDontCare));
-// A special register list to communicate registers that can't be changed
-
-// when doing dynamic code replacement.
-static const RegisterList kDynCodeReplaceFrozenRegs(
-    1 << Register::kPc | 1 << Register::kLr | 1 << Register::kSp |
-    1 << Register::kTp);
 
 // The number of bits in an ARM instruction.
 static const int kArm32InstSize = 32;

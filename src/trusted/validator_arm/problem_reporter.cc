@@ -91,7 +91,7 @@ static nacl_arm_dec::Register Int2Register(uint32_t index) {
   if (index < 16) {
     return nacl_arm_dec::Register(index);
   } else {
-    return nacl_arm_dec::kRegisterNone;
+    return nacl_arm_dec::Register::None();
   }
 }
 

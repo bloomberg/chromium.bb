@@ -444,7 +444,7 @@ class UpdatesConditionsBit20Interface {
   }
   // Returns the conditions register if it is used.
   static Register conds_if_updated(const Instruction i) {
-    return is_updated(i) ? kConditions : kRegisterNone;
+    return is_updated(i) ? Register::Conditions() : Register::None();
   }
 
  private:
@@ -605,7 +605,7 @@ class ClassDecoder {
   virtual bool is_literal_load(Instruction i) const;
 
   // For indirect branch instructions, returns the register being moved into
-  // r15.  Otherwise, reports kRegisterNone.
+  // r15.  Otherwise, reports Register::None().
   //
   // Note that this exclusively describes instructions that write r15 from a
   // register, unmodified.  This means BX, BLX, and MOV without shift.  Not

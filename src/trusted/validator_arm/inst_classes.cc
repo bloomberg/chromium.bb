@@ -61,7 +61,7 @@ uint32_t Imm12Bits0To11Interface::get_modified_immediate(Instruction i) {
 // ClassDecoder
 RegisterList ClassDecoder::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return kRegisterListEverything;
+  return RegisterList::Everything();
 }
 
 RegisterList ClassDecoder::immediate_addressing_defs(Instruction i) const {
@@ -71,7 +71,7 @@ RegisterList ClassDecoder::immediate_addressing_defs(Instruction i) const {
 
 Register ClassDecoder::base_address_register(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return kRegisterNone;
+  return Register::None();
 }
 
 bool ClassDecoder::is_literal_load(Instruction i) const {
@@ -81,7 +81,7 @@ bool ClassDecoder::is_literal_load(Instruction i) const {
 
 Register ClassDecoder::branch_target_register(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return kRegisterNone;
+  return Register::None();
 }
 
 bool ClassDecoder::is_relative_branch(Instruction i) const {
@@ -137,7 +137,7 @@ RegisterList UnsafeClassDecoder::defs(Instruction i) const {
 
 // CoprocessorOp
 SafetyLevel CoprocessorOp::safety(const Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
   switch (coproc.value(i)) {
     default: return FORBIDDEN;
 

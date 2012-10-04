@@ -25,17 +25,18 @@ SafetyLevel DontCareInst::safety(Instruction i) const {
 
 RegisterList DontCareInst::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return kCondsDontCare;
+  return RegisterList::CondsDontCare();
 }
 
 SafetyLevel DontCareInstRdNotPc::safety(Instruction i) const {
-  if (d.reg(i).Equals(kRegisterPc))
+  if (d.reg(i).Equals(Register::Pc()))
     return UNPREDICTABLE;
   return MAY_BE_SAFE;
 }
 
 SafetyLevel DontCareInstRnRsRmNotPc::safety(Instruction i) const {
-  if (RegisterList(m.reg(i)).Add(s.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+  if (RegisterList(m.reg(i)).Add(s.reg(i)).Add(n.reg(i)).
+      Contains(Register::Pc()))
     return UNPREDICTABLE;
   return MAY_BE_SAFE;
 }
@@ -50,14 +51,14 @@ RegisterList MaybeSetsConds::defs(const Instruction i) const {
 }
 
 SafetyLevel NoPcAssignClassDecoder::safety(const Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) {
+  if (defs(i).Contains(Register::Pc())) {
     return FORBIDDEN_OPERANDS;
   }
   return MAY_BE_SAFE;
 }
 
 SafetyLevel NoPcAssignCondsDontCare::safety(const Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) {
+  if (defs(i).Contains(Register::Pc())) {
     return FORBIDDEN_OPERANDS;
   }
   return MAY_BE_SAFE;
@@ -68,11 +69,11 @@ RegisterList Defs12To15::defs(const Instruction i) const {
 }
 
 RegisterList Defs12To15CondsDontCare::defs(const Instruction i) const {
-  return RegisterList(kCondsDontCare).Add(d.reg(i));
+  return RegisterList(RegisterList::CondsDontCare()).Add(d.reg(i));
 }
 
 SafetyLevel Defs12To15CondsDontCareRdRnNotPc::safety(Instruction i) const {
-  if (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+  if (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(Register::Pc()))
     return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -95,7 +96,7 @@ safety(Instruction i) const {
 }
 
 SafetyLevel Defs12To15RdRnNotPc::safety(Instruction i) const {
-  if (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+  if (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(Register::Pc()))
     return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -104,7 +105,8 @@ SafetyLevel Defs12To15RdRnNotPc::safety(Instruction i) const {
 }
 
 SafetyLevel Defs12To15RdRmRnNotPc::safety(Instruction i) const {
-  if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+  if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).
+      Contains(Register::Pc()))
     return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -115,7 +117,7 @@ SafetyLevel Defs12To15RdRmRnNotPc::safety(Instruction i) const {
 SafetyLevel Defs12To15RdRnRsRmNotPc::safety(
     const Instruction i) const {
   if (RegisterList(d.reg(i)).Add(n.reg(i)).Add(s.reg(i)).
-      Add(m.reg(i)).Contains(kRegisterPc))
+      Add(m.reg(i)).Contains(Register::Pc()))
     return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -126,7 +128,7 @@ SafetyLevel Defs12To15RdRnRsRmNotPc::safety(
 SafetyLevel Defs12To15CondsDontCareRdRnRsRmNotPc::safety(
     const Instruction i) const {
   if (RegisterList(d.reg(i)).Add(n.reg(i)).Add(s.reg(i)).
-      Add(m.reg(i)).Contains(kRegisterPc))
+      Add(m.reg(i)).Contains(Register::Pc()))
     return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -135,12 +137,13 @@ SafetyLevel Defs12To15CondsDontCareRdRnRsRmNotPc::safety(
 }
 
 RegisterList Defs16To19CondsDontCare::defs(const Instruction i) const {
-  return RegisterList(kCondsDontCare).Add(d.reg(i));
+  return RegisterList(RegisterList::CondsDontCare()).Add(d.reg(i));
 }
 
 SafetyLevel Defs16To19CondsDontCareRdRmRnNotPc::
 safety(const Instruction i) const {
-  if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+  if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).
+      Contains(Register::Pc()))
     return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -151,7 +154,7 @@ safety(const Instruction i) const {
 SafetyLevel Defs16To19CondsDontCareRdRaRmRnNotPc::
 safety(const Instruction i) const {
   if (RegisterList(d.reg(i)).Add(a.reg(i)).Add(m.reg(i)).Add(n.reg(i)).
-      Contains(kRegisterPc))
+      Contains(Register::Pc()))
     return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -160,13 +163,14 @@ safety(const Instruction i) const {
 }
 
 RegisterList Defs12To19CondsDontCare::defs(const Instruction i) const {
-  return RegisterList(kCondsDontCare).Add(d_hi.reg(i)).Add(d_lo.reg(i));
+  return RegisterList(RegisterList::CondsDontCare()).
+      Add(d_hi.reg(i)).Add(d_lo.reg(i));
 }
 
 SafetyLevel Defs12To19CondsDontCare::safety(const Instruction i) const {
   if (d_hi.reg(i).Equals(d_lo.reg(i)))
     return UNPREDICTABLE;
-  if (defs(i).Contains(kRegisterPc))
+  if (defs(i).Contains(Register::Pc()))
     return FORBIDDEN;
   return MAY_BE_SAFE;
 }
@@ -175,7 +179,7 @@ SafetyLevel Defs12To19CondsDontCareRdRmRnNotPc::
 safety(const Instruction i) const {
   if (d_hi.reg(i).Equals(d_lo.reg(i)))
     return UNPREDICTABLE;
-  if (defs(i).Add(n.reg(i)).Add(m.reg(i)).Contains(kRegisterPc))
+  if (defs(i).Add(n.reg(i)).Add(m.reg(i)).Contains(Register::Pc()))
     return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -186,7 +190,7 @@ safety(const Instruction i) const {
 SafetyLevel Defs12To15CondsDontCareRnRdRmNotPc::safety(
     const Instruction i) const {
   if (RegisterList(n.reg(i)).Add(d.reg(i)).Add(m.reg(i)).
-      Contains(kRegisterPc))
+      Contains(Register::Pc()))
     return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
@@ -203,7 +207,7 @@ bool TestIfAddressMasked::sets_Z_if_bits_clear(Instruction i,
                                                uint32_t mask) const {
   return n.reg(i).Equals(r)
       && (imm12.get_modified_immediate(i) & mask) == mask
-      && defs(i).Contains(kConditions);
+      && defs(i).Contains(Register::Conditions());
 }
 
 bool MaskAddress::clears_bits(const Instruction i, uint32_t mask) const {
@@ -212,7 +216,7 @@ bool MaskAddress::clears_bits(const Instruction i, uint32_t mask) const {
 
 RegisterList VfpOp::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return kCondsDontCare;
+  return RegisterList::CondsDontCare();
 }
 
 Register BasedAddressUsingRn::base_address_register(Instruction i) const {
@@ -221,7 +225,7 @@ Register BasedAddressUsingRn::base_address_register(Instruction i) const {
 
 SafetyLevel LoadBasedMemory::safety(const Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
-  if (RegisterList(n.reg(i)).Add(t.reg(i)).Contains(kRegisterPc)) {
+  if (RegisterList(n.reg(i)).Add(t.reg(i)).Contains(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -237,7 +241,7 @@ RegisterList LoadBasedMemory::defs(Instruction i) const {
 SafetyLevel LoadBasedMemoryDouble::safety(const Instruction i) const {
   // Arm restrictions for this instruction, based on double width.
   // Unsafe if any register contains PC (ARM restriction).
-  if (RegisterList(n.reg(i)).Add(t2.reg(i)).Contains(kRegisterPc)) {
+  if (RegisterList(n.reg(i)).Add(t2.reg(i)).Contains(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -257,7 +261,7 @@ RegisterList LoadBasedMemoryDouble::defs(Instruction i) const {
 SafetyLevel StoreBasedMemoryRtBits0To3::safety(const Instruction i) const {
   // Arm restrictions for this instruction.
   if (RegisterList(d.reg(i)).Add(t.reg(i)).Add(n.reg(i)).
-      Contains(kRegisterPc)) {
+      Contains(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -278,7 +282,7 @@ SafetyLevel StoreBasedMemoryDoubleRtBits0To3::
 safety(const Instruction i) const {
   // Arm restrictions for this instruction.
   if (RegisterList(d.reg(i)).Add(t2.reg(i)).Add(n.reg(i)).
-      Contains(kRegisterPc)) {
+      Contains(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -299,31 +303,32 @@ safety(const Instruction i) const {
 
 SafetyLevel LoadBasedMemoryWithWriteBack::safety(const Instruction i) const {
   // Arm restrictions for this instruction.
-  if (t.reg(i).Equals(kRegisterPc)) {
+  if (t.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
   if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+      (n.reg(i).Equals(Register::Pc()) || n.reg(i).Equals(t.reg(i)))) {
     return UNPREDICTABLE;
   }
 
   // Above implies literal loads can't writeback, the following checks the
   // ARM restriction that literal loads can't have P == W.
   // This should always decode to another instruction, but checking it is good.
-  if (n.reg(i).Equals(kRegisterPc) &&
+  if (n.reg(i).Equals(Register::Pc()) &&
       (indexing.IsDefined(i) == writes.IsDefined(i))) {
     return UNPREDICTABLE;
   }
 
   // Don't let addressing writeback alter PC (NaCl constraint).
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
 
   return MAY_BE_SAFE;
 }
 
 RegisterList LoadBasedMemoryWithWriteBack::defs(const Instruction i) const {
-  return RegisterList(t.reg(i)).Add(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
+  return RegisterList(t.reg(i)).Add(HasWriteBack(i) ?
+                                    n.reg(i) : Register::None());
 }
 
 SafetyLevel LoadBasedOffsetMemory::safety(const Instruction i) const {
@@ -335,7 +340,7 @@ SafetyLevel LoadBasedOffsetMemory::safety(const Instruction i) const {
     return FORBIDDEN;
 
   // Arm restrictions for this instruction.
-  if (m.reg(i).Equals(kRegisterPc))
+  if (m.reg(i).Equals(Register::Pc()))
     return UNPREDICTABLE;
 
   return LoadBasedMemoryWithWriteBack::safety(i);
@@ -347,7 +352,7 @@ SafetyLevel LoadBasedOffsetMemoryDouble::safety(const Instruction i) const {
     return UNDEFINED;
   }
 
-  if (t2.reg(i).Equals(kRegisterPc)) {
+  if (t2.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -369,12 +374,12 @@ RegisterList LoadBasedOffsetMemoryDouble::defs(Instruction i) const {
 
 RegisterList LoadBasedImmedMemory::
 immediate_addressing_defs(const Instruction i) const {
-  return RegisterList(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
+  return RegisterList(HasWriteBack(i) ? n.reg(i) : Register::None());
 }
 
 bool LoadBasedImmedMemory::is_literal_load(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return base_address_register(i).Equals(kRegisterPc);
+  return base_address_register(i).Equals(Register::Pc());
 }
 
 SafetyLevel LoadBasedImmedMemoryDouble::safety(const Instruction i) const {
@@ -383,7 +388,7 @@ SafetyLevel LoadBasedImmedMemoryDouble::safety(const Instruction i) const {
     return UNDEFINED;
   }
 
-  if (t2.reg(i).Equals(kRegisterPc)) {
+  if (t2.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -401,12 +406,12 @@ RegisterList LoadBasedImmedMemoryDouble::defs(const Instruction i) const {
 
 SafetyLevel StoreBasedMemoryWithWriteBack::safety(const Instruction i) const {
   // Arm restrictions for this instruction.
-  if (t.reg(i).Equals(kRegisterPc)) {
+  if (t.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
   if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc))) {
+      (n.reg(i).Equals(Register::Pc()))) {
     // NOTE: The manual states that that it is also unpredictable
     // when HasWriteBack(i) and Rn=Rt. However, the compilers
     // may not check for this. For the moment, we are changing
@@ -417,13 +422,13 @@ SafetyLevel StoreBasedMemoryWithWriteBack::safety(const Instruction i) const {
   }
 
   // Don't let addressing writeback alter PC (NaCl constraint).
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
 
   return MAY_BE_SAFE;
 }
 
 RegisterList StoreBasedMemoryWithWriteBack::defs(const Instruction i) const {
-  return RegisterList(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
+  return RegisterList(HasWriteBack(i) ? n.reg(i) : Register::None());
 }
 
 SafetyLevel StoreBasedOffsetMemory::safety(const Instruction i) const {
@@ -436,12 +441,12 @@ SafetyLevel StoreBasedOffsetMemory::safety(const Instruction i) const {
   }
 
   // Arm restrictions for this instruction.
-  if (m.reg(i).Equals(kRegisterPc)) {
+  if (m.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
   if (HasWriteBack(i) &&
-      (n.reg(i).Equals(kRegisterPc))) {
+      (n.reg(i).Equals(Register::Pc()))) {
     // NOTE: The manual states that that it is also unpredictable
     // when HasWriteBack(i) and Rn=Rt. However, the compilers
     // may not check for this. For the moment, we are changing
@@ -462,7 +467,7 @@ SafetyLevel StoreBasedOffsetMemoryDouble::safety(const Instruction i) const {
     return UNDEFINED;
   }
 
-  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
+  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -472,7 +477,7 @@ SafetyLevel StoreBasedOffsetMemoryDouble::safety(const Instruction i) const {
   // the code to ignore this case for stores.
   // TODO(karl): Should we not allow this?
   // if (HasWriteBack(i) &&
-  //     (n.reg(i).Equals(kRegisterPc))) {
+  //     (n.reg(i).Equals(Register::Pc()))) {
   //   return UNPREDICTABLE;
   // }
 
@@ -482,7 +487,7 @@ SafetyLevel StoreBasedOffsetMemoryDouble::safety(const Instruction i) const {
 
 RegisterList StoreBasedImmedMemory::
 immediate_addressing_defs(const Instruction i) const {
-  return RegisterList(HasWriteBack(i) ? n.reg(i) : kRegisterNone);
+  return RegisterList(HasWriteBack(i) ? n.reg(i) : Register::None());
 }
 
 SafetyLevel StoreBasedImmedMemoryDouble::safety(const Instruction i) const {
@@ -491,7 +496,7 @@ SafetyLevel StoreBasedImmedMemoryDouble::safety(const Instruction i) const {
     return UNDEFINED;
   }
 
-  if (t2.reg(i).Equals(kRegisterPc)) {
+  if (t2.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -546,26 +551,26 @@ bool Breakpoint::is_literal_pool_head(const Instruction i) const {
 }
 
 SafetyLevel PackSatRev::safety(const Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) {
+  if (defs(i).Contains(Register::Pc())) {
     return FORBIDDEN_OPERANDS;
   }
   return MAY_BE_SAFE;
 }
 
 RegisterList PackSatRev::defs(const Instruction i) const {
-  return RegisterList(Rd(i)).Add(kConditions);
+  return RegisterList(Rd(i)).Add(Register::Conditions());
 }
 
 
 SafetyLevel Multiply::safety(const Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) {
+  if (defs(i).Contains(Register::Pc())) {
     return FORBIDDEN_OPERANDS;
   }
   return MAY_BE_SAFE;
 }
 
 RegisterList Multiply::defs(const Instruction i) const {
-  return RegisterList(Rd(i)).Add(kConditions);
+  return RegisterList(Rd(i)).Add(Register::Conditions());
 }
 
 
@@ -583,7 +588,7 @@ SafetyLevel MoveToStatusRegister::safety(Instruction i) const {
 
 RegisterList MoveToStatusRegister::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return RegisterList(kConditions);
+  return RegisterList(Register::Conditions());
 }
 
 
@@ -591,7 +596,7 @@ RegisterList MoveToStatusRegister::defs(const Instruction i) const {
 
 SafetyLevel StoreImmediate::safety(const Instruction i) const {
   // Don't let addressing writeback alter PC.
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
   return MAY_BE_SAFE;
 }
 
@@ -602,7 +607,7 @@ RegisterList StoreImmediate::defs(const Instruction i) const {
 RegisterList StoreImmediate::immediate_addressing_defs(
     const Instruction i) const {
   return RegisterList((!PreindexingFlag(i) || WritesFlag(i))
-                      ? base_address_register(i) : kRegisterNone);
+                      ? base_address_register(i) : Register::None());
 }
 
 Register StoreImmediate::base_address_register(const Instruction i) const {
@@ -618,10 +623,10 @@ SafetyLevel LoadMultiple::safety(const Instruction i) const {
     // (Pre-v7 this was still a weird thing to do.)
     return UNPREDICTABLE;
   }
-  if (Rn(i).Equals(kRegisterPc) || (i.Bits(15, 0) == 0)) {
+  if (Rn(i).Equals(Register::Pc()) || (i.Bits(15, 0) == 0)) {
     return UNPREDICTABLE;
   }
-  if (defs(i).Contains(kRegisterPc)) {
+  if (defs(i).Contains(Register::Pc())) {
     return FORBIDDEN_OPERANDS;
   }
   return MAY_BE_SAFE;
@@ -633,7 +638,7 @@ RegisterList LoadMultiple::defs(const Instruction i) const {
 
 RegisterList LoadMultiple::immediate_addressing_defs(
     const Instruction i) const {
-  return RegisterList(WritesFlag(i) ? Rn(i) : kRegisterNone);
+  return RegisterList(WritesFlag(i) ? Rn(i) : Register::None());
 }
 
 Register LoadMultiple::base_address_register(const Instruction i) const {
@@ -643,19 +648,19 @@ Register LoadMultiple::base_address_register(const Instruction i) const {
 // Vector load/stores
 
 SafetyLevel VectorLoad::safety(Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
   return MAY_BE_SAFE;
 }
 
 RegisterList VectorLoad::defs(Instruction i) const {
   // Rm == PC indicates no address writeback.  Otherwise Rn is affected.
-  return RegisterList(!Rm(i).Equals(kRegisterPc) ? Rn(i) : kRegisterNone);
+  return RegisterList(!Rm(i).Equals(Register::Pc()) ? Rn(i) : Register::None());
 }
 
 RegisterList VectorLoad::immediate_addressing_defs(Instruction i) const {
   // Rm == SP indicates automatic update based on size of load, and
   // updated by small static displacement.
-  return RegisterList(Rm(i).Equals(kRegisterStack) ? Rn(i) : kRegisterNone);
+  return RegisterList(Rm(i).Equals(Register::Sp()) ? Rn(i) : Register::None());
 }
 
 Register VectorLoad::base_address_register(const Instruction i) const {
@@ -664,20 +669,20 @@ Register VectorLoad::base_address_register(const Instruction i) const {
 
 
 SafetyLevel VectorStore::safety(Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
   return MAY_BE_SAFE;
 }
 
 RegisterList VectorStore::defs(Instruction i) const {
   // Rm == PC indicates no address writeback.  Otherwise Rn is affected.
-  return RegisterList(!Rm(i).Equals(kRegisterPc)
-                      ? base_address_register(i) : kRegisterNone);
+  return RegisterList(!Rm(i).Equals(Register::Pc())
+                      ? base_address_register(i) : Register::None());
 }
 
 RegisterList VectorStore::immediate_addressing_defs(Instruction i) const {
   // Rm == SP indicates automatic update based on size of store.
-  return RegisterList(Rm(i).Equals(kRegisterStack)
-                      ? base_address_register(i) : kRegisterNone);
+  return RegisterList(Rm(i).Equals(Register::Sp())
+                      ? base_address_register(i) : Register::None());
 }
 
 Register VectorStore::base_address_register(Instruction i) const {
@@ -688,7 +693,7 @@ Register VectorStore::base_address_register(Instruction i) const {
 // Coprocessors
 /*
 SafetyLevel CoprocessorOp::safety(Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  if (defs(i).Contains(Register::Pc())) return FORBIDDEN_OPERANDS;
   switch (CoprocIndex(i)) {
     default: return FORBIDDEN;
 
@@ -704,7 +709,7 @@ RegisterList LoadCoprocessor::defs(Instruction i) const {
 }
 
 RegisterList LoadCoprocessor::immediate_addressing_defs(Instruction i) const {
-  return RegisterList(writes.IsDefined(i) ? Rn(i) : kRegisterNone);
+  return RegisterList(writes.IsDefined(i) ? Rn(i) : Register::None());
 }
 
 RegisterList StoreCoprocessor::defs(Instruction i) const {
@@ -713,7 +718,7 @@ RegisterList StoreCoprocessor::defs(Instruction i) const {
 
 RegisterList StoreCoprocessor::immediate_addressing_defs(Instruction i) const {
   return RegisterList(writes.IsDefined(i)
-                      ? base_address_register(i) : kRegisterNone);
+                      ? base_address_register(i) : Register::None());
 }
 
 Register StoreCoprocessor::base_address_register(Instruction i) const {
@@ -733,10 +738,10 @@ SafetyLevel BxBlx::safety(Instruction i) const {
   // after the current instruction. This instruction should be in an instruction
   // pair, the mask should therefore be to PC and fail checking, but there's
   // little harm in checking.
-  if (m.reg(i).Equals(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  if (m.reg(i).Equals(Register::Pc())) return FORBIDDEN_OPERANDS;
 
   // Redundant with the above, but this is actually UNPREDICTABLE. Expect DCE.
-  if (link_register.IsUpdated(i) && m.reg(i).Equals(kRegisterPc)) {
+  if (link_register.IsUpdated(i) && m.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -744,8 +749,8 @@ SafetyLevel BxBlx::safety(Instruction i) const {
 }
 
 RegisterList BxBlx::defs(const Instruction i) const {
-  return RegisterList(kRegisterPc).
-      Add(link_register.IsUpdated(i) ? kRegisterLink : kRegisterNone);
+  return RegisterList(Register::Pc()).
+      Add(link_register.IsUpdated(i) ? Register::Lr() : Register::None());
 }
 
 Register BxBlx::branch_target_register(const Instruction i) const {
@@ -763,8 +768,8 @@ bool Branch::is_relative_branch(Instruction i) const {
 }
 
 RegisterList Branch::defs(const Instruction i) const {
-  return RegisterList(kRegisterPc).
-      Add(PreindexingFlag(i) ? kRegisterLink : kRegisterNone);
+  return RegisterList(Register::Pc()).
+      Add(PreindexingFlag(i) ? Register::Lr() : Register::None());
 }
 
 int32_t Branch::branch_target_offset(const Instruction i) const {
@@ -781,7 +786,7 @@ SafetyLevel Unary1RegisterSet::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  if (d.reg(i).Equals(kRegisterPc)) {
+  if (d.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -800,7 +805,7 @@ SafetyLevel Unary1RegisterUse::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
-  if (n.reg(i).Equals(kRegisterPc)) {
+  if (n.reg(i).Equals(Register::Pc())) {
     return UNPREDICTABLE;
   }
 
@@ -808,12 +813,13 @@ SafetyLevel Unary1RegisterUse::safety(const Instruction i) const {
 }
 
 RegisterList Unary1RegisterUse::defs(const Instruction i) const {
-  return RegisterList((mask.value(i) < 2) ? kRegisterNone : kConditions);
+  return RegisterList((mask.value(i) < 2) ?
+                      Register::None() : Register::Conditions());
 }
 
 // Unary1RegisterBitRangeMsbGeLsb
 SafetyLevel Unary1RegisterBitRangeMsbGeLsb::safety(Instruction i) const {
-  if (d.reg(i).Equals(kRegisterPc) ||
+  if (d.reg(i).Equals(Register::Pc()) ||
       msb.value(i) < lsb.value(i))
     return UNPREDICTABLE;
 
