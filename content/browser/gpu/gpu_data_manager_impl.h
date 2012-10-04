@@ -50,8 +50,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void AddObserver(content::GpuDataManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
       content::GpuDataManagerObserver* observer) OVERRIDE;
-  virtual void SetWindowCount(uint32 count) OVERRIDE;
-  virtual uint32 GetWindowCount() const OVERRIDE;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser
@@ -156,9 +154,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // We disable histogram stuff in testing, especially in unit tests because
   // they cause random failures.
   bool update_histograms_;
-
-  // Number of currently open windows, to be used in gpu memory allocation.
-  int window_count_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };

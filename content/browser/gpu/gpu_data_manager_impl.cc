@@ -76,8 +76,7 @@ GpuDataManagerImpl::GpuDataManagerImpl()
       observer_list_(new GpuDataManagerObserverList),
       software_rendering_(false),
       card_blacklisted_(false),
-      update_histograms_(true),
-      window_count_(0) {
+      update_histograms_(true) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
@@ -284,22 +283,6 @@ void GpuDataManagerImpl::AddObserver(GpuDataManagerObserver* observer) {
 
 void GpuDataManagerImpl::RemoveObserver(GpuDataManagerObserver* observer) {
   observer_list_->RemoveObserver(observer);
-}
-
-void GpuDataManagerImpl::SetWindowCount(uint32 count) {
-  {
-    base::AutoLock auto_lock(gpu_info_lock_);
-    window_count_ = count;
-  }
-  GpuProcessHost::SendOnIO(
-      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-      new GpuMsg_SetVideoMemoryWindowCount(count));
-}
-
-uint32 GpuDataManagerImpl::GetWindowCount() const {
-  base::AutoLock auto_lock(gpu_info_lock_);
-  return window_count_;
 }
 
 void GpuDataManagerImpl::AppendRendererCommandLine(

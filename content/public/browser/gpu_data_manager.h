@@ -79,11 +79,6 @@ class GpuDataManager {
   virtual void AddObserver(GpuDataManagerObserver* observer) = 0;
   virtual void RemoveObserver(GpuDataManagerObserver* observer) = 0;
 
-  // Notifies the gpu process about the number of browser windows, so
-  // they can be used to determine managed memory allocation.
-  virtual void SetWindowCount(uint32 count) = 0;
-  virtual uint32 GetWindowCount() const = 0;
-
  protected:
   virtual ~GpuDataManager() {}
 };
