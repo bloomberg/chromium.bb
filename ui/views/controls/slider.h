@@ -75,6 +75,11 @@ class VIEWS_EXPORT Slider : public View,
  private:
   void SetValueInternal(float value, SliderChangeReason reason);
 
+  // Should be called on the Mouse Down event. Used to calculate relative
+  // position of the mouse cursor (or the touch point) on the button to
+  // accurately move the button using the MoveButtonTo() method.
+  void PrepareForMove(const gfx::Point& point);
+
   // Moves the button to the specified point and updates the value accordingly.
   void MoveButtonTo(const gfx::Point& point);
 
@@ -105,6 +110,10 @@ class VIEWS_EXPORT Slider : public View,
   string16 accessible_name_;
   bool accessibility_events_enabled_;
   SkColor focus_border_color_;
+
+  // Relative position of the mouse cursor (or the touch point) on the slider's
+  // button.
+  gfx::Point initial_button_offset_;
 
   const int* bar_active_images_;
   const int* bar_disabled_images_;

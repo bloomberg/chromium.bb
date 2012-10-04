@@ -108,16 +108,47 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   }
 }
 
+void Slider::PrepareForMove(const gfx::Point& point) {
+  // Try to remember the position of the mouse cursor on the button.
+  gfx::Insets inset = GetInsets();
+  gfx::Rect content = GetContentsBounds();
+  float value = move_animation_.get() && move_animation_->is_animating() ?
+        animating_value_ : value_;
+
+  // For the horizontal orientation.
+  const int thumb_x = value * (content.width() - thumb_->width());
+  const int candidate_x = (base::i18n::IsRTL() ?
+      width() - (point.x() - inset.left()) :
+      point.x() - inset.left()) - thumb_x;
+  if (candidate_x >= 0 && candidate_x < thumb_->width())
+    initial_button_offset_.set_x(candidate_x);
+  else
+    initial_button_offset_.set_x(thumb_->width() / 2);
+
+  // For the vertical orientation.
+  const int thumb_y = (1.0 - value) * (content.height() - thumb_->height());
+  const int candidate_y = point.y() - thumb_y;
+  if (candidate_y >= 0 && candidate_y < thumb_->height())
+    initial_button_offset_.set_y(candidate_y);
+  else
+    initial_button_offset_.set_y(thumb_->height() / 2);
+}
+
 void Slider::MoveButtonTo(const gfx::Point& point) {
   gfx::Insets inset = GetInsets();
+  // Calculate the value.
   if (orientation_ == HORIZONTAL) {
-    int amount = base::i18n::IsRTL() ? width() - inset.left() - point.x() :
-                                       point.x() - inset.left();
-    SetValueInternal(static_cast<float>(amount) / (width() - inset.width()),
+    int amount = base::i18n::IsRTL() ?
+        width() - inset.left() - point.x() - initial_button_offset_.x() :
+        point.x() - inset.left() - initial_button_offset_.x();
+    SetValueInternal(static_cast<float>(amount) /
+                         (width() - inset.width() - thumb_->width()),
                      VALUE_CHANGED_BY_USER);
   } else {
-    SetValueInternal(1.0f - static_cast<float>(point.y()) / height(),
-                     VALUE_CHANGED_BY_USER);
+    SetValueInternal(
+        1.0f - static_cast<float>(point.y() - initial_button_offset_.y()) /
+            (height() - thumb_->height()),
+        VALUE_CHANGED_BY_USER);
   }
 }
 
@@ -193,14 +224,12 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
     // TODO(jennyz): draw vertical slider bar with resources.
     // TODO(sad): The painting code should use NativeTheme for various
     // platforms.
-    const int kButtonRadius = 5;
-    const int kLineThickness = 5;
+    const int kButtonRadius = thumb_->width() / 2;
+    const int kLineThickness = bar_height_ / 2;
     const SkColor kFullColor = SkColorSetARGB(125, 0, 0, 0);
     const SkColor kEmptyColor = SkColorSetARGB(50, 0, 0, 0);
-    const SkColor kButtonColor = SK_ColorBLACK;
 
-    int button_cx = 0, button_cy = 0;
-    int h = content.height() - kButtonRadius * 2;
+    int h = content.height() - thumb_->height();
     int full = value * h;
     int empty = h - full;
     int x = content.width() / 2 - kLineThickness / 2;
@@ -211,21 +240,22 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
                                kLineThickness, full),
                      kFullColor);
 
-    button_cx = x + kLineThickness / 2;
-    button_cy = content.y() + empty + kButtonRadius;
-
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setAntiAlias(true);
-    paint.setColor(kButtonColor);
-    canvas->sk_canvas()->drawCircle(button_cx, button_cy, kButtonRadius, paint);
+    // TODO(mtomasz): We draw a thumb here because so far it is the same
+    // for horizontal and vertical orientations. If it is different, then
+    // we will need a separate resource.
+    int button_cy = content.y() + h - full;
+    int thumb_x = content.width() / 2 - thumb_->width() / 2;
+    canvas->DrawImageInt(*thumb_, thumb_x, button_cy);
   }
   View::OnPaint(canvas);
 }
 
 bool Slider::OnMousePressed(const ui::MouseEvent& event) {
+  if (!event.IsOnlyLeftMouseButton())
+    return false;
   if (listener_)
     listener_->SliderDragStarted(this);
+  PrepareForMove(event.location());
   MoveButtonTo(event.location());
   return true;
 }
@@ -262,10 +292,14 @@ bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 ui::EventResult Slider::OnGestureEvent(const ui::GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-      event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-      event.type() == ui::ET_GESTURE_SCROLL_END ||
+  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
       event.type() == ui::ET_GESTURE_TAP_DOWN) {
+    PrepareForMove(event.location());
+    MoveButtonTo(event.location());
+    return ui::ER_CONSUMED;
+  } else
+  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+      event.type() == ui::ET_GESTURE_SCROLL_END) {
     MoveButtonTo(event.location());
     return ui::ER_CONSUMED;
   }

@@ -28,7 +28,7 @@ void ClickAt(views::View* view, int x, int y) {
 
 namespace views {
 
-TEST(SliderTest, UpdateFromClick) {
+TEST(SliderTest, UpdateFromClickHorizontal) {
   scoped_ptr<Slider> slider(new Slider(NULL, Slider::HORIZONTAL));
   View* view = slider.get();
   gfx::Size size = view->GetPreferredSize();
@@ -41,7 +41,20 @@ TEST(SliderTest, UpdateFromClick) {
   EXPECT_EQ(1.0f, slider->value());
 }
 
-TEST(SliderTest, UpdateFromClickRTL) {
+TEST(SliderTest, UpdateFromClickVertical) {
+  scoped_ptr<Slider> slider(new Slider(NULL, Slider::VERTICAL));
+  View* view = slider.get();
+  gfx::Size size = view->GetPreferredSize();
+  view->SetSize(size);
+
+  ClickAt(view, 0, 0);
+  EXPECT_EQ(1.0f, slider->value());
+
+  ClickAt(view, 0, view->height());
+  EXPECT_EQ(0.0f, slider->value());
+}
+
+TEST(SliderTest, UpdateFromClickRTLHorizontal) {
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 
