@@ -134,7 +134,6 @@
         '../third_party/skia/include/pdf/SkPDFDevice.h',
         '../third_party/skia/include/pdf/SkPDFDocument.h',
 
-        '../third_party/skia/include/ports/SkStream_Win.h',
         '../third_party/skia/include/ports/SkTypeface_win.h',
 
         '../third_party/skia/include/images/SkFlipPixelRef.h',
