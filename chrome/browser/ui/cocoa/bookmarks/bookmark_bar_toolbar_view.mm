@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"

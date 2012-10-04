@@ -20,7 +20,6 @@
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -66,6 +65,9 @@ using content::UserMetricsAction;
 using content::WebContents;
 
 namespace {
+
+// The showing height of the bar.
+const int kBookmarkBarHeight = 29;
 
 // Padding for when the bookmark bar is detached.
 const int kTopBottomNTPPadding = 12;
@@ -130,6 +132,8 @@ void RecordAppLaunch(Profile* profile, const GURL& url) {
 }
 
 }  // namespace
+
+const int BookmarkBarGtk::kBookmarkBarNTPHeight = 57;
 
 BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
                                Browser* browser,
@@ -320,7 +324,7 @@ void BookmarkBarGtk::CalculateMaxHeight() {
     max_height_ = req.height;
   } else {
     max_height_ = (bookmark_bar_state_ == BookmarkBar::DETACHED) ?
-        chrome::kNTPBookmarkBarHeight : chrome::kBookmarkBarHeight;
+                  kBookmarkBarNTPHeight : kBookmarkBarHeight;
   }
 }
 

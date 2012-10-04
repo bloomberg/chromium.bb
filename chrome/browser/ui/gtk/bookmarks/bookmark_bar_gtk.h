@@ -49,6 +49,9 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
                        public chrome::BookmarkBarInstructionsDelegate,
                        public BookmarkContextMenuControllerDelegate {
  public:
+  // The NTP needs to have access to this.
+  static const int kBookmarkBarNTPHeight;
+
   BookmarkBarGtk(BrowserWindowGtk* window,
                  Browser* browser,
                  TabstripOriginProvider* tabstrip_origin_provider);

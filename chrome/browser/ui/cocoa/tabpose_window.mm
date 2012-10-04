@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #include "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -246,7 +245,7 @@ void ThumbnailLoader::LoadThumbnail() {
       bookmark_tab_helper->ShouldShowBookmarkBar() &&
       !always_show_bookmark_bar;
   if (has_detached_bookmark_bar)
-    topOffset += chrome::kNTPBookmarkBarHeight;
+    topOffset += bookmarks::kNTPBookmarkBarHeight;
 
   return topOffset;
 }

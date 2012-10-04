@@ -15,7 +15,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -1032,8 +1031,8 @@ TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
   EXPECT_GT([buttons count], 0u);
   for (NSButton* button in buttons) {
     EXPECT_FLOAT_EQ(
-        (chrome::kBookmarkBarHeight + bookmarks::kVisualHeightOffset) - 2 *
-            bookmarks::kBookmarkVerticalPadding,
+        (bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset) - 2 *
+                    bookmarks::kBookmarkVerticalPadding,
         [button frame].size.height);
   }
 }
