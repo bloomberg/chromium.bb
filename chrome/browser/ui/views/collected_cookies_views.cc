@@ -192,6 +192,7 @@ CollectedCookiesViews::CollectedCookiesViews(TabContents* tab_contents)
       block_allowed_button_(NULL),
       allow_blocked_button_(NULL),
       for_session_blocked_button_(NULL),
+      cookie_info_view_(NULL),
       infobar_(NULL),
       status_changed_(false) {
   TabSpecificContentSettings* content_settings =
