@@ -1149,12 +1149,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     // Verify that the current UA override setting has a priority over UA
     // overrides in navigation history entries.
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testUserAgentStringOverrideForHistory() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final ContentViewCore contentView =
@@ -1191,12 +1187,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         assertEquals(page2Title + defaultUserAgentString, getTitleOnUiThread(contentView));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testUserAgentStringNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
@@ -1204,12 +1196,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsUserAgentStringTestHelper(views.getView1(), views.getClient1()));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testUserAgentStringIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
@@ -1217,12 +1205,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsUserAgentStringTestHelper(views.getView1(), views.getClient1()));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testUserAgentStringBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(

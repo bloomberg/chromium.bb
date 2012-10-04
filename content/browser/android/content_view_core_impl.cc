@@ -431,6 +431,19 @@ jint ContentViewCoreImpl::GetCurrentRenderProcessId(JNIEnv* env, jobject obj) {
     return 0;
 }
 
+void ContentViewCoreImpl::SetAllUserAgentOverridesInHistory(
+    JNIEnv* env,
+    jobject,
+    jstring user_agent_override) {
+  std::string override =
+      base::android::ConvertJavaStringToUTF8(env, user_agent_override);
+  web_contents_->SetUserAgentOverride(override);
+  bool override_used = !override.empty();
+  const NavigationController& controller = web_contents_->GetController();
+  for (int i = 0; i < controller.GetEntryCount(); ++i)
+    controller.GetEntryAtIndex(i)->SetIsOverridingUserAgent(override_used);
+}
+
 ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetURL(
     JNIEnv* env, jobject) const {
   return ConvertUTF8ToJavaString(env, GetWebContents()->GetURL().spec());

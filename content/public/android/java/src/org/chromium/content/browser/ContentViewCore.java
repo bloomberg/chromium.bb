@@ -586,6 +586,12 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     public void loadUrl(LoadUrlParams params) {
         if (mNativeContentViewCore == 0) return;
+        if (isPersonalityView()) {
+            // For WebView, always use the user agent override, which is set
+            // every time the user agent in ContentSettings is modified.
+            params.setOverrideUserAgent(LoadUrlParams.UA_OVERRIDE_TRUE);
+        }
+
         nativeLoadUrl(mNativeContentViewCore,
                 params.mUrl,
                 params.mLoadUrlType,
@@ -598,7 +604,8 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     void setAllUserAgentOverridesInHistory() {
-        // TODO(tedchoc): Pass user agent override down to native.
+        nativeSetAllUserAgentOverridesInHistory(mNativeContentViewCore,
+                mContentSettings.getUserAgentString());
     }
 
     /**
@@ -1781,6 +1788,9 @@ public class ContentViewCore implements MotionEventDelegate {
             byte[] postData,
             String baseUrlForDataUrl,
             String virtualUrlForDataUrl);
+
+    private native void nativeSetAllUserAgentOverridesInHistory(int nativeContentViewCoreImpl,
+            String userAgentOverride);
 
     private native String nativeGetURL(int nativeContentViewCoreImpl);
 
