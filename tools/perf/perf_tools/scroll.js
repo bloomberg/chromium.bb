@@ -213,8 +213,9 @@
     this.scrollHeight_ = Math.min(this.scrollHeight_,
                                   this.element_.scrollHeight);
 
+    // -1 to allow for rounding errors on scaled viewports (like mobile).
     var isPassComplete =
-        this.element_.scrollTop + clientHeight >= this.scrollHeight_;
+        this.element_.scrollTop + clientHeight >= this.scrollHeight_ - 1;
 
     if (!isPassComplete) {
       this.gesture_.start(this.onGestureComplete_.bind(this));
