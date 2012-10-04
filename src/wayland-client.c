@@ -499,22 +499,29 @@ create_proxies(struct wl_display *display, struct wl_closure *closure)
 	return 0;
 }
 
-static void
-handle_event(struct wl_display *display,
-	     uint32_t id, uint32_t opcode, uint32_t size)
+static int
+queue_event(struct wl_display *display, int len, struct wl_list *list)
 {
+	uint32_t p[2], id;
+	int opcode, size;
 	struct wl_proxy *proxy;
 	struct wl_closure *closure;
 	const struct wl_message *message;
 
-	proxy = wl_map_lookup(&display->objects, id);
+	wl_connection_copy(display->connection, p, sizeof p);
+	id = p[0];
+	opcode = p[1] & 0xffff;
+	size = p[1] >> 16;
+	if (len < size)
+		return 0;
 
+	proxy = wl_map_lookup(&display->objects, id);
 	if (proxy == WL_ZOMBIE_OBJECT) {
 		wl_connection_consume(display->connection, size);
-		return;
+		return size;
 	} else if (proxy == NULL || proxy->object.implementation == NULL) {
 		wl_connection_consume(display->connection, size);
-		return;
+		return size;
 	}
 
 	message = &proxy->object.interface->events[opcode];
@@ -529,38 +536,59 @@ handle_event(struct wl_display *display,
 		abort();
 	}
 
+	wl_list_insert(list->prev, &closure->link);
+
+	return size;
+}
+
+static void
+dispatch_event(struct wl_display *display, struct wl_closure *closure)
+{
+	struct wl_proxy *proxy;
+	uint32_t id;
+	int opcode;
+
+	wl_list_remove(&closure->link);
+	id = closure->buffer[0];
+	opcode = closure->buffer[1] & 0xffff;
+
+	proxy = wl_map_lookup(&display->objects, id);
+	if (proxy == WL_ZOMBIE_OBJECT)
+		goto skip;
+
 	wl_closure_invoke(closure, &proxy->object,
 			  proxy->object.implementation[opcode],
 			  proxy->user_data);
-
+ skip:
 	wl_closure_destroy(closure);
 }
 
 WL_EXPORT int
 wl_display_dispatch(struct wl_display *display)
 {
-	uint32_t p[2], object;
-	int len, opcode, size;
+	struct wl_list list;
+	struct wl_closure *closure;
+	int len, size;
 
 	/* FIXME: Handle flush errors, EAGAIN... */
 	wl_display_flush(display);
 
 	/* FIXME: Shouldn't always read here... */
 	len = wl_connection_read(display->connection);
+	if (len == -1)
+		return -1;
 
-	while (len > 0) {
-		if ((size_t) len < sizeof p)
+	wl_list_init(&list);
+	while (len >= 8) {
+		size = queue_event(display, len, &list);
+		if (size == 0)
 			break;
-		
-		wl_connection_copy(display->connection, p, sizeof p);
-		object = p[0];
-		opcode = p[1] & 0xffff;
-		size = p[1] >> 16;
-		if (len < size)
-			break;
-
-		handle_event(display, object, opcode, size);
 		len -= size;
+	}
+
+	while (!wl_list_empty(&list)) {
+		closure = container_of(list.next, struct wl_closure, link);
+		dispatch_event(display, closure);
 	}
 
 	return len;

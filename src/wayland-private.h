@@ -73,6 +73,7 @@ struct wl_closure {
 	ffi_cif cif;
 	void *args[20];
 	uint32_t *start;
+	struct wl_list link;
 	uint32_t buffer[0];
 };
 
