@@ -504,6 +504,7 @@ Mosaic.Layout = function(container) {
   this.container_ = container;
   this.columns_ = [];
   this.newColumn_ = null;
+  this.tilesPerRowLimit_ = 1;  // Try the least dense layout first.
 };
 
 /**
@@ -533,10 +534,18 @@ Mosaic.Layout.prototype.getTileCount = function() {
 };
 
 /**
+ * @return {Mosaic.Column} The last column or null for empty layout.
+ * @private
+ */
+Mosaic.Layout.prototype.getLastColumn_ = function() {
+  return this.columns_.length ? this.columns_[this.columns_.length - 1] : null;
+};
+
+/**
  * @return {number} Total number of tiles in completed columns.
  */
 Mosaic.Layout.prototype.getLaidOutTileCount = function() {
-  var lastColumn = this.columns_[this.columns_.length - 1];
+  var lastColumn = this.getLastColumn_();
   return lastColumn ? lastColumn.getLastTileIndex() : 0;
 };
 
@@ -548,6 +557,14 @@ Mosaic.Layout.prototype.getLaidOutTileCount = function() {
  */
 Mosaic.Layout.prototype.add = function(tile, isLast) {
   var layoutQueue = [tile];
+
+  // There are two levels of backtracking in the layout algorithm.
+  // |this.tilesPerRowLimit_| property tracks the state of the 'global'
+  // backtracking which aims to use as much of the viewport space as possible.
+  //
+  // |tilesPerRow| variable tracks the state of the 'local' backtracking
+  // which aims to produce for each column a nice non-regular mix of large and
+  // small thumbnails.
   var tilesPerRow = Mosaic.Row.TILES_PER_ROW;
 
   var layoutHeight = this.container_.clientHeight -
@@ -555,23 +572,54 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
 
   while (layoutQueue.length) {
     if (!this.newColumn_) {
+      var lastColumn = this.getLastColumn_();
       this.newColumn_ = new Mosaic.Column(
-          this.columns_.length, this.getTileCount(), layoutHeight, tilesPerRow);
+          this.columns_.length,
+          lastColumn ? lastColumn.getLastTileIndex() : 0,
+          lastColumn ? lastColumn.getRightEdge() : 0,
+          Mosaic.Layout.PADDING_TOP, layoutHeight,
+          Math.min(tilesPerRow, this.tilesPerRowLimit_));
       tilesPerRow = Mosaic.Row.TILES_PER_ROW;  // Reset the default.
     }
 
     this.newColumn_.add(layoutQueue.shift());
 
-    if (this.newColumn_.prepareLayout(isLast && !layoutQueue.length)) {
+    var isFinalColumn = isLast && !layoutQueue.length;
+
+    if (this.newColumn_.prepareLayout(isFinalColumn)) {
       if (this.newColumn_.isSuboptimal()) {
-        // Forget the new column, put its tiles back into the layout queue.
+        // Rollback the new column and try again with less tiles per row.
         layoutQueue = this.newColumn_.getTiles().concat(layoutQueue);
-        tilesPerRow = 1;  // Force 1 tile per row for the next column.
+        console.assert(tilesPerRow > 1, 'Inconsistent layout state');
+        tilesPerRow--;
       } else {
-        var lastColumn = this.columns_[this.columns_.length - 1];
-        this.newColumn_.layout(lastColumn ? lastColumn.getRightEdge() : 0,
-            Mosaic.Layout.PADDING_TOP);
         this.columns_.push(this.newColumn_);
+        if (this.tilesPerRowLimit_ < Mosaic.Row.TILES_PER_ROW) {
+          // Doing tentative layout. Delay the actual layout until we are sure
+          // that the layout does not overflow the viewport.
+          if (this.newColumn_.getRightEdge() > this.container_.clientWidth) {
+            // The layout does not fit into the viewport. Rollback the
+            // uncommitted columns and start over with a denser layout.
+            while (this.columns_.length) {
+              var column = this.getLastColumn_();
+              if (column.isLayoutFinal())
+                break;
+              layoutQueue = column.getTiles().concat(layoutQueue);
+              this.columns_.pop();
+            }
+            this.tilesPerRowLimit_++;
+          } else if (isFinalColumn) {
+            // The layout fits into the viewport completely.
+            // Commit the tentative part layout.
+            for (var i = 0; i != this.columns_.length; i++) {
+              if (!this.columns_[i].isLayoutFinal())
+                this.columns_[i].layout();
+            }
+          }
+        } else {
+          // Layout normally.
+          this.newColumn_.layout();
+        }
       }
       this.newColumn_ = null;
     }
@@ -586,6 +634,7 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
  */
 Mosaic.Layout.prototype.backtrack = function(index) {
   this.newColumn_ = null;
+  this.tilesPerRowLimit_ = 1; //  Try the least dense layout first.
 
   var columnIndex = this.getColumnIndexByTile_(index);
   if (columnIndex < 0)
@@ -673,13 +722,18 @@ Mosaic.Layout.rescaleSizesToNewTotal = function(sizes, newTotal) {
  *
  * @param {number} index Column index.
  * @param {number} firstTileIndex Index of the first tile in the column.
+ * @param {number} left Left edge coordinate.
+ * @param {number} top Top edge coordinate.
  * @param {number} maxHeight Maximum height.
  * @param {number} maxTilesPerRow Maximum number of tiles per row.
  * @constructor
  */
-Mosaic.Column = function(index, firstTileIndex, maxHeight, maxTilesPerRow) {
+Mosaic.Column = function(index, firstTileIndex, left, top, maxHeight,
+                         maxTilesPerRow) {
   this.index_ = index;
   this.firstTileIndex_ = firstTileIndex;
+  this.left_ = left;
+  this.top_ = top;
   this.maxHeight_ = maxHeight;
   this.maxTilesPerRow_ = maxTilesPerRow;
 
@@ -816,15 +870,18 @@ Mosaic.Column.prototype.getRightEdge = function() {
 };
 
 /**
- * Perform the column layout.
- *
- * @param {number} left Left coordinate.
- * @param {number} top Top coordinate.
+ * @return {boolean} True if the column layout has been performed.
  */
-Mosaic.Column.prototype.layout = function(left, top) {
-  this.left_ = left;
+Mosaic.Column.prototype.isLayoutFinal = function() { return this.final_ };
+
+/**
+ * Perform the column layout.
+ */
+Mosaic.Column.prototype.layout = function() {
+  this.final_ = true;
+  var top = this.top_;
   for (var r = 0; r != this.rows_.length; r++) {
-    this.rows_[r].layout(left, top, this.width_, this.rowHeights_[r]);
+    this.rows_[r].layout(this.left_, top, this.width_, this.rowHeights_[r]);
     top += this.rowHeights_[r];
   }
 };
@@ -871,6 +928,7 @@ Mosaic.Row = function(firstTileIndex) {
 
 /**
  * Default number of tiles per row.
+ * TODO(kaznacheev): Increase to 3 if the thumbnails are large enough.
  * @type {Number}
  */
 Mosaic.Row.TILES_PER_ROW = 2;
