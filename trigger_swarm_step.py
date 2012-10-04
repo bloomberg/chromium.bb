@@ -34,7 +34,8 @@ CLEANUP_SCRIPT_PATH = os.path.join(TOOLS_PATH, CLEANUP_SCRIPT_NAME)
 # need to make sure they don't have zombie processes left by themselves. Figure
 # out a way to make this cleaner.
 WINDOWS_SCRIPT_NAME = 'kill_processes.py'
-WINDOWS_SCRIPT_PATH = os.path.join(TOOLS_PATH, WINDOWS_SCRIPT_NAME)
+WINDOWS_SCRIPT_PATH = os.path.join(
+    BUILD_ROOT_PATH, 'scripts', 'slave', WINDOWS_SCRIPT_NAME)
 
 HANDLE_EXE = 'handle.exe'
 HANDLE_EXE_PATH = os.path.join(
