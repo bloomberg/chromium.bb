@@ -1,5 +1,6 @@
 # The set noparent is temporary until src/OWNERS isn't *.
 set noparent
-nduca@chromium.org
 alokp@chromium.org
 dtu@chromium.org
+nduca@chromium.org
+tonyg@chromium.org
