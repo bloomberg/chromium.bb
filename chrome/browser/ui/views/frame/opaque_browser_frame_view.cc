@@ -714,7 +714,6 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   canvas->SaveLayerAlpha(
       255, gfx::Rect(x - kClientEdgeThickness, y, w + kClientEdgeThickness * 3,
                      h));
-  canvas->sk_canvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
   // TODO(kuan): migrate background animation from cros to win by calling
   // GetToolbarBackgound* with the correct mode, refer to

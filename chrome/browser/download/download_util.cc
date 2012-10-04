@@ -270,10 +270,8 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
 
   // Start at full opacity, then loop back and forth five times before ending
   // at zero opacity.
-  canvas->SaveLayerAlpha(GetOpacity(animation_progress), complete_bounds);
-  canvas->sk_canvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-  canvas->DrawImageInt(*complete, complete_bounds.x(), complete_bounds.y());
-  canvas->Restore();
+  canvas->DrawImageInt(*complete, complete_bounds.x(), complete_bounds.y(),
+                       GetOpacity(animation_progress));
 }
 
 void PaintDownloadInterrupted(gfx::Canvas* canvas,
@@ -302,10 +300,8 @@ void PaintDownloadInterrupted(gfx::Canvas* canvas,
 
   // Start at zero opacity, then loop back and forth five times before ending
   // at full opacity.
-  canvas->SaveLayerAlpha(GetOpacity(1.0 - animation_progress), complete_bounds);
-  canvas->sk_canvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-  canvas->DrawImageInt(*complete, complete_bounds.x(), complete_bounds.y());
-  canvas->Restore();
+  canvas->DrawImageInt(*complete, complete_bounds.x(), complete_bounds.y(),
+                       GetOpacity(1.0 - animation_progress));
 }
 
 // Load a language dependent height so that the dangerous download confirmation

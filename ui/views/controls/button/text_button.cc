@@ -139,7 +139,6 @@ void TextButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
       // handle the case of having a non-NULL |normal_set_|.
       canvas->SaveLayerAlpha(static_cast<uint8>(
           button->GetAnimation()->CurrentValueBetween(0, 255)));
-      canvas->sk_canvas()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
       Paint(view, canvas, *set);
       canvas->Restore();
     } else {
