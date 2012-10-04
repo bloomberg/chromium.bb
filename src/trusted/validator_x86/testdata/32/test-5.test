@@ -333,7 +333,5 @@
    14f:	f4                  	hlt
 @rdfa_output:
   4b: [0] direct jump out of range
-  4b: [0] warning - bad call alignment
   eb: [0] direct jump out of range
-  eb: [0] warning - bad call alignment
   return code: 1

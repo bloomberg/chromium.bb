@@ -66,10 +66,7 @@
    19:	f4                  	hlt
 @rdfa_output:
   6: [0] direct jump out of range
-  6: [0] warning - bad call alignment
   b: [0] direct jump out of range
-  b: [0] warning - bad call alignment
   10: [0] direct jump out of range
-  10: [0] warning - bad call alignment
   16: [0] unrecognized instruction
   return code: 1

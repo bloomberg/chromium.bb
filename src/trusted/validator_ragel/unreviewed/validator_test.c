@@ -109,8 +109,6 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
   if (error_code & SPL_MODIFIED)
     printf("offset 0x%"NACL_PRIxS": error - %%spl or %%sp is changed\n",
                                                                         offset);
-  if (error_code & BAD_CALL_ALIGNMENT)
-    printf("offset 0x%"NACL_PRIxS": warning - bad call alignment\n", offset);
   if (error_code & BAD_JUMP_TARGET)
     printf("bad jump to around 0x%"NACL_PRIxS"\n", offset);
   if (error_code & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
@@ -119,7 +117,18 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
     return TRUE;
 }
 
+Bool ProcessErrorOrWarning(const uint8_t *begin, const uint8_t *end,
+                           uint32_t error_code, void *userdata) {
+  size_t offset = begin - (((struct ValidateState *)userdata)->offset);
+  UNREFERENCED_PARAMETER(end);
+
+  if (error_code & BAD_CALL_ALIGNMENT)
+    printf("offset 0x%"NACL_PRIxS": warning - bad call alignment\n", offset);
+  return ProcessError(begin, end, error_code, userdata);
+}
+
 Bool ValidateElf32(const uint8_t *data, size_t data_size,
+                   Bool warnings,
                    enum validation_options options,
                    const NaClCPUFeaturesX86 *cpu_features) {
   Elf32_Ehdr *header;
@@ -150,7 +159,8 @@ Bool ValidateElf32(const uint8_t *data, size_t data_size,
                   data + section->sh_offset, section->sh_size);
       res = ValidateChunkIA32(data + section->sh_offset, section->sh_size,
                               options, cpu_features,
-                              ProcessError, &state);
+                              warnings ? ProcessErrorOrWarning : ProcessError,
+                              &state);
       if (!res)
         return res;
     }
@@ -159,6 +169,7 @@ Bool ValidateElf32(const uint8_t *data, size_t data_size,
 }
 
 Bool ValidateElf64(const uint8_t *data, size_t data_size,
+                   Bool warnings,
                    enum validation_options options,
                    const NaClCPUFeaturesX86 *cpu_features) {
   Elf64_Ehdr *header;
@@ -191,8 +202,9 @@ Bool ValidateElf64(const uint8_t *data, size_t data_size,
                   data + section->sh_offset, (size_t)section->sh_size);
       res = ValidateChunkAMD64(data + section->sh_offset,
                                (size_t)section->sh_size,
-                               options,
-                               cpu_features, ProcessError, &state);
+                               options, cpu_features,
+                               warnings ? ProcessErrorOrWarning : ProcessError,
+                               &state);
       if (!res)
         return res;
     }
@@ -202,12 +214,13 @@ Bool ValidateElf64(const uint8_t *data, size_t data_size,
 
 Bool ValidateElf(const char *filename,
                  const uint8_t *data, size_t data_size,
+                 Bool warnings,
                  enum validation_options options,
                  const NaClCPUFeaturesX86 *cpu_features) {
   if (data[4] == 1) {
-    return ValidateElf32(data, data_size, options, cpu_features);
+    return ValidateElf32(data, data_size, warnings, options, cpu_features);
   } else if (data[4] == 2) {
-    return ValidateElf64(data, data_size, options, cpu_features);
+    return ValidateElf64(data, data_size, warnings, options, cpu_features);
   } else {
     printf("Unknown ELF class: %s\n", filename);
     exit(1);
@@ -217,6 +230,7 @@ Bool ValidateElf(const char *filename,
 void ProcessFile(const char *filename,
                  int repeat_count,
                  int raw_bitness,
+                 Bool warnings,
                  enum validation_options options,
                  const NaClCPUFeaturesX86 *cpu_features) {
   size_t data_size;
@@ -230,6 +244,7 @@ void ProcessFile(const char *filename,
     if (raw_bitness == 0)
       rc = ValidateElf(filename,
                        data, data_size,
+                       warnings,
                        options,
                        cpu_features);
     else if (raw_bitness == 32) {
@@ -238,7 +253,8 @@ void ProcessFile(const char *filename,
       CHECK(data_size % kBundleSize == 0);
       rc = ValidateChunkIA32(data, data_size,
                              options, cpu_features,
-                             ProcessError, &state);
+                             warnings ? ProcessErrorOrWarning : ProcessError,
+                             &state);
     }
     else if (raw_bitness == 64) {
       struct ValidateState state;
@@ -246,7 +262,8 @@ void ProcessFile(const char *filename,
       CHECK(data_size % kBundleSize == 0);
       rc = ValidateChunkAMD64(data, data_size,
                               options, cpu_features,
-                              ProcessError, &state);
+                              warnings ? ProcessErrorOrWarning : ProcessError,
+                              &state);
     }
     if (!rc) {
       printf("file '%s' can not be fully validated\n", filename);
@@ -259,6 +276,7 @@ int main(int argc, char **argv) {
   int index, initial_index = 1, repeat_count = 1;
   const NaClCPUFeaturesX86 *cpu_features = &full_cpuid_features;
   int raw_bitness = 0;
+  Bool warnings = FALSE;
   enum validation_options options = 0;
 
   if (argc == 1) {
@@ -270,8 +288,10 @@ int main(int argc, char **argv) {
     if (!strcmp(arg, "--compatible")) {
       cpu_features = &validator_cpuid_features;
       initial_index++;
-    } else if (!strcmp(argv[initial_index], "--detect-unaligned-calls")) {
+    } else if (!strcmp(argv[initial_index], "--warnings")) {
+      warnings = TRUE;
       options |= CALL_USER_CALLBACK_ON_EACH_INSTRUCTION;
+      initial_index++;
     } else if (!strcmp(arg, "--nobundles")) {
       options |= PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM;
       initial_index++;
@@ -294,7 +314,8 @@ int main(int argc, char **argv) {
   }
   for (index = initial_index; index < argc; ++index) {
     const char *filename = argv[index];
-    ProcessFile(filename, repeat_count, raw_bitness, options, cpu_features);
+    ProcessFile(filename, repeat_count, raw_bitness, warnings, options,
+                cpu_features);
   }
   return 0;
 }
