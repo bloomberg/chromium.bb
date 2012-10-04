@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Mon Sep 10 20:05:13 2012.
+ *   modified Mon Oct 01 20:27:29 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_1 \
-    "PPP_ContentDecryptor_Private;0.1"
+#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_2 \
+    "PPP_ContentDecryptor_Private;0.2"
 #define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_1
+    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_2
 
 /**
  * @file
@@ -42,7 +42,7 @@
  * Decryption Module (CDM) for v0.1 of the proposed Encrypted Media Extensions:
  * http://goo.gl/rbdnR
  */
-struct PPP_ContentDecryptor_Private_0_1 {
+struct PPP_ContentDecryptor_Private_0_2 {
   /**
    * Generates a key request. key_system specifies the key or licensing system
    * to use. init_data is a data buffer containing data for use in generating
@@ -114,29 +114,26 @@ struct PPP_ContentDecryptor_Private_0_1 {
                   PP_Resource encrypted_block,
                   const struct PP_EncryptedBlockInfo* encrypted_block_info);
   /**
-   * Decrypts the block, decodes it, and returns the unencrypted uncompressed
-   * (decoded) media to the browser via the
+   * Decrypts encrypted_video_frame, decodes it, and returns the unencrypted
+   * uncompressed (decoded) video frame to the browser via the
+   * <code>DeliverFrame()</code> method on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
-   * Decrypted and decoded video frames are sent to <code>DeliverFrame()</code>,
-   * and decrypted and decoded audio samples are sent to
-   * <code>DeliverSamples()</code>.
+   * @param[in] encrypted_video_frame A <code>PP_Resource</code> corresponding
+   * to a <code>PPB_Buffer_Dev</code> resource that contains an encrypted video
+   * frame.
    *
-   * @param[in] resource A <code>PP_Resource</code> corresponding to a
-   * <code>PPB_Buffer_Dev</code> resource that contains an encrypted data
-   * block.
-   *
-   * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
-   * contains all auxiliary information needed for decryption of the
-   * <code>encrypted_block</code>.
+   * @param[in] encrypted_video_frame_info A
+   * <code>PP_EncryptedVideoFrameInfo</code> that contains all information
+   * needed to decrypt and decode <code>encrypted_video_frame</code>.
    */
-  void (*DecryptAndDecode)(
+  void (*DecryptAndDecodeFrame)(
       PP_Instance instance,
-      PP_Resource encrypted_block,
-      const struct PP_EncryptedBlockInfo* encrypted_block_info);
+      PP_Resource encrypted_video_frame,
+      const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info);
 };
 
-typedef struct PPP_ContentDecryptor_Private_0_1 PPP_ContentDecryptor_Private;
+typedef struct PPP_ContentDecryptor_Private_0_2 PPP_ContentDecryptor_Private;
 /**
  * @}
  */

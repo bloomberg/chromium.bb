@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Wed Oct  3 12:52:47 2012. */
+/* From private/pp_content_decryptor.idl modified Wed Oct  3 16:16:49 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -129,6 +129,70 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedBlockInfo, 240);
  * @{
  */
 /**
+ * <code>PP_DecryptedFrameFormat</code> contains video frame formats.
+ */
+typedef enum {
+  PP_DECRYPTEDFRAMEFORMAT_UNKNOWN = 0,
+  PP_DECRYPTEDFRAMEFORMAT_EMPTY = 1,
+  PP_DECRYPTEDFRAMEFORMAT_YV12 = 2,
+  PP_DECRYPTEDFRAMEFORMAT_I420 = 3
+} PP_DecryptedFrameFormat;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptedFrameFormat, 4);
+
+/**
+ * <code>PP_VideoCodec</code> contains video codec type constants.
+ */
+typedef enum {
+  PP_VIDEOCODEC_UNKNOWN = 0,
+  PP_VIDEOCODEC_VP8 = 1
+} PP_VideoCodec;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoCodec, 4);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
+/**
+ * <code>PP_EncryptedVideoFrameInfo</code> contains the information required
+ * to decrypt and decode a video frame.
+ * TODO(tomfinegan): Revisit necessity of including format information in this
+ * struct once we decide how to implement video decoder initialization.
+ */
+struct PP_EncryptedVideoFrameInfo {
+  /**
+   * The decoded video frame format.
+   */
+  PP_DecryptedFrameFormat format;
+  /**
+   * The video frame codec type.
+   */
+  PP_VideoCodec codec;
+  /**
+   * Video frame width in pixels.
+   */
+  int32_t width;
+  /**
+   * Video frame height in pixels.
+   */
+  int32_t height;
+  /**
+   * Information required to decrypt the frame.
+   */
+  struct PP_EncryptedBlockInfo encryption_info;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedVideoFrameInfo, 256);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Enums
+ * @{
+ */
+/**
  * The <code>PP_DecryptResult</code> enum contains decryption and decoding
  * result constants.
  */
@@ -180,17 +244,6 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DecryptedBlockInfo, 24);
  * @addtogroup Enums
  * @{
  */
-/**
- * <code>PP_DecryptedFrameFormat</code> contains video frame formats.
- */
-typedef enum {
-  PP_DECRYPTEDFRAMEFORMAT_UNKNOWN = 0,
-  PP_DECRYPTEDFRAMEFORMAT_EMPTY = 1,
-  PP_DECRYPTEDFRAMEFORMAT_YV12 = 2,
-  PP_DECRYPTEDFRAMEFORMAT_I420 = 3
-} PP_DecryptedFrameFormat;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptedFrameFormat, 4);
-
 /**
  * <code>PP_DecryptedFramePlanes</code> provides YUV plane index values for
  * accessing plane offsets stored in <code>PP_DecryptedFrameInfo</code>.

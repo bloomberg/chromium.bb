@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M23 = 0.1
+  M23 = 0.2
 };
 
 /**
@@ -100,24 +100,21 @@ interface PPP_ContentDecryptor_Private {
       [in] PP_EncryptedBlockInfo encrypted_block_info);
 
   /**
-   * Decrypts the block, decodes it, and returns the unencrypted uncompressed
-   * (decoded) media to the browser via the
+   * Decrypts encrypted_video_frame, decodes it, and returns the unencrypted 
+   * uncompressed (decoded) video frame to the browser via the
+   * <code>DeliverFrame()</code> method on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
-   * Decrypted and decoded video frames are sent to <code>DeliverFrame()</code>,
-   * and decrypted and decoded audio samples are sent to
-   * <code>DeliverSamples()</code>.
+   * @param[in] encrypted_video_frame A <code>PP_Resource</code> corresponding
+   * to a <code>PPB_Buffer_Dev</code> resource that contains an encrypted video
+   * frame.
    *
-   * @param[in] resource A <code>PP_Resource</code> corresponding to a
-   * <code>PPB_Buffer_Dev</code> resource that contains an encrypted data
-   * block.
-   *
-   * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
-   * contains all auxiliary information needed for decryption of the
-   * <code>encrypted_block</code>.
+   * @param[in] encrypted_video_frame_info A 
+   * <code>PP_EncryptedVideoFrameInfo</code> that contains all information
+   * needed to decrypt and decode <code>encrypted_video_frame</code>.
    */
-  void DecryptAndDecode(
+  void DecryptAndDecodeFrame(
       [in] PP_Instance instance,
-      [in] PP_Resource encrypted_block,
-      [in] PP_EncryptedBlockInfo encrypted_block_info);
+      [in] PP_Resource encrypted_video_frame,
+      [in] PP_EncryptedVideoFrameInfo encrypted_video_frame_info);
 };

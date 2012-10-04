@@ -208,7 +208,7 @@ class ContentDecryptionModule {
                          DecryptedBlock* decrypted_buffer) = 0;
 
   // Initializes the CDM video decoder with |video_decoder_config|. This
-  // function must be called before DecryptAndDecodeVideo() is called.
+  // function must be called before DecryptAndDecodeFrame() is called.
   //
   // Returns kSuccess if the |video_decoder_config| is supported and the CDM
   // video decoder is successfully initialized.
@@ -239,7 +239,7 @@ class ContentDecryptionModule {
   // TODO(xhwang): It's not safe to pass the ownership of the dynamically
   // allocated memory over library boundaries. Fix it after related PPAPI change
   // and sample CDM are landed.
-  virtual Status DecryptAndDecodeVideo(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
                                        VideoFrame* video_frame) = 0;
 
   // Resets the CDM video decoder to an initialized clean state. All internal

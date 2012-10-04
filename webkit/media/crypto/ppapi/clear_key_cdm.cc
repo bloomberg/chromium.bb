@@ -235,7 +235,7 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
   return cdm::kSessionError;
 }
 
-cdm::Status ClearKeyCdm::DecryptAndDecodeVideo(
+cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::VideoFrame* video_frame) {
   NOTIMPLEMENTED();

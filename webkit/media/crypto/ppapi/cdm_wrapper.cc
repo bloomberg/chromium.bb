@@ -367,10 +367,8 @@ class CdmWrapper : public pp::Instance,
   }
 
   // PPP_ContentDecryptor_Private methods
-  // Note: As per comments in PPP_ContentDecryptor_Private, these calls should
-  // return false if the call was not forwarded to the CDM and should return
-  // true otherwise. Once the call reaches the CDM, the call result/status
-  // should be reported through the PPB_ContentDecryptor_Private interface.
+  // Note: Results of calls to these methods must be reported through the
+  // PPB_ContentDecryptor_Private interface.
   virtual void GenerateKeyRequest(const std::string& key_system,
                                   pp::VarArrayBuffer init_data) OVERRIDE;
   virtual void AddKey(const std::string& session_id,
@@ -380,9 +378,9 @@ class CdmWrapper : public pp::Instance,
   virtual void Decrypt(
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
-  virtual void DecryptAndDecode(
-      pp::Buffer_Dev encrypted_buffer,
-      const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
+  virtual void DecryptAndDecodeFrame(
+      pp::Buffer_Dev encrypted_frame,
+      const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) OVERRIDE;
 
  private:
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
@@ -532,25 +530,27 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
       encrypted_block_info.tracking_info));
 }
 
-void CdmWrapper::DecryptAndDecode(
-    pp::Buffer_Dev encrypted_buffer,
-    const PP_EncryptedBlockInfo& encrypted_block_info) {
-  PP_DCHECK(!encrypted_buffer.is_null());
+void CdmWrapper::DecryptAndDecodeFrame(
+    pp::Buffer_Dev encrypted_frame,
+    const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) {
+  PP_DCHECK(!encrypted_frame.is_null());
   PP_DCHECK(cdm_);
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
-  ConfigureInputBuffer(encrypted_buffer, encrypted_block_info, &subsamples,
+  ConfigureInputBuffer(encrypted_frame,
+                       encrypted_video_frame_info.encryption_info,
+                       &subsamples,
                        &input_buffer);
 
   LinkedVideoFrame video_frame(new VideoFrameImpl());
-  cdm::Status status = cdm_->DecryptAndDecodeVideo(input_buffer,
+  cdm::Status status = cdm_->DecryptAndDecodeFrame(input_buffer,
                                                    video_frame.get());
   CallOnMain(callback_factory_.NewCallback(
       &CdmWrapper::DeliverFrame,
       status,
       video_frame,
-      encrypted_block_info.tracking_info));
+      encrypted_video_frame_info.encryption_info.tracking_info));
 }
 
 void CdmWrapper::KeyAdded(int32_t result, const std::string& session_id) {

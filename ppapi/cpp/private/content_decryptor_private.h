@@ -36,9 +36,9 @@ class ContentDecryptor_Private {
   virtual void CancelKeyRequest(const std::string& session_id) = 0;
   virtual void Decrypt(pp::Buffer_Dev encrypted_buffer,
                        const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
-  virtual void DecryptAndDecode(
-      pp::Buffer_Dev encrypted_buffer,
-      const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
+  virtual void DecryptAndDecodeFrame(
+      pp::Buffer_Dev encrypted_frame,
+      const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) = 0;
 
   // PPB_ContentDecryptor_Private methods for passing data from the decryptor
   // to the browser.

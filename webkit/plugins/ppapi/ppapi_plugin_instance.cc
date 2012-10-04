@@ -343,7 +343,8 @@ bool CopyStringToArray(const std::string& str, uint8 (&array)[array_size]) {
 
 // Fills the |block_info| with information from |decrypt_config|, |timestamp|
 // and |request_id|.
-// Returns true if |block_info| is successfully filled. Returns false otherwise.
+// Returns true if |block_info| is successfully filled. Returns false
+// otherwise.
 bool MakeEncryptedBlockInfo(
     const media::DecryptConfig& decrypt_config,
     int64_t timestamp,
@@ -1545,25 +1546,43 @@ bool PluginInstance::Decrypt(
   return true;
 }
 
-bool PluginInstance::DecryptAndDecode(
-    const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+// Note: this method can be used with an unencrypted frame.
+bool PluginInstance::DecryptAndDecodeFrame(
+    const scoped_refptr<media::DecoderBuffer>& encrypted_frame,
     const media::Decryptor::DecryptCB& decrypt_cb) {
   if (!LoadContentDecryptorInterface())
     return false;
 
   ScopedPPResource encrypted_resource(MakeBufferResource(
       pp_instance(),
-      encrypted_buffer->GetData(),
-      encrypted_buffer->GetDataSize()));
+      encrypted_frame->GetData(),
+      encrypted_frame->GetDataSize()));
   if (!encrypted_resource.get())
     return false;
 
-  PP_EncryptedBlockInfo block_info;
+  const uint32_t request_id = next_decryption_request_id_++;
 
-  // TODO(tomfinegan): Store callback and ID in a map, and pass ID to decryptor.
-  plugin_decryption_interface_->DecryptAndDecode(pp_instance(),
-                                                 encrypted_resource,
-                                                 &block_info);
+  // TODO(tomfinegan): Need to get the video format information here somehow.
+  PP_EncryptedVideoFrameInfo frame_info;
+  frame_info.width = 0;
+  frame_info.height = 0;
+  frame_info.format = PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
+  frame_info.codec = PP_VIDEOCODEC_UNKNOWN;
+
+  DCHECK(encrypted_frame->GetDecryptConfig());
+  if (!MakeEncryptedBlockInfo(*encrypted_frame->GetDecryptConfig(),
+                              encrypted_frame->GetTimestamp().InMicroseconds(),
+                              request_id,
+                              &frame_info.encryption_info)) {
+    return false;
+  }
+
+  DCHECK(!ContainsKey(pending_decryption_cbs_, request_id));
+  pending_decryption_cbs_.insert(std::make_pair(request_id, decrypt_cb));
+
+  plugin_decryption_interface_->DecryptAndDecodeFrame(pp_instance(),
+                                                      encrypted_resource,
+                                                      &frame_info);
   return true;
 }
 

@@ -42,10 +42,10 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   void OnMsgDecrypt(PP_Instance instance,
                     const PPPDecryptor_Buffer& encrypted_buffer,
                     const std::string& serialized_encrypted_block_info);
-  void OnMsgDecryptAndDecode(
+  void OnMsgDecryptAndDecodeFrame(
       PP_Instance instance,
-      const PPPDecryptor_Buffer& encrypted_buffer,
-      const std::string& serialized_encrypted_block_info);
+      const PPPDecryptor_Buffer& encrypted_frame,
+      const std::string& serialized_encrypted_frame_info);
 
   const PPP_ContentDecryptor_Private* ppp_decryptor_impl_;
 

@@ -44,7 +44,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
                               cdm::DecryptedBlock* decrypted_block) OVERRIDE;
   virtual cdm::Status InitializeVideoDecoder(
       const cdm::VideoDecoderConfig& video_decoder_config) OVERRIDE;
-  virtual cdm::Status DecryptAndDecodeVideo(
+  virtual cdm::Status DecryptAndDecodeFrame(
       const cdm::InputBuffer& encrypted_buffer,
       cdm::VideoFrame* video_frame) OVERRIDE;
   virtual void ResetVideoDecoder() OVERRIDE;

@@ -114,6 +114,60 @@ struct PP_EncryptedBlockInfo {
 };
 
 /**
+ * <code>PP_DecryptedFrameFormat</code> contains video frame formats.
+ */
+[assert_size(4)]
+enum PP_DecryptedFrameFormat {
+  PP_DECRYPTEDFRAMEFORMAT_UNKNOWN = 0,
+  PP_DECRYPTEDFRAMEFORMAT_EMPTY = 1,
+  PP_DECRYPTEDFRAMEFORMAT_YV12 = 2,
+  PP_DECRYPTEDFRAMEFORMAT_I420 = 3
+};
+
+/**
+ * <code>PP_VideoCodec</code> contains video codec type constants.
+ */
+[assert_size(4)]
+enum PP_VideoCodec {
+  PP_VIDEOCODEC_UNKNOWN = 0,
+  PP_VIDEOCODEC_VP8 = 1
+};
+
+/**
+ * <code>PP_EncryptedVideoFrameInfo</code> contains the information required
+ * to decrypt and decode a video frame.
+ * TODO(tomfinegan): Revisit necessity of including format information in this
+ * struct once we decide how to implement video decoder initialization.
+ */
+[assert_size(256)]
+struct PP_EncryptedVideoFrameInfo {
+  /**
+   * The decoded video frame format.
+   */
+  PP_DecryptedFrameFormat format;
+
+  /**
+   * The video frame codec type.
+   */
+  PP_VideoCodec codec;
+
+  /**
+   * Video frame width in pixels.
+   */
+  int32_t width;
+
+  /**
+   * Video frame height in pixels.
+   */
+  int32_t height;
+
+  /**
+   * Information required to decrypt the frame.
+   */
+  PP_EncryptedBlockInfo encryption_info;
+};
+
+/**
  * The <code>PP_DecryptResult</code> enum contains decryption and decoding
  * result constants.
  */
@@ -151,17 +205,6 @@ struct PP_DecryptedBlockInfo {
    * Information needed by the client to track the block to be decrypted.
    */
   PP_DecryptTrackingInfo tracking_info;
-};
-
-/**
- * <code>PP_DecryptedFrameFormat</code> contains video frame formats.
- */
-[assert_size(4)]
-enum PP_DecryptedFrameFormat {
-  PP_DECRYPTEDFRAMEFORMAT_UNKNOWN = 0,
-  PP_DECRYPTEDFRAMEFORMAT_EMPTY = 1,
-  PP_DECRYPTEDFRAMEFORMAT_YV12 = 2,
-  PP_DECRYPTEDFRAMEFORMAT_I420 = 3
 };
 
 /**

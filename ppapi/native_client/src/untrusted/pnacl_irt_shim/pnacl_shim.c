@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Wed Oct  3 12:53:07 2012. */
+/* Last generated from IDL: Wed Oct  3 16:17:09 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -230,7 +230,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_3;
@@ -3302,39 +3302,39 @@ struct PP_Var Pnacl_M19_PPB_X509Certificate_Private_GetField(PP_Resource resourc
 
 /* End wrapper methods for PPB_X509Certificate_Private_0_1 */
 
-/* Begin wrapper methods for PPP_ContentDecryptor_Private_0_1 */
+/* Begin wrapper methods for PPP_ContentDecryptor_Private_0_2 */
 
 static void Pnacl_M23_PPP_ContentDecryptor_Private_GenerateKeyRequest(PP_Instance instance, struct PP_Var key_system, struct PP_Var init_data) {
-  const struct PPP_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPP_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_2.real_iface;
   void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, struct PP_Var key_system, struct PP_Var init_data) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, struct PP_Var key_system, struct PP_Var init_data))iface->GenerateKeyRequest);
   temp_fp(instance, key_system, init_data);
 }
 
 static void Pnacl_M23_PPP_ContentDecryptor_Private_AddKey(PP_Instance instance, struct PP_Var session_id, struct PP_Var key, struct PP_Var init_data) {
-  const struct PPP_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPP_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_2.real_iface;
   void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, struct PP_Var session_id, struct PP_Var key, struct PP_Var init_data) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, struct PP_Var session_id, struct PP_Var key, struct PP_Var init_data))iface->AddKey);
   temp_fp(instance, session_id, key, init_data);
 }
 
 static void Pnacl_M23_PPP_ContentDecryptor_Private_CancelKeyRequest(PP_Instance instance, struct PP_Var session_id) {
-  const struct PPP_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPP_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_2.real_iface;
   void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, struct PP_Var session_id) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, struct PP_Var session_id))iface->CancelKeyRequest);
   temp_fp(instance, session_id);
 }
 
 static void Pnacl_M23_PPP_ContentDecryptor_Private_Decrypt(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info) {
-  const struct PPP_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_1.real_iface;
+  const struct PPP_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_2.real_iface;
   void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info))iface->Decrypt);
   temp_fp(instance, encrypted_block, encrypted_block_info);
 }
 
-static void Pnacl_M23_PPP_ContentDecryptor_Private_DecryptAndDecode(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info) {
-  const struct PPP_ContentDecryptor_Private_0_1 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_1.real_iface;
-  void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info))iface->DecryptAndDecode);
-  temp_fp(instance, encrypted_block, encrypted_block_info);
+static void Pnacl_M23_PPP_ContentDecryptor_Private_DecryptAndDecodeFrame(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info) {
+  const struct PPP_ContentDecryptor_Private_0_2 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_2.real_iface;
+  void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info))iface->DecryptAndDecodeFrame);
+  temp_fp(instance, encrypted_video_frame, encrypted_video_frame_info);
 }
 
-/* End wrapper methods for PPP_ContentDecryptor_Private_0_1 */
+/* End wrapper methods for PPP_ContentDecryptor_Private_0_2 */
 
 /* Not generating wrapper methods for PPP_Flash_BrowserOperations_1_0 */
 
@@ -4102,12 +4102,12 @@ struct PPB_X509Certificate_Private_0_1 Pnacl_Wrappers_PPB_X509Certificate_Privat
     .GetField = (struct PP_Var (*)(PP_Resource resource, PP_X509Certificate_Private_Field field))&Pnacl_M19_PPB_X509Certificate_Private_GetField
 };
 
-struct PPP_ContentDecryptor_Private_0_1 Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_1 = {
+struct PPP_ContentDecryptor_Private_0_2 Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_2 = {
     .GenerateKeyRequest = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var init_data))&Pnacl_M23_PPP_ContentDecryptor_Private_GenerateKeyRequest,
     .AddKey = (void (*)(PP_Instance instance, struct PP_Var session_id, struct PP_Var key, struct PP_Var init_data))&Pnacl_M23_PPP_ContentDecryptor_Private_AddKey,
     .CancelKeyRequest = (void (*)(PP_Instance instance, struct PP_Var session_id))&Pnacl_M23_PPP_ContentDecryptor_Private_CancelKeyRequest,
     .Decrypt = (void (*)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info))&Pnacl_M23_PPP_ContentDecryptor_Private_Decrypt,
-    .DecryptAndDecode = (void (*)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info))&Pnacl_M23_PPP_ContentDecryptor_Private_DecryptAndDecode
+    .DecryptAndDecodeFrame = (void (*)(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info))&Pnacl_M23_PPP_ContentDecryptor_Private_DecryptAndDecodeFrame
 };
 
 /* Not generating wrapper interface for PPP_Flash_BrowserOperations_1_0 */
@@ -4842,9 +4842,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_X509Certificate_Private_0
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_1 = {
-  .iface_macro = PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_1,
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_2 = {
+  .iface_macro = PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_2,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_2,
   .real_iface = NULL
 };
 
@@ -4992,7 +4992,7 @@ static struct __PnaclWrapperInfo *s_ppp_wrappers[] = {
   &Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_11,
   &Pnacl_WrapperInfo_PPP_Widget_Dev_0_2,
   &Pnacl_WrapperInfo_PPP_Zoom_Dev_0_3,
-  &Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_1,
+  &Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_2,
   &Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_0,
   &Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_2,
   &Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_3,
