@@ -18,39 +18,51 @@ IN_CHROOT=cros_sdk
 OUTSIDE_CHROOT_CHROMITE=$(realpath "$(dirname "$0")/..")
 CHROOT_CHROMITE=../../chromite
 
-declare -a FAILED_TESTS
-declare -a FAILED_LOGS
-
 set -eu
+
+LOGFILE="$(mktemp)"
 
 # Helper function to add failed logs/tests to be printed out later.
 # $1 test that failed.
 # $2 log file where we stored the output of the failed test.
 append_failed_test() {
-  echo "ERROR: $1 failed.  Log will be output at end of run!!!"
-  FAILED_TESTS+=($1)
-  FAILED_LOGS+=($2)
+  echo "ERROR: Unittest $1 failed.  Log will be output at end of run!!!"
+
+  cat << EOF >> "${LOGFILE}.$$"
+
+FAIL: Unittest $1 failed output:
+
+$(<"$2")
+EOF
+  rm -f "$2"
 }
 
 # Wrapper to run unittest.  Hides output unless test fails.
 # $1 test to run.  Must be in chromite/buildbot.
 # $2 If set, run inside the chroot.
 run_test() {
-  local log_file=$(mktemp)
+  local log_file="$(mktemp)"
   local special="${special_tests[$1]:-}"
+  local starttime="$(date +%s%N)"
 
   if [[ "${special}" == "skip" ]]; then
     echo "Skipping unittest $1"
     return
   elif [[ "${special}" == "inside" ]]; then
-    echo "Running unittest $1 inside the chroot."
-    ${IN_CHROOT} python ${CHROOT_CHROMITE}/$1 &> $log_file ||
-      append_failed_test $1 $log_file
+    echo "Starting unittest $1 inside the chroot"
+    ${IN_CHROOT} python "${CHROOT_CHROMITE}/$1" &> "${log_file}" ||
+      append_failed_test "$1" "${log_file}"
   else
-    echo "Running unittest $1"
-    python ${OUTSIDE_CHROOT_CHROMITE}/$1 &> $log_file ||
-      append_failed_test $1 $log_file
+    echo "Starting unittest $1"
+    python "${OUTSIDE_CHROOT_CHROMITE}/$1" &> "${log_file}" ||
+      append_failed_test "$1" "${log_file}"
   fi
+
+  local endtime="$(date +%s%N)"
+  local duration=$(( (endtime - starttime) / 1000000 ))
+
+  echo "Finished unittest $1 (${duration} ms)"
+  rm -f "${log_file}"
 }
 
 # For some versions of 'sudo' (notably, the 'sudo' in the chroot at
@@ -63,48 +75,67 @@ sudo true
 # skip - don't run this test (please comment on why)
 declare -A special_tests
 special_tests=(
+  # Tests that need to run inside the chroot.
   ['lib/upgrade_table_unittest.py']=inside
   ['scripts/cros_mark_as_stable_unittest.py']=inside
   ['scripts/cros_mark_chrome_as_stable_unittest.py']=inside
   ['scripts/sync_package_status_unittest.py']=inside
+  ['scripts/cros_portage_upgrade_unittest.py']=inside
   ['scripts/upload_package_status_unittest.py']=inside
 
+  # Tests that are presently broken.
   ['buildbot/validation_pool_unittest.py']=skip
   ['lib/gdata_lib_unittest.py']=skip
   ['scripts/chrome_set_ver_unittest.py']=skip
   ['scripts/check_gdata_token_unittest.py']=skip
-  ['scripts/cros_portage_upgrade_unittest.py']=skip
   ['scripts/merge_package_status_unittest.py']=skip
   ['scripts/upload_package_status_unittest.py']=skip
 )
-# List all unit test scripts that match the given pattern.
-all_tests=(
-  $(find "${OUTSIDE_CHROOT_CHROMITE}" -name '*_unittest.py' -printf '%P ')
-)
 
 if [ $# -eq 0 ]; then
+  # List all unit test scripts that match the given pattern.
+  all_tests=(
+    $(find "${OUTSIDE_CHROOT_CHROMITE}" -name '*_unittest.py' -printf '%P ')
+  )
   set -- "${all_tests[@]}"
 fi
 
-for test in "$@" ; do
-  run_test ${test}
+declare -a children
+cleanup() {
+  delayed_kill() {
+    sleep 5
+    kill -9 ${children[*]} &> /dev/null
+  }
+
+  echo "Cleaning up backgrounded jobs."
+  # Graceful exit.
+  kill -INT ${children[*]} &> /dev/null
+  # Set of a hard kill timer after a while.
+  delayed_kill &
+  wait ${children[*]}
+}
+
+trap cleanup INT TERM
+
+for test in "$@"; do
+  run_test ${test} &
+  children+=( $! )
 done
 
-if [ ${#FAILED_TESTS[@]} -gt 0 ]; then
-  index=0
-  for test in "${FAILED_TESTS[@]}"; do
+wait ${children[*]}
+trap - INT TERM
 
-    echo
-    echo "FAIL: Unittest $test failed output:"
-    echo
-
-    cat ${FAILED_LOGS[$index]}
-    rm ${FAILED_LOGS[$index]}
-    index=$(( index + 1 ))
-  done
+cat "${LOGFILE}".* > "${LOGFILE}"
+rm -f "${LOGFILE}".*
+if [[ $(wc -c "${LOGFILE}" |cut -f1 -d' ') -gt 0 ]]; then
+  cat "${LOGFILE}"
   echo
-  echo "FAIL: The following tests failed ${FAILED_TESTS[@]}"
+  echo
+  echo "FAIL: The following tests failed:"
+  sed -nre '/^FAIL:/s/^FAIL: Unittest (.*) failed output:/\1/p' "${LOGFILE}"
+  rm -f "${LOGFILE}"
   exit 1
-else
-  echo "All tests succeeded!"
 fi
+
+rm -f "${LOGFILE}"
+echo "All tests succeeded!"
