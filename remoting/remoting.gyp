@@ -1378,6 +1378,8 @@
         'host/json_host_config.h',
         'host/linux/x_server_clipboard.cc',
         'host/linux/x_server_clipboard.h',
+        'host/linux/x_server_pixel_buffer.cc',
+        'host/linux/x_server_pixel_buffer.h',
         'host/local_input_monitor.h',
         'host/local_input_monitor_linux.cc',
         'host/local_input_monitor_mac.mm',
@@ -1447,8 +1449,6 @@
         'host/win/session_desktop_environment_factory.h',
         'host/win/session_event_executor.cc',
         'host/win/session_event_executor.h',
-        'host/x_server_pixel_buffer.cc',
-        'host/x_server_pixel_buffer.h',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -1470,12 +1470,6 @@
         }, {  # else toolkit_uses_gtk!=1
           'sources!': [
             '*_gtk.cc',
-          ],
-        }],
-        ['OS!="linux"', {
-          'sources!': [
-            'host/x_server_pixel_buffer.cc',
-            'host/x_server_pixel_buffer.h',
           ],
         }],
         ['OS=="mac"', {

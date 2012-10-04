@@ -16,8 +16,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/host/differ.h"
+#include "remoting/host/linux/x_server_pixel_buffer.h"
 #include "remoting/host/video_frame_capturer_helper.h"
-#include "remoting/host/x_server_pixel_buffer.h"
 #include "remoting/proto/control.pb.h"
 
 namespace remoting {

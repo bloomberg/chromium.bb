@@ -4,8 +4,8 @@
 
 // Don't include this file in any .h files because it pulls in some X headers.
 
-#ifndef REMOTING_HOST_X_SERVER_PIXEL_BUFFER_H_
-#define REMOTING_HOST_X_SERVER_PIXEL_BUFFER_H_
+#ifndef REMOTING_HOST_LINUX_X_SERVER_PIXEL_BUFFER_H_
+#define REMOTING_HOST_LINUX_X_SERVER_PIXEL_BUFFER_H_
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -68,4 +68,4 @@ class XServerPixelBuffer {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_X_SERVER_PIXEL_BUFFER_H_
+#endif  // REMOTING_HOST_LINUX_X_SERVER_PIXEL_BUFFER_H_
