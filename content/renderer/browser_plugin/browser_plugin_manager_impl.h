@@ -36,6 +36,13 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
   void OnDidNavigate(int instance_id, const GURL& url, int process_id);
   void OnAdvanceFocus(int instance_id, bool reverse);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
+  void OnLoadStart(int instance_id,
+                   const GURL& url,
+                   bool is_top_level);
+  void OnLoadAbort(int instance_id,
+                   const GURL& url,
+                   bool is_top_level,
+                   const std::string& type);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
 };

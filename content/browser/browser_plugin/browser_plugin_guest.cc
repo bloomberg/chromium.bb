@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/string_util.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_helper.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
+#include "net/base/net_errors.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {
@@ -72,6 +74,16 @@ bool BrowserPluginGuest::ViewTakeFocus(bool reverse) {
 
 void BrowserPluginGuest::Go(int relative_index) {
   web_contents()->GetController().GoToOffset(relative_index);
+}
+
+bool BrowserPluginGuest::CanDownload(RenderViewHost* render_view_host,
+                                    int request_id,
+                                    const std::string& request_method) {
+  // TODO(fsamuel): We disable downloads in guests for now, but we will later
+  // expose API to allow embedders to handle them.
+  // Note: it seems content_shell ignores this. This should be fixed
+  // for debugging and test purposes.
+  return false;
 }
 
 void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
@@ -276,6 +288,37 @@ void BrowserPluginGuest::ShowWidget(RenderViewHost* render_view_host,
 
 void BrowserPluginGuest::SetCursor(const WebCursor& cursor) {
   cursor_ = cursor;
+}
+
+void BrowserPluginGuest::DidStartProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    bool is_error_page,
+    RenderViewHost* render_view_host) {
+  // Inform the embedder of the loadStart.
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_LoadStart(instance_id(),
+                                     validated_url,
+                                     is_main_frame));
+}
+
+void BrowserPluginGuest::DidFailProvisionalLoad(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    int error_code,
+    const string16& error_description,
+    RenderViewHost* render_view_host) {
+  // Translate the |error_code| into an error string.
+  std::string error_type;
+  RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
+  // Inform the embedder of the loadAbort.
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_LoadAbort(instance_id(),
+                                     validated_url,
+                                     is_main_frame,
+                                     error_type));
 }
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(

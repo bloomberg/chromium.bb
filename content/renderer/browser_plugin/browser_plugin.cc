@@ -43,11 +43,15 @@ namespace content {
 
 namespace {
 const char kCrashEventName[] = "crash";
+const char kIsTopLevel[] = "isTopLevel";
+const char kLoadAbortEventName[] = "loadAbort";
+const char kLoadStartEventName[] = "loadStart";
 const char kNavigationEventName[] = "navigation";
-const char* kPartitionAttribute = "partition";
-const char* kPersistPrefix = "persist:";
-const char* kSrcAttribute = "src";
-
+const char kPartitionAttribute[] = "partition";
+const char kPersistPrefix[] = "persist:";
+const char kSrcAttribute[] = "src";
+const char kType[] = "type";
+const char kURL[] = "url";
 }
 
 BrowserPlugin::BrowserPlugin(
@@ -347,6 +351,67 @@ void BrowserPlugin::DidNavigate(const GURL& url, int process_id) {
                                          v8::Object::New(),
                                          1,
                                          &param);
+  }
+}
+
+void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
+  if (!HasListeners(kLoadStartEventName))
+    return;
+
+  EventListeners& listeners = event_listener_map_[kLoadStartEventName];
+  EventListeners::iterator it = listeners.begin();
+
+  v8::Context::Scope context_scope(v8::Context::New());
+  v8::HandleScope handle_scope;
+  // Construct the loadStart event object.
+  v8::Local<v8::Value> event =
+      v8::Local<v8::Object>::New(v8::Object::New());
+  v8::Local<v8::Object>::Cast(event)->Set(
+      v8::String::New(kURL, sizeof(kURL) - 1),
+      v8::String::New(url.spec().c_str(), url.spec().size()));
+  v8::Local<v8::Object>::Cast(event)->Set(
+      v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
+      v8::Boolean::New(is_top_level));
+  for (; it != listeners.end(); ++it) {
+    // Fire the event listener.
+    container()->element().document().frame()->
+        callFunctionEvenIfScriptDisabled(*it,
+                                         v8::Object::New(),
+                                         1,
+                                         &event);
+  }
+}
+
+void BrowserPlugin::LoadAbort(const GURL& url,
+                              bool is_top_level,
+                              const std::string& type) {
+  if (!HasListeners(kLoadAbortEventName))
+    return;
+
+  EventListeners& listeners = event_listener_map_[kLoadAbortEventName];
+  EventListeners::iterator it = listeners.begin();
+
+  v8::Context::Scope context_scope(v8::Context::New());
+  v8::HandleScope handle_scope;
+  // Construct the loadAbort event object.
+  v8::Local<v8::Value> event =
+      v8::Local<v8::Object>::New(v8::Object::New());
+  v8::Local<v8::Object>::Cast(event)->Set(
+      v8::String::New(kURL, sizeof(kURL) - 1),
+      v8::String::New(url.spec().c_str(), url.spec().size()));
+  v8::Local<v8::Object>::Cast(event)->Set(
+      v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
+      v8::Boolean::New(is_top_level));
+  v8::Local<v8::Object>::Cast(event)->Set(
+      v8::String::New(kType, sizeof(kType) - 1),
+      v8::String::New(type.c_str(), type.size()));
+  for (; it != listeners.end(); ++it) {
+    // Fire the event listener.
+    container()->element().document().frame()->
+        callFunctionEvenIfScriptDisabled(*it,
+                                         v8::Object::New(),
+                                         1,
+                                         &event);
   }
 }
 

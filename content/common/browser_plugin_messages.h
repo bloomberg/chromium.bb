@@ -130,6 +130,23 @@ IPC_SYNC_MESSAGE_ROUTED2_0(BrowserPluginHostMsg_ResizeGuest,
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.
 
+// When the guest begins to load a page, the browser process informs the
+// embedder through the BrowserPluginMsg_LoadStart message.
+IPC_MESSAGE_CONTROL3(BrowserPluginMsg_LoadStart,
+                     int /* instance_id */,
+                     GURL /* url */,
+                     bool /* is_top_level */)
+
+// If the guest fails to commit a page load then it will inform the
+// embedder through the BrowserPluginMsg_LoadAbort. A description
+// of the error will be stored in |type|.  The list of known error
+// types can be found in net/base/net_error_list.h.
+IPC_MESSAGE_CONTROL4(BrowserPluginMsg_LoadAbort,
+                     int /* instance_id */,
+                     GURL /* url */,
+                     bool /* is_top_level */,
+                     std::string /* type */)
+
 // When the guest navigates, the browser process informs the embedder through
 // the BrowserPluginMsg_DidNavigate message.
 IPC_MESSAGE_CONTROL3(BrowserPluginMsg_DidNavigate,

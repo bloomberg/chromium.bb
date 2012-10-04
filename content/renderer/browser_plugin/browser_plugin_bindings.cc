@@ -196,7 +196,10 @@ bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
       return false;
 
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-    return bindings->instance()->AddEventListener(event_name, function);
+    result->type = NPVariantType_Bool;
+    result->value.boolValue =
+        bindings->instance()->AddEventListener(event_name, function);
+    return true;
   }
 
   if (IdentifierIsBackMethod(name) && !arg_count) {
@@ -238,7 +241,10 @@ bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
       return false;
 
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-    return bindings->instance()->RemoveEventListener(event_name, function);
+    result->type = NPVariantType_Bool;
+    result->value.boolValue =
+        bindings->instance()->RemoveEventListener(event_name, function);
+    return true;
   }
 
   if (IdentifierIsStop(name) && !arg_count) {

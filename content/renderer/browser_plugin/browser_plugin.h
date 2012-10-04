@@ -54,6 +54,10 @@ class CONTENT_EXPORT BrowserPlugin :
   void GuestCrashed();
   // Informs the BrowserPlugin that the guest has navigated to a new URL.
   void DidNavigate(const GURL& url, int process_id);
+  // Inform the BrowserPlugin that the guest has started loading a new page.
+  void LoadStart(const GURL& url, bool is_top_level);
+  // Inform the BrowserPlugin that the guest has aborted loading a new page.
+  void LoadAbort(const GURL& url, bool is_top_level, const std::string& type);
   // Tells the BrowserPlugin to advance the focus to the next (or previous)
   // element.
   void AdvanceFocus(bool reverse);

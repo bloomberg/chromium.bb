@@ -82,6 +82,19 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   }
 
   // WebContentsObserver implementation.
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidFailProvisionalLoad(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      int error_code,
+      const string16& error_description,
+      RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,
@@ -91,6 +104,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
   // WebContentsDelegate implementation.
+  virtual bool CanDownload(RenderViewHost* render_view_host,
+                           int request_id,
+                           const std::string& request_method) OVERRIDE;
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
 
   void UpdateRect(RenderViewHost* render_view_host,

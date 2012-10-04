@@ -622,4 +622,40 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, TerminateGuest) {
   test_guest()->WaitForCrashed();
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStart) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+
+  const string16 expected_title = ASCIIToUTF16(kHTMLForGuest);
+  content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                      expected_title);
+  // Renavigate the guest to |kHTMLForGuest|.
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+
+  string16 actual_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, actual_title);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+
+  const string16 expected_title = ASCIIToUTF16("ERR_EMPTY_RESPONSE");
+  content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                      expected_title);
+
+  // Renavigate the guest to "close-socket".
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  GURL test_url = test_server()->GetURL("close-socket");
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", test_url.spec().c_str())));
+
+  string16 actual_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, actual_title);
+}
+
 }  // namespace content

@@ -41,6 +41,8 @@ bool BrowserPluginManagerImpl::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadAbort, OnLoadAbort)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -80,6 +82,23 @@ void BrowserPluginManagerImpl::OnShouldAcceptTouchEvents(int instance_id,
   BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
   if (plugin)
     plugin->SetAcceptTouchEvents(accept);
+}
+
+void BrowserPluginManagerImpl::OnLoadStart(int instance_id,
+                                           const GURL& url,
+                                           bool is_top_level) {
+  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+  if (plugin)
+    plugin->LoadStart(url, is_top_level);
+}
+
+void BrowserPluginManagerImpl::OnLoadAbort(int instance_id,
+                                           const GURL& url,
+                                           bool is_top_level,
+                                           const std::string& type) {
+  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+  if (plugin)
+    plugin->LoadAbort(url, is_top_level, type);
 }
 
 }  // namespace content

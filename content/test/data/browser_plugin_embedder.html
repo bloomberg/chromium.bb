@@ -1,4 +1,10 @@
 <script type="text/javascript">
+function loadAbort(evt) {
+  document.title = evt.type;
+}
+function loadStart(evt) {
+  document.title = evt.url;
+}
 function SetSrc(src) {
   var plugin = document.getElementById('plugin');
   plugin.src = src;
@@ -23,8 +29,7 @@ function Go(relativeIndex) {
 function SetTitle(str) {
   document.title = str;
 }
-
-window.document.title = 'embedder';
+document.title = 'embedder';
 </script>
 
 <object id="plugin"
@@ -33,3 +38,9 @@ window.document.title = 'embedder';
     width="640"
     height="480"
     border="0px"></object>
+
+<script>
+  var plugin = document.getElementById('plugin');
+  plugin.addEventListener('loadStart', loadStart);
+  plugin.addEventListener('loadAbort', loadAbort);
+</script>
