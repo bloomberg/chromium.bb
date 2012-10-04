@@ -247,6 +247,10 @@ const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
+// Enables old implementation path for browser plugin instead of current one.
+const char kEnableBrowserPluginOldImplementation[] =
+    "enable-browser-plugin-old-implementation";
+
 // Enables the creation of compositing layers for fixed position elements.
 const char kEnableCompositingForFixedPosition[] =
      "enable-fixed-position-compositing";

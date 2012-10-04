@@ -307,11 +307,10 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
     const WebPluginParams& params,
     WebPlugin** plugin) {
   std::string orig_mime_type = params.mimeType.utf8();
-  if (orig_mime_type == content::kBrowserPluginNewMimeType ||
-      ((orig_mime_type == content::kBrowserPluginMimeType) &&
-        extensions::ExtensionHelper::Get(render_view)->view_type() ==
-        VIEW_TYPE_APP_SHELL)) {
-      return false;
+  if (orig_mime_type == content::kBrowserPluginMimeType &&
+      extensions::ExtensionHelper::Get(render_view)->view_type() ==
+          VIEW_TYPE_APP_SHELL) {
+    return false;
   }
 
   ChromeViewHostMsg_GetPluginInfo_Output output;

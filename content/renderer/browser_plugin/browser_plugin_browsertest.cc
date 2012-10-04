@@ -38,7 +38,7 @@ const char kHTMLForPartitionedPersistedPluginObject[] =
 
 std::string GetHTMLForBrowserPluginObject() {
   return StringPrintf(kHTMLForBrowserPluginObject,
-                      content::kBrowserPluginNewMimeType);
+                      content::kBrowserPluginMimeType);
 }
 
 }  // namespace
@@ -379,14 +379,14 @@ TEST_F(BrowserPluginTest, ReloadMethod) {
 // correctly.
 TEST_F(BrowserPluginTest, PartitionAttribute) {
   std::string html = StringPrintf(kHTMLForPartitionedPluginObject,
-                                  content::kBrowserPluginNewMimeType);
+                                  content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   std::string partition_value = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').partition");
   EXPECT_STREQ("someid", partition_value.c_str());
 
   html = StringPrintf(kHTMLForPartitionedPersistedPluginObject,
-                      content::kBrowserPluginNewMimeType);
+                      content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   partition_value = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').partition");
@@ -406,7 +406,7 @@ TEST_F(BrowserPluginTest, PartitionAttribute) {
 
   // Load a browser tag without 'src' defined.
   html = StringPrintf(kHTMLForSourcelessPluginObject,
-                      content::kBrowserPluginNewMimeType);
+                      content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
 
   // Ensure we don't parse just "persist:" string and return exception.
@@ -423,7 +423,7 @@ TEST_F(BrowserPluginTest, PartitionAttribute) {
 // cannot be modified.
 TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
   std::string html = StringPrintf(kHTMLForSourcelessPluginObject,
-                                  content::kBrowserPluginNewMimeType);
+                                  content::kBrowserPluginMimeType);
   LoadHTML(html.c_str());
 
   ExecuteJavaScript(

@@ -692,7 +692,11 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
 
   // Platform app sources that are not API-specific..
-  source_map_.RegisterSource("browserTag", IDR_BROWSER_TAG_JS);
+  const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
+  if (command_line.HasSwitch(switches::kEnableBrowserPluginOldImplementation))
+    source_map_.RegisterSource("browserTag", IDR_BROWSER_TAG_OLD_JS);
+  else
+    source_map_.RegisterSource("browserTag", IDR_BROWSER_TAG_JS);
   source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
   source_map_.RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
 }

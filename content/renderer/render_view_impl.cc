@@ -2481,15 +2481,18 @@ WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
     return plugin;
   }
 
-  // TODO(fsamuel): Remove this once upstreaming of the new browser plugin is
-  // complete.
-  if (UTF16ToASCII(params.mimeType) == content::kBrowserPluginNewMimeType) {
-   return content::BrowserPluginManager::Get()->
-      CreateBrowserPlugin(this, frame, params);
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (UTF16ToASCII(params.mimeType) == content::kBrowserPluginMimeType) {
+    if (cmd_line->HasSwitch(switches::kEnableBrowserPluginOldImplementation)) {
+      // TODO(fsamuel): Remove this once upstreaming of the new browser plugin
+      // is complete.
+      return content::old::BrowserPlugin::Create(this, frame, params);
+    } else {
+      return content::BrowserPluginManager::Get()->CreateBrowserPlugin(this,
+                                                                       frame,
+                                                                       params);
+    }
   }
-
-  if (UTF16ToASCII(params.mimeType) == content::kBrowserPluginMimeType)
-    return content::old::BrowserPlugin::Create(this, frame, params);
 
   webkit::WebPluginInfo info;
   std::string mime_type;
