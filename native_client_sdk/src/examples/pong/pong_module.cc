@@ -4,9 +4,8 @@
 
 #include <ppapi/cpp/module.h>
 
-#include "pong.h"
+#include "pong_instance.h"
 
-namespace pong {
 // The Module class.  The browser calls the CreateInstance() method to create
 // an instance of your NaCl module on the web page.  The browser creates a new
 // instance for each <embed> tag with type="application/x-nacl".
@@ -15,12 +14,11 @@ class PongModule : public pp::Module {
   PongModule() : pp::Module() {}
   virtual ~PongModule() {}
 
-  // Create and return a PiGeneratorInstance object.
+  // Create and return a PongInstance object.
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new Pong(instance);
+    return new PongInstance(instance);
   }
 };
-}  // namespace pong
 
 // Factory function called by the browser when the module is first loaded.
 // The browser keeps a singleton of this module.  It calls the
@@ -29,6 +27,6 @@ class PongModule : public pp::Module {
 // point for your NaCl module with the browser.
 namespace pp {
 Module* CreateModule() {
-  return new pong::PongModule();
+  return new PongModule();
 }
 }  // namespace pp

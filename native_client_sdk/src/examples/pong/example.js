@@ -3,18 +3,6 @@
 // found in the LICENSE file.
 
 // Called by the common.js module.
-function domContentLoaded(name, tc, config, width, height) {
-  window.webkitStorageInfo.requestQuota(window.PERSISTENT, 1024,
-      function(bytes) {
-        common.updateStatus(
-            'Allocated '+bytes+' bytes of persistent storage.');
-        common.createNaClModule(name, tc, config, 800, 600);
-        common.attachDefaultListeners();
-      },
-      function(e) { alert('Failed to allocate space'); });
-}
-
-// Called by the common.js module.
 function attachListeners() {
   document.getElementById('resetScore').addEventListener('click', resetScore);
 }

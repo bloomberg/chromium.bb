@@ -5,11 +5,15 @@
       'NAME' : 'pong',
       'TYPE' : 'main',
       'SOURCES' : [
-        'pong.cc',
-        'pong.h',
+        'pong_instance.cc',
+        'pong_instance.h',
+        'pong_input.cc',
+        'pong_input.h',
+        'pong_model.cc',
+        'pong_model.h',
         'pong_module.cc',
-        'view.cc',
-        'view.h',
+        'pong_view.cc',
+        'pong_view.h'
       ],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
@@ -19,9 +23,8 @@
   'NAME': 'pong',
   'TITLE': 'Pong',
   'DESC': """
-The Pong example demonstrates how to create a basic 2D video game and
-how to store application information in a local persistent file. This game 
+The Pong example demonstrates how to create a basic 2D video game. This game 
 uses up and down arrow keyboard input events to move the paddle.""",
-  'INFO': 'File I/O, 2D graphics, input events.'
+  'INFO': '2D graphics, input events.'
 }
 
