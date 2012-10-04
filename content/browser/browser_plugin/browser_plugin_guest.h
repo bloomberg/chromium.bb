@@ -119,6 +119,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContents* GetWebContents();
 
+  // Kill the guest process.
+  void Terminate();
+
   // Overridden in tests.
   virtual bool ViewTakeFocus(bool reverse);
   // If possible, navigate the guest to |relative_index| entries away from the

@@ -36,6 +36,11 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_CreateGuest,
                     std::string /* storage_partition_id */,
                     bool /* persist_storage */)
 
+// Tells the browser process to terminate the guest associated with the
+// browser plugin associated with the provided |instance_id|.
+IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_TerminateGuest,
+                    int /* instance_id */)
+
 // Tells the guest to navigate to an entry |relative_index| away from the
 // current navigation entry.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_Go,

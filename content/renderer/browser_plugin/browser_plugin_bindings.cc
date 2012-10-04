@@ -47,18 +47,11 @@ const char kReloadMethod[] = "reload";
 const char kRemoveEventListener[] = "removeEventListener";
 const char kSrcAttribute[] = "src";
 const char kStopMethod[] = "stop";
+const char kTerminateMethod[] = "terminate";
 
 BrowserPluginBindings* GetBindings(NPObject* object) {
   return static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(object)->
       message_channel;
-}
-
-bool IdentifierIsReload(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kReloadMethod) == identifier;
-}
-
-bool IdentifierIsStop(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kStopMethod) == identifier;
 }
 
 bool IdentifierIsAddEventListener(NPIdentifier identifier) {
@@ -73,24 +66,36 @@ bool IdentifierIsForwardMethod(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kForwardMethod) == identifier;
 }
 
+bool IdentifierIsGetProcessID(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kGetProcessId) == identifier;
+}
+
 bool IdentifierIsGoMethod(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kGoMethod) == identifier;
+}
+
+bool IdentifierIsPartitionAttribute(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kPartitionAttribute) == identifier;
+}
+
+bool IdentifierIsReload(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kReloadMethod) == identifier;
 }
 
 bool IdentifierIsRemoveEventListener(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kRemoveEventListener) == identifier;
 }
 
-bool IdentifierIsGetProcessID(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kGetProcessId) == identifier;
-}
-
 bool IdentifierIsSrcAttribute(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kSrcAttribute) == identifier;
 }
 
-bool IdentifierIsPartitionAttribute(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kPartitionAttribute) == identifier;
+bool IdentifierIsStop(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kStopMethod) == identifier;
+}
+
+bool IdentifierIsTerminate(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kTerminateMethod) == identifier;
 }
 
 int Int32FromNPVariant(const NPVariant& variant) {
@@ -162,6 +167,9 @@ bool BrowserPluginBindingsHasMethod(NPObject* np_obj, NPIdentifier name) {
     return true;
 
   if (IdentifierIsStop(name))
+    return true;
+
+  if (IdentifierIsTerminate(name))
     return true;
 
   return false;
@@ -236,6 +244,10 @@ bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
   if (IdentifierIsStop(name) && !arg_count) {
     bindings->instance()->Stop();
     return true;
+  }
+
+  if (IdentifierIsTerminate(name)) {
+    bindings->instance()->TerminateGuest();
   }
 
   return false;

@@ -82,6 +82,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   void Go(int instance_id, int relative_index);
   void Stop(int instance_id);
   void Reload(int instance_id);
+  void TerminateGuest(int instance_id);
 
   // WebContentsObserver implementation.
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;

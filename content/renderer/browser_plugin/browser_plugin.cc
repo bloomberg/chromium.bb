@@ -239,6 +239,14 @@ void BrowserPlugin::Go(int relative_index) {
                                   relative_index));
 }
 
+void BrowserPlugin::TerminateGuest() {
+  if (!navigate_src_sent_)
+    return;
+  BrowserPluginManager::Get()->Send(
+      new BrowserPluginHostMsg_TerminateGuest(render_view_->GetRoutingID(),
+                                              instance_id_));
+}
+
 void BrowserPlugin::Stop() {
   if (!navigate_src_sent_)
     return;

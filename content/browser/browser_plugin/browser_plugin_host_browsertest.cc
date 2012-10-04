@@ -609,4 +609,17 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, TerminateGuest) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
+
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      "document.getElementById('plugin').terminate()"));
+
+  // Expect the guest to crash.
+  test_guest()->WaitForCrashed();
+}
+
 }  // namespace content

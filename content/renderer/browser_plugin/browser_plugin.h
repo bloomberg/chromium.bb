@@ -80,6 +80,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // Tells the BrowserPlugin to tell the guest to navigate to a position
   // relative to the current index in its navigation history.
   void Go(int relativeIndex);
+  // Tells the BrowserPlugin to terminate the guest process.
+  void TerminateGuest();
 
   // A request from Javascript has been made to stop the loading of the page.
   void Stop();

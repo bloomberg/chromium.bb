@@ -283,6 +283,12 @@ void BrowserPluginEmbedder::Reload(int instance_id) {
     guest->Reload();
 }
 
+void BrowserPluginEmbedder::TerminateGuest(int instance_id) {
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  if (guest)
+    guest->Terminate();
+}
+
 void BrowserPluginEmbedder::Observe(int type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {

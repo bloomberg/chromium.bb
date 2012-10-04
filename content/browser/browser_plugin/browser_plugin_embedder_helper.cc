@@ -48,6 +48,7 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_TerminateGuest, OnTerminateGuest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -146,6 +147,10 @@ void BrowserPluginEmbedderHelper::OnStop(int instance_id) {
 
 void BrowserPluginEmbedderHelper::OnReload(int instance_id) {
   embedder_->Reload(instance_id);
+}
+
+void BrowserPluginEmbedderHelper::OnTerminateGuest(int instance_id) {
+  embedder_->TerminateGuest(instance_id);
 }
 
 }  // namespace content
