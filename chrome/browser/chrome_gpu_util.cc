@@ -11,6 +11,9 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -20,6 +23,67 @@
 using content::GpuDataManager;
 
 namespace gpu_util {
+
+// The BrowserMonitor class is used to track the number of currently open
+// browser windows, so that the gpu can be notified when they are created or
+// destroyed. We only count tabbed windows for this purpose.
+
+// There's no BrowserList on Android/
+#if !defined(OS_ANDROID)
+class BrowserMonitor : public chrome::BrowserListObserver {
+ public:
+  static BrowserMonitor* GetInstance() {
+    static BrowserMonitor* instance = NULL;
+    if (!instance)
+      instance = new BrowserMonitor;
+    return instance;
+  }
+
+  void Install() {
+    if (!installed_) {
+      BrowserList::AddObserver(this);
+      installed_ = true;
+    }
+  }
+
+  void Uninstall() {
+    if (installed_) {
+      BrowserList::RemoveObserver(this);
+      installed_ = false;
+    }
+  }
+
+ private:
+  BrowserMonitor() : num_browsers_(0), installed_(false) {
+  }
+
+  ~BrowserMonitor() {
+  }
+
+  // BrowserListObserver implementation.
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE {
+    if (browser->type() == Browser::TYPE_TABBED)
+      content::GpuDataManager::GetInstance()->SetWindowCount(++num_browsers_);
+  }
+
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE {
+    if (browser->type() == Browser::TYPE_TABBED)
+      content::GpuDataManager::GetInstance()->SetWindowCount(--num_browsers_);
+  }
+
+  uint32 num_browsers_;
+  bool installed_;
+};
+
+void InstallBrowserMonitor() {
+  BrowserMonitor::GetInstance()->Install();
+}
+
+void UninstallBrowserMonitor() {
+  BrowserMonitor::GetInstance()->Uninstall();
+}
+
+#endif // !defined(OS_ANDROID)
 
 bool ShouldRunStage3DFieldTrial() {
 #if !defined(OS_WIN)

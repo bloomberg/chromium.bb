@@ -34,6 +34,7 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/chrome_gpu_util.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -929,6 +930,9 @@ void ChromeBrowserMainParts::PostProfileInit() {
 void ChromeBrowserMainParts::PreBrowserStart() {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreBrowserStart();
+#if !defined(OS_ANDROID)
+  gpu_util::InstallBrowserMonitor();
+#endif
 }
 
 void ChromeBrowserMainParts::PostBrowserStart() {
@@ -1394,6 +1398,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   std::vector<Profile*> last_opened_profiles =
       g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif
+
   if (browser_creator_->Start(parsed_command_line(), FilePath(),
                               profile_, last_opened_profiles, &result_code)) {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -1525,6 +1530,10 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopRun();
+
+#if !defined(OS_ANDROID)
+  gpu_util::UninstallBrowserMonitor();
+#endif
 
 #if defined(OS_WIN)
   // Log the search engine chosen on first run. Do this at shutdown, after any
