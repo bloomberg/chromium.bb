@@ -287,15 +287,15 @@ void CCRendererGL::drawCheckerboardQuad(const DrawingFrame& frame, const CCCheck
     SkColor color = quad->color();
     GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), SkColorGetR(color) / 255.0, SkColorGetG(color) / 255.0, SkColorGetB(color) / 255.0, 1));
 
+    const int checkerboardWidth = 16;
+    float frequency = 1.0 / checkerboardWidth;
+
     IntRect tileRect = quad->quadRect();
-    float texOffsetX = tileRect.x();
-    float texOffsetY = tileRect.y();
+    float texOffsetX = tileRect.x() % checkerboardWidth;
+    float texOffsetY = tileRect.y() % checkerboardWidth;
     float texScaleX = tileRect.width();
     float texScaleY = tileRect.height();
     GLC(context(), context()->uniform4f(program->fragmentShader().texTransformLocation(), texOffsetX, texOffsetY, texScaleX, texScaleY));
-
-    const int checkerboardWidth = 16;
-    float frequency = 1.0 / checkerboardWidth;
 
     GLC(context(), context()->uniform1f(program->fragmentShader().frequencyLocation(), frequency));
 
