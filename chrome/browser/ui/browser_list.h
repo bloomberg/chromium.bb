@@ -14,7 +14,6 @@ class Browser;
 class Profile;
 
 namespace browser {
-class BrowserActivityObserver;
 #if defined(OS_MACOSX)
 Browser* GetLastActiveBrowser();
 #endif
@@ -97,15 +96,7 @@ class BrowserList {
   // DO NOT ADD MORE FRIENDS TO THIS LIST. This list should be reduced over
   // time by wiring context through to the relevant code rather than using
   // GetLastActive().
-  friend class BrowserView;
-  friend class ChromeShellDelegate;
-  friend class NetworkProfileBubble;
-  friend class PrintPreviewHandler;
   friend class SelectFileDialogExtension;
-  friend class StartupBrowserCreatorImpl;
-  friend class TaskManager;
-  friend class WindowSizer;
-  friend class browser::BrowserActivityObserver;
   friend Browser* web_intents::GetBrowserForBackgroundWebIntentDelivery(
       Profile*);
 #if defined(OS_CHROMEOS)
