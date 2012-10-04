@@ -53,14 +53,10 @@ MACRO(get_tls)
 #if NACL_LINUX
         /*
          * Linux uses TLS.
-         * The spelling is slightly different when we need to be PIC-friendly.
+         * We use "@GOTTPOFF" rather than "@TPOFF" in order to be PIC-friendly.
          */
-# ifdef __PIC__
         movq    nacl_thread_index@GOTTPOFF(%rip), %rax
         movl    %fs:(%rax), %eax
-# else
-        movl    %fs:nacl_thread_index@TPOFF, %eax
-# endif
 #elif NACL_OSX
         /*
          * This assumes a particular implementation of OS X's

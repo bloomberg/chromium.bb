@@ -129,12 +129,10 @@ struct NaClApp {
    */
   uintptr_t                 mem_start;
 
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 32 && __PIC__)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   uintptr_t                 pcrel_thunk;
 #endif
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 64)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
   uintptr_t                 dispatch_thunk;
   uintptr_t                 get_tls_fast_path;
 #endif
@@ -633,14 +631,13 @@ void NaClFillTrampolineRegion(struct NaClApp *nap);
 
 void NaClFillEndOfTextRegion(struct NaClApp *nap);
 
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 32 && __PIC__)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
 
 int NaClMakePcrelThunk(struct NaClApp *nap);
 
 #endif
 
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
 
 int NaClMakeDispatchThunk(struct NaClApp *nap);
 

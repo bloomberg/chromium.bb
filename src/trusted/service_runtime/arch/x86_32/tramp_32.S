@@ -15,12 +15,6 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-#if __PIC__
-        /*
-         * This the PIC version of below, enabling the use of NaCl as
-         * a -fPIC library, primarily for mac chrome.
-         */
-
         .text
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
 
@@ -42,26 +36,3 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClPcrelThunk_dseg_patch):
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClPcrelThunk_globals_patch):
         jmp     IDENTIFIER(NaClSyscallSeg) /* PCREL patch */
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClPcrelThunk_end):
-
-#else
-
-        .text
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
-        movl    $0xdeadbeef, %eax  /* known okay ds */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_tramp_dseg_patch):
-        mov     %ax, %ds  /* disable data sandbox for this thread */
-
-        /*
-         * space between $ and IDENTIFIER is critical, since windows cl.exe
-         * will not expand IDENTIFIER(.) otherwise.
-         */
-        lcall   $0xcafe, $ IDENTIFIER(NaClSyscallSeg)
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_tramp_cseg_patch):
-        hlt
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_end):
-
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_text_prot):
-        hlt
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_text_prot_end):
-
-#endif

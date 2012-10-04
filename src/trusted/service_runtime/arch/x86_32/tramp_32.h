@@ -22,12 +22,8 @@ extern char   NaCl_trampoline_seg_code, NaCl_trampoline_seg_end;
 extern char   NaCl_tramp_cseg_patch;
 extern char   NaCl_text_prot, NaCl_text_prot_end;
 
-#if __PIC__
 extern char   NaClPcrelThunk, NaClPcrelThunk_end;
 extern char   NaClPcrelThunk_globals_patch;
 extern char   NaClPcrelThunk_dseg_patch;
-#else
-extern char   NaCl_tramp_dseg_patch;
-#endif
 
 #endif

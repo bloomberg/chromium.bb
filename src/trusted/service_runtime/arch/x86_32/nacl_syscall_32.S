@@ -30,8 +30,6 @@
         .text
 
         /*
-         * In the PIC case:
-         *
          * The trampoline code calls NaClPcrelThunk using an lcall,
          * restoring %cs.  Next, NaClPcrelThunk invokes
          * NaClSyscallSeg, with nacl_user in %ecx and %ds restored.
@@ -71,12 +69,8 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         test    %eax, %eax  /* zero is illegal (and default) */
         jz      1f
 
-#if __PIC__
         movl    0(%ecx), %edx
         movl    0(%edx,%eax,4), %edx
-#else
-        movl    IDENTIFIER(nacl_user)(,%eax,4), %edx
-#endif
         test    %edx, %edx
         jz      1f
 

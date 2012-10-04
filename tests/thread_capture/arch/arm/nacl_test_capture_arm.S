@@ -14,14 +14,10 @@
 
         .text
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClTestCapture):
-#ifdef __PIC__
   ldr  r3, .L.gNaClThreadIdxPIC
 .LPIC0:
   add  r3, pc
   ldr  r3, [r3]
-#else
-  ldr  r3, .L.gNaClThreadIdx
-#endif
   /*
    * Fetch the thread-local variable holding the thread index.
    * This funny instruction is what the compiler generates for -mtp=cp15,
@@ -35,10 +31,5 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClTestCapture):
   bx   ip
 
   .balign 4
-#ifdef __PIC__
 .L.gNaClThreadIdxPIC:
   .word  gNaClThreadIdx(gottpoff) + (. - .LPIC0 - 8)
-#else
-.L.gNaClThreadIdx:
-  .word  gNaClThreadIdx(tpoff)
-#endif

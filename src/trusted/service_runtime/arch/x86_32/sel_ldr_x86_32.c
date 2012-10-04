@@ -16,8 +16,6 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_32/tramp_32.h"
 
-#if __PIC__
-
 struct NaClPcrelThunkGlobals {
   struct NaClThreadContext **user;
 };
@@ -133,42 +131,6 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
 
   NaClApplyPatchToMemory(&patch_info);
 }
-
-#else
-/*
- * Install a syscall trampoline at target_addr.  NB: Thread-safe.
- */
-void  NaClPatchOneTrampoline(struct NaClApp *nap,
-                             uintptr_t      target_addr) {
-  struct NaClPatchInfo  patch_info;
-
-  struct NaClPatch      patch16[1];
-  struct NaClPatch      patch32[1];
-
-  UNREFERENCED_PARAMETER(nap);
-
-  patch16[0].target = ((uintptr_t) &NaCl_tramp_cseg_patch) - 2;
-  patch16[0].value = NaClGetGlobalCs();
-
-  patch32[0].target = ((uintptr_t) &NaCl_tramp_dseg_patch) - 4;
-  patch32[0].value = NaClGetGlobalDs();  /* opens the data sandbox */
-
-  NaClPatchInfoCtor(&patch_info);
-
-  patch_info.abs16 = patch16;
-  patch_info.num_abs16 = NACL_ARRAY_SIZE(patch16);
-
-  patch_info.abs32 = patch32;
-  patch_info.num_abs32 = NACL_ARRAY_SIZE(patch32);
-
-  patch_info.dst = target_addr;
-  patch_info.src = (uintptr_t) &NaCl_trampoline_seg_code;
-  patch_info.nbytes = ((uintptr_t) &NaCl_trampoline_seg_end
-                       - (uintptr_t) &NaCl_trampoline_seg_code);
-
-  NaClApplyPatchToMemory(&patch_info);
-}
-#endif
 
 void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
   CHECK(!(size % NACL_HALT_LEN));

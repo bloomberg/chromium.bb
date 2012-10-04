@@ -87,7 +87,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->mem_start = 0;
 
 #if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 32 && __PIC__)
+     && NACL_BUILD_SUBARCH == 32)
   nap->pcrel_thunk = 0;
 #endif
 #if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
@@ -425,7 +425,7 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
   int         i;
   uintptr_t   addr;
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 && __PIC__
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   if (!NaClMakePcrelThunk(nap)) {
     NaClLog(LOG_FATAL, "NaClMakePcrelThunk failed!\n");
   }

@@ -15,12 +15,8 @@
         .text
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClTestCapture):
 #if NACL_LINUX
-# ifdef __PIC__
         movq    nacl_thread_index@GOTTPOFF(%rip), %rax
         movl    $0, %fs:(%rax)
-# else
-        movl    $0, %fs:nacl_thread_index@TPOFF
-# endif
 #elif NACL_OSX
         movl    _nacl_thread_index_tls_offset(%rip), %eax
         movl    $0, %gs:(%rax)
