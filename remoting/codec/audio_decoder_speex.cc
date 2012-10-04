@@ -12,8 +12,6 @@
 #include "base/stl_util.h"
 #include "remoting/proto/audio.pb.h"
 #include "third_party/speex/speex.h"
-#include "third_party/speex/include/speex/speex_callbacks.h"
-#include "third_party/speex/include/speex/speex_stereo.h"
 
 namespace remoting {
 
