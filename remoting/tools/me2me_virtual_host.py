@@ -174,6 +174,7 @@ class Desktop:
     self.child_env = None
     self.sizes = sizes
     self.pulseaudio_pipe = None
+    self.server_supports_exact_resize = False
     g_desktops.append(self)
 
   @staticmethod
@@ -259,9 +260,16 @@ class Desktop:
     max_height = max([height for width, height in self.sizes])
 
     try:
-      xvfb = locate_executable("Xvfb-randr")
+      # TODO(jamiewalch): This script expects to be installed alongside
+      # Xvfb-randr, but that's no longer the case. Fix this once we have
+      # a Xvfb-randr package that installs somewhere sensible.
+      xvfb = "/usr/bin/Xvfb-randr"
+      if not os.path.exists(xvfb):
+        xvfb = locate_executable("Xvfb-randr")
+      self.server_supports_exact_resize = True
     except Exception:
       xvfb = "Xvfb"
+      self.server_supports_exact_resize = False
 
     logging.info("Starting %s on display :%d" % (xvfb, display))
     screen_option = "%dx%dx24" % (max_width, max_height)
@@ -353,6 +361,8 @@ class Desktop:
     args = [locate_executable(HOST_BINARY_NAME), "--host-config=/dev/stdin"]
     if self.pulseaudio_pipe:
       args.append("--audio-pipe-name=%s" % self.pulseaudio_pipe)
+    if self.server_supports_exact_resize:
+      args.append("--server-supports-exact-resize")
     self.host_proc = subprocess.Popen(args, env=self.child_env,
                                       stdin=subprocess.PIPE)
     logging.info(args)
@@ -737,7 +747,7 @@ def waitpid_handle_exceptions(pid, deadline):
 
 
 def main():
-  DEFAULT_SIZE = "1280x800"
+  DEFAULT_SIZE = "2560x1600"
   EPILOG = """This script is not intended for use by end-users.  To configure
 Chrome Remote Desktop, please install the app from the Chrome
 Web Store: https://chrome.google.com/remotedesktop"""
