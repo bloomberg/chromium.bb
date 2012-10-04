@@ -2,7 +2,7 @@
 
 vars = {
   "chrome_rev": "147940",
-  # NOTE!  These four should match their counterparts in chromium/src/DEPS.
+  # NOTE!  These three should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.
   "gtest_rev": "617",
   "gyp_rev": "1486",
@@ -16,8 +16,6 @@ vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "googlecode_url": "http://%s.googlecode.com/svn",
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
-  "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
-  "sourceforge_url": "http://%(repo)s.svn.sourceforge.net/svnroot/%(repo)s",
 }
 
 deps = {
@@ -36,8 +34,6 @@ deps = {
   "third_party/lss":
     ((Var("googlecode_url") % "linux-syscall-support") +
      "/trunk/lss@" + Var("lss_rev")),
-  "third_party/khronos":
-    Var("chromium_trunk") + "/src/third_party/khronos@" + Var("chrome_rev"),
   "tools/clang":
     Var("chromium_trunk") + "/src/tools/clang@" + Var("chrome_rev"),
   "tools/gyp":
