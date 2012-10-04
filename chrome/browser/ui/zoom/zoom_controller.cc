@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -80,8 +81,15 @@ void ZoomController::Observe(int type,
 }
 
 void ZoomController::UpdateState(const std::string& host) {
-  if (!host.empty() &&
-      host != net::GetHostOrSpecFromURL(web_contents()->GetURL())) {
+  if (host.empty())
+    return;
+
+  // Use the active navigation entry's URL instead of the WebContents' so
+  // virtual URLs work (e.g. chrome://settings). http://crbug.com/153950
+  content::NavigationEntry* active_entry =
+      web_contents()->GetController().GetActiveEntry();
+  if (!active_entry ||
+      host != net::GetHostOrSpecFromURL(active_entry->GetURL())) {
     return;
   }
 
