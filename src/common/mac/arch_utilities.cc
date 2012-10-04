@@ -53,6 +53,7 @@ const NXArchInfo* ArchInfo_armv7s() {
                                       CPU_SUBTYPE_ARM_V7);
   armv7s->name = "armv7s";
   armv7s->cpusubtype = CPU_SUBTYPE_ARM_V7S;
+  armv7s->description = "arm v7s";
   return armv7s;
 }
 
