@@ -76,6 +76,7 @@ bool CrackFileSystemURL(
 
 FileSystemURL::FileSystemURL()
     : type_(kFileSystemTypeUnknown),
+      mount_type_(kFileSystemTypeUnknown),
       is_valid_(false) {}
 
 FileSystemURL::FileSystemURL(const GURL& url)
