@@ -262,12 +262,10 @@ TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
           ui::NativeTheme::kColorId_TextButtonHighlightColor)),
       color_hover_(ui::NativeTheme::instance()->GetSystemColor(
           ui::NativeTheme::kColorId_TextButtonHoverColor)),
-      text_halo_color_(0),
-      has_text_halo_(false),
+      has_text_shadow_(false),
       active_text_shadow_color_(0),
       inactive_text_shadow_color_(0),
-      has_shadow_(false),
-      shadow_offset_(gfx::Point(1, 1)),
+      text_shadow_offset_(gfx::Point(1, 1)),
       min_width_(0),
       min_height_(0),
       max_width_(0),
@@ -324,20 +322,19 @@ void TextButtonBase::SetHoverColor(SkColor color) {
   color_hover_ = color;
 }
 
-void TextButtonBase::SetTextHaloColor(SkColor color) {
-  text_halo_color_ = color;
-  has_text_halo_ = true;
-}
-
 void TextButtonBase::SetTextShadowColors(SkColor active_color,
                                          SkColor inactive_color) {
   active_text_shadow_color_ = active_color;
   inactive_text_shadow_color_ = inactive_color;
-  has_shadow_ = true;
+  has_text_shadow_ = true;
 }
 
 void TextButtonBase::SetTextShadowOffset(int x, int y) {
-  shadow_offset_.SetPoint(x, y);
+  text_shadow_offset_.SetPoint(x, y);
+}
+
+void TextButtonBase::ClearEmbellishing() {
+  has_text_shadow_ = false;
 }
 
 void TextButtonBase::ClearMaxTextSize() {
@@ -346,11 +343,6 @@ void TextButtonBase::ClearMaxTextSize() {
 
 void TextButtonBase::SetShowMultipleIconStates(bool show_multiple_icon_states) {
   show_multiple_icon_states_ = show_multiple_icon_states;
-}
-
-void TextButtonBase::ClearEmbellishing() {
-  has_shadow_ = false;
-  has_text_halo_ = false;
 }
 
 void TextButtonBase::SetMultiLine(bool multi_line) {
@@ -441,13 +433,6 @@ void TextButtonBase::CalculateTextSize(gfx::Size* text_size, int max_width) {
     flags |= gfx::Canvas::NO_ELLIPSIS;
 
   gfx::Canvas::SizeStringInt(text_, font_, &w, &h, flags);
-
-  // Add 2 extra pixels to width and height when text halo is used.
-  if (has_text_halo_) {
-    w += 2;
-    h += 2;
-  }
-
   text_size->SetSize(w, h);
 }
 
@@ -563,19 +548,15 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                             text_bounds.height(),
                             draw_string_flags);
 #endif
-    } else if (has_text_halo_) {
-      canvas->DrawStringWithHalo(text_, font_, text_color, text_halo_color_,
-          text_bounds.x(), text_bounds.y(), text_bounds.width(),
-          text_bounds.height(), draw_string_flags);
-    } else if (has_shadow_) {
+    } else if (has_text_shadow_) {
       SkColor shadow_color =
           GetWidget()->IsActive() ? active_text_shadow_color_ :
                                     inactive_text_shadow_color_;
       canvas->DrawStringInt(text_,
                             font_,
                             shadow_color,
-                            text_bounds.x() + shadow_offset_.x(),
-                            text_bounds.y() + shadow_offset_.y(),
+                            text_bounds.x() + text_shadow_offset_.x(),
+                            text_bounds.y() + text_shadow_offset_.y(),
                             text_bounds.width(),
                             text_bounds.height(),
                             draw_string_flags);
@@ -834,8 +815,7 @@ NativeTextButton::NativeTextButton(ButtonListener* listener,
 
 void NativeTextButton::Init() {
 #if defined(OS_WIN)
-  // Windows will like to show its own colors.
-  // Halos and such are ignored as they are always set by specific calls.
+  // Use applicable Windows system colors.
   color_enabled_ = skia::COLORREFToSkColor(GetSysColor(COLOR_BTNTEXT));
   color_disabled_ = skia::COLORREFToSkColor(GetSysColor(COLOR_GRAYTEXT));
   color_hover_ = color_ = color_enabled_;
