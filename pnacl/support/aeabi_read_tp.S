@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -15,7 +15,7 @@
     .global __aeabi_read_tp
 
 __aeabi_read_tp:
-    mov r0, r9
+    ldr r0, [r9]
 
     .align NACL_BLOCK_SHIFT
     bic lr, lr, #NACL_CONTROL_FLOW_MASK

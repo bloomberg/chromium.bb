@@ -274,6 +274,16 @@ void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size) {
      */
     void *tdb = (char *) tp + __nacl_tp_tdb_offset(tdb_size);
     *(void **) tdb = tdb;
+  } else {
+    /*
+     * The TDB sits before $tp but there is space for a "header"
+     * directly at $tp, of which we make no other use.  So we can
+     * store the $tp pointer value here for consistency with the
+     * x86 case.  The real utility of this is only transitional,
+     * so we might remove it later.
+     * TODO(mcgrathr): Remove this when the ARM $tp ABI transition is complete.
+     */
+    *(void **) tp = tp;
   }
 
   return tp;

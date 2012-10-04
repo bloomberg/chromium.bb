@@ -16,5 +16,5 @@
         .type __aeabi_read_tp,%function
         .p2align NACL_BLOCK_SHIFT
 __aeabi_read_tp:
-        mov r0, r9
+        ldr r0, [r9]
         sfi_bx lr
