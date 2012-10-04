@@ -592,6 +592,8 @@ FileManager.prototype = {
     cr.ui.contextMenuHandler.setContextMenu(this.renameInput_,
         this.textContextMenu_);
     this.registerInputCommands_(this.renameInput_);
+
+    doc.addEventListener('command', this.setNoHover_.bind(this, true));
   };
 
   /**
@@ -3297,9 +3299,17 @@ FileManager.prototype = {
       case 'Right':
         // When navigating with keyboard we hide the distracting mouse hover
         // highlighting until the user moves the mouse again.
-        this.listContainer_.classList.add('nohover');
+        this.setNoHover_(true);
         break;
     }
+  };
+
+  /**
+   * Suppress/restore hover highlighting in the list container.
+   * @param {boolean} on True to temporarity hide hover state.
+   */
+  FileManager.prototype.setNoHover_ = function(on) {
+    setClassIf(this.listContainer_, 'nohover', on);
   };
 
   /**
@@ -3328,7 +3338,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onListMouseMove_ = function(event) {
     // The user grabbed the mouse, restore the hover highlighting.
-    this.listContainer_.classList.remove('nohover');
+    this.setNoHover_(false);
   };
 
   /**
