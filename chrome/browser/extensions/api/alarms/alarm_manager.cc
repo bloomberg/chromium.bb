@@ -29,7 +29,7 @@ const char kRegisteredAlarms[] = "alarms";
 const char kAlarmGranularity[] = "granularity";
 
 // The minimum period between polling for alarms to run.
-const base::TimeDelta kDefaultMinPollPeriod = base::TimeDelta::FromMinutes(5);
+const base::TimeDelta kDefaultMinPollPeriod = base::TimeDelta::FromMinutes(1);
 
 class DefaultAlarmDelegate : public AlarmManager::Delegate {
  public:

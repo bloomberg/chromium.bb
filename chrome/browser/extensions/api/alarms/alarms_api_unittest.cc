@@ -474,17 +474,17 @@ TEST_F(ExtensionAlarmsSchedulingTest, ReleasedExtensionPollsInfrequently) {
       extensions::Extension::INTERNAL);
   current_time_ = base::Time::FromJsTime(300000);
   CreateAlarm("[\"a\", {\"when\": 300010}]");
-  CreateAlarm("[\"b\", {\"when\": 360000}]");
+  CreateAlarm("[\"b\", {\"when\": 340000}]");
 
-  // In released extensions, we set the granularity to at least 5
-  // minutes, but AddAlarm schedules its next poll precisely.
+  // In released extensions, we set the granularity to at least 1
+  // minute, but AddAlarm schedules its next poll precisely.
   EXPECT_DOUBLE_EQ(300010, alarm_manager_->next_poll_time_.ToJsTime());
 
   // Run an iteration to see the effect of the granularity.
   current_time_ = base::Time::FromJsTime(300020);
   MessageLoop::current()->Run();
   EXPECT_DOUBLE_EQ(300020, alarm_manager_->last_poll_time_.ToJsTime());
-  EXPECT_DOUBLE_EQ(600020, alarm_manager_->next_poll_time_.ToJsTime());
+  EXPECT_DOUBLE_EQ(360020, alarm_manager_->next_poll_time_.ToJsTime());
 }
 
 TEST_F(ExtensionAlarmsSchedulingTest, TimerRunning) {
