@@ -38,6 +38,7 @@ BrowserPluginGuest::BrowserPluginGuest(int instance_id,
 #if defined(OS_WIN)
       damage_buffer_size_(0),
 #endif
+      damage_buffer_scale_factor_(1.0f),
       pending_update_counter_(0),
       guest_hang_timeout_(
           base::TimeDelta::FromMilliseconds(kGuestHangTimeoutMs)) {
