@@ -15,8 +15,8 @@ fi
 # took longer to write.
 
 IN_CHROOT=cros_sdk
-OUTSIDE_CHROOT_BUILDBOT=$(dirname $0)
-CHROOT_BUILDBOT=../../chromite/buildbot
+OUTSIDE_CHROOT_CHROMITE=$(realpath "$(dirname "$0")/..")
+CHROOT_CHROMITE=../../chromite
 
 declare -a FAILED_TESTS
 declare -a FAILED_LOGS
@@ -37,13 +37,18 @@ append_failed_test() {
 # $2 If set, run inside the chroot.
 run_test() {
   local log_file=$(mktemp)
-  echo "Running unittest $1"
+  local special="${special_tests[$1]:-}"
 
-  if [ $# -gt 1 ]; then
-    ${IN_CHROOT} -- $CHROOT_BUILDBOT/$1 &> $log_file ||
+  if [[ "${special}" == "skip" ]]; then
+    echo "Skipping unittest $1"
+    return
+  elif [[ "${special}" == "inside" ]]; then
+    echo "Running unittest $1 inside the chroot."
+    ${IN_CHROOT} python ${CHROOT_CHROMITE}/$1 &> $log_file ||
       append_failed_test $1 $log_file
   else
-    $OUTSIDE_CHROOT_BUILDBOT/$1 &> $log_file ||
+    echo "Running unittest $1"
+    python ${OUTSIDE_CHROOT_CHROMITE}/$1 &> $log_file ||
       append_failed_test $1 $log_file
   fi
 }
@@ -53,25 +58,30 @@ run_test() {
 # or not it's needed.  'sudo true' will do what we want.
 sudo true
 
-all_tests=(
-  portage_utilities_unittest.py
-  cbuildbot_unittest.py
-  cbuildbot_background_unittest.py
-  cbuildbot_config_unittest.py
-  cbuildbot_commands_unittest.py
-  cbuildbot_stages_unittest.py
-  gerrit_helper_unittest.py
-  lkgm_manager_unittest.py
-  manifest_version_unittest.py
-  patch_unittest.py
-  remote_try_unittest.py
-  repository_unittest.py
-  validation_pool_unittest.py
-  "../lib/osutils_unittest.py"
-  "../scripts/cros_mark_as_stable_unittest.py yes"
-  "../scripts/cros_mark_chrome_as_stable_unittest.py yes"
-  "../scripts/upload_prebuilts_unittest.py"
+# List all exceptions, with a token describing what's odd here.
+# inside - inside the chroot
+# skip - don't run this test (please comment on why)
+declare -A special_tests
+special_tests=(
+  ['lib/upgrade_table_unittest.py']=inside
+  ['scripts/cros_mark_as_stable_unittest.py']=inside
+  ['scripts/cros_mark_chrome_as_stable_unittest.py']=inside
+  ['scripts/sync_package_status_unittest.py']=inside
+  ['scripts/upload_package_status_unittest.py']=inside
+
+  ['buildbot/validation_pool_unittest.py']=skip
+  ['lib/gdata_lib_unittest.py']=skip
+  ['scripts/chrome_set_ver_unittest.py']=skip
+  ['scripts/check_gdata_token_unittest.py']=skip
+  ['scripts/cros_portage_upgrade_unittest.py']=skip
+  ['scripts/merge_package_status_unittest.py']=skip
+  ['scripts/upload_package_status_unittest.py']=skip
 )
+# List all unit test scripts that match the given pattern.
+all_tests=(
+  $(find "${OUTSIDE_CHROOT_CHROMITE}" -name '*_unittest.py' -printf '%P ')
+)
+
 if [ $# -eq 0 ]; then
   set -- "${all_tests[@]}"
 fi
