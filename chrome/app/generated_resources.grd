@@ -10566,7 +10566,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
         <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
                  desc="Text for the context menu item that creates an app shortcut. (In sentence case.)">
-          Create shortcut
+          Create shortcuts...
         </message>
         <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
                  desc="Text for the button that opens the app in a pinned tab. (In sentence case.)">
@@ -10613,7 +10613,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
         <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
                  desc="Text for the context menu item that creates an app shortcut. (In title case.)">
-          Create Shortcut
+          Create Shortcuts...
         </message>
         <message name="IDS_APP_CONTEXT_MENU_OPEN_PINNED"
                  desc="Text for the button that opens the app in a pinned tab. (In title case.)">
@@ -18044,6 +18044,9 @@ Battery full
     </message>
     <message name="IDS_APP_LIST_SHORTCUT_NAME" desc="Name for the App List to appear in the taskbar and in any shortcuts to it.">
       Chrome Apps Launcher
+    </message>
+    <message name="IDS_APP_LIST_UNINSTALL_ITEM" desc="Title text for the 'uninstall' context menu item of an app list item.">
+      Uninstall
     </message>
     <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
       Search

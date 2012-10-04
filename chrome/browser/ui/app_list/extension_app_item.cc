@@ -35,6 +35,7 @@ namespace {
 enum CommandId {
   LAUNCH = 100,
   TOGGLE_PIN,
+  CREATE_SHORTCUTS,
   OPTIONS,
   UNINSTALL,
   DETAILS,
@@ -266,6 +267,8 @@ void ExtensionAppItem::ExecuteCommand(int command_id) {
       controller_->UnpinApp(extension_id_);
     else
       controller_->PinApp(extension_id_);
+  } else if (command_id == CREATE_SHORTCUTS) {
+    controller_->ShowCreateShortcutsDialog(profile_, extension_id_);
   } else if (command_id >= LAUNCH_TYPE_START &&
              command_id < LAUNCH_TYPE_LAST) {
     SetExtensionLaunchType(profile_,
@@ -294,6 +297,10 @@ void ExtensionAppItem::Activate(int event_flags) {
 }
 
 ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
+  const Extension* extension = GetExtension();
+  if (!extension)
+    return NULL;
+
   // No context menu for Chrome app.
   if (extension_id_ == extension_misc::kChromeAppId)
     return NULL;
@@ -308,32 +315,51 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
     int index = 0;
     extension_menu_items_->AppendExtensionItems(extension_id_, string16(),
                                                 &index);
-    context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-    context_menu_model_->AddItemWithStringId(
-        TOGGLE_PIN,
-        controller_->IsAppPinned(extension_id_) ?
-            IDS_APP_LIST_CONTEXT_MENU_UNPIN :
-            IDS_APP_LIST_CONTEXT_MENU_PIN);
-    context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-    context_menu_model_->AddCheckItemWithStringId(
-        LAUNCH_TYPE_REGULAR_TAB,
-        IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-    context_menu_model_->AddCheckItemWithStringId(
-        LAUNCH_TYPE_PINNED_TAB,
-        IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-    context_menu_model_->AddCheckItemWithStringId(
-        LAUNCH_TYPE_WINDOW,
-        IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-    // Even though the launch type is Full Screen it is more accurately
-    // described as Maximized in Ash.
-    context_menu_model_->AddCheckItemWithStringId(
-        LAUNCH_TYPE_FULLSCREEN,
-        IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-    context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-    context_menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
-    context_menu_model_->AddItemWithStringId(DETAILS, IDS_NEW_TAB_APP_DETAILS);
+    if (controller_->CanPin()) {
+      context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+      context_menu_model_->AddItemWithStringId(
+          TOGGLE_PIN,
+          controller_->IsAppPinned(extension_id_) ?
+              IDS_APP_LIST_CONTEXT_MENU_UNPIN :
+              IDS_APP_LIST_CONTEXT_MENU_PIN);
+    }
+
+    if (controller_->CanShowCreateShortcutsDialog() &&
+        extension->is_platform_app()) {
+      context_menu_model_->AddItemWithStringId(
+          CREATE_SHORTCUTS,
+          IDS_NEW_TAB_APP_CREATE_SHORTCUT);
+    }
+
+    if (!extension->is_platform_app()) {
+      context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+      context_menu_model_->AddCheckItemWithStringId(
+          LAUNCH_TYPE_REGULAR_TAB,
+          IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
+      context_menu_model_->AddCheckItemWithStringId(
+          LAUNCH_TYPE_PINNED_TAB,
+          IDS_APP_CONTEXT_MENU_OPEN_PINNED);
+      context_menu_model_->AddCheckItemWithStringId(
+          LAUNCH_TYPE_WINDOW,
+          IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+      // Even though the launch type is Full Screen it is more accurately
+      // described as Maximized in Ash.
+      context_menu_model_->AddCheckItemWithStringId(
+          LAUNCH_TYPE_FULLSCREEN,
+          IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+    }
+
+    if (!extension->is_platform_app()) {
+      context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+      context_menu_model_->AddItemWithStringId(OPTIONS,
+                                               IDS_NEW_TAB_APP_OPTIONS);
+      context_menu_model_->AddItemWithStringId(DETAILS,
+                                               IDS_NEW_TAB_APP_DETAILS);
+    }
     context_menu_model_->AddItemWithStringId(UNINSTALL,
-                                             IDS_EXTENSIONS_UNINSTALL);
+                                             extension->is_platform_app() ?
+                                                 IDS_APP_LIST_UNINSTALL_ITEM :
+                                                 IDS_EXTENSIONS_UNINSTALL);
   }
 
   return context_menu_model_.get();

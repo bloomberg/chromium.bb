@@ -25,6 +25,11 @@ class AppListController {
   virtual void UnpinApp(const std::string& extension_id) = 0;
   virtual bool CanPin() = 0;
 
+  // Whether the controller supports showing the Create Shortcuts dialog.
+  virtual bool CanShowCreateShortcutsDialog() = 0;
+  virtual void ShowCreateShortcutsDialog(Profile* profile,
+                                         const std::string& extension_id) = 0;
+
   // App has been clicked on in the app list.
   virtual void ActivateApp(Profile* profile,
                            const std::string& extension_id,

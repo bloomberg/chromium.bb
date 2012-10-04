@@ -33,6 +33,14 @@ bool AppListControllerAsh::CanPin() {
   return ChromeLauncherController::instance()->CanPin();
 }
 
+bool AppListControllerAsh::CanShowCreateShortcutsDialog() {
+  return false;
+}
+
+void AppListControllerAsh::ShowCreateShortcutsDialog(
+    Profile* profile,
+    const std::string& extension_id) {}
+
 void AppListControllerAsh::ActivateApp(Profile* profile,
                                        const std::string& extension_id,
                                        int event_flags) {

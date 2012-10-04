@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
@@ -49,6 +50,10 @@ class AppListControllerWin : public AppListController {
   virtual void PinApp(const std::string& extension_id) OVERRIDE;
   virtual void UnpinApp(const std::string& extension_id) OVERRIDE;
   virtual bool CanPin() OVERRIDE;
+  virtual bool CanShowCreateShortcutsDialog() OVERRIDE;
+  virtual void ShowCreateShortcutsDialog(
+      Profile* profile,
+      const std::string& extension_id) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const std::string& extension_id,
                            int event_flags) OVERRIDE;
@@ -76,6 +81,21 @@ void AppListControllerWin::UnpinApp(const std::string& extension_id) {}
 
 bool AppListControllerWin::CanPin() {
   return false;
+}
+
+bool AppListControllerWin::CanShowCreateShortcutsDialog() {
+  return true;
+}
+
+void AppListControllerWin::ShowCreateShortcutsDialog(
+    Profile* profile,
+    const std::string& extension_id) {
+  ExtensionService* service = profile->GetExtensionService();
+  DCHECK(service);
+  const extensions::Extension* extension = service->GetInstalledExtension(
+      extension_id);
+  DCHECK(extension);
+  chrome::ShowCreateChromeAppShortcutsDialog(NULL, profile, extension);
 }
 
 void AppListControllerWin::ActivateApp(Profile* profile,
