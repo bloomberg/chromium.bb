@@ -273,6 +273,16 @@
             'SK_SUPPORT_GPU=0',
           ],
         }],
+        ['release_valgrind_build == 1', {
+          'defines': [
+            'SK_DEBUG_PATH_REF=1',
+          ],
+          'direct_dependent_settings': {
+            'defines': [
+              'SK_DEBUG_PATH_REF=1',
+            ],
+          },
+        }],
         ['order_profiling != 0', {
           'target_conditions' : [
             ['_toolset=="target"', {
