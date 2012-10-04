@@ -958,7 +958,14 @@ const wchar_t* ShellUtil::kAppPathsRegistryPathName = L"Path";
 const wchar_t* ShellUtil::kChromeHTMLProgId = L"ChromeHTML";
 const wchar_t* ShellUtil::kChromeHTMLProgIdDesc = L"Chrome HTML Document";
 #else
-const wchar_t* ShellUtil::kChromeHTMLProgId = L"ChromiumHTML";
+// This used to be "ChromiumHTML", but was forced to become "ChromiumHTM"
+// because of http://crbug.com/153349 as with the '.' and 26 characters suffix
+// added on user-level installs, the generated progid for Chromium was 39
+// characters long which, according to MSDN (
+// http://msdn.microsoft.com/library/aa911706.aspx), is the maximum length
+// for a progid. It was however determined through experimentation that the 39
+// character limit mentioned on MSDN includes the NULL character...
+const wchar_t* ShellUtil::kChromeHTMLProgId = L"ChromiumHTM";
 const wchar_t* ShellUtil::kChromeHTMLProgIdDesc = L"Chromium HTML Document";
 #endif
 
