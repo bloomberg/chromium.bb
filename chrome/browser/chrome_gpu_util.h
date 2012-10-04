@@ -13,6 +13,11 @@ void InitializeStage3DFieldTrial();
 // Sets up force-compositing-mode and threaded compositing field trials.
 void InitializeCompositingFieldTrial();
 
+// Sets up a monitor for browser windows, to be used to determine gpu
+// managed memory allocation.
+void InstallBrowserMonitor();
+void UninstallBrowserMonitor();
+
 }  // namespace gpu_util
 
 #endif  // CHROME_BROWSER_CHROME_GPU_UTIL_H_

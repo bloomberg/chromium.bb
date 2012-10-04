@@ -446,7 +446,11 @@ bool GpuProcessHost::Init() {
     return false;
   }
 
-  return Send(new GpuMsg_Initialize());
+  if (!Send(new GpuMsg_Initialize()))
+    return false;
+
+  return Send(new GpuMsg_SetVideoMemoryWindowCount(
+      GpuDataManagerImpl::GetInstance()->GetWindowCount()));
 }
 
 void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {
