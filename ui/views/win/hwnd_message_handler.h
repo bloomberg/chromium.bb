@@ -149,7 +149,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   }
 
   void set_use_system_default_icon(bool use_system_default_icon) {
-    use_sytem_default_icon_ = use_system_default_icon;
+    use_system_default_icon_ = use_system_default_icon;
   }
 
  private:
@@ -369,7 +369,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
 
   bool remove_standard_frame_;
 
-  bool use_sytem_default_icon_;
+  bool use_system_default_icon_;
 
   // Whether the focus should be restored next time we get enabled.  Needed to
   // restore focus correctly when Windows modal dialogs are displayed.

@@ -370,6 +370,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
           fullscreen_handler_(new FullscreenHandler)),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       remove_standard_frame_(false),
+      use_system_default_icon_(false),
       restore_focus_when_enabled_(false),
       restored_enabled_(false),
       previous_cursor_(NULL),
@@ -898,7 +899,7 @@ void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
 // HWNDMessageHandler, ui::WindowImpl overrides:
 
 HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
-  if (use_sytem_default_icon_)
+  if (use_system_default_icon_)
     return NULL;
   return ViewsDelegate::views_delegate ?
       ViewsDelegate::views_delegate->GetDefaultWindowIcon() : NULL;
