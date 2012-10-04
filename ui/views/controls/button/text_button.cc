@@ -376,7 +376,7 @@ gfx::Size TextButtonBase::GetPreferredSize() {
   if (max_width_ > 0)
     prefsize.set_width(std::min(max_width_, prefsize.width()));
 
-  prefsize.set_width(std::max(prefsize.height(), min_width_));
+  prefsize.set_width(std::max(prefsize.width(), min_width_));
   prefsize.set_height(std::max(prefsize.height(), min_height_));
 
   return prefsize;
@@ -732,7 +732,7 @@ gfx::Size TextButton::GetPreferredSize() {
   }
 #endif
 
-  prefsize.set_width(std::max(prefsize.height(), min_width_));
+  prefsize.set_width(std::max(prefsize.width(), min_width_));
   prefsize.set_height(std::max(prefsize.height(), min_height_));
 
   return prefsize;
