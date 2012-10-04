@@ -1774,6 +1774,7 @@ misc-tools() {
       platform=arm \
       naclsdk_validate=0 \
       sysinfo=0 \
+      -j${PNACL_CONCURRENCY} \
       sel_ldr
     rm -rf  "${INSTALL_ROOT}/tools-arm"
     mkdir "${INSTALL_ROOT}/tools-arm"
@@ -1794,6 +1795,7 @@ misc-tools() {
       platform=mips32 \
       naclsdk_validate=0 \
       sysinfo=0 \
+      -j${PNACL_CONCURRENCY} \
       sel_ldr
     rm -rf  "${INSTALL_ROOT}/tools-mips32"
     mkdir "${INSTALL_ROOT}/tools-mips32"
