@@ -131,13 +131,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoContents) {
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(NULL, "", false));
 }
 
-#if defined(OS_WIN)
-// See http://crbug.com/153741.
-#define MAYBE_CanOffer FLAKY_CanOffer
-#else
-#define MAYBE_CanOffer CanOffer
-#endif
-TEST_F(OneClickSigninHelperTest, MAYBE_CanOffer) {
+TEST_F(OneClickSigninHelperTest, CanOffer) {
   content::WebContents* web_contents = CreateMockWebContents(false, "");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
