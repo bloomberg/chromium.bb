@@ -198,7 +198,7 @@ bool RenderViewHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
     params.new_render_process_host_id =
         pending_render_view_host_->GetProcess()->GetID();
     params.new_request_id = pending_request_id;
-    current_host()->GetProcess()->CrossSiteSwapOutACK(params);
+    current_host()->GetProcess()->SimulateSwapOutACK(params);
   }
   return false;
 }

@@ -155,6 +155,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Called when the unload handler for a cross-site request has finished.
   void OnSwapOutACK(const ViewMsg_SwapOut_Params& params);
 
+  // Called when we want to simulate the renderer process sending
+  // ViewHostMsg_SwapOut_ACK in cases where the renderer has died or is
+  // unresponsive.
+  void OnSimulateSwapOutACK(const ViewMsg_SwapOut_Params& params);
+
   // Called when the renderer loads a resource from its internal cache.
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
                                         const std::string& security_info,
@@ -249,6 +254,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
+
+  // The real implementation of the OnSwapOutACK logic. OnSwapOutACK and
+  // OnSimulateSwapOutACK just call this method, supplying the |timed_out|
+  // parameter, which indicates whether the call is due to a timeout while
+  // waiting for SwapOut acknowledgement from the renderer process.
+  void HandleSwapOutACK(const ViewMsg_SwapOut_Params& params, bool timed_out);
 
   // Helper function for regular and download requests.
   void BeginRequestInternal(scoped_ptr<net::URLRequest> request,

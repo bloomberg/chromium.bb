@@ -439,11 +439,11 @@ void RenderViewHostImpl::SwapOut(int new_render_process_host_id,
     // This RenderViewHost doesn't have a live renderer, so just skip the unload
     // event.  We must notify the ResourceDispatcherHost on the IO thread,
     // which we will do through the RenderProcessHost's widget helper.
-    GetProcess()->CrossSiteSwapOutACK(params);
+    GetProcess()->SimulateSwapOutACK(params);
   }
 }
 
-void RenderViewHostImpl::OnSwapOutACK() {
+void RenderViewHostImpl::OnSwapOutACK(bool timed_out) {
   // Stop the hang monitor now that the unload handler has finished.
   decrement_in_flight_event_count();
   StopHangMonitorTimeout();

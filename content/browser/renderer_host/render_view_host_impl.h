@@ -310,8 +310,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // of the parameters.
   void SwapOut(int new_render_process_host_id, int new_request_id);
 
-  // Called by ResourceDispatcherHost after the SwapOutACK is received.
-  void OnSwapOutACK();
+  // Called by ResourceDispatcherHost after the SwapOutACK is received or the
+  // response times out.
+  void OnSwapOutACK(bool timed_out);
 
   // Called to notify the renderer that it has been visibly swapped out and
   // replaced by another RenderViewHost, after an earlier call to SwapOut.

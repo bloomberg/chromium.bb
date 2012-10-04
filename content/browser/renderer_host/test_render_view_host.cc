@@ -346,7 +346,7 @@ void TestRenderViewHost::SetContentsMimeType(const std::string& mime_type) {
 }
 
 void TestRenderViewHost::SimulateSwapOutACK() {
-  OnSwapOutACK();
+  OnSwapOutACK(false);
 }
 
 void TestRenderViewHost::SimulateWasHidden() {
