@@ -1241,6 +1241,7 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
         commands.RunHWTestSuite(build, self._suite, self._current_board,
                                 self._build_config['hw_tests_pool'],
                                 self._build_config['hw_tests_num'],
+                                self._build_config['hw_tests_file_bugs'],
                                 debug)
 
     except cros_build_lib.TimeoutError as exception:

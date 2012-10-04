@@ -55,6 +55,7 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
     my_config['push_image'] = False
     my_config['hw_tests_pool'] = constants.HWTEST_TRYBOT_POOL
     my_config['hw_tests_num'] = constants.HWTEST_TRYBOT_NUM
+    my_config['hw_tests_file_bugs'] = False
 
     # Default to starting with a fresh chroot on remote trybot runs.
     if remote_trybot:
@@ -230,6 +231,9 @@ _settings = dict(
 
 # Maximum number of devices to use when scheduling tests in the hw lab.
   hw_tests_num=constants.HWTEST_DEFAULT_NUM,
+
+# Should we file bugs if a test fails in a suite run.
+  hw_tests_file_bugs=False,
 
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
   upload_hw_test_artifacts=False,

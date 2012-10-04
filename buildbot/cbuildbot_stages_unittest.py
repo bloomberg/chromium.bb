@@ -708,6 +708,7 @@ class HWTestStageTest(AbstractStageTest):
                             self._current_board,
                             constants.HWTEST_TRYBOT_POOL,
                             constants.HWTEST_TRYBOT_NUM,
+                            False,
                             False)
 
     self.mox.ReplayAll()
@@ -733,6 +734,7 @@ class HWTestStageTest(AbstractStageTest):
                             self._current_board,
                             constants.HWTEST_TRYBOT_POOL,
                             constants.HWTEST_TRYBOT_NUM,
+                            False,
                             True)
 
     self.mox.ReplayAll()
@@ -750,6 +752,7 @@ class HWTestStageTest(AbstractStageTest):
                             self._current_board,
                             constants.HWTEST_MACH_POOL,
                             constants.HWTEST_DEFAULT_NUM,
+                            False,
                             False)
 
     self.mox.ReplayAll()
@@ -770,6 +773,7 @@ class HWTestStageTest(AbstractStageTest):
                             self._current_board,
                             constants.HWTEST_MACH_POOL,
                             constants.HWTEST_DEFAULT_NUM,
+                            False,
                             False).AndRaise(error)
     bs.BuilderStage._HandleExceptionAsWarning(mox.IgnoreArg())
     self.mox.ReplayAll()
