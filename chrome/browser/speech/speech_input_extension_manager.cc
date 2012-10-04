@@ -645,7 +645,6 @@ void SpeechInputExtensionManager::StartRecording(
   context.context_name = extension_name;
 
   content::SpeechRecognitionSessionConfig config;
-  config.is_one_shot = true;
   config.language = language;
   config.grammars.push_back(content::SpeechRecognitionGrammar(grammar));
   config.initial_context = context;

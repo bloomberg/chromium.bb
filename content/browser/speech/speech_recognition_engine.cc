@@ -14,6 +14,8 @@ namespace speech {
 
 SpeechRecognitionEngine::Config::Config()
     : filter_profanities(false),
+      continuous(true),
+      interim_results(true),
       max_hypotheses(kDefaultMaxHypotheses),
       audio_sample_rate(kDefaultConfigSampleRate),
       audio_num_bits_per_sample(kDefaultConfigBitsPerSample) {

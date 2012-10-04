@@ -175,12 +175,14 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.audio_num_bits_per_sample =
      SpeechRecognizer::kNumBitsPerAudioSample;
   remote_engine_config.filter_profanities = config.filter_profanities;
+  remote_engine_config.continuous = config.continuous;
+  remote_engine_config.interim_results = config.interim_results;
   remote_engine_config.max_hypotheses = config.max_hypotheses;
   remote_engine_config.hardware_info = hardware_info;
   remote_engine_config.origin_url = can_report_metrics ? config.origin_url : "";
 
   SpeechRecognitionEngine* google_remote_engine;
-  if (config.is_one_shot) {
+  if (config.is_legacy_api) {
     google_remote_engine =
         new GoogleOneShotRemoteEngine(config.url_request_context_getter);
   } else {
@@ -190,10 +192,14 @@ int SpeechRecognitionManagerImpl::CreateSession(
 
   google_remote_engine->SetConfig(remote_engine_config);
 
-  session.recognizer = new SpeechRecognizer(this,
-                                            session_id,
-                                            config.is_one_shot,
-                                            google_remote_engine);
+  // The legacy api cannot use continuous mode.
+  DCHECK(!config.is_legacy_api || !config.continuous);
+
+  session.recognizer = new SpeechRecognizer(
+      this,
+      session_id,
+      !config.continuous,
+      google_remote_engine);
   return session_id;
 }
 

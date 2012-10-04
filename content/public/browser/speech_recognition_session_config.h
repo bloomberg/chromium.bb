@@ -21,14 +21,13 @@ struct CONTENT_EXPORT SpeechRecognitionSessionConfig {
   SpeechRecognitionSessionConfig();
   ~SpeechRecognitionSessionConfig();
 
-  // Enables one shot mode, which delivers a single result at the end of the
-  // speech, ending automatically recognition. When deasserted, continuous mode
-  // is used instead, carrying out recognition until an explicit stop request.
-  bool is_one_shot;
+  bool is_legacy_api;
   std::string language;
   SpeechRecognitionGrammarArray grammars;
   std::string origin_url;
   bool filter_profanities;
+  bool continuous;
+  bool interim_results;
   uint32 max_hypotheses;
   SpeechRecognitionSessionContext initial_context;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter;

@@ -80,7 +80,7 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
   context.requested_by_page_element = false;
 
   SpeechRecognitionSessionConfig config;
-  config.is_one_shot = params.is_one_shot;
+  config.is_legacy_api = false;
   config.language = params.language;
   config.grammars = params.grammars;
   config.max_hypotheses = params.max_hypotheses;
@@ -92,6 +92,8 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
   } else {
     config.filter_profanities = false;
   }
+  config.continuous = params.continuous;
+  config.interim_results = params.interim_results;
   config.event_listener = this;
 
   int session_id = manager()->CreateSession(config);

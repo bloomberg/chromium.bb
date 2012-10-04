@@ -363,10 +363,10 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
     upstream_args.push_back(
         "xhw=" + net::EscapeQueryParamValue(config_.hardware_info, true));
   }
-  upstream_args.push_back("continuous");
-  upstream_args.push_back("interim");
-  // TODO(hans): Set 'continuous', 'interim', and 'confidence' based on user
-  // input.
+  if (config_.continuous)
+    upstream_args.push_back("continuous");
+  if (config_.interim_results)
+    upstream_args.push_back("interim");
 
   GURL upstream_url(std::string(kWebServiceBaseUrl) +
                     std::string(kUpstreamUrl) +

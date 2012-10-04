@@ -11,8 +11,10 @@ const uint32 kDefaultMaxHypotheses = 1;
 namespace content {
 
 SpeechRecognitionSessionConfig::SpeechRecognitionSessionConfig()
-    : is_one_shot(true),
+    : is_legacy_api(true),
       filter_profanities(false),
+      continuous(false),
+      interim_results(false),
       max_hypotheses(kDefaultMaxHypotheses),
       event_listener(NULL) {
 }
