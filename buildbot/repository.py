@@ -150,6 +150,9 @@ class RepoRepository(object):
   # Use our own repo, in case android.kernel.org (the default location) is down.
   _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL]
 
+  # If a repo hasn't been used in the last 5 runs, wipe it.
+  LRU_THRESHOLD = 5
+
   def __init__(self, repo_url, directory, branch=None, referenced_repo=None,
                manifest=None, depth=None):
     self.repo_url = repo_url
@@ -344,11 +347,45 @@ class RepoRepository(object):
       # use relative object pathways.  Note that cros_sdk also triggers the
       # same cleanup- we however kick it erring on the side of caution.
       self._EnsureMirroring(True)
+      self._DoCleanup()
 
     except cros_build_lib.RunCommandError, e:
       err_msg = e.Stringify(error=False, output=False)
       logging.error(err_msg)
       raise SrcCheckOutException(err_msg)
+
+  def _DoCleanup(self):
+    """Wipe unused repositories."""
+
+    # Find all projects, even if they're not in the manifest.  Note the find
+    # trickery this is done to keep it as fast as possible.
+    repo_path = os.path.join(self.directory, '.repo', 'projects')
+    current = set(cros_build_lib.RunCommandCaptureOutput(
+        ['find', repo_path, '-type', 'd', '-name', '*.git', '-printf', '%P\n',
+         '-a', '!', '-wholename',  '*.git/*', '-prune'],
+        print_cmd=False).output.splitlines())
+    data = {}.fromkeys(current, 0)
+
+    path = os.path.join(self.directory, '.repo', 'project.lru')
+    if os.path.exists(path):
+      existing = [x.strip().split(None, 1)
+                  for x in osutils.ReadFile(path).splitlines()]
+      data.update((k, int(v)) for k, v in existing if k in current)
+
+    # Increment it all...
+    data.update((k, v + 1) for k, v in data.iteritems())
+    # Zero out what is now used.
+    projects = cros_build_lib.ManifestCheckout.Cached(self.directory).projects
+    data.update(('%s.git' % x['path'], 0) for x in projects.itervalues())
+
+    # Finally... wipe anything that's greater than our threshold.
+    wipes = [k for k, v in data.iteritems() if v > self.LRU_THRESHOLD]
+    if wipes:
+      cros_build_lib.SudoRunCommand(
+          ['rm', '-rf'] + [os.path.join(repo_path, proj) for proj in wipes])
+      map(data.pop, wipes)
+
+    osutils.WriteFile(path, "\n".join('%s %i' % x for x in data.iteritems()))
 
   def GetRelativePath(self, path):
     """Returns full path including source directory of path in repo."""
