@@ -35,6 +35,7 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <sys/poll.h>
+#include <pthread.h>
 
 #include "wayland-util.h"
 #include "wayland-os.h"
@@ -68,6 +69,7 @@ struct wl_display {
 	struct wl_map objects;
 	struct wl_list global_listener_list;
 	struct wl_list global_list;
+	pthread_mutex_t mutex;
 
 	wl_display_global_func_t global_handler;
 	void *global_handler_data;
@@ -117,9 +119,12 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 
 	proxy->object.interface = interface;
 	proxy->object.implementation = NULL;
+	proxy->display = display;
+
+	pthread_mutex_lock(&display->mutex);
 	proxy->object.id = wl_map_insert_new(&display->objects,
 					     WL_MAP_CLIENT_SIDE, proxy);
-	proxy->display = display;
+	pthread_mutex_unlock(&display->mutex);
 
 	return proxy;
 }
@@ -139,7 +144,10 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	proxy->object.implementation = NULL;
 	proxy->object.id = id;
 	proxy->display = display;
+
+	pthread_mutex_lock(&display->mutex);
 	wl_map_insert_at(&display->objects, id, proxy);
+	pthread_mutex_unlock(&display->mutex);
 
 	return proxy;
 }
@@ -147,12 +155,17 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 WL_EXPORT void
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
+	pthread_mutex_lock(&proxy->display->mutex);
+
 	if (proxy->object.id < WL_SERVER_ID_START)
 		wl_map_insert_at(&proxy->display->objects,
 				 proxy->object.id, WL_ZOMBIE_OBJECT);
 	else
 		wl_map_insert_at(&proxy->display->objects,
 				 proxy->object.id, NULL);
+
+	pthread_mutex_unlock(&proxy->display->mutex);
+
 	free(proxy);
 }
 
@@ -177,6 +190,8 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 	struct wl_closure *closure;
 	va_list ap;
 
+	pthread_mutex_lock(&proxy->display->mutex);
+
 	va_start(ap, opcode);
 	closure = wl_closure_vmarshal(&proxy->object, opcode, ap,
 				      &proxy->object.interface->methods[opcode]);
@@ -196,6 +211,8 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 	}
 
 	wl_closure_destroy(closure);
+
+	pthread_mutex_unlock(&proxy->display->mutex);
 }
 
 /* Can't do this, there may be more than one instance of an
@@ -269,11 +286,15 @@ display_handle_delete_id(void *data, struct wl_display *display, uint32_t id)
 {
 	struct wl_proxy *proxy;
 
+	pthread_mutex_lock(&display->mutex);
+
 	proxy = wl_map_lookup(&display->objects, id);
 	if (proxy != WL_ZOMBIE_OBJECT)
 		fprintf(stderr, "server sent delete_id for live object\n");
 	else
 		wl_map_remove(&display->objects, id);
+
+	pthread_mutex_unlock(&display->mutex);
 }
 
 static const struct wl_display_listener display_listener = {
@@ -552,7 +573,10 @@ dispatch_event(struct wl_display *display, struct wl_closure *closure)
 	id = closure->buffer[0];
 	opcode = closure->buffer[1] & 0xffff;
 
+	pthread_mutex_lock(&display->mutex);
 	proxy = wl_map_lookup(&display->objects, id);
+	pthread_mutex_unlock(&display->mutex);
+
 	if (proxy == WL_ZOMBIE_OBJECT)
 		goto skip;
 
@@ -570,13 +594,17 @@ wl_display_dispatch(struct wl_display *display)
 	struct wl_closure *closure;
 	int len, size;
 
+	pthread_mutex_lock(&display->mutex);
+
 	/* FIXME: Handle flush errors, EAGAIN... */
-	wl_display_flush(display);
+	wl_connection_flush(display->connection);
 
 	/* FIXME: Shouldn't always read here... */
 	len = wl_connection_read(display->connection);
-	if (len == -1)
+	if (len == -1) {
+		pthread_mutex_unlock(&display->mutex);
 		return -1;
+	}
 
 	wl_list_init(&list);
 	while (len >= 8) {
@@ -585,6 +613,8 @@ wl_display_dispatch(struct wl_display *display)
 			break;
 		len -= size;
 	}
+
+	pthread_mutex_unlock(&display->mutex);
 
 	while (!wl_list_empty(&list)) {
 		closure = container_of(list.next, struct wl_closure, link);
@@ -597,7 +627,15 @@ wl_display_dispatch(struct wl_display *display)
 WL_EXPORT int
 wl_display_flush(struct wl_display *display)
 {
-	return wl_connection_flush(display->connection);
+	int ret;
+
+	pthread_mutex_lock(&display->mutex);
+
+	ret = wl_connection_flush(display->connection);
+
+	pthread_mutex_unlock(&display->mutex);
+
+	return ret;
 }
 
 WL_EXPORT void *
