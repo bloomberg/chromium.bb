@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_SYNCABLE_SYNC_FILE_ERRORS_H_
-#define WEBKIT_FILEAPI_SYNCABLE_SYNC_FILE_ERRORS_H_
+#ifndef WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
+#define WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
 
 namespace fileapi {
 
-enum SyncFileError {
+enum SyncStatusCode {
+  SYNC_STATUS_OK = 0,
+
   // Basic ones that could be directly mapped to PlatformFileError.
-  SYNC_FILE_OK = 0,
   SYNC_FILE_ERROR_FAILED = -1,
   SYNC_FILE_ERROR_IN_USE = -2,
   SYNC_FILE_ERROR_EXISTS = -3,
@@ -27,11 +28,11 @@ enum SyncFileError {
   SYNC_FILE_ERROR_INVALID_URL = -15,
 
   // Database related errors.
-  SYNC_FILE_ERROR_DATABASE_NOT_FOUND = -16,
-  SYNC_FILE_ERROR_DATABASE_CORRUPTION = -17,
-  SYNC_FILE_ERROR_DATABASE_IO_ERROR = -18,
+  SYNC_DATABASE_ERROR_NOT_FOUND = -16,
+  SYNC_DATABASE_ERROR_CORRUPTION = -17,
+  SYNC_DATABASE_ERROR_IO_ERROR = -18,
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_SYNCABLE_SYNC_FILE_ERRORS_H_
+#endif  // WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
