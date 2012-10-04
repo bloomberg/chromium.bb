@@ -237,21 +237,6 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
     return NULL;
   }
 
-  // Set the display link for the current renderer
-  CGLPixelFormatObj cglPixelFormat =
-      (CGLPixelFormatObj)[glPixelFormat CGLPixelFormatObj];
-  ret = CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(display_link,
-                                                          cglContext,
-                                                          cglPixelFormat);
-  // This can fail with kCVReturnInvalidDisplay on mirrored displays, so
-  // ignore that failure and continue. http://crbug.com/152525
-  if (ret != kCVReturnSuccess && ret != kCVReturnInvalidDisplay) {
-    CVDisplayLinkRelease(display_link);
-    LOG(ERROR) << "CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext failed: "
-               << ret;
-    return NULL;
-  }
-
   return new CompositingIOSurfaceMac(io_surface_support, glContext.release(),
                                      cglContext,
                                      shader_program_blit_rgb,
