@@ -54,6 +54,7 @@ from _emerge.actions import adjust_configs
 from _emerge.actions import load_emerge_config
 from _emerge.create_depgraph_params import create_depgraph_params
 from _emerge.depgraph import backtrack_depgraph
+from _emerge.main import clean_logs
 from _emerge.main import emerge_main
 from _emerge.main import parse_opts
 from _emerge.Package import Package
@@ -1649,6 +1650,8 @@ def real_main(argv):
     args += [os.path.abspath(sys.argv[0])] + parallel_emerge_args
     args += ["--exclude=sys-apps/portage"]
     os.execvp("sudo", args)
+
+  clean_logs(emerge.settings)
 
   print "Done"
   return 0
