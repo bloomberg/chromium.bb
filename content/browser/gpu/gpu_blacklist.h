@@ -360,6 +360,9 @@ class CONTENT_EXPORT GpuBlacklist {
     bool SetGLRendererInfo(const std::string& renderer_op,
                            const std::string& renderer_value);
 
+    bool SetCpuBrand(const std::string& cpu_op,
+                     const std::string& cpu_value);
+
     bool SetPerfGraphicsInfo(const std::string& op,
                              const std::string& float_string,
                              const std::string& float_string2);
@@ -409,6 +412,7 @@ class CONTENT_EXPORT GpuBlacklist {
     scoped_ptr<VersionInfo> driver_date_info_;
     scoped_ptr<StringInfo> gl_vendor_info_;
     scoped_ptr<StringInfo> gl_renderer_info_;
+    scoped_ptr<StringInfo> cpu_brand_;
     scoped_ptr<FloatInfo> perf_graphics_info_;
     scoped_ptr<FloatInfo> perf_gaming_info_;
     scoped_ptr<FloatInfo> perf_overall_info_;

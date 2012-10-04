@@ -5,6 +5,7 @@
 #include "content/browser/gpu/gpu_blacklist.h"
 
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 
@@ -578,6 +579,19 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
+  const DictionaryValue* cpu_brand_value = NULL;
+  if (value->GetDictionary("cpu_info", &cpu_brand_value)) {
+    std::string cpu_op;
+    std::string cpu_value;
+    cpu_brand_value->GetString("op", &cpu_op);
+    cpu_brand_value->GetString("value", &cpu_value);
+    if (!entry->SetCpuBrand(cpu_op, cpu_value)) {
+      LOG(WARNING) << "Malformed cpu_brand entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   const DictionaryValue* perf_graphics_value = NULL;
   if (value->GetDictionary("perf_graphics", &perf_graphics_value)) {
     std::string op;
@@ -846,6 +860,14 @@ bool GpuBlacklist::GpuBlacklistEntry::SetGLRendererInfo(
   return gl_renderer_info_->IsValid();
 }
 
+bool GpuBlacklist::GpuBlacklistEntry::SetCpuBrand(
+    const std::string& cpu_op,
+    const std::string& cpu_value) {
+  cpu_brand_.reset(
+      new StringInfo(cpu_op, cpu_value));
+  return cpu_brand_->IsValid();
+}
+
 bool GpuBlacklist::GpuBlacklistEntry::SetPerfGraphicsInfo(
     const std::string& op,
     const std::string& float_string,
@@ -1050,6 +1072,12 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
   if (gpu_count_info_.get() != NULL &&
       !gpu_count_info_->Contains(gpu_info.secondary_gpus.size() + 1))
     return false;
+  if (cpu_brand_.get() != NULL) {
+    base::CPU cpu_info;
+    if (!cpu_brand_->Contains(cpu_info.cpu_brand()))
+      return false;
+  }
+
   for (size_t i = 0; i < exceptions_.size(); ++i) {
     if (exceptions_[i]->Contains(os_type, os_version, machine_model_name,
                                  machine_model_version, gpu_info))
