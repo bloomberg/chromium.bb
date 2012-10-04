@@ -420,7 +420,10 @@ class Remote(object):
   def get_file_handler(file_or_url):
     """Returns a object to retrieve objects from a remote."""
     if re.match(r'^https?://.+$', file_or_url):
-      file_or_url = file_or_url.rstrip('/') + '/'
+      # TODO(maruel): This is particularly hackish. It shouldn't rstrip('/') in
+      # the first place or try to append '/'.
+      if not file_or_url.endswith('='):
+        file_or_url = file_or_url.rstrip('/') + '/'
       def download_file(item, dest):
         # TODO(maruel): Reuse HTTP connections. The stdlib doesn't make this
         # easy.
