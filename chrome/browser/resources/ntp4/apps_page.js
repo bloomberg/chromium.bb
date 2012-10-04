@@ -61,7 +61,8 @@ cr.define('ntp', function() {
             self.onLaunchTypeChanged_.bind(self));
       });
 
-      menu.appendChild(cr.ui.MenuItem.createSeparator());
+      this.launchTypeMenuSeparator_ = cr.ui.MenuItem.createSeparator();
+      menu.appendChild(this.launchTypeMenuSeparator_);
       this.options_ = this.appendMenuItem_('appoptions');
       this.details_ = this.appendMenuItem_('appdetails');
       this.disableNotifications_ =
@@ -133,7 +134,10 @@ cr.define('ntp', function() {
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
         launchTypeButton.checked = app.appData.launch_type == id;
+        launchTypeButton.hidden = app.appData.packagedApp;
       });
+
+      this.launchTypeMenuSeparator_.hidden = app.appData.packagedApp;
 
       this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
       this.details_.disabled = !app.appData.detailsUrl;

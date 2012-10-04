@@ -111,6 +111,7 @@ namespace extension_info_keys {
   const char kOptionsUrlKey[] = "optionsUrl";
   const char kDetailsUrlKey[] = "detailsUrl";
   const char kVersionKey[] = "version";
+  const char kPackagedAppKey[] = "packagedApp";
 
 }  // namespace extension_filenames
 

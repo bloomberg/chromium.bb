@@ -509,6 +509,7 @@ void Extension::GetBasicInfo(bool enabled,
                   GetHomepageURL().possibly_invalid_spec());
   info->SetString(info_keys::kDetailsUrlKey,
                   details_url().possibly_invalid_spec());
+  info->SetBoolean(info_keys::kPackagedAppKey, is_platform_app());
 }
 
 Extension::Type Extension::GetType() const {

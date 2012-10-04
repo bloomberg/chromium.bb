@@ -73,6 +73,7 @@ namespace extension_info_keys {
   extern const char kOptionsUrlKey[];
   extern const char kDetailsUrlKey[];
   extern const char kVersionKey[];
+  extern const char kPackagedAppKey[];
 }
 
 namespace extension_misc {
