@@ -4,6 +4,10 @@
 
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 
+#if defined(OS_MACOSX)
+#include <ApplicationServices/ApplicationServices.h>
+#endif  // OS_MACOSX
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -56,6 +60,19 @@ std::string ProcessVersionString(const std::string& raw_string) {
   return version_string;
 }
 
+#if defined(OS_MACOSX)
+void DisplayReconfigCallback(CGDirectDisplayID display,
+                             CGDisplayChangeSummaryFlags flags,
+                             void* gpu_data_manager) {
+  if (flags & kCGDisplayAddFlag) {
+    GpuDataManagerImpl* manager =
+        reinterpret_cast<GpuDataManagerImpl*>(gpu_data_manager);
+    DCHECK(manager);
+    manager->HandleGpuSwitch();
+  }
+}
+#endif  // OS_MACOSX
+
 }  // namespace anonymous
 
 // static
@@ -92,6 +109,10 @@ GpuDataManagerImpl::GpuDataManagerImpl()
     if (option != content::GPU_SWITCHING_OPTION_UNKNOWN)
       gpu_switching_ = option;
   }
+
+#if defined(OS_MACOSX)
+  CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, this);
+#endif  // OS_MACOSX
 }
 
 void GpuDataManagerImpl::Initialize() {
@@ -147,6 +168,9 @@ void GpuDataManagerImpl::InitializeImpl(
 }
 
 GpuDataManagerImpl::~GpuDataManagerImpl() {
+#if defined(OS_MACOSX)
+  CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, this);
+#endif
 }
 
 void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
@@ -275,6 +299,14 @@ bool GpuDataManagerImpl::GpuAccessAllowed() const {
   // through renderer commandline switches.
   uint32 mask = ~(preliminary_gpu_feature_type_);
   return (gpu_feature_type_ & mask) == 0;
+}
+
+void GpuDataManagerImpl::HandleGpuSwitch() {
+  if (complete_gpu_info_already_requested_) {
+    complete_gpu_info_already_requested_ = false;
+    gpu_info_.finalized = false;
+    RequestCompleteGpuInfoIfNeeded();
+  }
 }
 
 void GpuDataManagerImpl::AddObserver(GpuDataManagerObserver* observer) {

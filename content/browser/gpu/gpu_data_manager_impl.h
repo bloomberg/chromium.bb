@@ -79,6 +79,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // crashes).
   void BlacklistCard();
 
+  // Called when switching gpu.
+  void HandleGpuSwitch();
+
 #if defined(OS_WIN)
   // Is the GPU process using the accelerated surface to present, instead of
   // presenting by itself.

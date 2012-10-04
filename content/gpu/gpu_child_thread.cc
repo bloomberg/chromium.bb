@@ -180,11 +180,10 @@ void GpuChildThread::StopWatchdog() {
 }
 
 void GpuChildThread::OnCollectGraphicsInfo() {
-  if (!gpu_info_.finalized &&
-      (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuSandbox) ||
-       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
-       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableGpuSandbox) ||
+      command_line->ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
+      command_line->ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
     // GPU full info collection should only happen on un-sandboxed GPU process
     // or single process/in-process gpu mode.
 
