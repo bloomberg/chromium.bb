@@ -1,8 +1,0 @@
-{
-  "includes": ["858e2f54f479c439ba529f893b9a54a5346986de"],
-  "files": {
-    "file2.txt": {
-      "sha-1": "4c5f884b8c98cd2064d36ffaf8512ff264f08316"
-    }
-  }
-}
