@@ -907,6 +907,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableRequestTabletSite)
   },
 #endif
+  {
+    "debug-packed-apps",
+    IDS_FLAGS_DEBUG_PACKED_APP_NAME,
+    IDS_FLAGS_DEBUG_PACKED_APP_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDebugPackedApps)
+  },
 };
 
 const Experiment* experiments = kExperiments;

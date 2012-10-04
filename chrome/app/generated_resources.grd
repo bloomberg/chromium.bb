@@ -6390,6 +6390,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_REQUEST_TABLET_SITE_DESCRIPTION" desc="Description for the flag to set to enable Request Tablet Site in the wrench menu.">
         Allows the user to request tablet site. Web content is often optimized for tablet devices. When this option is selected the user agent string is changed to indicate a tablet device. Web content optimized for tablets is received there after for the current tab.
       </message>
+	  <message name="IDS_FLAGS_DEBUG_PACKED_APP_NAME" desc="Name of the flag to enable debugging context menu options for packed apps.">
+	    Enable debugging for packed apps.
+	  </message>
+	  <message name="IDS_FLAGS_DEBUG_PACKED_APP_DESCRIPTION" desc="Description of the flag to enable debugging context menu options for packed apps.">
+	    Enables debugging context menu options such as Inspect Element for packed applications.
+	  </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

@@ -227,6 +227,10 @@ const char kCreateBrowserOnStartupForTests[] =
 // mode (Windows Vista and up only).
 const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";
 
+// Adds debugging entries such as Inspect Element to context menus of packed
+// apps.
+const char kDebugPackedApps[]        = "debug-packed-apps";
+
 // Enables support to debug printing subsystem.
 const char kDebugPrint[]                    = "debug-print";
 

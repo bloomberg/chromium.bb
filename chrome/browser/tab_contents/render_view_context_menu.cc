@@ -517,7 +517,9 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
                                      PrintableSelectionText(), &index);
 
   // Add dev tools for unpacked extensions.
-  if (platform_app->location() == Extension::LOAD) {
+  if (platform_app->location() == Extension::LOAD ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDebugPackedApps)) {
     menu_model_.AddItemWithStringId(IDC_RELOAD,
                                     IDS_CONTENT_CONTEXT_RELOAD_PAGE);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP,
