@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
       Extension::LOAD,
       Extension::FROM_BOOKMARK,
       &error));
-  service->OnExtensionInstalled(extension, false,
+  service->OnExtensionInstalled(extension,
                                 syncer::StringOrdinal::CreateInitialOrdinal(),
                                 false /* no requirement errors */);
   ASSERT_TRUE(extension.get());

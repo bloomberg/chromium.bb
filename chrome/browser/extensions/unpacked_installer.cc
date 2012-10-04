@@ -70,7 +70,6 @@ void SimpleExtensionLoadPrompt::InstallUIProceed() {
     perms_updater.GrantActivePermissions(extension_, false);
     service_weak_->OnExtensionInstalled(
         extension_,
-        false,  // Not from web store.
         syncer::StringOrdinal(),
         false /* no requirement errors */);
   }
@@ -262,7 +261,6 @@ void UnpackedInstaller::OnLoaded() {
   PermissionsUpdater perms_updater(service_weak_->profile());
   perms_updater.GrantActivePermissions(extension_, false);
   service_weak_->OnExtensionInstalled(extension_,
-                                      false,  // Not from web store.
                                       syncer::StringOrdinal(),
                                       false /* no requirement errors */);
 }

@@ -3391,10 +3391,12 @@ TEST_F(ExtensionServiceTest, DisableAllExtensions) {
 // Tests reloading extensions.
 TEST_F(ExtensionServiceTest, ReloadExtensions) {
   InitializeEmptyExtensionService();
+  InitializeRequestContext();
 
   // Simple extension that should install without error.
   FilePath path = data_dir_.AppendASCII("good.crx");
-  InstallCRX(path, INSTALL_NEW);
+  InstallCRX(path, INSTALL_NEW,
+             Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT);
   const char* extension_id = good_crx;
   service_->DisableExtension(extension_id, Extension::DISABLE_USER_ACTION);
 
@@ -3402,6 +3404,12 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
 
   service_->ReloadExtensions();
+
+  // The creation flags should not change when reloading the extension.
+  const Extension* extension = service_->GetExtensionById(good_crx, true);
+  EXPECT_TRUE(extension->from_webstore());
+  EXPECT_TRUE(extension->was_installed_by_default());
+  EXPECT_FALSE(extension->from_bookmark());
 
   // Extension counts shouldn't change.
   EXPECT_EQ(0u, service_->extensions()->size());

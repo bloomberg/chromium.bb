@@ -303,18 +303,11 @@ void InstalledLoader::LoadAllExtensions() {
 }
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
-  int flags = Extension::NO_FLAGS;
+  int flags = extension_prefs_->GetCreationFlags(info->extension_id);
   if (info->extension_location != Extension::LOAD)
     flags |= Extension::REQUIRE_KEY;
   if (extension_prefs_->AllowFileAccess(info->extension_id))
     flags |= Extension::ALLOW_FILE_ACCESS;
-  if (extension_prefs_->IsFromWebStore(info->extension_id))
-    flags |= Extension::FROM_WEBSTORE;
-  if (extension_prefs_->IsFromBookmark(info->extension_id))
-    flags |= Extension::FROM_BOOKMARK;
-  if (extension_prefs_->WasInstalledByDefault(info->extension_id)) {
-    flags |= Extension::WAS_INSTALLED_BY_DEFAULT;
-  }
   return flags;
 }
 

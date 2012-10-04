@@ -229,7 +229,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     }
 
     extension_service_->extension_prefs()->OnExtensionInstalled(
-        extension, extensions::Extension::ENABLED, false,
+        extension, extensions::Extension::ENABLED,
         syncer::StringOrdinal::CreateInitialOrdinal());
 
     return extension;

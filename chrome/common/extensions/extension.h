@@ -235,7 +235,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
     // Requires the extension to have an up-to-date manifest version.
     // Typically, we'll support multiple manifest versions during a version
-    // transition.  This flag signals that we want to require the most modern
+    // transition. This flag signals that we want to require the most modern
     // manifest version that Chrome understands.
     REQUIRE_MODERN_MANIFEST_VERSION = 1 << 1,
 

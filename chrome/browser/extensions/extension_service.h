@@ -403,7 +403,6 @@ class ExtensionService
   // Called by the backend when an extension has been installed.
   void OnExtensionInstalled(
       const extensions::Extension* extension,
-      bool from_webstore,
       const syncer::StringOrdinal& page_ordinal,
       bool has_requirement_errors);
 

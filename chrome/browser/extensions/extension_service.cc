@@ -2140,7 +2140,6 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
 
 void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
-    bool from_webstore,
     const syncer::StringOrdinal& page_ordinal,
     bool has_requirement_errors) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2220,7 +2219,6 @@ void ExtensionService::OnExtensionInstalled(
   extension_prefs_->OnExtensionInstalled(
       extension,
       initial_enable ? Extension::ENABLED : Extension::DISABLED,
-      from_webstore,
       page_ordinal);
 
   // Unpacked extensions default to allowing file access, but if that has been

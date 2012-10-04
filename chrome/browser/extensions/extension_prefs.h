@@ -118,7 +118,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // for the App.
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
-                            bool from_webstore,
                             const syncer::StringOrdinal& page_ordinal);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
@@ -422,6 +421,9 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // Clears incognito session-only content settings for all extensions.
   void ClearIncognitoSessionOnlyContentSettings();
+
+  // Returns the creation flags mask for the extension.
+  int GetCreationFlags(const std::string& extension_id) const;
 
   // Returns true if the extension was installed from the Chrome Web Store.
   bool IsFromWebStore(const std::string& extension_id) const;

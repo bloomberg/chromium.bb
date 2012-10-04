@@ -162,6 +162,9 @@ const char kPrefOldGrantedAPIs[] = "granted_permissions.api";
 // A preference that indicates when an extension was installed.
 const char kPrefInstallTime[] = "install_time";
 
+// A preference which saves the creation flags for extensions.
+const char kPrefCreationFlags[] = "creation_flags";
+
 // A preference that indicates whether the extension was installed from the
 // Chrome Web Store.
 const char kPrefFromWebStore[] = "from_webstore";
@@ -1442,7 +1445,6 @@ void ExtensionPrefs::SetActionBoxOrder(const ExtensionIdList& extension_ids) {
 void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
-    bool from_webstore,
     const syncer::StringOrdinal& page_ordinal) {
   const std::string& id = extension->id();
   CHECK(Extension::IdIsValid(id));
@@ -1452,8 +1454,10 @@ void ExtensionPrefs::OnExtensionInstalled(
   extension_dict->Set(kPrefState, Value::CreateIntegerValue(initial_state));
   extension_dict->Set(kPrefLocation,
                       Value::CreateIntegerValue(extension->location()));
+  extension_dict->Set(kPrefCreationFlags,
+                      Value::CreateIntegerValue(extension->creation_flags()));
   extension_dict->Set(kPrefFromWebStore,
-                      Value::CreateBooleanValue(from_webstore));
+                      Value::CreateBooleanValue(extension->from_webstore()));
   extension_dict->Set(kPrefFromBookmark,
                       Value::CreateBooleanValue(extension->from_bookmark()));
   extension_dict->Set(kPrefWasInstalledByDefault,
@@ -1863,6 +1867,22 @@ bool ExtensionPrefs::IsFromBookmark(
   if (dictionary && dictionary->GetBoolean(kPrefFromBookmark, &result))
     return result;
   return false;
+}
+
+int ExtensionPrefs::GetCreationFlags(const std::string& extension_id) const {
+  int creation_flags = Extension::NO_FLAGS;
+  if (!ReadExtensionPrefInteger(extension_id, kPrefCreationFlags,
+                                &creation_flags)) {
+    // Since kPrefCreationFlags was added later, it will be missing for
+    // previously installed extensions.
+    if (IsFromBookmark(extension_id))
+      creation_flags |= Extension::FROM_BOOKMARK;
+    if (IsFromWebStore(extension_id))
+      creation_flags |= Extension::FROM_WEBSTORE;
+    if (WasInstalledByDefault(extension_id))
+      creation_flags |= Extension::WAS_INSTALLED_BY_DEFAULT;
+  }
+  return creation_flags;
 }
 
 bool ExtensionPrefs::WasInstalledByDefault(
