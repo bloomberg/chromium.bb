@@ -317,7 +317,12 @@ void PanelView::ActivatePanel() {
 }
 
 void PanelView::DeactivatePanel() {
-  window_->Deactivate();
+  if (!focused_)
+    return;
+
+#if defined(OS_WIN) && !defined(AURA) && !defined(USE_ASH)
+  ::SetForegroundWindow(::GetDesktopWindow());
+#endif
 }
 
 bool PanelView::IsPanelActive() const {
