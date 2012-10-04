@@ -1,11 +1,6 @@
 # DEPS files look like -*- Python -*-
 
 vars = {
-  # When possible, keep chrome_rev and chromebinaries_rev at the same
-  # value.  chromebinaries_rev should match LKGR so that we can download
-  # the binaries, but sometimes chrome_rev needs to be more recent to get
-  # source changes when LKGR is lagging too far back.
-  "chromebinaries_rev": "147940",
   "chrome_rev": "147940",
   # NOTE!  These four should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.

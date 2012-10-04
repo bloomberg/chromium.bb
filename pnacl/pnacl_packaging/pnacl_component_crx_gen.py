@@ -35,8 +35,8 @@ J = os.path.join
 # Target arch and build arch junk to convert between all the
 # silly conventions between SCons, Chrome and PNaCl.
 
-# The version of the arch used by NaCl manifest files / scons placement
-# of chromebinaries.  This is based on the machine "building" this extension.
+# The version of the arch used by NaCl manifest files.
+# This is based on the machine "building" this extension.
 # We also used this to identify the arch-specific different versions of
 # this extension.
 def GetBuildArch():
@@ -115,31 +115,18 @@ class CRXGen(object):
   """
 
   @staticmethod
-  def ChromeBinaryName():
-    if BUILD_PLATFORM == 'mac':
-      return 'Chromium.app/Contents/MacOS/Chromium'
-    elif BUILD_PLATFORM == 'windows':
-      return 'chrome.exe'
-    else:
-      return 'chrome'
-
-  @staticmethod
-  def GetCRXGenPath():
-    plat_arch = '%s_%s' % (BUILD_PLATFORM, BUILD_ARCH)
-    return J(NACL_ROOT, 'chromebinaries', plat_arch, CRXGen.ChromeBinaryName())
-
-  @staticmethod
-  def RunCRXGen(manifest_dir, private_key=None):
-    binary = CRXGen.GetCRXGenPath()
-    if not os.path.isfile(binary):
-      raise Exception('NaCl downloaded chrome binary not found: %s' % binary)
+  def RunCRXGen(chrome_path, manifest_dir, private_key=None):
+    if chrome_path is None:
+      raise Exception('Chrome binary not specified!')
+    if not os.path.isfile(chrome_path):
+      raise Exception('Chrome binary not found: %s' % chrome_path)
     cmdline = []
     if BUILD_PLATFORM == 'linux':
       # In linux, run chrome in headless mode (even though crx-packing should
       # be headless, it's not quite with the zygote). This allows you to
       # run the tool under ssh or screen, etc.
       cmdline.append('xvfb-run')
-    cmdline += [binary, '--pack-extension=%s' % manifest_dir]
+    cmdline += [chrome_path, '--pack-extension=%s' % manifest_dir]
     if private_key is not None:
       cmdline.append('--pack-extension-key=%s' % private_key)
     StepBanner('GEN CRX', str(cmdline))
@@ -315,7 +302,7 @@ def GetWebAccessibleResources(base_dir):
   resources.append(os.path.basename(PnaclPackaging.pnacl_json))
   return resources
 
-def GeneratePrivateKey():
+def GeneratePrivateKey(options):
   """ Generate a dummy extension to generate a fresh private key. This will
   be left in the build dir, and the dummy extension will be cleaned up.
   """
@@ -328,7 +315,7 @@ def GeneratePrivateKey():
                                    'dummy_arch',
                                    [],
                                    False)
-  CRXGen.RunCRXGen(ext_dir)
+  CRXGen.RunCRXGen(options.chrome_path, ext_dir)
   shutil.copy2(J(tempdir, 'dummy_extension.pem'),
                PnaclDirs.OutputDir())
   shutil.rmtree(tempdir)
@@ -382,7 +369,7 @@ def BuildArchCRXForComponentUpdater(version_quad, arch, lib_overrides, options):
                                    arch,
                                    [],
                                    False)
-  CRXGen.RunCRXGen(parent_dir, options.prev_priv_key)
+  CRXGen.RunCRXGen(options.chrome_path, parent_dir, options.prev_priv_key)
 
 
 def LayoutAllDir(version_quad):
@@ -476,6 +463,8 @@ def Main():
   parser.add_option('-g', '--generate_key',
                     action='store_true', dest='gen_key',
                     help='Generate a fresh private key, and exit.')
+  parser.add_option('-C', '--chrome_path', dest='chrome_path',
+                    help='Location of chrome.')
 
   (options, args) = parser.parse_args()
 
@@ -487,7 +476,7 @@ def Main():
     Clean()
 
   if options.gen_key:
-    GeneratePrivateKey()
+    GeneratePrivateKey(options)
     return 0
 
   lib_overrides = {}

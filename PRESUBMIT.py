@@ -69,7 +69,6 @@ def CheckChangeOnUpload(input_api, output_api):
     sys.path.append(os.path.join(NaclTopDir(), 'tools'))
     sys.path.append(os.path.join(NaclTopDir(), 'build'))
     import code_hygiene
-    import validate_chrome_revision
   finally:
     sys.path = old_sys_path
     del old_sys_path
@@ -85,14 +84,6 @@ def CheckChangeOnUpload(input_api, output_api):
         report.append(output_api.PresubmitError(e, items=errors[e]))
       for w in warnings:
         report.append(output_api.PresubmitPromptWarning(w, items=warnings[w]))
-    if filename.endswith(MAIN_DEPS):
-      try:
-        e = validate_chrome_revision.ValidateChromeRevision(filename)
-        if e is not None:
-          report.append(output_api.PresubmitError(filename, items=[e]))
-      except Exception, e:
-        msg = "Could not validate Chrome revision: %s" % repr(e)
-        report.append(output_api.PresubmitError(filename, items=[msg]))
 
   return report
 
