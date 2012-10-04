@@ -130,6 +130,8 @@ PasswordGenerationBubbleView::PasswordGenerationBubbleView(
       title_label_(NULL),
       accept_button_(NULL),
       textfield_(NULL),
+      regenerate_button_(NULL),
+      textfield_wrapper_(NULL),
       form_(form),
       anchor_rect_(anchor_rect),
       render_view_host_(render_view_host),
