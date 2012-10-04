@@ -750,9 +750,6 @@ const char kOAuth1Secret[] = "settings.account.oauth1_secret";
 // A boolean pref that enables the (private) pepper GetID() call.
 const char kEnableCrosDRM[] = "settings.privacy.drm_enabled";
 
-// A 64bit integer pref that specifies the name of the primary display device.
-const char kPrimaryDisplayID[] = "settings.display.primary_id";
-
 // An enumeration that specifies the layout of the secondary display.
 //  0 - The secondary display is at the top of the primary display.
 //  1 - The secondary display is at the right of the primary display.

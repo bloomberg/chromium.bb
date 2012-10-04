@@ -14627,9 +14627,6 @@ Press any key to continue exploring.
       <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STOP_MIRRORING" desc="Button label to stop display mirroring.">
         Stop mirroring
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_SET_PRIMARY" desc="Button label to set a display primary.">
-        Make primary
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_APPLY_RESULT" desc="Button label to apply the current settings.">
         Apply
       </message>
