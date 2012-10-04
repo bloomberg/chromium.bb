@@ -1564,6 +1564,16 @@ void LocationBarView::TestPageActionPressed(size_t index) {
   NOTREACHED();
 }
 
+void LocationBarView::TestActionBoxMenuItemSelected(int command_id) {
+  action_box_button_view_->action_box_button_controller()->
+      ExecuteCommand(command_id);
+}
+
+bool LocationBarView::GetBookmarkStarVisibility() {
+  DCHECK(star_view_);
+  return star_view_->visible();
+}
+
 void LocationBarView::OnTemplateURLServiceChanged() {
   template_url_service_->RemoveObserver(this);
   template_url_service_ = NULL;

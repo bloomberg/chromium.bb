@@ -30,6 +30,10 @@ class ActionBoxButtonGtk : public MenuGtk::Delegate,
 
   GtkWidget* widget();
 
+  ActionBoxButtonController* action_box_button_controller() {
+    return &controller_;
+  }
+
  private:
   // ActionBoxButtonController::Delegate implementation.
   virtual void ShowMenu(scoped_ptr<ActionBoxMenuModel> model) OVERRIDE;

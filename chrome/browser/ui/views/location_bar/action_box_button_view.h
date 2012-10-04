@@ -21,6 +21,10 @@ class ActionBoxButtonView : public views::MenuButton,
   ActionBoxButtonView(Browser* browser, const gfx::Point& menu_offset);
   virtual ~ActionBoxButtonView();
 
+  ActionBoxButtonController* action_box_button_controller() {
+   return &controller_;
+  }
+
  private:
   // Overridden from views::CustomButton:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

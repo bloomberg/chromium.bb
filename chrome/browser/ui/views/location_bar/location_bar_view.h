@@ -330,6 +330,8 @@ class LocationBarView : public LocationBar,
   virtual ExtensionAction* GetPageAction(size_t index) OVERRIDE;
   virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;
   virtual void TestPageActionPressed(size_t index) OVERRIDE;
+  virtual void TestActionBoxMenuItemSelected(int command_id) OVERRIDE;
+  virtual bool GetBookmarkStarVisibility() OVERRIDE;
 
   // Overridden from TemplateURLServiceObserver
   virtual void OnTemplateURLServiceChanged() OVERRIDE;

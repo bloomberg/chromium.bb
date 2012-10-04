@@ -81,6 +81,8 @@ class LocationBarViewMac : public LocationBar,
   virtual ExtensionAction* GetPageAction(size_t index) OVERRIDE;
   virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;
   virtual void TestPageActionPressed(size_t index) OVERRIDE;
+  virtual void TestActionBoxMenuItemSelected(int command_id) OVERRIDE;
+  virtual bool GetBookmarkStarVisibility() OVERRIDE;
 
   // Set/Get the editable state of the field.
   void SetEditable(bool editable);

@@ -1086,6 +1086,15 @@ void LocationBarViewGtk::TestPageActionPressed(size_t index) {
   page_action_views_[index]->TestActivatePageAction();
 }
 
+void LocationBarViewGtk::TestActionBoxMenuItemSelected(int command_id) {
+  action_box_button_->action_box_button_controller()->
+      ExecuteCommand(command_id);
+}
+
+bool LocationBarViewGtk::GetBookmarkStarVisibility() {
+  return starred_;
+}
+
 void LocationBarViewGtk::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {

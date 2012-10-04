@@ -480,6 +480,15 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
     page_action_decorations_[index]->OnMousePressed(NSZeroRect);
 }
 
+void LocationBarViewMac::TestActionBoxMenuItemSelected(int command_id) {
+  plus_decoration_->action_box_button_controller()->ExecuteCommand(command_id);
+}
+
+bool LocationBarViewMac::GetBookmarkStarVisibility() {
+  DCHECK(star_decoration_.get());
+  return star_decoration_->IsVisible();
+}
+
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   UpdateStarDecorationVisibility();

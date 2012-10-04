@@ -31,6 +31,10 @@ class PlusDecoration : public ImageDecoration,
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
 
+  ActionBoxButtonController* action_box_button_controller() {
+    return &controller_;
+  }
+
  private:
   // Implement |ActionBoxButtonController::Delegate|.
   virtual void ShowMenu(scoped_ptr<ActionBoxMenuModel> model) OVERRIDE;

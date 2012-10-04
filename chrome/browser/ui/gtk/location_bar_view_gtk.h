@@ -157,6 +157,8 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual ExtensionAction* GetPageAction(size_t index) OVERRIDE;
   virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;
   virtual void TestPageActionPressed(size_t index) OVERRIDE;
+  virtual void TestActionBoxMenuItemSelected(int command_id) OVERRIDE;
+  virtual bool GetBookmarkStarVisibility() OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
