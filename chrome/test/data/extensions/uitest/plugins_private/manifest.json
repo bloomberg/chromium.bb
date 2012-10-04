@@ -8,5 +8,10 @@
     {"path": "plugin.plugin"},
     {"path": "plugin32.so"},
     {"path": "plugin64.so"}
-  ]
+  ],
+  "requirements": {
+    "plugins": {
+      "npapi": false
+    }
+  }
 }
