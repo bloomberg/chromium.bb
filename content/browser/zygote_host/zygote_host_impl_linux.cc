@@ -106,11 +106,14 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 
     // Zygote process needs to know what resources to have loaded when it
     // becomes a renderer process.
-    switches::kEnableTouchEvents,
     switches::kForceDeviceScaleFactor,
     switches::kTouchOptimizedUI,
 
     switches::kNoSandbox,
+
+#if !defined(OS_CHROMEOS)
+    switches::kEnableTouchEvents,
+#endif
   };
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
                             arraysize(kForwardSwitches));

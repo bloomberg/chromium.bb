@@ -106,10 +106,6 @@ class UI_EXPORT TouchFactory {
   // is immediately displayed.
   bool is_cursor_visible_;
 
-  // Touch events are currently disabled by default. It can be turned on using
-  // |kEnableTouchEvents| switch.
-  bool touch_events_allowed_;
-
   // The cursor is hidden if it is idle for a certain amount time. This timer
   // is used to keep track of the idleness.
   base::OneShotTimer<TouchFactory> cursor_timer_;

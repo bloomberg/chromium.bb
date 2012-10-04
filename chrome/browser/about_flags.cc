@@ -680,7 +680,7 @@ const Experiment kExperiments[] = {
     "enable-touch-events",
     IDS_ENABLE_TOUCH_EVENTS_NAME,
     IDS_ENABLE_TOUCH_EVENTS_DESCRIPTION,
-    kOsAll,
+    kOsWin | kOsMac | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kEnableTouchEvents)
   },
 #if defined(OS_CHROMEOS)

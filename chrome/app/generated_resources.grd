@@ -5698,10 +5698,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Automatic
       </message>
       <message name="IDS_ENABLE_TOUCH_EVENTS_NAME" desc="Title of the enable touch-events flag." >
-        Enable touch events
+        Force enable touch events.
       </message>
       <message name="IDS_ENABLE_TOUCH_EVENTS_DESCRIPTION" desc="Description of the enable touch-events flag.">
-        Enables experimental support for touch screens.
+        Enables experimental touch event support regardless of the presence of a physical touch screen capable of generating touch events.
       </message>
       <message name="IDS_ENABLE_BACKLOADER_NAME" desc="Title of the enable background loader flag." >
         Enable background loader component for hosted applications

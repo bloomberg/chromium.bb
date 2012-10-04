@@ -769,7 +769,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kEnableSmoothScrolling,
       ::switches::kEnableThreadedCompositing,
       ::switches::kEnableTouchCalibration,
-      ::switches::kEnableTouchEvents,
       ::switches::kEnableViewport,
       ::switches::kEnableWebkitTextSubpixelPositioning,
       ::switches::kDisableThreadedCompositing,

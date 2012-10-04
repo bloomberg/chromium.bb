@@ -31,7 +31,6 @@ namespace ui {
 
 TouchFactory::TouchFactory()
     : is_cursor_visible_(true),
-      touch_events_allowed_(false),
       cursor_timer_(),
       pointer_device_lookup_(),
       touch_device_available_(false),
@@ -72,12 +71,6 @@ TouchFactory::TouchFactory()
   evmask.mask_len = sizeof(mask);
   evmask.mask = mask;
   XISelectEvents(display, ui::GetX11RootWindow(), &evmask, 1);
-
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(switches::kTouchOptimizedUI) ||
-      cmdline->HasSwitch(switches::kEnableTouchEvents)) {
-    touch_events_allowed_ = true;
-  }
 }
 
 TouchFactory::~TouchFactory() {
@@ -196,7 +189,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
     XIFreeDeviceInfo(devices);
 
   if ((last_touch_device_available != touch_device_available_) &&
-      touch_events_allowed_ && touch_present_called_) {
+      touch_present_called_) {
     // Touch_device_available_ has changed after it's been queried.
     // TODO(rbyers): Should dispatch an event to indicate that the availability
     // of touch devices has changed.  crbug.com/124399.
@@ -215,7 +208,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   if (event->evtype == XI_TouchBegin ||
       event->evtype == XI_TouchUpdate ||
       event->evtype == XI_TouchEnd) {
-    return touch_events_allowed_ && IsTouchDevice(xiev->deviceid);
+    return IsTouchDevice(xiev->deviceid);
   }
 #endif
   if (event->evtype != XI_ButtonPress &&
@@ -226,7 +219,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   if (!pointer_device_lookup_[xiev->deviceid])
     return false;
 
-  return IsTouchDevice(xiev->deviceid) ? touch_events_allowed_ : true;
+  return true;
 }
 
 void TouchFactory::SetupXI2ForXWindow(Window window) {
@@ -418,7 +411,7 @@ void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
 
 bool TouchFactory::IsTouchDevicePresent() {
   touch_present_called_ = true;
-  return (touch_device_available_ && touch_events_allowed_);
+  return touch_device_available_;
 }
 
 }  // namespace ui
