@@ -2166,8 +2166,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolder) {
 
 // Test that we show a dangerous downloads warning for a dangerous file
 // downloaded through a blob: URL.
-// Test started failing after WebKit r130343, see crbug.com/153997
-IN_PROC_BROWSER_TEST_F(DownloadTest, FAILS_DownloadDangerousBlobData) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
 #if defined(OS_WIN)
   // On Windows, if SafeBrowsing is enabled, certain file types (.exe, .cab,
   // .msi) will be handled by the DownloadProtectionService. However, if the URL
