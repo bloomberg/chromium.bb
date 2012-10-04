@@ -13,6 +13,8 @@
 #include "base/message_loop_proxy.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor_client.h"
+#include "media/base/video_decoder_config.h"
+#include "media/base/video_frame.h"
 #include "webkit/media/crypto/key_systems.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
@@ -98,6 +100,32 @@ void PpapiDecryptor::Decrypt(
 }
 
 void PpapiDecryptor::CancelDecrypt() {
+}
+
+void PpapiDecryptor::InitializeVideoDecoder(
+    const media::VideoDecoderConfig& config,
+    const DecoderInitCB& init_cb) {
+  // TODO(xhwang): Implement this!
+  NOTIMPLEMENTED();
+  init_cb.Run(false);
+}
+
+void PpapiDecryptor::DecryptAndDecodeVideo(
+    const scoped_refptr<media::DecoderBuffer>& encrypted,
+    const VideoDecodeCB& video_decode_cb) {
+  // TODO(xhwang): Implement this!
+  NOTIMPLEMENTED();
+  video_decode_cb.Run(kError, NULL);
+}
+
+void PpapiDecryptor::CancelDecryptAndDecodeVideo() {
+  // TODO(xhwang): Implement this!
+  NOTIMPLEMENTED();
+}
+
+void PpapiDecryptor::StopVideoDecoder() {
+  // TODO(xhwang): Implement this!
+  NOTIMPLEMENTED();
 }
 
 void PpapiDecryptor::ReportFailureToCallPlugin(const std::string& key_system,
