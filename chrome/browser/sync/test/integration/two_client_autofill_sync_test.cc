@@ -315,7 +315,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, UpdateFields) {
 }
 
 // TCM ID - 3628299.
-IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ConflictingFields) {
+// This test is flaky on all platforms.  See crbug.com/152551.
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DISABLED_ConflictingFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
