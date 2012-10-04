@@ -73,6 +73,8 @@ class GoogleStreamingRemoteEngineTest
   void EndMockRecognition();
   void InjectDummyAudioChunk();
   size_t UpstreamChunksUploadedFromLastCall();
+  void ProvideMockProtoResultDownstream(
+      const proto::SpeechRecognitionEvent& result);
   void ProvideMockResultDownstream(const SpeechRecognitionResult& result);
   void ExpectResultReceived(const SpeechRecognitionResult& result);
   void CloseMockDownstream(DownstreamError error);
@@ -266,6 +268,51 @@ TEST_F(GoogleStreamingRemoteEngineTest, NetworkError) {
   ASSERT_EQ(0U, results_.size());
 }
 
+TEST_F(GoogleStreamingRemoteEngineTest, Stability) {
+  StartMockRecognition();
+  ASSERT_TRUE(GetUpstreamFetcher());
+  ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
+
+  // Upload a dummy audio chunk.
+  InjectDummyAudioChunk();
+  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+  engine_under_test_->AudioChunksEnded();
+
+  // Simulate a protobuf message with an intermediate result without confidence,
+  // but with stability.
+  proto::SpeechRecognitionEvent proto_event;
+  proto_event.set_status(proto::SpeechRecognitionEvent::STATUS_SUCCESS);
+  proto::SpeechRecognitionResult* proto_result = proto_event.add_result();
+  proto_result->set_stability(0.5);
+  proto::SpeechRecognitionAlternative *proto_alternative =
+      proto_result->add_alternative();
+  proto_alternative->set_transcript("foo");
+  ProvideMockProtoResultDownstream(proto_event);
+
+  // Set up expectations.
+  SpeechRecognitionResult expected;
+  expected.is_provisional = true;
+  expected.hypotheses.push_back(
+      SpeechRecognitionHypothesis(UTF8ToUTF16("foo"), 0.5));
+
+  // Check that the protobuf generated the expected result.
+  ExpectResultReceived(expected);
+
+  // Since it was a provisional result, recognition is still pending.
+  ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
+
+  // Shut down.
+  CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
+  ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
+  EndMockRecognition();
+
+  // Since there was no final result, we get an empty "no match" result.
+  SpeechRecognitionResult empty_result;
+  ExpectResultReceived(empty_result);
+  ASSERT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  ASSERT_EQ(0U, results_.size());
+}
+
 void GoogleStreamingRemoteEngineTest::SetUp() {
   engine_under_test_.reset(
       new  GoogleStreamingRemoteEngine(NULL /*URLRequestContextGetter*/));
@@ -338,14 +385,25 @@ size_t GoogleStreamingRemoteEngineTest::UpstreamChunksUploadedFromLastCall() {
   return new_chunks;
 }
 
-void GoogleStreamingRemoteEngineTest::ProvideMockResultDownstream(
-    const SpeechRecognitionResult& result) {
+void GoogleStreamingRemoteEngineTest::ProvideMockProtoResultDownstream(
+    const proto::SpeechRecognitionEvent& result) {
   TestURLFetcher* downstream_fetcher = GetDownstreamFetcher();
 
   ASSERT_TRUE(downstream_fetcher);
   downstream_fetcher->set_status(URLRequestStatus(/* default=SUCCESS */));
   downstream_fetcher->set_response_code(200);
 
+  std::string response_string = SerializeProtobufResponse(result);
+  response_buffer_.append(response_string);
+  downstream_fetcher->SetResponseString(response_buffer_);
+  downstream_fetcher->delegate()->OnURLFetchDownloadProgress(
+      downstream_fetcher,
+      response_buffer_.size(),
+      -1 /* total response length not used */);
+}
+
+void GoogleStreamingRemoteEngineTest::ProvideMockResultDownstream(
+    const SpeechRecognitionResult& result) {
   proto::SpeechRecognitionEvent proto_event;
   proto_event.set_status(proto::SpeechRecognitionEvent::STATUS_SUCCESS);
   proto::SpeechRecognitionResult* proto_result = proto_event.add_result();
@@ -357,14 +415,7 @@ void GoogleStreamingRemoteEngineTest::ProvideMockResultDownstream(
     proto_alternative->set_confidence(hypothesis.confidence);
     proto_alternative->set_transcript(UTF16ToUTF8(hypothesis.utterance));
   }
-
-  std::string response_string = SerializeProtobufResponse(proto_event);
-  response_buffer_.append(response_string);
-  downstream_fetcher->SetResponseString(response_buffer_);
-  downstream_fetcher->delegate()->OnURLFetchDownloadProgress(
-      downstream_fetcher,
-      response_buffer_.size(),
-      -1 /* total response length not used */);
+  ProvideMockProtoResultDownstream(proto_event);
 }
 
 void GoogleStreamingRemoteEngineTest::CloseMockDownstream(

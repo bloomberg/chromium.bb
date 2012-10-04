@@ -457,6 +457,8 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
       SpeechRecognitionHypothesis hypothesis;
       if (ws_alternative.has_confidence())
         hypothesis.confidence = ws_alternative.confidence();
+      else if (ws_result.has_stability())
+        hypothesis.confidence = ws_result.stability();
       DCHECK(ws_alternative.has_transcript());
       // TODO(hans): Perhaps the transcript should be required in the proto?
       if (ws_alternative.has_transcript())
