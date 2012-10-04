@@ -188,7 +188,8 @@ class ChromePluginTest : public InProcessBrowserTest {
 
 // Tests a bunch of basic scenarios with Flash.
 // This test fails under ASan on Mac, see http://crbug.com/147004.
-#if defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)
+// It fails elsewhere, too.  See http://crbug.com/152071.
+#if defined(ADDRESS_SANITIZER) || defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_Flash DISABLED_Flash
 #else
 #define MAYBE_Flash Flash
