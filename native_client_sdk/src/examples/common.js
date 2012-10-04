@@ -29,7 +29,8 @@ var common = (function () {
     moduleEl.setAttribute('src', path + '/' + name + '.nmf');
     // For NaCL modules use application/x-nacl.
     var mimetype = 'application/x-nacl';
-    if (tool == 'win' || tool == 'linux' || tool == 'mac') {
+    var isHost = tool == 'win' || tool == 'linux' || tool == 'mac';
+    if (isHost) {
       // For non-nacl PPAPI plugins use the x-ppapi-debug/release
       // mime type.
       if (path.toLowerCase().indexOf('release') != -1)
@@ -46,6 +47,15 @@ var common = (function () {
     // event fires.
     var listenerDiv = document.getElementById('listener');
     listenerDiv.appendChild(moduleEl);
+
+    // Host plugins don't send a moduleDidLoad message. We'll fake it here.
+    if (isHost) {
+      window.setTimeout(function () {
+        var evt = document.createEvent('Event');
+        evt.initEvent('load', true, true);  // bubbles, cancelable
+        moduleEl.dispatchEvent(evt);
+      }, 100);  // 100 ms
+    }
   }
 
   /**

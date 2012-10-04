@@ -202,6 +202,7 @@ DSC_FORMAT = {
         'SOURCES': (list, '', True),
         'CCFLAGS': (list, '', False),
         'CXXFLAGS': (list, '', False),
+        'DEFINES': (list, '', False),
         'LDFLAGS': (list, '', False),
         'INCLUDES': (list, '', False),
         'LIBS' : (list, '', False)

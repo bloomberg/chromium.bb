@@ -29,6 +29,7 @@ const uint32_t kBlueShift = 0;
 void FlushCallback(void* data, int32_t result) {
   static_cast<pi_generator::PiGenerator*>(data)->set_flush_pending(false);
 }
+
 }  // namespace
 
 namespace pi_generator {
@@ -79,14 +80,14 @@ PiGenerator::PiGenerator(PP_Instance instance)
       pixel_buffer_(NULL),
       flush_pending_(false),
       quit_(false),
-      compute_pi_thread_(0),
+      thread_create_result_(0),
       pi_(0.0) {
   pthread_mutex_init(&pixel_buffer_mutex_, NULL);
 }
 
 PiGenerator::~PiGenerator() {
   quit_ = true;
-  if (compute_pi_thread_) {
+  if (thread_create_result_ == 0) {
     pthread_join(compute_pi_thread_, NULL);
   }
   DestroyContext();
@@ -117,8 +118,9 @@ void PiGenerator::DidChangeView(const pp::View& view) {
 }
 
 bool PiGenerator::Init(uint32_t argc, const char* argn[], const char* argv[]) {
-  pthread_create(&compute_pi_thread_, NULL, ComputePi, this);
-  return true;
+  thread_create_result_ = pthread_create(&compute_pi_thread_, NULL, ComputePi,
+                                         this);
+  return thread_create_result_ == 0;
 }
 
 uint32_t* PiGenerator::LockPixels() {
@@ -201,8 +203,9 @@ void PiGenerator::FlushPixelBuffer() {
 void* PiGenerator::ComputePi(void* param) {
   int count = 0;  // The number of points put inside the inscribed quadrant.
   unsigned int seed = 1;
-  PiGenerator* pi_generator = static_cast<PiGenerator*>(param);
   srand(seed);
+
+  PiGenerator* pi_generator = static_cast<PiGenerator*>(param);
   for (int i = 1; i <= kMaxPointCount && !pi_generator->quit(); ++i) {
     ScopedPixelLock scoped_pixel_lock(pi_generator);
     uint32_t* pixel_bits = scoped_pixel_lock.pixels();
@@ -214,8 +217,8 @@ void* PiGenerator::ComputePi(void* param) {
       // initialized.
       continue;
     }
-    double x = static_cast<double>(rand_r(&seed)) / RAND_MAX;
-    double y = static_cast<double>(rand_r(&seed)) / RAND_MAX;
+    double x = static_cast<double>(rand()) / RAND_MAX;
+    double y = static_cast<double>(rand()) / RAND_MAX;
     double distance = sqrt(x * x + y * y);
     int px = x * pi_generator->width();
     int py = (1.0 - y) * pi_generator->height();

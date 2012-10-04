@@ -101,6 +101,7 @@ class PiGenerator : public pp::Instance {
   bool flush_pending_;
   bool quit_;
   pthread_t compute_pi_thread_;
+  int thread_create_result_;
   double pi_;
 
   // ComputePi() estimates Pi using Monte Carlo method and it is executed by a

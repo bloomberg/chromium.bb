@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TARGETS': [
     {
       'NAME' : 'pi_generator',
@@ -9,6 +9,7 @@
         'pi_generator.h',
         'pi_generator_module.cc'
       ],
+      'DEFINES': ['PTW32_STATIC_LIB'],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
