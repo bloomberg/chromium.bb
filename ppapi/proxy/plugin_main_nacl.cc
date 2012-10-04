@@ -89,7 +89,8 @@ class PpapiDispatcher : public ProxyChannel,
 };
 
 PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop)
-    : message_loop_(io_loop),
+    : next_plugin_dispatcher_id_(0),
+      message_loop_(io_loop),
       shutdown_event_(true, false) {
   IPC::ChannelHandle channel_handle(
       "NaCl IPC", base::FileDescriptor(NACL_IPC_FD, false));
@@ -276,4 +277,3 @@ int PpapiPluginMain() {
 
   return 0;
 }
-
