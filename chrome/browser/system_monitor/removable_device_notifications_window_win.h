@@ -20,15 +20,12 @@
 namespace chrome {
 
 // Gets device information given a |device_path|. On success, returns true and
-// fills in |location|, |unique_id| and |removable|.
-typedef bool (*GetDeviceInfoFunc)(const FilePath& device_path,
+// fills in |unique_id|, |name|, and |removable|.
+typedef bool (*GetDeviceInfoFunc)(const FilePath& device,
                                   string16* location,
                                   std::string* unique_id,
+                                  string16* name,
                                   bool* removable);
-
-// Gets the friendly name of the device given a |device_location|.
-// |device_location| is the device mount point. E.g.: "G:\" or "C:\foo".
-typedef string16 (*GetDeviceNameFunc)(const FilePath& device_location);
 
 // Returns a vector of all the removable devices that are connected.
 typedef std::vector<FilePath> (*GetAttachedDevicesFunc)();
@@ -58,7 +55,6 @@ class RemovableDeviceNotificationsWindowWin
  protected:
   // Only for use in unit tests.
   void InitForTest(GetDeviceInfoFunc getDeviceInfo,
-                   GetDeviceNameFunc getDeviceName,
                    GetAttachedDevicesFunc getAttachedDevices);
 
   void OnDeviceChange(UINT event_type, LPARAM data);
@@ -86,11 +82,12 @@ class RemovableDeviceNotificationsWindowWin
       GetAttachedDevicesFunc get_attached_devices_func);
 
   void CheckDeviceTypeOnFileThread(const std::string& unique_id,
+                                   const FilePath::StringType& device_name,
                                    const FilePath& device);
 
   void ProcessDeviceAttachedOnUIThread(
       const std::string& device_id,
-      const string16& device_name,
+      const FilePath::StringType& device_name,
       const FilePath& device);
 
   // The window class of |window_|.
@@ -100,7 +97,6 @@ class RemovableDeviceNotificationsWindowWin
   HWND window_;
 
   GetDeviceInfoFunc get_device_info_func_;
-  GetDeviceNameFunc get_device_name_func_;
 
   // A map from device mount point to device id. Only accessed on the UI Thread.
   MountPointDeviceIdMap device_ids_;

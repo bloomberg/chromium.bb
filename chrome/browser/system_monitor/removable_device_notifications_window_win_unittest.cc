@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "base/stringprintf.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
@@ -26,19 +25,9 @@ namespace {
 using content::BrowserThread;
 using chrome::RemovableDeviceNotificationsWindowWin;
 
-// Returns the friendly name of the device present at |device_location|.
-// Inputs of 'A:\' - 'Z:\' are valid.
-string16 GetDeviceName(const FilePath& device_location) {
-  if (device_location.empty())
-    return string16();
-
-  return base::StringPrintf(L"%ls (%ls)", L"Removable Device",
-                            device_location.LossyDisplayName().c_str());
-}
-
 // Inputs of 'A:\' - 'Z:\' are valid. 'N:\' is not removable.
 bool GetDeviceInfo(const FilePath& device_path, string16* device_location,
-                   std::string* unique_id, bool* removable) {
+                   std::string* unique_id, string16* name, bool* removable) {
   if (device_path.value().length() != 3 || device_path.value()[0] < L'A' ||
       device_path.value()[0] > L'Z') {
     return false;
@@ -50,14 +39,15 @@ bool GetDeviceInfo(const FilePath& device_path, string16* device_location,
     *unique_id = "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
     (*unique_id)[11] = device_path.value()[0];
   }
-
+  if (name)
+    *name = device_path.Append(L" Drive").LossyDisplayName();
   if (removable)
     *removable = device_path.value()[0] != L'N';
   return true;
 }
 
 FilePath DriveNumberToFilePath(int drive_number) {
-  string16 path(L"_:\\");
+  FilePath::StringType path(L"_:\\");
   path[0] = L'A' + drive_number;
   return FilePath(path);
 }
@@ -85,11 +75,11 @@ class TestRemovableDeviceNotificationsWindowWin
   }
 
   void InitWithTestData() {
-    InitForTest(&GetDeviceInfo, &GetDeviceName, &NoAttachedDevices);
+    InitForTest(&GetDeviceInfo, &NoAttachedDevices);
   }
 
   void InitWithTestDataAndAttachedDevices() {
-    InitForTest(&GetDeviceInfo, &GetDeviceName, &GetTestAttachedDevices);
+    InitForTest(&GetDeviceInfo, &GetTestAttachedDevices);
   }
 
   void InjectDeviceChange(UINT event_type, DWORD data) {
@@ -106,11 +96,6 @@ class TestRemovableDeviceNotificationsWindowWin
   }
 };
 
-// Before running the unit tests, make sure no removable device is attached
-// to the system.
-// TODO(kmadhusu) Add a mock MediaDeviceNotificationsUtils::IsMediaDevice
-// function. RemovableDeviceNotificationsWindowWin unit tests should not
-// depend on system configuration.
 class RemovableDeviceNotificationsWindowWinTest : public testing::Test {
  public:
   RemovableDeviceNotificationsWindowWinTest()
@@ -134,13 +119,14 @@ class RemovableDeviceNotificationsWindowWinTest : public testing::Test {
 
   void AddAttachExpectation(FilePath drive) {
     std::string unique_id;
+    string16 device_name;
     bool removable;
-    ASSERT_TRUE(GetDeviceInfo(drive, NULL, &unique_id, &removable));
+    ASSERT_TRUE(GetDeviceInfo(drive, NULL, &unique_id, &device_name,
+                &removable));
     if (removable) {
       MediaStorageUtil::Type type =
           MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
       std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
-      const string16 device_name = GetDeviceName(drive);
       EXPECT_CALL(observer_, OnRemovableStorageAttached(device_id, device_name,
                                                         drive.value()))
           .Times(1);
@@ -209,7 +195,7 @@ void RemovableDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
       std::string unique_id;
       bool removable;
       ASSERT_TRUE(GetDeviceInfo(DriveNumberToFilePath(*it), NULL, &unique_id,
-                                &removable));
+                                NULL, &removable));
       if (removable) {
         MediaStorageUtil::Type type =
             MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
@@ -319,9 +305,10 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoFoPath) {
   EXPECT_TRUE(window_->GetDeviceInfoForPath(removable_device, &device_info));
 
   std::string unique_id;
-  string16 device_name = GetDeviceName(removable_device);
+  string16 device_name;
   bool removable;
-  ASSERT_TRUE(GetDeviceInfo(removable_device, NULL, &unique_id, &removable));
+  ASSERT_TRUE(GetDeviceInfo(removable_device, NULL, &unique_id, &device_name,
+              &removable));
   EXPECT_TRUE(removable);
   std::string device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id);
@@ -332,8 +319,9 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoFoPath) {
   // A fixed device.
   FilePath fixed_device(L"N:\\");
   EXPECT_TRUE(window_->GetDeviceInfoForPath(fixed_device, &device_info));
-  device_name = fixed_device.value();
-  ASSERT_TRUE(GetDeviceInfo(fixed_device, NULL, &unique_id, &removable));
+
+  ASSERT_TRUE(GetDeviceInfo(fixed_device, NULL, &unique_id, &device_name,
+              &removable));
   EXPECT_FALSE(removable);
   device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::FIXED_MASS_STORAGE, unique_id);

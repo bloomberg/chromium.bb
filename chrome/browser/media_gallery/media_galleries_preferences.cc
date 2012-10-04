@@ -259,10 +259,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
       continue;
 
     const MediaGalleryPrefInfo& existing = known_galleries_[*it];
-    bool update_gallery_type =
-      existing.type == MediaGalleryPrefInfo::kBlackListed;
-    bool update_gallery_name = existing.display_name != display_name;
-    if (update_gallery_name || update_gallery_type) {
+    if (existing.type == MediaGalleryPrefInfo::kBlackListed) {
       PrefService* prefs = profile_->GetPrefs();
       ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
       ListValue* list = update.Get();
@@ -275,12 +272,8 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
         if ((*list_iter)->GetAsDictionary(&dict) &&
             GetPrefId(*dict, &iter_id) &&
             *it == iter_id) {
-          if (update_gallery_type) {
-            dict->SetString(kMediaGalleriesTypeKey,
-                            kMediaGalleriesTypeAutoDetectedValue);
-          }
-          if (update_gallery_name)
-            dict->SetString(kMediaGalleriesDisplayNameKey, display_name);
+          dict->SetString(kMediaGalleriesTypeKey,
+                          kMediaGalleriesTypeAutoDetectedValue);
           InitFromPrefs();
           break;
         }

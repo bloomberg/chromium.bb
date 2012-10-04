@@ -496,41 +496,6 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   Verify();
 }
 
-// Whenever a gallery is added, check to see if there is any gallery info exists
-// for the added gallery. If so, verify the existing gallery information with
-// the new details. If there is a mismatch, update the gallery information
-// accordingly.
-TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryDetails) {
-  MediaGalleryPrefId auto_id, id;
-  FilePath path;
-  std::string device_id;
-  string16 device_name;
-  FilePath relative_path;
-  Verify();
-
-  // Add a new auto detect gallery to test with.
-  path = MakePath("new_auto");
-  MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
-                                          &relative_path);
-  device_name = ASCIIToUTF16("NewAutoGallery");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
-  EXPECT_EQ(default_galleries_count() + 1UL, id);
-  auto_id = id;
-  AddGalleryExpectation(id, device_name, device_id, relative_path,
-                        MediaGalleryPrefInfo::kAutoDetected);
-  Verify();
-
-  // Update the device name and add the gallery again.
-  device_name = ASCIIToUTF16("AutoGallery2");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
-  EXPECT_EQ(auto_id, id);
-  AddGalleryExpectation(id, device_name, device_id, relative_path,
-                        MediaGalleryPrefInfo::kAutoDetected);
-  Verify();
-}
-
 TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
   FilePath path;
   std::string device_id;
