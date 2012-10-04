@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_util.h"
 
@@ -27,7 +26,7 @@ const char kNotifyAll[] = "notifyAll";
 
 const char kSenderIdKey[] = "senderId";
 const char kNotificationTypeKey[] = "notificationType";
-const char kIdStateMapKey[] = "idStateMap";
+const char kIdInvalidationMapKey[] = "idInvalidationMap";
 const char kSourceKey[] = "source";
 
 }  // namespace
@@ -74,11 +73,11 @@ P2PNotificationData::P2PNotificationData()
 P2PNotificationData::P2PNotificationData(
     const std::string& sender_id,
     P2PNotificationTarget target,
-    const ObjectIdStateMap& id_state_map,
+    const ObjectIdInvalidationMap& invalidation_map,
     IncomingInvalidationSource source)
     : sender_id_(sender_id),
       target_(target),
-      id_state_map_(id_state_map),
+      invalidation_map_(invalidation_map),
       source_(source) {}
 
 P2PNotificationData::~P2PNotificationData() {}
@@ -97,8 +96,9 @@ bool P2PNotificationData::IsTargeted(const std::string& id) const {
   }
 }
 
-const ObjectIdStateMap& P2PNotificationData::GetIdStateMap() const {
-  return id_state_map_;
+const ObjectIdInvalidationMap&
+P2PNotificationData::GetIdInvalidationMap() const {
+  return invalidation_map_;
 }
 
 IncomingInvalidationSource P2PNotificationData::GetSource() const {
@@ -109,7 +109,8 @@ bool P2PNotificationData::Equals(const P2PNotificationData& other) const {
   return
       (sender_id_ == other.sender_id_) &&
       (target_ == other.target_) &&
-      ObjectIdStateMapEquals(id_state_map_, other.id_state_map_) &&
+      ObjectIdInvalidationMapEquals(invalidation_map_,
+                                    other.invalidation_map_) &&
       (source_ == other.source_);
 }
 
@@ -118,7 +119,8 @@ std::string P2PNotificationData::ToString() const {
   dict->SetString(kSenderIdKey, sender_id_);
   dict->SetString(kNotificationTypeKey,
                   P2PNotificationTargetToString(target_));
-  dict->Set(kIdStateMapKey, ObjectIdStateMapToValue(id_state_map_).release());
+  dict->Set(kIdInvalidationMapKey,
+            ObjectIdInvalidationMapToValue(invalidation_map_).release());
   dict->SetInteger(kSourceKey, source_);
   std::string json;
   base::JSONWriter::Write(dict.get(), &json);
@@ -141,10 +143,11 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
                  << kNotificationTypeKey;
   }
   target_ = P2PNotificationTargetFromString(target_str);
-  const base::ListValue* id_state_map_list = NULL;
-  if (!data_dict->GetList(kIdStateMapKey, &id_state_map_list) ||
-      !ObjectIdStateMapFromValue(*id_state_map_list, &id_state_map_)) {
-    LOG(WARNING) << "Could not parse " << kIdStateMapKey;
+  const base::ListValue* invalidation_map_list = NULL;
+  if (!data_dict->GetList(kIdInvalidationMapKey, &invalidation_map_list) ||
+      !ObjectIdInvalidationMapFromValue(*invalidation_map_list,
+                                        &invalidation_map_)) {
+    LOG(WARNING) << "Could not parse " << kIdInvalidationMapKey;
   }
   int source_num = 0;
   if (!data_dict->GetInteger(kSourceKey, &source_num)) {
@@ -187,7 +190,7 @@ void P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                       ObjectIdLessThan());
   registrar_.UpdateRegisteredIds(handler, ids);
   const P2PNotificationData notification_data(
-      unique_id_, NOTIFY_SELF, ObjectIdSetToStateMap(new_ids, ""),
+      unique_id_, NOTIFY_SELF, ObjectIdSetToInvalidationMap(new_ids, ""),
       REMOTE_INVALIDATION);
   SendNotificationData(notification_data);
 }
@@ -229,10 +232,11 @@ void P2PInvalidator::UpdateCredentials(
   logged_in_ = true;
 }
 
-void P2PInvalidator::SendInvalidation(const ObjectIdStateMap& id_state_map) {
+void P2PInvalidator::SendInvalidation(
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const P2PNotificationData notification_data(
-      unique_id_, send_notification_target_, id_state_map,
+      unique_id_, send_notification_target_, invalidation_map,
       REMOTE_INVALIDATION);
   SendNotificationData(notification_data);
 }
@@ -245,7 +249,7 @@ void P2PInvalidator::OnNotificationsEnabled() {
   if (just_turned_on) {
     const P2PNotificationData notification_data(
         unique_id_, NOTIFY_SELF,
-        ObjectIdSetToStateMap(registrar_.GetAllRegisteredIds(), ""),
+        ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(), ""),
         REMOTE_INVALIDATION);
     SendNotificationData(notification_data);
   }
@@ -280,7 +284,7 @@ void P2PInvalidator::OnIncomingNotification(
     notification_data =
         P2PNotificationData(
             unique_id_, NOTIFY_ALL,
-            ObjectIdSetToStateMap(registrar_.GetAllRegisteredIds(), ""),
+            ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(), ""),
             REMOTE_INVALIDATION);
   }
   if (!notification_data.IsTargeted(unique_id_)) {
@@ -289,7 +293,7 @@ void P2PInvalidator::OnIncomingNotification(
     return;
   }
   registrar_.DispatchInvalidationsToHandlers(
-      notification_data.GetIdStateMap(),
+      notification_data.GetIdInvalidationMap(),
       REMOTE_INVALIDATION);
 }
 
@@ -302,7 +306,7 @@ void P2PInvalidator::SendNotificationDataForTest(
 void P2PInvalidator::SendNotificationData(
     const P2PNotificationData& notification_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (notification_data.GetIdStateMap().empty()) {
+  if (notification_data.GetIdInvalidationMap().empty()) {
     DVLOG(1) << "Not sending XMPP notification with empty state map: "
              << notification_data.ToString();
     return;

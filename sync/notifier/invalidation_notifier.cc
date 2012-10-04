@@ -100,14 +100,16 @@ void InvalidationNotifier::UpdateCredentials(
 }
 
 void InvalidationNotifier::SendInvalidation(
-    const ObjectIdStateMap& id_state_map) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(CalledOnValidThread());
   // Do nothing.
 }
 
-void InvalidationNotifier::OnInvalidate(const ObjectIdStateMap& id_state_map) {
+void InvalidationNotifier::OnInvalidate(
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(CalledOnValidThread());
-  registrar_.DispatchInvalidationsToHandlers(id_state_map, REMOTE_INVALIDATION);
+  registrar_.DispatchInvalidationsToHandlers(invalidation_map,
+                                             REMOTE_INVALIDATION);
 }
 
 void InvalidationNotifier::OnInvalidatorStateChange(InvalidatorState state) {

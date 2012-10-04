@@ -17,7 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -190,7 +190,7 @@ class MockConnectionManager : public ServerConnectionManager {
     expected_filter_ = expected_filter;
   }
 
-  void ExpectGetUpdatesRequestStates(const ModelTypeStateMap& states) {
+  void ExpectGetUpdatesRequestStates(const ModelTypeInvalidationMap& states) {
     expected_states_ = states;
   }
 
@@ -341,7 +341,7 @@ class MockConnectionManager : public ServerConnectionManager {
 
   ModelTypeSet expected_filter_;
 
-  ModelTypeStateMap expected_states_;
+  ModelTypeInvalidationMap expected_states_;
 
   int num_get_updates_requests_;
 

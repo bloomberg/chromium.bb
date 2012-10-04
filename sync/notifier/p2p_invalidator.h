@@ -56,7 +56,7 @@ class P2PNotificationData {
   P2PNotificationData();
   P2PNotificationData(const std::string& sender_id,
                       P2PNotificationTarget target,
-                      const ObjectIdStateMap& id_state_map,
+                      const ObjectIdInvalidationMap& invalidation_map,
                       IncomingInvalidationSource source);
 
   ~P2PNotificationData();
@@ -64,7 +64,7 @@ class P2PNotificationData {
   // Returns true if the given ID is targeted by this notification.
   bool IsTargeted(const std::string& id) const;
 
-  const ObjectIdStateMap& GetIdStateMap() const;
+  const ObjectIdInvalidationMap& GetIdInvalidationMap() const;
 
   IncomingInvalidationSource GetSource() const;
 
@@ -81,8 +81,8 @@ class P2PNotificationData {
   std::string sender_id_;
   // The intendent recipient(s) of the notification.
   P2PNotificationTarget target_;
-  // The state map for the notification.
-  ObjectIdStateMap id_state_map_;
+  // The invalidation map for the notification.
+  ObjectIdInvalidationMap invalidation_map_;
   // The source of the invalidation.
   IncomingInvalidationSource source_;
 };
@@ -110,7 +110,8 @@ class P2PInvalidator : public Invalidator,
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendInvalidation(const ObjectIdStateMap& id_state_map) OVERRIDE;
+  virtual void SendInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // PushClientObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;

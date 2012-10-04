@@ -43,7 +43,7 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   virtual void OnInvalidatorStateChange(
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdStateMap& id_state_map,
+      const syncer::ObjectIdInvalidationMap& invalidation_map,
       syncer::IncomingInvalidationSource source) OVERRIDE;
 
   const std::set<std::string>& GetRegisteredExtensionsForTest() const {

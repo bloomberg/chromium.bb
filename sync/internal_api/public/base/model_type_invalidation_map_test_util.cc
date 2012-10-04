@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/base/model_type_state_map_test_util.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map_test_util.h"
 
 #include <algorithm>
 
@@ -19,32 +19,33 @@ using ::testing::PrintToString;
 
 namespace {
 
-class ModelTypeStateMapEqMatcher
-    : public MatcherInterface<const ModelTypeStateMap&> {
+class ModelTypeInvalidationMapEqMatcher
+    : public MatcherInterface<const ModelTypeInvalidationMap&> {
  public:
-  explicit ModelTypeStateMapEqMatcher(const ModelTypeStateMap& expected);
+  explicit ModelTypeInvalidationMapEqMatcher(
+      const ModelTypeInvalidationMap& expected);
 
-  virtual bool MatchAndExplain(const ModelTypeStateMap& lhs,
+  virtual bool MatchAndExplain(const ModelTypeInvalidationMap& lhs,
                                MatchResultListener* listener) const;
   virtual void DescribeTo(::std::ostream* os) const;
   virtual void DescribeNegationTo(::std::ostream* os) const;
 
  private:
-  const ModelTypeStateMap expected_;
+  const ModelTypeInvalidationMap expected_;
 
-  DISALLOW_COPY_AND_ASSIGN(ModelTypeStateMapEqMatcher);
+  DISALLOW_COPY_AND_ASSIGN(ModelTypeInvalidationMapEqMatcher);
 };
 
-ModelTypeStateMapEqMatcher::ModelTypeStateMapEqMatcher(
-    const ModelTypeStateMap& expected) : expected_(expected) {
+ModelTypeInvalidationMapEqMatcher::ModelTypeInvalidationMapEqMatcher(
+    const ModelTypeInvalidationMap& expected) : expected_(expected) {
 }
 
-bool ModelTypeStateMapEqMatcher::MatchAndExplain(
-    const ModelTypeStateMap& actual, MatchResultListener* listener) const {
-  ModelTypeStateMap expected_only;
-  ModelTypeStateMap actual_only;
-  typedef std::pair<ModelType,
-                    std::pair<InvalidationState, InvalidationState> >
+bool ModelTypeInvalidationMapEqMatcher::MatchAndExplain(
+    const ModelTypeInvalidationMap& actual,
+    MatchResultListener* listener) const {
+  ModelTypeInvalidationMap expected_only;
+  ModelTypeInvalidationMap actual_only;
+  typedef std::pair<ModelType, std::pair<Invalidation, Invalidation> >
       ValueDifference;
   std::vector<ValueDifference> value_differences;
 
@@ -57,9 +58,9 @@ bool ModelTypeStateMapEqMatcher::MatchAndExplain(
                       std::inserter(actual_only, actual_only.begin()),
                       actual.value_comp());
 
-  for (ModelTypeStateMap::const_iterator it = expected_.begin();
+  for (ModelTypeInvalidationMap::const_iterator it = expected_.begin();
        it != expected_.end(); ++it) {
-    ModelTypeStateMap::const_iterator find_it =
+    ModelTypeInvalidationMap::const_iterator find_it =
         actual.find(it->first);
     if (find_it != actual.end() &&
         !Matches(Eq(it->second))(find_it->second)) {
@@ -94,18 +95,20 @@ bool ModelTypeStateMapEqMatcher::MatchAndExplain(
   return false;
 }
 
-void ModelTypeStateMapEqMatcher::DescribeTo(::std::ostream* os) const {
+void ModelTypeInvalidationMapEqMatcher::DescribeTo(::std::ostream* os) const {
   *os << " is equal to " << PrintToString(expected_);
 }
 
-void ModelTypeStateMapEqMatcher::DescribeNegationTo(::std::ostream* os) const {
+void ModelTypeInvalidationMapEqMatcher::DescribeNegationTo(
+    ::std::ostream* os) const {
   *os << " isn't equal to " << PrintToString(expected_);
 }
 
 }  // namespace
 
-Matcher<const ModelTypeStateMap&> Eq(const ModelTypeStateMap& expected) {
-  return MakeMatcher(new ModelTypeStateMapEqMatcher(expected));
+Matcher<const ModelTypeInvalidationMap&> Eq(
+    const ModelTypeInvalidationMap& expected) {
+  return MakeMatcher(new ModelTypeInvalidationMapEqMatcher(expected));
 }
 
 }  // namespace syncer

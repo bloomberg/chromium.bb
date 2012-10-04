@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/read_transaction.h"
@@ -73,7 +73,8 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
            << ModelTypeSetToString(enabled_types);
   DCHECK(!enabled_types.Empty());
 
-  const ModelTypeStateMap& type_state_map = session->source().types;
+  const ModelTypeInvalidationMap& invalidation_map =
+      session->source().types;
   for (ModelTypeSet::Iterator it = enabled_types.First();
        it.Good(); it.Inc()) {
     sync_pb::DataTypeProgressMarker* progress_marker =
@@ -81,10 +82,10 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     dir->GetDownloadProgress(it.Get(), progress_marker);
 
     // Set notification hint if present.
-    ModelTypeStateMap::const_iterator type_state =
-        type_state_map.find(it.Get());
-    if (type_state != type_state_map.end()) {
-      progress_marker->set_notification_hint(type_state->second.payload);
+    ModelTypeInvalidationMap::const_iterator find_it =
+        invalidation_map.find(it.Get());
+    if (find_it != invalidation_map.end()) {
+      progress_marker->set_notification_hint(find_it->second.payload);
     }
   }
 

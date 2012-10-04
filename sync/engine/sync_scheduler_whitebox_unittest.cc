@@ -143,17 +143,16 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudge) {
 TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
   InitializeSyncerOnNormalMode();
 
-  ModelTypeSet types;
-  types.Put(BOOKMARKS);
+  const ModelTypeSet types(BOOKMARKS);
 
   // Mark bookmarks as throttled.
   context()->throttled_data_type_tracker()->SetUnthrottleTime(
       types, base::TimeTicks::Now() + base::TimeDelta::FromHours(2));
 
-  ModelTypeStateMap type_state_map;
-  type_state_map.insert(std::make_pair(BOOKMARKS, InvalidationState()));
+  const ModelTypeInvalidationMap& invalidation_map =
+      ModelTypeSetToInvalidationMap(types, std::string());
 
-  SyncSourceInfo info(GetUpdatesCallerInfo::LOCAL, type_state_map);
+  SyncSourceInfo info(GetUpdatesCallerInfo::LOCAL, invalidation_map);
   SyncSession* s = scheduler_->CreateSyncSession(info);
 
   // Now schedule a nudge with just bookmarks and the change is local.

@@ -30,7 +30,7 @@
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_test_template.h"
-#include "sync/notifier/object_id_state_map_test_util.h"
+#include "sync/notifier/object_id_invalidation_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/user_agent/user_agent.h"
@@ -406,8 +406,8 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
 
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(3, "id3"));
-  const syncer::ObjectIdStateMap& states =
-      syncer::ObjectIdSetToStateMap(ids, "payload");
+  const syncer::ObjectIdInvalidationMap& states =
+      syncer::ObjectIdSetToInvalidationMap(ids, "payload");
 
   syncer::FakeInvalidationHandler handler;
 
@@ -424,7 +424,7 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
   EXPECT_EQ(syncer::INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
 
   backend->EmitOnIncomingInvalidation(states, syncer::REMOTE_INVALIDATION);
-  EXPECT_THAT(states, Eq(handler.GetLastInvalidationIdStateMap()));
+  EXPECT_THAT(states, Eq(handler.GetLastInvalidationMap()));
   EXPECT_EQ(syncer::REMOTE_INVALIDATION, handler.GetLastInvalidationSource());
 
   backend->EmitOnInvalidatorStateChange(syncer::TRANSIENT_INVALIDATION_ERROR);
@@ -473,7 +473,7 @@ class ProfileSyncServiceInvalidator : public syncer::Invalidator {
   }
 
   virtual void SendInvalidation(
-      const syncer::ObjectIdStateMap& id_state_map) OVERRIDE {
+      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
     // Do nothing.
   }
 
@@ -525,10 +525,10 @@ class ProfileSyncServiceInvalidatorTestDelegate {
   }
 
   void TriggerOnIncomingInvalidation(
-      const syncer::ObjectIdStateMap& id_state_map,
+      const syncer::ObjectIdInvalidationMap& invalidation_map,
       syncer::IncomingInvalidationSource source) {
     harness_.service->GetBackendForTest()->EmitOnIncomingInvalidation(
-        id_state_map, source);
+        invalidation_map, source);
   }
 
   static bool InvalidatorHandlesDeprecatedState() {

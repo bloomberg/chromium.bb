@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 
 #include <vector>
 
@@ -13,38 +13,40 @@
 
 namespace syncer {
 
-ModelTypeStateMap ModelTypeSetToStateMap(ModelTypeSet types,
-                                         const std::string& payload) {
-  ModelTypeStateMap type_state_map;
+ModelTypeInvalidationMap ModelTypeSetToInvalidationMap(
+    ModelTypeSet types, const std::string& payload) {
+  ModelTypeInvalidationMap invalidation_map;
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     // TODO(dcheng): Do we need to set ack_handle?
-    type_state_map[it.Get()].payload = payload;
+    invalidation_map[it.Get()].payload = payload;
   }
-  return type_state_map;
+  return invalidation_map;
 }
 
-ModelTypeSet ModelTypeStateMapToSet(
-    const ModelTypeStateMap& type_state_map) {
+ModelTypeSet ModelTypeInvalidationMapToSet(
+    const ModelTypeInvalidationMap& invalidation_map) {
   ModelTypeSet types;
-  for (ModelTypeStateMap::const_iterator it = type_state_map.begin();
-       it != type_state_map.end(); ++it) {
+  for (ModelTypeInvalidationMap::const_iterator it = invalidation_map.begin();
+       it != invalidation_map.end(); ++it) {
     types.Put(it->first);
   }
   return types;
 }
 
-std::string ModelTypeStateMapToString(const ModelTypeStateMap& type_state_map) {
-  scoped_ptr<DictionaryValue> value(ModelTypeStateMapToValue(type_state_map));
+std::string ModelTypeInvalidationMapToString(
+    const ModelTypeInvalidationMap& invalidation_map) {
+  scoped_ptr<DictionaryValue> value(
+      ModelTypeInvalidationMapToValue(invalidation_map));
   std::string json;
   base::JSONWriter::Write(value.get(), &json);
   return json;
 }
 
-DictionaryValue* ModelTypeStateMapToValue(
-    const ModelTypeStateMap& type_state_map) {
+DictionaryValue* ModelTypeInvalidationMapToValue(
+    const ModelTypeInvalidationMap& invalidation_map) {
   DictionaryValue* value = new DictionaryValue();
-  for (ModelTypeStateMap::const_iterator it = type_state_map.begin();
-       it != type_state_map.end(); ++it) {
+  for (ModelTypeInvalidationMap::const_iterator it = invalidation_map.begin();
+       it != invalidation_map.end(); ++it) {
     std::string printable_payload;
     base::JsonDoubleQuote(it->second.payload,
                           false /* put_in_quotes */,
@@ -54,12 +56,12 @@ DictionaryValue* ModelTypeStateMapToValue(
   return value;
 }
 
-void CoalesceStates(ModelTypeStateMap* original,
-                    const ModelTypeStateMap& update) {
+void CoalesceStates(ModelTypeInvalidationMap* original,
+                    const ModelTypeInvalidationMap& update) {
   // TODO(dcheng): Where is this called? Do we need to add more clever logic for
   // handling ack_handle? We probably want to always use the "latest"
   // ack_handle, which might imply always using the one in update?
-  for (ModelTypeStateMap::const_iterator i = update.begin();
+  for (ModelTypeInvalidationMap::const_iterator i = update.begin();
        i != update.end(); ++i) {
     if (original->count(i->first) == 0) {
       // If this datatype isn't already in our map, add it with

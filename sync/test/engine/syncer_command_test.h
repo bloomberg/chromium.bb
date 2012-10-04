@@ -100,8 +100,8 @@ class SyncerCommandTestBase : public testing::Test,
 
   // Lazily create a session requesting all datatypes with no state.
   sessions::SyncSession* session() {
-    ModelTypeStateMap types =
-        ModelSafeRoutingInfoToStateMap(routing_info_, std::string());
+    ModelTypeInvalidationMap types =
+        ModelSafeRoutingInfoToInvalidationMap(routing_info_, std::string());
     return session(sessions::SyncSourceInfo(types));
   }
 

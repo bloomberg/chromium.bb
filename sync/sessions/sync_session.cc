@@ -48,17 +48,17 @@ std::set<ModelSafeGroup> ComputeEnabledGroups(
   return enabled_groups;
 }
 
-void PurgeStaleStates(ModelTypeStateMap* original,
+void PurgeStaleStates(ModelTypeInvalidationMap* original,
                       const ModelSafeRoutingInfo& routing_info) {
-  std::vector<ModelTypeStateMap::iterator> iterators_to_delete;
-  for (ModelTypeStateMap::iterator i = original->begin();
+  std::vector<ModelTypeInvalidationMap::iterator> iterators_to_delete;
+  for (ModelTypeInvalidationMap::iterator i = original->begin();
        i != original->end(); ++i) {
     if (routing_info.end() == routing_info.find(i->first)) {
       iterators_to_delete.push_back(i);
     }
   }
 
-  for (std::vector<ModelTypeStateMap::iterator>::iterator
+  for (std::vector<ModelTypeInvalidationMap::iterator>::iterator
        it = iterators_to_delete.begin(); it != iterators_to_delete.end();
        ++it) {
     original->erase(*it);
@@ -157,7 +157,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
 
   bool is_share_useable = true;
   ModelTypeSet initial_sync_ended;
-  ModelTypeStateMap download_progress_markers;
+  ModelTypeInvalidationMap download_progress_markers;
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType type(ModelTypeFromInt(i));
     if (routing_info_.count(type) != 0) {

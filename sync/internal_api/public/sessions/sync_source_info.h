@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace base {
@@ -22,17 +22,17 @@ namespace sessions {
 // specific payloads which should be sent to the server.
 struct SyncSourceInfo {
   SyncSourceInfo();
-  explicit SyncSourceInfo(const ModelTypeStateMap& t);
+  explicit SyncSourceInfo(const ModelTypeInvalidationMap& t);
   SyncSourceInfo(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& u,
-      const ModelTypeStateMap& t);
+      const ModelTypeInvalidationMap& t);
   ~SyncSourceInfo();
 
   // Caller takes ownership of the returned dictionary.
   base::DictionaryValue* ToValue() const;
 
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source;
-  ModelTypeStateMap types;
+  ModelTypeInvalidationMap types;
 };
 
 }  // namespace sessions

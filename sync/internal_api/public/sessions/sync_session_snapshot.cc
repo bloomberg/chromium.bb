@@ -29,7 +29,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     const ModelNeutralState& model_neutral_state,
     bool is_share_usable,
     ModelTypeSet initial_sync_ended,
-    const ModelTypeStateMap& download_progress_markers,
+    const ModelTypeInvalidationMap& download_progress_markers,
     bool more_to_sync,
     bool is_silenced,
     int num_encryption_conflicts,
@@ -84,7 +84,7 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
   value->Set("initialSyncEnded",
              ModelTypeSetToValue(initial_sync_ended_));
   value->Set("downloadProgressMarkers",
-             ModelTypeStateMapToValue(download_progress_markers_));
+             ModelTypeInvalidationMapToValue(download_progress_markers_));
   value->SetBoolean("hasMoreToSync", has_more_to_sync_);
   value->SetBoolean("isSilenced", is_silenced_);
   // We don't care too much if we lose precision here, also.
@@ -123,7 +123,8 @@ ModelTypeSet SyncSessionSnapshot::initial_sync_ended() const {
   return initial_sync_ended_;
 }
 
-ModelTypeStateMap SyncSessionSnapshot::download_progress_markers() const {
+ModelTypeInvalidationMap
+SyncSessionSnapshot::download_progress_markers() const {
   return download_progress_markers_;
 }
 

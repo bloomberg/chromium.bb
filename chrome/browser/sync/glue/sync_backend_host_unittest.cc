@@ -24,7 +24,7 @@
 #include "sync/internal_api/public/test/fake_sync_manager.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/notifier/invalidator_state.h"
-#include "sync/notifier/object_id_state_map_test_util.h"
+#include "sync/notifier/object_id_invalidation_map_test_util.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/util/test_unrecoverable_error_handler.h"
@@ -57,7 +57,7 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD1(OnInvalidatorStateChange,
                void(syncer::InvalidatorState));
   MOCK_METHOD2(OnIncomingInvalidation,
-               void(const syncer::ObjectIdStateMap&,
+               void(const syncer::ObjectIdInvalidationMap&,
                     syncer::IncomingInvalidationSource));
   MOCK_METHOD2(OnBackendInitialized,
                void(const syncer::WeakHandle<syncer::JsBackend>&, bool));
@@ -566,16 +566,16 @@ TEST_F(SyncBackendHostTest, Invalidate) {
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(1, "id1"));
   ids.insert(invalidation::ObjectId(2, "id2"));
-  const syncer::ObjectIdStateMap& id_state_map =
-      syncer::ObjectIdSetToStateMap(ids, "payload");
+  const syncer::ObjectIdInvalidationMap& invalidation_map =
+      syncer::ObjectIdSetToInvalidationMap(ids, "payload");
 
   EXPECT_CALL(
       mock_frontend_,
-      OnIncomingInvalidation(id_state_map, syncer::REMOTE_INVALIDATION))
+      OnIncomingInvalidation(invalidation_map, syncer::REMOTE_INVALIDATION))
       .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
 
   backend_->UpdateRegisteredInvalidationIds(ids);
-  fake_manager_->Invalidate(id_state_map, syncer::REMOTE_INVALIDATION);
+  fake_manager_->Invalidate(invalidation_map, syncer::REMOTE_INVALIDATION);
   ui_loop_.PostDelayedTask(
       FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
   ui_loop_.Run();
@@ -614,9 +614,9 @@ TEST_F(SyncBackendHostTest, InvalidationsAfterStopSyncingForShutdown) {
   // Should not trigger anything.
   fake_manager_->UpdateInvalidatorState(syncer::TRANSIENT_INVALIDATION_ERROR);
   fake_manager_->UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
-  const syncer::ObjectIdStateMap& id_state_map =
-      syncer::ObjectIdSetToStateMap(ids, "payload");
-  fake_manager_->Invalidate(id_state_map, syncer::REMOTE_INVALIDATION);
+  const syncer::ObjectIdInvalidationMap& invalidation_map =
+      syncer::ObjectIdSetToInvalidationMap(ids, "payload");
+  fake_manager_->Invalidate(invalidation_map, syncer::REMOTE_INVALIDATION);
 
   // Make sure the above calls take effect before we continue.
   fake_manager_->WaitForSyncThread();

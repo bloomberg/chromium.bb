@@ -55,12 +55,13 @@ class NonBlockingInvalidator
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendInvalidation(const ObjectIdStateMap& id_state_map) OVERRIDE;
+  virtual void SendInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const ObjectIdStateMap& id_state_map,
+      const ObjectIdInvalidationMap& invalidation_map,
       IncomingInvalidationSource source) OVERRIDE;
 
  private:

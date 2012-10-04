@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 
 namespace base {
@@ -80,9 +80,9 @@ base::DictionaryValue* ModelSafeRoutingInfoToValue(
 SYNC_EXPORT std::string ModelSafeRoutingInfoToString(
     const ModelSafeRoutingInfo& routing_info);
 
-// Make a ModelTypeStateMap for all the enabled types in a
+// Make a ModelTypeInvalidationMap for all the enabled types in a
 // ModelSafeRoutingInfo using a default payload.
-ModelTypeStateMap ModelSafeRoutingInfoToStateMap(
+ModelTypeInvalidationMap ModelSafeRoutingInfoToInvalidationMap(
     const ModelSafeRoutingInfo& routes,
     const std::string& payload);
 

@@ -44,7 +44,7 @@ class NonBlockingInvalidator::Core
   // InvalidationNotifier).
   virtual void OnInvalidatorStateChange(InvalidatorState reason) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const ObjectIdStateMap& id_state_map,
+      const ObjectIdInvalidationMap& invalidation_map,
       IncomingInvalidationSource source) OVERRIDE;
 
  private:
@@ -129,11 +129,12 @@ void NonBlockingInvalidator::Core::OnInvalidatorStateChange(
 }
 
 void NonBlockingInvalidator::Core::OnIncomingInvalidation(
-    const ObjectIdStateMap& id_state_map, IncomingInvalidationSource source) {
+    const ObjectIdInvalidationMap& invalidation_map,
+    IncomingInvalidationSource source) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
                           &InvalidationHandler::OnIncomingInvalidation,
-                          id_state_map,
+                          invalidation_map,
                           source);
 }
 
@@ -237,9 +238,9 @@ void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
 }
 
 void NonBlockingInvalidator::SendInvalidation(
-    const ObjectIdStateMap& id_state_map) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  // InvalidationClient doesn't implement SendInvalidation(), so no
+  // InvalidationNotifier doesn't implement SendInvalidation(), so no
   // need to forward on the call.
 }
 
@@ -249,10 +250,10 @@ void NonBlockingInvalidator::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void NonBlockingInvalidator::OnIncomingInvalidation(
-        const ObjectIdStateMap& id_state_map,
+        const ObjectIdInvalidationMap& invalidation_map,
         IncomingInvalidationSource source) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
+  registrar_.DispatchInvalidationsToHandlers(invalidation_map, source);
 }
 
 }  // namespace syncer

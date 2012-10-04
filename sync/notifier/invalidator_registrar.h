@@ -12,7 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/object_id_state_map.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace invalidation {
 class ObjectId;
@@ -54,8 +54,9 @@ class InvalidatorRegistrar {
   // dispatches the batched invalidations to the corresponding handler.
   // Invalidations for IDs with no corresponding handler are dropped, as are
   // invalidations for handlers that are not added.
-  void DispatchInvalidationsToHandlers(const ObjectIdStateMap& id_state_map,
-                                       IncomingInvalidationSource source);
+  void DispatchInvalidationsToHandlers(
+      const ObjectIdInvalidationMap& invalidation_map,
+      IncomingInvalidationSource source);
 
   // Updates the invalidator state to the given one and then notifies
   // all handlers.  Note that the order is important; handlers that

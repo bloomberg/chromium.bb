@@ -35,8 +35,9 @@ const std::string& FakeInvalidator::GetCredentialsToken() const {
   return token_;
 }
 
-const ObjectIdStateMap& FakeInvalidator::GetLastSentIdStateMap() const {
-  return last_sent_id_state_map_;
+const ObjectIdInvalidationMap&
+FakeInvalidator::GetLastSentInvalidationMap() const {
+  return last_sent_invalidation_map_;
 }
 
 void FakeInvalidator::EmitOnInvalidatorStateChange(InvalidatorState state) {
@@ -44,9 +45,9 @@ void FakeInvalidator::EmitOnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void FakeInvalidator::EmitOnIncomingInvalidation(
-    const ObjectIdStateMap& id_state_map,
+    const ObjectIdInvalidationMap& invalidation_map,
     IncomingInvalidationSource source) {
-  registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
+  registrar_.DispatchInvalidationsToHandlers(invalidation_map, source);
 }
 
 void FakeInvalidator::RegisterHandler(InvalidationHandler* handler) {
@@ -80,8 +81,9 @@ void FakeInvalidator::UpdateCredentials(
   token_ = token;
 }
 
-void FakeInvalidator::SendInvalidation(const ObjectIdStateMap& id_state_map) {
-  last_sent_id_state_map_ = id_state_map;
+void FakeInvalidator::SendInvalidation(
+    const ObjectIdInvalidationMap& invalidation_map) {
+  last_sent_invalidation_map_ = invalidation_map;
 }
 
 }  // namespace syncer

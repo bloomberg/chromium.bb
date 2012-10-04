@@ -32,7 +32,7 @@
 #include "sync/api/sync_error.h"
 #include "sync/api/time.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/write_node.h"
@@ -1153,13 +1153,14 @@ void SessionModelAssociator::TabNodePool::FreeTabNode(int64 sync_id) {
 
 void SessionModelAssociator::AttemptSessionsDataRefresh() const {
   DVLOG(1) << "Triggering sync refresh for sessions datatype.";
-  const syncer::ModelType type = syncer::SESSIONS;
-  syncer::ModelTypeStateMap state_map;
-  state_map.insert(std::make_pair(type, syncer::InvalidationState()));
+  const syncer::ModelTypeSet types(syncer::SESSIONS);
+  const syncer::ModelTypeInvalidationMap& invalidation_map =
+      ModelTypeSetToInvalidationMap(types, std::string());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
       content::Source<Profile>(profile_),
-      content::Details<const syncer::ModelTypeStateMap>(&state_map));
+      content::Details<const syncer::ModelTypeInvalidationMap>(
+          &invalidation_map));
 }
 
 bool SessionModelAssociator::GetLocalSession(

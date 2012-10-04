@@ -164,7 +164,7 @@ TEST_F(PushMessagingInvalidationHandlerTest, Dispatch) {
               OnMessage("dddddddddddddddddddddddddddddddd", 0, "payload"));
   EXPECT_CALL(delegate_,
               OnMessage("dddddddddddddddddddddddddddddddd", 3, "payload"));
-  handler_->OnIncomingInvalidation(ObjectIdSetToStateMap(ids, "payload"),
+  handler_->OnIncomingInvalidation(ObjectIdSetToInvalidationMap(ids, "payload"),
                                    syncer::REMOTE_INVALIDATION);
 }
 
@@ -195,7 +195,7 @@ TEST_F(PushMessagingInvalidationHandlerTest, DispatchInvalidObjectIds) {
   ids.insert(invalidation::ObjectId(
       kSourceId,
       "U/dddddddddddddddddddddddddddddddd/4"));
-  handler_->OnIncomingInvalidation(ObjectIdSetToStateMap(ids, "payload"),
+  handler_->OnIncomingInvalidation(ObjectIdSetToInvalidationMap(ids, "payload"),
                                    syncer::REMOTE_INVALIDATION);
 }
 

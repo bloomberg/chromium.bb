@@ -54,7 +54,7 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet GetAndResetEnabledTypes();
 
   // Posts a method to invalidate the given IDs on the sync thread.
-  void Invalidate(const ObjectIdStateMap& id_state_map,
+  void Invalidate(const ObjectIdInvalidationMap& invalidation_map,
                   IncomingInvalidationSource source);
 
   // Posts a method to update the invalidator state on the sync thread.
@@ -121,7 +121,7 @@ class FakeSyncManager : public SyncManager {
 
  private:
   void InvalidateOnSyncThread(
-      const ObjectIdStateMap& id_state_map,
+      const ObjectIdInvalidationMap& invalidation_map,
       IncomingInvalidationSource source);
   void UpdateInvalidatorStateOnSyncThread(InvalidatorState state);
 

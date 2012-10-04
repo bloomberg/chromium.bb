@@ -67,9 +67,9 @@ void BridgedInvalidator::UpdateCredentials(
 }
 
 void BridgedInvalidator::SendInvalidation(
-    const syncer::ObjectIdStateMap& id_state_map) {
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
   if (delegate_.get())
-    delegate_->SendInvalidation(id_state_map);
+    delegate_->SendInvalidation(invalidation_map);
 }
 
 }  // namespace browser_sync

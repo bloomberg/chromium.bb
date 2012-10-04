@@ -12,7 +12,7 @@
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/throttled_data_type_tracker.h"
-#include "sync/internal_api/public/base/model_type_state_map_test_util.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map_test_util.h"
 #include "sync/sessions/test_util.h"
 #include "sync/test/callback_counter.h"
 #include "sync/test/engine/fake_model_worker.h"
@@ -199,13 +199,13 @@ class SyncSchedulerTest : public testing::Test {
     scheduler_->delay_provider_.reset(delay_);
   }
 
-  // Compare a ModelTypeSet to a ModelTypeStateMap, ignoring
+  // Compare a ModelTypeSet to a ModelTypeInvalidationMap, ignoring
   // state values.
-  bool CompareModelTypeSetToModelTypeStateMap(
+  bool CompareModelTypeSetToModelTypeInvalidationMap(
       ModelTypeSet lhs,
-      const ModelTypeStateMap& rhs) {
+      const ModelTypeInvalidationMap& rhs) {
     size_t count = 0;
-    for (ModelTypeStateMap::const_iterator i = rhs.begin();
+    for (ModelTypeInvalidationMap::const_iterator i = rhs.begin();
          i != rhs.end(); ++i, ++count) {
       if (!lhs.Has(i->first))
         return false;
@@ -282,7 +282,7 @@ TEST_F(SyncSchedulerTest, Nudge) {
   RunLoop();
 
   ASSERT_EQ(1U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(model_types,
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(model_types,
       records.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records.snapshots[0].source().updates_source);
@@ -301,7 +301,7 @@ TEST_F(SyncSchedulerTest, Nudge) {
   RunLoop();
 
   ASSERT_EQ(1U, records2.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(model_types,
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(model_types,
       records2.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records2.snapshots[0].source().updates_source);
@@ -329,7 +329,7 @@ TEST_F(SyncSchedulerTest, Config) {
   ASSERT_EQ(1, counter.times_called());
 
   ASSERT_EQ(1U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(model_types,
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(model_types,
       records.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
             records.snapshots[0].source().updates_source);
@@ -366,7 +366,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
 
   ASSERT_EQ(2U, records.snapshots.size());
   ASSERT_EQ(1, counter.times_called());
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(model_types,
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(model_types,
       records.snapshots[1].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
             records.snapshots[1].source().updates_source);
@@ -425,12 +425,12 @@ TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
 
   ASSERT_EQ(4U, records.snapshots.size());
 
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(model_types,
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(model_types,
       records.snapshots[2].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
             records.snapshots[2].source().updates_source);
 
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(model_types,
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(model_types,
       records.snapshots[3].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records.snapshots[3].source().updates_source);
@@ -456,7 +456,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
 
   ASSERT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(
       Union(types1, types2), r.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[0].source().updates_source);
@@ -472,7 +472,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
   RunLoop();
 
   ASSERT_EQ(1U, r2.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(types3,
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(types3,
       r2.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
             r2.snapshots[0].source().updates_source);
@@ -504,7 +504,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescingWithDifferentTimings) {
 
   // Make sure the sync has happened.
   ASSERT_EQ(1U, r.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(
       Union(types1, types2), r.snapshots[0].source().types));
 
   // Make sure the sync happened at the right time.
@@ -517,19 +517,20 @@ TEST_F(SyncSchedulerTest, NudgeWithStates) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   SyncShareRecords records;
-  ModelTypeStateMap type_state_map;
-  type_state_map[BOOKMARKS].payload = "test";
+  const ModelTypeSet types(BOOKMARKS);
+  ModelTypeInvalidationMap invalidation_map =
+      ModelTypeSetToInvalidationMap(types, "test");
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&records))))
       .RetiresOnSaturation();
   scheduler()->ScheduleNudgeWithStatesAsync(
-      zero(), NUDGE_SOURCE_LOCAL, type_state_map, FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, invalidation_map, FROM_HERE);
   RunLoop();
 
   ASSERT_EQ(1U, records.snapshots.size());
-  EXPECT_THAT(type_state_map, Eq(records.snapshots[0].source().types));
+  EXPECT_THAT(invalidation_map, Eq(records.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records.snapshots[0].source().updates_source);
 
@@ -537,17 +538,17 @@ TEST_F(SyncSchedulerTest, NudgeWithStates) {
 
   // Make sure a second, later, nudge is unaffected by first (no coalescing).
   SyncShareRecords records2;
-  type_state_map.erase(BOOKMARKS);
-  type_state_map[AUTOFILL].payload = "test2";
+  invalidation_map.erase(BOOKMARKS);
+  invalidation_map[AUTOFILL].payload = "test2";
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&records2))));
   scheduler()->ScheduleNudgeWithStatesAsync(
-      zero(), NUDGE_SOURCE_LOCAL, type_state_map, FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, invalidation_map, FROM_HERE);
   RunLoop();
 
   ASSERT_EQ(1U, records2.snapshots.size());
-  EXPECT_THAT(type_state_map, Eq(records2.snapshots[0].source().types));
+  EXPECT_THAT(invalidation_map, Eq(records2.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records2.snapshots[0].source().updates_source);
 }
@@ -560,7 +561,7 @@ TEST_F(SyncSchedulerTest, NudgeWithStatesCoalescing) {
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                       WithArg<0>(RecordSyncShare(&r))));
-  ModelTypeStateMap types1, types2, types3;
+  ModelTypeInvalidationMap types1, types2, types3;
   types1[BOOKMARKS].payload = "test1";
   types2[AUTOFILL].payload = "test2";
   types3[THEMES].payload = "test3";
@@ -574,7 +575,7 @@ TEST_F(SyncSchedulerTest, NudgeWithStatesCoalescing) {
 
   ASSERT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
-  ModelTypeStateMap coalesced_types;
+  ModelTypeInvalidationMap coalesced_types;
   CoalesceStates(&coalesced_types, types1);
   CoalesceStates(&coalesced_types, types2);
   EXPECT_THAT(coalesced_types, Eq(r.snapshots[0].source().types));
@@ -804,7 +805,7 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
   ASSERT_EQ(1, counter.times_called());
 
   ASSERT_EQ(1U, records.snapshots.size());
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(config_types,
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(config_types,
       records.snapshots[0].source().types));
 
   // Switch to NORMAL_MODE to ensure NUDGES were properly saved and run.
@@ -824,7 +825,7 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
   ASSERT_EQ(1U, records2.snapshots.size());
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             records2.snapshots[0].source().updates_source);
-  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(nudge_types,
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeInvalidationMap(nudge_types,
       records2.snapshots[0].source().types));
   PumpLoop();
 }

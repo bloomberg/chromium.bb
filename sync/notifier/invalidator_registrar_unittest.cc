@@ -9,7 +9,7 @@
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/invalidator_registrar.h"
 #include "sync/notifier/invalidator_test_template.h"
-#include "sync/notifier/object_id_state_map_test_util.h"
+#include "sync/notifier/object_id_invalidation_map_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -60,7 +60,8 @@ class RegistrarInvalidator : public Invalidator {
     // Do nothing.
   }
 
-  virtual void SendInvalidation(const ObjectIdStateMap& id_state_map) OVERRIDE {
+  virtual void SendInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE {
     // Do nothing.
   }
 
@@ -102,10 +103,11 @@ class RegistrarInvalidatorTestDelegate {
     invalidator_->GetRegistrar()->UpdateInvalidatorState(state);
   }
 
-  void TriggerOnIncomingInvalidation(const ObjectIdStateMap& id_state_map,
-                                     IncomingInvalidationSource source) {
+  void TriggerOnIncomingInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map,
+      IncomingInvalidationSource source) {
     invalidator_->GetRegistrar()->DispatchInvalidationsToHandlers(
-        id_state_map, source);
+        invalidation_map, source);
   }
 
   static bool InvalidatorHandlesDeprecatedState() {

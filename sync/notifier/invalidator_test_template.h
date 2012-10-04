@@ -56,8 +56,9 @@
 //     // Should cause OnIncomingInvalidation() to be called on all
 //     // observers of the Invalidator implementation with the given
 //     // parameters.
-//     void TriggerOnIncomingInvalidation(const ObjectIdStateMap& id_state_map,
-//                                        IncomingInvalidationSource source) {
+//     void TriggerOnIncomingInvalidation(
+//         const ObjectIdInvalidationMap& invalidation_map,
+//         IncomingInvalidationSource source) {
 //       ...
 //     }
 //
@@ -90,8 +91,8 @@
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/fake_invalidation_state_tracker.h"
 #include "sync/notifier/invalidator.h"
-#include "sync/notifier/object_id_state_map.h"
-#include "sync/notifier/object_id_state_map_test_util.h"
+#include "sync/notifier/object_id_invalidation_map.h"
+#include "sync/notifier/object_id_invalidation_map_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -148,7 +149,7 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
 
   invalidator->RegisterHandler(&handler);
 
-  ObjectIdStateMap states;
+  ObjectIdInvalidationMap states;
   states[this->id1].payload = "1";
   states[this->id2].payload = "2";
   states[this->id3].payload = "3";
@@ -165,15 +166,13 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   this->delegate_.TriggerOnInvalidatorStateChange(INVALIDATIONS_ENABLED);
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
 
-  ObjectIdStateMap expected_states;
+  ObjectIdInvalidationMap expected_states;
   expected_states[this->id1].payload = "1";
   expected_states[this->id2].payload = "2";
 
   this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
   EXPECT_EQ(1, handler.GetInvalidationCount());
-  EXPECT_THAT(
-      expected_states,
-      Eq(handler.GetLastInvalidationIdStateMap()));
+  EXPECT_THAT(expected_states, Eq(handler.GetLastInvalidationMap()));
   EXPECT_EQ(REMOTE_INVALIDATION, handler.GetLastInvalidationSource());
 
   ids.erase(this->id1);
@@ -186,9 +185,7 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   // Removed object IDs should not be notified, newly-added ones should.
   this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
   EXPECT_EQ(2, handler.GetInvalidationCount());
-  EXPECT_THAT(
-      expected_states,
-      Eq(handler.GetLastInvalidationIdStateMap()));
+  EXPECT_THAT(expected_states, Eq(handler.GetLastInvalidationMap()));
   EXPECT_EQ(REMOTE_INVALIDATION, handler.GetLastInvalidationSource());
 
   this->delegate_.TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
@@ -255,30 +252,26 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler4.GetInvalidatorState());
 
   {
-    ObjectIdStateMap states;
+    ObjectIdInvalidationMap states;
     states[this->id1].payload = "1";
     states[this->id2].payload = "2";
     states[this->id3].payload = "3";
     states[this->id4].payload = "4";
     this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
 
-    ObjectIdStateMap expected_states;
+    ObjectIdInvalidationMap expected_states;
     expected_states[this->id1].payload = "1";
     expected_states[this->id2].payload = "2";
 
     EXPECT_EQ(1, handler1.GetInvalidationCount());
-    EXPECT_THAT(
-        expected_states,
-        Eq(handler1.GetLastInvalidationIdStateMap()));
+    EXPECT_THAT(expected_states, Eq(handler1.GetLastInvalidationMap()));
     EXPECT_EQ(REMOTE_INVALIDATION, handler1.GetLastInvalidationSource());
 
     expected_states.clear();
     expected_states[this->id3].payload = "3";
 
     EXPECT_EQ(1, handler2.GetInvalidationCount());
-    EXPECT_THAT(
-        expected_states,
-        Eq(handler2.GetLastInvalidationIdStateMap()));
+    EXPECT_THAT(expected_states, Eq(handler2.GetLastInvalidationMap()));
     EXPECT_EQ(REMOTE_INVALIDATION, handler2.GetLastInvalidationSource());
 
     EXPECT_EQ(0, handler3.GetInvalidationCount());
@@ -327,7 +320,7 @@ TYPED_TEST_P(InvalidatorTest, EmptySetUnregisters) {
   EXPECT_EQ(INVALIDATIONS_ENABLED, handler2.GetInvalidatorState());
 
   {
-    ObjectIdStateMap states;
+    ObjectIdInvalidationMap states;
     states[this->id1].payload = "1";
     states[this->id2].payload = "2";
     states[this->id3].payload = "3";

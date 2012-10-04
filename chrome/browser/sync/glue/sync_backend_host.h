@@ -469,7 +469,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   void HandleInvalidatorStateChangeOnFrontendLoop(
       syncer::InvalidatorState state);
   void HandleIncomingInvalidationOnFrontendLoop(
-      const syncer::ObjectIdStateMap& id_state_map,
+      const syncer::ObjectIdInvalidationMap& invalidation_map,
       syncer::IncomingInvalidationSource source);
 
   // Handles stopping the core's SyncManager, accounting for whether

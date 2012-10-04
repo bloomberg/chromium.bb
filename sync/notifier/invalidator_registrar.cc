@@ -88,7 +88,7 @@ ObjectIdSet InvalidatorRegistrar::GetAllRegisteredIds() const {
 }
 
 void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
-    const ObjectIdStateMap& id_state_map,
+    const ObjectIdInvalidationMap& invalidation_map,
     IncomingInvalidationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If we have no handlers, there's nothing to do.
@@ -96,10 +96,10 @@ void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
     return;
   }
 
-  typedef std::map<InvalidationHandler*, ObjectIdStateMap> DispatchMap;
+  typedef std::map<InvalidationHandler*, ObjectIdInvalidationMap> DispatchMap;
   DispatchMap dispatch_map;
-  for (ObjectIdStateMap::const_iterator it = id_state_map.begin();
-       it != id_state_map.end(); ++it) {
+  for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
+       it != invalidation_map.end(); ++it) {
     InvalidationHandler* const handler = ObjectIdToHandler(it->first);
     // Filter out invalidations for IDs with no handler.
     if (handler)

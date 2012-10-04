@@ -28,7 +28,7 @@ class FakeSyncScheduler : public SyncScheduler {
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void ScheduleNudgeWithStatesAsync(
       const base::TimeDelta& delay, NudgeSource source,
-      const ModelTypeStateMap& type_state_map,
+      const ModelTypeInvalidationMap& invalidation_map,
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual bool ScheduleConfiguration(
       const ConfigurationParams& params) OVERRIDE;

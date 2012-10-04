@@ -118,9 +118,9 @@ void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
 }
 
 void DebugInfoEventListener::OnIncomingNotification(
-     const ModelTypeStateMap& type_state_map) {
+     const ModelTypeInvalidationMap& invalidation_map) {
   sync_pb::DebugEventInfo event_info;
-  ModelTypeSet types = ModelTypeStateMapToSet(type_state_map);
+  ModelTypeSet types = ModelTypeInvalidationMapToSet(invalidation_map);
 
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     event_info.add_datatypes_notified_from_server(

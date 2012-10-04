@@ -21,7 +21,7 @@
 #include "sync/engine/nudge_source.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer.h"
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/sessions/sync_session.h"
@@ -54,7 +54,7 @@ class SyncSchedulerImpl : public SyncScheduler {
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void ScheduleNudgeWithStatesAsync(
       const base::TimeDelta& delay, NudgeSource source,
-      const ModelTypeStateMap& type_state_map,
+      const ModelTypeInvalidationMap& invalidation_map,
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void SetNotificationsEnabled(bool notifications_enabled) OVERRIDE;
 
@@ -242,7 +242,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
-      const ModelTypeStateMap& type_state_map,
+      const ModelTypeInvalidationMap& invalidation_map,
       bool is_canary_job, const tracked_objects::Location& nudge_location);
 
   // Returns true if the client is currently in exponential backoff.

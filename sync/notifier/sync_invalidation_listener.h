@@ -21,7 +21,7 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidator_state.h"
-#include "sync/notifier/object_id_state_map.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/notifier/state_writer.h"
 #include "sync/notifier/sync_system_resources.h"
 
@@ -56,7 +56,8 @@ class SyncInvalidationListener
    public:
     virtual ~Delegate();
 
-    virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) = 0;
+    virtual void OnInvalidate(
+        const ObjectIdInvalidationMap& invalidation_map) = 0;
 
     virtual void OnInvalidatorStateChange(InvalidatorState state) = 0;
   };
@@ -136,7 +137,7 @@ class SyncInvalidationListener
 
   void EmitStateChange();
 
-  void EmitInvalidation(const ObjectIdStateMap& id_state_map);
+  void EmitInvalidation(const ObjectIdInvalidationMap& invalidation_map);
 
   // Owned by |sync_system_resources_|.
   notifier::PushClient* const push_client_;

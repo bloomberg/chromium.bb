@@ -119,11 +119,11 @@ void PushMessagingInvalidationHandler::OnInvalidatorStateChange(
 }
 
 void PushMessagingInvalidationHandler::OnIncomingInvalidation(
-    const syncer::ObjectIdStateMap& id_state_map,
+    const syncer::ObjectIdInvalidationMap& invalidation_map,
     syncer::IncomingInvalidationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (syncer::ObjectIdStateMap::const_iterator it = id_state_map.begin();
-       it != id_state_map.end(); ++it) {
+  for (syncer::ObjectIdInvalidationMap::const_iterator it =
+           invalidation_map.begin(); it != invalidation_map.end(); ++it) {
     std::string extension_id;
     int subchannel;
     if (ObjectIdToExtensionAndSubchannel(it->first,

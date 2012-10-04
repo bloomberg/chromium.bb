@@ -152,9 +152,9 @@ void SyncBackendHostForProfileSyncTest::EmitOnInvalidatorStateChange(
 }
 
 void SyncBackendHostForProfileSyncTest::EmitOnIncomingInvalidation(
-    const syncer::ObjectIdStateMap& id_state_map,
+    const syncer::ObjectIdInvalidationMap& invalidation_map,
     const syncer::IncomingInvalidationSource source) {
-  frontend()->OnIncomingInvalidation(id_state_map, source);
+  frontend()->OnIncomingInvalidation(invalidation_map, source);
 }
 
 }  // namespace browser_sync

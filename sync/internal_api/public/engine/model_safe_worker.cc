@@ -29,15 +29,15 @@ std::string ModelSafeRoutingInfoToString(
   return json;
 }
 
-ModelTypeStateMap ModelSafeRoutingInfoToStateMap(
+ModelTypeInvalidationMap ModelSafeRoutingInfoToInvalidationMap(
     const ModelSafeRoutingInfo& routes,
     const std::string& payload) {
-  ModelTypeStateMap type_state_map;
+  ModelTypeInvalidationMap invalidation_map;
   for (ModelSafeRoutingInfo::const_iterator i = routes.begin();
        i != routes.end(); ++i) {
-    type_state_map[i->first].payload = payload;
+    invalidation_map[i->first].payload = payload;
   }
-  return type_state_map;
+  return invalidation_map;
 }
 
 ModelTypeSet GetRoutingInfoTypes(const ModelSafeRoutingInfo& routing_info) {

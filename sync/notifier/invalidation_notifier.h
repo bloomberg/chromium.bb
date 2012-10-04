@@ -59,10 +59,12 @@ class InvalidationNotifier
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendInvalidation(const ObjectIdStateMap& id_state_map) OVERRIDE;
+  virtual void SendInvalidation(
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
   // SyncInvalidationListener::Delegate implementation.
-  virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) OVERRIDE;
+  virtual void OnInvalidate(
+      const ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
 
  private:

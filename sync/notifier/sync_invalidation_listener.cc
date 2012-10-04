@@ -162,9 +162,9 @@ void SyncInvalidationListener::Invalidate(
   if (invalidation.has_payload())
     payload = invalidation.payload();
 
-  ObjectIdStateMap id_state_map;
-  id_state_map[id].payload = payload;
-  EmitInvalidation(id_state_map);
+  ObjectIdInvalidationMap invalidation_map;
+  invalidation_map[id].payload = payload;
+  EmitInvalidation(invalidation_map);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/78462).
   client->Acknowledge(ack_handle);
@@ -178,9 +178,9 @@ void SyncInvalidationListener::InvalidateUnknownVersion(
   DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InvalidateUnknownVersion";
 
-  ObjectIdStateMap id_state_map;
-  id_state_map[object_id].payload = std::string();
-  EmitInvalidation(id_state_map);
+  ObjectIdInvalidationMap invalidation_map;
+  invalidation_map[object_id].payload = std::string();
+  EmitInvalidation(invalidation_map);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/78462).
   client->Acknowledge(ack_handle);
@@ -195,21 +195,18 @@ void SyncInvalidationListener::InvalidateAll(
   DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InvalidateAll";
 
-  ObjectIdStateMap id_state_map;
-  for (ObjectIdSet::const_iterator it = registered_ids_.begin();
-       it != registered_ids_.end(); ++it) {
-    id_state_map[*it].payload = std::string();
-  }
-  EmitInvalidation(id_state_map);
+  const ObjectIdInvalidationMap& invalidation_map =
+      ObjectIdSetToInvalidationMap(registered_ids_, std::string());
+  EmitInvalidation(invalidation_map);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/76482).
   client->Acknowledge(ack_handle);
 }
 
 void SyncInvalidationListener::EmitInvalidation(
-    const ObjectIdStateMap& id_state_map) {
+    const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(CalledOnValidThread());
-  delegate_->OnInvalidate(id_state_map);
+  delegate_->OnInvalidate(invalidation_map);
 }
 
 void SyncInvalidationListener::InformRegistrationStatus(

@@ -37,7 +37,7 @@ class ChromeSyncNotificationBridge::Core
   void UnregisterHandler(syncer::InvalidationHandler* handler);
 
   void EmitInvalidation(
-      const syncer::ObjectIdStateMap& state_map,
+      const syncer::ObjectIdInvalidationMap& invalidation_map,
       syncer::IncomingInvalidationSource invalidation_source);
 
   bool IsHandlerRegisteredForTest(syncer::InvalidationHandler* handler) const;
@@ -97,17 +97,17 @@ void ChromeSyncNotificationBridge::Core::UnregisterHandler(
 }
 
 void ChromeSyncNotificationBridge::Core::EmitInvalidation(
-    const syncer::ObjectIdStateMap& state_map,
+    const syncer::ObjectIdInvalidationMap& invalidation_map,
     syncer::IncomingInvalidationSource invalidation_source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  const syncer::ObjectIdStateMap& effective_state_map =
-      state_map.empty() ?
-      ObjectIdSetToStateMap(
+  const syncer::ObjectIdInvalidationMap& effective_invalidation_map =
+      invalidation_map.empty() ?
+      ObjectIdSetToInvalidationMap(
           invalidator_registrar_->GetAllRegisteredIds(), std::string()) :
-      state_map;
+      invalidation_map;
 
   invalidator_registrar_->DispatchInvalidationsToHandlers(
-      effective_state_map, invalidation_source);
+      effective_invalidation_map, invalidation_source);
 }
 
 bool ChromeSyncNotificationBridge::Core::IsHandlerRegisteredForTest(
@@ -197,17 +197,19 @@ void ChromeSyncNotificationBridge::Observe(
     return;
   }
 
-  // TODO(akalin): Use ObjectIdStateMap here instead.  We'll have to
+  // TODO(akalin): Use ObjectIdInvalidationMap here instead.  We'll have to
   // make sure all emitters of the relevant notifications also use
-  // ObjectIdStateMap.
-  content::Details<const syncer::ModelTypeStateMap>
+  // ObjectIdInvalidationMap.
+  content::Details<const syncer::ModelTypeInvalidationMap>
       state_details(details);
-  const syncer::ModelTypeStateMap& state_map = *(state_details.ptr());
+  const syncer::ModelTypeInvalidationMap& invalidation_map =
+      *(state_details.ptr());
   if (!sync_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&Core::EmitInvalidation,
                      core_,
-                     ModelTypeStateMapToObjectIdStateMap(state_map),
+                     ModelTypeInvalidationMapToObjectIdInvalidationMap(
+                         invalidation_map),
                      invalidation_source))) {
     NOTREACHED();
   }

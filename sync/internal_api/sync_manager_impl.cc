@@ -21,7 +21,7 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/change_reorder_buffer.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
@@ -1016,9 +1016,10 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
         (event.snapshot.model_neutral_state().num_successful_commits > 0);
     if (is_notifiable_commit) {
       if (invalidator_.get()) {
-        const ObjectIdStateMap& id_state_map =
-            ModelTypeStateMapToObjectIdStateMap(event.snapshot.source().types);
-        invalidator_->SendInvalidation(id_state_map);
+        const ObjectIdInvalidationMap& invalidation_map =
+            ModelTypeInvalidationMapToObjectIdInvalidationMap(
+                event.snapshot.source().types);
+        invalidator_->SendInvalidation(invalidation_map);
       } else {
         DVLOG(1) << "Not sending invalidation: invalidator_ is NULL";
       }
@@ -1236,9 +1237,9 @@ JsArgList SyncManagerImpl::GetChildNodeIds(const JsArgList& args) {
 }
 
 void SyncManagerImpl::UpdateNotificationInfo(
-    const ModelTypeStateMap& type_state_map) {
-  for (ModelTypeStateMap::const_iterator it = type_state_map.begin();
-       it != type_state_map.end(); ++it) {
+    const ModelTypeInvalidationMap& invalidation_map) {
+  for (ModelTypeInvalidationMap::const_iterator it = invalidation_map.begin();
+       it != invalidation_map.end(); ++it) {
     NotificationInfo* info = &notification_info_map_[it->first];
     info->total_count++;
     info->payload = it->second.payload;
@@ -1268,26 +1269,26 @@ void SyncManagerImpl::OnInvalidatorStateChange(InvalidatorState state) {
 }
 
 void SyncManagerImpl::OnIncomingInvalidation(
-    const ObjectIdStateMap& id_state_map,
+    const ObjectIdInvalidationMap& invalidation_map,
     IncomingInvalidationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const ModelTypeStateMap& type_state_map =
-      ObjectIdStateMapToModelTypeStateMap(id_state_map);
+  const ModelTypeInvalidationMap& type_invalidation_map =
+      ObjectIdInvalidationMapToModelTypeInvalidationMap(invalidation_map);
   if (source == LOCAL_INVALIDATION) {
     allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_LOCAL_REFRESH);
     scheduler_->ScheduleNudgeWithStatesAsync(
         TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
         NUDGE_SOURCE_LOCAL_REFRESH,
-        type_state_map, FROM_HERE);
-  } else if (!type_state_map.empty()) {
+        type_invalidation_map, FROM_HERE);
+  } else if (!type_invalidation_map.empty()) {
     allstatus_.IncrementNudgeCounter(NUDGE_SOURCE_NOTIFICATION);
     scheduler_->ScheduleNudgeWithStatesAsync(
         TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
         NUDGE_SOURCE_NOTIFICATION,
-        type_state_map, FROM_HERE);
+        type_invalidation_map, FROM_HERE);
     allstatus_.IncrementNotificationsReceived();
-    UpdateNotificationInfo(type_state_map);
-    debug_info_event_listener_.OnIncomingNotification(type_state_map);
+    UpdateNotificationInfo(type_invalidation_map);
+    debug_info_event_listener_.OnIncomingNotification(type_invalidation_map);
   } else {
     LOG(WARNING) << "Sync received invalidation without any type information.";
   }
@@ -1296,8 +1297,9 @@ void SyncManagerImpl::OnIncomingInvalidation(
     DictionaryValue details;
     ListValue* changed_types = new ListValue();
     details.Set("changedTypes", changed_types);
-    for (ModelTypeStateMap::const_iterator it = type_state_map.begin();
-         it != type_state_map.end(); ++it) {
+    for (ModelTypeInvalidationMap::const_iterator it =
+             type_invalidation_map.begin(); it != type_invalidation_map.end();
+         ++it) {
       const std::string& model_type_str =
           ModelTypeToString(it->first);
       changed_types->Append(Value::CreateStringValue(model_type_str));

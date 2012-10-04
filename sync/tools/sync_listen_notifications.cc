@@ -24,7 +24,7 @@
 #include "net/base/transport_security_state.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_util.h"
@@ -60,12 +60,13 @@ class NotificationPrinter : public InvalidationHandler {
   }
 
   virtual void OnIncomingInvalidation(
-      const ObjectIdStateMap& id_state_map,
+      const ObjectIdInvalidationMap& invalidation_map,
       IncomingInvalidationSource source) OVERRIDE {
-    const ModelTypeStateMap& type_state_map =
-        ObjectIdStateMapToModelTypeStateMap(id_state_map);
-    for (ModelTypeStateMap::const_iterator it = type_state_map.begin();
-         it != type_state_map.end(); ++it) {
+    const ModelTypeInvalidationMap& type_invalidation_map =
+        ObjectIdInvalidationMapToModelTypeInvalidationMap(invalidation_map);
+    for (ModelTypeInvalidationMap::const_iterator it =
+             type_invalidation_map.begin(); it != type_invalidation_map.end();
+         ++it) {
       LOG(INFO) << (source == REMOTE_INVALIDATION ? "Remote" : "Local")
                 << " Invalidation: type = "
                 << ModelTypeToString(it->first)

@@ -425,10 +425,10 @@ void ChromeToMobileService::OnInvalidatorStateChange(
 }
 
 void ChromeToMobileService::OnIncomingInvalidation(
-    const syncer::ObjectIdStateMap& id_state_map,
+    const syncer::ObjectIdInvalidationMap& invalidation_map,
     syncer::IncomingInvalidationSource source) {
-  DCHECK_EQ(1U, id_state_map.size());
-  DCHECK_EQ(1U, id_state_map.count(invalidation::ObjectId(
+  DCHECK_EQ(1U, invalidation_map.size());
+  DCHECK_EQ(1U, invalidation_map.count(invalidation::ObjectId(
       ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
       kSyncInvalidationObjectIdChromeToMobileDeviceList)));
   RequestDeviceSearch();

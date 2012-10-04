@@ -43,7 +43,7 @@ class BridgedInvalidator : public syncer::Invalidator {
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendInvalidation(
-      const syncer::ObjectIdStateMap& id_state_map) OVERRIDE;
+      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
  private:
   // The notification bridge that we register the observers with.

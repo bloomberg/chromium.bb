@@ -18,7 +18,7 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_state.h"
-#include "sync/notifier/object_id_state_map.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/test/fake_sync_encryption_handler.h"
 
 namespace syncer {
@@ -52,12 +52,13 @@ ModelTypeSet FakeSyncManager::GetAndResetEnabledTypes() {
   return enabled_types;
 }
 
-void FakeSyncManager::Invalidate(const ObjectIdStateMap& id_state_map,
-                                 IncomingInvalidationSource source) {
+void FakeSyncManager::Invalidate(
+    const ObjectIdInvalidationMap& invalidation_map,
+    IncomingInvalidationSource source) {
   if (!sync_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FakeSyncManager::InvalidateOnSyncThread,
-                 base::Unretained(this), id_state_map, source))) {
+                 base::Unretained(this), invalidation_map, source))) {
     NOTREACHED();
   }
 }
@@ -251,10 +252,10 @@ SyncEncryptionHandler* FakeSyncManager::GetEncryptionHandler() {
 }
 
 void FakeSyncManager::InvalidateOnSyncThread(
-    const ObjectIdStateMap& id_state_map,
+    const ObjectIdInvalidationMap& invalidation_map,
     IncomingInvalidationSource source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
+  registrar_.DispatchInvalidationsToHandlers(invalidation_map, source);
 }
 
 void FakeSyncManager::UpdateInvalidatorStateOnSyncThread(

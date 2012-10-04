@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/internal_api/public/base/model_type_invalidation_map.h"
 
 #include <string>
 
@@ -16,31 +16,31 @@ namespace {
 
 using base::ExpectDictStringValue;
 
-class ModelTypeStateMapTest : public testing::Test {};
+class ModelTypeInvalidationMapTest : public testing::Test {};
 
-TEST_F(ModelTypeStateMapTest, TypeStateMapToSet) {
-  ModelTypeStateMap states;
+TEST_F(ModelTypeInvalidationMapTest, TypeInvalidationMapToSet) {
+  ModelTypeInvalidationMap states;
   states[BOOKMARKS].payload = "bookmarkpayload";
   states[APPS].payload = "";
 
   const ModelTypeSet types(BOOKMARKS, APPS);
-  EXPECT_TRUE(ModelTypeStateMapToSet(states).Equals(types));
+  EXPECT_TRUE(ModelTypeInvalidationMapToSet(states).Equals(types));
 }
 
-TEST_F(ModelTypeStateMapTest, TypeStateMapToValue) {
-  ModelTypeStateMap states;
+TEST_F(ModelTypeInvalidationMapTest, TypeInvalidationMapToValue) {
+  ModelTypeInvalidationMap states;
   states[BOOKMARKS].payload = "bookmarkpayload";
   states[APPS].payload = "";
 
-  scoped_ptr<DictionaryValue> value(ModelTypeStateMapToValue(states));
+  scoped_ptr<DictionaryValue> value(ModelTypeInvalidationMapToValue(states));
   EXPECT_EQ(2u, value->size());
   ExpectDictStringValue(states[BOOKMARKS].payload, *value, "Bookmarks");
   ExpectDictStringValue("", *value, "Apps");
   EXPECT_FALSE(value->HasKey("Preferences"));
 }
 
-TEST_F(ModelTypeStateMapTest, CoalesceStates) {
-  ModelTypeStateMap original;
+TEST_F(ModelTypeInvalidationMapTest, CoalesceStates) {
+  ModelTypeInvalidationMap original;
   std::string empty_payload;
   std::string payload1 = "payload1";
   std::string payload2 = "payload2";
@@ -50,7 +50,7 @@ TEST_F(ModelTypeStateMapTest, CoalesceStates) {
   original[AUTOFILL].payload = payload2;
   original[THEMES].payload = payload3;
 
-  ModelTypeStateMap update;
+  ModelTypeInvalidationMap update;
   update[BOOKMARKS].payload = empty_payload;  // Same.
   update[PASSWORDS].payload = empty_payload;  // Overwrite with empty.
   update[AUTOFILL].payload = payload1;        // Overwrite with non-empty.

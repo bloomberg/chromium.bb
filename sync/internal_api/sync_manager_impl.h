@@ -169,7 +169,7 @@ class SyncManagerImpl : public SyncManager,
   // InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const ObjectIdStateMap& id_state_map,
+      const ObjectIdInvalidationMap& invalidation_map,
       IncomingInvalidationSource source) OVERRIDE;
 
   // Called only by our NetworkChangeNotifier.
@@ -253,7 +253,7 @@ class SyncManagerImpl : public SyncManager,
   // Called for every notification. This updates the notification statistics
   // to be displayed in about:sync.
   void UpdateNotificationInfo(
-      const ModelTypeStateMap& type_state_map);
+      const ModelTypeInvalidationMap& invalidation_map);
 
   // Checks for server reachabilty and requests a nudge.
   void OnIPAddressChangedImpl();

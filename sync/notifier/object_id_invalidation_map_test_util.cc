@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/object_id_state_map_test_util.h"
+#include "sync/notifier/object_id_invalidation_map_test_util.h"
 
 #include <algorithm>
 
@@ -18,32 +18,34 @@ using ::testing::PrintToString;
 
 namespace {
 
-class ObjectIdStateMapEqMatcher
-    : public MatcherInterface<const ObjectIdStateMap&> {
+class ObjectIdInvalidationMapEqMatcher
+    : public MatcherInterface<const ObjectIdInvalidationMap&> {
  public:
-  explicit ObjectIdStateMapEqMatcher(const ObjectIdStateMap& expected);
+  explicit ObjectIdInvalidationMapEqMatcher(
+      const ObjectIdInvalidationMap& expected);
 
-  virtual bool MatchAndExplain(const ObjectIdStateMap& actual,
+  virtual bool MatchAndExplain(const ObjectIdInvalidationMap& actual,
                                MatchResultListener* listener) const;
   virtual void DescribeTo(::std::ostream* os) const;
   virtual void DescribeNegationTo(::std::ostream* os) const;
 
  private:
-  const ObjectIdStateMap expected_;
+  const ObjectIdInvalidationMap expected_;
 
-  DISALLOW_COPY_AND_ASSIGN(ObjectIdStateMapEqMatcher);
+  DISALLOW_COPY_AND_ASSIGN(ObjectIdInvalidationMapEqMatcher);
 };
 
-ObjectIdStateMapEqMatcher::ObjectIdStateMapEqMatcher(
-    const ObjectIdStateMap& expected) : expected_(expected) {
+ObjectIdInvalidationMapEqMatcher::ObjectIdInvalidationMapEqMatcher(
+    const ObjectIdInvalidationMap& expected) : expected_(expected) {
 }
 
-bool ObjectIdStateMapEqMatcher::MatchAndExplain(
-    const ObjectIdStateMap& actual, MatchResultListener* listener) const {
-  ObjectIdStateMap expected_only;
-  ObjectIdStateMap actual_only;
+bool ObjectIdInvalidationMapEqMatcher::MatchAndExplain(
+    const ObjectIdInvalidationMap& actual,
+    MatchResultListener* listener) const {
+  ObjectIdInvalidationMap expected_only;
+  ObjectIdInvalidationMap actual_only;
   typedef std::pair<invalidation::ObjectId,
-                    std::pair<InvalidationState, InvalidationState> >
+                    std::pair<Invalidation, Invalidation> >
       ValueDifference;
   std::vector<ValueDifference> value_differences;
 
@@ -56,9 +58,9 @@ bool ObjectIdStateMapEqMatcher::MatchAndExplain(
                       std::inserter(actual_only, actual_only.begin()),
                       actual.value_comp());
 
-  for (ObjectIdStateMap::const_iterator it = expected_.begin();
+  for (ObjectIdInvalidationMap::const_iterator it = expected_.begin();
        it != expected_.end(); ++it) {
-    ObjectIdStateMap::const_iterator find_it =
+    ObjectIdInvalidationMap::const_iterator find_it =
         actual.find(it->first);
     if (find_it != actual.end() &&
         !Matches(Eq(it->second))(find_it->second)) {
@@ -93,18 +95,20 @@ bool ObjectIdStateMapEqMatcher::MatchAndExplain(
   return false;
 }
 
-void ObjectIdStateMapEqMatcher::DescribeTo(::std::ostream* os) const {
+void ObjectIdInvalidationMapEqMatcher::DescribeTo(::std::ostream* os) const {
   *os << " is equal to " << PrintToString(expected_);
 }
 
-void ObjectIdStateMapEqMatcher::DescribeNegationTo(::std::ostream* os) const {
+void ObjectIdInvalidationMapEqMatcher::DescribeNegationTo
+(::std::ostream* os) const {
   *os << " isn't equal to " << PrintToString(expected_);
 }
 
 }  // namespace
 
-Matcher<const ObjectIdStateMap&> Eq(const ObjectIdStateMap& expected) {
-  return MakeMatcher(new ObjectIdStateMapEqMatcher(expected));
+Matcher<const ObjectIdInvalidationMap&> Eq(
+    const ObjectIdInvalidationMap& expected) {
+  return MakeMatcher(new ObjectIdInvalidationMapEqMatcher(expected));
 }
 
 }  // namespace syncer

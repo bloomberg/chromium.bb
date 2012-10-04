@@ -125,7 +125,7 @@ class SyncBackendHost::Core
   virtual void OnInvalidatorStateChange(
       syncer::InvalidatorState state) OVERRIDE;
   virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdStateMap& id_state_map,
+      const syncer::ObjectIdInvalidationMap& invalidation_map,
       syncer::IncomingInvalidationSource source) OVERRIDE;
 
   // Note:
@@ -1052,14 +1052,14 @@ void SyncBackendHost::Core::OnInvalidatorStateChange(
 }
 
 void SyncBackendHost::Core::OnIncomingInvalidation(
-    const syncer::ObjectIdStateMap& id_state_map,
+    const syncer::ObjectIdInvalidationMap& invalidation_map,
     syncer::IncomingInvalidationSource source) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(FROM_HERE,
              &SyncBackendHost::HandleIncomingInvalidationOnFrontendLoop,
-             id_state_map, source);
+             invalidation_map, source);
 }
 
 void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
@@ -1444,12 +1444,12 @@ void SyncBackendHost::HandleInvalidatorStateChangeOnFrontendLoop(
 }
 
 void SyncBackendHost::HandleIncomingInvalidationOnFrontendLoop(
-    const syncer::ObjectIdStateMap& id_state_map,
+    const syncer::ObjectIdInvalidationMap& invalidation_map,
     syncer::IncomingInvalidationSource source) {
   if (!frontend_)
     return;
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
-  frontend_->OnIncomingInvalidation(id_state_map, source);
+  frontend_->OnIncomingInvalidation(invalidation_map, source);
 }
 
 bool SyncBackendHost::CheckPassphraseAgainstCachedPendingKeys(

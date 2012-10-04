@@ -6,7 +6,7 @@
 #define SYNC_NOTIFIER_INVALIDATION_HANDLER_H_
 
 #include "sync/notifier/invalidator_state.h"
-#include "sync/notifier/object_id_state_map.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace syncer {
 
@@ -26,7 +26,7 @@ class InvalidationHandler {
   // |id_state_map| and the source is in |source|.  Note that this may be
   // called regardless of the current invalidator state.
   virtual void OnIncomingInvalidation(
-      const ObjectIdStateMap& id_state_map,
+      const ObjectIdInvalidationMap& invalidation_map,
       IncomingInvalidationSource source) = 0;
 
  protected:

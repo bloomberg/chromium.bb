@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_STATE_H_
-#define SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_STATE_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_H_
+#define SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_H_
 
 #include <string>
 
@@ -28,11 +28,16 @@ class AckHandle {
   bool ResetFromValue(const base::Value& value);
 };
 
-struct InvalidationState {
+// Represents a local invalidation, and is roughly analogous to
+// invalidation::Invalidation. It contains a payload (which may be empty) and an
+// associated ack handle that an InvalidationHandler implementation can use to
+// acknowledge receipt of the invalidation. It does not embed the object ID,
+// since it is typically associated with it through ObjectIdInvalidationMap.
+struct Invalidation {
   std::string payload;
   AckHandle ack_handle;
 
-  bool Equals(const InvalidationState& other) const;
+  bool Equals(const Invalidation& other) const;
 
   // Caller owns the returned DictionaryValue.
   scoped_ptr<base::DictionaryValue> ToValue() const;
@@ -42,4 +47,4 @@ struct InvalidationState {
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_STATE_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_H_
