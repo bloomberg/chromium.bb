@@ -199,8 +199,20 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_FILE_MULTIPLE_UPLOAD;
     case WebLocalizedString::OtherColorLabel:
       return IDS_FORM_OTHER_COLOR_LABEL;
-      case WebLocalizedString::OtherDateLabel:
+    case WebLocalizedString::OtherDateLabel:
         return IDS_FORM_OTHER_DATE_LABEL;
+    case WebLocalizedString::OtherMonthLabel:
+      return IDS_FORM_OTHER_MONTH_LABEL;
+    case WebLocalizedString::OtherTimeLabel:
+      return IDS_FORM_OTHER_TIME_LABEL;
+    case WebLocalizedString::OtherWeekLabel:
+      return IDS_FORM_OTHER_WEEK_LABEL;
+    case WebLocalizedString::PlaceholderForDayOfMonthField:
+      return IDS_FORM_PLACEHOLDER_FOR_DAY_OF_MONTH_FIELD;
+    case WebLocalizedString::PlaceholderForMonthField:
+      return IDS_FORM_PLACEHOLDER_FOR_MONTH_FIELD;
+    case WebLocalizedString::PlaceholderForYearField:
+      return IDS_FORM_PLACEHOLDER_FOR_YEAR_FIELD;
     case WebLocalizedString::ResetButtonDefaultLabel:
       return IDS_FORM_RESET_LABEL;
     case WebLocalizedString::SearchableIndexIntroduction:
@@ -213,6 +225,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_RECENT_SEARCHES;
     case WebLocalizedString::SubmitButtonDefaultLabel:
       return IDS_FORM_SUBMIT_LABEL;
+    case WebLocalizedString::ThisMonthButtonLabel:
+      return IDS_FORM_THIS_MONTH_LABEL;
+    case WebLocalizedString::ThisWeekButtonLabel:
+      return IDS_FORM_THIS_WEEK_LABEL;
     case WebLocalizedString::ValidationPatternMismatch:
       return IDS_FORM_VALIDATION_PATTERN_MISMATCH;
     case WebLocalizedString::ValidationRangeOverflow:
