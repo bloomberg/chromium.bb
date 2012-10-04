@@ -18,15 +18,12 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_WIN)
-#include "ui/base/win/scoped_ole_initializer.h"
-#endif
 
 using ::testing::_;
 using ::testing::Mock;
@@ -67,9 +64,6 @@ class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
  private:
   // Members to fake that we are on the UI thread.
   content::TestBrowserThread ui_thread_;
-#if defined(OS_WIN)
-  ui::ScopedOleInitializer ole_initializer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelperTest);
 };
@@ -137,7 +131,13 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoContents) {
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(NULL, "", false));
 }
 
-TEST_F(OneClickSigninHelperTest, CanOffer) {
+#if defined(OS_WIN)
+// See http://crbug.com/153741.
+#define MAYBE_CanOffer DISABLED_CanOffer
+#else
+#define MAYBE_CanOffer CanOffer
+#endif
+TEST_F(OneClickSigninHelperTest, MAYBE_CanOffer) {
   content::WebContents* web_contents = CreateMockWebContents(false, "");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
