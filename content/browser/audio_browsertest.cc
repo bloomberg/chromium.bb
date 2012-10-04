@@ -15,6 +15,8 @@ IN_PROC_BROWSER_TEST_F(AudioLayoutTest, AudioConstructorPreload) {
   RunLayoutTest("audio-constructor-preload.html");
 }
 
+#if defined(OS_LINUX) && defined(USE_AURA)
+// http://crbug.com/154157
 IN_PROC_BROWSER_TEST_F(AudioLayoutTest, AudioConstructor) {
   RunLayoutTest("audio-constructor.html");
 }
@@ -22,6 +24,7 @@ IN_PROC_BROWSER_TEST_F(AudioLayoutTest, AudioConstructor) {
 IN_PROC_BROWSER_TEST_F(AudioLayoutTest, AudioConstructorSrc) {
   RunLayoutTest("audio-constructor-src.html");
 }
+#endif  // defined(OS_LINUX) && defined(USE_AURA)
 
 IN_PROC_BROWSER_TEST_F(AudioLayoutTest, AudioDataUrl) {
   RunLayoutTest("audio-data-url.html");
