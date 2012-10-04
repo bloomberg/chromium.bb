@@ -45,15 +45,9 @@ TouchFactory::TouchFactory()
     return;
 #endif
 
-  char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-  XColor black;
-  black.red = black.green = black.blue = 0;
-  Display* display = ui::GetXDisplay();
-  Pixmap blank = XCreateBitmapFromData(display, ui::GetX11RootWindow(),
-                                       nodata, 8, 8);
-  invisible_cursor_ = XCreatePixmapCursor(display, blank, blank,
-                                          &black, &black, 0, 0);
-  XFreePixmap(display, blank);
+  Display* display = GetXDisplay();
+
+  invisible_cursor_ = CreateInvisibleCursor();
   arrow_cursor_ = XCreateFontCursor(display, XC_arrow);
 
   SetCursorVisible(false, false);
