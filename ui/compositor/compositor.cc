@@ -223,6 +223,11 @@ void Compositor::SetRootLayer(Layer* root_layer) {
     root_web_layer_->addChild(root_layer_->web_layer());
 }
 
+void Compositor::SetHostHasTransparentBackground(
+    bool host_has_transparent_background) {
+  host_->setHasTransparentBackground(host_has_transparent_background);
+}
+
 void Compositor::Draw(bool force_clear) {
   if (!root_layer_)
     return;

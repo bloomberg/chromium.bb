@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/desktop_root_window_host_win.h"
 
-#include "base/command_line.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
@@ -18,7 +17,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
 #include "ui/views/ime/input_method_win.h"
-#include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_screen_position_client.h"
@@ -68,6 +66,14 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   aura::RootWindow::CreateParams rw_params(params.bounds);
   rw_params.host = this;
   root_window_ = new aura::RootWindow(rw_params);
+
+  // TODO(beng): We probably need to move these two calls to some function that
+  //             can change depending on the native-ness of the frame. For right
+  //             now in the hack-n-slash days of win-aura, we can just
+  //             unilaterally turn this on.
+  root_window_->compositor()->SetHostHasTransparentBackground(true);
+  root_window_->SetTransparent(true);
+
   root_window_->Init();
   root_window_->AddChild(content_window_);
   root_window_host_delegate_ = root_window_;
@@ -245,8 +251,7 @@ void DesktopRootWindowHostWin::SetVisibilityChangedAnimationsEnabled(
 }
 
 bool DesktopRootWindowHostWin::ShouldUseNativeFrame() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNativeFrame) ? ui::win::IsAeroGlassEnabled() : false;
+  return ui::win::IsAeroGlassEnabled();
 }
 
 void DesktopRootWindowHostWin::FrameTypeChanged() {

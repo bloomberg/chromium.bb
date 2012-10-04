@@ -10,6 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/widget/desktop_root_window_host.h"
 #include "ui/views/widget/widget.h"
 
@@ -40,6 +41,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
 
 void DesktopNativeWidgetAura::InitNativeWidget(
     const Widget::InitParams& params) {
+  window_->SetTransparent(true);
   window_->Init(params.layer_type);
   window_->Show();
 
