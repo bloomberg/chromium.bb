@@ -2488,13 +2488,10 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
 }
 
 void RenderWidgetHostViewWin::AcceleratedPaint(HDC dc) {
-  // If we have a previous frame then present it immediately. Otherwise request
-  // a new frame be composited.
-  if (!accelerated_surface_.get() ||
-      !accelerated_surface_->Present(dc)) {
-    if (render_widget_host_)
-      render_widget_host_->ScheduleComposite();
-  }
+  if (render_widget_host_)
+    render_widget_host_->ScheduleComposite();
+  if (accelerated_surface_.get())
+    accelerated_surface_->Present(dc);
 }
 
 // Creates a HWND within the RenderWidgetHostView that will serve as a host

@@ -234,6 +234,7 @@ class AcceleratedPresenterMap {
   void RemovePresenter(const scoped_refptr<AcceleratedPresenter>& presenter);
   scoped_refptr<AcceleratedPresenter> GetPresenter(
       gfx::PluginWindowHandle window);
+
  private:
   base::Lock lock_;
   typedef std::map<gfx::PluginWindowHandle, AcceleratedPresenter*> PresenterMap;
@@ -457,85 +458,20 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
                  completion_task));
 }
 
-bool AcceleratedPresenter::Present(HDC dc) {
+void AcceleratedPresenter::Present(HDC dc) {
   TRACE_EVENT0("gpu", "Present");
-
-  bool result;
-
-  present_thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&AcceleratedPresenter::DoPresent,
-                 this,
-                 dc,
-                 &result));
-  // http://crbug.com/125391
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  event_.Wait();
-  return result;
-}
-
-void AcceleratedPresenter::DoPresent(HDC dc, bool* result)
-{
-  *result = DoRealPresent(dc);
-  event_.Signal();
-}
-
-bool AcceleratedPresenter::DoRealPresent(HDC dc)
-{
-  TRACE_EVENT0("gpu", "DoRealPresent");
-  HRESULT hr;
 
   base::AutoLock locked(lock_);
 
   // If invalidated, do nothing. The window is gone.
   if (!window_)
-    return true;
+    return;
 
-
-  RECT window_rect;
-  GetClientRect(window_, &window_rect);
-  if (window_rect.right != present_size_.width() ||
-      window_rect.bottom != present_size_.height()) {
-    // If the window is a different size than the swap chain that was previously
-    // presented and it is becoming visible then signal the caller to
-    // recomposite at the new size.
-    if (hidden_)
-      return false;
-
-    HBRUSH brush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-    RECT fill_rect = window_rect;
-    fill_rect.top = present_size_.height();
-    FillRect(dc, &fill_rect, brush);
-    fill_rect = window_rect;
-    fill_rect.left = present_size_.width();
-    fill_rect.bottom = present_size_.height();
-    FillRect(dc, &fill_rect, brush);
-  }
-
-  // Signal the caller to recomposite if the presenter has been suspended or no
-  // surface has ever been presented.
+  // Suspended or nothing has ever been presented.
   if (!swap_chain_)
-    return false;
+    return;
 
-  RECT present_rect = {
-    0, 0,
-    present_size_.width(), present_size_.height()
-  };
-
-  {
-    TRACE_EVENT0("gpu", "PresentEx");
-    hr = swap_chain_->Present(&present_rect,
-                              &present_rect,
-                              window_,
-                              NULL,
-                              D3DPRESENT_INTERVAL_IMMEDIATE);
-    // For latency_tests.cc:
-    UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
-    if (FAILED(hr))
-      return false;
-  }
-
-  return true;
+  PresentWithGDI(dc);
 }
 
 bool AcceleratedPresenter::CopyTo(const gfx::Rect& src_subrect,
@@ -722,15 +658,13 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 #if !defined(USE_AURA)
   // If the window is a different size than the swap chain that is being
   // presented then drop the frame.
-  RECT window_rect;
-  GetClientRect(window_, &window_rect);
-  if (hidden_ && (window_rect.right != size.width() ||
-      window_rect.bottom != size.height())) {
+  gfx::Size window_size = GetWindowSize();
+  if (hidden_ && size != window_size) {
     TRACE_EVENT2("gpu", "EarlyOut_WrongWindowSize",
                  "backwidth", size.width(), "backheight", size.height());
     TRACE_EVENT2("gpu", "EarlyOut_WrongWindowSize2",
-                 "windowwidth", window_rect.right,
-                 "windowheight", window_rect.bottom);
+                 "windowwidth", window_size.width(),
+                 "windowheight", window_size.height());
     return;
   }
 #endif
@@ -856,15 +790,24 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   if (swap_delay.ToInternalValue())
     base::PlatformThread::Sleep(swap_delay);
 
-  {
-    TRACE_EVENT0("gpu", "Present");
+  // If it is expected that Direct3D cannot be used reliably because the window
+  // is resizing, fall back to presenting with GDI.
+  if (CheckDirect3DWillWork()) {
+    TRACE_EVENT0("gpu", "PresentD3D");
+
     hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
+
     // For latency_tests.cc:
     UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
+
     if (FAILED(hr) &&
         FAILED(present_thread_->device()->CheckDeviceState(window_))) {
       present_thread_->ResetDevice();
     }
+  } else {
+    HDC dc = GetDC(window_);
+    PresentWithGDI(dc);
+    ReleaseDC(window_, dc);
   }
 
   hidden_ = false;
@@ -928,6 +871,99 @@ void AcceleratedPresenter::DoReleaseSurface() {
   source_texture_.Release();
 }
 
+void AcceleratedPresenter::PresentWithGDI(HDC dc) {
+  TRACE_EVENT0("gpu", "PresentWithGDI");
+
+  base::win::ScopedComPtr<IDirect3DTexture9> system_texture;
+  {
+    TRACE_EVENT0("gpu", "CreateSystemTexture");
+    HRESULT hr = present_thread_->device()->CreateTexture(
+        quantized_size_.width(),
+        quantized_size_.height(),
+        1,
+        0,
+        D3DFMT_A8R8G8B8,
+        D3DPOOL_SYSTEMMEM,
+        system_texture.Receive(),
+        NULL);
+    if (FAILED(hr))
+      return;
+  }
+
+  base::win::ScopedComPtr<IDirect3DSurface9> system_surface;
+  HRESULT hr = system_texture->GetSurfaceLevel(0, system_surface.Receive());
+  DCHECK(SUCCEEDED(hr));
+
+  base::win::ScopedComPtr<IDirect3DSurface9> back_buffer;
+  hr = swap_chain_->GetBackBuffer(0,
+                                  D3DBACKBUFFER_TYPE_MONO,
+                                  back_buffer.Receive());
+  DCHECK(SUCCEEDED(hr));
+
+  {
+    TRACE_EVENT0("gpu", "GetRenderTargetData");
+    hr = present_thread_->device()->GetRenderTargetData(back_buffer,
+                                                        system_surface);
+    DCHECK(SUCCEEDED(hr));
+  }
+
+  D3DLOCKED_RECT locked_surface;
+  hr = system_surface->LockRect(&locked_surface, NULL, D3DLOCK_READONLY);
+  DCHECK(SUCCEEDED(hr));
+
+  BITMAPINFO bitmap_info = {
+    {
+      sizeof(BITMAPINFOHEADER),
+      quantized_size_.width(),
+      -quantized_size_.height(),
+      1,  // planes
+      32,  // bitcount
+      BI_RGB
+    },
+    {
+      {0, 0, 0, 0}
+    }
+  };
+
+  {
+    TRACE_EVENT0("gpu", "StretchDIBits");
+    StretchDIBits(dc,
+                  0, 0,
+                  present_size_.width(),
+                  present_size_.height(),
+                  0, 0,
+                  present_size_.width(),
+                  present_size_.height(),
+                  locked_surface.pBits,
+                  &bitmap_info,
+                  DIB_RGB_COLORS,
+                  SRCCOPY);
+  }
+
+  system_surface->UnlockRect();
+
+  // For latency_tests.cc:
+  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
+}
+
+gfx::Size AcceleratedPresenter::GetWindowSize() {
+  RECT rect;
+  GetClientRect(window_, &rect);
+  return gfx::Rect(rect).size();
+}
+
+bool AcceleratedPresenter::CheckDirect3DWillWork() {
+  gfx::Size window_size = GetWindowSize();
+  if (window_size != last_window_size_) {
+    last_window_size_ = window_size;
+    last_window_resize_time_ = base::Time::Now();
+    return false;
+  }
+
+  return base::Time::Now() - last_window_resize_time_ >
+      base::TimeDelta::FromMilliseconds(100);
+}
+
 AcceleratedSurface::AcceleratedSurface(gfx::PluginWindowHandle window)
     : presenter_(g_accelerated_presenter_map.Pointer()->CreatePresenter(
           window)) {
@@ -938,8 +974,8 @@ AcceleratedSurface::~AcceleratedSurface() {
   presenter_->Invalidate();
 }
 
-bool AcceleratedSurface::Present(HDC dc) {
-  return presenter_->Present(dc);
+void AcceleratedSurface::Present(HDC dc) {
+  presenter_->Present(dc);
 }
 
 bool AcceleratedSurface::CopyTo(const gfx::Rect& src_subrect,
