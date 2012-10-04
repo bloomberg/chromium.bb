@@ -838,10 +838,10 @@ wayland_compositor_create(struct wl_display *display,
 	c->base.destroy = wayland_destroy;
 	c->base.restore = wayland_restore;
 
-	c->border.top = 25;
-	c->border.bottom = 50;
+	c->border.top = 30;
+	c->border.bottom = 24;
 	c->border.left = 25;
-	c->border.right = 25;
+	c->border.right = 26;
 
 	/* requires border fields */
 	if (wayland_compositor_create_output(c, width, height) < 0)
