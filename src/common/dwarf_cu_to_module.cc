@@ -39,6 +39,7 @@
 #include "common/dwarf_cu_to_module.h"
 
 #include <assert.h>
+#include <cxxabi.h>
 #include <inttypes.h>
 #include <stdio.h>
 
@@ -56,7 +57,7 @@ using std::set;
 using std::vector;
 
 // Data provided by a DWARF specification DIE.
-// 
+//
 // In DWARF, the DIE for a definition may contain a DW_AT_specification
 // attribute giving the offset of the corresponding declaration DIE, and
 // the definition DIE may omit information given in the declaration. For
@@ -218,6 +219,14 @@ class DwarfCUToModule::GenericDIEHandler: public dwarf2reader::DIEHandler {
   DIEContext *parent_context_;
   uint64 offset_;
 
+  // Place the name in the global set of strings. Even though this looks
+  // like a copy, all the major std::string implementations use reference
+  // counting internally, so the effect is to have all the data structures
+  // share copies of strings whenever possible.
+  // FIXME: Should this return something like a string_ref to avoid the
+  // assumption about how strings are implemented?
+  string AddStringToPool(const string &str);
+
   // If this DIE has a DW_AT_declaration attribute, this is its value.
   // It is false on DIEs with no DW_AT_declaration attribute.
   bool declaration_;
@@ -230,6 +239,11 @@ class DwarfCUToModule::GenericDIEHandler: public dwarf2reader::DIEHandler {
   // The value of the DW_AT_name attribute, or the empty string if the
   // DIE has no such attribute.
   string name_attribute_;
+
+  // The demangled value of the DW_AT_MIPS_linkage_name attribute, or the empty
+  // string if the DIE has no such attribute or its content could not be
+  // demangled.
+  string demangled_name_;
 };
 
 void DwarfCUToModule::GenericDIEHandler::ProcessAttributeUnsigned(
@@ -273,20 +287,26 @@ void DwarfCUToModule::GenericDIEHandler::ProcessAttributeReference(
   }
 }
 
+string DwarfCUToModule::GenericDIEHandler::AddStringToPool(const string &str) {
+  pair<set<string>::iterator, bool> result =
+    cu_context_->file_context->file_private->common_strings.insert(str);
+  return *result.first;
+}
+
 void DwarfCUToModule::GenericDIEHandler::ProcessAttributeString(
     enum DwarfAttribute attr,
     enum DwarfForm form,
     const string &data) {
   switch (attr) {
-    case dwarf2reader::DW_AT_name: {
-      // Place the name in our global set of strings, and then use the
-      // string from the set. Even though the assignment looks like a copy,
-      // all the major std::string implementations use reference counting
-      // internally, so the effect is to have all our data structures share
-      // copies of strings whenever possible.
-      pair<set<string>::iterator, bool> result =
-          cu_context_->file_context->file_private->common_strings.insert(data);
-      name_attribute_ = *result.first; 
+    case dwarf2reader::DW_AT_name:
+      name_attribute_ = AddStringToPool(data);
+      break;
+    case dwarf2reader::DW_AT_MIPS_linkage_name: {
+      char* demangled = abi::__cxa_demangle(data.c_str(), NULL, NULL, NULL);
+      if (demangled) {
+        demangled_name_ = AddStringToPool(demangled);
+        free(reinterpret_cast<void*>(demangled));
+      }
       break;
     }
     default: break;
@@ -294,6 +314,11 @@ void DwarfCUToModule::GenericDIEHandler::ProcessAttributeString(
 }
 
 string DwarfCUToModule::GenericDIEHandler::ComputeQualifiedName() {
+  // Use DW_AT_MIPS_linkage_name if it is available. It is already qualified,
+  // so there is no need to add enclosing_name.
+  if (!demangled_name_.empty())
+    return demangled_name_;
+
   // Find our unqualified name. If the DIE has its own DW_AT_name
   // attribute, then use that; otherwise, check our specification.
   const string *unqualified_name;
