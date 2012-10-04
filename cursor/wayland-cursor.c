@@ -181,7 +181,7 @@ wl_cursor_destroy(struct wl_cursor *cursor)
 	free(cursor);
 }
 
-#include "cursor_data.c"
+#include "cursor-data.h"
 
 static struct wl_cursor *
 wl_cursor_create_from_data(struct cursor_metadata *metadata,

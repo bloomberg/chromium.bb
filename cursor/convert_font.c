@@ -359,7 +359,7 @@ static void
 write_output_file(struct reconstructed_glyph *glyphs, int n)
 {
 	int i, j, counter, size;
-	FILE *file = fopen("cursor_data.c", "w");
+	FILE *file = fopen("cursor-data.h", "w");
 	uint32_t *data;
 
 	fprintf(file, "%s\n", cursor_licence);
