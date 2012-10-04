@@ -20,6 +20,8 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
   enum WindowState {
     NORMAL,
     FULLSCREEN,
+    // No TO_ state for METRO_SNAP, the windows implementation is synchronous.
+    METRO_SNAP,
     TO_NORMAL,
     TO_FULLSCREEN
   };
@@ -84,11 +86,17 @@ bool FullscreenControllerTestWindow::IsFullscreen() const {
 
 #if defined(OS_WIN)
 void FullscreenControllerTestWindow::SetMetroSnapMode(bool enable) {
-  NOTREACHED(); // TODO(scheib) Determine how to model Metro Snap.
+  if (enable != IsInMetroSnapMode()) {
+    if (enable)
+      state_ = METRO_SNAP;
+    else
+      state_ = NORMAL;
+  }
+  ChangeWindowFullscreenStateIfReentrant();
 }
 
 bool FullscreenControllerTestWindow::IsInMetroSnapMode() const {
-  return false; // TODO(scheib) Determine how to model Metro Snap.
+  return state_ == METRO_SNAP;
 }
 #endif
 
@@ -100,6 +108,8 @@ const char* FullscreenControllerTestWindow::GetWindowStateString(
       return "NORMAL";
     case FULLSCREEN:
       return "FULLSCREEN";
+    case METRO_SNAP:
+      return "METRO_SNAP";
     case TO_FULLSCREEN:
       return "TO_FULLSCREEN";
     case TO_NORMAL:
@@ -118,6 +128,8 @@ void FullscreenControllerTestWindow::ChangeWindowFullscreenState() {
     case NORMAL:
       break;
     case FULLSCREEN:
+      break;
+    case METRO_SNAP:
       break;
     case TO_FULLSCREEN:
       state_ = FULLSCREEN;
@@ -147,6 +159,11 @@ class FullscreenControllerUnitTest : public BrowserWithTestWindowTest {
     // User-initiated fullscreen. On Mac, this is Lion-mode for 10.7+. On 10.6,
     // this is synonymous with STATE_BROWSER_FULLSCREEN_WITH_CHROME.
     STATE_BROWSER_FULLSCREEN_NO_CHROME,
+#if defined(OS_WIN)
+    // Windows 8 Metro Snap mode, which puts the window at 20% screen-width.
+    // No TO_ state for Metro, as the windows implementation is only reentrant.
+    STATE_METRO_SNAP,
+#endif
     // TO_ states are asynchronous states waiting for window state change
     // before transitioning to their named state.
     STATE_TO_NORMAL,
@@ -158,6 +175,12 @@ class FullscreenControllerUnitTest : public BrowserWithTestWindowTest {
   enum Event {
     // FullscreenController::ToggleFullscreenMode()
     TOGGLE_FULLSCREEN,
+#if defined(OS_WIN)
+    // FullscreenController::SetMetroSnapMode(true)
+    METRO_SNAP_TRUE,
+    // FullscreenController::SetMetroSnapMode(flase)
+    METRO_SNAP_FALSE,
+#endif
     // FullscreenController::ChangeWindowFullscreenState()
     WINDOW_CHANGE,
     NUM_EVENTS,
@@ -226,18 +249,46 @@ void FullscreenControllerUnitTest::SetUp() {
   // Human specified state machine data.
   // For each state, for each event, define the resulting state.
   State transition_table_data[NUM_STATES][NUM_EVENTS] = {
-    // STATE_NORMAL:
-    { STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TOGGLE_FULLSCREEN
-      STATE_NORMAL },                         // Event WINDOW_CHANGE
-    // STATE_BROWSER_FULLSCREEN_NO_CHROME:
-    { STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_BROWSER_FULLSCREEN_NO_CHROME },   // Event WINDOW_CHANGE
+    { // STATE_NORMAL:
+      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TOGGLE_FULLSCREEN
+#if defined(OS_WIN)
+      STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
+      STATE_NORMAL,                           // Event METRO_SNAP_FALSE
+#endif
+      STATE_NORMAL,                           // Event WINDOW_CHANGE
+    },
+    { // STATE_BROWSER_FULLSCREEN_NO_CHROME:
+      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
+#if defined(OS_WIN)
+      STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
+      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event METRO_SNAP_FALSE
+#endif
+      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
+    },
+#if defined(OS_WIN)
+    { // STATE_METRO_SNAP:
+      STATE_METRO_SNAP,                       // Event TOGGLE_FULLSCREEN
+      STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
+      STATE_NORMAL,                           // Event METRO_SNAP_FALSE
+      STATE_METRO_SNAP,                       // Event WINDOW_CHANGE
+    },
+#endif
     // STATE_TO_NORMAL:
     { STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_NORMAL },                         // Event WINDOW_CHANGE
+#if defined(OS_WIN)
+      STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
+      STATE_TO_NORMAL,                        // Event METRO_SNAP_FALSE
+#endif
+      STATE_NORMAL,                           // Event WINDOW_CHANGE
+    },
     // STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
     { STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TOGGLE_FULLSCREEN
-      STATE_BROWSER_FULLSCREEN_NO_CHROME },   // Event WINDOW_CHANGE
+#if defined(OS_WIN)
+      STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
+      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event METRO_SNAP_FALSE
+#endif
+      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
+    },
   };
   ASSERT_EQ(sizeof(transition_table_data), sizeof(transition_table_));
   memcpy(transition_table_, transition_table_data,
@@ -270,6 +321,10 @@ const char* FullscreenControllerUnitTest::GetStateString(State state) {
       return "STATE_NORMAL";
     case STATE_BROWSER_FULLSCREEN_NO_CHROME:
       return "STATE_BROWSER_FULLSCREEN_NO_CHROME";
+#if defined(OS_WIN)
+    case STATE_METRO_SNAP:
+      return "STATE_METRO_SNAP";
+#endif
     case STATE_TO_NORMAL:
       return "STATE_TO_NORMAL";
     case STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
@@ -287,6 +342,12 @@ const char* FullscreenControllerUnitTest::GetEventString(Event event) {
   switch (event) {
     case TOGGLE_FULLSCREEN:
       return "TOGGLE_FULLSCREEN";
+#if defined(OS_WIN)
+    case METRO_SNAP_TRUE:
+      return "METRO_SNAP_TRUE";
+    case METRO_SNAP_FALSE:
+      return "METRO_SNAP_FALSE";
+#endif
     case WINDOW_CHANGE:
       return "WINDOW_CHANGE";
     case EVENT_INVALID:
@@ -334,14 +395,29 @@ bool FullscreenControllerUnitTest::InvokeEvent(Event event) {
   State source_state = state_;
   State next_state = transition_table_[source_state][event];
 
+  // When simulating reentrant window change calls, expect the next state
+  // automatically.
+  if (window_->reentrant())
+    next_state = transition_table_[next_state][WINDOW_CHANGE];
+
   debugging_log_ << "  Transitioning state " << GetStateString(source_state)
       << " -> " << GetStateString(next_state) << " with event "
       << GetEventString(event) << std::endl;
+
+  state_ = next_state;
 
   switch (event) {
     case TOGGLE_FULLSCREEN:
       fullscreen_controller_->ToggleFullscreenMode();
       break;
+#if defined(OS_WIN)
+    case METRO_SNAP_TRUE:
+      fullscreen_controller_->SetMetroSnapMode(true);
+      break;
+    case METRO_SNAP_FALSE:
+      fullscreen_controller_->SetMetroSnapMode(false);
+      break;
+#endif
     case WINDOW_CHANGE:
       window_->ChangeWindowFullscreenState();
       break;
@@ -350,13 +426,6 @@ bool FullscreenControllerUnitTest::InvokeEvent(Event event) {
           << GetEventString(event) << GetAndClearDebugLog();
       return false;
   }
-
-  state_ = next_state;
-
-  // When simulating reentrant window change calls, expect the next state
-  // automatically.
-  if (window_->reentrant())
-    state_ = transition_table_[state_][WINDOW_CHANGE];
 
   VerifyWindowState();
 
@@ -377,6 +446,12 @@ void FullscreenControllerUnitTest::VerifyWindowState() {
       EXPECT_EQ(FullscreenControllerTestWindow::FULLSCREEN,
                 window_->state()) << GetAndClearDebugLog();
       break;
+#if defined(OS_WIN)
+    case STATE_METRO_SNAP:
+      EXPECT_EQ(FullscreenControllerTestWindow::METRO_SNAP,
+                window_->state()) << GetAndClearDebugLog();
+      break;
+#endif
     case STATE_TO_NORMAL:
       EXPECT_EQ(FullscreenControllerTestWindow::TO_NORMAL,
                 window_->state()) << GetAndClearDebugLog();
@@ -433,6 +508,12 @@ std::string FullscreenControllerUnitTest::GetAndClearDebugLog() {
 
 TEST_F(FullscreenControllerUnitTest, TransitionsForEachState) {
   for (int reentrant = 0; reentrant <= 1; reentrant++) {
+#if defined(OS_WIN)
+    // FullscreenController verifies that WindowFullscreenStateChanged is
+    // always reentrant on Windows. It will fail if we mock asynchronous calls.
+    reentrant = 1;
+#endif
+
     debugging_log_ << "\nTesting " << ((!!reentrant) ? "with" : "without")
         << " reentrant calls.\n";
     window_->set_reentrant(!!reentrant);
