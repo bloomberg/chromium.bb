@@ -11,7 +11,6 @@
 namespace remoting {
 
 class AudioCapturer;
-class ChromotingHostContext;
 class EventExecutor;
 class VideoFrameCapturer;
 

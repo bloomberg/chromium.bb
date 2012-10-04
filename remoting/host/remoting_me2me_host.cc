@@ -522,7 +522,8 @@ class HostProcess
                                xmpp_auth_service_));
 
     scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker(
-        new DnsBlackholeChecker(context_.get(), talkgadget_prefix_));
+        new DnsBlackholeChecker(context_->url_request_context_getter(),
+                                talkgadget_prefix_));
 
     signaling_connector_.reset(new SignalingConnector(
         signal_strategy_.get(), context_.get(), dns_blackhole_checker.Pass(),

@@ -6,7 +6,7 @@
 
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher.h"
-#include "remoting/host/chromoting_host_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace remoting {
 
@@ -18,9 +18,9 @@ const char kTalkGadgetUrl[] = ".talkgadget.google.com/talkgadget/"
                               "oauth/chrome-remote-desktop-host";
 
 DnsBlackholeChecker::DnsBlackholeChecker(
-    ChromotingHostContext* context,
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     std::string talkgadget_prefix)
-    : context_(context),
+    : url_request_context_getter_(url_request_context_getter),
       talkgadget_prefix_(talkgadget_prefix) {
 }
 
@@ -59,7 +59,7 @@ void DnsBlackholeChecker::CheckForDnsBlackhole(
     LOG(INFO) << "Verifying connection to " << talkgadget_url;
     url_fetcher_.reset(net::URLFetcher::Create(GURL(talkgadget_url),
                                                net::URLFetcher::GET, this));
-    url_fetcher_->SetRequestContext(context_->url_request_context_getter());
+    url_fetcher_->SetRequestContext(url_request_context_getter_.get());
     url_fetcher_->Start();
   } else {
     LOG(INFO) << "Pending connection check";

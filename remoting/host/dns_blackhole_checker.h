@@ -9,6 +9,10 @@
 
 #include "base/callback.h"
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace remoting {
 
 // This is the default prefix that is prepended to the kTalkGadgetUrl to form
@@ -16,12 +20,11 @@ namespace remoting {
 // to change the prefix that is used.
 extern const char kDefaultHostTalkGadgetPrefix[];
 
-class ChromotingHostContext;
-
 class DnsBlackholeChecker : public net::URLFetcherDelegate {
  public:
-  DnsBlackholeChecker(ChromotingHostContext* context,
-                      std::string talkgadget_prefix);
+  DnsBlackholeChecker(
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      std::string talkgadget_prefix);
   virtual ~DnsBlackholeChecker();
 
   // net::URLFetcherDelegate interface.
@@ -33,7 +36,8 @@ class DnsBlackholeChecker : public net::URLFetcherDelegate {
   void CheckForDnsBlackhole(const base::Callback<void(bool)>& callback);
 
  private:
-  ChromotingHostContext* context_;
+  // URL request context getter to use to create the URL fetcher.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // URL fetcher used to verify access to the host talkgadget.
   scoped_ptr<net::URLFetcher> url_fetcher_;
