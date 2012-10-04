@@ -13,7 +13,8 @@ namespace cc {
 class CachingBitmapCanvasLayerTextureUpdater
     : public BitmapCanvasLayerTextureUpdater {
  public:
-  static PassRefPtr<CachingBitmapCanvasLayerTextureUpdater> Create(
+  // Use lower-case on name to stay consistent with base-class.
+  static PassRefPtr<CachingBitmapCanvasLayerTextureUpdater> create(
       PassOwnPtr<LayerPainterChromium>);
 
   virtual void prepareToUpdate(const IntRect& content_rect,

@@ -11,8 +11,9 @@
 
 namespace cc {
 
+// Use lower-case on name to stay consistent with base-class.
 PassRefPtr<CachingBitmapCanvasLayerTextureUpdater>
-CachingBitmapCanvasLayerTextureUpdater::Create(
+CachingBitmapCanvasLayerTextureUpdater::create(
     PassOwnPtr<LayerPainterChromium> painter) {
   return adoptRef(new CachingBitmapCanvasLayerTextureUpdater(painter));
 }
