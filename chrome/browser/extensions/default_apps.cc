@@ -115,27 +115,24 @@ bool Provider::ShouldInstallInProfile() {
       NOTREACHED();
   }
 
-  if (install_apps && !IsLocaleSupported()) {
+  if (install_apps && !IsLocaleSupported())
     install_apps = false;
-  }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableDefaultApps)) {
     install_apps = false;
   }
 
-  if (base::FieldTrialList::TrialExists(kDefaultAppsTrialName)) {
-    install_apps = base::FieldTrialList::Find(
-        kDefaultAppsTrialName)->group_name() != kDefaultAppsTrialNoAppsGroup;
-  }
+  base::FieldTrial* trial = base::FieldTrialList::Find(kDefaultAppsTrialName);
+  if (trial)
+    install_apps = trial->group_name() != kDefaultAppsTrialNoAppsGroup;
 
   // Default apps are only installed on profile creation or a new chrome
   // download.
   if (state == kUnknown) {
     if (install_apps) {
-      profile_->GetPrefs()->SetInteger(
-          prefs::kDefaultAppsInstallState,
-          kAlreadyInstalledDefaultApps);
+      profile_->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
+                                       kAlreadyInstalledDefaultApps);
     } else {
       profile_->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
                                        kNeverInstallDefaultApps);
