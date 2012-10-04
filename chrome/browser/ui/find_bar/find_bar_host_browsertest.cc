@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_bar_host_unittest_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -37,11 +38,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/dropdown_bar_host.h"
-#include "ui/views/focus/focus_manager.h"
-#include "ui/views/widget/widget.h"
-#elif defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -87,7 +84,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
  public:
   FindInPageControllerTest() {
 #if defined(TOOLKIT_VIEWS)
-    DropdownBarHost::disable_animations_during_testing_ = true;
+    chrome::DisableFindBarAnimationsDuringTesting(true);
 #elif defined(TOOLKIT_GTK)
     SlideAnimatorGtk::SetAnimationsForTesting(false);
 #elif defined(OS_MACOSX)
@@ -1068,50 +1065,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                                          kFwd, kIgnoreCase, &ordinal, NULL));
   EXPECT_EQ(0, ordinal);
 }
-
-#if defined(TOOLKIT_VIEWS)
-// Make sure Find box grabs the Esc accelerator and restores it again.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
-  // First we navigate to any page.
-  GURL url = GetURL(kSimple);
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  gfx::NativeWindow window = browser()->window()->GetNativeWindow();
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  views::FocusManager* focus_manager = widget->GetFocusManager();
-
-  // See where Escape is registered.
-  ui::Accelerator escape(ui::VKEY_ESCAPE, ui::EF_NONE);
-  ui::AcceleratorTarget* old_target =
-      focus_manager->GetCurrentTargetForAccelerator(escape);
-  EXPECT_TRUE(old_target != NULL);
-
-  chrome::ShowFindBar(browser());
-
-  // Our Find bar should be the new target.
-  ui::AcceleratorTarget* new_target =
-      focus_manager->GetCurrentTargetForAccelerator(escape);
-
-  EXPECT_TRUE(new_target != NULL);
-  EXPECT_NE(new_target, old_target);
-
-  // Close the Find box.
-  browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelectionOnPage,
-      FindBarController::kKeepResultsInFindBox);
-
-  // The accelerator for Escape should be back to what it was before.
-  EXPECT_EQ(old_target,
-            focus_manager->GetCurrentTargetForAccelerator(escape));
-
-  // Show find bar again with animation on, and the target should be
-  // on find bar.
-  DropdownBarHost::disable_animations_during_testing_ = false;
-  chrome::ShowFindBar(browser());
-  EXPECT_EQ(new_target,
-            focus_manager->GetCurrentTargetForAccelerator(escape));
-}
-#endif  // TOOLKIT_VIEWS
 
 // Make sure Find box does not become UI-inactive when no text is in the box as
 // we switch to a tab contents with an empty find string. See issue 13570.
