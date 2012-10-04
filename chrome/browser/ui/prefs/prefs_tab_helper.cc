@@ -391,6 +391,9 @@ void PrefsTabHelper::InitIncognitoUserPrefStore(
   // profile.  All preferences that store information about the browsing history
   // or behavior of the user should have this property.
   pref_store->RegisterOverlayPref(prefs::kBrowserWindowPlacement);
+#if defined(OS_ANDROID)
+  pref_store->RegisterOverlayPref(prefs::kProxy);
+#endif
 }
 
 // static

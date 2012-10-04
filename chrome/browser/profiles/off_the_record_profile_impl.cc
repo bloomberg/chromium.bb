@@ -54,6 +54,10 @@
 #include "net/http/http_server_properties.h"
 #include "webkit/database/database_tracker.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
@@ -93,6 +97,10 @@ void OffTheRecordProfileImpl::Init() {
 
   DCHECK_NE(IncognitoModePrefs::DISABLED,
             IncognitoModePrefs::GetAvailability(profile_->GetPrefs()));
+
+#if defined(OS_ANDROID)
+  UseSystemProxy();
+#endif  // defined(OS_ANDROID)
 
   // TODO(oshima): Remove the need to eagerly initialize the request context
   // getter. chromeos::OnlineAttempt is illegally trying to access this
@@ -156,6 +164,22 @@ void OffTheRecordProfileImpl::InitHostZoomMap() {
   registrar_.Add(this, content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
                  content::Source<HostZoomMap>(parent_host_zoom_map));
 }
+
+#if defined(OS_ANDROID)
+void OffTheRecordProfileImpl::UseSystemProxy() {
+  // Force the use of the system-assigned proxy when off the record.
+  const char kProxyMode[] = "mode";
+  const char kProxyServer[] = "server";
+  const char kProxyBypassList[] = "bypass_list";
+  const char kProxyPacUrl[] = "pac_url";
+  DictionaryPrefUpdate update(prefs_, prefs::kProxy);
+  DictionaryValue* dict = update.Get();
+  dict->SetString(kProxyMode, ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
+  dict->SetString(kProxyPacUrl, "");
+  dict->SetString(kProxyServer, "");
+  dict->SetString(kProxyBypassList, "");
+}
+#endif  // defined(OS_ANDROID)
 
 std::string OffTheRecordProfileImpl::GetProfileName() {
   // Incognito profile should not return the profile name.

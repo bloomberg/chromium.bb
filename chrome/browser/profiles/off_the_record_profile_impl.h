@@ -113,6 +113,10 @@ class OffTheRecordProfileImpl : public Profile,
   FRIEND_TEST_ALL_PREFIXES(OffTheRecordProfileImplTest, GetHostZoomMap);
   void InitHostZoomMap();
 
+#if defined(OS_ANDROID)
+  void UseSystemProxy();
+#endif
+
   virtual base::Callback<ChromeURLDataManagerBackend*(void)>
       GetChromeURLDataManagerBackendGetter() const OVERRIDE;
 
