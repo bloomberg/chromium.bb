@@ -322,7 +322,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/navigation")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Iframes) {
+// Test started failing after WebKit r130343, see crbug.com/153997
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FAILS_Iframes) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/iframes")) << message_;
 }
