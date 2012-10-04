@@ -237,11 +237,6 @@ create_border(struct wayland_compositor *c)
 		     0, GL_BGRA_EXT, GL_UNSIGNED_BYTE,
 		     pixman_image_get_data(image));
 
-	c->border.top = 25;
-	c->border.bottom = 50;
-	c->border.left = 25;
-	c->border.right = 25;
-
 	pixman_image_unref(image);
 }
 
@@ -843,12 +838,20 @@ wayland_compositor_create(struct wl_display *display,
 	c->base.destroy = wayland_destroy;
 	c->base.restore = wayland_restore;
 
+	c->border.top = 25;
+	c->border.bottom = 50;
+	c->border.left = 25;
+	c->border.right = 25;
+
+	/* requires border fields */
 	if (wayland_compositor_create_output(c, width, height) < 0)
 		goto err_display;
 
+	/* requires wayland_compositor_create_output */
 	if (gles2_renderer_init(&c->base) < 0)
 		goto err_display;
 
+	/* requires gles2_renderer_init */
 	create_border(c);
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
