@@ -38,6 +38,7 @@ generator_default_variables = {
   'RULE_INPUT_PATH': '$(RULE_SOURCES)',
   'RULE_INPUT_EXT': '$(suffix $<)',
   'RULE_INPUT_NAME': '$(notdir $<)',
+  'CONFIGURATION_NAME': 'NOT_USED_ON_ANDROID',
 }
 
 # Make supports multiple toolsets
