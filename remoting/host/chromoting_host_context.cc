@@ -72,8 +72,7 @@ bool ChromotingHostContext::Start() {
                                ui_task_runner_);
 
   url_request_context_getter_ = new URLRequestContextGetter(
-      ui_task_runner(), network_task_runner(),
-      static_cast<MessageLoopForIO*>(file_thread_.message_loop()));
+      ui_task_runner(), network_task_runner());
   return true;
 }
 

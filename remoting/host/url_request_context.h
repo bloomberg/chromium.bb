@@ -41,8 +41,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   URLRequestContextGetter(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      MessageLoopForIO* file_message_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
   // Overridden from net::URLRequestContextGetter:
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
