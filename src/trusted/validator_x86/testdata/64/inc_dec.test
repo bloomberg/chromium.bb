@@ -1,0 +1,21 @@
+@hex:
+  # Check that inc and dec are considered zero-extending instructions.
+  # inc %ecx
+  ff c1
+  # and (%rsp, %rcx, 1), %esi
+  23 34 0c
+  # dec %ecx
+  ff c9
+  # and (%rsp, %rcx, 1), %esi
+  23 34 0c
+@rval:
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: ff c1                                        inc %ecx
+  0000000000000002: 23 34 0c                                     and %esi, [%rsp+%rcx*1]
+  0000000000000005: ff c9                                        dec %ecx
+  0000000000000007: 23 34 0c                                     and %esi, [%rsp+%rcx*1]
+@rdfa_output:
+  return code: 0

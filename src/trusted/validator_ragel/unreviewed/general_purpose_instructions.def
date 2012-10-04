@@ -461,7 +461,7 @@ cpuid, 0x0f 0xa2
 ######## CRC32 #################################################################
 crc32 E Gy, 0xf2 0x0f 0x38 0xf0, CPUFeature_SSE42
 ######## DEC ###################################################################
-dec E, 0xfe /1, lock
+dec E, 0xfe /1, lock nacl-amd64-zero-extends
 dec rz, 0x48, ia32
 ######## DIV ###################################################################
 # “div” is not marked as nacl-amd64-zero-extends because we never allowed it.
@@ -490,7 +490,7 @@ in Ib az, 0xe5, nacl-forbidden
 in ob ab, 0xec, nacl-forbidden
 in oz az, 0xed, nacl-forbidden
 ######## INC ###################################################################
-inc E, 0xfe /0, lock
+inc E, 0xfe /0, lock nacl-amd64-zero-extends
 inc rz, 0x40, ia32
 ######## INS/INSB/INSW/INSD ####################################################
 ins ob Yb, 0x6c, rep nacl-forbidden
