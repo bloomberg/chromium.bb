@@ -211,33 +211,17 @@ struct marshal_data {
 	int wrapped_calls;
 };
 
-static int
-update_func(struct wl_connection *connection, uint32_t mask, void *data)
-{
-	uint32_t *m = data;
-
-	*m = mask;
-
-	return 0;
-}
-
 static void
 setup_marshal_data(struct marshal_data *data)
 {
 	assert(socketpair(AF_UNIX,
 			  SOCK_STREAM | SOCK_CLOEXEC, 0, data->s) == 0);
 
-	data->read_connection =
-		wl_connection_create(data->s[0],
-				     update_func, &data->read_mask);
+	data->read_connection = wl_connection_create(data->s[0]);
 	assert(data->read_connection);
-	assert(data->read_mask == WL_CONNECTION_READABLE);
 
-	data->write_connection =
-		wl_connection_create(data->s[1],
-				     update_func, &data->write_mask);
+	data->write_connection = wl_connection_create(data->s[1]);
 	assert(data->write_connection);
-	assert(data->write_mask == WL_CONNECTION_READABLE);
 }
 
 static void
@@ -260,14 +244,9 @@ marshal_demarshal(struct marshal_data *data,
 	assert(closure);
 	assert(wl_closure_send(closure, data->write_connection) == 0);
 	wl_closure_destroy(closure);
-	assert(data->write_mask ==
-	       (WL_CONNECTION_WRITABLE | WL_CONNECTION_READABLE));
-	assert(wl_connection_data(data->write_connection,
-				  WL_CONNECTION_WRITABLE) == 0);
-	assert(data->write_mask == WL_CONNECTION_READABLE);
+	assert(wl_connection_flush(data->write_connection) == size);
 
-	assert(wl_connection_data(data->read_connection,
-				  WL_CONNECTION_READABLE) == size);
+	assert(wl_connection_read(data->read_connection) == size);
 
 	wl_map_init(&objects);
 	object.id = msg[0];

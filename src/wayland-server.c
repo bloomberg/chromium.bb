@@ -205,8 +205,6 @@ deref_new_objects(struct wl_closure *closure)
 	}
 }
 
-
-
 static int
 wl_client_connection_data(int fd, uint32_t mask, void *data)
 {
@@ -218,18 +216,31 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	const struct wl_message *message;
 	uint32_t p[2];
 	int opcode, size;
-	uint32_t cmask = 0;
 	int len;
 
-	if (mask & WL_EVENT_READABLE)
-		cmask |= WL_CONNECTION_READABLE;
-	if (mask & WL_EVENT_WRITABLE)
-		cmask |= WL_CONNECTION_WRITABLE;
-
-	len = wl_connection_data(connection, cmask);
-	if (len < 0) {
+	if (mask & (WL_EVENT_ERROR | WL_EVENT_HANGUP)) {
 		wl_client_destroy(client);
 		return 1;
+	}
+
+	if (mask & WL_EVENT_WRITABLE) {
+		len = wl_connection_flush(connection);
+		if (len < 0 && errno != EAGAIN) {
+			wl_client_destroy(client);
+			return 1;
+		} else if (len >= 0) {
+			wl_event_source_fd_update(client->source,
+						  WL_EVENT_READABLE);
+		}
+	}
+
+	len = 0;
+	if (mask & WL_EVENT_READABLE) {
+		len = wl_connection_read(connection);
+		if (len < 0 && errno != EAGAIN) {
+			wl_client_destroy(client);
+			return 1;
+		}
 	}
 
 	while ((size_t) len >= sizeof p) {
@@ -296,27 +307,10 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	return 1;
 }
 
-static int
-wl_client_connection_update(struct wl_connection *connection,
-			    uint32_t mask, void *data)
-{
-	struct wl_client *client = data;
-	uint32_t emask = 0;
-
-	client->mask = mask;
-	if (mask & WL_CONNECTION_READABLE)
-		emask |= WL_EVENT_READABLE;
-	if (mask & WL_CONNECTION_WRITABLE)
-		emask |= WL_EVENT_WRITABLE;
-
-	return wl_event_source_fd_update(client->source, emask);
-}
-
 WL_EXPORT void
 wl_client_flush(struct wl_client *client)
 {
-	if (client->mask & WL_CONNECTION_WRITABLE)
-		wl_connection_data(client->connection, WL_CONNECTION_WRITABLE);
+	wl_connection_flush(client->connection);
 }
 
 WL_EXPORT struct wl_display *
@@ -352,8 +346,7 @@ wl_client_create(struct wl_display *display, int fd)
 		return NULL;
 	}
 
-	client->connection =
-		wl_connection_create(fd, wl_client_connection_update, client);
+	client->connection = wl_connection_create(fd);
 	if (client->connection == NULL) {
 		free(client);
 		return NULL;
@@ -1103,8 +1096,28 @@ wl_display_run(struct wl_display *display)
 {
 	display->run = 1;
 
-	while (display->run)
+	while (display->run) {
+		wl_display_flush_clients(display);
 		wl_event_loop_dispatch(display->loop, -1);
+	}
+}
+
+WL_EXPORT void
+wl_display_flush_clients(struct wl_display *display)
+{
+	struct wl_client *client, *next;
+	int ret;
+
+	wl_list_for_each_safe(client, next, &display->client_list, link) {
+		ret = wl_connection_flush(client->connection);
+		if (ret < 0 && errno == EAGAIN) {
+			wl_event_source_fd_update(client->source,
+						  WL_EVENT_WRITABLE |
+						  WL_EVENT_READABLE);
+		} else if (ret < 0) {
+			wl_client_destroy(client);
+		}
+	}
 }
 
 static int

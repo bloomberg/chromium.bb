@@ -54,19 +54,14 @@ void wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data);
 struct wl_connection;
 struct wl_closure;
 
-#define WL_CONNECTION_READABLE 0x01
-#define WL_CONNECTION_WRITABLE 0x02
-
-typedef int (*wl_connection_update_func_t)(struct wl_connection *connection,
-					   uint32_t mask, void *data);
-
-struct wl_connection *wl_connection_create(int fd,
-					   wl_connection_update_func_t update,
-					   void *data);
+struct wl_connection *wl_connection_create(int fd);
 void wl_connection_destroy(struct wl_connection *connection);
 void wl_connection_copy(struct wl_connection *connection, void *data, size_t size);
 void wl_connection_consume(struct wl_connection *connection, size_t size);
-int wl_connection_data(struct wl_connection *connection, uint32_t mask);
+
+int wl_connection_flush(struct wl_connection *connection);
+int wl_connection_read(struct wl_connection *connection);
+
 int wl_connection_write(struct wl_connection *connection, const void *data, size_t count);
 int wl_connection_queue(struct wl_connection *connection,
 			const void *data, size_t count);

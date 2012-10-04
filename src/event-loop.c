@@ -75,6 +75,10 @@ wl_event_source_fd_dispatch(struct wl_event_source *source,
 		mask |= WL_EVENT_READABLE;
 	if (ep->events & EPOLLOUT)
 		mask |= WL_EVENT_WRITABLE;
+	if (ep->events & EPOLLHUP)
+		mask |= WL_EVENT_HANGUP;
+	if (ep->events & EPOLLERR)
+		mask |= WL_EVENT_ERROR;
 
 	return fd_source->func(fd_source->fd, mask, source->data);
 }
