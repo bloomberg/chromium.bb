@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -703,7 +704,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // browser window with an empty tab and returns it.
   Browser* GetAppropriateBrowser() {
     return browser::FindOrCreateTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord());
+        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+        chrome::HOST_DESKTOP_TYPE_ASH);
   }
 
   void SetProfile(Profile* profile) {

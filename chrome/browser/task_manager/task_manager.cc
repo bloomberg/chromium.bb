@@ -1263,6 +1263,7 @@ TaskManager* TaskManager::GetInstance() {
 }
 
 void TaskManager::OpenAboutMemory() {
+  // TODO(robertshield): FTB - Merge MAD's TaskManager change.
   Browser* browser = browser::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
  chrome::NavigateParams params(browser, GURL(chrome::kChromeUIMemoryURL),

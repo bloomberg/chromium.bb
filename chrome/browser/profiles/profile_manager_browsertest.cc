@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -41,7 +42,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   // Delete singleton profile.
   FilePath singleton_profile_path = cache.GetPathOfProfileAtIndex(0);
   EXPECT_FALSE(singleton_profile_path.empty());
-  profile_manager->ScheduleProfileForDeletion(singleton_profile_path);
+  profile_manager->ScheduleProfileForDeletion(singleton_profile_path,
+                                              chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // Spin things till profile is actually deleted.
   content::RunAllPendingInMessageLoop();
@@ -87,8 +89,10 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   FilePath profile_path2 = cache.GetPathOfProfileAtIndex(1);
   EXPECT_FALSE(profile_path1.empty());
   EXPECT_FALSE(profile_path2.empty());
-  profile_manager->ScheduleProfileForDeletion(profile_path1);
-  profile_manager->ScheduleProfileForDeletion(profile_path2);
+  profile_manager->ScheduleProfileForDeletion(profile_path1,
+                                              chrome::HOST_DESKTOP_TYPE_NATIVE);
+  profile_manager->ScheduleProfileForDeletion(profile_path2,
+                                              chrome::HOST_DESKTOP_TYPE_NATIVE);
 
   // Spin things so deletion can take place.
   content::RunAllPendingInMessageLoop();

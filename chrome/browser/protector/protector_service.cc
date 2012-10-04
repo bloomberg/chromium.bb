@@ -13,6 +13,7 @@
 #include "chrome/browser/protector/protector_utils.h"
 #include "chrome/browser/protector/settings_change_global_error.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -84,7 +85,9 @@ void ProtectorService::ShowChange(BaseSettingChange* change) {
     new_item.change.reset(change_ptr.release());
     items_.push_back(new_item);
     // Do not show the bubble immediately if another one is active.
-    error->AddToProfile(profile_, !has_active_change_);
+    // TODO(robertshield): Add desktop context to protector, crbug.com/153771
+    error->AddToProfile(profile_, !has_active_change_,
+                        chrome::HOST_DESKTOP_TYPE_NATIVE);
     has_active_change_ = true;
   } else {
     VLOG(1) << "Not showing a change because it's not user-visible.";
@@ -176,7 +179,9 @@ void ProtectorService::OnRemovedFromProfile(SettingsChangeGlobalError* error) {
     // Item was merged with another change instance and error has been removed,
     // create a new one for the composite change.
     item->error.reset(new SettingsChangeGlobalError(item->change.get(), this));
-    item->error->AddToProfile(profile_, show_new_error);
+    // TODO(robertshield): Add desktop context to protector, crbug.com/153771
+    item->error->AddToProfile(profile_, show_new_error,
+                              chrome::HOST_DESKTOP_TYPE_NATIVE);
     has_active_change_ = true;
     return;
   }
@@ -188,7 +193,9 @@ void ProtectorService::OnRemovedFromProfile(SettingsChangeGlobalError* error) {
   if (!has_active_change_) {
     for (item = items_.begin(); item != items_.end(); ++item) {
       if (!item->error->HasShownBubbleView()) {
-        item->error->ShowBubble();
+        // TODO(robertshield): Add desktop context to protector,
+        // crbug.com/153771
+        item->error->ShowBubble(chrome::HOST_DESKTOP_TYPE_NATIVE);
         has_active_change_ = true;
         return;
       }

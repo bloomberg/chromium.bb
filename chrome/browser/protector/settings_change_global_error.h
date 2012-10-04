@@ -12,6 +12,7 @@
 #include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/global_error/global_error.h"
+#include "chrome/browser/ui/host_desktop.h"
 
 class Browser;
 class Profile;
@@ -33,14 +34,18 @@ class SettingsChangeGlobalError : public GlobalError,
   virtual ~SettingsChangeGlobalError();
 
   // Adds a global error to the given browser profile and shows a bubble
-  // immediately if |show_bubble| is |true|.
-  void AddToProfile(Profile* profile, bool show_bubble);
+  // immediately on the desktop specified by |desktop_type| if |show_bubble| is
+  // |true|.
+  void AddToProfile(Profile* profile,
+                    bool show_bubble,
+                    chrome::HostDesktopType desktop_type);
 
   // Removes global error from its profile.
   void RemoveFromProfile();
 
-  // Displays the bubble in the last active tabbed browser.
-  void ShowBubble();
+  // Displays the bubble in the last active tabbed browser on the desktop
+  // specified by |desktop_type|.
+  void ShowBubble(chrome::HostDesktopType desktop_type);
 
   // Returns the change instance to which this error refers.
   BaseSettingChange* change() { return change_; }

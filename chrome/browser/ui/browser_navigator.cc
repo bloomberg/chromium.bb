@@ -53,8 +53,10 @@ bool WindowCanOpenTabs(Browser* browser) {
 
 // Finds an existing Browser compatible with |profile|, making a new one if no
 // such Browser is located.
-Browser* GetOrCreateBrowser(Profile* profile) {
-  Browser* browser = browser::FindTabbedBrowser(profile, false);
+Browser* GetOrCreateBrowser(Profile* profile,
+                            chrome::HostDesktopType host_desktop_type) {
+  Browser* browser =
+      browser::FindTabbedBrowser(profile, false, host_desktop_type);
   return browser ? browser : new Browser(Browser::CreateParams(profile));
 }
 
@@ -84,7 +86,8 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
     }
 
     params->disposition = SINGLETON_TAB;
-    params->browser = browser::FindOrCreateTabbedBrowser(profile);
+    params->browser =
+        browser::FindOrCreateTabbedBrowser(profile, params->host_desktop_type);
     params->window_action = chrome::NavigateParams::SHOW_WINDOW;
   }
 
@@ -110,7 +113,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      return GetOrCreateBrowser(profile);
+      return GetOrCreateBrowser(profile, params->host_desktop_type);
     case SINGLETON_TAB:
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB:
@@ -119,7 +122,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      return GetOrCreateBrowser(profile);
+      return GetOrCreateBrowser(profile, params->host_desktop_type);
     case NEW_POPUP: {
       // Make a new popup window.
       // Coerce app-style if |source| represents an app.
@@ -153,7 +156,8 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
     }
     case OFF_THE_RECORD:
       // Make or find an incognito window.
-      return GetOrCreateBrowser(profile->GetOffTheRecordProfile());
+      return GetOrCreateBrowser(profile->GetOffTheRecordProfile(),
+                                params->host_desktop_type);
     // The following types all result in no navigation.
     case SUPPRESS_OPEN:
     case SAVE_TO_DISK:
@@ -316,7 +320,12 @@ NavigateParams::NavigateParams(Browser* a_browser,
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
       browser(a_browser),
-      initiating_profile(NULL) {}
+      initiating_profile(NULL) {
+        if (a_browser)
+          host_desktop_type = a_browser->host_desktop_type();
+        else
+          host_desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+      }
 
 NavigateParams::NavigateParams(Browser* a_browser,
                                TabContents* a_target_contents)
@@ -332,7 +341,12 @@ NavigateParams::NavigateParams(Browser* a_browser,
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
       browser(a_browser),
-      initiating_profile(NULL) {}
+      initiating_profile(NULL) {
+        if (a_browser)
+          host_desktop_type = a_browser->host_desktop_type();
+        else
+          host_desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+      }
 
 NavigateParams::NavigateParams(Profile* a_profile,
                                const GURL& a_url,
@@ -350,7 +364,8 @@ NavigateParams::NavigateParams(Profile* a_profile,
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
       browser(NULL),
-      initiating_profile(a_profile) {}
+      initiating_profile(a_profile),
+      host_desktop_type(chrome::HOST_DESKTOP_TYPE_NATIVE) {}
 
 NavigateParams::~NavigateParams() {}
 

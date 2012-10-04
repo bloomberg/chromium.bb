@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -1535,7 +1536,8 @@ gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
 
 Browser* InternetOptionsHandler::GetAppropriateBrowser() {
   return browser::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {

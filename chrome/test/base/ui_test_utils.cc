@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -196,9 +197,11 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
 }
 
 Browser* OpenURLOffTheRecord(Profile* profile, const GURL& url) {
-  chrome::OpenURLOffTheRecord(profile, url);
+  chrome::OpenURLOffTheRecord(profile, url, chrome::HOST_DESKTOP_TYPE_NATIVE);
   Browser* browser = browser::FindTabbedBrowser(
-      profile->GetOffTheRecordProfile(), false);
+      profile->GetOffTheRecordProfile(),
+      false,
+      chrome::HOST_DESKTOP_TYPE_NATIVE);
   WaitForNavigations(&chrome::GetActiveWebContents(browser)->GetController(),
                      1);
   return browser;

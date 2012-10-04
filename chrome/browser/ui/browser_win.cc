@@ -23,7 +23,11 @@ void NewMetroWindow(Browser* source_browser, Profile* profile) {
       ::GetProcAddress(base::win::GetMetroModule(), "FlipFrameWindows"));
   DCHECK(flip_window_fn);
 
-  Browser* browser = browser::FindTabbedBrowser(profile, false);
+  chrome::HostDesktopType host_desktop_type =
+      source_browser->host_desktop_type();
+  Browser* browser =
+      browser::FindTabbedBrowser(profile, false, host_desktop_type);
+
   if (!browser) {
     chrome::OpenEmptyWindow(profile);
     return;

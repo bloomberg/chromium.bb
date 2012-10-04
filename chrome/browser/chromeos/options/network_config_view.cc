@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -38,7 +39,9 @@ gfx::NativeWindow GetDialogParent() {
     return chromeos::BaseLoginDisplayHost::default_host()->GetNativeWindow();
   } else {
     Browser* browser = browser::FindTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord(), true);
+        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+        true,
+        chrome::HOST_DESKTOP_TYPE_ASH);
     if (browser)
       return browser->window()->GetNativeWindow();
   }

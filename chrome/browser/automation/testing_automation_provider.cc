@@ -103,6 +103,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -1090,7 +1091,8 @@ void TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   new BrowserOpenedWithNewProfileNotificationObserver(this, reply_message);
   profile_manager->CreateMultiProfileAsync(
-      string16(), string16(), ProfileManager::CreateCallback());
+      string16(), string16(), ProfileManager::CreateCallback(),
+      chrome::HOST_DESKTOP_TYPE_NATIVE);
 }
 
 // Sample json input: { "command": "GetMultiProfileInfo" }
@@ -1195,7 +1197,8 @@ void TestingAutomationProvider::OpenProfileWindow(
       profile,
       chrome::startup::IS_NOT_PROCESS_STARTUP,
       chrome::startup::IS_NOT_FIRST_RUN,
-      0);
+      chrome::HOST_DESKTOP_TYPE_NATIVE,
+      false);
   }
 
 void TestingAutomationProvider::GetWindowForBrowser(int browser_handle,

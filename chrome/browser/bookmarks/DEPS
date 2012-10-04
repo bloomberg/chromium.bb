@@ -58,5 +58,6 @@ specific_include_rules = {
     "!chrome/browser/importer/firefox2_importer.h",
     "!chrome/browser/profiles/profile_manager.h",
     "!chrome/browser/ui/browser_commands.h",
+    "!chrome/browser/ui/host_desktop.h",
   ]
 }

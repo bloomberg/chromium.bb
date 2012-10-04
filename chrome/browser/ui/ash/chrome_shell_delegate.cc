@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -65,7 +66,8 @@ Browser* GetTargetBrowser() {
   if (browser)
     return browser;
   return browser::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 }  // namespace
@@ -277,7 +279,8 @@ void ChromeShellDelegate::ShowKeyboardOverlay() {
 
 void ChromeShellDelegate::ShowTaskManager() {
   Browser* browser = browser::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::OpenTaskManager(browser, false);
 }
 

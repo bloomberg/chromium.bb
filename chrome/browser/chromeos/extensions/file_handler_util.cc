@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -603,7 +604,8 @@ bool FileTaskExecutor::Execute(const std::vector<GURL>& file_urls) {
 
 Browser* FileTaskExecutor::GetBrowser() const {
   return browser::FindOrCreateTabbedBrowser(
-      profile_ ? profile_ : ProfileManager::GetDefaultProfileOrOffTheRecord());
+      profile_ ? profile_ : ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 const Extension* FileTaskExecutor::GetExtension() {

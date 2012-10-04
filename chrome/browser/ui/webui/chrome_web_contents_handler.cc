@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
@@ -36,10 +37,19 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
     return NULL;
 
   Profile* profile = Profile::FromBrowserContext(context);
-  Browser* browser = browser::FindTabbedBrowser(profile, false);
+
+  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+  if (source) {
+    Browser* source_browser = browser::FindBrowserWithWebContents(source);
+    if (source_browser)
+      desktop_type = source_browser->host_desktop_type();
+  }
+
+  Browser* browser = browser::FindTabbedBrowser(profile, false, desktop_type);
   const bool browser_created = !browser;
   if (!browser)
-    browser = new Browser(Browser::CreateParams(profile));
+    browser = new Browser(
+        Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
   chrome::NavigateParams nav_params(browser, params.url, params.transition);
   nav_params.referrer = params.referrer;
   if (source && source->IsCrashed() &&
@@ -78,10 +88,19 @@ void ChromeWebContentsHandler::AddNewContents(
     return;
 
   Profile* profile = Profile::FromBrowserContext(context);
-  Browser* browser = browser::FindTabbedBrowser(profile, false);
+
+  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+  if (source) {
+    Browser* source_browser = browser::FindBrowserWithWebContents(source);
+    if (source_browser)
+      desktop_type = source_browser->host_desktop_type();
+  }
+
+  Browser* browser = browser::FindTabbedBrowser(profile, false, desktop_type);
   const bool browser_created = !browser;
   if (!browser)
-    browser = new Browser(Browser::CreateParams(profile));
+    browser = new Browser(
+        Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
   TabContents* tab_contents =
       TabContents::Factory::CreateTabContents(new_contents);
   chrome::NavigateParams params(browser, tab_contents);

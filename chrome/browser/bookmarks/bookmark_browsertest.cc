@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -110,7 +111,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, MultiProfile) {
 
   ui_test_utils::BrowserAddedObserver observer;
   g_browser_process->profile_manager()->CreateMultiProfileAsync(
-      string16(), string16(), ProfileManager::CreateCallback());
+      string16(), string16(), ProfileManager::CreateCallback(),
+      chrome::HOST_DESKTOP_TYPE_NATIVE);
   Browser* browser2 = observer.WaitForSingleNewBrowser();
   BookmarkModel* bookmark_model2 = WaitForBookmarkModel(browser2->profile());
 

@@ -559,7 +559,7 @@ void ChromeLauncherController::UpdateAppState(TabContents* tab,
 
 void ChromeLauncherController::CreateNewTab() {
   Browser* last_browser = browser::FindTabbedBrowser(
-      GetProfileForNewWindows(), true);
+      GetProfileForNewWindows(), true, chrome::HOST_DESKTOP_TYPE_ASH);
 
   if (!last_browser) {
     CreateNewWindow();

@@ -118,7 +118,13 @@ void BookmarkContextMenuControllerViewsWin::ExecuteCommand(int id) {
         }
 
         NewBrowserPageNavigator navigator_impl(profile_to_use);
-        Browser* browser = browser::FindTabbedBrowser(profile_to_use, false);
+
+        // TODO(robertshield): FTB - Switch this to HOST_DESKTOP_TYPE_ASH when
+        //                     we make that the default for metro.
+        Browser* browser =
+            browser::FindTabbedBrowser(profile_to_use,
+                                       false,
+                                       chrome::HOST_DESKTOP_TYPE_NATIVE);
         content::PageNavigator* navigator = NULL;
         if (!browser || !chrome::GetActiveWebContents(browser)) {
           navigator = &navigator_impl;

@@ -69,14 +69,16 @@ SettingsChangeGlobalError::~SettingsChangeGlobalError() {
     menu_ids.Get().reset(menu_id_ - IDC_SHOW_SETTINGS_CHANGE_FIRST);
 }
 
-void SettingsChangeGlobalError::AddToProfile(Profile* profile,
-                                             bool show_bubble) {
+void SettingsChangeGlobalError::AddToProfile(
+    Profile* profile,
+    bool show_bubble,
+    chrome::HostDesktopType desktop_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
   GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(this);
   BrowserList::AddObserver(this);
   if (show_bubble) {
-    ShowBubble();
+    ShowBubble(desktop_type);
   } else {
     // Start inactivity timer.
     BrowserThread::PostDelayedTask(
@@ -98,13 +100,11 @@ void SettingsChangeGlobalError::RemoveFromProfile() {
   delegate_->OnRemovedFromProfile(this);
 }
 
-void SettingsChangeGlobalError::ShowBubble() {
+void SettingsChangeGlobalError::ShowBubble(
+    chrome::HostDesktopType desktop_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  Browser* browser = browser::FindTabbedBrowser(
-      profile_,
-      // match incognito
-      true);
+  Browser* browser = browser::FindTabbedBrowser(profile_, true, desktop_type);
   if (browser)
     ShowBubbleInBrowser(browser);
 }
@@ -217,7 +217,8 @@ void SettingsChangeGlobalError::OnBrowserSetLastActive(
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&SettingsChangeGlobalError::ShowBubble,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(),
+                   browser->host_desktop_type()));
   }
 }
 

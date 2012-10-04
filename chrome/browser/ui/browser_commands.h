@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/common/page_zoom.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -48,10 +49,12 @@ Browser* OpenEmptyWindow(Profile* profile);
 // Opens a new window with the tabs from |profile|'s TabRestoreService.
 void OpenWindowWithRestoredTabs(Profile* profile);
 
-// Opens the specified URL in a new browser window in an incognito session.
-// If there is already an existing active incognito session for the specified
-// |profile|, that session is re-used.
-void OpenURLOffTheRecord(Profile* profile, const GURL& url);
+// Opens the specified URL in a new browser window in an incognito session on
+// the desktop specified by |desktop_type|. If there is already an existing
+// active incognito session for the specified |profile|, that session is re-
+// used.
+void OpenURLOffTheRecord(Profile* profile, const GURL& url,
+                         chrome::HostDesktopType desktop_type);
 
 bool CanGoBack(const Browser* browser);
 void GoBack(Browser* browser, WindowOpenDisposition disposition);

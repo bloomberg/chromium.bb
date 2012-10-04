@@ -19,18 +19,29 @@ class WebContents;
 
 namespace browser {
 
+// Deprecated:
+Browser* FindTabbedBrowser(Profile* profile,
+                           bool match_original_profiles);
+
 // Retrieve the last active tabbed browser with a profile matching |profile|.
 // If |match_original_profiles| is true, matching is done based on the
 // original profile, eg profile->GetOriginalProfile() ==
 // browser->profile()->GetOriginalProfile(). This has the effect of matching
 // against both non-incognito and incognito profiles. If
 // |match_original_profiles| is false, only an exact match may be returned.
-Browser* FindTabbedBrowser(Profile* profile, bool match_original_profiles);
+// |type| refers to the host desktop the returned browser should belong to.
+Browser* FindTabbedBrowser(Profile* profile,
+                           bool match_original_profiles,
+                           chrome::HostDesktopType type);
+
+// Deprecated
+Browser* FindOrCreateTabbedBrowser(Profile* profile);
 
 // Returns the first tabbed browser matching |profile|. If there is no tabbed
-// browser a new one is created and returned. If a new browser is created it is
-// not made visible.
-Browser* FindOrCreateTabbedBrowser(Profile* profile);
+// browser a new one is created and returned for the desktop specified by
+// |type|. If a new browser is created it is not made visible.
+Browser* FindOrCreateTabbedBrowser(Profile* profile,
+                                   chrome::HostDesktopType type);
 
 // Find an existing browser window with any type. See comment above for
 // additional information.

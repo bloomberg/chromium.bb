@@ -43,6 +43,7 @@ CaptivePortalTabHelper::CaptivePortalTabHelper(
               base::Bind(&CaptivePortalTabHelper::OpenLoginTab,
                          base::Unretained(this)))),
       login_detector_(new CaptivePortalLoginDetector(profile_)),
+      web_contents_(web_contents),
       pending_error_code_(net::OK),
       provisional_render_view_host_(NULL) {
   registrar_.Add(this,
@@ -238,7 +239,8 @@ CaptivePortalTabReloader* CaptivePortalTabHelper::GetTabReloaderForTest() {
 }
 
 void CaptivePortalTabHelper::OpenLoginTab() {
-  Browser* browser = browser::FindTabbedBrowser(profile_, true);
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
+
   // If the Profile doesn't have a tabbed browser window open, do nothing.
   if (!browser)
     return;

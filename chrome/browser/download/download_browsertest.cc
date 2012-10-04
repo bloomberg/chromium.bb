@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
@@ -143,7 +144,8 @@ class DownloadsHistoryDataCollector {
 // extensions tests.  Find a common place for this class.
 class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
-  MockAbortExtensionInstallPrompt() : ExtensionInstallPrompt(NULL, NULL, NULL) {
+  MockAbortExtensionInstallPrompt() :
+      ExtensionInstallPrompt(NULL, NULL, NULL) {
   }
 
   // Simulate a user abort on an extension installation.

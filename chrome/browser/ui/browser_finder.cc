@@ -127,15 +127,28 @@ size_t GetBrowserCountImpl(Profile* profile,
 
 }  // namespace
 
-Browser* FindTabbedBrowser(Profile* profile, bool match_original_profiles) {
+Browser* FindTabbedBrowser(Profile* profile,
+                           bool match_original_profiles) {
+  return FindTabbedBrowser(profile, match_original_profiles,
+                           chrome::HOST_DESKTOP_TYPE_NATIVE);
+}
+
+Browser* FindTabbedBrowser(Profile* profile,
+                           bool match_original_profiles,
+                           chrome::HostDesktopType type) {
   return FindBrowserWithTabbedOrAnyType(profile,
-                                        kDefaultHostDesktopType,
+                                        type,
                                         true,
                                         match_original_profiles);
 }
 
 Browser* FindOrCreateTabbedBrowser(Profile* profile) {
-  Browser* browser = FindTabbedBrowser(profile, false);
+  return FindOrCreateTabbedBrowser(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+}
+
+Browser* FindOrCreateTabbedBrowser(Profile* profile,
+                                   chrome::HostDesktopType type) {
+  Browser* browser = FindTabbedBrowser(profile, false, type);
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile));
   return browser;

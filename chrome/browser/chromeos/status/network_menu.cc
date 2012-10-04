@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -82,7 +83,8 @@ bool ShouldHighlightNetwork(const chromeos::Network* network) {
 Browser* GetAppropriateBrowser() {
   DCHECK(chromeos::UserManager::Get()->IsSessionStarted());
   return browser::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
 }  // namespace
@@ -440,7 +442,8 @@ void NetworkMenuModel::ActivatedAt(int index) {
       cros->DisconnectFromNetwork(active_vpn);
   } else if (flags & FLAG_VIEW_ACCOUNT) {
     Browser* browser = browser::FindOrCreateTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord());
+        ProfileManager::GetDefaultProfileOrOffTheRecord(),
+        chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::ShowSingletonTab(browser, GURL(top_up_url_));
   }
 }

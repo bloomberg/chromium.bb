@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
@@ -110,10 +111,14 @@ int EnrollmentDialogView::GetDialogButtons() const {
 bool EnrollmentDialogView::Accept() {
   // TODO(beng): use Navigate().
   // Navigate to the target URI in a browser tab.
-  Browser* browser = browser::FindTabbedBrowser(profile_, false);
+  Browser* browser = browser::FindTabbedBrowser(profile_, false,
+                                                chrome::HOST_DESKTOP_TYPE_ASH);
   if (!browser) {
     // Couldn't find a tabbed browser: create one.
-    browser = new Browser(Browser::CreateParams(profile_));
+    browser = new Browser(
+        Browser::CreateParams(Browser::TYPE_TABBED,
+                              profile_,
+                              chrome::HOST_DESKTOP_TYPE_ASH));
   }
   DCHECK(browser);
   chrome::AddSelectedTabWithURL(browser, target_uri_,

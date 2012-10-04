@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -138,8 +139,9 @@ class ProfileManager : public base::NonThreadSafe,
   // otherwise return NULL.
   Profile* GetProfileByPath(const FilePath& path) const;
 
-  // Activates a window for |profile|.  If no such window yet exists, or if
-  // |always_create| is true, this first creates a new window, then activates
+  // Activates a window for |profile| on the desktop specified by
+  // |desktop_type|. If no such window yet exists, or if |always_create| is
+  // true, this first creates a new window, then activates
   // that. If activating an exiting window and multiple windows exists then the
   // window that was most recently active is activated. This is used for
   // creation of a window from the multi-profile dropdown menu.
@@ -147,6 +149,7 @@ class ProfileManager : public base::NonThreadSafe,
       Profile* profile,
       chrome::startup::IsProcessStartup process_startup,
       chrome::startup::IsFirstRun is_first_run,
+      chrome::HostDesktopType desktop_type,
       bool always_create);
 
   // Profile::Delegate implementation:
@@ -166,7 +169,8 @@ class ProfileManager : public base::NonThreadSafe,
   static void CreateMultiProfileAsync(
       const string16& name,
       const string16& icon_url,
-      const CreateCallback& callback);
+      const CreateCallback& callback,
+      chrome::HostDesktopType desktop_type);
 
   // Register multi-profile related preferences in Local State.
   static void RegisterPrefs(PrefService* prefs);
@@ -180,7 +184,8 @@ class ProfileManager : public base::NonThreadSafe,
   ProfileShortcutManager* profile_shortcut_manager();
 
   // Schedules the profile at the given path to be deleted on shutdown.
-  void ScheduleProfileForDeletion(const FilePath& profile_dir);
+  void ScheduleProfileForDeletion(const FilePath& profile_dir,
+                                  chrome::HostDesktopType desktop_type);
 
   // Checks if multiple profiles is enabled.
   static bool IsMultipleProfilesEnabled();

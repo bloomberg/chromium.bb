@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -256,8 +257,14 @@ void ManageProfileHandler::DeleteProfile(const ListValue* args) {
       !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
     return;
 
+  Browser* browser =
+      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+  if (browser)
+    desktop_type = browser->host_desktop_type();
+
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      profile_file_path);
+      profile_file_path, desktop_type);
 }
 
 void ManageProfileHandler::ProfileIconSelectionChanged(

@@ -68,7 +68,9 @@ void BalloonCollectionImplAsh::ShowSettings(const std::string& notifcation_id) {
   Balloon* balloon = base().FindBalloonById(notifcation_id);
   Profile* profile =
       balloon ? balloon->profile() : ProfileManager::GetDefaultProfile();
-  Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
+  Browser* browser =
+      browser::FindOrCreateTabbedBrowser(profile,
+                                         chrome::HOST_DESKTOP_TYPE_ASH);
   if (GetBalloonExtension(balloon))
     chrome::ShowExtensions(browser);
   else

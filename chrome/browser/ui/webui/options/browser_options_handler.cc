@@ -45,7 +45,10 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -948,17 +951,24 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
     return;
   string16 name, icon;
   bool create_box_checked;
+
+  Browser* browser =
+      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+  if (browser)
+    desktop_type = browser->host_desktop_type();
+
   if (args->GetString(0, &name) && args->GetString(1, &icon)) {
     if (args->GetBoolean(2, &create_box_checked) && create_box_checked) {
       ProfileManager::CreateMultiProfileAsync(
-        name, icon, base::Bind(&CreateDesktopShortcutForProfile));
+        name, icon, base::Bind(&CreateDesktopShortcutForProfile), desktop_type);
     } else {
       ProfileManager::CreateMultiProfileAsync(
-        name, icon, ProfileManager::CreateCallback());
+        name, icon, ProfileManager::CreateCallback(), desktop_type);
     }
   } else {
     ProfileManager::CreateMultiProfileAsync(
-        string16(), string16(), ProfileManager::CreateCallback());
+        string16(), string16(), ProfileManager::CreateCallback(), desktop_type);
   }
 }
 

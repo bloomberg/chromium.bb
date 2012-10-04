@@ -56,8 +56,12 @@ void RenderViewContextMenuWin::ExecuteCommand(int command_id,
     // implements the delegate for the context menu. This would break if there
     // are other delegates for the context menu. This is ok for now as this
     // code only executes for Windows 8 metro mode.
-    Browser* browser = browser::FindTabbedBrowser(
-        profile_->GetOriginalProfile(), false);
+    // TODO(robertshield): FTB - Switch this to HOST_DESKTOP_TYPE_ASH when
+    //                     we make that the default for metro.
+    Browser* browser =
+        browser::FindTabbedBrowser(profile_->GetOriginalProfile(),
+                                   false,
+                                   chrome::HOST_DESKTOP_TYPE_NATIVE);
     if (browser) {
       content::OpenURLParams url_params(
           params_.link_url,

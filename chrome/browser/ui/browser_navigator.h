@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
@@ -196,6 +197,10 @@ struct NavigateParams {
   // transferred to another RVH. Only used in case of a redirection of a request
   // to a different site that created a new RVH.
   content::GlobalRequestID transferred_global_request_id;
+
+  // Refers to which desktop this navigation should occur on. May be passed
+  // explicitly or inferred from an existing Browser instance.
+  chrome::HostDesktopType host_desktop_type;
 
  private:
   NavigateParams();

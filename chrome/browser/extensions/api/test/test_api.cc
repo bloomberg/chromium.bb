@@ -90,7 +90,8 @@ TestCreateIncognitoTabFunction::
 bool TestCreateIncognitoTabFunction::RunImpl() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
-  chrome::OpenURLOffTheRecord(profile(), GURL(url));
+  chrome::OpenURLOffTheRecord(profile(), GURL(url),
+                              chrome::HOST_DESKTOP_TYPE_NATIVE);
   return true;
 }
 
