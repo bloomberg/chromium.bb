@@ -16,61 +16,62 @@
 
 using content::NavigationEntry;
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabContentsSyncedTabDelegate)
+
 TabContentsSyncedTabDelegate::TabContentsSyncedTabDelegate(
-    TabContents* tab_contents)
-        : tab_contents_(tab_contents) {}
+    content::WebContents* web_contents)
+        : web_contents_(web_contents) {}
 
 TabContentsSyncedTabDelegate::~TabContentsSyncedTabDelegate() {}
 
 SessionID::id_type TabContentsSyncedTabDelegate::GetWindowId() const {
-  return SessionTabHelper::FromWebContents(tab_contents_->web_contents())->
-      window_id().id();
+  return SessionTabHelper::FromWebContents(web_contents_)->window_id().id();
 }
 
 SessionID::id_type TabContentsSyncedTabDelegate::GetSessionId() const {
-  return SessionTabHelper::FromWebContents(tab_contents_->web_contents())->
-      session_id().id();
+  return SessionTabHelper::FromWebContents(web_contents_)->session_id().id();
 }
 
 bool TabContentsSyncedTabDelegate::IsBeingDestroyed() const {
-  return tab_contents_->in_destructor();
+  // TODO(avi): Switch to just the web contents call when the
+  // SessionChangeProcessor is switched to NOTIFICATION_WEB_CONTENTS_DESTROYED
+  // from NOTIFICATION_TAB_CONTENTS_DESTROYED.
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
+  return tab_contents->in_destructor() || web_contents_->IsBeingDestroyed();
 }
 
 Profile* TabContentsSyncedTabDelegate::profile() const {
-  return tab_contents_->profile();
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
 std::string TabContentsSyncedTabDelegate::GetExtensionAppId() const {
   const scoped_refptr<const extensions::Extension> extension_app(
-      extensions::TabHelper::FromWebContents(
-          tab_contents_->web_contents())->extension_app());
+      extensions::TabHelper::FromWebContents(web_contents_)->extension_app());
   return (extension_app.get() ? extension_app->id() : "");
 }
 
 int TabContentsSyncedTabDelegate::GetCurrentEntryIndex() const {
-  return tab_contents_->web_contents()->GetController().GetCurrentEntryIndex();
+  return web_contents_->GetController().GetCurrentEntryIndex();
 }
 
 int TabContentsSyncedTabDelegate::GetEntryCount() const {
-  return tab_contents_->web_contents()->GetController().GetEntryCount();
+  return web_contents_->GetController().GetEntryCount();
 }
 
 int TabContentsSyncedTabDelegate::GetPendingEntryIndex() const {
-  return tab_contents_->web_contents()->GetController().GetPendingEntryIndex();
+  return web_contents_->GetController().GetPendingEntryIndex();
 }
 
 NavigationEntry* TabContentsSyncedTabDelegate::GetPendingEntry() const {
-  return
-      tab_contents_->web_contents()->GetController().GetPendingEntry();
+  return web_contents_->GetController().GetPendingEntry();
 }
 
-NavigationEntry* TabContentsSyncedTabDelegate::GetEntryAtIndex(int i)
-    const {
-  return tab_contents_->web_contents()->GetController().GetEntryAtIndex(i);
+NavigationEntry* TabContentsSyncedTabDelegate::GetEntryAtIndex(int i) const {
+  return web_contents_->GetController().GetEntryAtIndex(i);
 }
 
 NavigationEntry* TabContentsSyncedTabDelegate::GetActiveEntry() const {
-  return tab_contents_->web_contents()->GetController().GetActiveEntry();
+  return web_contents_->GetController().GetActiveEntry();
 }
 
 bool TabContentsSyncedTabDelegate::IsPinned() const {

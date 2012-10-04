@@ -47,8 +47,7 @@ BrowserSyncedWindowDelegate::~BrowserSyncedWindowDelegate() {}
 bool BrowserSyncedWindowDelegate::IsTabPinned(
     const browser_sync::SyncedTabDelegate* tab) const {
   for (int i = 0; i < browser_->tab_count(); i++) {
-    browser_sync::SyncedTabDelegate* current =
-        chrome::GetTabContentsAt(browser_, i)->synced_tab_delegate();
+    browser_sync::SyncedTabDelegate* current = GetTabAt(i);
     if (tab == current)
       return browser_->tab_strip_model()->IsTabPinned(i);
   }
@@ -58,7 +57,8 @@ bool BrowserSyncedWindowDelegate::IsTabPinned(
 
 browser_sync::SyncedTabDelegate* BrowserSyncedWindowDelegate::GetTabAt(
     int index) const {
-  return chrome::GetTabContentsAt(browser_, index)->synced_tab_delegate();
+  return TabContentsSyncedTabDelegate::FromWebContents(
+      chrome::GetWebContentsAt(browser_, index));
 }
 
 SessionID::id_type BrowserSyncedWindowDelegate::GetTabIdAt(int index) const {

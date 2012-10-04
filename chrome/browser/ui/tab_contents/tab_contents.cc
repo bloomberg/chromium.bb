@@ -154,7 +154,7 @@ TabContents::TabContents(WebContents* contents)
   chrome::search::SearchTabHelper::CreateForWebContents(contents);
   SnapshotTabHelper::CreateForWebContents(contents);
   SSLTabHelper::CreateForWebContents(contents);
-  synced_tab_delegate_.reset(new TabContentsSyncedTabDelegate(this));
+  TabContentsSyncedTabDelegate::CreateForWebContents(contents);
   TabSpecificContentSettings::CreateForWebContents(contents);
   TranslateTabHelper::CreateForWebContents(contents);
   ZoomController::CreateForWebContents(contents);

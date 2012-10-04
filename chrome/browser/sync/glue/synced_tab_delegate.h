@@ -18,23 +18,23 @@ class NavigationEntry;
 namespace browser_sync {
 
 // A SyncedTabDelegate is used to insulate the sync code from depending
-// directly on WebContents, TabContents and NavigationController.
+// directly on WebContents, NavigationController, and the extensions TabHelper.
 class SyncedTabDelegate {
  public:
   virtual ~SyncedTabDelegate() {}
 
-  // Method from TabContents.
+  // Methods from TabContents.
 
   virtual SessionID::id_type GetWindowId() const = 0;
   virtual SessionID::id_type GetSessionId() const = 0;
   virtual bool IsBeingDestroyed() const = 0;
   virtual Profile* profile() const = 0;
 
-  // Method derived from TabContents.
+  // Method derived from extensions TabHelper.
 
   virtual std::string GetExtensionAppId() const = 0;
 
-  // Method from NavigationController
+  // Methods from NavigationController.
 
   virtual int GetCurrentEntryIndex() const = 0;
   virtual int GetEntryCount() const = 0;

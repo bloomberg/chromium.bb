@@ -45,10 +45,6 @@ class WebIntentPickerCocoa;
 class WebIntentPickerGtk;
 class WebUITestContentsCreator;
 
-namespace browser_sync {
-class SyncedTabDelegate;
-}
-
 namespace chromeos {
 class SimpleWebViewDialog;
 class WebUILoginView;
@@ -149,10 +145,6 @@ class TabContents : public content::WebContentsObserver {
 
   PasswordManager* password_manager() { return password_manager_.get(); }
 
-  browser_sync::SyncedTabDelegate* synced_tab_delegate() {
-    return synced_tab_delegate_.get();
-  }
-
   // NOTE: This returns NULL unless in-browser thumbnail generation is enabled.
   ThumbnailGenerator* thumbnail_generator() {
     return thumbnail_generator_.get();
@@ -186,8 +178,6 @@ class TabContents : public content::WebContentsObserver {
   // per documentation in password_manager.h.
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
-
-  scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;
 
   scoped_ptr<ThumbnailGenerator> thumbnail_generator_;
 

@@ -45,11 +45,8 @@ static const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
 // from a NavigationController, if it exists. Returns |NULL| otherwise.
 SyncedTabDelegate* ExtractSyncedTabDelegate(
     const content::NotificationSource& source) {
-  TabContents* tab = TabContents::FromWebContents(
+  return TabContentsSyncedTabDelegate::FromWebContents(
       content::Source<NavigationController>(source).ptr()->GetWebContents());
-  if (!tab)
-    return NULL;
-  return tab->synced_tab_delegate();
 }
 
 }  // namespace
@@ -111,9 +108,9 @@ void SessionChangeProcessor::Observe(
     }
 
     case chrome::NOTIFICATION_TAB_PARENTED: {
-      TabContents* tab_contents = TabContents::FromWebContents(
-          content::Source<WebContents>(source).ptr());
-      SyncedTabDelegate* tab = tab_contents->synced_tab_delegate();
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
+      SyncedTabDelegate* tab =
+          TabContentsSyncedTabDelegate::FromWebContents(web_contents);
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -123,12 +120,9 @@ void SessionChangeProcessor::Observe(
     }
 
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      TabContents* tab_contents = TabContents::FromWebContents(
-          content::Source<WebContents>(source).ptr());
-      if (!tab_contents) {
-        return;
-      }
-      SyncedTabDelegate* tab = tab_contents->synced_tab_delegate();
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
+      SyncedTabDelegate* tab =
+          TabContentsSyncedTabDelegate::FromWebContents(web_contents);
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -139,7 +133,8 @@ void SessionChangeProcessor::Observe(
 
     case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       TabContents* tab_contents = content::Source<TabContents>(source).ptr();
-      SyncedTabDelegate* tab = tab_contents->synced_tab_delegate();
+      SyncedTabDelegate* tab = TabContentsSyncedTabDelegate::FromWebContents(
+          tab_contents->web_contents());
       if (!tab || tab->profile() != profile_)
         return;
       modified_tabs.push_back(tab);
@@ -186,9 +181,9 @@ void SessionChangeProcessor::Observe(
         return;
       }
       if (extension_tab_helper->extension_app()) {
-        TabContents* tab_contents =
-            TabContents::FromWebContents(extension_tab_helper->web_contents());
-        modified_tabs.push_back(tab_contents->synced_tab_delegate());
+        SyncedTabDelegate* tab = TabContentsSyncedTabDelegate::FromWebContents(
+            extension_tab_helper->web_contents());
+        modified_tabs.push_back(tab);
       }
       DVLOG(1) << "Received TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED "
                << "for profile " << profile_;
