@@ -222,11 +222,23 @@ if test "x$EXYNOS" = xyes; then
 	AC_DEFINE(HAVE_EXYNOS, 1, [Have EXYNOS support])
 fi
 
+AC_ARG_ENABLE([cairo-tests],
+              [AS_HELP_STRING([--enable-cairo-tests],
+                              [Enable support for Cairo rendering in tests (default: auto)])],
+              [CAIRO=$enableval], [CAIRO=auto])
 PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
-if test "x$HAVE_CAIRO" = xyes; then
-	AC_DEFINE(HAVE_CAIRO, 1, [Have cairo support])
+AC_MSG_CHECKING([whether to enable Cairo tests])
+if test "x$CAIRO" = xauto; then
+	CAIRO="$HAVE_CAIRO"
 fi
-AM_CONDITIONAL(HAVE_CAIRO, [test "x$HAVE_CAIRO" = xyes])
+if test "x$CAIRO" = xyes; then
+	if ! test "x$HAVE_CAIRO" = xyes; then
+		AC_MSG_ERROR([Cairo support required but not present])
+	fi
+	AC_DEFINE(HAVE_CAIRO, 1, [Have Cairo support])
+fi
+AC_MSG_RESULT([$CAIRO])
+AM_CONDITIONAL(HAVE_CAIRO, [test "x$CAIRO" = xyes])
 
 # For enumerating devices in test case
 PKG_CHECK_MODULES(LIBUDEV, libudev, [HAVE_LIBUDEV=yes], [HAVE_LIBUDEV=no])
