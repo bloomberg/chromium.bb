@@ -35,7 +35,7 @@ HANDLE_EXE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                '..', '..', 'third_party', 'psutils',
                                HANDLE_EXE)
 
-RUN_TEST_NAME = 'run_test_from_archive.py'
+RUN_TEST_NAME = 'run_swarm_step.py'
 RUN_TEST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              RUN_TEST_NAME)
 
