@@ -390,7 +390,8 @@ void ExtensionTtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {
 
 // static
 ExtensionTtsPlatformImplLinux* ExtensionTtsPlatformImplLinux::GetInstance() {
-  return Singleton<ExtensionTtsPlatformImplLinux>::get();
+  return Singleton<ExtensionTtsPlatformImplLinux,
+                   LeakySingletonTraits<ExtensionTtsPlatformImplLinux> >::get();
 }
 
 // static
