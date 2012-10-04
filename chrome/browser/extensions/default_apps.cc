@@ -153,7 +153,8 @@ Provider::Provider(Profile* profile,
                    int creation_flags)
     : extensions::ExternalProviderImpl(service, loader, crx_location,
                                        download_location, creation_flags),
-      profile_(profile) {
+      profile_(profile),
+      is_migration_(false) {
   DCHECK(profile);
   set_auto_acknowledge(true);
 }
