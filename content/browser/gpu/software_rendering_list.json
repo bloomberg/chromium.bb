@@ -73,7 +73,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "3.5",
+  "version": "3.6",
   "entries": [
     {
       "id": 1,
@@ -174,7 +174,7 @@
     },
     {
       "id": 12,
-      "description": "Drivers older than 2009-01 on Windows are assumed to be buggy.",
+      "description": "Drivers older than 2009-01 on Windows are possibly unreliable.",
       "cr_bugs": [72979, 89802],
       "os": {
         "type": "win"
@@ -194,12 +194,16 @@
         }
       ],
       "blacklist": [
-        "all"
+        "accelerated_video",
+        "accelerated_video_decode",
+        "3d_css",
+        "multisampling",
+        "flash_3d"
       ]
     },
     {
       "id": 13,
-      "description": "ATI drivers older than 10.6 on Windows XP are assumed to be buggy.",
+      "description": "ATI drivers older than 10.6 on Windows XP are possibly unreliable.",
       "cr_bugs": [74212],
       "os": {
         "type": "win",
@@ -214,12 +218,16 @@
         "number": "8.741"
       },
       "blacklist": [
-        "all"
+        "accelerated_video",
+        "accelerated_video_decode",
+        "3d_css",
+        "multisampling",
+        "flash_3d"
       ]
     },
     {
       "id": 14,
-      "description": "NVIDIA drivers older than 257.21 on Windows XP are assumed to be buggy.",
+      "description": "NVIDIA drivers older than 257.21 on Windows XP are possibly unreliable.",
       "cr_bugs": [74212],
       "os": {
         "type": "win",
@@ -234,12 +242,16 @@
         "number": "6.14.12.5721"
       },
       "blacklist": [
-        "all"
+        "accelerated_video",
+        "accelerated_video_decode",
+        "3d_css",
+        "multisampling",
+        "flash_3d"
       ]
     },
     {
       "id": 15,
-      "description": "Intel drivers older than 14.42.7.5294 on Windows XP are assumed to be buggy.",
+      "description": "Intel drivers older than 14.42.7.5294 on Windows XP are possibly unreliable.",
       "cr_bugs": [74212],
       "os": {
         "type": "win",
@@ -254,7 +266,11 @@
         "number": "6.14.10.5294"
       },
       "blacklist": [
-        "all"
+        "accelerated_video",
+        "accelerated_video_decode",
+        "3d_css",
+        "multisampling",
+        "flash_3d"
       ]
     },
     {
@@ -786,6 +802,31 @@
         "value": "2"
       },
       "gpu_switching": "force_discrete"
+    },
+    {
+      "id": 55,
+      "description": "Drivers older than 2007-01 on Windows are assumed to be buggy.",
+      "cr_bugs": [72979, 89802],
+      "os": {
+        "type": "win"
+      },
+      "driver_date": {
+        "op": "<",
+        "number": "2007.1"
+      },
+      "exceptions": [
+        {
+          "vendor_id": "0x8086",
+          "device_id": ["0x29a2"],
+          "driver_version": {
+            "op": ">=",
+            "number": "7.15.10.1624"
+          }
+        }
+      ],
+      "blacklist": [
+        "all"
+      ]
     }
   ]
 }
