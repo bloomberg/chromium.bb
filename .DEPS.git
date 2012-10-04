@@ -19,8 +19,6 @@ deps = {
         Var('git_url') + '/native_client/src/third_party.git@65665a7b13c7dae9db56283046fbf8f114c9dc8c',
     'third_party/asan':
         Var('git_url') + '/chromium/deps/asan.git@245a68a0347562da54e3e5881010f55a994c783f',
-    'third_party/khronos':
-        Var('git_url') + '/chromium/src/third_party/khronos.git@52db1f31446bedd13acadb78f4ecc72bf2e7300a',
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
     'third_party/lss':
