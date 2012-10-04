@@ -53,6 +53,7 @@ class WebIntentInlineDispositionDelegate
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DocumentAvailableInMainFrame() OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate
   virtual extensions::WindowController* GetExtensionWindowController()
@@ -69,6 +70,9 @@ class WebIntentInlineDispositionDelegate
   content::WebContents* web_contents_;
 
   Browser* browser_;  // Weak pointer.
+
+  // The RVH responsible for the RenderView. Weak pointer.
+  content::RenderViewHost* render_view_host_;
 
   // Dispatch handler for extension APIs.
   ExtensionFunctionDispatcher extension_function_dispatcher_;

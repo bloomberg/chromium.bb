@@ -95,6 +95,12 @@ void WebIntentInlineDispositionDelegate::RenderViewCreated(
   render_view_host->EnableAutoResize(
       picker_->GetMinInlineDispositionSize(),
       picker_->GetMaxInlineDispositionSize());
+  render_view_host_ = render_view_host;
+}
+
+void WebIntentInlineDispositionDelegate::DocumentAvailableInMainFrame() {
+  std::string css = "body { min-width:400px; }";
+  render_view_host_->InsertCSS(string16(), css);
 }
 
 content::WebContents* WebIntentInlineDispositionDelegate::
