@@ -25,8 +25,6 @@ namespace WebKit {
   class WebAudioDevice;
 }
 
-typedef struct _HyphenDict HyphenDict;
-
 // An implementation of WebKitPlatformSupport for tests.
 class TestWebKitPlatformSupport :
     public webkit_glue::WebKitPlatformSupportImpl {
@@ -122,12 +120,6 @@ class TestWebKitPlatformSupport :
       WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
   virtual WebKit::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
       WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
-  virtual bool canHyphenate(const WebKit::WebString& locale) OVERRIDE;
-  virtual size_t computeLastHyphenLocation(
-      const char16* characters,
-      size_t length,
-      size_t before_index,
-      const WebKit::WebString& locale) OVERRIDE;
 
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
@@ -145,7 +137,6 @@ class TestWebKitPlatformSupport :
   bool unit_test_mode_;
   WebKit::WebGamepads gamepad_data_;
   WebKit::Platform* shadow_platform_delegate_;
-  HyphenDict* hyphen_dictionary_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   WebKit::WebThemeEngine* active_theme_engine_;

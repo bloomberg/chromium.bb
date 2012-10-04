@@ -12,7 +12,6 @@ include_rules = [
   "+grit",  # For generated headers
   "+skia",
   "+third_party/angle",
-  "+third_party/hyphen",
   "+third_party/leveldatabase",
   "+third_party/skia",
   "+third_party/sqlite",
