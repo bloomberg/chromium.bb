@@ -18,6 +18,7 @@
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -375,26 +376,20 @@ ExtensionProtocolHandler::MaybeCreateJob(
       // component_extension_resources.pak file in resources_path, calculate
       // extension relative path against resources_path.
       resources_path.AppendRelativePath(directory_path, &relative_path)) {
-    relative_path = relative_path.Append(
-        extension_file_util::ExtensionURLToRelativeFilePath(request->url()));
-    relative_path = relative_path.NormalizePathSeparators();
-
-    // TODO(tc): Make a map of FilePath -> resource ids so we don't have to
-    // covert to FilePaths all the time.  This will be more useful as we add
-    // more resources.
-    for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
-      FilePath bm_resource_path =
-          FilePath().AppendASCII(kComponentExtensionResources[i].name);
-      bm_resource_path = bm_resource_path.NormalizePathSeparators();
-      if (relative_path == bm_resource_path) {
-        return new URLRequestResourceBundleJob(
-            request,
-            network_delegate,
-            relative_path,
-            kComponentExtensionResources[i].value,
-            content_security_policy,
-            send_cors_header);
-      }
+    FilePath request_path =
+        extension_file_util::ExtensionURLToRelativeFilePath(request->url());
+    int resource_id;
+    if (ImageLoadingTracker::IsComponentExtensionResource(extension,
+        request_path, &resource_id)) {
+      relative_path = relative_path.Append(request_path);
+      relative_path = relative_path.NormalizePathSeparators();
+      return new URLRequestResourceBundleJob(
+          request,
+          network_delegate,
+          relative_path,
+          resource_id,
+          content_security_policy,
+          send_cors_header);
     }
   }
 

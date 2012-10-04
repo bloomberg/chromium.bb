@@ -168,23 +168,21 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   ExtensionResource resource;
 
   // Find extension resource for non bundled component extensions.
-  if (!ImageLoadingTracker::IsSpecialBundledExtensionId(extension_->id())) {
-    // We try loading bigger image only if resource size is >= 32.
-    if (resource_size_in_pixel >= kMatchBiggerTreshold) {
-      resource = GetExtensionIconResource(extension_, icon_set_,
-          resource_size_in_pixel, ExtensionIconSet::MATCH_BIGGER);
-    }
-
-    // If resource is not found by now, try matching smaller one.
-    if (resource.empty()) {
-      resource = GetExtensionIconResource(extension_, icon_set_,
-          resource_size_in_pixel, ExtensionIconSet::MATCH_SMALLER);
-    }
-
-    // If there is no resource found, return default icon.
-    if (resource.empty())
-      return default_icon_.GetRepresentation(scale_factor);
+  // We try loading bigger image only if resource size is >= 32.
+  if (resource_size_in_pixel >= kMatchBiggerTreshold) {
+    resource = GetExtensionIconResource(extension_, icon_set_,
+        resource_size_in_pixel, ExtensionIconSet::MATCH_BIGGER);
   }
+
+  // If resource is not found by now, try matching smaller one.
+  if (resource.empty()) {
+    resource = GetExtensionIconResource(extension_, icon_set_,
+        resource_size_in_pixel, ExtensionIconSet::MATCH_SMALLER);
+  }
+
+  // If there is no resource found, return default icon.
+  if (resource.empty())
+    return default_icon_.GetRepresentation(scale_factor);
 
   int id = tracker_.next_id();
   load_map_[id].scale_factor = scale_factor;
