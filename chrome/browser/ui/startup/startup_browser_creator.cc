@@ -68,6 +68,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/profile_startup.h"
 #endif
 
@@ -257,6 +258,17 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
     // default launch behavior.
     pref.type = SessionStartupPref::DEFAULT;
   }
+
+#if defined(OS_CHROMEOS)
+  // Kiosk/Retail mode has no profile to restore and fails to open the tabs
+  // specified in the startup_urls policy if we try to restore the non-existent
+  // session which is the default for ChromeOS in general.
+  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
+    DCHECK(pref.type == SessionStartupPref::LAST);
+    pref.type = SessionStartupPref::DEFAULT;
+  }
+#endif  // OS_CHROMEOS
+
   return pref;
 }
 
