@@ -601,7 +601,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 #if defined(USE_ASH)
   // Ash window headers can be transparent.
   params.transparent = true;
-  ash::SetChildWindowVisibilityChangesAnimated(params.parent);
+  ash::SetChildWindowVisibilityChangesAnimated(params.GetParent());
   // No animations should get performed on the window since that will re-order
   // the window stack which will then cause many problems.
   if (params.parent && params.parent->parent()) {
@@ -632,6 +632,9 @@ ConstrainedWindowViews::ConstrainedWindowViews(
         tab_helper_delegate ? tab_helper_delegate->GetBrowserWindow() : NULL;
     if (browser_window && browser_window->GetConstrainedWindowTopY() >= 0) {
       bounds.set_y(browser_window->GetConstrainedWindowTopY());
+      // Center the constrained window.
+      bounds.set_x(
+          browser_window->GetBounds().width() / 2 - bounds.width() / 2);
       SetBounds(bounds);
     }
   }
