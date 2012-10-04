@@ -42,7 +42,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
   jalr  $t5, $t9
   nop
 
-  jr $0 /* NACL_HALT - at the start of the second block of the trampoline */
+  NACL_HALT
   .set reorder
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_end):

@@ -7,7 +7,10 @@
 #ifndef SERVICE_RUNTIME_ARCH_MIPS_SEL_LDR_H__
 #define SERVICE_RUNTIME_ARCH_MIPS_SEL_LDR_H__ 1
 
-#include "native_client/src/include/portability.h"
+#if !defined(__ASSEMBLER__)
+# include "native_client/src/include/portability.h"
+#endif
+
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #define NACL_MAX_ADDR_BITS      30
@@ -21,7 +24,7 @@
 #define NACL_THREAD_MAX         8192
 
 #define NACL_NOOP_OPCODE        0x00000000  /* nop */
-#define NACL_HALT_OPCODE        0x00000008  /* jr $0 */
+#define NACL_HALT_OPCODE        0x0000000D  /* break */
 #define NACL_HALT_LEN           4           /* length of halt instruction */
 #define NACL_HALT_WORD          NACL_HALT_OPCODE
 

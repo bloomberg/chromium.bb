@@ -59,7 +59,7 @@ class ClassDecoder {
  public:
   /*
    * Checks how safe this instruction is, in isolation.
-   * This will detect any violation in the Mips spec -- undefined encodings,
+   * This will detect any violation in the MIPS spec -- undefined encodings,
    * use of registers that are unpredictable -- and the most basic constraints
    * in our SFI model.  Because ClassDecoders are referentially-transparent and
    * cannot touch global state, this will not check things that may vary with
@@ -169,7 +169,7 @@ class ClassDecoder {
 };
 
 /*
- * Current Mips NaCl halt (jr $zero).
+ * Current MIPS NaCl halt (break).
  */
 class NaClHalt : public ClassDecoder {
   public:

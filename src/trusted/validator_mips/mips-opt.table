@@ -2,28 +2,10 @@
 
 -- MIPS32 (See Table A.2)
 pat0(31:0)                        
-111000xxxxxxxxxxxxxxxxxxxxxxxxxx  =StoreConditional
-010001xxxxxxxxxxxxxxxxxxxxxxxxxx  ->cop1
-000000xxxxxxxxxxxxxxxxxxxxxxxxxx  ->special
-000010xxxxxxxxxxxxxxxxxxxxxxxxxx  =JmpImm
-011100xxxxxxxxxxxxxxxxxxxxxxxxxx  ->special2
-11xx01xxxxxxxxxxxxxxxxxxxxxxxxxx  =FPLoadStore
-11xx10xxxxxxxxxxxxxxxxxxxxxxxxxx  =FPLoadStore
 100110xxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
 110000xxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
 10010xxxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
 1000xxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
-001110xxxxxxxxxxxxxxxxxxxxxxxxxx  =Arithm2
-00110xxxxxxxxxxxxxxxxxxxxxxxxxxx  =Arithm2
-0010xxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Arithm2
-011111xxxxxxxxxxxxxxxxxxxxxxxxxx  ->special3
-0x010xxxxxxxxxxxxxxxxxxxxxxxxxxx  =Branch
-001111xxxxxxxxxxxxxxxxxxxxxxxxxx  ->arithm2_1
-000011xxxxxxxxxxxxxxxxxxxxxxxxxx  =JalImm
-010010xxxxxxxxxxxxxxxxxxxxxxxxxx  ->cop2
-0x011xxxxxxxxxxxxxxxxxxxxxxxxxxx  ->branch_1
-010000xxxxxxxxxxxxxxxxxxxxxxxxxx  ->cop0
-000001xxxxxxxxxxxxxxxxxxxxxxxxxx  ->regimm
 011101xxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 011110xxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 10x111xxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
@@ -31,47 +13,70 @@ pat0(31:0)
 11x100xxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 0110xxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 11xx11xxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
+001110xxxxxxxxxxxxxxxxxxxxxxxxxx  =Arithm2
+00110xxxxxxxxxxxxxxxxxxxxxxxxxxx  =Arithm2
+0010xxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Arithm2
+010000xxxxxxxxxxxxxxxxxxxxxxxxxx  ->cop0
+111000xxxxxxxxxxxxxxxxxxxxxxxxxx  =StoreConditional
+010001xxxxxxxxxxxxxxxxxxxxxxxxxx  ->cop1
 010011xxxxxxxxxxxxxxxxxxxxxxxxxx  ->cop1x
+000011xxxxxxxxxxxxxxxxxxxxxxxxxx  =JalImm
+001111xxxxxxxxxxxxxxxxxxxxxxxxxx  ->arithm2_1
+0x011xxxxxxxxxxxxxxxxxxxxxxxxxxx  ->branch_1
+000001xxxxxxxxxxxxxxxxxxxxxxxxxx  ->regimm
+11xx01xxxxxxxxxxxxxxxxxxxxxxxxxx  =FPLoadStore
+11xx10xxxxxxxxxxxxxxxxxxxxxxxxxx  =FPLoadStore
+010010xxxxxxxxxxxxxxxxxxxxxxxxxx  ->cop2
+0x010xxxxxxxxxxxxxxxxxxxxxxxxxxx  =Branch
+011100xxxxxxxxxxxxxxxxxxxxxxxxxx  ->special2
+000010xxxxxxxxxxxxxxxxxxxxxxxxxx  =JmpImm
+000000xxxxxxxxxxxxxxxxxxxxxxxxxx  ->special
+011111xxxxxxxxxxxxxxxxxxxxxxxxxx  ->special3
 101110xxxxxxxxxxxxxxxxxxxxxxxxxx  =Store
 1010xxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Store
 
 -- special (See Table A.3)
 pat0(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxxxx0100x1  ->mthi
-xxxxxxxxxxxxxxxxxxxxxxxxxx000110  ->srlv
-xxxxxxxxxxxxxxxxxxxxxxxxxx10101x  ->arithm3_3
-xxxxxxxxxxxxxxxxxxxxxxxxxx100xxx  ->arithm3_3
-xxxxxxxxxxxxxxxxxxxxxxxxxx001111  ->sync
-xxxxxxxxxxxxxxxxxxxxxxxxxx0110xx  ->mult
-xxxxxxxxxxxxxxxxxxxxxxxxxx000010  ->srl
-xxxxxxxxxxxxxxxxxxxxxxxxxx000001  ->movci
-xxxxxxxxxxxxxxxxxxxxxxxxxx0100x0  ->mfhi
-xxxxxxxxxxxxxxxxxxxxxxxxxx001001  ->jalr
-xxxxxxxxxxxxxxxxxxxxxxxxxx001000  ->jr
-xxxxxxxxxxxxxxxxxxxxxxxxxx00x101  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx111111  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx0x0101  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx0011x0  =Forbidden
-xxxxxxxxxxxxxxxxxxxxxxxxxx11110x  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx0101x0  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx01x111  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxxx11110  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx10111x  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxxx1110x  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx101x0x  =Forbidden
-xxxxxxxxxxxxxxxxxxxxxxxxxx1x111x  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx1110xx  =Forbidden
-xxxxxxxxxxxxxxxxxxxxxxxxxx01x1xx  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx110xxx  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx000010  ->srl
 xxxxxxxxxxxxxxxxxxxxxxxxxx000100  ->arithm3_2
 xxxxxxxxxxxxxxxxxxxxxxxxxx000111  ->arithm3_2
 xxxxxxxxxxxxxxxxxxxxxxxxxx00101x  ->arithm3_2
+xxxxxxxxxxxxxxxxxxxxxxxxxx10101x  ->arithm3_3
+xxxxxxxxxxxxxxxxxxxxxxxxxx100xxx  ->arithm3_3
+xxxxxxxxxxxxxxxxxxxxxxxxxx0100x1  ->mthi
+xxxxxxxxxxxxxxxxxxxxxxxxxx000001  ->movci
+xxxxxxxxxxxxxxxxxxxxxxxxxx001101  =NaClHalt
+xxxxxxxxxxxxxxxxxxxxxxxxxx0110xx  ->mult
+xxxxxxxxxxxxxxxxxxxxxxxxxx001001  ->jalr
+xxxxxxxxxxxxxxxxxxxxxxxxxx001000  ->jr
 xxxxxxxxxxxxxxxxxxxxxxxxxx000000  ->arithm3_1
 xxxxxxxxxxxxxxxxxxxxxxxxxx000011  ->arithm3_1
+xxxxxxxxxxxxxxxxxxxxxxxxxx0100x0  ->mfhi
+xxxxxxxxxxxxxxxxxxxxxxxxxx000110  ->srlv
+xxxxxxxxxxxxxxxxxxxxxxxxxx001111  ->sync
 
 -- regimm (See Table A.4)
 pat0(31:0)                        
-xxxxxxxxxxx000xxxxxxxxxxxxxxxxxx  =Branch
 xxxxxxxxxxxx10xxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxxxxxxxxx1xxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxxxxxxx100xxxxxxxxxxxxxxxxxx  =BranchAndLink
+xxxxxxxxxxx000xxxxxxxxxxxxxxxxxx  =Branch
 
 -- special2 (See Table A.5)
 pat0(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxxxx000x0x  ->mult
+xxxxxxxxxxxxxxxxxxxxxxxxxx000010  ->arithm3_2
+xxxxxxxxxxxxxxxxxxxxxxxxxx10000x  ->arithm3_2
 xxxxxxxxxxxxxxxxxxxxxxxxxx111111  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx000x11  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx00x110  =Forbidden
@@ -84,13 +89,10 @@ xxxxxxxxxxxxxxxxxxxxxxxxxx100x1x  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx10x10x  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxxxx10xx  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxxx10xxx  =Forbidden
-xxxxxxxxxxxxxxxxxxxxxxxxxx000010  ->arithm3_2
-xxxxxxxxxxxxxxxxxxxxxxxxxx10000x  ->arithm3_2
+xxxxxxxxxxxxxxxxxxxxxxxxxx000x0x  ->mult
 
 -- special3 (See Table A.6)
 pat0(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxxxx000x00  =ExtIns
-xxxxxxxxxxxxxxxxxxxxxxxxxx100000  ->bshfl
 xxxxxxxxxxxxxxxxxxxxxxxxxx111111  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx1000x1  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx10x111  =Forbidden
@@ -102,22 +104,24 @@ xxxxxxxxxxxxxxxxxxxxxxxxxx10x10x  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx1x10xx  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx0x1xxx  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxxx10xxx  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx000x00  =ExtIns
+xxxxxxxxxxxxxxxxxxxxxxxxxx100000  ->bshfl
 
 -- movci (See Table A.7)
 pat0(31:0)                        pat1(31:0)                        
+xxxxxxxxxxxxxx0xxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx00000xxxxxx  =Arithm3
 xxxxxxxxxxxxxx1xxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx00000xxxxxx  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  ~xxxxxxxxxxxxxxxxxxxxx00000xxxxxx =Forbidden
-xxxxxxxxxxxxxx0xxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx00000xxxxxx  =Arithm3
 
 -- srl (See Table A.8)
 pat0(31:0)                        
-~xxxxxx0000xxxxxxxxxxxxxxxxxxxxxx =Forbidden
 xxxxxx0000xxxxxxxxxxxxxxxxxxxxxx  =Arithm3
+~xxxxxx0000xxxxxxxxxxxxxxxxxxxxxx =Forbidden
 
 -- srlv (See Table A.9)
 pat0(31:0)                        
-~xxxxxxxxxxxxxxxxxxxxx0000xxxxxxx =Forbidden
 xxxxxxxxxxxxxxxxxxxxx0000xxxxxxx  =Arithm3
+~xxxxxxxxxxxxxxxxxxxxx0000xxxxxxx =Forbidden
 
 -- bshfl (See Table A.10)
 pat0(31:0)                        
@@ -136,7 +140,6 @@ xxxxxxxxxxxxxxxxxxxxx1x000xxxxxx  ->arithm3_1
 
 -- cop0 (See Table A.11)
 pat0(31:0)                        
-xxxxxx01011xxxxxxxxxxxxxxxxxxxxx  ->mfmc0
 xxxxxx10111xxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx11110xxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx01x10xxxxxxxxxxxxxxxxxxxxx  =Forbidden
@@ -148,6 +151,7 @@ xxxxxx1x10xxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx110xxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx00xxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx10000xxxxxxxxxxxxxxxxxxxxx  ->c0
+xxxxxx01011xxxxxxxxxxxxxxxxxxxxx  ->mfmc0
 
 -- c0 (See Table A.12)
 pat0(31:0)                        
@@ -155,8 +159,6 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 
 -- cop1 (See Table A.13)
 pat0(31:0)                        
-xxxxxx00000xxxxxxxxxxxxxxxxxxxxx  ->mfc1
-xxxxxx00011xxxxxxxxxxxxxxxxxxxxx  ->mfc1
 xxxxxx01000xxxxxxxxxxxxxxxxxxxxx  ->bc1
 xxxxxx01111xxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx00x01xxxxxxxxxxxxxxxxxxxxx  =Forbidden
@@ -164,28 +166,23 @@ xxxxxx010x1xxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx0110xxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx1001xxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx0xx10xxxxxxxxxxxxxxxxxxxxx  =Forbidden
+xxxxxx00100xxxxxxxxxxxxxxxxxxxxx  ->mtc1
+xxxxxx00111xxxxxxxxxxxxxxxxxxxxx  ->mtc1
+xxxxxx00000xxxxxxxxxxxxxxxxxxxxx  ->mfc1
+xxxxxx00011xxxxxxxxxxxxxxxxxxxxx  ->mfc1
 xxxxxx1110xxxxxxxxxxxxxxxxxxxxxx  ->c1
 xxxxxx10x0xxxxxxxxxxxxxxxxxxxxxx  ->c1
 xxxxxx1x11xxxxxxxxxxxxxxxxxxxxxx  ->c1
 xxxxxx110xxxxxxxxxxxxxxxxxxxxxxx  ->c1
-xxxxxx00100xxxxxxxxxxxxxxxxxxxxx  ->mtc1
-xxxxxx00111xxxxxxxxxxxxxxxxxxxxx  ->mtc1
 
 -- c1 (See Table A.14, A.15, A.16, A.17)
 pat0(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxxxx101111  =Safe
-xxxxxxxxxxxxxxxxxxxxxxxxxx01001x  =Safe
-xxxxxxxxxxxxxxxxxxxxxxxxxx10x110  =Safe
-xxxxxxxxxxxxxxxxxxxxxxxxxx10110x  =Safe
-xxxxxxxxxxxxxxxxxxxxxxxxxx0000xx  =Safe
 xxxxxxxxxxxxxxxxxxxxxxxxxx010101  ->fp
 xxxxxxxxxxxxxxxxxxxxxxxxxx010110  ->fp
 xxxxxxxxxxxxxxxxxxxxxxxxxx101000  ->fp
 xxxxxxxxxxxxxxxxxxxxxxxxxx0010xx  ->fp
 xxxxxxxxxxxxxxxxxxxxxxxxxx100x0x  ->fp
 xxxxxxxxxxxxxxxxxxxxxxxxxx00x1xx  ->fp
-xxxxxxxxxxxxxxxxxxxxxxxxxx010001  ->movcf
-xxxxxxxxxxxxxxxxxxxxxxxxxx11xxxx  ->c_cond_fmt
 xxxxxxxxxxxxxxxxxxxxxxxxxx011110  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx100111  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx101010  =Forbidden
@@ -195,15 +192,21 @@ xxxxxxxxxxxxxxxxxxxxxxxxxx01110x  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx10001x  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx1010x1  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx0110xx  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx101111  =Safe
+xxxxxxxxxxxxxxxxxxxxxxxxxx01001x  =Safe
+xxxxxxxxxxxxxxxxxxxxxxxxxx10x110  =Safe
+xxxxxxxxxxxxxxxxxxxxxxxxxx10110x  =Safe
+xxxxxxxxxxxxxxxxxxxxxxxxxx0000xx  =Safe
+xxxxxxxxxxxxxxxxxxxxxxxxxx010001  ->movcf
+xxxxxxxxxxxxxxxxxxxxxxxxxx11xxxx  ->c_cond_fmt
 
 -- movcf (See Table A.18)
 pat0(31:0)                        
-xxxxxxxxxxxxxx0xxxxxxxxxxxxxxxxx  =Safe
 xxxxxxxxxxxxxx1xxxxxxxxxxxxxxxxx  =Forbidden
+xxxxxxxxxxxxxx0xxxxxxxxxxxxxxxxx  =Safe
 
 -- cop2 (See Table A.19)
 pat0(31:0)                        
-xxxxxx01000xxxxxxxxxxxxxxxxxxxxx  ->bc2
 xxxxxx11110xxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx010x1xxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx01x10xxxxxxxxxxxxxxxxxxxxx  =Forbidden
@@ -211,13 +214,10 @@ xxxxxxx1111xxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxxx110xxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx110xxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxxx0xxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
+xxxxxx01000xxxxxxxxxxxxxxxxxxxxx  ->bc2
 
 -- cop1x (See Table A.20)
 pat0(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxxxx110110  =Safe
-xxxxxxxxxxxxxxxxxxxxxxxxxxx11110  =Safe
-xxxxxxxxxxxxxxxxxxxxxxxxxx10x110  =Safe
-xxxxxxxxxxxxxxxxxxxxxxxxxx1xx00x  =Safe
 xxxxxxxxxxxxxxxxxxxxxxxxxx110111  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxxx11111  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx10x111  =Forbidden
@@ -228,11 +228,15 @@ xxxxxxxxxxxxxxxxxxxxxxxxxx10x10x  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx010xxx  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx1xx01x  =Forbidden
 xxxxxxxxxxxxxxxxxxxxxxxxxx00xxxx  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx110110  =Safe
+xxxxxxxxxxxxxxxxxxxxxxxxxxx11110  =Safe
+xxxxxxxxxxxxxxxxxxxxxxxxxx10x110  =Safe
+xxxxxxxxxxxxxxxxxxxxxxxxxx1xx00x  =Safe
 
 -- branch_1 (blez, bgtz, blezl, bgtzl)
 pat0(31:0)                        
-xxxxxxxxxxx00000xxxxxxxxxxxxxxxx  =Branch
 ~xxxxxxxxxxx00000xxxxxxxxxxxxxxxx =Forbidden
+xxxxxxxxxxx00000xxxxxxxxxxxxxxxx  =Branch
 
 -- arithm2_1 (lui)
 pat0(31:0)                        
@@ -241,49 +245,48 @@ xxxxxx00000xxxxxxxxxxxxxxxxxxxxx  =Arithm2
 
 -- arithm3_1 (sll, sra, wsbh, seb, seh)
 pat0(31:0)                        
-~xxxxxx00000xxxxxxxxxxxxxxxxxxxxx =Forbidden
 xxxxxx00000xxxxxxxxxxxxxxxxxxxxx  =Arithm3
+~xxxxxx00000xxxxxxxxxxxxxxxxxxxxx =Forbidden
 
 -- arithm3_2 (sllv, srav, movz, movn, mul, clz, clo)
 pat0(31:0)                        
-~xxxxxxxxxxxxxxxxxxxxx00000xxxxxx =Forbidden
 xxxxxxxxxxxxxxxxxxxxx00000xxxxxx  =Arithm3
+~xxxxxxxxxxxxxxxxxxxxx00000xxxxxx =Forbidden
 
 -- jr (jr)
-pat0(31:0)                        pat1(31:0)                        
-xxxxxx00000xxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx000000000000000xxxxxx  =NaClHalt
-~xxxxxx00000xxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxx000000000000000xxxxxx  =JmpReg
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  ~xxxxxxxxxxx000000000000000xxxxxx =Forbidden
+pat0(31:0)                        
+~xxxxxxxxxxx000000000000000xxxxxx =Forbidden
+xxxxxxxxxxx000000000000000xxxxxx  =JmpReg
 
 -- jalr (jalr)
 pat0(31:0)                        pat1(31:0)                        
-xxxxxxxxxxx00000xxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx00000xxxxxx  =JalReg
 ~xxxxxxxxxxx00000xxxxxxxxxxxxxxxx ~xxxxxxxxxxxxxxxxxxxxx00000xxxxxx =Forbidden
+xxxxxxxxxxx00000xxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx00000xxxxxx  =JalReg
 
 -- sync (sync)
 pat0(31:0)                        
-xxxxxx00000000000000000000xxxxxx  =Safe
 ~xxxxxx00000000000000000000xxxxxx =Forbidden
+xxxxxx00000000000000000000xxxxxx  =Safe
 
 -- mfhi (mfhi, mflo)
 pat0(31:0)                        pat1(31:0)                        
-~xxxxxx0000000000xxxxxxxxxxxxxxxx ~xxxxxxxxxxxxxxxxxxxxx00000xxxxxx =Forbidden
 xxxxxx0000000000xxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxx00000xxxxxx  =Arithm3
+~xxxxxx0000000000xxxxxxxxxxxxxxxx ~xxxxxxxxxxxxxxxxxxxxx00000xxxxxx =Forbidden
 
 -- mthi (mthi, mtlo)
 pat0(31:0)                        
-xxxxxxxxxxx000000000000000xxxxxx  =Safe
 ~xxxxxxxxxxx000000000000000xxxxxx =Forbidden
+xxxxxxxxxxx000000000000000xxxxxx  =Safe
 
 -- mult (mult, multu, div, divu, madd, maddu, msub, msubu)
 pat0(31:0)                        
-xxxxxxxxxxxxxxxx0000000000xxxxxx  =Safe
 ~xxxxxxxxxxxxxxxx0000000000xxxxxx =Forbidden
+xxxxxxxxxxxxxxxx0000000000xxxxxx  =Safe
 
 -- arithm3_3 (add, addu, sub, subu, and, or, xor, nor, slt, sltu)
 pat0(31:0)                        
-~xxxxxxxxxxxxxxxxxxxxx00000xxxxxx =Forbidden
 xxxxxxxxxxxxxxxxxxxxx00000xxxxxx  =Arithm3
+~xxxxxxxxxxxxxxxxxxxxx00000xxxxxx =Forbidden
 
 -- mfmc0 (di, ei)
 pat0(31:0)                        
@@ -296,8 +299,8 @@ xxxxxxxxxxxxxxxxxxxxx00000000000  =Arithm2
 
 -- mtc1 (mtc1, mthc1)
 pat0(31:0)                        
-xxxxxxxxxxxxxxxxxxxxx00000000000  =Safe
 ~xxxxxxxxxxxxxxxxxxxxx00000000000 =Forbidden
+xxxxxxxxxxxxxxxxxxxxx00000000000  =Safe
 
 -- bc1 (bc1f, bc1t, bc1fl, bc1tl)
 pat0(31:0)                        
@@ -305,8 +308,8 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Branch
 
 -- fp (sqrt.fmt, abs.fmt, mov.fmt, neg.fmt, round.l.fmt, trunc.l.fmt, ceil.l.fmt, floor.l.fmt, round.w.fmt, trunc.w.fmt, ceil.w.fmt, floor.w.fmt, recip.fmt, rsqrt.fmt, cvt.s.fmt, cvt.d.fmt, cvt.w.fmt, cvt.l.fmt, cvt.s.pl)
 pat0(31:0)                        
-xxxxxxxxxxx00000xxxxxxxxxxxxxxxx  =Safe
 ~xxxxxxxxxxx00000xxxxxxxxxxxxxxxx =Forbidden
+xxxxxxxxxxx00000xxxxxxxxxxxxxxxx  =Safe
 
 -- bc2 (bc2f, bc2t, bc2fl, bc2tl)
 pat0(31:0)                        
@@ -314,5 +317,5 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 
 -- c_cond_fmt (c.cond.fmt)
 pat0(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxx00xxxxxx  =Safe
 ~xxxxxxxxxxxxxxxxxxxxxxxx00xxxxxx =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxx00xxxxxx  =Safe

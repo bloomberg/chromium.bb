@@ -108,7 +108,7 @@ function(5:0)
 001010  ->arithm3_2      #  movz
 001011  ->arithm3_2      #  movn
 001100  =Forbidden       #  syscall
-001101  =Forbidden       #  break
+001101  =NaClHalt        #  break
 001110  =Forbidden
 001111  ->sync           #  sync
 010000  ->mfhi           #  mfhi
@@ -736,8 +736,7 @@ pat0(10:6)
 
 -- jr (jr)
 rs(25:21) pat1(20:6)
-00000     000000000000000  =NaClHalt        #  jr $zero
-~00000    000000000000000  =JmpReg          #  jr
+xxxxx     000000000000000  =JmpReg          #  jr
 xxxxx    ~000000000000000  =Forbidden
 
 

@@ -125,5 +125,5 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
    * by the following instruction
    */
 
-  jr $0 /*NACL_HALT*/
+  NACL_HALT
 

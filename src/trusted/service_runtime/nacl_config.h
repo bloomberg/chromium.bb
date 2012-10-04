@@ -269,6 +269,7 @@
 # define NACL_STACK_GETS_ARG        (0)
 # define NACL_STACK_PAD_BELOW_ALIGN (0)
 # define NACL_STACK_RED_ZONE        (0)
+# define NACL_HALT                  break
 /* 16 byte bundles */
 
 #else /* NACL_ARCH(NACL_BUILD_ARCH) */

@@ -15,7 +15,7 @@ namespace nacl_mips_dec {
 struct DecoderState {
   const Load _Load_instance;
   const JalImm _JalImm_instance;
-  const FPLoadStore _FPLoadStore_instance;
+  const Branch _Branch_instance;
   const Arithm2 _Arithm2_instance;
   const Arithm3 _Arithm3_instance;
   const Forbidden _Forbidden_instance;
@@ -24,7 +24,7 @@ struct DecoderState {
   const JalReg _JalReg_instance;
   const NaClHalt _NaClHalt_instance;
   const StoreConditional _StoreConditional_instance;
-  const Branch _Branch_instance;
+  const FPLoadStore _FPLoadStore_instance;
   const JmpImm _JmpImm_instance;
   const JmpReg _JmpReg_instance;
   const Store _Store_instance;
@@ -32,7 +32,7 @@ struct DecoderState {
   DecoderState() :
   _Load_instance()
   ,_JalImm_instance()
-  ,_FPLoadStore_instance()
+  ,_Branch_instance()
   ,_Arithm2_instance()
   ,_Arithm3_instance()
   ,_Forbidden_instance()
@@ -41,7 +41,7 @@ struct DecoderState {
   ,_JalReg_instance()
   ,_NaClHalt_instance()
   ,_StoreConditional_instance()
-  ,_Branch_instance()
+  ,_FPLoadStore_instance()
   ,_JmpImm_instance()
   ,_JmpReg_instance()
   ,_Store_instance()
@@ -270,11 +270,27 @@ static inline const ClassDecoder &decode_special(const Instruction insn, const D
     return decode_jalr(insn, state);
   }
   
+  if (((insn & 0x0000003F) == 0x0000000D)) {
+    return state->_NaClHalt_instance;
+  }
+  
   if (((insn & 0x0000003F) == 0x0000000F)) {
     return decode_sync(insn, state);
   }
   
-  if (((insn & 0x00000037) == 0x00000005)) {
+  if (((insn & 0x0000003F) == 0x0000003F)) {
+    return state->_Forbidden_instance;
+  }
+  
+  if (((insn & 0x0000001F) == 0x0000001E)) {
+    return state->_Forbidden_instance;
+  }
+  
+  if (((insn & 0x0000002F) == 0x00000005)) {
+    return state->_Forbidden_instance;
+  }
+  
+  if (((insn & 0x00000037) == 0x00000017)) {
     return state->_Forbidden_instance;
   }
   
@@ -290,6 +306,10 @@ static inline const ClassDecoder &decode_special(const Instruction insn, const D
     return decode_mthi(insn, state);
   }
   
+  if (((insn & 0x0000003D) == 0x00000014)) {
+    return state->_Forbidden_instance;
+  }
+  
   if (((insn & 0x0000003E) == 0x0000000A)) {
     return decode_arithm3_2(insn, state);
   }
@@ -298,11 +318,11 @@ static inline const ClassDecoder &decode_special(const Instruction insn, const D
     return decode_arithm3_3(insn, state);
   }
   
-  if (((insn & 0x0000003E) == 0x0000003C)) {
+  if (((insn & 0x0000003E) == 0x0000002E)) {
     return state->_Forbidden_instance;
   }
   
-  if (((insn & 0x0000002E) == 0x0000002E)) {
+  if (((insn & 0x0000001E) == 0x0000001C)) {
     return state->_Forbidden_instance;
   }
   
@@ -315,10 +335,6 @@ static inline const ClassDecoder &decode_special(const Instruction insn, const D
   }
   
   if (((insn & 0x0000003C) == 0x00000038)) {
-    return state->_Forbidden_instance;
-  }
-  
-  if (((insn & 0x00000034) == 0x00000014)) {
     return state->_Forbidden_instance;
   }
   
@@ -1052,16 +1068,12 @@ static inline const ClassDecoder &decode_arithm3_2(const Instruction insn, const
  * Specified by: jr.
  */
 static inline const ClassDecoder &decode_jr(const Instruction insn, const DecoderState *state) {
-  if (((insn & 0x03E00000) != 0x00000000) && ((insn & 0x001FFFC0) == 0x00000000)) {
-    return state->_JmpReg_instance;
-  }
-  
-  if (((insn & 0x03E00000) == 0x00000000) && ((insn & 0x001FFFC0) == 0x00000000)) {
-    return state->_NaClHalt_instance;
-  }
-  
-  if ((true) && ((insn & 0x001FFFC0) != 0x00000000)) {
+  if (((insn & 0x001FFFC0) != 0x00000000)) {
     return state->_Forbidden_instance;
+  }
+  
+  if (((insn & 0x001FFFC0) == 0x00000000)) {
+    return state->_JmpReg_instance;
   }
   
   // Catch any attempt to fall through...

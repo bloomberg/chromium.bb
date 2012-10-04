@@ -4,12 +4,12 @@
  * be found in the LICENSE file.
  */
 
+#include "native_client/src/trusted/service_runtime/arch/mips/sel_ldr_mips.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #define STORE_MASK $t7
 #define JUMP_MASK  $t6
-#define NACL_HALT  0x00000008  /*opcode for "jr $zero", Mips nacl halt*/
 
         /*
          * Code to test various address layout boundary conditions.
@@ -234,13 +234,15 @@ _start:
         nop
 
 #if defined(PNACL_AS)
-/* NOTE: unlike x86 the alignment directive on Mips takes
-   the logarithm of the alignment */
+/*
+ * NOTE: unlike x86 the alignment directive on MIPS takes
+ * the logarithm of the alignment
+ */
 #define POW2_BIGGER_THAN_DOT 14
-        .align32 POW2_BIGGER_THAN_DOT, NACL_HALT
-        .fill (TEXT_EXTEND - (1 << POW2_BIGGER_THAN_DOT))/4, 4, NACL_HALT
+        .align32 POW2_BIGGER_THAN_DOT, NACL_HALT_OPCODE
+        .fill (TEXT_EXTEND - (1 << POW2_BIGGER_THAN_DOT))/4, 4, NACL_HALT_OPCODE
 #else
-        .fill (TEXT_EXTEND - (. - start_of_text))/4, 4, NACL_HALT
+        .fill (TEXT_EXTEND - (. - start_of_text))/4, 4, NACL_HALT_OPCODE
 #endif
 
 end_of_text:
