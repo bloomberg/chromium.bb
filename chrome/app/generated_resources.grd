@@ -6513,6 +6513,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is not allowed.
       </message>
+      <message name="IDS_NACL_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
+        This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.
+      </message>
       <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated plug-in.">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is out of date.
       </message>
