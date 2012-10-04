@@ -297,10 +297,8 @@ void Network::SetState(ConnectionState new_state) {
   ConnectionState old_state = state_;
   VLOG(2) << "Entering new state: " << ConnectionStateString(new_state);
   state_ = new_state;
-  if (!IsConnectingState(new_state))
-    set_connection_started(false);
   if (new_state == STATE_FAILURE) {
-    VLOG(2) << "Detected Failure state.";
+    VLOG(1) << service_path() << ": Detected Failure state.";
     if (old_state != STATE_UNKNOWN && old_state != STATE_IDLE) {
       // New failure, the user needs to be notified.
       // Transition STATE_IDLE -> STATE_FAILURE sometimes happens on resume
@@ -313,6 +311,13 @@ void Network::SetState(ConnectionState new_state) {
         error_ = ERROR_UNKNOWN;
       }
     }
+  } else if (new_state == STATE_IDLE && IsConnectingState(old_state)
+             && connection_started()) {
+    // If we requested a connect and never went through a connected state,
+    // treat it as a failure.
+    VLOG(1) << service_path() << ": Inferring Failure state.";
+    notify_failure_ = true;
+    error_ = ERROR_UNKNOWN;
   } else if (new_state != STATE_UNKNOWN) {
     notify_failure_ = false;
     // State changed, so refresh IP address.
@@ -321,6 +326,8 @@ void Network::SetState(ConnectionState new_state) {
   }
   VLOG(1) << name() << ".State [" << service_path() << "]: " << GetStateString()
           << " (was: " << ConnectionStateString(old_state) << ")";
+  if (!IsConnectingState(new_state) && new_state != STATE_UNKNOWN)
+    set_connection_started(false);
 }
 
 void Network::SetError(ConnectionError error) {
@@ -1224,9 +1231,11 @@ std::string WifiNetwork::GetEncryptionString() const {
 }
 
 bool WifiNetwork::IsPassphraseRequired() const {
-  // TODO(stevenjb): Remove error_ tests when fixed.
-  // (http://crosbug.com/10135).
-  if (error() == ERROR_BAD_PASSPHRASE || error() == ERROR_BAD_WEPKEY)
+  if (encryption_ == SECURITY_NONE)
+    return false;
+  // A connection failure might be due to a bad passphrase.
+  if (error() == ERROR_BAD_PASSPHRASE || error() == ERROR_BAD_WEPKEY ||
+      error() == ERROR_UNKNOWN)
     return true;
   // For 802.1x networks, configuration is required if connectable is false
   // unless we're using a certificate pattern.

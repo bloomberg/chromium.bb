@@ -281,6 +281,7 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
 
   // Show connection error notification if necessary.
   if (new_failed_network) {
+    VLOG(1) << "Failed Network: " << new_failed_network->service_path();
     notification_connection_error_->ShowAlways(
         l10n_util::GetStringFUTF16(
             IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS,
