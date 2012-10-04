@@ -651,43 +651,51 @@ body {
 
 .gallery[mode='slide'] > .toolbar > .button.mode {
   background-image: -webkit-image-set(
-    url('../images/gallery/icon_mosaic.png') 1x);
+    url('../images/gallery/icon_mosaic.png') 1x,
+    url('../images/gallery/2x/icon_mosaic.png') 2x);
 }
 
 .gallery[mode='slide'] > .toolbar > .button.mode:active {
   background-image: -webkit-image-set(
-    url('../images/gallery/icon_mosaic_selected.png') 1x);
+    url('../images/gallery/icon_mosaic_selected.png') 1x,
+    url('../images/gallery/2x/icon_mosaic_selected.png') 2x);
 }
 
 .gallery[mode='mosaic'] > .toolbar > .button.mode {
   background-image: -webkit-image-set(
-    url('../images/gallery/icon_1up.png') 1x);
+    url('../images/gallery/icon_1up.png') 1x,
+    url('../images/gallery/2x/icon_1up.png') 2x);
 }
 
 .gallery[mode='mosaic'] > .toolbar > .button.mode:active {
   background-image: -webkit-image-set(
-    url('../images/gallery/icon_1up_selected.png') 1x);
+    url('../images/gallery/icon_1up_selected.png') 1x,
+    url('../images/gallery/2x/icon_1up_selected.png') 2x);
 }
 
 .gallery > .toolbar > .button.slideshow {
   background-image: -webkit-image-set(
-    url('../images/gallery/icon_slideshow.png') 1x);
+    url('../images/gallery/icon_slideshow.png') 1x,
+    url('../images/gallery/2x/icon_slideshow.png') 2x);
 }
 
 .gallery > .toolbar > .button.slideshow:active,
 .gallery > .toolbar > .button.slideshow[pressed] {
     background-image: -webkit-image-set(
-        url('../images/gallery/icon_slideshow_selected.png') 1x);
+        url('../images/gallery/icon_slideshow_selected.png') 1x,
+        url('../images/gallery/2x/icon_slideshow_selected.png') 2x);
 }
 
 .gallery > .toolbar > .button.delete {
   background-image: -webkit-image-set(
-    url('../images/gallery/icon_delete.png') 1x);
+    url('../images/gallery/icon_delete.png') 1x,
+    url('../images/gallery/2x/icon_delete.png') 2x);
 }
 
 .gallery > .toolbar > .button.delete:active {
   background-image: -webkit-image-set(
-    url('../images/gallery/icon_delete_selected.png') 1x);
+    url('../images/gallery/icon_delete_selected.png') 1x,
+    url('../images/gallery/2x/icon_delete_selected.png') 2x);
 }
 
 .gallery > .toolbar > .button.edit {
