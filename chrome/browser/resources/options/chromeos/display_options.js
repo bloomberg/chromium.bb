@@ -121,6 +121,10 @@ cr.define('options', function() {
       container.ontouchmove = this.onTouchMove_.bind(this);
       container.ontouchend = this.endDragging_.bind(this);
 
+      $('display-options-set-primary').onclick = (function() {
+        chrome.send('setPrimary', [this.displays_[this.focusedIndex_].id]);
+      }).bind(this);
+
       chrome.send('getDisplayInfo');
     },
 
@@ -471,6 +475,7 @@ cr.define('options', function() {
           this.displays_[this.focusedIndex_] == null) {
         $('selected-display-data-container').hidden = true;
         $('display-configuration-arrow').hidden = true;
+        $('display-options-set-primary').disabled = true;
         return;
       }
 
@@ -493,6 +498,9 @@ cr.define('options', function() {
           $('display-configurations').offsetTop - arrow.offsetHeight / 2 + 'px';
       arrow.style.left = display.div.offsetLeft + display.div.offsetWidth / 2 -
           arrow.offsetWidth / 2 + 'px';
+
+      $('display-options-set-primary').disabled =
+          this.displays_[this.focusedIndex_].isPrimary;
     },
 
     /**

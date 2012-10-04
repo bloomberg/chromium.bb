@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/json/json_value_converter.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
@@ -48,6 +49,8 @@ void DisplayOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_MIRRORING));
   localized_strings->SetString("stopMirroring", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STOP_MIRRORING));
+  localized_strings->SetString("setPrimary", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_SET_PRIMARY));
   localized_strings->SetString("applyResult", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_APPLY_RESULT));
   localized_strings->SetString("resolution", l10n_util::GetStringUTF16(
@@ -67,6 +70,10 @@ void DisplayOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setMirroring",
       base::Bind(&DisplayOptionsHandler::HandleMirroring,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setPrimary",
+      base::Bind(&DisplayOptionsHandler::HandleSetPrimary,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setDisplayLayout",
@@ -116,7 +123,7 @@ void DisplayOptionsHandler::SendDisplayInfo() {
     const gfx::Display* display = display_manager->GetDisplayAt(i);
     const gfx::Rect& bounds = display->bounds();
     base::DictionaryValue* js_display = new base::DictionaryValue();
-    js_display->SetDouble("id", display->id());
+    js_display->SetString("id", base::Int64ToString(display->id()));
     js_display->SetDouble("x", bounds.x());
     js_display->SetDouble("y", bounds.y());
     js_display->SetDouble("width", bounds.width());
@@ -143,7 +150,7 @@ void DisplayOptionsHandler::SendDisplayInfo() {
       mirroring, displays, *layout_value.get(), *offset_value.get());
 }
 
-void DisplayOptionsHandler::FadeOutForMirroringFinished(bool is_mirroring) {
+void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {
   // We use 'PRIMARY_ONLY' for non-mirroring state for now.
   // TODO(mukai): fix this and support multiple display modes.
   chromeos::OutputState new_state =
@@ -153,7 +160,7 @@ void DisplayOptionsHandler::FadeOutForMirroringFinished(bool is_mirroring) {
   // Not necessary to start fade-in animation.  OutputConfigurator will do that.
 }
 
-void DisplayOptionsHandler::FadeOutForDisplayLayoutFinished(
+void DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished(
     int layout, int offset) {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   aura::DisplayManager* display_manager =
@@ -181,9 +188,30 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
   args->GetBoolean(0, &is_mirroring);
   ash::Shell::GetInstance()->output_configurator_animation()->
       StartFadeOutAnimation(base::Bind(
-          &DisplayOptionsHandler::FadeOutForMirroringFinished,
+          &DisplayOptionsHandler::OnFadeOutForMirroringFinished,
           base::Unretained(this),
           is_mirroring));
+}
+
+void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
+  DCHECK(!args->empty());
+
+  int64 display_id = gfx::Display::kInvalidDisplayID;
+  std::string id_value;
+  if (!args->GetString(0, &id_value)) {
+    LOG(ERROR) << "Can't find ID";
+    return;
+  }
+
+  if (!base::StringToInt64(id_value, &display_id) ||
+      display_id == gfx::Display::kInvalidDisplayID) {
+    LOG(ERROR) << "Invalid parameter: " << id_value;
+    return;
+  }
+
+  SetPrimaryDisplayIDPref(
+      Profile::FromWebUI(web_ui())->GetPrefs(), display_id);
+  SendDisplayInfo();
 }
 
 void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
@@ -198,7 +226,7 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
   DCHECK_GE(ash::DisplayLayout::LEFT, layout);
   ash::Shell::GetInstance()->output_configurator_animation()->
       StartFadeOutAnimation(base::Bind(
-          &DisplayOptionsHandler::FadeOutForDisplayLayoutFinished,
+          &DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished,
           base::Unretained(this),
           static_cast<int>(layout),
           static_cast<int>(offset)));
