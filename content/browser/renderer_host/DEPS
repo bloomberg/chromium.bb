@@ -1,4 +1,5 @@
 include_rules = [
+  "+cc/switches.h", # For cc command line switches.
   "+content/renderer",  # For single-process mode.
   "+media/base",  # For media command line switches.
   "+media/audio/audio_util.h",  # For audio hardware sample-rate.

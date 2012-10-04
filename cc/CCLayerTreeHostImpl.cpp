@@ -333,7 +333,7 @@ bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
         if (appendQuadsData.hadMissingTiles) {
             bool layerHasAnimatingTransform = it->screenSpaceTransformIsAnimating() || it->drawTransformIsAnimating();
-            if (layerHasAnimatingTransform)
+            if (layerHasAnimatingTransform || CCSettings::jankInsteadOfCheckerboard())
                 drawFrame = false;
         }
 

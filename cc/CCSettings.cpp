@@ -4,7 +4,9 @@
 
 #include "config.h"
 
+#include "base/command_line.h"
 #include "CCSettings.h"
+#include "cc/switches.h"
 
 namespace {
 static bool s_perTilePaintingEnabled = false;
@@ -22,6 +24,16 @@ void CCSettings::setPartialSwapEnabled(bool enabled) { s_partialSwapEnabled = en
 
 bool CCSettings::acceleratedAnimationEnabled() { return s_acceleratedAnimationEnabled; }
 void CCSettings::setAcceleratedAnimationEnabled(bool enabled) { s_acceleratedAnimationEnabled = enabled; }
+
+bool CCSettings::jankInsteadOfCheckerboard()
+{
+    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kJankInsteadOfCheckerboard);
+}
+
+bool CCSettings::backgroundColorInsteadOfCheckerboard()
+{
+    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kBackgroundColorInsteadOfCheckerboard);
+}
 
 void CCSettings::reset()
 {

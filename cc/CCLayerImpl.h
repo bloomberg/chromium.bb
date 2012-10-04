@@ -201,7 +201,7 @@ public:
     void setNonFastScrollableRegion(const Region& region) { m_nonFastScrollableRegion = region; }
 
     void setDrawCheckerboardForMissingTiles(bool checkerboard) { m_drawCheckerboardForMissingTiles = checkerboard; }
-    bool drawCheckerboardForMissingTiles() const { return m_drawCheckerboardForMissingTiles; }
+    bool drawCheckerboardForMissingTiles() const;
 
     CCInputHandlerClient::ScrollStatus tryScroll(const IntPoint& viewportPoint, CCInputHandlerClient::ScrollInputType) const;
 

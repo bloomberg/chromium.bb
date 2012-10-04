@@ -9,11 +9,18 @@
 
 namespace cc {
 
+// This file is for settings that apply to all compositors.  Add settings to
+// CCLayerTreeSettings if a ui and renderer compositor might not want the same
+// setting.
+
 class CCSettings {
 public:
     static bool perTilePaintingEnabled();
     static bool partialSwapEnabled();
     static bool acceleratedAnimationEnabled();
+
+    static bool jankInsteadOfCheckerboard();
+    static bool backgroundColorInsteadOfCheckerboard();
 
     // These setters should only be used on the main thread before the layer
     // renderer is initialized.

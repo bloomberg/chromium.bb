@@ -208,6 +208,8 @@
       'SkPictureCanvasLayerTextureUpdater.h',
       'SolidColorLayerChromium.cpp',
       'SolidColorLayerChromium.h',
+      'switches.cc',
+      'switches.h',
       'TextureCopier.cpp',
       'TextureCopier.h',
       'TextureLayerChromium.cpp',
@@ -247,6 +249,8 @@
           ],
           'defines': [
             'WTF_USE_ACCELERATED_COMPOSITING=1',
+            # http://crbug.com/154052
+            'WEBKIT_GLUE_IMPLEMENTATION=1',
           ],
           'include_dirs': [
             '<(webkit_src_dir)/Source/Platform/chromium',

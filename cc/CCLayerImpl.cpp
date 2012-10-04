@@ -15,6 +15,7 @@
 #include "CCProxy.h"
 #include "CCQuadSink.h"
 #include "CCScrollbarAnimationController.h"
+#include "CCSettings.h"
 #include "TraceEvent.h"
 
 using WebKit::WebTransformationMatrix;
@@ -222,6 +223,11 @@ CCInputHandlerClient::ScrollStatus CCLayerImpl::tryScroll(const IntPoint& viewpo
     }
 
     return CCInputHandlerClient::ScrollStarted;
+}
+
+bool CCLayerImpl::drawCheckerboardForMissingTiles() const
+{
+    return m_drawCheckerboardForMissingTiles && !CCSettings::backgroundColorInsteadOfCheckerboard();
 }
 
 IntRect CCLayerImpl::layerRectToContentRect(const WebKit::WebRect& layerRect)
