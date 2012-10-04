@@ -24,6 +24,9 @@ namespace aura {
 class DesktopActivationClient;
 class DesktopDispatcherClient;
 class FocusManager;
+namespace client {
+class ScreenPositionClient;
+}
 namespace shared {
 class CompoundEventFilter;
 class InputMethodEventFilter;
@@ -190,6 +193,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   scoped_ptr<DesktopCaptureClient> capture_client_;
   scoped_ptr<aura::DesktopActivationClient> activation_client_;
   scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;
+  scoped_ptr<aura::client::ScreenPositionClient> position_client_;
 
   // Translates custom bitmaps provided by the webpage into X11 cursors.
   ui::CursorLoaderX11 cursor_loader_;

@@ -24,6 +24,7 @@
 #include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/widget/desktop_layout_manager.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/x11_desktop_handler.h"
 #include "ui/views/widget/x11_window_event_filter.h"
 
@@ -187,6 +188,10 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   // CursorClient's interface being plain wrong.
   aura::client::SetCursorClient(root_window_, this);
 
+  position_client_.reset(new DesktopScreenPositionClient());
+  aura::client::SetScreenPositionClient(root_window_,
+                                        position_client_.get());
+
   // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
   root_window_event_filter_ = new aura::shared::CompoundEventFilter;
   // Pass ownership of the filter to the root_window.
@@ -321,8 +326,29 @@ void DesktopRootWindowHostLinux::SetSize(const gfx::Size& size) {
 }
 
 void DesktopRootWindowHostLinux::CenterWindow(const gfx::Size& size) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  gfx::Rect parent_bounds = GetWorkAreaBoundsInScreen();
+
+  // If |window_|'s transient parent bounds are big enough to contain |size|,
+  // use them instead.
+  if (content_window_->transient_parent()) {
+    gfx::Rect transient_parent_rect =
+        content_window_->transient_parent()->GetBoundsInScreen();
+    if (transient_parent_rect.height() >= size.height() &&
+        transient_parent_rect.width() >= size.width()) {
+      parent_bounds = transient_parent_rect;
+    }
+  }
+
+  gfx::Rect window_bounds(
+      parent_bounds.x() + (parent_bounds.width() - size.width()) / 2,
+      parent_bounds.y() + (parent_bounds.height() - size.height()) / 2,
+      size.width(),
+      size.height());
+  // Don't size the window bigger than the parent, otherwise the user may not be
+  // able to close or move it.
+  window_bounds = window_bounds.AdjustToFit(parent_bounds);
+
+  SetBounds(window_bounds);
 }
 
 void DesktopRootWindowHostLinux::GetWindowPlacement(

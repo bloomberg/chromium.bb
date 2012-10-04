@@ -347,7 +347,7 @@ void DesktopNativeWidgetAura::SetVisibilityChangedAnimationsEnabled(
 // DesktopNativeWidgetAura, aura::WindowDelegate implementation:
 
 gfx::Size DesktopNativeWidgetAura::GetMinimumSize() const {
-  return gfx::Size(100, 100);
+  return native_widget_delegate_->GetMinimumSize();
 }
 
 void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
