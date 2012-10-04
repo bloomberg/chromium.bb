@@ -161,12 +161,6 @@ class StubLogin : public chromeos::LoginStatusConsumer,
 
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
                                        Profile* profile) {
-  // Login should always use dual display if there is an external display.
-  chromeos::OutputConfigurator* output_configurator =
-      ash::Shell::GetInstance()->output_configurator();
-  if (output_configurator->connected_output_count() > 1)
-    output_configurator->SetDisplayMode(chromeos::STATE_DUAL_PRIMARY_ONLY);
-
   if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
     std::string first_screen =
         parsed_command_line.GetSwitchValueASCII(switches::kLoginScreen);

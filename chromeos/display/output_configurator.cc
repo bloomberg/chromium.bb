@@ -382,8 +382,8 @@ static OutputState GetNextState(Display* display,
           state = STATE_DUAL_PRIMARY_ONLY;
           break;
         default:
-          // Unknown so just request something safe.
-          state = STATE_DUAL_PRIMARY_ONLY;
+          // Default to mirror mode for m23.
+          state = STATE_DUAL_MIRROR;
       }
       break;
     }
