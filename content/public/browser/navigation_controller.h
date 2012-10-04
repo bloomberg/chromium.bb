@@ -83,6 +83,16 @@ class NavigationController {
     // static constants.
   };
 
+  enum RestoreType {
+    // Indicates the restore is from the current session. For example, restoring
+    // a closed tab.
+    RESTORE_CURRENT_SESSION,
+
+    // Restore from the previous session.
+    RESTORE_LAST_SESSION_EXITED_CLEANLY,
+    RESTORE_LAST_SESSION_CRASHED,
+  };
+
   // Creates a navigation entry and translates the virtual url to a real one.
   // This is a general call; prefer LoadURL[FromRenderer]/TransferURL below.
   // Extra headers are separated by \n.
@@ -161,14 +171,13 @@ class NavigationController {
   virtual void SetBrowserContext(BrowserContext* browser_context) = 0;
 
   // Initializes this NavigationController with the given saved navigations,
-  // using selected_navigation as the currently loaded entry. Before this call
-  // the controller should be unused (there should be no current entry). If
-  // from_last_session is true, navigations are from the previous session,
-  // otherwise they are from the current session (undo tab close). This takes
-  // ownership of the NavigationEntrys in |entries| and clears it out.
-  // This is used for session restore.
+  // using |selected_navigation| as the currently loaded entry. Before this call
+  // the controller should be unused (there should be no current entry). |type|
+  // indicates where the restor comes from. This takes ownership of the
+  // NavigationEntrys in |entries| and clears it out.  This is used for session
+  // restore.
   virtual void Restore(int selected_navigation,
-                       bool from_last_session,
+                       RestoreType type,
                        std::vector<NavigationEntry*>* entries) = 0;
 
   // Entries -------------------------------------------------------------------

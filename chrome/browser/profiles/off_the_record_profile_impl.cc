@@ -335,10 +335,6 @@ content::SpeechRecognitionPreferences*
   return profile_->GetSpeechRecognitionPreferences();
 }
 
-bool OffTheRecordProfileImpl::DidLastSessionExitCleanly() {
-  return profile_->DidLastSessionExitCleanly();
-}
-
 quota::SpecialStoragePolicy*
     OffTheRecordProfileImpl::GetSpecialStoragePolicy() {
   return GetExtensionSpecialStoragePolicy();
@@ -387,6 +383,10 @@ void OffTheRecordProfileImpl::set_last_selected_directory(
 bool OffTheRecordProfileImpl::WasCreatedByVersionOrLater(
     const std::string& version) {
   return profile_->WasCreatedByVersionOrLater(version);
+}
+
+bool OffTheRecordProfileImpl::DidLastSessionExitCleanly() {
+  return profile_->DidLastSessionExitCleanly();
 }
 
 #if defined(OS_CHROMEOS)

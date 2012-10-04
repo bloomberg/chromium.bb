@@ -1891,13 +1891,16 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
       WebContentsImpl::Create(browser_context(), NULL, MSG_ROUTING_NONE,
                               NULL));
   NavigationControllerImpl& our_controller = our_contents->GetController();
-  our_controller.Restore(0, true, &entries);
+  our_controller.Restore(
+      0,
+      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
+      &entries);
   ASSERT_EQ(0u, entries.size());
 
   // Before navigating to the restored entry, it should have a restore_type
   // and no SiteInstance.
   ASSERT_EQ(1, our_controller.GetEntryCount());
-  EXPECT_EQ(NavigationEntryImpl::RESTORE_LAST_SESSION,
+  EXPECT_EQ(NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetEntryAtIndex(0))->restore_type());
   EXPECT_FALSE(NavigationEntryImpl::FromNavigationEntry(
@@ -1966,12 +1969,13 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
       WebContentsImpl::Create(browser_context(), NULL, MSG_ROUTING_NONE,
                               NULL));
   NavigationControllerImpl& our_controller = our_contents->GetController();
-  our_controller.Restore(0, true, &entries);
+  our_controller.Restore(
+      0, NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);
   ASSERT_EQ(0u, entries.size());
 
   // Before navigating to the restored entry, it should have a restore_type
   // and no SiteInstance.
-  EXPECT_EQ(NavigationEntryImpl::RESTORE_LAST_SESSION,
+  EXPECT_EQ(NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY,
             NavigationEntryImpl::FromNavigationEntry(
                 our_controller.GetEntryAtIndex(0))->restore_type());
   EXPECT_FALSE(NavigationEntryImpl::FromNavigationEntry(

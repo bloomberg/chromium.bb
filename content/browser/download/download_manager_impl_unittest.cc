@@ -397,7 +397,6 @@ class MockBrowserContext : public content::BrowserContext {
                content::GeolocationPermissionContext* ());
   MOCK_METHOD0(GetSpeechRecognitionPreferences,
                content::SpeechRecognitionPreferences* ());
-  MOCK_METHOD0(DidLastSessionExitCleanly, bool());
   MOCK_METHOD0(GetSpecialStoragePolicy, quota::SpecialStoragePolicy*());
 };
 

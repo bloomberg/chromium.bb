@@ -563,5 +563,5 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
 
 bool HasPendingUncleanExit(Profile* profile) {
   return !profile->DidLastSessionExitCleanly() &&
-    !profile_launch_observer.Get().HasBeenLaunched(profile);
+      !profile_launch_observer.Get().HasBeenLaunched(profile);
 }

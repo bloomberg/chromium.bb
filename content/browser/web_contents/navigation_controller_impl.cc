@@ -85,18 +85,30 @@ void SetContentStateIfEmpty(NavigationEntryImpl* entry) {
   }
 }
 
+NavigationEntryImpl::RestoreType ControllerRestoreTypeToEntryType(
+    NavigationController::RestoreType type) {
+  switch (type) {
+    case NavigationController::RESTORE_CURRENT_SESSION:
+      return NavigationEntryImpl::RESTORE_CURRENT_SESSION;
+    case NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY:
+      return NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY;
+    case NavigationController::RESTORE_LAST_SESSION_CRASHED:
+      return NavigationEntryImpl::RESTORE_LAST_SESSION_CRASHED;
+  }
+  NOTREACHED();
+  return NavigationEntryImpl::RESTORE_CURRENT_SESSION;
+}
+
 // Configure all the NavigationEntries in entries for restore. This resets
 // the transition type to reload and makes sure the content state isn't empty.
 void ConfigureEntriesForRestore(
     std::vector<linked_ptr<NavigationEntryImpl> >* entries,
-    bool from_last_session) {
+    NavigationController::RestoreType type) {
   for (size_t i = 0; i < entries->size(); ++i) {
     // Use a transition type of reload so that we don't incorrectly increase
     // the typed count.
     (*entries)[i]->SetTransitionType(content::PAGE_TRANSITION_RELOAD);
-    (*entries)[i]->set_restore_type(from_last_session ?
-        NavigationEntryImpl::RESTORE_LAST_SESSION :
-        NavigationEntryImpl::RESTORE_CURRENT_SESSION);
+    (*entries)[i]->set_restore_type(ControllerRestoreTypeToEntryType(type));
     // NOTE(darin): This code is only needed for backwards compat.
     SetContentStateIfEmpty((*entries)[i].get());
   }
@@ -222,7 +234,7 @@ void NavigationControllerImpl::SetBrowserContext(
 
 void NavigationControllerImpl::Restore(
     int selected_navigation,
-    bool from_last_session,
+    RestoreType type,
     std::vector<NavigationEntry*>* entries) {
   // Verify that this controller is unused and that the input is valid.
   DCHECK(GetEntryCount() == 0 && !GetPendingEntry());
@@ -238,7 +250,7 @@ void NavigationControllerImpl::Restore(
   entries->clear();
 
   // And finish the restore.
-  FinishRestore(selected_navigation, from_last_session);
+  FinishRestore(selected_navigation, type);
 }
 
 void NavigationControllerImpl::Reload(bool check_for_repost) {
@@ -1150,7 +1162,7 @@ void NavigationControllerImpl::CopyStateFrom(
         make_pair(it->first, source_namespace->Clone()));
   }
 
-  FinishRestore(source.last_committed_entry_index_, false);
+  FinishRestore(source.last_committed_entry_index_, RESTORE_CURRENT_SESSION);
 
   // Copy the max page id map from the old tab to the new tab.  This ensures
   // that new and existing navigations in the tab's current SiteInstances
@@ -1537,9 +1549,9 @@ void NavigationControllerImpl::NotifyEntryChanged(const NavigationEntry* entry,
 }
 
 void NavigationControllerImpl::FinishRestore(int selected_index,
-                                             bool from_last_session) {
+                                             RestoreType type) {
   DCHECK(selected_index >= 0 && selected_index < GetEntryCount());
-  ConfigureEntriesForRestore(&entries_, from_last_session);
+  ConfigureEntriesForRestore(&entries_, type);
 
   SetMaxRestoredPageID(static_cast<int32>(GetEntryCount()));
 

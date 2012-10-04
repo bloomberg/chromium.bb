@@ -37,7 +37,7 @@ class CONTENT_EXPORT NavigationControllerImpl
       content::BrowserContext* browser_context) OVERRIDE;
   virtual void Restore(
       int selected_navigation,
-      bool from_last_session,
+      RestoreType type,
       std::vector<content::NavigationEntry*>* entries) OVERRIDE;
   virtual content::NavigationEntry* GetActiveEntry() const OVERRIDE;
   virtual content::NavigationEntry* GetVisibleEntry() const OVERRIDE;
@@ -247,8 +247,8 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // Invoked after session/tab restore or cloning a tab. Resets the transition
   // type of the entries, updates the max page id and creates the active
-  // contents. See RestoreFromState for a description of from_last_session.
-  void FinishRestore(int selected_index, bool from_last_session);
+  // contents.
+  void FinishRestore(int selected_index, RestoreType type);
 
   // Inserts a new entry or replaces the current entry with a new one, removing
   // all entries after it. The new entry will become the active one.

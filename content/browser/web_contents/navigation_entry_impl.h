@@ -125,8 +125,9 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // Enumerations of the possible restore types.
   enum RestoreType {
-    // The entry has been restored is from the last session.
-    RESTORE_LAST_SESSION,
+    // Restore from the previous session.
+    RESTORE_LAST_SESSION_EXITED_CLEANLY,
+    RESTORE_LAST_SESSION_CRASHED,
 
     // The entry has been restored from the current session. This is used when
     // the user issues 'reopen closed tab'.

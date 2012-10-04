@@ -70,7 +70,6 @@ class ProfileImpl : public Profile,
       GetGeolocationPermissionContext() OVERRIDE;
   virtual content::SpeechRecognitionPreferences*
       GetSpeechRecognitionPreferences() OVERRIDE;
-  virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
   // Profile implementation:
@@ -109,6 +108,7 @@ class ProfileImpl : public Profile,
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
   virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
+  virtual bool DidLastSessionExitCleanly() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale,

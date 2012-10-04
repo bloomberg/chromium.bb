@@ -339,6 +339,9 @@ class Profile : public content::BrowserContext {
     return restored_last_session_;
   }
 
+  // Returns true if the last time this profile was open it was exited cleanly.
+  virtual bool DidLastSessionExitCleanly() = 0;
+
   // Stop sending accessibility events until ResumeAccessibilityEvents().
   // Calls to Pause nest; no events will be sent until the number of
   // Resume calls matches the number of Pause calls received.

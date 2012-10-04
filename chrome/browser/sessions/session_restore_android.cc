@@ -14,9 +14,9 @@
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 
-// static
 // The android implementation does not do anything "foreign session" specific.
 // We use it to restore tabs from "recently closed" too.
+// static
 void SessionRestore::RestoreForeignSessionTab(
     content::WebContents* web_contents,
     const SessionTab& session_tab,
@@ -32,9 +32,10 @@ void SessionRestore::RestoreForeignSessionTab(
   content::WebContents* new_web_contents = content::WebContents::Create(
         context, NULL, MSG_ROUTING_NONE, NULL);
   int selected_index = session_tab.normalized_navigation_index();
-  new_web_contents->GetController().Restore(selected_index,
-                                            true, /* from_last_session */
-                                            &entries);
+  new_web_contents->GetController().Restore(
+      selected_index,
+      content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
+      &entries);
   tab_model->CreateTab(new_web_contents);
 }
 

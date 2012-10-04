@@ -197,7 +197,6 @@ class TestingProfile : public Profile {
       GetGeolocationPermissionContext() OVERRIDE;
   virtual content::SpeechRecognitionPreferences*
       GetSpeechRecognitionPreferences() OVERRIDE;
-  virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
   virtual TestingProfile* AsTestingProfile() OVERRIDE;
@@ -272,6 +271,7 @@ class TestingProfile : public Profile {
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
   virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
+  virtual bool DidLastSessionExitCleanly() OVERRIDE;
 #if defined(OS_CHROMEOS)
   virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE {
   }

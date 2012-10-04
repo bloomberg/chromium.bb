@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_tabrestore.h"
 
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -25,6 +26,20 @@ using content::NavigationController;
 using content::NavigationEntry;
 
 namespace chrome {
+
+namespace {
+
+NavigationController::RestoreType GetRestoreType(
+    Browser* browser,
+    bool from_last_session) {
+  if (!from_last_session)
+    return NavigationController::RESTORE_CURRENT_SESSION;
+  return browser->profile()->DidLastSessionExitCleanly() ?
+      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY :
+      NavigationController::RESTORE_LAST_SESSION_CRASHED;
+}
+
+}
 
 int GetIndexForInsertionDuringRestore(Browser* browser, int relative_index) {
   return (browser->tab_strip_model()->insertion_policy() ==
@@ -64,7 +79,8 @@ content::WebContents* AddRestoredTab(
           navigations, browser->profile());
   new_tab->SetUserAgentOverride(user_agent_override);
   new_tab->GetController().Restore(
-      selected_navigation, from_last_session, &entries);
+      selected_navigation, GetRestoreType(browser, from_last_session),
+      &entries);
   DCHECK_EQ(0u, entries.size());
 
   int add_types = select ? TabStripModel::ADD_ACTIVE :
@@ -127,7 +143,8 @@ void ReplaceRestoredTab(
       TabNavigation::CreateNavigationEntriesFromTabNavigations(
           navigations, browser->profile());
   replacement->GetController().Restore(
-      selected_navigation, from_last_session, &entries);
+      selected_navigation, GetRestoreType(browser, from_last_session),
+      &entries);
   DCHECK_EQ(0u, entries.size());
 
   browser->tab_strip_model()->ReplaceNavigationControllerAt(

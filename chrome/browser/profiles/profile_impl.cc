@@ -637,6 +637,13 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
   return (profile_version.CompareTo(arg_version) >= 0);
 }
 
+bool ProfileImpl::DidLastSessionExitCleanly() {
+  // last_session_exited_cleanly_ is set when the preferences are loaded. Force
+  // it to be set by asking for the prefs.
+  GetPrefs();
+  return last_session_exited_cleanly_;
+}
+
 policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
   return cloud_policy_manager_.get();
 }
@@ -789,13 +796,6 @@ GAIAInfoUpdateService* ProfileImpl::GetGAIAInfoUpdateService() {
 DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
   return DownloadServiceFactory::GetForProfile(this)->
       GetDownloadManagerDelegate();
-}
-
-bool ProfileImpl::DidLastSessionExitCleanly() {
-  // last_session_exited_cleanly_ is set when the preferences are loaded. Force
-  // it to be set by asking for the prefs.
-  GetPrefs();
-  return last_session_exited_cleanly_;
 }
 
 quota::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {

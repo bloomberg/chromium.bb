@@ -148,10 +148,6 @@ SpeechRecognitionPreferences*
   return NULL;
 }
 
-bool TestBrowserContext::DidLastSessionExitCleanly() {
-  return true;
-}
-
 quota::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
   return special_storage_policy_.get();
 }

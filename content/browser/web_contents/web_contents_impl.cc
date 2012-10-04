@@ -208,8 +208,8 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
 
   // |RenderViewImpl::PopulateStateFromPendingNavigationParams| differentiates
   // between |RESTORE_WITH_POST| and |RESTORE|.
-  if (entry.restore_type() == NavigationEntryImpl::RESTORE_LAST_SESSION &&
-      browser_context->DidLastSessionExitCleanly()) {
+  if (entry.restore_type() ==
+      NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY) {
     if (entry.GetHasPostData())
       return ViewMsg_Navigate_Type::RESTORE_WITH_POST;
     return ViewMsg_Navigate_Type::RESTORE;

@@ -731,10 +731,6 @@ void TestingProfile::SetID(const std::wstring& id) {
   id_ = id;
 }
 
-bool TestingProfile::DidLastSessionExitCleanly() {
-  return last_session_exited_cleanly_;
-}
-
 bool TestingProfile::IsSameProfile(Profile *p) {
   return this == p;
 }
@@ -796,6 +792,10 @@ quota::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
 
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
   return true;
+}
+
+bool TestingProfile::DidLastSessionExitCleanly() {
+  return last_session_exited_cleanly_;
 }
 
 base::Callback<ChromeURLDataManagerBackend*(void)>
