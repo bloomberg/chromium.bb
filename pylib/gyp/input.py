@@ -537,7 +537,6 @@ class ParallelState(object):
 
 def LoadTargetBuildFileParallel(build_file_path, data, aux_data,
                                 variables, includes, depth, check):
-  global parallel_state
   parallel_state = ParallelState()
   parallel_state.condition = threading.Condition()
   parallel_state.dependencies = [build_file_path]
