@@ -1415,6 +1415,7 @@
    fun:gfx::GetDefaultWebKitFontRenderParams
    fun:renderer_preferences_util::UpdateFromSystemSettings
    fun:PrefsTabHelper::PrefsTabHelper
+   fun:WebContentsUserData::CreateForWebContents
    fun:TabContents::TabContents
    fun:TabContents::Factory::CreateTabContents
    fun:TabContentsTestHarness::SetContents
