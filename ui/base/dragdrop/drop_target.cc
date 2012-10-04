@@ -16,8 +16,14 @@ DropTarget::DropTarget(HWND hwnd)
     : hwnd_(hwnd),
       ref_count_(0) {
   DCHECK(hwnd);
+  // The main browser process registers OLE, as do various test runners; if you
+  // fail the next call, you're presumably reaching here from test code that
+  // doesn't trigger any of those spots.  Adding an appropriate
+  // ScopedOleInitializer will fix this, but beware you don't add it somewhere
+  // that causes nested initializations for some other test, which will add log
+  // warnings.
   HRESULT result = RegisterDragDrop(hwnd, this);
-  DCHECK(SUCCEEDED(result));
+  DCHECK(SUCCEEDED(result)) << "OLE is not initialized";
 }
 
 DropTarget::~DropTarget() {

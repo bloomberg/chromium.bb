@@ -21,7 +21,6 @@
 #if defined(OS_WIN)
 #include "content/public/app/startup_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "ui/base/win/scoped_ole_initializer.h"
 #endif  // defined(OS_WIN)
 
 namespace content {
@@ -77,10 +76,6 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
   virtual ContentClient* CreateClientForInitialization() OVERRIDE {
     return new ShellContentClient();
   }
-
-#if defined(OS_WIN)
-  ui::ScopedOleInitializer ole_initializer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentBrowserTestSuite);
 };
