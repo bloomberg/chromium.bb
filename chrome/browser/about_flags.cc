@@ -149,6 +149,17 @@ const Experiment::Choice kAsyncDnsChoices[] = {
     switches::kEnableAsyncDns, ""}
 };
 
+const Experiment::Choice kNaClDebugMaskChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  // Secure shell can be used on ChromeOS for forwarding the TCP port opened by
+  // debug stub to a remote machine. Since secure shell uses NaCl, we provide
+  // an option to switch off its debugging.
+  { IDS_NACL_DEBUG_MASK_CHOICE_EXCLUDE_UTILS,
+      switches::kNaClDebugMask, "!*://*/*ssh_client.nmf" },
+  { IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG,
+      switches::kNaClDebugMask, "*://*/*debug.nmf" }
+};
+
 #if defined(OS_CHROMEOS)
 const Experiment::Choice kAshBootAnimationFunction[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -350,6 +361,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_NACL_DEBUG_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableNaClDebug)
+  },
+  {
+    "nacl-debug-mask",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_NACL_DEBUG_MASK_NAME,
+    IDS_FLAGS_NACL_DEBUG_MASK_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kNaClDebugMaskChoices)
   },
   {
     "enable-pnacl",  // FLAGS:RECORD_UMA

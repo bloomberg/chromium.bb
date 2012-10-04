@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
@@ -228,6 +229,8 @@ void NaClProcessHost::EarlyStartup() {
   UMA_HISTOGRAM_BOOLEAN(
       "NaCl.enable-nacl-debug",
       cmd->HasSwitch(switches::kEnableNaClDebug));
+  NaClBrowser::GetInstance()->SetDebugPatterns(
+      cmd->GetSwitchValueASCII(switches::kNaClDebugMask));
 }
 
 void NaClProcessHost::Launch(
@@ -671,7 +674,8 @@ bool NaClProcessHost::StartNaClExecution() {
   params.validation_cache_key = nacl_browser->GetValidationCacheKey();
   params.version = chrome::VersionInfo().CreateVersionString();
   params.enable_exception_handling = enable_exception_handling_;
-  params.enable_debug_stub = enable_debug_stub_;
+  params.enable_debug_stub = enable_debug_stub_ &&
+      NaClBrowser::GetInstance()->URLMatchesDebugPatterns(manifest_url_);
   params.enable_ipc_proxy = enable_ipc_proxy_;
 
   base::PlatformFile irt_file = nacl_browser->IrtFile();
