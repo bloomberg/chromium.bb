@@ -30,6 +30,20 @@ PluginResource::~PluginResource() {
   }
 }
 
+void PluginResource::OnReplyReceived(
+    const proxy::ResourceMessageReplyParams& params,
+    const IPC::Message& msg) {
+  // Grab the callback for the reply sequence number and run it with |msg|.
+  CallbackMap::iterator it = callbacks_.find(params.sequence());
+  if (it == callbacks_.end()) {
+    DCHECK(false) << "Callback does not exist for an expected sequence number.";
+  } else {
+    scoped_refptr<PluginResourceCallbackBase> callback = it->second;
+    callbacks_.erase(it);
+    callback->Run(params, msg);
+  }
+}
+
 void PluginResource::SendCreateToBrowser(const IPC::Message& msg) {
   DCHECK(!sent_create_to_browser_);
   sent_create_to_browser_ = true;
@@ -51,29 +65,20 @@ void PluginResource::SendCreateToRenderer(const IPC::Message& msg) {
 void PluginResource::PostToBrowser(const IPC::Message& msg) {
   ResourceMessageCallParams params(pp_resource(),
                                    next_sequence_number_++);
-  connection_.browser_sender->Send(new PpapiHostMsg_ResourceCall(params, msg));
+  SendResourceCall(connection_.browser_sender, params, msg);
 }
 
 void PluginResource::PostToRenderer(const IPC::Message& msg) {
   ResourceMessageCallParams params(pp_resource(),
                                    next_sequence_number_++);
-  connection_.renderer_sender->Send(new PpapiHostMsg_ResourceCall(params, msg));
+  SendResourceCall(connection_.renderer_sender, params, msg);
 }
 
-int32_t PluginResource::CallBrowser(const IPC::Message& msg) {
-  ResourceMessageCallParams params(pp_resource(),
-                                   next_sequence_number_++);
-  params.set_has_callback();
-  connection_.browser_sender->Send(new PpapiHostMsg_ResourceCall(params, msg));
-  return params.sequence();
-}
-
-int32_t PluginResource::CallRenderer(const IPC::Message& msg) {
-  ResourceMessageCallParams params(pp_resource(),
-                                   next_sequence_number_++);
-  params.set_has_callback();
-  connection_.renderer_sender->Send(new PpapiHostMsg_ResourceCall(params, msg));
-  return params.sequence();
+bool PluginResource::SendResourceCall(
+    IPC::Sender* sender,
+    const ResourceMessageCallParams& call_params,
+    const IPC::Message& nested_msg) {
+  return sender->Send(new PpapiHostMsg_ResourceCall(call_params, nested_msg));
 }
 
 int32_t PluginResource::CallBrowserSync(const IPC::Message& msg,

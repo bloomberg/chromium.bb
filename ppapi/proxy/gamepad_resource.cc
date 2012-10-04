@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "base/bind.h"
 #include "base/threading/platform_thread.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -48,7 +49,9 @@ GamepadResource::GamepadResource(Connection connection, PP_Instance instance)
   memset(&last_read_, 0, sizeof(last_read_));
 
   SendCreateToBrowser(PpapiHostMsg_Gamepad_Create());
-  CallBrowser(PpapiHostMsg_Gamepad_RequestMemory());
+  CallBrowser<PpapiPluginMsg_Gamepad_SendMemory>(
+      PpapiHostMsg_Gamepad_RequestMemory(),
+      base::Bind(&GamepadResource::OnPluginMsgSendMemory, this));
 }
 
 GamepadResource::~GamepadResource() {
@@ -89,14 +92,6 @@ void GamepadResource::Sample(PP_GamepadsSampleData* data) {
     ConvertWebKitGamepadData(read_into, &last_read_);
 
   memcpy(data, &last_read_, sizeof(PP_GamepadsSampleData));
-}
-
-void GamepadResource::OnReplyReceived(const ResourceMessageReplyParams& params,
-                                      const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(GamepadResource, msg)
-    PPAPI_DISPATCH_RESOURCE_REPLY_0(PpapiPluginMsg_Gamepad_SendMemory,
-                                    OnPluginMsgSendMemory)
-  IPC_END_MESSAGE_MAP()
 }
 
 void GamepadResource::OnPluginMsgSendMemory(

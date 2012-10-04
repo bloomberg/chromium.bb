@@ -31,17 +31,11 @@ class PPAPI_PROXY_EXPORT PrintingResource
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
  private:
-  // PluginResource override.
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
-
   void OnPluginMsgGetDefaultPrintSettingsReply(
+      PP_PrintSettings_Dev* settings_out,
+      scoped_refptr<TrackedCallback> callback,
       const ResourceMessageReplyParams& params,
-      const PP_PrintSettings_Dev& print_settings);
-
-  PP_PrintSettings_Dev* print_settings_;
-
-  scoped_refptr<TrackedCallback> callback_;
+      const PP_PrintSettings_Dev& settings);
 
   DISALLOW_COPY_AND_ASSIGN(PrintingResource);
 };

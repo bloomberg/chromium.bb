@@ -54,10 +54,6 @@ class PPAPI_PROXY_EXPORT FileChooserResource
                                   std::vector<std::string>* output);
 
  private:
-  // PluginResource override.
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) OVERRIDE;
-
   void OnPluginMsgShowReply(
       const ResourceMessageReplyParams& params,
       const std::vector<PPB_FileRef_CreateInfo>& chosen_files);

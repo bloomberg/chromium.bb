@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/printing_resource.h"
 
+#include "base/bind.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
@@ -12,10 +13,8 @@
 namespace ppapi {
 namespace proxy {
 
-PrintingResource::PrintingResource(Connection connection,
-                                   PP_Instance instance)
-    : PluginResource(connection, instance),
-      print_settings_(NULL) {
+PrintingResource::PrintingResource(Connection connection, PP_Instance instance)
+    : PluginResource(connection, instance) {
 }
 
 PrintingResource::~PrintingResource() {
@@ -31,39 +30,26 @@ int32_t PrintingResource::GetDefaultPrintSettings(
   if (!print_settings)
     return PP_ERROR_BADARGUMENT;
 
-  if (TrackedCallback::IsPending(callback_))
-    return PP_ERROR_INPROGRESS;
-
   if (!sent_create_to_browser())
     SendCreateToBrowser(PpapiHostMsg_Printing_Create());
 
-  DCHECK(!print_settings_);
-  print_settings_ = print_settings;
-  callback_ = callback;
-
-  CallBrowser(PpapiHostMsg_Printing_GetDefaultPrintSettings());
+  CallBrowser<PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply>(
+      PpapiHostMsg_Printing_GetDefaultPrintSettings(),
+      base::Bind(&PrintingResource::OnPluginMsgGetDefaultPrintSettingsReply,
+          this, print_settings, callback));
   return PP_OK_COMPLETIONPENDING;
 }
 
-void PrintingResource::OnReplyReceived(
-    const ResourceMessageReplyParams& params,
-    const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(PrintingResource, msg)
-    PPAPI_DISPATCH_RESOURCE_REPLY(
-        PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply,
-        OnPluginMsgGetDefaultPrintSettingsReply)
-  IPC_END_MESSAGE_MAP()
-}
-
 void PrintingResource::OnPluginMsgGetDefaultPrintSettingsReply(
+    PP_PrintSettings_Dev* settings_out,
+    scoped_refptr<TrackedCallback> callback,
     const ResourceMessageReplyParams& params,
     const PP_PrintSettings_Dev& settings) {
   if (params.result() == PP_OK)
-    *print_settings_ = settings;
-  print_settings_ = NULL;
+    *settings_out = settings;
 
   // Notify the plugin of the new data.
-  TrackedCallback::ClearAndRun(&callback_, params.result());
+  TrackedCallback::ClearAndRun(&callback, params.result());
   // DANGER: May delete |this|!
 }
 

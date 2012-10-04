@@ -29,10 +29,6 @@ class FlashDeviceIDResource
                               scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
  private:
-  // PluginResource override;
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg);
-
   // IPC message handler.
   void OnPluginMsgGetDeviceIDReply(const ResourceMessageReplyParams& params,
                                    const std::string& id);
