@@ -18,7 +18,6 @@
 #include "chrome/browser/chrome_gpu_util.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/instant/instant_field_trials.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
@@ -116,7 +115,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   if (!proxy_policy_is_set)
     ProxyConnectionsFieldTrial();
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line_);
-  instant::SetupInstantFieldTrials();
   SpdyFieldTrial();
   ConnectBackupJobsFieldTrial();
   WarmConnectionFieldTrial();
