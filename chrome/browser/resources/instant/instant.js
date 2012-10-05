@@ -39,6 +39,12 @@ var instantConfig = (function() {
       label: 'Show search provider logo',
       type: 'checkbox',
       default: false
+    },
+    {
+      key: 'instant.show_white_ntp',
+      label: 'Show white NTP background',
+      type: 'checkbox',
+      default: false
     }
   ];
 

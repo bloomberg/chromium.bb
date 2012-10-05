@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
+#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -906,7 +907,9 @@ gfx::ImageSkia* BrowserView::GetToolbarBackgroundImage(
   switch (mode) {
     case chrome::search::Mode::MODE_NTP_LOADING:
     case chrome::search::Mode::MODE_NTP:
-      return theme_provider->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
+      return InstantUI::ShouldShowWhiteNTP(browser()->profile()) ?
+          theme_provider->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND_WHITE) :
+          theme_provider->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
 
     case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
     case chrome::search::Mode::MODE_SEARCH_RESULTS:
@@ -1955,9 +1958,7 @@ void BrowserView::Init() {
   BrowserTabStripController* tabstrip_controller =
       new BrowserTabStripController(browser_.get(),
                                     browser_->tab_strip_model());
-  tabstrip_ = new TabStrip(tabstrip_controller,
-                           chrome::search::IsInstantExtendedAPIEnabled(
-                               browser_->profile()));
+  tabstrip_ = new TabStrip(tabstrip_controller);
   AddChildView(tabstrip_);
   tabstrip_controller->InitFromModel(tabstrip_);
 

@@ -7,7 +7,6 @@
 ----------------------------------------------------------------------------- */
 
 body {
-  background: whiteSmoke;
   /* TODO(pedrosimonetti): Confirm with designers/engineers what do we want
    * to do regarding font family, once AFAIK we want to use Arial always. */
   font-family: Arial;

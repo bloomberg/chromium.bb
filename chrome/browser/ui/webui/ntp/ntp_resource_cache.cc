@@ -25,6 +25,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -188,6 +189,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kNtpShownPage, this);
   pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, this);
+  pref_change_registrar_.Add(prefs::kInstantShowWhiteNTP, this);
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -248,6 +250,7 @@ void NTPResourceCache::Observe(int type,
     // cache.
     new_tab_incognito_html_ = NULL;
     new_tab_html_ = NULL;
+    new_tab_css_ = NULL;
   } else {
     NOTREACHED();
   }
@@ -487,8 +490,11 @@ void NTPResourceCache::CreateNewTabCSS() {
   ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
   DCHECK(tp);
 
+  bool is_ntp_search = chrome::search::IsInstantExtendedAPIEnabled(profile_);
+
   // Get our theme colors
-  SkColor color_background =
+  SkColor color_background = is_ntp_search ?
+      chrome::search::GetNTPBackgroundColor(profile_) :
       GetThemeColor(tp, ThemeService::COLOR_NTP_BACKGROUND);
   SkColor color_text = GetThemeColor(tp, ThemeService::COLOR_NTP_TEXT);
   SkColor color_link = GetThemeColor(tp, ThemeService::COLOR_NTP_LINK);
@@ -569,7 +575,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          chrome::search::IsInstantExtendedAPIEnabled(profile_) ?
+          is_ntp_search ?
               IDR_NEW_TAB_SEARCH_THEME_CSS : IDR_NEW_TAB_4_THEME_CSS,
           ui::SCALE_FACTOR_NONE));
 

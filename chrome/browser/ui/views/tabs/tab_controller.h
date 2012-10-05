@@ -86,6 +86,9 @@ class TabController {
   // Returns true if Instant Extended API is enabled.
   virtual bool IsInstantExtendedAPIEnabled() = 0;
 
+  // Returns true if Instant Extended is showing white NTP.
+  virtual bool ShouldShowWhiteNTP() = 0;
+
  protected:
   virtual ~TabController() {}
 };

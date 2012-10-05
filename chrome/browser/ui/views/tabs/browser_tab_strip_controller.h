@@ -75,6 +75,8 @@ class BrowserTabStripController
   virtual void ClickActiveTab(int index) OVERRIDE;
   virtual bool IsIncognito() OVERRIDE;
   virtual void LayoutTypeMaybeChanged() OVERRIDE;
+  virtual bool IsInstantExtendedAPIEnabled() OVERRIDE;
+  virtual bool ShouldShowWhiteNTP() OVERRIDE;
 
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContents* contents,

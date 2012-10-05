@@ -767,7 +767,8 @@
       <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_OVERLAY" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_OVERLAY_INACTIVE" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_NTP_ATTRIBUTION" file="notused.png" />
-      <structure type="chrome_scaled_image" name="IDR_THEME_NTP_BACKGROUND" file="ntp_background.png" />
+      <structure type="chrome_scaled_image" name="IDR_THEME_NTP_BACKGROUND" file="common/ntp_background.png" />
+      <structure type="chrome_scaled_image" name="IDR_THEME_NTP_BACKGROUND_WHITE" file="common/ntp_background_white.png" />
       <if expr="not pp_ifdef('use_ash')">
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" />
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="theme_tab_background_incognito.png" />

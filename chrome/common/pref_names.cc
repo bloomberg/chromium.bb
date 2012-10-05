@@ -480,6 +480,9 @@ const char kExperimentalZeroSuggestUrlPrefix[] =
 const char kInstantShowSearchProviderLogo[] =
     "instant.show_search_provider_logo";
 
+// Boolean pref indicating a white NTP background is desired.
+const char kInstantShowWhiteNTP[] = "instant.show_white_ntp";
+
 // Used to migrate preferences from local state to user preferences to
 // enable multiple profiles.
 // BITMASK with possible values (see browser_prefs.cc for enum):

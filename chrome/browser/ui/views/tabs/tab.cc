@@ -543,7 +543,9 @@ gfx::ImageSkia* Tab::GetTabBackgroundImage(
   switch (mode) {
     case chrome::search::Mode::MODE_NTP_LOADING:
     case chrome::search::Mode::MODE_NTP:
-      return tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
+      return controller()->ShouldShowWhiteNTP() ?
+          tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND_WHITE) :
+          tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
 
     case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
     case chrome::search::Mode::MODE_SEARCH_RESULTS:

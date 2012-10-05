@@ -27,6 +27,9 @@ class InstantUI : public content::WebUIController {
   static bool ShouldShowSearchProviderLogo(
       content::BrowserContext* browser_context);
 
+  // Returns true if the user has enabled the white NTP checkbox.
+  static bool ShouldShowWhiteNTP(content::BrowserContext* browser_context);
+
   static void RegisterUserPrefs(PrefService* user_prefs);
 
  private:

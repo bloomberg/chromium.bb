@@ -986,7 +986,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // first; otherwise, there will be a white outline around the location bar
   // border.
   if (instant_extended_api_enabled_)
-    canvas->DrawColor(chrome::search::kNTPBackgroundColor);
+    canvas->DrawColor(chrome::search::GetNTPBackgroundColor(profile_));
 
   if (background_painter_.get()) {
     background_painter_->Paint(canvas, size());

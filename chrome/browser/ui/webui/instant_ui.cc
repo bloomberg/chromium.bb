@@ -90,6 +90,11 @@ void InstantUIMessageHandler::GetPreferenceValue(const base::ListValue* args) {
     base::FundamentalValue arg(prefs->GetBoolean(pref_name.c_str()));
     web_ui()->CallJavascriptFunction(
         "instantConfig.getPreferenceValueResult", pref_name_value, arg);
+  } else if (pref_name == prefs::kInstantShowWhiteNTP) {
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    base::FundamentalValue arg(prefs->GetBoolean(pref_name.c_str()));
+    web_ui()->CallJavascriptFunction(
+        "instantConfig.getPreferenceValueResult", pref_name_value, arg);
   } else if (pref_name == prefs::kExperimentalZeroSuggestUrlPrefix) {
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
     base::StringValue arg(prefs->GetString(pref_name.c_str()));
@@ -114,6 +119,12 @@ void InstantUIMessageHandler::SetPreferenceValue(const base::ListValue* args) {
     NOTIMPLEMENTED();
 #endif  // defined(TOOLKIT_VIEWS)
   } else if (pref_name == prefs::kInstantShowSearchProviderLogo) {
+    bool value;
+    if (!args->GetBoolean(1, &value))
+      return;
+    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+    prefs->SetBoolean(pref_name.c_str(), value);
+  } else if (pref_name == prefs::kInstantShowWhiteNTP) {
     bool value;
     if (!args->GetBoolean(1, &value))
       return;
@@ -148,14 +159,23 @@ int InstantUI::GetSlowAnimationScaleFactor() {
 
 // static
 bool InstantUI::ShouldShowSearchProviderLogo(
-      content::BrowserContext* browser_context) {
+    content::BrowserContext* browser_context) {
   PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
   return prefs->GetBoolean(prefs::kInstantShowSearchProviderLogo);
 }
 
 // static
+bool InstantUI::ShouldShowWhiteNTP(
+    content::BrowserContext* browser_context) {
+  PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
+  return prefs->GetBoolean(prefs::kInstantShowWhiteNTP);
+}
+
+// static
 void InstantUI::RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kInstantShowSearchProviderLogo, false,
+                                  PrefService::UNSYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(prefs::kInstantShowWhiteNTP, false,
                                   PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kExperimentalZeroSuggestUrlPrefix, "",
                                  PrefService::UNSYNCABLE_PREF);

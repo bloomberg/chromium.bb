@@ -54,8 +54,7 @@ class TabStrip : public views::View,
  public:
   static const char kViewClassName[];
 
-  TabStrip(TabStripController* controller,
-           bool instant_extended_api_enabled);
+  explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
 
   // Sets the layout type. If |adjust_layout| is true the layout type changes
@@ -188,6 +187,7 @@ class TabStrip : public views::View,
                                  const ui::MouseEvent& event) OVERRIDE;
   virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE;
   virtual bool IsInstantExtendedAPIEnabled() OVERRIDE;
+  virtual bool ShouldShowWhiteNTP() OVERRIDE;
 
   // MouseWatcherListener overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;
@@ -512,8 +512,6 @@ class TabStrip : public views::View,
   TabsClosingMap tabs_closing_map_;
 
   scoped_ptr<TabStripController> controller_;
-
-  const bool instant_extended_api_enabled_;
 
   // The "New Tab" button.
   NewTabButton* newtab_button_;

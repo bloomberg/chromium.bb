@@ -53,6 +53,9 @@ class FakeTabController : public TabController {
   virtual bool IsInstantExtendedAPIEnabled() OVERRIDE {
     return false;
   }
+  virtual bool ShouldShowWhiteNTP() OVERRIDE {
+    return false;
+  }
 
  private:
   TabStripSelectionModel selection_model_;

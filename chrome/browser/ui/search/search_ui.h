@@ -7,15 +7,16 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace gfx {
 class Font;
 }
 
 namespace chrome {
 namespace search {
-
-// Background color of the NTP.
-extern const SkColor kNTPBackgroundColor;
 
 // Color for the placeholder text on NTP.
 extern const SkColor kNTPPlaceholderTextColor;
@@ -57,6 +58,10 @@ gfx::Font GetNTPOmniboxFont(const gfx::Font& font);
 
 // Returns the height of NTP given the |font| to be used.
 int GetNTPOmniboxHeight(const gfx::Font& font);
+
+// Returns the NTP content area's background color.  May return white if
+// set in chrome://instant.
+SkColor GetNTPBackgroundColor(content::BrowserContext* browser_context);
 
 }  // namespace search
 }  // namespace chrome

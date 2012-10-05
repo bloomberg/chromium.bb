@@ -109,12 +109,14 @@ class SearchContainerView : public views::View {
 // Background for the NTP view.
 class NTPViewBackground : public views::Background {
  public:
-  NTPViewBackground() {}
+  explicit NTPViewBackground(content::BrowserContext* browser_context)
+      : browser_context_(browser_context) {
+  }
   virtual ~NTPViewBackground() {}
 
   // views::Background overrides:
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
-    canvas->DrawColor(chrome::search::kNTPBackgroundColor);
+    canvas->DrawColor(chrome::search::GetNTPBackgroundColor(browser_context_));
     // Have to use the height of the layer here since the layer is animated
     // independent of the view.
     int height = view->layer()->bounds().height();
@@ -125,6 +127,9 @@ class NTPViewBackground : public views::Background {
   }
 
  private:
+  // Weak.
+  content::BrowserContext* browser_context_;
+
   DISALLOW_COPY_AND_ASSIGN(NTPViewBackground);
 };
 
@@ -483,7 +488,7 @@ void SearchViewController::CreateViews(State state) {
   DCHECK(!ntp_container_);
 
   ntp_container_ = new views::View;
-  ntp_container_->set_background(new NTPViewBackground);
+  ntp_container_->set_background(new NTPViewBackground(browser_context_));
   ntp_container_->SetPaintToLayer(true);
   ntp_container_->layer()->SetMasksToBounds(true);
 
