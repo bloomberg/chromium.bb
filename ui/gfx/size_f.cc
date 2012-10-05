@@ -4,11 +4,8 @@
 
 #include "ui/gfx/size_f.h"
 
-#include <cmath>
-
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "ui/gfx/size.h"
 
 namespace gfx {
 
@@ -22,11 +19,6 @@ SizeF::SizeF(float width, float height) : SizeBase<SizeF, float>(0, 0) {
 }
 
 SizeF::~SizeF() {}
-
-Size SizeF::ToSize() const {
-  return Size(static_cast<int>(std::floor(width())),
-              static_cast<int>(std::floor(height())));
-}
 
 std::string SizeF::ToString() const {
   return base::StringPrintf("%fx%f", width(), height());

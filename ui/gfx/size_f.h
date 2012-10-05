@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ui/base/ui_export.h"
-#include "ui/gfx/size.h"
 #include "ui/gfx/size_base.h"
 
 namespace gfx {
@@ -19,8 +18,6 @@ class UI_EXPORT SizeF : public SizeBase<SizeF, float> {
   SizeF();
   SizeF(float width, float height);
   ~SizeF();
-
-  Size ToSize() const;
 
   std::string ToString() const;
 };

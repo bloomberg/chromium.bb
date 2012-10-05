@@ -11,21 +11,25 @@
 #include "ui/gfx/point_base.h"
 
 namespace gfx {
-class Point;
 
 // A floating version of gfx::Point.
 class UI_EXPORT PointF : public PointBase<PointF, float> {
  public:
   PointF();
   PointF(float x, float y);
-  explicit PointF(Point& point);
-  ~PointF() {}
-
-  Point ToPoint() const;
+  ~PointF();
 
   // Returns a string representation of point.
   std::string ToString() const;
 };
+
+inline PointF operator+(PointF lhs, PointF rhs) {
+  return lhs.Add(rhs);
+}
+
+inline PointF operator-(PointF lhs, PointF rhs) {
+  return lhs.Subtract(rhs);
+}
 
 #if !defined(COMPILER_MSVC)
 extern template class PointBase<PointF, float>;

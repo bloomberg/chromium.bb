@@ -6,6 +6,8 @@
 
 #include "content/browser/renderer_host/backing_store_mac.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -23,7 +25,10 @@ namespace {
 
 // Returns a Rect obtained by flooring the values of the given RectF.
 gfx::Rect ToFlooredRect(const gfx::RectF& rect) {
-  return gfx::Rect(rect.origin().ToPoint(), rect.size().ToSize());
+  return gfx::Rect(static_cast<int>(std::floor(rect.x())),
+                   static_cast<int>(std::floor(rect.y())),
+                   static_cast<int>(std::floor(rect.width())),
+                   static_cast<int>(std::floor(rect.height())));
 }
 
 } // namespace
