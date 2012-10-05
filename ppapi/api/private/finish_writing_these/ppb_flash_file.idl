@@ -62,7 +62,7 @@ interface PPB_Flash_File_ModuleLocal_0_1 {
   int32_t QueryFile(
       [in] PP_Instance instance,
       [in] str_t path,
-      [out] PP_FileInfo_Dev info);
+      [out] PP_FileInfo info);
 
   /* Gets the list of files contained in a module-local directory. The return
    * value is the ppapi error, PP_OK if success, one of the PP_ERROR_* in case
