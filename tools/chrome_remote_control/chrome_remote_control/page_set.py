@@ -16,6 +16,7 @@ class Page(object):
     self.is_gmail = False
     self.wait_time_after_navigate = 2
     self.scroll_is_infinite = False
+    self.wait_for_javascript_expression = None
 
     if attributes:
       for k, v in attributes.iteritems():

@@ -127,6 +127,14 @@ http://goto/read-src-internal, or add your own credentials to
       self._server.Close()
       self._server = None
 
+  @staticmethod
+  def WaitForPageToLoad(expression, tab):
+    def IsPageLoaded():
+      return tab.runtime.Evaluate(expression)
+
+    # Wait until the form is submitted and the page completes loading.
+    util.WaitFor(lambda: IsPageLoaded(), 60) # pylint: disable=W0108
+
   def PreparePage(self, page, tab, page_state, results):
     parsed_url = urlparse.urlparse(page.url)
     if parsed_url[0] == 'file':
@@ -154,6 +162,8 @@ http://goto/read-src-internal, or add your own credentials to
     if page.wait_time_after_navigate:
       # Wait for unpredictable redirects.
       time.sleep(page.wait_time_after_navigate)
+    if page.wait_for_javascript_expression is not None:
+      self.WaitForPageToLoad(page.wait_for_javascript_expression, tab)
     tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
     return True
 
