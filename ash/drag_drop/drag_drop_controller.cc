@@ -62,7 +62,7 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
                                          int operation) {
   DCHECK(!IsDragDropInProgress());
 
-  drag_drop_tracker_.reset(new DragDropTracker(root_window));
+  drag_drop_tracker_.reset(new DragDropTracker);
 
   drag_data_ = &data;
   drag_operation_ = operation;

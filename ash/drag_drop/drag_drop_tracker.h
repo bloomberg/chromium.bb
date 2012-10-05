@@ -11,7 +11,6 @@
 #include "ui/base/events/event.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 }
 
@@ -25,15 +24,15 @@ namespace internal {
 // is supported for now.
 class ASH_EXPORT DragDropTracker {
  public:
-  explicit DragDropTracker(aura::RootWindow* root_window);
+  DragDropTracker();
   ~DragDropTracker();
 
-  // Gets the target located at |event| in the coordinates of the root window
-  // given to the constructor.
+  // Gets the target located at |event| in the coordinates of the active root
+  // window.
   aura::Window* GetTarget(const ui::LocatedEvent& event);
 
-  // Converts the locations of |event| in the coordinates of the root window
-  // given to the constructor to the ones in |target|'s coordinates.
+  // Converts the locations of |event| in the coordinates of the active root
+  // window to the ones in |target|'s coordinates.
   // Caller takes ownership of the returned object.
   ui::MouseEvent* ConvertMouseEvent(aura::Window* target,
                                     const ui::MouseEvent& event);

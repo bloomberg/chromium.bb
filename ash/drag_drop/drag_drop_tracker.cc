@@ -14,14 +14,11 @@
 namespace {
 
 // Creates a window for capturing drag events.
-aura::Window* CreateCaptureWindow(aura::RootWindow* root_window) {
+aura::Window* CreateCaptureWindow() {
   aura::Window* window = new aura::Window(NULL);
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetParent(NULL);
-  window->SetBoundsInScreen(gfx::Rect(root_window->GetBoundsInScreen().origin(),
-                                      gfx::Size()),
-                            gfx::Screen::GetDisplayNearestWindow(root_window));
   window->Show();
   return window;
 }
@@ -31,8 +28,8 @@ aura::Window* CreateCaptureWindow(aura::RootWindow* root_window) {
 namespace ash {
 namespace internal {
 
-DragDropTracker::DragDropTracker(aura::RootWindow* root_window)
-    : capture_window_(CreateCaptureWindow(root_window)) {
+DragDropTracker::DragDropTracker()
+    : capture_window_(CreateCaptureWindow()) {
   capture_window_->SetCapture();
 }
 
