@@ -7,7 +7,6 @@
 #ifndef CC_SWITCHES_H_
 #define CC_SWITCHES_H_
 
-#include "build/build_config.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 // Since cc is used from the render process, anything that goes here also needs
