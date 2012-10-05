@@ -369,10 +369,13 @@ void RenderWidgetHostViewAura::WasHidden() {
   AdjustSurfaceProtection();
 
 #if defined(OS_WIN)
-  HWND parent = window_->GetRootWindow()->GetAcceleratedWidget();
-  LPARAM lparam = reinterpret_cast<LPARAM>(this);
+  aura::RootWindow* root_window = window_->GetRootWindow();
+  if (root_window) {
+    HWND parent = root_window->GetAcceleratedWidget();
+    LPARAM lparam = reinterpret_cast<LPARAM>(this);
 
-  EnumChildWindows(parent, HideWindowsCallback, lparam);
+    EnumChildWindows(parent, HideWindowsCallback, lparam);
+  }
 #endif
 }
 
