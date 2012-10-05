@@ -13,17 +13,16 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "chrome/browser/ui/gtk/zoom_bubble_gtk.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
-#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(dbeam): share some testing code with ZoomBubbleGtkTest.
+// TODO(dbeam): share some testing code with LocationBarViewGtkZoomTest.
 
 namespace {
 
@@ -46,30 +45,25 @@ void ExpectAtDefaultZoom(content::WebContents* contents) {
 
 }
 
-class LocationBarViewGtkZoomTest : public InProcessBrowserTest {
+class ZoomBubbleGtkTest : public InProcessBrowserTest {
  public:
-  LocationBarViewGtkZoomTest() {}
-  virtual ~LocationBarViewGtkZoomTest() {}
+  ZoomBubbleGtkTest() {}
+  virtual ~ZoomBubbleGtkTest() {}
 
  protected:
-  void ExpectTooltipContainsZoom() {
-    gchar* text = gtk_widget_get_tooltip_text(GetZoomWidget());
-    std::string tooltip(text);
-    g_free(text);
+  ZoomBubbleGtk* GetZoomBubble() {
+    return ZoomBubbleGtk::g_bubble;
+  }
+
+  bool ZoomBubbleIsShowing() {
+    return ZoomBubbleGtk::IsShowing();
+  }
+
+  void ExpectLabelTextContainsZoom() {
+    std::string label(gtk_label_get_text(GTK_LABEL(GetZoomBubble()->label_)));
     content::WebContents* contents = chrome::GetActiveWebContents(browser());
     std::string zoom_percent = base::IntToString(GetZoomPercent(contents));
-    EXPECT_FALSE(tooltip.find(zoom_percent) == std::string::npos);
-  }
-
-  bool ZoomIconIsShowing() {
-    return gtk_widget_get_visible(GetZoomWidget());
-  }
-
-  void ExpectIconIsResource(int resource_id) {
-    // TODO(dbeam): actually compare the image bits with gfx::test::IsEqual?
-    content::WebContents* contents = chrome::GetActiveWebContents(browser());
-    ZoomController* zoom_controller = ZoomController::FromWebContents(contents);
-    EXPECT_EQ(resource_id, zoom_controller->GetResourceForZoomLevel());
+    EXPECT_FALSE(label.find(zoom_percent) == std::string::npos);
   }
 
   void ResetZoom() {
@@ -77,10 +71,15 @@ class LocationBarViewGtkZoomTest : public InProcessBrowserTest {
   }
 
   content::WebContents* SetUpTest() {
+    TearDown();
     content::WebContents* contents = chrome::GetActiveWebContents(browser());
     ResetZoom();
     ExpectAtDefaultZoom(contents);
     return contents;
+  }
+
+  void TearDown() {
+    ZoomBubbleGtk::Close();
   }
 
   void ZoomIn() {
@@ -92,11 +91,6 @@ class LocationBarViewGtkZoomTest : public InProcessBrowserTest {
   }
 
  private:
-  GtkWidget* GetZoomWidget() {
-    gfx::NativeWindow window = browser()->window()->GetNativeWindow();
-    return ViewIDUtil::GetWidget(GTK_WIDGET(window), VIEW_ID_ZOOM_BUTTON);
-  }
-
   void WaitForZoom(content::PageZoom zoom_action) {
     content::WindowedNotificationObserver zoom_observer(
         content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
@@ -105,24 +99,46 @@ class LocationBarViewGtkZoomTest : public InProcessBrowserTest {
     zoom_observer.Wait();
   }
 
-  DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtkZoomTest);
+  DISALLOW_COPY_AND_ASSIGN(ZoomBubbleGtkTest);
 };
 
-IN_PROC_BROWSER_TEST_F(LocationBarViewGtkZoomTest, DefaultToZoomedInAndBack) {
+IN_PROC_BROWSER_TEST_F(ZoomBubbleGtkTest, BubbleSanityTest) {
+  ResetZoom();
+
+  // The bubble assumes it shows only at non-default zoom levels.
+  ZoomIn();
+
+  ZoomBubbleGtk::Close();
+  DCHECK(!GetZoomBubble());
+  EXPECT_FALSE(ZoomBubbleIsShowing());
+
+  GtkWidget* window = GTK_WIDGET(browser()->window()->GetNativeWindow());
+  GtkWidget* zoom_icon = ViewIDUtil::GetWidget(window, VIEW_ID_ZOOM_BUTTON);
+  DCHECK(zoom_icon);
+
+  TabContents* tab_contents = chrome::GetActiveTabContents(browser());
+  DCHECK(tab_contents);
+
+  // Force show a bubble.
+  ZoomBubbleGtk::Show(zoom_icon, tab_contents, true);
+  DCHECK(GetZoomBubble());
+  EXPECT_TRUE(ZoomBubbleIsShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(ZoomBubbleGtkTest, DefaultToZoomedInAndBack) {
   content::WebContents* contents = SetUpTest();
 
   ZoomIn();
   ExpectZoomedIn(contents);
-  EXPECT_TRUE(ZoomIconIsShowing());
-  ExpectIconIsResource(IDR_ZOOM_PLUS);
-  ExpectTooltipContainsZoom();
+  EXPECT_TRUE(ZoomBubbleIsShowing());
+  ExpectLabelTextContainsZoom();
 
-  ZoomOut();  // Back to default, in theory.
+  ZoomOut();
   ExpectAtDefaultZoom(contents);
-  EXPECT_FALSE(ZoomIconIsShowing());
+  EXPECT_FALSE(ZoomBubbleIsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(LocationBarViewGtkZoomTest, ZoomInTwiceAndReset) {
+IN_PROC_BROWSER_TEST_F(ZoomBubbleGtkTest, ZoomInTwiceAndReset) {
   content::WebContents* contents = SetUpTest();
 
   ZoomIn();
@@ -131,30 +147,28 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewGtkZoomTest, ZoomInTwiceAndReset) {
   EXPECT_GT(GetZoomPercent(contents), zoom_level);
   ExpectZoomedIn(contents);
 
-  EXPECT_TRUE(ZoomIconIsShowing());
-  ExpectIconIsResource(IDR_ZOOM_PLUS);
-  ExpectTooltipContainsZoom();
+  EXPECT_TRUE(ZoomBubbleIsShowing());
+  ExpectLabelTextContainsZoom();
 
   ResetZoom();
   ExpectAtDefaultZoom(contents);
-  EXPECT_FALSE(ZoomIconIsShowing());
+  EXPECT_FALSE(ZoomBubbleIsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(LocationBarViewGtkZoomTest, DefaultToZoomedOutAndBack) {
+IN_PROC_BROWSER_TEST_F(ZoomBubbleGtkTest, DefaultToZoomedOutAndBack) {
   content::WebContents* contents = SetUpTest();
 
   ZoomOut();
   ExpectZoomedOut(contents);
-  EXPECT_TRUE(ZoomIconIsShowing());
-  ExpectIconIsResource(IDR_ZOOM_MINUS);
-  ExpectTooltipContainsZoom();
+  EXPECT_TRUE(ZoomBubbleIsShowing());
+  ExpectLabelTextContainsZoom();
 
   ZoomIn();
   ExpectAtDefaultZoom(contents);
-  EXPECT_FALSE(ZoomIconIsShowing());
+  EXPECT_FALSE(ZoomBubbleIsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(LocationBarViewGtkZoomTest, ZoomOutTwiceAndReset) {
+IN_PROC_BROWSER_TEST_F(ZoomBubbleGtkTest, ZoomOutTwiceAndReset) {
   content::WebContents* contents = SetUpTest();
 
   ZoomOut();
@@ -163,11 +177,10 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewGtkZoomTest, ZoomOutTwiceAndReset) {
   EXPECT_LT(GetZoomPercent(contents), zoom_level);
   ExpectZoomedOut(contents);
 
-  EXPECT_TRUE(ZoomIconIsShowing());
-  ExpectIconIsResource(IDR_ZOOM_MINUS);
-  ExpectTooltipContainsZoom();
+  EXPECT_TRUE(ZoomBubbleIsShowing());
+  ExpectLabelTextContainsZoom();
 
   ResetZoom();
   ExpectAtDefaultZoom(contents);
-  EXPECT_FALSE(ZoomIconIsShowing());
+  EXPECT_FALSE(ZoomBubbleIsShowing());
 }
