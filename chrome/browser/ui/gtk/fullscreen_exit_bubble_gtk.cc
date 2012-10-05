@@ -241,7 +241,6 @@ void FullscreenExitBubbleGtk::OnLinkClicked(GtkWidget* link) {
 
 void FullscreenExitBubbleGtk::OnAllowClicked(GtkWidget* button) {
   Accept();
-  UpdateContent(url_, bubble_type_);
 }
 void FullscreenExitBubbleGtk::OnDenyClicked(GtkWidget* button) {
   Cancel();

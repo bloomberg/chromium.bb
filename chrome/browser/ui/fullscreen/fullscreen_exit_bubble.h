@@ -65,7 +65,9 @@ class FullscreenExitBubble : public ui::AnimationDelegate {
   void StopWatchingMouse();
 
   void ToggleFullscreen();
+  // Accepts the request. Can cause FullscreenExitBubble to be deleted.
   void Accept();
+  // Denys the request. Can cause FullscreenExitBubble to be deleted.
   void Cancel();
 
   // The following strings may change according to the content type and URL.
