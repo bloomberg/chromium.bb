@@ -240,7 +240,9 @@ bool CreateEULASentinel() {
   FilePath eula_sentinel;
   if (!GetEULASentinelFilePath(&eula_sentinel))
     return false;
-  return file_util::WriteFile(eula_sentinel, "", 0) != -1;
+
+  return (file_util::CreateDirectory(eula_sentinel.DirName()) &&
+          file_util::WriteFile(eula_sentinel, "", 0) != -1);
 }
 
 // Shows the EULA dialog if required. Returns true if the EULA is accepted,
