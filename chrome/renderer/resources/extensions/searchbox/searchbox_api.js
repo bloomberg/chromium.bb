@@ -60,8 +60,7 @@ if (!chrome.searchBox) {
       var autocompleteResults = DedupeAutcompleteResults(
           GetAutocompleteResults());
       var userInput = GetQuery();
-      for (var i = 0; i < autocompleteResults.length; ++i) {
-        var result = autocompleteResults[i];
+      for (var i = 0, result; result = autocompleteResults[i]; ++i) {
         var title = result.contents;
         var url = CleanUrl(result.destination_url, userInput);
         var combinedHtml = '<span class=chrome_url>' + url + '</span>';
@@ -78,6 +77,7 @@ if (!chrome.searchBox) {
       return autocompleteResults;
     }
 
+    // TODO(dcblack): Do this in C++ instead of JS.
     function CleanUrl(url, userInput) {
       if (url.indexOf(userInput) == 0) {
         return url;
@@ -89,6 +89,7 @@ if (!chrome.searchBox) {
       return url.replace(WWW_REGEX, '');
     }
 
+    // TODO(dcblack): Do this in C++ instead of JS.
     function CanonicalizeUrl(url) {
       return url.replace(HTTP_REGEX, '').replace(WWW_REGEX, '');
     }
@@ -97,8 +98,7 @@ if (!chrome.searchBox) {
     // TODO(dcblack): Do this in C++ instead of JS.
     function DedupeAutcompleteResults(autocompleteResults) {
       var urlToResultMap = {};
-      for (var i = 0; i < autocompleteResults.length; ++i) {
-        var result = autocompleteResults[i];
+      for (var i = 0, result; result = autocompleteResults[i]; ++i) {
         var url = CanonicalizeUrl(result.destination_url);
         if (url in urlToResultMap) {
           var oldRelevance = urlToResultMap[url].rankingData.relevance;
@@ -131,15 +131,15 @@ if (!chrome.searchBox) {
       lastPrefixQueriedForDuplicates = userInput;
       var autocompleteResults = GetAutocompleteResults();
       var nativeUrls = {};
-      for (var i = 0; i < autocompleteResults.length; ++i) {
-        var nativeUrl = CanonicalizeUrl(autocompleteResults[i].destination_url);
-        nativeUrls[nativeUrl] = autocompleteResults[i].rid;
+      for (var i = 0, result; result = autocompleteResults[i]; ++i) {
+        var nativeUrl = CanonicalizeUrl(result.destination_url);
+        nativeUrls[nativeUrl] = result.rid;
       }
-      for (var i = 0; i < clientSuggestions.length &&
+      for (var i = 0, result; result = clientSuggestions[i] &&
            i < MAX_CLIENT_SUGGESTIONS_TO_DEDUPE; ++i) {
-        var clientUrl = CanonicalizeUrl(clientSuggestions[i].url);
+        var clientUrl = CanonicalizeUrl(result.url);
         if (clientUrl in nativeUrls) {
-          clientSuggestions[i].duplicateOf = nativeUrls[clientUrl];
+          result.duplicateOf = nativeUrls[clientUrl];
         }
       }
       return true;
