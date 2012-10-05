@@ -18,6 +18,16 @@ using content::BrowserThread;
 using quota::QuotaClient;
 using webkit_database::DatabaseUtil;
 
+namespace {
+
+quota::QuotaStatusCode DeleteOriginDataOnWebKitThread(
+    IndexedDBContextImpl* context,
+    const GURL& origin) {
+  context->DeleteForOrigin(origin);
+  return quota::kQuotaStatusOk;
+}
+
+}  // nameapace
 
 // Helper tasks ---------------------------------------------------------------
 
@@ -35,36 +45,6 @@ class IndexedDBQuotaClient::HelperTask : public quota::QuotaThreadTask {
 
  protected:
   virtual ~HelperTask() {}
-};
-
-class IndexedDBQuotaClient::DeleteOriginTask : public HelperTask {
- public:
-  DeleteOriginTask(IndexedDBQuotaClient* client,
-                   base::MessageLoopProxy* webkit_thread_message_loop,
-                   const GURL& origin_url,
-                   const DeletionCallback& callback)
-      : HelperTask(client, webkit_thread_message_loop),
-        origin_url_(origin_url), callback_(callback) {
-  }
-
- private:
-  virtual ~DeleteOriginTask() {}
-
-  virtual void RunOnTargetThread() OVERRIDE {
-    indexed_db_context_->DeleteForOrigin(origin_url_);
-  }
-
-  virtual void Aborted() OVERRIDE {
-    callback_.Reset();
-  }
-
-  virtual void Completed() OVERRIDE {
-    callback_.Run(quota::kQuotaStatusOk);
-    callback_.Reset();
-  }
-
-  GURL origin_url_;
-  DeletionCallback callback_;
 };
 
 class IndexedDBQuotaClient::GetOriginUsageTask : public HelperTask {
@@ -258,12 +238,14 @@ void IndexedDBQuotaClient::DeleteOriginData(
     callback.Run(quota::kQuotaErrorNotSupported);
     return;
   }
-  scoped_refptr<DeleteOriginTask> task(
-      new DeleteOriginTask(this,
-                           webkit_thread_message_loop_,
-                           origin,
-                           callback));
-  task->Start();
+
+  base::PostTaskAndReplyWithResult(
+      webkit_thread_message_loop_,
+      FROM_HERE,
+      base::Bind(&DeleteOriginDataOnWebKitThread,
+                 indexed_db_context_,
+                 origin),
+      callback);
 }
 
 void IndexedDBQuotaClient::DidGetOriginUsage(
