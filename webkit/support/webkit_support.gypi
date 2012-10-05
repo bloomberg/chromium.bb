@@ -18,6 +18,7 @@
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/hyphen/hyphen.gyp:hyphen',
         '<(DEPTH)/ui/ui.gyp:ui',
         'appcache',
         'blob',

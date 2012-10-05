@@ -14,6 +14,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
 #include "net/test/test_server.h"
+#include "third_party/hyphen/hyphen.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
@@ -68,7 +69,8 @@ using WebKit::WebScriptController;
 TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
     WebKit::Platform* shadow_platform_delegate)
     : unit_test_mode_(unit_test_mode),
-      shadow_platform_delegate_(shadow_platform_delegate) {
+      shadow_platform_delegate_(shadow_platform_delegate),
+      hyphen_dictionary_(NULL) {
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);
@@ -150,6 +152,8 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
 }
 
 TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {
+  if (hyphen_dictionary_)
+    hnj_hyphen_free(hyphen_dictionary_);
 }
 
 WebKit::WebMimeRegistry* TestWebKitPlatformSupport::mimeRegistry() {
@@ -495,4 +499,79 @@ TestWebKitPlatformSupport::createRTCPeerConnectionHandler(
 
   return webkit_glue::WebKitPlatformSupportImpl::createRTCPeerConnectionHandler(
       client);
+}
+
+bool TestWebKitPlatformSupport::canHyphenate(const WebKit::WebString& locale) {
+  return locale.isEmpty() || locale.equals("en_US");
+}
+
+size_t TestWebKitPlatformSupport::computeLastHyphenLocation(
+    const char16* characters,
+    size_t length,
+    size_t before_index,
+    const WebKit::WebString& locale) {
+  DCHECK(locale.isEmpty() || locale.equals("en_US"));
+  if (!hyphen_dictionary_) {
+    // Initialize the hyphen library with a sample dictionary. To avoid test
+    // flakiness, this code synchronously loads the dictionary.
+    FilePath path;
+    if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
+      return 0;
+    path = path.AppendASCII("third_party");
+    path = path.AppendASCII("hyphen");
+    path = path.AppendASCII("hyph_en_US.dic");
+    std::string dictionary;
+    if (!file_util::ReadFileToString(path, &dictionary))
+      return 0;
+    hyphen_dictionary_ = hnj_hyphen_load(
+        reinterpret_cast<const unsigned char*>(dictionary.data()),
+        dictionary.length());
+    if (!hyphen_dictionary_)
+      return 0;
+  }
+  // Retrieve the positions where we can insert hyphens. This function assumes
+  // the input word is an English word so it can use the position returned by
+  // the hyphen library without conversion.
+  string16 word_utf16(characters, length);
+  if (!IsStringASCII(word_utf16))
+    return 0;
+  std::string word = UTF16ToASCII(word_utf16);
+  scoped_array<char> hyphens(new char[word.length() + 5]);
+  char** rep = NULL;
+  int* pos = NULL;
+  int* cut = NULL;
+  int error = hnj_hyphen_hyphenate2(hyphen_dictionary_,
+                                    word.data(),
+                                    static_cast<int>(word.length()),
+                                    hyphens.get(),
+                                    NULL,
+                                    &rep,
+                                    &pos,
+                                    &cut);
+  if (error)
+    return 0;
+
+  // Release all resources allocated by the hyphen library now because they are
+  // not used when hyphenating English words.
+  if (rep) {
+    for (size_t i = 0; i < word.length(); ++i) {
+      if (rep[i])
+        free(rep[i]);
+    }
+    free(rep);
+  }
+  if (pos)
+    free(pos);
+  if (cut)
+    free(cut);
+
+  // Retrieve the last position where we can insert a hyphen before the given
+  // index.
+  if (before_index >= 2) {
+    for (size_t index = before_index - 2; index > 0; --index) {
+      if (hyphens[index] & 1)
+        return index + 1;
+    }
+  }
+  return 0;
 }
