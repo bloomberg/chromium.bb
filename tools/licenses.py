@@ -222,20 +222,20 @@ class LicenseError(Exception):
     fully filled out."""
     pass
 
-def AbsolutePath(path, filename):
+def AbsolutePath(path, filename, root):
     """Convert a path in README.chromium to be absolute based on the source
     root."""
     if filename.startswith('/'):
         # Absolute-looking paths are relative to the source root
         # (which is the directory we're run from).
-        absolute_path = os.path.join(os.getcwd(), filename[1:])
+        absolute_path = os.path.join(root, filename[1:])
     else:
-        absolute_path = os.path.join(path, filename)
+        absolute_path = os.path.join(root, path, filename)
     if os.path.exists(absolute_path):
         return absolute_path
     return None
 
-def ParseDir(path, require_license_file=True):
+def ParseDir(path, root, require_license_file=True):
     """Examine a third_party/foo component and extract its metadata."""
 
     # Parse metadata fields out of README.chromium.
@@ -255,7 +255,7 @@ def ParseDir(path, require_license_file=True):
         metadata.update(SPECIAL_CASES[path])
     else:
         # Try to find README.chromium.
-        readme_path = os.path.join(path, 'README.chromium')
+        readme_path = os.path.join(root, path, 'README.chromium')
         if not os.path.exists(readme_path):
             raise LicenseError("missing README.chromium or licenses.py "
                                "SPECIAL_CASES entry")
@@ -281,7 +281,7 @@ def ParseDir(path, require_license_file=True):
     if metadata["License File"] != NOT_SHIPPED:
         # Check that the license file exists.
         for filename in (metadata["License File"], "COPYING"):
-            license_path = AbsolutePath(path, filename)
+            license_path = AbsolutePath(path, filename, root)
             if license_path is not None:
                 break
 
@@ -294,7 +294,7 @@ def ParseDir(path, require_license_file=True):
         metadata["License File"] = license_path
 
     if "Required Text" in metadata:
-        required_path = AbsolutePath(path, metadata["Required Text"])
+        required_path = AbsolutePath(path, metadata["Required Text"], root)
         if required_path is not None:
             metadata["Required Text"] = required_path
         else:
@@ -303,20 +303,20 @@ def ParseDir(path, require_license_file=True):
     return metadata
 
 
-def ContainsFiles(path):
+def ContainsFiles(path, root):
     """Determines whether any files exist in a directory or in any of its
     subdirectories."""
-    for _, _, files in os.walk(path):
+    for _, _, files in os.walk(os.path.join(root, path)):
         if files:
             return True
     return False
 
 
-def FindThirdPartyDirs(prune_paths):
-    """Find all third_party directories underneath the current directory."""
+def FindThirdPartyDirs(prune_paths, root):
+    """Find all third_party directories underneath the source root."""
     third_party_dirs = []
-    for path, dirs, files in os.walk('.'):
-        path = path[len('./'):]  # Pretty up the path.
+    for path, dirs, files in os.walk(root):
+        path = path[len(root)+1:]  # Pretty up the path.
 
         if path in prune_paths:
             dirs[:] = []
@@ -350,17 +350,19 @@ def FindThirdPartyDirs(prune_paths):
 
     # If a directory contains no files, assume it's a DEPS directory for a
     # project not used by our current configuration and skip it.
-    return [x for x in third_party_dirs if ContainsFiles(x)]
+    return [x for x in third_party_dirs if ContainsFiles(x, root)]
 
 
-def ScanThirdPartyDirs():
+def ScanThirdPartyDirs(root=None):
     """Scan a list of directories and report on any problems we find."""
-    third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS)
+    if root is None:
+      root = os.getcwd()
+    third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS, root)
 
     errors = []
     for path in sorted(third_party_dirs):
         try:
-            metadata = ParseDir(path)
+            metadata = ParseDir(path, root)
         except LicenseError, e:
             errors.append((path, e.args[0]))
             continue
@@ -371,7 +373,7 @@ def ScanThirdPartyDirs():
     return len(errors) == 0
 
 
-def GenerateCredits():
+def GenerateCredits(root=None):
     """Generate about:credits, dumping the result to stdout."""
 
     def EvaluateTemplate(template, env, escape=True):
@@ -383,14 +385,16 @@ def GenerateCredits():
             template = template.replace('{{%s}}' % key, val)
         return template
 
-    third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS)
+    if root is None:
+      root = os.getcwd()
+    third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS, root)
 
-    entry_template = open('chrome/browser/resources/about_credits_entry.tmpl',
-                          'rb').read()
+    entry_template = open(os.path.join(root, 'chrome', 'browser', 'resources',
+                                       'about_credits_entry.tmpl'), 'rb').read()
     entries = []
     for path in sorted(third_party_dirs):
         try:
-            metadata = ParseDir(path)
+            metadata = ParseDir(path, root)
         except LicenseError:
             print >>sys.stderr, ("WARNING: licensing info for " + path +
                                  " is incomplete, skipping.")
@@ -410,8 +414,8 @@ def GenerateCredits():
             env["license_unescaped"] = required_text
         entries.append(EvaluateTemplate(entry_template, env))
 
-    file_template = open('chrome/browser/resources/about_credits.tmpl',
-                         'rb').read()
+    file_template = open(os.path.join(root, 'chrome', 'browser', 'resources',
+                                      'about_credits.tmpl'), 'rb').read()
     print "<!-- Generated by licenses.py; do not edit. -->"
     print EvaluateTemplate(file_template, {'entries': '\n'.join(entries)},
                            escape=False)
