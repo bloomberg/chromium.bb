@@ -18,12 +18,7 @@ var oldChromeVersion = !chrome.runtime;
 var requestTimerId;
 
 function getGmailUrl() {
-  var url = "https://mail.google.com/";
-  if (localStorage.customDomain)
-    url += localStorage.customDomain + '/';
-  else
-    url += "mail/"
-  return url;
+  return "https://mail.google.com/mail/";
 }
 
 // Identifier used to debug the possibility of multiple instances of the
@@ -41,15 +36,8 @@ function getFeedUrl() {
 }
 
 function isGmailUrl(url) {
-  // This is the Gmail we're looking for if:
-  // - starts with the correct gmail url
-  // - doesn't contain any other path chars
-  var gmail = getGmailUrl();
-  if (url.indexOf(gmail) != 0)
-    return false;
-
-  return url.length == gmail.length || url[gmail.length] == '?' ||
-                       url[gmail.length] == '#';
+  // Return whether the URL starts with the Gmail prefix.
+  return url.indexOf(getGmailUrl()) == 0;
 }
 
 // A "loading" animation displayed while we wait for the first response from
@@ -344,13 +332,20 @@ if (chrome.webNavigation && chrome.webNavigation.onDOMContentLoaded &&
 
 chrome.browserAction.onClicked.addListener(goToInbox);
 
-// This hack is needed because Chrome 22 does not persist browserAction icon
-// state, and also doesn't expose onStartup. So the icon always starts out in
-// wrong state. We don't actually need onStartup, we just use it as a clue
-// that we're in a version of Chrome that has this problem.
-if (chrome.runtime && !chrome.runtime.onStartup) {
+if (chrome.runtime && chrome.runtime.onStartup) {
+  chrome.runtime.onStartup.addListener(function() {
+    console.log('Starting browser... updating icon.');
+    startRequest({scheduleRequest:false, showLoadingAnimation:false});
+    updateIcon();
+  });
+} else {
+  // This hack is needed because Chrome 22 does not persist browserAction icon
+  // state, and also doesn't expose onStartup. So the icon always starts out in
+  // wrong state. We don't actually use onStartup except as a clue that we're
+  // in a version of Chrome that has this problem.
   chrome.windows.onCreated.addListener(function() {
     console.log('Window created... updating icon.');
+    startRequest({scheduleRequest:false, showLoadingAnimation:false});
     updateIcon();
   });
 }
