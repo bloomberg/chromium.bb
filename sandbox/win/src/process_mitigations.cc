@@ -4,7 +4,6 @@
 
 #include "sandbox/win/src/process_mitigations.h"
 
-#include "base/logging.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_utils.h"
@@ -46,8 +45,9 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 
     // Check for SetDefaultDllDirectories since it requires KB2533623.
     if (set_default_dll_directories) {
-      if (!set_default_dll_directories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS)) {
-        CHECK_EQ(ERROR_ACCESS_DENIED, static_cast<long>(::GetLastError()));
+      if (!set_default_dll_directories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS) &&
+          ERROR_ACCESS_DENIED != ::GetLastError()) {
+        return false;
       }
     }
   }
@@ -56,8 +56,9 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
   if (version >= base::win::VERSION_VISTA &&
       (flags & MITIGATION_HEAP_TERMINATE)) {
     if (!::HeapSetInformation(NULL, HeapEnableTerminationOnCorruption,
-                              NULL, 0)) {
-      CHECK_EQ(ERROR_ACCESS_DENIED, static_cast<long>(::GetLastError()));
+                              NULL, 0) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
+      return false;
     }
   }
 
@@ -74,8 +75,9 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
         reinterpret_cast<SetProcessDEPPolicyFunction>(
             ::GetProcAddress(module, "SetProcessDEPPolicy"));
     if (set_process_dep_policy) {
-      if (!set_process_dep_policy(dep_flags) && return_on_fail) {
-        CHECK_EQ(ERROR_ACCESS_DENIED, static_cast<long>(::GetLastError()));
+      if (!set_process_dep_policy(dep_flags) &&
+          ERROR_ACCESS_DENIED != ::GetLastError() && return_on_fail) {
+        return false;
       }
     } else {
       // We're on XP sp2, so use the less standard approach.
@@ -96,8 +98,8 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
       if (!SUCCEEDED(set_information_process(GetCurrentProcess(),
                                              ProcessExecuteFlags,
                                              &dep, sizeof(dep))) &&
-          return_on_fail) {
-        CHECK_EQ(ERROR_ACCESS_DENIED, static_cast<long>(::GetLastError()));
+          ERROR_ACCESS_DENIED != ::GetLastError() && return_on_fail) {
+        return false;
       }
     }
   }
@@ -122,8 +124,9 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
         MITIGATION_RELOCATE_IMAGE_REQUIRED;
 
     if (!set_process_mitigation_policy(ProcessASLRPolicy, &policy,
-                                       sizeof(policy))) {
-      CHECK_EQ(ERROR_ACCESS_DENIED, static_cast<long>(::GetLastError()));
+                                       sizeof(policy)) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
+      return false;
     }
   }
 
@@ -134,8 +137,9 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
         policy.RaiseExceptionOnInvalidHandleReference = true;
 
     if (!set_process_mitigation_policy(ProcessStrictHandleCheckPolicy, &policy,
-                                       sizeof(policy))) {
-      CHECK_EQ(ERROR_ACCESS_DENIED, static_cast<long>(::GetLastError()));
+                                       sizeof(policy)) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
+      return false;
     }
   }
 
@@ -145,8 +149,9 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     policy.DisallowWin32kSystemCalls = true;
 
     if (!set_process_mitigation_policy(ProcessSystemCallDisablePolicy, &policy,
-                                       sizeof(policy))) {
-      CHECK_EQ(ERROR_ACCESS_DENIED, static_cast<long>(::GetLastError()));
+                                       sizeof(policy)) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
+      return false;
     }
   }
 
@@ -156,8 +161,9 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     policy.DisableExtensionPoints = true;
 
     if (!set_process_mitigation_policy(ProcessExtensionPointDisablePolicy,
-                                       &policy, sizeof(policy))) {
-      CHECK_EQ(ERROR_ACCESS_DENIED, static_cast<long>(::GetLastError()));
+                                       &policy, sizeof(policy)) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
+      return false;
     }
   }
 
