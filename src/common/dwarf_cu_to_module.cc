@@ -74,6 +74,9 @@ using std::vector;
 // A Specification holds information gathered from a declaration DIE that
 // we may need if we find a DW_AT_specification link pointing to it.
 struct DwarfCUToModule::Specification {
+  // The qualified name that can be found by demangling DW_AT_MIPS_linkage_name.
+  string qualified_name;
+
   // The name of the enclosing scope, or the empty string if there is none.
   string enclosing_name;
 
@@ -314,37 +317,53 @@ void DwarfCUToModule::GenericDIEHandler::ProcessAttributeString(
 }
 
 string DwarfCUToModule::GenericDIEHandler::ComputeQualifiedName() {
-  // Use DW_AT_MIPS_linkage_name if it is available. It is already qualified,
-  // so there is no need to add enclosing_name.
-  if (!demangled_name_.empty())
-    return demangled_name_;
+  // Use the demangled name, if one is available. Demangled names are
+  // preferable to those inferred from the DWARF structure because they
+  // include argument types.
+  const string *qualified_name = NULL;
+  if (!demangled_name_.empty()) {
+    // Found it is this DIE.
+    qualified_name = &demangled_name_;
+  } else if (specification_ && !specification_->qualified_name.empty()) {
+    // Found it on the specification.
+    qualified_name = &specification_->qualified_name;
+  }
 
-  // Find our unqualified name. If the DIE has its own DW_AT_name
-  // attribute, then use that; otherwise, check our specification.
   const string *unqualified_name;
-  if (name_attribute_.empty() && specification_)
-    unqualified_name = &specification_->unqualified_name;
-  else
-    unqualified_name = &name_attribute_;
-
-  // Find the name of our enclosing context. If we have a
-  // specification, it's the specification's enclosing context that
-  // counts; otherwise, use this DIE's context.
   const string *enclosing_name;
-  if (specification_)
-    enclosing_name = &specification_->enclosing_name;
-  else
-    enclosing_name = &parent_context_->name;
+  if (!qualified_name) {
+    // Find our unqualified name. If the DIE has its own DW_AT_name
+    // attribute, then use that; otherwise, check our specification.
+    if (name_attribute_.empty() && specification_)
+      unqualified_name = &specification_->unqualified_name;
+    else
+      unqualified_name = &name_attribute_;
+
+    // Find the name of our enclosing context. If we have a
+    // specification, it's the specification's enclosing context that
+    // counts; otherwise, use this DIE's context.
+    if (specification_)
+      enclosing_name = &specification_->enclosing_name;
+    else
+      enclosing_name = &parent_context_->name;
+  }
 
   // If this DIE was marked as a declaration, record its names in the
   // specification table.
   if (declaration_) {
     FileContext *file_context = cu_context_->file_context;
     Specification spec;
-    spec.enclosing_name = *enclosing_name;
-    spec.unqualified_name = *unqualified_name;
+    if (qualified_name)
+      spec.qualified_name = *qualified_name;
+    else {
+      spec.enclosing_name = *enclosing_name;
+      spec.unqualified_name = *unqualified_name;
+    }
     file_context->file_private->specifications[offset_] = spec;
   }
+
+  if (qualified_name)
+    return *qualified_name;
 
   // Combine the enclosing name and unqualified name to produce our
   // own fully-qualified name.
