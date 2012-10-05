@@ -4,6 +4,8 @@
 
 #include "content/common/indexed_db/proxy_webidbdatabase_impl.h"
 
+#include <vector>
+
 #include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
@@ -52,6 +54,7 @@ WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
   web_metadata.name = idb_metadata.name;
   web_metadata.version = idb_metadata.version;
   web_metadata.intVersion = idb_metadata.int_version;
+  web_metadata.maxObjectStoreId = idb_metadata.max_object_store_id;
   web_metadata.objectStores = WebVector<WebIDBMetadata::ObjectStore>(
       idb_metadata.object_stores.size());
 
@@ -64,6 +67,7 @@ WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
     web_store_metadata.name = idb_store_metadata.name;
     web_store_metadata.keyPath = idb_store_metadata.keyPath;
     web_store_metadata.autoIncrement = idb_store_metadata.autoIncrement;
+    web_store_metadata.maxIndexId = idb_store_metadata.max_index_id;
     web_store_metadata.indexes = WebVector<WebIDBMetadata::Index>(
         idb_store_metadata.indexes.size());
 
@@ -84,12 +88,14 @@ WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
 }
 
 WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
+    long long id,
     const WebKit::WebString& name,
     const WebKit::WebIDBKeyPath& key_path,
     bool auto_increment,
     const WebKit::WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBHostMsg_DatabaseCreateObjectStore_Params params;
+  params.id = id;
   params.name = name;
   params.key_path = content::IndexedDBKeyPath(key_path);
   params.auto_increment = auto_increment;
@@ -103,6 +109,18 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
   if (!object_store)
     return NULL;
   return new RendererWebIDBObjectStoreImpl(object_store);
+}
+
+// TODO(alecflett): Remove this when it is removed from webkit:
+// https://bugs.webkit.org/show_bug.cgi?id=98085
+WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
+    const WebKit::WebString& name,
+    const WebKit::WebIDBKeyPath& key_path,
+    bool auto_increment,
+    const WebKit::WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
+    return createObjectStore(AutogenerateObjectStoreId, name, key_path,
+                             auto_increment, transaction, ec);
 }
 
 void RendererWebIDBDatabaseImpl::deleteObjectStore(

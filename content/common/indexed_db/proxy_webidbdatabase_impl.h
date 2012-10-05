@@ -20,8 +20,19 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   explicit RendererWebIDBDatabaseImpl(int32 idb_database_id);
   virtual ~RendererWebIDBDatabaseImpl();
 
+  // TODO(alecflett): Remove this when it is removed from webkit:
+  // https://bugs.webkit.org/show_bug.cgi?id=98085
+  static const long long AutogenerateObjectStoreId = -1;
+
   // WebKit::WebIDBDatabase
   virtual WebKit::WebIDBMetadata metadata() const;
+  virtual WebKit::WebIDBObjectStore* createObjectStore(
+      long long objectstore_id,
+      const WebKit::WebString& name,
+      const WebKit::WebIDBKeyPath& key_path,
+      bool auto_increment,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode& ec);
   virtual WebKit::WebIDBObjectStore* createObjectStore(
       const WebKit::WebString& name,
       const WebKit::WebIDBKeyPath& key_path,

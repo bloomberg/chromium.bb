@@ -345,6 +345,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
   metadata->name = web_metadata.name;
   metadata->version = web_metadata.version;
   metadata->int_version = web_metadata.intVersion;
+  metadata->max_object_store_id = web_metadata.maxObjectStoreId;
 
   for (size_t i = 0; i < web_metadata.objectStores.size(); ++i) {
     const WebIDBMetadata::ObjectStore& web_store_metadata =
@@ -353,6 +354,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
     idb_store_metadata.name = web_store_metadata.name;
     idb_store_metadata.keyPath = IndexedDBKeyPath(web_store_metadata.keyPath);
     idb_store_metadata.autoIncrement = web_store_metadata.autoIncrement;
+    idb_store_metadata.max_index_id = web_store_metadata.maxIndexId;
 
     for (size_t j = 0; j < web_store_metadata.indexes.size(); ++j) {
       const WebIDBMetadata::Index& web_index_metadata =
@@ -381,7 +383,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
 
   *ec = 0;
   WebIDBObjectStore* object_store = idb_database->createObjectStore(
-      params.name, params.key_path, params.auto_increment,
+      params.id, params.name, params.key_path, params.auto_increment,
       *idb_transaction, *ec);
   *object_store_id = *ec ? 0 : parent_->Add(object_store);
   if (parent_->Context()->IsOverQuota(
@@ -794,8 +796,8 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCreateIndex(
 
   *ec = 0;
   WebIDBIndex* index = idb_object_store->createIndex(
-      params.name, params.key_path, params.unique, params.multi_entry,
-      *idb_transaction, *ec);
+      params.id, params.name, params.key_path, params.unique,
+      params.multi_entry, *idb_transaction, *ec);
   *index_id = *ec ? 0 : parent_->Add(index);
   WebIDBObjectIDToURLMap* transaction_url_map =
       &parent_->transaction_dispatcher_host_->transaction_url_map_;

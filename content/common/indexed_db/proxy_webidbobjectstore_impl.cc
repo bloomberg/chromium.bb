@@ -144,6 +144,7 @@ void RendererWebIDBObjectStoreImpl::clear(
 }
 
 WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
+    long long id,
     const WebString& name,
     const WebIDBKeyPath& key_path,
     bool unique,
@@ -151,6 +152,7 @@ WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBHostMsg_ObjectStoreCreateIndex_Params params;
+  params.id = id;
   params.name = name;
   params.key_path = IndexedDBKeyPath(key_path);
   params.unique = unique;
@@ -164,6 +166,19 @@ WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
   if (!index_id)
     return NULL;
   return new RendererWebIDBIndexImpl(index_id);
+}
+
+// TODO(alecflett): Remove this when it is removed from webkit:
+// https://bugs.webkit.org/show_bug.cgi?id=98085
+WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
+    const WebString& name,
+    const WebIDBKeyPath& key_path,
+    bool unique,
+    bool multi_entry,
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
+    return createIndex(AutogenerateIndexId, name, key_path, unique, multi_entry,
+                       transaction, ec);
 }
 
 WebIDBIndex* RendererWebIDBObjectStoreImpl::index(

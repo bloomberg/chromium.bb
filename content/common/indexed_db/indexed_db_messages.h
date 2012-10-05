@@ -65,6 +65,8 @@ IPC_STRUCT_END()
 
 // Used to create an object store.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
+  // The storage id of the object store.
+  IPC_STRUCT_MEMBER(int64, id)
   // The name of the object store.
   IPC_STRUCT_MEMBER(string16, name)
   // The keyPath of the object store.
@@ -130,6 +132,8 @@ IPC_STRUCT_END()
 
 // Used to create an index.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreCreateIndex_Params)
+  // The storage id of the index.
+  IPC_STRUCT_MEMBER(int64, id)
   // The name of the index.
   IPC_STRUCT_MEMBER(string16, name)
   // The keyPath of the index.
@@ -338,6 +342,7 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryDeleteDatabase,
 
 // WebIDBDatabase::metadata() payload
 IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)
+  IPC_STRUCT_MEMBER(int64, id)
   IPC_STRUCT_MEMBER(string16, name)
   IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
   IPC_STRUCT_MEMBER(bool, unique)
@@ -345,16 +350,20 @@ IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBObjectStoreMetadata)
+  IPC_STRUCT_MEMBER(int64, id)
   IPC_STRUCT_MEMBER(string16, name)
   IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
   IPC_STRUCT_MEMBER(bool, autoIncrement)
+  IPC_STRUCT_MEMBER(int64, max_index_id)
   IPC_STRUCT_MEMBER(std::vector<IndexedDBIndexMetadata>, indexes)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBDatabaseMetadata)
+  IPC_STRUCT_MEMBER(int64, id)
   IPC_STRUCT_MEMBER(string16, name)
   IPC_STRUCT_MEMBER(string16, version)
   IPC_STRUCT_MEMBER(int64, int_version)
+  IPC_STRUCT_MEMBER(int64, max_object_store_id)
   IPC_STRUCT_MEMBER(std::vector<IndexedDBObjectStoreMetadata>, object_stores)
 IPC_STRUCT_END()
 
@@ -366,7 +375,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_DatabaseMetadata,
 // WebIDBDatabase::createObjectStore() message.
 IPC_SYNC_MESSAGE_CONTROL1_2(IndexedDBHostMsg_DatabaseCreateObjectStore,
                             IndexedDBHostMsg_DatabaseCreateObjectStore_Params,
-                            int32, /* object_store_id */
+                            int32, /* idb_object_store_id */
                             WebKit::WebExceptionCode /* ec */)
 
 // WebIDBDatabase::removeObjectStore() message.
