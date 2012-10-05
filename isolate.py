@@ -1838,7 +1838,10 @@ def CMDtrace(args):
 class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
   """Adds automatic --isolate, --result, --out and --variables handling."""
   def __init__(self, require_result=True, **kwargs):
-    trace_inputs.OptionParserWithNiceDescription.__init__(self, **kwargs)
+    trace_inputs.OptionParserWithNiceDescription.__init__(
+        self,
+        verbose=int(os.environ.get('ISOLATE_DEBUG', 0)),
+        **kwargs)
     default_variables = [('OS', get_flavor())]
     if sys.platform in ('win32', 'cygwin'):
       default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
