@@ -164,7 +164,7 @@
             '<@(isolate_dependency_tracked)',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/cacheinvalidation_unittests.swarm',
+            '<(PRODUCT_DIR)/cacheinvalidation_unittests.isolated',
           ],
           'action': [
             'python',
