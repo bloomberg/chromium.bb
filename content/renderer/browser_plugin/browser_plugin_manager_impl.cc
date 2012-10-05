@@ -43,6 +43,7 @@ bool BrowserPluginManagerImpl::OnControlMessageReceived(
                         OnShouldAcceptTouchEvents)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadAbort, OnLoadAbort)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -99,6 +100,15 @@ void BrowserPluginManagerImpl::OnLoadAbort(int instance_id,
   BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
   if (plugin)
     plugin->LoadAbort(url, is_top_level, type);
+}
+
+void BrowserPluginManagerImpl::OnLoadRedirect(int instance_id,
+                                              const GURL& old_url,
+                                              const GURL& new_url,
+                                              bool is_top_level) {
+  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+  if (plugin)
+    plugin->LoadRedirect(old_url, new_url, is_top_level);
 }
 
 }  // namespace content

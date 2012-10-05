@@ -14,13 +14,17 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "net/base/net_errors.h"
 #include "ui/surface/transport_dib.h"
+#include "webkit/glue/resource_type.h"
 
 namespace content {
 
@@ -47,6 +51,10 @@ BrowserPluginGuest::BrowserPluginGuest(int instance_id,
   DCHECK(web_contents);
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
   new BrowserPluginGuestHelper(this, render_view_host);
+
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
+      content::Source<content::WebContents>(web_contents));
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
@@ -64,6 +72,27 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
                                               render_view_host);
   }
   return new BrowserPluginGuest(instance_id, web_contents, render_view_host);
+}
+
+void BrowserPluginGuest::Observe(int type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  switch (type) {
+    case NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
+      DCHECK_EQ(Source<WebContents>(source).ptr(), web_contents());
+      ResourceRedirectDetails* resource_redirect_details =
+            Details<ResourceRedirectDetails>(details).ptr();
+      bool is_top_level =
+          resource_redirect_details->resource_type == ResourceType::MAIN_FRAME;
+      LoadRedirect(resource_redirect_details->url,
+                   resource_redirect_details->new_url,
+                   is_top_level);
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected notification sent.";
+      break;
+  }
 }
 
 bool BrowserPluginGuest::ViewTakeFocus(bool reverse) {
@@ -327,6 +356,15 @@ void BrowserPluginGuest::DidFailProvisionalLoad(
                                      validated_url,
                                      is_main_frame,
                                      error_type));
+}
+
+void BrowserPluginGuest::LoadRedirect(
+    const GURL& old_url,
+    const GURL& new_url,
+    bool is_top_level) {
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_LoadRedirect(
+          instance_id(), old_url, new_url, is_top_level));
 }
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(

@@ -147,6 +147,14 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_LoadAbort,
                      bool /* is_top_level */,
                      std::string /* type */)
 
+// When the guest redirects a navigation, the browser process informs the
+// embedder through the BrowserPluginMsg_LoadRedirect message.
+IPC_MESSAGE_CONTROL4(BrowserPluginMsg_LoadRedirect,
+                     int /* instance_id */,
+                     GURL /* old_url */,
+                     GURL /* new_url */,
+                     bool /* is_top_level */)
+
 // When the guest navigates, the browser process informs the embedder through
 // the BrowserPluginMsg_DidNavigate message.
 IPC_MESSAGE_CONTROL3(BrowserPluginMsg_DidNavigate,

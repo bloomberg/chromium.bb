@@ -58,6 +58,10 @@ class CONTENT_EXPORT BrowserPlugin :
   void LoadStart(const GURL& url, bool is_top_level);
   // Inform the BrowserPlugin that the guest has aborted loading a new page.
   void LoadAbort(const GURL& url, bool is_top_level, const std::string& type);
+  // Inform the BrowserPlugin that the guest has redirected a navigation.
+  void LoadRedirect(const GURL& old_url,
+                    const GURL& new_url,
+                    bool is_top_level);
   // Tells the BrowserPlugin to advance the focus to the next (or previous)
   // element.
   void AdvanceFocus(bool reverse);

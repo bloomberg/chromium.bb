@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
-#include "content/public/browser/notification_observer.h"
 #include "content/public/test/test_utils.h"
 #include "ui/gfx/size.h"
 
@@ -23,8 +22,7 @@ class RenderViewHost;
 //
 // Provides utilities to wait for certain state/messages in BrowserPluginGuest
 // to be used in tests.
-class TestBrowserPluginGuest : public BrowserPluginGuest,
-                               public NotificationObserver {
+class TestBrowserPluginGuest : public BrowserPluginGuest {
  public:
   TestBrowserPluginGuest(int instance_id,
                          WebContentsImpl* web_contents,
@@ -98,9 +96,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest,
   scoped_refptr<MessageLoopRunner> reload_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> stop_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> damage_buffer_message_loop_runner_;
-
-  // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginGuest);
 };

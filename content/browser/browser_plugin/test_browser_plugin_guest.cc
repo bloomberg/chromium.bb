@@ -30,9 +30,9 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
       waiting_for_damage_buffer_with_size_(false),
       last_damage_buffer_size_(gfx::Size()) {
   // Listen to visibility changes so that a test can wait for these changes.
-  registrar_.Add(this,
-                 NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-                 Source<WebContents>(web_contents));
+  notification_registrar_.Add(this,
+                              NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+                              Source<WebContents>(web_contents));
 }
 
 TestBrowserPluginGuest::~TestBrowserPluginGuest() {
@@ -53,11 +53,11 @@ void TestBrowserPluginGuest::Observe(int type,
         if (was_hidden_message_loop_runner_)
           was_hidden_message_loop_runner_->Quit();
       }
-      break;
+      return;
     }
-    default:
-      NOTREACHED() << "Unexpected notification type: " << type;
   }
+
+  BrowserPluginGuest::Observe(type, source, details);
 }
 
 void TestBrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {

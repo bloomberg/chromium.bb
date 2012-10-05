@@ -658,4 +658,36 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadAbort) {
   EXPECT_EQ(expected_title, actual_title);
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadRedirect) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+
+  const string16 expected_title = ASCIIToUTF16("redirected");
+  content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                      expected_title);
+
+  // Navigate with a redirect and wait until the title changes.
+  GURL redirect_url(test_server()->GetURL(
+      "server-redirect?files/title1.html"));
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", redirect_url.spec().c_str())));
+
+  string16 actual_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, actual_title);
+
+  // Verify that we heard a loadRedirect during the navigation.
+  base::Value* v = rvh->ExecuteJavascriptAndGetValue(
+      string16(), ASCIIToUTF16("redirectOldUrl"));
+  std::string result;
+  EXPECT_TRUE(v->GetAsString(&result));
+  EXPECT_EQ(redirect_url.spec().c_str(), result);
+
+  v = rvh->ExecuteJavascriptAndGetValue(
+      string16(), ASCIIToUTF16("redirectNewUrl"));
+  EXPECT_TRUE(v->GetAsString(&result));
+  EXPECT_EQ(test_server()->GetURL("files/title1.html").spec().c_str(), result);
+}
+
 }  // namespace content

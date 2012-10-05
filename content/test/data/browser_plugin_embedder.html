@@ -5,6 +5,15 @@ function loadAbort(evt) {
 function loadStart(evt) {
   document.title = evt.url;
 }
+var redirectOldUrl;
+var redirectNewUrl;
+function loadRedirect(event) {
+  document.title = "redirected";
+  if (event.isTopLevel) {
+    redirectOldUrl = event.oldUrl;
+    redirectNewUrl = event.newUrl;
+  }
+}
 function SetSrc(src) {
   var plugin = document.getElementById('plugin');
   plugin.src = src;
@@ -43,4 +52,5 @@ document.title = 'embedder';
   var plugin = document.getElementById('plugin');
   plugin.addEventListener('loadStart', loadStart);
   plugin.addEventListener('loadAbort', loadAbort);
+  plugin.addEventListener('loadRedirect', loadRedirect);
 </script>

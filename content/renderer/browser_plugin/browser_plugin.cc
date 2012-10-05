@@ -45,8 +45,11 @@ namespace {
 const char kCrashEventName[] = "crash";
 const char kIsTopLevel[] = "isTopLevel";
 const char kLoadAbortEventName[] = "loadAbort";
+const char kLoadRedirectEventName[] = "loadRedirect";
 const char kLoadStartEventName[] = "loadStart";
 const char kNavigationEventName[] = "navigation";
+const char kNewURL[] = "newUrl";
+const char kOldURL[] = "oldUrl";
 const char kPartitionAttribute[] = "partition";
 const char kPersistPrefix[] = "persist:";
 const char kSrcAttribute[] = "src";
@@ -405,6 +408,40 @@ void BrowserPlugin::LoadAbort(const GURL& url,
   v8::Local<v8::Object>::Cast(event)->Set(
       v8::String::New(kType, sizeof(kType) - 1),
       v8::String::New(type.c_str(), type.size()));
+  for (; it != listeners.end(); ++it) {
+    // Fire the event listener.
+    container()->element().document().frame()->
+        callFunctionEvenIfScriptDisabled(*it,
+                                         v8::Object::New(),
+                                         1,
+                                         &event);
+  }
+}
+
+void BrowserPlugin::LoadRedirect(const GURL& old_url,
+                                 const GURL& new_url,
+                                 bool is_top_level) {
+  if (!HasListeners(kLoadRedirectEventName))
+    return;
+
+  EventListeners& listeners = event_listener_map_[kLoadRedirectEventName];
+  EventListeners::iterator it = listeners.begin();
+
+  v8::Context::Scope context_scope(v8::Context::New());
+  v8::HandleScope handle_scope;
+
+  // Construct the loadRedirect event object.
+  v8::Local<v8::Value> event =
+      v8::Local<v8::Object>::New(v8::Object::New());
+  v8::Local<v8::Object>::Cast(event)->Set(
+      v8::String::New(kOldURL, sizeof(kOldURL) - 1),
+      v8::String::New(old_url.spec().c_str(), old_url.spec().size()));
+  v8::Local<v8::Object>::Cast(event)->Set(
+      v8::String::New(kNewURL, sizeof(kNewURL) - 1),
+      v8::String::New(new_url.spec().c_str(), new_url.spec().size()));
+  v8::Local<v8::Object>::Cast(event)->Set(
+      v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
+      v8::Boolean::New(is_top_level));
   for (; it != listeners.end(); ++it) {
     // Fire the event listener.
     container()->element().document().frame()->

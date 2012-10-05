@@ -34,6 +34,8 @@
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/time.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/rect.h"
@@ -57,7 +59,8 @@ class RenderProcessHost;
 // messages.
 //
 // BrowserPluginEmbedder is responsible for creating and destroying a guest.
-class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
+class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
+                                          public WebContentsDelegate,
                                           public WebContentsObserver {
  public:
   virtual ~BrowserPluginGuest();
@@ -80,6 +83,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
       RenderProcessHost* render_process_host) {
     embedder_render_process_host_ = render_process_host;
   }
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void DidStartProvisionalLoadForFrame(
@@ -181,9 +189,15 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   // since we want to intercept certain messages for testing.
   virtual void SendMessageToEmbedder(IPC::Message* msg);
 
+  // Called when a redirect notification occurs.
+  void LoadRedirect(const GURL& old_url,
+                    const GURL& new_url,
+                    bool is_top_level);
+
   // Static factory instance (always NULL for non-test).
   static content::BrowserPluginHostFactory* factory_;
 
+  NotificationRegistrar notification_registrar_;
   RenderProcessHost* embedder_render_process_host_;
   // An identifier that uniquely identifies a browser plugin guest within an
   // embedder.

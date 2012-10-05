@@ -43,6 +43,10 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                    const GURL& url,
                    bool is_top_level,
                    const std::string& type);
+  void OnLoadRedirect(int instance_id,
+                      const GURL& old_url,
+                      const GURL& new_url,
+                      bool is_top_level);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManagerImpl);
 };
