@@ -32,6 +32,8 @@ class AURA_EXPORT InputMethodEventFilter
 
   void SetInputMethodPropertyInRootWindow(RootWindow* root_window);
 
+  ui::InputMethod* input_method() const { return input_method_.get(); }
+
  private:
   // Overridden from EventFilter:
   virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE;

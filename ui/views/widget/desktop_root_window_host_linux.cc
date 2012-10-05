@@ -21,6 +21,7 @@
 #include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/widget/desktop_layout_manager.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
@@ -46,6 +47,7 @@ const char* kAtomsToCache[] = {
   "_NET_WM_PID",
   "_NET_WM_PING",
   "_NET_WM_STATE",
+  "_NET_WM_STATE_FULLSCREEN",
   "_NET_WM_STATE_HIDDEN",
   "_NET_WM_STATE_MAXIMIZED_HORZ",
   "_NET_WM_STATE_MAXIMIZED_VERT",
@@ -314,6 +316,9 @@ void DesktopRootWindowHostLinux::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
   // TODO(erg):
   NOTIMPLEMENTED();
+
+  // TODO(erg): We shouldn't completely fall down here.
+  Show();
 }
 
 bool DesktopRootWindowHostLinux::IsVisible() const {
@@ -456,16 +461,13 @@ void DesktopRootWindowHostLinux::SetAlwaysOnTop(bool always_on_top) {
 }
 
 InputMethod* DesktopRootWindowHostLinux::CreateInputMethod() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return NULL;
+  ui::InputMethod* host = input_method_filter_->input_method();
+  return new InputMethodBridge(this, host);
 }
 
 internal::InputMethodDelegate*
     DesktopRootWindowHostLinux::GetInputMethodDelegate() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return NULL;
+  return this;
 }
 
 void DesktopRootWindowHostLinux::SetWindowTitle(const string16& title) {
@@ -507,14 +509,13 @@ NonClientFrameView* DesktopRootWindowHostLinux::CreateNonClientFrameView() {
 }
 
 void DesktopRootWindowHostLinux::SetFullscreen(bool fullscreen) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  SetWMSpecState(fullscreen,
+                 atom_cache_.GetAtom("_NET_WM_STATE_FULLSCREEN"),
+                 None);
 }
 
 bool DesktopRootWindowHostLinux::IsFullscreen() const {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return false;
+  return HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN");
 }
 
 void DesktopRootWindowHostLinux::SetOpacity(unsigned char opacity) {
@@ -756,6 +757,20 @@ void DesktopRootWindowHostLinux::SetDeviceScaleFactor(
     float device_scale_factor) {
   cursor_loader_.UnloadAll();
   cursor_loader_.set_device_scale_factor(device_scale_factor);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopRootWindowHostLinux, views::internal::InputMethodDelegate:
+
+void DesktopRootWindowHostLinux::DispatchKeyEventPostIME(
+    const ui::KeyEvent& key) {
+  FocusManager* focus_manager =
+      native_widget_delegate_->AsWidget()->GetFocusManager();
+  if (focus_manager)
+    focus_manager->MaybeResetMenuKeyState(key);
+  if (native_widget_delegate_->OnKeyEvent(key) || !focus_manager)
+    return;
+  focus_manager->OnKeyEvent(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

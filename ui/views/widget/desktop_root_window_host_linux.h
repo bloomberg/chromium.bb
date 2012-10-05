@@ -17,6 +17,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/base/x/x11_atom_cache.h"
+#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_root_window_host.h"
 
@@ -41,6 +42,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
     : public DesktopRootWindowHost,
       public aura::RootWindowHost,
       public aura::client::CursorClient,
+      public views::internal::InputMethodDelegate,
       public MessageLoop::Dispatcher {
  public:
   DesktopRootWindowHostLinux(
@@ -155,6 +157,9 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // Note: other methods are just set on aura::RootWindowHost:
   virtual bool IsCursorVisible() const OVERRIDE;
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
+
+  // Overridden from views::internal::InputMethodDelegate:
+  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
 
   // Overridden from Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;

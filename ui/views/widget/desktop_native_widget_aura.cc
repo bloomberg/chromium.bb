@@ -11,6 +11,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/ime/input_method.h"
 #include "ui/views/widget/desktop_root_window_host.h"
 #include "ui/views/widget/widget.h"
 
@@ -361,10 +362,17 @@ void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
-  // This space intentionally left blank.
+  // This used to have the comment "This space intentionally left
+  // blank," except that alerting the input method of focus events is actually
+  // really important because input methods directly call InsertChar() on
+  // widgets instead of going through normal ui::Events.
+  //
+  // TODO(erg): Check that my understanding of the above is correct.
+  GetWidget()->GetInputMethod()->OnFocus();
 }
 
 void DesktopNativeWidgetAura::OnBlur() {
+  GetWidget()->GetInputMethod()->OnBlur();
 }
 
 gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
