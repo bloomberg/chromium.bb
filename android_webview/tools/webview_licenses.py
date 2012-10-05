@@ -177,6 +177,8 @@ def _FindThirdPartyDirs():
     os.path.join('third_party', 'gles2_conform'),
     # The llvm-build doesn't exist for non-clang builder
     os.path.join('third_party', 'llvm-build'),
+    # Binaries doesn't apply to android
+    os.path.join('third_party', 'widevine'),
   ]
   return licenses.FindThirdPartyDirs(prune_paths)
 
