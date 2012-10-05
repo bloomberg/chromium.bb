@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_instance.h"
 
-#include "native_client/tests/ppapi_geturl/module.h"
+#include "chrome/test/data/nacl/ppapi/geturl/module.h"
 
 // Global PPP functions --------------------------------------------------------
 
