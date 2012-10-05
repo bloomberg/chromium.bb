@@ -7,23 +7,28 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/google_apis/auth_service.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_util.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 
 using content::BrowserThread;
@@ -197,6 +202,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when GetFreeDiskSpace() is complete.
   void OnGetFreeDiskSpace(base::DictionaryValue* local_storage_summary);
 
+  // Called when GetAccountMetadata() call to DriveService is complete.
+  void OnGetAccountMetadata(gdata::GDataErrorCode status,
+                            scoped_ptr<base::Value> data);
+
   // Called when the page requests periodic update.
   void OnPeriodicUpdate(const base::ListValue* args);
 
@@ -209,6 +218,59 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);
 };
+
+void DriveInternalsWebUIHandler::OnGetAccountMetadata(
+    gdata::GDataErrorCode status, scoped_ptr<base::Value> data) {
+  if (status != gdata::HTTP_SUCCESS) {
+    LOG(ERROR) << "Failed to get account metadata";
+    return;
+  }
+  DCHECK(data.get());
+
+  base::DictionaryValue account_metadata;
+
+  if (gdata::util::IsDriveV2ApiEnabled()) {
+    scoped_ptr<gdata::AboutResource> about_resource;
+    about_resource = gdata::AboutResource::CreateFrom(*data);
+
+    account_metadata.SetDouble("account-quota-total",
+                               about_resource->quota_bytes_total());
+    account_metadata.SetDouble("account-quota-used",
+                               about_resource->quota_bytes_used());
+    account_metadata.SetString(
+        "account-largest-changestamp",
+        base::Int64ToString(about_resource->largest_change_id()));
+
+    // TODO(haruki): Fill installed Drive apps for Drive API.
+    // http://crbug.com/154241
+    return;
+  } else {
+    scoped_ptr<gdata::AccountMetadataFeed> feed;
+    feed = gdata::AccountMetadataFeed::CreateFrom(*data);
+
+    account_metadata.SetDouble("account-quota-total",
+                               feed->quota_bytes_total());
+    account_metadata.SetDouble("account-quota-used", feed->quota_bytes_used());
+    account_metadata.SetString(
+        "account-largest-changestamp",
+        base::Int64ToString(feed->largest_changestamp()));
+
+    base::ListValue* installed_apps = new base::ListValue();
+    for (size_t i = 0; i < feed->installed_apps().size(); ++i) {
+      const gdata::InstalledApp* app = feed->installed_apps()[i];
+      base::DictionaryValue* app_data = new base::DictionaryValue();
+      app_data->SetString("app_name", app->app_name());
+      app_data->SetString("app_id", app->app_id());
+      app_data->SetString("object_type", app->object_type());
+      app_data->SetBoolean("supports_create", app->supports_create());
+
+      installed_apps->Append(app_data);
+    }
+    account_metadata.Set("installed-apps", installed_apps);
+  }
+
+  web_ui()->CallJavascriptFunction("updateAccountMetadata", account_metadata);
+}
 
 void DriveInternalsWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -244,6 +306,11 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   auth_status.SetBoolean("has-access-token",
                          drive_service->HasAccessToken());
   web_ui()->CallJavascriptFunction("updateAuthStatus", auth_status);
+
+   // Update account metadata section.
+  drive_service->GetAccountMetadata(
+      base::Bind(&DriveInternalsWebUIHandler::OnGetAccountMetadata,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // Start updating the GCache contents section.
   Profile* profile = Profile::FromWebUI(web_ui());

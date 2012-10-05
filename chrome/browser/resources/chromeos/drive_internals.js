@@ -116,6 +116,33 @@ function updateInFlightOperations(inFlightOperations) {
 }
 
 /**
+ * Updates the summary about account metadata.
+ * @param {Object} accountMetadata Dictionary describing account metadata.
+ */
+function updateAccountMetadata(accountMetadata) {
+  var quotaTotalInMb = accountMetadata['account-quota-total'] / (1 << 20);
+  var quotaUsedInMb = accountMetadata['account-quota-used'] / (1 << 20);
+
+  $('account-quota-info').textContent =
+      quotaUsedInMb + ' / ' + quotaTotalInMb + ' (MB)';
+  $('account-largest-changestamp').textContent =
+      accountMetadata['account-largest-changestamp'];
+
+  var installedAppContainer = $('account-installed-apps');
+  for (var i = 0; i < accountMetadata['installed-apps'].length; i++) {
+    var app = accountMetadata['installed-apps'][i];
+    var tr = document.createElement('tr');
+    tr.className = 'installed-app';
+    tr.appendChild(createElementFromText('td', app.app_name));
+    tr.appendChild(createElementFromText('td', app.app_id));
+    tr.appendChild(createElementFromText('td', app.object_type));
+    tr.appendChild(createElementFromText('td', app.supports_create));
+
+    installedAppContainer.appendChild(tr);
+  }
+}
+
+/**
  * Creates an element named |elementName| containing the content |text|.
  * @param {string} elementName Name of the new element to be created.
  * @param {string} text Text to be contained in the new element.
