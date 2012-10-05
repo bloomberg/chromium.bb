@@ -26,6 +26,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/system_monitor/removable_device_notifications_window_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
@@ -104,9 +105,15 @@ void WarnAboutMinimumSystemRequirements() {
 }
 
 void ShowCloseBrowserFirstMessageBox() {
+  int message_id = IDS_UNINSTALL_CLOSE_APP;
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      (ShellIntegration::IsDefaultBrowser() ==
+           ShellIntegration::IS_DEFAULT_WEB_CLIENT)) {
+    message_id = IDS_UNINSTALL_CLOSE_APP_IMMERSIVE;
+  }
   chrome::ShowMessageBox(NULL,
                          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                         l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP),
+                         l10n_util::GetStringUTF16(message_id),
                          chrome::MESSAGE_BOX_TYPE_WARNING);
 }
 

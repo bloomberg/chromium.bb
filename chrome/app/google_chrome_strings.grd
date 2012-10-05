@@ -249,9 +249,14 @@ Chrome supports. -->
         Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.
       </message>
       <!-- Uninstall messages -->
-      <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
-        Please close all Google Chrome windows and try again.
-      </message>
+      <if expr="is_win">
+        <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
+          Please close all Google Chrome windows and try again.
+        </message>
+        <message name="IDS_UNINSTALL_CLOSE_APP_IMMERSIVE" desc="Message to user when uninstall detects other app instance running, possibly in the Windows 8 immersive mode">
+          Please close all Google Chrome windows (including those in Windows 8 mode) and try again.
+        </message>
+      </if>
       <message name="IDS_UNINSTALL_VERIFY" desc="Message to confirm user wants to uninstall">
         Are you sure you want to uninstall Google Chrome?
       </message>
