@@ -1015,14 +1015,6 @@ bool ParseResourceType(const std::string& type_str,
   return true;
 }
 
-bool CanExtensionAccessURL(const extensions::Extension* extension,
-                           const GURL& url) {
-  // about: URLs are not covered in host permissions, but are allowed anyway.
-  return (url.SchemeIs(chrome::kAboutScheme) ||
-          extension->HasHostPermission(url) ||
-          url.GetOrigin() == extension->url());
-}
-
 void ClearCacheOnNavigation() {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     ClearCacheOnNavigationOnUI();

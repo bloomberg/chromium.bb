@@ -273,12 +273,6 @@ const char* ResourceTypeToString(ResourceType::Type type);
 bool ParseResourceType(const std::string& type_str,
                        ResourceType::Type* type);
 
-// Returns whether |extension| may access |url| based on host permissions.
-// In addition to that access is granted to about: URLs and extension URLs
-// that are in the scope of |extension|.
-bool CanExtensionAccessURL(const extensions::Extension* extension,
-                           const GURL& url);
-
 // Triggers clearing each renderer's in-memory cache the next time it navigates.
 void ClearCacheOnNavigation();
 
