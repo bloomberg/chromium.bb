@@ -107,6 +107,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsDelegate,
   virtual bool CanDownload(RenderViewHost* render_view_host,
                            int request_id,
                            const std::string& request_method) OVERRIDE;
+  virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
 
   void UpdateRect(RenderViewHost* render_view_host,

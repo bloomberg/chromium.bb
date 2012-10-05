@@ -86,6 +86,14 @@ bool BrowserPluginGuest::CanDownload(RenderViewHost* render_view_host,
   return false;
 }
 
+bool BrowserPluginGuest::HandleContextMenu(
+    const ContextMenuParams& params) {
+  // TODO(fsamuel): We have a do nothing context menu handler for now until
+  // we implement the Apps Context Menu API for Browser Plugin (see
+  // http://crbug.com/140315).
+  return true;
+}
+
 void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
   base::ProcessHandle process_handle =
       web_contents()->GetRenderProcessHost()->GetHandle();
