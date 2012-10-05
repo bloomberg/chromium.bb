@@ -711,6 +711,11 @@ class NativeMemorySnapshot(object):
   Public Methods:
     GetProcessPrivateMemorySize: The process total size.
     GetUnknownSize: Size of not instrumented parts.
+    GetInstrumentedObjectsCount: Number of instrumented objects traversed by
+        DevTools memory instrumentation.
+    GetNumberOfInstrumentedObjectsNotInHeap: Number of instrumented objects
+        visited by DevTools memory instrumentation that haven't been allocated
+        by tcmalloc.
     FindMemoryBlock: Given an array of memory block names return the block.
   """
   def __init__(self, root_block):
@@ -725,6 +730,31 @@ class NativeMemorySnapshot(object):
     for child in self._root['children']:
       known_size += child['size']
     return self.GetProcessPrivateMemorySize() - known_size
+
+  def GetInstrumentedObjectsCount(self):
+    """Returns number of objects visited by DevTools memory instrumentation.
+
+    Returns:
+      Number of known instrumented objects or None if it is not available.
+    """
+    memory_block = self.FindMemoryBlock(['ProcessPrivateMemory',
+        'InstrumentedObjectsCount'])
+    if not memory_block is None:
+      return memory_block['size']
+    return None
+
+  def GetNumberOfInstrumentedObjectsNotInHeap(self):
+    """Returns number of instrumented objects unknown to tcmalloc.
+
+    Returns:
+      Number of known instrumented objects that are not allocated by tcmalloc,
+      None if it is not available.
+    """
+    memory_block = self.FindMemoryBlock(['ProcessPrivateMemory',
+        'InstrumentedButNotAllocatedObjectsCount'])
+    if not memory_block is None:
+      return memory_block['size']
+    return None
 
   def FindMemoryBlock(self, path):
     """Find memory block with given path.
