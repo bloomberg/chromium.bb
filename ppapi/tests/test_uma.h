@@ -7,9 +7,8 @@
 
 #include <string>
 
+#include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/tests/test_case.h"
-
-struct PPB_UMA_Private;
 
 class TestUMA : public TestCase {
  public:

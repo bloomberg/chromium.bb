@@ -5,7 +5,7 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_UMA_PRIVATE_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_UMA_PRIVATE_IMPL_H_
 
-struct PPB_UMA_Private;
+#include "ppapi/c/private/ppb_uma_private.h"
 
 namespace webkit {
 namespace ppapi {
