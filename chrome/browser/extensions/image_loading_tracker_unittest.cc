@@ -81,6 +81,13 @@ class ImageLoadingTrackerTest : public testing::Test,
     if (!valid_value.get())
       return NULL;
 
+    if (location == Extension::COMPONENT) {
+      if (!PathService::Get(chrome::DIR_RESOURCES, &test_file)) {
+        EXPECT_FALSE(true);
+        return NULL;
+      }
+      test_file = test_file.AppendASCII(name);
+    }
     return Extension::Create(test_file, location, *valid_value,
                              Extension::NO_FLAGS, &error);
   }

@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -313,7 +315,13 @@ bool ImageLoadingTracker::IsComponentExtensionResource(
     return false;
 
   FilePath directory_path = extension->path();
-  FilePath relative_path = directory_path.BaseName().Append(resource_path);
+  FilePath resources_dir;
+  FilePath relative_path;
+  if (!PathService::Get(chrome::DIR_RESOURCES, &resources_dir) ||
+      !resources_dir.AppendRelativePath(directory_path, &relative_path)) {
+    return false;
+  }
+  relative_path = relative_path.Append(resource_path);
   relative_path = relative_path.NormalizePathSeparators();
 
   // TODO(tc): Make a map of FilePath -> resource ids so we don't have to
