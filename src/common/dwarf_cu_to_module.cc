@@ -101,12 +101,20 @@ struct DwarfCUToModule::FilePrivate {
   // A set of strings used in this CU. Before storing a string in one of
   // our data structures, insert it into this set, and then use the string
   // from the set.
-  // 
-  // Because std::string uses reference counting internally, simply using
-  // strings from this set, even if passed by value, assigned, or held
-  // directly in structures and containers (map<string, ...>, for example),
-  // causes those strings to share a single instance of each distinct piece
-  // of text.
+  //
+  // In some STL implementations, strings are reference-counted internally,
+  // meaning that simply using strings from this set, even if passed by
+  // value, assigned, or held directly in structures and containers
+  // (map<string, ...>, for example), causes those strings to share a
+  // single instance of each distinct piece of text. GNU's libstdc++ uses
+  // reference counts, and I believe MSVC did as well, at some point.
+  // However, C++ '11 implementations are moving away from reference
+  // counting.
+  //
+  // In other implementations, string assignments copy the string's text,
+  // so this set will actually hold yet another copy of the string (although
+  // everything will still work). To improve memory consumption portably,
+  // we will probably need to use pointers to strings held in this set.
   set<string> common_strings;
 
   // A map from offsets of DIEs within the .debug_info section to
