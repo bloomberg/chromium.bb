@@ -70,33 +70,6 @@
       },
     },
     {
-      'target_name': 'ppapi_geturl',
-      'type': 'none',
-      'variables': {
-        'nexe_target': 'ppapi_geturl',
-        'build_newlib': 1,
-        'build_glibc': 1,
-        'link_flags': [
-          '-lppapi',
-          '-lplatform',
-          '-lgio',
-        ],
-        'sources': [
-          'ppapi/geturl/module.cc',
-          'ppapi/geturl/ppapi_geturl.cc',
-          'ppapi/geturl/url_load_request.cc',
-        ],
-        'test_files': [
-          'ppapi/geturl/ppapi_geturl.html',
-          'ppapi/geturl/ppapi_geturl_success.html',
-
-        ],
-      },
-      'dependencies': [
-        'ppapi_test_lib',
-      ],
-    },
-    {
       'target_name': 'ppapi_ppb_core',
       'type': 'none',
       'variables': {
@@ -114,55 +87,6 @@
         ],
         'test_files': [
           'ppapi/ppb_core/ppapi_ppb_core.html',
-        ],
-      },
-      'dependencies': [
-        'ppapi_test_lib',
-      ],
-    },
-    {
-      'target_name': 'ppapi_ppb_dev',
-      'type': 'none',
-      'variables': {
-        'nexe_target': 'ppapi_ppb_dev',
-        'build_newlib': 1,
-        'build_glibc': 1,
-        'link_flags': [
-          '-lppapi',
-          '-lppapi_test_lib',
-          '-lplatform',
-          '-lgio',
-        ],
-        'sources': [
-          'ppapi/ppb_dev/ppapi_ppb_dev.cc',
-        ],
-        'test_files': [
-          'ppapi/ppb_dev/ppapi_ppb_dev.html',
-        ],
-      },
-      'dependencies': [
-        'ppapi_test_lib',
-      ],
-    },
-    {
-      'target_name': 'ppapi_ppp_instance',
-      'type': 'none',
-      'variables': {
-        'nexe_target': 'ppapi_ppp_instance',
-        'build_newlib': 1,
-        'build_glibc': 1,
-        'link_flags': [
-          '-lppapi',
-          '-lppapi_test_lib',
-          '-lplatform',
-          '-lgio',
-        ],
-        'sources': [
-          'ppapi/ppp_instance/ppapi_ppp_instance.cc',
-        ],
-        'test_files': [
-          'ppapi/ppp_instance/ppapi_ppp_instance.html',
-          'ppapi/ppp_instance/ppapi_ppp_instance.js',
         ],
       },
       'dependencies': [

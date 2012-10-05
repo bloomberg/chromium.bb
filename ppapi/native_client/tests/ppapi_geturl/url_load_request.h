@@ -1,8 +1,8 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_TEST_DATA_NACL_PPAPI_GETURL_URL_LOAD_REQUEST_H_
-#define CHROME_TEST_DATA_NACL_PPAPI_GETURL_URL_LOAD_REQUEST_H_
+#ifndef TESTS_PPAPI_GETURL_URL_LOAD_REQUEST_H_
+#define TESTS_PPAPI_GETURL_URL_LOAD_REQUEST_H_
 
 #include <string>
 #include <vector>
@@ -76,4 +76,4 @@ class UrlLoadRequest {
   int32_t read_offset_;
 };
 
-#endif  // CHROME_TEST_DATA_NACL_PPAPI_GETURL_URL_LOAD_REQUEST_H_
+#endif  // TESTS_PPAPI_GETURL_URL_LOAD_REQUEST_H_
