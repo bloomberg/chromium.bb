@@ -79,7 +79,8 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     std::vector<content::FileDescriptorInfo>* mappings) {
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
   FilePath pak_file;
-  DCHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_file));
+  bool r = PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_file);
+  CHECK(r);
   pak_file = pak_file.Append(FILE_PATH_LITERAL("paks"));
   pak_file = pak_file.Append(FILE_PATH_LITERAL("content_shell.pak"));
 

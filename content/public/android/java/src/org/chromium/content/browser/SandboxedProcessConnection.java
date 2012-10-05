@@ -212,6 +212,12 @@ public class SandboxedProcessConnection implements ServiceConnection {
             FileDescriptorInfo[] fileInfos = mConnectionParams.mFilesToBeMapped;
             ParcelFileDescriptor[] parcelFiles = new ParcelFileDescriptor[fileInfos.length];
             for (int i = 0; i < fileInfos.length; i++) {
+                if (fileInfos[i].mFd == -1) {
+                    // If someone provided an invalid FD, they are doing something wrong.
+                    Log.e(TAG, "Invalid FD (id=" + fileInfos[i].mId + ") for process connection, "
+                          + "aborting connection.");
+                    return;
+                }
                 String idName = EXTRA_FILES_PREFIX + i + EXTRA_FILES_ID_SUFFIX;
                 String fdName = EXTRA_FILES_PREFIX + i + EXTRA_FILES_FD_SUFFIX;
                 if (fileInfos[i].mAutoClose) {
