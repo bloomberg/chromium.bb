@@ -90,6 +90,7 @@
         '-fstack-protector',
         '-fstack-protector-all',
         '-fprofile-generate',
+        '-finstrument-functions',
       ],
       'conditions': [
         ['clang==1', {
