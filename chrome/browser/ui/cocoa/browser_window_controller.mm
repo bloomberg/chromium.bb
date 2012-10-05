@@ -1585,6 +1585,10 @@ enum {
   [infoBarContainerController_ tabDetachedWithContents:tabContents];
 }
 
+- (void)onInsertTabWithContents:(WebContents*)contents {
+  [previewableContentsController_ onInsertTabWithContents:contents];
+}
+
 - (void)userChangedTheme {
   // TODO(dmaclach): Instead of redrawing the whole window, views that care
   // about the active window state should be registering for notifications.

@@ -40,6 +40,8 @@ using content::WebContents;
 }
 - (void)onTabDetachedWithContents:(WebContents*)contents {
 }
+- (void)onInsertTabWithContents:(WebContents*)contents {
+}
 @end
 
 @interface TabStripController (Test)
