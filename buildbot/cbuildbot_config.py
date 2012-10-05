@@ -16,17 +16,25 @@ import urllib
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
-# Contains the valid build types in the order that they are dumped.
-BUILD_TYPE_DUMP_ORDER = [
-    constants.PALADIN_TYPE,
-    constants.INCREMENTAL_TYPE,
-    constants.BUILD_FROM_SOURCE_TYPE,
-    constants.CANARY_TYPE,
-    constants.CHROOT_BUILDER_TYPE,
-    constants.CHROOT_BUILDER_BOARD,
-    constants.CHROME_PFQ_TYPE,
-    constants.PFQ_TYPE,
-    constants.REFRESH_PACKAGES_TYPE]
+# Contains the valid build config suffixes in the order that they are dumped.
+CONFIG_TYPE_DUMP_ORDER = (
+    'paladin',
+    'incremental',
+    'full',
+    'release',
+    'release-group',
+    'sdk',
+    'chromium-pfq',
+    'chrome-pfq',
+    'chrome-pfq-informational',
+    'pre-flight-branch',
+    'factory',
+    'firmware',
+    'toolchain',
+    'toolchain_minor',
+    'asan',
+    'refresh-packages',
+)
 
 
 def OverrideConfigForTrybot(build_config, remote_trybot):
@@ -245,7 +253,7 @@ _settings = dict(
   gs_path=GS_PATH_DEFAULT,
 
 # TODO(sosa): Deprecate binary.
-# build_type -- Type of builder.  Check constants.BUILD_TYPE_DUMP_ORDER.
+# build_type -- Type of builder.  Check constants.VALID_BUILD_TYPES.
   build_type=constants.PFQ_TYPE,
 
 # arm -- Whether the board we are building is arm-based.
@@ -1056,13 +1064,32 @@ _factory_release.add_config('daisy-factory',
   boards=['daisy'],
 )
 
+
+def _GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
+  """Given a config_name, return display position specified by suffix_order.
+
+  Arguments:
+    config_name: Name of config to look up.
+    type_order: A tuple/list of config types in the order they are to be
+                displayed.
+
+  If config name does not contain any of the suffixes, returns the index
+  position after the last element of suffix_order.
+  """
+  for index, config_type in enumerate(type_order):
+   if config_name.endswith('-' + config_type) or config_name == config_type:
+     return index
+
+  return len(type_order)
+
+
 def _InjectDisplayPosition(config_source):
   """Add field to help buildbot masters order builders on the waterfall."""
   def _GetSortKey(items):
     my_config = items[1]
     # Allow configs to override the display_position.
     return (my_config.get('display_position', 1000000),
-            BUILD_TYPE_DUMP_ORDER.index(my_config['build_type']),
+            _GetDisplayPosition(my_config['name']),
             my_config['internal'], my_config['vm_tests'])
 
   source = sorted(config_source.iteritems(), key=_GetSortKey)

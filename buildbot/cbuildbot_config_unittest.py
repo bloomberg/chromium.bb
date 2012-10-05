@@ -144,7 +144,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     """Verifies that all configs use valid build types."""
     for build_name, config in cbuildbot_config.config.iteritems():
       self.assertTrue(
-          config['build_type'] in cbuildbot_config.BUILD_TYPE_DUMP_ORDER,
+          config['build_type'] in constants.VALID_BUILD_TYPES,
           'Config %s: has unexpected build_type value.' % build_name)
 
   def testGCCGitHash(self):
@@ -310,6 +310,46 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     if missing_pfqs:
       self.fail('Chrome PFQs are using boards that are missing ChromeOS PFQs:'
                 '\n\t' + ' '.join(missing_pfqs))
+
+  def testNonOverlappingConfigTypes(self):
+    """Test that a config can only match one build suffix."""
+    for config_type in cbuildbot_config.CONFIG_TYPE_DUMP_ORDER:
+      # A longer config_type should never end with a shorter suffix.
+      my_list = list(cbuildbot_config.CONFIG_TYPE_DUMP_ORDER)
+      my_list.remove(config_type)
+      self.assertEquals(
+          cbuildbot_config._GetDisplayPosition(
+              config_type, type_order=my_list),
+          len(my_list))
+
+  def testCorrectConfigTypeIndex(self):
+    """Test that the correct build suffix index is returned."""
+    type_order = (
+        'type1',
+        'donkey-type2',
+        'kong-type3')
+
+    for index, config_type in enumerate(type_order):
+      config = '-'.join(['pre-fix', config_type])
+      self.assertEquals(
+          cbuildbot_config._GetDisplayPosition(
+              config, type_order=type_order),
+          index)
+
+    # Verify suffix needs to match up to a '-'.
+    self.assertEquals(
+        cbuildbot_config._GetDisplayPosition(
+            'pre-fix-sometype1', type_order=type_order),
+        len(type_order))
+
+  def testConfigTypesComplete(self):
+    """Verify CONFIG_TYPE_DUMP_ORDER contains all valid config types."""
+    for config_name in cbuildbot_config.config:
+      self.assertNotEqual(
+          cbuildbot_config._GetDisplayPosition(config_name),
+          len(cbuildbot_config.CONFIG_TYPE_DUMP_ORDER),
+          '%s did not match any types in %s' %
+          (config_name, 'cbuildbot_config.CONFIG_TYPE_DUMP_ORDER'))
 
 
 if __name__ == '__main__':

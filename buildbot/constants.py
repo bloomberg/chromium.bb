@@ -127,6 +127,19 @@ CHROOT_BUILDER_BOARD = 'amd64-host'
 # Build that refreshes the online Portage package status spreadsheet.
 REFRESH_PACKAGES_TYPE = 'refresh_packages'
 
+VALID_BUILD_TYPES = (
+    PALADIN_TYPE,
+    INCREMENTAL_TYPE,
+    BUILD_FROM_SOURCE_TYPE,
+    CANARY_TYPE,
+    CHROOT_BUILDER_TYPE,
+    CHROOT_BUILDER_BOARD,
+    CHROME_PFQ_TYPE,
+    PFQ_TYPE,
+    REFRESH_PACKAGES_TYPE
+)
+
+
 # Define pool of machines for Hardware tests.
 HWTEST_DEFAULT_NUM = 6
 HWTEST_TRYBOT_NUM = 1
