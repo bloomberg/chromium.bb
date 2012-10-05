@@ -190,8 +190,10 @@ BrowserCommandController::~BrowserCommandController() {
   if (service)
     service->RemoveObserver(this);
 
+  // TabRestoreService may have been shutdown by the time we get here. Don't
+  // trigger creating it.
   TabRestoreService* tab_restore_service =
-      TabRestoreServiceFactory::GetForProfile(profile());
+      TabRestoreServiceFactory::GetForProfileIfExisting(profile());
   if (tab_restore_service)
     tab_restore_service->RemoveObserver(this);
   profile_pref_registrar_.RemoveAll();

@@ -451,11 +451,14 @@ void TabRestoreService::LoadTabsFromLastSession() {
 
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile());
-  if (!profile()->restored_last_session() &&
-      profile()->GetLastSessionExitType() == Profile::EXIT_CRASHED &&
-      session_service) {
-    // The previous session crashed and wasn't restored. Load the tabs/windows
-    // that were open at the point of crash from the session service.
+  Profile::ExitType exit_type = profile()->GetLastSessionExitType();
+  if (!profile()->restored_last_session() && session_service &&
+      (exit_type == Profile::EXIT_CRASHED ||
+       exit_type == Profile::EXIT_SESSION_ENDED)) {
+    // The previous session crashed and wasn't restored, or was a forced
+    // shutdown. Both of which won't have notified us of the browser close so
+    // that we need to load the windows from session service (which will have
+    // saved them).
     session_service->GetLastSession(
         &crash_consumer_,
         base::Bind(&TabRestoreService::OnGotPreviousSession,

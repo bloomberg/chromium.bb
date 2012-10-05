@@ -18,6 +18,10 @@ class TabRestoreServiceFactory : public ProfileKeyedServiceFactory {
  public:
   static TabRestoreService* GetForProfile(Profile* profile);
 
+  // Variant of GetForProfile() that returns NULL if TabRestoreService does not
+  // exist.
+  static TabRestoreService* GetForProfileIfExisting(Profile* profile);
+
   static void ResetForProfile(Profile* profile);
 
   static TabRestoreServiceFactory* GetInstance();
