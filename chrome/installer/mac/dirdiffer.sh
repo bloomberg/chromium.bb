@@ -150,7 +150,7 @@ GOOBSDIFF="$(find_tool goobsdiff)"
 readonly GOOBSDIFF
 readonly BZIP2="bzip2"
 readonly GZIP="gzip"
-XZ="$(dirname "${0}")/xz"
+XZ="$(find_tool xz)"
 readonly XZ
 readonly GBS_SUFFIX='$gbs'
 readonly BZ2_SUFFIX='$bz2'

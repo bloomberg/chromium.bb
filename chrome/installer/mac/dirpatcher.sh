@@ -91,7 +91,7 @@ GOOBSPATCH="$(find_tool goobspatch)"
 readonly GOOBSPATCH
 readonly BUNZIP2="bunzip2"
 readonly GUNZIP="gunzip"
-XZDEC="$(dirname "${0}")/xzdec"
+XZDEC="$(find_tool xzdec)"
 readonly XZDEC
 readonly GBS_SUFFIX='$gbs'
 readonly BZ2_SUFFIX='$bz2'
