@@ -43,15 +43,15 @@ bool ChildHistogramMessageFilter::OnMessageReceived(
 
 void ChildHistogramMessageFilter::SendHistograms(int sequence_number) {
   ChildProcess::current()->io_message_loop_proxy()->PostTask(
-      FROM_HERE, base::Bind(&ChildHistogramMessageFilter::UploadAllHistrograms,
+      FROM_HERE, base::Bind(&ChildHistogramMessageFilter::UploadAllHistograms,
                             this, sequence_number));
 }
 
 void ChildHistogramMessageFilter::OnGetChildHistogramData(int sequence_number) {
-  UploadAllHistrograms(sequence_number);
+  UploadAllHistograms(sequence_number);
 }
 
-void ChildHistogramMessageFilter::UploadAllHistrograms(int sequence_number) {
+void ChildHistogramMessageFilter::UploadAllHistograms(int sequence_number) {
   DCHECK_EQ(0u, pickled_histograms_.size());
 
   base::StatisticsRecorder::CollectHistogramStats("ChildProcess");

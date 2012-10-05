@@ -53,7 +53,7 @@ class ChildHistogramMessageFilter : public base::HistogramFlattener,
 
   // Extract snapshot data and then send it off the the Browser process.
   // Send only a delta to what we have already sent.
-  void UploadAllHistrograms(int sequence_number);
+  void UploadAllHistograms(int sequence_number);
 
   IPC::Channel* channel_;
 
