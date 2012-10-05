@@ -886,10 +886,30 @@ void OmniboxEditModel::OnPopupDataChanged(
 
   bool call_controller_onchanged = true;
   inline_autocomplete_text_ = text;
-  if (view_->OnInlineAutocompleteTextMaybeChanged(
-      DisplayTextFromUserText(user_text_ + inline_autocomplete_text_),
-      DisplayTextFromUserText(user_text_).length()))
+
+  if (keyword_state_changed && KeywordIsSelected()) {
+    // If we reach here, the user most likely entered keyword mode by inserting
+    // a space between a keyword name and a search string (as pressing space or
+    // tab after the keyword name alone would have been be handled in
+    // MaybeAcceptKeywordBySpace() by calling AcceptKeyword(), which won't reach
+    // here).  In this case, we don't want to call
+    // OnInlineAutocompleteTextMaybeChanged() as normal, because that will
+    // correctly change the text (to the search string alone) but move the caret
+    // to the end of the string; instead we want the caret at the start of the
+    // search string since that's where it was in the original input.  So we set
+    // the text and caret position directly.
+    //
+    // It may also be possible to reach here if we're reverting from having
+    // temporary text back to a default match that's a keyword search, but in
+    // that case the RevertTemporaryText() call below will reset the caret or
+    // selection correctly so the caret positioning we do here won't matter.
+    view_->SetWindowTextAndCaretPos(DisplayTextFromUserText(user_text_), 0,
+                                                            false, false);
+  } else if (view_->OnInlineAutocompleteTextMaybeChanged(
+             DisplayTextFromUserText(user_text_ + inline_autocomplete_text_),
+             DisplayTextFromUserText(user_text_).length())) {
     call_controller_onchanged = false;
+  }
 
   // If |has_temporary_text_| is true, then we previously had a manual selection
   // but now don't (or |destination_for_temporary_text_change| would have been

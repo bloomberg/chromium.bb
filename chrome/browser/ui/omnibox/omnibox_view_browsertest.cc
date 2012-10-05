@@ -815,6 +815,10 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
     ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
     ASSERT_EQ(ASCIIToUTF16("a "), omnibox_view->GetText());
+    size_t start, end;
+    omnibox_view->GetSelectionBounds(&start, &end);
+    EXPECT_EQ(0U, start);
+    EXPECT_EQ(0U, end);
 
     // Keyword shouldn't be accepted by pasting "foo bar".
     omnibox_view->SetUserText(string16());
@@ -848,7 +852,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
     ASSERT_EQ(search_keyword + ASCIIToUTF16("  "), omnibox_view->GetText());
 
-    size_t start, end;
     omnibox_view->GetSelectionBounds(&start, &end);
     ASSERT_NE(start, end);
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
