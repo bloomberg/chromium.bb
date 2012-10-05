@@ -157,7 +157,6 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   root_window_->Init();
   root_window_->AddChild(content_window_);
   root_window_->SetLayoutManager(new DesktopLayoutManager(root_window_));
-  root_window_host_delegate_ = root_window_;
 
   // If we're given a parent, we need to mark ourselves as transient to another
   // window. Otherwise activation gets screwy.
@@ -558,6 +557,11 @@ void DesktopRootWindowHostLinux::FlashFrame(bool flash_frame) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostLinux, aura::RootWindowHost implementation:
+
+void DesktopRootWindowHostLinux::SetDelegate(
+    aura::RootWindowHostDelegate* delegate) {
+  root_window_host_delegate_ = delegate;
+}
 
 aura::RootWindow* DesktopRootWindowHostLinux::GetRootWindow() {
   return root_window_;

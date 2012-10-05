@@ -77,7 +77,6 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
 
   root_window_->Init();
   root_window_->AddChild(content_window_);
-  root_window_host_delegate_ = root_window_;
 
   native_widget_delegate_->OnNativeWidgetCreated();
 
@@ -312,6 +311,12 @@ void DesktopRootWindowHostWin::FlashFrame(bool flash_frame) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, RootWindowHost implementation:
+
+
+void DesktopRootWindowHostWin::SetDelegate(
+    aura::RootWindowHostDelegate* delegate) {
+  root_window_host_delegate_ = delegate;
+}
 
 aura::RootWindow* DesktopRootWindowHostWin::GetRootWindow() {
   return root_window_;

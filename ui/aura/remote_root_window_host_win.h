@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_ROOT_WINDOW_HOST_WIN_H_
-#define UI_AURA_ROOT_WINDOW_HOST_WIN_H_
+#ifndef UI_AURA_REMOTE_ROOT_WINDOW_HOST_WIN_H_
+#define UI_AURA_REMOTE_ROOT_WINDOW_HOST_WIN_H_
+
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window_host.h"
@@ -14,12 +16,20 @@ class ViewProp;
 }
 
 namespace aura {
-
-class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
+// RootWindowHost implementaton that receives events from a different process.
+class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
  public:
-  RootWindowHostWin(const gfx::Rect& bounds);
-  virtual ~RootWindowHostWin();
-  // RootWindowHost:
+  static RemoteRootWindowHostWin* Instance();
+  static RemoteRootWindowHostWin* Create(const gfx::Rect& bounds);
+
+  void OnMouseMoved(int x, int y, int extra);
+  void OnMouseClick(int x, int y, int extra);
+
+ private:
+  RemoteRootWindowHostWin(const gfx::Rect& bounds);
+  virtual ~RemoteRootWindowHostWin();
+
+  // RootWindowHost overrides:
   virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
@@ -45,49 +55,13 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
- private:
-  BEGIN_MSG_MAP_EX(RootWindowHostWin)
-    // Range handlers must go first!
-    MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
-    MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
-
-    // Mouse capture events.
-    MESSAGE_HANDLER_EX(WM_CAPTURECHANGED, OnCaptureChanged)
-
-    // Key events.
-    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_CHAR, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSCHAR, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_IME_CHAR, OnKeyEvent)
-
-    MSG_WM_CLOSE(OnClose)
-    MSG_WM_PAINT(OnPaint)
-    MSG_WM_SIZE(OnSize)
-  END_MSG_MAP()
-
-  void OnClose();
-  LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnCaptureChanged(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnPaint(HDC dc);
-  void OnSize(UINT param, const CSize& size);
-
   RootWindowHostDelegate* delegate_;
-
-  bool fullscreen_;
-  bool has_capture_;
-  RECT saved_window_rect_;
-  DWORD saved_window_style_;
-  DWORD saved_window_ex_style_;
-
   scoped_ptr<ui::ViewProp> prop_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootWindowHostWin);
+  DISALLOW_COPY_AND_ASSIGN(RemoteRootWindowHostWin);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_ROOT_WINDOW_HOST_WIN_H_
+#endif  // UI_AURA_REMOTE_ROOT_WINDOW_HOST_WIN_H_
+

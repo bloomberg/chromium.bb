@@ -21,7 +21,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
 WebKit::WebTouchPoint* UpdateWebTouchEventFromNativeEvent(
     base::NativeEvent native_event, WebKit::WebTouchEvent* web_event);
 #else
-WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::MouseWheelEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
@@ -35,6 +34,8 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
 WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
     ui::TouchEvent* event, WebKit::WebTouchEvent* web_event);
 #endif
+
+WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event);
 
 // General approach:
 //
@@ -60,14 +61,17 @@ WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
 //
 
 WebKit::WebMouseEvent MakeWebMouseEvent(ui::MouseEvent* event) {
-#if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
   WebKit::WebMouseEvent webkit_event =
-      MakeUntranslatedWebMouseEventFromNativeEvent(event->native_event());
+#if defined(OS_WIN)
+  // On Windows we have WM_ events comming from desktop and pure aura
+  // events comming from metro mode.
+  event->native_event().message ?
+      MakeUntranslatedWebMouseEventFromNativeEvent(event->native_event()) :
+      MakeWebMouseEventFromAuraEvent(event);
 #else
-  WebKit::WebMouseEvent webkit_event = MakeWebMouseEventFromAuraEvent(event);
+  MakeWebMouseEventFromAuraEvent(event);
 #endif
-
   // Replace the event's coordinate fields with translated position data from
   // |event|.
   webkit_event.windowX = webkit_event.x = event->x();
@@ -191,6 +195,62 @@ WebKit::WebTouchPoint* UpdateWebTouchEvent(ui::TouchEvent* event,
 #else
   return UpdateWebTouchEventFromAuraEvent(event, web_event);
 #endif
+}
+
+int EventFlagsToWebEventModifiers(int flags) {
+  int modifiers = 0;
+  if (flags & ui::EF_SHIFT_DOWN)
+    modifiers |= WebKit::WebInputEvent::ShiftKey;
+  if (flags & ui::EF_CONTROL_DOWN)
+    modifiers |= WebKit::WebInputEvent::ControlKey;
+  if (flags & ui::EF_ALT_DOWN)
+    modifiers |= WebKit::WebInputEvent::AltKey;
+  // TODO(beng): MetaKey/META_MASK
+  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
+    modifiers |= WebKit::WebInputEvent::LeftButtonDown;
+  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
+    modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
+  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
+    modifiers |= WebKit::WebInputEvent::RightButtonDown;
+  if (flags & ui::EF_CAPS_LOCK_DOWN)
+    modifiers |= WebKit::WebInputEvent::CapsLockOn;
+  return modifiers;
+}
+
+WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
+  WebKit::WebMouseEvent webkit_event;
+
+  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
+  webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
+
+  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
+  if (event->flags() & ui::EF_LEFT_MOUSE_BUTTON)
+    webkit_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  if (event->flags() & ui::EF_MIDDLE_MOUSE_BUTTON)
+    webkit_event.button = WebKit::WebMouseEvent::ButtonMiddle;
+  if (event->flags() & ui::EF_RIGHT_MOUSE_BUTTON)
+    webkit_event.button = WebKit::WebMouseEvent::ButtonRight;
+
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+      webkit_event.type = WebKit::WebInputEvent::MouseDown;
+      webkit_event.clickCount = event->GetClickCount();
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      webkit_event.type = WebKit::WebInputEvent::MouseUp;
+      break;
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_EXITED:
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED:
+      webkit_event.type = WebKit::WebInputEvent::MouseMove;
+      break;
+    default:
+      NOTIMPLEMENTED() << "Received unexpected event: " << event->type();
+      break;
+  }
+
+  return webkit_event;
 }
 
 }  // namespace content

@@ -5,8 +5,10 @@
 #include "chrome/browser/metro_viewer/metro_viewer_process_host_win.h"
 
 #include "base/logging.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ui/aura/remote_root_window_host_win.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "ui/surface/accelerated_surface_win.h"
 
@@ -33,10 +35,18 @@ bool MetroViewerProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MetroViewerProcessHost, message)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetTargetSurface, OnSetTargetSurface)
-    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseEvent, OnMouseEvent)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseMoved, OnMouseMoved)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseButton, OnMouseButton)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void  MetroViewerProcessHost::OnChannelError() {
+  // TODO(cpu): At some point we only close the browser. Right now this
+  // is very convenient for developing.
+  DLOG(INFO) << "viewer channel error : Quitting browser";
+  browser::CloseAllBrowsers();
 }
 
 void MetroViewerProcessHost::OnSetTargetSurface(
@@ -49,7 +59,12 @@ void MetroViewerProcessHost::OnSetTargetSurface(
   any_window->SetNewTargetWindow(hwnd);
 }
 
-void MetroViewerProcessHost::OnMouseEvent(
-    int msg, WPARAM w_param, LPARAM l_param) {
-  // TODO(scottmg): Pass to window.
+void MetroViewerProcessHost::OnMouseMoved(int x, int y, int modifiers) {
+  // TODO(cpu): Find a decent way to get to the root window host.
+  aura::RemoteRootWindowHostWin::Instance()->OnMouseMoved(x, y, modifiers);
+}
+
+void MetroViewerProcessHost::OnMouseButton(int x, int y, int modifiers) {
+  // TODO(cpu): Find a decent way to get to the root window host.
+  aura::RemoteRootWindowHostWin::Instance()->OnMouseClick(x, y, modifiers);
 }

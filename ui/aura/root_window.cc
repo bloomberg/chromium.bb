@@ -83,8 +83,10 @@ void SetLastMouseLocation(const Window* root_window,
 
 RootWindowHost* CreateHost(RootWindow* root_window,
                            const RootWindow::CreateParams& params) {
-  return params.host ? params.host :
-      RootWindowHost::Create(root_window, params.initial_bounds);
+  RootWindowHost* host = params.host ?
+      params.host : RootWindowHost::Create(params.initial_bounds);
+  host->SetDelegate(root_window);
+  return host;
 }
 
 }  // namespace

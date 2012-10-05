@@ -59,26 +59,6 @@ namespace {
 // This matches Firefox behavior.
 const int kPixelsPerTick = 53;
 
-int EventFlagsToWebEventModifiers(int flags) {
-  int modifiers = 0;
-  if (flags & ui::EF_SHIFT_DOWN)
-    modifiers |= WebKit::WebInputEvent::ShiftKey;
-  if (flags & ui::EF_CONTROL_DOWN)
-    modifiers |= WebKit::WebInputEvent::ControlKey;
-  if (flags & ui::EF_ALT_DOWN)
-    modifiers |= WebKit::WebInputEvent::AltKey;
-  // TODO(beng): MetaKey/META_MASK
-  if (flags & ui::EF_LEFT_MOUSE_BUTTON)
-    modifiers |= WebKit::WebInputEvent::LeftButtonDown;
-  if (flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-    modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
-  if (flags & ui::EF_RIGHT_MOUSE_BUTTON)
-    modifiers |= WebKit::WebInputEvent::RightButtonDown;
-  if (flags & ui::EF_CAPS_LOCK_DOWN)
-    modifiers |= WebKit::WebInputEvent::CapsLockOn;
-  return modifiers;
-}
-
 int XKeyEventToWindowsKeyCode(XKeyEvent* event) {
   int windows_key_code =
       ui::KeyboardCodeFromXKeyEvent(reinterpret_cast<XEvent*>(event));
@@ -188,42 +168,6 @@ WebKit::WebInputEvent::Type TouchEventTypeFromEvent(
 }
 
 }  // namespace
-
-WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
-  WebKit::WebMouseEvent webkit_event;
-
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
-  webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
-
-  webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
-  if (event->flags() & ui::EF_LEFT_MOUSE_BUTTON)
-    webkit_event.button = WebKit::WebMouseEvent::ButtonLeft;
-  if (event->flags() & ui::EF_MIDDLE_MOUSE_BUTTON)
-    webkit_event.button = WebKit::WebMouseEvent::ButtonMiddle;
-  if (event->flags() & ui::EF_RIGHT_MOUSE_BUTTON)
-    webkit_event.button = WebKit::WebMouseEvent::ButtonRight;
-
-  switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
-      webkit_event.type = WebKit::WebInputEvent::MouseDown;
-      webkit_event.clickCount = event->GetClickCount();
-      break;
-    case ui::ET_MOUSE_RELEASED:
-      webkit_event.type = WebKit::WebInputEvent::MouseUp;
-      break;
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED:
-    case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_DRAGGED:
-      webkit_event.type = WebKit::WebInputEvent::MouseMove;
-      break;
-    default:
-      NOTIMPLEMENTED() << "Received unexpected event: " << event->type();
-      break;
-  }
-
-  return webkit_event;
-}
 
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::MouseWheelEvent* event) {

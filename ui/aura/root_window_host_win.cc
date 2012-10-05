@@ -28,9 +28,8 @@ const char* kRootWindowHostWinKey = "__AURA_ROOT_WINDOW_HOST_WIN__";
 }  // namespace
 
 // static
-RootWindowHost* RootWindowHost::Create(RootWindowHostDelegate* delegate,
-                                       const gfx::Rect& bounds) {
-  return new RootWindowHostWin(delegate, bounds);
+RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
+  return new RootWindowHostWin(bounds);
 }
 
 // static
@@ -46,9 +45,8 @@ gfx::Size RootWindowHost::GetNativeScreenSize() {
                    GetSystemMetrics(SM_CYSCREEN));
 }
 
-RootWindowHostWin::RootWindowHostWin(RootWindowHostDelegate* delegate,
-                                     const gfx::Rect& bounds)
-    : delegate_(delegate),
+RootWindowHostWin::RootWindowHostWin(const gfx::Rect& bounds)
+    : delegate_(NULL),
       fullscreen_(false),
       has_capture_(false),
       saved_window_style_(0),
@@ -60,6 +58,10 @@ RootWindowHostWin::RootWindowHostWin(RootWindowHostDelegate* delegate,
 
 RootWindowHostWin::~RootWindowHostWin() {
   DestroyWindow(hwnd());
+}
+
+void RootWindowHostWin::SetDelegate(RootWindowHostDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 RootWindow* RootWindowHostWin::GetRootWindow() {

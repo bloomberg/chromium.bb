@@ -31,6 +31,11 @@
 #include "chromeos/display/output_configurator.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#include "ui/aura/remote_root_window_host_win.h"
+#endif
+
 DECLARE_WINDOW_PROPERTY_TYPE(int64);
 typedef std::vector<gfx::Display> DisplayList;
 
@@ -253,8 +258,15 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
 
 RootWindow* MultiDisplayManager::CreateRootWindowForDisplay(
     const gfx::Display& display) {
-  RootWindow* root_window =
-      new RootWindow(RootWindow::CreateParams(display.bounds_in_pixel()));
+
+  RootWindow::CreateParams params(display.bounds_in_pixel());
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    params.host = aura::RemoteRootWindowHostWin::Create(
+        display.bounds_in_pixel());
+  }
+#endif
+  aura::RootWindow* root_window = new aura::RootWindow(params);
   // No need to remove RootWindowObserver because
   // the DisplayManager object outlives RootWindow objects.
   root_window->AddRootWindowObserver(this);
@@ -358,6 +370,10 @@ void MultiDisplayManager::Init() {
   }
 #endif
 
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    set_use_fullscreen_host_window(true);
+#endif
   // TODO(oshima): Move this logic to DisplayChangeObserver.
   const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kAuraHostWindowSize);

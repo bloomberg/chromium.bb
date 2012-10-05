@@ -28,10 +28,13 @@ class MetroViewerProcessHost : public IPC::Listener,
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
  private:
   void OnSetTargetSurface(gfx::NativeViewId target_surface);
   void OnMouseEvent(int msg, WPARAM w_param, LPARAM l_param);
+  void OnMouseMoved(int x, int y, int modifiers);
+  void OnMouseButton(int x, int y, int modifiers);
 
   scoped_ptr<IPC::ChannelProxy> channel_;
 

@@ -331,9 +331,8 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
 
 }  // namespace internal
 
-RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
-                                         const gfx::Rect& bounds)
-    : delegate_(delegate),
+RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
+    : delegate_(NULL),
       xdisplay_(base::MessagePumpAuraX11::GetDefaultXDisplay()),
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
@@ -698,6 +697,10 @@ void RootWindowHostLinux::DispatchXI2Event(const base::NativeEvent& event) {
     XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
 }
 
+void RootWindowHostLinux::SetDelegate(RootWindowHostDelegate* delegate) {
+  delegate_ = delegate;
+}
+
 RootWindow* RootWindowHostLinux::GetRootWindow() {
   return delegate_->AsRootWindow();
 }
@@ -1011,9 +1014,8 @@ void RootWindowHostLinux::TranslateAndDispatchMouseEvent(
 }
 
 // static
-RootWindowHost* RootWindowHost::Create(RootWindowHostDelegate* delegate,
-                                       const gfx::Rect& bounds) {
-  return new RootWindowHostLinux(delegate, bounds);
+RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
+  return new RootWindowHostLinux(bounds);
 }
 
 // static

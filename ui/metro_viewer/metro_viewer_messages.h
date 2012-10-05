@@ -15,8 +15,15 @@
 // Inform the browser of the surface to target for compositing.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SetTargetSurface,
                      gfx::NativeViewId /* target hwnd */)
+// Informs the browser that the mouse moved.
+IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseMoved,
+                     int,       /* x-coordinate */
+                     int,       /* y-coordinate */
+                     int        /* modifiers */)
+// Inforoms the brower that a mouse button was pressed.
+IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseButton,
+                     int,       /* x-coordinate */
+                     int,       /* y-coordinate */
+                     int        /* modifiers */)
 
-IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseEvent,
-                     int,       /* msg */
-                     uintptr_t, /* message's wParam */
-                     intptr_t   /* message's lParam */)
+

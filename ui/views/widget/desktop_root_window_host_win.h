@@ -92,6 +92,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual void FlashFrame(bool flash_frame) OVERRIDE;
 
   // Overridden from aura::RootWindowHost:
+  virtual void SetDelegate(aura::RootWindowHostDelegate* delegate) OVERRIDE;
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;

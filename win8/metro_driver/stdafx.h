@@ -27,6 +27,7 @@ namespace mswr = Microsoft::WRL;
 namespace mswrw = Microsoft::WRL::Wrappers;
 namespace winapp = ABI::Windows::ApplicationModel;
 namespace windata = ABI::Windows::Data;
+namespace windevs = ABI::Windows::Devices;
 namespace winfoundtn = ABI::Windows::Foundation;
 namespace wingfx = ABI::Windows::Graphics;
 namespace winui = ABI::Windows::UI;

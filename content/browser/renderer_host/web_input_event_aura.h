@@ -39,6 +39,8 @@ CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEventFlingCancel();
 WebKit::WebTouchPoint* UpdateWebTouchEvent(ui::TouchEvent* event,
                                            WebKit::WebTouchEvent* web_event);
 
-}
+int EventFlagsToWebEventModifiers(int flags);
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_WEB_INPUT_EVENT_AURA_H_

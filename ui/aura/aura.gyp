@@ -88,6 +88,8 @@
         'display_change_observer_x11.h',
         'display_manager.cc',
         'display_manager.h',
+        'remote_root_window_host_win.cc',
+        'remote_root_window_host_win.h',
         'root_window_host.h',
         'root_window_host_delegate.h',
         'root_window_host_linux.cc',

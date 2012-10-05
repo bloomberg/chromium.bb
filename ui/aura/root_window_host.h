@@ -31,12 +31,14 @@ class AURA_EXPORT RootWindowHost {
   virtual ~RootWindowHost() {}
 
   // Creates a new RootWindowHost. The caller owns the returned value.
-  static RootWindowHost* Create(RootWindowHostDelegate* delegate,
-                                const gfx::Rect& bounds);
+  static RootWindowHost* Create(const gfx::Rect& bounds);
 
   // Returns the actual size of the screen.
   // (gfx::Screen only reports on the virtual desktop exposed by Aura.)
   static gfx::Size GetNativeScreenSize();
+
+  // Sets the delegate, which is normally done by the root window.
+  virtual void SetDelegate(RootWindowHostDelegate* delegate) = 0;
 
   virtual RootWindow* GetRootWindow() = 0;
 

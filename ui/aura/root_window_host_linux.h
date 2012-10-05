@@ -30,8 +30,7 @@ class TouchEventCalibrate;
 class RootWindowHostLinux : public RootWindowHost,
                             public MessageLoop::Dispatcher {
  public:
-  RootWindowHostLinux(RootWindowHostDelegate* delegate,
-                      const gfx::Rect& bounds);
+  RootWindowHostLinux(const gfx::Rect& bounds);
   virtual ~RootWindowHostLinux();
 
   // Overridden from Dispatcher overrides:
@@ -46,6 +45,7 @@ class RootWindowHostLinux : public RootWindowHost,
   void DispatchXI2Event(const base::NativeEvent& event);
 
   // RootWindowHost Overrides.
+  virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
