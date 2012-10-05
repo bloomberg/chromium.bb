@@ -25,6 +25,8 @@ namespace IsochronousTransfer =
     extensions::api::experimental_usb::IsochronousTransfer;
 namespace ReleaseInterface =
     extensions::api::experimental_usb::ReleaseInterface;
+namespace SetInterfaceAlternateSetting =
+    extensions::api::experimental_usb::SetInterfaceAlternateSetting;
 using extensions::api::experimental_usb::Device;
 using std::vector;
 
@@ -33,6 +35,8 @@ namespace {
 static const char* kErrorNoDevice = "No such device.";
 static const char* kErrorCannotClaimInterface = "Error claiming interface.";
 static const char* kErrorCannotReleaseInterface = "Error releasing interface.";
+static const char* kErrorCannotSetInterfaceAlternateSetting =
+    "Error setting alternate interface setting.";
 
 static UsbDevice* device_for_test_ = NULL;
 
@@ -188,6 +192,38 @@ void UsbReleaseInterfaceFunction::AsyncWorkStart() {
 void UsbReleaseInterfaceFunction::OnCompleted(bool success) {
   if (!success)
     SetError(kErrorCannotReleaseInterface);
+  AsyncWorkCompleted();
+}
+
+UsbSetInterfaceAlternateSettingFunction::
+    UsbSetInterfaceAlternateSettingFunction() {}
+
+UsbSetInterfaceAlternateSettingFunction::
+    ~UsbSetInterfaceAlternateSettingFunction() {}
+
+bool UsbSetInterfaceAlternateSettingFunction::Prepare() {
+  parameters_ = SetInterfaceAlternateSetting::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  return true;
+}
+
+void UsbSetInterfaceAlternateSettingFunction::AsyncWorkStart() {
+  UsbDeviceResource* device = GetUsbDeviceResource(parameters_->device.handle);
+  if (!device) {
+    SetError(kErrorNoDevice);
+    AsyncWorkCompleted();
+    return;
+  }
+
+  device->device()->SetInterfaceAlternateSetting(
+      parameters_->interface_number,
+      parameters_->alternate_setting,
+      base::Bind(&UsbSetInterfaceAlternateSettingFunction::OnCompleted, this));
+}
+
+void UsbSetInterfaceAlternateSettingFunction::OnCompleted(bool success) {
+  if (!success)
+    SetError(kErrorCannotSetInterfaceAlternateSetting);
   AsyncWorkCompleted();
 }
 

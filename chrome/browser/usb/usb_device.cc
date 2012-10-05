@@ -167,6 +167,18 @@ void UsbDevice::ReleaseInterface(const int interface_number,
   callback.Run(release_result == 0);
 }
 
+void UsbDevice::SetInterfaceAlternateSetting(
+    const int interface_number,
+    const int alternate_setting,
+    const UsbInterfaceCallback& callback) {
+  CheckDevice();
+
+  const int setting_result = libusb_set_interface_alt_setting(handle_,
+      interface_number, alternate_setting);
+
+  callback.Run(setting_result == 0);
+}
+
 void UsbDevice::ControlTransfer(const TransferDirection direction,
     const TransferRequestType request_type, const TransferRecipient recipient,
     const uint8 request, const uint16 value, const uint16 index,

@@ -108,6 +108,26 @@ class UsbReleaseInterfaceFunction : public UsbAsyncApiFunction {
       parameters_;
 };
 
+class UsbSetInterfaceAlternateSettingFunction : public UsbAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.usb.setInterfaceAlternateSetting");
+
+  UsbSetInterfaceAlternateSettingFunction();
+
+ private:
+  virtual ~UsbSetInterfaceAlternateSettingFunction();
+
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+  void OnCompleted(bool success);
+
+  scoped_ptr<
+      extensions::api::experimental_usb::SetInterfaceAlternateSetting::Params>
+      parameters_;
+};
+
 class UsbControlTransferFunction : public UsbAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.controlTransfer");

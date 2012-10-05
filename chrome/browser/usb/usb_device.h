@@ -66,6 +66,11 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
   virtual void ReleaseInterface(const int interface_number,
                                 const UsbInterfaceCallback& callback);
 
+  virtual void SetInterfaceAlternateSetting(
+      const int interface_number,
+      const int alternate_setting,
+      const UsbInterfaceCallback& callback);
+
   virtual void ControlTransfer(const TransferDirection direction,
                                const TransferRequestType request_type,
                                const TransferRecipient recipient,

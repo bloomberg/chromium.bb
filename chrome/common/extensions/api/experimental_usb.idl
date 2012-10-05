@@ -146,6 +146,15 @@ namespace experimental.usb {
     static long releaseInterface(Device device, long interfaceNumber,
         VoidCallback callback);
 
+    // Selects an alternate setting on a previously claimed interface on a
+    // device.
+    // |device|: The device on which the interface settings are to be set.
+    // |interface|: The interface number to be set.
+    // |alternateSetting|: The alternate setting to set.
+    // |callback|: The callback to invoke once the interface setting is set.
+    static long setInterfaceAlternateSetting(Device device,
+        long interfaceNumber, long alternateSetting, VoidCallback callback);
+
     // Performs a control transfer on the specified device. See the
     // ControlTransferInfo structure for the parameters required to make a
     // transfer.
