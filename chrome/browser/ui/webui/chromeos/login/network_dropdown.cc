@@ -88,7 +88,7 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
     gfx::Image icon;
     if (model->GetIconAt(i, &icon)) {
       SkBitmap icon_bitmap = icon.ToImageSkia()->GetRepresentation(
-          ui::GetScaleFactorFromScale(web_ui_->GetDeviceScale())).sk_bitmap();
+          web_ui_->GetDeviceScaleFactor()).sk_bitmap();
       item->SetString("icon", web_ui_util::GetImageDataUrl(icon_bitmap));
     }
     if (id >= 0) {
@@ -163,7 +163,7 @@ void NetworkDropdown::SetNetworkIconAndText() {
   string16 text;
   const gfx::ImageSkia icon_image = network_icon_->GetIconAndText(&text);
   SkBitmap icon_bitmap = icon_image.GetRepresentation(
-      ui::GetScaleFactorFromScale(web_ui_->GetDeviceScale())).sk_bitmap();
+      web_ui_->GetDeviceScaleFactor()).sk_bitmap();
   std::string icon_str =
       icon_image.isNull() ?
           std::string() : web_ui_util::GetImageDataUrl(icon_bitmap);

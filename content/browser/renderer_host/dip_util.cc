@@ -11,47 +11,50 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 
+namespace {
+
+float GetScaleForView(const content::RenderWidgetHostView* view) {
+  return ui::GetScaleFactorScale(content::GetScaleFactorForView(view));
+}
+
+}  // namespace
+
 namespace content {
 
-float GetDIPScaleFactor(const RenderWidgetHostView* view) {
-  if (gfx::Screen::IsDIPEnabled()) {
-    gfx::Display display = gfx::Screen::GetDisplayNearestWindow(
-        view ? view->GetNativeView() : NULL);
-    return display.device_scale_factor();
-  }
-  return 1.0f;
+ui::ScaleFactor GetScaleFactorForView(const RenderWidgetHostView* view) {
+  return ui::GetScaleFactorForNativeView(view ? view->GetNativeView() : NULL);
 }
 
 gfx::Point ConvertPointToDIP(const RenderWidgetHostView* view,
                              const gfx::Point& point_in_pixel) {
-  return point_in_pixel.Scale(1.0f / GetDIPScaleFactor(view));
+  return point_in_pixel.Scale(1.0f / GetScaleForView(view));
 }
 
 gfx::Size ConvertSizeToDIP(const RenderWidgetHostView* view,
                            const gfx::Size& size_in_pixel) {
-  return size_in_pixel.Scale(1.0f / GetDIPScaleFactor(view));
+  return size_in_pixel.Scale(1.0f / GetScaleForView(view));
 }
 
 gfx::Rect ConvertRectToDIP(const RenderWidgetHostView* view,
                            const gfx::Rect& rect_in_pixel) {
-  float scale = 1.0f / GetDIPScaleFactor(view);
+  float scale = 1.0f / GetScaleForView(view);
   return gfx::Rect(rect_in_pixel.origin().Scale(scale),
                    rect_in_pixel.size().Scale(scale));
 }
 
 gfx::Point ConvertPointToPixel(const RenderWidgetHostView* view,
                                const gfx::Point& point_in_dip) {
-  return point_in_dip.Scale(GetDIPScaleFactor(view));
+  return point_in_dip.Scale(GetScaleForView(view));
 }
 
 gfx::Size ConvertSizeToPixel(const RenderWidgetHostView* view,
                              const gfx::Size& size_in_dip) {
-  return size_in_dip.Scale(GetDIPScaleFactor(view));
+  return size_in_dip.Scale(GetScaleForView(view));
 }
 
 gfx::Rect ConvertRectToPixel(const RenderWidgetHostView* view,
                              const gfx::Rect& rect_in_dip) {
-    float scale = GetDIPScaleFactor(view);
+    float scale = GetScaleForView(view);
     return gfx::Rect(rect_in_dip.origin().Scale(scale),
                      rect_in_dip.size().Scale(scale));
 }

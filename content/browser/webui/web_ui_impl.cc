@@ -117,8 +117,8 @@ WebContents* WebUIImpl::GetWebContents() const {
   return web_contents_;
 }
 
-float WebUIImpl::GetDeviceScale() const {
-  return GetDIPScaleFactor(web_contents_->GetRenderWidgetHostView());
+ui::ScaleFactor WebUIImpl::GetDeviceScaleFactor() const {
+  return GetScaleFactorForView(web_contents_->GetRenderWidgetHostView());
 }
 
 bool WebUIImpl::ShouldHideFavicon() const {

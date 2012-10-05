@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_DIP_UTIL_H_
 
 #include "content/common/content_export.h"
+#include "ui/base/layout.h"
 
 namespace gfx {
 class Point;
@@ -16,9 +17,10 @@ class Size;
 namespace content {
 class RenderWidgetHostView;
 
-// Returns scale factor used to convert from DIP to pixel coordinate systems.
-// Returns 1.0 if DIP is not enabled.
-CONTENT_EXPORT float GetDIPScaleFactor(const RenderWidgetHostView* view);
+// Returns scale factor of the display nearest to |view|.
+// Returns ui::SCALE_FACTOR_100P if the platform does not support DIP.
+CONTENT_EXPORT ui::ScaleFactor GetScaleFactorForView(
+    const RenderWidgetHostView* view);
 
 // Utility functions that convert point/size/rect between DIP and pixel
 // coordinate system.

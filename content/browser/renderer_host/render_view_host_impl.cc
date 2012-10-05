@@ -1434,8 +1434,7 @@ void RenderViewHostImpl::OnMsgStartDragging(
     if (policy->CanReadFile(GetProcess()->GetID(), path))
       filtered_data.filenames.push_back(*it);
   }
-  ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(
-      content::GetDIPScaleFactor(GetView()));
+  ui::ScaleFactor scale_factor = content::GetScaleFactorForView(GetView());
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, scale_factor));
   view->StartDragging(filtered_data, drag_operations_mask, image,
       bitmap_offset_in_dip);

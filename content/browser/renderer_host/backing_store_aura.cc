@@ -25,8 +25,9 @@ static const int kMaxVideoLayerSize = 23170;
 
 BackingStoreAura::BackingStoreAura(RenderWidgetHost* widget,
                                    const gfx::Size& size)
-    : BackingStore(widget, size),
-      device_scale_factor_(GetDIPScaleFactor(widget->GetView())) {
+    : BackingStore(widget, size) {
+  device_scale_factor_ =
+      ui::GetScaleFactorScale(GetScaleFactorForView(widget->GetView()));
   gfx::Size pixel_size = size.Scale(device_scale_factor_);
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());

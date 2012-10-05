@@ -26,6 +26,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using ::testing::_;
@@ -256,8 +257,8 @@ class TestWebUI : public content::WebUI {
     return NULL;
   }
   virtual void SetController(content::WebUIController* controller) OVERRIDE {}
-  virtual float GetDeviceScale() const OVERRIDE {
-    return 1.0f;
+  virtual ui::ScaleFactor GetDeviceScaleFactor() const OVERRIDE {
+    return ui::SCALE_FACTOR_100P;
   }
   virtual bool ShouldHideFavicon() const OVERRIDE {
     return false;
