@@ -128,8 +128,10 @@ void CCTextureUpdateController::finalize()
 
 void CCTextureUpdateController::onTimerFired()
 {
+    CCResourceProvider::debugNotifyEnterZone(0x8000000);
     if (!updateMoreTexturesIfEnoughTimeRemaining())
         m_client->readyToFinalizeTextureUpdates();
+    CCResourceProvider::debugNotifyLeaveZone();
 }
 
 base::TimeTicks CCTextureUpdateController::now() const
