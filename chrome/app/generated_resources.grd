@@ -872,17 +872,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
           No more suggestions from Google
         </message>
-        <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
-          &amp;Language Settings...
-        </message>
         <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="In Title Case: The name of the Check the spelling of this field command in the content area context menu">
           &amp;Check Spelling in This Field
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="In Title Case: The name of the Show Spelling Panel command in the content area context menu">
-          &amp;Show Spelling Panel
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="In Title Case: The name of the Hide Spelling Panel command in the content area context menu">
-          &amp;Hide Spelling Panel
         </message>
         <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="In Title Case: The name of the Select All command in the content area context menu">
           Select &amp;All
@@ -952,17 +943,32 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
             &amp;Spell-checker options
           </message>
+          <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
+            &amp;Language settings...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="The name of the Show Spelling Panel command in the content area context menu">
+            &amp;Show spelling panel
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="The name of the Hide Spelling Panel command in the content area context menu">
+            &amp;Hide spelling panel
+          </message>
         </if>
         <if expr="pp_ifdef('use_titlecase')">
           <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
             &amp;Spell-checker Options
           </message>
+          <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
+            &amp;Language Settings...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="In Title Case: The name of the Show Spelling Panel command in the content area context menu">
+            &amp;Show Spelling Panel
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="In Title Case: The name of the Hide Spelling Panel command in the content area context menu">
+            &amp;Hide Spelling Panel
+          </message>
         </if>
         <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the Check Spelling while Typing field command in the spelling context menu">
           Check the spelling of text fields
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
-          &amp;Language settings...
         </message>
       </if>
 
