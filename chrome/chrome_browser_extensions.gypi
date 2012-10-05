@@ -105,6 +105,8 @@
         'browser/extensions/api/content_settings/content_settings_helpers.h',
         'browser/extensions/api/content_settings/content_settings_store.cc',
         'browser/extensions/api/content_settings/content_settings_store.h',
+        'browser/extensions/api/commands/commands.cc',
+        'browser/extensions/api/commands/commands.h',
         'browser/extensions/api/context_menu/context_menu_api.cc',
         'browser/extensions/api/context_menu/context_menu_api.h',
         'browser/extensions/api/cookies/cookies_api.cc',

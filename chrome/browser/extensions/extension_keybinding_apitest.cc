@@ -179,4 +179,12 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgesCommandsApiTest, ScriptBadge_DISABLED) {
   }
 }
 
+// This test validates that the getAll query API function returns registered
+// commands as well as synthesized ones and that inactive commands (like the
+// synthesized ones are in nature) have no shortcuts.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, SynthesizedCommand) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("keybinding/synthesized")) << message_;
+}
+
 }  // extensions

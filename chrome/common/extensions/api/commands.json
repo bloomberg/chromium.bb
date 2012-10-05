@@ -5,6 +5,29 @@
 [
   {
     "namespace": "commands",
+    "types": [
+      {
+        "id": "Command",
+        "type": "object",
+        "properties": {
+          "name":        {
+            "type": "string",
+            "optional": true,
+            "description": "The name of the Extension Command"
+          },
+          "description": {
+            "type": "string",
+            "optional": true,
+            "description": "The Extension Command description"
+          },
+          "shortcut": {
+            "type": "string",
+            "optional": true,
+            "description": "The shortcut active for this command, or blank if not active."
+          }
+        }
+      }
+    ],
     "events": [
       {
         "name": "onCommand",
@@ -14,6 +37,30 @@
           {
             "name": "command",
             "type": "string"
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "name": "getAll",
+        "type": "function",
+        "description": "Returns all the registered extension commands for this extension and their shortcut (if active).",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "commands",
+                "type": "array",
+                "items": {
+                  "$ref": "Command"
+                }
+              }
+            ],
+            "description": "Called to return the registered commands."
           }
         ]
       }
