@@ -350,7 +350,7 @@ int pthread_create(pthread_t *thread_id,
     new_tp = __nacl_tls_data_bss_initialize_from_template(
       NODE_TO_PAYLOAD(tls_node), TDB_SIZE);
 
-    if (__nacl_tp_tdb_offset(TDB_SIZE) >= 0) {
+    if (__nacl_tp_tdb_offset(TDB_SIZE) < 0) {
       /*
        * The TDB sits before $tp but there is space for a "header"
        * directly at $tp, of which we make no other use.  So we can
