@@ -416,6 +416,10 @@ cr.define('login', function() {
     // True if inside focusPod().
     insideFocusPod_: false,
 
+    // True if user pod has been activated with keyboard.
+    // In case of activation with keyboard we delay wallpaper change.
+    keyboardActivated_: false,
+
     // Focused pod.
     focusedPod_: undefined,
 
@@ -624,12 +628,16 @@ cr.define('login', function() {
      *                             podToFocus is already focused.
      */
     focusPod: function(podToFocus, opt_force) {
-      if (this.isFocused(podToFocus) && !opt_force)
+      if (this.isFocused(podToFocus) && !opt_force) {
+        this.keyboardActivated_ = false;
         return;
+      }
 
       // Make sure there's only one focusPod operation happening at a time.
-      if (this.insideFocusPod_)
+      if (this.insideFocusPod_) {
+        this.keyboardActivated_ = false;
         return;
+      }
       this.insideFocusPod_ = true;
 
       clearTimeout(this.loadWallpaperTimeout_);
@@ -649,7 +657,7 @@ cr.define('login', function() {
         podToFocus.classList.add('focused');
         podToFocus.reset(true);  // Reset and give focus.
         this.scrollPodIntoView(podToFocus);
-        if (hadFocus) {
+        if (hadFocus && this.keyboardActivated_) {
           // Delay wallpaper loading to let user tab through pods without lag.
           this.loadWallpaperTimeout_ = window.setTimeout(
               this.loadWallpaper_.bind(this), WALLPAPER_LOAD_DELAY_MS);
@@ -657,12 +665,13 @@ cr.define('login', function() {
           // Load wallpaper immediately if there no pod was focused
           // previously, and it is not a boot into user pod list case.
           this.loadWallpaper_();
-          this.firstShown_ = false;
         }
+        this.firstShown_ = false;
       } else {
         chrome.send('userDeselected');
       }
       this.insideFocusPod_ = false;
+      this.keyboardActivated_ = false;
     },
 
     loadWallpaper_: function() {
@@ -804,6 +813,7 @@ cr.define('login', function() {
       switch (e.keyIdentifier) {
         case 'Left':
           if (!editing) {
+            this.keyboardActivated_ = true;
             if (this.focusedPod_ && this.focusedPod_.previousElementSibling)
               this.focusPod(this.focusedPod_.previousElementSibling);
             else
@@ -814,6 +824,7 @@ cr.define('login', function() {
           break;
         case 'Right':
           if (!editing) {
+            this.keyboardActivated_ = true;
             if (this.focusedPod_ && this.focusedPod_.nextElementSibling)
               this.focusPod(this.focusedPod_.nextElementSibling);
             else
