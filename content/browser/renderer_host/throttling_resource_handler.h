@@ -62,6 +62,8 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
 
   GURL deferred_url_;
   scoped_refptr<ResourceResponse> deferred_response_;
+
+  bool cancelled_by_resource_throttle_;
 };
 
 }  // namespace content
