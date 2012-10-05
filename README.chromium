@@ -3,7 +3,7 @@ URL: http://ffmpeg.org/
 License: LGPL 2.1
 License File: LICENSE
 Upstream Git: git://source.ffmpeg.org/ffmpeg.git
-Last Upstream Merge: 23bb85b0691d76162da753ce08d8dd03f636ef47, Jul 24 2012
+Last Upstream Merge: c39916bc2f43eed86f9822b7d6802b8a4f2a86c8, Oct 1 2012
 
 This file documents the layout of the Chromium copy of FFmpeg git, some common
 tasks, how to produce the FFmpeg include directory, and how to create the
@@ -70,7 +70,7 @@ need to export it to the Subversion repository.  See the next help entry.
 
 -- Exporting the Git repository to Subversion.
 
-Sadly, as of this writing (Jan 2012) Chromium does not support building from Git
+Sadly, as of this writing (Oct 2012) Chromium does not support building from Git
 repos.  The builders rely on an export of the Git repo to SVN for builds.  A
 DEPS entry controls which revision the builders are currently using.
 

@@ -1,19 +1,8 @@
-Current Status as of Sep 28, 2012
+Current Status as of Oct 2, 2012
 
 
 Upstream cherry-picks:
-4c53bbe probe_codec: fix memory corruption
-26595cb vorbisdec: fix heap buffer overflow.
-86e35cd flacdec: fix memleaks
-70e76e2 mpegprobe: fix misdetection of mp3
-a9511ce dsputil: make add_hfyu_left_prediction_sse4() support unaligned src.
-12ba355 matroskadec: check element size against stream limit in ebml_parse_elem
-9c06b7f oggdec: Initialize stream index to -1 in ogg_packet.
-fd73a17 oggdec: simplify start time calculation code.
-6b063c8 oggdec: check stream index before using it in ogg_get_length()
-7274a3f mov: dont clip timestamps at 0
-0575772 avformat: Identify anonymous AVIO typedef structs.
-94041fe mpegaudiodec: prevent out-of-bounds stack write in exponent table.
+3c2101f Shared library support for MSVC build.
 
 
 Current patches:
@@ -37,8 +26,3 @@ ugly/
   dalecurtis: In order to preserve ABI compatibility after av_gettime() was
   moved inside the FFmpeg code base, they added a "symbolic link" version which
   our build chain doesn't like.  Remove it until the next major version bump.
-
-08_disable_aac_sample_skipping.patch
-  dalecurtis: Currently non-Apple encoders aren't supported and this change
-  chops off more samples than necessary for these files.  See:
-  http://ffmpeg.org/pipermail/ffmpeg-devel/2012-July/127834.html
