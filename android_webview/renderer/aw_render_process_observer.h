@@ -20,9 +20,12 @@ class AwRenderProcessObserver : public content::RenderProcessObserver {
 
   // content::RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void WebKitInitialized() OVERRIDE;
 
  private:
   void OnClearCache();
+
+  bool webkit_initialized_;
 };
 
 }  // namespace android_webview

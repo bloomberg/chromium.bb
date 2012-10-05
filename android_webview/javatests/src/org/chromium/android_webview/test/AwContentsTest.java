@@ -9,15 +9,19 @@ import android.os.Looper;
 import android.os.Message;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * AwContents tests.
@@ -80,19 +84,84 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         assertEquals(1, result);
     }
 
-    public void testClearCache() throws Throwable {
-        // TODO(boliu): Implement actual test.
-        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
-        final AwContents awContents = testView.getAwContents();
-        loadUrlSync(
-                awContents.getContentViewCore(),
-                mContentsClient.getOnPageFinishedHelper(),
-                UrlUtils.getTestFileUrl("webview/hello_world.html"));
+    private void clearCacheOnUiThread(final AwContents awContents,
+                                         final boolean includeDiskFiles) throws Throwable {
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              awContents.clearCache(includeDiskFiles);
+            }
+        });
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView"})
+    public void testClearCacheMemoryAndDisk() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(false, contentClient);
+        final ContentViewCore contentView = testContainer.getContentViewCore();
+        final AwContents awContents = testContainer.getAwContents();
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            final String pagePath = "/clear_cache_test.html";
+            List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+            // Set Cache-Control headers to cache this request. One century should be long enough.
+            headers.add(Pair.create("Cache-Control", "max-age=3153600000"));
+            headers.add(Pair.create("Last-Modified", "Wed, 3 Oct 2012 00:00:00 GMT"));
+            final String pageUrl = webServer.setResponse(
+                    pagePath, "<html><body>foo</body></html>", headers);
+
+            // First load to populate cache.
+            clearCacheOnUiThread(awContents, true);
+            loadUrlSync(contentView,
+                        contentClient.getOnPageFinishedHelper(),
+                        pageUrl);
+            assertEquals(1, webServer.getRequestCount(pagePath));
+
+            // Load about:blank so next load is not treated as reload by webkit and force
+            // revalidate with the server.
+            loadUrlSync(contentView,
+                        contentClient.getOnPageFinishedHelper(),
+                        "about:blank");
+
+            // No clearCache call, so should be loaded from cache.
+            loadUrlSync(contentView,
+                        contentClient.getOnPageFinishedHelper(),
+                        pageUrl);
+            assertEquals(1, webServer.getRequestCount(pagePath));
+
+            // Same as above.
+            loadUrlSync(contentView,
+                        contentClient.getOnPageFinishedHelper(),
+                        "about:blank");
+
+            // Clear cache, so should hit server again.
+            clearCacheOnUiThread(awContents, true);
+            loadUrlSync(contentView,
+                        contentClient.getOnPageFinishedHelper(),
+                        pageUrl);
+            assertEquals(2, webServer.getRequestCount(pagePath));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView"})
+    public void testClearCacheInQuickSuccession() throws Throwable {
+        final AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(false, new TestAwContentsClient());
+        final AwContents awContents = testContainer.getAwContents();
 
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-              awContents.clearCache(false);
+              for (int i = 0; i < 10; ++i) {
+                  awContents.clearCache(true);
+              }
             }
         });
     }

@@ -39,6 +39,8 @@
         'browser/find_helper.h',
         'browser/net/aw_network_delegate.cc',
         'browser/net/aw_network_delegate.h',
+        'browser/net_disk_cache_remover.cc',
+        'browser/net_disk_cache_remover.h',
         'browser/renderer_host/aw_render_view_host_ext.cc',
         'browser/renderer_host/aw_render_view_host_ext.h',
         'browser/renderer_host/aw_resource_dispatcher_host_delegate.cc',

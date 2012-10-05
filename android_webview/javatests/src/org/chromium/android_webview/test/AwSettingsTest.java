@@ -1804,8 +1804,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             TestFileUtil.deleteFile(fileName);  // Remove leftover file if any.
             TestFileUtil.createNewHtmlFile(fileName, "unset", pageHtml);
 
-            // Actual test. Note that image may have been cached before test started.
-            // Blocking should trigger onerror handler.
+            // Actual test. Blocking should trigger onerror handler.
             awSettings.setBlockNetworkLoads(true);
             loadUrlSync(
                 contentView,

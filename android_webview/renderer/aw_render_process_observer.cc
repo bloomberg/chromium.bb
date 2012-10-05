@@ -10,7 +10,8 @@
 
 namespace android_webview {
 
-AwRenderProcessObserver::AwRenderProcessObserver() {
+AwRenderProcessObserver::AwRenderProcessObserver()
+  : webkit_initialized_(false) {
 }
 
 AwRenderProcessObserver::~AwRenderProcessObserver() {
@@ -26,8 +27,13 @@ bool AwRenderProcessObserver::OnControlMessageReceived(
   return handled;
 }
 
+void AwRenderProcessObserver::WebKitInitialized() {
+  webkit_initialized_ = true;
+}
+
 void AwRenderProcessObserver::OnClearCache() {
-  WebKit::WebCache::clear();
+  if (webkit_initialized_)
+    WebKit::WebCache::clear();
 }
 
 }  // nanemspace android_webview

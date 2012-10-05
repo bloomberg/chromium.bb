@@ -161,7 +161,6 @@ public class AwContents {
      * cache for all WebViews used.
      *
      * @param includeDiskFiles if false, only the RAM cache is cleared
-     * TODO(boliu): Clear disk cache part not implemented yet.
      */
     public void clearCache(boolean includeDiskFiles) {
         nativeClearCache(mNativeAwContents, includeDiskFiles);

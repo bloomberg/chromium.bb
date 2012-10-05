@@ -32,6 +32,10 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
                                        this_id));
 }
 
+void AwRenderViewHostExt::ClearCache() {
+  Send(new AwViewMsg_ClearCache);
+}
+
 void AwRenderViewHostExt::RenderViewGone(base::TerminationStatus status) {
   DCHECK(CalledOnValidThread());
   for (std::map<int, DocumentHasImagesResult>::iterator pending_req =

@@ -25,6 +25,9 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   typedef base::Callback<void(bool)> DocumentHasImagesResult;
   void DocumentHasImages(DocumentHasImagesResult result);
 
+  // Clear all WebCore memory cache (not only for this view).
+  void ClearCache();
+
  private:
   // content::WebContentsObserver implementation.
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;

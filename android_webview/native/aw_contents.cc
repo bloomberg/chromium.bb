@@ -4,12 +4,12 @@
 
 #include "android_webview/native/aw_contents.h"
 
+#include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
-#include "android_webview/common/render_view_messages.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_container.h"
-#include "android_webview/native/aw_web_contents_delegate.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
+#include "android_webview/native/aw_web_contents_delegate.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -253,8 +253,14 @@ void AwContents::ClearCache(
     JNIEnv* env,
     jobject obj,
     jboolean include_disk_files) {
-  render_view_host_ext_->Send(new AwViewMsg_ClearCache);
-  // TODO(boliu): Implement clear network disk cache.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  render_view_host_ext_->ClearCache();
+
+  if (include_disk_files) {
+    content::WebContents* web_contents = contents_container_->GetWebContents();
+    RemoveHttpDiskCache(web_contents->GetBrowserContext(),
+                        web_contents->GetRoutingID());
+  }
 }
 
 FindHelper* AwContents::GetFindHelper() {
