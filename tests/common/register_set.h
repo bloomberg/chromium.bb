@@ -188,8 +188,13 @@ extern const uint8_t kX86FlagBits[5];
         "movl %eax, 0x24(%esp)\n" \
         /* Adjust saved %esp value to account for preceding pushes. */ \
         "addl $5 * 4, 0x10(%esp)\n" \
-        /* Push argument to callee_func(). */ \
-        "push %esp\n" \
+        /* Save argument to callee_func() temporarily. */ \
+        "mov %esp, %eax\n" \
+        /* Align the stack pointer and leave space for an argument. */ \
+        "pushl $0\n" \
+        "and $~15, %esp\n" \
+        /* Set argument to callee_func(). */ \
+        "mov %eax, (%esp)\n" \
         "call " #callee_func "\n" \
         ".popsection\n")
 
@@ -263,6 +268,8 @@ extern const uint8_t kX86FlagBits[5];
         "str r0, [sp, #0x40]\n" \
         /* Set argument to callee_func() */ \
         "mov r0, sp\n" \
+        /* Align the stack pointer */ \
+        "bic sp, sp, #0xc000000f\n" \
         "b " #callee_func "\n" \
         ".popsection\n")
 
