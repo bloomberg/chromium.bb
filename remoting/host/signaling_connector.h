@@ -20,7 +20,6 @@ class URLRequestContextGetter;
 
 namespace remoting {
 
-class ChromotingHostContext;
 class DnsBlackholeChecker;
 
 // SignalingConnector listens for SignalStrategy status notifications
@@ -55,10 +54,11 @@ class SignalingConnector
   };
 
   // The |auth_failed_callback| is called when authentication fails.
-  SignalingConnector(XmppSignalStrategy* signal_strategy,
-                     ChromotingHostContext* context,
-                     scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
-                     const base::Closure& auth_failed_callback);
+  SignalingConnector(
+      XmppSignalStrategy* signal_strategy,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
+      const base::Closure& auth_failed_callback);
   virtual ~SignalingConnector();
 
   // May be called immediately after the constructor to enable OAuth
@@ -94,7 +94,7 @@ class SignalingConnector
   void RefreshOAuthToken();
 
   XmppSignalStrategy* signal_strategy_;
-  ChromotingHostContext* context_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   base::Closure auth_failed_callback_;
 
   scoped_ptr<OAuthCredentials> oauth_credentials_;

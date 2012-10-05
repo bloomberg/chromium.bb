@@ -256,7 +256,9 @@ class SimpleHost : public HeartbeatSender::Listener {
         new DnsBlackholeChecker(context_.url_request_context_getter(),
                                 kDefaultHostTalkGadgetPrefix));
     signaling_connector_.reset(new SignalingConnector(
-        signal_strategy_.get(), &context_, dns_blackhole_checker.Pass(),
+        signal_strategy_.get(),
+        context_.url_request_context_getter(),
+        dns_blackhole_checker.Pass(),
         base::Bind(&SimpleHost::OnAuthFailed, base::Unretained(this))));
 
     if (fake_) {

@@ -7,9 +7,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "net/url_request/url_fetcher.h"
-#include "remoting/host/chromoting_host_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/dns_blackhole_checker.h"
-#include "remoting/host/url_request_context.h"
 
 namespace remoting {
 
@@ -35,11 +34,11 @@ SignalingConnector::OAuthCredentials::OAuthCredentials(
 
 SignalingConnector::SignalingConnector(
     XmppSignalStrategy* signal_strategy,
-    ChromotingHostContext* context,
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
     const base::Closure& auth_failed_callback)
     : signal_strategy_(signal_strategy),
-      context_(context),
+      url_request_context_getter_(url_request_context_getter),
       auth_failed_callback_(auth_failed_callback),
       dns_blackhole_checker_(dns_blackhole_checker.Pass()),
       reconnect_attempts_(0),
@@ -62,7 +61,7 @@ void SignalingConnector::EnableOAuth(
     scoped_ptr<OAuthCredentials> oauth_credentials) {
   oauth_credentials_ = oauth_credentials.Pass();
   gaia_oauth_client_.reset(new GaiaOAuthClient(
-      OAuthProviderInfo::GetDefault(), context_->url_request_context_getter()));
+      OAuthProviderInfo::GetDefault(), url_request_context_getter_));
 }
 
 void SignalingConnector::OnSignalStrategyStateChange(
