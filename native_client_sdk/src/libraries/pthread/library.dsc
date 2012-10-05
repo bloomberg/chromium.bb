@@ -7,9 +7,6 @@
     {
       'NAME' : 'pthread',
       'TYPE' : 'lib',
-      'DEFINES': [
-        'PTW32_STATIC_LIB',
-      ],
       'SOURCES' : [
         'autostatic.c',
         'cleanup.c',

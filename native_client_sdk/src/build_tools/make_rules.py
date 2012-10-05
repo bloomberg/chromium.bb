@@ -57,7 +57,7 @@ WIN_CC?=cl.exe /nologo
 WIN_CXX?=cl.exe /nologo
 WIN_LINK?=link.exe /nologo
 WIN_LIB?=lib.exe /nologo
-WIN_CCFLAGS=/I$(NACL_SDK_ROOT)/include /I$(NACL_SDK_ROOT)/include/win -D WIN32 -D _WIN32
+WIN_CCFLAGS=/I$(NACL_SDK_ROOT)/include /I$(NACL_SDK_ROOT)/include/win -D WIN32 -D _WIN32 -D PTW32_STATIC_LIB
 """
 
 #

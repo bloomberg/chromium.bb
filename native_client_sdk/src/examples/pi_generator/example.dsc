@@ -9,7 +9,6 @@
         'pi_generator.h',
         'pi_generator_module.cc'
       ],
-      'DEFINES': ['PTW32_STATIC_LIB'],
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
