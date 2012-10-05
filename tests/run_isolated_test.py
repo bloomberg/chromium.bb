@@ -13,10 +13,10 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-import run_swarm_step
+import run_isolated
 
 
-class RemoteTest(run_swarm_step.Remote):
+class RemoteTest(run_isolated.Remote):
   @staticmethod
   def get_file_handler(_):
     def upload_file(item, _dest):
@@ -27,9 +27,9 @@ class RemoteTest(run_swarm_step.Remote):
     return upload_file
 
 
-class RunTestFromArchiveTest(unittest.TestCase):
+class RunIsolatedTest(unittest.TestCase):
   def test_load_manifest_empty(self):
-    m = run_swarm_step.load_manifest('{}')
+    m = run_isolated.load_manifest('{}')
     self.assertEquals({}, m)
 
   def test_load_manifest_good(self):
@@ -47,11 +47,11 @@ class RunTestFromArchiveTest(unittest.TestCase):
         }
       },
       u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
-      u'os': run_swarm_step.get_flavor(),
+      u'os': run_isolated.get_flavor(),
       u'read_only': False,
       u'relative_cwd': u'somewhere_else'
     }
-    m = run_swarm_step.load_manifest(json.dumps(data))
+    m = run_isolated.load_manifest(json.dumps(data))
     self.assertEquals(data, m)
 
   def test_load_manifest_bad(self):
@@ -64,16 +64,16 @@ class RunTestFromArchiveTest(unittest.TestCase):
       },
     }
     try:
-      run_swarm_step.load_manifest(json.dumps(data))
+      run_isolated.load_manifest(json.dumps(data))
       self.fail()
-    except run_swarm_step.ConfigError:
+    except run_isolated.ConfigError:
       pass
 
   def test_load_manifest_os_only(self):
     data = {
-      u'os': run_swarm_step.get_flavor(),
+      u'os': run_isolated.get_flavor(),
     }
-    m = run_swarm_step.load_manifest(json.dumps(data))
+    m = run_isolated.load_manifest(json.dumps(data))
     self.assertEquals(data, m)
 
   def test_load_manifest_os_bad(self):
@@ -81,9 +81,9 @@ class RunTestFromArchiveTest(unittest.TestCase):
       u'os': 'foo',
     }
     try:
-      run_swarm_step.load_manifest(json.dumps(data))
+      run_isolated.load_manifest(json.dumps(data))
       self.fail()
-    except run_swarm_step.ConfigError:
+    except run_isolated.ConfigError:
       pass
 
   def test_remote_no_errors(self):
@@ -91,7 +91,7 @@ class RunTestFromArchiveTest(unittest.TestCase):
     remote = RemoteTest('')
 
     for i in range(files_to_handle):
-      remote.add_item(run_swarm_step.Remote.MED, i, i)
+      remote.add_item(run_isolated.Remote.MED, i, i)
 
     for i in range(files_to_handle):
       self.assertNotEqual(-1, remote.get_result())
@@ -101,8 +101,8 @@ class RunTestFromArchiveTest(unittest.TestCase):
   def test_remote_with_errors(self):
     remote = RemoteTest('')
 
-    remote.add_item(run_swarm_step.Remote.MED, IOError, '')
-    remote.add_item(run_swarm_step.Remote.MED, Exception, '')
+    remote.add_item(run_isolated.Remote.MED, IOError, '')
+    remote.add_item(run_isolated.Remote.MED, Exception, '')
     remote.join()
 
     self.assertNotEqual(None, remote.next_exception())

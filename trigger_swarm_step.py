@@ -41,7 +41,7 @@ HANDLE_EXE = 'handle.exe'
 HANDLE_EXE_PATH = os.path.join(
     BUILD_ROOT_PATH, 'third_party', 'psutils', HANDLE_EXE)
 
-RUN_TEST_NAME = 'run_swarm_step.py'
+RUN_TEST_NAME = 'run_isolated.py'
 RUN_TEST_PATH = os.path.join(ROOT_DIR, RUN_TEST_NAME)
 
 

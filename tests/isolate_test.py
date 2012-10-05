@@ -161,7 +161,7 @@ class Isolate(unittest.TestCase):
       }
       self.assertEquals(expected_saved_state, actual_saved_state)
     finally:
-      isolate.run_swarm_step.rmtree(directory)
+      isolate.run_isolated.rmtree(directory)
 
   @staticmethod
   def _size(*args):

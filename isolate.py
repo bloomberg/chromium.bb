@@ -26,11 +26,11 @@ import time
 import urllib
 import urllib2
 
-import run_swarm_step
+import run_isolated
 import trace_inputs
 
 # Import here directly so isolate is easier to use as a library.
-from run_swarm_step import get_flavor
+from run_isolated import get_flavor
 
 
 # Used by process_input().
@@ -120,12 +120,12 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
     ln -s .. foo
   """
   if os.path.isabs(relfile):
-    raise run_swarm_step.MappingError(
+    raise run_isolated.MappingError(
         'Can\'t map absolute path %s' % relfile)
 
   infile = normpath(os.path.join(indir, relfile))
   if not infile.startswith(indir):
-    raise run_swarm_step.MappingError(
+    raise run_isolated.MappingError(
         'Can\'t map file %s outside %s' % (infile, indir))
 
   if sys.platform != 'win32':
@@ -142,11 +142,11 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
       if rest:
         dest_infile = trace_inputs.safe_join(dest_infile, rest)
       if not dest_infile.startswith(indir):
-        raise run_swarm_step.MappingError(
+        raise run_isolated.MappingError(
             'Can\'t map symlink reference %s (from %s) ->%s outside of %s' %
             (symlink_relfile, relfile, dest_infile, indir))
       if infile.startswith(dest_infile):
-        raise run_swarm_step.MappingError(
+        raise run_isolated.MappingError(
             'Can\'t map recursive symlink reference %s->%s' %
             (symlink_relfile, dest_infile))
       dest_relfile = dest_infile[len(indir)+1:]
@@ -158,7 +158,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
 
   if relfile.endswith(os.path.sep):
     if not os.path.isdir(infile):
-      raise run_swarm_step.MappingError(
+      raise run_isolated.MappingError(
           '%s is not a directory but ends with "%s"' % (infile, os.path.sep))
 
     outfiles = []
@@ -174,11 +174,11 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
   else:
     # Always add individual files even if they were blacklisted.
     if os.path.isdir(infile):
-      raise run_swarm_step.MappingError(
+      raise run_isolated.MappingError(
           'Input directory %s must have a trailing slash' % infile)
 
     if not os.path.isfile(infile):
-      raise run_swarm_step.MappingError(
+      raise run_isolated.MappingError(
           'Input file %s doesn\'t exist' % infile)
 
     return [relfile]
@@ -211,9 +211,9 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
       (outdir, indir, len(infiles), action, as_sha1))
 
   assert action in (
-      run_swarm_step.HARDLINK,
-      run_swarm_step.SYMLINK,
-      run_swarm_step.COPY)
+      run_isolated.HARDLINK,
+      run_isolated.SYMLINK,
+      run_isolated.COPY)
   outdir = os.path.normpath(outdir)
   if not os.path.isdir(outdir):
     logging.info ('Creating %s' % outdir)
@@ -251,7 +251,7 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
       logging.debug('Symlink: %s -> %s' % (outfile, pointed))
       os.symlink(pointed, outfile)
     else:
-      run_swarm_step.link_file(outfile, infile, action)
+      run_isolated.link_file(outfile, infile, action)
 
 
 def encode_multipart_formdata(fields, files,
@@ -337,7 +337,7 @@ def upload_hash_content_to_blobstore(generate_upload_url, params,
                              content_type=content_type)
 
 
-class UploadRemote(run_swarm_step.Remote):
+class UploadRemote(run_isolated.Remote):
   @staticmethod
   def get_file_handler(base_url):
     def upload_file(hash_data, hash_key):
@@ -375,7 +375,7 @@ def url_open(url, data=None, max_retries=MAX_UPLOAD_ATTEMPTS):
   # If we get no response from the server after max_retries, assume it
   # is down and raise an exception
   if response is None:
-    raise run_swarm_step.MappingError('Unable to connect to server, %s, '
+    raise run_isolated.MappingError('Unable to connect to server, %s, '
                                              'to see which files are presents' %
                                              url)
 
@@ -394,7 +394,7 @@ def update_files_to_upload(query_url, queries, files_to_upload):
       (binascii.unhexlify(meta_data['sha-1']) for (_, meta_data) in queries))
   response = url_open(query_url, data=body).read()
   if len(queries) != len(response):
-    raise run_swarm_step.MappingError(
+    raise run_isolated.MappingError(
         'Got an incorrect number of responses from the server. Expected %d, '
         'but got %d' % (len(queries), len(response)))
 
@@ -448,7 +448,7 @@ def upload_sha1_tree(base_url, indir, infiles):
     infile = os.path.join(indir, relfile)
     with open(infile, 'rb') as f:
       hash_data = f.read()
-    remote_uploader.add_item(run_swarm_step.Remote.MED,
+    remote_uploader.add_item(run_isolated.Remote.MED,
                              hash_data,
                              metadata['sha-1'])
   remote_uploader.join()
@@ -458,7 +458,7 @@ def upload_sha1_tree(base_url, indir, infiles):
     while exception:
       logging.error('Error uploading file to server:\n%s', exception[1])
       exception = remote_uploader.next_exception()
-    raise run_swarm_step.MappingError(
+    raise run_isolated.MappingError(
         'Encountered errors uploading hash contents to server. See logs for '
         'exact failures')
 
@@ -500,7 +500,7 @@ def process_input(filepath, prevdict, level, read_only):
       filestats = os.lstat(filepath)
     except OSError:
       # The file is not present.
-      raise run_swarm_step.MappingError('%s is missing' % filepath)
+      raise run_isolated.MappingError('%s is missing' % filepath)
     is_link = stat.S_ISLNK(filestats.st_mode)
     if get_flavor() != 'win':
       # Ignore file mode on Windows since it's not really useful there.
@@ -1294,7 +1294,7 @@ class Flattenable(object):
 class SwarmFile(Flattenable):
   """Describes the content of a .swarm file.
 
-  This file is used by run_swarm_step.py so its content is strictly only
+  This file is used by run_isolated.py so its content is strictly only
   what is necessary to run the test outside of a checkout.
 
   It is important to note that the 'files' dict keys are using native OS path
@@ -1335,7 +1335,7 @@ class SwarmFile(Flattenable):
   def _load_member(self, member, value):
     if member == 'os':
       if value != self.os:
-        raise run_swarm_step.ConfigError(
+        raise run_isolated.ConfigError(
             'The .swarm file was created on another platform')
     else:
       super(SwarmFile, self)._load_member(member, value)
@@ -1353,7 +1353,7 @@ class SavedState(Flattenable):
   """Describes the content of a .state file.
 
   The items in this file are simply to improve the developer's life and aren't
-  used by run_swarm_step.py. This file can always be safely removed.
+  used by run_isolated.py. This file can always be safely removed.
 
   isolate_file permits to find back root_dir, variables are used for stateful
   rerun.
@@ -1394,7 +1394,7 @@ class CompleteState(object):
   def __init__(self, swarm_filepath, swarm, saved_state):
     super(CompleteState, self).__init__()
     self.swarm_filepath = swarm_filepath
-    # Contains the data that will be used by run_swarm_step.py
+    # Contains the data that will be used by run_isolated.py
     self.swarm = swarm
     # Contains the data to ease developer's use-case but that is not strictly
     # necessary.
@@ -1458,7 +1458,7 @@ class CompleteState(object):
         lambda x: re.match(r'.*\.(git|svn|pyc)$', x))
 
     # Finally, update the new stuff in the foo.swarm file, the file that is
-    # used by run_swarm_step.py.
+    # used by run_isolated.py.
     self.swarm.update(command, infiles, touched, read_only, relative_cwd)
     logging.debug(self)
 
@@ -1623,7 +1623,7 @@ def CMDhashtable(args):
   parser = OptionParserIsolate(command='hashtable')
   options, _ = parser.parse_args(args)
 
-  with run_swarm_step.Profiler('GenerateHashtable'):
+  with run_isolated.Profiler('GenerateHashtable'):
     success = False
     try:
       complete_state = load_complete_state(options, WITH_HASH)
@@ -1654,7 +1654,7 @@ def CMDhashtable(args):
             outdir=options.outdir,
             indir=complete_state.root_dir,
             infiles=infiles,
-            action=run_swarm_step.HARDLINK,
+            action=run_isolated.HARDLINK,
             as_sha1=True)
       success = True
     finally:
@@ -1713,7 +1713,7 @@ def CMDremap(args):
   complete_state = load_complete_state(options, STATS_ONLY)
 
   if not options.outdir:
-    options.outdir = run_swarm_step.make_temp_dir(
+    options.outdir = run_isolated.make_temp_dir(
         'isolate', complete_state.root_dir)
   else:
     if not os.path.isdir(options.outdir):
@@ -1725,10 +1725,10 @@ def CMDremap(args):
       outdir=options.outdir,
       indir=complete_state.root_dir,
       infiles=complete_state.swarm.files,
-      action=run_swarm_step.HARDLINK,
+      action=run_isolated.HARDLINK,
       as_sha1=False)
   if complete_state.swarm.read_only:
-    run_swarm_step.make_writable(options.outdir, True)
+    run_isolated.make_writable(options.outdir, True)
 
   if complete_state.swarm_filepath:
     complete_state.save_files()
@@ -1756,7 +1756,7 @@ def CMDrun(args):
   cmd = trace_inputs.fix_python_path(cmd)
   try:
     if not options.outdir:
-      options.outdir = run_swarm_step.make_temp_dir(
+      options.outdir = run_isolated.make_temp_dir(
           'isolate', complete_state.root_dir)
     else:
       if not os.path.isdir(options.outdir):
@@ -1765,7 +1765,7 @@ def CMDrun(args):
         outdir=options.outdir,
         indir=complete_state.root_dir,
         infiles=complete_state.swarm.files,
-        action=run_swarm_step.HARDLINK,
+        action=run_isolated.HARDLINK,
         as_sha1=False)
     cwd = os.path.normpath(
         os.path.join(options.outdir, complete_state.swarm.relative_cwd))
@@ -1775,12 +1775,12 @@ def CMDrun(args):
       # directory.
       os.makedirs(cwd)
     if complete_state.swarm.read_only:
-      run_swarm_step.make_writable(options.outdir, True)
+      run_isolated.make_writable(options.outdir, True)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     result = subprocess.call(cmd, cwd=cwd)
   finally:
     if options.outdir:
-      run_swarm_step.rmtree(options.outdir)
+      run_isolated.rmtree(options.outdir)
 
   if complete_state.swarm_filepath:
     complete_state.save_files()
@@ -1914,8 +1914,8 @@ def main(argv):
     return trace_inputs.main_impl(argv)
   except (
       ExecutionError,
-      run_swarm_step.MappingError,
-      run_swarm_step.ConfigError) as e:
+      run_isolated.MappingError,
+      run_isolated.ConfigError) as e:
     sys.stderr.write('\nError: ')
     sys.stderr.write(str(e))
     sys.stderr.write('\n')

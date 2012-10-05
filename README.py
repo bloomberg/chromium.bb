@@ -16,7 +16,7 @@ Scripts are compartmentalized by their name:
 - *_test_cases.py: Scripts specifically managing GTest executables.
 
 A few scripts have strict dependency rules:
-- run_swarm_step.py, run_test_cases.py, shard_test_cases.py and trace_inputs.py
+- run_isolated.py, run_test_cases.py, shard_test_cases.py and trace_inputs.py
   depends on no other script so they can be run outside the checkout.
 - The pure tracing scripts (trace_inputs.py and trace_test_cases.py) do not know
   about isolate infrastructure.

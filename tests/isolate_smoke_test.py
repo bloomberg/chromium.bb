@@ -260,8 +260,8 @@ class IsolateModeBase(IsolateBase):
   def _expect_results(self, args, read_only, extra_vars, empty_file):
     self._expected_result(args, read_only, empty_file)
     self._expected_saved_state(extra_vars)
-    # Also verifies run_swarm_step.py will be able to read it.
-    isolate.run_swarm_step.load_manifest(open(self.result, 'r').read())
+    # Also verifies run_isolated.py will be able to read it.
+    isolate.run_isolated.load_manifest(open(self.result, 'r').read())
 
   def _expect_no_result(self):
     self.assertFalse(os.path.exists(self.result))

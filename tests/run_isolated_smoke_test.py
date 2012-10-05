@@ -62,7 +62,7 @@ def write_json(filepath, data):
 
 class RunSwarmStep(unittest.TestCase):
   def setUp(self):
-    self.tempdir = tempfile.mkdtemp(prefix='run_swarm_step_smoke_test')
+    self.tempdir = tempfile.mkdtemp(prefix='run_isolated_smoke_test')
     logging.debug(self.tempdir)
     # The "source" hash table.
     self.table = os.path.join(self.tempdir, 'table')
@@ -70,7 +70,7 @@ class RunSwarmStep(unittest.TestCase):
     # The slave-side cache.
     self.cache = os.path.join(self.tempdir, 'cache')
 
-    self.data_dir = os.path.join(ROOT_DIR, 'tests', 'run_swarm_step')
+    self.data_dir = os.path.join(ROOT_DIR, 'tests', 'run_isolated')
 
   def tearDown(self):
     shutil.rmtree(self.tempdir)
@@ -80,7 +80,7 @@ class RunSwarmStep(unittest.TestCase):
 
   @staticmethod
   def _run(args):
-    cmd = [sys.executable, os.path.join(ROOT_DIR, 'run_swarm_step.py')]
+    cmd = [sys.executable, os.path.join(ROOT_DIR, 'run_isolated.py')]
     cmd.extend(args)
     if VERBOSE:
       cmd.extend(['-v'] * 2)
