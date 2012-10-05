@@ -330,10 +330,10 @@ remoting.HostTableEntry.prototype.removeEditBox_ = function() {
  * @private
  */
 remoting.HostTableEntry.prototype.setHostName_ = function() {
-  var hostNameNode = /** @type {HTMLElement} */ document.createElement('span');
+  var hostNameNode = /** @type {HTMLElement} */ document.createElement('a');
   if (this.host.status == 'ONLINE') {
     hostNameNode.innerText = this.host.hostName;
-    hostNameNode.tabIndex = 0;
+    hostNameNode.href = '#';
     this.registerFocusHandlers_(hostNameNode);
     /** @type {remoting.HostTableEntry} */
     var that = this;

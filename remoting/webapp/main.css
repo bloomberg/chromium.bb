@@ -423,6 +423,11 @@ td {
   padding: 0 5px;
 }
 
+.host-list-label, .host-list-label:visited, .host-list-label:active {
+  color: inherit;
+  cursor: inherit;
+}
+
 .host-list-main-icon {
   margin-__MSG_@@bidi_end_edge__: 10px;
   vertical-align: middle;
