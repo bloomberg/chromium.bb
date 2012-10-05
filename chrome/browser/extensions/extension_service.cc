@@ -530,9 +530,15 @@ void ExtensionService::InitEventRouters() {
   event_routers_initialized_ = true;
 }
 
-void ExtensionService::Shutdown() {
+void ExtensionService::OnProfileSyncServiceShutdown() {
+  // TODO(akalin): Move this block to Shutdown() once
+  // http://crbug.com/153827 is fixed.
   if (push_messaging_event_router_.get())
     push_messaging_event_router_->Shutdown();
+}
+
+void ExtensionService::Shutdown() {
+  // Do nothing for now.
 }
 
 const Extension* ExtensionService::GetExtensionById(

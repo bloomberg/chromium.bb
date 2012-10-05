@@ -285,6 +285,13 @@ class ExtensionService
   // Start up the extension event routers.
   void InitEventRouters();
 
+  // Called when the ProfileSyncService for the associated Profile is
+  // going to be destroyed.  This is guaranteed to be called exactly
+  // once before Shutdown() is called.
+  //
+  // TODO(akalin): Remove this once http://crbug.com/153827 is fixed.
+  void OnProfileSyncServiceShutdown();
+
   // Called when the associated Profile is going to be destroyed.
   void Shutdown();
 
