@@ -384,7 +384,7 @@ history::TopSites* OffTheRecordProfileImpl::GetTopSites() {
   return NULL;
 }
 
-void OffTheRecordProfileImpl::MarkAsCleanShutdown() {
+void OffTheRecordProfileImpl::SetExitType(ExitType exit_type) {
 }
 
 void OffTheRecordProfileImpl::InitPromoResources() {
@@ -409,8 +409,8 @@ bool OffTheRecordProfileImpl::WasCreatedByVersionOrLater(
   return profile_->WasCreatedByVersionOrLater(version);
 }
 
-bool OffTheRecordProfileImpl::DidLastSessionExitCleanly() {
-  return profile_->DidLastSessionExitCleanly();
+Profile::ExitType OffTheRecordProfileImpl::GetLastSessionExitType() {
+  return profile_->GetLastSessionExitType();
 }
 
 #if defined(OS_CHROMEOS)

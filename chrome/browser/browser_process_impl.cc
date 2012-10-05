@@ -311,7 +311,7 @@ void BrowserProcessImpl::EndSession() {
   ProfileManager* pm = profile_manager();
   std::vector<Profile*> profiles(pm->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i)
-    profiles[i]->MarkAsCleanShutdown();
+    profiles[i]->SetExitType(Profile::EXIT_SESSION_ENDED);
 
   // Tell the metrics service it was cleanly shutdown.
   MetricsService* metrics = g_browser_process->metrics_service();

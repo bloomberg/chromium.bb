@@ -34,9 +34,9 @@ NavigationController::RestoreType GetRestoreType(
     bool from_last_session) {
   if (!from_last_session)
     return NavigationController::RESTORE_CURRENT_SESSION;
-  return browser->profile()->DidLastSessionExitCleanly() ?
-      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY :
-      NavigationController::RESTORE_LAST_SESSION_CRASHED;
+  return browser->profile()->GetLastSessionExitType() == Profile::EXIT_CRASHED ?
+      NavigationController::RESTORE_LAST_SESSION_CRASHED :
+      NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY;
 }
 
 }

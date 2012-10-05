@@ -452,7 +452,7 @@ void TabRestoreService::LoadTabsFromLastSession() {
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile());
   if (!profile()->restored_last_session() &&
-      !profile()->DidLastSessionExitCleanly() &&
+      profile()->GetLastSessionExitType() == Profile::EXIT_CRASHED &&
       session_service) {
     // The previous session crashed and wasn't restored. Load the tabs/windows
     // that were open at the point of crash from the session service.

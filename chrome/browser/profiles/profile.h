@@ -117,6 +117,17 @@ class Profile : public content::BrowserContext {
     CREATE_MODE_ASYNCHRONOUS
   };
 
+  enum ExitType {
+    // A normal shutdown. The user clicked exit/closed last window of the
+    // profile.
+    EXIT_NORMAL,
+
+    // The exit was the result of the system shutting down.
+    EXIT_SESSION_ENDED,
+
+    EXIT_CRASHED,
+  };
+
   class Delegate {
    public:
     // Called when creation of the profile is finished.
@@ -267,12 +278,6 @@ class Profile : public content::BrowserContext {
   // the user started chrome.
   virtual base::Time GetStartTime() const = 0;
 
-  // Marks the profile as cleanly shutdown.
-  //
-  // NOTE: this is invoked internally on a normal shutdown, but is public so
-  // that it can be invoked when the user logs out/powers down (WM_ENDSESSION).
-  virtual void MarkAsCleanShutdown() = 0;
-
   // Start up service that gathers data from a promo resource feed.
   virtual void InitPromoResources() = 0;
 
@@ -339,8 +344,17 @@ class Profile : public content::BrowserContext {
     return restored_last_session_;
   }
 
-  // Returns true if the last time this profile was open it was exited cleanly.
-  virtual bool DidLastSessionExitCleanly() = 0;
+  // Sets the ExitType for the profile. This may be invoked multiple times
+  // during shutdown; the value of the first invocation is written to prefs, any
+  // other calls are ignored. Only legal values to pass to this are
+  // EXIT_SESSION_ENDED and EXIT_NORMAL.
+  //
+  // NOTE: this is invoked internally on a normal shutdown, but is public so
+  // that it can be invoked when the user logs out/powers down (WM_ENDSESSION).
+  virtual void SetExitType(ExitType exit_type) = 0;
+
+  // Returns how the last session was shutdown.
+  virtual ExitType GetLastSessionExitType() = 0;
 
   // Stop sending accessibility events until ResumeAccessibilityEvents().
   // Calls to Pause nest; no events will be sent until the number of

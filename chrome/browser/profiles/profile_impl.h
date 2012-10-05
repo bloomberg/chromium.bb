@@ -46,6 +46,9 @@ class ExtensionSystem;
 class ProfileImpl : public Profile,
                     public content::NotificationObserver {
  public:
+  // Value written to prefs when the exit type is EXIT_NORMAL. Public for tests.
+  static const char* const kPrefExitTypeNormal;
+
   virtual ~ProfileImpl();
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -100,7 +103,6 @@ class ProfileImpl : public Profile,
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
-  virtual void MarkAsCleanShutdown() OVERRIDE;
   virtual void InitPromoResources() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
@@ -108,7 +110,8 @@ class ProfileImpl : public Profile,
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
   virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
-  virtual bool DidLastSessionExitCleanly() OVERRIDE;
+  virtual void SetExitType(ExitType exit_type) OVERRIDE;
+  virtual ExitType GetLastSessionExitType() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale,
@@ -214,8 +217,9 @@ class ProfileImpl : public Profile,
   scoped_ptr<GAIAInfoUpdateService> gaia_info_update_service_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
 
-  // Whether or not the last session exited cleanly. This is set only once.
-  bool last_session_exited_cleanly_;
+  // Exit type the last time the profile was opened. This is set only once from
+  // prefs.
+  ExitType last_session_exit_type_;
 
 #if defined(ENABLE_SESSION_SERVICE)
   base::OneShotTimer<ProfileImpl> create_session_service_timer_;

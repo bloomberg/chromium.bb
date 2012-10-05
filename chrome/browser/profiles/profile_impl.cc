@@ -147,6 +147,10 @@ static const char kReadmeText[] =
     "information and MUST not be extracted, overwritten or modified except "
     "through %s defined APIs.";
 
+// Value written to prefs for EXIT_CRASHED and EXIT_SESSION_ENDED.
+const char* const kPrefExitTypeCrashed = "Crashed";
+const char* const kPrefExitTypeSessionEnded = "SessionEnded";
+
 // Helper method needed because PostTask cannot currently take a Callback
 // function with non-void return type.
 // TODO(jhawkins): Remove once IgnoreResult is fixed.
@@ -173,6 +177,29 @@ void EnsureReadmeFile(const FilePath& base) {
           readme_path, readme_text.data(), readme_text.size()) == -1) {
     LOG(ERROR) << "Could not create README file.";
   }
+}
+
+// Converts the kSessionExitedCleanly pref to the corresponding EXIT_TYPE.
+Profile::ExitType SessionTypePrefValueToExitType(const std::string& value) {
+  if (value == kPrefExitTypeSessionEnded)
+    return Profile::EXIT_SESSION_ENDED;
+  if (value == kPrefExitTypeCrashed)
+    return Profile::EXIT_CRASHED;
+  return Profile::EXIT_NORMAL;
+}
+
+// Converts an ExitType into a string that is written to prefs.
+std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
+  switch (type) {
+    case Profile::EXIT_NORMAL:
+        return ProfileImpl::kPrefExitTypeNormal;
+    case Profile::EXIT_SESSION_ENDED:
+      return kPrefExitTypeSessionEnded;
+    case Profile::EXIT_CRASHED:
+      return kPrefExitTypeCrashed;
+  }
+  NOTREACHED();
+  return std::string();
 }
 
 }  // namespace
@@ -204,6 +231,9 @@ Profile* Profile::CreateProfile(const FilePath& path,
 
 // static
 int ProfileImpl::create_readme_delay_ms = 60000;
+
+// static
+const char* const ProfileImpl::kPrefExitTypeNormal = "Normal";
 
 // static
 void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
@@ -257,6 +287,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
           new VisitedLinkEventListener(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       host_content_settings_map_(NULL),
+      last_session_exit_type_(EXIT_NORMAL),
       start_time_(Time::Now()),
       delegate_(delegate),
       predictor_(NULL) {
@@ -395,7 +426,7 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
           *CommandLine::ForCurrentProcess(), this).type;
 #endif
   bool restore_old_session_cookies =
-      (!DidLastSessionExitCleanly() ||
+      (GetLastSessionExitType() == Profile::EXIT_CRASHED ||
        startup_pref_type == SessionStartupPref::LAST);
 
   InitHostZoomMap();
@@ -516,7 +547,7 @@ ProfileImpl::~ProfileImpl() {
 
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
-    MarkAsCleanShutdown();
+    SetExitType(EXIT_NORMAL);
 }
 
 std::string ProfileImpl::GetProfileName() {
@@ -610,12 +641,23 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
   if (g_browser_process->local_state())
     chrome::MigrateBrowserPrefs(this, g_browser_process->local_state());
 
-  // The last session exited cleanly if there is no pref for
-  // kSessionExitedCleanly or the value for kSessionExitedCleanly is true.
-  last_session_exited_cleanly_ =
-      prefs_->GetBoolean(prefs::kSessionExitedCleanly);
+  // |kSessionExitType| was added after |kSessionExitedCleanly|. If the pref
+  // value is empty fallback to checking for |kSessionExitedCleanly|.
+  const std::string exit_type_pref_value(
+      prefs_->GetString(prefs::kSessionExitType));
+  if (exit_type_pref_value.empty()) {
+    last_session_exit_type_ =
+        prefs_->GetBoolean(prefs::kSessionExitedCleanly) ?
+          EXIT_NORMAL : EXIT_CRASHED;
+  } else {
+    last_session_exit_type_ =
+        SessionTypePrefValueToExitType(exit_type_pref_value);
+  }
   // Mark the session as open.
-  prefs_->SetBoolean(prefs::kSessionExitedCleanly, false);
+  prefs_->SetString(prefs::kSessionExitType, kPrefExitTypeCrashed);
+  // Force this to true in case we fallback and use it.
+  // TODO(sky): remove this in a couple of releases (m28ish).
+  prefs_->SetBoolean(prefs::kSessionExitedCleanly, true);
 
   ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
 
@@ -637,11 +679,25 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
   return (profile_version.CompareTo(arg_version) >= 0);
 }
 
-bool ProfileImpl::DidLastSessionExitCleanly() {
+void ProfileImpl::SetExitType(ExitType exit_type) {
+  DCHECK(exit_type == EXIT_NORMAL || exit_type == EXIT_SESSION_ENDED);
+  // This may be invoked multiple times. Only persist the value first passed in.
+  if (prefs_.get() && (SessionTypePrefValueToExitType(prefs_->GetString(
+                       prefs::kSessionExitType)) == EXIT_CRASHED)) {
+    prefs_->SetString(prefs::kSessionExitType,
+                      ExitTypeToSessionTypePrefValue(exit_type));
+
+    // NOTE: If you change what thread this writes on, be sure and update
+    // ChromeFrame::EndSession().
+    prefs_->CommitPendingWrite();
+  }
+}
+
+Profile::ExitType ProfileImpl::GetLastSessionExitType() {
   // last_session_exited_cleanly_ is set when the preferences are loaded. Force
   // it to be set by asking for the prefs.
   GetPrefs();
-  return last_session_exited_cleanly_;
+  return last_session_exit_type_;
 }
 
 policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
@@ -831,17 +887,6 @@ history::TopSites* ProfileImpl::GetTopSites() {
 
 history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
   return top_sites_;
-}
-
-void ProfileImpl::MarkAsCleanShutdown() {
-  if (prefs_.get()) {
-    // The session cleanly exited, set kSessionExitedCleanly appropriately.
-    prefs_->SetBoolean(prefs::kSessionExitedCleanly, true);
-
-    // NOTE: If you change what thread this writes on, be sure and update
-    // ChromeFrame::EndSession().
-    prefs_->CommitPendingWrite();
-  }
 }
 
 void ProfileImpl::Observe(int type,

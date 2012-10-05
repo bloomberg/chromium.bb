@@ -61,12 +61,12 @@ class OffTheRecordProfileImpl : public Profile,
   virtual Time GetStartTime() const OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
-  virtual void MarkAsCleanShutdown() OVERRIDE;
   virtual void InitPromoResources() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
   virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
-  virtual bool DidLastSessionExitCleanly() OVERRIDE;
+  virtual void SetExitType(ExitType exit_type) OVERRIDE;
+  virtual ExitType GetLastSessionExitType() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE;

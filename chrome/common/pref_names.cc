@@ -36,7 +36,15 @@ const char kIsGooglePlusUser[] = "is_google_plus_user";
 // Used to determine if the last session exited cleanly. Set to false when
 // first opened, and to true when closing. On startup if the value is false,
 // it means the profile didn't exit cleanly.
+// DEPRECATED: this is replaced by kSessionExitType and exists for backwards
+// compatability.
 const char kSessionExitedCleanly[] = "profile.exited_cleanly";
+
+// A string pref whose values is one of the values defined by
+// |ProfileImpl::kPrefExitTypeXXX|. Set to |kPrefExitTypeCrashed| on startup and
+// one of |kPrefExitTypeNormal| or |kPrefExitTypeSessionEnded| during
+// shutdown. Used to determine the exit type the last time the profile was open.
+const char kSessionExitType[] = "profile.exit_type";
 
 // An integer pref. Holds one of several values:
 // 0: (deprecated) open the homepage on startup.

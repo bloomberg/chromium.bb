@@ -794,8 +794,8 @@ bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
   return true;
 }
 
-bool TestingProfile::DidLastSessionExitCleanly() {
-  return last_session_exited_cleanly_;
+Profile::ExitType TestingProfile::GetLastSessionExitType() {
+  return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
 base::Callback<ChromeURLDataManagerBackend*(void)>

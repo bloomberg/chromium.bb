@@ -76,7 +76,7 @@ void MarkAsCleanShutdown() {
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles() instead?
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
-    (*i)->profile()->MarkAsCleanShutdown();
+    (*i)->profile()->SetExitType(Profile::EXIT_NORMAL);
   }
 }
 
@@ -270,7 +270,7 @@ void AttemptRestartWithModeSwitch() {
 void AttemptExit() {
   // If we know that all browsers can be closed without blocking,
   // don't notify users of crashes beyond this point.
-  // Note that MarkAsCleanShutdown does not set UMA's exit cleanly bit
+  // Note that MarkAsCleanShutdown() does not set UMA's exit cleanly bit
   // so crashes during shutdown are still reported in UMA.
   if (AreAllBrowsersCloseable())
     MarkAsCleanShutdown();

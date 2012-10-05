@@ -82,7 +82,7 @@ void PreferencesBrowserTest::SetUpOnMainThread() {
   pref_service_ = browser()->profile()->GetPrefs();
   ASSERT_TRUE(content::ExecuteJavaScript(render_view_host_, L"",
       L"function TestEnv() {"
-      L"  this.sentinelName_ = 'profile.exited_cleanly';"
+      L"  this.sentinelName_ = 'download.prompt_for_download';"
       L"  this.prefs_ = [];"
       L"  TestEnv.instance_ = this;"
       L"}"

@@ -622,9 +622,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
 
   // Simulate a launch after an unclear exit.
   browser()->window()->Close();
-  static_cast<ProfileImpl*>(profile_home)->last_session_exited_cleanly_ = false;
-  static_cast<ProfileImpl*>(profile_last)->last_session_exited_cleanly_ = false;
-  static_cast<ProfileImpl*>(profile_urls)->last_session_exited_cleanly_ = false;
+  static_cast<ProfileImpl*>(profile_home)->last_session_exit_type_ =
+      Profile::EXIT_CRASHED;
+  static_cast<ProfileImpl*>(profile_last)->last_session_exit_type_ =
+      Profile::EXIT_CRASHED;
+  static_cast<ProfileImpl*>(profile_urls)->last_session_exit_type_ =
+      Profile::EXIT_CRASHED;
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
   int return_code;

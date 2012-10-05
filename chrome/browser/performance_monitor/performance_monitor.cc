@@ -209,7 +209,7 @@ void PerformanceMonitor::CheckForUncleanExits() {
 
   for (std::vector<Profile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
-    if (!(*iter)->DidLastSessionExitCleanly()) {
+    if ((*iter)->GetLastSessionExitType() == Profile::EXIT_CRASHED) {
       BrowserThread::PostBlockingPoolSequencedTask(
           Database::kDatabaseSequenceToken,
           FROM_HERE,
@@ -514,7 +514,7 @@ void PerformanceMonitor::Observe(int type,
     }
     case chrome::NOTIFICATION_PROFILE_ADDED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      if (!profile->DidLastSessionExitCleanly()) {
+      if (profile->GetLastSessionExitType() == Profile::EXIT_CRASHED) {
         BrowserThread::PostBlockingPoolSequencedTask(
             Database::kDatabaseSequenceToken,
             FROM_HERE,

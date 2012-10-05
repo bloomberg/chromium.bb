@@ -33,6 +33,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -712,7 +713,8 @@ void UITest::TerminateBrowser() {
   // Make sure session restore says we didn't crash.
   scoped_ptr<DictionaryValue> profile_prefs(GetDefaultProfilePreferences());
   ASSERT_TRUE(profile_prefs.get());
-  ASSERT_TRUE(profile_prefs->GetBoolean(prefs::kSessionExitedCleanly,
-                                        &exited_cleanly));
-  ASSERT_TRUE(exited_cleanly);
+  std::string exit_type;
+  ASSERT_TRUE(profile_prefs->GetString(prefs::kSessionExitedCleanly,
+                                        &exit_type));
+  EXPECT_EQ(ProfileImpl::kPrefExitTypeNormal, exit_type);
 }
