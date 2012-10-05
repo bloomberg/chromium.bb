@@ -14,6 +14,7 @@
 
 class GURL;
 class SkBitmap;
+class TabContents;
 
 namespace browser_sync {
 class SyncedTabDelegate;
@@ -34,6 +35,14 @@ class TabAndroid {
 
   static TabAndroid* GetNativeTab(JNIEnv* env, jobject obj);
 
+  // TODO(nileshagrawal): This should go away when all helpers
+  // have moved out of TabContents. crbug.com/153587
+  static TabContents* GetOrCreateTabContents(
+      content::WebContents* web_contents);
+
+  static TabContents* InitTabContentsFromView(JNIEnv* env,
+                                              jobject content_view);
+
   virtual browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() = 0;
 
   int id() const {
@@ -52,9 +61,6 @@ class TabAndroid {
       const content::ContextMenuParams& params,
       const base::Callback<void(int)>& callback) = 0;
 
-  // --------------------------------------------------------------------------
-  // Public methods that call to Java via JNI
-  // --------------------------------------------------------------------------
   // Called when context menu option to create the bookmark shortcut on
   // homescreen is called.
   virtual void AddShortcutToBookmark(

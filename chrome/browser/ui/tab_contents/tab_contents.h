@@ -100,6 +100,8 @@ class TabContents : public content::WebContentsObserver {
     friend class PanelHost;
     friend class prerender::PrerenderContents;
     friend class ShellWindow;
+    // See crbug.com/153587
+    friend class TabAndroid;
     friend class TabContentsTestHarness;
     friend class TabStripModel;
     friend class TabStripModelContentsCreator;
