@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chrome/browser/chromeos/display/primary_display_switch_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -463,6 +464,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
         chromeos::PowerStateOverride::BLOCK_DISPLAY_SLEEP));
   }
 
+  primary_display_switch_observer_.reset(
+      new chromeos::PrimaryDisplaySwitchObserver());
+
   removable_device_notifications_ =
       new chromeos::RemovableDeviceNotificationsCros();
 
@@ -559,6 +563,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // before the shell is destroyed.
   user_activity_notifier_.reset();
   video_activity_notifier_.reset();
+  primary_display_switch_observer_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   power_button_observer_.reset();

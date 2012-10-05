@@ -204,6 +204,8 @@
         'browser/chromeos/customization_document.h',
         'browser/chromeos/display/display_preferences.cc',
         'browser/chromeos/display/display_preferences.h',
+        'browser/chromeos/display/primary_display_switch_observer.cc',
+        'browser/chromeos/display/primary_display_switch_observer.h',
         'browser/chromeos/dbus/cros_dbus_service.cc',
         'browser/chromeos/dbus/cros_dbus_service.h',
         'browser/chromeos/dbus/proxy_resolution_service_provider.cc',

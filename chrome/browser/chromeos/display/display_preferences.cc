@@ -6,23 +6,17 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_util.h"
 #include "ui/aura/display_manager.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
 
 namespace chromeos {
 
@@ -93,51 +87,6 @@ void NotifyPrimaryDisplayIDChanged(PrefService* pref_service) {
   }
 }
 
-// PrimaryDisplaySwitchObserver observes the change of the primary/secondary
-// displays and store the current primary display ID into the local preference.
-class PrimaryDisplaySwitchObserver : public aura::RootWindowObserver,
-                                     public ash::ShellObserver {
- public:
-  // Creates an instance of the observer and starts observing the status.  Since
-  // it will automatically delete itself at window destroying, it is not
-  // necessary to handle the ownership here.
-  static void StartObserver() {
-    // ash::Shell doesn't exist in unit_tests.
-    if (ash::Shell::HasInstance())
-      new PrimaryDisplaySwitchObserver();
-  }
-
- protected:
-  // aura::RootWindow::Observer overrides:
-  virtual void OnRootWindowMoved(const aura::RootWindow* root_window,
-                                 const gfx::Point& new_origin) OVERRIDE {
-    PrefService* pref_service = ProfileManager::GetDefaultProfile()->GetPrefs();
-    pref_service->SetInt64(
-        prefs::kPrimaryDisplayID, gfx::Screen::GetPrimaryDisplay().id());
-  }
-
-  // ash::ShellObserver overrides:
-  virtual void OnAppTerminating() OVERRIDE {
-    delete this;
-  }
-
- private:
-  PrimaryDisplaySwitchObserver()
-      : primary_root_(ash::Shell::GetInstance()->GetPrimaryRootWindow()) {
-    primary_root_->AddRootWindowObserver(this);
-    ash::Shell::GetInstance()->AddShellObserver(this);
-  }
-
-  virtual ~PrimaryDisplaySwitchObserver() {
-    ash::Shell::GetInstance()->RemoveShellObserver(this);
-    primary_root_->RemoveRootWindowObserver(this);
-  }
-
-  aura::RootWindow* primary_root_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrimaryDisplaySwitchObserver);
-};
-
 }  // namespace
 
 void RegisterDisplayPrefs(PrefService* pref_service) {
@@ -158,7 +107,6 @@ void RegisterDisplayPrefs(PrefService* pref_service) {
   pref_service->RegisterInt64Pref(prefs::kPrimaryDisplayID,
                                   gfx::Display::kInvalidDisplayID,
                                   PrefService::UNSYNCABLE_PREF);
-  PrimaryDisplaySwitchObserver::StartObserver();
 }
 
 void SetDisplayLayoutPref(PrefService* pref_service,
