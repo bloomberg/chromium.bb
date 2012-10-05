@@ -1,0 +1,27 @@
+<div id="known_issues">
+  <h3>Open known issues</h3>
+  {{?known_issues.open}}
+  <ul>
+    {{#known_issues.open}}
+    <li><a href="http://code.google.com/p/chromium/issues/detail?id={{id}}">
+      {{title}}
+    </a></li>
+    {{/known_issues.open}}
+  </ul>
+  {{:known_issues.open}}
+  <p>There are no open known issues at this time. You might be able to find more
+  on the <a href="http://code.google.com/p/chromium/issues/list?q=Hotlist%3DKnownIssue+Feature%3DApps">Chromium bug tracker</a>.</p>
+  {{/known_issues.open}}
+  <h3>Recently closed known issues</h3>
+  {{?known_issues.closed}}
+  <ul>
+    {{#known_issues.closed}}
+    <li><a href="http://code.google.com/p/chromium/issues/detail?id={{id}}">
+      {{title}}
+    </a></li>
+    {{/known_issues.closed}}
+  </ul>
+  {{:known_issues.closed}}
+  <p>There are no closed known issues at this time.</p>
+  {{/known_issues.closed}}
+</div>

@@ -22,6 +22,7 @@ from compiled_file_system import CompiledFileSystem
 import compiled_file_system as compiled_fs
 from github_file_system import GithubFileSystem
 from intro_data_source import IntroDataSource
+from known_issues_data_source import KnownIssuesDataSource
 from local_file_system import LocalFileSystem
 from memcache_file_system import MemcacheFileSystem
 from samples_data_source import SamplesDataSource
@@ -99,6 +100,10 @@ EXTENSIONS_COMPILED_FILE_SYSTEM = CompiledFileSystem.Factory(
     EXTENSIONS_FILE_SYSTEM,
     EXTENSIONS_MEMCACHE).Create(_SplitFilenameUnix, compiled_fs.EXTENSIONS_FS)
 
+KNOWN_ISSUES_DATA_SOURCE = KnownIssuesDataSource(
+    InMemoryObjectStore('KnownIssues'),
+    AppEngineUrlFetcher(None))
+
 def _MakeInstanceKey(branch, number):
   return '%s/%s' % (branch, number)
 
@@ -143,6 +148,7 @@ def _GetInstanceForBranch(channel_name, local_path):
       api_list_data_source_factory,
       intro_data_source_factory,
       samples_data_source_factory,
+      KNOWN_ISSUES_DATA_SOURCE,
       cache_factory,
       PUBLIC_TEMPLATE_PATH,
       PRIVATE_TEMPLATE_PATH)

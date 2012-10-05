@@ -102,6 +102,10 @@ class FakeGithubZip(_FakeFetcher):
     except IOError:
       return None
 
+class FakeIssuesFetcher(_FakeFetcher):
+  def fetch(self, url):
+    return 'Status,Summary,ID'
+
 def ConfigureFakeFetchers(docs):
   '''Configure the fake fetcher paths relative to the docs directory.
   '''
@@ -110,5 +114,7 @@ def ConfigureFakeFetchers(docs):
     '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(docs),
     '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(docs),
     '%s/commits/.*' % url_constants.GITHUB_URL: FakeGithubStat(docs),
-    '%s/zipball' % url_constants.GITHUB_URL: FakeGithubZip(docs)
+    '%s/zipball' % url_constants.GITHUB_URL: FakeGithubZip(docs),
+    re.escape(url_constants.OPEN_ISSUES_CSV_URL): FakeIssuesFetcher(docs),
+    re.escape(url_constants.CLOSED_ISSUES_CSV_URL): FakeIssuesFetcher(docs)
   })

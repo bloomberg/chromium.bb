@@ -4,31 +4,7 @@
 evolving, so there are still a few rough edges. Here's a list of known issues
 in the current <a href="https://tools.google.com/dlpage/chromesxs/">Chrome
 Canary</a>:</p>
-
-<p id="known-issues"></p>
-<p id="known-issues-error" style="position: absolute; top: -1000px; color: #333; padding: 1em; background: #eee;">
-  The list of known issues cannot be loaded at this time. You may be able to
-  see them on the <a href="http://code.google.com/p/chromium/issues/list?q=label:Hotlist-AppsKnownIssues">Chromium bug tracker</a>.
-</p>
-
-<script>
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) return;
-
-    if (xhr.status != 200) {
-      // We can't use display none/block, since in that case the error paragraph
-      // would be stripped by the template processor.
-      document.getElementById('known-issues-error').style.position = 'static';
-      return;
-    }
-    document.getElementById('known-issues').innerHTML = xhr.responseText;
-  };
-  xhr.open(
-      'GET', 'http://developer.chrome.com/app_known_issues_snippet.html', true);
-  xhr.send(null);
-</script>
-
+{{+partials.known_issues}}
 <p>
 If one of the above describes an issue you've run into, and you wish to be
 updated when it's resolved, click the star icon on the page header. Do not

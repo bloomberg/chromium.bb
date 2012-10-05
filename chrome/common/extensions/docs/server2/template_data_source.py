@@ -45,6 +45,7 @@ class TemplateDataSource(object):
                  api_list_data_source_factory,
                  intro_data_source_factory,
                  samples_data_source_factory,
+                 known_issues_data_source,
                  cache_factory,
                  public_template_path,
                  private_template_path):
@@ -53,6 +54,7 @@ class TemplateDataSource(object):
       self._api_list_data_source_factory = api_list_data_source_factory
       self._intro_data_source_factory = intro_data_source_factory
       self._samples_data_source_factory = samples_data_source_factory
+      self._known_issues_data_source = known_issues_data_source
       self._cache = cache_factory.Create(Handlebar, compiled_fs.HANDLEBAR)
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
@@ -71,6 +73,7 @@ class TemplateDataSource(object):
           self._api_list_data_source_factory.Create(),
           self._intro_data_source_factory.Create(),
           self._samples_data_source_factory.Create(request),
+          self._known_issues_data_source,
           self._cache,
           self._public_template_path,
           self._private_template_path,
@@ -83,6 +86,7 @@ class TemplateDataSource(object):
                api_list_data_source,
                intro_data_source,
                samples_data_source,
+               known_issues_data_source,
                cache,
                public_template_path,
                private_template_path,
@@ -93,6 +97,7 @@ class TemplateDataSource(object):
     self._intro_data_source = intro_data_source
     self._samples_data_source = samples_data_source
     self._api_data_source = api_data_source
+    self._known_issues_data_source = known_issues_data_source
     self._cache = cache
     self._public_template_path = public_template_path
     self._private_template_path = private_template_path
@@ -113,6 +118,7 @@ class TemplateDataSource(object):
       'apis': self._api_data_source,
       'branchInfo': self._branch_info,
       'intros': self._intro_data_source,
+      'known_issues': self._known_issues_data_source,
       'partials': self,
       'samples': self._samples_data_source,
       'static': self._static_resources,
