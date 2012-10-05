@@ -122,7 +122,7 @@ class DimmerView : public views::WidgetDelegateView,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE {
     CHECK_EQ(window, launcher_->GetNativeWindow());
-    GetWidget()->SetBounds(launcher_->GetWindowBoundsInScreen());
+    GetWidget()->GetNativeWindow()->SetBounds(window->bounds());
   }
 
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
