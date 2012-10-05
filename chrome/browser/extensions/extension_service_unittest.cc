@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
@@ -3319,6 +3320,47 @@ TEST_F(ExtensionServiceTest, ExternalExtensionAutoAcknowledgement) {
   ASSERT_TRUE(!prefs->IsExternalExtensionAcknowledged(good_crx));
   ASSERT_TRUE(prefs->IsExternalExtensionAcknowledged(page_action));
 }
+
+#if !defined(OS_CHROMEOS)
+// This tests if default apps are installed correctly.
+TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
+  InitializeEmptyExtensionService();
+  InitializeRequestContext();
+  set_extensions_enabled(true);
+
+  {
+    std::string json_data =
+        "{"
+        "  \"ldnnhddmnhbkjipkidpdiheffobcpfmf\" : {"
+        "    \"external_crx\": \"good.crx\","
+        "    \"external_version\": \"1.0.0.0\","
+        "    \"is_bookmark_app\": false"
+        "  }"
+        "}";
+    default_apps::Provider* provider =
+        new default_apps::Provider(
+            profile_.get(),
+            service_,
+            new extensions::ExternalTestingLoader(json_data, data_dir_),
+            Extension::INTERNAL,
+            Extension::INVALID,
+            Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT);
+
+    AddMockExternalProvider(provider);
+  }
+
+  ASSERT_EQ(0u, service_->extensions()->size());
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+
+  ASSERT_EQ(1u, service_->extensions()->size());
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
+  const Extension* extension = service_->GetExtensionById(good_crx, false);
+  EXPECT_TRUE(extension->from_webstore());
+  EXPECT_TRUE(extension->was_installed_by_default());
+
+}
+#endif
 
 // Tests disabling extensions
 TEST_F(ExtensionServiceTest, DisableExtension) {
