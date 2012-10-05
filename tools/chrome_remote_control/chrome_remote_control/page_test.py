@@ -10,10 +10,10 @@ class PageTestResults(object):
   def __init__(self):
     self.page_failures = []
 
-  def AddFailure(self, page, exception, trace):
+  def AddFailure(self, page, message, details):
     self.page_failures.append({'page': page,
-                               'exception': exception,
-                               'trace': trace})
+                               'message': message,
+                               'details': details})
 
 class PageTest(object):
   """A class styled on unittest.TestCase for creating page-specific tests."""
@@ -36,6 +36,10 @@ class PageTest(object):
 
   def CustomizeBrowserOptions(self, options):
     """Override to add test-specific options to the BrowserOptions object"""
+    pass
+
+  def SetUpBrowser(self, browser):
+    """Override to customize the browser right after it has launched."""
     pass
 
   def Run(self, options, page, tab, results):

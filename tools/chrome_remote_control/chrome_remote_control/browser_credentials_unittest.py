@@ -6,31 +6,63 @@ import tempfile
 
 from chrome_remote_control import browser_credentials
 
-simple_config_string = """
+SIMPLE_CREDENTIALS_STRING = """
 {
-  "google_username": "example",
-  "google_password": "asdf",
-
-  "google_account_url": null,
-
-
-  "othersite_username": "test",
-  "othersite_password": "1234"
+  "google": {
+    "username": "example",
+    "password": "asdf"
+  }
 }
 """
 
-desired_config = {'google_username':None, 'othersite_password':None}
+class BackendStub(object):
+  def __init__(self, credentials_type):
+    self.login_needed_called = None
+    self.login_no_longer_needed_called = None
+    self.credentials_type = credentials_type
 
-result_config = {'google_username':'example', 'othersite_password':'1234'}
+  def LoginNeeded(self, config, tab):
+    self.login_needed_called = (config, tab)
+    return True
+
+  def LoginNoLongerNeeded(self, tab):
+    self.login_no_longer_needed_called = (tab, )
+
 
 class TestBrowserCredentials(unittest.TestCase):
-  def testGetConfig(self):
-    browser_cred = browser_credentials.BrowserCredentials()
+  def testCredentialsInfrastructure(self):
+    google_backend = BackendStub("google")
+    othersite_backend = BackendStub("othersite")
+    browser_cred = browser_credentials.BrowserCredentials(
+      [google_backend,
+       othersite_backend])
     with tempfile.NamedTemporaryFile() as f:
-      f.write(simple_config_string)
+      f.write(SIMPLE_CREDENTIALS_STRING)
       f.flush()
 
-      browser_cred.SetCredentialsConfigFile(f.name)
-      config = browser_cred.GetConfig(desired_config)
+      browser_cred.credentials_path = f.name
 
-      self.assertEqual(config, result_config)
+      # Should true because it has a password and a backend.
+      self.assertTrue(browser_cred.CanLogin('google'))
+
+      # Should be false succeed because it has no password.
+      self.assertFalse(browser_cred.CanLogin('othersite'))
+
+      # Should fail because it has no backend.
+      self.assertRaises(
+        Exception,
+        lambda: browser_cred.CanLogin('foobar'))
+
+      tab = {}
+      ret = browser_cred.LoginNeeded(tab, 'google')
+      self.assertTrue(ret)
+      self.assertTrue(google_backend.login_needed_called is not None)
+      self.assertEqual(tab, google_backend.login_needed_called[0])
+      self.assertEqual("example",
+                       google_backend.login_needed_called[1]["username"])
+      self.assertEqual("asdf",
+                       google_backend.login_needed_called[1]["password"])
+
+      browser_cred.LoginNoLongerNeeded(tab, 'google')
+      self.assertTrue(google_backend.login_no_longer_needed_called is not None)
+      self.assertEqual(tab, google_backend.login_no_longer_needed_called[0])

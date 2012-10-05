@@ -5,7 +5,7 @@ import os
 import sys
 
 PYLINT_BLACKLIST = []
-PYLINT_DISABLED_WARNINGS = ['R0923']
+PYLINT_DISABLED_WARNINGS = ['R0923', 'R0201', 'E1101']
 
 def _CommonChecks(input_api, output_api):
   results = []

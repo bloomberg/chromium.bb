@@ -7,8 +7,6 @@ import sys
 import shlex
 import logging
 
-from chrome_remote_control import browser_finder
-
 class BrowserOptions(optparse.Values):
   """Options to be used for discovering and launching a browser."""
 
@@ -35,6 +33,8 @@ class BrowserOptions(optparse.Values):
     return other
 
   def CreateParser(self, *args, **kwargs):
+    # Called here to avoid cyclic import dependency.
+    from chrome_remote_control import browser_finder
     parser = optparse.OptionParser(*args, **kwargs)
 
     # Selection group

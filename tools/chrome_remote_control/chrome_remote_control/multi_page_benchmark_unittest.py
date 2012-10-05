@@ -61,9 +61,8 @@ class MultiPageBenchmarkUnitTest(
   def testRecordAndReplay(self):
     test_archive = '/tmp/google.wpr'
     try:
-      ps = page_set.PageSet(description='',
-                            archive_path=test_archive,
-                            file_path='/tmp/test_pageset.json')
+      ps = page_set.PageSet()
+      ps.archive_path = test_archive
       benchmark = BenchForReplay()
 
       # First record an archive with only www.google.com.
@@ -84,6 +83,8 @@ class MultiPageBenchmarkUnitTest(
       all_results = self.RunBenchmark(benchmark, ps)
       self.assertEquals(0, len(all_results.page_failures))
 
+      self.assertTrue(os.path.isfile(test_archive))
+
     finally:
-      assert os.path.isfile(test_archive)
-      os.remove(test_archive)
+      if os.path.isfile(test_archive):
+        os.remove(test_archive)

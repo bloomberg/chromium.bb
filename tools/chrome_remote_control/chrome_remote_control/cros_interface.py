@@ -192,7 +192,8 @@ class LoginException(Exception):
 class KeylessLoginRequiredException(LoginException):
   pass
 
-class CrOSInterface(object): # pylint: disable=R0923
+class CrOSInterface(object):
+  # pylint: disable=R0923
   def __init__(self, hostname, ssh_identity = None):
     self._hostname = hostname
     self._ssh_identity = None

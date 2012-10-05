@@ -25,10 +25,10 @@ class Page(object):
     return self.url
 
 class PageSet(object):
-  def __init__(self, file_path='', attributes=None):
+  def __init__(self, base_dir='', attributes=None):
     self.description = ''
     self.archive_path = ''
-    self.file_path = file_path
+    self.base_dir = base_dir
     self.credentials_path = None
 
     if attributes:
@@ -36,7 +36,7 @@ class PageSet(object):
         setattr(self, k, v)
 
     if self.credentials_path is not None:
-      self.credentials_path = os.path.join(os.path.dirname(self.file_path),
+      self.credentials_path = os.path.join(self.base_dir,
                                            self.credentials_path)
 
     self.pages = []
@@ -46,7 +46,7 @@ class PageSet(object):
     with open(file_path, 'r') as f:
       contents = f.read()
       data = json.loads(contents)
-      return cls.FromDict(data, file_path)
+      return cls.FromDict(data, os.path.dirname(file_path))
 
   @classmethod
   def FromDict(cls, data, file_path=''):
