@@ -48,12 +48,16 @@ class VaapiH264Decoder {
   // at the time of Decode() and AssignPictureBuffer() calls).
   typedef base::Callback<void(int32, int32)> OutputPicCB;
 
-  // Callback invoked on the client to start a GPU job to put a decoded picture
-  // into a pixmap/texture. Callee has to call PutPicToTexture() for the given
-  // picture.
-  // Argument: output buffer id (provided by the client at the time of
-  // AssignPictureBuffer() call).
-  typedef base::Callback<void(int32)> SyncPicCB;
+  // Callback invoked on the client to start a GPU job to decode and render
+  // a video frame into a pixmap/texture. Callee has to call SubmitDecode()
+  // for the given picture, taking ownership of the queues.
+  // Arguments: output buffer id (provided by the client at the time of
+  // AssignPictureBuffer() call), va buffer and slice buffer queues to be
+  // passed to SubmitDecode(). SubmitDecode() will take ownership of the
+  // queues.
+  typedef base::Callback<void(int32,
+                              std::queue<VABufferID>*,
+                              std::queue<VABufferID>*)> SubmitDecodeCB;
 
   // Decode result codes.
   enum DecResult {
@@ -82,7 +86,7 @@ class VaapiH264Decoder {
                   GLXContext glx_context,
                   const base::Callback<bool(void)>& make_context_current,
                   const OutputPicCB& output_pic_cb,
-                  const SyncPicCB& sync_pic_cb) WARN_UNUSED_RESULT;
+                  const SubmitDecodeCB& submit_decode_cb) WARN_UNUSED_RESULT;
   void Destroy();
 
   // Notify the decoder that this output buffer has been consumed and
@@ -95,10 +99,14 @@ class VaapiH264Decoder {
   bool AssignPictureBuffer(int32 picture_buffer_id, uint32 texture_id)
       WARN_UNUSED_RESULT;
 
-  // Sync the data so that the texture for given |picture_buffer_id| can
-  // be displayed.
+  // Decode and put results into texture associated with given
+  // |picture_buffer_id|, using the buffers provided as arguments. Takes
+  // ownership of queues' memory and frees it once done.
   // Must be run on the GLX thread.
-  bool PutPicToTexture(int32 picture_buffer_id) WARN_UNUSED_RESULT;
+  bool SubmitDecode(
+      int32 picture_buffer_id,
+      scoped_ptr<std::queue<VABufferID> > va_bufs,
+      scoped_ptr<std::queue<VABufferID> > slice_bufs) WARN_UNUSED_RESULT;
 
   // Have the decoder flush its state and trigger output of all previously
   // decoded pictures via OutputPicCB.
@@ -346,8 +354,8 @@ class VaapiH264Decoder {
   // Called by decoder when a picture should be outputted.
   OutputPicCB output_pic_cb_;
 
-  // Called by decoder to post a Sync job on the ChildThread.
-  SyncPicCB sync_pic_cb_;
+  // Called by decoder to post a decode job on the ChildThread.
+  SubmitDecodeCB submit_decode_cb_;
 
   // PicOrderCount of the previously outputted frame.
   int last_output_poc_;

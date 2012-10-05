@@ -493,11 +493,11 @@ bool VaapiH264Decoder::Initialize(
     GLXContext glx_context,
     const base::Callback<bool(void)>& make_context_current,
     const OutputPicCB& output_pic_cb,
-    const SyncPicCB& sync_pic_cb) {
+    const SubmitDecodeCB& submit_decode_cb) {
   DCHECK_EQ(state_, kUninitialized);
 
   output_pic_cb_ = output_pic_cb;
-  sync_pic_cb_ = sync_pic_cb;
+  submit_decode_cb_ = submit_decode_cb;
 
   x_display_ = x_display;
   make_context_current_ = make_context_current;
@@ -1048,6 +1048,37 @@ bool VaapiH264Decoder::QueueSlice(H264SliceHeader* slice_hdr) {
   return true;
 }
 
+bool VaapiH264Decoder::DecodePicture() {
+  DCHECK(!frame_ready_at_hw_);
+  DCHECK(curr_pic_.get());
+
+  // Find the surface associated with the picture to be decoded.
+  DecodeSurface* dec_surface =
+      poc_to_decode_surfaces_[curr_pic_->pic_order_cnt];
+  DVLOG(4) << "Decoding POC " << curr_pic_->pic_order_cnt
+           << " into surface " << dec_surface->va_surface_id();
+
+  DVLOG(4) << "Pending VA bufs to commit: " << pending_va_bufs_.size();
+  DVLOG(4) << "Pending slice bufs to commit: " << pending_slice_bufs_.size();
+
+  DCHECK(pending_slice_bufs_.size());
+  std::queue<VABufferID>* va_bufs = new std::queue<VABufferID>();
+  std::swap(*va_bufs, pending_va_bufs_);
+  std::queue<VABufferID>* slice_bufs = new std::queue<VABufferID>();
+  std::swap(*slice_bufs, pending_slice_bufs_);
+
+  // Fire up a parallel job on the GPU on the ChildThread to decode and put
+  // the decoded/converted/scaled picture into the pixmap.
+  // Callee will take care of freeing the buffer queues.
+  submit_decode_cb_.Run(dec_surface->picture_buffer_id(), va_bufs, slice_bufs);
+
+  // Used to notify clients that we had sufficient data to start decoding
+  // a new frame.
+  frame_ready_at_hw_ = true;
+
+  return true;
+}
+
 void VaapiH264Decoder::DestroyBuffers(size_t num_va_buffers,
                                       const VABufferID* va_buffers) {
   for (size_t i = 0; i < num_va_buffers; ++i) {
@@ -1058,36 +1089,32 @@ void VaapiH264Decoder::DestroyBuffers(size_t num_va_buffers,
 
 // TODO(posciak) start using vaMapBuffer instead of vaCreateBuffer wherever
 // possible.
-
-bool VaapiH264Decoder::DecodePicture() {
-  DCHECK(!frame_ready_at_hw_);
-  DCHECK(curr_pic_.get());
+bool VaapiH264Decoder::SubmitDecode(
+    int32 picture_buffer_id,
+    scoped_ptr<std::queue<VABufferID> > va_bufs,
+    scoped_ptr<std::queue<VABufferID> > slice_bufs) {
 
   static const size_t kMaxVABuffers = 32;
-  DCHECK_LE(pending_va_bufs_.size(), kMaxVABuffers);
-  DCHECK_LE(pending_slice_bufs_.size(), kMaxVABuffers);
+  DCHECK_LE(va_bufs->size(), kMaxVABuffers);
+  DCHECK_LE(slice_bufs->size(), kMaxVABuffers);
 
-  DVLOG(4) << "Pending VA bufs to commit: " << pending_va_bufs_.size();
-  DVLOG(4) << "Pending slice bufs to commit: " << pending_slice_bufs_.size();
-
-  // Find the surface associated with the picture to be decoded.
-  DCHECK(pending_slice_bufs_.size());
-  DecodeSurface* dec_surface =
-      poc_to_decode_surfaces_[curr_pic_->pic_order_cnt];
-  DVLOG(4) << "Decoding POC " << curr_pic_->pic_order_cnt
-           << " into surface " << dec_surface->va_surface_id();
+  DecodeSurfaces::iterator it = decode_surfaces_.find(picture_buffer_id);
+  if (it == decode_surfaces_.end()) {
+    DVLOG(1) << "Asked to put an invalid buffer";
+    return false;
+  }
 
   // Get ready to decode into surface.
   VAStatus va_res = VAAPI_BeginPicture(va_display_, va_context_id_,
-                                       dec_surface->va_surface_id());
+                                       it->second->va_surface_id());
   VA_SUCCESS_OR_RETURN(va_res, "vaBeginPicture failed", false);
 
   // Put buffer IDs for pending parameter buffers into va_buffers[].
   VABufferID va_buffers[kMaxVABuffers];
-  size_t num_va_buffers = pending_va_bufs_.size();
+  size_t num_va_buffers = va_bufs->size();
   for (size_t i = 0; i < num_va_buffers && i < kMaxVABuffers; ++i) {
-    va_buffers[i] = pending_va_bufs_.front();
-    pending_va_bufs_.pop();
+    va_buffers[i] = va_bufs->front();
+    va_bufs->pop();
   }
   base::Closure va_buffers_callback =
       base::Bind(&VaapiH264Decoder::DestroyBuffers, base::Unretained(this),
@@ -1103,10 +1130,10 @@ bool VaapiH264Decoder::DecodePicture() {
 
   // Put buffer IDs for pending slice data buffers into slice_buffers[].
   VABufferID slice_buffers[kMaxVABuffers];
-  size_t num_slice_buffers = pending_slice_bufs_.size();
+  size_t num_slice_buffers = slice_bufs->size();
   for (size_t i = 0; i < num_slice_buffers && i < kMaxVABuffers; ++i) {
-    slice_buffers[i] = pending_slice_bufs_.front();
-    pending_slice_bufs_.pop();
+    slice_buffers[i] = slice_bufs->front();
+    slice_bufs->pop();
   }
   base::Closure va_slices_callback =
       base::Bind(&VaapiH264Decoder::DestroyBuffers, base::Unretained(this),
@@ -1125,15 +1152,10 @@ bool VaapiH264Decoder::DecodePicture() {
   va_res = VAAPI_EndPicture(va_display_, va_context_id_);
   VA_SUCCESS_OR_RETURN(va_res, "vaEndPicture failed", false);
 
-  // Used to notify clients that we had sufficient data to start decoding
-  // a new frame.
-  frame_ready_at_hw_ = true;
+  DVLOG(3) << "Will output from VASurface " << it->second->va_surface_id()
+           << " to texture id " << it->second->texture_id();
 
-  // Fire up a parallel job on the GPU on the ChildThread to put
-  // the decoded/converted/scaled picture into the pixmap.
-  sync_pic_cb_.Run(dec_surface->picture_buffer_id());
-
-  return true;
+  return it->second->Sync();
 }
 
 
@@ -1651,19 +1673,6 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
   ref_pic_listx->resize(num_ref_idx_lX_active_minus1 + 1);
 
   return true;
-}
-
-bool VaapiH264Decoder::PutPicToTexture(int32 picture_buffer_id) {
-  DecodeSurfaces::iterator it = decode_surfaces_.find(picture_buffer_id);
-  if (it == decode_surfaces_.end()) {
-    DVLOG(1) << "Asked to put an invalid buffer";
-    return false;
-  }
-
-  DVLOG(3) << "Will output from VASurface " << it->second->va_surface_id()
-           << " to texture id " << it->second->texture_id();
-
-  return it->second->Sync();
 }
 
 bool VaapiH264Decoder::OutputPic(H264Picture* pic) {

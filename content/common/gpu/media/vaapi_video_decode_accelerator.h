@@ -204,9 +204,12 @@ private:
   int num_frames_at_client_;
   int num_stream_bufs_at_decoder_;
 
-  // Posted onto ChildThread by the decoder to submit a GPU job to put decoded
-  // picture into output buffer.
-  void Sync(int32 output_id);
+  // Posted onto ChildThread by the decoder to submit a GPU job to decode
+  // and put the decoded picture into output buffer. Takes ownership of
+  // the queues' memory.
+  void SubmitDecode(int32 output_id,
+                    std::queue<VABufferID>* va_bufs,
+                    std::queue<VABufferID>* slice_bufs);
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoDecodeAccelerator);
 };

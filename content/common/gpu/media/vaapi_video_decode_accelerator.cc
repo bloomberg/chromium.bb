@@ -95,7 +95,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(
       media::BindToLoop(message_loop_->message_loop_proxy(), base::Bind(
           &VaapiVideoDecodeAccelerator::NotifyPictureReady, weak_this_)),
       media::BindToLoop(message_loop_->message_loop_proxy(), base::Bind(
-          &VaapiVideoDecodeAccelerator::Sync, weak_this_)));
+          &VaapiVideoDecodeAccelerator::SubmitDecode, weak_this_)));
   if (!res) {
     DVLOG(1) << "Failed initializing decoder";
     return false;
@@ -110,18 +110,25 @@ bool VaapiVideoDecodeAccelerator::Initialize(
   return true;
 }
 
-void VaapiVideoDecodeAccelerator::Sync(int32 output_id) {
+void VaapiVideoDecodeAccelerator::SubmitDecode(
+    int32 output_id,
+    std::queue<VABufferID>* va_bufs_ptr,
+    std::queue<VABufferID>* slice_bufs_ptr) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  TRACE_EVENT1("Video Decoder", "VAVDA::Sync", "output_id", output_id);
+
+  scoped_ptr<std::queue<VABufferID> > va_bufs(va_bufs_ptr);
+  scoped_ptr<std::queue<VABufferID> > slice_bufs(slice_bufs_ptr);
+
+  TRACE_EVENT1("Video Decoder", "VAVDA::Decode", "output_id", output_id);
 
   // Handle Destroy() arriving while pictures are queued for output.
   if (!client_)
     return;
 
-  // Sync the contents of the texture.
-  RETURN_AND_NOTIFY_ON_FAILURE(decoder_.PutPicToTexture(output_id),
-                               "Failed putting picture to texture",
-                               PLATFORM_FAILURE, );
+  RETURN_AND_NOTIFY_ON_FAILURE(
+      decoder_.SubmitDecode(output_id, va_bufs.Pass(), slice_bufs.Pass()),
+      "Failed putting picture to texture",
+       PLATFORM_FAILURE, );
 }
 
 void VaapiVideoDecodeAccelerator::NotifyPictureReady(int32 input_id,
