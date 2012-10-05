@@ -37,6 +37,17 @@
 #include "unicode/timezone.h"
 
 namespace chromeos {
+namespace {
+
+// TODO(achuith): Get rid of this.
+bool IsLink() {
+  std::string board;
+  system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+      "CHROMEOS_RELEASE_BOARD", &board);
+  return StartsWithASCII(board, "link", false);
+}
+
+}  // namespace
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
@@ -73,7 +84,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              false,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kNaturalScroll,
-                             true,
+                             false,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPrimaryMouseButtonRight,
                              false,
@@ -413,7 +424,17 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Started", enabled);
   }
   if (!pref_name || *pref_name == prefs::kNaturalScroll) {
+    // If user is on link, force natural scroll to on.
+    if (IsLink() &&
+        !pref_name &&
+        !prefs_->GetUserPrefValue(prefs::kNaturalScroll)) {
+      natural_scroll_.SetValue(true);
+      DVLOG(1) << "Natural scroll forced to true";
+      UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Forced", true);
+    }
+
     const bool enabled = natural_scroll_.GetValue();
+    DVLOG(1) << "Natural scroll set to " << enabled;
     ui::SetNaturalScroll(enabled);
     if (pref_name)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Changed", enabled);
