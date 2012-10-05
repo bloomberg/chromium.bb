@@ -83,10 +83,7 @@ class XSyncHandler {
     return loaded_extension_;
   }
 
-  void PushPaintCounter(TransportDIB* dib,
-                        Display* display,
-                        Picture picture,
-                        Pixmap pixmap,
+  void PushPaintCounter(Display* display, Picture picture, Pixmap pixmap,
                         const base::Closure& completion_callback);
 
  private:
@@ -95,17 +92,13 @@ class XSyncHandler {
   // A struct that has cleanup and callback tasks that were queued into the
   // future and are run on |g_backing_store_sync_alarm| firing.
   struct BackingStoreEvents {
-    BackingStoreEvents(TransportDIB* dib, Display* d, Picture pic, Pixmap pix,
+    BackingStoreEvents(Display* d, Picture pic, Pixmap pix,
                        const base::Closure& c)
-        : dib(dib),
-          display(d),
+        : display(d),
           picture(pic),
           pixmap(pix),
           closure(c) {
-      dib->IncreaseInFlightCounter();
     }
-
-    TransportDIB* dib;
 
     // The display we're running on.
     Display* display;
@@ -140,13 +133,12 @@ class XSyncHandler {
   std::queue<BackingStoreEvents*> backing_store_events_;
 };
 
-void XSyncHandler::PushPaintCounter(TransportDIB* dib,
-                                    Display* display,
+void XSyncHandler::PushPaintCounter(Display* display,
                                     Picture picture,
                                     Pixmap pixmap,
                                     const base::Closure& completion_callback) {
-  backing_store_events_.push(new BackingStoreEvents(
-        dib, display, picture, pixmap, completion_callback));
+  backing_store_events_.push(
+      new BackingStoreEvents(display, picture, pixmap, completion_callback));
 
   // Push a change counter event into the X11 event queue that will trigger our
   // alarm when it is processed.
@@ -190,7 +182,6 @@ XSyncHandler::~XSyncHandler() {
   if (loaded_extension_)
     gdk_window_remove_filter(NULL, &OnEventThunk, this);
 
-  XSync(ui::GetXDisplay(), False);
   while (!backing_store_events_.empty()) {
     // We delete the X11 resources we're holding onto. We don't run the
     // callbacks because we are shutting down.
@@ -198,7 +189,6 @@ XSyncHandler::~XSyncHandler() {
     backing_store_events_.pop();
     XRenderFreePicture(data->display, data->picture);
     XFreePixmap(data->display, data->pixmap);
-    data->dib->DecreaseInFlightCounter();
     delete data;
   }
 }
@@ -229,8 +219,6 @@ GdkFilterReturn XSyncHandler::OnEvent(GdkXEvent* gdkxevent,
 
       // Dispatch the closure we were given.
       data->closure.Run();
-
-      data->dib->DecreaseInFlightCounter();
       delete data;
 
       return GDK_FILTER_REMOVE;
@@ -484,8 +472,7 @@ void BackingStoreGtk::PaintToBackingStore(
     XSyncHandler* handler = XSyncHandler::GetInstance();
     if (handler->Enabled()) {
       *scheduled_completion_callback = true;
-      handler->PushPaintCounter(
-          dib, display_, picture, pixmap, completion_callback);
+      handler->PushPaintCounter(display_, picture, pixmap, completion_callback);
     } else {
       XSync(display_, False);
     }

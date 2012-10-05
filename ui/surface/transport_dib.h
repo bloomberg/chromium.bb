@@ -194,15 +194,6 @@ class SURFACE_EXPORT TransportDIB {
   // Map the shared memory into the X server and return an id for the shared
   // segment.
   XID MapToX(Display* connection);
-
-  void IncreaseInFlightCounter() { inflight_counter_++; }
-  // Decreases the inflight counter, and deletes the transport DIB if it is
-  // detached.
-  void DecreaseInFlightCounter();
-
-  // Deletes this transport DIB and detaches the shared memory once the
-  // |inflight_counter_| is zero.
-  void Detach();
 #endif
 
  private:
@@ -216,8 +207,6 @@ class SURFACE_EXPORT TransportDIB {
   void* address_;  // mapped address
   XSharedMemoryId x_shm_;  // X id for the shared segment
   Display* display_;  // connection to the X server
-  size_t inflight_counter_;  // How many requests to the X server are in flight
-  bool detached_;  // If true, delete the transport DIB when it is idle
 #endif
   size_t size_;  // length, in bytes
 
