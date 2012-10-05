@@ -466,9 +466,15 @@ remoting::DaemonController::State DaemonControllerWin::ConvertToDaemonState(
 // static
 DaemonController::AsyncResult DaemonControllerWin::HResultToAsyncResult(
     HRESULT hr) {
-  // TODO(sergeyu): Report other errors to the webapp once it knows
-  // how to handle them.
-  return FAILED(hr) ? RESULT_FAILED : RESULT_OK;
+  if (SUCCEEDED(hr)) {
+    return RESULT_OK;
+  } else if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
+    return RESULT_CANCELLED;
+  } else {
+    // TODO(sergeyu): Report other errors to the webapp once it knows
+    // how to handle them.
+    return RESULT_FAILED;
+  }
 }
 
 void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {

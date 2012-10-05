@@ -26,11 +26,11 @@ VerifyConfigWindowWin::VerifyConfigWindowWin(const std::string& email,
 }
 
 void VerifyConfigWindowWin::OnCancel(UINT code, int id, HWND control) {
-  EndDialog(IDCANCEL);
+  EndDialog(ERROR_CANCELLED);
 }
 
 void VerifyConfigWindowWin::OnClose() {
-  EndDialog(IDCANCEL);
+  EndDialog(ERROR_CANCELLED);
 }
 
 LRESULT VerifyConfigWindowWin::OnInitDialog(HWND wparam, LPARAM lparam) {
@@ -68,9 +68,9 @@ LRESULT VerifyConfigWindowWin::OnInitDialog(HWND wparam, LPARAM lparam) {
 
 void VerifyConfigWindowWin::OnOk(UINT code, int id, HWND control) {
   if (VerifyHostSecretHash()) {
-    EndDialog(IDOK);
+    EndDialog(ERROR_SUCCESS);
   } else {
-    EndDialog(IDCANCEL);
+    EndDialog(ERROR_LOGON_FAILURE);
   }
 }
 

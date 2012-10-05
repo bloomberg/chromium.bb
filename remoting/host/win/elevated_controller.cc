@@ -237,8 +237,9 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
   if (!IsClientAdmin()) {
     remoting::VerifyConfigWindowWin verify_win(email, host_id,
                                                host_secret_hash);
-    if (verify_win.DoModal(owner_window) != IDOK) {
-      return E_FAIL;
+    DWORD error = verify_win.DoModal(owner_window);
+    if (error != ERROR_SUCCESS) {
+      return HRESULT_FROM_WIN32(error);
     }
   }
 
