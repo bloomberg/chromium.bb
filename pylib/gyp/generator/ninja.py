@@ -366,6 +366,8 @@ class NinjaWriter:
     self.toolset = spec['toolset']
     config = spec['configurations'][config_name]
     self.target = Target(spec['type'])
+    self.is_standalone_static_library = bool(
+        spec.get('standalone_static_library', 0))
 
     self.is_mac_bundle = gyp.xcode_emulation.IsMacBundle(self.flavor, spec)
     self.xcode_settings = self.msvs_settings = None
@@ -952,8 +954,13 @@ class NinjaWriter:
       if self.xcode_settings:
         variables.append(('libtool_flags',
                           self.xcode_settings.GetLibtoolflags(config_name)))
-      self.ninja.build(self.target.binary, 'alink', link_deps,
-                       order_only=compile_deps, variables=variables)
+      if (self.flavor not in ('mac', 'win') and not
+          self.is_standalone_static_library):
+        self.ninja.build(self.target.binary, 'alink_thin', link_deps,
+                         order_only=compile_deps, variables=variables)
+      else:
+        self.ninja.build(self.target.binary, 'alink', link_deps,
+                         order_only=compile_deps, variables=variables)
     else:
       self.WriteLink(spec, config_name, config, link_deps)
     return self.target.binary
@@ -1137,7 +1144,7 @@ class NinjaWriter:
     elif self.flavor == 'win' and self.toolset == 'target':
       type_in_output_root += ['shared_library']
 
-    if type in type_in_output_root:
+    if type in type_in_output_root or self.is_standalone_static_library:
       return filename
     elif type == 'shared_library':
       libdir = 'lib'
@@ -1493,6 +1500,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   if flavor != 'mac' and flavor != 'win':
     master_ninja.rule(
       'alink',
+      description='AR $out',
+      command='rm -f $out && $ar rcs $out $in')
+    master_ninja.rule(
+      'alink_thin',
       description='AR $out',
       command='rm -f $out && $ar rcsT $out $in')
 

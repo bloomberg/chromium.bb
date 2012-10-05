@@ -125,7 +125,10 @@ SPACE_REPLACEMENT = '?'
 
 LINK_COMMANDS_LINUX = """\
 quiet_cmd_alink = AR($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crsT $@ $(filter %.o,$^)
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crs $@ $(filter %.o,$^)
+
+quiet_cmd_alink_thin = AR($(TOOLSET)) $@
+cmd_alink_thin = rm -f $@ && $(AR.$(TOOLSET)) crsT $@ $(filter %.o,$^)
 
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
@@ -176,7 +179,10 @@ cmd_solink_module = $(LINK.$(TOOLSET)) -shared $(GYP_LDFLAGS) $(LDFLAGS.$(TOOLSE
 
 LINK_COMMANDS_ANDROID = """\
 quiet_cmd_alink = AR($(TOOLSET)) $@
-cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crsT $@ $(filter %.o,$^)
+cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crs $@ $(filter %.o,$^)
+
+quiet_cmd_alink_thin = AR($(TOOLSET)) $@
+cmd_alink_thin = rm -f $@ && $(AR.$(TOOLSET)) crsT $@ $(filter %.o,$^)
 
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
@@ -717,9 +723,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     else:
       self.output = self.output_binary = self.ComputeOutput(spec)
 
+    self.is_standalone_static_library = bool(
+        spec.get('standalone_static_library', 0))
     self._INSTALLABLE_TARGETS = ('executable', 'loadable_module',
                                  'shared_library')
-    if self.type in self._INSTALLABLE_TARGETS:
+    if (self.is_standalone_static_library or
+        self.type in self._INSTALLABLE_TARGETS):
       self.alias = os.path.basename(self.output)
       install_path = self._InstallableTargetInstallPath()
     else:
@@ -1532,8 +1541,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       for link_dep in link_deps:
         assert ' ' not in link_dep, (
             "Spaces in alink input filenames not supported (%s)"  % link_dep)
-      self.WriteDoCmd([self.output_binary], link_deps, 'alink', part_of_all,
-                      postbuilds=postbuilds)
+      if (self.flavor not in ('mac', 'win') and not
+          self.is_standalone_static_library):
+        self.WriteDoCmd([self.output_binary], link_deps, 'alink_thin',
+                        part_of_all, postbuilds=postbuilds)
+      else:
+        self.WriteDoCmd([self.output_binary], link_deps, 'alink', part_of_all,
+                        postbuilds=postbuilds)
     elif self.type == 'shared_library':
       self.WriteLn('%s: LD_INPUTS := %s' % (
             QuoteSpaces(self.output_binary),
@@ -1573,9 +1587,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # 1) They need to install to the build dir or "product" dir.
     # 2) They get shortcuts for building (e.g. "make chrome").
     # 3) They are part of "make all".
-    if self.type in self._INSTALLABLE_TARGETS:
+    if (self.type in self._INSTALLABLE_TARGETS or
+        self.is_standalone_static_library):
       if self.type == 'shared_library':
         file_desc = 'shared library'
+      elif self.type == 'static_library':
+        file_desc = 'static library'
       else:
         file_desc = 'executable'
       install_path = self._InstallableTargetInstallPath()

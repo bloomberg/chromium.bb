@@ -1157,6 +1157,8 @@ def _GetOutputFilePathAndTool(spec, msbuild):
   output_file_props = output_file_map.get(spec['type'])
   if output_file_props and int(spec.get('msvs_auto_output_file', 1)):
     vc_tool, msbuild_tool, out_dir, suffix = output_file_props
+    if spec.get('standalone_static_library', 0):
+      out_dir = '$(OutDir)'
     out_dir = spec.get('product_dir', out_dir)
     product_extension = spec.get('product_extension')
     if product_extension:
