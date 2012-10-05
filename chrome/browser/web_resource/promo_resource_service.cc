@@ -25,8 +25,9 @@ namespace {
 // Delay on first fetch so we don't interfere with startup.
 const int kStartResourceFetchDelay = 5000;
 
-// Delay between calls to update the cache (12 hours), and 3 min in debug mode.
-const int kCacheUpdateDelay = 12 * 60 * 60 * 1000;
+// Delay between calls to fetch the promo json: 6 hours in production, and 3 min
+// in debug.
+const int kCacheUpdateDelay = 6 * 60 * 60 * 1000;
 const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 
 // The version of the service (used to expire the cache when upgrading Chrome
