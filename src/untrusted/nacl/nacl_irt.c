@@ -20,6 +20,7 @@ struct nacl_irt_dyncode __libnacl_irt_dyncode;
 struct nacl_irt_tls __libnacl_irt_tls;
 struct nacl_irt_blockhook __libnacl_irt_blockhook;
 struct nacl_irt_clock __libnacl_irt_clock;
+struct nacl_irt_dev_getpid __libnacl_irt_dev_getpid;
 
 TYPE_nacl_irt_query __nacl_irt_query;
 

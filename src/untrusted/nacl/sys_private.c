@@ -166,6 +166,10 @@ int getdents(int fd, struct dirent *buf, size_t count) {
       NACL_SYSCALL(getdents)(fd, buf, count)));
 }
 
+int getpid(void) {
+  return errno_value_call(NACL_SYSCALL(getpid)());
+}
+
 
 /*
  * This is a stub since _start will call it but we don't want to

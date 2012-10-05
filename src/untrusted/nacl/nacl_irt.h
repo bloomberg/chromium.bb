@@ -21,6 +21,7 @@ extern struct nacl_irt_memory __libnacl_irt_memory;
 extern struct nacl_irt_tls __libnacl_irt_tls;
 extern struct nacl_irt_blockhook __libnacl_irt_blockhook;
 extern struct nacl_irt_clock __libnacl_irt_clock;
+extern struct nacl_irt_dev_getpid __libnacl_irt_dev_getpid;
 
 extern void __libnacl_mandatory_irt_query(const char *interface_ident,
                                           void *table, size_t table_size);

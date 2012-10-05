@@ -4,15 +4,14 @@
  * found in the LICENSE file.
  */
 
-
-/*
- * Stub routine for wait for newlib support.
- */
 #include <errno.h>
-#include <sys/types.h>
-#include <sys/nacl_syscalls.h>
+#include <unistd.h>
 
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#include "native_client/src/untrusted/nacl/nacl_irt.h"
+
+static int getpid_not_implemented(int *pid) {
+  return ENOSYS;
+}
 
 pid_t getpid(void) {
   /*
@@ -23,14 +22,19 @@ pid_t getpid(void) {
    * return value is reserved to indicate an error".  However, that is
    * not reasonable for systems that don't support getpid(), such as
    * NaCl in the web browser.
-   *
-   * TODO(mseaborn): Create an IRT call for getpid().
-   * See http://code.google.com/p/nativeclient/issues/detail?id=2488
    */
-  int retval = NACL_SYSCALL(getpid)();
-  if (retval < 0) {
-    errno = -retval;
+  if (__libnacl_irt_dev_getpid.getpid == NULL) {
+    if (__nacl_irt_query(NACL_IRT_DEV_GETPID_v0_1, &__libnacl_irt_dev_getpid,
+                         sizeof(__libnacl_irt_dev_getpid)) !=
+        sizeof(__libnacl_irt_dev_getpid)) {
+      __libnacl_irt_dev_getpid.getpid = getpid_not_implemented;
+    }
+  }
+  int pid;
+  int error = __libnacl_irt_dev_getpid.getpid(&pid);
+  if (error != 0) {
+    errno = error;
     return -1;
   }
-  return retval;
+  return pid;
 }

@@ -41,7 +41,7 @@ if not env.Bit('host_windows'):
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
 #endif
 
-# TODO(mseaborn): Add an IRT call for getpid() so that it works in nacl-glibc.
+# TODO(mseaborn): Change nacl-glibc to use the IRT's getpid() interface.
 # See http://code.google.com/p/nativeclient/issues/detail?id=2488
 getpid_is_broken = env.Bit('nacl_glibc')
 
