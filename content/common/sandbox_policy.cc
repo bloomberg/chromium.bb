@@ -765,7 +765,6 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return 0;
 
   mitigations = MITIGATION_STRICT_HANDLE_CHECKS |
-                MITIGATION_EXTENSION_DLL_DISABLE |
                 MITIGATION_DLL_SEARCH_ORDER;
 #if defined(NACL_WIN64)
   mitigations |= MITIGATION_DEP |
