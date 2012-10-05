@@ -307,7 +307,6 @@ extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];
 extern const char kScriptBubbleEnabled[];
 extern const char kSearchInOmniboxHint[];
-extern const char kServiceAccountLsid[];
 extern const char kSetToken[];
 extern const char kShowAppList[];
 extern const char kShowAutofillTypePredictions[];
