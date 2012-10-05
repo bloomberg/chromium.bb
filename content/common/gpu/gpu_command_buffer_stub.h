@@ -73,6 +73,8 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
 
   virtual void SetMemoryAllocation(
       const GpuMemoryAllocation& allocation) = 0;
+
+  virtual bool GetTotalGpuMemory(size_t* bytes) = 0;
 };
 
 class GpuCommandBufferStub
@@ -130,6 +132,11 @@ class GpuCommandBufferStub
   // Sets buffer usage depending on Memory Allocation
   virtual void SetMemoryAllocation(
       const GpuMemoryAllocation& allocation) OVERRIDE;
+
+  // Returns in bytes the total amount of GPU memory for the GPU which this
+  // context is currently rendering on. Returns false if no extension exists
+  // to get the exact amount of GPU memory.
+  virtual bool GetTotalGpuMemory(size_t* bytes) OVERRIDE;
 
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();

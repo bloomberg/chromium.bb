@@ -76,6 +76,7 @@ GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
       max_surfaces_with_frontbuffer_soft_limit_(
           max_surfaces_with_frontbuffer_soft_limit),
       bytes_available_gpu_memory_(0),
+      bytes_available_gpu_memory_overridden_(false),
       bytes_allocated_current_(0),
       bytes_allocated_historical_max_(0),
       window_count_has_been_received_(false),
@@ -87,21 +88,49 @@ GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
       command_line->GetSwitchValueASCII(switches::kForceGpuMemAvailableMb),
       &bytes_available_gpu_memory_);
     bytes_available_gpu_memory_ *= 1024 * 1024;
-  } else {
-#if defined(OS_ANDROID)
-    bytes_available_gpu_memory_ = 64 * 1024 * 1024;
-#else
-#if defined(OS_CHROMEOS)
-    bytes_available_gpu_memory_ = 1024 * 1024 * 1024;
-#else
-    bytes_available_gpu_memory_ = 256 * 1024 * 1024;
-#endif
-#endif
-  }
+    bytes_available_gpu_memory_overridden_ = true;
+  } else
+    bytes_available_gpu_memory_ = GetDefaultAvailableGpuMemory();
 }
 
 GpuMemoryManager::~GpuMemoryManager() {
   DCHECK(tracking_groups_.empty());
+}
+
+void GpuMemoryManager::UpdateAvailableGpuMemory(
+   std::vector<GpuCommandBufferStubBase*>& stubs) {
+  // If the amount of video memory to use was specified at the command
+  // line, never change it.
+  if (bytes_available_gpu_memory_overridden_)
+    return;
+
+  // We do not have a reliable concept of multiple GPUs existing in
+  // a system, so just be safe and go with the minimum encountered.
+  size_t bytes_min = 0;
+  for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
+      it != stubs.end(); ++it) {
+    GpuCommandBufferStubBase* stub = *it;
+    size_t bytes = 0;
+    if (stub->GetTotalGpuMemory(&bytes)) {
+      if (!bytes_min || bytes < bytes_min)
+        bytes_min = bytes;
+    }
+  }
+  if (!bytes_min)
+    return;
+
+  // Allow Chrome to use 75% of total GPU memory, or all-but-64MB of GPU
+  // memory, whichever is less.
+  bytes_available_gpu_memory_ = std::min(3 * bytes_min / 4,
+                                         bytes_min - 64*1024*1024);
+
+  // And never go below the default allocation
+  bytes_available_gpu_memory_ = std::max(bytes_available_gpu_memory_,
+                                         GetDefaultAvailableGpuMemory());
+
+  // And never go above 1GB
+  bytes_available_gpu_memory_ = std::min(bytes_available_gpu_memory_,
+                                         static_cast<size_t>(1024*1024*1024));
 }
 
 bool GpuMemoryManager::StubWithSurfaceComparator::operator()(
@@ -288,6 +317,12 @@ void GpuMemoryManager::Manage() {
     else
       stubs_without_surface_hibernated.push_back(stub);
   }
+
+  // Update the amount of GPU memory available on the system. Only use the
+  // stubs that are visible, because otherwise the set of stubs we are
+  // querying could become extremely large (resulting in hundreds of calls
+  // to the driver).
+  UpdateAvailableGpuMemory(stubs_with_surface_foreground);
 
   size_t bonus_allocation = 0;
 #if !defined(OS_ANDROID)

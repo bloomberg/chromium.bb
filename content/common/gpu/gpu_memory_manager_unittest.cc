@@ -44,6 +44,9 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
   virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
     allocation_ = alloc;
   }
+  virtual bool GetTotalGpuMemory(size_t* bytes) {
+    return false;
+  }
 };
 
 class FakeCommandBufferStubWithoutSurface : public GpuCommandBufferStubBase {
@@ -77,6 +80,9 @@ class FakeCommandBufferStubWithoutSurface : public GpuCommandBufferStubBase {
   }
   virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
     allocation_ = alloc;
+  }
+  virtual bool GetTotalGpuMemory(size_t* bytes) {
+    return false;
   }
 };
 

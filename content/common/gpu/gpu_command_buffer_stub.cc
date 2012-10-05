@@ -808,6 +808,12 @@ void GpuCommandBufferStub::SetPreemptByCounter(
     scheduler_->SetPreemptByCounter(preempt_by_counter_);
 }
 
+bool GpuCommandBufferStub::GetTotalGpuMemory(size_t* bytes) {
+  if (!MakeCurrent())
+    return false;
+  return context_->GetTotalGpuMemory(bytes);
+}
+
 gfx::Size GpuCommandBufferStub::GetSurfaceSize() const {
   if (!surface_)
     return gfx::Size();
