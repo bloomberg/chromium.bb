@@ -67,8 +67,12 @@ void UMABrowsingActivityObserver::LogRenderProcessHostCount() const {
 
 void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   int tab_count = 0;
+  int app_window_count = 0;
+  int panel_window_count = 0;
+  int popup_window_count = 0;
+  int tabbed_window_count = 0;
   for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-        browser_iterator != BrowserList::end(); browser_iterator++) {
+       browser_iterator != BrowserList::end(); ++browser_iterator) {
     // Record how many tabs each window has open.
     Browser* browser = (*browser_iterator);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerWindow",
@@ -80,9 +84,28 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountActiveWindow",
                                   browser->tab_count(), 1, 200, 50);
     }
+
+    if (browser->is_app())
+      app_window_count++;
+    else if (browser->is_type_panel())
+      panel_window_count++;
+    else if (browser->is_type_popup())
+      popup_window_count++;
+    else if (browser->is_type_tabbed())
+      tabbed_window_count++;
   }
   // Record how many tabs total are open (across all windows).
   UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tab_count, 1, 200, 50);
+
+  // Record how many windows are open, by type.
+  UMA_HISTOGRAM_COUNTS_100("WindowManager.AppWindowCountPerLoad",
+                           app_window_count);
+  UMA_HISTOGRAM_COUNTS_100("WindowManager.PanelWindowCountPerLoad",
+                           panel_window_count);
+  UMA_HISTOGRAM_COUNTS_100("WindowManager.PopUpWindowCountPerLoad",
+                           popup_window_count);
+  UMA_HISTOGRAM_COUNTS_100("WindowManager.TabbedWindowCountPerLoad",
+                           tabbed_window_count);
 }
 
 }  // namespace chrome
