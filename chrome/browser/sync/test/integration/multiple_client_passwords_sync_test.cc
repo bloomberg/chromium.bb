@@ -14,7 +14,7 @@ using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
 using passwords_helper::GetPasswordStore;
 
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 class MultipleClientPasswordsSyncTest : public SyncTest {
  public:

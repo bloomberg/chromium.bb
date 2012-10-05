@@ -6,7 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_data.h"
 
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 PasswordForm* CreatePasswordFormFromData(
     const PasswordFormData& form_data) {
@@ -69,7 +69,7 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << "date_created: " << form.date_created.ToDoubleT();
 }
 
-typedef std::set<const webkit::forms::PasswordForm*> SetOfForms;
+typedef std::set<const content::PasswordForm*> SetOfForms;
 
 bool ContainsSamePasswordFormsPtr(
     const std::vector<PasswordForm*>& first,
@@ -105,8 +105,8 @@ bool ContainsSamePasswordFormsPtr(
 }
 
 bool ContainsSamePasswordForms(
-    std::vector<webkit::forms::PasswordForm>& first,
-    std::vector<webkit::forms::PasswordForm>& second) {
+    std::vector<content::PasswordForm>& first,
+    std::vector<content::PasswordForm>& second) {
   std::vector<PasswordForm*> first_ptr;
   for (unsigned int i = 0; i < first.size(); ++i) {
     first_ptr.push_back(&first[i]);

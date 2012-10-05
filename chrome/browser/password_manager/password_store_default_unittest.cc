@@ -28,13 +28,13 @@
 
 using base::WaitableEvent;
 using content::BrowserThread;
+using content::PasswordForm;
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAreArray;
 using testing::Pointee;
 using testing::Property;
 using testing::WithArg;
-using webkit::forms::PasswordForm;
 
 namespace {
 

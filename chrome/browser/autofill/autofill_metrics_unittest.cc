@@ -20,13 +20,13 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/form_data.h"
+#include "chrome/common/form_field_data.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_field.h"
 
 using content::BrowserThread;
 using ::testing::_;
@@ -34,8 +34,6 @@ using ::testing::AnyNumber;
 using ::testing::Mock;
 using base::TimeTicks;
 using base::TimeDelta;
-using webkit::forms::FormData;
-using webkit::forms::FormField;
 
 namespace {
 
@@ -339,7 +337,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   form.user_submitted = true;
 
   std::vector<AutofillFieldType> heuristic_types, server_types;
-  FormField field;
+  FormFieldData field;
 
   autofill_test::CreateTestFormField(
       "Autofilled", "autofilled", "Elvis Aaron Presley", "text", &field);
@@ -554,7 +552,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsForFailure) {
 
   std::vector<AutofillFieldType> heuristic_types, server_types;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(failure_cases); ++i) {
-    FormField field;
+    FormFieldData field;
     autofill_test::CreateTestFormField(failure_cases[i].label,
                                        failure_cases[i].name,
                                        failure_cases[i].value, "text", &field);
@@ -608,7 +606,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
 
   std::vector<AutofillFieldType> heuristic_types, server_types;
 
-  FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "Both match", "match", "Elvis Aaron Presley", "text", &field);
   field.is_autofilled = true;
@@ -641,7 +639,7 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
 
 
   // Add a field and re-arrange the remaining form fields before submitting.
-  std::vector<FormField> cached_fields = form.fields;
+  std::vector<FormFieldData> cached_fields = form.fields;
   form.fields.clear();
   autofill_test::CreateTestFormField(
       "New field", "new field", "Tennessee", "text", &field);
@@ -763,7 +761,7 @@ TEST_F(AutofillMetricsTest, NoQualityMetricsForNonAutofillableForms) {
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
 
-  FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "Autofilled", "autofilled", "Elvis Presley", "text", &field);
   field.is_autofilled = true;
@@ -804,7 +802,7 @@ TEST_F(AutofillMetricsTest, QualityMetricsWithExperimentId) {
   form.user_submitted = true;
 
   std::vector<AutofillFieldType> heuristic_types, server_types;
-  FormField field;
+  FormFieldData field;
 
   autofill_test::CreateTestFormField(
       "Autofilled", "autofilled", "Elvis Aaron Presley", "text", &field);
@@ -956,7 +954,7 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
 
-  FormField field;
+  FormFieldData field;
   std::vector<AutofillFieldType> field_types;
   autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
@@ -1130,7 +1128,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
 
-  FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField("Email", "email", "", "text", &field);
@@ -1264,7 +1262,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
 
-  FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField("Email", "email", "", "text", &field);
@@ -1369,7 +1367,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   form.action = GURL("http://example.com/submit.html");
   form.user_submitted = true;
 
-  FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
   form.fields.push_back(field);
   autofill_test::CreateTestFormField("Email", "email", "", "text", &field);

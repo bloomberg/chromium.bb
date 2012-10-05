@@ -10,9 +10,9 @@
 
 #include "base/file_path.h"
 #include "base/string16.h"
+#include "content/public/common/password_form.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
-#include "webkit/forms/password_form.h"
 
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
@@ -30,14 +30,14 @@ class LoginDatabase {
   void ReportMetrics();
 
   // Adds |form| to the list of remembered password forms.
-  bool AddLogin(const webkit::forms::PasswordForm& form);
+  bool AddLogin(const content::PasswordForm& form);
 
   // Updates remembered password form. Returns true on success and sets
   // items_changed (if non-NULL) to the number of logins updated.
-  bool UpdateLogin(const webkit::forms::PasswordForm& form, int* items_changed);
+  bool UpdateLogin(const content::PasswordForm& form, int* items_changed);
 
   // Removes |form| from the list of remembered password forms.
-  bool RemoveLogin(const webkit::forms::PasswordForm& form);
+  bool RemoveLogin(const content::PasswordForm& form);
 
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
@@ -48,8 +48,8 @@ class LoginDatabase {
   // Loads a list of matching password forms into the specified vector |forms|.
   // The list will contain all possibly relevant entries to the observed |form|,
   // including blacklisted matches.
-  bool GetLogins(const webkit::forms::PasswordForm& form,
-                 std::vector<webkit::forms::PasswordForm*>* forms) const;
+  bool GetLogins(const content::PasswordForm& form,
+                 std::vector<content::PasswordForm*>* forms) const;
 
   // Loads all logins created from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
@@ -57,16 +57,16 @@ class LoginDatabase {
   bool GetLoginsCreatedBetween(
       const base::Time begin,
       const base::Time end,
-      std::vector<webkit::forms::PasswordForm*>* forms) const;
+      std::vector<content::PasswordForm*>* forms) const;
 
   // Loads the complete list of autofillable password forms (i.e., not blacklist
   // entries) into |forms|.
   bool GetAutofillableLogins(
-      std::vector<webkit::forms::PasswordForm*>* forms) const;
+      std::vector<content::PasswordForm*>* forms) const;
 
   // Loads the complete list of blacklist forms into |forms|.
   bool GetBlacklistLogins(
-      std::vector<webkit::forms::PasswordForm*>* forms) const;
+      std::vector<content::PasswordForm*>* forms) const;
 
   // Deletes the login database file on disk, and creates a new, empty database.
   // This can be used after migrating passwords to some other store, to ensure
@@ -87,13 +87,13 @@ class LoginDatabase {
 
   // Fills |form| from the values in the given statement (which is assumed to
   // be of the form used by the Get*Logins methods).
-  void InitPasswordFormFromStatement(webkit::forms::PasswordForm* form,
+  void InitPasswordFormFromStatement(content::PasswordForm* form,
                                      sql::Statement& s) const;
 
   // Loads all logins whose blacklist setting matches |blacklisted| into
   // |forms|.
   bool GetAllLoginsWithBlacklistSetting(
-      bool blacklisted, std::vector<webkit::forms::PasswordForm*>* forms) const;
+      bool blacklisted, std::vector<content::PasswordForm*>* forms) const;
 
   FilePath db_path_;
   mutable sql::Connection db_;

@@ -36,6 +36,7 @@ using content::InterstitialPage;
 using content::MockRenderProcessHost;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::PasswordForm;
 using content::SiteInstance;
 using content::RenderViewHost;
 using content::RenderViewHostImplTestHarness;
@@ -45,7 +46,6 @@ using content::TestWebContents;
 using content::WebContents;
 using content::WebUI;
 using content::WebUIController;
-using webkit::forms::PasswordForm;
 
 namespace {
 

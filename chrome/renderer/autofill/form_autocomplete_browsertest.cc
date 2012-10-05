@@ -4,16 +4,15 @@
 
 #include "base/time.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/form_data.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
-#include "webkit/forms/form_data.h"
 #include "webkit/glue/web_io_operators.h"
 
-using webkit::forms::FormData;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebURLError;
@@ -40,7 +39,7 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(2U, forms.a.fields.size());
 
-  webkit::forms::FormField& form_field = forms.a.fields[0];
+  FormFieldData& form_field = forms.a.fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name);
   EXPECT_EQ(WebString("Rick"), form_field.value);
 
@@ -89,7 +88,7 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(1U, forms.a.fields.size());
 
-  webkit::forms::FormField& form_field = forms.a.fields[0];
+  FormFieldData& form_field = forms.a.fields[0];
   EXPECT_EQ(WebString("fname"), form_field.name);
   EXPECT_EQ(WebString("Rick"), form_field.value);
 }

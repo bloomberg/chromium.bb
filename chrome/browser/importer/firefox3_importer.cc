@@ -22,11 +22,11 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/password_form.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
-#include "webkit/forms/password_form.h"
 
 using content::BrowserThread;
 
@@ -307,7 +307,7 @@ void Firefox3Importer::ImportPasswords() {
     return;
   }
 
-  std::vector<webkit::forms::PasswordForm> forms;
+  std::vector<content::PasswordForm> forms;
   FilePath source_path = source_path_;
   FilePath file = source_path.AppendASCII("signons.sqlite");
   if (file_util::PathExists(file)) {

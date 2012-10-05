@@ -14,14 +14,11 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/password_form.h"
 #include "ui/gfx/rect.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/forms/password_form.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
-
-using content::NativeWebKeyboardEvent;
-using webkit::forms::PasswordForm;
 
 namespace content {
 

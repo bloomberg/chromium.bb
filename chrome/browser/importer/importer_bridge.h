@@ -42,7 +42,7 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
   virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
                            bool unique_on_host_and_path) = 0;
 
-  virtual void SetPasswordForm(const webkit::forms::PasswordForm& form) = 0;
+  virtual void SetPasswordForm(const content::PasswordForm& form) = 0;
 
   // Notifies the coordinator that the import operation has begun.
   virtual void NotifyStarted() = 0;

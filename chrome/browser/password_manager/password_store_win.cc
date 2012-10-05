@@ -16,7 +16,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 
 using content::BrowserThread;
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 namespace {
 // Subclass GetLoginsRequest in order to hold a copy of the form information

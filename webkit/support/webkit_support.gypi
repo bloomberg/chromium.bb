@@ -24,7 +24,6 @@
         'database',
         'dom_storage',
         'fileapi',
-        'forms',
         'glue',
         'user_agent',
         'webkit_base',

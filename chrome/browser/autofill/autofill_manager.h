@@ -38,6 +38,9 @@ class PrefService;
 class ProfileSyncService;
 class TabContents;
 
+struct FormData;
+struct FormFieldData;
+struct PasswordFormFillData;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace autofill {
@@ -47,6 +50,7 @@ class PasswordGenerator;
 
 namespace content {
 class RenderViewHost;
+struct PasswordForm;
 }
 
 namespace gfx {
@@ -55,15 +59,6 @@ class Rect;
 
 namespace IPC {
 class Message;
-}
-
-namespace webkit {
-namespace forms {
-struct FormData;
-struct FormField;
-struct PasswordForm;
-struct PasswordFormFillData;
-}
 }
 
 // Manages saving and restoring the user's personal information entered into web
@@ -95,8 +90,8 @@ class AutofillManager : public content::NotificationObserver,
 
   // Called from our external delegate so they cannot be private.
   virtual void OnFillAutofillFormData(int query_id,
-                                      const webkit::forms::FormData& form,
-                                      const webkit::forms::FormField& field,
+                                      const FormData& form,
+                                      const FormFieldData& field,
                                       int unique_id);
   void OnDidShowAutofillSuggestions(bool is_new_popup);
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
@@ -104,7 +99,7 @@ class AutofillManager : public content::NotificationObserver,
   void OnDidPreviewAutofillFormData();
   void OnShowPasswordGenerationPopup(const gfx::Rect& bounds,
                                      int max_length,
-                                     const webkit::forms::PasswordForm& form);
+                                     const content::PasswordForm& form);
 
   // Remove the credit card or Autofill profile that matches |unique_id|
   // from the database.
@@ -171,7 +166,7 @@ class AutofillManager : public content::NotificationObserver,
   // Processes the submitted |form|, saving any new Autofill data and uploading
   // the possible field types for the submitted fields to the crowdsouring
   // server.  Returns false if this form is not relevant for Autofill.
-  bool OnFormSubmitted(const webkit::forms::FormData& form,
+  bool OnFormSubmitted(const FormData& form,
                        const base::TimeTicks& timestamp);
 
  private:
@@ -204,24 +199,24 @@ class AutofillManager : public content::NotificationObserver,
   void UpdatePasswordGenerationState(content::RenderViewHost* host,
                                      bool new_renderer);
 
-  void OnFormsSeen(const std::vector<webkit::forms::FormData>& forms,
+  void OnFormsSeen(const std::vector<FormData>& forms,
                    const base::TimeTicks& timestamp);
-  void OnTextFieldDidChange(const webkit::forms::FormData& form,
-                            const webkit::forms::FormField& field,
+  void OnTextFieldDidChange(const FormData& form,
+                            const FormFieldData& field,
                             const base::TimeTicks& timestamp);
 
   // The |bounding_box| is a window relative value.
   void OnQueryFormFieldAutofill(int query_id,
-                                const webkit::forms::FormData& form,
-                                const webkit::forms::FormField& field,
+                                const FormData& form,
+                                const FormFieldData& field,
                                 const gfx::Rect& bounding_box,
                                 bool display_warning);
   void OnDidEndTextFieldEditing();
   void OnHideAutofillPopup();
   void OnAddPasswordFormMapping(
-      const webkit::forms::FormField& form,
-      const webkit::forms::PasswordFormFillData& fill_data);
-  void OnShowPasswordSuggestions(const webkit::forms::FormField& field,
+      const FormFieldData& form,
+      const PasswordFormFillData& fill_data);
+  void OnShowPasswordSuggestions(const FormFieldData& field,
                                  const gfx::Rect& bounds,
                                  const std::vector<string16>& suggestions);
   void OnSetDataList(const std::vector<string16>& values,
@@ -246,15 +241,15 @@ class AutofillManager : public content::NotificationObserver,
 
   // Fills |form_structure| cached element corresponding to |form|.
   // Returns false if the cached element was not found.
-  bool FindCachedForm(const webkit::forms::FormData& form,
+  bool FindCachedForm(const FormData& form,
                       FormStructure** form_structure) const WARN_UNUSED_RESULT;
 
   // Fills |form_structure| and |autofill_field| with the cached elements
   // corresponding to |form| and |field|.  This might have the side-effect of
   // updating the cache.  Returns false if the |form| is not autofillable, or if
   // it is not already present in the cache and the cache is full.
-  bool GetCachedFormAndField(const webkit::forms::FormData& form,
-                             const webkit::forms::FormField& field,
+  bool GetCachedFormAndField(const FormData& form,
+                             const FormFieldData& field,
                              FormStructure** form_structure,
                              AutofillField** autofill_field) WARN_UNUSED_RESULT;
 
@@ -262,7 +257,7 @@ class AutofillManager : public content::NotificationObserver,
   // |cached_form| should be a pointer to the existing version of the form, or
   // NULL if no cached version exists.  The updated form is then written into
   // |updated_form|.  Returns false if the cache could not be updated.
-  bool UpdateCachedForm(const webkit::forms::FormData& live_form,
+  bool UpdateCachedForm(const FormData& live_form,
                         const FormStructure* cached_form,
                         FormStructure** updated_form) WARN_UNUSED_RESULT;
 
@@ -270,7 +265,7 @@ class AutofillManager : public content::NotificationObserver,
   // value of |field| and returns the labels of the matching profiles. |labels|
   // is filled with the Profile label.
   void GetProfileSuggestions(FormStructure* form,
-                             const webkit::forms::FormField& field,
+                             const FormFieldData& field,
                              AutofillFieldType type,
                              std::vector<string16>* values,
                              std::vector<string16>* labels,
@@ -280,7 +275,7 @@ class AutofillManager : public content::NotificationObserver,
   // Returns a list of values from the stored credit cards that match |type| and
   // the value of |field| and returns the labels of the matching credit cards.
   void GetCreditCardSuggestions(FormStructure* form,
-                                const webkit::forms::FormField& field,
+                                const FormFieldData& field,
                                 AutofillFieldType type,
                                 std::vector<string16>* values,
                                 std::vector<string16>* labels,
@@ -290,7 +285,7 @@ class AutofillManager : public content::NotificationObserver,
   // Set |field|'s value based on |type| and contents of the |credit_card|.
   void FillCreditCardFormField(const CreditCard& credit_card,
                                AutofillFieldType type,
-                               webkit::forms::FormField* field);
+                               FormFieldData* field);
 
   // Set |field|'s value based on |cached_field|'s type and contents of the
   // |profile|. The |variant| parameter specifies which value in a multi-valued
@@ -298,7 +293,7 @@ class AutofillManager : public content::NotificationObserver,
   void FillFormField(const AutofillProfile& profile,
                      const AutofillField& cached_field,
                      size_t variant,
-                     webkit::forms::FormField* field);
+                     FormFieldData* field);
 
   // Set |field|'s value for phone number based on contents of the |profile|.
   // The |cached_field| specifies the type of the phone and whether this is a
@@ -307,10 +302,10 @@ class AutofillManager : public content::NotificationObserver,
   void FillPhoneNumberField(const AutofillProfile& profile,
                             const AutofillField& cached_field,
                             size_t variant,
-                            webkit::forms::FormField* field);
+                            FormFieldData* field);
 
   // Parses the forms using heuristic matching and querying the Autofill server.
-  void ParseForms(const std::vector<webkit::forms::FormData>& forms);
+  void ParseForms(const std::vector<FormData>& forms);
 
   // Imports the form data, submitted by the user, into |personal_data_|.
   void ImportFormData(const FormStructure& submitted_form);

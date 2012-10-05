@@ -104,10 +104,8 @@ typedef void (*SECITEMFreeItemFunc)(SECItem *item, PRBool free_it);
 typedef void (*PLArenaFinishFunc)(void);
 typedef PRStatus (*PRCleanupFunc)(void);
 
-namespace webkit {
-namespace forms {
+namespace content {
 struct PasswordForm;
-}
 }
 
 // A wrapper for Firefox NSS decrypt component.
@@ -132,13 +130,13 @@ class NSSDecryptor {
   // username/password and reads other related information.
   // The result will be stored in |forms|.
   void ParseSignons(const std::string& content,
-                    std::vector<webkit::forms::PasswordForm>* forms);
+                    std::vector<content::PasswordForm>* forms);
 
   // Reads and parses the Firefox password sqlite db, decrypts the
   // username/password and reads other related information.
   // The result will be stored in |forms|.
   bool ReadAndParseSignons(const FilePath& sqlite_file,
-                           std::vector<webkit::forms::PasswordForm>* forms);
+                           std::vector<content::PasswordForm>* forms);
 
  private:
   // Call NSS initialization funcs.

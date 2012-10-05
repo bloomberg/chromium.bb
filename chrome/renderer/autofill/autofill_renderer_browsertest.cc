@@ -4,20 +4,18 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/form_data.h"
+#include "chrome/common/form_field_data.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_field.h"
 
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
 using WebKit::WebString;
-using webkit::forms::FormData;
-using webkit::forms::FormField;
 
 namespace autofill {
 
@@ -49,31 +47,31 @@ TEST_F(ChromeRenderViewTest, SendForms) {
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(4UL, forms[0].fields.size());
 
-  FormField expected;
+  FormFieldData expected;
 
   expected.name = ASCIIToUTF16("firstname");
   expected.value = string16();
   expected.form_control_type = ASCIIToUTF16("text");
   expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[0]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[0]);
 
   expected.name = ASCIIToUTF16("middlename");
   expected.value = string16();
   expected.form_control_type = ASCIIToUTF16("text");
   expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[1]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[1]);
 
   expected.name = ASCIIToUTF16("lastname");
   expected.value = string16();
   expected.form_control_type = ASCIIToUTF16("text");
   expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[2]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[2]);
 
   expected.name = ASCIIToUTF16("state");
   expected.value = ASCIIToUTF16("?");
   expected.form_control_type = ASCIIToUTF16("select-one");
   expected.max_length = 0;
-  EXPECT_FORM_FIELD_EQUALS(expected, forms[0].fields[3]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[3]);
 
   // Verify that |didAcceptAutofillSuggestion()| sends the expected number of
   // fields.
@@ -110,19 +108,19 @@ TEST_F(ChromeRenderViewTest, SendForms) {
   expected.value = string16();
   expected.form_control_type = ASCIIToUTF16("text");
   expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_EQUALS(expected, form2.fields[0]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[0]);
 
   expected.name = ASCIIToUTF16("middlename");
   expected.value = string16();
   expected.form_control_type = ASCIIToUTF16("text");
   expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_EQUALS(expected, form2.fields[1]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[1]);
 
   expected.name = ASCIIToUTF16("state");
   expected.value = ASCIIToUTF16("?");
   expected.form_control_type = ASCIIToUTF16("select-one");
   expected.max_length = 0;
-  EXPECT_FORM_FIELD_EQUALS(expected, form2.fields[2]);
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[2]);
 }
 
 TEST_F(ChromeRenderViewTest, FillFormElement) {

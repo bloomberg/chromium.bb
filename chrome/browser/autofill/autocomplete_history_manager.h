@@ -14,14 +14,10 @@
 #include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
+struct FormData;
+
 namespace content {
 class BrowserContext;
-}
-
-namespace webkit {
-namespace forms {
-struct FormData;
-}
 }
 
 class AutofillExternalDelegate;
@@ -54,7 +50,7 @@ class AutocompleteHistoryManager
       const std::vector<string16>& autofill_labels,
       const std::vector<string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids);
-  void OnFormSubmitted(const webkit::forms::FormData& form);
+  void OnFormSubmitted(const FormData& form);
 
   // Must be public for the external delegate to use.
   void OnRemoveAutocompleteEntry(const string16& name, const string16& value);

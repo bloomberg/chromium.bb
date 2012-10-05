@@ -21,7 +21,7 @@
 
 using content::BrowserThread;
 using crypto::MockAppleKeychain;
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 using testing::_;
 using testing::DoAll;
 using testing::WithArg;
@@ -32,7 +32,7 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
                void(CancelableRequestProvider::Handle,
-                    const std::vector<webkit::forms::PasswordForm*>&));
+                    const std::vector<content::PasswordForm*>&));
 };
 
 ACTION(STLDeleteElements0) {

@@ -27,13 +27,13 @@
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/form_field_data.h"
 #include "chrome/test/base/thread_observer_helper.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/forms/form_field.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -135,8 +135,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
 
   void AppendFormField(const string16& name,
                        const string16& value,
-                       std::vector<webkit::forms::FormField>* form_fields) {
-    webkit::forms::FormField field;
+                       std::vector<FormFieldData>* form_fields) {
+    FormFieldData field;
     field.name = name;
     field.value = value;
     form_fields->push_back(field);
@@ -245,7 +245,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillAdd) {
                        Pointee(ElementsAreArray(expected_changes))))).
       WillOnce(SignalEvent(&done_event_));
 
-  std::vector<webkit::forms::FormField> form_fields;
+  std::vector<FormFieldData> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   AppendFormField(name2_, value2_, &form_fields);
   wds_->AddFormFields(form_fields);
@@ -271,7 +271,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveOne) {
   // First add some values to autofill.
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       WillOnce(SignalEvent(&done_event_));
-  std::vector<webkit::forms::FormField> form_fields;
+  std::vector<FormFieldData> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   wds_->AddFormFields(form_fields);
 
@@ -302,7 +302,7 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
 
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       WillOnce(SignalEvent(&done_event_));
-  std::vector<webkit::forms::FormField> form_fields;
+  std::vector<FormFieldData> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   AppendFormField(name2_, value2_, &form_fields);
   wds_->AddFormFields(form_fields);

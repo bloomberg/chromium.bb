@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FORMS_FORM_DATA_H__
-#define WEBKIT_FORMS_FORM_DATA_H__
+#ifndef CHROME_COMMON_FORM_DATA_H__
+#define CHROME_COMMON_FORM_DATA_H__
 
 #include <vector>
 
 #include "base/string16.h"
+#include "chrome/common/form_field_data.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/forms/form_field.h"
-#include "webkit/forms/webkit_forms_export.h"
-
-namespace webkit {
-namespace forms {
 
 // Holds information about a form to be filled and/or submitted.
-struct WEBKIT_FORMS_EXPORT FormData {
+struct FormData {
   // The name of the form.
   string16 name;
   // GET or POST.
@@ -28,7 +24,7 @@ struct WEBKIT_FORMS_EXPORT FormData {
   // true if this form was submitted by a user gesture and not javascript.
   bool user_submitted;
   // A vector of all the input fields in the form.
-  std::vector<FormField> fields;
+  std::vector<FormFieldData> fields;
 
   FormData();
   FormData(const FormData& data);
@@ -38,7 +34,4 @@ struct WEBKIT_FORMS_EXPORT FormData {
   bool operator==(const FormData& form) const;
 };
 
-}  // namespace forms
-}  // namespace webkit
-
-#endif  // WEBKIT_FORMS_FORM_DATA_H__
+#endif  // CHROME_COMMON_FORM_DATA_H__

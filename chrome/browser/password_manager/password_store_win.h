@@ -12,10 +12,8 @@ class LoginDatabase;
 class Profile;
 class WebDataService;
 
-namespace webkit {
-namespace forms {
+namespace content {
 struct PasswordForm;
-}
 }
 
 // Windows PasswordStore implementation that uses the default implementation,
@@ -46,7 +44,7 @@ class PasswordStoreWin : public PasswordStoreDefault {
 
   // Overridden so that we can save the form for later use.
   virtual void GetLoginsImpl(GetLoginsRequest* request,
-                             const webkit::forms::PasswordForm& form) OVERRIDE;
+                             const content::PasswordForm& form) OVERRIDE;
 
   scoped_ptr<DBHandler> db_handler_;
 

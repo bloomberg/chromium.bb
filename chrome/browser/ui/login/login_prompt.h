@@ -50,7 +50,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   // Sets information about the authentication type (|form|) and the
   // |password_manager| for this profile.
-  void SetPasswordForm(const webkit::forms::PasswordForm& form);
+  void SetPasswordForm(const content::PasswordForm& form);
   void SetPasswordManager(PasswordManager* password_manager);
 
   // Returns the WebContents that needs authentication.
@@ -141,7 +141,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // when later notifying the password manager if the credentials were accepted
   // or rejected.
   // This should only be accessed on the UI loop.
-  webkit::forms::PasswordForm password_form_;
+  content::PasswordForm password_form_;
 
   // Points to the password manager owned by the WebContents requesting auth.
   // This should only be accessed on the UI loop.

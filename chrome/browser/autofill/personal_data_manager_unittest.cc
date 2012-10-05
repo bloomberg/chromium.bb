@@ -17,6 +17,7 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/common/form_data.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
@@ -27,10 +28,8 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/forms/form_data.h"
 
 using content::BrowserThread;
-using webkit::forms::FormData;
 
 ACTION(QuitUIMessageLoop) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -483,7 +482,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
 
 TEST_F(PersonalDataManagerTest, ImportFormData) {
   FormData form;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form.fields.push_back(field);
@@ -528,7 +527,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
 
 TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
   FormData form;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form.fields.push_back(field);
@@ -563,7 +562,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
 
 TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
   FormData form;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form.fields.push_back(field);
@@ -588,7 +587,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
 
 TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   FormData form;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form.fields.push_back(field);
@@ -679,7 +678,7 @@ TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
 
 TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
   FormData form1;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
@@ -770,7 +769,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
 
 TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
   FormData form1;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
@@ -865,7 +864,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
 
 TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   FormData form1;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
@@ -975,7 +974,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
 
 TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
   FormData form1;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
@@ -1062,7 +1061,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
 
 TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
   FormData form1;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
@@ -1153,7 +1152,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
 
 TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
   FormData form1;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);
@@ -1203,7 +1202,7 @@ TEST_F(PersonalDataManagerTest, AggregateExistingAuxiliaryProfile) {
   // Simulate a form submission with a subset of the info.
   // Note that the phone number format is different from the saved format.
   FormData form;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "Tester", "text", &field);
   form.fields.push_back(field);
@@ -1250,7 +1249,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   FormData form1;
 
   // Start with a single valid credit card form.
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
@@ -1326,7 +1325,7 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
   FormData form1;
 
   // Start with a single valid credit card form.
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
@@ -1393,7 +1392,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
   FormData form1;
 
   // Start with a single valid credit card form.
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
@@ -1469,7 +1468,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
   FormData form1;
 
   // Start with a single valid credit card form.
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
@@ -1537,7 +1536,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   FormData form1;
 
   // Start with a single valid credit card form.
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form1.fields.push_back(field);
@@ -1653,7 +1652,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   // Add a second different valid credit card where the year is different but
   // the credit card number matches.
   FormData form;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form.fields.push_back(field);
@@ -1710,7 +1709,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
 
   // Import the same card info, but with different separators in the number.
   FormData form;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
   form.fields.push_back(field);
@@ -1864,7 +1863,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
 
 TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
   FormData form1;
-  webkit::forms::FormField field;
+  FormFieldData field;
   autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form1.fields.push_back(field);

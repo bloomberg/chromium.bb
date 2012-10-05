@@ -13,10 +13,8 @@
 
 class FilePath;
 
-namespace webkit {
-namespace forms {
+namespace content {
 struct PasswordForm;
-}
 }
 
 // A NULL wrapper for Firefox NSS decrypt component, for use in builds where
@@ -27,9 +25,9 @@ class NSSDecryptor {
   bool Init(const FilePath& dll_path, const FilePath& db_path) { return false; }
   string16 Decrypt(const std::string& crypt) const { return string16(); }
   void ParseSignons(const std::string& content,
-                    std::vector<webkit::forms::PasswordForm>* forms) {}
+                    std::vector<content::PasswordForm>* forms) {}
   bool ReadAndParseSignons(const FilePath& sqlite_file,
-                           std::vector<webkit::forms::PasswordForm>* forms) {
+                           std::vector<content::PasswordForm>* forms) {
     return false;
   }
 

@@ -25,12 +25,11 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
+#include "chrome/common/form_field_data.h"
 #include "sql/statement.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/forms/form_field.h"
 
 using base::Time;
-using webkit::forms::FormField;
 
 namespace {
 
@@ -343,12 +342,13 @@ bool AutofillTable::IsSyncable() {
   return true;
 }
 
-bool AutofillTable::AddFormFieldValues(const std::vector<FormField>& elements,
-                                       std::vector<AutofillChange>* changes) {
+bool AutofillTable::AddFormFieldValues(
+    const std::vector<FormFieldData>& elements,
+    std::vector<AutofillChange>* changes) {
   return AddFormFieldValuesTime(elements, changes, Time::Now());
 }
 
-bool AutofillTable::AddFormFieldValue(const FormField& element,
+bool AutofillTable::AddFormFieldValue(const FormFieldData& element,
                                       std::vector<AutofillChange>* changes) {
   return AddFormFieldValueTime(element, changes, Time::Now());
 }
@@ -566,7 +566,7 @@ bool AutofillTable::AddToCountOfFormElement(int64 pair_id,
 }
 
 bool AutofillTable::GetIDAndCountOfFormElement(
-    const FormField& element,
+    const FormFieldData& element,
     int64* pair_id,
     int* count) {
   DCHECK(pair_id);
@@ -614,7 +614,7 @@ bool AutofillTable::SetCountOfFormElement(int64 pair_id, int count) {
   return s.Run();
 }
 
-bool AutofillTable::InsertFormElement(const FormField& element,
+bool AutofillTable::InsertFormElement(const FormFieldData& element,
                                       int64* pair_id) {
   DCHECK(pair_id);
   sql::Statement s(db_->GetUniqueStatement(
@@ -655,7 +655,7 @@ bool AutofillTable::DeleteLastAccess(int64 pair_id) {
 }
 
 bool AutofillTable::AddFormFieldValuesTime(
-    const std::vector<FormField>& elements,
+    const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes,
     Time time) {
   // Only add one new entry for each unique element name.  Use |seen_names| to
@@ -663,7 +663,7 @@ bool AutofillTable::AddFormFieldValuesTime(
   const size_t kMaximumUniqueNames = 256;
   std::set<string16> seen_names;
   bool result = true;
-  for (std::vector<FormField>::const_iterator itr = elements.begin();
+  for (std::vector<FormFieldData>::const_iterator itr = elements.begin();
        itr != elements.end(); ++itr) {
     if (seen_names.size() >= kMaximumUniqueNames)
       break;
@@ -818,7 +818,7 @@ bool AutofillTable::InsertAutofillEntry(const AutofillEntry& entry) {
   return true;
 }
 
-bool AutofillTable::AddFormFieldValueTime(const FormField& element,
+bool AutofillTable::AddFormFieldValueTime(const FormFieldData& element,
                                           std::vector<AutofillChange>* changes,
                                           Time time) {
   int count = 0;

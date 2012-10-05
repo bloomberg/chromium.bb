@@ -35,8 +35,8 @@ class AutofillExternalDelegateViews : public AutofillExternalDelegate {
   // AutofillExternalDelegate implementation.
   virtual void OnQueryPlatformSpecific(
       int query_id,
-      const webkit::forms::FormData& form,
-      const webkit::forms::FormField& field,
+      const FormData& form,
+      const FormFieldData& field,
       const gfx::Rect& bounds) OVERRIDE;
   virtual void ApplyAutofillSuggestions(
       const std::vector<string16>& autofill_values,

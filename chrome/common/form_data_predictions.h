@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FORMS_FORM_DATA_PREDICTIONS_H__
-#define WEBKIT_FORMS_FORM_DATA_PREDICTIONS_H__
+#ifndef CHROME_COMMON_FORM_DATA_PREDICTIONS_H__
+#define CHROME_COMMON_FORM_DATA_PREDICTIONS_H__
 
 #include <string>
 #include <vector>
 
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_field_predictions.h"
-#include "webkit/forms/webkit_forms_export.h"
-
-namespace webkit {
-namespace forms {
+#include "chrome/common/form_data.h"
+#include "chrome/common/form_field_data_predictions.h"
 
 // Holds information about a form to be filled and/or submitted.
-struct WEBKIT_FORMS_EXPORT FormDataPredictions {
+struct FormDataPredictions {
   // Data for this form.
   FormData data;
   // The form signature for communication with the crowdsourcing server.
@@ -24,14 +20,11 @@ struct WEBKIT_FORMS_EXPORT FormDataPredictions {
   // The experiment id for the server predictions.
   std::string experiment_id;
   // The form fields and their predicted field types.
-  std::vector<FormFieldPredictions> fields;
+  std::vector<FormFieldDataPredictions> fields;
 
   FormDataPredictions();
   FormDataPredictions(const FormDataPredictions& other);
   ~FormDataPredictions();
 };
 
-}  // namespace forms
-}  // namespace webkit
-
-#endif  // WEBKIT_FORMS_FORM_DATA_PREDICTIONS_H__
+#endif  // CHROME_COMMON_FORM_DATA_PREDICTIONS_H__

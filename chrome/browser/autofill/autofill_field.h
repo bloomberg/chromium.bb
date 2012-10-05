@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "webkit/forms/form_field.h"
+#include "chrome/common/form_field_data.h"
 
-class AutofillField : public webkit::forms::FormField {
+class AutofillField : public FormFieldData {
  public:
   enum PhonePart {
     IGNORED = 0,
@@ -21,8 +21,7 @@ class AutofillField : public webkit::forms::FormField {
   };
 
   AutofillField();
-  AutofillField(const webkit::forms::FormField& field,
-                const string16& unique_name);
+  AutofillField(const FormFieldData& field, const string16& unique_name);
   virtual ~AutofillField();
 
   const string16& unique_name() const { return unique_name_; }

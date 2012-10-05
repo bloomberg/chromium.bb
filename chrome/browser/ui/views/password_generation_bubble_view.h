@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORD_GENERATION_BUBBLE_VIEW_H_
 
 #include "base/basictypes.h"
+#include "content/public/common/password_form.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
-#include "webkit/forms/password_form.h"
 
 namespace autofill {
 class PasswordGenerator;
@@ -37,7 +37,7 @@ class PasswordManager;
 class PasswordGenerationBubbleView : public views::BubbleDelegateView,
                                      public views::ButtonListener {
  public:
-  PasswordGenerationBubbleView(const webkit::forms::PasswordForm& form,
+  PasswordGenerationBubbleView(const content::PasswordForm& form,
                                const gfx::Rect& anchor_rect,
                                views::View* anchor_view,
                                content::RenderViewHost* render_view_host,
@@ -71,7 +71,7 @@ class PasswordGenerationBubbleView : public views::BubbleDelegateView,
   views::View* textfield_wrapper_;
 
   // The form associated with the password field(s) that we are generated.
-  webkit::forms::PasswordForm form_;
+  content::PasswordForm form_;
 
   // Location that the bubble points to
   gfx::Rect anchor_rect_;

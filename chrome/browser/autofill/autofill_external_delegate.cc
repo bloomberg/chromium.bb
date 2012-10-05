@@ -42,8 +42,8 @@ void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id) {
 }
 
 void AutofillExternalDelegate::OnQuery(int query_id,
-                                       const webkit::forms::FormData& form,
-                                       const webkit::forms::FormField& field,
+                                       const FormData& form,
+                                       const FormFieldData& field,
                                        const gfx::Rect& bounds,
                                        bool display_warning_if_disabled) {
   autofill_query_form_ = form;
@@ -118,7 +118,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
 void AutofillExternalDelegate::OnShowPasswordSuggestions(
     const std::vector<string16>& suggestions,
-    const webkit::forms::FormField& field,
+    const FormFieldData& field,
     const gfx::Rect& bounds) {
   autofill_query_field_ = field;
 
@@ -231,8 +231,8 @@ void AutofillExternalDelegate::Reset() {
 }
 
 void AutofillExternalDelegate::AddPasswordFormMapping(
-      const webkit::forms::FormField& form,
-      const webkit::forms::PasswordFormFillData& fill_data) {
+      const FormFieldData& form,
+      const PasswordFormFillData& fill_data) {
     password_autofill_manager_.AddPasswordFormMapping(form, fill_data);
 }
 

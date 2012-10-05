@@ -20,15 +20,11 @@
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
+#include "chrome/common/form_data.h"
+#include "chrome/common/form_data_predictions.h"
+#include "chrome/common/form_field_data.h"
+#include "chrome/common/form_field_data_predictions.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_data_predictions.h"
-#include "webkit/forms/form_field.h"
-#include "webkit/forms/form_field_predictions.h"
-
-using webkit::forms::FormData;
-using webkit::forms::FormDataPredictions;
-using webkit::forms::FormFieldPredictions;
 
 namespace {
 
@@ -244,7 +240,7 @@ FormStructure::FormStructure(const FormData& form)
       has_author_specified_types_(false) {
   // Copy the form fields.
   std::map<string16, size_t> unique_names;
-  for (std::vector<webkit::forms::FormField>::const_iterator field =
+  for (std::vector<FormFieldData>::const_iterator field =
            form.fields.begin();
        field != form.fields.end(); field++) {
     // Add all supported form fields (including with empty names) to the
@@ -487,9 +483,9 @@ void FormStructure::GetFieldTypePredictions(
     for (std::vector<AutofillField*>::const_iterator field =
              form_structure->fields_.begin();
          field != form_structure->fields_.end(); ++field) {
-      form.data.fields.push_back(webkit::forms::FormField(**field));
+      form.data.fields.push_back(FormFieldData(**field));
 
-      FormFieldPredictions annotated_field;
+      FormFieldDataPredictions annotated_field;
       annotated_field.signature = (*field)->FieldSignature();
       annotated_field.heuristic_type =
           AutofillType::FieldTypeToString((*field)->heuristic_type());

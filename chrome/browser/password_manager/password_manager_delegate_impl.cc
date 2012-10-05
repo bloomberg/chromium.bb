@@ -18,6 +18,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/password_form.h"
 #include "content/public/common/ssl_status.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/chromium_strings.h"
@@ -26,7 +27,6 @@
 #include "net/base/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/forms/password_form.h"
 
 // After a successful *new* login attempt, we take the PasswordFormManager in
 // provisional_save_manager_ and move it to a SavePasswordInfoBarDelegate while
@@ -123,7 +123,7 @@ InfoBarDelegate::InfoBarAutomationType
 // PasswordManagerDelegateImpl ------------------------------------------------
 
 void PasswordManagerDelegateImpl::FillPasswordForm(
-    const webkit::forms::PasswordFormFillData& form_data) {
+    const PasswordFormFillData& form_data) {
   bool disable_popup = tab_contents_->autofill_manager()->HasExternalDelegate();
 
   tab_contents_->web_contents()->GetRenderViewHost()->Send(

@@ -5,6 +5,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/form_data.h"
+#include "chrome/common/form_field_data.h"
 #include "chrome/renderer/autofill/autofill_agent.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/test/base/chrome_render_view_test.h"
@@ -17,13 +19,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_field.h"
 
-using webkit::forms::FormField;
-using webkit::forms::PasswordFormFillData;
-using webkit::forms::PasswordForm;
-using webkit::forms::PasswordFormDomManager;
+using content::PasswordForm;
 using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;
@@ -80,12 +77,12 @@ class PasswordAutofillManagerTest : public ChromeRenderViewTest {
     username3_ = ASCIIToUTF16(kCarolUsername);
     password3_ = ASCIIToUTF16(kCarolPassword);
 
-    FormField username_field;
+    FormFieldData username_field;
     username_field.name = ASCIIToUTF16(kUsernameName);
     username_field.value = username1_;
     fill_data_.basic_data.fields.push_back(username_field);
 
-    FormField password_field;
+    FormFieldData password_field;
     password_field.name = ASCIIToUTF16(kPasswordName);
     password_field.value = password1_;
     fill_data_.basic_data.fields.push_back(password_field);

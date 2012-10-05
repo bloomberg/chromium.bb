@@ -18,8 +18,8 @@ void TestAutofillExternalDelegate::ApplyAutofillSuggestions(
 
 void TestAutofillExternalDelegate::OnQueryPlatformSpecific(
     int query_id,
-    const webkit::forms::FormData& form,
-    const webkit::forms::FormField& field,
+    const FormData& form,
+    const FormFieldData& field,
     const gfx::Rect& bounds) {}
 
 void TestAutofillExternalDelegate::HideAutofillPopupInternal() {}

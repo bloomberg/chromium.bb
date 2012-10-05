@@ -13,17 +13,15 @@
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/form_data.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "webkit/forms/form_data.h"
 
 using base::StringPiece16;
 using content::BrowserContext;
 using content::WebContents;
-using webkit::forms::FormData;
-using webkit::forms::FormField;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(AutocompleteHistoryManager)
 
@@ -98,7 +96,7 @@ bool IsSSN(const string16& text) {
   return true;
 }
 
-bool IsTextField(const FormField& field) {
+bool IsTextField(const FormFieldData& field) {
   return
       field.form_control_type == ASCIIToUTF16("text") ||
       field.form_control_type == ASCIIToUTF16("search") ||
@@ -209,8 +207,8 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
   //  - text field
   //  - value is not a credit card number
   //  - value is not a SSN
-  std::vector<FormField> values;
-  for (std::vector<FormField>::const_iterator iter =
+  std::vector<FormFieldData> values;
+  for (std::vector<FormFieldData>::const_iterator iter =
            form.fields.begin();
        iter != form.fields.end(); ++iter) {
     if (!iter->value.empty() &&

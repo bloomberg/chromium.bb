@@ -375,7 +375,7 @@ class WebDataService
 
   // AutofillWebData implementation.
   virtual void AddFormFields(
-      const std::vector<webkit::forms::FormField>& fields) OVERRIDE;
+      const std::vector<FormFieldData>& fields) OVERRIDE;
   virtual Handle GetFormValuesForElementName(
       const string16& name,
       const string16& prefix,
@@ -550,7 +550,7 @@ class WebDataService
   //
   //////////////////////////////////////////////////////////////////////////////
   void AddFormElementsImpl(
-      GenericRequest<std::vector<webkit::forms::FormField> >* request);
+      GenericRequest<std::vector<FormFieldData> >* request);
   void GetFormValuesForElementNameImpl(WebDataRequest* request,
       const string16& name, const string16& prefix, int limit);
   void RemoveFormElementsAddedBetweenImpl(

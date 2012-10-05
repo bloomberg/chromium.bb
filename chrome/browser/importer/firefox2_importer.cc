@@ -26,10 +26,10 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/common/password_form.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
-#include "webkit/forms/password_form.h"
 
 namespace {
 const char kItemOpen[] = "<DT><A";
@@ -338,7 +338,7 @@ void Firefox2Importer::ImportPasswords() {
 
   std::string content;
   file_util::ReadFileToString(file, &content);
-  std::vector<webkit::forms::PasswordForm> forms;
+  std::vector<content::PasswordForm> forms;
   decryptor.ParseSignons(content, &forms);
 
   if (!cancelled()) {

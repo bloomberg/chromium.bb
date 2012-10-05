@@ -19,7 +19,7 @@ class AutofillWebDataServiceImpl : public AutofillWebDataService {
 
   // AutofillWebData implementation.
   virtual void AddFormFields(
-      const std::vector<webkit::forms::FormField>& fields) OVERRIDE;
+      const std::vector<FormFieldData>& fields) OVERRIDE;
   virtual WebDataServiceBase::Handle GetFormValuesForElementName(
       const string16& name,
       const string16& prefix,

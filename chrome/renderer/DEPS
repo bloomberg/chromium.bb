@@ -14,7 +14,6 @@ include_rules = [
 
   "+webkit/extensions",
   "+webkit/fileapi",
-  "+webkit/forms",  # Defines some types that are marshalled over IPC.
   "+webkit/glue",
   "+webkit/glue/plugins",
   "+webkit/gpu",

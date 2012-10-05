@@ -98,7 +98,6 @@
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         'blob',
         'fileapi',
-        'forms',
         'user_agent',
         'webkit_base',
         'webkit_media',

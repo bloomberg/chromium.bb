@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/password_form.h"
 #include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -42,13 +43,13 @@
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "webkit/forms/password_form.h"
 
 using base::Time;
 using browser_sync::PasswordChangeProcessor;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::PasswordModelAssociator;
 using content::BrowserThread;
+using content::PasswordForm;
 using syncer::syncable::WriteTransaction;
 using testing::_;
 using testing::AtLeast;
@@ -56,7 +57,6 @@ using testing::DoAll;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::SetArgumentPointee;
-using webkit::forms::PasswordForm;
 
 ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));

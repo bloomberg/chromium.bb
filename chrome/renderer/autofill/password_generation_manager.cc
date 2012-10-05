@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/password_generation_util.h"
+#include "content/public/renderer/password_form_conversion_utils.h"
 #include "content/public/renderer/render_view.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
@@ -110,8 +111,8 @@ void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
 
     // If we can't get a valid PasswordForm, we skip this form because the
     // the password won't get saved even if we generate it.
-    scoped_ptr<webkit::forms::PasswordForm> password_form(
-        webkit::forms::PasswordFormDomManager::CreatePasswordForm(forms[i]));
+    scoped_ptr<content::PasswordForm> password_form(
+        content::CreatePasswordForm(forms[i]));
     if (!password_form.get()) {
       DVLOG(2) << "Skipping form as it would not be saved";
       continue;
@@ -175,9 +176,8 @@ WebKit::WebCString PasswordGenerationManager::imageNameForReadOnlyState() {
 
 void PasswordGenerationManager::handleClick(WebKit::WebInputElement& element) {
   gfx::Rect rect(element.decorationElementFor(this).boundsInViewportSpace());
-  scoped_ptr<webkit::forms::PasswordForm> password_form(
-      webkit::forms::PasswordFormDomManager::CreatePasswordForm(
-          element.form()));
+  scoped_ptr<content::PasswordForm> password_form(
+      content::CreatePasswordForm(element.form()));
   // We should not have shown the icon we can't create a valid PasswordForm.
   DCHECK(password_form.get());
 
@@ -209,7 +209,7 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PasswordGenerationManager::OnFormNotBlacklisted(
-    const webkit::forms::PasswordForm& form) {
+    const content::PasswordForm& form) {
   not_blacklisted_password_form_origins_.push_back(form.origin);
   MaybeShowIcon();
 }

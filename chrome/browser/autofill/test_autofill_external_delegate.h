@@ -26,8 +26,8 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
       const std::vector<int>& autofill_unique_ids) OVERRIDE;
 
   virtual void OnQueryPlatformSpecific(int query_id,
-                                       const webkit::forms::FormData& form,
-                                       const webkit::forms::FormField& field,
+                                       const FormData& form,
+                                       const FormFieldData& field,
                                        const gfx::Rect& bounds) OVERRIDE;
 
 

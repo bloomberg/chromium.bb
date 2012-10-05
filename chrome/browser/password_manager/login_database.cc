@@ -16,7 +16,7 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 static const int kCurrentVersionNumber = 1;
 static const int kCompatibleVersionNumber = 1;
@@ -297,7 +297,7 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
 bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time begin,
     const base::Time end,
-    std::vector<webkit::forms::PasswordForm*>* forms) const {
+    std::vector<content::PasswordForm*>* forms) const {
   DCHECK(forms);
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT origin_url, action_url, "

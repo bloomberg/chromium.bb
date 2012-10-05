@@ -21,8 +21,8 @@
 
 using content::UserMetricsAction;
 using content::WebContents;
-using webkit::forms::PasswordForm;
-using webkit::forms::PasswordFormMap;
+using content::PasswordForm;
+using content::PasswordFormMap;
 
 namespace {
 
@@ -285,12 +285,12 @@ void PasswordManager::Autofill(
     case PasswordForm::SCHEME_HTML: {
       // Note the check above is required because the observer_ for a non-HTML
       // schemed password form may have been freed, so we need to distinguish.
-      webkit::forms::PasswordFormFillData fill_data;
-      webkit::forms::PasswordFormDomManager::InitFillData(form_for_autofill,
-                                                          best_matches,
-                                                          &preferred_match,
-                                                          wait_for_username,
-                                                          &fill_data);
+      PasswordFormFillData fill_data;
+      InitPasswordFormFillData(form_for_autofill,
+                               best_matches,
+                               &preferred_match,
+                               wait_for_username,
+                               &fill_data);
       delegate_->FillPasswordForm(fill_data);
       return;
     }

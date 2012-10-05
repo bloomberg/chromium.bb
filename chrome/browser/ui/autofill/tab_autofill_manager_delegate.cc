@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/common/password_form.h"
 #include "ui/gfx/rect.h"
-#include "webkit/forms/password_form.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabAutofillManagerDelegate)
 
@@ -74,7 +74,7 @@ void TabAutofillManagerDelegate::ShowAutofillSettings() {
 
 void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(
       const gfx::Rect& bounds,
-      const webkit::forms::PasswordForm& form,
+      const content::PasswordForm& form,
       autofill::PasswordGenerator* generator) {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();

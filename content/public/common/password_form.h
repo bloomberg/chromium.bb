@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FORMS_PASSWORD_FORM_H__
-#define WEBKIT_FORMS_PASSWORD_FORM_H__
+#ifndef CONTENT_PUBLIC_COMMON_PASSWORD_FORM_H__
+#define CONTENT_PUBLIC_COMMON_PASSWORD_FORM_H__
 
 #include <map>
 #include <string>
 
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPasswordFormData.h"
-#include "webkit/forms/webkit_forms_export.h"
 
-namespace webkit {
-namespace forms {
+namespace content {
 
 // The PasswordForm struct encapsulates information about a login form,
 // which can be an HTML form or a dialog with username/password text fields.
@@ -38,7 +36,7 @@ namespace forms {
 // describe which fields are not strictly required when adding a saved password
 // entry to the database and how they can affect the matching process.
 
-struct WEBKIT_FORMS_EXPORT PasswordForm {
+struct CONTENT_EXPORT PasswordForm {
   // Enum to differentiate between HTML form based authentication, and dialogs
   // using basic or digest schemes. Default is SCHEME_HTML. Only PasswordForms
   // of the same Scheme will be matched/autofilled against each other.
@@ -148,14 +146,12 @@ struct WEBKIT_FORMS_EXPORT PasswordForm {
   Type type;
 
   PasswordForm();
-  PasswordForm(const WebKit::WebPasswordFormData& web_password_form);
   ~PasswordForm();
 };
 
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
 typedef std::map<string16, PasswordForm*> PasswordFormMap;
 
-}  // namespace forms
-}  // namespace webkit
+}  // namespace content
 
-#endif  // WEBKIT_FORMS_PASSWORD_FORM_H__
+#endif  // CONTENT_PUBLIC_COMMON_PASSWORD_FORM_H__

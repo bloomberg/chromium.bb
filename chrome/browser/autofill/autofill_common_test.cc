@@ -10,8 +10,8 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/form_field_data.h"
 #include "chrome/common/pref_names.h"
-#include "webkit/forms/form_field.h"
 
 namespace autofill_test {
 
@@ -19,7 +19,7 @@ void CreateTestFormField(const char* label,
                          const char* name,
                          const char* value,
                          const char* type,
-                         webkit::forms::FormField* field) {
+                         FormFieldData* field) {
   field->label = ASCIIToUTF16(label);
   field->name = ASCIIToUTF16(name);
   field->value = ASCIIToUTF16(value);

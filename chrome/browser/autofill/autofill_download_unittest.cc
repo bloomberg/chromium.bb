@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/common/form_data.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -21,11 +22,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "webkit/forms/form_data.h"
 
 using content::BrowserThread;
-using webkit::forms::FormData;
-using webkit::forms::FormField;
 using WebKit::WebInputElement;
 
 namespace {
@@ -145,7 +143,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
   field.form_control_type = ASCIIToUTF16("text");
@@ -357,7 +355,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("username");

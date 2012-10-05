@@ -39,7 +39,7 @@ GdkPixbuf* GetImage(int resource_id) {
 
 PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
     const gfx::Rect& anchor_rect,
-    const webkit::forms::PasswordForm& form,
+    const content::PasswordForm& form,
     TabContents* tab,
     autofill::PasswordGenerator* password_generator)
     : form_(form),

@@ -17,7 +17,7 @@ AutofillWebDataServiceImpl::~AutofillWebDataServiceImpl() {
 }
 
 void AutofillWebDataServiceImpl::AddFormFields(
-    const std::vector<webkit::forms::FormField>& fields) {
+    const std::vector<FormFieldData>& fields) {
   service_->AddFormFields(fields);
 }
 

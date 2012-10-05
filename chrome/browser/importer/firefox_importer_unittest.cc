@@ -25,7 +25,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "webkit/forms/password_form.h"
+#include "content/public/common/password_form.h"
 
 // TODO(estade): some of these are disabled on mac. http://crbug.com/48007
 #if defined(OS_MACOSX)
@@ -150,7 +150,7 @@ class FirefoxObserver : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {
+  virtual void AddPasswordForm(const content::PasswordForm& form) {
     PasswordInfo p = kFirefox2Passwords[password_count_];
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
@@ -295,7 +295,7 @@ class Firefox3Observer : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {
+  virtual void AddPasswordForm(const content::PasswordForm& form) {
     PasswordInfo p = kFirefox3Passwords[password_count_];
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);

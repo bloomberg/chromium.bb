@@ -26,7 +26,7 @@ using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::WithArg;
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 namespace {
 

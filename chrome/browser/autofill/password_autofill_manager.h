@@ -14,7 +14,7 @@
 
 #include <map>
 
-#include "webkit/forms/password_form_dom_manager.h"
+#include "chrome/common/password_form_fill_data.h"
 
 namespace content {
 class WebContents;
@@ -28,13 +28,13 @@ class PasswordAutofillManager {
 
   // Fills the password associated with user name |value|. Returns true if the
   // username and password fields were filled, false otherwise.
-  bool DidAcceptAutofillSuggestion(const webkit::forms::FormField& field,
+  bool DidAcceptAutofillSuggestion(const FormFieldData& field,
                                    const string16& value);
 
   // Invoked when a password mapping is added.
   void AddPasswordFormMapping(
-      const webkit::forms::FormField& username_element,
-      const webkit::forms::PasswordFormFillData& password);
+      const FormFieldData& username_element,
+      const PasswordFormFillData& password);
 
   // Invoked to clear any page specific cached values.
   void Reset();
@@ -43,19 +43,19 @@ class PasswordAutofillManager {
   // TODO(csharp): Modify the AutofillExternalDeletegate code so that it can
   // figure out if a entry is a password one without using this mapping.
   // crbug.com/118601
-  typedef std::map<webkit::forms::FormField,
-                   webkit::forms::PasswordFormFillData>
+  typedef std::map<FormFieldData,
+                   PasswordFormFillData>
       LoginToPasswordInfoMap;
 
   // Returns true if |current_username| matches a username for one of the
   // login mappings in |password|.
   bool WillFillUserNameAndPassword(
       const string16& current_username,
-      const webkit::forms::PasswordFormFillData& password);
+      const PasswordFormFillData& password);
 
   // Finds login information for a |node| that was previously filled.
-  bool FindLoginInfo(const webkit::forms::FormField& field,
-                     webkit::forms::PasswordFormFillData* found_password);
+  bool FindLoginInfo(const FormFieldData& field,
+                     PasswordFormFillData* found_password);
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;

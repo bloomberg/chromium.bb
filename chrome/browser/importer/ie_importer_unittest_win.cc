@@ -39,7 +39,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "webkit/forms/password_form.h"
+#include "content/public/common/password_form.h"
 
 namespace {
 
@@ -280,7 +280,7 @@ class TestObserver : public ProfileWriter,
     return true;
   }
 
-  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {
+  virtual void AddPasswordForm(const content::PasswordForm& form) {
     // Importer should obtain this password form only.
     EXPECT_EQ(GURL("http://localhost:8080/security/index.htm"), form.origin);
     EXPECT_EQ("http://localhost:8080/", form.signon_realm);
@@ -377,7 +377,7 @@ class MalformedFavoritesRegistryTestObserver
   virtual bool BookmarkModelIsLoaded() const { return true; }
   virtual bool TemplateURLServiceIsLoaded() const { return true; }
 
-  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form) {}
+  virtual void AddPasswordForm(const content::PasswordForm& form) {}
   virtual void AddHistoryPage(const history::URLRows& page,
                               history::VisitSource visit_source) {}
   virtual void AddKeyword(std::vector<TemplateURL*> template_url,

@@ -19,9 +19,9 @@ PasswordAutofillManager::~PasswordAutofillManager() {
 }
 
 bool PasswordAutofillManager::DidAcceptAutofillSuggestion(
-    const webkit::forms::FormField& field,
+    const FormFieldData& field,
     const string16& value) {
-  webkit::forms::PasswordFormFillData password;
+  PasswordFormFillData password;
   if (!FindLoginInfo(field, &password))
     return false;
 
@@ -40,8 +40,8 @@ bool PasswordAutofillManager::DidAcceptAutofillSuggestion(
 }
 
 void PasswordAutofillManager::AddPasswordFormMapping(
-    const webkit::forms::FormField& username_element,
-    const webkit::forms::PasswordFormFillData& password) {
+    const FormFieldData& username_element,
+    const PasswordFormFillData& password) {
   login_to_password_info_[username_element] = password;
 }
 
@@ -54,13 +54,13 @@ void PasswordAutofillManager::Reset() {
 
 bool PasswordAutofillManager::WillFillUserNameAndPassword(
     const string16& current_username,
-    const webkit::forms::PasswordFormFillData& fill_data) {
+    const PasswordFormFillData& fill_data) {
   // Look for any suitable matches to current field text.
   if (fill_data.basic_data.fields[0].value == current_username) {
     return true;
   } else {
     // Scan additional logins for a match.
-    webkit::forms::PasswordFormFillData::LoginCollection::const_iterator iter;
+    PasswordFormFillData::LoginCollection::const_iterator iter;
     for (iter = fill_data.additional_logins.begin();
          iter != fill_data.additional_logins.end(); ++iter) {
       if (iter->first == current_username)
@@ -72,8 +72,8 @@ bool PasswordAutofillManager::WillFillUserNameAndPassword(
 }
 
 bool PasswordAutofillManager::FindLoginInfo(
-    const webkit::forms::FormField& field,
-    webkit::forms::PasswordFormFillData* found_password) {
+    const FormFieldData& field,
+    PasswordFormFillData* found_password) {
   LoginToPasswordInfoMap::iterator iter = login_to_password_info_.find(field);
   if (iter == login_to_password_info_.end())
     return false;

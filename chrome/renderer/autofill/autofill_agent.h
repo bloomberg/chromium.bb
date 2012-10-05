@@ -17,13 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 
-namespace webkit {
-namespace forms {
-struct FormData;
-struct FormDataPredictions;
-struct FormField;
-}
-}
+struct FormFieldData;
 
 namespace WebKit {
 class WebNode;
@@ -100,9 +94,9 @@ class AutofillAgent : public content::RenderViewObserver,
                              const std::vector<string16>& labels,
                              const std::vector<string16>& icons,
                              const std::vector<int>& unique_ids);
-  void OnFormDataFilled(int query_id, const webkit::forms::FormData& form);
+  void OnFormDataFilled(int query_id, const FormData& form);
   void OnFieldTypePredictionsAvailable(
-      const std::vector<webkit::forms::FormDataPredictions>& forms);
+      const std::vector<FormDataPredictions>& forms);
 
   // For external Autofill selection.
   void OnSelectAutofillSuggestionAtIndex(int listIndex);
@@ -163,8 +157,8 @@ class AutofillAgent : public content::RenderViewObserver,
   // |node|. Returns true if the data was found; and false otherwise.
   bool FindFormAndFieldForNode(
       const WebKit::WebNode& node,
-      webkit::forms::FormData* form,
-      webkit::forms::FormField* field) WARN_UNUSED_RESULT;
+      FormData* form,
+      FormFieldData* field) WARN_UNUSED_RESULT;
 
   // Set |node| to display the given |value|.
   void SetNodeText(const string16& value, WebKit::WebInputElement* node);

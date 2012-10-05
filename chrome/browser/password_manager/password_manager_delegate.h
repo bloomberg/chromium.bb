@@ -5,14 +5,10 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
 
-namespace webkit {
-namespace forms {
-struct PasswordFormFillData;
-}
-}
-
 class PasswordFormManager;
 class Profile;
+
+struct PasswordFormFillData;
 
 // An abstraction of operations in the external environment (WebContents)
 // that the PasswordManager depends on.  This allows for more targeted
@@ -26,7 +22,7 @@ class PasswordManagerDelegate {
   // through the RenderViewHost to FillPasswordForm.  Tests can override this
   // to sever the dependency on the entire rendering stack.
   virtual void FillPasswordForm(
-      const webkit::forms::PasswordFormFillData& form_data) = 0;
+      const PasswordFormFillData& form_data) = 0;
 
   // A mechanism to show an infobar in the current tab at our request.
   // The infobar may not show in some circumstances, such as when the one-click

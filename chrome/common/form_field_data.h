@@ -2,30 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FORMS_FORM_FIELD_H_
-#define WEBKIT_FORMS_FORM_FIELD_H_
+#ifndef CHROME_COMMON_FORM_FIELD_DATA_H_
+#define CHROME_COMMON_FORM_FIELD_DATA_H_
 
 #include <vector>
 
 #include "base/string16.h"
-#include "webkit/forms/webkit_forms_export.h"
-
-namespace webkit {
-namespace forms {
 
 // Stores information about a field in a form.
-struct WEBKIT_FORMS_EXPORT FormField {
-  FormField();
-  virtual ~FormField();
+struct FormFieldData {
+  FormFieldData();
+  virtual ~FormFieldData();
 
   // Equality tests for identity which does not include |value| or
   // |is_autofilled|.
   // TODO(dhollowa): These operators need to be revised when we implement field
   // ids.
-  bool operator==(const FormField& field) const;
-  bool operator!=(const FormField& field) const;
+  bool operator==(const FormFieldData& field) const;
+  bool operator!=(const FormFieldData& field) const;
   // Comparsion operator exposed for STL map. Uses label, then name to sort.
-  bool operator<(const FormField& field) const;
+  bool operator<(const FormFieldData& field) const;
 
   string16 label;
   string16 name;
@@ -43,16 +39,12 @@ struct WEBKIT_FORMS_EXPORT FormField {
   std::vector<string16> option_contents;
 };
 
-// So we can compare FormFields with EXPECT_EQ().
-WEBKIT_FORMS_EXPORT std::ostream& operator<<(std::ostream& os,
-                                            const FormField& field);
+// So we can compare FormFieldDatas with EXPECT_EQ().
+std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 
-}  // namespace forms
-}  // namespace webkit
-
-// Prefer to use this macro in place of |EXPECT_EQ()| for comparing |FormField|s
-// in test code.
-#define EXPECT_FORM_FIELD_EQUALS(expected, actual) \
+// Prefer to use this macro in place of |EXPECT_EQ()| for comparing
+// |FormFieldData|s in test code.
+#define EXPECT_FORM_FIELD_DATA_EQUALS(expected, actual) \
   do { \
     EXPECT_EQ(expected.label, actual.label); \
     EXPECT_EQ(expected.name, actual.name); \
@@ -63,4 +55,4 @@ WEBKIT_FORMS_EXPORT std::ostream& operator<<(std::ostream& os,
     EXPECT_EQ(expected.is_autofilled, actual.is_autofilled); \
   } while (0)
 
-#endif  // WEBKIT_FORMS_FORM_FIELD_H_
+#endif  // CHROME_COMMON_FORM_FIELD_DATA_H_

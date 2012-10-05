@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/forms/form_field_predictions.h"
+#include "chrome/common/form_field_data_predictions.h"
 
-namespace webkit {
-namespace forms {
-
-FormFieldPredictions::FormFieldPredictions() {
+FormFieldDataPredictions::FormFieldDataPredictions() {
 }
 
-FormFieldPredictions::FormFieldPredictions(const FormFieldPredictions& other)
+FormFieldDataPredictions::FormFieldDataPredictions(
+    const FormFieldDataPredictions& other)
     : field(other.field),
       signature(other.signature),
       heuristic_type(other.heuristic_type),
@@ -18,8 +16,5 @@ FormFieldPredictions::FormFieldPredictions(const FormFieldPredictions& other)
       overall_type(other.overall_type) {
 }
 
-FormFieldPredictions::~FormFieldPredictions() {
+FormFieldDataPredictions::~FormFieldDataPredictions() {
 }
-
-}  // namespace forms
-}  // namespace webkit

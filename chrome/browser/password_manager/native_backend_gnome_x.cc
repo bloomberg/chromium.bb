@@ -22,7 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 #define GNOME_KEYRING_DEFINE_POINTER(name) \
   typeof(&::gnome_keyring_##name) GnomeKeyringLoader::gnome_keyring_##name;

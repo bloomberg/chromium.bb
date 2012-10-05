@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 using testing::_;
 using testing::DoAll;
 using ::testing::Exactly;
@@ -32,7 +32,7 @@ using ::testing::Return;
 class MockPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
   MOCK_METHOD1(FillPasswordForm, void(
-     const webkit::forms::PasswordFormFillData&));
+     const PasswordFormFillData&));
   MOCK_METHOD1(AddSavePasswordInfoBarIfPermitted, void(PasswordFormManager*));
   MOCK_METHOD0(GetProfile, Profile*());
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());

@@ -10,11 +10,7 @@
 
 class FormGroup;
 
-namespace webkit {
-namespace forms {
-struct FormField;
-}
-}
+struct FormFieldData;
 
 namespace autofill {
 
@@ -24,7 +20,7 @@ namespace autofill {
 // months, e.g., (04, April).
 void FillSelectControl(const FormGroup& form_group,
                        AutofillFieldType type,
-                       webkit::forms::FormField* field);
+                       FormFieldData* field);
 
 // Returns true if |value| is a valid US state name or abbreviation.  It is case
 // insensitive.  Valid for US states only.

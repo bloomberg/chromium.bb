@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/form_data.h"
+#include "chrome/common/form_data_predictions.h"
+#include "chrome/common/form_field_data.h"
+#include "chrome/common/form_field_data_predictions.h"
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -17,10 +21,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_data_predictions.h"
-#include "webkit/forms/form_field.h"
-#include "webkit/forms/form_field_predictions.h"
 
 using WebKit::WebDocument;
 using WebKit::WebFormControlElement;
@@ -30,8 +30,6 @@ using WebKit::WebInputElement;
 using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
-using webkit::forms::FormData;
-using webkit::forms::FormDataPredictions;
 
 namespace {
 

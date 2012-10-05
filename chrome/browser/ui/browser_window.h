@@ -36,6 +36,7 @@ class PasswordGenerator;
 namespace content {
 class WebContents;
 struct NativeWebKeyboardEvent;
+struct PasswordForm;
 struct SSLStatus;
 }
 
@@ -46,12 +47,6 @@ class Extension;
 namespace gfx {
 class Rect;
 class Size;
-}
-
-namespace webkit {
-namespace forms {
-struct PasswordForm;
-}
 }
 
 enum DevToolsDockSide {
@@ -382,7 +377,7 @@ class BrowserWindow : public BaseWindow {
   // available on mac.
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
-      const webkit::forms::PasswordForm& form,
+      const content::PasswordForm& form,
       autofill::PasswordGenerator* password_generator) {}
 
  protected:

@@ -38,7 +38,7 @@ using content::RenderViewHostDelegate;
 using content::ResourceDispatcherHost;
 using content::ResourceRequestInfo;
 using content::WebContents;
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 class LoginHandlerImpl;
 
@@ -115,7 +115,7 @@ void LoginHandler::OnRequestCancelled() {
   CancelAuth();
 }
 
-void LoginHandler::SetPasswordForm(const webkit::forms::PasswordForm& form) {
+void LoginHandler::SetPasswordForm(const content::PasswordForm& form) {
   password_form_ = form;
 }
 

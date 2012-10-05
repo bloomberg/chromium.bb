@@ -38,10 +38,10 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/common/password_form.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/forms/password_form.h"
 
 namespace {
 
@@ -609,7 +609,7 @@ void IEImporter::ImportPasswordsIE6() {
       continue;
     }
 
-    webkit::forms::PasswordForm form;
+    content::PasswordForm form;
     GURL::Replacements rp;
     rp.ClearUsername();
     rp.ClearPassword();

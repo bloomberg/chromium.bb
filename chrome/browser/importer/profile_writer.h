@@ -19,10 +19,8 @@
 class Profile;
 class TemplateURL;
 
-namespace webkit {
-namespace forms {
+namespace content {
 struct PasswordForm;
-}
 }
 
 #if defined(OS_WIN)
@@ -55,7 +53,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
   virtual bool TemplateURLServiceIsLoaded() const;
 
   // Helper methods for adding data to local stores.
-  virtual void AddPasswordForm(const webkit::forms::PasswordForm& form);
+  virtual void AddPasswordForm(const content::PasswordForm& form);
 
 #if defined(OS_WIN)
   virtual void AddIE7PasswordInfo(const IE7PasswordInfo& info);

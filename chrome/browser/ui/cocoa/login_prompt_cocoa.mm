@@ -24,8 +24,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::PasswordForm;
 using content::WebContents;
-using webkit::forms::PasswordForm;
 
 // ----------------------------------------------------------------------------
 // LoginHandlerMac

@@ -51,8 +51,8 @@ class AutofillExternalDelegateViewsBrowserTest : public InProcessBrowserTest {
 
   void GeneratePopup() {
     int query_id = 1;
-    webkit::forms::FormData form;
-    webkit::forms::FormField field;
+    FormData form;
+    FormFieldData field;
     field.is_focusable = true;
     field.should_autocomplete = true;
     gfx::Rect bounds(100, 100);

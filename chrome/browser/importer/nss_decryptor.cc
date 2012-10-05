@@ -12,9 +12,9 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/common/password_form.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
-#include "webkit/forms/password_form.h"
 
 #if defined(USE_NSS)
 #include <pk11pub.h>
@@ -112,7 +112,7 @@ string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
 // http://kb.mozillazine.org/Signons3.txt
 void NSSDecryptor::ParseSignons(
     const std::string& content,
-    std::vector<webkit::forms::PasswordForm>* forms) {
+    std::vector<content::PasswordForm>* forms) {
   forms->clear();
 
   // Splits the file content into lines.
@@ -141,7 +141,7 @@ void NSSDecryptor::ParseSignons(
   // Reads never-saved list. Domains are stored one per line.
   size_t i;
   for (i = 1; i < lines.size() && lines[i].compare(".") != 0; ++i) {
-    webkit::forms::PasswordForm form;
+    content::PasswordForm form;
     form.origin = GURL(lines[i]).ReplaceComponents(rep);
     form.signon_realm = form.origin.GetOrigin().spec();
     form.blacklisted_by_user = true;
@@ -163,7 +163,7 @@ void NSSDecryptor::ParseSignons(
     if (end - begin < 5)
       continue;
 
-    webkit::forms::PasswordForm form;
+    content::PasswordForm form;
 
     // The first line is the site URL.
     // For HTTP authentication logins, the URL may contain http realm,
@@ -233,7 +233,7 @@ void NSSDecryptor::ParseSignons(
 }
 
 bool NSSDecryptor::ReadAndParseSignons(const FilePath& sqlite_file,
-    std::vector<webkit::forms::PasswordForm>* forms) {
+    std::vector<content::PasswordForm>* forms) {
   sql::Connection db;
   if (!db.Open(sqlite_file))
     return false;
@@ -250,7 +250,7 @@ bool NSSDecryptor::ReadAndParseSignons(const FilePath& sqlite_file,
   rep.ClearPassword();
   // Read domains for which passwords are never saved.
   while (s.Step()) {
-    webkit::forms::PasswordForm form;
+    content::PasswordForm form;
     form.origin = GURL(s.ColumnString(0)).ReplaceComponents(rep);
     form.signon_realm = form.origin.GetOrigin().spec();
     form.blacklisted_by_user = true;
@@ -281,7 +281,7 @@ bool NSSDecryptor::ReadAndParseSignons(const FilePath& sqlite_file,
     if (!url.is_valid())
       continue;
 
-    webkit::forms::PasswordForm form;
+    content::PasswordForm form;
     form.origin = url.ReplaceComponents(rep);
     form.signon_realm = form.origin.GetOrigin().spec();
     if (!realm.empty())

@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/password_form.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -45,8 +46,6 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/forms/password_form.h"
-#include "webkit/forms/password_form_dom_manager.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper)
 

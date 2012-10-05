@@ -351,7 +351,7 @@ class BrowserView : public BrowserWindow,
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
-      const webkit::forms::PasswordForm& form,
+      const content::PasswordForm& form,
       autofill::PasswordGenerator* password_generator) OVERRIDE;
 
   // Overridden from BrowserWindowTesting:

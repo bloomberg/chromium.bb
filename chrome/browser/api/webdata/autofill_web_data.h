@@ -12,16 +12,11 @@
 #include "base/string16.h"
 #include "chrome/browser/api/webdata/web_data_service_base.h"
 
-namespace webkit {
-namespace forms {
-struct FormField;
-}
-}
-
 class AutofillProfile;
 class CreditCard;
 class Profile;
 class WebDataServiceConsumer;
+struct FormFieldData;
 
 // Pure virtual interface for retrieving Autofill data.  API users
 // should use AutofillWebDataService.
@@ -31,7 +26,7 @@ class AutofillWebData {
 
   // Schedules a task to add form fields to the web database.
   virtual void AddFormFields(
-      const std::vector<webkit::forms::FormField>& fields) = 0;
+      const std::vector<FormFieldData>& fields) = 0;
 
   // Initiates the request for a vector of values which have been entered in
   // form input fields named |name|.  The method OnWebDataServiceRequestDone of

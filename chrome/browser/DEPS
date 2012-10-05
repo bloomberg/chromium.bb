@@ -37,7 +37,6 @@ include_rules = [
   "+webkit/database",
   "+webkit/dom_storage",
   "+webkit/fileapi",
-  "+webkit/forms",  # Defines some types that are marshalled over IPC.
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
   "+webkit/quota",
   "+webkit/user_agent",

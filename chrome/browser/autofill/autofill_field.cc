@@ -31,9 +31,9 @@ AutofillField::AutofillField()
       phone_part_(IGNORED) {
 }
 
-AutofillField::AutofillField(const webkit::forms::FormField& field,
+AutofillField::AutofillField(const FormFieldData& field,
                              const string16& unique_name)
-    : webkit::forms::FormField(field),
+    : FormFieldData(field),
       unique_name_(unique_name),
       server_type_(NO_SERVER_DATA),
       heuristic_type_(UNKNOWN_TYPE),

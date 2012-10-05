@@ -19,7 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 using sync_datatype_helper::test;
 
 const std::string kFakeSignonRealm = "http://fake-signon-realm.google.com/";

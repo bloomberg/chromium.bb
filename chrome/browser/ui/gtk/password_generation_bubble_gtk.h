@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/common/password_generation_util.h"
+#include "content/public/common/password_form.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/rect.h"
-#include "webkit/forms/password_form.h"
 
 namespace autofill {
 class PasswordGenerator;
@@ -27,7 +27,7 @@ class TabContents;
 class PasswordGenerationBubbleGtk : public BubbleDelegateGtk {
  public:
   PasswordGenerationBubbleGtk(const gfx::Rect& anchor_rect,
-                              const webkit::forms::PasswordForm& form,
+                              const content::PasswordForm& form,
                               TabContents* tab,
                               autofill::PasswordGenerator* password_generator);
   virtual ~PasswordGenerationBubbleGtk();
@@ -49,7 +49,7 @@ class PasswordGenerationBubbleGtk : public BubbleDelegateGtk {
 
   // Form that contains the password field that we are generating a password
   // for. Used by the password_manager_.
-  webkit::forms::PasswordForm form_;
+  content::PasswordForm form_;
 
   // TabContents associated with the button that spawned this bubble.
   TabContents* tab_;

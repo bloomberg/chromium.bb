@@ -12,7 +12,7 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
-#include "webkit/forms/password_form.h"
+#include "content/public/common/password_form.h"
 
 namespace content {
 class WebContents;
@@ -35,7 +35,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   PasswordFormManager(Profile* profile,
                       PasswordManager* password_manager,
                       content::WebContents* web_contents,
-                      const webkit::forms::PasswordForm& observed_form,
+                      const content::PasswordForm& observed_form,
                       bool ssl_valid);
   virtual ~PasswordFormManager();
 
@@ -46,7 +46,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Compare basic data of observed_form_ with argument. Only check the action
   // URL when action match is required.
-  bool DoesManage(const webkit::forms::PasswordForm& form,
+  bool DoesManage(const content::PasswordForm& form,
                   ActionMatch action_match) const;
 
   // Retrieves potential matching logins from the database.
@@ -85,12 +85,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Determines if we need to autofill given the results of the query.
   void OnRequestDone(
-      int handle, const std::vector<webkit::forms::PasswordForm*>& result);
+      int handle, const std::vector<content::PasswordForm*>& result);
 
   // PasswordStoreConsumer implementation.
   virtual void OnPasswordStoreRequestDone(
       CancelableRequestProvider::Handle handle,
-      const std::vector<webkit::forms::PasswordForm*>& result) OVERRIDE;
+      const std::vector<content::PasswordForm*>& result) OVERRIDE;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
@@ -99,7 +99,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // If the user has submitted observed_form_, provisionally hold on to
   // the submitted credentials until we are told by PasswordManager whether
   // or not the login was successful.
-  void ProvisionallySave(const webkit::forms::PasswordForm& credentials);
+  void ProvisionallySave(const content::PasswordForm& credentials);
 
   // Handles save-as-new or update of the form managed by this manager.
   // Note the basic data of updated_credentials must match that of
@@ -166,7 +166,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for OnPasswordStoreRequestDone to determine whether or not
   // the given result form is worth scoring.
-  bool IgnoreResult(const webkit::forms::PasswordForm& form) const;
+  bool IgnoreResult(const content::PasswordForm& form) const;
 
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user
@@ -176,7 +176,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for OnPasswordStoreRequestDone to score an individual result
   // against the observed_form_.
-  int ScoreResult(const webkit::forms::PasswordForm& form) const;
+  int ScoreResult(const content::PasswordForm& form) const;
 
   // Helper for Save in the case that best_matches.size() > 0, meaning
   // we have at least one match for this form/username/password. This
@@ -202,13 +202,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
   // frequently require lookups by username value in IsNewLogin.
-  webkit::forms::PasswordFormMap best_matches_;
+  content::PasswordFormMap best_matches_;
 
   // Cleans up when best_matches_ goes out of scope.
-  STLValueDeleter<webkit::forms::PasswordFormMap> best_matches_deleter_;
+  STLValueDeleter<content::PasswordFormMap> best_matches_deleter_;
 
   // The PasswordForm from the page or dialog managed by this.
-  webkit::forms::PasswordForm observed_form_;
+  content::PasswordForm observed_form_;
 
   // The origin url path of observed_form_ tokenized, for convenience when
   // scoring.
@@ -216,7 +216,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Stores updated credentials when the form was submitted but success is
   // still unknown.
-  webkit::forms::PasswordForm pending_credentials_;
+  content::PasswordForm pending_credentials_;
 
   // Whether pending_credentials_ stores a new login or is an update
   // to an existing one.
@@ -235,7 +235,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // as preferred. This is only allowed to be null if there are no best matches
   // at all, since there will always be one preferred login when there are
   // multiple matches (when first saved, a login is marked preferred).
-  const webkit::forms::PasswordForm* preferred_match_;
+  const content::PasswordForm* preferred_match_;
 
   typedef enum {
     PRE_MATCHING_PHASE,      // Have not yet invoked a GetLogins query to find

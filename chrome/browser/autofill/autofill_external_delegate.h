@@ -11,9 +11,9 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/password_autofill_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_field.h"
-#include "webkit/forms/password_form_dom_manager.h"
+#include "chrome/common/form_data.h"
+#include "chrome/common/form_field_data.h"
+#include "chrome/common/password_form_fill_data.h"
 
 class AutofillManager;
 
@@ -47,8 +47,8 @@ class AutofillExternalDelegate {
   // Autocomplete because they have their own popup, and showing our popup
   // on to of theirs would be a poor user experience.
   virtual void OnQuery(int query_id,
-                       const webkit::forms::FormData& form,
-                       const webkit::forms::FormField& field,
+                       const FormData& form,
+                       const FormFieldData& field,
                        const gfx::Rect& bounds,
                        bool display_warning_if_disabled);
 
@@ -63,7 +63,7 @@ class AutofillExternalDelegate {
 
   // Show password suggestions in the popup.
   void OnShowPasswordSuggestions(const std::vector<string16>& suggestions,
-                                 const webkit::forms::FormField& field,
+                                 const FormFieldData& field,
                                  const gfx::Rect& bounds);
 
   // Set the data list value associated with the current field.
@@ -100,8 +100,8 @@ class AutofillExternalDelegate {
 
   // Inform the Password Manager of a filled form.
   void AddPasswordFormMapping(
-      const webkit::forms::FormField& form,
-      const webkit::forms::PasswordFormFillData& fill_data);
+      const FormFieldData& form,
+      const PasswordFormFillData& fill_data);
 
   // Platforms that wish to implement an external Autofill delegate
   // MUST implement this.  The 1st arg is the tab contents that owns
@@ -124,8 +124,8 @@ class AutofillExternalDelegate {
 
   // Handle instance specific OnQueryCode.
   virtual void OnQueryPlatformSpecific(int query_id,
-                                       const webkit::forms::FormData& form,
-                                       const webkit::forms::FormField& field,
+                                       const FormData& form,
+                                       const FormFieldData& field,
                                        const gfx::Rect& bounds) = 0;
 
   // Handle platform-dependent hiding.
@@ -179,8 +179,8 @@ class AutofillExternalDelegate {
   int autofill_query_id_;
 
   // The current form and field selected by Autofill.
-  webkit::forms::FormData autofill_query_form_;
-  webkit::forms::FormField autofill_query_field_;
+  FormData autofill_query_form_;
+  FormFieldData autofill_query_field_;
 
   // Should we display a warning if Autofill is disabled?
   bool display_warning_if_disabled_;

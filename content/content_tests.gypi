@@ -489,7 +489,6 @@
             '../webkit/support/webkit_support.gyp:database',
             '../webkit/support/webkit_support.gyp:dom_storage',
             '../webkit/support/webkit_support.gyp:fileapi',
-            '../webkit/support/webkit_support.gyp:forms',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:quota',
             '../webkit/support/webkit_support.gyp:webkit_base',
@@ -601,6 +600,7 @@
           'type': 'executable',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
+            'content_common',
             'content_gpu',
             'content_plugin',
             'content_renderer',
@@ -621,7 +621,6 @@
             '../third_party/mesa/mesa.gyp:osmesa',
             '../ui/ui.gyp:ui',
             '../webkit/support/webkit_support.gyp:clearkeycdmplugin',
-            '../webkit/support/webkit_support.gyp:forms',
             '../webkit/support/webkit_support.gyp:glue',
           ],
           'include_dirs': [

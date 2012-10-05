@@ -11,16 +11,11 @@ class PasswordGenerator;
 
 namespace content {
 class BrowserContext;
+struct PasswordForm;
 }
 
 namespace gfx {
 class Rect;
-}
-
-namespace webkit {
-namespace forms {
-struct PasswordForm;
-}
 }
 
 class InfoBarService;
@@ -73,7 +68,7 @@ class AutofillManagerDelegate {
   // specified form with the given bounds.
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& bounds,
-      const webkit::forms::PasswordForm& form,
+      const content::PasswordForm& form,
       autofill::PasswordGenerator* generator) = 0;
 };
 

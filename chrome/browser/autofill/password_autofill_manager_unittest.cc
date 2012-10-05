@@ -34,7 +34,7 @@ class PasswordAutofillManagerTest : public testing::Test {
     username_field_.value = username1;
     fill_data_.basic_data.fields.push_back(username_field_);
 
-    webkit::forms::FormField password_field;
+    FormFieldData password_field;
     password_field.name = ASCIIToUTF16(kPasswordName);
     password_field.value = password1;
     fill_data_.basic_data.fields.push_back(password_field);
@@ -47,11 +47,11 @@ class PasswordAutofillManagerTest : public testing::Test {
     return &password_autofill_manager_;
   }
 
-  const webkit::forms::FormField& username_field() { return username_field_; }
+  const FormFieldData& username_field() { return username_field_; }
 
  private:
-  webkit::forms::PasswordFormFillData fill_data_;
-  webkit::forms::FormField username_field_;
+  PasswordFormFillData fill_data_;
+  FormFieldData username_field_;
 
   PasswordAutofillManager password_autofill_manager_;
 };
@@ -62,7 +62,7 @@ TEST_F(PasswordAutofillManagerTest, DidAcceptAutofillSuggestion) {
   EXPECT_FALSE(password_autofill_manager()->DidAcceptAutofillSuggestion(
       username_field(), ASCIIToUTF16(kInvalidUsername)));
 
-  webkit::forms::FormField invalid_username_field;
+  FormFieldData invalid_username_field;
   invalid_username_field.name = ASCIIToUTF16(kInvalidUsername);
 
   EXPECT_FALSE(password_autofill_manager()->DidAcceptAutofillSuggestion(

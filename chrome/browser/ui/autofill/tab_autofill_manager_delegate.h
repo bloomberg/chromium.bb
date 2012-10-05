@@ -30,7 +30,7 @@ class TabAutofillManagerDelegate
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& bounds,
-      const webkit::forms::PasswordForm& form,
+      const content::PasswordForm& form,
       autofill::PasswordGenerator* generator) OVERRIDE;
 
  private:

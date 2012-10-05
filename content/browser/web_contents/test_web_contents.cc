@@ -16,8 +16,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/password_form.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "webkit/forms/password_form.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace content {
@@ -77,7 +77,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.should_update_history = false;
   params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();
-  params.password_form = webkit::forms::PasswordForm();
+  params.password_form = content::PasswordForm();
   params.security_info = std::string();
   params.gesture = NavigationGestureUser;
   params.was_within_same_page = false;

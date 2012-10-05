@@ -73,7 +73,6 @@
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:fileapi',
-        '../webkit/support/webkit_support.gyp:forms',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
         '../webkit/support/webkit_support.gyp:user_agent',

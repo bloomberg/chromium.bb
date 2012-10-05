@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/forms/form_data.h"
+#include "chrome/common/form_data.h"
 
 #include "base/string_util.h"
-
-namespace webkit {
-namespace forms {
 
 FormData::FormData()
     : user_submitted(false) {
@@ -33,6 +30,3 @@ bool FormData::operator==(const FormData& form) const {
           user_submitted == form.user_submitted &&
           fields == form.fields);
 }
-
-}  // namespace forms
-}  // namespace webkit

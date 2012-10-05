@@ -219,7 +219,7 @@ void ExternalProcessImporterClient::OnFaviconsImportGroup(
 }
 
 void ExternalProcessImporterClient::OnPasswordFormImportReady(
-    const webkit::forms::PasswordForm& form) {
+    const content::PasswordForm& form) {
   if (cancelled_)
     return;
 

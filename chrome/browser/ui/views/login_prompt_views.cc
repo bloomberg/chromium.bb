@@ -20,8 +20,8 @@
 #include "ui/views/window/dialog_delegate.h"
 
 using content::BrowserThread;
+using content::PasswordForm;
 using content::WebContents;
-using webkit::forms::PasswordForm;
 
 // ----------------------------------------------------------------------------
 // LoginHandlerViews

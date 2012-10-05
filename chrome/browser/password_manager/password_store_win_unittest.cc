@@ -32,7 +32,7 @@ using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
 using testing::WithArg;
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 namespace {
 
@@ -40,7 +40,7 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD2(OnPasswordStoreRequestDone,
                void(CancelableRequestProvider::Handle,
-                    const std::vector<webkit::forms::PasswordForm*>&));
+                    const std::vector<content::PasswordForm*>&));
 };
 
 class MockWebDataServiceConsumer : public WebDataServiceConsumer {

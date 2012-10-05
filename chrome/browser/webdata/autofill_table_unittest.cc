@@ -20,13 +20,12 @@
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/form_field_data.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/forms/form_field.h"
 
 using base::Time;
 using base::TimeDelta;
-using webkit::forms::FormField;
 
 // So we can compare AutofillKeys with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutofillKey& key) {
@@ -132,7 +131,7 @@ TEST_F(AutofillTableTest, Autofill) {
   // Simulate the submission of a handful of entries in a field called "Name",
   // some more often than others.
   AutofillChangeList changes;
-  FormField field;
+  FormFieldData field;
   field.name = ASCIIToUTF16("Name");
   field.value = ASCIIToUTF16("Superman");
   base::Time now = base::Time::Now();
@@ -290,7 +289,7 @@ TEST_F(AutofillTableTest, Autofill_RemoveBetweenChanges) {
   Time t2 = t1 + one_day;
 
   AutofillChangeList changes;
-  FormField field;
+  FormFieldData field;
   field.name = ASCIIToUTF16("Name");
   field.value = ASCIIToUTF16("Superman");
   EXPECT_TRUE(
@@ -326,7 +325,7 @@ TEST_F(AutofillTableTest, Autofill_AddChanges) {
   Time t2 = t1 + one_day;
 
   AutofillChangeList changes;
-  FormField field;
+  FormFieldData field;
   field.name = ASCIIToUTF16("Name");
   field.value = ASCIIToUTF16("Superman");
   EXPECT_TRUE(
@@ -356,7 +355,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithOneTimestamp) {
   entries.push_back(entry);
   ASSERT_TRUE(db.GetAutofillTable()->UpdateAutofillEntries(entries));
 
-  FormField field;
+  FormFieldData field;
   field.name = ASCIIToUTF16("foo");
   field.value = ASCIIToUTF16("bar");
   int64 pair_id;
@@ -381,7 +380,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithTwoTimestamps) {
   entries.push_back(entry);
   ASSERT_TRUE(db.GetAutofillTable()->UpdateAutofillEntries(entries));
 
-  FormField field;
+  FormFieldData field;
   field.name = ASCIIToUTF16("foo");
   field.value = ASCIIToUTF16("bar");
   int64 pair_id;
@@ -426,7 +425,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
   entries.push_back(entry1);
   ASSERT_TRUE(db.GetAutofillTable()->UpdateAutofillEntries(entries));
 
-  FormField field0;
+  FormFieldData field0;
   field0.name = ASCIIToUTF16("foo");
   field0.value = ASCIIToUTF16("bar0");
   int64 pair_id;
@@ -436,7 +435,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
   EXPECT_LE(0, pair_id);
   EXPECT_EQ(1, count);
 
-  FormField field1;
+  FormFieldData field1;
   field1.name = ASCIIToUTF16("foo");
   field1.value = ASCIIToUTF16("bar1");
   ASSERT_TRUE(db.GetAutofillTable()->GetIDAndCountOfFormElement(
@@ -451,7 +450,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateReplace) {
 
   AutofillChangeList changes;
   // Add a form field.  This will be replaced.
-  FormField field;
+  FormFieldData field;
   field.name = ASCIIToUTF16("Name");
   field.value = ASCIIToUTF16("Superman");
   EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValue(field, &changes));
@@ -477,7 +476,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateDontReplace) {
 
   AutofillChangeList changes;
   // Add a form field.  This will NOT be replaced.
-  FormField field;
+  FormFieldData field;
   field.name = existing.key().name();
   field.value = existing.key().value();
   EXPECT_TRUE(db.GetAutofillTable()->AddFormFieldValueTime(field, &changes, t));
@@ -505,8 +504,8 @@ TEST_F(AutofillTableTest, Autofill_AddFormFieldValues) {
   // Add multiple values for "firstname" and "lastname" names.  Test that only
   // first value of each gets added. Related to security issue:
   // http://crbug.com/51727.
-  std::vector<FormField> elements;
-  FormField field;
+  std::vector<FormFieldData> elements;
+  FormFieldData field;
   field.name = ASCIIToUTF16("firstname");
   field.value = ASCIIToUTF16("Joe");
   elements.push_back(field);
@@ -1305,7 +1304,7 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_OneResult) {
 
   time_t start = 0;
   std::vector<Time> timestamps1;
-  FormField field;
+  FormFieldData field;
   field.name = ASCIIToUTF16("Name");
   field.value = ASCIIToUTF16("Superman");
   EXPECT_TRUE(
@@ -1347,7 +1346,7 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
   time_t start = 0;
 
   std::vector<Time> timestamps1;
-  FormField field;
+  FormFieldData field;
   field.name = ASCIIToUTF16("Name");
   field.value = ASCIIToUTF16("Superman");
   EXPECT_TRUE(
@@ -1405,7 +1404,7 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoSame) {
   time_t start = 0;
   std::vector<Time> timestamps;
   for (int i = 0; i < 2; i++) {
-    FormField field;
+    FormFieldData field;
     field.name = ASCIIToUTF16("Name");
     field.value = ASCIIToUTF16("Superman");
     EXPECT_TRUE(

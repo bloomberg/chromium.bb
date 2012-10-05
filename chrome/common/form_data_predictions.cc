@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/forms/form_data_predictions.h"
-
-namespace webkit {
-namespace forms {
+#include "chrome/common/form_data_predictions.h"
 
 FormDataPredictions::FormDataPredictions() {
 }
@@ -19,6 +16,3 @@ FormDataPredictions::FormDataPredictions(const FormDataPredictions& other)
 
 FormDataPredictions::~FormDataPredictions() {
 }
-
-}  // namespace forms
-}  // namespace webkit

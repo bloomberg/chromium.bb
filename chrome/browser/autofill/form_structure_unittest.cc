@@ -6,18 +6,15 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/common/form_data.h"
+#include "chrome/common/form_field_data.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_field.h"
 
-using webkit::forms::FormData;
-using webkit::forms::FormField;
 using WebKit::WebInputElement;
 
-namespace webkit {
-namespace forms {
+namespace content {
 
 std::ostream& operator<<(std::ostream& os, const FormData& form) {
   os << UTF16ToUTF8(form.name)
@@ -29,7 +26,7 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
      << form.action.spec()
      << " ";
 
-  for (std::vector<webkit::forms::FormField>::const_iterator iter =
+  for (std::vector<FormFieldData>::const_iterator iter =
            form.fields.begin();
        iter != form.fields.end(); ++iter) {
     os << *iter
@@ -39,8 +36,7 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
   return os;
 }
 
-}  // namespace forms
-}  // namespace webkit_glue
+}  // namespace content
 
 class FormStructureTest {
  public:
@@ -53,7 +49,7 @@ TEST(FormStructureTest, FieldCount) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
   field.form_control_type = ASCIIToUTF16("text");
@@ -79,7 +75,7 @@ TEST(FormStructureTest, AutofillCount) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
   field.form_control_type = ASCIIToUTF16("text");
@@ -123,7 +119,7 @@ TEST(FormStructureTest, IsAutofillable) {
   // We need at least three text fields to be auto-fillable.
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
   field.form_control_type = ASCIIToUTF16("text");
@@ -197,7 +193,7 @@ TEST(FormStructureTest, ShouldBeParsed) {
   // We need at least three text fields to be parseable.
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
   field.form_control_type = ASCIIToUTF16("text");
@@ -270,7 +266,7 @@ TEST(FormStructureTest, HeuristicsContactInfo) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First Name");
@@ -339,7 +335,7 @@ TEST(FormStructureTest, HeuristicsAutocompletetype) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = string16();
@@ -377,7 +373,7 @@ TEST(FormStructureTest, HeuristicsAutocompletetypePhones) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = string16();
@@ -421,7 +417,7 @@ TEST(FormStructureTest, AutocompletetypeOverridesOtherHeuristics) {
   form.method = ASCIIToUTF16("post");
 
   // Start with a regular contact form.
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First Name");
@@ -470,7 +466,7 @@ TEST(FormStructureTest, HeuristicsAutocompletetypeWithSections) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   // We expect "shipping" and "billing" to be the most common sections.
@@ -542,7 +538,7 @@ TEST(FormStructureTest, HeuristicsAutocompletetypeWithFallbacks) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   // Skip over any sections and "x"-prefixed types.
@@ -590,7 +586,7 @@ TEST(FormStructureTest, HeuristicsSample8) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Your First Name:");
@@ -669,7 +665,7 @@ TEST(FormStructureTest, HeuristicsSample6) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("E-mail address");
@@ -725,14 +721,14 @@ TEST(FormStructureTest, HeuristicsSample6) {
 }
 
 // Tests a sequence of FormFields where only labels are supplied to heuristics
-// for matching.  This works because FormField labels are matched in the case
-// that input element ids (or |name| fields) are missing.
+// for matching.  This works because FormFieldData labels are matched in the
+// case that input element ids (or |name| fields) are missing.
 TEST(FormStructureTest, HeuristicsLabelsOnly) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First Name");
@@ -798,7 +794,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfo) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name on Card");
@@ -852,7 +848,7 @@ TEST(FormStructureTest, HeuristicsCreditCardInfoWithUnknownCardField) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name on Card");
@@ -914,7 +910,7 @@ TEST(FormStructureTest, ThreeAddressLines) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address Line1");
@@ -956,7 +952,7 @@ TEST(FormStructureTest, BillingAndShippingAddresses) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address Line1");
@@ -1002,7 +998,7 @@ TEST(FormStructureTest, ThreeAddressLinesExpedia) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Street:");
@@ -1045,7 +1041,7 @@ TEST(FormStructureTest, TwoAddressLinesEbay) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address Line1");
@@ -1079,7 +1075,7 @@ TEST(FormStructureTest, HeuristicsStateWithProvince) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Address Line1");
@@ -1114,7 +1110,7 @@ TEST(FormStructureTest, HeuristicsWithBilling) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First Name*:");
@@ -1187,7 +1183,7 @@ TEST(FormStructureTest, ThreePartPhoneNumber) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Phone:");
@@ -1235,7 +1231,7 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name on Card");
@@ -1284,7 +1280,7 @@ TEST(FormStructureTest, CVCCodeClash) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Card number");
@@ -1338,7 +1334,7 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("Name on Card");
@@ -1453,7 +1449,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First Name");
@@ -1599,7 +1595,7 @@ TEST(FormStructureTest, CheckDataPresence) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("First Name");
@@ -1853,7 +1849,7 @@ TEST(FormStructureTest, CheckMultipleTypes) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("email");
@@ -1959,7 +1955,7 @@ TEST(FormStructureTest, CheckFormSignature) {
   FormData form;
   form.method = ASCIIToUTF16("post");
 
-  FormField field;
+  FormFieldData field;
   field.form_control_type = ASCIIToUTF16("text");
 
   field.label = ASCIIToUTF16("email");

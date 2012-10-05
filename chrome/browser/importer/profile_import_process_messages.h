@@ -15,9 +15,9 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/common_param_traits_macros.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "webkit/forms/password_form.h"
 
 #ifndef CHROME_BROWSER_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
 #define CHROME_BROWSER_IMPORTER_PROFILE_IMPORT_PROCESS_MESSAGES_H_
@@ -331,7 +331,7 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
                      std::vector<history::ImportedFaviconUsage>)
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
-                     webkit::forms::PasswordForm)
+                     content::PasswordForm)
 
 // WARNING: The TemplateURL*s in the following message get heap-allocated on the
 // receiving end.  The message handler for this message MUST take ownership of

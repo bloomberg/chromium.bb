@@ -18,10 +18,8 @@ class Pickle;
 class PickleIterator;
 class PrefService;
 
-namespace webkit {
-namespace forms {
+namespace content {
 struct PasswordForm;
-}
 }
 
 namespace base {
@@ -43,12 +41,12 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   virtual bool Init() OVERRIDE;
 
   // Implements NativeBackend interface.
-  virtual bool AddLogin(const webkit::forms::PasswordForm& form) OVERRIDE;
-  virtual bool UpdateLogin(const webkit::forms::PasswordForm& form) OVERRIDE;
-  virtual bool RemoveLogin(const webkit::forms::PasswordForm& form) OVERRIDE;
+  virtual bool AddLogin(const content::PasswordForm& form) OVERRIDE;
+  virtual bool UpdateLogin(const content::PasswordForm& form) OVERRIDE;
+  virtual bool RemoveLogin(const content::PasswordForm& form) OVERRIDE;
   virtual bool RemoveLoginsCreatedBetween(
       const base::Time& delete_begin, const base::Time& delete_end) OVERRIDE;
-  virtual bool GetLogins(const webkit::forms::PasswordForm& form,
+  virtual bool GetLogins(const content::PasswordForm& form,
                          PasswordFormList* forms) OVERRIDE;
   virtual bool GetLoginsCreatedBetween(const base::Time& get_begin,
                                        const base::Time& get_end,
@@ -127,8 +125,8 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   // If |update_check| is false, we only check the fields that are checked by
   // LoginDatabase::UpdateLogin() when updating logins; otherwise, we check the
   // fields that are checked by LoginDatabase::RemoveLogin() for removing them.
-  static bool CompareForms(const webkit::forms::PasswordForm& a,
-                           const webkit::forms::PasswordForm& b,
+  static bool CompareForms(const content::PasswordForm& a,
+                           const content::PasswordForm& b,
                            bool update_check);
 
   // Serializes a list of PasswordForms to be stored in the wallet.

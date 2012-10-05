@@ -39,18 +39,24 @@
       'filepath': 'ui/aura/|'\
                   'ash/',
     },
+    # TODO(blundell): Add any new paths to this file after applying jam's
+    # comments.
     'autofill': {
       'filepath': 'chrome/browser/autofill/|'\
         'chrome/browser/resources/options/autofill_|'\
         'chrome/browser/sync/glue/autofill_|'\
         'chrome/browser/ui/webui/options/autofill_|'\
+        'chrome/common/form_|'\
+        'chrome/common/password_|'\
         'chrome/renderer/autofill/|'\
         'chrome/test/data/autofill/|'\
         'chrome/test/data/autofill/heuristics/input/|'\
         'chrome/test/data/autofill/heuristics/output/|'\
         'chrome/test/data/autofill/merge/input/|'\
         'chrome/test/data/autofill/merge/output/|'\
-        'webkit/forms/',
+        'content/public/common/password_|'\
+        'content/public/renderer/password_'\
+        'content/renderer/password_',
     },
     'automation': {
       'filepath': 'chrome/browser/automation/|chrome/test/automation/',

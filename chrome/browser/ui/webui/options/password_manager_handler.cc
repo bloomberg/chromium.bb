@@ -17,11 +17,11 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/password_form.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/forms/password_form.h"
 
 namespace options {
 
@@ -241,7 +241,7 @@ void PasswordManagerHandler::PasswordListPopulater::Populate() {
 void PasswordManagerHandler::PasswordListPopulater::
     OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<webkit::forms::PasswordForm*>& result) {
+        const std::vector<content::PasswordForm*>& result) {
   DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = 0;
   page_->password_list_.clear();
@@ -270,7 +270,7 @@ void PasswordManagerHandler::PasswordExceptionListPopulater::Populate() {
 void PasswordManagerHandler::PasswordExceptionListPopulater::
     OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<webkit::forms::PasswordForm*>& result) {
+        const std::vector<content::PasswordForm*>& result) {
   DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = 0;
   page_->password_exception_list_.clear();

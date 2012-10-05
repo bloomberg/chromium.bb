@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/profile_import_process_messages.h"
-#include "webkit/forms/password_form.h"
+#include "content/public/common/password_form.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/ie7_password.h"
@@ -115,7 +115,7 @@ void ExternalProcessImporterBridge::SetKeywords(
 }
 
 void ExternalProcessImporterBridge::SetPasswordForm(
-    const webkit::forms::PasswordForm& form) {
+    const content::PasswordForm& form) {
   Send(new ProfileImportProcessHostMsg_NotifyPasswordFormReady(form));
 }
 

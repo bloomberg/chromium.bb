@@ -52,7 +52,6 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:database',
         '<(DEPTH)/webkit/support/webkit_support.gyp:dom_storage',
         '<(DEPTH)/webkit/support/webkit_support.gyp:fileapi',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:forms',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
         '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',

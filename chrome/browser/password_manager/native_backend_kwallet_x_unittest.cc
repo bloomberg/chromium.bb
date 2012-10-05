@@ -29,7 +29,7 @@ using content::BrowserThread;
 using testing::_;
 using testing::Invoke;
 using testing::Return;
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 namespace {
 

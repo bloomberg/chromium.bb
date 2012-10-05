@@ -8,19 +8,19 @@
 
 #include "base/time.h"
 #include "chrome/common/common_param_traits_macros.h"
+#include "chrome/common/form_data.h"
+#include "chrome/common/form_data_predictions.h"
+#include "chrome/common/form_field_data.h"
+#include "chrome/common/form_field_data_predictions.h"
+#include "chrome/common/password_form_fill_data.h"
+#include "content/public/common/password_form.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ui/gfx/rect.h"
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_data_predictions.h"
-#include "webkit/forms/form_field.h"
-#include "webkit/forms/form_field_predictions.h"
-#include "webkit/forms/password_form.h"
-#include "webkit/forms/password_form_dom_manager.h"
 
 #define IPC_MESSAGE_START AutofillMsgStart
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::forms::FormField)
+IPC_STRUCT_TRAITS_BEGIN(FormFieldData)
   IPC_STRUCT_TRAITS_MEMBER(label)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(value)
@@ -34,7 +34,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit::forms::FormField)
   IPC_STRUCT_TRAITS_MEMBER(option_contents)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::forms::FormFieldPredictions)
+IPC_STRUCT_TRAITS_BEGIN(FormFieldDataPredictions)
   IPC_STRUCT_TRAITS_MEMBER(field)
   IPC_STRUCT_TRAITS_MEMBER(signature)
   IPC_STRUCT_TRAITS_MEMBER(heuristic_type)
@@ -42,7 +42,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit::forms::FormFieldPredictions)
   IPC_STRUCT_TRAITS_MEMBER(overall_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::forms::FormData)
+IPC_STRUCT_TRAITS_BEGIN(FormData)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(method)
   IPC_STRUCT_TRAITS_MEMBER(origin)
@@ -51,14 +51,14 @@ IPC_STRUCT_TRAITS_BEGIN(webkit::forms::FormData)
   IPC_STRUCT_TRAITS_MEMBER(fields)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::forms::FormDataPredictions)
+IPC_STRUCT_TRAITS_BEGIN(FormDataPredictions)
   IPC_STRUCT_TRAITS_MEMBER(data)
   IPC_STRUCT_TRAITS_MEMBER(signature)
   IPC_STRUCT_TRAITS_MEMBER(experiment_id)
   IPC_STRUCT_TRAITS_MEMBER(fields)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::forms::PasswordFormFillData)
+IPC_STRUCT_TRAITS_BEGIN(PasswordFormFillData)
   IPC_STRUCT_TRAITS_MEMBER(basic_data)
   IPC_STRUCT_TRAITS_MEMBER(additional_logins)
   IPC_STRUCT_TRAITS_MEMBER(wait_for_username)
@@ -79,19 +79,19 @@ IPC_MESSAGE_ROUTED5(AutofillMsg_SuggestionsReturned,
 // Autofill form data.
 IPC_MESSAGE_ROUTED2(AutofillMsg_FormDataFilled,
                     int /* id of the request message */,
-                    webkit::forms::FormData /* form data */)
+                    FormData /* form data */)
 
 // Fill a password form and prepare field autocomplete for multiple
 // matching logins. Lets the renderer know if it should disable the popup
 // because the browser process will own the popup UI.
 IPC_MESSAGE_ROUTED2(AutofillMsg_FillPasswordForm,
-                    webkit::forms::PasswordFormFillData, /* the fill form data*/
+                    PasswordFormFillData, /* the fill form data*/
                     bool /* disable popup */ )
 
 // Send the heuristic and server field type predictions to the renderer.
 IPC_MESSAGE_ROUTED1(
     AutofillMsg_FieldTypePredictionsAvailable,
-    std::vector<webkit::forms::FormDataPredictions> /* forms */)
+    std::vector<FormDataPredictions> /* forms */)
 
 // Select an Autofill item when using an external delegate.
 IPC_MESSAGE_ROUTED1(AutofillMsg_SelectAutofillSuggestionAtIndex,
@@ -133,42 +133,42 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptPasswordAutofillSuggestion,
 // Tells the renderer that this password form is not blacklisted.  A form can
 // be blacklisted if a user chooses "never save passwords for this site".
 IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,
-                    webkit::forms::PasswordForm /* form checked */)
+                    content::PasswordForm /* form checked */)
 
 // Autofill messages sent from the renderer to the browser.
 
 // Notification that forms have been seen that are candidates for
 // filling/submitting by the AutofillManager.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormsSeen,
-                    std::vector<webkit::forms::FormData> /* forms */,
+                    std::vector<FormData> /* forms */,
                     base::TimeTicks /* timestamp */)
 
 // Notification that password forms have been seen that are candidates for
 // filling/submitting by the password manager.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsParsed,
-                    std::vector<webkit::forms::PasswordForm> /* forms */)
+                    std::vector<content::PasswordForm> /* forms */)
 
 // Notification that initial layout has occurred and the following password
 // forms are visible on the page (e.g. not set to display:none.)
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsRendered,
-                    std::vector<webkit::forms::PasswordForm> /* forms */)
+                    std::vector<content::PasswordForm> /* forms */)
 
 // Notification that a form has been submitted.  The user hit the button.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormSubmitted,
-                    webkit::forms::FormData /* form */,
+                    FormData /* form */,
                     base::TimeTicks /* timestamp */)
 
 // Notification that a form field's value has changed.
 IPC_MESSAGE_ROUTED3(AutofillHostMsg_TextFieldDidChange,
-                    webkit::forms::FormData /* the form */,
-                    webkit::forms::FormField /* the form field */,
+                    FormData /* the form */,
+                    FormFieldData /* the form field */,
                     base::TimeTicks /* timestamp */)
 
 // Queries the browser for Autofill suggestions for a form input field.
 IPC_MESSAGE_ROUTED5(AutofillHostMsg_QueryFormFieldAutofill,
                     int /* id of this message */,
-                    webkit::forms::FormData /* the form */,
-                    webkit::forms::FormField /* the form field */,
+                    FormData /* the form */,
+                    FormFieldData /* the form field */,
                     gfx::Rect /* input field bounds, window-relative */,
                     bool /* display warning if autofill disabled */)
 
@@ -180,8 +180,8 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_DidShowAutofillSuggestions,
 // profile data.
 IPC_MESSAGE_ROUTED4(AutofillHostMsg_FillAutofillFormData,
                     int /* id of this message */,
-                    webkit::forms::FormData /* the form  */,
-                    webkit::forms::FormField /* the form field  */,
+                    FormData /* the form  */,
+                    FormFieldData /* the form field  */,
                     int /* profile unique ID */)
 
 // Sent when a form is previewed with Autofill suggestions.
@@ -212,17 +212,17 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillPopup)
 IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordGenerationPopup,
                     gfx::Rect /* source location */,
                     int /* max length of the password */,
-                    webkit::forms::PasswordForm)
+                    content::PasswordForm)
 
 // Instruct the browser that a password mapping has been found for a field.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_AddPasswordFormMapping,
-                    webkit::forms::FormField, /* the user name field */
-                    webkit::forms::PasswordFormFillData /* password pairings */)
+                    FormFieldData, /* the user name field */
+                    PasswordFormFillData /* password pairings */)
 
 // Instruct the browser to show a popup with the following suggestions from the
 // password manager.
 IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordSuggestions,
-                    webkit::forms::FormField /* the form field */,
+                    FormFieldData /* the form field */,
                     gfx::Rect /* input field bounds, window-relative */,
                     std::vector<string16> /* suggestions */)
 

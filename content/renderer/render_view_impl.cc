@@ -57,6 +57,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
+#include "content/public/renderer/password_form_conversion_utils.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
@@ -182,9 +183,6 @@
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/forms/form_data.h"
-#include "webkit/forms/form_field.h"
-#include "webkit/forms/password_form_dom_manager.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/glue_serialize.h"
@@ -322,6 +320,7 @@ using base::Time;
 using base::TimeDelta;
 using content::DocumentState;
 using content::NavigationState;
+using content::PasswordForm;
 using content::Referrer;
 using content::RenderThread;
 using content::RenderViewObserver;
@@ -329,9 +328,6 @@ using content::RenderViewVisitor;
 using content::RendererAccessibilityComplete;
 using content::RendererAccessibilityFocusOnly;
 using content::V8ValueConverter;
-using webkit::forms::FormField;
-using webkit::forms::PasswordForm;
-using webkit::forms::PasswordFormDomManager;
 using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::ResourceFetcher;
 using webkit_glue::WebPreferences;
@@ -2941,8 +2937,7 @@ void RenderViewImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
   // a copy of the password in case it gets lost.
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
-  document_state->set_password_form_data(
-      PasswordFormDomManager::CreatePasswordForm(form));
+  document_state->set_password_form_data(content::CreatePasswordForm(form));
 }
 
 void RenderViewImpl::willSubmitForm(WebFrame* frame,
@@ -2960,7 +2955,7 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
   document_state->set_searchable_form_encoding(
       web_searchable_form_data.encoding().utf8());
   scoped_ptr<PasswordForm> password_form_data =
-      PasswordFormDomManager::CreatePasswordForm(form);
+      content::CreatePasswordForm(form);
 
   // In order to save the password that the user actually typed and not one
   // that may have gotten transformed by the site prior to submit, recover it

@@ -91,7 +91,7 @@ bool ProfileWriter::TemplateURLServiceIsLoaded() const {
   return TemplateURLServiceFactory::GetForProfile(profile_)->loaded();
 }
 
-void ProfileWriter::AddPasswordForm(const webkit::forms::PasswordForm& form) {
+void ProfileWriter::AddPasswordForm(const content::PasswordForm& form) {
   PasswordStoreFactory::GetForProfile(
       profile_, Profile::EXPLICIT_ACCESS)->AddLogin(form);
 }

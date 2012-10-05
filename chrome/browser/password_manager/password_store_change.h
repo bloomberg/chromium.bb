@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "webkit/forms/password_form.h"
+#include "content/public/common/password_form.h"
 
 class PasswordStoreChange {
  public:
@@ -17,13 +17,13 @@ class PasswordStoreChange {
     REMOVE,
   };
 
-  PasswordStoreChange(Type type, const webkit::forms::PasswordForm& form)
+  PasswordStoreChange(Type type, const content::PasswordForm& form)
       : type_(type), form_(form) {
   }
   virtual ~PasswordStoreChange() {}
 
   Type type() const { return type_; }
-  const webkit::forms::PasswordForm& form() const { return form_; }
+  const content::PasswordForm& form() const { return form_; }
 
   bool operator==(const PasswordStoreChange& other) const {
     return type() == other.type() &&
@@ -45,7 +45,7 @@ class PasswordStoreChange {
 
  private:
   Type type_;
-  webkit::forms::PasswordForm form_;
+  content::PasswordForm form_;
 };
 
 typedef std::vector<PasswordStoreChange> PasswordStoreChangeList;

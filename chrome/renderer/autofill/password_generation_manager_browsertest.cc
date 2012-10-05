@@ -80,7 +80,7 @@ class PasswordGenerationManagerTest : public ChromeRenderViewTest {
   }
 
   void SetNotBlacklistedMessage(const char* form_str) {
-    webkit::forms::PasswordForm form;
+    content::PasswordForm form;
     form.origin =
         GURL(StringPrintf("data:text/html;charset=utf-8,%s",form_str));
     AutofillMsg_FormNotBlacklisted msg(0, form);

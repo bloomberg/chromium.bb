@@ -28,6 +28,7 @@
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/form_field_data.h"
 #ifdef DEBUG
 #include "content/public/browser/browser_thread.h"
 #endif
@@ -37,7 +38,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/forms/form_field.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -48,7 +48,6 @@
 using base::Bind;
 using base::Time;
 using content::BrowserThread;
-using webkit::forms::FormField;
 using webkit_glue::WebIntentServiceData;
 
 namespace {
@@ -418,9 +417,9 @@ WebDataService::Handle WebDataService::GetAllTokens(
 ////////////////////////////////////////////////////////////////////////////////
 
 void WebDataService::AddFormFields(
-    const std::vector<FormField>& fields) {
-  GenericRequest<std::vector<FormField> >* request =
-      new GenericRequest<std::vector<FormField> >(
+    const std::vector<FormFieldData>& fields) {
+  GenericRequest<std::vector<FormFieldData> >* request =
+      new GenericRequest<std::vector<FormFieldData> >(
           this, GetNextRequestHandle(), NULL, fields);
   RegisterRequest(request);
   ScheduleTask(FROM_HERE,
@@ -1067,7 +1066,7 @@ void WebDataService::GetAllTokensImpl(
 ////////////////////////////////////////////////////////////////////////////////
 
 void WebDataService::AddFormElementsImpl(
-    GenericRequest<std::vector<FormField> >* request) {
+    GenericRequest<std::vector<FormFieldData> >* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled(NULL)) {
     AutofillChangeList changes;

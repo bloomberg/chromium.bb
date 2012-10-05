@@ -20,7 +20,7 @@
 
 using content::BrowserThread;
 using std::vector;
-using webkit::forms::PasswordForm;
+using content::PasswordForm;
 
 PasswordStoreX::PasswordStoreX(LoginDatabase* login_db,
                                Profile* profile,

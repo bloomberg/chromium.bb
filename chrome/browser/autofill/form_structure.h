@@ -15,6 +15,8 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "googleurl/src/gurl.h"
 
+struct FormData;
+struct FormDataPredictions;
 
 enum RequestMethod {
   GET,
@@ -37,18 +39,11 @@ namespace buzz {
 class XmlElement;
 }
 
-namespace webkit {
-namespace forms {
-struct FormData;
-struct FormDataPredictions;
-}
-}
-
 // FormStructure stores a single HTML form together with the values entered
 // in the fields along with additional information needed by Autofill.
 class FormStructure {
  public:
-  explicit FormStructure(const webkit::forms::FormData& form);
+  explicit FormStructure(const FormData& form);
   virtual ~FormStructure();
 
   // Runs several heuristics against the form fields to determine their possible
@@ -79,7 +74,7 @@ class FormStructure {
   // fields' predicted types.
   static void GetFieldTypePredictions(
       const std::vector<FormStructure*>& form_structures,
-      std::vector<webkit::forms::FormDataPredictions>* forms);
+      std::vector<FormDataPredictions>* forms);
 
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.
@@ -140,8 +135,8 @@ class FormStructure {
 
   virtual std::string server_experiment_id() const;
 
-  bool operator==(const webkit::forms::FormData& form) const;
-  bool operator!=(const webkit::forms::FormData& form) const;
+  bool operator==(const FormData& form) const;
+  bool operator!=(const FormData& form) const;
 
  private:
   friend class FormStructureTest;
