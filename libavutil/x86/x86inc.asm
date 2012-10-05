@@ -164,10 +164,10 @@ CPUNOP amdnop
         %define r%1m  %2d
         %define r%1mp %2
     %elif ARCH_X86_64 ; memory
-        %define r%1m [rsp + stack_offset + %3]
+        %define r%1m [rSTK + stack_offset + %3]
         %define r%1mp qword r %+ %1 %+ m
     %else
-        %define r%1m [esp + stack_offset + %3]
+        %define r%1m [rSTK + stack_offset + %3]
         %define r%1mp dword r %+ %1 %+ m
     %endif
     %define r%1  %2
@@ -229,12 +229,16 @@ DECLARE_REG_TMP_SIZE 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14
 
 %macro PUSH 1
     push %1
-    %assign stack_offset stack_offset+gprsize
+    %ifidn rSTK, rsp
+        %assign stack_offset stack_offset+gprsize
+    %endif
 %endmacro
 
 %macro POP 1
     pop %1
-    %assign stack_offset stack_offset-gprsize
+    %ifidn rSTK, rsp
+       %assign stack_offset stack_offset-gprsize
+    %endif
 %endmacro
 
 %macro PUSH_IF_USED 1-*
@@ -267,14 +271,18 @@ DECLARE_REG_TMP_SIZE 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14
 %macro SUB 2
     sub %1, %2
     %ifidn %1, rsp
-        %assign stack_offset stack_offset+(%2)
+        %ifidn rSTK, rsp
+            %assign stack_offset stack_offset+(%2)
+        %endif
     %endif
 %endmacro
 
 %macro ADD 2
     add %1, %2
     %ifidn %1, rsp
-        %assign stack_offset stack_offset-(%2)
+        %ifidn rSTK, rsp
+            %assign stack_offset stack_offset-(%2)
+        %endif
     %endif
 %endmacro
 
@@ -331,6 +339,44 @@ DECLARE_REG_TMP_SIZE 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14
     %assign n_arg_names %0
 %endmacro
 
+%macro ALLOC_STACK 1-2 ; stack_size, n_xmm_regs (for win64 only)
+    ASSERT %1 > 0
+    %assign stack_size_alignment ((mmsize + 8) & ~8)
+    %assign stack_size_aligned (%1 + stack_size_alignment - 1) & ~(stack_size_alignment - 1)
+    %if %0 == 2
+        %assign xmm_regs_used %2
+    %else
+        %assign xmm_regs_used 0
+    %endif
+    %if mmsize <= 16 && HAVE_ALIGNED_STACK
+        %assign stack_size_padded stack_size_aligned + stack_size_alignment - gprsize - (stack_offset & (stack_size_alignment - 1))
+        %if xmm_regs_used > 6
+            %assign stack_size_padded stack_size_padded + (xmm_regs_used - 6) * 16
+        %endif
+        SUB rsp, stack_size_padded
+        %if xmm_regs_used > 6
+            WIN64_PUSH_XMM
+        %endif
+    %else
+        %assign reg_num (regs_used - 1)
+        %xdefine rSTK r %+ reg_num
+        ; align stack, and save original stack location directly above it, i.e.
+        ; in [rsp+stack_size_padded], so we can restore the stack in a single
+        ; instruction (i.e. mov rsp, [rsp+stack_size_padded])
+        mov  rSTK, rsp
+        %assign stack_size_padded stack_size_aligned
+        %if xmm_regs_used > 6
+            %assign stack_size_padded stack_size_padded + (xmm_regs_used - 6) * 16
+        %endif
+        sub  rsp, gprsize+stack_size_padded
+        and  rsp, ~(stack_size_alignment-1)
+        mov [rsp+stack_size_padded], rSTK
+        %if xmm_regs_used > 6
+            WIN64_PUSH_XMM
+        %endif
+    %endif
+%endmacro
+
 %if WIN64 ; Windows x64 ;=================================================
 
 DECLARE_REG 0,  rcx
@@ -349,31 +395,46 @@ DECLARE_REG 12, R13, 104
 DECLARE_REG 13, R14, 112
 DECLARE_REG 14, R15, 120
 
-%macro PROLOGUE 2-4+ 0 ; #args, #regs, #xmm_regs, arg_names...
+%macro PROLOGUE 2-5+ 0 ; #args, #regs, #xmm_regs, arg_names...
     %assign num_args %1
     %assign regs_used %2
     ASSERT regs_used >= num_args
     ASSERT regs_used <= 15
     PUSH_IF_USED 7, 8, 9, 10, 11, 12, 13, 14
-    %if mmsize == 8
-        %assign xmm_regs_used 0
-    %else
+    %assign xmm_regs_used 0
+    %ifnum %4
+        %if %4 > 0
+            ALLOC_STACK %4, %3
+        %endif
+    %endif
+    %if mmsize != 8 && stack_size_aligned == 0
         WIN64_SPILL_XMM %3
     %endif
     LOAD_IF_USED 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
-    DEFINE_ARGS %4
+    %ifnum %4
+        DEFINE_ARGS %5
+    %elif %0 == 4
+        DEFINE_ARGS %4
+    %elif %0 > 4
+        DEFINE_ARGS %4, %5
+    %endif
+%endmacro
+
+%macro WIN64_PUSH_XMM 0
+    %assign %%i xmm_regs_used
+    %rep (xmm_regs_used-6)
+        %assign %%i %%i-1
+        movdqa [rsp + (%%i-6)*16 + stack_size_aligned], xmm %+ %%i
+    %endrep
 %endmacro
 
 %macro WIN64_SPILL_XMM 1
     %assign xmm_regs_used %1
     ASSERT xmm_regs_used <= 16
     %if xmm_regs_used > 6
-        SUB rsp, (xmm_regs_used-6)*16+16
-        %assign %%i xmm_regs_used
-        %rep (xmm_regs_used-6)
-            %assign %%i %%i-1
-            movdqa [rsp + (%%i-6)*16+(~stack_offset&8)], xmm %+ %%i
-        %endrep
+        %assign stack_size_padded (xmm_regs_used-6)*16+16-gprsize-(stack_offset&15)
+        SUB rsp, stack_size_padded
+        WIN64_PUSH_XMM
     %endif
 %endmacro
 
@@ -382,19 +443,23 @@ DECLARE_REG 14, R15, 120
         %assign %%i xmm_regs_used
         %rep (xmm_regs_used-6)
             %assign %%i %%i-1
-            movdqa xmm %+ %%i, [%1 + (%%i-6)*16+(~stack_offset&8)]
+            movdqa xmm %+ %%i, [%1 + (%%i-6)*16+stack_size_aligned]
         %endrep
-        add %1, (xmm_regs_used-6)*16+16
+    %endif
+    %if mmsize == 32 || HAVE_ALIGNED_STACK == 0
+        mov rsp, [rsp+stack_size_padded]
+    %else
+        add %1, stack_size_padded
     %endif
 %endmacro
 
 %macro WIN64_RESTORE_XMM 1
     WIN64_RESTORE_XMM_INTERNAL %1
-    %assign stack_offset stack_offset-(xmm_regs_used-6)*16+16
+    %assign stack_offset (stack_offset-stack_size_padded)
     %assign xmm_regs_used 0
 %endmacro
 
-%define has_epilogue regs_used > 7 || xmm_regs_used > 6 || mmsize == 32
+%define has_epilogue regs_used > 7 || xmm_regs_used > 6 || mmsize == 32 || stack_size_aligned > 0
 
 %macro RET 0
     WIN64_RESTORE_XMM_INTERNAL rsp
@@ -423,19 +488,37 @@ DECLARE_REG 12, R13, 56
 DECLARE_REG 13, R14, 64
 DECLARE_REG 14, R15, 72
 
-%macro PROLOGUE 2-4+ ; #args, #regs, #xmm_regs, arg_names...
+%macro PROLOGUE 2-5+ ; #args, #regs, #xmm_regs, arg_names...
     %assign num_args %1
     %assign regs_used %2
     ASSERT regs_used >= num_args
     ASSERT regs_used <= 15
     PUSH_IF_USED 9, 10, 11, 12, 13, 14
+    %ifnum %4
+        %if %4 > 0
+            ALLOC_STACK %4
+        %endif
+    %endif
     LOAD_IF_USED 6, 7, 8, 9, 10, 11, 12, 13, 14
-    DEFINE_ARGS %4
+    %ifnum %4
+        DEFINE_ARGS %5
+    %elif %0 == 4
+        DEFINE_ARGS %4
+    %elif %0 > 4
+        DEFINE_ARGS %4, %5
+    %endif
 %endmacro
 
-%define has_epilogue regs_used > 9 || mmsize == 32
+%define has_epilogue regs_used > 9 || mmsize == 32 || stack_size_aligned > 0
 
 %macro RET 0
+%if stack_size_aligned > 0
+%if mmsize == 32 || HAVE_ALIGNED_STACK == 0
+    mov rsp, [rsp+stack_size_padded]
+%else
+    add rsp, stack_size_padded
+%endif
+%endif
     POP_IF_USED 14, 13, 12, 11, 10, 9
 %if mmsize == 32
     vzeroupper
@@ -464,7 +547,7 @@ DECLARE_REG 6, ebp, 28
 
 DECLARE_ARG 7, 8, 9, 10, 11, 12, 13, 14
 
-%macro PROLOGUE 2-4+ ; #args, #regs, #xmm_regs, arg_names...
+%macro PROLOGUE 2-5+ ; #args, #regs, #xmm_regs, arg_names...
     %assign num_args %1
     %assign regs_used %2
     %if num_args > 7
@@ -475,13 +558,31 @@ DECLARE_ARG 7, 8, 9, 10, 11, 12, 13, 14
     %endif
     ASSERT regs_used >= num_args
     PUSH_IF_USED 3, 4, 5, 6
+    %ifnum %4
+        %if %4 > 0
+            ALLOC_STACK %4
+        %endif
+    %endif
     LOAD_IF_USED 0, 1, 2, 3, 4, 5, 6
-    DEFINE_ARGS %4
+    %ifnum %4
+        DEFINE_ARGS %5
+    %elif %0 == 4
+        DEFINE_ARGS %4
+    %elif %0 > 4
+        DEFINE_ARGS %4, %5
+    %endif
 %endmacro
 
-%define has_epilogue regs_used > 3 || mmsize == 32
+%define has_epilogue regs_used > 3 || mmsize == 32 || stack_size_aligned > 0
 
 %macro RET 0
+%if stack_size_aligned > 0
+%if mmsize == 32 || HAVE_ALIGNED_STACK == 0
+    mov rsp, [rsp+stack_size_padded]
+%else
+    add rsp, stack_size_padded
+%endif
+%endif
     POP_IF_USED 6, 5, 4, 3
 %if mmsize == 32
     vzeroupper
@@ -543,7 +644,10 @@ DECLARE_ARG 7, 8, 9, 10, 11, 12, 13, 14
     align function_align
     %1:
     RESET_MM_PERMUTATION ; not really needed, but makes disassembly somewhat nicer
+    %xdefine rSTK rsp
     %assign stack_offset 0
+    %assign stack_size_aligned 0
+    %assign stack_size_padded 0
     %ifnidn %2, ""
         PROLOGUE %2
     %endif
