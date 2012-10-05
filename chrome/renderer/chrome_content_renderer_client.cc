@@ -475,7 +475,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                     "Native Client in about:flags."));
             placeholder = PluginPlaceholder::CreateBlockedPlugin(
                 render_view, frame, params, plugin, identifier, group_name,
-                IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED);
+                IDR_BLOCKED_PLUGIN_HTML,
+#if defined(OS_CHROMEOS)
+                IDS_NACL_PLUGIN_BLOCKED);
+#else
+                IDS_PLUGIN_BLOCKED);
+#endif
             break;
           }
         }
