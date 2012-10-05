@@ -11,8 +11,8 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
-#include "webkit/fileapi/media/media_device_map_service.h"
 #include "webkit/fileapi/media/media_path_filter.h"
+#include "webkit/fileapi/media/mtp_device_map_service.h"
 
 using base::PlatformFileError;
 using base::PlatformFileInfo;
@@ -64,9 +64,9 @@ PlatformFileError DeviceMediaFileUtil::GetFileInfo(
     const FileSystemURL& url,
     PlatformFileInfo* file_info,
     FilePath* platform_path) {
-  DCHECK(context->media_device_delegate());
+  DCHECK(context->mtp_device_delegate());
   PlatformFileError error =
-      context->media_device_delegate()->GetFileInfo(url.path(), file_info);
+      context->mtp_device_delegate()->GetFileInfo(url.path(), file_info);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
@@ -81,11 +81,11 @@ DeviceMediaFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     bool recursive) {
-  DCHECK(context->media_device_delegate());
+  DCHECK(context->mtp_device_delegate());
   return new FilteringFileEnumerator(
       make_scoped_ptr(
-          context->media_device_delegate()->CreateFileEnumerator(url.path(),
-                                                                 recursive)),
+          context->mtp_device_delegate()->CreateFileEnumerator(url.path(),
+                                                               recursive)),
       context->media_path_filter());
 }
 
@@ -114,7 +114,7 @@ PlatformFileError DeviceMediaFileUtil::Truncate(
 bool DeviceMediaFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  DCHECK(context->media_device_delegate());
+  DCHECK(context->mtp_device_delegate());
   scoped_ptr<AbstractFileEnumerator> enumerator(
       CreateFileEnumerator(context, url, false));
   FilePath path;
@@ -162,7 +162,7 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
   DCHECK(file_info);
   DCHECK(local_path);
   DCHECK(snapshot_policy);
-  DCHECK(context->media_device_delegate());
+  DCHECK(context->mtp_device_delegate());
 
   // We return a temporary file as a snapshot.
   *snapshot_policy = FileSystemFileUtil::kSnapshotFileTemporary;
@@ -186,7 +186,7 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
                  << isolated_media_file_system_dir_path.value();
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
-  return context->media_device_delegate()->CreateSnapshotFile(
+  return context->mtp_device_delegate()->CreateSnapshotFile(
       url.path(), *local_path, file_info);
 }
 

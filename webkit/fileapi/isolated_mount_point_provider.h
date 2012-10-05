@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/media/media_file_system_config.h"
+#include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 namespace fileapi {
 
@@ -17,7 +17,7 @@ class IsolatedFileUtil;
 class MediaPathFilter;
 class NativeMediaFileUtil;
 
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 class DeviceMediaFileUtil;
 #endif
 
@@ -74,7 +74,7 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   scoped_ptr<DraggedFileUtil> dragged_file_util_;
   scoped_ptr<NativeMediaFileUtil> native_media_file_util_;
 
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   scoped_ptr<DeviceMediaFileUtil> device_media_file_util_;
 #endif
 };

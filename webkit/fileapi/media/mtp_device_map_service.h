@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_MEDIA_DEVICE_MAP_SERVICE_H_
-#define WEBKIT_FILEAPI_MEDIA_MEDIA_DEVICE_MAP_SERVICE_H_
+#ifndef WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_MAP_SERVICE_H_
+#define WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_MAP_SERVICE_H_
 
 #include <map>
 
@@ -15,18 +15,18 @@
 
 namespace fileapi {
 
-class MediaDeviceDelegate;
+class MtpDeviceDelegate;
 
 // Helper class to manage media device delegates which can communicate with mtp
 // devices to complete media file system operations.
-class FILEAPI_EXPORT MediaDeviceMapService {
+class FILEAPI_EXPORT MtpDeviceMapService {
  public:
-  static MediaDeviceMapService* GetInstance();
+  static MtpDeviceMapService* GetInstance();
 
   // Adds the media device delegate for the given |device_location|. Called on
   // IO thread.
   void AddDelegate(const FilePath::StringType& device_location,
-                   scoped_refptr<MediaDeviceDelegate> delegate);
+                   scoped_refptr<MtpDeviceDelegate> delegate);
 
   // Removes the media device delegate for the given |device_location| if
   // exists. Called on IO thread.
@@ -35,19 +35,19 @@ class FILEAPI_EXPORT MediaDeviceMapService {
   // Gets the media device delegate associated with |filesystem_id|.
   // Return NULL if the |filesystem_id| is no longer valid (e.g. because the
   // corresponding device is detached etc). Called on IO thread.
-  MediaDeviceDelegate* GetMediaDeviceDelegate(const std::string& filesystem_id);
+  MtpDeviceDelegate* GetMtpDeviceDelegate(const std::string& filesystem_id);
 
  private:
-  friend struct DefaultSingletonTraits<MediaDeviceMapService>;
+  friend struct DefaultSingletonTraits<MtpDeviceMapService>;
 
-  typedef scoped_refptr<MediaDeviceDelegate> MediaDeviceDelegateObj;
+  typedef scoped_refptr<MtpDeviceDelegate> MtpDeviceDelegateObj;
 
-  // Mapping of device_location and MediaDeviceDelegate object.
-  typedef std::map<FilePath::StringType, MediaDeviceDelegateObj> DelegateMap;
+  // Mapping of device_location and MtpDeviceDelegate object.
+  typedef std::map<FilePath::StringType, MtpDeviceDelegateObj> DelegateMap;
 
   // Get access to this class using GetInstance() method.
-  MediaDeviceMapService();
-  ~MediaDeviceMapService();
+  MtpDeviceMapService();
+  ~MtpDeviceMapService();
 
   // Stores a map of attached mtp device delegates.
   DelegateMap delegate_map_;
@@ -56,9 +56,9 @@ class FILEAPI_EXPORT MediaDeviceMapService {
   // called on same thread.
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaDeviceMapService);
+  DISALLOW_COPY_AND_ASSIGN(MtpDeviceMapService);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_MEDIA_MEDIA_DEVICE_MAP_SERVICE_H_
+#endif  // WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_MAP_SERVICE_H_

@@ -23,14 +23,13 @@
 #include "webkit/fileapi/isolated_file_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/media/media_file_system_config.h"
 #include "webkit/fileapi/media/media_path_filter.h"
 #include "webkit/fileapi/media/native_media_file_util.h"
 #include "webkit/fileapi/native_file_util.h"
 
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 #include "webkit/fileapi/media/device_media_file_util.h"
-#include "webkit/fileapi/media/media_device_map_service.h"
+#include "webkit/fileapi/media/mtp_device_map_service.h"
 #endif
 
 namespace fileapi {
@@ -42,7 +41,7 @@ IsolatedMountPointProvider::IsolatedMountPointProvider(
       isolated_file_util_(new IsolatedFileUtil()),
       dragged_file_util_(new DraggedFileUtil()),
       native_media_file_util_(new NativeMediaFileUtil()) {
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // TODO(kmadhusu): Initialize |device_media_file_util_| in
   // initialization list.
   device_media_file_util_.reset(new DeviceMediaFileUtil(profile_path_));
@@ -94,7 +93,7 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
     case kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
     case kFileSystemTypeDeviceMedia:
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
       return device_media_file_util_.get();
 #endif
 
@@ -122,17 +121,17 @@ FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
         context->task_runners()->media_task_runner());
   }
 
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   if (url.type() == kFileSystemTypeDeviceMedia) {
-    MediaDeviceMapService* map_service = MediaDeviceMapService::GetInstance();
-    MediaDeviceDelegate* device_delegate =
-        map_service->GetMediaDeviceDelegate(url.filesystem_id());
+    MtpDeviceMapService* map_service = MtpDeviceMapService::GetInstance();
+    MtpDeviceDelegate* device_delegate =
+        map_service->GetMtpDeviceDelegate(url.filesystem_id());
     if (!device_delegate) {
       if (error_code)
         *error_code = base::PLATFORM_FILE_ERROR_NOT_FOUND;
       return NULL;
     }
-    operation_context->set_media_device_delegate(device_delegate);
+    operation_context->set_mtp_device_delegate(device_delegate);
     operation_context->set_task_runner(device_delegate->media_task_runner());
     operation_context->set_media_path_filter(media_path_filter_.get());
   }

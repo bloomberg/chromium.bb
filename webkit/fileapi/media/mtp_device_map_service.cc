@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/media/media_device_map_service.h"
+#include "webkit/fileapi/media/mtp_device_map_service.h"
 
 #include <string>
 #include <utility>
 
 #include "base/stl_util.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/fileapi/media/media_device_delegate.h"
+#include "webkit/fileapi/media/mtp_device_delegate.h"
 
 namespace fileapi {
 
 // static
-MediaDeviceMapService* MediaDeviceMapService::GetInstance() {
-  return Singleton<MediaDeviceMapService>::get();
+MtpDeviceMapService* MtpDeviceMapService::GetInstance() {
+  return Singleton<MtpDeviceMapService>::get();
 }
 
-void MediaDeviceMapService::AddDelegate(
+void MtpDeviceMapService::AddDelegate(
     const FilePath::StringType& device_location,
-    scoped_refptr<MediaDeviceDelegate> delegate) {
+    scoped_refptr<MtpDeviceDelegate> delegate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(delegate.get());
   DCHECK(!device_location.empty());
@@ -31,7 +31,7 @@ void MediaDeviceMapService::AddDelegate(
   delegate_map_[device_location] = delegate;
 }
 
-void MediaDeviceMapService::RemoveDelegate(
+void MtpDeviceMapService::RemoveDelegate(
     const FilePath::StringType& device_location) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DelegateMap::iterator it = delegate_map_.find(device_location);
@@ -39,7 +39,7 @@ void MediaDeviceMapService::RemoveDelegate(
   delegate_map_.erase(it);
 }
 
-MediaDeviceDelegate* MediaDeviceMapService::GetMediaDeviceDelegate(
+MtpDeviceDelegate* MtpDeviceMapService::GetMtpDeviceDelegate(
     const std::string& filesystem_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FilePath device_path;
@@ -56,12 +56,12 @@ MediaDeviceDelegate* MediaDeviceMapService::GetMediaDeviceDelegate(
   return it->second.get();
 }
 
-MediaDeviceMapService::MediaDeviceMapService() {
+MtpDeviceMapService::MtpDeviceMapService() {
   // This object is constructed on UI Thread but the member functions are
   // accessed on IO thread. Therefore, detach from current thread.
   thread_checker_.DetachFromThread();
 }
 
-MediaDeviceMapService::~MediaDeviceMapService() {}
+MtpDeviceMapService::~MtpDeviceMapService() {}
 
 }  // namespace fileapi

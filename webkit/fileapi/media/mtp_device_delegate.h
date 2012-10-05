@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_MEDIA_DEVICE_DELEGATE_H_
-#define WEBKIT_FILEAPI_MEDIA_MEDIA_DEVICE_DELEGATE_H_
+#ifndef WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_DELEGATE_H_
+#define WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_DELEGATE_H_
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -19,14 +19,14 @@ class Time;
 
 namespace fileapi {
 
-struct MediaDeviceDelegateDeleter;
+struct MtpDeviceDelegateDeleter;
 
 // Delegate for mtp device to perform media device isolated file system
 // operations. Class that implements this delegate does the actual communication
 // with the mtp device.
-class MediaDeviceDelegate
-    : public base::RefCountedThreadSafe<MediaDeviceDelegate,
-                                        MediaDeviceDelegateDeleter> {
+class MtpDeviceDelegate
+    : public base::RefCountedThreadSafe<MtpDeviceDelegate,
+                                        MtpDeviceDelegateDeleter> {
  public:
   // Returns information about the given file path.
   virtual base::PlatformFileError GetFileInfo(
@@ -56,21 +56,21 @@ class MediaDeviceDelegate
   virtual void DeleteOnCorrectThread() const = 0;
 
  protected:
-  virtual ~MediaDeviceDelegate() {}
+  virtual ~MtpDeviceDelegate() {}
 
  private:
-  friend struct MediaDeviceDelegateDeleter;
-  friend class base::DeleteHelper<MediaDeviceDelegate>;
-  friend class base::RefCountedThreadSafe<MediaDeviceDelegate,
-                                          MediaDeviceDelegateDeleter>;
+  friend struct MtpDeviceDelegateDeleter;
+  friend class base::DeleteHelper<MtpDeviceDelegate>;
+  friend class base::RefCountedThreadSafe<MtpDeviceDelegate,
+                                          MtpDeviceDelegateDeleter>;
 };
 
-struct MediaDeviceDelegateDeleter {
-  static void Destruct(const MediaDeviceDelegate* delegate) {
+struct MtpDeviceDelegateDeleter {
+  static void Destruct(const MtpDeviceDelegate* delegate) {
     delegate->DeleteOnCorrectThread();
   }
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_MEDIA_MEDIA_DEVICE_DELEGATE_H_
+#endif  // WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_DELEGATE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_gallery/media_device_delegate_impl_chromeos.h"
+#include "chrome/browser/media_gallery/mtp_device_delegate_impl_chromeos.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -618,7 +618,7 @@ class RecursiveMediaFileEnumerator
 
 namespace chromeos {
 
-MediaDeviceDelegateImplCros::MediaDeviceDelegateImplCros(
+MtpDeviceDelegateImplCros::MtpDeviceDelegateImplCros(
     const std::string& device_location)
     : device_path_(device_location) {
   CHECK(!device_path_.empty());
@@ -630,13 +630,13 @@ MediaDeviceDelegateImplCros::MediaDeviceDelegateImplCros(
   DCHECK(media_task_runner_);
 }
 
-MediaDeviceDelegateImplCros::~MediaDeviceDelegateImplCros() {
+MtpDeviceDelegateImplCros::~MtpDeviceDelegateImplCros() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GetMediaTransferProtocolManager()->CloseStorage(device_handle_,
                                                   Bind(&DoNothing));
 }
 
-PlatformFileError MediaDeviceDelegateImplCros::GetFileInfo(
+PlatformFileError MtpDeviceDelegateImplCros::GetFileInfo(
     const FilePath& file_path,
     PlatformFileInfo* file_info) {
   if (!LazyInit())
@@ -650,7 +650,7 @@ PlatformFileError MediaDeviceDelegateImplCros::GetFileInfo(
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*
-MediaDeviceDelegateImplCros::CreateFileEnumerator(
+MtpDeviceDelegateImplCros::CreateFileEnumerator(
         const FilePath& root,
         bool recursive) {
   if (root.value().empty() || !LazyInit())
@@ -671,7 +671,7 @@ MediaDeviceDelegateImplCros::CreateFileEnumerator(
   return new MediaFileEnumerator(worker->get_file_entries());
 }
 
-PlatformFileError MediaDeviceDelegateImplCros::CreateSnapshotFile(
+PlatformFileError MtpDeviceDelegateImplCros::CreateSnapshotFile(
     const FilePath& device_file_path,
     const FilePath& local_path,
     PlatformFileInfo* file_info) {
@@ -700,11 +700,11 @@ PlatformFileError MediaDeviceDelegateImplCros::CreateSnapshotFile(
   return error;
 }
 
-SequencedTaskRunner* MediaDeviceDelegateImplCros::media_task_runner() {
+SequencedTaskRunner* MtpDeviceDelegateImplCros::media_task_runner() {
   return media_task_runner_.get();
 }
 
-void MediaDeviceDelegateImplCros::DeleteOnCorrectThread() const {
+void MtpDeviceDelegateImplCros::DeleteOnCorrectThread() const {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
     return;
@@ -712,7 +712,7 @@ void MediaDeviceDelegateImplCros::DeleteOnCorrectThread() const {
   delete this;
 }
 
-bool MediaDeviceDelegateImplCros::LazyInit() {
+bool MtpDeviceDelegateImplCros::LazyInit() {
   DCHECK(media_task_runner_);
   DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
 
