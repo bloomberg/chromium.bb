@@ -102,6 +102,16 @@ void set_registers_and_stop() {
 #endif
 }
 
+void test_jump_to_address_zero() {
+  /*
+   * "volatile" tells Clang/LLVM not to optimize this call away and
+   * replace it with an illegal instruction, which produces different
+   * behaviour (SIGILL rather than SIGSEGV).
+   */
+  void (*volatile null_ptr)(void) = NULL;
+  null_ptr();
+}
+
 /*
  * The test sets a breakpoint on this function, so for that to work
  * this function must not be inlined.
@@ -212,6 +222,9 @@ int main(int argc, char **argv) {
   if (strcmp(argv[1], "test_getting_registers") == 0) {
     set_registers_and_stop();
     return 0;
+  }
+  if (strcmp(argv[1], "test_jump_to_address_zero") == 0) {
+    test_jump_to_address_zero();
   }
   if (strcmp(argv[1], "test_setting_breakpoint") == 0) {
     breakpoint_target_func();

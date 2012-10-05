@@ -340,6 +340,17 @@ class DebugStubTest(unittest.TestCase):
       self.CheckWriteRegisters(connection)
       self.CheckReadOnlyRegisters(connection)
 
+  def test_jump_to_address_zero(self):
+    with LaunchDebugStub('test_jump_to_address_zero') as connection:
+      # Continue from initial breakpoint.
+      reply = connection.RspRequest('c')
+      AssertReplySignal(reply, NACL_SIGSEGV)
+      registers = DecodeRegs(connection.RspRequest('g'))
+      if ARCH == 'x86-64':
+        self.assertEquals(registers[IP_REG[ARCH]], registers['r15'])
+      else:
+        self.assertEquals(registers[IP_REG[ARCH]], 0)
+
   def test_reading_and_writing_memory(self):
     # Any arguments to the nexe would work here because we do not run
     # the executable beyond the initial breakpoint.
