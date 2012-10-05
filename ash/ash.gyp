@@ -74,6 +74,8 @@
         'desktop_background/desktop_background_widget_controller.h',
         'display/display_controller.cc',
         'display/display_controller.h',
+        'display/display_error_dialog.cc',
+        'display/display_error_dialog.h',
         'display/mouse_cursor_event_filter.cc',
         'display/mouse_cursor_event_filter.h',
         'display/multi_display_manager.cc',

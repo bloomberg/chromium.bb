@@ -473,6 +473,9 @@ Press Search or Shift to cancel.
       <message name="IDS_ASH_MINIMIZE_WINDOW" desc="A help text to show that when the button gets clicked the window gets minimized.">
         Minimize
       </message>
+      <message name="IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING" desc="An error message to show that the system failed to enter the mirroring mode.">
+	Can't duplicate image on attached monitors. No matching resolution found.
+      </message>
     </messages>
   </release>
 </grit>
