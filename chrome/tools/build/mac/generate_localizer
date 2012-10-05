@@ -42,8 +42,19 @@ def xib_localizable_strings(xib_path):
   """Runs ibtool to extract the localizable strings data from the xib."""
   tools_dir = os.environ.get('DEVELOPER_BIN_DIR', '/usr/bin')
   tool_path = os.path.join(tools_dir, 'ibtool')
+
+  # Take SDKROOT out of the environment passed to ibtool. ibtool itself has
+  # no need for it, but when ibtool runs via xcrun and Xcode isn't aware of
+  # the SDK in use, its presence causes an error.
+  if 'SDKROOT' in os.environ:
+    ibtool_env = os.environ.copy()
+    del ibtool_env['SDKROOT']
+  else:
+    ibtool_env = os.environ
+
   ibtool_cmd = subprocess.Popen([tool_path, '--localizable-strings', xib_path],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                env=ibtool_env)
   (cmd_out, cmd_err) = ibtool_cmd.communicate()
   if ibtool_cmd.returncode:
     sys.stderr.write('%s:0: error: ibtool on "%s" failed (%d):\n%s\n' %
