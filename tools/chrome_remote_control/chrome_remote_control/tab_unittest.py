@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from chrome_remote_control import tab_test_case
+from chrome_remote_control import tab_crash_exception
 
 class TabTest(tab_test_case.TabTestCase):
   def testNavigateAndWaitToForCompleteState(self):
@@ -14,3 +15,10 @@ class TabTest(tab_test_case.TabTestCase):
 
   def testTabBrowserIsRightBrowser(self):
     self.assertEquals(self._tab.browser, self._browser)
+
+  def testRendererCrash(self):
+    self.assertRaises(tab_crash_exception.TabCrashException,
+                      lambda: self._tab.page.Navigate('chrome://crash',
+                                                      timeout=5))
+
+

@@ -50,11 +50,11 @@ class InspectorPage(object):
     res = self._inspector_backend.SendAndIgnoreResponse(request)
 
     self._pending_navigate_url = url
-    def IsNavigationDone():
-      self._inspector_backend.DispatchNotifications()
+    def IsNavigationDone(time_left):
+      self._inspector_backend.DispatchNotifications(time_left)
       return self._pending_navigate_url == None
 
-    util.WaitFor(IsNavigationDone, timeout)
+    util.WaitFor(IsNavigationDone, timeout, pass_time_left_to_func=True)
 
     # Turn off notifications.
     request = {

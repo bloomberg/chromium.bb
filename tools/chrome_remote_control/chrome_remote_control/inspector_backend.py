@@ -5,6 +5,8 @@ import json
 import logging
 import socket
 
+from chrome_remote_control import tab_crash_exception
+from chrome_remote_control import util
 from chrome_remote_control import websocket
 
 class InspectorException(Exception):
@@ -14,10 +16,12 @@ class InspectorBackend(object):
   def __init__(self, backend, descriptor):
     self._backend = backend
     self._descriptor = descriptor
+    self._socket_url = descriptor['webSocketDebuggerUrl']
     self._socket = websocket.create_connection(
         descriptor['webSocketDebuggerUrl'])
     self._next_request_id = 0
     self._domain_handlers = {}
+    self._cur_socket_timeout = 0
 
   def Close(self):
     for _, handlers in self._domain_handlers.items():
@@ -28,11 +32,14 @@ class InspectorBackend(object):
     self._socket = None
     self._backend = None
 
-  def DispatchNotifications(self):
+  def DispatchNotifications(self, timeout=10):
+    self._SetTimeout(timeout)
     try:
       data = self._socket.recv()
     except socket.error:
-      return None
+      if self._backend.DoesDebuggerUrlExist(self._socket_url):
+        return
+      raise tab_crash_exception.TabCrashException()
 
     res = json.loads(data)
     logging.debug('got [%s]', data)
@@ -54,16 +61,28 @@ class InspectorBackend(object):
     self._next_request_id += 1
     self._socket.send(json.dumps(req))
 
-  def SyncRequest(self, req, timeout=60):
+  def _SetTimeout(self, timeout):
+    if self._cur_socket_timeout != timeout:
+      self._socket.settimeout(timeout)
+      self._cur_socket_timeout = timeout
+
+  def SyncRequest(self, req, timeout=10):
     # TODO(nduca): Listen to the timeout argument
     # pylint: disable=W0613
-    # self._socket.settimeout(timeout)
+    self._SetTimeout(timeout)
+
     req['id'] = self._next_request_id
     self._next_request_id += 1
     self._socket.send(json.dumps(req))
 
     while True:
-      data = self._socket.recv()
+      try:
+        data = self._socket.recv()
+      except socket.error:
+        if self._backend.DoesDebuggerUrlExist(self._socket_url):
+          raise util.TimeoutException(
+            "TimedOut waiting for reply. This is unusual.")
+        raise tab_crash_exception.TabCrashException()
 
       res = json.loads(data)
       logging.debug('got [%s]', data)

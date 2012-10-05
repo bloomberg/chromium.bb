@@ -1,7 +1,6 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import logging
 import os
 import unittest
 
@@ -22,17 +21,15 @@ class TestGoogleCredentialsBackend(unittest.TestCase):
   def testRealLoginIfPossible(self):
     credentials_path = os.path.join(
       os.path.dirname(__file__),
-      '..', 'unittest_data', 'internal', 'google_test_credentials.json')
+      '..', '..', 'perf', 'data', 'credentials.json')
     if not os.path.exists(credentials_path):
-      logging.warning(
-        ('%s credentials file not found. Will not be able to fully'
-         'verify google_credentials_backend.') %
-        credentials_path)
       return
 
     options = options_for_unittests.Get()
     with browser_finder.FindBrowser(options).Create() as b:
       b.credentials.credentials_path = credentials_path
+      if not b.credentials.CanLogin('google'):
+        return
       with b.ConnectToNthTab(0) as tab:
         ret = b.credentials.LoginNeeded(tab, 'google')
         self.assertTrue(ret)

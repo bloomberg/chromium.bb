@@ -7,10 +7,18 @@ import time
 class TimeoutException(Exception):
   pass
 
-def WaitFor(condition, timeout, poll_interval=0.1):
+def WaitFor(condition,
+            timeout, poll_interval=0.1,
+            pass_time_left_to_func=False):
   assert isinstance(condition, type(lambda: None))  # is function
   start_time = time.time()
-  while not condition():
+  while True:
+    if pass_time_left_to_func:
+      res = condition((start_time + timeout) - time.time())
+    else:
+      res = condition()
+    if res:
+      break
     if time.time() - start_time > timeout:
       if condition.__name__ == '<lambda>':
         try:

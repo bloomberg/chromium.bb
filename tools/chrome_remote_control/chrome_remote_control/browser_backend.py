@@ -61,6 +61,11 @@ class BrowserBackend(object):
     ib = inspector_backend.InspectorBackend(self, self._ListTabs()[index])
     return tab.Tab(browser, ib)
 
+  def DoesDebuggerUrlExist(self, url):
+    matches = [t for t in self._ListTabs()
+               if t['webSocketDebuggerUrl'] == url]
+    return len(matches) >= 1
+
   def CreateForwarder(self, host_port):
     raise NotImplementedError()
 
