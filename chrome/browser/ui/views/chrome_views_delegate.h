@@ -50,6 +50,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance) OVERRIDE;
   virtual views::NativeWidget* CreateNativeWidget(
+      views::Widget::InitParams::Type type,
       views::internal::NativeWidgetDelegate* delegate,
       gfx::NativeView parent) OVERRIDE;
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
 
+#include "ash/wm/visibility_controller.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_root_window_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -11,6 +12,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
@@ -52,6 +54,13 @@ void DesktopBrowserFrameAura::InitNativeWidget(
   modified_params.desktop_root_window_host =
       browser_desktop_root_window_host_->AsDesktopRootWindowHost();
   DesktopNativeWidgetAura::InitNativeWidget(modified_params);
+
+#if defined(USE_ASH)
+  visibility_controller_.reset(new ash::internal::VisibilityController);
+  aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(),
+                                    visibility_controller_.get());
+  ash::SetChildWindowVisibilityChangesAnimated(GetNativeView());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

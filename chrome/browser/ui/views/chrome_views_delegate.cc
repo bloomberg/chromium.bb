@@ -26,6 +26,7 @@
 #endif
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #endif
 
@@ -168,14 +169,10 @@ int ChromeViewsDelegate::GetDispositionForEvent(int event_flags) {
 #if defined(USE_AURA)
 views::NativeWidgetHelperAura* ChromeViewsDelegate::CreateNativeWidgetHelper(
     views::NativeWidgetAura* native_widget) {
-  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
-#if !defined(OS_CHROMEOS)  // We don't build this class for ChromeOS.
-#if defined(USE_ASH)
-  if (!chrome::ShouldOpenAshOnStartup())
-#endif
-    return new views::DesktopNativeWidgetHelperAura(native_widget);
-#endif
-#if defined(USE_ASH)
+#if !defined(OS_CHROMEOS) && !defined(OS_WIN)
+      // TODO(erg): get rid of this, it's interfering with desktop-aura.
+  return new views::DesktopNativeWidgetHelperAura(native_widget);
+#else
   return NULL;
 #endif
 }
@@ -188,9 +185,12 @@ content::WebContents* ChromeViewsDelegate::CreateWebContents(
 }
 
 views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
+    views::Widget::InitParams::Type type,
     views::internal::NativeWidgetDelegate* delegate,
     gfx::NativeView parent) {
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  if (parent && type != views::Widget::InitParams::TYPE_MENU)
+    return new views::NativeWidgetAura(delegate);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
         views::switches::kDesktopAura))
     return new views::DesktopNativeWidgetAura(delegate);

@@ -16,6 +16,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
+#include "ui/views/widget/widget.h"
 
 namespace content {
 class WebContents;
@@ -119,6 +120,7 @@ class VIEWS_EXPORT ViewsDelegate {
   // Creates a NativeWidget implementation. Returning NULL means Widget will
   // create a default implementation for the platform.
   virtual NativeWidget* CreateNativeWidget(
+      Widget::InitParams::Type type,
       internal::NativeWidgetDelegate* delegate,
       gfx::NativeView parent) = 0;
 };

@@ -54,11 +54,12 @@ void BuildRootLayers(View* view, std::vector<ui::Layer*>* layers) {
 // Finally, make a default one.
 NativeWidget* CreateNativeWidget(NativeWidget* native_widget,
                                  internal::NativeWidgetDelegate* delegate,
+                                 Widget::InitParams::Type type,
                                  gfx::NativeView parent) {
   if (!native_widget) {
     if (ViewsDelegate::views_delegate) {
-      native_widget =
-          ViewsDelegate::views_delegate->CreateNativeWidget(delegate, parent);
+      native_widget = ViewsDelegate::views_delegate->CreateNativeWidget(
+          type, delegate, parent);
     }
     if (!native_widget) {
       native_widget =
@@ -332,8 +333,8 @@ void Widget::Init(const InitParams& params) {
   widget_delegate_ = params.delegate ?
       params.delegate : new DefaultWidgetDelegate(this, params);
   ownership_ = params.ownership;
-  native_widget_ =
-      CreateNativeWidget(params.native_widget, this, params.GetParent())->
+  native_widget_ = CreateNativeWidget(
+      params.native_widget, this, params.type, params.GetParent())->
           AsNativeWidgetPrivate();
   GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);

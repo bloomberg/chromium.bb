@@ -44,7 +44,6 @@ void DesktopScreenPositionClient::SetBounds(
   aura::RootWindow* root = window->GetRootWindow();
   aura::Window::ConvertPointToTarget(window->parent(), root, &origin);
 
-#if !defined(OS_WIN)
   if  (window->type() == aura::client::WINDOW_TYPE_CONTROL) {
     window->SetBounds(gfx::Rect(origin, bounds.size()));
     return;
@@ -57,7 +56,6 @@ void DesktopScreenPositionClient::SetBounds(
     window->SetBounds(gfx::Rect(origin, bounds.size()));
     return;
   }
-#endif  // !defined(OS_WIN)
   root->SetHostBounds(bounds);
   window->SetBounds(gfx::Rect(bounds.size()));
 }

@@ -225,9 +225,14 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     ash::SetWindowVisibilityAnimationType(
         popup_->GetNativeView(),
         ash::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-    // No animation for autocomplete popup appearance.  see crbug.com/124104
+    // Meanie-pants designers won't let us animate the appearance in
+    // production, but we will do it anyway for desktop-aura for the time being
+    // as it lets usverify quickly that hotness is enabled.
+#if defined(OS_CHROMEOS)
+    // No animation for autocomplete popup appearance.
     ash::SetWindowVisibilityAnimationTransition(
         popup_->GetNativeView(), ash::ANIMATE_HIDE);
+#endif
 #endif
     popup_->SetContentsView(this);
     popup_->StackAbove(omnibox_view_->GetRelativeWindowForPopup());

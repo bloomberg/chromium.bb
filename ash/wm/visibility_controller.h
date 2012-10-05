@@ -13,7 +13,7 @@
 namespace ash {
 namespace internal {
 
-class VisibilityController : public aura::client::VisibilityClient {
+class ASH_EXPORT VisibilityController : public aura::client::VisibilityClient {
  public:
   VisibilityController();
   virtual ~VisibilityController();

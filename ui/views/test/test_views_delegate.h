@@ -64,6 +64,7 @@ class TestViewsDelegate : public ViewsDelegate {
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance) OVERRIDE;
   virtual NativeWidget* CreateNativeWidget(
+      Widget::InitParams::Type type,
       internal::NativeWidgetDelegate* delegate,
       gfx::NativeView parent) OVERRIDE;
 

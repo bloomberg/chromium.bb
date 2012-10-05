@@ -69,6 +69,7 @@ content::WebContents* TestViewsDelegate::CreateWebContents(
 }
 
 NativeWidget* TestViewsDelegate::CreateNativeWidget(
+    Widget::InitParams::Type type,
     internal::NativeWidgetDelegate* delegate,
     gfx::NativeView parent) {
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)

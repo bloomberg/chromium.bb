@@ -12,6 +12,7 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
+#include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
@@ -106,7 +107,13 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   // CEF sets focus to the window the user clicks down on.
   // TODO(beng): see if we can't do this some other way. CEF seems a heavy-
   //             handed way of accomplishing focus.
-  root_window_->SetEventFilter(new aura::shared::CompoundEventFilter);
+  aura::shared::CompoundEventFilter* root_window_event_filter =
+      new aura::shared::CompoundEventFilter;
+  root_window_->SetEventFilter(root_window_event_filter);
+
+  input_method_filter_.reset(new aura::shared::InputMethodEventFilter);
+  input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
+  root_window_event_filter->AddFilter(input_method_filter_.get());
 
   return root_window_;
 }
@@ -326,8 +333,7 @@ void DesktopRootWindowHostWin::ToggleFullScreen() {
 }
 
 gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
-  // TODO(beng): Should be an ash-only method??
-  return GetWindowBoundsInScreen();
+  return GetClientAreaBoundsInScreen();
 }
 
 void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {

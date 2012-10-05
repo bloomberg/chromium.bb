@@ -18,6 +18,9 @@ class FocusManager;
 namespace client {
 class ScreenPositionClient;
 }
+namespace shared {
+class InputMethodEventFilter;
+}
 }
 
 namespace views {
@@ -201,6 +204,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   scoped_ptr<aura::FocusManager> focus_manager_;
   // Depends on focus_manager_.
   scoped_ptr<aura::DesktopActivationClient> activation_client_;
+  scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.
