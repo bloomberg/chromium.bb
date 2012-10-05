@@ -1,9 +1,9 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From pp_graphics_3d.idl modified Tue Nov 29 12:56:32 2011. */
+/* From pp_graphics_3d.idl modified Wed Oct  3 15:55:01 2012. */
 
 #ifndef PPAPI_C_PP_GRAPHICS_3D_H_
 #define PPAPI_C_PP_GRAPHICS_3D_H_
@@ -78,7 +78,21 @@ typedef enum {
   /**
    * Indicates that color buffer contents may be destroyed or changed.
    */
-  PP_GRAPHICS3DATTRIB_BUFFER_DESTROYED = 0x3095
+  PP_GRAPHICS3DATTRIB_BUFFER_DESTROYED = 0x3095,
+  /**
+   * Specifies whether the context is intended to be low-power or
+   * high-performance. The initial value is
+   * PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE.
+   */
+  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE = 0x11000,
+  /**
+   * The context should be low-power, and may be created on an integrated gpu.
+   */
+  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER = 0x11001,
+  /**
+   * The context may be high-power and may be created on a discrete gpu.
+   */
+  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE = 0x11002
 } PP_Graphics3DAttrib;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Graphics3DAttrib, 4);
 /**

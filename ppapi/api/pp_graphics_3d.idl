@@ -65,5 +65,19 @@
   /**
    * Indicates that color buffer contents may be destroyed or changed.
    */
-  PP_GRAPHICS3DATTRIB_BUFFER_DESTROYED = 0x3095
+  PP_GRAPHICS3DATTRIB_BUFFER_DESTROYED = 0x3095,
+  /**
+   * Specifies whether the context is intended to be low-power or
+   * high-performance. The initial value is
+   * PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE.
+   */
+  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE = 0x11000,
+  /**
+   * The context should be low-power, and may be created on an integrated gpu.
+   */
+  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER = 0x11001,
+  /**
+   * The context may be high-power and may be created on a discrete gpu.
+   */
+  PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE = 0x11002
 };
