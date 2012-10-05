@@ -983,6 +983,12 @@ void WebIntentPickerController::LocationBarPickerButtonClicked() {
 
     source_intents_dispatcher_->ResetDispatch();
 
+    WebIntentPickerController* client_controller =
+        WebIntentPickerController::FromWebContents(window_disposition_source_);
+    DCHECK(client_controller);
+
+    // This call deletes this object, so anything below here needs to
+    // use stack variables.
     chrome::CloseWebContents(service_browser, web_contents_);
 
     // Re-open the other tab and activate the picker.
@@ -990,8 +996,7 @@ void WebIntentPickerController::LocationBarPickerButtonClicked() {
     client_browser->tab_strip_model()->ActivateTabAt(client_index, true);
     // The picker has been Reset() when the new tab is created; need to fully
     // reload.
-    WebIntentPickerController::FromWebContents(window_disposition_source_)->
-        ReshowDialog();
+    client_controller->ReshowDialog();
   }
   // TODO(gbillock): figure out what we ought to do in this case. Probably
   // nothing? Refresh the location bar?

@@ -670,6 +670,9 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
       content::Source<content::WebContentsDelegate>(browser())));
   controller_->ShowDialog(kAction1, kType1);
   new_tab_observer.Wait();
+  WebIntentPickerController* service_controller =
+      WebIntentPickerController::FromWebContents(new_tab_observer.GetTab());
+  EXPECT_TRUE(service_controller->ShowLocationBarPickerButton());
 
   EXPECT_EQ(2, picker_.num_installed_services_);
 
