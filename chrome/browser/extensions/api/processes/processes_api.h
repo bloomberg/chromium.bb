@@ -105,6 +105,9 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
 // currently in use by the specified Tab.
 class GetProcessIdForTabFunction : public AsyncExtensionFunction,
                                    public content::NotificationObserver {
+ public:
+  GetProcessIdForTabFunction();
+
  private:
   virtual ~GetProcessIdForTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
@@ -131,6 +134,9 @@ class GetProcessIdForTabFunction : public AsyncExtensionFunction,
 // * guards against killing non-Chrome processes
 class TerminateFunction : public AsyncExtensionFunction,
                           public content::NotificationObserver {
+ public:
+  TerminateFunction();
+
  private:
   virtual ~TerminateFunction() {}
   virtual bool RunImpl() OVERRIDE;

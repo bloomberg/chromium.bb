@@ -510,6 +510,9 @@ bool ProcessesEventRouter::HasEventListeners(std::string& event_name) {
   return false;
 }
 
+GetProcessIdForTabFunction::GetProcessIdForTabFunction() : tab_id_(-1) {
+}
+
 bool GetProcessIdForTabFunction::RunImpl() {
 #if defined(ENABLE_TASK_MANAGER)
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id_));
@@ -566,6 +569,9 @@ void GetProcessIdForTabFunction::GetProcessIdForTab() {
 
   // Balance the AddRef in the RunImpl.
   Release();
+}
+
+TerminateFunction::TerminateFunction() : process_id_(-1) {
 }
 
 bool TerminateFunction::RunImpl() {
