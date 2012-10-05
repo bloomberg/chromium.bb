@@ -89,7 +89,6 @@ bool WebIntentInlineDispositionDelegate::OnMessageReceived(
   IPC_END_MESSAGE_MAP()
   return handled;
 }
-
 void WebIntentInlineDispositionDelegate::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   DCHECK(render_view_host);

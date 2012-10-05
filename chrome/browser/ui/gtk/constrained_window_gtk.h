@@ -55,9 +55,6 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   virtual void CloseConstrainedWindow() OVERRIDE;
   virtual void FocusConstrainedWindow() OVERRIDE;
 
-  // Called when the result of GetBackgroundColor may have changed.
-  void BackgroundColorChanged();
-
   // Returns the TabContents that constrains this Constrained Window.
   TabContents* owner() const { return tab_contents_; }
 
