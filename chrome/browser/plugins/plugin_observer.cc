@@ -103,8 +103,7 @@ string16 ConfirmInstallDialogDelegate::GetAcceptButtonTitle() {
 }
 
 void ConfirmInstallDialogDelegate::OnAccepted() {
-  installer()->StartInstalling(plugin_metadata_->url_for_display(),
-                               plugin_metadata_->plugin_url(),
+  installer()->StartInstalling(plugin_metadata_->plugin_url(),
                                TabContents::FromWebContents(web_contents_));
 }
 
@@ -310,9 +309,7 @@ void PluginObserver::InstallMissingPlugin(
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata) {
   if (plugin_metadata->url_for_display()) {
-    installer->OpenDownloadURL(plugin_metadata->url_for_display(),
-                               plugin_metadata->plugin_url(),
-                               web_contents());
+    installer->OpenDownloadURL(plugin_metadata->plugin_url(), web_contents());
   } else {
     TabModalConfirmDialog::Create(
         new ConfirmInstallDialogDelegate(

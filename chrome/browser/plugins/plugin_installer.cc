@@ -129,11 +129,9 @@ void PluginInstaller::RemoveWeakObserver(
   weak_observers_.RemoveObserver(observer);
 }
 
-void PluginInstaller::StartInstalling(bool url_for_display,
-                                      const GURL& plugin_url,
+void PluginInstaller::StartInstalling(const GURL& plugin_url,
                                       TabContents* tab_contents) {
   DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
-  DCHECK(url_for_display);
   state_ = INSTALLER_STATE_DOWNLOADING;
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadStarted());
   content::WebContents* web_contents = tab_contents->web_contents();
@@ -174,11 +172,9 @@ void PluginInstaller::DownloadStarted(
   download_item->AddObserver(this);
 }
 
-void PluginInstaller::OpenDownloadURL(bool url_for_display,
-                                      const GURL& plugin_url,
+void PluginInstaller::OpenDownloadURL(const GURL& plugin_url,
                                       content::WebContents* web_contents) {
   DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
-  DCHECK(url_for_display);
   web_contents->OpenURL(content::OpenURLParams(
       plugin_url,
       content::Referrer(web_contents->GetURL(),

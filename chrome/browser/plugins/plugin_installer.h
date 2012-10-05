@@ -48,18 +48,13 @@ class PluginInstaller : public content::DownloadItem::Observer {
 
   InstallerState state() const { return state_; }
 
-  // Opens the download URL in a new tab. This method should only be called if
-  // |url_for_display| returns true.
-  void OpenDownloadURL(bool url_for_display,
-                       const GURL& plugin_url,
+  // Opens the download URL in a new tab.
+  void OpenDownloadURL(const GURL& plugin_url,
                        content::WebContents* web_contents);
 
   // Starts downloading the download URL and opens the downloaded file
-  // when finished. This method should only be called if |url_for_display|
-  // returns false.
-  void StartInstalling(bool url_for_display,
-                       const GURL& plugin_url,
-                       TabContents* tab_contents);
+  // when finished.
+  void StartInstalling(const GURL& plugin_url, TabContents* tab_contents);
 
  private:
   void DownloadStarted(scoped_refptr<content::DownloadManager> dlm,

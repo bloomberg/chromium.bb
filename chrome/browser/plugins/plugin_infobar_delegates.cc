@@ -233,15 +233,16 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
   }
 
   content::WebContents* web_contents = owner()->GetWebContents();
+  // A call to any of |OpenDownloadURL()| or |StartInstalling()| will
+  // result in deleting ourselves. Accordingly, we make sure to
+  // not pass a reference to an object that can go away.
+  // http://crbug.com/54167
+  GURL plugin_url(plugin_metadata_->plugin_url());
   if (plugin_metadata_->url_for_display()) {
-    installer()->OpenDownloadURL(plugin_metadata_->url_for_display(),
-                                 plugin_metadata_->plugin_url(),
-                                 web_contents);
+    installer()->OpenDownloadURL(plugin_url, web_contents);
   } else {
-    installer()->StartInstalling(
-        plugin_metadata_->url_for_display(),
-        plugin_metadata_->plugin_url(),
-        TabContents::FromWebContents(web_contents));
+    installer()->StartInstalling(plugin_url,
+                                 TabContents::FromWebContents(web_contents));
   }
   return false;
 }
