@@ -41,27 +41,6 @@ cr.define('ntp', function() {
   var notificationContainer;
 
   /**
-   * If non-null, an info bubble for showing messages to the user. It points at
-   * the Most Visited label, and is used to draw more attention to the
-   * navigation dot UI.
-   * @type {!Element|undefined}
-   */
-  var infoBubble;
-
-  /**
-   * If non-null, an bubble confirming that the user has signed into sync. It
-   * points at the login status at the top of the page.
-   * @type {!Element|undefined}
-   */
-  var loginBubble;
-
-  /**
-   * true if |loginBubble| should be shown.
-   * @type {Boolean}
-   */
-  var shouldShowLoginBubble = false;
-
-  /**
    * The total number of thumbnails that were hovered over.
    * @type {number}
    * @private
@@ -296,9 +275,6 @@ cr.define('ntp', function() {
       // Set a tab index on the first dot.
       if (this.dotList.dots.length == 1)
         newDot.tabIndex = 3;
-
-      if (infoBubble)
-        window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
     },
 
     /**
@@ -725,32 +701,6 @@ cr.define('ntp', function() {
     newTabView.appendTilePage(devices, loadTimeData.getString('otherSessions'));
     chrome.send('getForeignSessions');
 
-    if (loadTimeData.getString('login_status_message')) {
-      loginBubble = new cr.ui.Bubble;
-      loginBubble.anchorNode = $('login-container');
-      loginBubble.arrowLocation = cr.ui.ArrowLocation.TOP_END;
-      loginBubble.bubbleAlignment =
-          cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE;
-      loginBubble.deactivateToDismissDelay = 2000;
-      loginBubble.closeButtonVisible = false;
-
-      $('login-status-advanced').onclick = function() {
-        chrome.send('showAdvancedLoginUI');
-      };
-      $('login-status-dismiss').onclick = loginBubble.hide.bind(loginBubble);
-
-      var bubbleContent = $('login-status-bubble-contents');
-      loginBubble.content = bubbleContent;
-
-      // The anchor node won't be updated until updateLogin is called so don't
-      // show the bubble yet.
-      shouldShowLoginBubble = true;
-    }
-
-    var loginContainer = getRequiredElement('login-container');
-    loginContainer.addEventListener('click', showSyncLoginUI);
-    chrome.send('initializeSyncLogin');
-
     doWhenAllSectionsReady(function() {
       // Tell the slider about the pages.
       newTabView.updateSliderCards();
@@ -942,53 +892,6 @@ cr.define('ntp', function() {
   }
 
   /**
-   * Updates the text displayed in the login container. If there is no text then
-   * the login container is hidden.
-   * @param {string} loginHeader The first line of text.
-   * @param {string} loginSubHeader The second line of text.
-   * @param {string} iconURL The url for the login status icon. If this is null
-        then the login status icon is hidden.
-   * @param {boolean} isUserSignedIn Indicates if the user is signed in or not.
-   */
-  function updateLogin(loginHeader, loginSubHeader, iconURL, isUserSignedIn) {
-    if (loginHeader || loginSubHeader) {
-      $('login-container').hidden = false;
-      $('login-status-header').innerHTML = loginHeader;
-      $('login-status-sub-header').innerHTML = loginSubHeader;
-      $('card-slider-frame').classList.add('showing-login-area');
-
-      if (iconURL) {
-        $('login-status-header-container').style.backgroundImage = url(iconURL);
-        $('login-status-header-container').classList.add('login-status-icon');
-      } else {
-        $('login-status-header-container').style.backgroundImage = 'none';
-        $('login-status-header-container').classList.remove(
-            'login-status-icon');
-      }
-    } else {
-      $('login-container').hidden = true;
-      $('card-slider-frame').classList.remove('showing-login-area');
-    }
-    if (shouldShowLoginBubble) {
-      window.setTimeout(loginBubble.show.bind(loginBubble), 0);
-      chrome.send('loginMessageSeen');
-      shouldShowLoginBubble = false;
-    } else if (loginBubble) {
-      loginBubble.reposition();
-    }
-  }
-
-  /**
-   * Show the sync login UI.
-   * @param {Event} e The click event.
-   */
-  function showSyncLoginUI(e) {
-    var rect = e.currentTarget.getBoundingClientRect();
-    chrome.send('showSyncLoginUI',
-                [rect.left, rect.top, rect.width, rect.height]);
-  }
-
-  /**
    * Increments the parameter used to log the total number of thumbnail hovered
    * over.
    */
@@ -1079,7 +982,6 @@ cr.define('ntp', function() {
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     showNotification: showNotification,
     themeChanged: themeChanged,
-    updateLogin: updateLogin,
   };
 });
 

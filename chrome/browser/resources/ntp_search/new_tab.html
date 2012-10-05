@@ -27,7 +27,7 @@
 <!-- It's important that this be the first script loaded. -->
 <script src="../ntp4/logging.js"></script>
 
-<link rel="stylesheet" href="../shared/css/bubble.css">
+<!-- TODO(jeremycho): This is only used for notifications.  Discuss with UX. -->
 <link rel="stylesheet" href="../shared/css/expandable_bubble.css">
 <link rel="stylesheet" href="../shared/css/menu.css">
 <link rel="stylesheet" href="../shared/css/menu_button.css">
@@ -52,7 +52,6 @@
 <script src="../shared/js/util.js"></script>
 <script src="../shared/js/cr.js"></script>
 <script src="../shared/js/cr/ui.js"></script>
-<script src="../shared/js/cr/ui/bubble.js"></script>
 <script src="../shared/js/cr/ui/card_slider.js"></script>
 <script src="../shared/js/cr/ui/context_menu_handler.js"></script>
 <script src="../shared/js/cr/ui/drag_wrapper.js"></script>
@@ -75,13 +74,6 @@
 </head>
 
 <body id="ntp5" i18n-values=".style.fontSize:fontsize">
-  <button id="login-container" class="custom-appearance" hidden>
-    <div id="login-status-header-container" class="login-status-row">
-      <div id="login-status-header"></div>
-    </div>
-    <div id="login-status-sub-header"></div>
-  </button>
-
   <div id="card-slider-frame">
     <div id="page-list-menu">
       <ul id="dot-list"></ul>
@@ -110,23 +102,6 @@
 <div id="ntp4-intro-bubble-contents">
   <div></div>
   <a i18n-content="learn_more" target="_blank"></a>
-</div>
-
-<!-- Login status bubble -->
-<div id="login-status-bubble-contents">
-  <div id="login-status-message-container">
-    <span i18n-content="login_status_message"></span>
-    <a id="login-status-learn-more" i18n-content="learn_more"
-        i18n-values="href:login_status_url" target="_blank"></a>
-  </div>
-  <div class="login-status-row">
-    <div id="login-status-advanced-container">
-      <a id="login-status-advanced"
-          i18n-content="login_status_advanced" href="#"></a>
-    </div>
-    <button id="login-status-dismiss" i18n-content="login_status_dismiss">
-    </button>
-  </div>
 </div>
 
 <!-- App Contents w/ Large Icon -->
