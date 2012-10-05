@@ -111,7 +111,7 @@ void SetupPrerenderFieldTrial() {
   const int experiment_multi_prerender_group =
       trial->AppendGroup("PrerenderMulti",
                          experiment_multi_prerender_probability);
-  const int experiment_5_min_TTL_group =
+  const int experiment_15_min_TTL_group =
       trial->AppendGroup("Prerender15minTTL",
                          experiment_15min_ttl_probability);
   const int experiment_no_use_group =
@@ -128,7 +128,7 @@ void SetupPrerenderFieldTrial() {
   } else if (trial_group == experiment_multi_prerender_group) {
     PrerenderManager::SetMode(
         PrerenderManager::PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP);
-  } else if (trial_group == experiment_5_min_TTL_group) {
+  } else if (trial_group == experiment_15_min_TTL_group) {
     PrerenderManager::SetMode(
         PrerenderManager::PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP);
   } else if (trial_group == experiment_no_use_group) {
