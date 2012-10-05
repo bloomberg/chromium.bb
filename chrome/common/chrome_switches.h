@@ -95,7 +95,6 @@ extern const char kDisableExtensionsResourceWhitelist[];
 extern const char kDisableExtensions[];
 extern const char kDisableFlashSandbox[];
 extern const char kDisableImprovedDownloadProtection[];
-extern const char kDisableInBrowserThumbnailing[];
 extern const char kDisableInfiniteCache[];
 extern const char kDisableInternalFlash[];
 extern const char kDisableIPv6[];

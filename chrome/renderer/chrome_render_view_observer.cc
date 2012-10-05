@@ -16,8 +16,6 @@
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/thumbnail_score.h"
-#include "chrome/common/thumbnail_support.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
@@ -34,7 +32,6 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "net/base/data_url.h"
-#include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
@@ -48,7 +45,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -92,10 +88,6 @@ static const int kDelayForForcedCaptureMs = 6000;
 // maximum number of characters in the document to index, any text beyond this
 // point will be clipped
 static const size_t kMaxIndexChars = 65535;
-
-// Size of the thumbnails that we'll generate
-static const int kThumbnailWidth = 212;
-static const int kThumbnailHeight = 132;
 
 // Constants for UMA statistic collection.
 static const char kWWWDotGoogleDotCom[] = "www.google.com";
@@ -173,19 +165,6 @@ static bool PaintViewIntoCanvas(WebView* view,
   // visible part.
 
   return true;
-}
-
-// Calculates how "boring" a thumbnail is. The boring score is the
-// 0,1 ranged percentage of pixels that are the most common
-// luma. Higher boring scores indicate that a higher percentage of a
-// bitmap are all the same brightness.
-static double CalculateBoringScore(SkBitmap* bitmap) {
-  int histogram[256] = {0};
-  color_utils::BuildLumaHistogram(*bitmap, histogram);
-
-  int color_count = *std::max_element(histogram, histogram + 256);
-  int pixel_count = bitmap->width() * bitmap->height();
-  return static_cast<double>(color_count) / pixel_count;
 }
 
 static FaviconURL::IconType ToFaviconType(WebIconURL::Type type) {
@@ -897,12 +876,6 @@ void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
                                             contents));
   }
 
-  // Generate the thumbnail here if the in-browser thumbnailing isn't
-  // enabled. TODO(mazda): Remove this and related code once in-browser
-  // thumbnailing is supported on all platforms (http://crbug.com/120003).
-  if (!ShouldEnableInBrowserThumbnailing())
-    CaptureThumbnail();
-
 #if defined(ENABLE_SAFE_BROWSING)
   // Will swap out the string.
   if (phishing_classifier_)
@@ -940,113 +913,6 @@ void ChromeRenderViewObserver::CaptureText(WebFrame* frame,
       return;  // don't index if we got a huge block of text with no spaces
     contents->resize(last_space_index);
   }
-}
-
-void ChromeRenderViewObserver::CaptureThumbnail() {
-  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
-  if (!main_frame)
-    return;
-
-  // get the URL for this page
-  GURL url(main_frame->document().url());
-  if (url.is_empty())
-    return;
-
-  if (render_view()->GetSize().IsEmpty())
-    return;  // Don't create an empty thumbnail!
-
-  TRACE_EVENT0("renderer", "ChromeRenderViewObserver::CaptureThumbnail");
-
-  ThumbnailScore score;
-  SkBitmap thumbnail;
-  if (!CaptureFrameThumbnail(render_view()->GetWebView(), kThumbnailWidth,
-                             kThumbnailHeight, &thumbnail, &score))
-    return;
-
-  // send the thumbnail message to the browser process
-  Send(new ChromeViewHostMsg_Thumbnail(routing_id(), url, score, thumbnail));
-}
-
-bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
-                                                     int w,
-                                                     int h,
-                                                     SkBitmap* thumbnail,
-                                                     ThumbnailScore* score) {
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
-
-  skia::PlatformCanvas canvas;
-
-  {
-    TRACE_EVENT0("renderer",
-        "ChromeRenderViewObserver::CaptureFrameThumbnail::PaintViewIntoCanvas");
-    // Paint |view| into |canvas|.
-    if (!PaintViewIntoCanvas(view, canvas))
-      return false;
-  }
-
-  SkDevice* device = skia::GetTopDevice(canvas);
-
-  const SkBitmap& src_bmp = device->accessBitmap(false);
-  // Cut off the vertical scrollbars (if any).
-  int src_bmp_width = view->mainFrame()->contentsSize().width;
-
-  SkRect dest_rect = { 0, 0, SkIntToScalar(w), SkIntToScalar(h) };
-  float dest_aspect = dest_rect.width() / dest_rect.height();
-
-  // Get the src rect so that we can preserve the aspect ratio while filling
-  // the destination.
-  SkIRect src_rect;
-  if (src_bmp_width < dest_rect.width() ||
-      src_bmp.height() < dest_rect.height()) {
-    // Source image is smaller: we clip the part of source image within the
-    // dest rect, and then stretch it to fill the dest rect. We don't respect
-    // the aspect ratio in this case.
-    src_rect.set(0, 0, static_cast<S16CPU>(dest_rect.width()),
-                 static_cast<S16CPU>(dest_rect.height()));
-    score->good_clipping = false;
-  } else {
-    float src_aspect = static_cast<float>(src_bmp_width) / src_bmp.height();
-    if (src_aspect > dest_aspect) {
-      // Wider than tall, clip horizontally: we center the smaller thumbnail in
-      // the wider screen.
-      S16CPU new_width = static_cast<S16CPU>(src_bmp.height() * dest_aspect);
-      S16CPU x_offset = (src_bmp_width - new_width) / 2;
-      src_rect.set(x_offset, 0, new_width + x_offset, src_bmp.height());
-      score->good_clipping = (src_aspect < ThumbnailScore::kTooWideAspectRatio);
-    } else {
-      src_rect.set(0, 0, src_bmp_width,
-                   static_cast<S16CPU>(src_bmp_width / dest_aspect));
-      score->good_clipping = true;
-    }
-  }
-
-  score->at_top = (view->mainFrame()->scrollOffset().height == 0);
-
-  SkBitmap subset;
-  device->accessBitmap(false).extractSubset(&subset, src_rect);
-
-  TRACE_EVENT_BEGIN0("renderer",
-        "ChromeRenderViewObserver::CaptureFrameThumbnail::DownsampleByTwo");
-  // First do a fast downsample by powers of two to get close to the final size.
-  SkBitmap downsampled_subset =
-      SkBitmapOperations::DownsampleByTwoUntilSize(subset, w, h);
-  TRACE_EVENT_END0("renderer",
-        "ChromeRenderViewObserver::CaptureFrameThumbnail::DownsampleByTwo");
-
-  {
-    TRACE_EVENT0("renderer",
-        "ChromeRenderViewObserver::CaptureFrameThumbnail::DownsampleLanczos3");
-    // Do a high-quality resize from the downscaled size to the final size.
-    *thumbnail = skia::ImageOperations::Resize(
-        downsampled_subset, skia::ImageOperations::RESIZE_LANCZOS3, w, h);
-  }
-
-  score->boring_score = CalculateBoringScore(thumbnail);
-
-  HISTOGRAM_TIMES("Renderer4.Thumbnail",
-                  base::TimeTicks::Now() - beginning_time);
-
-  return true;
 }
 
 bool ChromeRenderViewObserver::CaptureSnapshot(WebView* view,

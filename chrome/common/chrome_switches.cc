@@ -326,11 +326,6 @@ const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
 
-// Disables the in-browser thumbnailing, which is more efficient than the
-// in-renderer thumbnailing, as we can use more information to determine if we
-// need to update thumbnails.
-const char kDisableInBrowserThumbnailing[]  = "disable-in-browser-thumbnailing";
-
 // Disable the Infinite Cache.
 const char kDisableInfiniteCache[]          = "disable-infinite-cache";
 

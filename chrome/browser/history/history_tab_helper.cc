@@ -8,7 +8,6 @@
 
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -86,7 +85,6 @@ bool HistoryTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(HistoryTabHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageContents, OnPageContents)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Thumbnail, OnThumbnail)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -181,22 +179,6 @@ void HistoryTabHelper::OnPageContents(const GURL& url,
       hs->SetPageContents(url, contents);
   }
 #endif
-}
-
-void HistoryTabHelper::OnThumbnail(const GURL& url,
-                                   const ThumbnailScore& score,
-                                   const SkBitmap& bitmap) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  if (profile->IsOffTheRecord())
-    return;
-
-  // Tell History about this thumbnail.
-  history::TopSites* ts = profile->GetTopSites();
-  if (ts) {
-    gfx::Image thumbnail(bitmap);
-    ts->SetPageThumbnail(url, &thumbnail, score);
-  }
 }
 
 HistoryService* HistoryTabHelper::GetHistoryService() {

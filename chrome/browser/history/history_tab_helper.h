@@ -13,8 +13,6 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class HistoryService;
-class SkBitmap;
-struct ThumbnailScore;
 
 namespace history {
 struct HistoryAddPageArgs;
@@ -65,9 +63,6 @@ class HistoryTabHelper : public content::WebContentsObserver,
   void OnPageContents(const GURL& url,
                       int32 page_id,
                       const string16& contents);
-  void OnThumbnail(const GURL& url,
-                   const ThumbnailScore& score,
-                   const SkBitmap& bitmap);
 
   // Helper function to return the history service.  May return NULL.
   HistoryService* GetHistoryService();

@@ -22,7 +22,6 @@
 #include "chrome/common/instant_types.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/search_provider.h"
-#include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
@@ -170,13 +169,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)
   IPC_STRUCT_TRAITS_MEMBER(image_rules)
   IPC_STRUCT_TRAITS_MEMBER(script_rules)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ThumbnailScore)
-  IPC_STRUCT_TRAITS_MEMBER(boring_score)
-  IPC_STRUCT_TRAITS_MEMBER(good_clipping)
-  IPC_STRUCT_TRAITS_MEMBER(at_top)
-  IPC_STRUCT_TRAITS_MEMBER(time_at_snapshot)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::ResourceTypeStat)
@@ -499,13 +491,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_OpenAboutPlugins)
 // Tells the browser that there was an error loading a plug-in.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
                     FilePath /* plugin_path */)
-
-// Specifies the URL as the first parameter (a wstring) and thumbnail as
-// binary data as the second parameter.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_Thumbnail,
-                    GURL /* url */,
-                    ThumbnailScore /* score */,
-                    SkBitmap /* bitmap */)
 
 // Send a snapshot of the tab contents to the render host.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_Snapshot,

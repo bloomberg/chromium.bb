@@ -22,7 +22,6 @@ class ContentSettingsObserver;
 class ExternalHostBindings;
 class SkBitmap;
 class TranslateHelper;
-struct ThumbnailScore;
 class WebViewColorOverlay;
 class WebViewAnimatingOverlay;
 
@@ -156,14 +155,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Retrieves the text from the given frame contents, the page text up to the
   // maximum amount kMaxIndexChars will be placed into the given buffer.
   void CaptureText(WebKit::WebFrame* frame, string16* contents);
-
-  void CaptureThumbnail();
-
-  // Creates a thumbnail of |frame|'s contents resized to (|w|, |h|)
-  // and puts that in |thumbnail|. Thumbnail metadata goes in |score|.
-  bool CaptureFrameThumbnail(WebKit::WebView* view, int w, int h,
-                             SkBitmap* thumbnail,
-                             ThumbnailScore* score);
 
   // Capture a snapshot of a view.  This is used to allow an extension
   // to get a snapshot of a tab using chrome.tabs.captureVisibleTab().
