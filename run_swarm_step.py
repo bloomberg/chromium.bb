@@ -670,7 +670,7 @@ class Cache(object):
 
 
 class Manifest(object):
-  """Represents a single parsed manifest, e.g. a .results file."""
+  """Represents a single parsed manifest, e.g. a .swarm file."""
   def __init__(self, obj_hash):
     """|obj_hash| is really the sha-1 of the file."""
     logging.debug('Manifest(%s)' % obj_hash)

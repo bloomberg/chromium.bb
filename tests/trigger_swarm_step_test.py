@@ -16,7 +16,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 import trigger_swarm_step as run_slavelastic
 
-FILE_NAME = "test.results"
+FILE_NAME = "test.swarm"
 FILE_HASH = hashlib.sha1(FILE_NAME).hexdigest()
 TEST_NAME = "unit_tests"
 TEST_FILTER = '*'

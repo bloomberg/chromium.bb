@@ -40,7 +40,7 @@ class Isolate(unittest.TestCase):
       'files': {},
       'os': isolate.get_flavor(),
     }
-    self.assertEquals(expected, isolate.Result.load(values).flatten())
+    self.assertEquals(expected, isolate.SwarmFile.load(values).flatten())
 
   def test_result_load(self):
     values = {
@@ -54,7 +54,7 @@ class Isolate(unittest.TestCase):
       'os': isolate.get_flavor(),
       'read_only': 2,
     }
-    self.assertEquals(expected, isolate.Result.load(values).flatten())
+    self.assertEquals(expected, isolate.SwarmFile.load(values).flatten())
 
   def test_result_load_unexpected(self):
     values = {
@@ -62,11 +62,11 @@ class Isolate(unittest.TestCase):
     }
     expected = (
       ("Found unexpected entry {'foo': 'bar'} while constructing an "
-          "object Result"),
+          "object SwarmFile"),
       {'foo': 'bar'},
-      'Result')
+      'SwarmFile')
     try:
-      isolate.Result.load(values)
+      isolate.SwarmFile.load(values)
       self.fail()
     except ValueError, e:
       self.assertEquals(expected, e.args)
@@ -129,7 +129,7 @@ class Isolate(unittest.TestCase):
       #   when re-running the same command multiple times and contain
       #   discardable information.
       complete_state = isolate.load_complete_state(Options, isolate.STATS_ONLY)
-      actual_result = complete_state.result.flatten()
+      actual_result = complete_state.swarm.flatten()
       actual_saved_state = complete_state.saved_state.flatten()
 
       expected_result = {
