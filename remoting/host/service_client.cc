@@ -93,7 +93,7 @@ void ServiceClient::Core::HandleResponse(const net::URLFetcher* source) {
     return;
   }
   if (source->GetResponseCode() == net::HTTP_OK) {
-    delegate_->OnSuccess();
+    delegate_->OnHostRegistered();
     return;
   }
   delegate_->OnNetworkError(source->GetResponseCode());

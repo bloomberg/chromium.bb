@@ -20,8 +20,8 @@ class ServiceClient {
  public:
   class Delegate {
    public:
-    // Invoked on a successful response.
-    virtual void OnSuccess() = 0;
+    // Invoked when a host has been registered.
+    virtual void OnHostRegistered() = 0;
     // Invoked when there is an OAuth error.
     virtual void OnOAuthError() = 0;
     // Invoked when there is a network error or upon receiving an invalid

@@ -1028,6 +1028,8 @@
         'host/setup/daemon_controller_win.cc',
         'host/setup/daemon_installer_win.cc',
         'host/setup/daemon_installer_win.h',
+        'host/setup/host_starter.cc',
+        'host/setup/host_starter.h',
       ],
       'conditions': [
         ['OS=="win"', {
