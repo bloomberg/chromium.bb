@@ -570,7 +570,7 @@ bool LdrImmediateOp::is_load_thread_address_pointer(Instruction i) const {
 
   // The instruction must be a load+offset instruction.
   if (indexing.IsPostIndexing(i) || writes.IsDefined(i) ||
-      direction.IsAdd(i)) return false;
+      !direction.IsAdd(i)) return false;
 
   // The immediate value must be in { 0 , 4 }.
   uint32_t imm_value = imm12.value(i);
