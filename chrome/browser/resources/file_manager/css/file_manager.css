@@ -341,6 +341,10 @@ div.root-eject:hover {
   margin-top: 5px;
 }
 
+[maximized] .dialog-header {
+  -webkit-padding-end: 70px;
+}
+
 /* Container for the detail and thumbnail list views. */
 .dialog-body {
   -webkit-box-flex: 1;

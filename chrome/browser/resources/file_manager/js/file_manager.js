@@ -740,6 +740,8 @@ FileManager.prototype = {
 
     this.fileTypeSelector_ = this.dialogDom_.querySelector('#file-type');
     this.initFileTypeFilter_();
+
+    this.updateWindowState_();
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
   };
@@ -1226,6 +1228,18 @@ FileManager.prototype = {
     this.rootsList_.redraw();
     this.breadcrumbs_.truncate();
     this.searchBreadcrumbs_.truncate();
+
+    this.updateWindowState_();
+  };
+
+  FileManager.prototype.updateWindowState_ = function() {
+    chrome.windows.getCurrent(function(wnd) {
+      if (wnd.state == 'maximized') {
+        this.dialogDom_.setAttribute('maximized', 'maximized');
+      } else {
+        this.dialogDom_.removeAttribute('maximized');
+      }
+    }.bind(this));
   };
 
   FileManager.prototype.resolvePath = function(
