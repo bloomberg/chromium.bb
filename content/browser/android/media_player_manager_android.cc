@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "content/browser/android/cookie_getter_impl.h"
-#include "content/common/view_messages.h"
+#include "content/common/media/media_player_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -22,7 +22,9 @@ namespace content {
 
 MediaPlayerManagerAndroid::MediaPlayerManagerAndroid(
     RenderViewHost* render_view_host)
-    : RenderViewHostObserver(render_view_host) {
+    : RenderViewHostObserver(render_view_host),
+      ALLOW_THIS_IN_INITIALIZER_LIST(video_view_(this)),
+      fullscreen_player_id_(-1) {
 }
 
 MediaPlayerManagerAndroid::~MediaPlayerManagerAndroid() {}
@@ -30,23 +32,59 @@ MediaPlayerManagerAndroid::~MediaPlayerManagerAndroid() {}
 bool MediaPlayerManagerAndroid::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MediaPlayerManagerAndroid, msg)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPlayerInitialize,
-                        OnInitialize)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPlayerStart,
-                        OnStart)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPlayerSeek,
-                        OnSeek)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPlayerPause,
-                        OnPause)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPlayerRelease,
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_EnterFullscreen, OnEnterFullscreen)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ExitFullscreen, OnExitFullscreen)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerInitialize, OnInitialize)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerStart, OnStart)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerSeek, OnSeek)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerPause, OnPause)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaPlayerRelease,
                         OnReleaseResources)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyMediaPlayer,
-                        OnDestroyPlayer)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyAllMediaPlayers,
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void MediaPlayerManagerAndroid::FullscreenPlayerPlay() {
+  MediaPlayerBridge* player = GetFullscreenPlayer();
+  player->Start();
+  Send(new MediaPlayerMsg_DidMediaPlayerPlay(
+      routing_id(), fullscreen_player_id_));
+}
+
+void MediaPlayerManagerAndroid::FullscreenPlayerPause() {
+  MediaPlayerBridge* player = GetFullscreenPlayer();
+  player->Pause();
+  Send(new MediaPlayerMsg_DidMediaPlayerPause(
+      routing_id(), fullscreen_player_id_));
+}
+
+void MediaPlayerManagerAndroid::FullscreenPlayerSeek(int msec) {
+  MediaPlayerBridge* player = GetFullscreenPlayer();
+  player->SeekTo(base::TimeDelta::FromMilliseconds(msec));
+}
+
+void MediaPlayerManagerAndroid::ExitFullscreen(bool release_media_player) {
+  Send(new MediaPlayerMsg_DidExitFullscreen(
+      routing_id(), fullscreen_player_id_));
+  MediaPlayerBridge* player = GetFullscreenPlayer();
+  if (release_media_player)
+    player->Release();
+  else
+    player->SetVideoSurface(NULL);
+  fullscreen_player_id_ = -1;
+}
+
+void MediaPlayerManagerAndroid::SetVideoSurface(jobject surface) {
+  MediaPlayerBridge* player = GetFullscreenPlayer();
+  if (player) {
+    player->SetVideoSurface(surface);
+    Send(new MediaPlayerMsg_DidEnterFullscreen(
+        routing_id(), player->player_id()));
+  }
 }
 
 void MediaPlayerManagerAndroid::OnInitialize(
@@ -81,8 +119,8 @@ void MediaPlayerManagerAndroid::OnInitialize(
                  base::Unretained(this))));
 
   // Send a MediaPrepared message to webkit so that Load() can finish.
-  Send(new ViewMsg_MediaPrepared(routing_id(), player_id,
-                                 GetPlayer(player_id)->GetDuration()));
+  Send(new MediaPlayerMsg_MediaPrepared(
+      routing_id(), player_id, GetPlayer(player_id)->GetDuration()));
 }
 
 void MediaPlayerManagerAndroid::OnStart(int player_id) {
@@ -103,6 +141,23 @@ void MediaPlayerManagerAndroid::OnPause(int player_id) {
     player->Pause();
 }
 
+void MediaPlayerManagerAndroid::OnEnterFullscreen(int player_id) {
+  DCHECK_EQ(fullscreen_player_id_, -1);
+
+  fullscreen_player_id_ = player_id;
+  video_view_.CreateContentVideoView();
+}
+
+void MediaPlayerManagerAndroid::OnExitFullscreen(int player_id) {
+  if (fullscreen_player_id_ == player_id) {
+    MediaPlayerBridge* player = GetPlayer(player_id);
+    if (player)
+      player->SetVideoSurface(NULL);
+    video_view_.DestroyContentVideoView();
+    fullscreen_player_id_ = -1;
+  }
+}
+
 void MediaPlayerManagerAndroid::OnReleaseResources(int player_id) {
   MediaPlayerBridge* player = GetPlayer(player_id);
   if (player)
@@ -117,10 +172,16 @@ void MediaPlayerManagerAndroid::OnDestroyPlayer(int player_id) {
       break;
     }
   }
+  if (fullscreen_player_id_ == player_id)
+    fullscreen_player_id_ = -1;
 }
 
 void MediaPlayerManagerAndroid::DestroyAllMediaPlayers() {
   players_.clear();
+  if (fullscreen_player_id_ != -1) {
+    video_view_.DestroyContentVideoView();
+    fullscreen_player_id_ = -1;
+  }
 }
 
 MediaPlayerBridge* MediaPlayerManagerAndroid::GetPlayer(int player_id) {
@@ -132,38 +193,55 @@ MediaPlayerBridge* MediaPlayerManagerAndroid::GetPlayer(int player_id) {
   return NULL;
 }
 
+MediaPlayerBridge* MediaPlayerManagerAndroid::GetFullscreenPlayer() {
+  return GetPlayer(fullscreen_player_id_);
+}
+
 void MediaPlayerManagerAndroid::OnPrepared(int player_id,
                                            base::TimeDelta duration) {
-  Send(new ViewMsg_MediaPrepared(routing_id(), player_id, duration));
+  Send(new MediaPlayerMsg_MediaPrepared(routing_id(), player_id, duration));
+  if (fullscreen_player_id_ != -1)
+    video_view_.UpdateMediaMetadata();
 }
 
 void MediaPlayerManagerAndroid::OnPlaybackComplete(int player_id) {
-  Send(new ViewMsg_MediaPlaybackCompleted(routing_id(), player_id));
+  Send(new MediaPlayerMsg_MediaPlaybackCompleted(routing_id(), player_id));
+  if (fullscreen_player_id_ != -1)
+    video_view_.OnPlaybackComplete();
 }
 
 void MediaPlayerManagerAndroid::OnBufferingUpdate(
     int player_id, int percentage) {
-  Send(new ViewMsg_MediaBufferingUpdate(routing_id(), player_id, percentage));
+  Send(new MediaPlayerMsg_MediaBufferingUpdate(
+      routing_id(), player_id, percentage));
+  if (fullscreen_player_id_ != -1)
+    video_view_.OnBufferingUpdate(percentage);
 }
 
 void MediaPlayerManagerAndroid::OnSeekComplete(int player_id,
                                                base::TimeDelta current_time) {
-  Send(new ViewMsg_MediaSeekCompleted(routing_id(), player_id, current_time));
+  Send(new MediaPlayerMsg_MediaSeekCompleted(
+      routing_id(), player_id, current_time));
 }
 
 void MediaPlayerManagerAndroid::OnError(int player_id, int error) {
-  Send(new ViewMsg_MediaError(routing_id(), player_id, error));
+  Send(new MediaPlayerMsg_MediaError(routing_id(), player_id, error));
+  if (fullscreen_player_id_ != -1)
+    video_view_.OnMediaPlayerError(error);
 }
 
 void MediaPlayerManagerAndroid::OnVideoSizeChanged(
     int player_id, int width, int height) {
-  Send(new ViewMsg_MediaVideoSizeChanged(routing_id(), player_id,
+  Send(new MediaPlayerMsg_MediaVideoSizeChanged(routing_id(), player_id,
       width, height));
+  if (fullscreen_player_id_ != -1)
+    video_view_.OnVideoSizeChanged(width, height);
 }
 
 void MediaPlayerManagerAndroid::OnTimeUpdate(int player_id,
                                              base::TimeDelta current_time) {
-  Send(new ViewMsg_MediaTimeUpdate(routing_id(), player_id, current_time));
+  Send(new MediaPlayerMsg_MediaTimeUpdate(
+      routing_id(), player_id, current_time));
 }
 
 void MediaPlayerManagerAndroid::RequestMediaResources(
@@ -189,9 +267,11 @@ void MediaPlayerManagerAndroid::RequestMediaResources(
     return;
 
   for (it = players_.begin(); it != players_.end(); ++it) {
-    if ((*it)->prepared() && !(*it)->IsPlaying()) {
+    if ((*it)->prepared() && !(*it)->IsPlaying() &&
+        fullscreen_player_id_ != (*it)->player_id()) {
       (*it)->Release();
-      Send(new ViewMsg_MediaPlayerReleased(routing_id(), (*it)->player_id()));
+      Send(new MediaPlayerMsg_MediaPlayerReleased(
+          routing_id(), (*it)->player_id()));
     }
   }
 }

@@ -45,6 +45,17 @@ class WebMediaPlayerImplAndroid : public WebMediaPlayerAndroid {
                             StreamTextureFactory* factory);
   virtual ~WebMediaPlayerImplAndroid();
 
+  // WebKit::WebMediaPlayer implementation.
+  virtual void enterFullscreen();
+  virtual void exitFullscreen();
+  virtual bool canEnterFullscreen() const;
+
+  // Functions called when media player status changes.
+  void OnMediaPlayerPlay();
+  void OnMediaPlayerPause();
+  void OnDidEnterFullscreen();
+  void OnDidExitFullscreen();
+
   // WebMediaPlayerAndroid implementation.
   virtual void OnTimeUpdate(base::TimeDelta current_time) OVERRIDE;
   virtual void SetVideoSurface(jobject j_surface) OVERRIDE;

@@ -37,6 +37,12 @@ class WebMediaPlayerProxyAndroid {
 
   // Destroy the player in the browser process
   virtual void DestroyPlayer(int player_id) = 0;
+
+  // Request the player to enter fullscreen.
+  virtual void EnterFullscreen(int player_id) = 0;
+
+  // Request the player to exit fullscreen.
+  virtual void ExitFullscreen(int player_id) = 0;
 };
 
 }  // namespace webkit_media

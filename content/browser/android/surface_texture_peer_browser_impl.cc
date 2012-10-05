@@ -38,8 +38,9 @@ static void SetSurfacePeer(jobject j_surface,
     if (host) {
       media::MediaPlayerBridge* player =
           host->media_player_manager()->GetPlayer(player_id);
-      if (player) {
-          player->SetVideoSurface(j_surface);
+      if (player &&
+          player != host->media_player_manager()->GetFullscreenPlayer()) {
+        player->SetVideoSurface(j_surface);
       }
     }
   }

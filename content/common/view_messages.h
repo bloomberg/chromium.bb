@@ -54,10 +54,6 @@
 #include "content/common/mac/font_descriptor.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "webkit/media/android/media_metadata_android.h"
-#endif
-
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
@@ -379,19 +375,6 @@ IPC_STRUCT_TRAITS_BEGIN(ui::SelectedFileInfo)
   IPC_STRUCT_TRAITS_MEMBER(local_path)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
 IPC_STRUCT_TRAITS_END()
-
-#if defined(OS_ANDROID)
-IPC_STRUCT_TRAITS_BEGIN(webkit_media::MediaMetadataAndroid)
-  IPC_STRUCT_TRAITS_MEMBER(width)
-  IPC_STRUCT_TRAITS_MEMBER(height)
-  IPC_STRUCT_TRAITS_MEMBER(duration)
-  IPC_STRUCT_TRAITS_MEMBER(current_time)
-  IPC_STRUCT_TRAITS_MEMBER(paused)
-  IPC_STRUCT_TRAITS_MEMBER(can_pause)
-  IPC_STRUCT_TRAITS_MEMBER(can_seek_forward)
-  IPC_STRUCT_TRAITS_MEMBER(can_seek_backward)
-IPC_STRUCT_TRAITS_END()
-#endif
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   // Routing ID of the view initiating the open.
@@ -2399,77 +2382,4 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_FindMatchRects_Reply,
 // Start an android intent with the given URI.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_StartContentIntent,
                     GURL /* content_url */)
-
-// Messages for notifying the render process of media playback status -------
-
-// Media buffering has updated.
-IPC_MESSAGE_ROUTED2(ViewMsg_MediaBufferingUpdate,
-                    int /* player_id */,
-                    int /* percent */)
-
-// A media playback error has occured.
-IPC_MESSAGE_ROUTED2(ViewMsg_MediaError,
-                    int /* player_id */,
-                    int /* error */)
-
-// Playback is completed.
-IPC_MESSAGE_ROUTED1(ViewMsg_MediaPlaybackCompleted,
-                    int /* player_id */)
-
-// Player is prepared.
-IPC_MESSAGE_ROUTED2(ViewMsg_MediaPrepared,
-                    int /* player_id */,
-                    base::TimeDelta /* duration */)
-
-// Media seek is completed.
-IPC_MESSAGE_ROUTED2(ViewMsg_MediaSeekCompleted,
-                    int /* player_id */,
-                    base::TimeDelta /* current_time */)
-
-// Video size has changed.
-IPC_MESSAGE_ROUTED3(ViewMsg_MediaVideoSizeChanged,
-                    int /* player_id */,
-                    int /* width */,
-                    int /* height */)
-
-// The current play time has updated.
-IPC_MESSAGE_ROUTED2(ViewMsg_MediaTimeUpdate,
-                    int /* player_id */,
-                    base::TimeDelta /* current_time */)
-
-// The player has been released.
-IPC_MESSAGE_ROUTED1(ViewMsg_MediaPlayerReleased,
-                    int /* player_id */)
-
-// Messages for controllering the media playback in browser process ----------
-
-// Destroy the media player object.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DestroyMediaPlayer,
-                    int /* player_id */)
-
-// Destroy all the players.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DestroyAllMediaPlayers)
-
-// Initialize a media player object with the given player_id.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_MediaPlayerInitialize,
-                    int /* player_id */,
-                    std::string /* url */,
-                    std::string /* first_party_for_cookies */)
-
-// Pause the player.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_MediaPlayerPause,
-                    int /* player_id */)
-
-// Release player resources, but keep the object for future usage.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_MediaPlayerRelease,
-                    int /* player_id */)
-
-// Perform a seek.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_MediaPlayerSeek,
-                    int /* player_id */,
-                    base::TimeDelta /* time */)
-
-// Start the player for playback.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_MediaPlayerStart,
-                    int /* player_id */)
 #endif

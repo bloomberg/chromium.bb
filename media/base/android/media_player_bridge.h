@@ -72,7 +72,7 @@ class MediaPlayerBridge {
   MediaPlayerBridge(int player_id,
                     const std::string& url,
                     const std::string& first_party_for_cookies,
-                    CookieGetter* cookies_getter,
+                    CookieGetter* cookie_getter,
                     bool hide_url_log,
                     MediaPlayerBridgeManager* manager,
                     const MediaErrorCB& media_error_cb,

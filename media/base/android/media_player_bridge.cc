@@ -172,7 +172,6 @@ void MediaPlayerBridge::Pause() {
   }
 }
 
-
 bool MediaPlayerBridge::IsPlaying() {
   if (!prepared_)
     return pending_play_;

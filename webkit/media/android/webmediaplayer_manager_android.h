@@ -9,6 +9,10 @@
 
 #include "base/basictypes.h"
 
+namespace WebKit {
+class WebFrame;
+}
+
 namespace webkit_media {
 
 class WebMediaPlayerAndroid;
@@ -27,6 +31,16 @@ class WebMediaPlayerManagerAndroid {
   // Release all the media resources managed by this object.
   void ReleaseMediaResources();
 
+  // Check whether a player can enter fullscreen.
+  bool CanEnterFullscreen(WebKit::WebFrame* frame);
+
+  // Called when a player entered or exited fullscreen.
+  void DidEnterFullscreen(WebKit::WebFrame* frame);
+  void DidExitFullscreen();
+
+  // Check whether the Webframe is in fullscreen.
+  bool IsInFullscreen(WebKit::WebFrame* frame);
+
   // Get the pointer to WebMediaPlayerAndroid given the |player_id|.
   WebMediaPlayerAndroid* GetMediaPlayer(int player_id);
 
@@ -36,6 +50,9 @@ class WebMediaPlayerManagerAndroid {
   std::map<int32, WebMediaPlayerAndroid*> media_players_;
 
   int32 next_media_player_id_;
+
+  // WebFrame of the fullscreen video.
+  WebKit::WebFrame* fullscreen_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerManagerAndroid);
 };

@@ -410,6 +410,10 @@ void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
   needs_establish_peer_ = false;
 }
 
+void WebMediaPlayerAndroid::SetNeedsEstablishPeer(bool needs_establish_peer) {
+  needs_establish_peer_ = needs_establish_peer;
+}
+
 void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
   is_playing_ = is_playing;
 }

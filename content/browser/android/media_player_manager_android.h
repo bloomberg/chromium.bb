@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
+#include "content/browser/android/content_video_view.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_bridge_manager.h"
@@ -33,6 +34,13 @@ class MediaPlayerManagerAndroid
   // RenderViewHostObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // Fullscreen video playback controls.
+  void FullscreenPlayerPlay();
+  void FullscreenPlayerPause();
+  void FullscreenPlayerSeek(int msec);
+  void ExitFullscreen(bool release_media_player);
+  void SetVideoSurface(jobject surface);
+
   // An internal method that checks for current time routinely and generates
   // time update events.
   void OnTimeUpdate(int player_id, base::TimeDelta current_time);
@@ -52,10 +60,13 @@ class MediaPlayerManagerAndroid
   // Release all the players managed by this object.
   void DestroyAllMediaPlayers();
 
+  media::MediaPlayerBridge* GetFullscreenPlayer();
   media::MediaPlayerBridge* GetPlayer(int player_id);
 
  private:
   // Message handlers.
+  void OnEnterFullscreen(int player_id);
+  void OnExitFullscreen(int player_id);
   void OnInitialize(int player_id, const std::string& url,
                     const std::string& first_party_for_cookies);
   void OnStart(int player_id);
@@ -66,6 +77,12 @@ class MediaPlayerManagerAndroid
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerBridge> players_;
+
+  // The fullscreen video view object.
+  ContentVideoView video_view_;
+
+  // Player ID of the fullscreen media player.
+  int fullscreen_player_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerManagerAndroid);
 };

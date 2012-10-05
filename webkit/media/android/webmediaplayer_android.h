@@ -137,8 +137,11 @@ class WebMediaPlayerAndroid
   virtual void UpdateReadyState(WebKit::WebMediaPlayer::ReadyState state);
 
   // Helper method to reestablish the surface texture peer for android
-  // mediaplayer.
+  // media player.
   virtual void EstablishSurfaceTexturePeer();
+
+  // Requesting whether the surface texture peer needs to be reestablished.
+  virtual void SetNeedsEstablishPeer(bool needs_establish_peer);
 
   // Method to be implemented by child classes.
   // Initialize the media player bridge object.
@@ -164,7 +167,9 @@ class WebMediaPlayerAndroid
 
   WebKit::WebMediaPlayerClient* client() { return client_; }
 
-  int player_id() { return player_id_; }
+  int player_id() const { return player_id_; }
+
+  WebMediaPlayerManagerAndroid* manager() const { return manager_; }
 
  private:
   WebKit::WebMediaPlayerClient* const client_;

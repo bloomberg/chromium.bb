@@ -288,6 +288,7 @@
     'common/media/audio_messages.h',
     'common/media/audio_param_traits.cc',
     'common/media/audio_param_traits.h',
+    'common/media/media_player_messages.h',
     'common/media/media_stream_messages.h',
     'common/media/media_stream_options.cc',
     'common/media/media_stream_options.h',

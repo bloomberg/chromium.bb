@@ -13,72 +13,63 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 
-namespace webkit_media {
-struct MediaMetadataAndroid;
-}
-
 namespace content {
 
-class MediaPlayerDelegateAndroid;
+class MediaPlayerManagerAndroid;
 
-// Native mirror of ContentVideoView.java.
+// Native mirror of ContentVideoView.java. This class is responsible for
+// creating the Java video view and pass all the player status change to
+// it. It accepts media control from Java class, and forwards it to
+// MediaPlayerManagerAndroid.
 class ContentVideoView {
  public:
-  ContentVideoView();
+  // Construct a ContentVideoView object. The |manager| will handle all the
+  // playback controls from the Java class.
+  explicit ContentVideoView(MediaPlayerManagerAndroid* manager);
   ~ContentVideoView();
 
   static bool RegisterContentVideoView(JNIEnv* env);
-  void Init(JNIEnv*, jobject obj, jobject weak_this);
 
-  // --------------------------------------------------------------------------
-  // All these functions are called on UI thread
+  // Getter method called by the Java class to get the media information.
   int GetVideoWidth(JNIEnv*, jobject obj) const;
   int GetVideoHeight(JNIEnv*, jobject obj) const;
   int GetDurationInMilliSeconds(JNIEnv*, jobject obj) const;
   int GetCurrentPosition(JNIEnv*, jobject obj) const;
   bool IsPlaying(JNIEnv*, jobject obj);
+  void UpdateMediaMetadata(JNIEnv*, jobject obj);
+
+  // Method to create and destroy the Java view.
+  void DestroyContentVideoView();
+  void CreateContentVideoView();
+
+  // Called when the Java fullscreen view is destroyed. If
+  // |release_media_player| is true, |manager_| needs to release the player
+  // as we are quitting the app.
+  void ExitFullscreen(JNIEnv*, jobject, jboolean release_media_player);
+
+  // Media control method called by the Java class.
   void SeekTo(JNIEnv*, jobject obj, jint msec);
-  int GetPlayerId(JNIEnv*, jobject obj) const;
-  int GetRouteId(JNIEnv*, jobject obj) const;
-  int GetRenderHandle(JNIEnv*, jobject obj) const;
   void Play(JNIEnv*, jobject obj);
   void Pause(JNIEnv*, jobject obj);
-  // --------------------------------------------------------------------------
 
-  void PrepareAsync();
-  void DestroyContentVideoView();
-  void UpdateMediaMetadata(JNIEnv*, jobject obj);
-  void DestroyContentVideoView(JNIEnv*, jobject);
-  void DestroyContentVideoView(JNIEnv*, jobject, jboolean release_media_player);
-  void CreateContentVideoView(MediaPlayerDelegateAndroid* player);
-  void SetSurface(JNIEnv*,
-                  jobject obj,
-                  jobject surface,
-                  jint route_id,
-                  jint player_id);
+  // Called by the Java class to pass the surface object to the player.
+  void SetSurface(JNIEnv*, jobject obj, jobject surface);
+
+  // Method called by |manager_| to inform the Java class about player status
+  // change.
   void UpdateMediaMetadata();
-
   void OnMediaPlayerError(int errorType);
   void OnVideoSizeChanged(int width, int height);
   void OnBufferingUpdate(int percent);
   void OnPlaybackComplete();
 
  private:
-  // In some certain cases if the renderer crashes, the ExitFullscreen message
-  // will never acknowledged by the renderer.
-  void OnTimeout();
+  // Object that manages the fullscreen media player. It is responsible for
+  // handling all the playback controls.
+  MediaPlayerManagerAndroid* manager_;
 
-  webkit_media::MediaMetadataAndroid* GetMediaMetadata();
-
-  int ConvertSecondsToMilliSeconds(float seconds) const;
-
-  MediaPlayerDelegateAndroid* player_;
-
+  // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> j_content_video_view_;
-
-  // A timer to keep track of when the acknowledgement of exitfullscreen
-  // message times out.
-  base::OneShotTimer<ContentVideoView> timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVideoView);
 };

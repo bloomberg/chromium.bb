@@ -42,6 +42,8 @@ class WebMediaPlayerProxyImplAndroid
   virtual void Seek(int player_id, base::TimeDelta time) OVERRIDE;
   virtual void ReleaseResources(int player_id) OVERRIDE;
   virtual void DestroyPlayer(int player_id) OVERRIDE;
+  virtual void EnterFullscreen(int player_id) OVERRIDE;
+  virtual void ExitFullscreen(int player_id) OVERRIDE;
 
  private:
   webkit_media::WebMediaPlayerImplAndroid* GetWebMediaPlayer(int player_id);
@@ -55,6 +57,10 @@ class WebMediaPlayerProxyImplAndroid
   void OnVideoSizeChanged(int player_id, int width, int height);
   void OnTimeUpdate(int player_id, base::TimeDelta current_time);
   void OnMediaPlayerReleased(int player_id);
+  void OnDidExitFullscreen(int player_id);
+  void OnDidEnterFullscreen(int player_id);
+  void OnPlayerPlay(int player_id);
+  void OnPlayerPause(int player_id);
 
   webkit_media::WebMediaPlayerManagerAndroid* manager_;
 

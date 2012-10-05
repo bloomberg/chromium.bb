@@ -7,38 +7,32 @@
 #include "base/android/jni_android.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-#include "content/browser/media/media_player_delegate_android.h"
-#endif
+#include "content/browser/android/media_player_manager_android.h"
 #include "content/common/android/surface_callback.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ContentVideoView_jni.h"
-#include "webkit/media/android/media_metadata_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ScopedJavaGlobalRef;
 
-// The timeout value we should wait after user click the back button on the
-// fullscreen view.
-static const int kTimeoutMillseconds = 1000;
-
-// ----------------------------------------------------------------------------
-// Methods that call to Java via JNI
-// ----------------------------------------------------------------------------
-
 namespace content {
 
-// static
 bool ContentVideoView::RegisterContentVideoView(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ContentVideoView::CreateContentVideoView(
-    MediaPlayerDelegateAndroid* player) {
-  player_ = player;
+ContentVideoView::ContentVideoView(MediaPlayerManagerAndroid* manager)
+    : manager_(manager) {
+}
+
+ContentVideoView::~ContentVideoView() {
+  DestroyContentVideoView();
+}
+
+void ContentVideoView::CreateContentVideoView() {
   if (j_content_video_view_.is_null()) {
     JNIEnv* env = AttachCurrentThread();
     j_content_video_view_.Reset(Java_ContentVideoView_createContentVideoView(
@@ -94,198 +88,62 @@ void ContentVideoView::UpdateMediaMetadata() {
     UpdateMediaMetadata(AttachCurrentThread(), j_content_video_view_.obj());
 }
 
-// ----------------------------------------------------------------------------
-
-ContentVideoView::ContentVideoView() : player_(NULL) {
-}
-
-ContentVideoView::~ContentVideoView() {
-  player_ = NULL;
-
-  // If the browser process crashed, just kill the fullscreen view.
-  DestroyContentVideoView();
-}
-
-// ----------------------------------------------------------------------------
-// All these functions are called on UI thread
-
 int ContentVideoView::GetVideoWidth(JNIEnv*, jobject obj) const {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return player_ ? player_->GetVideoWidth() : 0;
-#else
-  return 0;
-#endif
+  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  return player ? player->GetVideoWidth() : 0;
 }
 
 int ContentVideoView::GetVideoHeight(JNIEnv*, jobject obj) const {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return player_ ? player_->GetVideoHeight() : 0;
-#else
-  return 0;
-#endif
+  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  return player ? player->GetVideoHeight() : 0;
 }
 
 int ContentVideoView::GetDurationInMilliSeconds(JNIEnv*, jobject obj) const {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return player_ ? ConvertSecondsToMilliSeconds(player_->Duration()) : -1;
-#else
-  return -1;
-#endif
+  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  return player ? player->GetDuration().InMilliseconds() : -1;
 }
 
 int ContentVideoView::GetCurrentPosition(JNIEnv*, jobject obj) const {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return player_ ? ConvertSecondsToMilliSeconds(player_->CurrentTime()) : 0;
-#else
-  return 0;
-#endif
+  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  return player ? player->GetCurrentTime().InMilliseconds() : 0;
 }
 
 bool ContentVideoView::IsPlaying(JNIEnv*, jobject obj) {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return player_ ? player_->IsPlaying() : false;
-#else
-  return false;
-#endif
+  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  return player ? player->IsPlaying() : false;
 }
 
 void ContentVideoView::SeekTo(JNIEnv*, jobject obj, jint msec) {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (player_)
-    player_->Seek(static_cast<float>(msec / 1000.0));
-#endif
-}
-
-webkit_media::MediaMetadataAndroid* ContentVideoView::GetMediaMetadata() {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!player_)
-    return NULL;
-
-  return new webkit_media::MediaMetadataAndroid(player_->GetVideoWidth(),
-                                                player_->GetVideoHeight(),
-                                                base::TimeDelta::FromSeconds(
-                                                    player_->Duration()),
-                                                base::TimeDelta::FromSeconds(
-                                                    player_->CurrentTime()),
-                                                !player_->IsPlaying(),
-                                                player_->CanPause(),
-                                                player_->CanSeekForward(),
-                                                player_->CanSeekForward());
-#else
-  return NULL;
-#endif
-}
-
-int ContentVideoView::GetPlayerId(JNIEnv*, jobject obj) const {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return player_ ? player_->player_id() : -1;
-#else
-  return -1;
-#endif
-}
-
-int ContentVideoView::GetRouteId(JNIEnv*, jobject obj) const {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return player_ ? player_->route_id() : -1;
-#else
-  return -1;
-#endif
-}
-
-int ContentVideoView::GetRenderHandle(JNIEnv*, jobject obj) const {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  static bool single_process =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-  if (!player_)
-    return -1;
-
-  if (single_process)
-    return 0;
-  return player_->render_handle();
-#else
-  return -1;
-#endif
+  manager_->FullscreenPlayerSeek(msec);
 }
 
 void ContentVideoView::Play(JNIEnv*, jobject obj) {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (player_)
-    player_->Play();
-#endif
+  manager_->FullscreenPlayerPlay();
 }
 
 void ContentVideoView::Pause(JNIEnv*, jobject obj) {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (player_)
-    player_->Pause();
-#endif
+  manager_->FullscreenPlayerPause();
 }
 
-void ContentVideoView::OnTimeout() {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#endif
-  timeout_timer_.Stop();
-  DestroyContentVideoView();
-}
-
-int ContentVideoView::ConvertSecondsToMilliSeconds(float seconds) const {
-  return static_cast<int>(seconds * 1000);
-}
-
-// ----------------------------------------------------------------------------
-// Methods called from Java via JNI
-// ----------------------------------------------------------------------------
-
-void ContentVideoView::DestroyContentVideoView(JNIEnv*, jobject,
-                                               jboolean release_media_player) {
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  if (player_) {
-    player_->ExitFullscreen(release_media_player);
-
-    // Fire off a timer so that we will close the fullscreen view in case the
-    // renderer crashes.
-    timeout_timer_.Start(FROM_HERE,
-                   base::TimeDelta::FromMilliseconds(kTimeoutMillseconds),
-                   this, &ContentVideoView::OnTimeout);
-  }
-#endif
+void ContentVideoView::ExitFullscreen(
+    JNIEnv*, jobject, jboolean release_media_player) {
+  manager_->ExitFullscreen(release_media_player);
+  j_content_video_view_.Reset();
 }
 
 void ContentVideoView::SetSurface(JNIEnv* env, jobject obj,
-                                  jobject surface,
-                                  jint route_id,
-                                  jint player_id) {
-  SetSurfaceAsync(env,
-                  surface,
-                  SurfaceTexturePeer::SET_VIDEO_SURFACE_TEXTURE,
-                  route_id,
-                  player_id,
-                  NULL);
+                                  jobject surface) {
+  manager_->SetVideoSurface(surface);
+  ReleaseSurface(surface);
 }
 
 void ContentVideoView::UpdateMediaMetadata(JNIEnv* env, jobject obj) {
-  scoped_ptr<webkit_media::MediaMetadataAndroid> metadata(GetMediaMetadata());
-  Java_ContentVideoView_updateMediaMetadata(env,
-                                            obj,
-                                            metadata->width,
-                                            metadata->height,
-                                            metadata->duration.InMilliseconds(),
-                                            metadata->can_pause,
-                                            metadata->can_seek_forward,
-                                            metadata->can_seek_backward);
+  media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
+  if (player)
+    Java_ContentVideoView_updateMediaMetadata(
+        env, obj, player->GetVideoWidth(), player->GetVideoHeight(),
+        player->GetDuration().InMilliseconds(), player->can_pause(),
+        player->can_seek_forward(), player->can_seek_backward());
 }
 
 } // namespace content

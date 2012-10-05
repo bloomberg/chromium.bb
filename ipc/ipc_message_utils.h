@@ -108,6 +108,7 @@ enum IPCMessageStart {
   AndroidWebViewMsgStart,
   MetroViewerMsgStart,
   CCMsgStart,
+  MediaPlayerMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 
