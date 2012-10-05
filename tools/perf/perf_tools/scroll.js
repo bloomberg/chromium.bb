@@ -39,9 +39,8 @@
    * Uses smooth scrolling capabilities provided by the platform, if available.
    * @constructor
    */
-  function SmoothScrollDownGesture(opt_element, opt_isGmailTest) {
+  function SmoothScrollDownGesture(opt_element) {
     this.element_ = opt_element || document.body;
-    this.isGmailTest_ = opt_isGmailTest;
   };
 
   SmoothScrollDownGesture.prototype.start = function(callback) {
@@ -52,12 +51,6 @@
       chrome.gpuBenchmarking.beginSmoothScrollDown(true, function() {
         callback();
       });
-      return;
-    }
-
-    if (this.isGmailTest_) {
-      this.element_.scrollByLines(1);
-      requestAnimationFrame(callback);
       return;
     }
 
@@ -153,31 +146,15 @@
   // The page is scrolled down by a set of scroll gestures. These gestures
   // correspond to a reading gesture on that platform.
   //
-  // start_ -> startPass_ -> ...scrolling... -> onGestureComplete_ ->
-  //        -> startPass_ -> .. scrolling... -> onGestureComplete_ -> callback_
-  //
-  // TODO(nduca): This test starts in its constructor. That is strange. We
-  // should change it to start explicitly.
-  function ScrollTest(opt_callback, opt_isGmailTest) {
+  // start -> startPass_ -> ...scrolling... -> onGestureComplete_ ->
+  //       -> startPass_ -> .. scrolling... -> onGestureComplete_ -> callback_
+  function ScrollTest(opt_callback) {
     var self = this;
 
     this.callback_ = opt_callback;
-    this.isGmailTest_ = opt_isGmailTest;
-
-    if (this.isGmailTest_) {
-      gmonkey.load('2.0', function(api) {
-          self.start_(api.getScrollableElement());
-      });
-    } else {
-      if (document.readyState == 'interactive' ||
-          document.readyState == 'complete')
-        this.start_();
-      else
-        window.addEventListener('load', function() { self.start_(); });
-    }
   }
 
-  ScrollTest.prototype.start_ = function(opt_element) {
+  ScrollTest.prototype.start = function(opt_element) {
     // Assign this.element_ here instead of constructor, because the constructor
     // ensures this method will be called after the document is loaded.
     this.element_ = opt_element || document.body;
@@ -196,8 +173,7 @@
       this.renderingStats_ = new RafRenderingStats();
     this.renderingStats_.start();
 
-    this.gesture_ = new SmoothScrollDownGesture(this.element_,
-                                                this.isGmailTest_);
+    this.gesture_ = new SmoothScrollDownGesture(this.element_);
     this.gesture_.start(this.onGestureComplete_.bind(this));
   };
 
