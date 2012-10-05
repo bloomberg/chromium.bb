@@ -309,6 +309,7 @@ void LocationBarView::Init(views::View* popup_parent_view) {
   }
 
   zoom_view_ = new ZoomView(model_, delegate_);
+  zoom_view_->set_id(VIEW_ID_ZOOM_BUTTON);
   AddChildView(zoom_view_);
 
   web_intents_button_view_ =

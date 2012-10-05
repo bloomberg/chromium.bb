@@ -837,10 +837,9 @@ GtkWidget* LocationBarViewGtk::CreateIconButton(
 }
 
 void LocationBarViewGtk::CreateZoomButton() {
-  // TODO(khorimoto): Add tests for zoom button.
   zoom_.Own(CreateIconButton(&zoom_image_,
                              0,
-                             VIEW_ID_NONE,
+                             VIEW_ID_ZOOM_BUTTON,
                              0,
                              OnZoomButtonPressThunk));
 }

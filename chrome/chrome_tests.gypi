@@ -3051,6 +3051,9 @@
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/fullscreen/fullscreen_controller_browsertest.cc',
         'browser/ui/global_error/global_error_service_browsertest.cc',
+        'browser/ui/gtk/bubble/bubble_gtk_browsertest.cc',
+        'browser/ui/gtk/confirm_bubble_gtk_browsertest.cc',
+        'browser/ui/gtk/location_bar_view_gtk_browsertest.cc',
         'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
         'browser/ui/gtk/view_id_util_browsertest.cc',
         'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
@@ -3366,13 +3369,6 @@
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
-          ],
-        }],
-        ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
-          'sources': [
-            # BubbleGtk is used only on Linux/GTK.
-            'browser/ui/gtk/bubble/bubble_gtk_browsertest.cc',
-            'browser/ui/gtk/confirm_bubble_gtk_browsertest.cc',
           ],
         }],
         ['OS=="mac"', {

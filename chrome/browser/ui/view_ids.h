@@ -71,6 +71,12 @@ enum ViewID {
   // The Download shelf.
   VIEW_ID_DOWNLOAD_SHELF,
 
+// TODO(dbeam): change the zoom decoration to an NSImageView on Mac so IDs work.
+#if !defined(OS_MACOSX)
+  // Zoom button in location bar.
+  VIEW_ID_ZOOM_BUTTON,
+#endif
+
   // Used in chrome/browser/ui/gtk/view_id_util_browsertests.cc
   // If you add new ids, make sure the above test passes.
   VIEW_ID_PREDEFINED_COUNT,
