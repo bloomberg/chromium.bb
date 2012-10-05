@@ -522,20 +522,24 @@ def Update(options, argv, config):
     raise Error("Unrecognized bundle name or argument: '%s'" %
                 ', '.join(bad_args))
 
+  if SDK_TOOLS in args and not options.update_sdk_tools:
+    # We only want sdk_tools to be updated by sdk_update.py. If the user
+    # tries to update directly, we just ignore the request.
+    InfoPrint('Updating sdk_tools happens automatically.\n'
+        'Ignoring manual update request.')
+    args.remove(SDK_TOOLS)
+
   for bundle in bundles:
     bundle_path = os.path.join(options.sdk_root_dir, bundle.name)
     bundle_update_path = '%s_update' % bundle_path
-    if bundle.name == SDK_TOOLS and not options.update_sdk_tools:
-      # We only want sdk_tools to updated by sdk_update.py. If the
-      # user tries to update directly, we just ignore the request.
-      InfoPrint('Updating sdk_tools happens automatically.\n'
-          'Ignoring manual update request.')
-      continue
-
     if not (bundle.name in args or
             ALL in args or (RECOMMENDED in args and
                             bundle[RECOMMENDED] == 'yes')):
       continue
+
+    if bundle.name == SDK_TOOLS and not options.update_sdk_tools:
+      continue
+
     def UpdateBundle():
       '''Helper to install a bundle'''
       archive = bundle.GetHostOSArchive()
