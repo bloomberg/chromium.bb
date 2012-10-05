@@ -21,6 +21,8 @@ import android.view.inputmethod.InputConnection;
 import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
 
+import java.util.ArrayList;
+
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.gfx.NativeWindow;
 
@@ -108,6 +110,10 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         return ContentViewCore.initChromiumBrowserProcess(context, maxRendererProcesses);
     }
 
+    // Used for showing a temporary bitmap while the actual texture is being drawn.
+    private final ArrayList<SurfaceTextureUpdatedListener> mSurfaceTextureUpdatedListeners =
+            new ArrayList<SurfaceTextureUpdatedListener>();
+
     private ContentViewCore mContentViewCore;
 
     /**
@@ -183,6 +189,24 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public ContentViewCore getContentViewCore() {
         return mContentViewCore;
+    }
+
+    /**
+     * Allows an external source to listen to SurfaceTexture updates.
+     *
+     * @param listener
+     */
+    public void registerSurfaceTextureListener(SurfaceTextureUpdatedListener listener) {
+        if (!mSurfaceTextureUpdatedListeners.contains(listener)) {
+            mSurfaceTextureUpdatedListeners.add(listener);
+        }
+    }
+
+    /**
+     * Unregisters the current external listener that waits for SurfaceTexture updates.
+     */
+    public void unregisterSurfaceTextureListener(SurfaceTextureUpdatedListener listener) {
+        mSurfaceTextureUpdatedListeners.remove(listener);
     }
 
     /**
@@ -361,6 +385,39 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public void clearHistory() {
         mContentViewCore.clearHistory();
+    }
+
+    /**
+     * Start profiling the update speed. You must call {@link #stopFpsProfiling}
+     * to stop profiling.
+     *
+     * @VisibleForTesting
+     */
+    public void startFpsProfiling() {
+        // TODO(nileshagrawal): Implement this.
+    }
+
+    /**
+     * Stop profiling the update speed.
+     *
+     * @VisibleForTesting
+     */
+    public float stopFpsProfiling() {
+        // TODO(nileshagrawal): Implement this.
+        return 0.0f;
+    }
+
+    /**
+     * Fling the ContentView from the current position.
+     * @param x Fling touch starting position
+     * @param y Fling touch starting position
+     * @param velocityX Initial velocity of the fling (X) measured in pixels per second.
+     * @param velocityY Initial velocity of the fling (Y) measured in pixels per second.
+     *
+     * @VisibleForTesting
+     */
+    public void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
+        // TODO(nileshagrawal): Implement this.
     }
 
     /**
