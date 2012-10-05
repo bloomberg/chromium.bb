@@ -19,11 +19,6 @@ for os in linux mac; do
         TO="chromium/config/$target/$os/$arch/$f"
         [ -e $FROM ] && cp -v $FROM $TO
       done
-
-      mkdir -p "chromium/config/$target/$os/$arch/libavcodec/"
-      FROM="build.$arch.$os/$target/libavcodec/codec_names.h"
-      TO="chromium/config/$target/$os/$arch/libavcodec/codec_names.h"
-      [ -e $FROM ] && cp -v $FROM $TO
     done
   done
 done
