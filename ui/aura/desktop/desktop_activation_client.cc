@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/activation_change_observer.h"
-#include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -31,13 +30,11 @@ DesktopActivationClient::DesktopActivationClient(FocusManager* focus_manager)
       current_active_(NULL),
       updating_activation_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
-  aura::Env::GetInstance()->AddObserver(this);
   focus_manager->AddObserver(this);
 }
 
 DesktopActivationClient::~DesktopActivationClient() {
   focus_manager_->RemoveObserver(this);
-  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void DesktopActivationClient::AddObserver(
@@ -72,6 +69,9 @@ void DesktopActivationClient::ActivateWindow(Window* window) {
 
   aura::Window* old_active = current_active_;
   current_active_ = window;
+  if (window && !observer_manager_.IsObserving(window))
+    observer_manager_.Add(window);
+
   FOR_EACH_OBSERVER(client::ActivationChangeObserver,
                     observers_,
                     OnWindowActivated(window, old_active));
@@ -112,10 +112,6 @@ void DesktopActivationClient::OnWindowDestroying(aura::Window* window) {
     // don't do this because that's the desktop environment's job.
   }
   observer_manager_.Remove(window);
-}
-
-void DesktopActivationClient::OnWindowInitialized(aura::Window* window) {
-  observer_manager_.Add(window);
 }
 
 void DesktopActivationClient::OnWindowFocused(aura::Window* window) {

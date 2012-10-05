@@ -26,7 +26,6 @@ class ActivationChangeObserver;
 // objects.
 class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
                                             public WindowObserver,
-                                            public EnvObserver,
                                             public FocusChangeObserver {
  public:
   explicit DesktopActivationClient(FocusManager* focus_manager);
@@ -45,9 +44,6 @@ class AURA_EXPORT DesktopActivationClient : public client::ActivationClient,
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
-
-  // Overridden from aura::EnvObserver:
-  virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
   // Overridden from aura::FocusChangeObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
