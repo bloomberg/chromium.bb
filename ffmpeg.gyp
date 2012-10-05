@@ -12,21 +12,13 @@
 #     headers via pkg-config.  When Chromium is launched it will assume that
 #     FFmpeg is present in the system library path.  Default value is 0.
 #   build_ffmpegsumo
-#     When set to zero will build Chromium against the patched ffmpegsumo
-#     headers, but not build ffmpegsumo itself.  Users are expected to build
-#     and provide their own version of ffmpegsumo.  Default value is 1.
+#     When set to zero will build Chromium against Chrome's FFmpeg headers, but
+#     not build ffmpegsumo itself.  Users are expected to build and provide
+#     their own version of ffmpegsumo.  Default value is 1.
 #
 
 {
   'target_defaults': {
-    'conditions': [
-      ['os_posix != 1 or OS == "mac" or OS == "openbsd"', {
-        'sources/': [['exclude', '/linux/']]
-      }],
-      ['OS != "mac"', {'sources/': [['exclude', '/mac/']]}],
-      ['OS != "win"', {'sources/': [['exclude', '/win/']]}],
-      ['OS != "openbsd"', {'sources/': [['exclude', '/openbsd/']]}],
-    ],
     'variables': {
       # Since we are not often debugging FFmpeg, and performance is
       # unacceptable without optimization, freeze the optimizations to -O2.
@@ -36,12 +28,17 @@
       'release_optimize': '2',
       'debug_optimize': '2',
       'mac_debug_optimization': '2',
+      # In addition to the above reasons, /Od optimization won't remove symbols
+      # that are under "if (0)" style sections.  Which lead to link time errors
+      # when for example it tries to link an ARM symbol on X86.
+      'win_debug_Optimization': '2',
+      # Run time checks are incompatible with any level of optimizations.
+      'win_debug_RuntimeChecks': '0',
     },
   },
   'variables': {
-    # Allow overridding the selection of which FFmpeg binaries to copy via an
+    # Allow overriding the selection of which FFmpeg binaries to copy via an
     # environment variable.  Affects the ffmpeg_binaries target.
-
     'conditions': [
       ['armv7 == 1 and arm_neon == 1', {
         # Need a separate config for arm+neon vs arm
@@ -68,11 +65,19 @@
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
-    'asm_library': 'ffmpegasm',
+
+    # Stub generator script and signatures of all functions used by Chrome.
+    'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
+    'sig_files': ['chromium/ffmpegsumo.sigs'],
+    'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
   },
+  'includes': [
+    'ffmpeg_generated.gypi',
+  ],
   'conditions': [
     ['OS != "win" and use_system_ffmpeg == 0 and build_ffmpegsumo != 0', {
       'variables': {
+        # Path to platform configuration files.
         'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
       },
       'targets': [
@@ -81,12 +86,12 @@
           'type': 'loadable_module',
           'sources': [
             '<(platform_config_root)/config.h',
-            'chromium/config/libavutil/avconfig.h',
+            '<(platform_config_root)/libavutil/avconfig.h',
+            '<@(c_sources)',
           ],
           'include_dirs': [
             '<(platform_config_root)',
             '.',
-            'chromium/config',
           ],
           'defines': [
             'HAVE_AV_CONFIG_H',
@@ -98,10 +103,12 @@
             '-fPIC',
             '-fomit-frame-pointer',
           ],
-          'includes': [
-            'ffmpeg_generated.gypi',
-          ],
           'conditions': [
+            ['target_arch != "arm"', {
+              'dependencies': [
+                'ffmpeg_yasm',
+              ],
+            }],
             ['clang == 1', {
               'xcode_settings': {
                 'WARNING_CFLAGS': [
@@ -147,11 +154,6 @@
                 # gcc doesn't have flags for specific warnings, so disable them
                 # all.
                 '-w',
-              ],
-            }],
-            ['use_system_yasm == 0', {
-              'dependencies': [
-                '../yasm/yasm.gyp:yasm#host',
               ],
             }],
             ['target_arch == "ia32"', {
@@ -237,34 +239,6 @@
                   '-lz',
                 ],
               },
-              'variables': {
-                'obj_format': 'elf',
-                'conditions': [
-                  [ 'use_system_yasm == 1', {
-                    'yasm_path': '<!(which yasm)',
-                  }, {
-                    'yasm_path': '<(PRODUCT_DIR)/yasm',
-                  }],
-                  [ 'target_arch == "ia32"', {
-                    'yasm_flags': [
-                      '-DARCH_X86_32',
-                      # The next two lines are needed to enable AVX assembly.
-                      '-I<(platform_config_root)',
-                      '-Pconfig.asm',
-                      '-m', 'x86',
-                    ],
-                  }, {
-                    'yasm_flags': [
-                      '-DARCH_X86_64',
-                      '-m', 'amd64',
-                      '-DPIC',
-                      # The next two lines are needed to enable AVX assembly.
-                      '-I<(platform_config_root)',
-                      '-Pconfig.asm',
-                    ],
-                  }],
-                ],
-              },
             }],  # os_posix == 1 and OS != "mac"
             ['OS == "openbsd"', {
               # OpenBSD's gcc (4.2.1) does not support this flag
@@ -312,91 +286,105 @@
                   '-Wl,-read_only_relocs,suppress',
                 ],
               },
-              'variables': {
-                'obj_format': 'macho',
-                'yasm_flags': [ '-DPREFIX' ],
-                'conditions': [
-                  [ 'use_system_yasm == 1', {
-                    'yasm_path': '<!(which yasm)',
-                  }, {
-                    'yasm_path': '<(PRODUCT_DIR)/yasm',
-                  }],
-                  [ 'target_arch == "ia32"', {
-                    'yasm_flags': [
-                      '-DARCH_X86_32',
-                      # The next two lines are needed to enable AVX assembly.
-                      '-I<(platform_config_root)',
-                      '-Pconfig.asm',
-                      '-m', 'x86',
-                    ],
-                  }, {
-                    'yasm_flags': [
-                      '-DARCH_X86_64',
-                      '-m', 'amd64',
-                      '-DPIC',
-                      # The next two lines are needed to enable AVX assembly.
-                      '-I<(platform_config_root)',
-                      '-Pconfig.asm',
-                    ],
-                  }],
-                ],
-              },
             }],  # OS == "mac"
           ],
+        },
+      ],
+    }],
+    ['OS == "win"', {
+      'variables': {
+        # Path to platform configuration files.
+        'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+      },
+      'targets': [
+        {
+          'target_name': 'convert_ffmpeg_sources',
+          'type': 'none',
+          'sources': [
+            '<@(c_sources)',
+          ],
+          'variables': {
+            'converter_script': 'chromium/scripts/c99conv.py',
+            'converter_executable': 'chromium/binaries/c99conv.exe',
+          },
           'rules': [
             {
-              'rule_name': 'assemble',
-              'extension': 'asm',
-              'inputs': [ '<(yasm_path)', ],
+              'rule_name': 'convert_c99_to_c89',
+              'extension': 'c',
+              'inputs': [
+                '<(converter_script)',
+                '<(converter_executable)',
+                # Since we don't know the dependency graph for header includes
+                # we need to list them all here to ensure a header change causes
+                # a recompilation.
+                '<(platform_config_root)/config.h',
+                '<(platform_config_root)/libavutil/avconfig.h',
+                '<@(c_headers)',
+              ],
               'outputs': [
-                '<(shared_generated_dir)/<(RULE_INPUT_ROOT).o',
+                '<(shared_generated_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).c',
               ],
               'action': [
-                '<(yasm_path)',
-                '-f', '<(obj_format)',
-                '<@(yasm_flags)',
-                '-I', 'libavcodec/x86/',
-                '-I', 'libavutil/x86/',
-                '-I', '.',
-                '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).o',
+                'python',
+                '<(converter_script)',
                 '<(RULE_INPUT_PATH)',
+                '<(shared_generated_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).c',
+                '-I', '<(platform_config_root)',
               ],
+              'message': 'Converting <(RULE_INPUT_PATH) from C99 to C89.',
               'process_outputs_as_sources': 1,
-              'message': 'Build ffmpeg yasm build <(RULE_INPUT_PATH).',
             },
           ],
         },
+        {
+          'target_name': 'ffmpegsumo',
+          'type': 'loadable_module',
+          'dependencies': [
+            'convert_ffmpeg_sources',
+            'ffmpeg_yasm',
+          ],
+          'sources': [
+            '<(platform_config_root)/config.h',
+            '<(platform_config_root)/ibavutil/avconfig.h',
+            '<@(converter_outputs)',
+            '<(shared_generated_dir)/ffmpegsumo.def',
+          ],
+          # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
+          'msvs_disabled_warnings': [
+            4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
+            4116, 4307
+          ],
+          'actions': [
+            {
+              'action_name': 'generate_def',
+              'inputs': [
+                '<(generate_stubs_script)',
+                '<@(sig_files)',
+              ],
+              'outputs': [
+                '<(shared_generated_dir)/ffmpegsumo.def',
+              ],
+              'action': ['python',
+                         '<(generate_stubs_script)',
+                         '-i', '<(INTERMEDIATE_DIR)',
+                         '-o', '<(shared_generated_dir)',
+                         '-t', 'windows_def',
+                         '-m', 'ffmpegsumo.dll',
+                         '<@(_inputs)',
+              ],
+              'message': 'Generating FFmpeg export definitions.',
+            },
+          ],
+        }
       ],
     }],
   ],  # conditions
   'targets': [
     {
-      'variables': {
-        'platform_binary_root': 'chromium/binaries/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
-        'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
-        'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
-        'sig_files': [
-          # Note that these must be listed in dependency order.
-          # (i.e. if A depends on B, then B must be listed before A.)
-          'chromium/avutil-51.sigs',
-          'chromium/avcodec-54.sigs',
-          'chromium/avformat-54.sigs',
-        ],
-      },
-
       'target_name': 'ffmpeg',
-      'msvs_guid': 'D7A94F58-576A-45D9-A45F-EB87C63ABBB0',
-      'dependencies': [
-        '../../base/base.gyp:base',
-      ],
       'sources': [
-        # Hacks to introduce C99 types into Visual Studio.
-        'chromium/include/win/inttypes.h',
-        'chromium/include/win/stdint.h',
-
         # Files needed for stub generation rules.
         '<@(sig_files)',
-        '<(extra_header)'
       ],
       'defines': [
         '__STDC_CONSTANT_MACROS',  # FFmpeg uses INT64_C.
@@ -410,33 +398,34 @@
       #     b) Else, use our local copy
       'conditions': [
         ['OS == "win"', {
+          'msvs_guid': 'D7A94F58-576A-45D9-A45F-EB87C63ABBB0',
           'variables': {
             'outfile_type': 'windows_lib',
             'output_dir': '<(PRODUCT_DIR)/lib',
             'intermediate_dir': '<(INTERMEDIATE_DIR)',
           },
           'type': 'none',
-          'sources!': [
-            '<(extra_header)',
+          'sources': [
+            # Adds C99 types for Visual C++.
+            'chromium/include/win/inttypes.h',
+          ],
+          'dependencies': [
+            'ffmpegsumo',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
+              '<(platform_config_root)',
               'chromium/include/win',
-              'chromium/config',
               '.',
             ],
             'link_settings': {
               'libraries': [
-                '<(output_dir)/avcodec-54.lib',
-                '<(output_dir)/avformat-54.lib',
-                '<(output_dir)/avutil-51.lib',
+                '<(output_dir)/ffmpegsumo.lib',
               ],
               'msvs_settings': {
                 'VCLinkerTool': {
                   'DelayLoadDLLs': [
-                    'avcodec-54.dll',
-                    'avformat-54.dll',
-                    'avutil-51.dll',
+                    'ffmpegsumo.dll',
                   ],
                 },
               },
@@ -462,16 +451,6 @@
               'message': 'Generating FFmpeg import libraries.',
             },
           ],
-
-          # Copy prebuilt binaries to build directory.
-          'copies': [{
-            'destination': '<(PRODUCT_DIR)/',
-            'files': [
-              '<(platform_binary_root)/avcodec-54.dll',
-              '<(platform_binary_root)/avformat-54.dll',
-              '<(platform_binary_root)/avutil-51.dll',
-            ],
-          }],
         }, {  # else OS != "win", use POSIX stub generator
           'variables': {
             'outfile_type': 'posix_stubs',
@@ -480,6 +459,9 @@
             'intermediate_dir': '<(INTERMEDIATE_DIR)',
             'output_root': '<(SHARED_INTERMEDIATE_DIR)/ffmpeg',
           },
+          'sources': [
+            '<(extra_header)',
+          ],
           'type': '<(component)',
           'include_dirs': [
             '<(output_root)',
@@ -550,12 +532,12 @@
               },
             }, {  # else use_system_ffmpeg == 0, add local copy to include path
               'include_dirs': [
-                'chromium/config',
+                '<(platform_config_root)',
                 '.',
               ],
               'direct_dependent_settings': {
                 'include_dirs': [
-                  'chromium/config',
+                 '<(platform_config_root)',
                   '.',
                 ],
               },
@@ -570,6 +552,83 @@
           ],  # conditions
         }],
       ],  # conditions
+    },
+    {
+      'target_name': 'ffmpeg_yasm',
+      'type': 'static_library',
+      'sources': [
+        '<@(asm_sources)',
+      ],
+      'conditions': [
+        ['use_system_yasm == 0', {
+          'dependencies': [
+            '../yasm/yasm.gyp:yasm#host',
+          ],
+        }],
+      ],
+      'variables': {
+        # Path to platform configuration files.
+        'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+
+        'obj_format': 'elf',
+        'obj_extension': 'o',
+        'yasm_flags': ['-DPIC'],
+        'conditions': [
+          ['use_system_yasm == 1', {
+            'yasm_path': '<!(which yasm)',
+          }, {
+            'yasm_path': '<(PRODUCT_DIR)/yasm',
+          }],
+          ['target_arch == "ia32"', {
+            'yasm_flags': [
+              '-m', 'x86',
+              '-DARCH_X86_32'
+             ],
+          }, {
+            'yasm_flags': [
+              '-m', 'amd64',
+              '-DARCH_X86_64'
+            ],
+          }],
+          ['OS == "win" or OS == "mac"', {
+            # -DPREFIX is necessary to ensure symbols end up with a _ prefix.
+            'yasm_flags': ['-DPREFIX']
+          }],
+          ['OS == "win"', {
+            'obj_format': 'win32',
+            'obj_extension': 'obj',
+          }],
+          ['OS == "mac"', {
+            'obj_format': 'macho',
+          }],
+        ],
+      },
+      'rules': [
+        {
+          'rule_name': 'assemble',
+          'extension': 'asm',
+          'inputs': ['<(yasm_path)'],
+          'outputs': [
+            '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(obj_extension)',
+          ],
+          'action': [
+            '<(yasm_path)',
+            '-f', '<(obj_format)',
+            '<@(yasm_flags)',
+            '-I', '<(platform_config_root)',
+            '-I', 'libavcodec/x86/',
+            '-I', 'libavutil/x86/',
+            '-I', '.',
+            # Disable warnings, prevents log spam for things we won't fix.
+            '-w',
+            '-Pconfig.asm',
+            '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(obj_extension)',
+            '<(RULE_INPUT_PATH)',
+          ],
+          'process_outputs_as_sources': 1,
+          'message': 'Build ffmpeg yasm artifacts <(RULE_INPUT_PATH).',
+        },
+      ],
     },
   ],  # targets
 }
