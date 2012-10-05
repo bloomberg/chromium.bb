@@ -83,8 +83,6 @@ class WebPlugin {
   // if the plugin enters a modal loop.
   // Cancels a pending request.
   virtual void SetWindowlessPumpEvent(HANDLE pump_messages_event) = 0;
-  virtual void ReparentPluginWindow(HWND window, HWND parent) = 0;
-  virtual void ReportExecutableMemory(size_t size) = 0;
 #endif
   virtual void CancelResource(unsigned long id) = 0;
   virtual void Invalidate() = 0;

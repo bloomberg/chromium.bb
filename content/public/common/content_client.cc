@@ -83,13 +83,6 @@ gfx::Image& ContentClient::GetNativeImageNamed(int resource_id) const {
   return kEmptyImage;
 }
 
-#if defined(OS_WIN)
-bool ContentClient::SandboxPlugin(CommandLine* command_line,
-                                  sandbox::TargetPolicy* policy) {
-  return false;
-}
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 bool ContentClient::GetSandboxProfileForSandboxType(
     int sandbox_type,

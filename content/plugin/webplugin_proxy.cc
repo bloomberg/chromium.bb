@@ -148,16 +148,6 @@ void WebPluginProxy::SetWindowlessPumpEvent(HANDLE pump_messages_event) {
   Send(new PluginHostMsg_SetWindowlessPumpEvent(
       route_id_, pump_messages_event_for_renderer));
 }
-
-void WebPluginProxy::ReparentPluginWindow(HWND window, HWND parent) {
-  PluginThread::current()->Send(
-      new PluginProcessHostMsg_ReparentPluginWindow(window, parent));
-}
-
-void WebPluginProxy::ReportExecutableMemory(size_t size) {
-  PluginThread::current()->Send(
-      new PluginProcessHostMsg_ReportExecutableMemory(size));
-}
 #endif
 
 void WebPluginProxy::CancelResource(unsigned long id) {

@@ -58,24 +58,6 @@ using content::ChildProcessHost;
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
-namespace {
-
-void ReparentPluginWindowHelper(HWND window, HWND parent) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  int window_style = WS_CHILD;
-  if (!webkit::npapi::WebPluginDelegateImpl::IsDummyActivationWindow(window))
-    window_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-
-  ::SetWindowLongPtr(window, GWL_STYLE, window_style);
-  ::SetParent(window, parent);
-  // Allow the Flash plugin to forward some messages back to Chrome.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    ::SetPropW(parent, webkit::npapi::kNativeWindowClassFilterProp, HANDLE(-1));
-}
-
-}  // namespace
-
 void PluginProcessHost::OnPluginWindowDestroyed(HWND window, HWND parent) {
   // The window is destroyed at this point, we just care about its parent, which
   // is the intermediate window we created.
@@ -92,25 +74,6 @@ void PluginProcessHost::AddWindow(HWND window) {
   plugin_parent_windows_set_.insert(window);
 }
 
-void PluginProcessHost::OnReparentPluginWindow(HWND window, HWND parent) {
-  // Reparent only from the plugin process to our process.
-  DWORD process_id = 0;
-  ::GetWindowThreadProcessId(window, &process_id);
-  if (process_id != ::GetProcessId(process_->GetHandle()))
-    return;
-  ::GetWindowThreadProcessId(parent, &process_id);
-  if (process_id != ::GetCurrentProcessId())
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(ReparentPluginWindowHelper, window, parent));
-}
-
-void PluginProcessHost::OnReportExecutableMemory(size_t size) {
-  // TODO(jschuh): move this into the plugin process once it supports UMA.
-  UMA_HISTOGRAM_MEMORY_KB("Plugin.ExecPageSizeKB", size / 1024);
-}
 #endif  // defined(OS_WIN)
 
 #if defined(TOOLKIT_GTK)
@@ -317,10 +280,6 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginWindowDestroyed,
                         OnPluginWindowDestroyed)
-    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ReparentPluginWindow,
-                        OnReparentPluginWindow)
-    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ReportExecutableMemory,
-                        OnReportExecutableMemory)
 #endif
 #if defined(TOOLKIT_GTK)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_MapNativeViewId,

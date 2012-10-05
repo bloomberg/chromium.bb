@@ -92,13 +92,6 @@ IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ChannelCreated,
 IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
                      HWND /* window */,
                      HWND /* parent */)
-
-IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_ReparentPluginWindow,
-                     HWND /* window */,
-                     HWND /* parent */)
-
-IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ReportExecutableMemory,
-                     uint32_t /* size */)
 #endif
 
 #if defined(USE_X11)

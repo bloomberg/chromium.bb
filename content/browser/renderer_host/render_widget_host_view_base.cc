@@ -147,16 +147,6 @@ HWND ReparentWindow(HWND window) {
       WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
       0, 0, 0, 0, orig_parent, 0, instance, 0);
   ui::CheckWindowCreated(parent);
-  // If UIPI is enabled we need to add message filters for parents with
-  // children that cross process boundaries.
-  if (::GetPropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp)) {
-    // Process-wide message filters required on Vista must be added to:
-    // chrome_content_client.cc ChromeContentClient::SandboxPlugin
-    ChangeWindowMessageFilterEx(parent, WM_MOUSEWHEEL, MSGFLT_ALLOW, NULL);
-    ChangeWindowMessageFilterEx(parent, WM_GESTURE, MSGFLT_ALLOW, NULL);
-    ChangeWindowMessageFilterEx(parent, WM_APPCOMMAND, MSGFLT_ALLOW, NULL);
-    ::RemovePropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp);
-  }
   ::SetParent(window, parent);
   // How many times we try to find a PluginProcessHost whose process matches
   // the HWND.

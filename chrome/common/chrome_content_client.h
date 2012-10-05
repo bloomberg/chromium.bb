@@ -38,11 +38,6 @@ class ChromeContentClient : public content::ContentClient {
       ui::ScaleFactor scale_factor) const OVERRIDE;
   virtual gfx::Image& GetNativeImageNamed(int resource_id) const OVERRIDE;
 
-#if defined(OS_WIN)
-  virtual bool SandboxPlugin(CommandLine* command_line,
-                             sandbox::TargetPolicy* policy) OVERRIDE;
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   virtual bool GetSandboxProfileForSandboxType(
       int sandbox_type,

@@ -131,8 +131,6 @@ class CONTENT_EXPORT PluginProcessHost
 
 #if defined(OS_WIN)
   void OnPluginWindowDestroyed(HWND window, HWND parent);
-  void OnReparentPluginWindow(HWND window, HWND parent);
-  void OnReportExecutableMemory(size_t size);
 #endif
 
 #if defined(USE_X11)

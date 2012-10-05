@@ -112,16 +112,6 @@ const wchar_t* const kTroublesomeDlls[] = {
 };
 
 // The DLLs listed here are known (or under strong suspicion) of causing crashes
-// when they are loaded in the plugin process.
-const wchar_t* const kTroublesomePluginDlls[] = {
-  L"rpmainbrowserrecordplugin.dll",      // RealPlayer.
-  L"rpchromebrowserrecordhelper.dll",    // RealPlayer.
-  L"rpchrome10browserrecordhelper.dll",  // RealPlayer.
-  L"ycwebcamerasource.ax"                // Cyberlink Camera helper.
-  L"CLRGL.ax"                            // Cyberlink Camera helper.
-};
-
-// The DLLs listed here are known (or under strong suspicion) of causing crashes
 // when they are loaded in the GPU process.
 const wchar_t* const kTroublesomeGpuDlls[] = {
   L"cmsetac.dll",                 // Unknown (suspected malware).
@@ -240,13 +230,6 @@ void BlacklistAddOneDll(const wchar_t* module_name,
 void AddGenericDllEvictionPolicy(sandbox::TargetPolicy* policy) {
   for (int ix = 0; ix != arraysize(kTroublesomeDlls); ++ix)
     BlacklistAddOneDll(kTroublesomeDlls[ix], true, policy);
-}
-
-// Same as AddGenericDllEvictionPolicy but specifically for plugins. In this
-// case we add the blacklisted dlls even if they are not loaded in this process.
-void AddPluginDllEvictionPolicy(sandbox::TargetPolicy* policy) {
-  for (int ix = 0; ix != arraysize(kTroublesomePluginDlls); ++ix)
-    BlacklistAddOneDll(kTroublesomePluginDlls[ix], false, policy);
 }
 
 // Same as AddGenericDllEvictionPolicy but specifically for the GPU process.
@@ -754,25 +737,15 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   // to create separate pretetch settings for browser, renderer etc.
   cmd_line->AppendArg(base::StringPrintf("/prefetch:%d", type));
 
-  sandbox::ResultCode result;
-  base::win::ScopedProcessInformation target;
-  sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
-
-#if !defined(NACL_WIN64)  // We don't need this code on win nacl64.
-  if (type == content::PROCESS_TYPE_PLUGIN &&
-      !browser_command_line.HasSwitch(switches::kNoSandbox) &&
-      content::GetContentClient()->SandboxPlugin(cmd_line, policy)) {
-    in_sandbox = true;
-  }
-#endif
-
   if (!in_sandbox) {
-    policy->Release();
     base::ProcessHandle process = 0;
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &process);
     g_broker_services->AddTargetPeer(process);
     return process;
   }
+
+  base::win::ScopedProcessInformation target;
+  sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
   // TODO(jschuh): Make NaCl work with DEP and SEHOP. crbug.com/147752
   sandbox::MitigationFlags mitigations = MITIGATION_HEAP_TERMINATE |
@@ -804,10 +777,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   SetJobLevel(*cmd_line, JOB_LOCKDOWN, 0, policy);
 
-  if (type == content::PROCESS_TYPE_PLUGIN) {
-    AddGenericDllEvictionPolicy(policy);
-    AddPluginDllEvictionPolicy(policy);
-  } else if (type == content::PROCESS_TYPE_GPU) {
+  if (type == content::PROCESS_TYPE_GPU) {
     if (!AddPolicyForGPU(cmd_line, policy))
       return 0;
   } else {
@@ -836,6 +806,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     }
   }
 
+  sandbox::ResultCode result;
   if (!exposed_dir.empty()) {
     result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
                              sandbox::TargetPolicy::FILES_ALLOW_ANY,
