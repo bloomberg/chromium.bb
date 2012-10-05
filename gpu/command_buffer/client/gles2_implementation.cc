@@ -418,6 +418,7 @@ GLES2Implementation::GLES2Implementation(
       bound_element_array_buffer_id_(0),
       client_side_array_id_(0),
       client_side_element_array_id_(0),
+      bound_vertex_array_id_(0),
       error_bits_(0),
       debug_(false),
       use_count_(0),
