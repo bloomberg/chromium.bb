@@ -133,6 +133,12 @@ WebPreferences::WebPreferences()
       ASCIIToUTF16("Script");
   fantasy_font_family_map[kCommonScript] =
       ASCIIToUTF16("Impact");
+  pictograph_font_family_map[kCommonScript] =
+#if !defined(OS_MACOSX)
+      ASCIIToUTF16("Times New Roman");
+#else
+      ASCIIToUTF16("Apple Color Emoji");
+#endif
 }
 
 WebPreferences::~WebPreferences() {
@@ -174,6 +180,12 @@ void setFantasyFontFamilyWrapper(WebSettings* settings,
                                  const string16& font,
                                  UScriptCode script) {
   settings->setFantasyFontFamily(font, script);
+}
+
+void setPictographFontFamilyWrapper(WebSettings* settings,
+                               const string16& font,
+                               UScriptCode script) {
+  settings->setPictographFontFamily(font, script);
 }
 
 typedef void (*SetFontFamilyWrapper)(
@@ -227,6 +239,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   ApplyFontsFromMap(cursive_font_family_map, setCursiveFontFamilyWrapper,
                     settings);
   ApplyFontsFromMap(fantasy_font_family_map, setFantasyFontFamilyWrapper,
+                    settings);
+  ApplyFontsFromMap(pictograph_font_family_map, setPictographFontFamilyWrapper,
                     settings);
   settings->setDefaultFontSize(default_font_size);
   settings->setDefaultFixedFontSize(default_fixed_font_size);

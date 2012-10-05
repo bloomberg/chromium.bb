@@ -92,6 +92,9 @@ IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, PrefsAreMigratedToFontMap) {
             prefs->GetString(prefs::kWebKitCursiveFontFamily));
   EXPECT_EQ("FantasyFontFamily",
             prefs->GetString(prefs::kWebKitFantasyFontFamily));
+  // PictographFontFamily was added after the migration, so it never exists
+  // in the old format (and consequently isn't in the test Preferences file).
+  // So it doesn't need to be tested here.
   EXPECT_EQ("FixedFontFamily",
             prefs->GetString(prefs::kWebKitFixedFontFamily));
   EXPECT_EQ("SansSerifFontFamily",
@@ -155,6 +158,9 @@ IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest2, GlobalPrefsAreMigrated) {
             prefs->GetString(prefs::kWebKitCursiveFontFamily));
   EXPECT_EQ("FantasyFontFamily",
             prefs->GetString(prefs::kWebKitFantasyFontFamily));
+  // PictographFontFamily was added after the migration, so it never exists
+  // in the old format (and consequently isn't in the test Preferences file).
+  // So it doesn't need to be tested here.
   EXPECT_EQ("FixedFontFamily",
             prefs->GetString(prefs::kWebKitFixedFontFamily));
   EXPECT_EQ("SansSerifFontFamily",

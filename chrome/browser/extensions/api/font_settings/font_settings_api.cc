@@ -143,6 +143,8 @@ void FontSettingsEventRouter::Init() {
                                 prefs::kWebKitCursiveFontFamilyMap, this);
   RegisterFontFamilyMapObserver(&registrar_,
                                 prefs::kWebKitFantasyFontFamilyMap, this);
+  RegisterFontFamilyMapObserver(&registrar_,
+                                prefs::kWebKitPictographFontFamilyMap, this);
 }
 
 void FontSettingsEventRouter::AddPrefToObserve(const char* pref_name,

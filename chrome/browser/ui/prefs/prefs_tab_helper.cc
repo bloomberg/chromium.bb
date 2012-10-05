@@ -159,6 +159,7 @@ const FontDefault kFontDefaults[] = {
   { prefs::kWebKitSansSerifFontFamily, IDS_SANS_SERIF_FONT_FAMILY },
   { prefs::kWebKitCursiveFontFamily, IDS_CURSIVE_FONT_FAMILY },
   { prefs::kWebKitFantasyFontFamily, IDS_FANTASY_FONT_FAMILY },
+  { prefs::kWebKitPictographFontFamily, IDS_PICTOGRAPH_FONT_FAMILY },
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
   { prefs::kWebKitStandardFontFamilyJapanese,
     IDS_STANDARD_FONT_FAMILY_JAPANESE },
@@ -367,6 +368,8 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
                                   prefs::kWebKitCursiveFontFamilyMap, this);
     RegisterFontFamilyMapObserver(&pref_change_registrar_,
                                   prefs::kWebKitFantasyFontFamilyMap, this);
+    RegisterFontFamilyMapObserver(&pref_change_registrar_,
+                                  prefs::kWebKitPictographFontFamilyMap, this);
   }
 
   renderer_preferences_util::UpdateFromSystemSettings(
@@ -496,6 +499,7 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
   RegisterFontFamilyMap(prefs, prefs::kWebKitSansSerifFontFamilyMap);
   RegisterFontFamilyMap(prefs, prefs::kWebKitCursiveFontFamilyMap);
   RegisterFontFamilyMap(prefs, prefs::kWebKitFantasyFontFamilyMap);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitPictographFontFamilyMap);
 
   prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
                                       IDS_DEFAULT_FONT_SIZE,
