@@ -39,8 +39,11 @@ void CalculateWindowStylesFromInitParams(
     *ex_style |= WS_EX_TOPMOST;
   if (params.mirror_origin_in_rtl)
     *ex_style |= l10n_util::GetExtendedTooltipStyles();
+#if !defined(USE_AURA)
+  // TODO(beng): layered windows with aura. http://crbug.com/154069
   if (params.transparent)
     *ex_style |= WS_EX_LAYERED;
+#endif
   if (params.has_dropshadow) {
     *class_style |= (base::win::GetVersion() < base::win::VERSION_XP) ?
         0 : CS_DROPSHADOW;
