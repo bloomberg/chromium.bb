@@ -238,7 +238,7 @@ def main():
   (options, args) = parser.parse_args()
 
   if args:
-    parser.error('Unknown args, ' + args)
+    parser.error('Unknown args: %s' % args)
 
   if not options.os_image:
     parser.error('Must specify an os image')
