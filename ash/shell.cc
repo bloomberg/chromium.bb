@@ -55,6 +55,7 @@
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_gesture_event_filter.h"
+#include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/user_activity_detector.h"
 #include "ash/wm/video_detector.h"
@@ -656,6 +657,34 @@ void Shell::SetDimming(bool should_dim) {
     (*iter)->screen_dimmer()->SetDimming(should_dim);
 }
 
+void Shell::CreateModalBackground() {
+  if (!modality_filter_.get()) {
+    modality_filter_.reset(new internal::SystemModalContainerEventFilter(this));
+    AddEnvEventFilter(modality_filter_.get());
+  }
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter)
+    (*iter)->GetSystemModalLayoutManager()->CreateModalBackground();
+}
+
+void Shell::OnModalWindowRemoved(aura::Window* removed) {
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  bool activated = false;
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end() && !activated; ++iter) {
+    activated =
+        (*iter)->GetSystemModalLayoutManager()->ActivateNextModalWindow();
+  }
+  if (!activated) {
+    RemoveEnvEventFilter(modality_filter_.get());
+    modality_filter_.reset();
+    for (RootWindowControllerList::iterator iter = controllers.begin();
+         iter != controllers.end(); ++iter)
+      (*iter)->GetSystemModalLayoutManager()->DestroyModalBackground();
+  }
+}
+
 SystemTrayDelegate* Shell::tray_delegate() {
   return status_area_widget_->system_tray_delegate();
 }
@@ -722,6 +751,10 @@ void Shell::InitRootWindowController(
       root_window->GetChildById(internal::kShellWindowId_AlwaysOnTopContainer));
   root_window->SetProperty(internal::kAlwaysOnTopControllerKey,
                            always_on_top_controller);
+  if (GetPrimaryRootWindowController()->GetSystemModalLayoutManager()->
+          has_modal_background()) {
+    controller->GetSystemModalLayoutManager()->CreateModalBackground();
+  }
 
   window_cycle_controller_->OnRootWindowAdded(root_window);
 }
@@ -774,6 +807,18 @@ void Shell::ShowCursor(bool visible) {
   for (RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
     (*iter)->ShowCursor(visible);
+}
+
+bool Shell::CanWindowReceiveEvents(aura::Window* window) {
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter) {
+    if ((*iter)->GetSystemModalLayoutManager()->
+            CanWindowReceiveEvents(window)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace ash

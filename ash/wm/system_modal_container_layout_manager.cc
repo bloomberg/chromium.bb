@@ -22,6 +22,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -30,10 +31,10 @@ namespace internal {
 
 namespace {
 
-class ScreenView : public views::View {
+class ModalBackgroundView : public views::View {
  public:
-  ScreenView() {}
-  virtual ~ScreenView() {}
+  ModalBackgroundView() {}
+  virtual ~ModalBackgroundView() {}
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -49,7 +50,7 @@ class ScreenView : public views::View {
     return SK_ColorBLACK;
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenView);
+  DISALLOW_COPY_AND_ASSIGN(ModalBackgroundView);
 };
 
 }  // namespace
@@ -60,9 +61,7 @@ class ScreenView : public views::View {
 SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     aura::Window* container)
     : container_(container),
-      modal_screen_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(modality_filter_(
-          new SystemModalContainerEventFilter(this))) {
+      modal_background_(NULL) {
 }
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
@@ -72,9 +71,10 @@ SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
 // SystemModalContainerLayoutManager, aura::LayoutManager implementation:
 
 void SystemModalContainerLayoutManager::OnWindowResized() {
-  if (modal_screen_) {
+  if (modal_background_) {
     // Note: we have to set the entire bounds with the screen offset.
-    modal_screen_->SetBounds(container_->bounds());
+    modal_background_->SetBounds(
+        gfx::Screen::GetDisplayNearestWindow(container_).bounds());
   }
   if (!modal_windows_.empty()) {
     aura::Window::Windows::iterator it = modal_windows_.begin();
@@ -86,7 +86,7 @@ void SystemModalContainerLayoutManager::OnWindowResized() {
 
 void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
-  DCHECK((modal_screen_ && child == modal_screen_->GetNativeView()) ||
+  DCHECK((modal_background_ && child == modal_background_->GetNativeView()) ||
          child->type() == aura::client::WINDOW_TYPE_NORMAL ||
          child->type() == aura::client::WINDOW_TYPE_POPUP);
   child->AddObserver(this);
@@ -135,8 +135,8 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
 
 void SystemModalContainerLayoutManager::OnWindowDestroying(
     aura::Window* window) {
-  if (modal_screen_ && modal_screen_->GetNativeView() == window)
-    modal_screen_ = NULL;
+  if (modal_background_ && modal_background_->GetNativeView() == window)
+    modal_background_ = NULL;
 }
 
 
@@ -154,12 +154,59 @@ bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
   return wm::GetActivatableWindow(window) == modal_window();
 }
 
-bool SystemModalContainerLayoutManager::IsModalScreen(
+bool SystemModalContainerLayoutManager::ActivateNextModalWindow() {
+  if (modal_windows_.empty())
+    return false;
+  wm::ActivateWindow(modal_window());
+  return true;
+}
+
+void SystemModalContainerLayoutManager::CreateModalBackground() {
+  if (!modal_background_) {
+    modal_background_ = new views::Widget;
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+    params.parent = container_;
+    params.bounds = gfx::Screen::GetDisplayNearestWindow(container_).bounds();
+    modal_background_->Init(params);
+    modal_background_->GetNativeView()->SetName(
+        "SystemModalContainerLayoutManager.ModalBackground");
+    modal_background_->SetContentsView(new ModalBackgroundView);
+    modal_background_->GetNativeView()->layer()->SetOpacity(0.0f);
+  }
+
+  ui::ScopedLayerAnimationSettings settings(
+      modal_background_->GetNativeView()->layer()->GetAnimator());
+  modal_background_->Show();
+  modal_background_->GetNativeView()->layer()->SetOpacity(0.5f);
+  container_->StackChildAtTop(modal_background_->GetNativeView());
+}
+
+void SystemModalContainerLayoutManager::DestroyModalBackground() {
+  // modal_background_ can be NULL when a root window is shutting down
+  // and OnWindowDestroying is called first.
+  if (modal_background_) {
+    ui::ScopedLayerAnimationSettings settings(
+        modal_background_->GetNativeView()->layer()->GetAnimator());
+    modal_background_->Close();
+    settings.AddObserver(CreateHidingWindowAnimationObserver(
+        modal_background_->GetNativeView()));
+    modal_background_->GetNativeView()->layer()->SetOpacity(0.0f);
+    modal_background_ = NULL;
+  }
+}
+
+// static
+bool SystemModalContainerLayoutManager::IsModalBackground(
     aura::Window* window) {
   int id = window->parent()->id();
-  return (id == internal::kShellWindowId_SystemModalContainer ||
-          id == internal::kShellWindowId_LockSystemModalContainer) &&
-      window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE;
+  if (id != internal::kShellWindowId_SystemModalContainer &&
+      id != internal::kShellWindowId_LockSystemModalContainer)
+    return false;
+  SystemModalContainerLayoutManager* layout_manager =
+      static_cast<SystemModalContainerLayoutManager*>(
+          window->parent()->layout_manager());
+  return layout_manager->modal_background_ &&
+      layout_manager->modal_background_->GetNativeWindow() == window;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -172,7 +219,7 @@ void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
       capture_window->ReleaseCapture();
   }
   modal_windows_.push_back(window);
-  CreateModalScreen();
+  Shell::GetInstance()->CreateModalBackground();
 }
 
 void SystemModalContainerLayoutManager::RemoveModalWindow(
@@ -182,48 +229,7 @@ void SystemModalContainerLayoutManager::RemoveModalWindow(
   if (it != modal_windows_.end())
     modal_windows_.erase(it);
 
-  if (modal_windows_.empty())
-    DestroyModalScreen();
-  else
-    wm::ActivateWindow(modal_window());
-}
-
-void SystemModalContainerLayoutManager::CreateModalScreen() {
-  if (!modal_screen_) {
-    modal_screen_ = new views::Widget;
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-    params.parent = container_;
-    params.bounds = gfx::Rect(0, 0, container_->bounds().width(),
-        container_->bounds().height());
-    modal_screen_->Init(params);
-    modal_screen_->GetNativeView()->SetName(
-        "SystemModalContainerLayoutManager.ModalScreen");
-    modal_screen_->SetContentsView(new ScreenView);
-    modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
-
-    Shell::GetInstance()->env_filter()->AddFilter(modality_filter_.get());
-  }
-
-  ui::ScopedLayerAnimationSettings settings(
-      modal_screen_->GetNativeView()->layer()->GetAnimator());
-  modal_screen_->Show();
-  modal_screen_->GetNativeView()->layer()->SetOpacity(0.5f);
-  container_->StackChildAtTop(modal_screen_->GetNativeView());
-}
-
-void SystemModalContainerLayoutManager::DestroyModalScreen() {
-  Shell::GetInstance()->env_filter()->RemoveFilter(modality_filter_.get());
-  // modal_screen_ can be NULL when a root window is shutting down
-  // and OnWindowDestroying is called first.
-  if (modal_screen_) {
-    ui::ScopedLayerAnimationSettings settings(
-        modal_screen_->GetNativeView()->layer()->GetAnimator());
-    modal_screen_->Close();
-    settings.AddObserver(
-        CreateHidingWindowAnimationObserver(modal_screen_->GetNativeView()));
-    modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
-    modal_screen_ = NULL;
-  }
+  Shell::GetInstance()->OnModalWindowRemoved(window);
 }
 
 }  // namespace internal

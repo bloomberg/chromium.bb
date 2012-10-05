@@ -122,7 +122,8 @@ void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
          iter != children.end(); ++iter) {
       aura::Window* window = *iter;
       // Don't move modal screen.
-      if (internal::SystemModalContainerLayoutManager::IsModalScreen(window))
+      if (internal::SystemModalContainerLayoutManager::IsModalBackground(
+              window))
         continue;
 
       ReparentWindow(window, dst_container);
@@ -144,8 +145,8 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
     : root_window_(root_window) {
   SetRootWindowController(root_window, this);
 
-  event_client_.reset(new internal::EventClientImpl(root_window));
-  screen_dimmer_.reset(new internal::ScreenDimmer(root_window));
+  event_client_.reset(new EventClientImpl(root_window));
+  screen_dimmer_.reset(new ScreenDimmer(root_window));
 }
 
 RootWindowController::~RootWindowController() {
@@ -171,25 +172,31 @@ void RootWindowController::Shutdown() {
   root_window_->PrepareForShutdown();
 }
 
+SystemModalContainerLayoutManager*
+RootWindowController::GetSystemModalLayoutManager() {
+  return static_cast<SystemModalContainerLayoutManager*>(
+      GetContainer(kShellWindowId_SystemModalContainer)->layout_manager());
+}
+
 aura::Window* RootWindowController::GetContainer(int container_id) {
   return root_window_->GetChildById(container_id);
 }
 
 void RootWindowController::InitLayoutManagers() {
   root_window_layout_ =
-      new internal::RootWindowLayoutManager(root_window_.get());
+      new RootWindowLayoutManager(root_window_.get());
   root_window_->SetLayoutManager(root_window_layout_);
 
   aura::Window* default_container =
-      GetContainer(internal::kShellWindowId_DefaultContainer);
+      GetContainer(kShellWindowId_DefaultContainer);
   // Workspace manager has its own layout managers.
   workspace_controller_.reset(
-      new internal::WorkspaceController(default_container));
+      new WorkspaceController(default_container));
 
   aura::Window* always_on_top_container =
-      GetContainer(internal::kShellWindowId_AlwaysOnTopContainer);
+      GetContainer(kShellWindowId_AlwaysOnTopContainer);
   always_on_top_container->SetLayoutManager(
-      new internal::BaseLayoutManager(
+      new BaseLayoutManager(
           always_on_top_container->GetRootWindow()));
 }
 
@@ -278,44 +285,44 @@ void RootWindowController::CreateContainersInRootWindow(
   // container (moved back on unlock). We want to make sure that there's an
   // opaque layer occluding the non-lock-screen layers.
 
-  CreateContainer(internal::kShellWindowId_SystemBackgroundContainer,
+  CreateContainer(kShellWindowId_SystemBackgroundContainer,
                   "SystemBackgroundContainer", root_window);
 
   aura::Window* desktop_background_containers = CreateContainer(
-      internal::kShellWindowId_DesktopBackgroundContainer,
+      kShellWindowId_DesktopBackgroundContainer,
       "DesktopBackgroundContainer",
       root_window);
   SetChildWindowVisibilityChangesAnimated(desktop_background_containers);
 
   aura::Window* non_lock_screen_containers = CreateContainer(
-      internal::kShellWindowId_NonLockScreenContainersContainer,
+      kShellWindowId_NonLockScreenContainersContainer,
       "NonLockScreenContainersContainer",
       root_window);
 
   aura::Window* lock_background_containers = CreateContainer(
-      internal::kShellWindowId_LockScreenBackgroundContainer,
+      kShellWindowId_LockScreenBackgroundContainer,
       "LockScreenBackgroundContainer",
       root_window);
   SetChildWindowVisibilityChangesAnimated(lock_background_containers);
 
   aura::Window* lock_screen_containers = CreateContainer(
-      internal::kShellWindowId_LockScreenContainersContainer,
+      kShellWindowId_LockScreenContainersContainer,
       "LockScreenContainersContainer",
       root_window);
   aura::Window* lock_screen_related_containers = CreateContainer(
-      internal::kShellWindowId_LockScreenRelatedContainersContainer,
+      kShellWindowId_LockScreenRelatedContainersContainer,
       "LockScreenRelatedContainersContainer",
       root_window);
 
-  CreateContainer(internal::kShellWindowId_UnparentedControlContainer,
+  CreateContainer(kShellWindowId_UnparentedControlContainer,
                   "UnparentedControlContainer",
                   non_lock_screen_containers);
 
   aura::Window* default_container = CreateContainer(
-      internal::kShellWindowId_DefaultContainer,
+      kShellWindowId_DefaultContainer,
       "DefaultContainer",
       non_lock_screen_containers);
-  if (!internal::WorkspaceController::IsWorkspace2Enabled()) {
+  if (!WorkspaceController::IsWorkspace2Enabled()) {
     default_container_handler_.reset(
         new ToplevelWindowEventHandler(default_container));
   }
@@ -323,7 +330,7 @@ void RootWindowController::CreateContainersInRootWindow(
   SetUsesScreenCoordinates(default_container);
 
   aura::Window* always_on_top_container = CreateContainer(
-      internal::kShellWindowId_AlwaysOnTopContainer,
+      kShellWindowId_AlwaysOnTopContainer,
       "AlwaysOnTopContainer",
       non_lock_screen_containers);
   always_on_top_container_handler_.reset(
@@ -332,36 +339,36 @@ void RootWindowController::CreateContainersInRootWindow(
   SetUsesScreenCoordinates(always_on_top_container);
 
   aura::Window* panel_container = CreateContainer(
-      internal::kShellWindowId_PanelContainer,
+      kShellWindowId_PanelContainer,
       "PanelContainer",
       non_lock_screen_containers);
   SetUsesScreenCoordinates(panel_container);
 
   aura::Window* launcher_container =
-      CreateContainer(internal::kShellWindowId_LauncherContainer,
+      CreateContainer(kShellWindowId_LauncherContainer,
                       "LauncherContainer",
                       non_lock_screen_containers);
   SetUsesScreenCoordinates(launcher_container);
 
   aura::Window* app_list_container =
-      CreateContainer(internal::kShellWindowId_AppListContainer,
+      CreateContainer(kShellWindowId_AppListContainer,
                       "AppListContainer",
                       non_lock_screen_containers);
   SetUsesScreenCoordinates(app_list_container);
 
   aura::Window* modal_container = CreateContainer(
-      internal::kShellWindowId_SystemModalContainer,
+      kShellWindowId_SystemModalContainer,
       "SystemModalContainer",
       non_lock_screen_containers);
   modal_container_handler_.reset(
       new ToplevelWindowEventHandler(modal_container));
   modal_container->SetLayoutManager(
-      new internal::SystemModalContainerLayoutManager(modal_container));
+      new SystemModalContainerLayoutManager(modal_container));
   SetChildWindowVisibilityChangesAnimated(modal_container);
   SetUsesScreenCoordinates(modal_container);
 
   aura::Window* input_method_container = CreateContainer(
-      internal::kShellWindowId_InputMethodContainer,
+      kShellWindowId_InputMethodContainer,
       "InputMethodContainer",
       non_lock_screen_containers);
   SetUsesScreenCoordinates(input_method_container);
@@ -369,54 +376,54 @@ void RootWindowController::CreateContainersInRootWindow(
   // TODO(beng): Figure out if we can make this use
   // SystemModalContainerEventFilter instead of stops_event_propagation.
   aura::Window* lock_container = CreateContainer(
-      internal::kShellWindowId_LockScreenContainer,
+      kShellWindowId_LockScreenContainer,
       "LockScreenContainer",
       lock_screen_containers);
   lock_container->SetLayoutManager(
-      new internal::BaseLayoutManager(root_window));
+      new BaseLayoutManager(root_window));
   SetUsesScreenCoordinates(lock_container);
   // TODO(beng): stopsevents
 
   aura::Window* lock_modal_container = CreateContainer(
-      internal::kShellWindowId_LockSystemModalContainer,
+      kShellWindowId_LockSystemModalContainer,
       "LockSystemModalContainer",
       lock_screen_containers);
   lock_modal_container_handler_.reset(
       new ToplevelWindowEventHandler(lock_modal_container));
   lock_modal_container->SetLayoutManager(
-      new internal::SystemModalContainerLayoutManager(lock_modal_container));
+      new SystemModalContainerLayoutManager(lock_modal_container));
   SetChildWindowVisibilityChangesAnimated(lock_modal_container);
   SetUsesScreenCoordinates(lock_modal_container);
 
   aura::Window* status_container =
-      CreateContainer(internal::kShellWindowId_StatusContainer,
+      CreateContainer(kShellWindowId_StatusContainer,
                       "StatusContainer",
                       lock_screen_related_containers);
   SetUsesScreenCoordinates(status_container);
 
   aura::Window* settings_bubble_container = CreateContainer(
-      internal::kShellWindowId_SettingBubbleContainer,
+      kShellWindowId_SettingBubbleContainer,
       "SettingBubbleContainer",
       lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(settings_bubble_container);
   SetUsesScreenCoordinates(settings_bubble_container);
 
   aura::Window* menu_container = CreateContainer(
-      internal::kShellWindowId_MenuContainer,
+      kShellWindowId_MenuContainer,
       "MenuContainer",
       lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(menu_container);
   SetUsesScreenCoordinates(menu_container);
 
   aura::Window* drag_drop_container = CreateContainer(
-      internal::kShellWindowId_DragImageAndTooltipContainer,
+      kShellWindowId_DragImageAndTooltipContainer,
       "DragImageAndTooltipContainer",
       lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(drag_drop_container);
   SetUsesScreenCoordinates(drag_drop_container);
 
   aura::Window* overlay_container = CreateContainer(
-      internal::kShellWindowId_OverlayContainer,
+      kShellWindowId_OverlayContainer,
       "OverlayContainer",
       lock_screen_related_containers);
   SetUsesScreenCoordinates(overlay_container);

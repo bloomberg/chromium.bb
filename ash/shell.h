@@ -13,6 +13,7 @@
 #include "ash/wm/cursor_delegate.h"
 #include "ash/wm/cursor_manager.h"
 #include "ash/wm/shelf_types.h"
+#include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -100,6 +101,7 @@ class SlowAnimationEventFilter;
 class StackingController;
 class StatusAreaWidget;
 class SystemGestureEventFilter;
+class SystemModalContainerEventFilter;
 class TooltipController;
 class TouchObserverHUD;
 class VisibilityController;
@@ -112,7 +114,8 @@ class WorkspaceController;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell : ash::CursorDelegate {
+class ASH_EXPORT Shell : CursorDelegate,
+                         internal::SystemModalContainerEventFilterDelegate {
  public:
   typedef std::vector<aura::RootWindow*> RootWindowList;
   typedef std::vector<internal::RootWindowController*> RootWindowControllerList;
@@ -318,6 +321,15 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   // Dims or undims the screen.
   void SetDimming(bool should_dim);
 
+  // Creates modal background, which is a partially-opaque fullscreen
+  // window, on all displays.
+  void CreateModalBackground();
+
+  // Called when a modal window is removed. It will activate
+  // another modal window if any, or remove modal screens
+  // on all displays.
+  void OnModalWindowRemoved(aura::Window* removed);
+
   // TODO(sky): don't expose this!
   internal::ShelfLayoutManager* shelf() const { return shelf_; }
 
@@ -388,6 +400,9 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ShowCursor(bool visible) OVERRIDE;
 
+  // ash::internal::SystemModalContainerEventFilterDelegate overrides:
+  virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;
+
   static Shell* instance_;
 
   // If set before the Shell is initialized, the mouse cursor will be hidden
@@ -441,6 +456,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
   scoped_ptr<internal::MouseCursorEventFilter> mouse_cursor_filter_;
   scoped_ptr<internal::ScreenPositionController> screen_position_controller_;
+  scoped_ptr<internal::SystemModalContainerEventFilter> modality_filter_;
 
   // An event filter that rewrites or drops an event.
   scoped_ptr<internal::EventRewriterEventFilter> event_rewriter_filter_;

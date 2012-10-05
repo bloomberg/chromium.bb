@@ -5,6 +5,7 @@
 #ifndef ASH_ROOT_WINDOW_CONTROLLER_H_
 #define ASH_ROOT_WINDOW_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -28,6 +29,7 @@ class EventClientImpl;
 class RootWindowLayoutManager;
 class ScreenDimmer;
 class SystemBackgroundController;
+class SystemModalContainerLayoutManager;
 class WorkspaceController;
 
 // This class maintains the per root window state for ash. This class
@@ -35,7 +37,7 @@ class WorkspaceController;
 // deleted upon the deletion of the root window.  The RootWindowController
 // for particular root window is stored as a property and can be obtained
 // using |GetRootWindowController(aura::RootWindow*)| function.
-class RootWindowController {
+class ASH_EXPORT RootWindowController {
  public:
   explicit RootWindowController(aura::RootWindow* root_window);
   ~RootWindowController();
@@ -44,17 +46,19 @@ class RootWindowController {
     return root_window_.get();
   }
 
-  internal::RootWindowLayoutManager* root_window_layout() {
+  RootWindowLayoutManager* root_window_layout() {
     return root_window_layout_;
   }
 
-  internal::WorkspaceController* workspace_controller() {
+  WorkspaceController* workspace_controller() {
     return workspace_controller_.get();
   }
 
-  internal::ScreenDimmer* screen_dimmer() {
+  ScreenDimmer* screen_dimmer() {
     return screen_dimmer_.get();
   }
+
+  SystemModalContainerLayoutManager* GetSystemModalLayoutManager();
 
   aura::Window* GetContainer(int container_id);
 
@@ -89,7 +93,7 @@ class RootWindowController {
   void CreateContainersInRootWindow(aura::RootWindow* root_window);
 
   scoped_ptr<aura::RootWindow> root_window_;
-  internal::RootWindowLayoutManager* root_window_layout_;
+  RootWindowLayoutManager* root_window_layout_;
 
   // A background layer that's displayed beneath all other layers.  Without
   // this, portions of the root window that aren't covered by layers will be
@@ -98,9 +102,9 @@ class RootWindowController {
   scoped_ptr<SystemBackgroundController> background_;
 
   // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr<internal::EventClientImpl> event_client_;
-  scoped_ptr<internal::ScreenDimmer> screen_dimmer_;
-  scoped_ptr<internal::WorkspaceController> workspace_controller_;
+  scoped_ptr<EventClientImpl> event_client_;
+  scoped_ptr<ScreenDimmer> screen_dimmer_;
+  scoped_ptr<WorkspaceController> workspace_controller_;
 
   // We need to own event handlers for various containers.
   scoped_ptr<ToplevelWindowEventHandler> default_container_handler_;

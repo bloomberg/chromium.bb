@@ -4,6 +4,7 @@
 
 #include "ash/wm/system_modal_container_layout_manager.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -15,6 +16,7 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -27,6 +29,19 @@ aura::Window* GetModalContainer() {
   return Shell::GetContainer(
       Shell::GetPrimaryRootWindow(),
       ash::internal::kShellWindowId_SystemModalContainer);
+}
+
+bool AllRootWindowsHaveModalBackgrounds() {
+  Shell::RootWindowControllerList controllers =
+      Shell::GetAllRootWindowControllers();
+  bool has_modal_screen = !controllers.empty();
+  for (Shell::RootWindowControllerList::const_iterator iter =
+           controllers.begin();
+       iter != controllers.end(); ++iter) {
+    has_modal_screen &=
+        (*iter)->GetSystemModalLayoutManager()->has_modal_background();
+  }
+  return has_modal_screen;
 }
 
 class TestWindow : public views::WidgetDelegateView {
@@ -339,6 +354,59 @@ TEST_F(SystemModalContainerLayoutManagerTest, KeepVisible) {
 
   gfx::Rect bounds = main->bounds();
   EXPECT_EQ(bounds, gfx::Rect(700, 500, 100, 100));
+}
+
+TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
+  UpdateDisplay("500x500,500x500");
+
+  scoped_ptr<aura::Window> normal(TestWindow::OpenTestWindow(NULL, false));
+  normal->SetBounds(gfx::Rect(100, 100, 50, 50));
+
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(2U, root_windows.size());
+  aura::Window* container1 = Shell::GetContainer(
+      root_windows[0], ash::internal::kShellWindowId_SystemModalContainer);
+  aura::Window* container2 = Shell::GetContainer(
+      root_windows[1], ash::internal::kShellWindowId_SystemModalContainer);
+
+  scoped_ptr<aura::Window> modal1(
+      TestWindow::OpenTestWindow(container1, true));
+  EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
+  EXPECT_TRUE(wm::IsActiveWindow(modal1.get()));
+
+  scoped_ptr<aura::Window> modal11(
+      TestWindow::OpenTestWindow(container1, true));
+  EXPECT_TRUE(wm::IsActiveWindow(modal11.get()));
+
+  scoped_ptr<aura::Window> modal2(
+      TestWindow::OpenTestWindow(container2, true));
+  EXPECT_TRUE(wm::IsActiveWindow(modal2.get()));
+
+  // Sanity check if they're on the correct containers.
+  EXPECT_EQ(container1, modal1->parent());
+  EXPECT_EQ(container1, modal11->parent());
+  EXPECT_EQ(container2, modal2->parent());
+
+  modal2.reset();
+  EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
+  EXPECT_TRUE(wm::IsActiveWindow(modal11.get()));
+
+  modal11.reset();
+  EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
+  EXPECT_TRUE(wm::IsActiveWindow(modal1.get()));
+
+  UpdateDisplay("500x500");
+  EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
+  EXPECT_TRUE(wm::IsActiveWindow(modal1.get()));
+
+  UpdateDisplay("500x500,600x600");
+  EXPECT_TRUE(AllRootWindowsHaveModalBackgrounds());
+  EXPECT_TRUE(wm::IsActiveWindow(modal1.get()));
+
+  // No more modal screen.
+  modal1.reset();
+  EXPECT_FALSE(AllRootWindowsHaveModalBackgrounds());
+  EXPECT_TRUE(wm::IsActiveWindow(normal.get()));
 }
 
 }  // namespace test
