@@ -95,9 +95,12 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION));
   localized_strings->SetString("controlledSettingRecommended",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED));
-  localized_strings->SetString("controlledSettingApplyRecommendation",
+  localized_strings->SetString("controlledSettingHasRecommendation",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_CONTROLLED_SETTING_APPLY_RECOMMENDATION));
+          IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION));
+  localized_strings->SetString("controlledSettingFollowRecommendation",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CONTROLLED_SETTING_FOLLOW_RECOMMENDATION));
 
   // Search
   RegisterTitle(localized_strings, "searchPage", IDS_OPTIONS_SEARCH_PAGE_TITLE);

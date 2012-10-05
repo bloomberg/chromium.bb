@@ -23,15 +23,11 @@ cr.define('options', function() {
     decorate: function() {
       var self = this;
 
-      // If there is a pref, track its controlledBy property in order to be able
-      // to bring up the correct bubble.
+      // If there is a pref, track its controlledBy and recommendedValue
+      // properties in order to be able to bring up the correct bubble.
       if (this.pref) {
-        Preferences.getInstance().addEventListener(this.pref,
-            function(event) {
-              var controlledBy = event.value.controlledBy;
-              self.controlledBy = controlledBy ? controlledBy : null;
-              OptionsPage.hideBubble();
-            });
+        Preferences.getInstance().addEventListener(
+            this.pref, this.handlePrefChange.bind(this));
         this.resetHandler = this.clearAssociatedPref_;
       }
 
@@ -44,7 +40,8 @@ cr.define('options', function() {
 
     /**
      * The given handler will be called when the user clicks on the 'reset to
-     * recommended value' link shown in the indicator bubble.
+     * recommended value' link shown in the indicator bubble. The |this| object
+     * will be the indicator itself.
      * @param {function()} handler The handler to be called.
      */
     set resetHandler(handler) {
@@ -71,7 +68,26 @@ cr.define('options', function() {
      * @private
      */
     clearAssociatedPref_: function() {
-      Preferences.clearPref(this.pref, this.dialogPref);
+      Preferences.clearPref(this.pref, !this.dialogPref);
+    },
+
+    /* Handle changes to the associated pref by hiding any currently visible
+     * bubble and updating the controlledBy property.
+     * @param {Event} event Pref change event.
+     */
+    handlePrefChange: function(event) {
+      OptionsPage.hideBubble();
+      if (event.value.controlledBy) {
+        this.controlledBy =
+            !this.value || String(event.value.value) == this.value ?
+            event.value.controlledBy : null;
+      } else if (event.value.recommendedValue != undefined) {
+        this.controlledBy =
+            !this.value || String(event.value.recommendedValue) == this.value ?
+            'hasRecommendation' : null;
+      } else {
+        this.controlledBy = null;
+      }
     },
 
     /**
@@ -120,14 +136,16 @@ cr.define('options', function() {
       } else {
         var self = this;
 
-        // Work out the popup text.
+        // Construct the bubble text.
         defaultStrings = {
           'policy': loadTimeData.getString('controlledSettingPolicy'),
           'extension': loadTimeData.getString('controlledSettingExtension'),
           'recommended': loadTimeData.getString('controlledSettingRecommended'),
+          'hasRecommendation':
+              loadTimeData.getString('controlledSettingHasRecommendation'),
         };
 
-        // No controller, no popup.
+        // No controller, no bubble.
         if (!this.controlledBy || !(this.controlledBy in defaultStrings))
           return;
 
@@ -143,13 +161,14 @@ cr.define('options', function() {
         content.setAttribute('controlled-by', this.controlledBy);
         content.textContent = text;
 
-        if (this.controlledBy == 'recommended' && this.resetHandler_) {
+        if (this.controlledBy == 'hasRecommendation' && this.resetHandler_ &&
+            !this.readOnly) {
           var container = document.createElement('div');
           var action = document.createElement('button');
           action.classList.add('link-button');
           action.classList.add('controlled-setting-bubble-action');
           action.textContent =
-              loadTimeData.getString('controlledSettingApplyRecommendation');
+              loadTimeData.getString('controlledSettingFollowRecommendation');
           action.addEventListener('click', function(event) {
             self.resetHandler_();
           });
@@ -180,8 +199,25 @@ cr.define('options', function() {
                     cr.PropertyKind.BOOL_ATTR);
 
   /**
-   * Whether the associated preference is controlled by a source other than the
-   * user's setting (can be 'policy', 'extension', 'recommended' or unset).
+   * The value of the associated preference that the indicator represents. If
+   * this is not set, the indicator will be visible whenever any value is
+   * enforced or recommended. If it is set, the indicator will be visible only
+   * when the enforced or recommended value matches the value it represents.
+   * This allows multiple indicators to be created for a set of radio buttons,
+   * ensuring that only one of them is visible at a time.
+   */
+  cr.defineProperty(ControlledSettingIndicator, 'value',
+                    cr.PropertyKind.ATTR);
+
+  /**
+   * The status of the associated preference:
+   * - 'policy':            A specific value is enfoced by policy.
+   * - 'extension':         A specific value is enforced by an extension.
+   * - 'recommended':       A value is recommended by policy. The user could
+   *                        override this recommendation but has not done so.
+   * - 'hasRecommendation': A value is recommended by policy. The user has
+   *                        overridden this recommendation.
+   * - unset:               The value is controlled by the user alone.
    * @type {string}
    */
   cr.defineProperty(ControlledSettingIndicator, 'controlledBy',

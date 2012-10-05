@@ -464,6 +464,11 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
   display: none;
 }
 
+input:-webkit-any([type='text'],[type='url'],:not([type])) +
+    .controlled-setting-indicator {
+  -webkit-margin-start: 5px;
+}
+
 .controlled-setting-indicator[controlled-by] {
   background-size: 16px;
   display: inline-block;
@@ -494,13 +499,14 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION');
 }
 
-.controlled-setting-indicator[controlled-by='recommended'] {
+.controlled-setting-indicator:-webkit-any([controlled-by='recommended'],
+    [controlled-by='hasRecommendation']) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED_GRAY');
 }
 
-.controlled-setting-indicator[controlled-by='recommended']:-webkit-any(:hover,
-    .showing-bubble) {
+.controlled-setting-indicator:-webkit-any([controlled-by='recommended'],
+    [controlled-by='hasRecommendation']):-webkit-any(:hover,.showing-bubble) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED');
 }
@@ -522,7 +528,8 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
       url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION_LARGE');
 }
 
-.controlled-setting-bubble-content[controlled-by='recommended'] {
+.controlled-setting-bubble-content:-webkit-any([controlled-by='recommended'],
+    [controlled-by='hasRecommendation']) {
   background-image:
       url('chrome://theme/IDR_CONTROLLED_SETTING_RECOMMENDED_LARGE');
 }

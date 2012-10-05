@@ -159,7 +159,6 @@ const char kTagConnecting[] = "connecting";
 const char kTagConnectionState[] = "connectionState";
 const char kTagControlledBy[] = "controlledBy";
 const char kTagDataRemaining[] = "dataRemaining";
-const char kTagDefault[] = "default";
 const char kTagDeviceConnected[] = "deviceConnected";
 const char kTagDisconnect[] = "disconnect";
 const char kTagEncryption[] = "encryption";
@@ -203,6 +202,7 @@ const char kTagPrlVersion[] = "prlVersion";
 const char kTagProvider_type[] = "provider_type";
 const char kTagProviderApnList[] = "providerApnList";
 const char kTagRecommended[] = "recommended";
+const char kTagRecommendedValue[] = "recommendedValue";
 const char kTagRemembered[] = "remembered";
 const char kTagRememberedList[] = "rememberedList";
 const char kTagRestrictedPool[] = "restrictedPool";
@@ -493,26 +493,25 @@ static bool CanAddNetworkType(int type) {
          type == chromeos::TYPE_CELLULAR;
 }
 
-// Stores a dictionary under |key| in |settings| that is suitable to be sent
-// to the webui that contains the actual value of a setting and whether it's
-// controlled by policy. Takes ownership of |value|.
+// Decorate pref value as CoreOptionsHandler::CreateValueForPref() does and
+// store it under |key| in |settings|. Takes ownership of |value|.
 void SetValueDictionary(
     DictionaryValue* settings,
     const char* key,
     base::Value* value,
     const chromeos::NetworkPropertyUIData& ui_data) {
-  DictionaryValue* value_dict = new DictionaryValue();
+  DictionaryValue* dict = new DictionaryValue();
   // DictionaryValue::Set() takes ownership of |value|.
-  if (value)
-    value_dict->Set(kTagValue, value);
-  const base::Value* default_value = ui_data.default_value();
-  if (default_value)
-    value_dict->Set(kTagDefault, default_value->DeepCopy());
+  dict->Set(kTagValue, value);
+  const base::Value* recommended_value = ui_data.default_value();
   if (ui_data.managed())
-    value_dict->SetString(kTagControlledBy, kTagPolicy);
-  else if (ui_data.recommended())
-    value_dict->SetString(kTagControlledBy, kTagRecommended);
-  settings->Set(key, value_dict);
+    dict->SetString(kTagControlledBy, kTagPolicy);
+  else if (recommended_value && recommended_value->Equals(value))
+    dict->SetString(kTagControlledBy, kTagRecommended);
+
+  if (recommended_value)
+    dict->Set(kTagRecommendedValue, recommended_value->DeepCopy());
+  settings->Set(key, dict);
 }
 
 // Fills |dictionary| with the configuration details of |vpn|. |onc| is required

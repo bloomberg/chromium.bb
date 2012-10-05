@@ -10043,9 +10043,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="Label for the import data button.">
         Import bookmarks and settings...
       </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_APPLY_RECOMMENDATION" desc="Link text displayed in the controlled settings bubble for applying the recommendation.">
-        Apply recommendation
-      </message>
 
       <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in the settings UI when there are policy-managed options the user won't be able to change.">
         Some settings are managed by your administrator.
@@ -10059,14 +10056,20 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_UNMODIFIABLE_PREFS" desc="Banner displayed in case there are options that the user won't be able to change.">
         Some settings cannot be modified by the user.
       </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble in case the setting is forced by policy.">
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by policy.">
         This setting is enforced by your administrator.
       </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble in case the setting controlled by an extension.">
-        This setting is managed by an extension.
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension.">
+        This setting is enforced by an extension.
       </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble in case the setting has a policy-supplied default value.">
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy and the user has not overridden this recommendation.">
+        You are following the administrator's recommendation for this setting.
+      </message>
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy but is currently overridden by a user-supplied value.">
         Your administrator recommends a specific value for this setting.
+      </message>
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_FOLLOW_RECOMMENDATION" desc="Link text displayed in the controlled settings bubble to clear the user-supplied value and start following the recommendation.">
+        Follow recommendation
       </message>
 
       <!-- Options search page strings. -->
