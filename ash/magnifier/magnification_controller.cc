@@ -436,7 +436,9 @@ bool MagnificationControllerImpl::PreHandleKeyEvent(aura::Window* target,
 
 bool MagnificationControllerImpl::PreHandleMouseEvent(aura::Window* target,
                                                       ui::MouseEvent* event) {
-  if (event->type() == ui::ET_SCROLL && event->IsAltDown()) {
+  if (event->type() == ui::ET_SCROLL &&
+      event->IsAltDown() &
+      event->IsControlDown()) {
     ui::ScrollEvent* scroll_event = static_cast<ui::ScrollEvent*>(event);
     float scale = GetScale();
     scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
