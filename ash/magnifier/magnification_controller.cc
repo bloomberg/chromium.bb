@@ -415,10 +415,10 @@ void MagnificationControllerImpl::EnsurePointIsVisible(
 
 void MagnificationControllerImpl::SetEnabled(bool enabled) {
   if (enabled) {
-    scale_ =
+    float scale =
         ash::Shell::GetInstance()->delegate()->GetSavedScreenMagnifierScale();
-    ValidateScale(&scale_);
-    RedrawKeepingMousePosition(scale_, true);
+    ValidateScale(&scale);
+    RedrawKeepingMousePosition(scale, true);
     is_enabled_ = enabled;
   } else {
     RedrawKeepingMousePosition(kNonMagnifiedScale, true);
