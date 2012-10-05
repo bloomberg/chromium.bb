@@ -4822,7 +4822,7 @@
                 '<@(isolate_dependency_tracked)',
               ],
               'outputs': [
-                '<(PRODUCT_DIR)/unit_tests.results',
+                '<(PRODUCT_DIR)/unit_tests.swarm',
               ],
               'action': [
                 'python',
@@ -4853,7 +4853,7 @@
                 '<@(isolate_dependency_tracked)',
               ],
               'outputs': [
-                '<(PRODUCT_DIR)/browser_tests.results',
+                '<(PRODUCT_DIR)/browser_tests.swarm',
               ],
               'action': [
                 'python',
