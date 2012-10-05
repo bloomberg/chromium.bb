@@ -8,6 +8,7 @@
 #include "CCFontAtlas.h"
 
 #include "base/string_split.h"
+#include "ui/gfx/point.h"
 #include "CCProxy.h"
 #include "SkCanvas.h"
 #include <vector>
@@ -28,38 +29,38 @@ CCFontAtlas::~CCFontAtlas()
 {
 }
 
-void CCFontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const IntPoint& destPosition, const IntSize& clip) const
+void CCFontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const gfx::Point& destPosition, const IntSize& clip) const
 {
     ASSERT(CCProxy::isImplThread());
 
     std::vector<std::string> lines;
     base::SplitString(text, '\n', &lines);
 
-    IntPoint position = destPosition;
+    gfx::Point position = destPosition;
     for (size_t i = 0; i < lines.size(); ++i) {
         drawOneLineOfTextInternal(canvas, paint, lines[i], position);
-        position.setY(position.y() + m_fontHeight);
+        position.set_y(position.y() + m_fontHeight);
         if (position.y() > clip.height())
             return;
     }
 }
 
-void CCFontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint, const std::string& textLine, const IntPoint& destPosition) const
+void CCFontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint, const std::string& textLine, const gfx::Point& destPosition) const
 {
     ASSERT(CCProxy::isImplThread());
 
-    IntPoint position = destPosition;
+    gfx::Point position = destPosition;
     for (unsigned i = 0; i < textLine.length(); ++i) {
         // If the ASCII code is out of bounds, then index 0 is used, which is just a plain rectangle glyph.
         int asciiIndex = (textLine[i] < 128) ? textLine[i] : 0;
         IntRect glyphBounds = m_asciiToRectTable[asciiIndex];
         SkIRect source = SkIRect::MakeXYWH(glyphBounds.x(), glyphBounds.y(), glyphBounds.width(), glyphBounds.height());
         canvas->drawBitmapRect(m_atlas, &source, SkRect::MakeXYWH(position.x(), position.y(), glyphBounds.width(), glyphBounds.height()), &paint);
-        position.setX(position.x() + glyphBounds.width());
+        position.set_x(position.x() + glyphBounds.width());
     }
 }
 
-void CCFontAtlas::drawDebugAtlas(SkCanvas* canvas, const IntPoint& destPosition) const
+void CCFontAtlas::drawDebugAtlas(SkCanvas* canvas, const gfx::Point& destPosition) const
 {
     ASSERT(CCProxy::isImplThread());
 

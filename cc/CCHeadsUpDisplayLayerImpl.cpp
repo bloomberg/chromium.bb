@@ -7,6 +7,7 @@
 #include "CCHeadsUpDisplayLayerImpl.h"
 
 #include "base/stringprintf.h"
+#include "ui/gfx/point.h"
 #include "CCDebugRectHistory.h"
 #include "CCFontAtlas.h"
 #include "CCFrameRateCounter.h"
@@ -155,7 +156,7 @@ void CCHeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 
     if (settings.showPlatformLayerTree && m_fontAtlas.get()) {
         std::string layerTree = layerTreeHostImpl()->layerTreeAsText();
-        m_fontAtlas->drawText(canvas, createPaint(), layerTree, IntPoint(2, platformLayerTreeTop), bounds());
+        m_fontAtlas->drawText(canvas, createPaint(), layerTree, gfx::Point(2, platformLayerTreeTop), bounds());
     }
 
     if (settings.showDebugRects())
