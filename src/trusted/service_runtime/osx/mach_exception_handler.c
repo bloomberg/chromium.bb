@@ -166,8 +166,6 @@ static int HandleException(mach_port_t thread_port,
       }
     }
 
-    natp->fault_signal = ExceptionCodeToNaClSignalNumber(exception);
-    AtomicIncrement(&nap->faulted_thread_count, 1);
     /*
      * Increment the kernel's thread suspension count so that the
      * thread remains suspended after we return.
@@ -176,6 +174,14 @@ static int HandleException(mach_port_t thread_port,
     if (result != KERN_SUCCESS) {
       NaClLog(LOG_FATAL, "HandleException: thread_suspend() call failed\n");
     }
+    /*
+     * Notify the handler running on another thread.  This must happen
+     * after the thread_suspend() call, otherwise the handler might
+     * receive the notification and attempt to decrement the thread's
+     * suspension count before we have incremented it.
+     */
+    natp->fault_signal = ExceptionCodeToNaClSignalNumber(exception);
+    AtomicIncrement(&nap->faulted_thread_count, 1);
     return 1;
   }
 
