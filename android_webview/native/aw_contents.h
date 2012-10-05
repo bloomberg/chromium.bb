@@ -65,6 +65,8 @@ class AwContents : public FindHelper::Listener {
   void DocumentHasImages(JNIEnv* env, jobject obj, jobject message);
   void GenerateMHTML(JNIEnv* env, jobject obj, jstring jpath, jobject callback);
   void SetIoThreadClient(JNIEnv* env, jobject obj, jobject client);
+  base::android::ScopedJavaLocalRef<jbyteArray> GetCertificate(
+      JNIEnv* env, jobject obj);
 
   // Find-in-page API and related methods.
   jint FindAllSync(JNIEnv* env, jobject obj, jstring search_string);
@@ -79,6 +81,7 @@ class AwContents : public FindHelper::Listener {
   virtual void OnFindResultReceived(int active_ordinal,
                                     int match_count,
                                     bool finished) OVERRIDE;
+
  private:
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<AwContentsContainer> contents_container_;

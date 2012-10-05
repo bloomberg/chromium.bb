@@ -11,14 +11,19 @@
 #include "android_webview/native/aw_web_contents_delegate.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cert_store.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
+#include "net/base/x509_certificate.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -271,6 +276,28 @@ void AwContents::OnFindResultReceived(int active_ordinal,
 
   Java_AwContents_onFindResultReceived(
       env, obj.obj(), active_ordinal, match_count, finished);
+}
+
+base::android::ScopedJavaLocalRef<jbyteArray>
+    AwContents::GetCertificate(JNIEnv* env,
+                               jobject obj) {
+  WebContents* web_contents = contents_container_->GetWebContents();
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetActiveEntry();
+  if (!entry)
+    return ScopedJavaLocalRef<jbyteArray>();
+  // Get the certificate
+  int cert_id = entry->GetSSL().cert_id;
+  scoped_refptr<net::X509Certificate> cert;
+  bool ok = content::CertStore::GetInstance()->RetrieveCert(cert_id, &cert);
+  if (!ok)
+    return ScopedJavaLocalRef<jbyteArray>();
+
+  // Convert the certificate and return it
+  std::string der_string;
+  net::X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der_string);
+  return base::android::ToJavaByteArray(env,
+      reinterpret_cast<const uint8*>(der_string.data()), der_string.length());
 }
 
 }  // namespace android_webview

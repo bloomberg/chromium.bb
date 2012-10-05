@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.net.http.SslCertificate;
 import android.os.AsyncTask;
 import android.os.Message;
 import android.text.TextUtils;
@@ -17,11 +18,16 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.common.CleanupReference;
+import org.chromium.net.X509Util;
 import org.chromium.ui.gfx.NativeWindow;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 /**
  * Exposes the native AwContents class, and together these classes wrap the ContentViewCore
@@ -206,6 +212,35 @@ public class AwContents {
                 .setHttpAuthUsernamePassword(host, realm, username, password);
     }
 
+    /**
+     * @see android.webkit.WebView#getCertificate()
+     */
+    public SslCertificate getCertificate() {
+        byte[] derBytes = nativeGetCertificate(mNativeAwContents);
+        if (derBytes == null) {
+            return null;
+        }
+
+        try {
+            X509Certificate x509Certificate =
+                    X509Util.createCertificateFromBytes(derBytes);
+            return new SslCertificate(x509Certificate);
+        } catch (CertificateException e) {
+            // Intentional fall through
+            // A SSL related exception must have occured.  This shouldn't happen.
+            Log.w(TAG, "Could not read certificate: " + e);
+        } catch (KeyStoreException e) {
+            // Intentional fall through
+            // A SSL related exception must have occured.  This shouldn't happen.
+            Log.w(TAG, "Could not read certificate: " + e);
+        } catch (NoSuchAlgorithmException e) {
+            // Intentional fall through
+            // A SSL related exception must have occured.  This shouldn't happen.
+            Log.w(TAG, "Could not read certificate: " + e);
+        }
+        return null;
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Methods called from native via JNI
     //--------------------------------------------------------------------------------------------
@@ -329,4 +364,5 @@ public class AwContents {
     private native void nativeFindNext(int nativeAwContents, boolean forward);
     private native void nativeClearMatches(int nativeAwContents);
     private native void nativeClearCache(int nativeAwContents, boolean includeDiskFiles);
+    private native byte[] nativeGetCertificate(int nativeAwContents);
 }
