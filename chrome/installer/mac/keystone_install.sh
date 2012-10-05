@@ -1069,11 +1069,11 @@ main() {
   # Redirect stdout to /dev/null to suppress the useless "ThrottleProcessIO:
   # throttling disk i/o" messages that lsregister might print.
   note "notifying LaunchServices"
-  local cs_fwk="/System/Library/Frameworks/CoreServices.framework"
-  local ls_fwk="${cs_fwk}/Frameworks/LaunchServices.framework"
-  local lsregister="${ls_fwk}/Support/lsregister"
-  note "cs_fwk = ${cs_fwk}"
-  note "ls_fwk = ${ls_fwk}"
+  local coreservices="/System/Library/Frameworks/CoreServices.framework"
+  local launchservices="${coreservices}/Frameworks/LaunchServices.framework"
+  local lsregister="${launchservices}/Support/lsregister"
+  note "coreservices = ${coreservices}"
+  note "launchservices = ${launchservices}"
   note "lsregister = ${lsregister}"
   "${lsregister}" -f "${installed_app}" > /dev/null || true
 
