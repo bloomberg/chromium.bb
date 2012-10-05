@@ -356,6 +356,10 @@ class _PropertyTypeInfo(object):
   def __eq__(self, other):
     return isinstance(other, _PropertyTypeInfo) and self.name == other.name
 
+  def __ne__(self, other):
+    # Yes. You seriously do need this.
+    return not (self == other)
+
 class PropertyType(object):
   """Enum of different types of properties/parameters.
   """
