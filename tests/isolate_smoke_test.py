@@ -138,7 +138,7 @@ class IsolateBase(unittest.TestCase):
     # The tests assume the current directory is the file's directory.
     os.chdir(ROOT_DIR)
     self.tempdir = tempfile.mkdtemp()
-    self.result = os.path.join(self.tempdir, 'isolate_smoke_test.swarm')
+    self.result = os.path.join(self.tempdir, 'isolate_smoke_test.isolated')
     self.outdir = os.path.join(self.tempdir, 'isolated')
 
   def tearDown(self):
@@ -324,7 +324,7 @@ class IsolateModeBase(IsolateBase):
     return filename
 
   def saved_state(self):
-    return isolate.swarmfile_to_state(self.result)
+    return isolate.isolatedfile_to_state(self.result)
 
 
 class Isolate(unittest.TestCase):
@@ -914,8 +914,8 @@ class IsolateNoOutdir(IsolateBase):
   def test_check(self):
     self._execute('check', ['--isolate', self.filename()], False)
     files = sorted([
-      'isolate_smoke_test.swarm',
-      'isolate_smoke_test.swarm.state',
+      'isolate_smoke_test.isolated',
+      'isolate_smoke_test.isolated.state',
       os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
@@ -932,8 +932,8 @@ class IsolateNoOutdir(IsolateBase):
           calc_sha1(
               os.path.join(ROOT_DIR, 'tests', 'isolate', 'touch_root.py'))),
       os.path.join('hashtable', calc_sha1(os.path.join(self.result))),
-      'isolate_smoke_test.swarm',
-      'isolate_smoke_test.swarm.state',
+      'isolate_smoke_test.isolated',
+      'isolate_smoke_test.isolated.state',
       os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
@@ -943,8 +943,8 @@ class IsolateNoOutdir(IsolateBase):
   def test_remap(self):
     self._execute('remap', ['--isolate', self.filename()], False)
     files = sorted([
-      'isolate_smoke_test.swarm',
-      'isolate_smoke_test.swarm.state',
+      'isolate_smoke_test.isolated',
+      'isolate_smoke_test.isolated.state',
       os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
@@ -954,8 +954,8 @@ class IsolateNoOutdir(IsolateBase):
   def test_run(self):
     self._execute('run', ['--isolate', self.filename()], False)
     files = sorted([
-      'isolate_smoke_test.swarm',
-      'isolate_smoke_test.swarm.state',
+      'isolate_smoke_test.isolated',
+      'isolate_smoke_test.isolated.state',
       os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
@@ -984,10 +984,10 @@ class IsolateNoOutdir(IsolateBase):
 
     # Clean the directory from the logs, which are OS-specific.
     isolate.trace_inputs.get_api().clean_trace(
-        os.path.join(self.tempdir, 'isolate_smoke_test.swarm.log'))
+        os.path.join(self.tempdir, 'isolate_smoke_test.isolated.log'))
     files = sorted([
-      'isolate_smoke_test.swarm',
-      'isolate_smoke_test.swarm.state',
+      'isolate_smoke_test.isolated',
+      'isolate_smoke_test.isolated.state',
       os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
       os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),

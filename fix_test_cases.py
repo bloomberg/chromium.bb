@@ -205,7 +205,7 @@ def main():
 
   basename = args[0]
   executable = os.path.join(options.dir, basename)
-  result = '%s.swarm' % executable
+  result = '%s.isolated' % executable
   if sys.platform in('win32', 'cygwin'):
     executable += '.exe'
   if not os.path.isfile(executable):

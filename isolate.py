@@ -540,7 +540,7 @@ def process_input(filepath, prevdict, level, read_only):
 ### Variable stuff.
 
 
-def swarmfile_to_state(filename):
+def isolatedfile_to_state(filename):
   """Replaces the file's extension."""
   return filename + '.state'
 
@@ -1291,8 +1291,8 @@ class Flattenable(object):
     return out
 
 
-class SwarmFile(Flattenable):
-  """Describes the content of a .swarm file.
+class IsolatedFile(Flattenable):
+  """Describes the content of a .isolated file.
 
   This file is used by run_isolated.py so its content is strictly only
   what is necessary to run the test outside of a checkout.
@@ -1311,7 +1311,7 @@ class SwarmFile(Flattenable):
   os = get_flavor()
 
   def __init__(self):
-    super(SwarmFile, self).__init__()
+    super(IsolatedFile, self).__init__()
     self.command = []
     self.files = {}
     self.read_only = None
@@ -1336,9 +1336,9 @@ class SwarmFile(Flattenable):
     if member == 'os':
       if value != self.os:
         raise run_isolated.ConfigError(
-            'The .swarm file was created on another platform')
+            'The .isolated file was created on another platform')
     else:
-      super(SwarmFile, self)._load_member(member, value)
+      super(IsolatedFile, self)._load_member(member, value)
 
   def __str__(self):
     out = '%s(\n' % self.__class__.__name__
@@ -1391,26 +1391,26 @@ class SavedState(Flattenable):
 
 class CompleteState(object):
   """Contains all the state to run the task at hand."""
-  def __init__(self, swarm_filepath, swarm, saved_state):
+  def __init__(self, isolated_filepath, isolated, saved_state):
     super(CompleteState, self).__init__()
-    self.swarm_filepath = swarm_filepath
+    self.isolated_filepath = isolated_filepath
     # Contains the data that will be used by run_isolated.py
-    self.swarm = swarm
+    self.isolated = isolated
     # Contains the data to ease developer's use-case but that is not strictly
     # necessary.
     self.saved_state = saved_state
 
   @classmethod
-  def load_files(cls, swarm_filepath):
+  def load_files(cls, isolated_filepath):
     """Loads state from disk."""
-    assert os.path.isabs(swarm_filepath), swarm_filepath
+    assert os.path.isabs(isolated_filepath), isolated_filepath
     return cls(
-        swarm_filepath,
-        SwarmFile.load_file(swarm_filepath),
-        SavedState.load_file(swarmfile_to_state(swarm_filepath)))
+        isolated_filepath,
+        IsolatedFile.load_file(isolated_filepath),
+        SavedState.load_file(isolatedfile_to_state(isolated_filepath)))
 
   def load_isolate(self, isolate_file, variables):
-    """Updates self.swarm and self.saved_state with information loaded from a
+    """Updates self.isolated and self.saved_state with information loaded from a
     .isolate file.
 
     Processes the loaded data, deduce root_dir, relative_cwd.
@@ -1457,29 +1457,31 @@ class CompleteState(object):
         infiles,
         lambda x: re.match(r'.*\.(git|svn|pyc)$', x))
 
-    # Finally, update the new stuff in the foo.swarm file, the file that is
+    # Finally, update the new stuff in the foo.isolated file, the file that is
     # used by run_isolated.py.
-    self.swarm.update(command, infiles, touched, read_only, relative_cwd)
+    self.isolated.update(command, infiles, touched, read_only, relative_cwd)
     logging.debug(self)
 
   def process_inputs(self, level):
-    """Updates self.swarm.files with the files' mode and hash.
+    """Updates self.isolated.files with the files' mode and hash.
 
     See process_input() for more information.
     """
-    for infile in sorted(self.swarm.files):
+    for infile in sorted(self.isolated.files):
       filepath = os.path.join(self.root_dir, infile)
-      self.swarm.files[infile] = process_input(
-          filepath, self.swarm.files[infile], level, self.swarm.read_only)
+      self.isolated.files[infile] = process_input(
+          filepath, self.isolated.files[infile], level, self.isolated.read_only)
 
   def save_files(self):
-    """Saves both self.swarm and self.saved_state."""
-    logging.debug('Dumping to %s' % self.swarm_filepath)
-    trace_inputs.write_json(self.swarm_filepath, self.swarm.flatten(), True)
-    total_bytes = sum(i.get('size', 0) for i in self.swarm.files.itervalues())
+    """Saves both self.isolated and self.saved_state."""
+    logging.debug('Dumping to %s' % self.isolated_filepath)
+    trace_inputs.write_json(
+        self.isolated_filepath, self.isolated.flatten(), True)
+    total_bytes = sum(i
+        .get('size', 0) for i in self.isolated.files.itervalues())
     if total_bytes:
       logging.debug('Total size: %d bytes' % total_bytes)
-    saved_state_file = swarmfile_to_state(self.swarm_filepath)
+    saved_state_file = isolatedfile_to_state(self.isolated_filepath)
     logging.debug('Dumping to %s' % saved_state_file)
     trace_inputs.write_json(saved_state_file, self.saved_state.flatten(), True)
 
@@ -1488,18 +1490,18 @@ class CompleteState(object):
     """isolate_file is always inside relative_cwd relative to root_dir."""
     isolate_dir = os.path.dirname(self.saved_state.isolate_file)
     # Special case '.'.
-    if self.swarm.relative_cwd == '.':
+    if self.isolated.relative_cwd == '.':
       return isolate_dir
-    assert isolate_dir.endswith(self.swarm.relative_cwd), (
-        isolate_dir, self.swarm.relative_cwd)
-    return isolate_dir[:-(len(self.swarm.relative_cwd) + 1)]
+    assert isolate_dir.endswith(self.isolated.relative_cwd), (
+        isolate_dir, self.isolated.relative_cwd)
+    return isolate_dir[:-(len(self.isolated.relative_cwd) + 1)]
 
   @property
   def resultdir(self):
     """Directory containing the results, usually equivalent to the variable
     PRODUCT_DIR.
     """
-    return os.path.dirname(self.swarm_filepath)
+    return os.path.dirname(self.isolated_filepath)
 
   def __str__(self):
     def indent(data, indent_length):
@@ -1509,7 +1511,7 @@ class CompleteState(object):
 
     out = '%s(\n' % self.__class__.__name__
     out += '  root_dir: %s\n' % self.root_dir
-    out += '  result: %s\n' % indent(self.swarm, 2)
+    out += '  result: %s\n' % indent(self.isolated, 2)
     out += '  saved_state: %s)' % indent(self.saved_state, 2)
     return out
 
@@ -1517,20 +1519,20 @@ class CompleteState(object):
 def load_complete_state(options, level):
   """Loads a CompleteState.
 
-  This includes data from .isolate, .swarm and .state files.
+  This includes data from .isolate, .isolated and .state files.
 
   Arguments:
     options: Options instance generated with OptionParserIsolate.
     level: Amount of data to fetch.
   """
   if options.result:
-    # Load the previous state if it was present. Namely, "foo.swarm" and
+    # Load the previous state if it was present. Namely, "foo.isolated" and
     # "foo.state".
     complete_state = CompleteState.load_files(options.result)
   else:
     # Constructs a dummy object that cannot be saved. Useful for temporary
     # commands like 'run'.
-    complete_state = CompleteState(None, SwarmFile(), SavedState())
+    complete_state = CompleteState(None, IsolatedFile(), SavedState())
   options.isolate = options.isolate or complete_state.saved_state.isolate_file
   if not options.isolate:
     raise ExecutionError('A .isolate file is required.')
@@ -1543,7 +1545,7 @@ def load_complete_state(options, level):
   # Then load the .isolate and expands directories.
   complete_state.load_isolate(options.isolate, options.variables)
 
-  # Regenerate complete_state.swarm.files.
+  # Regenerate complete_state.isolated.files.
   complete_state.process_inputs(level)
   return complete_state
 
@@ -1551,7 +1553,7 @@ def load_complete_state(options, level):
 def read_trace_as_isolate_dict(complete_state):
   """Reads a trace and returns the .isolate dictionary."""
   api = trace_inputs.get_api()
-  logfile = complete_state.swarm_filepath + '.log'
+  logfile = complete_state.isolated_filepath + '.log'
   if not os.path.isfile(logfile):
     raise ExecutionError(
         'No log file \'%s\' to read, did you forget to \'trace\'?' % logfile)
@@ -1565,12 +1567,12 @@ def read_trace_as_isolate_dict(complete_state):
         touched,
         complete_state.root_dir,
         complete_state.saved_state.variables,
-        complete_state.swarm.relative_cwd)
+        complete_state.isolated.relative_cwd)
     return value
   except trace_inputs.TracingFailure, e:
     raise ExecutionError(
         'Reading traces failed for: %s\n%s' %
-          (' '.join(complete_state.swarm.command), str(e)))
+          (' '.join(complete_state.isolated.command), str(e)))
 
 
 def print_all(comment, data, stream):
@@ -1604,7 +1606,7 @@ def merge(complete_state):
 
 
 def CMDcheck(args):
-  """Checks that all the inputs are present and update .swarm."""
+  """Checks that all the inputs are present and update .isolated."""
   parser = OptionParserIsolate(command='check')
   options, _ = parser.parse_args(args)
   complete_state = load_complete_state(options, NO_INFO)
@@ -1617,8 +1619,8 @@ def CMDcheck(args):
 def CMDhashtable(args):
   """Creates a hash table content addressed object store.
 
-  All the files listed in the .swarm file are put in the output directory with
-  the file name being the sha-1 of the file's content.
+  All the files listed in the .isolated file are put in the output directory
+  with the file name being the sha-1 of the file's content.
   """
   parser = OptionParserIsolate(command='hashtable')
   options, _ = parser.parse_args(args)
@@ -1635,14 +1637,14 @@ def CMDhashtable(args):
       complete_state.save_files()
 
       logging.info('Creating content addressed object store with %d item',
-                   len(complete_state.swarm.files))
+                   len(complete_state.isolated.files))
 
-      with open(complete_state.swarm_filepath, 'rb') as f:
+      with open(complete_state.isolated_filepath, 'rb') as f:
         manifest_hash = hashlib.sha1(f.read()).hexdigest()
       manifest_metadata = {'sha-1': manifest_hash}
 
-      infiles = complete_state.swarm.files
-      infiles[complete_state.swarm_filepath] = manifest_metadata
+      infiles = complete_state.isolated.files
+      infiles[complete_state.isolated_filepath] = manifest_metadata
 
       if re.match(r'^https?://.+$', options.outdir):
         upload_sha1_tree(
@@ -1658,7 +1660,7 @@ def CMDhashtable(args):
             as_sha1=True)
       success = True
     finally:
-      # If the command failed, delete the .swarm file if it exists. This is
+      # If the command failed, delete the .isolated file if it exists. This is
       # important so no stale swarm job is executed.
       if not success and os.path.isfile(options.result):
         os.remove(options.result)
@@ -1724,13 +1726,13 @@ def CMDremap(args):
   recreate_tree(
       outdir=options.outdir,
       indir=complete_state.root_dir,
-      infiles=complete_state.swarm.files,
+      infiles=complete_state.isolated.files,
       action=run_isolated.HARDLINK,
       as_sha1=False)
-  if complete_state.swarm.read_only:
+  if complete_state.isolated.read_only:
     run_isolated.make_writable(options.outdir, True)
 
-  if complete_state.swarm_filepath:
+  if complete_state.isolated_filepath:
     complete_state.save_files()
   return 0
 
@@ -1744,13 +1746,13 @@ def CMDrun(args):
 
   Argument processing stops at the first non-recognized argument and these
   arguments are appended to the command line of the target to run. For example,
-  use: isolate.py -r foo.swarm -- --gtest_filter=Foo.Bar
+  use: isolate.py -r foo.isolated -- --gtest_filter=Foo.Bar
   """
   parser = OptionParserIsolate(command='run', require_result=False)
   parser.enable_interspersed_args()
   options, args = parser.parse_args(args)
   complete_state = load_complete_state(options, STATS_ONLY)
-  cmd = complete_state.swarm.command + args
+  cmd = complete_state.isolated.command + args
   if not cmd:
     raise ExecutionError('No command to run')
   cmd = trace_inputs.fix_python_path(cmd)
@@ -1764,17 +1766,17 @@ def CMDrun(args):
     recreate_tree(
         outdir=options.outdir,
         indir=complete_state.root_dir,
-        infiles=complete_state.swarm.files,
+        infiles=complete_state.isolated.files,
         action=run_isolated.HARDLINK,
         as_sha1=False)
     cwd = os.path.normpath(
-        os.path.join(options.outdir, complete_state.swarm.relative_cwd))
+        os.path.join(options.outdir, complete_state.isolated.relative_cwd))
     if not os.path.isdir(cwd):
       # It can happen when no files are mapped from the directory containing the
       # .isolate file. But the directory must exist to be the current working
       # directory.
       os.makedirs(cwd)
-    if complete_state.swarm.read_only:
+    if complete_state.isolated.read_only:
       run_isolated.make_writable(options.outdir, True)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     result = subprocess.call(cmd, cwd=cwd)
@@ -1782,7 +1784,7 @@ def CMDrun(args):
     if options.outdir:
       run_isolated.rmtree(options.outdir)
 
-  if complete_state.swarm_filepath:
+  if complete_state.isolated_filepath:
     complete_state.save_files()
   return result
 
@@ -1796,7 +1798,7 @@ def CMDtrace(args):
 
   Argument processing stops at the first non-recognized argument and these
   arguments are appended to the command line of the target to run. For example,
-  use: isolate.py -r foo.swarm -- --gtest_filter=Foo.Bar
+  use: isolate.py -r foo.isolated -- --gtest_filter=Foo.Bar
   """
   parser = OptionParserIsolate(command='trace')
   parser.enable_interspersed_args()
@@ -1805,15 +1807,15 @@ def CMDtrace(args):
       help='After tracing, merge the results back in the .isolate file')
   options, args = parser.parse_args(args)
   complete_state = load_complete_state(options, STATS_ONLY)
-  cmd = complete_state.swarm.command + args
+  cmd = complete_state.isolated.command + args
   if not cmd:
     raise ExecutionError('No command to run')
   cmd = trace_inputs.fix_python_path(cmd)
   cwd = os.path.normpath(os.path.join(
-      complete_state.root_dir, complete_state.swarm.relative_cwd))
+      complete_state.root_dir, complete_state.isolated.relative_cwd))
   logging.info('Running %s, cwd=%s' % (cmd, cwd))
   api = trace_inputs.get_api()
-  logfile = complete_state.swarm_filepath + '.log'
+  logfile = complete_state.isolated_filepath + '.log'
   api.clean_trace(logfile)
   try:
     with api.get_tracer(logfile) as tracer:
@@ -1846,7 +1848,7 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
     group.add_option(
         '-r', '--result',
         metavar='FILE',
-        help='.swarm file to store the json manifest')
+        help='.isolated file to store the json manifest')
     group.add_option(
         '-i', '--isolate',
         metavar='FILE',
@@ -1885,8 +1887,8 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
 
     if self.require_result and not options.result:
       self.error('--result is required.')
-    if options.result and not options.result.endswith('.swarm'):
-      self.error('--result value must end with \'.swarm\'')
+    if options.result and not options.result.endswith('.isolated'):
+      self.error('--result value must end with \'.isolated\'')
 
     if options.result:
       options.result = os.path.abspath(options.result.replace('/', os.path.sep))

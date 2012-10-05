@@ -41,7 +41,7 @@ class TraceTestCases(unittest.TestCase):
     os.environ.pop('GTEST_SHARD_INDEX', '')
     os.environ.pop('GTEST_TOTAL_SHARDS', '')
 
-    self.filename = 'test.swarm'
+    self.filename = 'test.isolated'
 
   def tearDown(self):
     if os.path.exists(self.filename):

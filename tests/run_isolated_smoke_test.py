@@ -94,7 +94,7 @@ class RunSwarmStep(unittest.TestCase):
     return out, err, proc.returncode
 
   def _store_result(self, result_data):
-    """Stores a .swarm file in the hash table."""
+    """Stores a .isolated file in the hash table."""
     result_text = json.dumps(result_data, sort_keys=True, indent=2)
     result_sha1 = hashlib.sha1(result_text).hexdigest()
     write_content(os.path.join(self.table, result_sha1), result_text)
@@ -123,7 +123,7 @@ class RunSwarmStep(unittest.TestCase):
 
   def test_result(self):
     # Loads an arbitrary manifest on the file system.
-    manifest = os.path.join(self.data_dir, 'gtest_fake.swarm')
+    manifest = os.path.join(self.data_dir, 'gtest_fake.isolated')
     expected = [
       'state.json',
       self._store('gtest_fake.py'),
@@ -144,7 +144,7 @@ class RunSwarmStep(unittest.TestCase):
 
   def test_hash(self):
     # Loads the manifest from the store as a hash.
-    result_sha1 = self._store('gtest_fake.swarm')
+    result_sha1 = self._store('gtest_fake.isolated')
     expected = [
       'state.json',
       self._store('gtest_fake.py'),
@@ -180,20 +180,20 @@ class RunSwarmStep(unittest.TestCase):
   def test_includes(self):
     # Loads a manifest that includes another one.
 
-    # References manifest1.swarm and gtest_fake.swarm. Maps file3.txt as
+    # References manifest1.isolated and gtest_fake.isolated. Maps file3.txt as
     # file2.txt.
-    result_sha1 = self._store('check_files.swarm')
+    result_sha1 = self._store('check_files.isolated')
     expected = [
       'state.json',
       self._store('check_files.py'),
       self._store('gtest_fake.py'),
-      self._store('gtest_fake.swarm'),
+      self._store('gtest_fake.isolated'),
       self._store('file1.txt'),
       self._store('file3.txt'),
       # Maps file1.txt.
-      self._store('manifest1.swarm'),
-      # References manifest1.swarm. Maps file2.txt but it is overriden.
-      self._store('manifest2.swarm'),
+      self._store('manifest1.isolated'),
+      # References manifest1.isolated. Maps file2.txt but it is overriden.
+      self._store('manifest2.isolated'),
       result_sha1,
     ]
     out, err, returncode = self._run(self._generate_args(result_sha1))
@@ -207,7 +207,7 @@ class RunSwarmStep(unittest.TestCase):
   def test_link_all_hash_instances(self):
     # Load a manifest file with the same file (same sha-1 hash), listed under
     # two different names and ensure both are created.
-    result_sha1 = self._store('repeated_files.swarm')
+    result_sha1 = self._store('repeated_files.isolated')
     expected = [
         'state.json',
         result_sha1,
