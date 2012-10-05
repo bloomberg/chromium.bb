@@ -139,11 +139,15 @@ void FullscreenController::ToggleFullscreenModeWithExtension(
   ToggleFullscreenModeInternal(false);
 }
 
-#if defined(OS_WIN)
 bool FullscreenController::IsInMetroSnapMode() {
+#if defined(OS_WIN)
   return window_->IsInMetroSnapMode();
+#else
+  return false;
+#endif
 }
 
+#if defined(OS_WIN)
 void FullscreenController::SetMetroSnapMode(bool enable) {
   reentrant_window_state_change_call_check_ = false;
 

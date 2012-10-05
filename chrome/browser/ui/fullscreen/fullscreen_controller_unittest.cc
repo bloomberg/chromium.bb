@@ -441,24 +441,39 @@ void FullscreenControllerUnitTest::VerifyWindowState() {
     case STATE_NORMAL:
       EXPECT_EQ(FullscreenControllerTestWindow::NORMAL,
                 window_->state()) << GetAndClearDebugLog();
+      EXPECT_EQ(false, fullscreen_controller_->IsFullscreenForBrowser());
+      EXPECT_EQ(false, fullscreen_controller_->IsFullscreenForTabOrPending());
+      EXPECT_EQ(false, fullscreen_controller_->IsInMetroSnapMode());
       break;
     case STATE_BROWSER_FULLSCREEN_NO_CHROME:
       EXPECT_EQ(FullscreenControllerTestWindow::FULLSCREEN,
                 window_->state()) << GetAndClearDebugLog();
+      EXPECT_EQ(true, fullscreen_controller_->IsFullscreenForBrowser());
+      EXPECT_EQ(false, fullscreen_controller_->IsFullscreenForTabOrPending());
+      EXPECT_EQ(false, fullscreen_controller_->IsInMetroSnapMode());
       break;
 #if defined(OS_WIN)
     case STATE_METRO_SNAP:
       EXPECT_EQ(FullscreenControllerTestWindow::METRO_SNAP,
                 window_->state()) << GetAndClearDebugLog();
+      EXPECT_EQ(false, fullscreen_controller_->IsFullscreenForBrowser());
+      EXPECT_EQ(false, fullscreen_controller_->IsFullscreenForTabOrPending());
+      EXPECT_EQ(true, fullscreen_controller_->IsInMetroSnapMode());
       break;
 #endif
     case STATE_TO_NORMAL:
       EXPECT_EQ(FullscreenControllerTestWindow::TO_NORMAL,
                 window_->state()) << GetAndClearDebugLog();
+      // No expectation for IsFullscreenForBrowser.
+      // No expectation for IsFullscreenForTabOrPending.
+      EXPECT_EQ(false, fullscreen_controller_->IsInMetroSnapMode());
       break;
     case STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
       EXPECT_EQ(FullscreenControllerTestWindow::TO_FULLSCREEN,
                 window_->state()) << GetAndClearDebugLog();
+      EXPECT_EQ(false, fullscreen_controller_->IsFullscreenForBrowser());
+      EXPECT_EQ(false, fullscreen_controller_->IsFullscreenForTabOrPending());
+      EXPECT_EQ(false, fullscreen_controller_->IsInMetroSnapMode());
       break;
     default:
       NOTREACHED() << GetAndClearDebugLog();
