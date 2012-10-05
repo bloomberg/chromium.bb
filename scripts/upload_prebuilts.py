@@ -410,7 +410,8 @@ class PrebuiltUploader(object):
         cmd = ['tar', '-I', bzip2, '-cf', tarfile]
         excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
                           'tmp')
-        cmd.extend('--exclude=%s/*' % path for path in excluded_paths)
+        for path in excluded_paths:
+          cmd.append('--exclude=%s/*' % path)
         cmd.append('.')
         cros_build_lib.SudoRunCommand(cmd, cwd=os.path.join(cwd, boardname))
       else:
@@ -425,7 +426,7 @@ class PrebuiltUploader(object):
         # FIXME(zbehan): Why does version contain the prefix "chroot-"?
         version_str = version[len('chroot-'):]
         remote_tarfile = \
-            '%s/cros-sdk-%s.tar.xz' % (_SDK_GS_BUCKET, version_str)
+            '%s/cros-sdk-%s.tbz2' % (_SDK_GS_BUCKET, version_str)
         # For SDK, also upload the manifest which is guaranteed to exist
         # by the builderstage.
         _GsUpload(tarfile + '.Manifest', remote_tarfile + '.Manifest',
@@ -437,6 +438,7 @@ class PrebuiltUploader(object):
         osutils.WriteFile(pointerfile, 'LATEST_SDK=%s' % version_str)
         _GsUpload(pointerfile, remote_pointerfile, self._acl)
       _GsUpload(tarfile, remote_tarfile, self._acl)
+
 
   def _GetTargets(self):
     """Retuns the list of targets to use."""

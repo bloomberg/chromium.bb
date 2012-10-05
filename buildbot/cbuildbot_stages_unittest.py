@@ -551,9 +551,9 @@ class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
     """Tests whether we package the tarball and correctly create a Manifest."""
     self.bot_id = 'chromiumos-sdk'
     self.build_config = config.config[self.bot_id]
-    fake_tarball = os.path.join(self.build_root, 'built-sdk.tar.xz')
+    fake_tarball = os.path.join(self.build_root, 'built-sdk.tbz2')
     fake_manifest = os.path.join(self.build_root,
-                                 'built-sdk.tar.xz.Manifest')
+                                 'built-sdk.tbz2.Manifest')
     self.mox.StubOutWithMock(portage_utilities, 'ListInstalledPackages')
 
     portage_utilities.ListInstalledPackages(self.fake_chroot).AndReturn(
@@ -565,7 +565,7 @@ class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
 
     # Check tarball for the correct contents.
     output = cros_build_lib.RunCommandCaptureOutput(
-        ['tar', '-I', 'xz', '-tvf', fake_tarball]).output.splitlines()
+        ['tar', '-jtvf', fake_tarball]).output.splitlines()
     # First line is './', use it as an anchor, count the chars, and strip as
     # much from all other lines.
     stripchars = len(output[0]) - 1

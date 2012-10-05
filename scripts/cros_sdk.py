@@ -21,7 +21,7 @@ cros_build_lib.STRICT_SUDO = True
 
 
 DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk'
-COMPRESSION_PREFERENCE = ('xz', 'bz2')
+COMPRESSION_PREFERENCE = ('bz2', 'xz')
 
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
 OVERLAY_DIR = os.path.join(SRC_ROOT, 'src/third_party/chromiumos-overlay')
@@ -33,7 +33,7 @@ MAKE_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/make_chroot.sh')]
 ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')]
 
 # We need these tools to run. Very common tools (tar,..) are ommited.
-NEEDED_TOOLS = ('curl', 'xz')
+NEEDED_TOOLS = ('curl',)
 
 
 def CheckPrerequisites(needed_tools):
