@@ -264,7 +264,7 @@ void CCLayerTreeHostImpl::FrameData::appendRenderPass(scoped_ptr<CCRenderPass> r
 
 bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 {
-    ASSERT(!frame.renderPasses.size());
+    ASSERT(frame.renderPasses.empty());
 
     calculateRenderSurfaceLayerList(*frame.renderSurfaceLayerList);
 
@@ -556,7 +556,7 @@ void CCLayerTreeHostImpl::drawLayers(const FrameData& frame)
 {
     TRACE_EVENT0("cc", "CCLayerTreeHostImpl::drawLayers");
     ASSERT(canDraw());
-    ASSERT(frame.renderPasses.size());
+    ASSERT(!frame.renderPasses.empty());
 
     // FIXME: use the frame begin time from the overall compositor scheduler.
     // This value is currently inaccessible because it is up in Chromium's
