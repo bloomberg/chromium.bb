@@ -8,6 +8,7 @@ import traceback
 import unittest
 
 from chrome_remote_control import browser_options
+from chrome_remote_control import options_for_unittests
 
 def RequiresBrowserOfType(*types):
   def wrap(func):
@@ -91,7 +92,7 @@ def DiscoverAndRunTests(dir_name, args, top_level_dir):
       method = getattr(test, test._testMethodName) # pylint: disable=W0212
       if hasattr(method, '_requires_browser_types'):
         types = method._requires_browser_types # pylint: disable=W0212
-        if browser_options.browser_type_for_unittests not in types:
+        if options_for_unittests.GetBrowserType() not in types:
           logging.debug('Skipping test %s because it requires %s' %
                         (test.id(), types))
           return False
@@ -123,8 +124,8 @@ def Main(args, start_dir, top_level_dir):
     logging.error('Re-run with --browser=list to see available browser types.')
     return 1
 
-  browser_options.options_for_unittests = default_options
-  browser_options.browser_type_for_unittests = browser_to_create.browser_type
+  options_for_unittests.Set(default_options,
+                            browser_to_create.browser_type)
   olddir = os.getcwd()
   num_errors = 0
   try:
@@ -134,6 +135,6 @@ def Main(args, start_dir, top_level_dir):
       num_errors += DiscoverAndRunTests(start_dir, args, top_level_dir)
   finally:
     os.chdir(olddir)
-    browser_options.options_for_unittests = None
+    options_for_unittests.Set(None, None)
 
-  return num_errors
+  return max(num_errors, 255)

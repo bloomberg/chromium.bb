@@ -4,11 +4,12 @@
 import unittest
 
 from chrome_remote_control import browser_finder
-from chrome_remote_control import browser_options
+from chrome_remote_control import options_for_unittests
 
 class BrowserTest(unittest.TestCase):
   def testBrowserCreation(self):
-    options = browser_options.options_for_unittests
+
+    options = options_for_unittests.Get()
     browser_to_create = browser_finder.FindBrowser(options)
     if not browser_to_create:
       raise Exception('No browser found, cannot continue test.')
@@ -22,7 +23,7 @@ class BrowserTest(unittest.TestCase):
     # This test starts the browser with --enable-benchmarking, which should
     # create a chrome.Interval namespace. This tests whether the command line is
     # being set.
-    options = browser_options.options_for_unittests.Copy()
+    options = options_for_unittests.Get()
 
     flag1 = '--user-agent=chrome_remote_control'
     options.extra_browser_args.append(flag1)

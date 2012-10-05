@@ -35,10 +35,6 @@ class PageSet(object):
       for k, v in attributes.iteritems():
         setattr(self, k, v)
 
-    if self.credentials_path is not None:
-      self.credentials_path = os.path.join(self.base_dir,
-                                           self.credentials_path)
-
     self.pages = []
 
   @classmethod

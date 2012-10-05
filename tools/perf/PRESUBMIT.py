@@ -5,26 +5,27 @@ import os
 import sys
 
 PYLINT_BLACKLIST = []
-PYLINT_DISABLED_WARNINGS = []
+PYLINT_DISABLED_WARNINGS = ['R0923', 'R0201', 'E1101']
 
-def CheckChangeOnUpload(input_api, output_api):
-  report = []
-  report.extend(input_api.canned_checks.PanProjectChecks(
-      input_api, output_api))
-  return report
-
-def CheckChangeOnCommit(input_api, output_api):
-  report = []
-  report.extend(input_api.canned_checks.PanProjectChecks(input_api, output_api))
-
+def _CommonChecks(input_api, output_api):
+  results = []
   old_sys_path = sys.path
   try:
     sys.path = [os.path.join('..', 'chrome_remote_control')] + sys.path
-    report.extend(input_api.canned_checks.RunPylint(
+    results.extend(input_api.canned_checks.RunPylint(
         input_api, output_api,
         black_list=PYLINT_BLACKLIST,
         disabled_warnings=PYLINT_DISABLED_WARNINGS))
   finally:
     sys.path = old_sys_path
+  return results
 
+def CheckChangeOnUpload(input_api, output_api):
+  report = []
+  report.extend(_CommonChecks(input_api, output_api))
+  return report
+
+def CheckChangeOnCommit(input_api, output_api):
+  report = []
+  report.extend(_CommonChecks(input_api, output_api))
   return report

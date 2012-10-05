@@ -5,8 +5,8 @@ import os
 import unittest
 
 from chrome_remote_control import browser_finder
-from chrome_remote_control import browser_options
 from chrome_remote_control import multi_page_benchmark
+from chrome_remote_control import options_for_unittests
 from chrome_remote_control import page_runner
 from chrome_remote_control import page_set
 
@@ -33,9 +33,8 @@ class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
 
   def RunBenchmark(self, benchmark, ps):
     """Runs a benchmark against a pageset, returning the rows its outputs."""
-    assert browser_options.options_for_unittests
-    options = (
-      browser_options.options_for_unittests.Copy())
+    options = options_for_unittests.Get()
+    assert options
     temp_parser = options.CreateParser()
     benchmark.AddOptions(temp_parser)
     defaults = temp_parser.get_default_values()

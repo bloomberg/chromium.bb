@@ -6,6 +6,7 @@ import json
 import os
 
 from chrome_remote_control import google_credentials_backend
+from chrome_remote_control import options_for_unittests
 
 class BrowserCredentials(object):
   def __init__(self, backends = None):
@@ -57,24 +58,12 @@ class BrowserCredentials(object):
     elif os.path.exists(self._credentials_path):
       with open(self._credentials_path, 'r') as f:
         credentials = json.loads(f.read())
-    else:
-      logging.warning(
-        "%s was not found. Sites that require login may not run." %
-        self._credentials_path)
 
     # TODO(nduca): use system keychain, if possible.
     homedir_credentials_path = os.path.expanduser('~/.crc-credentials')
     homedir_credentials = {}
 
-    # Workaround pylint issues by importing browser_options with voodo.
-    import sys
-    if 'chrome_remote_control.browser_options' in sys.modules:
-      browser_options = sys.modules['chrome_remote_control.browser_options']
-    else:
-      browser_options = None
-
-    if (browser_options and
-        browser_options.options_for_unittests and
+    if (not options_for_unittests.Get() and
         os.path.exists(homedir_credentials_path)):
       logging.info("Found ~/.crc-credentials. Its contents will be used when "
                    "no other credentials can be found.")
@@ -88,3 +77,4 @@ class BrowserCredentials(object):
         self._credentials[k] = credentials[k]
       if k in homedir_credentials:
         logging.info("Will use ~/.crc-credentials for %s logins." % k)
+        self._credentials[k] = homedir_credentials[k]

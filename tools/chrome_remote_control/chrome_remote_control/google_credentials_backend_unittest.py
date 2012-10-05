@@ -5,10 +5,10 @@ import logging
 import os
 import unittest
 
-from chrome_remote_control import browser_options
 from chrome_remote_control import browser_finder
 from chrome_remote_control import google_credentials_backend
 from chrome_remote_control import simple_mock
+from chrome_remote_control import options_for_unittests
 
 _ = simple_mock.DONT_CARE
 
@@ -30,7 +30,7 @@ class TestGoogleCredentialsBackend(unittest.TestCase):
         credentials_path)
       return
 
-    options = browser_options.options_for_unittests.Copy()
+    options = options_for_unittests.Get()
     with browser_finder.FindBrowser(options).Create() as b:
       b.credentials.credentials_path = credentials_path
       with b.ConnectToNthTab(0) as tab:

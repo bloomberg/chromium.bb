@@ -4,13 +4,13 @@
 import unittest
 
 from chrome_remote_control import browser_finder
-from chrome_remote_control import browser_options
+from chrome_remote_control import options_for_unittests
 
 class TabTestCase(unittest.TestCase):
   def setUp(self):
     self._browser = None
     self._tab = None
-    options = browser_options.options_for_unittests
+    options = options_for_unittests.Get()
     browser_to_create = browser_finder.FindBrowser(options)
     if not browser_to_create:
       raise Exception('No browser found, cannot continue test.')

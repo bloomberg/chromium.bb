@@ -5,10 +5,10 @@ import tempfile
 import unittest
 
 from chrome_remote_control import browser_finder
-from chrome_remote_control import browser_options
 from chrome_remote_control import page_set
 from chrome_remote_control import page_test
 from chrome_remote_control import page_runner
+from chrome_remote_control import options_for_unittests
 
 SIMPLE_CREDENTIALS_STRING = """
 {
@@ -41,17 +41,19 @@ class PageRunnerTests(unittest.TestCase):
 
   def testCredentialsWhenLoginFails(self):
     results = page_test.PageTestResults()
-    credentials_backend = StubCredentialsBackend(login_return_value=True)
-    self.runCredentialsTest(credentials_backend, results)
+    credentials_backend = StubCredentialsBackend(login_return_value=False)
+    did_run = self.runCredentialsTest(credentials_backend, results)
     assert credentials_backend.did_get_login == True
-    assert credentials_backend.did_get_login_no_longer_needed == True
+    assert credentials_backend.did_get_login_no_longer_needed == False
+    assert did_run == False
 
   def testCredentialsWhenLoginSucceeds(self):
     results = page_test.PageTestResults()
-    credentials_backend = StubCredentialsBackend(login_return_value=False)
-    self.runCredentialsTest(credentials_backend, results)
+    credentials_backend = StubCredentialsBackend(login_return_value=True)
+    did_run = self.runCredentialsTest(credentials_backend, results)
     assert credentials_backend.did_get_login == True
-    assert credentials_backend.did_get_login_no_longer_needed == False
+    assert credentials_backend.did_get_login_no_longer_needed == True
+    assert did_run
 
   def runCredentialsTest(self, # pylint: disable=R0201
                          credentials_backend,
@@ -60,6 +62,8 @@ class PageRunnerTests(unittest.TestCase):
     page.credentials = "test"
     ps = page_set.PageSet()
     ps.pages.append(page)
+
+    did_run = [False]
 
     with tempfile.NamedTemporaryFile() as f:
       f.write(SIMPLE_CREDENTIALS_STRING)
@@ -75,10 +79,12 @@ class PageRunnerTests(unittest.TestCase):
           browser.credentials.AddBackend(self._credentials_backend)
 
         def RunTest(self, page, tab, results): # pylint: disable=W0613,R0201
-          return
+          did_run[0] = True
 
       test = TestThatInstallsCredentialsBackend(credentials_backend)
       with page_runner.PageRunner(ps) as runner:
-        options = browser_options.options_for_unittests
+        options = options_for_unittests.Get()
         possible_browser = browser_finder.FindBrowser(options)
         runner.Run(options, possible_browser, test, results)
+
+    return did_run[0]

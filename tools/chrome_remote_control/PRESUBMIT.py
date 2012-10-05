@@ -9,10 +9,6 @@ PYLINT_DISABLED_WARNINGS = ['R0923', 'R0201', 'E1101']
 
 def _CommonChecks(input_api, output_api):
   results = []
-  results.extend(input_api.canned_checks.PanProjectChecks(
-      input_api, output_api))
-
-
   old_sys_path = sys.path
   try:
     sys.path = [os.path.join('..', 'chrome_remote_control')] + sys.path
