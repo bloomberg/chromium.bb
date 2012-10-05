@@ -40,12 +40,13 @@ class PageRunner(object):
     else:
       extra_browser_args = []
       if not options_for_unittests.Get():
-        logging.warning('\n' + 80 * '*' + """\n
-        The page set archive %s does not exist,
-        benchmarking against live sites!
-        Results won't be repeatable or comparable. To correct this, check out
-        the archives from src-internal or create a new archive using --record.
-        \n""" + 80 * '*' + '\n', os.path.relpath(archive_path))
+        logging.warning("""
+The page set archive %s does not exist, benchmarking against live sites!
+Results won't be repeatable or comparable.
+
+To fix this, either add svn-internal to your .gclient using
+http://goto/read-src-internal, or create a new archive using --record.
+""", os.path.relpath(archive_path))
 
     credentials_path = None
     if self.page_set.credentials_path:

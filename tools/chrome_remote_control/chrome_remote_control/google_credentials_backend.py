@@ -44,7 +44,7 @@ class GoogleCredentialsBackend(object):
       RuntimeError: if could not get credential information.
     """
     if self._logged_in:
-      return False
+      return True
 
     if 'username' not in config or 'password' not in config:
       message = 'Credentials for "google" must include username and password.'
