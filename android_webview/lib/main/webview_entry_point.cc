@@ -6,6 +6,7 @@
 #include "android_webview/native/android_webview_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/android/compositor.h"
@@ -33,6 +34,12 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   // and should be properly fixed. See bug 153758.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kLang, "en-US");
+
+  // We disable Preconnection as it causes our simple test Web Servers
+  // to deadlock. See
+  // https://code.google.com/p/chromium-os/issues/detail?id=13043
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+       switches::kDisablePreconnect);
 
   // TODO: The next two lines are temporarily required for the renderer
   // initialization to not crash.

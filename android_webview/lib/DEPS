@@ -30,4 +30,8 @@ include_rules = [
 
   # Temporary until fixing bug 153758.
   "!ui/base/ui_base_switches.h",
+
+  # Temporary. Needed to prevent instantiation of chrome_browser_net::Predictor
+  # which breaks WebView tests (as we have simple dumb test web servers).
+  "!chrome/common/chrome_switches.h",
 ]
