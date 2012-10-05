@@ -37,6 +37,9 @@ int ki_getdents(int fd, void* buf, unsigned int count);
 int ki_fsync(int fd);
 int ki_isatty(int fd);
 int ki_close(int fd);
+int ki_remove(const char* path);
+int ki_unlink(const char* path);
+int ki_access(const char* path, int amode);
 
 EXTERN_C_END
 

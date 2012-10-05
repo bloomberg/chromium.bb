@@ -84,3 +84,15 @@ int ki_isatty(int fd) {
 int ki_close(int fd) {
   return s_kp->close(fd);
 }
+
+int ki_remove(const char* path) {
+  return s_kp->remove(path);
+}
+
+int ki_unlink(const char* path) {
+  return s_kp->unlink(path);
+}
+
+int ki_access(const char* path, int amode) {
+  return s_kp->access(path, amode);
+}

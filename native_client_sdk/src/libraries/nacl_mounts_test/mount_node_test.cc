@@ -42,6 +42,9 @@ class MockMemory : public MountNodeMem {
   }
   void Link() { MountNodeMem::Link(); }
   void Unlink() { MountNodeMem::Unlink(); }
+
+ protected:
+  using MountNodeMem::Init;
 };
 
 class MockDir : public MountNodeDir {
@@ -68,20 +71,23 @@ class MockDir : public MountNodeDir {
   }
   void Link() { MountNodeDir::Link(); }
   void Unlink() { MountNodeDir::Unlink(); }
+
+ protected:
+  using MountNodeDir::Init;
 };
 
 TEST(MountNodeTest, File) {
   MockMemory *file = new MockMemory;
 
-  EXPECT_EQ(true, file->Init(S_IREAD | S_IWRITE));
+  EXPECT_TRUE(file->Init(S_IREAD | S_IWRITE));
 
   // Test properties
   EXPECT_EQ(0, file->GetLinks());
   EXPECT_EQ(S_IREAD | S_IWRITE, file->GetMode());
   EXPECT_EQ(S_IFREG, file->GetType());
-  EXPECT_EQ(false, file->IsaDir());
-  EXPECT_EQ(true, file->IsaFile());
-  EXPECT_EQ(false, file->IsaTTY());
+  EXPECT_FALSE(file->IsaDir());
+  EXPECT_TRUE(file->IsaFile());
+  EXPECT_FALSE(file->IsaTTY());
   EXPECT_EQ(1, file->RefCount());
 
   // Test IO
@@ -125,9 +131,9 @@ TEST(MountNodeTest, Directory) {
   EXPECT_EQ(0, root->GetLinks());
   EXPECT_EQ(S_IREAD | S_IWRITE, root->GetMode());
   EXPECT_EQ(S_IFDIR, root->GetType());
-  EXPECT_EQ(true, root->IsaDir());
-  EXPECT_EQ(false, root->IsaFile());
-  EXPECT_EQ(false, root->IsaTTY());
+  EXPECT_TRUE(root->IsaDir());
+  EXPECT_FALSE(root->IsaFile());
+  EXPECT_FALSE(root->IsaTTY());
   EXPECT_EQ(1, root->RefCount());
 
   // IO operations should fail
@@ -140,7 +146,7 @@ TEST(MountNodeTest, Directory) {
 
   // Test directory operations
   MockMemory* file = new MockMemory;
-  EXPECT_EQ(true, file->Init(S_IREAD | S_IWRITE));
+  EXPECT_TRUE(file->Init(S_IREAD | S_IWRITE));
 
   EXPECT_EQ(1, root->RefCount());
   EXPECT_EQ(1, file->RefCount());

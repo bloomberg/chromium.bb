@@ -584,6 +584,16 @@ LIB_DICT = {
   'win': ['x86_32']
 }
 
+
+def MakeDirectoryOrClobber(pepperdir, dirname, clobber):
+  dirpath = os.path.join(pepperdir, dirname)
+  if clobber:
+    buildbot_common.RemoveDir(dirpath)
+  buildbot_common.MakeDir(dirpath)
+
+  return dirpath
+
+
 def BuildStepCopyExamples(pepperdir, toolchains, build_experimental, clobber):
   buildbot_common.BuildStep('Copy examples')
 
@@ -592,15 +602,8 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental, clobber):
   if not os.path.exists(os.path.join(pepperdir, 'toolchain')):
     buildbot_common.ErrorExit('Examples depend on missing toolchains.')
 
-  exampledir = os.path.join(pepperdir, 'examples')
-  if clobber:
-    buildbot_common.RemoveDir(exampledir)
-  buildbot_common.MakeDir(exampledir)
-
-  libdir = os.path.join(pepperdir, 'lib')
-  if clobber:
-    buildbot_common.RemoveDir(libdir)
-  buildbot_common.MakeDir(libdir)
+  exampledir = MakeDirectoryOrClobber(pepperdir, 'examples', clobber)
+  libdir = MakeDirectoryOrClobber(pepperdir, 'lib', clobber)
 
   plat = getos.GetPlatform()
   for arch in LIB_DICT[plat]:
@@ -614,11 +617,7 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental, clobber):
                               config))
 
 
-  srcdir = os.path.join(pepperdir, 'src')
-  if clobber:
-    buildbot_common.RemoveDir(srcdir)
-  buildbot_common.MakeDir(srcdir)
-
+  MakeDirectoryOrClobber(pepperdir, 'src', clobber)
 
   # Copy individual files
   files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html']
@@ -792,10 +791,8 @@ TEST_LIBRARY_LIST = [
 def BuildStepCopyTests(pepperdir, toolchains, build_experimental, clobber):
   buildbot_common.BuildStep('Copy Tests')
 
-  testingdir = os.path.join(pepperdir, 'testing')
-  if clobber:
-    buildbot_common.RemoveDir(testingdir)
-  buildbot_common.MakeDir(testingdir)
+  MakeDirectoryOrClobber(pepperdir, 'testlibs', clobber)
+  MakeDirectoryOrClobber(pepperdir, 'tests', clobber)
 
   args = ['--dstroot=%s' % pepperdir, '--master']
   for toolchain in toolchains:
@@ -817,7 +814,8 @@ def BuildStepCopyTests(pepperdir, toolchains, build_experimental, clobber):
 
 
 def BuildStepBuildTests(pepperdir, platform):
-  BuildStepMakeAll(pepperdir, platform, 'testing', 'Build Tests')
+  BuildStepMakeAll(pepperdir, platform, 'testlibs', 'Build Test Libraries')
+  BuildStepMakeAll(pepperdir, platform, 'tests', 'Build Tests')
 
 
 def BuildStepRunPyautoTests(pepperdir, platform, pepper_ver):

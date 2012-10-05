@@ -37,6 +37,10 @@ def WriteReplaced(srcpath, dstpath, replacements):
   open(dstpath, 'wb').write(text)
 
 
+def ShouldProcessHTML(desc):
+  return desc['DEST'] in ('examples', 'tests')
+
+
 def GenerateSourceCopyList(desc):
   sources = []
   # Add sources for each target
@@ -46,7 +50,7 @@ def GenerateSourceCopyList(desc):
   # And HTML and data files
   sources.extend(desc.get('DATA', []))
 
-  if desc['DEST'] == 'examples':
+  if ShouldProcessHTML(desc):
     sources.append('common.js')
 
   return sources
@@ -214,7 +218,7 @@ DSC_FORMAT = {
     'SEARCH': (list, '', False),
     'POST': (str, '', False),
     'PRE': (str, '', False),
-    'DEST': (str, ['examples', 'src', 'testing'], True),
+    'DEST': (str, ['examples', 'src', 'testlibs', 'tests'], True),
     'NAME': (str, '', False),
     'DATA': (list, '', False),
     'TITLE': (str, '', False),
@@ -415,8 +419,7 @@ def FindAndCopyFiles(src_files, root, search_dirs, dst_dir):
   for src_name in src_files:
     src_file = FindFile(src_name, root, search_dirs)
     if not src_file:
-      ErrorMsgFunc('Failed to find: ' + src_name)
-      return None
+      ErrorExit('Failed to find: ' + src_name)
     dst_file = os.path.join(dst_dir, src_name)
     if os.path.exists(dst_file):
       if os.stat(src_file).st_mtime <= os.stat(dst_file).st_mtime:
@@ -576,7 +579,7 @@ def main(argv):
       ErrorExit('\n*** Failed to process project: %s ***' % filename)
 
     # if this is an example update the html
-    if desc['DEST'] == 'examples':
+    if ShouldProcessHTML(desc):
       ProcessHTML(srcroot, options.dstroot, desc, toolchains)
 
     # Create a list of projects for each DEST. This will be used to generate a

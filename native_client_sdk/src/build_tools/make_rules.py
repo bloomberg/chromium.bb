@@ -47,7 +47,7 @@ TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 LINUX_DEFAULTS = """
 LINUX_CC?=gcc -c
 LINUX_CXX?=g++ -c -std=gnu++98
-LINUX_LINK?=g++ -shared -Wl,-as-needed
+LINUX_LINK?=g++
 LINUX_LIB?=ar r
 LINUX_CCFLAGS=-I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
 """
@@ -82,18 +82,18 @@ WIN_CC_RULES = {
 # Link rules for various platforms.
 #
 NEXE_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>',
-  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>'
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> -Wl,--start-group <LIBLIST> -Wl,--end-group',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config>  -Wl,--start-group <LIBLIST> -Wl,--end-group'
 }
 
 SO_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tcname>/<config> <LIBLIST>',
-  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tcname>/<config> <LIBLIST>',
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tcname>/<config>',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tcname>/<config>',
 }
 
 LINUX_SO_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<tcname>/<config> <LIBLIST>',
-  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<tcname>/<config> <LIBLIST>',
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<tcname>/<config> -Wl,--whole-archive <LIBLIST> -Wl,--no-whole-archive',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<tcname>/<config> -Wl,--whole-archive <LIBLIST> -Wl,--no-whole-archive',
 }
 
 PEXE_TRANSLATE_RULE = """

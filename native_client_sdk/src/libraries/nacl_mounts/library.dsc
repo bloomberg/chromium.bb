@@ -52,5 +52,4 @@
   ],
   'DEST': 'src',
   'NAME': 'nacl_mounts',
-  'EXPERIMENTAL': True
 }

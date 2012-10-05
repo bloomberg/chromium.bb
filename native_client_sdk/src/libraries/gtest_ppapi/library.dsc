@@ -27,6 +27,6 @@
       'DEST': 'include/gtest_ppapi',
     },
   ],
-  'DEST': 'testing',
+  'DEST': 'testlibs',
   'NAME': 'gtest_ppapi',
 }

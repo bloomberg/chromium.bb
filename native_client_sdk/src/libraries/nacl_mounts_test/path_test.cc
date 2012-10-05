@@ -16,10 +16,10 @@ TEST(PathTest, SanityChecks) {
   delete ph2;
 
   Path p1(".");
-  EXPECT_EQ(false, p1.IsAbsolute());
+  EXPECT_FALSE(p1.IsAbsolute());
   EXPECT_EQ(".", p1.Join());
   Path p2("/");
-  EXPECT_EQ(true, p2.IsAbsolute());
+  EXPECT_TRUE(p2.IsAbsolute());
   EXPECT_EQ("/", p2.Join());
 }
 
@@ -32,27 +32,27 @@ TEST(PathTest, Assignment) {
   Path self_str("./rel/from/string");
 
   EXPECT_EQ(0, empty.Size());
-  EXPECT_EQ(false, empty.IsAbsolute());
+  EXPECT_FALSE(empty.IsAbsolute());
   EXPECT_EQ(std::string(""), empty.Join());
 
   EXPECT_EQ(1, dot.Size());
-  EXPECT_EQ(false, dot.IsAbsolute());
+  EXPECT_FALSE(dot.IsAbsolute());
   EXPECT_EQ(std::string("."), dot.Join());
 
   EXPECT_EQ(1, root.Size());
-  EXPECT_EQ(true, root.IsAbsolute());
+  EXPECT_TRUE(root.IsAbsolute());
   EXPECT_EQ(std::string("/"), root.Join());
 
   EXPECT_EQ(4, abs_str.Size());
-  EXPECT_EQ(true, abs_str.IsAbsolute());
+  EXPECT_TRUE(abs_str.IsAbsolute());
   EXPECT_EQ(std::string("/abs/from/string"), abs_str.Join());
 
   EXPECT_EQ(3, rel_str.Size());
-  EXPECT_EQ(false, rel_str.IsAbsolute());
+  EXPECT_FALSE(rel_str.IsAbsolute());
   EXPECT_EQ(std::string("rel/from/string"), rel_str.Join());
 
   EXPECT_EQ(3, self_str.Size());
-  EXPECT_EQ(false, self_str.IsAbsolute());
+  EXPECT_FALSE(self_str.IsAbsolute());
   EXPECT_EQ(std::string("rel/from/string"), self_str.Join());
 
   empty = "";
@@ -63,58 +63,58 @@ TEST(PathTest, Assignment) {
   self_str = "./rel/from/assign";
 
   EXPECT_EQ(1, empty.Size());
-  EXPECT_EQ(false, empty.IsAbsolute());
+  EXPECT_FALSE(empty.IsAbsolute());
   EXPECT_EQ(std::string("."), empty.Join());
 
   EXPECT_EQ(1, dot.Size());
-  EXPECT_EQ(false, dot.IsAbsolute());
+  EXPECT_FALSE(dot.IsAbsolute());
   EXPECT_EQ(std::string("."), dot.Join());
 
   EXPECT_EQ(1, root.Size());
-  EXPECT_EQ(true, root.IsAbsolute());
+  EXPECT_TRUE(root.IsAbsolute());
   EXPECT_EQ(std::string("/"), root.Join());
 
   EXPECT_EQ(4, abs_str.Size());
-  EXPECT_EQ(true, abs_str.IsAbsolute());
+  EXPECT_TRUE(abs_str.IsAbsolute());
   EXPECT_EQ(std::string("/abs/from/assign"), abs_str.Join());
 
   EXPECT_EQ(3, rel_str.Size());
-  EXPECT_EQ(false, rel_str.IsAbsolute());
+  EXPECT_FALSE(rel_str.IsAbsolute());
   EXPECT_EQ(std::string("rel/from/assign"), rel_str.Join());
 
   EXPECT_EQ(3, self_str.Size());
-  EXPECT_EQ(false, self_str.IsAbsolute());
+  EXPECT_FALSE(self_str.IsAbsolute());
   EXPECT_EQ(std::string("rel/from/assign"), self_str.Join());
 
   Path cpy_str;
   cpy_str = empty;
   EXPECT_EQ(1, cpy_str.Size());
-  EXPECT_EQ(false, cpy_str.IsAbsolute());
+  EXPECT_FALSE(cpy_str.IsAbsolute());
   EXPECT_EQ(std::string("."), cpy_str.Join());
 
   cpy_str = dot;
   EXPECT_EQ(1, cpy_str.Size());
-  EXPECT_EQ(false, cpy_str.IsAbsolute());
+  EXPECT_FALSE(cpy_str.IsAbsolute());
   EXPECT_EQ(std::string("."), cpy_str.Join());
 
   cpy_str = root;
   EXPECT_EQ(1, cpy_str.Size());
-  EXPECT_EQ(true, cpy_str.IsAbsolute());
+  EXPECT_TRUE(cpy_str.IsAbsolute());
   EXPECT_EQ(std::string("/"), cpy_str.Join());
 
   cpy_str = abs_str;
   EXPECT_EQ(4, cpy_str.Size());
-  EXPECT_EQ(true, cpy_str.IsAbsolute());
+  EXPECT_TRUE(cpy_str.IsAbsolute());
   EXPECT_EQ(std::string("/abs/from/assign"), cpy_str.Join());
 
   cpy_str = rel_str;
   EXPECT_EQ(3, cpy_str.Size());
-  EXPECT_EQ(false, cpy_str.IsAbsolute());
+  EXPECT_FALSE(cpy_str.IsAbsolute());
   EXPECT_EQ(std::string("rel/from/assign"), cpy_str.Join());
 
   cpy_str = self_str;
   EXPECT_EQ(3, cpy_str.Size());
-  EXPECT_EQ(false, cpy_str.IsAbsolute());
+  EXPECT_FALSE(cpy_str.IsAbsolute());
   EXPECT_EQ(std::string("rel/from/assign"), cpy_str.Join());
 }
 
@@ -148,7 +148,7 @@ TEST(PathTest, Collapse) {
   Path p3("sim/ple//spli/tter/te/st/");
   path_components = p3.Split();
   EXPECT_EQ(6, static_cast<int>(path_components.size()));
-  EXPECT_EQ(false, p3.IsAbsolute());
+  EXPECT_FALSE(p3.IsAbsolute());
   EXPECT_EQ("sim", path_components[0]);
   EXPECT_EQ("ple", path_components[1]);
   EXPECT_EQ("spli", path_components[2]);

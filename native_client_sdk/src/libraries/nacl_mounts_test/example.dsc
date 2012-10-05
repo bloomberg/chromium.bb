@@ -1,5 +1,9 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
+  # TODO(binji): pnacl doesn't build right now because gtest doesn't build yet.
+  'TOOLS': ['newlib', 'glibc', 'win', 'linux'],
+
+  # Need to add ../../examples for common.js
+  'SEARCH': ['.', '../../examples'],
   'TARGETS': [
     {
       'NAME' : 'nacl_mounts_test',
@@ -11,12 +15,14 @@
         'mount_node_test.cc',
         'mount_test.cc',
         'path_test.cc',
-        'test.cc',
       ],
-      'LIBS': ['ppapi', 'pthread', 'gtest', 'nacl_mounts']
+      'LIBS': ['ppapi', 'pthread', 'gtest', 'nacl_mounts', 'ppapi_cpp', 'gtest_ppapi']
     }
   ],
-  'DEST': 'testing',
+  'DATA': [
+    'example.js'
+  ],
+  'DEST': 'tests',
   'NAME': 'nacl_mounts_test',
-  'EXPERIMENTAL': True,
+  'TITLE': 'NaCl Mounts test',
 }

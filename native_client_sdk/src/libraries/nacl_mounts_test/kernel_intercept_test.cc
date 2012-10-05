@@ -20,92 +20,92 @@ class KernelProxyMock : public KernelProxy {
   KernelProxyMock() {}
   virtual ~KernelProxyMock() {}
 
-  int chdir(const char* path) {
+  virtual int chdir(const char* path) {
     events.push_back("chdir");
     return 0;
   }
-  char* getcwd(char* buf, size_t size) {
+  virtual char* getcwd(char* buf, size_t size) {
     events.push_back("getcwd");
     return buf;
   }
-  char* getwd(char* buf) {
+  virtual char* getwd(char* buf) {
     events.push_back("getwd");
     return buf;
   }
-  int dup(int oldfd) {
+  virtual int dup(int oldfd) {
     events.push_back("dup");
     return oldfd;
   }
-  int chmod(const char *path, mode_t mode) {
+  virtual int chmod(const char *path, mode_t mode) {
     events.push_back("chmod");
     return 0;
   }
-  int stat(const char *path, struct stat *buf) {
+  virtual int stat(const char *path, struct stat *buf) {
     events.push_back("stat");
     return 0;
   }
-  int mkdir(const char *path, mode_t mode) {
+  virtual int mkdir(const char *path, mode_t mode) {
     events.push_back("mkdir");
     return 0;
   }
-  int rmdir(const char *path) {
+  virtual int rmdir(const char *path) {
     events.push_back("rmdir");
     return 0;
   }
-  int mount(const char *source, const char *target,
+  virtual int mount(const char *source, const char *target,
       const char *filesystemtype, unsigned long mountflags, const void *data) {
     events.push_back("mount");
     return 0;
   }
-  int umount(const char *path) {
+  virtual int umount(const char *path) {
     events.push_back("umount");
     return 0;
   }
-  int open(const char *path, int oflag) {
+  virtual int open(const char *path, int oflag) {
     events.push_back("open");
     return 0;
   }
-  ssize_t read(int fd, void *buf, size_t nbyte) {
+  virtual ssize_t read(int fd, void *buf, size_t nbyte) {
     events.push_back("read");
     return 0;
   }
-  ssize_t write(int fd, const void *buf, size_t nbyte) {
+  virtual ssize_t write(int fd, const void *buf, size_t nbyte) {
     events.push_back("write");
     return 0;
   }
-  int fstat(int fd, struct stat *buf) {
+  virtual int fstat(int fd, struct stat *buf) {
     events.push_back("fstat");
     return 0;
   }
-  int getdents(int fd, void *buf, unsigned int count) {
+  virtual int getdents(int fd, void *buf, unsigned int count) {
     events.push_back("getdents");
     return 0;
   }
-  int fsync(int fd) {
+  virtual int fsync(int fd) {
     events.push_back("fsync");
     return 0;
   }
-  int isatty(int fd) {
+  virtual int isatty(int fd) {
     events.push_back("isatty");
     return 0;
   }
-  int close(int fd) {
+  virtual int close(int fd) {
     events.push_back("close");
     return 0;
   }
-  off_t lseek(int fd, off_t offset, int whence) {
+  virtual off_t lseek(int fd, off_t offset, int whence) {
     events.push_back("lseek");
     return 0;
   }
-  int remove(const std::string& path) {
+  virtual int remove(const char* path) {
     events.push_back("remove");
     return 0;
   }
-  int unlink(const std::string& path) {
+  virtual int unlink(const char* path) {
     events.push_back("unlink");
     return 0;
   }
-  int access(const std::string& path, int amode) {
+  virtual int access(const char* path, int amode) {
     events.push_back("access");
     return 0;
   }
@@ -136,7 +136,7 @@ TEST(KernelIntercept, SanityChecks) {
   ki_dup(1);
   EXPECT_EQ("dup", mock->LastStr());
 
-  ki_chmod("foo", NULL);
+  ki_chmod("foo", 0);
   EXPECT_EQ("chmod", mock->LastStr());
 
   ki_stat("foo", NULL);
@@ -177,5 +177,13 @@ TEST(KernelIntercept, SanityChecks) {
 
   ki_close(1);
   EXPECT_EQ("close", mock->LastStr());
-}
 
+  ki_remove("foo");
+  EXPECT_EQ("fsync", mock->LastStr());
+
+  ki_unlink("foo");
+  EXPECT_EQ("isatty", mock->LastStr());
+
+  ki_access("foo", 0);
+  EXPECT_EQ("close", mock->LastStr());
+}
