@@ -5,6 +5,7 @@
 #ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_WIDGET_CONTROLLER_H_
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_WIDGET_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_property.h"
 #include "ui/compositor/layer.h"
@@ -20,8 +21,9 @@ namespace internal {
 // RootWindow. To avoid a white flash during wallpaper changes the old
 // DesktopBackgroundWidgetController is moved to a secondary property
 // (kComponentWrapper). When the animation completes the old
-// DesktopBackgroundWidgetController is destroyed.
-class DesktopBackgroundWidgetController : public views::WidgetObserver {
+// DesktopBackgroundWidgetController is destroyed. Exported for tests.
+class ASH_EXPORT DesktopBackgroundWidgetController
+    : public views::WidgetObserver {
  public:
   // Create
   explicit DesktopBackgroundWidgetController(views::Widget* widget);
@@ -55,30 +57,34 @@ class DesktopBackgroundWidgetController : public views::WidgetObserver {
 // This class wraps a DesktopBackgroundWidgetController pointer. It is installed
 // as an owned property on the RootWindow. DesktopBackgroundWidgetController is
 // moved to this property before animation completes. After animation completes,
-// the kWindowDesktopComponent property on RootWindow is set to the
-// DesktopBackgroundWidgetController in this class.
-class ComponentWrapper {
+// the kDesktopController property on RootWindow is set to the
+// DesktopBackgroundWidgetController in this class. Exported for tests.
+class ASH_EXPORT AnimatingDesktopController {
  public:
-  explicit ComponentWrapper(
+  explicit AnimatingDesktopController(
       DesktopBackgroundWidgetController* component);
-  ~ComponentWrapper();
+  ~AnimatingDesktopController();
 
   // Gets the wrapped DesktopBackgroundWidgetController pointer. Caller should
   // take ownership of the pointer if |pass_ownership| is true.
-  DesktopBackgroundWidgetController* GetComponent(bool pass_ownership);
+  DesktopBackgroundWidgetController* GetController(bool pass_ownership);
 
  private:
-  scoped_ptr<DesktopBackgroundWidgetController> component_;
+  scoped_ptr<DesktopBackgroundWidgetController> controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(ComponentWrapper);
+  DISALLOW_COPY_AND_ASSIGN(AnimatingDesktopController);
 };
 
 // Window property key, that binds instance of DesktopBackgroundWidgetController
-// to root windows.
-extern const aura::WindowProperty<DesktopBackgroundWidgetController*>* const
-    kWindowDesktopComponent;
+// to root windows.  Owned property.
+ASH_EXPORT extern
+    const aura::WindowProperty<DesktopBackgroundWidgetController*>* const
+        kDesktopController;
 
-extern const aura::WindowProperty<ComponentWrapper*>* const kComponentWrapper;
+// Wrapper for the DesktopBackgroundWidgetController for a desktop background
+// that is animating in.  Owned property.
+ASH_EXPORT extern const aura::WindowProperty<AnimatingDesktopController*>* const
+    kAnimatingDesktopController;
 
 }  // namespace internal
 }  // namespace ash

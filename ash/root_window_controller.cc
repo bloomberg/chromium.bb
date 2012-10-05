@@ -214,10 +214,10 @@ void RootWindowController::HandleDesktopBackgroundVisible() {
 
 void RootWindowController::CloseChildWindows() {
   // Close background widget first as it depends on tooltip.
-  root_window_->SetProperty(kWindowDesktopComponent,
+  root_window_->SetProperty(kDesktopController,
       static_cast<DesktopBackgroundWidgetController*>(NULL));
-  root_window_->SetProperty(kComponentWrapper,
-                            static_cast<ComponentWrapper*>(NULL));
+  root_window_->SetProperty(kAnimatingDesktopController,
+                            static_cast<AnimatingDesktopController*>(NULL));
 
   workspace_controller_.reset();
   aura::client::SetTooltipClient(root_window_.get(), NULL);

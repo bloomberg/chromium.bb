@@ -151,11 +151,11 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
 
   // Creates and adds component for current mode (either Widget or Layer) to
   // |root_window|.
-  void InstallComponent(aura::RootWindow* root_window);
+  void InstallDesktopController(aura::RootWindow* root_window);
 
   // Creates and adds component for current mode (either Widget or Layer) to
   // all root windows.
-  void InstallComponentForAllWindows();
+  void InstallDesktopControllerForAllWindows();
 
   // Moves all desktop components from one container to other across all root
   // windows. Returns true if a desktop moved.

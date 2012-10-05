@@ -473,6 +473,10 @@ void Window::RemoveObserver(WindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool Window::HasObserver(WindowObserver* observer) {
+  return observers_.HasObserver(observer);
+}
+
 bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) const {
   const Window* root_window = GetRootWindow();
   if (!root_window)

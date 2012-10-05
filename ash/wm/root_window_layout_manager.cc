@@ -40,10 +40,10 @@ void RootWindowLayoutManager::OnWindowResized() {
       (*j)->SetBounds(fullscreen_bounds);
   }
   internal::DesktopBackgroundWidgetController* background =
-      owner_->GetProperty(internal::kWindowDesktopComponent);
-  if (!background && owner_->GetProperty(internal::kComponentWrapper)) {
-    background = owner_->GetProperty(internal::kComponentWrapper)->
-        GetComponent(false);
+      owner_->GetProperty(kDesktopController);
+  if (!background && owner_->GetProperty(kAnimatingDesktopController)) {
+    background = owner_->GetProperty(kAnimatingDesktopController)->
+        GetController(false);
   }
   if (background)
     background->SetBounds(fullscreen_bounds);

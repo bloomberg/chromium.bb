@@ -52,12 +52,14 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
     shell->GetPrimaryRootWindowController()->HandleDesktopBackgroundVisible();
     shell->user_wallpaper_delegate()->OnWallpaperAnimationFinished();
     // Only removes old component when wallpaper animation finished. If we
-    // remove the old one too early, there will be a white flash during
-    // animation.
-    if (root_window_->GetProperty(kComponentWrapper)) {
-      internal::DesktopBackgroundWidgetController* component =
-          root_window_->GetProperty(kComponentWrapper)->GetComponent(true);
-      root_window_->SetProperty(kWindowDesktopComponent, component);
+    // remove the old one before the new wallpaper is done fading in there will
+    // be a white flash during the animation.
+    if (root_window_->GetProperty(kAnimatingDesktopController)) {
+      DesktopBackgroundWidgetController* controller =
+          root_window_->GetProperty(kAnimatingDesktopController)->
+              GetController(true);
+      // Release the old controller and close its background widget.
+      root_window_->SetProperty(kDesktopController, controller);
     }
     delete this;
   }
@@ -173,7 +175,7 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
   // will animate from a white screen. Note that boot animation is different.
   // It animates from a white background.
   if (animation_type == ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE &&
-      NULL == root_window->GetProperty(internal::kComponentWrapper)) {
+      NULL == root_window->GetProperty(kAnimatingDesktopController)) {
     ash::SetWindowVisibilityAnimationTransition(desktop_widget->GetNativeView(),
                                                 ash::ANIMATE_NONE);
   } else {

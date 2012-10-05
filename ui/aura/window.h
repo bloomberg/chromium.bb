@@ -237,6 +237,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Add/remove observer.
   void AddObserver(WindowObserver* observer);
   void RemoveObserver(WindowObserver* observer);
+  bool HasObserver(WindowObserver* observer);
 
   void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
 
