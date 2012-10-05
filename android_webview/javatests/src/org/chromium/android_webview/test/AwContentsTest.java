@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -12,15 +14,22 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.android_webview.test.util.TestWebServer;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -164,5 +173,56 @@ public class AwContentsTest extends AndroidWebViewTestBase {
               }
             }
         });
+    }
+
+    private static final long TEST_TIMEOUT = 20000L;
+    private static final int CHECK_INTERVAL = 100;
+
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView"})
+     * BUG 6094807
+     */
+    @DisabledTest
+    public void testGetFavicon() throws Throwable {
+        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        final ContentViewCore contentViewCore = testView.getContentViewCore();
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+
+            final String faviconUrl = webServer.setResponseBase64(
+                    "/" + CommonResources.FAVICON_FILENAME, CommonResources.FAVICON_DATA_BASE64,
+                    CommonResources.getImagePngHeaders(false));
+            final String pageUrl = webServer.setResponse("/favicon.html",
+                    CommonResources.FAVICON_STATIC_HTML, null);
+
+            // The getFavicon will return the right icon a certain time after
+            // the page load completes which makes it slightly hard to test.
+            final Bitmap defaultFavicon = awContents.getFavicon();
+
+            getContentSettingsOnUiThread(contentViewCore).setImagesEnabled(true);
+            loadUrlSync(contentViewCore, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+
+            assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return awContents.getFavicon() != null &&
+                        !awContents.getFavicon().sameAs(defaultFavicon);
+                }
+            }, TEST_TIMEOUT, CHECK_INTERVAL));
+
+            final Object originalFaviconSource = (new URL(faviconUrl)).getContent();
+            final Bitmap originalFavicon =
+                BitmapFactory.decodeStream((InputStream)originalFaviconSource);
+            assertNotNull(originalFavicon);
+
+            assertTrue(awContents.getFavicon().sameAs(originalFavicon));
+
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
     }
 }

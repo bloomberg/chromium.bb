@@ -747,6 +747,17 @@ public class ContentViewCore implements MotionEventDelegate {
 
     // End FrameLayout overrides.
 
+    /**
+     * @see {@link android.webkit.WebView#flingScroll(int, int)}
+     */
+    public void flingScroll(int vx, int vy) {
+        // Notes:
+        //   (1) Use large negative values for the x/y parameters so we don't accidentally scroll a
+        //       nested frame.
+        //   (2) vx and vy are inverted to match WebView behavior.
+        mContentViewGestureHandler.fling(
+                System.currentTimeMillis(), -Integer.MAX_VALUE, -Integer.MIN_VALUE, -vx, -vy);
+    }
 
     /**
      * @see View#onTouchEvent(MotionEvent)
@@ -1100,6 +1111,18 @@ public class ContentViewCore implements MotionEventDelegate {
                     dx, dy);
             nativeScrollEnd(mNativeContentViewCore, time);
         }
+    }
+
+    // NOTE: this can go away once ContentView.getScrollX() reports correct values.
+    //       see: b/6029133
+    public int getNativeScrollXForTest() {
+        return mNativeScrollX;
+    }
+
+    // NOTE: this can go away once ContentView.getScrollY() reports correct values.
+    //       see: b/6029133
+    public int getNativeScrollYForTest() {
+        return mNativeScrollY;
     }
 
     /**
@@ -1462,6 +1485,11 @@ public class ContentViewCore implements MotionEventDelegate {
         getContentViewClient().onEvaluateJavaScriptResult(id, jsonResult);
     }
 
+    @CalledByNative
+    private void startContentIntent(String contentUrl) {
+        getContentViewClient().onStartContentIntent(getContext(), contentUrl);
+    }
+
     /**
      * @return Whether a reload happens when this ContentView is activated.
      */
@@ -1629,6 +1657,14 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
+     * Return the current scale of the WebView
+     * @return The current scale.
+     */
+    public float getScale() {
+        return mNativePageScaleFactor;
+    }
+
+    /**
      * If the view is ready to draw contents to the screen. In hardware mode,
      * the initialization of the surface texture may not occur until after the
      * view has been added to the layout. This method will return {@code true}
@@ -1645,11 +1681,6 @@ public class ContentViewCore implements MotionEventDelegate {
     public boolean isAvailable() {
         // TODO(nileshagrawal): Implement this.
         return false;
-    }
-
-    @CalledByNative
-    private void startContentIntent(String contentUrl) {
-        getContentViewClient().onStartContentIntent(getContext(), contentUrl);
     }
 
     /**

@@ -76,6 +76,47 @@ public class LoadUrlParams {
     }
 
     /**
+     * Helper method to create a LoadUrlParams object for data url with base
+     * and virtual url.
+     * @param data Data to be loaded.
+     * @param mimeType Mime type of the data.
+     * @param isBase64Encoded True if the data is encoded in Base 64 format.
+     * @param baseUrl Base url of this data load. Note that for WebView compatibility,
+     *                baseUrl and historyUrl are ignored if this is a data: url.
+     *                Defaults to about:blank if null.
+     * @param historyUrl History url for this data load. Note that for WebView compatibility,
+     *                   this is ignored if baseUrl is a data: url. Defaults to about:blank
+     *                   if null.
+     */
+    public static LoadUrlParams createLoadDataParamsWithBaseUrl(
+            String data, String mimeType, boolean isBase64Encoded,
+            String baseUrl, String historyUrl) {
+        LoadUrlParams params = createLoadDataParams(data, mimeType, isBase64Encoded);
+        // For WebView compatibility, when the base URL has the 'data:'
+        // scheme, we treat it as a regular data URL load and skip setting
+        // baseUrl and historyUrl.
+        if (baseUrl == null || !baseUrl.toLowerCase().startsWith("data:")) {
+            params.setBaseUrlForDataUrl(baseUrl != null ? baseUrl : "about:blank");
+            params.setVirtualUrlForDataUrl(historyUrl != null ? historyUrl : "about:blank");
+        }
+        return params;
+    }
+
+    /**
+     * Helper method to create a LoadUrlParams object for an HTTP POST load.
+     * @param url URL of the load.
+     * @param postData Post data of the load. Can be null.
+     */
+    public static LoadUrlParams createLoadHttpPostParams(
+            String url, byte[] postData) {
+        LoadUrlParams params = new LoadUrlParams(url);
+        params.setLoadType(LOAD_TYPE_BROWSER_INITIATED_HTTP_POST);
+        params.setTransitionType(ContentViewCore.PAGE_TRANSITION_TYPED);
+        params.setPostData(postData);
+        return params;
+    }
+
+    /**
      * Set load type of this load. Defaults to LOAD_TYPE_DEFAULT.
      * @param loadType One of LOAD_TYPE static constants above.
      */

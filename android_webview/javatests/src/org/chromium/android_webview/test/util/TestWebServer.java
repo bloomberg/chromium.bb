@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test;
+package org.chromium.android_webview.test.util;
 
 import android.util.Base64;
 import android.util.Log;
@@ -186,6 +186,10 @@ public class TestWebServer {
         Integer count = mResponseCountMap.get(requestPath);
         if (count == null) throw new IllegalArgumentException("Path not set: " + requestPath);
         return count.intValue();
+    }
+
+    public String getBaseUrl() {
+        return mServerUri + "/";
     }
 
     private URLConnection openConnection(URL url)

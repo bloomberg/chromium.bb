@@ -9,7 +9,7 @@ import org.chromium.net.NetError;
 /**
  * This is a helper class to map native error code about loading a page to Android specific ones.
  */
-class ErrorCodeConversionHelper {
+public abstract class ErrorCodeConversionHelper {
     // Success
     public static final int ERROR_OK = 0;
     // Generic error

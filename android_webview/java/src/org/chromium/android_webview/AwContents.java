@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.graphics.Bitmap;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
 import android.os.Message;
@@ -150,6 +151,11 @@ public class AwContents {
     public int getMostRecentProgress() {
         // WebContentsDelegateAndroid conveniently caches the most recent notified value for us.
         return mContentsClient.getWebContentsDelegate().getMostRecentProgress();
+    }
+
+    public Bitmap getFavicon() {
+        // To be implemented.
+        return null;
     }
 
     //--------------------------------------------------------------------------------------------

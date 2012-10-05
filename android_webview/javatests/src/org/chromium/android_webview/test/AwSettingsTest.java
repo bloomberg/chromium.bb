@@ -13,6 +13,9 @@ import android.util.Pair;
 import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.android_webview.test.util.ImagePageGenerator;
+import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -304,52 +307,6 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             return "<html><body onload=\"document.title = " +
                     "getComputedStyle(document.body).getPropertyValue('font-size');\">"
                     + "</body></html>";
-        }
-    }
-
-    // The purpose of the generator is to provide a sequence of distinct images
-    // to avoid caching side-effects.  As we don't need too many images, I've
-    // found it easier to hardcode image samples. It is possible to generate
-    // images on the fly, but it will require hooking up additional packages.
-    class ImagePageGenerator {
-        public static final String IMAGE_LOADED_STRING = "1";
-        public static final String IMAGE_NOT_LOADED_STRING = "0";
-        private final String[] COLORS = {
-            "AAAAIAAc3j0Ss", "AQABIAEayS9b0", "AgACIAIQ8BmAc", "AwADIAMW5wvJE",
-            "BAAEIAQZNWRTI", "BQAFIAUfInYaQ", "BgAGIAYVG0DB4", "BwAHIAcTDFKIg",
-            "CAAIIAgXCI+Rk", "CQAJIAkRH53Y8", "CgAKIAobJqsDU", "CwALIAsdMblKM",
-            "DAAMIAwS49bQA", "DQANIA0U9MSZY", "DgAOIA4ezfJCw", "DwAPIA8Y2uALo",
-            "D+AQAA/9vaUwc", "D/AQEBANNhzkw" };
-        private final String IMAGE_PREFIX = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA" +
-                "6fptVAAAAAXNSR0IArs4c6QAAAA1JREFUCB0BAgD9/w";
-        private final String IMAGE_SUFFIX = "AAAAASUVORK5CYII=";
-        private int mIndex;
-        private boolean mAdvance;
-
-        ImagePageGenerator(int startIndex, boolean advance) {
-            mIndex = startIndex;
-            mAdvance = advance;
-        }
-
-        String getImageSourceNoAdvance() {
-            return IMAGE_PREFIX + COLORS[mIndex] + IMAGE_SUFFIX;
-        }
-
-        String getPageTemplateSource(String imageSrc) {
-            return "<html><head>" +
-                    "<script>function updateTitle(){" +
-                    "document.title=document.getElementById('img').naturalHeight}</script></head>" +
-                    "<body onload='updateTitle();'>" +
-                    "<img id='img' onload='updateTitle();' " +
-                    "src='" + imageSrc + "'></body></html>";
-        }
-
-        String getPageSource() {
-            String result =
-                    getPageTemplateSource("data:image/png;base64," + getImageSourceNoAdvance());
-            if (mAdvance)
-                mIndex += 2;
-            return result;
         }
     }
 
@@ -1523,11 +1480,9 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         TestWebServer webServer = null;
         try {
             webServer = new TestWebServer(false);
-            List<Pair<String, String>> imageHeaders = new ArrayList<Pair<String, String>>();
-            imageHeaders.add(Pair.create("Content-Type", "image/png"));
             final String imagePath = "/image.png";
-            webServer.setResponseBase64(
-                    imagePath, generator.getImageSourceNoAdvance(), imageHeaders);
+            webServer.setResponseBase64(imagePath, generator.getImageSourceNoAdvance(),
+                    CommonResources.getImagePngHeaders(false));
 
             final String pagePath = "/html_image.html";
             final String httpUrlImageHtml = generator.getPageTemplateSource(imagePath);
@@ -1788,12 +1743,10 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         try {
             // Set up http image.
             webServer = new TestWebServer(false);
-            List<Pair<String, String>> imageHeaders = new ArrayList<Pair<String, String>>();
-            imageHeaders.add(Pair.create("Content-Type", "image/png"));
-            imageHeaders.add(Pair.create("Cache-Control", "no-store"));
             final String httpPath = "/image.png";
             final String imageUrl = webServer.setResponseBase64(
-                    httpPath, generator.getImageSourceNoAdvance(), imageHeaders);
+                    httpPath, generator.getImageSourceNoAdvance(),
+                    CommonResources.getImagePngHeaders(true));
 
             // Set up file html that loads http iframe.
             String pageHtml ="<img src='" + imageUrl + "' " +
