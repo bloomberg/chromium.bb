@@ -21,6 +21,11 @@ def _RemoveNoDocs(item):
         item.remove(i)
   return False
 
+def _CreateId(node, prefix):
+  if node.parent is not None and not isinstance(node.parent, model.Namespace):
+    return '-'.join([prefix, node.parent.simple_name, node.simple_name])
+  return '-'.join([prefix, node.simple_name])
+
 def _FormatValue(value):
   """Inserts commas every three digits for integer values. It is magic.
   """
@@ -37,11 +42,6 @@ class HandlebarDictGenerator(object):
       self._namespace = None
     else:
       self._namespace = model.Namespace(clean_json, clean_json['namespace'])
-
-  def _StripPrefix(self, name):
-    if name.startswith(self._namespace.name + '.'):
-      return name[len(self._namespace.name + '.'):]
-    return name
 
   def _FormatDescription(self, description):
     if description is None or '$ref:' not in description:
@@ -69,34 +69,42 @@ class HandlebarDictGenerator(object):
       return {}
     return {
       'name': self._namespace.name,
-      'types': map(self._GenerateType, self._namespace.types.values()),
+      'types':  [self._GenerateType(t) for t in self._namespace.types.values()
+                 if t.type_ != model.PropertyType.ADDITIONAL_PROPERTIES],
       'functions': self._GenerateFunctions(self._namespace.functions),
-      'events': map(self._GenerateEvent, self._namespace.events.values()),
+      'events': self._GenerateEvents(self._namespace.events),
       'properties': self._GenerateProperties(self._namespace.properties)
     }
 
   def _GenerateType(self, type_):
     type_dict = {
-      'name': self._StripPrefix(type_.name),
+      'name': type_.simple_name,
       'description': self._FormatDescription(type_.description),
       'properties': self._GenerateProperties(type_.properties),
       'functions': self._GenerateFunctions(type_.functions),
-      'events': map(self._GenerateEvent, type_.events.values())
+      'events': self._GenerateEvents(type_.events),
+      'id': _CreateId(type_, 'type')
     }
     self._RenderTypeInformation(type_, type_dict)
     return type_dict
 
   def _GenerateFunctions(self, functions):
-    return map(self._GenerateFunction, functions.values())
+    return [self._GenerateFunction(f) for f in functions.values()]
 
   def _GenerateFunction(self, function):
     function_dict = {
-      'name': function.name,
+      'name': function.simple_name,
       'description': self._FormatDescription(function.description),
       'callback': self._GenerateCallback(function.callback),
       'parameters': [],
-      'returns': None
+      'returns': None,
+      'id': _CreateId(function, 'method')
     }
+    if (function.parent is not None and
+        not isinstance(function.parent, model.Namespace)):
+      function_dict['parent_name'] = function.parent.simple_name
+    else:
+      function_dict['parent_name'] = None
     if function.returns:
       function_dict['returns'] = self._GenerateProperty(function.returns)
     for param in function.params:
@@ -107,9 +115,12 @@ class HandlebarDictGenerator(object):
       function_dict['parameters'][-1]['last'] = True
     return function_dict
 
+  def _GenerateEvents(self, events):
+    return [self._GenerateEvent(e) for e in events.values()]
+
   def _GenerateEvent(self, event):
     event_dict = {
-      'name': self._StripPrefix(event.name),
+      'name': event.simple_name,
       'description': self._FormatDescription(event.description),
       'parameters': map(self._GenerateProperty, event.params),
       'callback': self._GenerateCallback(event.callback),
@@ -118,8 +129,14 @@ class HandlebarDictGenerator(object):
       'actions': [GetLinkToRefType(self._namespace.name, a)
                      for a in event.actions],
       'filters': map(self._GenerateProperty, event.filters),
-      'supportsRules': event.supports_rules
+      'supportsRules': event.supports_rules,
+      'id': _CreateId(event, 'event')
     }
+    if (event.parent is not None and
+        not isinstance(event.parent, model.Namespace)):
+      event_dict['parent_name'] = event.parent.simple_name
+    else:
+      event_dict['parent_name'] = None
     if event_dict['callback']:
       event_dict['parameters'].append(event_dict['callback'])
     if len(event_dict['parameters']) > 0:
@@ -130,7 +147,7 @@ class HandlebarDictGenerator(object):
     if not callback:
       return None
     callback_dict = {
-      'name': callback.name,
+      'name': callback.simple_name,
       'description': self._FormatDescription(callback.description),
       'simple_type': {'simple_type': 'function'},
       'optional': callback.optional,
@@ -143,16 +160,23 @@ class HandlebarDictGenerator(object):
     return callback_dict
 
   def _GenerateProperties(self, properties):
-    return map(self._GenerateProperty, properties.values())
+    return [self._GenerateProperty(v) for v in properties.values()
+            if v.type_ != model.PropertyType.ADDITIONAL_PROPERTIES]
 
   def _GenerateProperty(self, property_):
     property_dict = {
-      'name': self._StripPrefix(property_.name),
+      'name': property_.simple_name,
       'optional': property_.optional,
       'description': self._FormatDescription(property_.description),
       'properties': self._GenerateProperties(property_.properties),
-      'functions': self._GenerateFunctions(property_.functions)
+      'functions': self._GenerateFunctions(property_.functions),
+      'id': _CreateId(property_, 'property')
     }
+    if (property_.parent is not None and
+        not isinstance(property_.parent, model.Namespace)):
+      property_dict['parent_name'] = property_.parent.simple_name
+    else:
+      property_dict['parent_name'] = None
     if property_.has_value:
       if isinstance(property_.value, int):
         property_dict['value'] = _FormatValue(property_.value)
@@ -170,8 +194,6 @@ class HandlebarDictGenerator(object):
       # choices in templates.
       if len(dst_dict['choices']) > 0:
         dst_dict['choices'][-1]['last'] = True
-    elif property_.type_ == model.PropertyType.ADDITIONAL_PROPERTIES:
-      dst_dict['additional_properties'] = True
     elif property_.type_ == model.PropertyType.REF:
       dst_dict['link'] = GetLinkToRefType(self._namespace.name,
                                           property_.ref_type)

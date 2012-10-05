@@ -38,6 +38,14 @@ class DictGeneratorTest(unittest.TestCase):
     gen = HandlebarDictGenerator(self._LoadJSON(filename))
     self.assertEquals(expected_json, gen.Generate())
 
+  def testCreateId(self):
+    dict_ = HandlebarDictGenerator(self._LoadJSON('test_file.json')).Generate()
+    self.assertEquals('type-TypeA', dict_['types'][0]['id'])
+    self.assertEquals('property-TypeA-b',
+                      dict_['types'][0]['properties'][0]['id'])
+    self.assertEquals('method-get', dict_['functions'][0]['id'])
+    self.assertEquals('event-EventA', dict_['events'][0]['id'])
+
   def testGenerate(self):
     self._GenerateTest('test_file.json')
 
