@@ -38,8 +38,8 @@ class SdkToolsTestCase(unittest.TestCase):
   def SetupDefault(self):
     self.SetupWithBaseDirPrefix('sdktools')
 
-  def SetupWithBaseDirPrefix(self, basedir_prefix):
-    self.basedir = tempfile.mkdtemp(prefix=basedir_prefix)
+  def SetupWithBaseDirPrefix(self, basedir_prefix, tmpdir=None):
+    self.basedir = tempfile.mkdtemp(prefix=basedir_prefix, dir=tmpdir)
     # We have to make sure that we build our updaters with a version that is at
     # least as large as the version in the sdk_tools bundle. If not, update
     # tests may fail because the "current" version (according to the sdk_cache)
@@ -200,6 +200,14 @@ class TestAutoUpdateSdkTools(SdkToolsTestCase):
     sdk_tools_update_dir = os.path.join(self.basedir, 'nacl_sdk',
         'sdk_tools_update')
     self.assertFalse(os.path.exists(sdk_tools_update_dir))
+
+
+class TestAutoUpdateSdkToolsDifferentFilesystem(TestAutoUpdateSdkTools):
+  def setUp(self):
+    # On Linux (on my machine at least), /tmp is a different filesystem than
+    # the current directory. os.rename fails when the source and destination
+    # are on different filesystems. Test that case here.
+    self.SetupWithBaseDirPrefix('sdktools', tmpdir='.')
 
 
 def main():

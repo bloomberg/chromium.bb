@@ -53,7 +53,7 @@ def RenameDir(srcdir, destdir):
   for num_tries in xrange(max_tries):
     try:
       RemoveDir(destdir)
-      os.rename(srcdir, destdir)
+      shutil.move(srcdir, destdir)
       return
     except OSError as err:
       if err.errno != errno.EACCES:
