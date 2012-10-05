@@ -61,13 +61,22 @@ def Generate(src_defs, dst_header, dst_server):
     os.close(nacl_exc_defs)
 
     # Run the 'Mach Interface Generator'.
-    subprocess.check_call([
-        'mig',
-        '-server', dst_server,
-        '-user', '/dev/null',
-        '-header', dst_header,
-        nacl_exc_defs_path,
-     ])
+    args = ['mig',
+            '-server', dst_server,
+            '-user', '/dev/null',
+            '-header', dst_header]
+
+    # If SDKROOT is set to an SDK that Xcode doesn't know about, it might
+    # interfere with mig's ability to find a valid compiler (via xcrun -sdk ...
+    # -find cc). Clear out SDKROOT if set to avoid this problem, but pass it to
+    # mig as its -isysroot argument so that the desired SDK is used.
+    if 'SDKROOT' in os.environ:
+      args.append('-isysroot')
+      args.append(os.environ['SDKROOT'])
+      del os.environ['SDKROOT']
+
+    args.append(nacl_exc_defs_path)
+    subprocess.check_call(args)
   finally:
     if nacl_exc_defs_path and os.path.exists(nacl_exc_defs_path):
       os.remove(nacl_exc_defs_path)
