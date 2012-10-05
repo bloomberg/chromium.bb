@@ -27,6 +27,8 @@ namespace syncer {
 class InvalidatorRegistrar {
  public:
   InvalidatorRegistrar();
+
+  // It is an error to have registered handlers on destruction.
   ~InvalidatorRegistrar();
 
   // Starts sending notifications to |handler|.  |handler| must not be NULL,

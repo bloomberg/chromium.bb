@@ -61,6 +61,7 @@ class SigninTrackerTest : public testing::Test {
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),
             ProfileSyncServiceMock::BuildMockProfileSyncService));
+    mock_pss_->Initialize();
     // Make gmock not spam the output with information about these uninteresting
     // calls.
     EXPECT_CALL(*mock_pss_, AddObserver(_)).Times(AnyNumber());

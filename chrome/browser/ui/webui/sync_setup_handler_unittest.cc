@@ -361,6 +361,7 @@ class SyncSetupHandlerTest : public testing::Test {
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),
             ProfileSyncServiceMock::BuildMockProfileSyncService));
+    mock_pss_->Initialize();
     mock_signin_ = static_cast<SigninManagerMock*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildSigninManagerMock));

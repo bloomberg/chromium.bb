@@ -283,6 +283,10 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler2.GetInvalidatorState());
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler3.GetInvalidatorState());
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler4.GetInvalidatorState());
+
+  invalidator->UnregisterHandler(&handler3);
+  invalidator->UnregisterHandler(&handler2);
+  invalidator->UnregisterHandler(&handler1);
 }
 
 // Make sure that passing an empty set to UpdateRegisteredIds clears the
@@ -332,6 +336,9 @@ TYPED_TEST_P(InvalidatorTest, EmptySetUnregisters) {
   this->delegate_.TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler1.GetInvalidatorState());
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler2.GetInvalidatorState());
+
+  invalidator->UnregisterHandler(&handler2);
+  invalidator->UnregisterHandler(&handler1);
 }
 
 namespace internal {
@@ -374,6 +381,8 @@ TYPED_TEST_P(InvalidatorTest, GetInvalidatorStateAlwaysCurrent) {
   this->delegate_.TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler.GetInvalidatorState());
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler.GetLastRetrievedState());
+
+  invalidator->UnregisterHandler(&handler);
 }
 
 // Initialize the invalidator with no bootstrap data.  Call the deprecated

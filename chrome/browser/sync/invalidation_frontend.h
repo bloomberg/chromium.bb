@@ -47,6 +47,12 @@ class InvalidationHandler;
 // It can also do the above in OnInvalidatorStateChange(), or it can use the
 // argument to OnInvalidatorStateChange().
 //
+// It is an error to have registered handlers when an
+// InvalidationFrontend is shut down; clients must ensure that they
+// unregister themselves before then. (Depending on the
+// InvalidationFrontend, shutdown may be equivalent to destruction, or
+// a separate function call like Shutdown()).
+//
 // NOTE(akalin): Invalidations that come in during browser shutdown may get
 // dropped.  This won't matter once we have an Acknowledge API, though: see
 // http://crbug.com/78462 and http://crbug.com/124149.

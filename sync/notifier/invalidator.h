@@ -48,6 +48,10 @@ class Invalidator {
   //
   //   invalidator->UpdateRegisteredIds(client_handler, ObjectIdSet());
   //   invalidator->UnregisterHandler(client_handler);
+  //
+  // It is an error to have registered handlers when an invalidator is
+  // destroyed; clients must ensure that they unregister themselves
+  // before then.
 
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
   // and it must not already be registered.

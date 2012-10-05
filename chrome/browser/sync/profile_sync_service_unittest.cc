@@ -180,6 +180,7 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
       ProfileSyncService::MANUAL_START,
       true,
       base::Closure()));
+  harness_.service->Initialize();
   EXPECT_TRUE(
       harness_.service->sync_service_url().spec() ==
         ProfileSyncService::kSyncServerUrl ||
@@ -430,6 +431,8 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
   backend->EmitOnInvalidatorStateChange(syncer::TRANSIENT_INVALIDATION_ERROR);
   EXPECT_EQ(syncer::TRANSIENT_INVALIDATION_ERROR,
             handler.GetInvalidatorState());
+
+  harness_.service->UnregisterInvalidationHandler(&handler);
 }
 
 // Thin Invalidator wrapper around ProfileSyncService.

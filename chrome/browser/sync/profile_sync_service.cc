@@ -67,6 +67,7 @@
 #include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
+#include "sync/notifier/invalidator_registrar.h"
 #include "sync/util/cryptographer.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -189,6 +190,9 @@ bool ProfileSyncService::IsSyncTokenAvailable() {
 }
 
 void ProfileSyncService::Initialize() {
+  DCHECK(!invalidator_registrar_.get());
+  invalidator_registrar_.reset(new syncer::InvalidatorRegistrar());
+
   InitSettings();
 
   // We clear this here (vs Shutdown) because we want to remember that an error
@@ -435,7 +439,7 @@ void ProfileSyncService::StartUp() {
   // http://crbug.com/140354).
   if (backend_.get()) {
     backend_->UpdateRegisteredInvalidationIds(
-        invalidator_registrar_.GetAllRegisteredIds());
+        invalidator_registrar_->GetAllRegisteredIds());
   }
 
   if (!sync_global_error_.get()) {
@@ -450,29 +454,29 @@ void ProfileSyncService::StartUp() {
 
 void ProfileSyncService::RegisterInvalidationHandler(
     syncer::InvalidationHandler* handler) {
-  invalidator_registrar_.RegisterHandler(handler);
+  invalidator_registrar_->RegisterHandler(handler);
 }
 
 void ProfileSyncService::UpdateRegisteredInvalidationIds(
     syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
-  invalidator_registrar_.UpdateRegisteredIds(handler, ids);
+  invalidator_registrar_->UpdateRegisteredIds(handler, ids);
 
   // If |backend_| is NULL, its registered IDs will be updated when
   // it's created and initialized.
   if (backend_.get()) {
     backend_->UpdateRegisteredInvalidationIds(
-        invalidator_registrar_.GetAllRegisteredIds());
+        invalidator_registrar_->GetAllRegisteredIds());
   }
 }
 
 void ProfileSyncService::UnregisterInvalidationHandler(
     syncer::InvalidationHandler* handler) {
-  invalidator_registrar_.UnregisterHandler(handler);
+  invalidator_registrar_->UnregisterHandler(handler);
 }
 
 syncer::InvalidatorState ProfileSyncService::GetInvalidatorState() const {
-  return invalidator_registrar_.GetInvalidatorState();
+  return invalidator_registrar_->GetInvalidatorState();
 }
 
 void ProfileSyncService::EmitInvalidationForTest(
@@ -487,6 +491,7 @@ void ProfileSyncService::EmitInvalidationForTest(
 }
 
 void ProfileSyncService::Shutdown() {
+  DCHECK(invalidator_registrar_.get());
   // TODO(akalin): Remove this once http://crbug.com/153827 is fixed.
   ExtensionService* const extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
@@ -494,6 +499,10 @@ void ProfileSyncService::Shutdown() {
   // (e.g., extension sync wasn't enabled in tests).
   if (extension_service)
     extension_service->OnProfileSyncServiceShutdown();
+
+  // Reset |invalidator_registrar_| first so that ShutdownImpl cannot
+  // use it.
+  invalidator_registrar_.reset();
 
   ShutdownImpl(false);
 }
@@ -688,14 +697,14 @@ void ProfileSyncService::DisableBrokenDatatype(
 
 void ProfileSyncService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
-  invalidator_registrar_.UpdateInvalidatorState(state);
+  invalidator_registrar_->UpdateInvalidatorState(state);
 }
 
 void ProfileSyncService::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map,
     syncer::IncomingInvalidationSource source) {
-  invalidator_registrar_.DispatchInvalidationsToHandlers(invalidation_map,
-                                                         source);
+  invalidator_registrar_->DispatchInvalidationsToHandlers(invalidation_map,
+                                                          source);
 }
 
 void ProfileSyncService::OnBackendInitialized(

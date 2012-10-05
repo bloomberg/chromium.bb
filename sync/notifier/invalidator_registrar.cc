@@ -16,6 +16,8 @@ InvalidatorRegistrar::InvalidatorRegistrar()
 
 InvalidatorRegistrar::~InvalidatorRegistrar() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(!handlers_.might_have_observers());
+  // |id_to_handler_map_| may be non-empty but that's okay.
 }
 
 void InvalidatorRegistrar::RegisterHandler(InvalidationHandler* handler) {
