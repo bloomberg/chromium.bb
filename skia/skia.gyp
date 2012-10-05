@@ -316,6 +316,11 @@
           'defines+': [
             'SK_USE_POSIX_THREADS',
           ],
+          'direct_dependent_settings': {
+            'defines': [
+              'SK_USE_POSIX_THREADS',
+            ],
+          },
           'sources!': [
             'ext/SkThread_chrome.cc',
           ],
