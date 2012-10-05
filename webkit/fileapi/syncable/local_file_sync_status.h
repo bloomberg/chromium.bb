@@ -17,7 +17,7 @@ namespace fileapi {
 
 // Represents local file sync status.
 // This class is thread-safe and fields of this class are protected by a lock.
-// Owned by FileSystemContext.
+// TODO(kinuko): Limit access to this class only on IO thread.
 //
 // This class manages two important synchronization flags: writing (counter)
 // and syncing (flag).  Writing counter keeps track of which URL is in

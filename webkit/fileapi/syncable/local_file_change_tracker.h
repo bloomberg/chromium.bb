@@ -26,8 +26,6 @@ class SequencedTaskRunner;
 
 namespace fileapi {
 
-class LocalFileSyncStatus;
-
 // Tracks local file changes for cloud-backed file systems.
 // All methods must be called on the file_task_runner given to the constructor.
 // Owned by FileSystemContext.
@@ -41,8 +39,7 @@ class FILEAPI_EXPORT LocalFileChangeTracker
   // |file_task_runner| must be the one where the observee file operations run.
   // (So that we can make sure DB operations are done before actual update
   // happens)
-  LocalFileChangeTracker(LocalFileSyncStatus* sync_status,
-                         const FilePath& base_path,
+  LocalFileChangeTracker(const FilePath& base_path,
                          base::SequencedTaskRunner* file_task_runner);
   virtual ~LocalFileChangeTracker();
 
@@ -68,8 +65,7 @@ class FILEAPI_EXPORT LocalFileChangeTracker
   void GetChangesForURL(const FileSystemURL& url, FileChangeList* changes);
 
   // Called by FileSyncService to notify that the changes are synced for |url|.
-  // This removes |url| from the internal change map and re-enables writing
-  // for |url|.
+  // This removes |url| from the internal change map.
   void FinalizeSyncForURL(const FileSystemURL& url);
 
   // Called by FileSyncService at the startup time to collect last
@@ -89,10 +85,6 @@ class FILEAPI_EXPORT LocalFileChangeTracker
   std::string SerializeExternalFileSystemURL(const FileSystemURL& url);
   bool DeserializeExternalFileSystemURL(
       const std::string& serialized_url, FileSystemURL* url);
-
-  // Not owned; this must have the same lifetime with us (both owned
-  // by FileSystemContext).
-  LocalFileSyncStatus *sync_status_;
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 

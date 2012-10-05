@@ -19,7 +19,7 @@
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
-#include "webkit/fileapi/syncable/local_file_sync_status.h"
+#include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/test_mount_point_provider.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -54,7 +54,7 @@ FileSystemContext::FileSystemContext(
     scoped_ptr<FileSystemTaskRunners> task_runners,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
-    const FilePath& profile_path,
+    const FilePath& partition_path,
     const FileSystemOptions& options)
     : task_runners_(task_runners.Pass()),
       quota_manager_proxy_(quota_manager_proxy),
@@ -62,10 +62,10 @@ FileSystemContext::FileSystemContext(
           new SandboxMountPointProvider(
               quota_manager_proxy,
               task_runners_->file_task_runner(),
-              profile_path,
+              partition_path,
               options)),
-      isolated_provider_(new IsolatedMountPointProvider(profile_path)),
-      sync_status_(new LocalFileSyncStatus) {
+      isolated_provider_(new IsolatedMountPointProvider(partition_path)),
+      partition_path_(partition_path) {
   DCHECK(task_runners_.get());
 
   if (quota_manager_proxy) {
@@ -280,6 +280,14 @@ void FileSystemContext::RegisterMountPointProvider(
   DCHECK(provider);
   DCHECK(provider_map_.find(type) == provider_map_.end());
   provider_map_[type] = provider;
+}
+
+void FileSystemContext::SetLocalFileChangeTracker(
+    scoped_ptr<LocalFileChangeTracker> tracker) {
+  DCHECK(!change_tracker_.get());
+  DCHECK(tracker.get());
+  change_tracker_ = tracker.Pass();
+  // TODO(kinuko): Add the tracker as the observer of syncable file systems.
 }
 
 FileSystemContext::~FileSystemContext() {}

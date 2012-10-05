@@ -39,7 +39,7 @@ class FileSystemQuotaUtil;
 class FileSystemTaskRunners;
 class FileSystemURL;
 class IsolatedMountPointProvider;
-class LocalFileSyncStatus;
+class LocalFileChangeTracker;
 class SandboxMountPointProvider;
 
 struct DefaultContextDeleter;
@@ -61,7 +61,7 @@ class FILEAPI_EXPORT FileSystemContext
       scoped_ptr<FileSystemTaskRunners> task_runners,
       quota::SpecialStoragePolicy* special_storage_policy,
       quota::QuotaManagerProxy* quota_manager_proxy,
-      const FilePath& profile_path,
+      const FilePath& partition_path,
       const FileSystemOptions& options);
 
   bool DeleteDataForOriginOnFileThread(const GURL& origin_url);
@@ -162,7 +162,10 @@ class FILEAPI_EXPORT FileSystemContext
 
   FileSystemTaskRunners* task_runners() { return task_runners_.get(); }
 
-  LocalFileSyncStatus* sync_status() { return sync_status_.get(); }
+  LocalFileChangeTracker* change_tracker() { return change_tracker_.get(); }
+  void SetLocalFileChangeTracker(scoped_ptr<LocalFileChangeTracker> tracker);
+
+  const FilePath& partition_path() const { return partition_path_; }
 
  private:
   friend struct DefaultContextDeleter;
@@ -185,8 +188,11 @@ class FILEAPI_EXPORT FileSystemContext
   // Registered mount point providers.
   std::map<FileSystemType, FileSystemMountPointProvider*> provider_map_;
 
-  // Keeps track of the writing/syncing status.
-  scoped_ptr<LocalFileSyncStatus> sync_status_;
+  // The base path of the storage partition for this context.
+  const FilePath& partition_path_;
+
+  // For syncable file systems.
+  scoped_ptr<LocalFileChangeTracker> change_tracker_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);
 };

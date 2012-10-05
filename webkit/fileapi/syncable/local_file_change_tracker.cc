@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
 
@@ -57,16 +58,17 @@ class LocalFileChangeTracker::TrackerDB {
 // LocalFileChangeTracker ------------------------------------------------------
 
 LocalFileChangeTracker::LocalFileChangeTracker(
-    LocalFileSyncStatus* sync_status,
     const FilePath& base_path,
     base::SequencedTaskRunner* file_task_runner)
-    : sync_status_(sync_status),
-      file_task_runner_(file_task_runner),
+    : file_task_runner_(file_task_runner),
       tracker_db_(new TrackerDB(base_path)) {}
 
 LocalFileChangeTracker::~LocalFileChangeTracker() {
-  if (tracker_db_.get())
+  if (!file_task_runner_->RunsTasksOnCurrentThread()) {
     file_task_runner_->DeleteSoon(FROM_HERE, tracker_db_.release());
+    return;
+  }
+  tracker_db_.reset();
 }
 
 void LocalFileChangeTracker::OnStartUpdate(const FileSystemURL& url) {
@@ -76,10 +78,7 @@ void LocalFileChangeTracker::OnStartUpdate(const FileSystemURL& url) {
   MarkDirtyOnDatabase(url);
 }
 
-void LocalFileChangeTracker::OnEndUpdate(const FileSystemURL& url) {
-  // TODO(kinuko): implement. Probably we could call
-  // sync_status_->DecrementWriting() here.
-}
+void LocalFileChangeTracker::OnEndUpdate(const FileSystemURL& url) {}
 
 void LocalFileChangeTracker::OnCreateFile(const FileSystemURL& url) {
   RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -128,7 +127,6 @@ void LocalFileChangeTracker::GetChangedURLs(std::vector<FileSystemURL>* urls) {
 void LocalFileChangeTracker::GetChangesForURL(
     const FileSystemURL& url, FileChangeList* changes) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!sync_status_->IsWritable(url));
   DCHECK(changes);
   changes->clear();
   FileChangeMap::iterator found = changes_.find(url);
@@ -141,7 +139,6 @@ void LocalFileChangeTracker::FinalizeSyncForURL(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   ClearDirtyOnDatabase(url);
   changes_.erase(url);
-  sync_status_->EnableWriting(url);
 }
 
 void LocalFileChangeTracker::CollectLastDirtyChanges(FileChangeMap* changes) {

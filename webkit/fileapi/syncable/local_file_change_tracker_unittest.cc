@@ -12,7 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
-#include "webkit/fileapi/syncable/local_file_sync_status.h"
 
 namespace fileapi {
 
@@ -37,13 +36,11 @@ FileSystemURL URL(const char* spec) {
 
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
-  LocalFileChangeTrackerTest()
-      : sync_status_(new LocalFileSyncStatus) {}
+  LocalFileChangeTrackerTest() {}
 
   virtual void SetUp() OVERRIDE {
     EXPECT_TRUE(data_dir_.CreateUniqueTempDir());
     change_tracker_.reset(new LocalFileChangeTracker(
-        sync_status_.get(),
         data_dir_.path(),
         base::MessageLoopProxy::current()));
     IsolatedContext::GetInstance()->RegisterExternalFileSystem(
@@ -54,15 +51,10 @@ class LocalFileChangeTrackerTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     change_tracker_.reset();
-    sync_status_.reset();
     message_loop_.RunAllPending();
   }
 
  protected:
-  LocalFileSyncStatus* sync_status() const {
-    return sync_status_.get();
-  }
-
   LocalFileChangeTracker* change_tracker() const {
     return change_tracker_.get();
   }
@@ -81,9 +73,6 @@ class LocalFileChangeTrackerTest : public testing::Test {
                     const FileChange& expected_change) {
     SCOPED_TRACE(testing::Message() << url.spec() <<
                  " expecting:" << expected_change.DebugString());
-    // Writes need to be disabled before calling GetChangesForURL().
-    ASSERT_TRUE(sync_status()->TryDisableWriting(url));
-
     // Get the changes for URL and verify.
     FileChangeList changes;
     change_tracker()->GetChangesForURL(url, &changes);
@@ -92,13 +81,10 @@ class LocalFileChangeTrackerTest : public testing::Test {
     EXPECT_EQ(1U, changes.size());
     EXPECT_EQ(expected_change, changes.list()[0]);
 
-    // Finish sync for URL to enable writing.
-    EXPECT_FALSE(sync_status()->IsWritable(url));
+    // Finish sync for URL.
     change_tracker()->FinalizeSyncForURL(url);
-    EXPECT_TRUE(sync_status()->IsWritable(url));
 
     // See if the changes for URL are reset.
-    ASSERT_TRUE(sync_status()->TryDisableWriting(url));
     change_tracker()->GetChangesForURL(url, &changes);
     EXPECT_TRUE(changes.empty());
   }
@@ -106,7 +92,6 @@ class LocalFileChangeTrackerTest : public testing::Test {
  private:
   ScopedTempDir data_dir_;
   MessageLoop message_loop_;
-  scoped_ptr<LocalFileSyncStatus> sync_status_;
   scoped_ptr<LocalFileChangeTracker> change_tracker_;
 };
 
