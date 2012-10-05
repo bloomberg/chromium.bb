@@ -25,7 +25,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/printing/cloud_print/virtual_driver_install_helper.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -169,9 +168,6 @@ void RecordLastRunAppBundlePath() {
 
 }  // anonymous namespace
 
-const AEEventClass kAECloudPrintInstallClass = 'GCPi';
-const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
-
 @interface AppController (Private)
 - (void)initMenuState;
 - (void)initProfileMenu;
@@ -181,8 +177,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
 - (void)submitCloudPrintJob:(NSAppleEventDescriptor*)event;
-- (void)installCloudPrint:(NSAppleEventDescriptor*)event;
-- (void)uninstallCloudPrint:(NSAppleEventDescriptor*)event;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
 - (void)windowChangedToProfile:(Profile*)profile;
 - (void)checkForAnyKeyWindows;
@@ -209,15 +203,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
           andSelector:@selector(submitCloudPrintJob:)
         forEventClass:cloud_print::kAECloudPrintClass
            andEventID:cloud_print::kAECloudPrintClass];
-  // Install and uninstall handlers for virtual drivers.
-  [em setEventHandler:self
-          andSelector:@selector(installCloudPrint:)
-        forEventClass:kAECloudPrintInstallClass
-           andEventID:kAECloudPrintInstallClass];
-  [em setEventHandler:self
-          andSelector:@selector(uninstallCloudPrint:)
-        forEventClass:kAECloudPrintUninstallClass
-           andEventID:kAECloudPrintUninstallClass];
   [em setEventHandler:self
           andSelector:@selector(getUrl:withReply:)
         forEventClass:'WWW!'    // A particularly ancient AppleEvent that dates
@@ -275,10 +260,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
                            andEventID:kAEGetURL];
   [em removeEventHandlerForEventClass:cloud_print::kAECloudPrintClass
                            andEventID:cloud_print::kAECloudPrintClass];
-  [em removeEventHandlerForEventClass:kAECloudPrintInstallClass
-                           andEventID:kAECloudPrintInstallClass];
-  [em removeEventHandlerForEventClass:kAECloudPrintUninstallClass
-                           andEventID:kAECloudPrintUninstallClass];
   [em removeEventHandlerForEventClass:'WWW!'
                            andEventID:'OURL'];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -1138,18 +1119,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
         FilePath([inputPath UTF8String]), title16,
         printTicket16, [mime UTF8String], /*delete_on_close=*/false);
   }
-}
-
-// Calls the helper class to install the virtual driver to the
-// service process.
-- (void)installCloudPrint:(NSAppleEventDescriptor*)event {
-  cloud_print::VirtualDriverInstallHelper::SetUpInstall();
-}
-
-// Calls the helper class to uninstall the virtual driver to the
-// service process.
-- (void)uninstallCloudPrint:(NSAppleEventDescriptor*)event {
-  cloud_print::VirtualDriverInstallHelper::SetUpUninstall();
 }
 
 - (void)application:(NSApplication*)sender

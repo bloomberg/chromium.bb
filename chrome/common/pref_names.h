@@ -640,7 +640,6 @@ extern const char kCloudPrintRobotRefreshToken[];
 extern const char kCloudPrintRobotEmail[];
 extern const char kCloudPrintConnectNewPrinters[];
 extern const char kCloudPrintPrinterBlacklist[];
-extern const char kVirtualPrinterDriverEnabled[];
 extern const char kCloudPrintSubmitEnabled[];
 
 #if !defined(OS_ANDROID)

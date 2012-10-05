@@ -50,8 +50,6 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
       const std::string& user_email);
   void OnGetCloudPrintProxyInfo();
   void OnDisableCloudPrintProxy();
-  void OnEnableVirtualDriver();
-  void OnDisableVirtualDriver();
 
   void OnShutdown();
   void OnUpdateAvailable();
