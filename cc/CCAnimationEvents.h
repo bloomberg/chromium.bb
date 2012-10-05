@@ -5,10 +5,9 @@
 #ifndef CCAnimationEvents_h
 #define CCAnimationEvents_h
 
-#include "CCActiveAnimation.h"
+#include <vector>
 
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "CCActiveAnimation.h"
 
 namespace cc {
 
@@ -31,8 +30,8 @@ struct CCAnimationEvent {
     double monotonicTime;
 };
 
-typedef Vector<CCAnimationEvent> CCAnimationEventsVector;
+typedef std::vector<CCAnimationEvent> CCAnimationEventsVector;
 
-} // namespace cc
+}  // namespace cc
 
 #endif // CCAnimationEvents_h

@@ -1237,7 +1237,7 @@ void CCLayerTreeHostImpl::animateLayers(double monotonicTime, double wallClockTi
     bool didAnimate = false;
     animateLayersRecursive(m_rootLayerImpl.get(), monotonicTime, wallClockTime, events.get(), didAnimate, m_needsAnimateLayers);
 
-    if (!events->isEmpty())
+    if (!events->empty())
         m_client->postAnimationEventsToMainThreadOnImplThread(events.release(), wallClockTime);
 
     if (didAnimate)
@@ -1328,4 +1328,4 @@ void CCLayerTreeHostImpl::animateScrollbarsRecursive(CCLayerImpl* layer, double 
         animateScrollbarsRecursive(layer->children()[i], monotonicTime);
 }
 
-} // namespace cc
+}  // namespace cc
