@@ -272,51 +272,37 @@ void DeleteChromeShortcuts(const InstallerState& installer_state,
     return;
   }
 
-  FilePath shortcut_path;
-  if (installer_state.system_install()) {
-    PathService::Get(base::DIR_COMMON_START_MENU, &shortcut_path);
-    if (!ShellUtil::RemoveChromeDesktopShortcut(
-        product.distribution(),
-        ShellUtil::CURRENT_USER | ShellUtil::SYSTEM_LEVEL,
-        ShellUtil::SHORTCUT_NO_OPTIONS)) {
-      ShellUtil::RemoveChromeDesktopShortcut(
-          product.distribution(),
-          ShellUtil::CURRENT_USER | ShellUtil::SYSTEM_LEVEL,
-          ShellUtil::SHORTCUT_ALTERNATE);
-    }
+  BrowserDistribution* dist = product.distribution();
 
-    ShellUtil::RemoveChromeQuickLaunchShortcut(
-        product.distribution(),
-        ShellUtil::CURRENT_USER | ShellUtil::SYSTEM_LEVEL);
-  } else {
-    PathService::Get(base::DIR_START_MENU, &shortcut_path);
-    if (!ShellUtil::RemoveChromeDesktopShortcut(
-        product.distribution(),
-        ShellUtil::CURRENT_USER, ShellUtil::SHORTCUT_NO_OPTIONS)) {
-      ShellUtil::RemoveChromeDesktopShortcut(
-          product.distribution(),
-          ShellUtil::CURRENT_USER, ShellUtil::SHORTCUT_ALTERNATE);
-    }
+  // The per-user shortcut for this user, if present on a system-level install,
+  // has already been deleted in chrome_browser_main_win.cc::DoUninstallTasks().
+  ShellUtil::ShellChange install_level = installer_state.system_install() ?
+      ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER;
 
-    ShellUtil::RemoveChromeQuickLaunchShortcut(
-        product.distribution(), ShellUtil::CURRENT_USER);
+  VLOG(1) << "Deleting Desktop shortcut.";
+  if (!ShellUtil::RemoveChromeShortcut(
+          ShellUtil::SHORTCUT_DESKTOP, dist, install_level, NULL)) {
+    LOG(WARNING) << "Failed to delete Desktop shortcut.";
   }
-  if (shortcut_path.empty()) {
-    LOG(ERROR) << "Failed to get location for shortcut.";
-  } else {
-    const string16 product_name(product.distribution()->GetAppShortCutName());
-    shortcut_path = shortcut_path.Append(product_name);
+  // Also try to delete the alternate desktop shortcut. It is not sufficient
+  // to do so upon failure of the above call as ERROR_FILE_NOT_FOUND on
+  // delete is considered success.
+  if (!ShellUtil::RemoveChromeShortcut(
+          ShellUtil::SHORTCUT_DESKTOP, dist, install_level,
+          &dist->GetAlternateApplicationName())) {
+    LOG(WARNING) << "Failed to delete alternate Desktop shortcut.";
+  }
 
-    FilePath shortcut_link(shortcut_path.Append(product_name + L".lnk"));
+  VLOG(1) << "Deleting Quick Launch shortcut.";
+  if (!ShellUtil::RemoveChromeShortcut(
+          ShellUtil::SHORTCUT_QUICK_LAUNCH, dist, install_level, NULL)) {
+    LOG(WARNING) << "Failed to delete Quick Launch shortcut.";
+  }
 
-    VLOG(1) << "Unpinning shortcut at " << shortcut_link.value()
-            << " from taskbar";
-    // Ignore return value: keep uninstalling if the unpin fails.
-    base::win::TaskbarUnpinShortcutLink(shortcut_link.value().c_str());
-
-    VLOG(1) << "Deleting shortcut " << shortcut_path.value();
-    if (!file_util::Delete(shortcut_path, true))
-      LOG(ERROR) << "Failed to delete folder: " << shortcut_path.value();
+  VLOG(1) << "Deleting Start Menu shortcuts.";
+  if (!ShellUtil::RemoveChromeShortcut(
+          ShellUtil::SHORTCUT_START_MENU, dist, install_level, NULL)) {
+    LOG(WARNING) << "Failed to delete Start Menu shortcuts.";
   }
 
   ShellUtil::RemoveChromeStartScreenShortcuts(product.distribution(),

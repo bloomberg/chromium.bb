@@ -133,13 +133,14 @@ int DoUninstallTasks(bool chrome_still_running) {
     // We want to remove user level shortcuts and we only care about the ones
     // created by us and not by the installer so |alternate| is false.
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    if (!ShellUtil::RemoveChromeDesktopShortcut(
-            dist, ShellUtil::CURRENT_USER, ShellUtil::SHORTCUT_NO_OPTIONS)) {
+    if (!ShellUtil::RemoveChromeShortcut(
+            ShellUtil::SHORTCUT_DESKTOP, dist, ShellUtil::CURRENT_USER, NULL)) {
       VLOG(1) << "Failed to delete desktop shortcut.";
     }
     // TODO(rlp): Cleanup profiles shortcuts.
-    if (!ShellUtil::RemoveChromeQuickLaunchShortcut(dist,
-                                                    ShellUtil::CURRENT_USER)) {
+    if (!ShellUtil::RemoveChromeShortcut(
+            ShellUtil::SHORTCUT_QUICK_LAUNCH, dist, ShellUtil::CURRENT_USER,
+            NULL)) {
       VLOG(1) << "Failed to delete quick launch shortcut.";
     }
   }

@@ -202,6 +202,7 @@ const wchar_t kInstallBinaryDir[] = L"Application";
 const wchar_t kInstallerDir[] = L"Installer";
 const wchar_t kInstallTempDir[] = L"Temp";
 const wchar_t kInstallUserDataDir[] = L"User Data";
+const wchar_t kLnkExt[] = L".lnk";
 const wchar_t kNaClExe[] = L"nacl64.exe";
 const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kSxSSuffix[] = L" SxS";

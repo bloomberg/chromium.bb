@@ -256,7 +256,7 @@ void AddDeleteUninstallShortcutsForMSIWorkItems(
     uninstall_link = uninstall_link.Append(
         product.distribution()->GetAppShortCutName());
     uninstall_link = uninstall_link.Append(
-        product.distribution()->GetUninstallLinkName() + L".lnk");
+        product.distribution()->GetUninstallLinkName() + installer::kLnkExt);
     VLOG(1) << "Deleting old uninstall shortcut (if present): "
             << uninstall_link.value();
     WorkItem* delete_link = work_item_list->AddDeleteTreeWorkItem(

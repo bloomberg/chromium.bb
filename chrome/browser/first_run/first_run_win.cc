@@ -111,16 +111,12 @@ bool CreateChromeDesktopShortcut() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (!dist || !dist->CanCreateDesktopShortcuts())
     return false;
-  return ShellUtil::CreateChromeDesktopShortcut(
-      dist,
-      chrome_exe.value(),
-      dist->GetAppDescription(),
-      L"",
-      L"",
-      chrome_exe.value(),
-      dist->GetIconIndex(),
-      ShellUtil::CURRENT_USER,
-      ShellUtil::SHORTCUT_CREATE_ALWAYS);
+  ShellUtil::ChromeShortcutProperties shortcut_properties(
+      ShellUtil::CURRENT_USER);
+  shortcut_properties.set_chrome_exe(chrome_exe);
+  return ShellUtil::CreateOrUpdateChromeShortcut(
+      ShellUtil::SHORTCUT_DESKTOP, dist, shortcut_properties,
+      ShellUtil::SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
 }
 
 // Creates the quick launch shortcut to chrome for the current user. Returns
@@ -130,11 +126,12 @@ bool CreateChromeQuickLaunchShortcut() {
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
     return false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  return ShellUtil::CreateChromeQuickLaunchShortcut(
-      dist,
-      chrome_exe.value(),
-      ShellUtil::CURRENT_USER,  // create only for current user.
-      ShellUtil::SHORTCUT_CREATE_ALWAYS);
+  ShellUtil::ChromeShortcutProperties shortcut_properties(
+      ShellUtil::CURRENT_USER);
+  shortcut_properties.set_chrome_exe(chrome_exe);
+  return ShellUtil::CreateOrUpdateChromeShortcut(
+      ShellUtil::SHORTCUT_QUICK_LAUNCH, dist, shortcut_properties,
+      ShellUtil::SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
 }
 
 void PlatformSetup(Profile* profile) {

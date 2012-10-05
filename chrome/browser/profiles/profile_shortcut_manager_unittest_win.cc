@@ -6,6 +6,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/shortcut.h"
@@ -32,10 +33,10 @@ namespace {
 void GetShortcutPathForProfile(BrowserDistribution* dist,
                                const string16& profile_name,
                                FilePath* path) {
-  string16 shortcut_name;
-  EXPECT_TRUE(ShellUtil::GetDesktopPath(false, path));
-  EXPECT_TRUE(ShellUtil::GetChromeShortcutName(dist, false, profile_name,
-                                               &shortcut_name));
+  EXPECT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_DESKTOP, dist,
+                                         ShellUtil::CURRENT_USER, path));
+  string16 shortcut_name(
+      ProfileShortcutManager::GetShortcutNameForProfile(profile_name));
   *path = path->Append(shortcut_name);
 }
 

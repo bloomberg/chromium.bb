@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_H_
 
 #include "base/file_path.h"
+#include "base/string16.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#include "ui/gfx/image/image.h"
 
 class ProfileManager;
 
@@ -22,6 +22,7 @@ class ProfileShortcutManager {
 
   static bool IsFeatureEnabled();
   static ProfileShortcutManager* Create(ProfileManager* manager);
+  static string16 GetShortcutNameForProfile(const string16& profile_name);
 
  protected:
   ProfileShortcutManager();

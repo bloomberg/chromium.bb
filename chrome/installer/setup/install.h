@@ -25,6 +25,16 @@ class InstallationState;
 class InstallerState;
 class MasterPreferences;
 
+enum InstallShortcutOperation {
+  // Create mandatory shortcuts (Start menu, taskbar, and uninstall).
+  INSTALL_SHORTCUT_CREATE_MANDATORY = 0,
+  // Create mandatory shortcuts and desktop + quick launch shortcuts.
+  INSTALL_SHORTCUT_CREATE_ALL,
+  // Replace all shortcuts that still exist with the most recent version of
+  // each individual shortcut.
+  INSTALL_SHORTCUT_REPLACE_EXISTING,
+};
+
 // Escape |att_value| as per the XML AttValue production
 // (http://www.w3.org/TR/2008/REC-xml-20081126/#NT-AttValue) for a value in
 // single quotes.
@@ -36,35 +46,18 @@ void EscapeXmlAttributeValueInSingleQuotes(string16* att_value);
 bool CreateVisualElementsManifest(const FilePath& src_path,
                                   const Version& version);
 
-// This method, if SHORTCUT_CREATE_ALWAYS is specified in |options|, creates
-// Start Menu shortcuts for all users or only for the current user depending on
-// whether it is a system wide install or a user-level install. It also pins
-// the browser shortcut to the current user's taskbar.
-// If SHORTCUT_CREATE_ALWAYS is not specified in |options|: this method only
-// updates existing Start Menu shortcuts.
-// |setup_exe|: The path to the setup.exe stored in <version_dir>\Installer
-// post-install.
-// |options|: bitfield for which the options come from
-// ShellUtil::ChromeShortcutOptions.
-void CreateOrUpdateStartMenuAndTaskbarShortcuts(
-    const InstallerState& installer_state,
-    const FilePath& setup_exe,
-    const Product& product,
-    uint32 options);
-
-// This method, if SHORTCUT_CREATE_ALWAYS is specified in |options|, creates
-// Desktop and Quick Launch shortcuts for all users or only for the current user
-// depending on whether it is a system wide install or a user-level install.
-// If SHORTCUT_CREATE_ALWAYS is not specified in |options|: this method only
-// updates existing shortcuts.
-// |options|: bitfield for which the options come from
-// ShellUtil::ChromeShortcutOptions.
-// If SHORTCUT_ALTERNATE is specified in |options|, an alternate shortcut name
-// is used for the Desktop shortcut.
-void CreateOrUpdateDesktopAndQuickLaunchShortcuts(
-    const InstallerState& installer_state,
-    const Product& product,
-    uint32 options);
+// Overwrites shortcuts (desktop, quick launch, start menu, and uninstall link)
+// if they are present on the system.
+// If |install_operation| is a creation command, appropriate shortcuts will be
+// created even if they don't exist.
+// The uninstall link is only created if this is not an MSI install.
+// If creating the Start menu shortcut is successful, it is also pinned to the
+// taskbar.
+void CreateOrUpdateShortcuts(const InstallerState& installer_state,
+                             const FilePath& setup_exe,
+                             const Product& product,
+                             InstallShortcutOperation install_operation,
+                             bool alternate_desktop_shortcut);
 
 // Registers Chrome on this machine.
 // If |make_chrome_default|, also attempts to make Chrome default (potentially

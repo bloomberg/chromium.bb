@@ -608,7 +608,8 @@ FilePath ShellIntegration::GetStartMenuShortcut(const FilePath& chrome_exe) {
       continue;
     }
 
-    shortcut = shortcut.Append(shortcut_name).Append(shortcut_name + L".lnk");
+    shortcut = shortcut.Append(shortcut_name).Append(shortcut_name +
+                                                     installer::kLnkExt);
     if (file_util::PathExists(shortcut))
       return shortcut;
   }
