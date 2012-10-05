@@ -10,72 +10,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "googleurl/src/gurl.h"
 
 namespace quota {
-
-class MockQuotaManager::GetModifiedSinceTask : public QuotaThreadTask {
- public:
-  GetModifiedSinceTask(MockQuotaManager* manager,
-                       const std::set<GURL>& origins,
-                       StorageType type,
-                       const GetOriginsCallback& callback)
-      : QuotaThreadTask(manager, manager->io_thread_.get()),
-        origins_(origins),
-        type_(type),
-        callback_(callback) {
-  }
-
- protected:
-  virtual ~GetModifiedSinceTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {}
-
-  virtual void Completed() OVERRIDE {
-    callback_.Run(origins_, type_);
-  }
-
-  virtual void Aborted() OVERRIDE {
-    callback_.Run(std::set<GURL>(), type_);
-  }
-
- private:
-  std::set<GURL> origins_;
-  StorageType type_;
-  GetOriginsCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetModifiedSinceTask);
-};
-
-class MockQuotaManager::DeleteOriginDataTask : public QuotaThreadTask {
- public:
-  DeleteOriginDataTask(MockQuotaManager* manager,
-                       const StatusCallback& callback)
-      : QuotaThreadTask(manager, manager->io_thread_),
-        callback_(callback) {
-  }
-
- protected:
-  virtual ~DeleteOriginDataTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {}
-
-  virtual void Completed() OVERRIDE {
-    callback_.Run(quota::kQuotaStatusOk);
-  }
-
-  virtual void Aborted() OVERRIDE {
-    callback_.Run(quota::kQuotaErrorAbort);
-  }
-
- private:
-  StatusCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteOriginDataTask);
-};
 
 MockQuotaManager::OriginInfo::OriginInfo(
     const GURL& origin,
@@ -102,7 +41,8 @@ MockQuotaManager::MockQuotaManager(
     base::SequencedTaskRunner* db_thread,
     SpecialStoragePolicy* special_storage_policy)
     : QuotaManager(is_incognito, profile_path, io_thread, db_thread,
-        special_storage_policy) {
+        special_storage_policy),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 void MockQuotaManager::GetUsageAndQuota(
@@ -146,15 +86,21 @@ void MockQuotaManager::GetOriginsModifiedSince(
     StorageType type,
     base::Time modified_since,
     const GetOriginsCallback& callback) {
-  std::set<GURL> origins_to_return;
+  std::set<GURL>* origins_to_return = new std::set<GURL>();
   for (std::vector<OriginInfo>::const_iterator current = origins_.begin();
        current != origins_.end();
        ++current) {
     if (current->type == type && current->modified >= modified_since)
-      origins_to_return.insert(current->origin);
+      origins_to_return->insert(current->origin);
   }
-  make_scoped_refptr(new GetModifiedSinceTask(this, origins_to_return, type,
-      callback))->Start();
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MockQuotaManager::DidGetModifiedSince,
+                 weak_factory_.GetWeakPtr(),
+                 callback,
+                 base::Owned(origins_to_return),
+                 type));
 }
 
 void MockQuotaManager::DeleteOriginData(
@@ -173,7 +119,13 @@ void MockQuotaManager::DeleteOriginData(
       break;
     }
   }
-  make_scoped_refptr(new DeleteOriginDataTask(this, callback))->Start();
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MockQuotaManager::DidDeleteOriginData,
+                 weak_factory_.GetWeakPtr(),
+                 callback,
+                 kQuotaStatusOk));
 }
 
 MockQuotaManager::~MockQuotaManager() {}
@@ -181,6 +133,19 @@ MockQuotaManager::~MockQuotaManager() {}
 void MockQuotaManager::UpdateUsage(
     const GURL& origin, StorageType type, int64 delta) {
   usage_and_quota_map_[std::make_pair(origin, type)].usage += delta;
+}
+
+void MockQuotaManager::DidGetModifiedSince(
+    const GetOriginsCallback& callback,
+    std::set<GURL>* origins,
+    StorageType storage_type) {
+  callback.Run(*origins, storage_type);
+}
+
+void MockQuotaManager::DidDeleteOriginData(
+    const StatusCallback& callback,
+    QuotaStatusCode status) {
+  callback.Run(status);
 }
 
 // MockQuotaManagerProxy -----------------------------------------------------

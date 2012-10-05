@@ -121,15 +121,17 @@ class MockQuotaManager : public QuotaManager {
   typedef std::pair<GURL, StorageType> OriginAndType;
   typedef std::map<OriginAndType, StorageInfo> UsageAndQuotaMap;
 
-  class GetModifiedSinceTask;
-  class DeleteOriginDataTask;
-
   // This must be called via MockQuotaManagerProxy.
   void UpdateUsage(const GURL& origin, StorageType type, int64 delta);
+  void DidGetModifiedSince(const GetOriginsCallback& callback,
+                           std::set<GURL>* origins,
+                           StorageType storage_type);
+  void DidDeleteOriginData(const StatusCallback& callback,
+                           QuotaStatusCode status);
 
   // The list of stored origins that have been added via AddOrigin.
   std::vector<OriginInfo> origins_;
-
+  base::WeakPtrFactory<MockQuotaManager> weak_factory_;
   UsageAndQuotaMap usage_and_quota_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MockQuotaManager);
