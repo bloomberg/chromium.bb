@@ -27,6 +27,11 @@ from chromite.scripts import parallel_emerge
 from portage.package.ebuild import config as portcfg
 from portage.tests.resolver import ResolverPlayground as respgnd
 
+# Enable color invariably. Since we rely on color for error/warn message
+# recognition, leaving this to be decided based on stdout being a tty
+# will make the tests fail/succeed based on how they are run.
+cpu.oper._color._enabled = True
+
 # pylint: disable=W0212,R0904,W0102,W0201,E1120,E1101
 DEFAULT_PORTDIR = '/usr/portage'
 
