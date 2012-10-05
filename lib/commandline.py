@@ -154,10 +154,13 @@ class OptionParser(optparse.OptionParser):
       opts.cache_dir = func(self, opts)
       if opts.cache_dir is not None:
         opts.cache_dir = os.path.abspath(func(self, opts))
-        os.environ[constants.SHARED_CACHE_ENVVAR] = opts.cache_dir
-      logging.debug("Defaulted cache_dir to %r", opts.cache_dir)
+        self.ConfigureCacheDir(opts.cache_dir)
 
     return opts, args
+
+  def ConfigureCacheDir(self, cache_dir):
+    os.environ[constants.SHARED_CACHE_ENVVAR] = cache_dir
+    logging.debug("Configured cache_dir to %r", cache_dir)
 
   @staticmethod
   def FindCacheDir(_parser, _opts):

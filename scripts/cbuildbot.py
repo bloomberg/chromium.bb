@@ -1068,6 +1068,7 @@ def _PostParseCheck(parser, options, args):
     else:
       options.cache_dir = parser.FindCacheDir(parser, options)
     options.cache_dir = os.path.abspath(options.cache_dir)
+    parser.ConfigureCacheDir(options.cache_dir)
 
   osutils.SafeMakedirs(options.cache_dir)
 
