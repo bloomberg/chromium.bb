@@ -452,7 +452,8 @@ void LoginDialogCallback(const GURL& request_url,
   string16 elided_realm;
   ui::ElideString(UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
 
-  string16 host_and_port = ASCIIToUTF16(auth_info->challenger.ToString());
+  string16 host_and_port = ASCIIToUTF16(request_url.scheme() + "://" +
+                                        auth_info->challenger.ToString());
   string16 explanation = elided_realm.empty() ?
       l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
                                  host_and_port) :
