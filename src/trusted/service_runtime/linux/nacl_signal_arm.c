@@ -16,29 +16,29 @@
  * Fill a signal context structure from the raw platform dependent
  * signal information.
  */
-void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
-                                  const void *rawCtx) {
-  ucontext_t *uctx = (ucontext_t *) rawCtx;
+void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
+                                  const void *raw_ctx) {
+  ucontext_t *uctx = (ucontext_t *) raw_ctx;
   struct sigcontext *mctx = &uctx->uc_mcontext;
 
-  sigCtx->prog_ctr = mctx->arm_pc;
-  sigCtx->stack_ptr = mctx->arm_sp;
+  sig_ctx->prog_ctr = mctx->arm_pc;
+  sig_ctx->stack_ptr = mctx->arm_sp;
 
-  sigCtx->r0 = mctx->arm_r0;
-  sigCtx->r1 = mctx->arm_r1;
-  sigCtx->r2 = mctx->arm_r2;
-  sigCtx->r3 = mctx->arm_r3;
-  sigCtx->r4 = mctx->arm_r4;
-  sigCtx->r5 = mctx->arm_r5;
-  sigCtx->r6 = mctx->arm_r6;
-  sigCtx->r7 = mctx->arm_r7;
-  sigCtx->r8 = mctx->arm_r8;
-  sigCtx->r9 = mctx->arm_r9;
-  sigCtx->r10 = mctx->arm_r10;
-  sigCtx->r11 = mctx->arm_fp;
-  sigCtx->r12 = mctx->arm_ip;
-  sigCtx->lr = mctx->arm_lr;
-  sigCtx->cpsr = mctx->arm_cpsr;
+  sig_ctx->r0 = mctx->arm_r0;
+  sig_ctx->r1 = mctx->arm_r1;
+  sig_ctx->r2 = mctx->arm_r2;
+  sig_ctx->r3 = mctx->arm_r3;
+  sig_ctx->r4 = mctx->arm_r4;
+  sig_ctx->r5 = mctx->arm_r5;
+  sig_ctx->r6 = mctx->arm_r6;
+  sig_ctx->r7 = mctx->arm_r7;
+  sig_ctx->r8 = mctx->arm_r8;
+  sig_ctx->r9 = mctx->arm_r9;
+  sig_ctx->r10 = mctx->arm_r10;
+  sig_ctx->r11 = mctx->arm_fp;
+  sig_ctx->r12 = mctx->arm_ip;
+  sig_ctx->lr = mctx->arm_lr;
+  sig_ctx->cpsr = mctx->arm_cpsr;
 }
 
 
@@ -46,27 +46,27 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
  * Update the raw platform dependent signal information from the
  * signal context structure.
  */
-void NaClSignalContextToHandler(void *rawCtx,
-                                const struct NaClSignalContext *sigCtx) {
-  ucontext_t *uctx = (ucontext_t *) rawCtx;
+void NaClSignalContextToHandler(void *raw_ctx,
+                                const struct NaClSignalContext *sig_ctx) {
+  ucontext_t *uctx = (ucontext_t *) raw_ctx;
   struct sigcontext *mctx = &uctx->uc_mcontext;
 
-  mctx->arm_pc = sigCtx->prog_ctr;
-  mctx->arm_sp = sigCtx->stack_ptr;
+  mctx->arm_pc = sig_ctx->prog_ctr;
+  mctx->arm_sp = sig_ctx->stack_ptr;
 
-  mctx->arm_r0 = sigCtx->r0;
-  mctx->arm_r1 = sigCtx->r1;
-  mctx->arm_r2 = sigCtx->r2;
-  mctx->arm_r3 = sigCtx->r3;
-  mctx->arm_r4 = sigCtx->r4;
-  mctx->arm_r5 = sigCtx->r5;
-  mctx->arm_r6 = sigCtx->r6;
-  mctx->arm_r7 = sigCtx->r7;
-  mctx->arm_r8 = sigCtx->r8;
-  mctx->arm_r9 = sigCtx->r9;
-  mctx->arm_r10 = sigCtx->r10;
-  mctx->arm_fp = sigCtx->r11;
-  mctx->arm_ip = sigCtx->r12;
-  mctx->arm_lr = sigCtx->lr;
-  mctx->arm_cpsr = sigCtx->cpsr;
+  mctx->arm_r0 = sig_ctx->r0;
+  mctx->arm_r1 = sig_ctx->r1;
+  mctx->arm_r2 = sig_ctx->r2;
+  mctx->arm_r3 = sig_ctx->r3;
+  mctx->arm_r4 = sig_ctx->r4;
+  mctx->arm_r5 = sig_ctx->r5;
+  mctx->arm_r6 = sig_ctx->r6;
+  mctx->arm_r7 = sig_ctx->r7;
+  mctx->arm_r8 = sig_ctx->r8;
+  mctx->arm_r9 = sig_ctx->r9;
+  mctx->arm_r10 = sig_ctx->r10;
+  mctx->arm_fp = sig_ctx->r11;
+  mctx->arm_ip = sig_ctx->r12;
+  mctx->arm_lr = sig_ctx->lr;
+  mctx->arm_cpsr = sig_ctx->cpsr;
 }

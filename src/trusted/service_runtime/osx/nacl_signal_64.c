@@ -80,18 +80,18 @@ void NaClSignalContextToMacThreadState(x86_thread_state_t *dest,
  * Fill a signal context structure from the raw platform dependent
  * signal information.
  */
-void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
-                                  const void *rawCtx) {
-  ucontext_t *uctx = (ucontext_t *) rawCtx;
-  SignalContextFromRegs(sigCtx, &uctx->uc_mcontext->__ss);
+void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
+                                  const void *raw_ctx) {
+  ucontext_t *uctx = (ucontext_t *) raw_ctx;
+  SignalContextFromRegs(sig_ctx, &uctx->uc_mcontext->__ss);
 }
 
 /*
  * Update the raw platform dependent signal information from the
  * signal context structure.
  */
-void NaClSignalContextToHandler(void *rawCtx,
-                                const struct NaClSignalContext *sigCtx) {
-  ucontext_t *uctx = (ucontext_t *) rawCtx;
-  SignalContextToRegs(&uctx->uc_mcontext->__ss, sigCtx);
+void NaClSignalContextToHandler(void *raw_ctx,
+                                const struct NaClSignalContext *sig_ctx) {
+  ucontext_t *uctx = (ucontext_t *) raw_ctx;
+  SignalContextToRegs(&uctx->uc_mcontext->__ss, sig_ctx);
 }

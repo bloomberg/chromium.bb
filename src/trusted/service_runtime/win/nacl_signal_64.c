@@ -14,35 +14,35 @@
  * Fill a signal context structure from the raw platform dependent
  * signal information.
  */
-void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
-                                  const void *rawCtx) {
-  const CONTEXT *winCtx = rawCtx;
+void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
+                                  const void *raw_ctx) {
+  const CONTEXT *win_ctx = raw_ctx;
 
-  sigCtx->prog_ctr = winCtx->Rip;
-  sigCtx->stack_ptr = winCtx->Rsp;
+  sig_ctx->prog_ctr = win_ctx->Rip;
+  sig_ctx->stack_ptr = win_ctx->Rsp;
 
-  sigCtx->rax = winCtx->Rax;
-  sigCtx->rbx = winCtx->Rbx;
-  sigCtx->rcx = winCtx->Rcx;
-  sigCtx->rdx = winCtx->Rdx;
-  sigCtx->rsi = winCtx->Rsi;
-  sigCtx->rdi = winCtx->Rdi;
-  sigCtx->rbp = winCtx->Rbp;
-  sigCtx->r8 = winCtx->R8;
-  sigCtx->r9 = winCtx->R9;
-  sigCtx->r10 = winCtx->R10;
-  sigCtx->r11 = winCtx->R11;
-  sigCtx->r12 = winCtx->R12;
-  sigCtx->r13 = winCtx->R13;
-  sigCtx->r14 = winCtx->R14;
-  sigCtx->r15 = winCtx->R15;
-  sigCtx->flags = winCtx->EFlags;
-  sigCtx->cs = winCtx->SegCs;
-  sigCtx->ss = winCtx->SegSs;
-  sigCtx->ds = winCtx->SegDs;
-  sigCtx->es = winCtx->SegEs;
-  sigCtx->fs = winCtx->SegFs;
-  sigCtx->gs = winCtx->SegGs;
+  sig_ctx->rax = win_ctx->Rax;
+  sig_ctx->rbx = win_ctx->Rbx;
+  sig_ctx->rcx = win_ctx->Rcx;
+  sig_ctx->rdx = win_ctx->Rdx;
+  sig_ctx->rsi = win_ctx->Rsi;
+  sig_ctx->rdi = win_ctx->Rdi;
+  sig_ctx->rbp = win_ctx->Rbp;
+  sig_ctx->r8 = win_ctx->R8;
+  sig_ctx->r9 = win_ctx->R9;
+  sig_ctx->r10 = win_ctx->R10;
+  sig_ctx->r11 = win_ctx->R11;
+  sig_ctx->r12 = win_ctx->R12;
+  sig_ctx->r13 = win_ctx->R13;
+  sig_ctx->r14 = win_ctx->R14;
+  sig_ctx->r15 = win_ctx->R15;
+  sig_ctx->flags = win_ctx->EFlags;
+  sig_ctx->cs = win_ctx->SegCs;
+  sig_ctx->ss = win_ctx->SegSs;
+  sig_ctx->ds = win_ctx->SegDs;
+  sig_ctx->es = win_ctx->SegEs;
+  sig_ctx->fs = win_ctx->SegFs;
+  sig_ctx->gs = win_ctx->SegGs;
 }
 
 
@@ -50,34 +50,34 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
  * Update the raw platform dependent signal information from the
  * signal context structure.
  */
-void NaClSignalContextToHandler(void *rawCtx,
-                                const struct NaClSignalContext *sigCtx) {
-  CONTEXT *winCtx = rawCtx;
+void NaClSignalContextToHandler(void *raw_ctx,
+                                const struct NaClSignalContext *sig_ctx) {
+  CONTEXT *win_ctx = raw_ctx;
 
-  winCtx->Rip = sigCtx->prog_ctr;
-  winCtx->Rsp = sigCtx->stack_ptr;
+  win_ctx->Rip = sig_ctx->prog_ctr;
+  win_ctx->Rsp = sig_ctx->stack_ptr;
 
-  winCtx->Rax = sigCtx->rax;
-  winCtx->Rbx = sigCtx->rbx;
-  winCtx->Rcx = sigCtx->rcx;
-  winCtx->Rdx = sigCtx->rdx;
-  winCtx->Rsi = sigCtx->rsi;
-  winCtx->Rdi = sigCtx->rdi;
-  winCtx->Rbp = sigCtx->rbp;
-  winCtx->R8 = sigCtx->r8;
-  winCtx->R9 = sigCtx->r9;
-  winCtx->R10 = sigCtx->r10;
-  winCtx->R11 = sigCtx->r11;
-  winCtx->R12 = sigCtx->r12;
-  winCtx->R13 = sigCtx->r13;
-  winCtx->R14 = sigCtx->r14;
-  winCtx->R15 = sigCtx->r15;
-  winCtx->EFlags = sigCtx->flags;
-  winCtx->SegCs = sigCtx->cs;
-  winCtx->SegSs = sigCtx->ss;
-  winCtx->SegDs = sigCtx->ds;
-  winCtx->SegEs = sigCtx->es;
-  winCtx->SegFs = sigCtx->fs;
-  winCtx->SegGs = sigCtx->gs;
+  win_ctx->Rax = sig_ctx->rax;
+  win_ctx->Rbx = sig_ctx->rbx;
+  win_ctx->Rcx = sig_ctx->rcx;
+  win_ctx->Rdx = sig_ctx->rdx;
+  win_ctx->Rsi = sig_ctx->rsi;
+  win_ctx->Rdi = sig_ctx->rdi;
+  win_ctx->Rbp = sig_ctx->rbp;
+  win_ctx->R8 = sig_ctx->r8;
+  win_ctx->R9 = sig_ctx->r9;
+  win_ctx->R10 = sig_ctx->r10;
+  win_ctx->R11 = sig_ctx->r11;
+  win_ctx->R12 = sig_ctx->r12;
+  win_ctx->R13 = sig_ctx->r13;
+  win_ctx->R14 = sig_ctx->r14;
+  win_ctx->R15 = sig_ctx->r15;
+  win_ctx->EFlags = sig_ctx->flags;
+  win_ctx->SegCs = sig_ctx->cs;
+  win_ctx->SegSs = sig_ctx->ss;
+  win_ctx->SegDs = sig_ctx->ds;
+  win_ctx->SegEs = sig_ctx->es;
+  win_ctx->SegFs = sig_ctx->fs;
+  win_ctx->SegGs = sig_ctx->gs;
 }
 

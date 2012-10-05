@@ -282,7 +282,7 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
 }
 
 static void SignalCatch(int sig, siginfo_t *info, void *uc) {
-  struct NaClSignalContext sigCtx;
+  struct NaClSignalContext sig_ctx;
   int is_untrusted;
   struct NaClAppThread *natp;
 
@@ -298,8 +298,8 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
   __asm__("cld");
 #endif
 
-  NaClSignalContextFromHandler(&sigCtx, uc);
-  NaClSignalContextGetCurrentThread(&sigCtx, &is_untrusted, &natp);
+  NaClSignalContextFromHandler(&sig_ctx, uc);
+  NaClSignalContextGetCurrentThread(&sig_ctx, &is_untrusted, &natp);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   /*
@@ -339,8 +339,8 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 
 #if NACL_LINUX
   if (sig != SIGINT && sig != SIGQUIT) {
-    if (NaClThreadSuspensionSignalHandler(sig, &sigCtx, is_untrusted, natp)) {
-      NaClSignalContextToHandler(uc, &sigCtx);
+    if (NaClThreadSuspensionSignalHandler(sig, &sig_ctx, is_untrusted, natp)) {
+      NaClSignalContextToHandler(uc, &sig_ctx);
       /* Resume untrusted code using possibly modified register state. */
       return;
     }
@@ -348,8 +348,8 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 #endif
 
   if (is_untrusted && sig == SIGSEGV) {
-    if (DispatchToUntrustedHandler(natp, &sigCtx)) {
-      NaClSignalContextToHandler(uc, &sigCtx);
+    if (DispatchToUntrustedHandler(natp, &sig_ctx)) {
+      NaClSignalContextToHandler(uc, &sig_ctx);
       /* Resume untrusted code using the modified register state. */
       return;
     }

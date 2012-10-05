@@ -69,13 +69,13 @@ ssize_t NaClSignalErrorMessage(const char *msg) {
  * signal occurred, because on x86-64 it reads a thread-local variable
  * (nacl_thread_index).
  */
-void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sigCtx,
+void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
                                        int *is_untrusted,
                                        struct NaClAppThread **result_thread) {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   /* For x86-32, if %cs does not match, it is untrusted code. */
-  *is_untrusted = (NaClGetGlobalCs() != sigCtx->cs);
-  *result_thread = nacl_thread[sigCtx->gs >> 3];
+  *is_untrusted = (NaClGetGlobalCs() != sig_ctx->cs);
+  *result_thread = nacl_thread[sig_ctx->gs >> 3];
 #elif (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) || \
       NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
       NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
@@ -107,7 +107,7 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sigCtx,
     if (!NACL_WINDOWS) {
       DCHECK(!NaClIsUserAddr(thread->nap, (uintptr_t) pointer_into_stack));
     }
-    *is_untrusted = NaClIsUserAddr(thread->nap, sigCtx->prog_ctr);
+    *is_untrusted = NaClIsUserAddr(thread->nap, sig_ctx->prog_ctr);
     *result_thread = thread;
   }
 #else
@@ -121,10 +121,10 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sigCtx,
  * Like NaClSignalContextGetCurrentThread(), this should only be
  * called from the thread in which the signal occurred.
  */
-int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sigCtx) {
+int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sig_ctx) {
   struct NaClAppThread *thread_unused;
   int is_untrusted;
-  NaClSignalContextGetCurrentThread(sigCtx, &is_untrusted, &thread_unused);
+  NaClSignalContextGetCurrentThread(sig_ctx, &is_untrusted, &thread_unused);
   return is_untrusted;
 }
 
@@ -137,22 +137,22 @@ enum NaClSignalResult NaClSignalHandleNone(int signal, void *ctx) {
 }
 
 enum NaClSignalResult NaClSignalHandleUntrusted(int signal, void *ctx) {
-  struct NaClSignalContext sigCtx;
+  struct NaClSignalContext sig_ctx;
   char tmp[128];
   /*
    * Return an 8 bit error code which is -signal to
    * simulate normal OS behavior
    */
-  NaClSignalContextFromHandler(&sigCtx, ctx);
-  if (NaClSignalContextIsUntrusted(&sigCtx)) {
+  NaClSignalContextFromHandler(&sig_ctx, ctx);
+  if (NaClSignalContextIsUntrusted(&sig_ctx)) {
     SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from untrusted code: "
-             "pc=%" NACL_PRIxNACL_REG "\n", signal, sigCtx.prog_ctr);
+             "pc=%" NACL_PRIxNACL_REG "\n", signal, sig_ctx.prog_ctr);
     NaClSignalErrorMessage(tmp);
     NaClExit((-signal) & 0xFF);
   }
   else {
     SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from trusted code: "
-             "pc=%" NACL_PRIxNACL_REG "\n", signal, sigCtx.prog_ctr);
+             "pc=%" NACL_PRIxNACL_REG "\n", signal, sig_ctx.prog_ctr);
     NaClSignalErrorMessage(tmp);
     /*
      * Continue the search for another handler so that trusted crashes

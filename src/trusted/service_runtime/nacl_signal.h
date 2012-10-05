@@ -140,24 +140,24 @@ int NaClSignalHandlerRemove(int id);
  * Fill a signal context structure from the raw platform dependent
  * signal information.
  */
-void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
-                                  const void *rawCtx);
+void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
+                                  const void *raw_ctx);
 
 /*
  * Update the raw platform dependent signal information from the
  * signal context structure.
  */
-void NaClSignalContextToHandler(void *rawCtx,
-                                const struct NaClSignalContext *sigCtx);
+void NaClSignalContextToHandler(void *raw_ctx,
+                                const struct NaClSignalContext *sig_ctx);
 
 
 /*
  * Return non-zero if the signal context is currently executing in an
  * untrusted environment.
  */
-int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sigCtx);
+int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sig_ctx);
 
-void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sigCtx,
+void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
                                        int *is_untrusted,
                                        struct NaClAppThread **result_thread);
 

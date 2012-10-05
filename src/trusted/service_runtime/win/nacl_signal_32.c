@@ -14,27 +14,27 @@
  * Fill a signal context structure from the raw platform dependent
  * signal information.
  */
-void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
-                                  const void *rawCtx) {
-  const CONTEXT *winCtx = rawCtx;
+void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
+                                  const void *raw_ctx) {
+  const CONTEXT *win_ctx = raw_ctx;
 
-  sigCtx->prog_ctr = winCtx->Eip;
-  sigCtx->stack_ptr = winCtx->Esp;
+  sig_ctx->prog_ctr = win_ctx->Eip;
+  sig_ctx->stack_ptr = win_ctx->Esp;
 
-  sigCtx->eax = winCtx->Eax;
-  sigCtx->ebx = winCtx->Ebx;
-  sigCtx->ecx = winCtx->Ecx;
-  sigCtx->edx = winCtx->Edx;
-  sigCtx->esi = winCtx->Esi;
-  sigCtx->edi = winCtx->Edi;
-  sigCtx->ebp = winCtx->Ebp;
-  sigCtx->flags = winCtx->EFlags;
-  sigCtx->cs = winCtx->SegCs;
-  sigCtx->ss = winCtx->SegSs;
-  sigCtx->ds = winCtx->SegDs;
-  sigCtx->es = winCtx->SegEs;
-  sigCtx->fs = winCtx->SegFs;
-  sigCtx->gs = winCtx->SegGs;
+  sig_ctx->eax = win_ctx->Eax;
+  sig_ctx->ebx = win_ctx->Ebx;
+  sig_ctx->ecx = win_ctx->Ecx;
+  sig_ctx->edx = win_ctx->Edx;
+  sig_ctx->esi = win_ctx->Esi;
+  sig_ctx->edi = win_ctx->Edi;
+  sig_ctx->ebp = win_ctx->Ebp;
+  sig_ctx->flags = win_ctx->EFlags;
+  sig_ctx->cs = win_ctx->SegCs;
+  sig_ctx->ss = win_ctx->SegSs;
+  sig_ctx->ds = win_ctx->SegDs;
+  sig_ctx->es = win_ctx->SegEs;
+  sig_ctx->fs = win_ctx->SegFs;
+  sig_ctx->gs = win_ctx->SegGs;
 }
 
 
@@ -42,25 +42,25 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
  * Update the raw platform dependent signal information from the
  * signal context structure.
  */
-void NaClSignalContextToHandler(void *rawCtx,
-                                const struct NaClSignalContext *sigCtx) {
-  CONTEXT *winCtx = rawCtx;
+void NaClSignalContextToHandler(void *raw_ctx,
+                                const struct NaClSignalContext *sig_ctx) {
+  CONTEXT *win_ctx = raw_ctx;
 
-  winCtx->Eip = sigCtx->prog_ctr;
-  winCtx->Esp = sigCtx->stack_ptr;
+  win_ctx->Eip = sig_ctx->prog_ctr;
+  win_ctx->Esp = sig_ctx->stack_ptr;
 
-  winCtx->Eax = sigCtx->eax;
-  winCtx->Ebx = sigCtx->ebx;
-  winCtx->Ecx = sigCtx->ecx;
-  winCtx->Edx = sigCtx->edx;
-  winCtx->Esi = sigCtx->esi;
-  winCtx->Edi = sigCtx->edi;
-  winCtx->Ebp = sigCtx->ebp;
-  winCtx->EFlags = sigCtx->flags;
-  winCtx->SegCs = sigCtx->cs;
-  winCtx->SegSs = sigCtx->ss;
-  winCtx->SegDs = sigCtx->ds;
-  winCtx->SegEs = sigCtx->es;
-  winCtx->SegFs = sigCtx->fs;
-  winCtx->SegGs = sigCtx->gs;
+  win_ctx->Eax = sig_ctx->eax;
+  win_ctx->Ebx = sig_ctx->ebx;
+  win_ctx->Ecx = sig_ctx->ecx;
+  win_ctx->Edx = sig_ctx->edx;
+  win_ctx->Esi = sig_ctx->esi;
+  win_ctx->Edi = sig_ctx->edi;
+  win_ctx->Ebp = sig_ctx->ebp;
+  win_ctx->EFlags = sig_ctx->flags;
+  win_ctx->SegCs = sig_ctx->cs;
+  win_ctx->SegSs = sig_ctx->ss;
+  win_ctx->SegDs = sig_ctx->ds;
+  win_ctx->SegEs = sig_ctx->es;
+  win_ctx->SegFs = sig_ctx->fs;
+  win_ctx->SegGs = sig_ctx->gs;
 }

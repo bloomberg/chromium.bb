@@ -18,22 +18,22 @@
  * Fill a signal context structure from the raw platform dependent
  * signal information.
  */
-void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
-                                  const void *rawCtx) {
-  const ucontext_t *uctx = (const ucontext_t *) rawCtx;
+void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
+                                  const void *raw_ctx) {
+  const ucontext_t *uctx = (const ucontext_t *) raw_ctx;
   const mcontext_t *mctx = &uctx->uc_mcontext;
 
-  sigCtx->prog_ctr = mctx->gregs[REG_EIP];
-  sigCtx->stack_ptr = mctx->gregs[REG_ESP];
+  sig_ctx->prog_ctr = mctx->gregs[REG_EIP];
+  sig_ctx->stack_ptr = mctx->gregs[REG_ESP];
 
-  sigCtx->eax = mctx->gregs[REG_EAX];
-  sigCtx->ebx = mctx->gregs[REG_EBX];
-  sigCtx->ecx = mctx->gregs[REG_ECX];
-  sigCtx->edx = mctx->gregs[REG_EDX];
-  sigCtx->esi = mctx->gregs[REG_ESI];
-  sigCtx->edi = mctx->gregs[REG_EDI];
-  sigCtx->ebp = mctx->gregs[REG_EBP];
-  sigCtx->flags = mctx->gregs[REG_EFL];
+  sig_ctx->eax = mctx->gregs[REG_EAX];
+  sig_ctx->ebx = mctx->gregs[REG_EBX];
+  sig_ctx->ecx = mctx->gregs[REG_ECX];
+  sig_ctx->edx = mctx->gregs[REG_EDX];
+  sig_ctx->esi = mctx->gregs[REG_ESI];
+  sig_ctx->edi = mctx->gregs[REG_EDI];
+  sig_ctx->ebp = mctx->gregs[REG_EBP];
+  sig_ctx->flags = mctx->gregs[REG_EFL];
    /*
     * We need to drop the top 16 bits with the casts below.  In some
     * situations, Linux does not assign to the top 2 bytes of the
@@ -47,12 +47,12 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
     *
     * See http://code.google.com/p/nativeclient/issues/detail?id=1486
     */
-  sigCtx->cs = (uint16_t) mctx->gregs[REG_CS];
-  sigCtx->ss = (uint16_t) mctx->gregs[REG_SS];
-  sigCtx->ds = (uint16_t) mctx->gregs[REG_DS];
-  sigCtx->es = (uint16_t) mctx->gregs[REG_ES];
-  sigCtx->fs = (uint16_t) mctx->gregs[REG_FS];
-  sigCtx->gs = (uint16_t) mctx->gregs[REG_GS];
+  sig_ctx->cs = (uint16_t) mctx->gregs[REG_CS];
+  sig_ctx->ss = (uint16_t) mctx->gregs[REG_SS];
+  sig_ctx->ds = (uint16_t) mctx->gregs[REG_DS];
+  sig_ctx->es = (uint16_t) mctx->gregs[REG_ES];
+  sig_ctx->fs = (uint16_t) mctx->gregs[REG_FS];
+  sig_ctx->gs = (uint16_t) mctx->gregs[REG_GS];
 }
 
 
@@ -60,28 +60,28 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
  * Update the raw platform dependent signal information from the
  * signal context structure.
  */
-void NaClSignalContextToHandler(void *rawCtx,
-                                const struct NaClSignalContext *sigCtx) {
-  ucontext_t *uctx = (ucontext_t *) rawCtx;
+void NaClSignalContextToHandler(void *raw_ctx,
+                                const struct NaClSignalContext *sig_ctx) {
+  ucontext_t *uctx = (ucontext_t *) raw_ctx;
   mcontext_t *mctx = &uctx->uc_mcontext;
 
-  mctx->gregs[REG_EIP] = sigCtx->prog_ctr;
-  mctx->gregs[REG_ESP] = sigCtx->stack_ptr;
+  mctx->gregs[REG_EIP] = sig_ctx->prog_ctr;
+  mctx->gregs[REG_ESP] = sig_ctx->stack_ptr;
 
-  mctx->gregs[REG_EAX] = sigCtx->eax;
-  mctx->gregs[REG_EBX] = sigCtx->ebx;
-  mctx->gregs[REG_ECX] = sigCtx->ecx;
-  mctx->gregs[REG_EDX] = sigCtx->edx;
-  mctx->gregs[REG_ESI] = sigCtx->esi;
-  mctx->gregs[REG_EDI] = sigCtx->edi;
-  mctx->gregs[REG_EBP] = sigCtx->ebp;
-  mctx->gregs[REG_EFL] = sigCtx->flags;
-  mctx->gregs[REG_CS] = sigCtx->cs;
-  mctx->gregs[REG_SS] = sigCtx->ss;
-  mctx->gregs[REG_DS] = sigCtx->ds;
-  mctx->gregs[REG_ES] = sigCtx->es;
-  mctx->gregs[REG_FS] = sigCtx->fs;
-  mctx->gregs[REG_GS] = sigCtx->gs;
+  mctx->gregs[REG_EAX] = sig_ctx->eax;
+  mctx->gregs[REG_EBX] = sig_ctx->ebx;
+  mctx->gregs[REG_ECX] = sig_ctx->ecx;
+  mctx->gregs[REG_EDX] = sig_ctx->edx;
+  mctx->gregs[REG_ESI] = sig_ctx->esi;
+  mctx->gregs[REG_EDI] = sig_ctx->edi;
+  mctx->gregs[REG_EBP] = sig_ctx->ebp;
+  mctx->gregs[REG_EFL] = sig_ctx->flags;
+  mctx->gregs[REG_CS] = sig_ctx->cs;
+  mctx->gregs[REG_SS] = sig_ctx->ss;
+  mctx->gregs[REG_DS] = sig_ctx->ds;
+  mctx->gregs[REG_ES] = sig_ctx->es;
+  mctx->gregs[REG_FS] = sig_ctx->fs;
+  mctx->gregs[REG_GS] = sig_ctx->gs;
 }
 
 
