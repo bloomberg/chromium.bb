@@ -536,6 +536,9 @@
                   'src/common/android/include',
                 ],
               },
+              'sources': [
+                'src/common/android/breakpad_getcontext.S',
+              ],
             }],
           ],
 
