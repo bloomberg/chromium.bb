@@ -32,7 +32,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/test/gpu/test_switches.h"
 #include "media/audio/audio_manager.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
