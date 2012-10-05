@@ -823,6 +823,9 @@ const char kLogNetLog[]                     = "log-net-log";
 // Uninstalls an extension with the specified extension id.
 const char kUninstallExtension[]            = "uninstall-extension";
 
+// Use hardware gpu, if available, for tests.
+const char kUseGpuInTests[] = "use-gpu-in-tests";
+
 // Starts the browser in managed mode.
 const char kManaged[]                       = "managed";
 

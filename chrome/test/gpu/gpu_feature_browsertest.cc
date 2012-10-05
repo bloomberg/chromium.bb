@@ -22,7 +22,6 @@
 #include "content/public/common/gpu_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/test/gpu/gpu_test_config.h"
-#include "content/test/gpu/test_switches.h"
 #include "net/base/net_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/compositor/compositor_setup.h"
