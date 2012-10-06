@@ -2,11 +2,9 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-# get_swarm_results.py: Retrieves and output swarm test results for a given
-# test request name.
 
-"""Takes in a test name and retrieves all the output that the swarm server
-has produced for tests with that name.
+"""Retrieves all the output that the Swarm server has produced for requests with
+that name.
 """
 
 import json
@@ -45,9 +43,7 @@ def fetch_with_retry(url):
 
 def get_test_keys(swarm_base_url, test_name):
   key_data = urllib.urlencode([('name', test_name)])
-  test_keys_url = '%s/get_matching_test_cases?%s' % (
-      swarm_base_url.rstrip('/'), key_data)
-
+  test_keys_url = '%s/get_matching_test_cases?%s' % (swarm_base_url, key_data)
   result = fetch_with_retry(test_keys_url)
   if result is None:
     return []
@@ -61,13 +57,13 @@ def get_test_keys(swarm_base_url, test_name):
   return result.split()
 
 
-def get_swarm_results(swarm_base_url, test_keys):
+def swarm_get_results(swarm_base_url, test_keys):
   """Retrieves the given swarm test results from the swarm server and print it
   to stdout.
   """
   outputs = []
   for test in test_keys:
-    result_url = '%s/get_result?r=%s' % (swarm_base_url.rstrip('/'), test)
+    result_url = '%s/get_result?r=%s' % (swarm_base_url, test)
     result = fetch_with_retry(result_url)
     if result is None:
       continue
@@ -97,9 +93,10 @@ def main():
   elif len(args) > 1:
     parser.error('Must specify only one test name.')
 
+  url = options.url.rstrip('/')
   test_name = args[0]
-  test_keys = get_test_keys(options.url, test_name)
-  print_results(get_swarm_results(options.url, test_keys))
+  test_keys = get_test_keys(url, test_name)
+  print_results(swarm_get_results(url, test_keys))
   return 0
 
 

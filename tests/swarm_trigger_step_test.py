@@ -10,11 +10,9 @@ import StringIO
 import sys
 import unittest
 
-#import test_env  # pylint: disable=W0403,W0611
-
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
-import trigger_swarm_step as run_slavelastic
+import swarm_trigger_step
 
 FILE_NAME = "test.isolated"
 FILE_HASH = hashlib.sha1(FILE_NAME).hexdigest()
@@ -55,7 +53,7 @@ def GenerateExpectedJSON(options):
     'tests' : [
       {
         'action': [
-          'python', run_slavelastic.RUN_TEST_NAME,
+          'python', swarm_trigger_step.RUN_TEST_NAME,
           '--hash', FILE_HASH,
           '--remote', retrieval_url,
           '-v'
@@ -120,8 +118,8 @@ def MockUrlOpen(_url_or_request, _body=None):
 class ManifestTest(unittest.TestCase):
   def test_basic_manifest(self):
     options = Options(shards=2)
-    manifest = run_slavelastic.Manifest(FILE_HASH, TEST_NAME, options.shards,
-                                        '*', options)
+    manifest = swarm_trigger_step.Manifest(
+        FILE_HASH, TEST_NAME, options.shards, '*', options)
 
     manifest_json = json.loads(manifest.to_json())
 
@@ -132,10 +130,9 @@ class ManifestTest(unittest.TestCase):
     """A basic linux manifest test to ensure that windows specific values
        aren't used.
     """
-
     options = Options(os_image='linux2')
-    manifest = run_slavelastic.Manifest(FILE_HASH, TEST_NAME, options.shards,
-                                        '*', options)
+    manifest = swarm_trigger_step.Manifest(
+        FILE_HASH, TEST_NAME, options.shards, '*', options)
 
     manifest_json = json.loads(manifest.to_json())
 
@@ -143,13 +140,19 @@ class ManifestTest(unittest.TestCase):
     self.assertEqual(expected, manifest_json)
 
   def test_process_manifest_success(self):
-    run_slavelastic.zipfile.ZipFile = MockZipFile
-    run_slavelastic.urllib2.urlopen = MockUrlOpen
-
-    options = Options()
-    self.assertEqual(
-        0, run_slavelastic.ProcessManifest(FILE_HASH, TEST_NAME, options.shards,
-                                           '*', options))
+    old_ZipFile = swarm_trigger_step.zipfile.ZipFile
+    old_urlopen = swarm_trigger_step.urllib2.urlopen
+    try:
+      swarm_trigger_step.zipfile.ZipFile = MockZipFile
+      swarm_trigger_step.urllib2.urlopen = MockUrlOpen
+      options = Options()
+      self.assertEqual(
+          0,
+          swarm_trigger_step.ProcessManifest(
+            FILE_HASH, TEST_NAME, options.shards, '*', options))
+    finally:
+      swarm_trigger_step.zipfile.ZipFile = old_ZipFile
+      swarm_trigger_step.urllib2.urlopen = old_urlopen
 
 
 if __name__ == '__main__':

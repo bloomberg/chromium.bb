@@ -54,7 +54,7 @@ def main():
     hashval = hashlib.sha1(open(isolated, 'rb').read()).hexdigest()
     run(
         [
-          'trigger_swarm_step.py',
+          'swarm_trigger_step.py',
           '--os_image', sys.platform,
           '--swarm-url', swarm_server,
           '--test-name-prefix', prefix,
@@ -72,7 +72,7 @@ def main():
     print('\nGetting results')
     run(
         [
-          'get_swarm_results.py',
+          'swarm_get_results.py',
           '--url', swarm_server,
           prefix + 'hello_world',
         ])
