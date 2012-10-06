@@ -5,6 +5,10 @@
 #ifndef WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
 #define WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
 
+namespace leveldb {
+class Status;
+}
+
 namespace fileapi {
 
 enum SyncStatusCode {
@@ -31,7 +35,10 @@ enum SyncStatusCode {
   SYNC_DATABASE_ERROR_NOT_FOUND = -16,
   SYNC_DATABASE_ERROR_CORRUPTION = -17,
   SYNC_DATABASE_ERROR_IO_ERROR = -18,
+  SYNC_DATABASE_ERROR_UNKNOWN = -19,
 };
+
+SyncStatusCode LevelDBStatusToSyncStatusCode(leveldb::Status status);
 
 }  // namespace fileapi
 
