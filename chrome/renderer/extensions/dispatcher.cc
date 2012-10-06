@@ -467,8 +467,6 @@ void Dispatcher::OnDispatchOnDisconnect(int port_id, bool connection_error) {
 
 void Dispatcher::OnLoaded(
     const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions) {
-  std::vector<WebString> platform_app_patterns;
-
   std::vector<ExtensionMsg_Loaded_Params>::const_iterator i;
   for (i = loaded_extensions.begin(); i != loaded_extensions.end(); ++i) {
     scoped_refptr<const Extension> extension(i->ConvertToExtension());
@@ -481,30 +479,6 @@ void Dispatcher::OnLoaded(
     }
 
     extensions_.Insert(extension);
-
-    if (extension->is_platform_app()) {
-      platform_app_patterns.push_back(
-          WebString::fromUTF8(extension->url().spec() + "*"));
-    }
-  }
-
-  if (!platform_app_patterns.empty()) {
-    // We have collected a set of platform-app extensions, so let's tell WebKit
-    // about them so that it can provide a default stylesheet for them.
-    //
-    // TODO(miket): consider enhancing WebView to allow removing
-    // single stylesheets, or else to edit the pattern set associated
-    // with one.
-    RenderThread::Get()->EnsureWebKitInitialized();
-    WebVector<WebString> patterns;
-    patterns.assign(platform_app_patterns);
-    WebView::addUserStyleSheet(
-        WebString::fromUTF8(ResourceBundle::GetSharedInstance().
-            GetRawDataResource(IDR_PLATFORM_APP_CSS,
-                               ui::SCALE_FACTOR_NONE)),
-        patterns,
-        WebView::UserContentInjectInAllFrames,
-        WebView::UserStyleInjectInExistingDocuments);
   }
 }
 
@@ -707,8 +681,8 @@ void Dispatcher::PopulateLazyBindingsMap() {
 }
 
 void Dispatcher::InstallBindings(ModuleSystem* module_system,
-                                          v8::Handle<v8::Context> v8_context,
-                                          const std::string& api) {
+                                 v8::Handle<v8::Context> v8_context,
+                                 const std::string& api) {
   std::map<std::string, BindingInstaller>::const_iterator lazy_binding =
       lazy_bindings_map_.find(api);
   if (lazy_binding != lazy_bindings_map_.end()) {
@@ -833,8 +807,7 @@ void Dispatcher::DidCreateScriptContext(
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
-std::string Dispatcher::GetExtensionID(const WebFrame* frame,
-                                                int world_id) {
+std::string Dispatcher::GetExtensionID(const WebFrame* frame, int world_id) {
   if (world_id != 0) {
     // Isolated worlds (content script).
     return user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
@@ -847,8 +820,12 @@ std::string Dispatcher::GetExtensionID(const WebFrame* frame,
 }
 
 bool Dispatcher::IsWithinPlatformApp(const WebFrame* frame) {
-  const Extension* extension =
-      extensions_.GetByID(GetExtensionID(frame->top(), 0));
+  // We intentionally don't use the origin parameter for ExtensionURLInfo since
+  // it would be empty (i.e. unique) for sandboxed resources and thus not match.
+  ExtensionURLInfo url_info(
+      UserScriptSlave::GetDataSourceURLForFrame(frame->top()));
+  const Extension* extension = extensions_.GetExtensionOrAppByURL(url_info);
+
   return extension && extension->is_platform_app();
 }
 
@@ -862,6 +839,19 @@ void Dispatcher::WillReleaseScriptContext(
 
   v8_context_set_.Remove(context);
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
+}
+
+void Dispatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
+  if (IsWithinPlatformApp(frame)) {
+    // WebKit doesn't let us define an additional user agent stylesheet, so we
+    // insert the default platform app stylesheet into all documents that are
+    // loaded in each app.
+    frame->document().insertUserStyleSheet(
+        WebString::fromUTF8(ResourceBundle::GetSharedInstance().
+            GetRawDataResource(IDR_PLATFORM_APP_CSS,
+                               ui::SCALE_FACTOR_NONE)),
+        WebDocument::UserStyleUserLevel);
+  }
 }
 
 void Dispatcher::OnActivateExtension(const std::string& extension_id) {

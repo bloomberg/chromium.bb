@@ -95,6 +95,8 @@ class Dispatcher : public content::RenderProcessObserver {
                                 v8::Handle<v8::Context> context,
                                 int world_id);
 
+  void DidCreateDocumentElement(WebKit::WebFrame* frame);
+
   // TODO(mpcomplete): remove. http://crbug.com/100411
   bool IsAdblockWithWebRequestInstalled() const {
     return webrequest_adblock_;
@@ -195,8 +197,9 @@ class Dispatcher : public content::RenderProcessObserver {
                        v8::Handle<v8::Context> v8_context,
                        const std::string& api);
 
-  // Determeines whether |frame| is being run inside a platform app
-  // (this evaluates to true for iframes in platform apps).
+  // Determines whether |frame| is loading a platform app resource URL. (this
+  // evaluates to true for iframes in platform apps and sandboxed resources that
+  // are not in the same origin).
   bool IsWithinPlatformApp(const WebKit::WebFrame* frame);
 
   // Returns the Feature::Context type of context for a JavaScript context.
