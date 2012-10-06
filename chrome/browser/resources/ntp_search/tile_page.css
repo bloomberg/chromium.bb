@@ -6,10 +6,6 @@
   Tile Page
 ----------------------------------------------------------------------------- */
 
-#page-list {
-  padding-bottom: 10px;
-}
-
 .tile-page {
   overflow: hidden;
   position: relative;

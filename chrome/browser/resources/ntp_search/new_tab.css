@@ -6,13 +6,68 @@
    General Styles
 ----------------------------------------------------------------------------- */
 
+html {
+  /* It's necessary to put this here instead of in body in order to get the
+     background-size of 100% to work properly */
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
+  /* Don't highlight links when they're tapped. Safari has bugs here that
+     show up as flicker when dragging in some situations */
+  -webkit-tap-highlight-color: transparent;
+  /* Don't allow selecting text - can occur when dragging */
+  -webkit-user-select: none;
+  background-size: auto 100%;
   /* TODO(pedrosimonetti): Confirm with designers/engineers what do we want
    * to do regarding font family, once AFAIK we want to use Arial always. */
   font-family: Arial;
   margin: 0;
   overflow: hidden;
   padding: 0;
+}
+
+/* [hidden] does display:none, but its priority is too low in some cases. */
+[hidden] {
+  display: none !important;
+}
+
+#notification-container {
+  -webkit-transition: opacity 200ms;
+  position: absolute;
+  top: 32px;
+}
+
+#notification-container.inactive {
+  -webkit-transition: opacity 200ms;
+  opacity: 0;
+}
+
+#notification {
+  display: inline-block;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+#notification > div > div,
+#notification > div {
+  display: inline-block;
+}
+
+/* NOTE: This is in the probable case that we start stuffing 16x16 data URI'd
+ * icons in the promo notification responses. */
+#notification > span > img {
+  margin-bottom: -3px;
+}
+
+#notification .close-button {
+  -webkit-margin-start: 8px;
+  vertical-align: top;
+}
+
+.link-button {
+  -webkit-margin-start: 0.5em;
 }
 
 #card-slider-frame {
@@ -32,6 +87,7 @@ body {
 
 #page-list {
   display: -webkit-box;
+  height: 100%;
   position: static;
 }
 
@@ -39,4 +95,36 @@ body {
   height: 14px;
   margin: 8px auto 30px;
   text-align: center;
+}
+
+/* TODO(jeremycho): Figure out if we need this. */
+#attribution {
+  bottom: 0;
+  left: auto;
+  margin-left: 8px;
+  /* Leave room for the scrollbar. */
+  margin-right: 13px;
+  position: absolute;
+  right: 0;
+  text-align: left;
+  z-index: -5;
+}
+
+/* For themes that right-align their images, we flip the attribution to the
+ * left to avoid conflicts. We also do this for bare-minimum mode since there
+ * can be conflicts with the recently closed menu. */
+html[themegravity='right'] #attribution,
+body.bare-minimum #attribution,
+html[dir='rtl'] #attribution {
+  left: 0;
+  right: auto;
+  text-align: right;
+}
+
+#attribution > span {
+  display: block;
+}
+
+.starting-up * {
+  -webkit-transition: none !important;
 }

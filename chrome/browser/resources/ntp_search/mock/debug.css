@@ -8,39 +8,9 @@
    according to the new specification.
    ========================================================================= */
 
-#ntp5 #card-slider-frame {
-  bottom: 0;
-  position: absolute;
-  top: inherit;
-}
-
 #ntp5 .tile-page-scrollbar,
 #ntp5 .top-margin {
   display: none;
-}
-
-#ntp5 .tile-page {
-  display: block;
-}
-
-#ntp5 #page-list {
-  margin-top: 0;
-  padding-bottom: 0;
-}
-
-#ntp5 .thumbnail-image {
-  border-radius: 2px;
-  opacity: 1;
-}
-
-#ntp5 .tile-page-content {
-  padding: 0;
-}
-
-#ntp5 #notification-container {
-  bottom: inherit;
-  position: absolute;
-  top: 32px;
 }
 
 /* =========================================================================

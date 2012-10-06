@@ -43,6 +43,8 @@
 ----------------------------------------------------------------------------- */
 
 .thumbnail .thumbnail-image {
+  /* These values are equivalent to background-size: 100%.
+     TODO(jeremycho): Resolve the discrepancy with the cell dimensions above. */
   background-size: 130px 81px;
 }
 
