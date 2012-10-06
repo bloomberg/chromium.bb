@@ -374,11 +374,7 @@ void BluetoothAdapterChromeOs::UpdateDevice(
   }
   device->Update(properties, true);
 
-  // Don't send a duplicate added event for supported devices that were
-  // previously visible or for already paired devices, send a changed
-  // event instead. We always send one event or the other since we always
-  // inform observers about paired devices whether or not they're supported.
-  if (update_device && (device->IsSupported() || was_paired)) {
+  if (update_device) {
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceChanged(this, device));
   } else {
@@ -393,9 +389,8 @@ void BluetoothAdapterChromeOs::ClearDevices() {
   for (DevicesMap::iterator iter = replace.begin();
        iter != replace.end(); ++iter) {
     BluetoothDeviceChromeOs* device = iter->second;
-    if (device->IsSupported() || device->IsPaired())
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceRemoved(this, device));
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      DeviceRemoved(this, device));
 
     delete device;
   }
@@ -440,15 +435,8 @@ void BluetoothAdapterChromeOs::DeviceRemoved(
       DVLOG(1) << "Removed object path from device " << device->address();
       device->RemoveObjectPath();
 
-      // If the device is not supported then we want to act as if it was
-      // removed, even though it is still visible to the adapter.
-      if (!device->IsSupported()) {
-        FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                          DeviceRemoved(this, device));
-      } else {
-        FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                          DeviceChanged(this, device));
-      }
+      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                        DeviceChanged(this, device));
     }
   }
 }
@@ -468,9 +456,8 @@ void BluetoothAdapterChromeOs::ClearDiscoveredDevices() {
     ++iter;
 
     if (!device->IsPaired()) {
-      if (device->IsSupported())
-        FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                          DeviceRemoved(this, device));
+      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                        DeviceRemoved(this, device));
 
       delete device;
       devices_.erase(temp);
@@ -502,14 +489,10 @@ void BluetoothAdapterChromeOs::DeviceFound(
   device->SetVisible(true);
   device->Update(&properties, false);
 
-  // Don't send a duplicated added event for duplicate signals for supported
-  // devices that were previously visible (should never happen) or for already
-  // paired devices, send a changed event instead. We do not inform observers
-  // if we find or update an unconnected and unsupported device.
-  if (update_device && (device->IsSupported() || device->IsPaired())) {
+  if (update_device) {
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceChanged(this, device));
-  } else if (device->IsSupported()) {
+  } else {
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceAdded(this, device));
   }
@@ -531,9 +514,8 @@ void BluetoothAdapterChromeOs::DeviceDisappeared(
   // paired with is no longer visible to the adapter, so don't remove
   // in that case and only clear the visible flag.
   if (!device->IsPaired()) {
-    if (device->IsSupported())
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceRemoved(this, device));
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      DeviceRemoved(this, device));
 
     DVLOG(1) << "Discovered device " << device->address()
              << " is no longer visible to the adapter";

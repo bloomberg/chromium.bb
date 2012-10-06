@@ -117,13 +117,6 @@ TEST_F(BluetoothAdapterDevicesChromeOsTest, DeviceRemovedAfterFound) {
   device_properties.name.ReplaceValue("Fake Keyboard");
   device_properties.bluetooth_class.ReplaceValue(0x2540);
 
-  // needs to be a supported class
-
-  // should create a bluetooth device,
-  // put it in the hash map,
-  // set visible to true,
-  // update its properties,
-
   // Inform the adapter that the device has been found;
   // BluetoothAdapterClient::Observer::DeviceAdded will be called, passing
   // the device object.
@@ -151,7 +144,7 @@ TEST_F(BluetoothAdapterDevicesChromeOsTest, DeviceRemovedAfterFound) {
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->DeviceCreated(adapter_path_, device_path);
 
-  // Finally remove the adapter again; since this is a supported device
+  // Finally remove the adapter again;
   // BluetoothAdapterClient::Observer::DeviceRemoved should be not called,
   // instead BluetoothAdapterClient::Observer::DeviceChanged will be called.
   EXPECT_CALL(adapter_observer_, DeviceRemoved(adapter_.get(), device))
@@ -165,53 +158,6 @@ TEST_F(BluetoothAdapterDevicesChromeOsTest, DeviceRemovedAfterFound) {
   // Verify that the device is still visible, just no longer paired.
   EXPECT_TRUE(device->IsVisible());
   EXPECT_FALSE(device->IsPaired());
-}
-
-TEST_F(BluetoothAdapterDevicesChromeOsTest,
-       UnsupportedDeviceRemovedAfterFound) {
-  const dbus::ObjectPath device_path("/fake/hci0/dev_ba_c0_11_00_00_02");
-  const std::string device_address = "BA:C0:11:00:00:02";
-
-  MockBluetoothDeviceClient::Properties device_properties;
-  device_properties.address.ReplaceValue(device_address);
-  device_properties.name.ReplaceValue("Fake Computer");
-  device_properties.bluetooth_class.ReplaceValue(0x400100);
-
-  // Inform the adapter that the unsupported device has been found;
-  // BluetoothAdapterClient::Observer::DeviceAdded should not be called
-  // yet because this device is not supported so is hidden from the UI.
-  EXPECT_CALL(adapter_observer_, DeviceAdded(adapter_.get(), _))
-      .Times(0);
-
-  BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
-  static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
-      ->DeviceFound(adapter_path_, device_address, device_properties);
-
-  // Now inform the adapter the device has been added and assigned an
-  // object path; BluetoothDeviceClient::GetProperties will be called
-  // to obtain the property set; and
-  // BluetoothAdapterClient::Observer::DeviceAdded will be called,
-  // passing the device object.
-  EXPECT_CALL(*mock_device_client_, GetProperties(device_path))
-      .WillRepeatedly(Return(&device_properties));
-
-  BluetoothDevice* device;
-  EXPECT_CALL(adapter_observer_, DeviceAdded(adapter_.get(), _))
-      .Times(1)
-      .WillOnce(SaveArg<1>(&device));
-
-  static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
-      ->DeviceCreated(adapter_path_, device_path);
-
-  // Finally remove the device again;
-  // BluetoothAdapterClient::Observer::DeviceRemoved will be called
-  // before the device object is deleted.
-  EXPECT_CALL(adapter_observer_, DeviceRemoved(adapter_.get(), device))
-      .Times(1);
-
-  static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
-      ->DeviceRemoved(adapter_path_, device_path);
 }
 
 }  // namespace chromeos

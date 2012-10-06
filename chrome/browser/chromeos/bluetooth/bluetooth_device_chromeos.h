@@ -76,9 +76,6 @@ class BluetoothDeviceChromeOs : public BluetoothDevice,
 
   explicit BluetoothDeviceChromeOs(BluetoothAdapterChromeOs* adapter);
 
-  // Indicates whether the class of this device is supported by Chrome OS.
-  bool IsSupported() const;
-
   // Sets the dbus object path for the device to |object_path|, indicating
   // that the device has gone from being discovered to paired or bonded.
   void SetObjectPath(const dbus::ObjectPath& object_path);

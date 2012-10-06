@@ -863,15 +863,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableFramelessConstrainedDialogs),
   },
-#if defined(OS_CHROMEOS)
-  {
-    "enable-unsupported-bluetooth-devices",
-    IDS_FLAGS_UNSUPPORTED_BLUETOOTH_DEVICES_NAME,
-    IDS_FLAGS_UNSUPPORTED_BLUETOOTH_DEVICES_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableUnsupportedBluetoothDevices)
-  },
-#endif
   { "disable-accelerated-video-decode",
     IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME,
     IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_DESCRIPTION,

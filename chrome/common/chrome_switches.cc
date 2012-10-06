@@ -1423,11 +1423,6 @@ const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
 // default.
 const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
 
-// Enables discovery and interaction with Bluetooth devices that may not be
-// supported by ChromeOS.
-const char kEnableUnsupportedBluetoothDevices[] =
-    "enable-unsupported-bluetooth-devices";
-
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[] = "first-boot";
 

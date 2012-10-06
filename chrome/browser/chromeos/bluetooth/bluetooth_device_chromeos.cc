@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_service_record.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket_chromeos.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_utils.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
@@ -45,20 +44,6 @@ BluetoothDeviceChromeOs::BluetoothDeviceChromeOs(
 }
 
 BluetoothDeviceChromeOs::~BluetoothDeviceChromeOs() {
-}
-
-bool BluetoothDeviceChromeOs::IsSupported() const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableUnsupportedBluetoothDevices))
-    return true;
-
-  BluetoothDevice::DeviceType device_type = GetDeviceType();
-  return (device_type == DEVICE_JOYSTICK ||
-          device_type == DEVICE_GAMEPAD ||
-          device_type == DEVICE_KEYBOARD ||
-          device_type == DEVICE_MOUSE ||
-          device_type == DEVICE_TABLET ||
-          device_type == DEVICE_KEYBOARD_MOUSE_COMBO);
 }
 
 bool BluetoothDeviceChromeOs::IsPaired() const {

@@ -386,7 +386,6 @@ extern const char kEnableGView[];
 extern const char kEnableKioskMode[];
 extern const char kEnableRequestTabletSite[];
 extern const char kEnableStaticIPConfig[];
-extern const char kEnableUnsupportedBluetoothDevices[];
 extern const char kFirstBoot[];
 extern const char kKioskModeScreensaverPath[];
 extern const char kLoginManager[];
