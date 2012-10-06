@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/painter.h"
@@ -27,6 +28,25 @@ const SkColor kPushedBackgroundTopColor = SkColorSetRGB(0xeb, 0xeb, 0xeb);
 const SkColor kPushedBackgroundBottomColor = SkColorSetRGB(0xdb, 0xdb, 0xdb);
 const SkColor kDisabledBackgroundTopColor = SkColorSetRGB(0xed, 0xed, 0xed);
 const SkColor kDisabledBackgroundBottomColor = SkColorSetRGB(0xde, 0xde, 0xde);
+
+const SkScalar kShadowOffsetX = SkFloatToScalar(0.0f);
+const SkScalar kShadowOffsetY = SkFloatToScalar(2.0f);
+const SkColor kShadowColor = SkColorSetRGB(0x00, 0x00, 0x00);
+const SkAlpha kNormalShadowAlpha = 0x13;
+const SkAlpha kHotShadowAlpha = 0x1e;
+const SkAlpha kPushedShadowAlpha = 0x00;
+const SkAlpha kDisabledShadowAlpha = 0x00;
+
+// The spec'ed radius in CSS is 2, but the Skia blur is much more diffuse than
+// the CSS blur.  A radius of 1 produces a similar visual result.
+const SkScalar kInsetShadowBlurRadius = SkFloatToScalar(1.0f);
+const SkScalar kInsetShadowOffsetX = SkFloatToScalar(0.0f);
+const SkScalar kInsetShadowOffsetY = SkFloatToScalar(1.0f);
+const SkColor kInsetShadowColor = SkColorSetRGB(0xff, 0xff, 0xff);
+const SkAlpha kNormalInsetShadowAlpha = 0xb7;
+const SkAlpha kHotInsetShadowAlpha = 0xf2;
+const SkAlpha kPushedInsetShadowAlpha = 0x23;
+const SkAlpha kDisabledInsetShadowAlpha = 0x00;
 
 const SkColor kEnabledTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kDisabledTextColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
@@ -51,24 +71,12 @@ int GetButtonInset() {
   return std::max(kBorderWidth, kFocusRingWidth);
 }
 
-class ChromeStyleTextButtonBackground : public Background {
+class ChromeStyleTextButtonBackgroundPainter : public Painter {
  public:
-  ChromeStyleTextButtonBackground() {
-  }
-
-  virtual ~ChromeStyleTextButtonBackground() {
-  }
-
-  // Overriden from Background
-  virtual void Paint(gfx::Canvas* canvas, View* view) const {
-    if (painter_.get())
-    {
-      gfx::Rect bounds = view->GetLocalBounds();
-      // Inset to the actual button region.
-      int inset = GetButtonInset();
-      bounds.Inset(inset, inset, inset, inset);
-      Painter::PaintPainterAt(canvas, painter_.get(), bounds);
-    }
+  ChromeStyleTextButtonBackgroundPainter()
+      : gradient_painter_(NULL),
+        shadow_alpha_(kNormalShadowAlpha),
+        inset_shadow_alpha_(kNormalInsetShadowAlpha) {
   }
 
   void SetColors(SkColor top, SkColor bottom) {
@@ -77,14 +85,108 @@ class ChromeStyleTextButtonBackground : public Background {
     SkScalar pos[count] = {
       SkFloatToScalar(0.0f), kGradientStartLocation, SkFloatToScalar(1.0f) };
 
-    painter_.reset(
+    gradient_painter_.reset(
         Painter::CreateVerticalMultiColorGradient(colors, pos, count));
-    SetNativeControlColor(
-        color_utils::AlphaBlend(colors[0], colors[count - 1], 128));
+  }
+
+  void set_shadow_alpha(SkAlpha alpha) {
+    shadow_alpha_ = alpha;
+  }
+
+  void set_inset_shadow_alpha(SkAlpha alpha) {
+    inset_shadow_alpha_ = alpha;
   }
 
  private:
-  scoped_ptr<Painter> painter_;
+  // Overridden from Painter:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) {
+    PaintShadow(canvas, size);
+    PaintGradientBackground(canvas, size);
+    PaintInsetShadow(canvas, size);
+  }
+
+  void PaintGradientBackground(gfx::Canvas* canvas, const gfx::Size& size) {
+    if (gradient_painter_.get())
+      gradient_painter_->Paint(canvas, size);
+  }
+
+  void PaintShadow(gfx::Canvas* canvas, const gfx::Size& size) {
+    SkPaint paint;
+
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(SkColorSetA(kShadowColor, shadow_alpha_));
+
+    SkRect shadow_rect = SkRect::MakeWH(size.width(), size.height());
+    shadow_rect.offset(kShadowOffsetX, kShadowOffsetY);
+    canvas->sk_canvas()->drawRect(shadow_rect, paint);
+  }
+
+  void PaintInsetShadow(gfx::Canvas* canvas, const gfx::Size& size) {
+    if (inset_shadow_alpha_ == 0)
+      return;
+
+    canvas->sk_canvas()->saveLayerAlpha(NULL, inset_shadow_alpha_);
+
+    // Outset shadow to ring of pixels outside the button, then offset.
+    SkRect shadow_rect = SkRect::MakeWH(size.width(), size.height());
+    float shadow_ring_width = SkScalarToFloat(kInsetShadowBlurRadius) * 2.0f;
+    shadow_rect.outset(SkFloatToScalar(shadow_ring_width / 2.0f),
+                       SkFloatToScalar(shadow_ring_width / 2.0f));
+    shadow_rect.offset(kInsetShadowOffsetX, kInsetShadowOffsetY);
+
+    // Clip to button region.
+    SkRect clip_rect = SkRect::MakeWH(size.width(), size.height());
+
+    SkPaint paint;
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(SkFloatToScalar(shadow_ring_width));
+    paint.setColor(kInsetShadowColor);
+    paint.setMaskFilter(
+        SkBlurMaskFilter::Create(
+            SkFloatToScalar(kInsetShadowBlurRadius),
+            SkBlurMaskFilter::kNormal_BlurStyle));
+    canvas->sk_canvas()->clipRect(clip_rect);
+    canvas->sk_canvas()->drawRect(shadow_rect, paint);
+    canvas->sk_canvas()->restore();
+  }
+
+  scoped_ptr<Painter> gradient_painter_;
+  SkAlpha shadow_alpha_;
+  SkAlpha inset_shadow_alpha_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeStyleTextButtonBackgroundPainter);
+};
+
+class ChromeStyleTextButtonBackground : public Background {
+ public:
+  ChromeStyleTextButtonBackground()
+      : painter_(new ChromeStyleTextButtonBackgroundPainter) {
+  }
+
+  // Overriden from Background
+  virtual void Paint(gfx::Canvas* canvas, View* view) const {
+    gfx::Rect bounds = view->GetLocalBounds();
+    // Inset to the actual button region.
+    int inset = GetButtonInset();
+    bounds.Inset(inset, inset, inset, inset);
+    Painter::PaintPainterAt(canvas, painter_.get(), bounds);
+  }
+
+  void SetColors(SkColor top, SkColor bottom) {
+    painter_->SetColors(top, bottom);
+    SetNativeControlColor(color_utils::AlphaBlend(top, bottom, 128));
+  }
+
+  void SetShadowAlpha(SkAlpha alpha) {
+    painter_->set_shadow_alpha(alpha);
+  }
+
+  void SetInsetShadowAlpha(SkAlpha alpha) {
+    painter_->set_inset_shadow_alpha(alpha);
+  }
+
+ private:
+  scoped_ptr<ChromeStyleTextButtonBackgroundPainter> painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeStyleTextButtonBackground);
 };
@@ -216,26 +318,36 @@ class ChromeStyleStateChangedUpdater
 
     SkColor top;
     SkColor bottom;
+    SkAlpha shadow_alpha;
+    SkAlpha inset_shadow_alpha;
 
     switch (state) {
       case CustomButton::BS_NORMAL:
         top = kNormalBackgroundTopColor;
         bottom = kNormalBackgroundBottomColor;
+        shadow_alpha = kNormalShadowAlpha;
+        inset_shadow_alpha = kNormalInsetShadowAlpha;
         break;
 
       case CustomButton::BS_HOT:
         top = kHotBackgroundTopColor;
         bottom = kHotBackgroundBottomColor;
+        shadow_alpha = kHotShadowAlpha;
+        inset_shadow_alpha = kHotInsetShadowAlpha;
         break;
 
       case CustomButton::BS_PUSHED:
         top = kPushedBackgroundTopColor;
         bottom = kPushedBackgroundBottomColor;
+        shadow_alpha = kPushedShadowAlpha;
+        inset_shadow_alpha = kPushedInsetShadowAlpha;
         break;
 
       case CustomButton::BS_DISABLED:
         top = kDisabledBackgroundTopColor;
         bottom = kDisabledBackgroundBottomColor;
+        shadow_alpha = kDisabledShadowAlpha;
+        inset_shadow_alpha = kDisabledInsetShadowAlpha;
         break;
 
       default:
@@ -245,6 +357,8 @@ class ChromeStyleStateChangedUpdater
     }
 
     background_->SetColors(top, bottom);
+    background_->SetShadowAlpha(shadow_alpha);
+    background_->SetInsetShadowAlpha(inset_shadow_alpha);
   }
 
   void SetShadowForState(CustomButton::ButtonState state) {
