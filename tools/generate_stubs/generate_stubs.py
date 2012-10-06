@@ -78,6 +78,7 @@ INVALID_C_IDENT_CHARS = re.compile('[^_a-zA-Z0-9]')
 # Constants defning the supported file types options.
 FILE_TYPE_WIN = 'windows_lib'
 FILE_TYPE_POSIX_STUB = 'posix_stubs'
+FILE_TYPE_WIN_DEF = 'windows_def'
 
 # Template for generating a stub function definition.  Includes a forward
 # declaration marking the symbol as weak.  This template takes the following
@@ -875,19 +876,21 @@ def CreateOptionParser():
                     '--intermediate_dir',
                     dest='intermediate_dir',
                     default=None,
-                    help='Locaiton of intermediate files.')
+                    help=('Location of intermediate files. Ignored for %s type'
+                          % FILE_TYPE_WIN_DEF))
   parser.add_option('-t',
                     '--type',
                     dest='type',
                     default=None,
-                    help=('Type of file. Either "%s" or "%s"' %
-                          (FILE_TYPE_POSIX_STUB, FILE_TYPE_WIN)))
+                    help=('Type of file. Valid types are "%s" or "%s" or "%s"' %
+                          (FILE_TYPE_POSIX_STUB, FILE_TYPE_WIN,
+                           FILE_TYPE_WIN_DEF)))
   parser.add_option('-s',
                     '--stubfile_name',
                     dest='stubfile_name',
                     default=None,
-                    help=('Name of posix_stubs output file. Ignored for '
-                          '%s type.' % FILE_TYPE_WIN))
+                    help=('Name of posix_stubs output file. Only valid with '
+                          '%s type.' % FILE_TYPE_POSIX_STUB))
   parser.add_option('-p',
                     '--path_from_source',
                     dest='path_from_source',
@@ -906,6 +909,13 @@ def CreateOptionParser():
                     help=('File to insert after the system includes in the '
                           'generated stub implemenation file. Ignored for '
                           '%s type.' % FILE_TYPE_WIN))
+  parser.add_option('-m',
+                    '--module_name',
+                    dest='module_name',
+                    default=None,
+                    help=('Name of output DLL or LIB for DEF creation using '
+                          '%s type.' % FILE_TYPE_WIN_DEF))
+
   return parser
 
 
@@ -925,14 +935,19 @@ def ParseOptions():
   if options.out_dir is None:
     parser.error('Output location not specified')
 
-  if options.type not in [FILE_TYPE_WIN, FILE_TYPE_POSIX_STUB]:
-    parser.error('Invalid output file type')
+  if (options.type not in
+      [FILE_TYPE_WIN, FILE_TYPE_POSIX_STUB, FILE_TYPE_WIN_DEF]):
+    parser.error('Invalid output file type: %s' % options.type)
 
   if options.type == FILE_TYPE_POSIX_STUB:
     if options.stubfile_name is None:
-      parser.error('Output file name need for %s' % FILE_TYPE_POSIX_STUB)
+      parser.error('Output file name needed for %s' % FILE_TYPE_POSIX_STUB)
     if options.path_from_source is None:
       parser.error('Path from source needed for %s' % FILE_TYPE_POSIX_STUB)
+
+  if options.type == FILE_TYPE_WIN_DEF:
+    if options.module_name is None:
+      parser.error('Module name needed for %s' % FILE_TYPE_WIN_DEF)
 
   return options, args
 
@@ -977,7 +992,7 @@ def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir):
   """For each signature file, create a windows lib.
 
   Args:
-    sig_files: Array of Strings with the paths to each signature file.
+    sig_files: Array of strings with the paths to each signature file.
     out_dir: String holding path to directory where the generated libs go.
     intermediate_dir: String holding path to directory generated intermdiate
                       artifacts.
@@ -992,13 +1007,39 @@ def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir):
       infile.close()
 
 
+def CreateWindowsDefForSigFiles(sig_files, out_dir, module_name):
+  """For all signature files, create a single windows def file.
+
+  Args:
+    sig_files: Array of strings with the paths to each signature file.
+    out_dir: String holding path to directory where the generated def goes.
+    module_name: Name of the output DLL or LIB which will link in the def file.
+  """
+  signatures = []
+  for input_path in sig_files:
+    infile = open(input_path, 'r')
+    try:
+      signatures += ParseSignatures(infile)
+    finally:
+      infile.close()
+
+  def_file_path = os.path.join(
+      out_dir, os.path.splitext(os.path.basename(module_name))[0] + '.def')
+  outfile = open(def_file_path, 'w')
+
+  try:
+    WriteWindowsDefFile(module_name, signatures, outfile)
+  finally:
+    outfile.close()
+
+
 def CreatePosixStubsForSigFiles(sig_files, stub_name, out_dir,
                                 intermediate_dir, path_from_source,
                                 extra_stub_header):
   """Create a posix stub library with a module for each signature file.
 
   Args:
-    sig_files: Array of Strings with the paths to each signature file.
+    sig_files: Array of strings with the paths to each signature file.
     stub_name: String with the basename of the generated stub file.
     out_dir: String holding path to directory for the .h files.
     intermediate_dir: String holding path to directory for the .cc files.
@@ -1070,6 +1111,8 @@ def main():
     CreatePosixStubsForSigFiles(args, options.stubfile_name, out_dir,
                                 intermediate_dir, options.path_from_source,
                                 options.extra_stub_header)
+  elif options.type == FILE_TYPE_WIN_DEF:
+    CreateWindowsDefForSigFiles(args, out_dir, options.module_name)
 
 
 if __name__ == '__main__':
