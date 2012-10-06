@@ -7315,7 +7315,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Please tell us what is happening before sending the feedback.
       </message>
       <message name="IDS_FEEDBACK_NO_SAVED_SCREENSHOTS_HELP" desc="Message shown when no screenshots are available for selection">
-        You can select saved screenshots from here. Currently there are no screenshots available. You can press Ctrl + the "Overview Mode" key together to take a screenshot. The last three screenshots that you have taken will appear here.
+        You can select saved screenshots from here. Currently there are no screenshots available. You can press Ctrl + the "Window Switch" key together to take a screenshot. The last three screenshots that you have taken will appear here.
       </message>
       <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
         Send feedback
