@@ -19,6 +19,7 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/syncable/file_change.h"
+#include "webkit/fileapi/syncable/sync_status_code.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -70,17 +71,18 @@ class FILEAPI_EXPORT LocalFileChangeTracker
 
   // Called by FileSyncService at the startup time to collect last
   // dirty changes left after the last shutdown (if any).
-  void CollectLastDirtyChanges(FileChangeMap* changes);
+  SyncStatusCode CollectLastDirtyChanges(FileChangeMap* changes);
+
+ protected:
+  // Database related methods. These methods are virtual for testing.
+  virtual SyncStatusCode MarkDirtyOnDatabase(const FileSystemURL& url);
+  virtual SyncStatusCode ClearDirtyOnDatabase(const FileSystemURL& url);
 
  private:
   class TrackerDB;
   friend class LocalFileChangeTrackerTest;
 
   void RecordChange(const FileSystemURL& url, const FileChange& change);
-
-  // Database related methods.
-  void MarkDirtyOnDatabase(const FileSystemURL& url);
-  void ClearDirtyOnDatabase(const FileSystemURL& url);
 
   std::string SerializeExternalFileSystemURL(const FileSystemURL& url);
   bool DeserializeExternalFileSystemURL(

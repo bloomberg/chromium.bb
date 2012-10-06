@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
+#include "webkit/fileapi/syncable/sync_status_code.h"
 
 namespace fileapi {
 
@@ -34,13 +35,31 @@ FileSystemURL URL(const char* spec) {
 
 }  // namespace
 
+class LocalFileChangeTrackerForTest : public LocalFileChangeTracker {
+ public:
+  LocalFileChangeTrackerForTest(const FilePath& base_path,
+                                base::SequencedTaskRunner* file_task_runner)
+      : LocalFileChangeTracker(base_path, file_task_runner) {}
+
+ protected:
+  virtual SyncStatusCode MarkDirtyOnDatabase(
+      const FileSystemURL& url) OVERRIDE {
+    return SYNC_STATUS_OK;
+  };
+
+  virtual SyncStatusCode ClearDirtyOnDatabase(
+      const FileSystemURL& url) OVERRIDE {
+    return SYNC_STATUS_OK;
+  }
+};
+
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
   LocalFileChangeTrackerTest() {}
 
   virtual void SetUp() OVERRIDE {
     EXPECT_TRUE(data_dir_.CreateUniqueTempDir());
-    change_tracker_.reset(new LocalFileChangeTracker(
+    change_tracker_.reset(new LocalFileChangeTrackerForTest(
         data_dir_.path(),
         base::MessageLoopProxy::current()));
     IsolatedContext::GetInstance()->RegisterExternalFileSystem(

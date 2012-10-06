@@ -12,13 +12,13 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
 
+namespace fileapi {
+
 namespace {
 const FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("LocalFileChangeTracker");
 const char kMark[] = "d";
 }  // namespace
-
-namespace fileapi {
 
 // A database class that stores local file changes in a local database. This
 // object must be destructed on file_task_runner.
@@ -26,31 +26,23 @@ class LocalFileChangeTracker::TrackerDB {
  public:
   explicit TrackerDB(const FilePath& base_path);
 
-  bool MarkDirty(const std::string& url);
-  bool ClearDirty(const std::string& url);
+  SyncStatusCode MarkDirty(const std::string& url);
+  SyncStatusCode ClearDirty(const std::string& url);
 
  private:
-  enum InitStatus {
-    INIT_STATUS_OK = 0,
-    INIT_STATUS_CORRUPTION,
-    INIT_STATUS_IO_ERROR,
-    INIT_STATUS_UNKNOWN_ERROR,
-    INIT_STATUS_MAX,
-  };
-
   enum RecoveryOption {
     REPAIR_ON_CORRUPTION,
     FAIL_ON_CORRUPTION,
   };
 
-  bool Init(RecoveryOption recovery_option);
-  bool Repair(const std::string& db_path);
+  SyncStatusCode Init(RecoveryOption recovery_option);
+  SyncStatusCode Repair(const std::string& db_path);
   void HandleError(const tracked_objects::Location& from_here,
                    const leveldb::Status& status);
 
   const FilePath base_path_;
   scoped_ptr<leveldb::DB> db_;
-  bool db_disabled_;
+  SyncStatusCode db_status_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackerDB);
 };
@@ -75,6 +67,7 @@ void LocalFileChangeTracker::OnStartUpdate(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   // TODO(kinuko): we may want to reduce the number of this call if
   // the URL is already marked dirty.
+  // TODO(nhiroki): propagate the error code (see http://crbug.com/152127).
   MarkDirtyOnDatabase(url);
 }
 
@@ -137,29 +130,32 @@ void LocalFileChangeTracker::GetChangesForURL(
 
 void LocalFileChangeTracker::FinalizeSyncForURL(const FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  // TODO(nhiroki): propagate the error code (see http://crbug.com/152127).
   ClearDirtyOnDatabase(url);
   changes_.erase(url);
 }
 
-void LocalFileChangeTracker::CollectLastDirtyChanges(FileChangeMap* changes) {
+SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
+    FileChangeMap* changes) {
   // TODO(kinuko): implement.
   NOTREACHED();
+  return SYNC_DATABASE_ERROR_NOT_FOUND;
 }
 
 void LocalFileChangeTracker::RecordChange(
     const FileSystemURL& url, const FileChange& change) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  // TODO(nhiroki): propagate the error code (see http://crbug.com/152127).
-  MarkDirtyOnDatabase(url);
   changes_[url].Update(change);
 }
 
-void LocalFileChangeTracker::MarkDirtyOnDatabase(const FileSystemURL& url) {
-  tracker_db_->MarkDirty(SerializeExternalFileSystemURL(url));
+SyncStatusCode LocalFileChangeTracker::MarkDirtyOnDatabase(
+    const FileSystemURL& url) {
+  return tracker_db_->MarkDirty(SerializeExternalFileSystemURL(url));
 }
 
-void LocalFileChangeTracker::ClearDirtyOnDatabase(const FileSystemURL& url) {
-  tracker_db_->ClearDirty(SerializeExternalFileSystemURL(url));
+SyncStatusCode LocalFileChangeTracker::ClearDirtyOnDatabase(
+    const FileSystemURL& url) {
+  return tracker_db_->ClearDirty(SerializeExternalFileSystemURL(url));
 }
 
 std::string LocalFileChangeTracker::SerializeExternalFileSystemURL(
@@ -178,11 +174,12 @@ bool LocalFileChangeTracker::DeserializeExternalFileSystemURL(
 
 LocalFileChangeTracker::TrackerDB::TrackerDB(const FilePath& base_path)
   : base_path_(base_path),
-    db_disabled_(false) {}
+    db_status_(SYNC_STATUS_OK) {}
 
-bool LocalFileChangeTracker::TrackerDB::Init(RecoveryOption recovery_option) {
-  if (db_.get())
-    return true;
+SyncStatusCode LocalFileChangeTracker::TrackerDB::Init(
+    RecoveryOption recovery_option) {
+  if (db_.get() && db_status_ == SYNC_STATUS_OK)
+    return SYNC_STATUS_OK;
 
   std::string path = FilePathToString(base_path_.Append(kDatabaseName));
   leveldb::Options options;
@@ -191,37 +188,39 @@ bool LocalFileChangeTracker::TrackerDB::Init(RecoveryOption recovery_option) {
   leveldb::Status status = leveldb::DB::Open(options, path, &db);
   if (status.ok()) {
     db_.reset(db);
-    return true;
+    return SYNC_STATUS_OK;
   }
 
   HandleError(FROM_HERE, status);
   if (!status.IsCorruption())
-    return false;
+    return LevelDBStatusToSyncStatusCode(status);
 
+  // Try to repair the corrupted DB.
   switch (recovery_option) {
     case FAIL_ON_CORRUPTION:
-      return false;
+      return SYNC_DATABASE_ERROR_CORRUPTION;
     case REPAIR_ON_CORRUPTION:
       return Repair(path);
   }
   NOTREACHED();
-  return false;
+  return SYNC_DATABASE_ERROR_UNKNOWN;
 }
 
-bool LocalFileChangeTracker::TrackerDB::Repair(const std::string& db_path) {
+SyncStatusCode LocalFileChangeTracker::TrackerDB::Repair(
+    const std::string& db_path) {
   DCHECK(!db_.get());
   LOG(WARNING) << "Attempting to repair TrackerDB.";
 
   if (leveldb::RepairDB(db_path, leveldb::Options()).ok() &&
-      Init(FAIL_ON_CORRUPTION)) {
+      Init(FAIL_ON_CORRUPTION) == SYNC_STATUS_OK) {
     // TODO(nhiroki): perform some consistency checks between TrackerDB and
     // syncable file system.
     LOG(WARNING) << "Repairing TrackerDB completed.";
-    return true;
+    return SYNC_STATUS_OK;
   }
 
   LOG(WARNING) << "Failed to repair TrackerDB.";
-  return false;
+  return SYNC_DATABASE_ERROR_CORRUPTION;
 }
 
 // TODO(nhiroki): factor out the common methods into somewhere else.
@@ -232,29 +231,31 @@ void LocalFileChangeTracker::TrackerDB::HandleError(
              << from_here.ToString() << " with error: " << status.ToString();
 }
 
-bool LocalFileChangeTracker::TrackerDB::MarkDirty(const std::string& url) {
-  if (db_disabled_)
-    return false;
+SyncStatusCode LocalFileChangeTracker::TrackerDB::MarkDirty(
+    const std::string& url) {
+  if (db_status_ != SYNC_STATUS_OK)
+    return db_status_;
 
-  if (!Init(REPAIR_ON_CORRUPTION)) {
-    db_disabled_ = true;
+  db_status_ = Init(REPAIR_ON_CORRUPTION);
+  if (db_status_ != SYNC_STATUS_OK) {
     db_.reset();
-    return false;
+    return db_status_;
   }
 
   leveldb::Status status = db_->Put(leveldb::WriteOptions(), url, kMark);
   if (!status.ok()) {
     HandleError(FROM_HERE, status);
-    db_disabled_ = true;
+    db_status_ = LevelDBStatusToSyncStatusCode(status);
     db_.reset();
-    return false;
+    return db_status_;
   }
-  return true;
+  return SYNC_STATUS_OK;
 }
 
-bool LocalFileChangeTracker::TrackerDB::ClearDirty(const std::string& url) {
-  if (db_disabled_)
-    return false;
+SyncStatusCode LocalFileChangeTracker::TrackerDB::ClearDirty(
+    const std::string& url) {
+  if (db_status_ != SYNC_STATUS_OK)
+    return db_status_;
 
   // Should not reach here before initializing the database. The database should
   // be cleared after read, and should be initialized during read if
@@ -264,11 +265,11 @@ bool LocalFileChangeTracker::TrackerDB::ClearDirty(const std::string& url) {
   leveldb::Status status = db_->Delete(leveldb::WriteOptions(), url);
   if (!status.ok() && !status.IsNotFound()) {
     HandleError(FROM_HERE, status);
-    db_disabled_ = true;
+    db_status_ = LevelDBStatusToSyncStatusCode(status);
     db_.reset();
-    return false;
+    return db_status_;
   }
-  return true;
+  return SYNC_STATUS_OK;
 }
 
 }  // namespace fileapi
