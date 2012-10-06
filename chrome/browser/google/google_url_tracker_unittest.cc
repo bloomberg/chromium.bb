@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
+#include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"

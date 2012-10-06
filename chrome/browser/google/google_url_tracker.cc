@@ -4,36 +4,27 @@
 
 #include "chrome/browser/google/google_url_tracker.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
+#include "chrome/browser/google/google_url_tracker_infobar_delegate.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -45,134 +36,7 @@ GoogleURLTrackerInfoBarDelegate* CreateInfoBar(
                                              new_google_url);
 }
 
-string16 GetHost(const GURL& url) {
-  DCHECK(url.is_valid());
-  return net::StripWWW(UTF8ToUTF16(url.host()));
-}
-
 }  // namespace
-
-// GoogleURLTrackerInfoBarDelegate --------------------------------------------
-
-GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
-    GoogleURLTracker* google_url_tracker,
-    const GURL& new_google_url)
-    : ConfirmInfoBarDelegate(infobar_helper),
-      map_key_(infobar_helper),
-      google_url_tracker_(google_url_tracker),
-      new_google_url_(new_google_url),
-      showing_(false),
-      pending_id_(0) {
-}
-
-bool GoogleURLTrackerInfoBarDelegate::Accept() {
-  google_url_tracker_->AcceptGoogleURL(new_google_url_, true);
-  return false;
-}
-
-bool GoogleURLTrackerInfoBarDelegate::Cancel() {
-  google_url_tracker_->CancelGoogleURL(new_google_url_);
-  return false;
-}
-
-string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  content::OpenURLParams params(google_util::AppendGoogleLocaleParam(GURL(
-      "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
-      content::Referrer(),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
-  owner()->GetWebContents()->OpenURL(params);
-  return false;
-}
-
-bool GoogleURLTrackerInfoBarDelegate::ShouldExpireInternal(
-    const content::LoadCommittedDetails& details) const {
-  int unique_id = details.entry->GetUniqueID();
-  return (unique_id != contents_unique_id()) && (unique_id != pending_id_);
-}
-
-void GoogleURLTrackerInfoBarDelegate::SetGoogleURL(const GURL& new_google_url) {
-  DCHECK_EQ(GetHost(new_google_url_), GetHost(new_google_url));
-  new_google_url_ = new_google_url;
-}
-
-void GoogleURLTrackerInfoBarDelegate::Show(const GURL& search_url) {
-  if (!owner())
-    return;
-  StoreActiveEntryUniqueID(owner());
-  search_url_ = search_url;
-  pending_id_ = 0;
-  if (!showing_) {
-    showing_ = true;
-    owner()->AddInfoBar(this);  // May delete |this| on failure!
-  }
-}
-
-void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
-  if (!showing_) {
-    // We haven't been added to a tab, so just delete ourselves.
-    delete this;
-    return;
-  }
-
-  // Synchronously remove ourselves from the URL tracker's list, because the
-  // RemoveInfoBar() call below may result in either a synchronous or an
-  // asynchronous call back to InfoBarClosed(), and it's easier to handle when
-  // we just guarantee the removal is synchronous.
-  google_url_tracker_->InfoBarClosed(map_key_);
-  google_url_tracker_ = NULL;
-
-  // If we're already animating closed, we won't have an owner.  Do nothing in
-  // this case.
-  // TODO(pkasting): For now, this can also happen if we were showing in a
-  // background tab that was then closed, in which case we'll have leaked and
-  // subsequently reached here due to GoogleURLTracker::CloseAllInfoBars().
-  // This case will no longer happen once infobars are refactored to own their
-  // delegates.
-  if (!owner())
-    return;
-
-  if (redo_search) {
-    // Re-do the user's search on the new domain.
-    DCHECK(search_url_.is_valid());
-    url_canon::Replacements<char> replacements;
-    const std::string& host(new_google_url_.host());
-    replacements.SetHost(host.data(), url_parse::Component(0, host.length()));
-    GURL new_search_url(search_url_.ReplaceComponents(replacements));
-    if (new_search_url.is_valid()) {
-      content::OpenURLParams params(new_search_url, content::Referrer(),
-          CURRENT_TAB, content::PAGE_TRANSITION_GENERATED, false);
-      owner()->GetWebContents()->OpenURL(params);
-    }
-  }
-
-  owner()->RemoveInfoBar(this);
-}
-
-GoogleURLTrackerInfoBarDelegate::~GoogleURLTrackerInfoBarDelegate() {
-  if (google_url_tracker_)
-    google_url_tracker_->InfoBarClosed(map_key_);
-}
-
-string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE,
-      GetHost(new_google_url_), GetHost(google_url_tracker_->google_url_));
-}
-
-string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  bool new_host = (button == BUTTON_OK);
-  return l10n_util::GetStringFUTF16(new_host ?
-      IDS_GOOGLE_URL_TRACKER_INFOBAR_SWITCH :
-      IDS_GOOGLE_URL_TRACKER_INFOBAR_DONT_SWITCH,
-      GetHost(new_host ? new_google_url_ : google_url_tracker_->google_url_));
-}
 
 
 // GoogleURLTracker::MapEntry -------------------------------------------------
@@ -300,14 +164,14 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  string16 fetched_host(GetHost(fetched_google_url_));
+  string16 fetched_host(net::StripWWWFromHost(fetched_google_url_));
   if (fetched_google_url_ == google_url_) {
     // Either the user has continually been on this URL, or we prompted for a
     // different URL but have now changed back before they responded to any of
     // the prompts.  In this latter case we want to close any open infobars and
     // stop prompting.
     CancelGoogleURL(fetched_google_url_);
-  } else if (fetched_host == GetHost(google_url_)) {
+  } else if (fetched_host == net::StripWWWFromHost(google_url_)) {
     // Similar to the above case, but this time the new URL differs from the
     // existing one, probably due to switching between HTTP and HTTPS searching.
     // Like before we want to close any open infobars and stop prompting; we
@@ -315,7 +179,7 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
     // searches so as to avoid suddenly changing a page the user might be
     // interacting with; it's enough to simply get future searches right.
     AcceptGoogleURL(fetched_google_url_, false);
-  } else if (fetched_host == GetHost(last_prompted_url)) {
+  } else if (fetched_host == net::StripWWWFromHost(last_prompted_url)) {
     // We've re-fetched a TLD the user previously turned down.  Although the new
     // URL might have a different scheme than the old, we want to preserve the
     // user's decision.  Note that it's possible that, like in the above two
@@ -336,7 +200,7 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
     // existing infobars since their message is out-of-date.
     if (!url.is_valid())  // Note: |url| is the previous |fetched_google_url_|.
       return;
-    if (fetched_host != GetHost(url)) {
+    if (fetched_host != net::StripWWWFromHost(url)) {
       CloseAllInfoBars(false);
     } else if (fetched_google_url_ != url) {
       for (InfoBarMap::iterator i(infobar_map_.begin());
