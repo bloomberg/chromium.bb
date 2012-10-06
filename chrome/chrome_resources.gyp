@@ -300,7 +300,7 @@
         },
       ],
       'conditions': [
-        ['use_aura==1', {
+        ['use_ash==1', {
           'dependencies': [
              '<(DEPTH)/ash/ash.gyp:ash_resources',
              '<(DEPTH)/ash/ash.gyp:ash_wallpaper_resources',

@@ -53,6 +53,11 @@
                 '../ui/compositor/compositor.gyp:compositor',
               ],
             }],
+            ['use_ash==1', {
+              'sources': [
+                '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_wallpaper_resources.rc',
+              ],
+            }],
             ['OS=="win"', {
               'product_name': 'chrome',
               'dependencies': [

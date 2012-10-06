@@ -5,6 +5,7 @@
       <emit emit_type='prepend'></emit>
     </output>
     <output filename="ash_wallpaper_resources.pak" type="data_package" />
+    <output filename="ash_wallpaper_resources.rc" type="rc_all" />
   </outputs>
   <release seq="1">
     <includes>
