@@ -83,17 +83,16 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
 
   sessions::StatusController* status = session()->mutable_status_controller();
 
+  EXPECT_EQ(0, status->num_simple_conflicts())
+      << "Simple update shouldn't result in conflicts";
+  EXPECT_EQ(0, status->num_encryption_conflicts())
+      << "Simple update shouldn't result in conflicts";
+  EXPECT_EQ(0, status->num_hierarchy_conflicts())
+      << "Simple update shouldn't result in conflicts";
   sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
   ASSERT_TRUE(status->update_progress());
   EXPECT_EQ(2, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
-      << "Simple update shouldn't result in conflicts";
-  EXPECT_EQ(0, status->conflict_progress()->EncryptionConflictingItemsSize())
-      << "Simple update shouldn't result in conflicts";
-  EXPECT_EQ(0, status->conflict_progress()->HierarchyConflictingItemsSize())
-      << "Simple update shouldn't result in conflicts";
   EXPECT_EQ(2, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "All items should have been successfully applied";
 }
@@ -117,13 +116,12 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
+  EXPECT_EQ(0, status->num_simple_conflicts())
+      << "Simple update shouldn't result in conflicts, even if out-of-order";
   sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
   ASSERT_TRUE(status->update_progress());
   EXPECT_EQ(5, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
-      << "Simple update shouldn't result in conflicts, even if out-of-order";
   EXPECT_EQ(5, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "All updates should have been successfully applied";
 }
@@ -139,9 +137,7 @@ TEST_F(ApplyUpdatesCommandTest, SimpleConflict) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(1, status->conflict_progress()->SimpleConflictingItemsSize())
+  EXPECT_EQ(1, status->num_simple_conflicts())
       << "Unsynced and unapplied item should be a simple conflict";
 }
 
@@ -169,15 +165,14 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyAndSimpleConflict) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
-
-  EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize());
 
   // An update that is both a simple conflict and a hierarchy conflict should be
   // treated as a hierarchy conflict.
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
-  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize());
+  EXPECT_EQ(1, status->num_hierarchy_conflicts());
+  EXPECT_EQ(0, status->num_simple_conflicts());
+
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
+  EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize());
 }
 
 
@@ -216,14 +211,13 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDirectoryLoop) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
-
-  EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize());
 
   // This should count as a hierarchy conflict.
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
-  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize());
+  EXPECT_EQ(1, status->num_hierarchy_conflicts());
+  EXPECT_EQ(0, status->num_simple_conflicts());
+
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
+  EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize());
 }
 
 // Runs the ApplyUpdatesCommand on a directory where the server sent us an
@@ -254,12 +248,8 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeletedParent) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
-
-  // This should count as a hierarchy conflict.
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
-  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize());
+  EXPECT_EQ(1, status->num_hierarchy_conflicts());
+  EXPECT_EQ(0, status->num_simple_conflicts());
 }
 
 // Runs the ApplyUpdatesCommand on a directory where the server is trying to
@@ -296,12 +286,9 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictDeleteNonEmptyDirectory) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
-
   // This should count as a hierarchy conflict.
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
-  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize());
+  EXPECT_EQ(1, status->num_hierarchy_conflicts());
+  EXPECT_EQ(0, status->num_simple_conflicts());
 }
 
 // Runs the ApplyUpdatesCommand on a server-created item that has a locally
@@ -318,16 +305,17 @@ TEST_F(ApplyUpdatesCommandTest, HierarchyConflictUnknownParent) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
+
+  EXPECT_EQ(0, status->num_simple_conflicts())
+      << "Updates with unknown parent should not be treated as 'simple'"
+      << " conflicts";
+  EXPECT_EQ(2, status->num_hierarchy_conflicts())
+      << "All updates with an unknown ancestors should be in conflict";
+
   sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
   ASSERT_TRUE(status->update_progress());
   EXPECT_EQ(2, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
-      << "Updates with unknown parent should not be treated as 'simple'"
-      << " conflicts";
-  EXPECT_EQ(2, status->conflict_progress()->HierarchyConflictingItemsSize())
-      << "All updates with an unknown ancestors should be in conflict";
   EXPECT_EQ(0, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "No item with an unknown ancestor should be applied";
 }
@@ -352,13 +340,14 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
+
+  EXPECT_EQ(2, status->num_hierarchy_conflicts())
+      << "The updates with unknown ancestors should be in conflict";
+
   sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
   ASSERT_TRUE(status->update_progress());
   EXPECT_EQ(6, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(2, status->conflict_progress()->HierarchyConflictingItemsSize())
-      << "The updates with unknown ancestors should be in conflict";
   EXPECT_EQ(4, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "The updates with known ancestors should be successfully applied";
 }
@@ -388,13 +377,14 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
+
+  EXPECT_EQ(0, status->num_simple_conflicts())
+      << "No update should be in conflict because they're all decryptable";
+
   sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSWORD);
   ASSERT_TRUE(status->update_progress());
   EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
       << "All updates should have been attempted";
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
-      << "No update should be in conflict because they're all decryptable";
   EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
       << "The updates that can be decrypted should be applied";
 }
@@ -419,18 +409,15 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
   EXPECT_TRUE(status->HasConflictingUpdates())
     << "Updates that can't be decrypted should trigger the syncer to have "
     << "conflicting updates.";
+  EXPECT_EQ(0, status->num_simple_conflicts())
+      << "Updates that can't be decrypted should not be in regular conflict";
+  EXPECT_EQ(3, status->num_encryption_conflicts())
+      << "Updates that can't be decrypted should be in encryption conflict";
   {
     sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
     ASSERT_TRUE(status->update_progress());
     EXPECT_EQ(2, status->update_progress()->AppliedUpdatesSize())
         << "All updates should have been attempted";
-    ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
-        << "The updates that can't be decrypted should not be in regular "
-        << "conflict";
-    EXPECT_EQ(2, status->conflict_progress()->EncryptionConflictingItemsSize())
-        << "The updates that can't be decrypted should be in encryption "
-        << "conflict";
     EXPECT_EQ(0, status->update_progress()->SuccessfullyAppliedUpdateCount())
         << "No update that can't be decrypted should be applied";
   }
@@ -439,13 +426,6 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
     ASSERT_TRUE(status->update_progress());
     EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
         << "All updates should have been attempted";
-    ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
-        << "The updates that can't be decrypted should not be in regular "
-        << "conflict";
-    EXPECT_EQ(1, status->conflict_progress()->EncryptionConflictingItemsSize())
-        << "The updates that can't be decrypted should be in encryption "
-        << "conflict";
     EXPECT_EQ(0, status->update_progress()->SuccessfullyAppliedUpdateCount())
         << "No update that can't be decrypted should be applied";
   }
@@ -493,17 +473,17 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
     << "Updates that can't be decrypted should trigger the syncer to have "
     << "conflicting updates.";
   {
+    EXPECT_EQ(0, status->num_simple_conflicts())
+        << "The updates that can't be decrypted should not be in regular "
+        << "conflict";
+    EXPECT_EQ(1, status->num_encryption_conflicts())
+        << "The updates that can't be decrypted should be in encryption "
+        << "conflict";
+
     sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSWORD);
     ASSERT_TRUE(status->update_progress());
     EXPECT_EQ(2, status->update_progress()->AppliedUpdatesSize())
         << "All updates should have been attempted";
-    ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
-        << "The updates that can't be decrypted should not be in regular "
-        << "conflict";
-    EXPECT_EQ(1, status->conflict_progress()->EncryptionConflictingItemsSize())
-        << "The updates that can't be decrypted should be in encryption "
-        << "conflict";
     EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
         << "The undecryptable password update shouldn't be applied";
   }

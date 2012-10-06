@@ -27,14 +27,14 @@ SyncerError ResolveConflictsCommand::ModelChangingExecuteImpl(
 
   syncable::Directory* dir = session->context()->directory();
   sessions::StatusController* status = session->mutable_status_controller();
-  const sessions::ConflictProgress* progress = status->conflict_progress();
-  if (!progress)
-    return SYNCER_OK;  // Nothing to do.
+  const std::set<syncable::Id>* simple_conflict_ids =
+      status->simple_conflict_ids();
+
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   const Cryptographer* cryptographer = dir->GetCryptographer(&trans);
   status->update_conflicts_resolved(
       resolver->ResolveConflicts(&trans, cryptographer,
-                                 progress->SimpleConflictingItems(), status));
+                                 *simple_conflict_ids, status));
 
   return SYNCER_OK;
 }

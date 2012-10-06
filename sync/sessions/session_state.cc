@@ -16,60 +16,6 @@ using std::vector;
 namespace syncer {
 namespace sessions {
 
-ConflictProgress::ConflictProgress()
-  : num_server_conflicting_items(0), num_hierarchy_conflicting_items(0),
-    num_encryption_conflicting_items(0) {
-}
-
-ConflictProgress::~ConflictProgress() {
-}
-
-bool ConflictProgress::HasSimpleConflictItem(const syncable::Id& id) const {
-  return simple_conflicting_item_ids_.count(id) > 0;
-}
-
-const std::set<syncable::Id>& ConflictProgress::SimpleConflictingItems() const {
-  return simple_conflicting_item_ids_;
-}
-
-void ConflictProgress::AddSimpleConflictingItemById(
-    const syncable::Id& the_id) {
-  simple_conflicting_item_ids_.insert(the_id);
-}
-
-void ConflictProgress::EraseSimpleConflictingItemById(
-    const syncable::Id& the_id) {
-  simple_conflicting_item_ids_.erase(the_id);
-}
-
-void ConflictProgress::AddEncryptionConflictingItemById(
-    const syncable::Id& the_id) {
-  std::pair<std::set<syncable::Id>::iterator, bool> ret =
-      unresolvable_conflicting_item_ids_.insert(the_id);
-  if (ret.second) {
-    num_encryption_conflicting_items++;
-  }
-  unresolvable_conflicting_item_ids_.insert(the_id);
-}
-
-void ConflictProgress::AddHierarchyConflictingItemById(
-    const syncable::Id& the_id) {
-  std::pair<std::set<syncable::Id>::iterator, bool> ret =
-      unresolvable_conflicting_item_ids_.insert(the_id);
-  if (ret.second) {
-    num_hierarchy_conflicting_items++;
-  }
-}
-
-void ConflictProgress::AddServerConflictingItemById(
-    const syncable::Id& the_id) {
-  std::pair<std::set<syncable::Id>::iterator, bool> ret =
-      unresolvable_conflicting_item_ids_.insert(the_id);
-  if (ret.second) {
-    num_server_conflicting_items++;
-  }
-}
-
 UpdateProgress::UpdateProgress() {}
 
 UpdateProgress::~UpdateProgress() {}

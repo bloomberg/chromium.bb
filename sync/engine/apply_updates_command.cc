@@ -69,9 +69,10 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
       dir->GetCryptographer(&trans),
       session->routing_info(),
       session->status_controller().group_restriction());
-  applicator.AttemptApplications(&trans, handles);
+  applicator.AttemptApplications(&trans, handles,
+                                 session->mutable_status_controller());
   applicator.SaveProgressIntoSessionState(
-      session->mutable_status_controller()->mutable_conflict_progress(),
+      session->mutable_status_controller()->mutable_simple_conflict_ids(),
       session->mutable_status_controller()->mutable_update_progress());
 
   // This might be the first time we've fully completed a sync cycle, for

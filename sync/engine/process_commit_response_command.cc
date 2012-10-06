@@ -32,7 +32,6 @@ namespace syncer {
 using sessions::OrderedCommitSet;
 using sessions::StatusController;
 using sessions::SyncSession;
-using sessions::ConflictProgress;
 using syncable::WriteTransaction;
 using syncable::MutableEntry;
 using syncable::Entry;
@@ -110,7 +109,6 @@ SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
   int successes = 0;
 
   set<syncable::Id> deleted_folders;
-  ConflictProgress* conflict_progress = status->mutable_conflict_progress();
   OrderedCommitSet::Projection proj = status->commit_id_projection(
       commit_set_);
 
@@ -129,8 +127,7 @@ SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
           break;
         case CommitResponse::CONFLICT:
           ++conflicting_commits;
-          conflict_progress->AddServerConflictingItemById(
-              commit_set_.GetCommitIdAt(proj[i]));
+          status->increment_num_server_conflicts();
           break;
         case CommitResponse::SUCCESS:
           // TODO(sync): worry about sync_rate_ rate calc?

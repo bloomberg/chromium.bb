@@ -22,53 +22,6 @@
 namespace syncer {
 namespace sessions {
 
-// Tracks progress of conflicts and their resolutions.
-class ConflictProgress {
- public:
-  explicit ConflictProgress();
-  ~ConflictProgress();
-
-  bool HasSimpleConflictItem(const syncable::Id &id) const;
-
-  // Various mutators for tracking commit conflicts.
-  void AddSimpleConflictingItemById(const syncable::Id& the_id);
-  void EraseSimpleConflictingItemById(const syncable::Id& the_id);
-  const std::set<syncable::Id>& SimpleConflictingItems() const;
-  int SimpleConflictingItemsSize() const {
-    return simple_conflicting_item_ids_.size();
-  }
-
-  // Mutators for unresolvable conflicting items (see description below).
-  void AddEncryptionConflictingItemById(const syncable::Id& the_id);
-  int EncryptionConflictingItemsSize() const {
-    return num_encryption_conflicting_items;
-  }
-
-  void AddHierarchyConflictingItemById(const syncable::Id& id);
-  int HierarchyConflictingItemsSize() const {
-    return num_hierarchy_conflicting_items;
-  }
-
-  void AddServerConflictingItemById(const syncable::Id& id);
-  int ServerConflictingItemsSize() const {
-    return num_server_conflicting_items;
-  }
-
- private:
-  // Conflicts that occur when local and server changes collide and can be
-  // resolved locally.
-  std::set<syncable::Id> simple_conflicting_item_ids_;
-
-  // Unresolvable conflicts are not processed by the conflict resolver.  We wait
-  // and hope the server will provide us with an update that resolves these
-  // conflicts.
-  std::set<syncable::Id> unresolvable_conflicting_item_ids_;
-
-  size_t num_server_conflicting_items;
-  size_t num_hierarchy_conflicting_items;
-  size_t num_encryption_conflicting_items;
-};
-
 typedef std::pair<VerifyResult, sync_pb::SyncEntity> VerifiedUpdate;
 typedef std::pair<UpdateAttemptResponse, syncable::Id> AppliedUpdate;
 
@@ -123,7 +76,7 @@ struct PerModelSafeGroupState {
   ~PerModelSafeGroupState();
 
   UpdateProgress update_progress;
-  ConflictProgress conflict_progress;
+  std::set<syncable::Id> simple_conflict_ids;
 };
 
 }  // namespace sessions

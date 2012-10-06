@@ -45,7 +45,8 @@ UpdateApplicator::~UpdateApplicator() {
 // don't bother re-processing them on subsequent passes.
 void UpdateApplicator::AttemptApplications(
     syncable::WriteTransaction* trans,
-    const std::vector<int64>& handles) {
+    const std::vector<int64>& handles,
+    sessions::StatusController* status) {
   std::vector<int64> to_apply = handles;
   DVLOG(1) << "UpdateApplicator running over " << to_apply.size() << " items.";
   while (!to_apply.empty()) {
@@ -64,12 +65,14 @@ void UpdateApplicator::AttemptApplications(
       switch (result) {
         case SUCCESS:
           application_results_.AddSuccess(entry.Get(ID));
+          status->increment_num_updates_applied();
           break;
         case CONFLICT_SIMPLE:
           application_results_.AddSimpleConflict(entry.Get(ID));
           break;
         case CONFLICT_ENCRYPTION:
           application_results_.AddEncryptionConflict(entry.Get(ID));
+          status->increment_num_encryption_conflicts();
           break;
         case CONFLICT_HIERARCHY:
           application_results_.AddHierarchyConflict(entry.Get(ID));
@@ -86,7 +89,7 @@ void UpdateApplicator::AttemptApplications(
 
     if (to_reapply.size() == to_apply.size()) {
       // We made no progress.  Must be stubborn hierarchy conflicts.
-      // Break out early, leaving some updates unapplied.
+      status->set_num_hierarchy_conflicts(to_apply.size());
       break;
     }
 
@@ -119,9 +122,9 @@ bool UpdateApplicator::SkipUpdate(const syncable::Entry& entry) {
 }
 
 void UpdateApplicator::SaveProgressIntoSessionState(
-    sessions::ConflictProgress* conflict_progress,
+    std::set<syncable::Id>* simple_conflict_ids,
     sessions::UpdateProgress* update_progress) {
-  application_results_.SaveProgress(conflict_progress, update_progress);
+  application_results_.SaveProgress(simple_conflict_ids, update_progress);
 }
 
 UpdateApplicator::ResultTracker::ResultTracker() {
@@ -147,25 +150,22 @@ void UpdateApplicator::ResultTracker::AddSuccess(syncable::Id id) {
 }
 
 void UpdateApplicator::ResultTracker::SaveProgress(
-    sessions::ConflictProgress* conflict_progress,
+    std::set<syncable::Id>* simple_conflict_ids,
     sessions::UpdateProgress* update_progress) {
   std::set<syncable::Id>::const_iterator i;
+  *simple_conflict_ids = conflicting_ids_;
   for (i = conflicting_ids_.begin(); i != conflicting_ids_.end(); ++i) {
-    conflict_progress->AddSimpleConflictingItemById(*i);
     update_progress->AddAppliedUpdate(CONFLICT_SIMPLE, *i);
   }
   for (i = encryption_conflict_ids_.begin();
        i != encryption_conflict_ids_.end(); ++i) {
-    conflict_progress->AddEncryptionConflictingItemById(*i);
     update_progress->AddAppliedUpdate(CONFLICT_ENCRYPTION, *i);
   }
   for (i = hierarchy_conflict_ids_.begin();
        i != hierarchy_conflict_ids_.end(); ++i) {
-    conflict_progress->AddHierarchyConflictingItemById(*i);
     update_progress->AddAppliedUpdate(CONFLICT_HIERARCHY, *i);
   }
   for (i = successful_ids_.begin(); i != successful_ids_.end(); ++i) {
-    conflict_progress->EraseSimpleConflictingItemById(*i);
     update_progress->AddAppliedUpdate(SUCCESS, *i);
   }
 }

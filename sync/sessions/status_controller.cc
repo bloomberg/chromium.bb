@@ -33,34 +33,27 @@ UpdateProgress* StatusController::mutable_update_progress() {
       true, group_restriction_)->update_progress;
 }
 
-const ConflictProgress* StatusController::conflict_progress() const {
+const std::set<syncable::Id>* StatusController::simple_conflict_ids() const {
   const PerModelSafeGroupState* state =
       GetModelSafeGroupState(true, group_restriction_);
-  return state ? &state->conflict_progress : NULL;
+  return state ? &state->simple_conflict_ids : NULL;
 }
 
-ConflictProgress* StatusController::mutable_conflict_progress() {
+std::set<syncable::Id>* StatusController::mutable_simple_conflict_ids() {
   return &GetOrCreateModelSafeGroupState(
-      true, group_restriction_)->conflict_progress;
+      true, group_restriction_)->simple_conflict_ids;
 }
 
-const ConflictProgress* StatusController::GetUnrestrictedConflictProgress(
-    ModelSafeGroup group) const {
-  const PerModelSafeGroupState* state =
-      GetModelSafeGroupState(false, group);
-  return state ? &state->conflict_progress : NULL;
-}
-
-ConflictProgress*
-    StatusController::GetUnrestrictedMutableConflictProgressForTest(
-        ModelSafeGroup group) {
-  return &GetOrCreateModelSafeGroupState(false, group)->conflict_progress;
+const std::set<syncable::Id>*
+    StatusController::GetUnrestrictedSimpleConflictIds(
+        ModelSafeGroup group) const {
+  const PerModelSafeGroupState* state = GetModelSafeGroupState(false, group);
+  return state ? &state->simple_conflict_ids : NULL;
 }
 
 const UpdateProgress* StatusController::GetUnrestrictedUpdateProgress(
     ModelSafeGroup group) const {
-  const PerModelSafeGroupState* state =
-      GetModelSafeGroupState(false, group);
+  const PerModelSafeGroupState* state = GetModelSafeGroupState(false, group);
   return state ? &state->update_progress : NULL;
 }
 
@@ -129,6 +122,22 @@ void StatusController::increment_num_successful_commits() {
   model_neutral_.num_successful_commits++;
 }
 
+void StatusController::increment_num_updates_applied() {
+  model_neutral_.num_updates_applied++;
+}
+
+void StatusController::increment_num_encryption_conflicts() {
+  model_neutral_.num_encryption_conflicts++;
+}
+
+void StatusController::increment_num_server_conflicts() {
+  model_neutral_.num_server_conflicts++;
+}
+
+void StatusController::set_num_hierarchy_conflicts(int value) {
+  model_neutral_.num_hierarchy_conflicts = value;
+}
+
 void StatusController::increment_num_local_overwrites() {
   model_neutral_.num_local_overwrites++;
 }
@@ -189,66 +198,42 @@ bool StatusController::HasConflictingUpdates() const {
   return false;
 }
 
-int StatusController::TotalNumEncryptionConflictingItems() const {
+int StatusController::num_encryption_conflicts() const {
+  return model_neutral_.num_encryption_conflicts;
+}
+
+int StatusController::num_hierarchy_conflicts() const {
   DCHECK(!group_restriction_in_effect_)
-      << "TotalNumEncryptionConflictingItems applies to all ModelSafeGroups";
+      << "num_hierarchy_conflicts applies to all ModelSafeGroups";
+  return model_neutral_.num_hierarchy_conflicts;
+}
+
+int StatusController::num_simple_conflicts() const {
+  DCHECK(!group_restriction_in_effect_)
+   << "num_simple_conflicts applies to all ModelSafeGroups";
   std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
       per_model_group_.begin();
   int sum = 0;
   for (; it != per_model_group_.end(); ++it) {
-    sum += it->second->conflict_progress.EncryptionConflictingItemsSize();
+    sum += it->second->simple_conflict_ids.size();
   }
   return sum;
 }
 
-int StatusController::TotalNumHierarchyConflictingItems() const {
+int StatusController::num_server_conflicts() const {
   DCHECK(!group_restriction_in_effect_)
-      << "TotalNumHierarchyConflictingItems applies to all ModelSafeGroups";
-  std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
-      per_model_group_.begin();
-  int sum = 0;
-  for (; it != per_model_group_.end(); ++it) {
-    sum += it->second->conflict_progress.HierarchyConflictingItemsSize();
-  }
-  return sum;
-}
-
-int StatusController::TotalNumSimpleConflictingItems() const {
-  DCHECK(!group_restriction_in_effect_)
-      << "TotalNumSimpleConflictingItems applies to all ModelSafeGroups";
-  std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
-      per_model_group_.begin();
-  int sum = 0;
-  for (; it != per_model_group_.end(); ++it) {
-    sum += it->second->conflict_progress.SimpleConflictingItemsSize();
-  }
-  return sum;
-}
-
-int StatusController::TotalNumServerConflictingItems() const {
-  DCHECK(!group_restriction_in_effect_)
-      << "TotalNumServerConflictingItems applies to all ModelSafeGroups";
-  std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
-      per_model_group_.begin();
-  int sum = 0;
-  for (; it != per_model_group_.end(); ++it) {
-    sum += it->second->conflict_progress.ServerConflictingItemsSize();
-  }
-  return sum;
+      << "num_server_conflicts applies to all ModelSafeGroups";
+  return model_neutral_.num_server_conflicts;
 }
 
 int StatusController::TotalNumConflictingItems() const {
   DCHECK(!group_restriction_in_effect_)
       << "TotalNumConflictingItems applies to all ModelSafeGroups";
-  std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
-    per_model_group_.begin();
   int sum = 0;
-  for (; it != per_model_group_.end(); ++it) {
-    sum += it->second->conflict_progress.SimpleConflictingItemsSize();
-    sum += it->second->conflict_progress.EncryptionConflictingItemsSize();
-    sum += it->second->conflict_progress.HierarchyConflictingItemsSize();
-    sum += it->second->conflict_progress.ServerConflictingItemsSize();
-  }
+  sum += num_simple_conflicts();
+  sum += num_encryption_conflicts();
+  sum += num_hierarchy_conflicts();
+  sum += num_server_conflicts();
   return sum;
 }
 

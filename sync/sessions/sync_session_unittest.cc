@@ -162,27 +162,6 @@ TEST_F(SyncSessionTest, EnabledGroups) {
   EXPECT_EQ(expected_enabled_groups, session->GetEnabledGroups());
 }
 
-TEST_F(SyncSessionTest, EnabledGroupsWithConflictsEmpty) {
-  scoped_ptr<SyncSession> session(MakeSession());
-  // Auto-create conflict progress.  This shouldn't put that group in
-  // conflict.
-  session->mutable_status_controller()->
-      GetUnrestrictedMutableConflictProgressForTest(GROUP_PASSIVE);
-  EXPECT_TRUE(session->GetEnabledGroupsWithConflicts().empty());
-}
-
-TEST_F(SyncSessionTest, EnabledGroupsWithConflicts) {
-  scoped_ptr<SyncSession> session(MakeSession());
-  // Put GROUP_UI in conflict.
-  session->mutable_status_controller()->
-      GetUnrestrictedMutableConflictProgressForTest(GROUP_UI)->
-      AddSimpleConflictingItemById(syncable::Id());
-  std::set<ModelSafeGroup> expected_enabled_groups_with_conflicts;
-  expected_enabled_groups_with_conflicts.insert(GROUP_UI);
-  EXPECT_EQ(expected_enabled_groups_with_conflicts,
-            session->GetEnabledGroupsWithConflicts());
-}
-
 TEST_F(SyncSessionTest, ScopedContextHelpers) {
   ConflictResolver resolver;
   EXPECT_FALSE(context_->resolver());

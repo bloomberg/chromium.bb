@@ -53,14 +53,12 @@ class StatusController {
   // Progress counters.  All const methods may return NULL if the
   // progress structure doesn't exist, but all non-const methods
   // auto-create.
-  const ConflictProgress* conflict_progress() const;
-  ConflictProgress* mutable_conflict_progress();
+  const std::set<syncable::Id>* simple_conflict_ids() const;
+  std::set<syncable::Id>* mutable_simple_conflict_ids();
   const UpdateProgress* update_progress() const;
   UpdateProgress* mutable_update_progress();
-  const ConflictProgress* GetUnrestrictedConflictProgress(
+  const std::set<syncable::Id>* GetUnrestrictedSimpleConflictIds(
       ModelSafeGroup group) const;
-  ConflictProgress* GetUnrestrictedMutableConflictProgressForTest(
-      ModelSafeGroup group);
   const UpdateProgress* GetUnrestrictedUpdateProgress(
       ModelSafeGroup group) const;
   UpdateProgress* GetUnrestrictedMutableUpdateProgressForTest(
@@ -102,16 +100,14 @@ class StatusController {
   // Note: this includes unresolvable conflicts.
   bool HasConflictingUpdates() const;
 
-  // Aggregate sums of various types of conflict counters accross all
-  // ConflictProgress objects (one for each ModelSafeGroup currently in-use).
-  int TotalNumEncryptionConflictingItems() const;
-  int TotalNumHierarchyConflictingItems() const;
-  int TotalNumServerConflictingItems() const;
-  int TotalNumSimpleConflictingItems() const;
+  // Various conflict counters.
+  int num_encryption_conflicts() const;
+  int num_hierarchy_conflicts() const;
+  int num_server_conflicts() const;
 
-  // Aggregate sum of SimpleConflictingItemSize() and other
-  // ${Type}ConflictingItemSize() methods over all ConflictProgress objects (one
-  // for each ModelSafeGroup currently in-use).
+  int num_simple_conflicts() const;
+
+  // Aggregate sum of all conflicting items over all conflict types.
   int TotalNumConflictingItems() const;
 
   // Returns the number of updates received from the sync server.
@@ -151,24 +147,37 @@ class StatusController {
 
   SyncerError last_get_key_result() const;
 
-  // A toolbelt full of methods for updating counters and flags.
+  // Download counters.
   void set_num_server_changes_remaining(int64 changes_remaining);
-  void set_num_successful_bookmark_commits(int value);
-  void increment_num_successful_commits();
-  void increment_num_successful_bookmark_commits();
   void increment_num_updates_downloaded_by(int value);
   void increment_num_tombstone_updates_downloaded_by(int value);
   void increment_num_reflected_updates_downloaded_by(int value);
-  void set_types_needing_local_migration(ModelTypeSet types);
+
+  // Update application and conflict resolution counters.
+  void increment_num_updates_applied();
+  void increment_num_encryption_conflicts();
+  void increment_num_server_conflicts();
+  void set_num_hierarchy_conflicts(int value);
   void increment_num_local_overwrites();
   void increment_num_server_overwrites();
+
+  // TODO(rlarocque): Remove these after conflict resolution refactor.
+  void update_conflicts_resolved(bool resolved);
+  void reset_conflicts_resolved();
+
+  // Commit counters.
+  void increment_num_successful_commits();
+  void increment_num_successful_bookmark_commits();
+  void set_num_successful_bookmark_commits(int value);
+
+  // Server communication status tracking.
   void set_sync_protocol_error(const SyncProtocolError& error);
   void set_last_get_key_result(const SyncerError result);
   void set_last_download_updates_result(const SyncerError result);
   void set_commit_result(const SyncerError result);
 
-  void update_conflicts_resolved(bool resolved);
-  void reset_conflicts_resolved();
+  // A very important flag used to inform frontend of need to migrate.
+  void set_types_needing_local_migration(ModelTypeSet types);
 
   void UpdateStartTime();
 

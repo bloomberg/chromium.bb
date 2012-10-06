@@ -605,7 +605,6 @@
           'engine/model_changing_syncer_command_unittest.cc',
           'engine/process_commit_response_command_unittest.cc',
           'engine/process_updates_command_unittest.cc',
-          'engine/resolve_conflicts_command_unittest.cc',
           'engine/sync_scheduler_unittest.cc',
           'engine/sync_scheduler_whitebox_unittest.cc',
           'engine/syncer_proto_util_unittest.cc',

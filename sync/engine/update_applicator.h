@@ -17,11 +17,12 @@
 #include "base/port.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/syncable/syncable_id.h"
+#include "sync/sessions/status_controller.h"
 
 namespace syncer {
 
 namespace sessions {
-class ConflictProgress;
+class StatusController;
 class UpdateProgress;
 }
 
@@ -44,14 +45,15 @@ class UpdateApplicator {
 
   // Attempt to apply the specified updates.
   void AttemptApplications(syncable::WriteTransaction* trans,
-                           const std::vector<int64>& handles);
+                           const std::vector<int64>& handles,
+                           sessions::StatusController* status);
 
   // This class does not automatically save its progress into the
   // SyncSession -- to get that to happen, call this method after update
   // application is finished (i.e., when AttemptOneAllocation stops returning
   // true).
   void SaveProgressIntoSessionState(
-      sessions::ConflictProgress* conflict_progress,
+      std::set<syncable::Id>* simple_conflict_ids,
       sessions::UpdateProgress* update_progress);
 
  private:
@@ -64,7 +66,7 @@ class UpdateApplicator {
      void AddEncryptionConflict(syncable::Id);
      void AddHierarchyConflict(syncable::Id);
      void AddSuccess(syncable::Id);
-     void SaveProgress(sessions::ConflictProgress* conflict_progress,
+     void SaveProgress(std::set<syncable::Id>* simple_conflict_ids,
                        sessions::UpdateProgress* update_progress);
      void ClearHierarchyConflicts();
 

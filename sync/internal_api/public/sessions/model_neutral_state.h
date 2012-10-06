@@ -41,6 +41,12 @@ struct ModelNeutralState {
   // the client must now "migrate", by purging and re-downloading all updates.
   ModelTypeSet types_needing_local_migration;
 
+  // Update application and conflicts.
+  int num_updates_applied;
+  int num_encryption_conflicts;
+  int num_server_conflicts;
+  int num_hierarchy_conflicts;
+
   // Overwrites due to conflict resolution counters.
   int num_local_overwrites;
   int num_server_overwrites;

@@ -105,7 +105,6 @@ using syncable::SPECIFICS;
 using syncable::SYNCING;
 using syncable::UNITTEST;
 
-using sessions::ConflictProgress;
 using sessions::ScopedSetSessionWriteTransaction;
 using sessions::StatusController;
 using sessions::SyncSessionContext;
@@ -1583,12 +1582,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
 
   // Id 3 should be in conflict now.
   EXPECT_EQ(1, status().TotalNumConflictingItems());
-  {
-    sessions::ScopedModelSafeGroupRestriction r(
-        session_->mutable_status_controller(), GROUP_PASSIVE);
-    ASSERT_TRUE(status().conflict_progress());
-    EXPECT_EQ(1, status().conflict_progress()->HierarchyConflictingItemsSize());
-  }
+  EXPECT_EQ(1, status().num_hierarchy_conflicts());
 
   // These entries will be used in the second set of updates.
   mock_server_->AddUpdateDirectory(4, 0, "newer_version", 20, 10);
@@ -1602,12 +1596,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   // The three items with an unresolved parent should be unapplied (3, 9, 100).
   // The name clash should also still be in conflict.
   EXPECT_EQ(3, status().TotalNumConflictingItems());
-  {
-    sessions::ScopedModelSafeGroupRestriction r(
-        session_->mutable_status_controller(), GROUP_PASSIVE);
-    ASSERT_TRUE(status().conflict_progress());
-    EXPECT_EQ(3, status().conflict_progress()->HierarchyConflictingItemsSize());
-  }
+  EXPECT_EQ(3, status().num_hierarchy_conflicts());
 
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
@@ -1697,12 +1686,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
 
   EXPECT_FALSE(saw_syncer_event_);
   EXPECT_EQ(4, status().TotalNumConflictingItems());
-  {
-    sessions::ScopedModelSafeGroupRestriction r(
-        session_->mutable_status_controller(), GROUP_PASSIVE);
-    ASSERT_TRUE(status().conflict_progress());
-    EXPECT_EQ(4, status().conflict_progress()->HierarchyConflictingItemsSize());
-  }
+  EXPECT_EQ(4, status().num_hierarchy_conflicts());
 }
 
 TEST_F(SyncerTest, CommitTimeRename) {
@@ -2392,7 +2376,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
     existing.Put(IS_DEL, true);
   }
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
-  EXPECT_EQ(0, status().TotalNumServerConflictingItems());
+  EXPECT_EQ(0, status().num_server_conflicts());
 }
 
 TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {

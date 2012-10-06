@@ -95,24 +95,22 @@ TEST_F(StatusControllerTest, TotalNumConflictingItems) {
   TestIdFactory f;
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    EXPECT_FALSE(status.conflict_progress());
-    status.mutable_conflict_progress()->
-        AddSimpleConflictingItemById(f.NewLocalId());
-    status.mutable_conflict_progress()->
-        AddSimpleConflictingItemById(f.NewLocalId());
-    EXPECT_EQ(2, status.conflict_progress()->SimpleConflictingItemsSize());
+    status.mutable_simple_conflict_ids()->insert(f.NewLocalId());
+    status.mutable_simple_conflict_ids()->insert(f.NewLocalId());
+    EXPECT_EQ(static_cast<size_t>(2), status.simple_conflict_ids()->size());
   }
   EXPECT_EQ(2, status.TotalNumConflictingItems());
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_DB);
-    EXPECT_FALSE(status.conflict_progress());
-    status.mutable_conflict_progress()->
-        AddSimpleConflictingItemById(f.NewLocalId());
-    status.mutable_conflict_progress()->
-        AddSimpleConflictingItemById(f.NewLocalId());
-    EXPECT_EQ(2, status.conflict_progress()->SimpleConflictingItemsSize());
+    status.mutable_simple_conflict_ids()->insert(f.NewLocalId());
+    status.mutable_simple_conflict_ids()->insert(f.NewLocalId());
+    EXPECT_EQ(static_cast<size_t>(2), status.simple_conflict_ids()->size());
   }
   EXPECT_EQ(4, status.TotalNumConflictingItems());
+
+  status.increment_num_server_conflicts();
+  status.set_num_hierarchy_conflicts(3);
+  EXPECT_EQ(8, status.TotalNumConflictingItems());
 }
 
 // Basic test that non group-restricted state accessors don't cause violations.
