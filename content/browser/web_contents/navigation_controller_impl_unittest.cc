@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -47,6 +49,63 @@ using content::TestNotificationTracker;
 using content::TestRenderViewHost;
 using content::TestWebContents;
 using content::WebContents;
+
+// TimeSmoother tests ----------------------------------------------------------
+
+// With no duplicates, GetSmoothedTime should be the identity
+// function.
+TEST(TimeSmoother, Basic) {
+  NavigationControllerImpl::TimeSmoother smoother;
+  for (int64 i = 1; i < 1000; ++i) {
+    base::Time t = base::Time::FromInternalValue(i);
+    EXPECT_EQ(t, smoother.GetSmoothedTime(t));
+  }
+}
+
+// With a single duplicate and timestamps thereafter increasing by one
+// microsecond, the smoothed time should always be one behind.
+TEST(TimeSmoother, SingleDuplicate) {
+  NavigationControllerImpl::TimeSmoother smoother;
+  base::Time t = base::Time::FromInternalValue(1);
+  EXPECT_EQ(t, smoother.GetSmoothedTime(t));
+  for (int64 i = 1; i < 1000; ++i) {
+    base::Time expected_t = base::Time::FromInternalValue(i + 1);
+    t = base::Time::FromInternalValue(i);
+    EXPECT_EQ(expected_t, smoother.GetSmoothedTime(t));
+  }
+}
+
+// With k duplicates and timestamps thereafter increasing by one
+// microsecond, the smoothed time should always be k behind.
+TEST(TimeSmoother, ManyDuplicates) {
+  const int64 kNumDuplicates = 100;
+  NavigationControllerImpl::TimeSmoother smoother;
+  base::Time t = base::Time::FromInternalValue(1);
+  for (int64 i = 0; i < kNumDuplicates; ++i) {
+    base::Time expected_t = base::Time::FromInternalValue(i + 1);
+    EXPECT_EQ(expected_t, smoother.GetSmoothedTime(t));
+  }
+  for (int64 i = 1; i < 1000; ++i) {
+    base::Time expected_t =
+        base::Time::FromInternalValue(i + kNumDuplicates);
+    t = base::Time::FromInternalValue(i);
+    EXPECT_EQ(expected_t, smoother.GetSmoothedTime(t));
+  }
+}
+
+// If the clock jumps far back enough after a run of duplicates, it
+// should immediately jump to that value.
+TEST(TimeSmoother, ClockBackwardsJump) {
+  const int64 kNumDuplicates = 100;
+  NavigationControllerImpl::TimeSmoother smoother;
+  base::Time t = base::Time::FromInternalValue(1000);
+  for (int64 i = 0; i < kNumDuplicates; ++i) {
+    base::Time expected_t = base::Time::FromInternalValue(i + 1000);
+    EXPECT_EQ(expected_t, smoother.GetSmoothedTime(t));
+  }
+  t = base::Time::FromInternalValue(500);
+  EXPECT_EQ(t, smoother.GetSmoothedTime(t));
+}
 
 // NavigationControllerTest ----------------------------------------------------
 
@@ -270,6 +329,55 @@ TEST_F(NavigationControllerTest, LoadURL) {
   EXPECT_EQ(contents()->GetMaxPageID(), 1);
 
   EXPECT_FALSE(controller.GetActiveEntry()->GetTimestamp().is_null());
+}
+
+namespace {
+
+base::Time GetFixedTime(base::Time time) {
+  return time;
+}
+
+}  // namespace
+
+TEST_F(NavigationControllerTest, LoadURLSameTime) {
+  NavigationControllerImpl& controller = controller_impl();
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  // Set the clock to always return a timestamp of 1.
+  controller.SetGetTimestampCallbackForTest(
+      base::Bind(&GetFixedTime, base::Time::FromInternalValue(1)));
+
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+
+  controller.LoadURL(
+      url1, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
+
+  test_rvh()->SendNavigate(0, url1);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+
+  // Load another...
+  controller.LoadURL(
+      url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
+
+  // Simulate the beforeunload ack for the cross-site transition, and then the
+  // commit.
+  test_rvh()->SendShouldCloseACK(true);
+  test_rvh()->SendNavigate(1, url2);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+
+  // The two loads should now be committed.
+  ASSERT_EQ(controller.GetEntryCount(), 2);
+
+  // Timestamps should be distinct despite the clock returning the
+  // same value.
+  EXPECT_EQ(1u,
+            controller.GetEntryAtIndex(0)->GetTimestamp().ToInternalValue());
+  EXPECT_EQ(2u,
+            controller.GetEntryAtIndex(1)->GetTimestamp().ToInternalValue());
 }
 
 void CheckNavigationEntryMatchLoadParams(

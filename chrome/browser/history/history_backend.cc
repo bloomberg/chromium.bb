@@ -427,19 +427,6 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
   DCHECK(request.redirects.empty() ||
          request.redirects.back() == request.url);
 
-  // Avoid duplicating times in the database, at least as long as pages are
-  // added in order. However, we don't want to disallow pages from recording
-  // times earlier than our last_recorded_time_, because someone might set
-  // their machine's clock back.
-  //
-  // TODO(akalin): Put this logic in NavigationController.
-  if (last_requested_time_ == request.time) {
-    last_recorded_time_ = last_recorded_time_ + TimeDelta::FromMicroseconds(1);
-  } else {
-    last_requested_time_ = request.time;
-    last_recorded_time_ = last_requested_time_;
-  }
-
   // If the user is adding older history, we need to make sure our times
   // are correct.
   if (request.time < first_recorded_time_)
@@ -483,7 +470,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
         content::PAGE_TRANSITION_CHAIN_END);
 
     // No redirect case (one element means just the page itself).
-    last_ids = AddPageVisit(request.url, last_recorded_time_,
+    last_ids = AddPageVisit(request.url, request.time,
                             last_ids.second, t, request.visit_source);
 
     // Update the segment for this visit. KEYWORD_GENERATED visits should not
@@ -491,10 +478,10 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
     // visited db).
     if (!is_keyword_generated) {
       UpdateSegments(request.url, from_visit_id, last_ids.second, t,
-                     last_recorded_time_);
+                     request.time);
 
       // Update the referrer's duration.
-      UpdateVisitDuration(from_visit_id, last_recorded_time_);
+      UpdateVisitDuration(from_visit_id, request.time);
     }
   } else {
     // Redirect case. Add the redirect chain.
@@ -559,15 +546,15 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       // them anyway, and if we ever decide to, we can reconstruct their order
       // from the redirect chain.
       last_ids = AddPageVisit(redirects[redirect_index],
-                              last_recorded_time_, last_ids.second,
+                              request.time, last_ids.second,
                               t, request.visit_source);
       if (t & content::PAGE_TRANSITION_CHAIN_START) {
         // Update the segment for this visit.
         UpdateSegments(redirects[redirect_index],
-                       from_visit_id, last_ids.second, t, last_recorded_time_);
+                       from_visit_id, last_ids.second, t, request.time);
 
         // Update the visit_details for this visit.
-        UpdateVisitDuration(from_visit_id, last_recorded_time_);
+        UpdateVisitDuration(from_visit_id, request.time);
       }
 
       // Subsequent transitions in the redirect list must all be server
@@ -596,7 +583,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
 
   if (text_database_.get()) {
     text_database_->AddPageURL(request.url, last_ids.first, last_ids.second,
-                               last_recorded_time_);
+                               request.time);
   }
 
   ScheduleCommit();

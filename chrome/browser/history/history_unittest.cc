@@ -496,46 +496,6 @@ TEST_F(HistoryTest, AddPage) {
   EXPECT_FALSE(query_url_row_.hidden());  // Because loaded in main frame.
 }
 
-TEST_F(HistoryTest, AddPageSameTimes) {
-  scoped_refptr<HistoryService> history(new HistoryService);
-  history_service_ = history;
-  ASSERT_TRUE(history->Init(history_dir_, NULL));
-
-  Time now = Time::Now();
-  const GURL test_urls[] = {
-    GURL("http://timer.first.page/"),
-    GURL("http://timer.second.page/"),
-    GURL("http://timer.third.page/"),
-  };
-
-  // Make sure that two pages added at the same time with no intervening
-  // additions have different timestamps.
-  history->AddPage(test_urls[0], now, NULL, 0, GURL(),
-                   history::RedirectList(), content::PAGE_TRANSITION_LINK,
-                   history::SOURCE_BROWSED, false);
-  EXPECT_TRUE(QueryURL(history, test_urls[0]));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_TRUE(now == query_url_row_.last_visit());  // gtest doesn't like Time
-
-  history->AddPage(test_urls[1], now, NULL, 0, GURL(),
-                   history::RedirectList(), content::PAGE_TRANSITION_LINK,
-                   history::SOURCE_BROWSED, false);
-  EXPECT_TRUE(QueryURL(history, test_urls[1]));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_TRUE(now + TimeDelta::FromMicroseconds(1) ==
-      query_url_row_.last_visit());
-
-  // Make sure the next page, at a different time, is also correct.
-  history->AddPage(test_urls[2], now + TimeDelta::FromMinutes(1),
-                   NULL, 0, GURL(), history::RedirectList(),
-                   content::PAGE_TRANSITION_LINK, history::SOURCE_BROWSED,
-                   false);
-  EXPECT_TRUE(QueryURL(history, test_urls[2]));
-  EXPECT_EQ(1, query_url_row_.visit_count());
-  EXPECT_TRUE(now + TimeDelta::FromMinutes(1) ==
-      query_url_row_.last_visit());
-}
-
 TEST_F(HistoryTest, AddRedirect) {
   scoped_refptr<HistoryService> history(new HistoryService);
   history_service_ = history;

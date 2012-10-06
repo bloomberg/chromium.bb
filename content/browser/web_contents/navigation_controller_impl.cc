@@ -4,6 +4,7 @@
 
 #include "content/browser/web_contents/navigation_controller_impl.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"  // Temporary
@@ -198,6 +199,22 @@ void NavigationController::DisablePromptOnRepost() {
 
 }  // namespace content
 
+base::Time NavigationControllerImpl::TimeSmoother::GetSmoothedTime(
+    base::Time t) {
+  // If |t| is between the water marks, we're in a run of duplicates
+  // or just getting out of it, so increase the high-water mark to get
+  // a time that probably hasn't been used before and return it.
+  if (low_water_mark_ <= t && t <= high_water_mark_) {
+    high_water_mark_ += base::TimeDelta::FromMicroseconds(1);
+    return high_water_mark_;
+  }
+
+  // Otherwise, we're clear of the last duplicate run, so reset the
+  // water marks.
+  low_water_mark_ = high_water_mark_ = t;
+  return t;
+}
+
 NavigationControllerImpl::NavigationControllerImpl(
     WebContentsImpl* web_contents,
     BrowserContext* browser_context)
@@ -211,7 +228,8 @@ NavigationControllerImpl::NavigationControllerImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_manager_(this)),
       needs_reload_(false),
       is_initial_navigation_(true),
-      pending_reload_(NO_RELOAD) {
+      pending_reload_(NO_RELOAD),
+      get_timestamp_callback_(base::Bind(&base::Time::Now)) {
   DCHECK(browser_context_);
 }
 
@@ -756,12 +774,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
   //
   // TODO(akalin): Use "sane time" as described in
   // http://www.chromium.org/developers/design-documents/sane-time .
-  //
-  // TODO(akalin): Make sure (to at least a high probability) that the
-  // generated timestamp is unique.  (Move the uniquifying logic from
-  // history_backend.cc.)
-  const base::Time timestamp = base::Time::Now();
-  DVLOG(1) << "Navigation finished at timestamp "
+  base::Time timestamp =
+      time_smoother_.GetSmoothedTime(get_timestamp_callback_.Run());
+  DVLOG(1) << "Navigation finished at (smoothed) timestamp "
            << timestamp.ToInternalValue();
 
   // All committed entries should have nonempty content state so WebKit doesn't
@@ -773,7 +788,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
   active_entry->SetContentState(params.content_state);
   // No longer needed since content state will hold the post data if any.
   active_entry->SetBrowserInitiatedPostData(NULL);
-
 
   // Once committed, we do not need to track if the entry was initiated by
   // the renderer.
@@ -1606,4 +1620,9 @@ void NavigationControllerImpl::InsertEntriesFrom(
                           new NavigationEntryImpl(*source.entries_[i])));
     }
   }
+}
+
+void NavigationControllerImpl::SetGetTimestampCallbackForTest(
+    const base::Callback<base::Time()>& get_timestamp_callback) {
+  get_timestamp_callback_ = get_timestamp_callback;
 }
