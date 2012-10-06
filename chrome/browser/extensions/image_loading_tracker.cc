@@ -105,7 +105,7 @@ class ImageLoadingTracker::ImageLoader
     tracker_ = NULL;
   }
 
-  // Instructs the loader to load a task on the File thread.
+  // Instructs the loader to load a task on the blocking pool.
   void LoadImage(const ImageRepresentation& image_info, int id) {
     DCHECK(BrowserThread::CurrentlyOn(callback_thread_id_));
     BrowserThread::PostBlockingPoolTask(
@@ -147,26 +147,44 @@ class ImageLoadingTracker::ImageLoader
     ReportBack(decoded.release(), image_info, original_size, id);
   }
 
-  // Instructs the loader to load a resource on the File thread.
+  // Instructs the loader to load a resource on the UI thread.
   void LoadResource(const ImageRepresentation& image_info,
                     int id,
                     int resource_id) {
     DCHECK(BrowserThread::CurrentlyOn(callback_thread_id_));
-    BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(&ImageLoader::LoadResourceOnBlockingPool, this, image_info,
+
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      LoadResourceOnUIThread(image_info, id, resource_id);
+      return;
+    }
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&ImageLoader::LoadResourceOnUIThread, this, image_info,
                    id, resource_id));
   }
 
-  void LoadResourceOnBlockingPool(const ImageRepresentation& image_info,
-                                  int id,
-                                  int resource_id) {
+  void LoadResourceOnUIThread(const ImageRepresentation& image_info,
+                              int id,
+                              int resource_id) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    // Bundled image resources is only safe to be loaded on UI thread.
+    gfx::ImageSkia* image =
+        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+    image->MakeThreadSafe();
+
+    BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(&ImageLoader::ResizeOnBlockingPool, this, image_info,
+                   id, *image));
+  }
+
+  void ResizeOnBlockingPool(const ImageRepresentation& image_info,
+                            int id,
+                            const gfx::ImageSkia& image) {
     DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
     // TODO(xiyuan): Clean up to use SkBitmap here and in LoadOnBlockingPool.
-    gfx::ImageSkia image(
-        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
-    image.MakeThreadSafe();
-
     scoped_ptr<SkBitmap> bitmap(new SkBitmap);
     *bitmap = ResizeIfNeeded(*image.bitmap(), image_info);
     ReportBack(bitmap.release(), image_info, image_info.desired_size, id);
