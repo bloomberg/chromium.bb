@@ -13,6 +13,32 @@ cr.define('ntp', function() {
   var TilePage = ntp.TilePage;
 
   /**
+   * Device type strings that are used as a part of the class name for the
+   * device picture element.
+   * @enum {string}
+   */
+  var ICON_TYPES = {
+    LAPTOP: 'laptop',
+    PHONE: 'phone',
+    TABLET: 'tablet',
+  };
+
+  /**
+   * Map for converting device types to pictures.
+   * @type {Object}
+   * @const
+   */
+  var DEVICE_ICONS = {
+    'win': ICON_TYPES.LAPTOP,
+    'macosx': ICON_TYPES.LAPTOP,
+    'linux': ICON_TYPES.LAPTOP,
+    'chromeos': ICON_TYPES.LAPTOP,
+    'other': ICON_TYPES.LAPTOP,
+    'phone': ICON_TYPES.PHONE,
+    'tablet': ICON_TYPES.TABLET,
+  };
+
+  /**
    * Creates a new OtherDevice object for tiling.
    * @constructor
    * @extends {Tile}
@@ -20,18 +46,18 @@ cr.define('ntp', function() {
    * @param {Object} config Tile page configuration object.
    */
   function OtherDevice(config) {
-    var el = cr.doc.createElement('a');
+    var el = cr.doc.createElement('div');
     el.__proto__ = OtherDevice.prototype;
     el.initialize(config);
 
     return el;
   }
 
-  OtherDevice.prototype = {
-    __proto__: Tile.prototype,
+  OtherDevice.prototype = Tile.subclass({
+    __proto__: HTMLDivElement.prototype,
 
     /**
-     * Initializes a OtherDevice Tile.
+     * Initializes an OtherDevice Tile.
      * @param {Object} config TilePage configuration object.
      */
     initialize: function(config) {
@@ -57,7 +83,51 @@ cr.define('ntp', function() {
       chrome.send('showOtherDeviceSessionPopup',
                   [this.data.tag, e.clientX, e.clientY]);
     },
-  };
+
+    /**
+     * Clears the DOM hierarchy for this node, setting it back to the default
+     * for a blank tile.
+     */
+    reset: function() {
+      this.innerHTML =
+          '<div class="device-image"></div>' +
+          '<div class="devices-infopane">' +
+            '<div class="devices-label-container">' +
+              '<p class="devices-info-text devices-name"></p>' +
+              '<p class="devices-info-text devices-timestamp"></p>' +
+            '</div>' +
+          '</div>';
+      // TODO(vadimt): Replace assigning null with calling base.reset().
+      this.data_ = null;
+    },
+
+    /**
+     * Gets the class for the picture element for a device of a given type.
+     * @param {string} deviceType Type of the device.
+     * @private
+     */
+    getPictureClass_: function(deviceType) {
+      var iconType = DEVICE_ICONS[deviceType] || ICON_TYPES.LAPTOP;
+      // TODO(vadimt): Also need Retina-resolution images.
+      return 'device-image device-' + iconType;
+    },
+
+    /**
+     * Update the appearance of this tile according to |data|.
+     * @param {Object} data A dictionary of relevant data for the page.
+     */
+    setData: function(data) {
+      // TODO(vadimt): We should decide what to do with too long texts.
+      Tile.prototype.setData.apply(this, arguments);
+
+      var image = this.querySelector('.device-image');
+      image.className = this.getPictureClass_(data.deviceType);
+      var deviceName = this.querySelector('.devices-name');
+      deviceName.textContent = data.name;
+      var timestamp = this.querySelector('.devices-timestamp');
+      timestamp.textContent = data.modifiedTime;
+    },
+  });
 
   /**
    * Creates a new OtherDevicesPage object.
@@ -75,16 +145,26 @@ cr.define('ntp', function() {
   OtherDevicesPage.prototype = {
     __proto__: TilePage.prototype,
 
+    TileClass: OtherDevice,
+
     // TODO(vadimt): config constants are not final.
+    // TODO(vadimt): center tiles horizontally.
+    /**
+     * Configuration object for the tile.
+     * @type {Object}
+     * @const
+     * @private
+     */
     config_: {
       // The width of a cell.
-      cellWidth: 100,
+      cellWidth: 161,
       // The start margin of a cell (left or right according to text direction).
       cellMarginStart: 18,
       // The border panel horizontal margin.
       bottomPanelHorizontalMargin: 100,
       // The height of the tile row.
-      rowHeight: 100,
+      // TODO(vadimt): Strange that we need to repeat same value for all pages.
+      rowHeight: 105,
       // The maximum number of Tiles to be displayed.
       maxTileCount: 10
     },
@@ -114,17 +194,15 @@ cr.define('ntp', function() {
     /**
      * Sets the data that will be used to create and update Tiles.
      * @param {Array} data The array of data.
-     * @type (Array}
      */
-    setData: function(data, isTabSyncEnabled) {
-      // TODO(vadimt): unused parameter isTabSyncEnabled.
+    setDataList: function(dataList) {
+      // TODO(vadimt): show text to right/left of image depending on locale.
       var startTime = Date.now();
 
-      // TODO(vadimt): Uncomment the line below when setDataList is implemented.
-      //TilePage.prototype.setDataList.apply(this, arguments);
+      TilePage.prototype.setDataList.apply(this, arguments);
 
       var dot = this.navigationDot;
-      if (data.length == 0) {
+      if (this.dataList_.length == 0) {
         dot.hidden = true;
         // If the device list is empty and we're still on the Other Devices
         // page, fall back to the first page in the dot list.

@@ -887,6 +887,11 @@ cr.define('ntp', function() {
     cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
+  function setForeignSessions(dataList, isTabSyncEnabled) {
+    newTabView.otherDevicesPage.setDataList(dataList);
+    cr.dispatchSimpleEvent(document, 'sectionready', true, true);
+  }
+
   function getThumbnailUrl(url) {
     return 'chrome://thumb/' + url;
   }
@@ -934,10 +939,6 @@ cr.define('ntp', function() {
 
   function appsReordered() {
     return newTabView.appsReordered.apply(newTabView, arguments);
-  }
-
-  function setForeignSessions(sessionList, isTabSyncEnabled) {
-    return newTabView.otherDevicesPage.setData(sessionList, isTabSyncEnabled);
   }
 
   function getAppsCallback() {
