@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 #include "native_client/src/trusted/validator_arm/validator_tests.h"
 
 namespace nacl_val_arm_test {
@@ -178,7 +184,7 @@ void ValidatorTests::all_cond_values_pass(const arm_inst prototype,
        cond = Instruction::Next(cond)) {
     test_inst = ChangeCond(test_inst, cond);
     EXPECT_TRUE(validate(&test_inst, 1, base_addr, &spy))
-        << "Fails on cond " << cond << ": " << msg;
+        << "Fails on cond " << Instruction::ToString(cond) << ": " << msg;
   }
 }
 
@@ -192,7 +198,7 @@ void ValidatorTests::all_cond_values_fail(const arm_inst prototype,
        cond = Instruction::Next(cond)) {
     test_inst = ChangeCond(test_inst, cond);
     EXPECT_FALSE(validate(&test_inst, 1, base_addr, &spy))
-        << "Passes on cond " << cond << ": " << msg;
+        << "Passes on cond " << Instruction::ToString(cond) << ": " << msg;
   }
 }
 

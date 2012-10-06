@@ -1023,6 +1023,141 @@ TEST_F(ValidatorTests, CheckPushPcUnpredictable) {
                        "push {pc} (A2 A8-248) should be unpredictable");
 }
 
+TEST_F(ValidatorTests, ConditionalBreakpoints) {
+  ProblemSpy spy;
+  arm_inst bkpt = 0xE1200070;  // BKPT #0
+  arm_inst pool_head = nacl_arm_dec::kLiteralPoolHeadInstruction;
+  for (Instruction::Condition cond = Instruction::EQ;
+       cond < Instruction::AL;
+       cond = Instruction::Next(cond)) {
+    bkpt = ChangeCond(bkpt, cond);
+    pool_head = ChangeCond(pool_head, cond);
+    EXPECT_FALSE(validate(&bkpt, 1, kDefaultBaseAddr, &spy))
+        << "conditional breakpoint should be unpredictable";
+    EXPECT_FALSE(validate(&pool_head, 1, kDefaultBaseAddr, &spy))
+        << "conditional literal pool head should be unpredictable";
+  }
+}
+
+TEST_F(ValidatorTests, LiteralPoolHeadIsBreakpoint) {
+  EXPECT_EQ(nacl_arm_dec::kLiteralPoolHeadInstruction & 0xFFF000F0,
+            0xE1200070)  // BKPT #0
+      << ("the literal pool head should be a breakpoint: "
+          "it needs to act as a roadblock");
+}
+
+TEST_F(ValidatorTests, LiteralPoolHeadInstruction) {
+  // Make sure that literal pools are handled properly: they should be preceded
+  // by a special breakpoint instruction at the start of the bundle, and can
+  // then contain any bits that would otherwise look malicious.
+  // Each literal pool bundle has to start with such a literal pool head.
+  vector<arm_inst> literal_pool(_validator.InstructionsPerBundle(),
+                                0xEF000000);  // SVC #0
+  literal_pool[0] = 0xE1200070;  // BKPT #0
+  // Try out all BKPT encodings, and make sure only one of them works.
+  for (uint32_t imm16 = 0; imm16 <= 0xFFFF; ++imm16) {
+    literal_pool[0] = (literal_pool[0] & 0xFFF000F0) |
+        (imm16 & 0xF) |
+        ((imm16 & 0xFFF0) << 8);
+    if (literal_pool[0] == nacl_arm_dec::kLiteralPoolHeadInstruction) {
+      validation_should_pass(literal_pool.data(),
+                             literal_pool.size(),
+                             kDefaultBaseAddr,
+                             "valid literal pool: "
+                             "starts with special BKPT");
+    } else {
+      validation_should_fail(literal_pool.data(),
+                             literal_pool.size(),
+                             kDefaultBaseAddr,
+                             "invalid literal pool: "
+                             "starts with just a regular BKPT");
+    }
+  }
+}
+
+TEST_F(ValidatorTests, LiteralPoolHeadPosition) {
+  // Literal pools should only work when the head instruction is indeed at
+  // the head.
+  vector<arm_inst> literal_pool(_validator.InstructionsPerBundle());
+  for (size_t pos = 0; pos <= literal_pool.size(); ++pos) {
+    std::fill(literal_pool.begin(), literal_pool.end(), 0xEF000000);  // SVC #0
+    if (pos != literal_pool.size()) {
+      // We do one iteration without a literal pool head at all.
+      literal_pool[pos] = nacl_arm_dec::kLiteralPoolHeadInstruction;
+    }
+    if (pos == 0) {
+      validation_should_pass(literal_pool.data(),
+                             literal_pool.size(),
+                             kDefaultBaseAddr,
+                             "valid literal pool: "
+                             "starts with special head instruction");
+    } else {
+      validation_should_fail(literal_pool.data(),
+                             literal_pool.size(),
+                             kDefaultBaseAddr,
+                             "invalid literal pool: "
+                             "doesn't start with special  head instruction");
+    }
+  }
+}
+
+TEST_F(ValidatorTests, LiteralPoolBig) {
+  // Literal pools should be a single bundle wide, each must be preceded by
+  // a pool head.
+  vector<arm_inst> literal_pools(2 * _validator.InstructionsPerBundle());
+  for (size_t pos = 0; pos <= literal_pools.size(); ++pos) {
+    std::fill(literal_pools.begin(), literal_pools.end(),
+              0xEF000000);  // SVC #0
+    literal_pools[pos] = nacl_arm_dec::kLiteralPoolHeadInstruction;
+    validation_should_fail(literal_pools.data(),
+                           literal_pools.size(),
+                           kDefaultBaseAddr,
+                           "invalid literal pool: two pools, one head");
+  }
+}
+
+TEST_F(ValidatorTests, LiteralPoolBranch) {
+  // Branching to a literal pool should only work at the head.
+  // Construct a code region with a bundle of code, then a bundle-wide
+  // literal pool, then another bundle of code.
+  // Add a branch from different code locations, pointing at different
+  // parts of the code. Pointing in the literal pool should fail, except
+  // when pointing at the head.
+  // Note that we don't actually put anything malicious in the literal pool,
+  // and we still shouldn't be able to jump in the middle of it.
+  const size_t bundle_pos = _validator.InstructionsPerBundle();
+  vector<arm_inst> code(3 * bundle_pos);
+  for (size_t b_pos = 0; b_pos < code.size(); ++b_pos) {
+    if ((bundle_pos <= b_pos) && (b_pos < bundle_pos * 2)) {
+      // Don't try putting the branch in the middle of the literal pool.
+      continue;
+    }
+    std::fill(code.begin(), code.end(), 0xE320F000);  // NOP
+    code[bundle_pos] = nacl_arm_dec::kLiteralPoolHeadInstruction;
+    for (size_t b_target = 0; b_target < code.size(); ++b_target) {
+      // PC reads as current instruction address plus 8 (e.g. two instructions
+      // ahead of b_pos).
+      // imm24 is encoded with the bottom two bits zeroed out, which we
+      // implicitly do by working with instructions instead of bytes.
+      uint32_t imm24 = (b_target - b_pos - 2) & 0x00FFFFFF;
+      code[b_pos] = 0xEA000000 | imm24;  // B #imm
+      bool target_in_pool = (bundle_pos < b_target) &&
+          (b_target < bundle_pos * 2);  // Excluding head.
+      if (target_in_pool) {
+        validation_should_fail(code.data(),
+                               code.size(),
+                               kDefaultBaseAddr,
+                               "branch inside a literal pool");
+      } else {
+        validation_should_pass(code.data(),
+                               code.size(),
+                               kDefaultBaseAddr,
+                               "branch around or at head of a literal pool");
+      }
+    }
+  }
+}
+
 };  // anonymous namespace
 
 // Test driver function.

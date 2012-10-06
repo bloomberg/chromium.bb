@@ -131,6 +131,11 @@ class SfiValidator {
   // This implies that the register is safe to use in unguarded stores.
   bool is_data_address_register(nacl_arm_dec::Register) const;
 
+  // Number of A32 instructions per bundle.
+  uint32_t InstructionsPerBundle() const {
+    return bytes_per_bundle_ / (nacl_arm_dec::kArm32InstSize / 8);
+  }
+
   uint32_t code_address_mask() const {
     return ~(code_region_bytes_ - 1) | (bytes_per_bundle_ - 1);
   }

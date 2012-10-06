@@ -32,6 +32,7 @@
  * Also see validator_tests.cc and validator_large_tests.cc
  */
 
+#include <algorithm>
 #include <limits>
 #include <string>
 #include <sstream>

@@ -531,9 +531,9 @@ SfiValidator::SfiValidator(uint32_t bytes_per_bundle,
   if ((nacl::PopCount(bytes_per_bundle_) != 1) ||
       (nacl::PopCount(code_region_bytes_) != 1) ||
       (nacl::PopCount(data_region_bytes_) != 1) ||
-      (bytes_per_bundle_ < 2) ||
-      (code_region_bytes_ < 2) ||
-      (data_region_bytes_ < 2) ||
+      (bytes_per_bundle_ < 4) ||
+      (code_region_bytes_ < 4) ||
+      (data_region_bytes_ < 4) ||
       (code_region_bytes_ < bytes_per_bundle_)) {
     construction_failed_ = true;
   }
@@ -681,7 +681,7 @@ bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
       Instruction(nacl_arm_dec::kLiteralPoolHeadInstruction),
       initial_decoder);  // and ensure that it decodes as Forbidden.
 
-  for (uint32_t va = segment.begin_addr(); va != segment.end_addr(); va += 4) {
+  for (uint32_t va = segment.begin_addr(); va < segment.end_addr(); va += 4) {
     DecodedInstruction inst(va, segment[va],
                             decode_state_.decode(segment[va]));
 
@@ -706,8 +706,11 @@ bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
     if (inst.is_literal_pool_head()
         && is_bundle_head(inst.addr())) {
       // Add each instruction in this bundle to the critical set.
+      // Skip over the literal pool head (which is also the bundle head):
+      // indirect branches to it are legal, direct branches should therefore
+      // also be legal.
       uint32_t last_data_addr = bundle_for_address(va).end_addr();
-      for (; va != last_data_addr; va += 4) {
+      for (va += 4; va < last_data_addr; va += 4) {
         critical->add(va);
       }
 
