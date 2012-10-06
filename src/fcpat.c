@@ -1147,66 +1147,22 @@ bail0:
     return NULL;
 }
 
-#define OBJECT_HASH_SIZE    251
-static struct objectBucket {
-    struct objectBucket	*next;
-    FcChar32		hash;
-    int			ref_count;
-} *FcObjectBuckets[OBJECT_HASH_SIZE];
+
+/* We used to have a shared-str pool.  Removed to make thread-safety
+ * work easier.  My measurements show that the extra overhead is not
+ * significant by any means. */
 
 FcBool
 FcSharedStrFree (const FcChar8 *name)
 {
-    FcChar32		hash = FcStringHash (name);
-    struct objectBucket	**p;
-    struct objectBucket	*b;
-    int			size;
-
-    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
-	if (b->hash == hash && ((char *)name == (char *) (b + 1)))
-	{
-	    b->ref_count--;
-	    if (!b->ref_count)
-	    {
-		*p = b->next;
-		size = sizeof (struct objectBucket) + strlen ((char *)name) + 1;
-		size = (size + 3) & ~3;
-		free (b);
-	    }
-            return FcTrue;
-	}
-    return FcFalse;
+  free (name);
+  return FcTrue;
 }
 
 const FcChar8 *
 FcSharedStr (const FcChar8 *name)
 {
-    FcChar32		hash = FcStringHash (name);
-    struct objectBucket	**p;
-    struct objectBucket	*b;
-    int			size;
-
-    for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
-	if (b->hash == hash && !strcmp ((char *)name, (char *) (b + 1)))
-	{
-	    b->ref_count++;
-	    return (FcChar8 *) (b + 1);
-	}
-    size = sizeof (struct objectBucket) + strlen ((char *)name) + 1;
-    /*
-     * workaround valgrind warning because glibc takes advantage of how it knows memory is
-     * allocated to implement strlen by reading in groups of 4
-     */
-    size = (size + 3) & ~3;
-    b = malloc (size);
-    if (!b)
-        return NULL;
-    b->next = 0;
-    b->hash = hash;
-    b->ref_count = 1;
-    strcpy ((char *) (b + 1), (char *)name);
-    *p = b;
-    return (FcChar8 *) (b + 1);
+  return strdup (name);
 }
 
 FcBool
