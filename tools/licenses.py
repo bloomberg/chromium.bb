@@ -28,6 +28,9 @@ PRUNE_PATHS = set([
     # Placeholder directory only, not third-party code.
     os.path.join('third_party','adobe'),
 
+    # Build files only, not third-party code.
+    os.path.join('third_party','widevine'),
+
     # Only binaries, used during development.
     os.path.join('third_party','valgrind'),
 
