@@ -244,6 +244,15 @@ void DaemonControllerLinux::DoSetConfigAndStart(
     return;
   }
 
+  // Ensure the configuration directory exists.
+  FilePath config_dir = GetConfigPath().DirName();
+  if (!file_util::DirectoryExists(config_dir) &&
+      !file_util::CreateDirectory(config_dir)) {
+    LOG(ERROR) << "Failed to create config directory " << config_dir.value();
+    done_callback.Run(RESULT_FAILED);
+    return;
+  }
+
   // Write config.
   JsonHostConfig config_file(GetConfigPath());
   if (!config_file.CopyFrom(config.get()) ||
