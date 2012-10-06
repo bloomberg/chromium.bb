@@ -1,0 +1,40 @@
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+{
+  'variables': {
+    'isolate_dependency_tracked': [
+      'hello_world.py',
+    ],
+  },
+  #
+  'conditions': [
+    ['OS=="linux"', {
+      'variables': {
+        'command': [
+          'python',
+          'hello_world.py',
+          'Linux',
+        ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
+        'command': [
+          'python',
+          'hello_world.py',
+          'OSX',
+        ],
+      },
+    }],
+    ['OS=="win"', {
+      'variables': {
+        'command': [
+          'python',
+          'hello_world.py',
+          'Windows',
+        ],
+      },
+    }],
+  ],
+}
