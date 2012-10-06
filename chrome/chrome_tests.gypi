@@ -503,12 +503,12 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
-        'browser/browser_focus_uitest.cc',
         'browser/browser_keyevents_browsertest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/mouseleave_browsertest.cc',
         'browser/printing/print_dialog_cloud_interative_uitest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
+        'browser/ui/browser_focus_uitest.cc',
         'browser/ui/fullscreen/fullscreen_controller_interactive_browsertest.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/ui/gtk/zoom_bubble_gtk_browsertest.cc',
