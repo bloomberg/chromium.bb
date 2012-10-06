@@ -21,6 +21,32 @@
 
 using webkit_blob::ShareableFileReference;
 
+namespace {
+
+// This class is similar to identically named classes in AsyncResourceHandler
+// and BufferedResourceHandler, but not quite.
+// TODO(ncbray) generalize and unify these cases?
+// In general, it's a bad idea to point to a subbuffer (particularly with
+// GrowableIOBuffer) because the backing IOBuffer may realloc its data.  In this
+// particular case we know RedirectToFileResourceHandler will not realloc its
+// buffer while a write is occurring, so we should be safe.  This property is
+// somewhat fragile, however, and depending on it is dangerous.  A more
+// principled approach would require significant refactoring, however, so for
+// the moment we're relying on fragile properties.
+class DependentIOBuffer : public net::WrappedIOBuffer {
+ public:
+  DependentIOBuffer(net::IOBuffer* backing, char* memory)
+      : net::WrappedIOBuffer(memory),
+        backing_(backing) {
+  }
+ private:
+  virtual ~DependentIOBuffer() {}
+
+  scoped_refptr<net::IOBuffer> backing_;
+};
+
+}
+
 namespace content {
 
 static const int kInitialReadBufSize = 32768;
@@ -200,19 +226,27 @@ bool RedirectToFileResourceHandler::WriteMore() {
       return true;
     DCHECK(write_cursor_ < buf_->offset());
 
-    // Create a temporary drainable buffer that can be passed to
-    // Write(). Temporarily reset the buf_ offset to 0 so that the
-    // drainable buffer can point to the the beginning of the buf_.
-    int offset = buf_->offset();
-    buf_->set_offset(0);
-    scoped_refptr<net::DrainableIOBuffer>
-        drainable = new net::DrainableIOBuffer(buf_, offset);
-    drainable->DidConsume(write_cursor_);
-    buf_->set_offset(offset);
+    // Create a temporary buffer pointing to a subsection of the data buffer so
+    // that it can be passed to Write.  This code makes some crazy scary
+    // assumptions about object lifetimes, thread sharing, and that buf_ will
+    // not realloc durring the write due to how the state machine in this class
+    // works.
+    // Note that buf_ is also shared with the code that writes data into the
+    // cache, so modifying it can cause some pretty subtle race conditions:
+    // https://code.google.com/p/chromium/issues/detail?id=152076
+    // We're using DependentIOBuffer instead of DrainableIOBuffer to dodge some
+    // of these issues, for the moment.
+    // TODO(ncbray) make this code less crazy scary.
+    // Also note that Write may increase the refcount of "wrapped" deep in the
+    // bowels of its implementation, the use of scoped_refptr here is not
+    // spurious.
+    scoped_refptr<DependentIOBuffer> wrapped = new DependentIOBuffer(
+        buf_, buf_->StartOfBuffer() + write_cursor_);
+    int write_len = buf_->offset() - write_cursor_;
 
     int rv = file_stream_->Write(
-        drainable,
-        drainable->BytesRemaining(),
+        wrapped,
+        write_len,
         base::Bind(&RedirectToFileResourceHandler::DidWriteToFile,
                    base::Unretained(this)));
     if (rv == net::ERR_IO_PENDING) {
