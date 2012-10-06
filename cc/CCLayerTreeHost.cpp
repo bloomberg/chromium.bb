@@ -82,12 +82,12 @@ bool CCLayerTreeHost::anyLayerTreeHostInstanceExists()
     return numLayerTreeInstances > 0;
 }
 
-PassOwnPtr<CCLayerTreeHost> CCLayerTreeHost::create(CCLayerTreeHostClient* client, const CCLayerTreeSettings& settings)
+scoped_ptr<CCLayerTreeHost> CCLayerTreeHost::create(CCLayerTreeHostClient* client, const CCLayerTreeSettings& settings)
 {
-    OwnPtr<CCLayerTreeHost> layerTreeHost = adoptPtr(new CCLayerTreeHost(client, settings));
+    scoped_ptr<CCLayerTreeHost> layerTreeHost(new CCLayerTreeHost(client, settings));
     if (!layerTreeHost->initialize())
-        return nullptr;
-    return layerTreeHost.release();
+        return scoped_ptr<CCLayerTreeHost>();
+    return layerTreeHost.Pass();
 }
 
 CCLayerTreeHost::CCLayerTreeHost(CCLayerTreeHostClient* client, const CCLayerTreeSettings& settings)
@@ -317,7 +317,7 @@ scoped_ptr<CCInputHandler> CCLayerTreeHost::createInputHandler()
     return m_client->createInputHandler();
 }
 
-PassOwnPtr<CCLayerTreeHostImpl> CCLayerTreeHost::createLayerTreeHostImpl(CCLayerTreeHostImplClient* client)
+scoped_ptr<CCLayerTreeHostImpl> CCLayerTreeHost::createLayerTreeHostImpl(CCLayerTreeHostImplClient* client)
 {
     return CCLayerTreeHostImpl::create(m_settings, client);
 }

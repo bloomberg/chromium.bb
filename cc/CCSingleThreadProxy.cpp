@@ -44,7 +44,7 @@ CCSingleThreadProxy::~CCSingleThreadProxy()
 {
     TRACE_EVENT0("cc", "CCSingleThreadProxy::~CCSingleThreadProxy");
     ASSERT(CCProxy::isMainThread());
-    ASSERT(!m_layerTreeHostImpl && !m_layerTreeHost); // make sure stop() got called.
+    ASSERT(!m_layerTreeHostImpl.get() && !m_layerTreeHost); // make sure stop() got called.
 }
 
 bool CCSingleThreadProxy::compositeAndReadback(void *pixels, const IntRect& rect)
@@ -83,7 +83,7 @@ void CCSingleThreadProxy::finishAllRendering()
 bool CCSingleThreadProxy::isStarted() const
 {
     ASSERT(CCProxy::isMainThread());
-    return m_layerTreeHostImpl;
+    return m_layerTreeHostImpl.get();
 }
 
 bool CCSingleThreadProxy::initializeContext()
@@ -257,7 +257,7 @@ void CCSingleThreadProxy::stop()
 
         if (!m_layerTreeHostImpl->contentsTexturesPurged())
             m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
-        m_layerTreeHostImpl.clear();
+        m_layerTreeHostImpl.reset();
     }
     m_layerTreeHost = 0;
 }

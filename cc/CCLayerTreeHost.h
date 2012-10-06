@@ -80,7 +80,7 @@ struct RendererCapabilities {
 
 class CCLayerTreeHost : public RateLimiterClient {
 public:
-    static PassOwnPtr<CCLayerTreeHost> create(CCLayerTreeHostClient*, const CCLayerTreeSettings&);
+    static scoped_ptr<CCLayerTreeHost> create(CCLayerTreeHostClient*, const CCLayerTreeSettings&);
     virtual ~CCLayerTreeHost();
 
     void setSurfaceReady();
@@ -103,7 +103,7 @@ public:
     void commitComplete();
     scoped_ptr<CCGraphicsContext> createContext();
     scoped_ptr<CCInputHandler> createInputHandler();
-    virtual PassOwnPtr<CCLayerTreeHostImpl> createLayerTreeHostImpl(CCLayerTreeHostImplClient*);
+    virtual scoped_ptr<CCLayerTreeHostImpl> createLayerTreeHostImpl(CCLayerTreeHostImplClient*);
     void didLoseContext();
     enum RecreateResult {
         RecreateSucceeded,

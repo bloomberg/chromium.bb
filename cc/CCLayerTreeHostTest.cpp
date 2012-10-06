@@ -42,7 +42,7 @@ public:
     {
         // Kill the layerTreeHost immediately.
         m_layerTreeHost->setRootLayer(0);
-        m_layerTreeHost.clear();
+        m_layerTreeHost.reset();
 
         endTest();
     }
@@ -63,7 +63,7 @@ public:
 
         // Kill the layerTreeHost immediately.
         m_layerTreeHost->setRootLayer(0);
-        m_layerTreeHost.clear();
+        m_layerTreeHost.reset();
 
         endTest();
     }
@@ -86,7 +86,7 @@ public:
 
         // Kill the layerTreeHost immediately.
         m_layerTreeHost->setRootLayer(0);
-        m_layerTreeHost.clear();
+        m_layerTreeHost.reset();
 
         endTest();
     }
@@ -1832,7 +1832,7 @@ public:
 
         // Kill the layerTreeHost immediately.
         m_layerTreeHost->setRootLayer(0);
-        m_layerTreeHost.clear();
+        m_layerTreeHost.reset();
 
         endTest();
     }
@@ -1922,7 +1922,7 @@ public:
 
         // Kill the layerTreeHost immediately.
         m_layerTreeHost->setRootLayer(0);
-        m_layerTreeHost.clear();
+        m_layerTreeHost.reset();
 
         CCLayerTreeHost::setNeedsFilterContext(false);
         endTest();
@@ -1982,7 +1982,7 @@ public:
 
         // Kill the layerTreeHost immediately.
         m_layerTreeHost->setRootLayer(0);
-        m_layerTreeHost.clear();
+        m_layerTreeHost.reset();
 
         endTest();
     }

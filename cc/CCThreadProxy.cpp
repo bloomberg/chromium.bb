@@ -106,7 +106,7 @@ void CCThreadProxy::requestReadbackOnImplThread(ReadbackRequest* request)
 {
     ASSERT(CCProxy::isImplThread());
     ASSERT(!m_readbackRequestOnImplThread);
-    if (!m_layerTreeHostImpl) {
+    if (!m_layerTreeHostImpl.get()) {
         request->success = false;
         request->completion.signal();
         return;
@@ -126,7 +126,7 @@ void CCThreadProxy::startPageScaleAnimation(const IntSize& targetPosition, bool 
 void CCThreadProxy::requestStartPageScaleAnimationOnImplThread(IntSize targetPosition, bool useAnchor, float scale, double duration)
 {
     ASSERT(CCProxy::isImplThread());
-    if (m_layerTreeHostImpl)
+    if (m_layerTreeHostImpl.get())
         m_layerTreeHostImpl->startPageScaleAnimation(targetPosition, useAnchor, scale, monotonicallyIncreasingTime(), duration);
 }
 
@@ -418,7 +418,7 @@ void CCThreadProxy::stop()
 
     m_mainThreadProxy->shutdown(); // Stop running tasks posted to us.
 
-    ASSERT(!m_layerTreeHostImpl); // verify that the impl deleted.
+    ASSERT(!m_layerTreeHostImpl.get()); // verify that the impl deleted.
     m_layerTreeHost = 0;
     m_started = false;
 }
@@ -592,7 +592,7 @@ void CCThreadProxy::beginFrameCompleteOnImplThread(CCCompletionEvent* completion
     ASSERT(m_schedulerOnImplThread);
     ASSERT(m_schedulerOnImplThread->commitPending());
 
-    if (!m_layerTreeHostImpl) {
+    if (!m_layerTreeHostImpl.get()) {
         TRACE_EVENT0("cc", "EarlyOut_NoLayerTree");
         completion->signal();
         return;
@@ -684,8 +684,8 @@ CCScheduledActionDrawAndSwapResult CCThreadProxy::scheduledActionDrawAndSwapInte
     result.didDraw = false;
     result.didSwap = false;
     ASSERT(isImplThread());
-    ASSERT(m_layerTreeHostImpl);
-    if (!m_layerTreeHostImpl)
+    ASSERT(m_layerTreeHostImpl.get());
+    if (!m_layerTreeHostImpl.get())
         return result;
 
     ASSERT(m_layerTreeHostImpl->renderer());
@@ -917,7 +917,7 @@ void CCThreadProxy::layerTreeHostClosedOnImplThread(CCCompletionEvent* completio
     m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
     CCResourceProvider::debugNotifyLeaveZone();
     m_inputHandlerOnImplThread.reset();
-    m_layerTreeHostImpl.clear();
+    m_layerTreeHostImpl.reset();
     m_schedulerOnImplThread.clear();
     completion->signal();
 }

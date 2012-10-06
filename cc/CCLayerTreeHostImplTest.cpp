@@ -74,14 +74,14 @@ public:
     virtual void postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE { }
     virtual void releaseContentsTexturesOnImplThread() OVERRIDE { }
 
-    PassOwnPtr<CCLayerTreeHostImpl> createLayerTreeHost(bool partialSwap, scoped_ptr<CCGraphicsContext> graphicsContext, PassOwnPtr<CCLayerImpl> rootPtr)
+    scoped_ptr<CCLayerTreeHostImpl> createLayerTreeHost(bool partialSwap, scoped_ptr<CCGraphicsContext> graphicsContext, PassOwnPtr<CCLayerImpl> rootPtr)
     {
         CCSettings::setPartialSwapEnabled(partialSwap);
 
         CCLayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = IntSize();
 
-        OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+        scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
         myHostImpl->initializeRenderer(graphicsContext.Pass());
         myHostImpl->setViewportSize(IntSize(10, 10), IntSize(10, 10));
@@ -95,7 +95,7 @@ public:
         root->setVisibleContentRect(IntRect(0, 0, 10, 10));
         root->setDrawsContent(true);
         myHostImpl->setRootLayer(root.release());
-        return myHostImpl.release();
+        return myHostImpl.Pass();
     }
 
     static void expectClearedScrollDeltasRecursive(CCLayerImpl* layer)
@@ -170,7 +170,7 @@ protected:
     DebugScopedSetImplThread m_alwaysImplThread;
     DebugScopedSetMainThreadBlocked m_alwaysMainThreadBlocked;
 
-    OwnPtr<CCLayerTreeHostImpl> m_hostImpl;
+    scoped_ptr<CCLayerTreeHostImpl> m_hostImpl;
     bool m_onCanDrawStateChangedCalled;
     bool m_didRequestCommit;
     bool m_didRequestRedraw;
@@ -1807,7 +1807,7 @@ TEST_F(CCLayerTreeHostImplTest, partialSwapReceivesDamageRect)
     // that we can force partial swap enabled.
     CCLayerTreeSettings settings;
     CCSettings::setPartialSwapEnabled(true);
-    OwnPtr<CCLayerTreeHostImpl> layerTreeHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> layerTreeHostImpl = CCLayerTreeHostImpl::create(settings, this);
     layerTreeHostImpl->initializeRenderer(ccContext.Pass());
     layerTreeHostImpl->setViewportSize(IntSize(500, 500), IntSize(500, 500));
 
@@ -2022,7 +2022,7 @@ TEST_F(CCLayerTreeHostImplTest, noPartialSwap)
     harness.mustSetScissor(0, 0, 10, 10);
 
     // Run test case
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = createLayerTreeHost(false, context.Pass(), FakeLayerWithQuads::create(1));
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = createLayerTreeHost(false, context.Pass(), FakeLayerWithQuads::create(1));
 
     CCLayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(myHostImpl->prepareToDraw(frame));
@@ -2037,7 +2037,7 @@ TEST_F(CCLayerTreeHostImplTest, partialSwap)
     MockContext* mockContext = static_cast<MockContext*>(context->context3D());
     MockContextHarness harness(mockContext);
 
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = createLayerTreeHost(true, context.Pass(), FakeLayerWithQuads::create(1));
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = createLayerTreeHost(true, context.Pass(), FakeLayerWithQuads::create(1));
 
     // The first frame is not a partially-swapped one.
     harness.mustSetScissor(0, 0, 10, 10);
@@ -2087,14 +2087,14 @@ public:
     }
 };
 
-static PassOwnPtr<CCLayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, CCLayerTreeHostImplClient* client)
+static scoped_ptr<CCLayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, CCLayerTreeHostImplClient* client)
 {
     CCSettings::setPartialSwapEnabled(partialSwap);
 
     scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
     CCLayerTreeSettings settings;
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, client);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, client);
     myHostImpl->initializeRenderer(context.Pass());
     myHostImpl->setViewportSize(IntSize(100, 100), IntSize(100, 100));
 
@@ -2152,12 +2152,12 @@ static PassOwnPtr<CCLayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, C
     root->addChild(child.release());
 
     myHostImpl->setRootLayer(root.release());
-    return myHostImpl.release();
+    return myHostImpl.Pass();
 }
 
 TEST_F(CCLayerTreeHostImplTest, contributingLayerEmptyScissorPartialSwap)
 {
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = setupLayersForOpacity(true, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = setupLayersForOpacity(true, this);
 
     {
         CCLayerTreeHostImpl::FrameData frame;
@@ -2178,7 +2178,7 @@ TEST_F(CCLayerTreeHostImplTest, contributingLayerEmptyScissorPartialSwap)
 
 TEST_F(CCLayerTreeHostImplTest, contributingLayerEmptyScissorNoPartialSwap)
 {
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = setupLayersForOpacity(false, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = setupLayersForOpacity(false, this);
 
     {
         CCLayerTreeHostImpl::FrameData frame;
@@ -2779,7 +2779,7 @@ TEST_F(CCLayerTreeHostImplTest, hasTransparentBackground)
     MockDrawQuadsToFillScreenContext* mockContext = static_cast<MockDrawQuadsToFillScreenContext*>(context->context3D());
 
     // Run test case
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = createLayerTreeHost(false, context.Pass(), CCLayerImpl::create(1));
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = createLayerTreeHost(false, context.Pass(), CCLayerImpl::create(1));
     myHostImpl->setBackgroundColor(SK_ColorWHITE);
 
     // Verify one quad is drawn when transparent background set is not set.
@@ -2858,7 +2858,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithClipping)
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     CCLayerImpl* rootPtr;
     CCLayerImpl* surfaceLayerPtr;
@@ -2955,7 +2955,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusion)
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     // Layers are structure as follows:
     //
@@ -3071,7 +3071,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     // Layers are structure as follows:
     //
@@ -3187,7 +3187,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     // Layers are structured as follows:
     //
@@ -3275,7 +3275,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
     CCSettings::setPartialSwapEnabled(false);
 
     CCLayerTreeSettings settings;
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     // Layers are structured as follows:
     //
@@ -3350,7 +3350,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     // Layers are structure as follows:
     //
@@ -3463,7 +3463,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithScissor)
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     /*
       Layers are created as follows:
@@ -3570,7 +3570,7 @@ TEST_F(CCLayerTreeHostImplTest, surfaceTextureCaching)
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     CCLayerImpl* rootPtr;
     CCLayerImpl* intermediateLayerPtr;
@@ -3731,7 +3731,7 @@ TEST_F(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
-    OwnPtr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
+    scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     CCLayerImpl* rootPtr;
     CCLayerImpl* intermediateLayerPtr;

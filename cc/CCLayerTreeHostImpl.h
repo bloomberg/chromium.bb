@@ -52,7 +52,7 @@ class CCLayerTreeHostImpl : public CCInputHandlerClient,
     typedef Vector<CCLayerImpl*> CCLayerList;
 
 public:
-    static PassOwnPtr<CCLayerTreeHostImpl> create(const CCLayerTreeSettings&, CCLayerTreeHostImplClient*);
+    static scoped_ptr<CCLayerTreeHostImpl> create(const CCLayerTreeSettings&, CCLayerTreeHostImplClient*);
     virtual ~CCLayerTreeHostImpl();
 
     // CCInputHandlerClient implementation

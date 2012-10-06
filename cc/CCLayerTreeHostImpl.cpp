@@ -102,9 +102,9 @@ CCLayerTreeHostImpl::FrameData::~FrameData()
 {
 }
 
-PassOwnPtr<CCLayerTreeHostImpl> CCLayerTreeHostImpl::create(const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)
+scoped_ptr<CCLayerTreeHostImpl> CCLayerTreeHostImpl::create(const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)
 {
-    return adoptPtr(new CCLayerTreeHostImpl(settings, client));
+    return scoped_ptr<CCLayerTreeHostImpl>(new CCLayerTreeHostImpl(settings, client));
 }
 
 CCLayerTreeHostImpl::CCLayerTreeHostImpl(const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)

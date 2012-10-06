@@ -443,7 +443,7 @@ TEST_F(TiledLayerChromiumTest, paintSmallAnimatedLayersImmediately)
     // Create a CCLayerTreeHost that has the right viewportsize,
     // so the layer is considered small enough.
     FakeCCLayerTreeHostClient fakeCCLayerTreeHostClient;
-    OwnPtr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, CCLayerTreeSettings());
+    scoped_ptr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, CCLayerTreeSettings());
 
     bool runOutOfMemory[2] = {false, true};
     for (int i = 0; i < 2; i++) {
@@ -498,7 +498,6 @@ TEST_F(TiledLayerChromiumTest, paintSmallAnimatedLayersImmediately)
             }
         }
     }
-    ccLayerTreeHost.clear();
 }
 
 TEST_F(TiledLayerChromiumTest, idlePaintOutOfMemory)
@@ -711,7 +710,7 @@ TEST_F(TiledLayerChromiumTest, verifyInvalidationWhenContentsScaleChanges)
 TEST_F(TiledLayerChromiumTest, skipsDrawGetsReset)
 {
     FakeCCLayerTreeHostClient fakeCCLayerTreeHostClient;
-    OwnPtr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, CCLayerTreeSettings());
+    scoped_ptr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, CCLayerTreeSettings());
     ASSERT_TRUE(ccLayerTreeHost->initializeRendererIfNeeded());
 
     // Create two 300 x 300 tiled layers.
@@ -753,7 +752,6 @@ TEST_F(TiledLayerChromiumTest, skipsDrawGetsReset)
 
     textureManagerClearAllMemory(ccLayerTreeHost->contentsTextureManager(), m_resourceProvider.get());
     ccLayerTreeHost->setRootLayer(0);
-    ccLayerTreeHost.clear();
 }
 
 TEST_F(TiledLayerChromiumTest, resizeToSmaller)
@@ -793,7 +791,7 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
     settings.maxPartialTextureUpdates = 4;
 
     FakeCCLayerTreeHostClient fakeCCLayerTreeHostClient;
-    OwnPtr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, settings);
+    scoped_ptr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, settings);
     ASSERT_TRUE(ccLayerTreeHost->initializeRendererIfNeeded());
 
     // Create one 300 x 200 tiled layer with 3 x 2 tiles.
@@ -894,7 +892,6 @@ TEST_F(TiledLayerChromiumTest, partialUpdates)
 
     textureManagerClearAllMemory(ccLayerTreeHost->contentsTextureManager(), m_resourceProvider.get());
     ccLayerTreeHost->setRootLayer(0);
-    ccLayerTreeHost.clear();
 }
 
 TEST_F(TiledLayerChromiumTest, tilesPaintedWithoutOcclusion)
@@ -1314,7 +1311,7 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
 
     CCLayerTreeSettings settings;
     FakeCCLayerTreeHostClient fakeCCLayerTreeHostClient;
-    OwnPtr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, settings);
+    scoped_ptr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, settings);
     ASSERT_TRUE(ccLayerTreeHost->initializeRendererIfNeeded());
 
     RefPtr<FakeTiledLayerChromium> root = adoptRef(new FakeTiledLayerChromium(ccLayerTreeHost->contentsTextureManager()));
@@ -1455,7 +1452,6 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
 
     textureManagerClearAllMemory(ccLayerTreeHost->contentsTextureManager(), m_resourceProvider.get());
     ccLayerTreeHost->setRootLayer(0);
-    ccLayerTreeHost.clear();
 }
 
 class TrackingLayerPainter : public LayerPainterChromium {

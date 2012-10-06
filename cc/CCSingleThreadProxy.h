@@ -75,7 +75,7 @@ private:
     scoped_ptr<CCGraphicsContext> m_contextBeforeInitialization;
 
     // Used on the CCThread, but checked on main thread during initialization/shutdown.
-    OwnPtr<CCLayerTreeHostImpl> m_layerTreeHostImpl;
+    scoped_ptr<CCLayerTreeHostImpl> m_layerTreeHostImpl;
     bool m_rendererInitialized;
     RendererCapabilities m_RendererCapabilitiesForMainThread;
 

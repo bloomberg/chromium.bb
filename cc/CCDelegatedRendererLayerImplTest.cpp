@@ -62,7 +62,7 @@ protected:
     DebugScopedSetImplThread m_alwaysImplThread;
     DebugScopedSetMainThreadBlocked m_alwaysMainThreadBlocked;
 
-    OwnPtr<CCLayerTreeHostImpl> m_hostImpl;
+    scoped_ptr<CCLayerTreeHostImpl> m_hostImpl;
 };
 
 static CCTestRenderPass* addRenderPass(ScopedPtrVector<CCRenderPass>& passList, CCRenderPass::Id id, IntRect outputRect, WebTransformationMatrix rootTransform)

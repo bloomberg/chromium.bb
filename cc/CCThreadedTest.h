@@ -116,7 +116,7 @@ protected:
 
     cc::CCLayerTreeSettings m_settings;
     OwnPtr<MockCCLayerTreeHostClient> m_client;
-    OwnPtr<cc::CCLayerTreeHost> m_layerTreeHost;
+    scoped_ptr<cc::CCLayerTreeHost> m_layerTreeHost;
 
 protected:
     RefPtr<cc::CCScopedThreadProxy> m_mainThreadProxy;
@@ -145,7 +145,7 @@ public:
 // Adapts CCLayerTreeHostImpl for test. Runs real code, then invokes test hooks.
 class MockLayerTreeHostImpl : public cc::CCLayerTreeHostImpl {
 public:
-    static PassOwnPtr<MockLayerTreeHostImpl> create(TestHooks*, const cc::CCLayerTreeSettings&, cc::CCLayerTreeHostImplClient*);
+    static scoped_ptr<MockLayerTreeHostImpl> create(TestHooks*, const cc::CCLayerTreeSettings&, cc::CCLayerTreeHostImplClient*);
 
     virtual void beginCommit() OVERRIDE;
     virtual void commitComplete() OVERRIDE;

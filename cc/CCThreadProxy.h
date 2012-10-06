@@ -140,7 +140,7 @@ private:
     bool m_texturesAcquired;
     bool m_inCompositeAndReadback;
 
-    OwnPtr<CCLayerTreeHostImpl> m_layerTreeHostImpl;
+    scoped_ptr<CCLayerTreeHostImpl> m_layerTreeHostImpl;
 
     scoped_ptr<CCInputHandler> m_inputHandlerOnImplThread;
 

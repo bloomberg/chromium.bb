@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "CCLayerTreeHostClient.h"
 #include <public/WebLayerTreeView.h>
-#include <wtf/OwnPtr.h>
 
 namespace cc {
 class CCLayerTreeHost;
@@ -68,7 +67,7 @@ public:
 
 private:
     WebLayerTreeViewClient* m_client;
-    OwnPtr<cc::CCLayerTreeHost> m_layerTreeHost;
+    scoped_ptr<cc::CCLayerTreeHost> m_layerTreeHost;
 };
 
 } // namespace WebKit

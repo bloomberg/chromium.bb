@@ -26,11 +26,11 @@ namespace WebKit {
 
 WebLayerTreeView* WebLayerTreeView::create(WebLayerTreeViewClient* client, const WebLayer& root, const WebLayerTreeView::Settings& settings)
 {
-    OwnPtr<WebLayerTreeViewImpl> layerTreeViewImpl = adoptPtr(new WebLayerTreeViewImpl(client));
+    scoped_ptr<WebLayerTreeViewImpl> layerTreeViewImpl(new WebLayerTreeViewImpl(client));
     if (!layerTreeViewImpl->initialize(settings))
         return 0;
     layerTreeViewImpl->setRootLayer(root);
-    return layerTreeViewImpl.leakPtr();
+    return layerTreeViewImpl.release();
 }
 
 WebLayerTreeViewImpl::WebLayerTreeViewImpl(WebLayerTreeViewClient* client)
@@ -54,7 +54,7 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.defaultTileSize = convert(webSettings.defaultTileSize);
     settings.maxUntiledLayerSize = convert(webSettings.maxUntiledLayerSize);
     m_layerTreeHost = CCLayerTreeHost::create(this, settings);
-    if (!m_layerTreeHost)
+    if (!m_layerTreeHost.get())
         return false;
     return true;
 }
