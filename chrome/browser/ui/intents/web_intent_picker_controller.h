@@ -37,6 +37,10 @@ class WebContents;
 class WebIntentsDispatcher;
 }
 
+namespace web_intents {
+class NativeServiceFactory;
+}
+
 namespace webkit_glue {
 struct WebIntentServiceData;
 }
@@ -354,6 +358,9 @@ class WebIntentPickerController
   // multiple UMA calls. Should be recalculated each time
   // |intents_dispatcher_| is set.
   web_intents::UMABucket uma_bucket_;
+
+  // Factory used to obtain instance of native services.
+  scoped_ptr<web_intents::NativeServiceFactory> native_services_;
 
   // The ID of a pending extension download.
   content::DownloadId download_id_;

@@ -4,6 +4,7 @@
 
 #include <ostream>
 
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -11,6 +12,7 @@
 namespace webkit_glue {
 
 static const char kIntentsInlineDisposition[] = "inline";
+static const char kIntentsWindowDisposition[] = "window";
 
 WebIntentServiceData::WebIntentServiceData()
     : disposition(WebIntentServiceData::DISPOSITION_WINDOW) {
@@ -52,10 +54,13 @@ bool WebIntentServiceData::operator==(const WebIntentServiceData& other) const {
 }
 
 void WebIntentServiceData::setDisposition(const string16& disp) {
-  if (disp == ASCIIToUTF16(webkit_glue::kIntentsInlineDisposition))
+  if (EqualsASCII(disp, kIntentsInlineDisposition))
     disposition = DISPOSITION_INLINE;
-  else
+  else if (EqualsASCII(disp, kIntentsWindowDisposition))
     disposition = DISPOSITION_WINDOW;
+  // NOTE: We intentionally do not support setting "native" disposition
+  // via this method. This keeps non-native services from
+  // claiming to be native...which is no supported...obviously.
 }
 
 std::ostream& operator<<(::std::ostream& os,

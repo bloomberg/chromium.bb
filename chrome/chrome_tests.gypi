@@ -1384,6 +1384,7 @@
         'browser/importer/toolbar_importer_unittest.cc',
         'browser/intents/cws_intents_registry_unittest.cc',
         'browser/intents/default_web_intent_service_unittest.cc',
+        'browser/intents/native_services_unittest.cc',
         'browser/intents/register_intent_handler_infobar_delegate_unittest.cc',
         'browser/intents/web_intents_registry_unittest.cc',
         'browser/intents/web_intents_reporting_unittest.cc',

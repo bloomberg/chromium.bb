@@ -19,6 +19,8 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/intents/cws_intents_registry_factory.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
+#include "chrome/browser/intents/intent_service_host.h"
+#include "chrome/browser/intents/native_services.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/intents/web_intents_reporting.h"
 #include "chrome/browser/profiles/profile.h"
@@ -188,6 +190,7 @@ WebIntentPickerController::WebIntentPickerController(
                  content::Source<content::NavigationController>(controller));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
                  content::Source<content::NavigationController>(controller));
+  native_services_.reset(new web_intents::NativeServiceFactory());
 #if defined(TOOLKIT_VIEWS)
   cancelled_ = true;
 #endif
@@ -350,13 +353,28 @@ void WebIntentPickerController::OnServiceChosen(
     return;
   }
 
+  // TODO(smckay): This entire method shold basically be pulled out
+  // into a separate class dedicated to the execution of intents.
+  // The tricky part is with the "INLINE" disposition where we
+  // want to (re)use the picker to handle the intent. A bit of
+  // artful composition + lazy instantiation should make that possible.
   switch (disposition) {
-    case webkit_glue::WebIntentServiceData::DISPOSITION_INLINE:
+    case webkit_glue::WebIntentServiceData::DISPOSITION_NATIVE: {
+      web_intents::IntentServiceHost* service =
+          native_services_->CreateServiceInstance(
+              url, intents_dispatcher_->GetIntent());
+      DCHECK(service);
+      service->HandleIntent(intents_dispatcher_);
+      break;
+    }
+
+    case webkit_glue::WebIntentServiceData::DISPOSITION_INLINE: {
       // Set the model to inline disposition. It will notify the picker which
       // will respond (via OnInlineDispositionWebContentsCreated) with the
       // WebContents to dispatch the intent to.
       picker_model_->SetInlineDisposition(url);
       break;
+    }
 
     case webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW: {
       TabContents* contents = chrome::TabContentsFactory(

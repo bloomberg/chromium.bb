@@ -19,6 +19,10 @@ namespace extensions {
 class Extension;
 }
 
+namespace web_intents {
+class NativeServiceRegistry;
+}
+
 // Handles storing and retrieving of web intents services in the web database.
 // The registry provides filtering logic to retrieve specific types of services.
 class WebIntentsRegistry : public ProfileKeyedService {
@@ -167,6 +171,9 @@ class WebIntentsRegistry : public ProfileKeyedService {
   // destroyed (i.e. |extension_service_|), so |extension_service_| is valid
   // for the lifetime of the WebIntentsRegistry object.
   ExtensionServiceInterface* extension_service_;
+
+  // Registry used to obtain list of supported native services.
+  scoped_ptr<web_intents::NativeServiceRegistry> native_services_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentsRegistry);
 };

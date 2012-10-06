@@ -17628,6 +17628,11 @@ Battery full
       Which app should be used for saving?
     </message>
 
+    <!-- Web Intents native services (titles) -->
+    <message name="IDS_WEB_INTENTS_FILE_PICKER_SERVICE_TITLE" desc="Title of the chrome-built-in web intent service for the 'pick' action (basically a file picker).">
+      System File Picker
+    </message>
+
     <!-- PDF with unsupported feature bubble -->
     <message name="IDS_PDF_BUBBLE_MESSAGE" desc="Message for the bubble when a user views a PDF with an unsupported feature">
       Parts of this PDF document could not be displayed.

@@ -13,6 +13,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
+#include "chrome/browser/intents/native_services.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/extensions/extension.h"
@@ -190,7 +191,9 @@ class WebIntentsRegistry::QueryAdapter : public WebDataServiceConsumer {
   ResultsHandler handler_;
 };
 
-WebIntentsRegistry::WebIntentsRegistry() {}
+WebIntentsRegistry::WebIntentsRegistry() {
+  native_services_.reset(new web_intents::NativeServiceRegistry());
+}
 
 WebIntentsRegistry::~WebIntentsRegistry() {
 
@@ -232,6 +235,9 @@ void WebIntentsRegistry::OnWebIntentsResultReceived(
       }
     }
   }
+
+  // add native services.
+  native_services_->GetSupportedServices(params.action_, &matching_services);
 
   // Filter out all services not matching the query type.
   FilterServicesByType(params.type_, &matching_services);

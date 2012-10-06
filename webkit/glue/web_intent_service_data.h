@@ -21,8 +21,9 @@ namespace webkit_glue {
 struct WEBKIT_GLUE_EXPORT WebIntentServiceData {
   // An intents disposition determines which context the service is opened in.
   enum Disposition {
-    DISPOSITION_WINDOW,  // Open service inside a new window. (Default)
-    DISPOSITION_INLINE,  // Open service inside the picker UI window.
+    DISPOSITION_WINDOW,  // Service is presented inside a new tab. (Default)
+    DISPOSITION_INLINE,  // Service is presented inside the picker UI window.
+    DISPOSITION_NATIVE,  // Service supplies it's own native UI in browser.
   };
 
   WebIntentServiceData();

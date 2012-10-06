@@ -1643,6 +1643,7 @@
         'browser/ui/views/user_data_dir_dialog_view.cc',
         'browser/ui/views/user_data_dir_dialog_view.h',
         'browser/ui/views/web_intent_picker_views.cc',
+        'browser/ui/views/web_intents_native_services.cc',
         'browser/ui/views/website_settings/permission_selector_view.cc',
         'browser/ui/views/website_settings/permission_selector_view.h',
         'browser/ui/views/website_settings/permission_selector_view_observer.h',

@@ -41,7 +41,6 @@ TEST(WebIntentServiceDataTest, Defaults) {
 
 TEST(WebIntentServiceDataTest, ActionServicesEqual) {
 
-  // with default disposition...
   WebIntentServiceData intent(
       ASCIIToUTF16("http://webintents.org/share"),
       ASCIIToUTF16("image/png"),
@@ -61,7 +60,6 @@ TEST(WebIntentServiceDataTest, ActionServicesEqual) {
 
 TEST(WebIntentServiceDataTest, SchemeServicesEqual) {
 
-  // with default disposition...
   WebIntentServiceData intent(
       string16(),
       string16(),
@@ -77,6 +75,36 @@ TEST(WebIntentServiceDataTest, SchemeServicesEqual) {
       "Image Sharing Service",
       WebIntentServiceData::DISPOSITION_WINDOW,
       &intent);
+}
+
+TEST(WebIntentServiceDataTest, SetDisposition) {
+
+  // Test using the default disposition (window).
+  WebIntentServiceData intent;
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_WINDOW, intent.disposition);
+
+  // Set the disposition to "inline", another supported disposition.
+  intent.setDisposition(ASCIIToUTF16("inline"));
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_INLINE, intent.disposition);
+
+  // "native" is a special internal disposition we use for
+  // "built-in" services. We don't allow the "native" disposition to be
+  // set via web-content (which is how this SetDisposition gets called).
+  // So after trying to set the value to "native" the disposition should
+  // remain unchanged.
+  intent.setDisposition(ASCIIToUTF16("native"));
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_INLINE, intent.disposition);
+
+  // Unrecognized values are ignored. When trying to set the value to "poodles"
+  // the disposition should remain unchanged.
+  intent.setDisposition(ASCIIToUTF16("poodles"));
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_INLINE, intent.disposition);
+
+  // Set the value back to "window" to confirm we can set back to
+  // the default disposition value, and to confirm setting still
+  // works after our special casing of the "native" and unrecognized values.
+  intent.setDisposition(ASCIIToUTF16("window"));
+  EXPECT_EQ(WebIntentServiceData::DISPOSITION_WINDOW, intent.disposition);
 }
 
 } // namespace
