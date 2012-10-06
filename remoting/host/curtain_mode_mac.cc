@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/curtain_mode_mac.h"
+#include "remoting/host/curtain_mode.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <Carbon/Carbon.h>
 #include <Security/Security.h>
+#include <unistd.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -18,31 +20,60 @@ const char* kCGSessionPath =
 
 namespace remoting {
 
-CurtainMode::CurtainMode(const base::Closure& on_session_activate,
-                         const base::Closure& on_error)
+class CurtainModeMac : public CurtainMode {
+ public:
+  CurtainModeMac(const base::Closure& on_session_activate,
+                 const base::Closure& on_error);
+
+  virtual ~CurtainModeMac();
+
+  // Overriden from CurtainMode.
+  virtual void SetActivated(bool activated) OVERRIDE;
+
+ private:
+  // If the current session is attached to the console and is not showing
+  // the logon screen then switch it out to ensure privacy.
+  bool ActivateCurtain();
+
+  // Add or remove the switch-in event handler.
+  bool InstallEventHandler();
+  bool RemoveEventHandler();
+
+  // Handlers for the switch-in event.
+  static OSStatus SessionActivateHandler(EventHandlerCallRef handler,
+                                         EventRef event,
+                                         void* user_data);
+  void OnSessionActivate();
+
+  base::Closure on_session_activate_;
+  base::Closure on_error_;
+  EventHandlerRef event_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(CurtainModeMac);
+};
+
+CurtainModeMac::CurtainModeMac(const base::Closure& on_session_activate,
+                               const base::Closure& on_error)
     : on_session_activate_(on_session_activate),
       on_error_(on_error),
-      connection_active_(false),
       event_handler_(NULL) {
 }
 
-CurtainMode::~CurtainMode() {
-  SetEnabled(false);
+CurtainModeMac::~CurtainModeMac() {
+  SetActivated(false);
 }
 
-void CurtainMode::SetEnabled(bool enabled) {
-  if (enabled) {
-    if (connection_active_) {
-      if (!ActivateCurtain()) {
-        on_error_.Run();
-      }
+void CurtainModeMac::SetActivated(bool activated) {
+  if (activated) {
+    if (!ActivateCurtain()) {
+      on_error_.Run();
     }
   } else {
     RemoveEventHandler();
   }
 }
 
-bool CurtainMode::ActivateCurtain() {
+bool CurtainModeMac::ActivateCurtain() {
   // Try to install the switch-in handler. Do this before switching out the
   // current session so that the console session is not affected if it fails.
   if (!InstallEventHandler()) {
@@ -74,32 +105,19 @@ bool CurtainMode::ActivateCurtain() {
   return true;
 }
 
-// TODO(jamiewalch): This code assumes at most one client connection at a time.
-// Add OnFirstClientConnected and OnLastClientDisconnected optional callbacks
-// to the HostStatusObserver interface to address this.
-void CurtainMode::OnClientAuthenticated(const std::string& jid) {
-  connection_active_ = true;
-  SetEnabled(true);
-}
-
-void CurtainMode::OnClientDisconnected(const std::string& jid) {
-  SetEnabled(false);
-  connection_active_ = false;
-}
-
-OSStatus CurtainMode::SessionActivateHandler(EventHandlerCallRef handler,
+OSStatus CurtainModeMac::SessionActivateHandler(EventHandlerCallRef handler,
                                              EventRef event,
                                              void* user_data) {
-  CurtainMode* self = static_cast<CurtainMode*>(user_data);
+  CurtainModeMac* self = static_cast<CurtainModeMac*>(user_data);
   self->OnSessionActivate();
   return noErr;
 }
 
-void CurtainMode::OnSessionActivate() {
+void CurtainModeMac::OnSessionActivate() {
   on_session_activate_.Run();
 }
 
-bool CurtainMode::InstallEventHandler() {
+bool CurtainModeMac::InstallEventHandler() {
   OSStatus result = noErr;
   if (!event_handler_) {
     EventTypeSpec event;
@@ -112,12 +130,20 @@ bool CurtainMode::InstallEventHandler() {
   return result == noErr;
 }
 
-bool CurtainMode::RemoveEventHandler() {
+bool CurtainModeMac::RemoveEventHandler() {
   OSStatus result = noErr;
   if (event_handler_) {
     result = ::RemoveEventHandler(event_handler_);
   }
   return result == noErr;
+}
+
+// static
+scoped_ptr<CurtainMode> CurtainMode::Create(
+    const base::Closure& on_session_activate,
+    const base::Closure& on_error) {
+  return scoped_ptr<CurtainMode>(
+      new CurtainModeMac(on_session_activate, on_error));
 }
 
 }  // namespace remoting
