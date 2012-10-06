@@ -12,7 +12,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/Vector.h>
 
 using namespace cc;
 using namespace WebKitTests;

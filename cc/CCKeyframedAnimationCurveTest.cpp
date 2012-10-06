@@ -11,7 +11,6 @@
 #include <public/WebTransformOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
 
 using namespace cc;
 using WebKit::WebTransformationMatrix;

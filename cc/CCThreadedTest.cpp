@@ -31,7 +31,6 @@
 #include <public/WebThread.h>
 #include <wtf/Locker.h>
 #include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
 
 using namespace cc;
 using namespace WebKit;

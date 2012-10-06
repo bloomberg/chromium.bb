@@ -6,7 +6,6 @@
 #define CCProxy_h
 
 #include "base/basictypes.h"
-#include "IntRect.h"
 #include <public/WebCompositorOutputSurface.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
@@ -14,6 +13,8 @@
 namespace cc {
 
 class CCThread;
+class IntRect;
+class IntSize;
 struct CCRenderingStats;
 struct RendererCapabilities;
 

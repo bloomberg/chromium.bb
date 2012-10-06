@@ -11,6 +11,7 @@
 #include "CCThread.h"
 #include "TraceEvent.h"
 #include <public/WebGraphicsContext3D.h>
+#include <wtf/RefPtr.h>
 
 namespace cc {
 

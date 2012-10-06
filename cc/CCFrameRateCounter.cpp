@@ -7,6 +7,8 @@
 #if USE(ACCELERATED_COMPOSITING)
 #include "CCFrameRateCounter.h"
 
+#include <cmath>
+
 #include "CCProxy.h"
 #include <public/Platform.h>
 #include <wtf/CurrentTime.h>

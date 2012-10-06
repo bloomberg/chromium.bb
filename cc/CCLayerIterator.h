@@ -7,9 +7,7 @@
 
 #include "CCLayerTreeHostCommon.h"
 
-#include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 
 namespace cc {
 
