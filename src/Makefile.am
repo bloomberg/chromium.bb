@@ -91,7 +91,8 @@ BUILT_SOURCES = $(ALIAS_FILES) \
 	../fc-glyphname/fcglyphname.h \
 	../fc-lang/fclang.h \
 	stamp-fcstdint \
-	fcobjshash.h
+	fcobjshash.h \
+	fcobjshash.gperf
 
 noinst_PROGRAMS = fcarch
 
@@ -116,7 +117,8 @@ fcobjshash.h: fcobjshash.gperf
 
 EXTRA_DIST += \
 	fcobjshash.gperf.h \
-	fcobjshash.gperf
+	fcobjshash.gperf \
+	fcobjshash.h
 
 libfontconfig_la_SOURCES = \
 	fcarch.h \
@@ -186,7 +188,7 @@ stamp-fcstdint: $(top_builddir)/config.status
 	$(SHELL) ./config.status src/fcstdint.h
 	@touch $@
 
-CLEANFILES = $(ALIAS_FILES)
+CLEANFILES = $(ALIAS_FILES) fontconfig.def
 DISTCLEANFILES = stamp-fcstdint fcstdint.h
 
 fontconfig.def: $(PUBLIC_FILES) $(PUBLIC_FT_FILES)
