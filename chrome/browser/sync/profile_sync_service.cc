@@ -145,7 +145,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       auto_start_enabled_(start_behavior == AUTO_START),
       failed_datatypes_handler_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       configure_status_(DataTypeManager::UNKNOWN),
-      setup_in_progress_(false) {
+      setup_in_progress_(false),
+      invalidator_state_(syncer::DEFAULT_INVALIDATION_ERROR) {
 #if defined(OS_ANDROID)
   chrome::VersionInfo version_info;
   if (version_info.IsOfficialBuild()) {
@@ -554,6 +555,9 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   expect_sync_configuration_aborted_ = false;
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
+  // NULL if we're called from Shutdown().
+  if (invalidator_registrar_.get())
+    UpdateInvalidatorRegistrarState();
   cached_passphrase_.clear();
   encryption_pending_ = false;
   encrypt_everything_ = false;
@@ -697,7 +701,8 @@ void ProfileSyncService::DisableBrokenDatatype(
 
 void ProfileSyncService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
-  invalidator_registrar_->UpdateInvalidatorState(state);
+  invalidator_state_ = state;
+  UpdateInvalidatorRegistrarState();
 }
 
 void ProfileSyncService::OnIncomingInvalidation(
@@ -749,6 +754,7 @@ void ProfileSyncService::OnBackendInitialized(
   }
 
   backend_initialized_ = true;
+  UpdateInvalidatorRegistrarState();
 
   sync_js_controller_.AttachJsBackend(js_backend);
 
@@ -1826,6 +1832,13 @@ void ProfileSyncService::OnInternalUnrecoverableError(
   DCHECK(!HasUnrecoverableError());
   unrecoverable_error_reason_ = reason;
   OnUnrecoverableErrorImpl(from_here, message, delete_sync_database);
+}
+
+void ProfileSyncService::UpdateInvalidatorRegistrarState() {
+  const syncer::InvalidatorState effective_state =
+      backend_initialized_ ?
+      invalidator_state_ : syncer::TRANSIENT_INVALIDATION_ERROR;
+  invalidator_registrar_->UpdateInvalidatorState(effective_state);
 }
 
 void ProfileSyncService::ResetForTest() {

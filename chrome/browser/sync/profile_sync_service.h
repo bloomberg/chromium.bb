@@ -715,6 +715,11 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                                     bool delete_sync_database,
                                     UnrecoverableErrorReason reason);
 
+  // Must be called every time |backend_initialized_| or
+  // |invalidator_state_| is changed (but only if
+  // |invalidator_registrar_| is not NULL).
+  void UpdateInvalidatorRegistrarState();
+
   // Destroys / recreates an instance of ProfileSyncService. Used exclusively by
   // the sync integration tests so they can restart sync from scratch without
   // tearing down and recreating the browser process. Needed because simply
@@ -842,6 +847,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Factory the backend will use to build the SyncManager.
   syncer::SyncManagerFactory sync_manager_factory_;
+
+  // Holds the current invalidator state as updated by
+  // OnInvalidatorStateChange().  Note that this is different from the
+  // state known by |invalidator_registrar_| (See
+  // UpdateInvalidatorState()).
+  syncer::InvalidatorState invalidator_state_;
 
   // Dispatches invalidations to handlers.  Set in Initialize() and
   // unset in Shutdown().

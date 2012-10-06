@@ -399,6 +399,31 @@ TEST_F(ProfileSyncServiceTest, FailToOpenDatabase) {
   EXPECT_FALSE(harness_.service->sync_initialized());
 }
 
+// Register a handler with the ProfileSyncService, and disable and
+// reenable sync.  The handler should get notified of the state
+// changes.
+TEST_F(ProfileSyncServiceTest, DisableInvalidationsOnStop) {
+  harness_.StartSyncService();
+
+  syncer::FakeInvalidationHandler handler;
+  harness_.service->RegisterInvalidationHandler(&handler);
+
+  SyncBackendHostForProfileSyncTest* const backend =
+      harness_.service->GetBackendForTest();
+
+  backend->EmitOnInvalidatorStateChange(syncer::INVALIDATIONS_ENABLED);
+  EXPECT_EQ(syncer::INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
+
+  harness_.service->StopAndSuppress();
+  EXPECT_EQ(syncer::TRANSIENT_INVALIDATION_ERROR,
+            handler.GetInvalidatorState());
+
+  harness_.service->UnsuppressAndStart();
+  EXPECT_EQ(syncer::INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
+
+  harness_.service->UnregisterInvalidationHandler(&handler);
+}
+
 // Register for some IDs with the ProfileSyncService, restart sync,
 // and trigger some invalidation messages.  They should still be
 // received by the handler.
