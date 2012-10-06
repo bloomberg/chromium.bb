@@ -68,10 +68,19 @@ GpuVideoDecoder::GpuVideoDecoder(
 }
 
 void GpuVideoDecoder::Reset(const base::Closure& closure)  {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread() ||
-      state_ == kDrainingDecoder) {
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Reset, this, closure));
+    return;
+  }
+
+  if (state_ == kDrainingDecoder) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &GpuVideoDecoder::Reset, this, closure));
+    // NOTE: if we're deferring Reset() until a Flush() completes, return
+    // queued pictures to the VDA so they can be used to finish that Flush().
+    if (pending_read_cb_.is_null())
+      ready_video_frames_.clear();
     return;
   }
 
