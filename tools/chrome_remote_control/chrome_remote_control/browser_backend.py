@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import urllib2
 import httplib
+import socket
 import json
 
 from chrome_remote_control import inspector_backend
@@ -23,6 +24,10 @@ class BrowserBackend(object):
     def IsBrowserUp():
       try:
         self._ListTabs()
+      except socket.error:
+        if not self.IsBrowserRunning():
+          raise BrowserGoneException()
+        return False
       except httplib.BadStatusLine:
         if not self.IsBrowserRunning():
           raise BrowserGoneException()

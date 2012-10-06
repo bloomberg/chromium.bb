@@ -26,12 +26,16 @@ def Main(args):
         start = time.time()
         tab.runtime.Evaluate('%i * 2' % i)
         times.append(time.time() - start)
-      avg = sum(times, 0.0) / float(len(times))
+      N = float(len(times))
+      avg = sum(times, 0.0) / N
       squared_diffs = [(t - avg) * (t - avg) for t in times]
-      stdev = sum(squared_diffs, 0.0) / float(len(times) - 1)
+      stdev = sum(squared_diffs, 0.0) / (N - 1)
+      times.sort()
+      percentile_75 = times[int(0.75 * N)]
 
-      print "Average evaluate round-trip time: %f +/- %f (seconds)" % (
-        avg, stdev)
+      print "%s: avg=%f; stdev=%f; min=%f; 75th percentile = %f" % (
+        "Round trip time (seconds)",
+        avg, stdev, min(times), percentile_75)
 
   return 0
 
