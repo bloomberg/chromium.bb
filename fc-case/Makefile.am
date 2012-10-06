@@ -66,3 +66,5 @@ CLEANFILES = $(ALIAS_FILES)
 DISTCLEANFILES = $(TARG)
 
 MAINTAINERCLEANFILES = $(TARG)
+
+-include $(top_srcdir)/git.mk

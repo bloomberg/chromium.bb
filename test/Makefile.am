@@ -7,3 +7,5 @@ TESTDATA=4x6.pcf 8x16.pcf out.expected fonts.conf.in
 EXTRA_DIST=$(check_SCRIPTS) $(TESTDATA)
 
 CLEANFILES=
+
+-include $(top_srcdir)/git.mk

@@ -208,3 +208,5 @@ htmldoc_DATA += $(srcdir)/$(HTML_DIR)/*
 all-local:
 clean-local:
 endif
+
+-include $(top_srcdir)/git.mk

@@ -148,3 +148,5 @@ debuild-dirs: distdir
 	$(RM) -r $(distdir).orig
 	cp -a $(distdir) $(distdir).orig
 	$(RM) -r $(distdir).orig/debian
+
+-include $(top_srcdir)/git.mk

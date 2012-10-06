@@ -198,3 +198,5 @@ fontconfig.def: $(PUBLIC_FILES) $(PUBLIC_FT_FILES)
 	echo LIBRARY libfontconfig-@LIBT_CURRENT_MINUS_AGE@.dll; \
 	echo VERSION @LIBT_CURRENT@.@LIBT_REVISION@) >$@
 	@ ! grep -q FcERROR $@ || ($(RM) $@; false)
+
+-include $(top_srcdir)/git.mk
