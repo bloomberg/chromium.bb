@@ -5659,6 +5659,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PNACL_DESCRIPTION" desc="Description of the 'Enable Portable Native Client' lab.">
         Enable support for Portable Native Client.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NACL_IPC_PROXY_NAME" desc="Name of the 'Enable Native Client IPC Proxy' lab.">
+        Native Client IPC Proxy.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NACL_IPC_PROXY_DESCRIPTION" desc="Description of the 'Enable Native Client IPC Proxy' lab.">
+        Use Chrome IPC, rather than NaCl SRPC, to proxy Pepper calls between Chrome and the plugin.
+      </message>
       <message name="IDS_FLAGS_ENABLE_SCRIPTED_SPEECH_NAME" desc="Name of the 'Enable Scripted Speech' lab.">
         Speech JavaScript API.
       </message>

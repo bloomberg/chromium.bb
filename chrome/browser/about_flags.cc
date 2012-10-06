@@ -338,7 +338,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kFixedPositionCreatesStackingContextChoices)
   },
-  // TODO(dspringer): When NaCl is on by default, remove this flag entry.
+  // TODO(bbudge): When NaCl is on by default, remove this flag entry.
   {
     "enable-nacl",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_NACL_NAME,
@@ -375,6 +375,15 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_PNACL_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnablePnacl)
+  },
+  // TODO(bbudge): When NaCl switches to the IPC-based proxy, remove this
+  // flag entry.
+  {
+    "enable-nacl-ipc-proxy",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_ENABLE_NACL_IPC_PROXY_NAME,
+    IDS_FLAGS_ENABLE_NACL_IPC_PROXY_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableNaClIPCProxy)
   },
   {
     "enable-scripted-speech",  // FLAGS:RECORD_UMA
