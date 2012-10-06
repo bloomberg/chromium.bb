@@ -113,7 +113,7 @@ private:
     void requestReadbackOnImplThread(ReadbackRequest*);
     void requestStartPageScaleAnimationOnImplThread(IntSize targetPosition, bool useAnchor, float scale, double durationSec);
     void finishAllRenderingOnImplThread(CCCompletionEvent*);
-    void initializeImplOnImplThread(CCCompletionEvent*, PassOwnPtr<CCInputHandler>);
+    void initializeImplOnImplThread(CCCompletionEvent*, CCInputHandler*);
     void setSurfaceReadyOnImplThread();
     void setVisibleOnImplThread(CCCompletionEvent*, bool);
     void initializeContextOnImplThread(CCGraphicsContext*);
@@ -142,7 +142,7 @@ private:
 
     OwnPtr<CCLayerTreeHostImpl> m_layerTreeHostImpl;
 
-    OwnPtr<CCInputHandler> m_inputHandlerOnImplThread;
+    scoped_ptr<CCInputHandler> m_inputHandlerOnImplThread;
 
     OwnPtr<CCScheduler> m_schedulerOnImplThread;
 
@@ -150,7 +150,7 @@ private:
 
     // Holds on to the context we might use for compositing in between initializeContext()
     // and initializeRenderer() calls.
-    OwnPtr<CCGraphicsContext> m_contextBeforeInitializationOnImplThread;
+    scoped_ptr<CCGraphicsContext> m_contextBeforeInitializationOnImplThread;
 
     // Set when the main thread is waiting on a scheduledActionBeginFrame to be issued.
     CCCompletionEvent* m_beginFrameCompletionEventOnImplThread;

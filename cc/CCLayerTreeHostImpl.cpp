@@ -719,7 +719,7 @@ void CCLayerTreeHostImpl::setVisible(bool visible)
     setBackgroundTickingEnabled(!m_visible && m_needsAnimateLayers);
 }
 
-bool CCLayerTreeHostImpl::initializeRenderer(PassOwnPtr<CCGraphicsContext> context)
+bool CCLayerTreeHostImpl::initializeRenderer(scoped_ptr<CCGraphicsContext> context)
 {
     // Since we will create a new resource provider, we cannot continue to use
     // the old resources (i.e. renderSurfaces and texture IDs). Clear them
@@ -731,7 +731,7 @@ bool CCLayerTreeHostImpl::initializeRenderer(PassOwnPtr<CCGraphicsContext> conte
     // Note: order is important here.
     m_renderer.clear();
     m_resourceProvider.clear();
-    m_context.clear();
+    m_context.reset();
 
     if (!context->bindToClient(this))
         return false;
@@ -748,7 +748,7 @@ bool CCLayerTreeHostImpl::initializeRenderer(PassOwnPtr<CCGraphicsContext> conte
         return false;
 
     m_resourceProvider = resourceProvider.release();
-    m_context = context;
+    m_context = context.Pass();
 
     if (!m_visible)
         m_renderer->setVisible(m_visible);

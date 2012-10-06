@@ -5,6 +5,7 @@
 #ifndef WebToCCInputHandlerAdapter_h
 #define WebToCCInputHandlerAdapter_h
 
+#include "base/memory/scoped_ptr.h"
 #include "CCInputHandler.h"
 #include <public/WebInputHandler.h>
 #include <wtf/OwnPtr.h>
@@ -14,7 +15,7 @@ namespace WebKit {
 
 class WebToCCInputHandlerAdapter : public cc::CCInputHandler {
 public:
-    static PassOwnPtr<WebToCCInputHandlerAdapter> create(PassOwnPtr<WebInputHandler>);
+    static scoped_ptr<WebToCCInputHandlerAdapter> create(PassOwnPtr<WebInputHandler>);
     virtual ~WebToCCInputHandlerAdapter();
 
     // cc::CCInputHandler implementation.

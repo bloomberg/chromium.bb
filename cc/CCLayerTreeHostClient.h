@@ -5,7 +5,7 @@
 #ifndef CCLayerTreeHostClient_h
 #define CCLayerTreeHostClient_h
 
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace WebKit {
 class WebCompositorOutputSurface;
@@ -23,9 +23,9 @@ public:
     virtual void animate(double frameBeginTime) = 0;
     virtual void layout() = 0;
     virtual void applyScrollAndScale(const IntSize& scrollDelta, float pageScale) = 0;
-    virtual PassOwnPtr<WebKit::WebCompositorOutputSurface> createOutputSurface() = 0;
+    virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface() = 0;
     virtual void didRecreateOutputSurface(bool success) = 0;
-    virtual PassOwnPtr<CCInputHandler> createInputHandler() = 0;
+    virtual scoped_ptr<CCInputHandler> createInputHandler() = 0;
     virtual void willCommit() = 0;
     virtual void didCommit() = 0;
     virtual void didCommitAndDrawFrame() = 0;

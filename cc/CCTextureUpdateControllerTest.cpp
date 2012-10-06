@@ -179,7 +179,7 @@ protected:
 
 protected:
     // Classes required to interact and test the CCTextureUpdateController
-    OwnPtr<CCGraphicsContext> m_context;
+    scoped_ptr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
     OwnPtr<CCTextureUpdateQueue> m_queue;
     TextureForUploadTest m_textures[4];

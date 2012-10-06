@@ -55,7 +55,7 @@ public:
 protected:
     DebugScopedSetImplThread m_alwaysImplThread;
 
-    OwnPtr<FakeWebCompositorOutputSurface> m_outputSurface;
+    scoped_ptr<FakeWebCompositorOutputSurface> m_outputSurface;
     OwnPtr<CCResourceProvider> m_resourceProvider;
     OwnPtr<CCRendererSoftware> m_renderer;
     IntSize m_viewportSize;

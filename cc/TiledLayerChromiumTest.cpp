@@ -159,7 +159,7 @@ public:
 
 public:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
-    OwnPtr<CCGraphicsContext> m_context;
+    scoped_ptr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
     OwnPtr<CCTextureUpdateQueue> m_queue;
     CCRenderingStats m_stats;

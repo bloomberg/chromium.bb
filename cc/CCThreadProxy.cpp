@@ -150,12 +150,12 @@ bool CCThreadProxy::isStarted() const
 bool CCThreadProxy::initializeContext()
 {
     TRACE_EVENT0("cc", "CCThreadProxy::initializeContext");
-    OwnPtr<CCGraphicsContext> context = m_layerTreeHost->createContext();
-    if (!context)
+    scoped_ptr<CCGraphicsContext> context = m_layerTreeHost->createContext();
+    if (!context.get())
         return false;
 
     CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::initializeContextOnImplThread,
-                                                       context.leakPtr()));
+                                                       context.release()));
     return true;
 }
 
@@ -216,8 +216,8 @@ bool CCThreadProxy::recreateContext()
     ASSERT(isMainThread());
 
     // Try to create the context.
-    OwnPtr<CCGraphicsContext> context = m_layerTreeHost->createContext();
-    if (!context)
+    scoped_ptr<CCGraphicsContext> context = m_layerTreeHost->createContext();
+    if (!context.get())
         return false;
     if (m_layerTreeHost->needsSharedContext())
         if (!WebSharedGraphicsContext3D::createCompositorThreadContext())
@@ -232,7 +232,7 @@ bool CCThreadProxy::recreateContext()
     DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::recreateContextOnImplThread,
                                                        &completion,
-                                                       context.leakPtr(),
+                                                       context.release(),
                                                        &recreateSucceeded,
                                                        &capabilities));
     completion.wait();
@@ -394,7 +394,7 @@ void CCThreadProxy::start()
     // Create LayerTreeHostImpl.
     DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CCCompletionEvent completion;
-    OwnPtr<CCInputHandler> handler = m_layerTreeHost->createInputHandler();
+    scoped_ptr<CCInputHandler> handler = m_layerTreeHost->createInputHandler();
     CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::initializeImplOnImplThread, &completion, handler.release()));
     completion.wait();
 
@@ -696,7 +696,7 @@ CCScheduledActionDrawAndSwapResult CCThreadProxy::scheduledActionDrawAndSwapInte
     double monotonicTime = monotonicallyIncreasingTime();
     double wallClockTime = currentTime();
 
-    if (m_inputHandlerOnImplThread)
+    if (m_inputHandlerOnImplThread.get())
         m_inputHandlerOnImplThread->animate(monotonicTime);
     m_layerTreeHostImpl->animate(monotonicTime, wallClockTime);
 
@@ -866,7 +866,7 @@ void CCThreadProxy::tryToRecreateContext()
         m_contextRecreationTimer.clear();
 }
 
-void CCThreadProxy::initializeImplOnImplThread(CCCompletionEvent* completion, PassOwnPtr<CCInputHandler> popHandler)
+void CCThreadProxy::initializeImplOnImplThread(CCCompletionEvent* completion, CCInputHandler* handler)
 {
     TRACE_EVENT0("cc", "CCThreadProxy::initializeImplOnImplThread");
     ASSERT(isImplThread());
@@ -880,8 +880,8 @@ void CCThreadProxy::initializeImplOnImplThread(CCCompletionEvent* completion, Pa
     m_schedulerOnImplThread = CCScheduler::create(this, frameRateController.release());
     m_schedulerOnImplThread->setVisible(m_layerTreeHostImpl->visible());
 
-    m_inputHandlerOnImplThread = popHandler;
-    if (m_inputHandlerOnImplThread)
+    m_inputHandlerOnImplThread = scoped_ptr<CCInputHandler>(handler);
+    if (m_inputHandlerOnImplThread.get())
         m_inputHandlerOnImplThread->bindToClient(m_layerTreeHostImpl.get());
 
     completion->signal();
@@ -891,15 +891,15 @@ void CCThreadProxy::initializeContextOnImplThread(CCGraphicsContext* context)
 {
     TRACE_EVENT0("cc", "CCThreadProxy::initializeContextOnImplThread");
     ASSERT(isImplThread());
-    m_contextBeforeInitializationOnImplThread = adoptPtr(context);
+    m_contextBeforeInitializationOnImplThread = scoped_ptr<CCGraphicsContext>(context).Pass();
 }
 
 void CCThreadProxy::initializeRendererOnImplThread(CCCompletionEvent* completion, bool* initializeSucceeded, RendererCapabilities* capabilities)
 {
     TRACE_EVENT0("cc", "CCThreadProxy::initializeRendererOnImplThread");
     ASSERT(isImplThread());
-    ASSERT(m_contextBeforeInitializationOnImplThread);
-    *initializeSucceeded = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitializationOnImplThread.release());
+    ASSERT(m_contextBeforeInitializationOnImplThread.get());
+    *initializeSucceeded = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitializationOnImplThread.Pass());
     if (*initializeSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();
         m_schedulerOnImplThread->setSwapBuffersCompleteSupported(
@@ -916,7 +916,7 @@ void CCThreadProxy::layerTreeHostClosedOnImplThread(CCCompletionEvent* completio
     CCResourceProvider::debugNotifyEnterZone(0x6000000);
     m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
     CCResourceProvider::debugNotifyLeaveZone();
-    m_inputHandlerOnImplThread.clear();
+    m_inputHandlerOnImplThread.reset();
     m_layerTreeHostImpl.clear();
     m_schedulerOnImplThread.clear();
     completion->signal();
@@ -940,7 +940,7 @@ void CCThreadProxy::recreateContextOnImplThread(CCCompletionEvent* completion, C
     CCResourceProvider::debugNotifyEnterZone(0x7000000);
     m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
     CCResourceProvider::debugNotifyLeaveZone();
-    *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(adoptPtr(contextPtr));
+    *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(scoped_ptr<CCGraphicsContext>(contextPtr).Pass());
     if (*recreateSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();
         m_schedulerOnImplThread->didRecreateContext();

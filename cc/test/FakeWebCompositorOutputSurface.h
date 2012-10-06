@@ -5,6 +5,7 @@
 #ifndef FakeWebCompositorOutputSurface_h
 #define FakeWebCompositorOutputSurface_h
 
+#include "base/memory/scoped_ptr.h"
 #include "FakeWebCompositorSoftwareOutputDevice.h"
 #include <public/WebCompositorOutputSurface.h>
 #include <public/WebGraphicsContext3D.h>
@@ -15,14 +16,14 @@ namespace WebKit {
 
 class FakeWebCompositorOutputSurface : public WebCompositorOutputSurface {
 public:
-    static inline PassOwnPtr<FakeWebCompositorOutputSurface> create(PassOwnPtr<WebGraphicsContext3D> context3D)
+    static inline scoped_ptr<FakeWebCompositorOutputSurface> create(PassOwnPtr<WebGraphicsContext3D> context3D)
     {
-        return adoptPtr(new FakeWebCompositorOutputSurface(context3D));
+        return scoped_ptr<FakeWebCompositorOutputSurface>(new FakeWebCompositorOutputSurface(context3D));
     }
 
-    static inline PassOwnPtr<FakeWebCompositorOutputSurface> createSoftware(PassOwnPtr<WebCompositorSoftwareOutputDevice> softwareDevice)
+    static inline scoped_ptr<FakeWebCompositorOutputSurface> createSoftware(PassOwnPtr<WebCompositorSoftwareOutputDevice> softwareDevice)
     {
-        return adoptPtr(new FakeWebCompositorOutputSurface(softwareDevice));
+        return scoped_ptr<FakeWebCompositorOutputSurface>(new FakeWebCompositorOutputSurface(softwareDevice));
     }
 
     virtual bool bindToClient(WebCompositorOutputSurfaceClient* client) OVERRIDE

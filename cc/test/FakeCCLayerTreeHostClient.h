@@ -6,6 +6,7 @@
 
 #include "config.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "CCInputHandler.h"
 #include "CCLayerTreeHost.h"
 #include "CompositorFakeWebGraphicsContext3D.h"
@@ -21,9 +22,9 @@ public:
     virtual void layout() OVERRIDE { }
     virtual void applyScrollAndScale(const IntSize& scrollDelta, float pageScale) OVERRIDE { }
 
-    virtual PassOwnPtr<WebKit::WebCompositorOutputSurface> createOutputSurface() OVERRIDE;
+    virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE { }
-    virtual PassOwnPtr<CCInputHandler> createInputHandler() OVERRIDE;
+    virtual scoped_ptr<CCInputHandler> createInputHandler() OVERRIDE;
     virtual void willCommit() OVERRIDE { }
     virtual void didCommit() OVERRIDE { }
     virtual void didCommitAndDrawFrame() OVERRIDE { }

@@ -12,9 +12,9 @@
 
 namespace WebKit {
 
-static inline PassOwnPtr<cc::CCGraphicsContext> createFakeCCGraphicsContext()
+static inline scoped_ptr<cc::CCGraphicsContext> createFakeCCGraphicsContext()
 {
-    return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3D::create(WebGraphicsContext3D::Attributes()));
+    return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3D::create(WebGraphicsContext3D::Attributes())).PassAs<cc::CCGraphicsContext>();
 }
 
 } // namespace WebKit

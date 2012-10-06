@@ -307,12 +307,12 @@ void CCLayerTreeHost::commitComplete()
     m_client->didCommit();
 }
 
-PassOwnPtr<CCGraphicsContext> CCLayerTreeHost::createContext()
+scoped_ptr<CCGraphicsContext> CCLayerTreeHost::createContext()
 {
     return m_client->createOutputSurface();
 }
 
-PassOwnPtr<CCInputHandler> CCLayerTreeHost::createInputHandler()
+scoped_ptr<CCInputHandler> CCLayerTreeHost::createInputHandler()
 {
     return m_client->createInputHandler();
 }

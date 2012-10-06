@@ -2781,9 +2781,9 @@ public:
             m_children.append(ContentLayerChromiumWithUpdateTracking::create(&m_client));
     }
 
-    virtual PassOwnPtr<WebKit::WebCompositorOutputSurface> createOutputSurface()
+    virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface()
     {
-        return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext::create(WebGraphicsContext3D::Attributes()));
+        return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithEndQueryCausingLostContext::create(WebGraphicsContext3D::Attributes())).PassAs<WebKit::WebCompositorOutputSurface>();
     }
 
     virtual void beginTest()

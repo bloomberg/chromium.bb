@@ -21,7 +21,7 @@ namespace {
 
 TEST(CCScopedTextureTest, NewScopedTexture)
 {
-    OwnPtr<CCGraphicsContext> context(createFakeCCGraphicsContext());
+    scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
     OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     OwnPtr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
@@ -36,7 +36,7 @@ TEST(CCScopedTextureTest, NewScopedTexture)
 
 TEST(CCScopedTextureTest, CreateScopedTexture)
 {
-    OwnPtr<CCGraphicsContext> context(createFakeCCGraphicsContext());
+    scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
     OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     OwnPtr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
@@ -53,7 +53,7 @@ TEST(CCScopedTextureTest, CreateScopedTexture)
 
 TEST(CCScopedTextureTest, ScopedTextureIsDeleted)
 {
-    OwnPtr<CCGraphicsContext> context(createFakeCCGraphicsContext());
+    scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
     OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
 
@@ -81,7 +81,7 @@ TEST(CCScopedTextureTest, ScopedTextureIsDeleted)
 
 TEST(CCScopedTextureTest, LeakScopedTexture)
 {
-    OwnPtr<CCGraphicsContext> context(createFakeCCGraphicsContext());
+    scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
     OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
 

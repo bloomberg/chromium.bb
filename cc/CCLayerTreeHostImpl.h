@@ -114,7 +114,7 @@ public:
     void finishAllRendering();
     int sourceAnimationFrameNumber() const;
 
-    bool initializeRenderer(PassOwnPtr<CCGraphicsContext>);
+    bool initializeRenderer(scoped_ptr<CCGraphicsContext>);
     bool isContextLost();
     CCRenderer* renderer() { return m_renderer.get(); }
     const RendererCapabilities& rendererCapabilities() const;
@@ -250,7 +250,7 @@ private:
 
     void dumpRenderSurfaces(std::string*, int indent, const CCLayerImpl*) const;
 
-    OwnPtr<CCGraphicsContext> m_context;
+    scoped_ptr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
     OwnPtr<CCRenderer> m_renderer;
     OwnPtr<CCLayerImpl> m_rootLayerImpl;

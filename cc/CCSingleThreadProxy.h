@@ -72,7 +72,7 @@ private:
 
     // Holds on to the context between initializeContext() and initializeRenderer() calls. Shouldn't
     // be used for anything else.
-    OwnPtr<CCGraphicsContext> m_contextBeforeInitialization;
+    scoped_ptr<CCGraphicsContext> m_contextBeforeInitialization;
 
     // Used on the CCThread, but checked on main thread during initialization/shutdown.
     OwnPtr<CCLayerTreeHostImpl> m_layerTreeHostImpl;

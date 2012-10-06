@@ -45,7 +45,7 @@ public:
     virtual void notifyAnimationStarted(double time) OVERRIDE { }
     virtual void notifyAnimationFinished(double time) OVERRIDE { }
 
-    virtual PassOwnPtr<WebKit::WebCompositorOutputSurface> createOutputSurface();
+    virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface();
 };
 
 class TimeoutTask;

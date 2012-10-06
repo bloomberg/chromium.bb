@@ -54,9 +54,9 @@ public:
     virtual void releaseContentsTexturesOnImplThread() OVERRIDE { }
 
 protected:
-    PassOwnPtr<CCGraphicsContext> createContext()
+    scoped_ptr<CCGraphicsContext> createContext()
     {
-        return FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3D));
+        return FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3D)).PassAs<CCGraphicsContext>();
     }
 
     DebugScopedSetImplThread m_alwaysImplThread;

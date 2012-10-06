@@ -101,8 +101,8 @@ public:
     void finishCommitOnImplThread(CCLayerTreeHostImpl*);
     void willCommit();
     void commitComplete();
-    PassOwnPtr<CCGraphicsContext> createContext();
-    PassOwnPtr<CCInputHandler> createInputHandler();
+    scoped_ptr<CCGraphicsContext> createContext();
+    scoped_ptr<CCInputHandler> createInputHandler();
     virtual PassOwnPtr<CCLayerTreeHostImpl> createLayerTreeHostImpl(CCLayerTreeHostImplClient*);
     void didLoseContext();
     enum RecreateResult {

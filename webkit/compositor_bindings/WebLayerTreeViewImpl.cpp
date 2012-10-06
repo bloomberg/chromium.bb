@@ -220,9 +220,9 @@ void WebLayerTreeViewImpl::applyScrollAndScale(const cc::IntSize& scrollDelta, f
     m_client->applyScrollAndScale(convert(scrollDelta), pageScale);
 }
 
-PassOwnPtr<WebCompositorOutputSurface> WebLayerTreeViewImpl::createOutputSurface()
+scoped_ptr<WebCompositorOutputSurface> WebLayerTreeViewImpl::createOutputSurface()
 {
-    return adoptPtr(m_client->createOutputSurface());
+    return scoped_ptr<WebCompositorOutputSurface>(m_client->createOutputSurface());
 }
 
 void WebLayerTreeViewImpl::didRecreateOutputSurface(bool success)
@@ -230,12 +230,13 @@ void WebLayerTreeViewImpl::didRecreateOutputSurface(bool success)
     m_client->didRecreateOutputSurface(success);
 }
 
-PassOwnPtr<CCInputHandler> WebLayerTreeViewImpl::createInputHandler()
+scoped_ptr<CCInputHandler> WebLayerTreeViewImpl::createInputHandler()
 {
+    scoped_ptr<CCInputHandler> ret;
     OwnPtr<WebInputHandler> handler = adoptPtr(m_client->createInputHandler());
     if (handler)
-        return WebToCCInputHandlerAdapter::create(handler.release());
-    return nullptr;
+        ret = WebToCCInputHandlerAdapter::create(handler.release());
+    return ret.Pass();
 }
 
 void WebLayerTreeViewImpl::willCommit()

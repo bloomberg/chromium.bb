@@ -22,9 +22,9 @@ COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollInputTypeWheel, CCInpu
 
 namespace WebKit {
 
-PassOwnPtr<WebToCCInputHandlerAdapter> WebToCCInputHandlerAdapter::create(PassOwnPtr<WebInputHandler> handler)
+scoped_ptr<WebToCCInputHandlerAdapter> WebToCCInputHandlerAdapter::create(PassOwnPtr<WebInputHandler> handler)
 {
-    return adoptPtr(new WebToCCInputHandlerAdapter(handler));
+    return scoped_ptr<WebToCCInputHandlerAdapter>(new WebToCCInputHandlerAdapter(handler));
 }
 
 WebToCCInputHandlerAdapter::WebToCCInputHandlerAdapter(PassOwnPtr<WebInputHandler> handler)

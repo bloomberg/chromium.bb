@@ -86,9 +86,9 @@ bool TestHooks::prepareToDrawOnCCThread(cc::CCLayerTreeHostImpl*)
     return true;
 }
 
-PassOwnPtr<WebCompositorOutputSurface> TestHooks::createOutputSurface()
+scoped_ptr<WebCompositorOutputSurface> TestHooks::createOutputSurface()
 {
-    return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes()));
+    return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes())).PassAs<WebCompositorOutputSurface>();
 }
 
 PassOwnPtr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testHooks, const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)
@@ -210,7 +210,7 @@ public:
         m_testHooks->applyScrollAndScale(scrollDelta, scale);
     }
 
-    virtual PassOwnPtr<WebCompositorOutputSurface> createOutputSurface() OVERRIDE
+    virtual scoped_ptr<WebCompositorOutputSurface> createOutputSurface() OVERRIDE
     {
         return m_testHooks->createOutputSurface();
     }
@@ -220,9 +220,9 @@ public:
         m_testHooks->didRecreateOutputSurface(succeeded);
     }
 
-    virtual PassOwnPtr<CCInputHandler> createInputHandler() OVERRIDE
+    virtual scoped_ptr<CCInputHandler> createInputHandler() OVERRIDE
     {
-        return nullptr;
+        return scoped_ptr<CCInputHandler>();
     }
 
     virtual void willCommit() OVERRIDE

@@ -89,10 +89,10 @@ bool CCSingleThreadProxy::isStarted() const
 bool CCSingleThreadProxy::initializeContext()
 {
     ASSERT(CCProxy::isMainThread());
-    OwnPtr<CCGraphicsContext> context = m_layerTreeHost->createContext();
-    if (!context)
+    scoped_ptr<CCGraphicsContext> context = m_layerTreeHost->createContext();
+    if (!context.get())
         return false;
-    m_contextBeforeInitialization = context.release();
+    m_contextBeforeInitialization = context.Pass();
     return true;
 }
 
@@ -110,10 +110,10 @@ void CCSingleThreadProxy::setVisible(bool visible)
 bool CCSingleThreadProxy::initializeRenderer()
 {
     ASSERT(CCProxy::isMainThread());
-    ASSERT(m_contextBeforeInitialization);
+    ASSERT(m_contextBeforeInitialization.get());
     {
         DebugScopedSetImplThread impl;
-        bool ok = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitialization.release());
+        bool ok = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitialization.Pass());
         if (ok) {
             m_rendererInitialized = true;
             m_RendererCapabilitiesForMainThread = m_layerTreeHostImpl->rendererCapabilities();
@@ -129,8 +129,8 @@ bool CCSingleThreadProxy::recreateContext()
     ASSERT(CCProxy::isMainThread());
     ASSERT(m_contextLost);
 
-    OwnPtr<CCGraphicsContext> context = m_layerTreeHost->createContext();
-    if (!context)
+    scoped_ptr<CCGraphicsContext> context = m_layerTreeHost->createContext();
+    if (!context.get())
         return false;
 
     bool initialized;
@@ -139,7 +139,7 @@ bool CCSingleThreadProxy::recreateContext()
         DebugScopedSetImplThread impl;
         if (!m_layerTreeHostImpl->contentsTexturesPurged())
             m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
-        initialized = m_layerTreeHostImpl->initializeRenderer(context.release());
+        initialized = m_layerTreeHostImpl->initializeRenderer(context.Pass());
         if (initialized) {
             m_RendererCapabilitiesForMainThread = m_layerTreeHostImpl->rendererCapabilities();
         }

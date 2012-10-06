@@ -95,7 +95,7 @@ protected:
     const IntSize m_textureSize;
     const GC3Denum m_textureFormat;
     WebCompositorInitializer m_compositorInitializer;
-    OwnPtr<CCGraphicsContext> m_context;
+    scoped_ptr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
 };
 
