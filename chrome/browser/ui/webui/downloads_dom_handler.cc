@@ -197,6 +197,7 @@ DictionaryValue* CreateDownloadItemValue(
 // Filters out extension downloads and downloads that don't have a filename yet.
 bool IsDownloadDisplayable(const content::DownloadItem& item) {
   return (!download_crx_util::IsExtensionDownload(item) &&
+          item.IsPersisted() &&
           !item.IsTemporary() &&
           !item.GetFileNameToReportUser().empty() &&
           !item.GetTargetFilePath().empty());
