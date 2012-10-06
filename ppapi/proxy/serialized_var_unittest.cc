@@ -201,12 +201,12 @@ TEST_F(SerializedVarTest, PluginReceiveInput) {
 
 // Tests the case that the plugin receives the same vars twice as an input
 // parameter (not passing ownership) within a vector.
-TEST_F(SerializedVarTest, DISABLED_PluginVectorReceiveInput) {
+TEST_F(SerializedVarTest, PluginVectorReceiveInput) {
   ProxyAutoLock lock;
   PP_Var host_object = MakeObjectVar(0x31337);
 
-  PP_Var* plugin_objects;
-  PP_Var* plugin_objects2;
+  std::vector<PP_Var> plugin_objects;
+  std::vector<PP_Var> plugin_objects2;
   {
     // Receive the params. The object should be tracked with no refcount and
     // no messages sent. The string should is plugin-side only and should have
@@ -216,7 +216,10 @@ TEST_F(SerializedVarTest, DISABLED_PluginVectorReceiveInput) {
     input1.push_back(SerializedVarTestConstructor("elite"));
     SerializedVarVectorReceiveInput receive_input(input1);
     uint32_t array_size = 0;
-    plugin_objects = receive_input.Get(plugin_dispatcher(), &array_size);
+    PP_Var* plugin_objects_array =
+        receive_input.Get(plugin_dispatcher(), &array_size);
+    plugin_objects.insert(plugin_objects.begin(), plugin_objects_array,
+                          plugin_objects_array + array_size);
     ASSERT_EQ(2u, array_size);
     EXPECT_EQ(0, var_tracker().GetRefCountForObject(plugin_objects[0]));
     EXPECT_EQ(1, var_tracker().GetRefCountForObject(plugin_objects[1]));
@@ -229,7 +232,10 @@ TEST_F(SerializedVarTest, DISABLED_PluginVectorReceiveInput) {
     input2.push_back(SerializedVarTestConstructor("elite"));
     SerializedVarVectorReceiveInput receive_input2(input2);
     uint32_t array_size2 = 0;
-    plugin_objects2 = receive_input2.Get(plugin_dispatcher(), &array_size2);
+    PP_Var* plugin_objects_array2 =
+        receive_input2.Get(plugin_dispatcher(), &array_size2);
+    plugin_objects2.insert(plugin_objects2.begin(), plugin_objects_array2,
+                           plugin_objects_array2 + array_size2);
     ASSERT_EQ(2u, array_size2);
     EXPECT_EQ(plugin_objects[0].value.as_id, plugin_objects2[0].value.as_id);
     EXPECT_EQ(0, var_tracker().GetRefCountForObject(plugin_objects[0]));
