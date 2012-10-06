@@ -146,6 +146,8 @@ class Manifest(object):
       vlan = 'm1'
     elif hostname.endswith('m4'):
       vlan = 'm4'
+    else:
+      vlan = 'm4'
 
     # Construct test case
     test_case = {
@@ -190,6 +192,7 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
   print 'Sending test requests to swarm'
   test_url = options.swarm_url + '/test'
   manifest_text = manifest.to_json()
+  result = None
   try:
     result = urllib2.urlopen(test_url, manifest_text).read()
 
@@ -197,7 +200,10 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
     json.loads(result)
   except (ValueError, TypeError, urllib2.URLError) as e:
     print 'Failed to send test for ' + test_name
+    print 'Manifest: %s' % manifest_text
     print e
+    if result:
+      print result
     return 1
 
   return 0

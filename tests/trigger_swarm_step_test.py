@@ -78,7 +78,7 @@ def GenerateExpectedJSON(options):
         'config_name': platform_mapping[options.os_image],
         'dimensions': {
           'os': platform_mapping[options.os_image],
-          'vlan': ''
+          'vlan': 'm4'
         },
       },
     ],
