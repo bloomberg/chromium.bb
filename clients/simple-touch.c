@@ -301,6 +301,7 @@ touch_create(int width, int height)
 	}
 
 	wl_surface_set_user_data(touch->surface, touch);
+	wl_shell_surface_set_title(touch->shell_surface, "simple-touch");
 
 	memset(touch->data, 64, width * height * 4);
 	wl_surface_attach(touch->surface, touch->buffer, 0, 0);

@@ -317,6 +317,8 @@ create_surface(struct window *window)
 				       display->egl.conf,
 				       window->native, NULL);
 
+	wl_shell_surface_set_title(window->shell_surface, "simple-egl");
+
 	ret = eglMakeCurrent(window->display->egl.dpy, window->egl_surface,
 			     window->egl_surface, window->display->egl.ctx);
 	assert(ret == EGL_TRUE);

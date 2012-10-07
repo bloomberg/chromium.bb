@@ -142,6 +142,8 @@ create_window(struct display *display, int width, int height)
 		wl_shell_surface_add_listener(window->shell_surface,
 					      &shell_surface_listener, window);
 
+	wl_shell_surface_set_title(window->shell_surface, "simple-shm");
+
 	wl_shell_surface_set_toplevel(window->shell_surface);
 
 	return window;
