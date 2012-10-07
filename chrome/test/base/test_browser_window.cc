@@ -133,8 +133,8 @@ FindBar* TestBrowserWindow::CreateFindBar() {
   return NULL;
 }
 
-int TestBrowserWindow::GetConstrainedWindowTopY() {
-  return -1;
+bool TestBrowserWindow::GetConstrainedWindowTopY(int* top_y) {
+  return false;
 }
 
 namespace chrome {

@@ -1359,11 +1359,16 @@ void WebIntentPickerViews::ResetContents() {
 }
 
 void WebIntentPickerViews::SizeToContents() {
-  gfx::Size client_size = contents_->GetPreferredSize();
-  gfx::Rect client_bounds(client_size);
-  gfx::Rect new_window_bounds = window_->non_client_view()->frame_view()->
-      GetWindowBoundsForClientBounds(client_bounds);
-  window_->CenterWindow(new_window_bounds.size());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFramelessConstrainedDialogs)) {
+    window_->OnSizeChanged();
+  } else {
+    gfx::Size client_size = contents_->GetPreferredSize();
+    gfx::Rect client_bounds(client_size);
+    gfx::Rect new_window_bounds = window_->non_client_view()->frame_view()->
+        GetWindowBoundsForClientBounds(client_bounds);
+    window_->CenterWindow(new_window_bounds.size());
+  }
 }
 
 void WebIntentPickerViews::ClearContents() {

@@ -582,6 +582,8 @@ ConstrainedWindowViews::ConstrainedWindowViews(
     content::WebContents* web_contents,
     views::WidgetDelegate* widget_delegate)
     : web_contents_(web_contents),
+      frameless_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFramelessConstrainedDialogs)),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -589,11 +591,9 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableFramelessConstrainedDialogs)) {
-    Widget* parent_widget = Widget::GetTopLevelWidgetForNativeView(
+  if (frameless_) {
+    params.parent_widget = Widget::GetTopLevelWidgetForNativeView(
         web_contents->GetView()->GetNativeView());
-    params.parent_widget = parent_widget;
   } else {
     params.parent = web_contents->GetNativeView();
   }
@@ -611,7 +611,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 #endif
   Init(params);
 
-  if (command_line->HasSwitch(switches::kEnableFramelessConstrainedDialogs)) {
+  if (frameless_) {
     // Set the dialog background color.
     if (widget_delegate && widget_delegate->AsDialogDelegate()) {
       views::Background* background = views::Background::CreateSolidBackground(
@@ -621,22 +621,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
       if (dialog_client_view)
         dialog_client_view->set_background(background);
     }
-
-    // Set the top of the now-centered window to overlap the browser chrome.
-    gfx::Rect bounds = GetRootView()->bounds();
-    Widget::ConvertRect(this, params.parent_widget, &bounds);
-    ConstrainedWindowTabHelperDelegate* tab_helper_delegate =
-        ConstrainedWindowTabHelper::FromWebContents(web_contents_)->delegate();
-
-    BrowserWindow* browser_window =
-        tab_helper_delegate ? tab_helper_delegate->GetBrowserWindow() : NULL;
-    if (browser_window && browser_window->GetConstrainedWindowTopY() >= 0) {
-      bounds.set_y(browser_window->GetConstrainedWindowTopY());
-      // Center the constrained window.
-      bounds.set_x(
-          browser_window->GetBounds().width() / 2 - bounds.width() / 2);
-      SetBounds(bounds);
-    }
+    PositionWindow();
   }
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
@@ -648,6 +633,28 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
+}
+
+void ConstrainedWindowViews::OnSizeChanged() {
+  if (frameless_)
+    PositionWindow();
+}
+
+void ConstrainedWindowViews::PositionWindow() {
+  DCHECK(frameless_);
+  gfx::Rect bounds = GetRootView()->bounds();
+  ConstrainedWindowTabHelperDelegate* tab_helper_delegate =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_)->delegate();
+
+  BrowserWindow* browser_window =
+      tab_helper_delegate ? tab_helper_delegate->GetBrowserWindow() : NULL;
+  int top_y;
+  if (browser_window && browser_window->GetConstrainedWindowTopY(&top_y)) {
+    bounds.set_y(top_y);
+    bounds.set_x(
+        browser_window->GetBounds().width() / 2 - bounds.width() / 2);
+    SetBounds(bounds);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -695,11 +702,11 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 // ConstrainedWindowViews, views::Widget overrides:
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableFramelessConstrainedDialogs)) {
+  if (frameless_) {
     return new ConstrainedWindowFrameSimple(this);
   } else {
 #if defined(USE_ASH)
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames))
       return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
     ConstrainedWindowFrameViewAsh* frame = new ConstrainedWindowFrameViewAsh;

@@ -34,7 +34,7 @@ class BrowserViewLayout : public views::LayoutManager {
   BrowserViewLayout();
   virtual ~BrowserViewLayout();
 
-  int GetConstrainedWindowTopY();
+  bool GetConstrainedWindowTopY(int* top_y);
 
   // Returns the minimum size of the browser view.
   virtual gfx::Size GetMinimumSize();

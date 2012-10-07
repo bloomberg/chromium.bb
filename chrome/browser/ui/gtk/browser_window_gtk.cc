@@ -1164,8 +1164,8 @@ FindBar* BrowserWindowGtk::CreateFindBar() {
   return new FindBarGtk(this);
 }
 
-int BrowserWindowGtk::GetConstrainedWindowTopY() {
-  return -1;
+bool BrowserWindowGtk::GetConstrainedWindowTopY(int* top_y) {
+  return false;
 }
 
 void BrowserWindowGtk::ShowAvatarBubble(WebContents* web_contents,

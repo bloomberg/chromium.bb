@@ -168,7 +168,7 @@ class BrowserWindowGtk
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
   virtual FindBar* CreateFindBar() OVERRIDE;
-  virtual int GetConstrainedWindowTopY() OVERRIDE;
+  virtual bool GetConstrainedWindowTopY(int* top_y) OVERRIDE;
   virtual void ShowAvatarBubble(content::WebContents* web_contents,
                                 const gfx::Rect& rect) OVERRIDE;
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;

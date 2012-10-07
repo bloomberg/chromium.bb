@@ -70,8 +70,10 @@ BrowserViewLayout::BrowserViewLayout()
 BrowserViewLayout::~BrowserViewLayout() {
 }
 
-int BrowserViewLayout::GetConstrainedWindowTopY() {
-  return constrained_window_top_y;
+bool BrowserViewLayout::GetConstrainedWindowTopY(int* top_y) {
+  DCHECK(top_y);
+  *top_y = constrained_window_top_y;
+  return (constrained_window_top_y >= 0);
 }
 
 gfx::Size BrowserViewLayout::GetMinimumSize() {

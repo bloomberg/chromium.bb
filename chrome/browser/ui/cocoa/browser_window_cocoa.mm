@@ -594,8 +594,8 @@ FindBar* BrowserWindowCocoa::CreateFindBar() {
   return bridge;
 }
 
-int BrowserWindowCocoa::GetConstrainedWindowTopY() {
-  return -1;
+bool BrowserWindowCocoa::GetConstrainedWindowTopY(int* top_y) {
+  return false;
 }
 
 void BrowserWindowCocoa::Observe(int type,
