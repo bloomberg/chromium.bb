@@ -25,6 +25,8 @@
 #include "fcint.h"
 #include <string.h>
 
+/* MT-safe */
+
 static const struct {
     FcObject	field;
     FcBool	value;
@@ -32,7 +34,6 @@ static const struct {
     { FC_HINTING_OBJECT,	   FcTrue	},  /* !FT_LOAD_NO_HINTING */
     { FC_VERTICAL_LAYOUT_OBJECT,   FcFalse	},  /* FC_LOAD_VERTICAL_LAYOUT */
     { FC_AUTOHINT_OBJECT,	   FcFalse	},  /* FC_LOAD_FORCE_AUTOHINT */
-    /* XXX: FC_GLOBAL_ADVANCE is deprecated */
     { FC_GLOBAL_ADVANCE_OBJECT,    FcTrue	},  /* !FC_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH */
     { FC_EMBEDDED_BITMAP_OBJECT,   FcTrue 	},  /* !FC_LOAD_NO_BITMAP */
     { FC_DECORATIVE_OBJECT,	   FcFalse	},
@@ -40,45 +41,81 @@ static const struct {
 
 #define NUM_FC_BOOL_DEFAULTS	(int) (sizeof FcBoolDefaults / sizeof FcBoolDefaults[0])
 
+FcStrSet *default_langs;
+
 FcStrSet *
 FcGetDefaultLangs (void)
 {
-    FcStrSet *result = FcStrSetCreate ();
-    char *langs;
-
-    langs = getenv ("FC_LANG");
-    if (!langs || !langs[0])
-	langs = getenv ("LC_ALL");
-    if (!langs || !langs[0])
-	langs = getenv ("LC_CTYPE");
-    if (!langs || !langs[0])
-	langs = getenv ("LANG");
-    if (langs && langs[0])
+    FcStrSet *result;
+retry:
+    result = (FcStrSet *) fc_atomic_ptr_get (&default_langs);
+    if (!result)
     {
-	if (!FcStrSetAddLangs (result, langs))
+	char *langs;
+
+	result = FcStrSetCreate ();
+
+	langs = getenv ("FC_LANG");
+	if (!langs || !langs[0])
+	    langs = getenv ("LC_ALL");
+	if (!langs || !langs[0])
+	    langs = getenv ("LC_CTYPE");
+	if (!langs || !langs[0])
+	    langs = getenv ("LANG");
+	if (langs && langs[0])
+	{
+	    if (!FcStrSetAddLangs (result, langs))
+		FcStrSetAdd (result, (const FcChar8 *) "en");
+	}
+	else
 	    FcStrSetAdd (result, (const FcChar8 *) "en");
+
+	FcRefSetConst (&result->ref);
+	if (!fc_atomic_ptr_cmpexch (&default_langs, NULL, result)) {
+	    FcRefInit (&result->ref, 1);
+	    FcStrSetDestroy (result);
+	    goto retry;
+	}
     }
-    else
-	FcStrSetAdd (result, (const FcChar8 *) "en");
 
     return result;
 }
 
+static FcChar8 *default_lang; /* MT-safe */
+
 FcChar8 *
 FcGetDefaultLang (void)
 {
-    static FcChar8 lang_local[128] = {0};
-    FcStrSet *langs;
-
-    if (!lang_local[0])
+    FcChar8 *lang;
+retry:
+    lang = fc_atomic_ptr_get (&default_lang);
+    if (!lang)
     {
-	langs = FcGetDefaultLangs ();
-	strncpy ((char *)lang_local, (const char *)langs->strs[0], 127);
-	lang_local[127] = 0;
+	FcStrSet *langs = FcGetDefaultLangs ();
+	lang = (FcChar8 *) strdup ((const char *) langs->strs[0]);
 	FcStrSetDestroy (langs);
+
+	if (!fc_atomic_ptr_cmpexch (&default_lang, NULL, lang)) {
+	    free (lang);
+	    goto retry;
+	}
     }
 
-    return lang_local;
+    return lang;
+}
+
+void
+FcDefaultFini (void)
+{
+    if (default_lang) {
+	free (default_lang);
+	default_lang = NULL;
+    }
+    if (default_langs) {
+	FcRefInit (&default_langs->ref, 1);
+	FcStrSetDestroy (default_langs);
+	default_langs = NULL;
+    }
 }
 
 void

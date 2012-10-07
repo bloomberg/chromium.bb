@@ -761,6 +761,9 @@ FcInitDebug (void);
 FcPrivate FcChar8 *
 FcGetDefaultLang (void);
 
+FcPrivate void
+FcDefaultFini (void);
+
 /* fcdir.c */
 
 FcPrivate FcBool
