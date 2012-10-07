@@ -38,11 +38,9 @@ void OpenAll(gfx::NativeWindow parent,
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
                                gfx::NativeWindow window);
 
+
 // Shows the bookmark all tabs dialog.
 void ShowBookmarkAllTabsDialog(Browser* browser);
-
-// Returns true if |selection| has at least one bookmark of type url.
-bool HasBookmarkURLs(const std::vector<const BookmarkNode*>& selection);
 
 }  // namespace chrome
 

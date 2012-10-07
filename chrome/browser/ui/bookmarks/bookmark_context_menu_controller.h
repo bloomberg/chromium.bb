@@ -85,6 +85,9 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
   // Any change to the model results in closing the menu.
   virtual void BookmarkModelChanged() OVERRIDE;
 
+  // Returns true if selection_ has at least one bookmark of type url.
+  bool HasURLs() const;
+
   gfx::NativeWindow parent_window_;
   BookmarkContextMenuControllerDelegate* delegate_;
   Browser* browser_;

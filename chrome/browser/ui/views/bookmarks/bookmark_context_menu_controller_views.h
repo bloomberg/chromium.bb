@@ -113,6 +113,9 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
   // Removes the observer from the model and NULLs out model_.
   BookmarkModel* RemoveModelObserver();
 
+  // Returns true if selection_ has at least one bookmark of type url.
+  bool HasURLs() const;
+
   views::Widget* parent_widget_;
   BookmarkContextMenuControllerViewsDelegate* delegate_;
   Browser* browser_;
