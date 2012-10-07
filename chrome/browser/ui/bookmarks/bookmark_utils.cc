@@ -94,6 +94,19 @@ int ChildURLCountTotal(const BookmarkNode* node) {
   return result;
 }
 
+bool NodeHasURLs(const BookmarkNode* node) {
+  DCHECK(node);
+
+  if (node->is_url())
+    return true;
+
+  for (int i = 0; i < node->child_count(); ++i) {
+    if (NodeHasURLs(node->GetChild(i)))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace chrome {
@@ -141,6 +154,14 @@ void ShowBookmarkAllTabsDialog(Browser* browser) {
 
   BookmarkEditor::Show(browser->window()->GetNativeWindow(),
                        profile, details, BookmarkEditor::SHOW_TREE);
+}
+
+bool HasBookmarkURLs(const std::vector<const BookmarkNode*>& selection) {
+  for (size_t i = 0; i < selection.size(); ++i) {
+    if (NodeHasURLs(selection[i]))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace chrome

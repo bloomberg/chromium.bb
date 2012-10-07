@@ -202,14 +202,14 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
              incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO:
-      return HasURLs() &&
+      return chrome::HasBookmarkURLs(selection_) &&
              !profile_->IsOffTheRecord() &&
              incognito_avail != IncognitoModePrefs::DISABLED;
 
     case IDC_BOOKMARK_BAR_OPEN_ALL:
-      return HasURLs();
+      return chrome::HasBookmarkURLs(selection_);
     case IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW:
-      return HasURLs() &&
+      return chrome::HasBookmarkURLs(selection_) &&
              incognito_avail != IncognitoModePrefs::FORCED;
 
     case IDC_BOOKMARK_BAR_RENAME_FOLDER:
@@ -320,12 +320,4 @@ BookmarkModel* BookmarkContextMenuControllerViews::RemoveModelObserver() {
   model_->RemoveObserver(this);
   model_ = NULL;
   return model;
-}
-
-bool BookmarkContextMenuControllerViews::HasURLs() const {
-  for (size_t i = 0; i < selection_.size(); ++i) {
-    if (bookmark_utils::NodeHasURLs(selection_[i]))
-      return true;
-  }
-  return false;
 }

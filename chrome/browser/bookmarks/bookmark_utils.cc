@@ -554,19 +554,6 @@ const BookmarkNode* GetParentForNewNodes(
   return real_parent;
 }
 
-bool NodeHasURLs(const BookmarkNode* node) {
-  DCHECK(node);
-
-  if (node->is_url())
-    return true;
-
-  for (int i = 0; i < node->child_count(); ++i) {
-    if (NodeHasURLs(node->GetChild(i)))
-      return true;
-  }
-  return false;
-}
-
 void DeleteBookmarkFolders(BookmarkModel* model,
                            const std::vector<int64>& ids) {
   // Remove the folders that were removed. This has to be done after all the

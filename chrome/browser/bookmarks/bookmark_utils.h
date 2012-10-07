@@ -188,10 +188,6 @@ const BookmarkNode* GetParentForNewNodes(
     const std::vector<const BookmarkNode*>& selection,
     int* index);
 
-// Returns true if the specified node is of type URL, or has a descendant
-// of type URL.
-bool NodeHasURLs(const BookmarkNode* node);
-
 // Deletes the bookmark folders for the given list of |ids|.
 void DeleteBookmarkFolders(BookmarkModel* model, const std::vector<int64>& ids);
 
