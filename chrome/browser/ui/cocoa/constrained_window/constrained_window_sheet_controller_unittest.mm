@@ -15,6 +15,9 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
   virtual void SetUp() OVERRIDE {
     CocoaTest::SetUp();
 
+    // Center the window so that the sheet doesn't go offscreen.
+    [test_window() center];
+
     // Create two dummy tabs and make the first one active.
     NSRect dummyRect = NSMakeRect(0, 0, 50, 50);
     tab_views_.reset([[NSMutableArray alloc] init]);
@@ -51,6 +54,12 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
             controllerForParentWindow:test_window()];
     EXPECT_TRUE(controller);
     [controller parentViewDidBecomeActive:active_tab_view_];
+  }
+
+  NSRect GetViewFrameInScreenCoordinates(NSView* view) {
+    NSRect rect = [view convertRect:[view bounds] toView:nil];
+    rect.origin = [[view window] convertBaseToScreen:rect.origin];
+    return rect;
   }
 
   scoped_nsobject<NSWindow> sheet_;
@@ -154,9 +163,36 @@ TEST_F(ConstrainedWindowSheetControllerTest, TopLevelView) {
   EXPECT_TRUE([ConstrainedWindowSheetController controllerForSheet:sheet_]);
   EXPECT_TRUE([sheet_ isVisible]);
 
-  NSRect window_frame = [test_window() frame];
+  NSRect parent_frame = GetViewFrameInScreenCoordinates(parentView);
   NSRect sheet_frame = [sheet_ frame];
-  CGFloat expected_x = NSMinX(window_frame) +
-      (NSWidth(window_frame) - NSWidth(sheet_frame)) / 2.0;
+  CGFloat expected_x = NSMinX(parent_frame) +
+      (NSWidth(parent_frame) - NSWidth(sheet_frame)) / 2.0;
+  EXPECT_EQ(expected_x, NSMinX(sheet_frame));
+}
+
+// Test that resizing sheet works.
+TEST_F(ConstrainedWindowSheetControllerTest, Resize) {
+  ConstrainedWindowSheetController* controller =
+      [ConstrainedWindowSheetController
+          controllerForParentWindow:test_window()];
+  [controller showSheet:sheet_ forParentView:active_tab_view_];
+
+  NSRect old_frame = [sheet_ frame];
+  NSSize desired_size = NSMakeSize(NSWidth(old_frame) + 100,
+                                   NSHeight(old_frame) + 50);
+  [controller setSheet:sheet_
+            windowSize:desired_size];
+
+  NSRect sheet_frame = [sheet_ frame];
+  EXPECT_EQ(NSWidth(sheet_frame), desired_size.width);
+  EXPECT_EQ(NSHeight(sheet_frame), desired_size.height);
+
+  // Y pos should not have changed.
+  EXPECT_EQ(NSMaxY(sheet_frame), NSMaxY(old_frame));
+
+  // X pos should be centered on parent view.
+  NSRect parent_frame = GetViewFrameInScreenCoordinates(active_tab_view_);
+  CGFloat expected_x = NSMinX(parent_frame) +
+      (NSWidth(parent_frame) - NSWidth(sheet_frame)) / 2.0;
   EXPECT_EQ(expected_x, NSMinX(sheet_frame));
 }

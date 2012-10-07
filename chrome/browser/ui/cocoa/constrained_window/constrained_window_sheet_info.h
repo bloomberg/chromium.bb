@@ -23,7 +23,7 @@
 }
 
 @property(nonatomic, readonly) NSWindow* sheet;
-@property(nonatomic, readonly) NSWindow* parentView;
+@property(nonatomic, readonly) NSView* parentView;
 @property(nonatomic, readonly) NSWindow* overlayWindow;
 @property(nonatomic, retain) NSAnimation* animation;
 

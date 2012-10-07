@@ -35,6 +35,9 @@
 - (void)showSheet:(NSWindow*)sheet
     forParentView:(NSView*)parentView;
 
+// Resize the given sheet.
+- (void)setSheet:(NSWindow*)sheet windowSize:(NSSize)size;
+
 // Closes the given sheet. If the parent view of the sheet is currently active
 // then an asynchronous animation will be run and the sheet will be closed
 // at the end of the animation.

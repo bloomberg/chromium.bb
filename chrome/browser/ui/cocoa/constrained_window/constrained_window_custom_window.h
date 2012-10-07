@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+
 // A NSWindow subclass that gives a custom look (rounded corners and white
 // background).
 //
@@ -17,7 +19,7 @@
 // If a ConstrainedWindow is using ConstrainedWindowAlert to display its UI
 // then it doesn't have to use this class. On the other hand, if it has some
 // custom UI (say from a nib) then it should use this class.
-@interface ConstrainedWindowCustomWindow : NSWindow
+@interface ConstrainedWindowCustomWindow : ChromeEventProcessingWindow
 
 // Initializes the window with the given content rect.
 - (id)initWithContentRect:(NSRect)contentRect;
