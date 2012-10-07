@@ -22,9 +22,8 @@
 
 #include "fcint.h"
 #include "fcftint.h"
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+
+/* Objects MT-safe for readonly access. */
 
 FcPattern *
 FcPatternCreate (void)
@@ -37,7 +36,7 @@ FcPatternCreate (void)
     p->num = 0;
     p->size = 0;
     p->elts_offset = FcPtrToOffset (p, NULL);
-    p->ref = 1;
+    FcRefInit (&p->ref, 1);
     return p;
 }
 
@@ -362,13 +361,13 @@ FcPatternDestroy (FcPattern *p)
     if (!p)
 	return;
 
-    if (p->ref == FC_REF_CONSTANT)
+    if (FcRefIsConst (&p->ref))
     {
 	FcCacheObjectDereference (p);
 	return;
     }
 	
-    if (--p->ref > 0)
+    if (FcRefDec (&p->ref) != 1)
 	return;
 
     elts = FcPatternElts (p);
@@ -546,7 +545,7 @@ FcPatternObjectListAdd (FcPattern	*p,
     FcPatternElt   *e;
     FcValueListPtr l, *prev;
 
-    if (p->ref == FC_REF_CONSTANT)
+    if (FcRefIsConst (&p->ref))
 	goto bail0;
 
     /*
@@ -598,7 +597,7 @@ FcPatternObjectAddWithBinding  (FcPattern	*p,
     FcPatternElt   *e;
     FcValueListPtr new, *prev;
 
-    if (p->ref == FC_REF_CONSTANT)
+    if (FcRefIsConst (&p->ref))
 	goto bail0;
 
     new = FcValueListCreate ();
@@ -1060,8 +1059,8 @@ bail0:
 void
 FcPatternReference (FcPattern *p)
 {
-    if (p->ref != FC_REF_CONSTANT)
-	p->ref++;
+    if (!FcRefIsConst (&p->ref))
+	FcRefInc (&p->ref);
     else
 	FcCacheObjectReference (p);
 }
@@ -1153,7 +1152,7 @@ bail0:
  * significant by any means. */
 
 FcBool
-FcSharedStrFree (const FcChar8 *name)
+FcSharedStrFree (FcChar8 *name)
 {
   free (name);
   return FcTrue;
@@ -1162,7 +1161,7 @@ FcSharedStrFree (const FcChar8 *name)
 const FcChar8 *
 FcSharedStr (const FcChar8 *name)
 {
-  return strdup (name);
+  return strdup ((const char *) name);
 }
 
 FcBool
@@ -1195,7 +1194,7 @@ FcPatternSerialize (FcSerialize *serialize, const FcPattern *pat)
 	return NULL;
     *pat_serialized = *pat;
     pat_serialized->size = pat->num;
-    pat_serialized->ref = FC_REF_CONSTANT;
+    FcRefSetConst (&pat_serialized->ref);
 
     elts_serialized = FcSerializePtr (serialize, elts);
     if (!elts_serialized)

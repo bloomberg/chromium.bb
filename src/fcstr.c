@@ -33,6 +33,8 @@
 #include <windows.h>
 #endif
 
+/* Objects MT-safe for readonly access. */
+
 FcChar8 *
 FcStrCopy (const FcChar8 *s)
 {
@@ -1078,7 +1080,7 @@ FcStrSetCreate (void)
     FcStrSet	*set = malloc (sizeof (FcStrSet));
     if (!set)
 	return 0;
-    set->ref = 1;
+    FcRefInit (&set->ref, 1);
     set->num = 0;
     set->size = 0;
     set->strs = 0;
@@ -1230,16 +1232,16 @@ FcStrSetDel (FcStrSet *set, const FcChar8 *s)
 void
 FcStrSetDestroy (FcStrSet *set)
 {
-    if (--set->ref == 0)
-    {
-	int	i;
+    int	i;
 
-	for (i = 0; i < set->num; i++)
-	    FcStrFree (set->strs[i]);
-	if (set->strs)
-	    free (set->strs);
-	free (set);
-    }
+    if (FcRefDec (&set->ref) != 1)
+	return;
+
+    for (i = 0; i < set->num; i++)
+	FcStrFree (set->strs[i]);
+    if (set->strs)
+	free (set->strs);
+    free (set);
 }
 
 FcStrList *
@@ -1251,7 +1253,7 @@ FcStrListCreate (FcStrSet *set)
     if (!list)
 	return 0;
     list->set = set;
-    set->ref++;
+    FcRefInc (&set->ref);
     list->n = 0;
     return list;
 }

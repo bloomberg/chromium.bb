@@ -170,7 +170,7 @@ FcDefaultSubstitute (FcPattern *pattern)
 	FcPatternObjectAdd (pattern, FC_FULLNAMELANG_OBJECT, namelang, FcTrue);
 	FcPatternObjectAddWithBinding (pattern, FC_FULLNAMELANG_OBJECT, v2, FcValueBindingWeak, FcTrue);
     }
-    FcSharedStrFree (v2.u.s);
+    FcSharedStrFree ((char *) v2.u.s);
 }
 #define __fcdefault__
 #include "fcaliastail.h"

@@ -35,7 +35,7 @@ FcCharSetCreate (void)
     fcs = (FcCharSet *) malloc (sizeof (FcCharSet));
     if (!fcs)
 	return 0;
-    fcs->ref = 1;
+    FcRefInit (&fcs->ref, 1);
     fcs->num = 0;
     fcs->leaves_offset = 0;
     fcs->numbers_offset = 0;
@@ -55,12 +55,12 @@ FcCharSetDestroy (FcCharSet *fcs)
 
     if (fcs)
     {
-	if (fcs->ref == FC_REF_CONSTANT)
+	if (FcRefIsConst (&fcs->ref))
 	{
 	    FcCacheObjectDereference (fcs);
 	    return;
 	}
-	if (--fcs->ref > 0)
+	if (FcRefDec (&fcs->ref) != 1)
 	    return;
 	for (i = 0; i < fcs->num; i++)
 	    free (FcCharSetLeaf (fcs, i));
@@ -237,7 +237,7 @@ FcCharSetAddChar (FcCharSet *fcs, FcChar32 ucs4)
     FcCharLeaf	*leaf;
     FcChar32	*b;
 
-    if (fcs == NULL || fcs->ref == FC_REF_CONSTANT)
+    if (fcs == NULL || FcRefIsConst (&fcs->ref))
 	return FcFalse;
     leaf = FcCharSetFindLeafCreate (fcs, ucs4);
     if (!leaf)
@@ -253,7 +253,7 @@ FcCharSetDelChar (FcCharSet *fcs, FcChar32 ucs4)
     FcCharLeaf	*leaf;
     FcChar32	*b;
 
-    if (fcs == NULL || fcs->ref == FC_REF_CONSTANT)
+    if (fcs == NULL || FcRefIsConst (&fcs->ref))
 	return FcFalse;
     leaf = FcCharSetFindLeaf (fcs, ucs4);
     if (!leaf)
@@ -329,8 +329,8 @@ FcCharSetCopy (FcCharSet *src)
 {
     if (src)
     {
-	if (src->ref != FC_REF_CONSTANT)
-	    src->ref++;
+	if (!FcRefIsConst (&src->ref))
+	    FcRefInc (&src->ref);
 	else
 	    FcCacheObjectReference (src);
     }
@@ -488,7 +488,7 @@ FcCharSetMerge (FcCharSet *a, const FcCharSet *b, FcBool *changed)
     if (!a || !b)
 	return FcFalse;
 
-    if (a->ref == FC_REF_CONSTANT) {
+    if (FcRefIsConst (&a->ref)) {
 	if (changed)
 	    *changed = FcFalse;
 	return FcFalse;
@@ -1204,7 +1204,7 @@ FcCharSetFreezeBase (FcCharSetFreezer *freezer, FcCharSet *fcs)
 
     freezer->charsets_allocated++;
 
-    ent->set.ref = FC_REF_CONSTANT;
+    FcRefSetConst (&ent->set.ref);
     ent->set.num = fcs->num;
     if (fcs->num)
     {
@@ -1338,7 +1338,7 @@ FcCharSetSerializeAlloc (FcSerialize *serialize, const FcCharSet *cs)
     FcChar16	    *numbers;
     int		    i;
 
-    if (cs->ref != FC_REF_CONSTANT)
+    if (!FcRefIsConst (&cs->ref))
     {
 	if (!serialize->cs_freezer)
 	{
@@ -1377,7 +1377,7 @@ FcCharSetSerialize(FcSerialize *serialize, const FcCharSet *cs)
     FcCharLeaf	*leaf, *leaf_serialized;
     int		i;
 
-    if (cs->ref != FC_REF_CONSTANT && serialize->cs_freezer)
+    if (!FcRefIsConst (&cs->ref) && serialize->cs_freezer)
     {
 	cs = FcCharSetFindFrozen (serialize->cs_freezer, cs);
 	if (!cs)
@@ -1388,7 +1388,7 @@ FcCharSetSerialize(FcSerialize *serialize, const FcCharSet *cs)
     if (!cs_serialized)
 	return NULL;
 
-    cs_serialized->ref = FC_REF_CONSTANT;
+    FcRefSetConst (&cs_serialized->ref);
     cs_serialized->num = cs->num;
 
     if (cs->num)

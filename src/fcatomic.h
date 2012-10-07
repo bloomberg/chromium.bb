@@ -63,7 +63,7 @@ static inline void HBMemoryBarrier (void) {
 }
 #endif
 
-typedef long fc_atomic_int_t;
+typedef int fc_atomic_int_t;
 #define fc_atomic_int_add(AI, V)	InterlockedExchangeAdd (&(AI), (V))
 
 #define fc_atomic_ptr_get(P)		(HBMemoryBarrier (), (void *) *(P))
@@ -74,7 +74,7 @@ typedef long fc_atomic_int_t;
 
 #include <libkern/OSAtomic.h>
 
-typedef int32_t fc_atomic_int_t;
+typedef int fc_atomic_int_t;
 #define fc_atomic_int_add(AI, V)	(OSAtomicAdd32Barrier ((V), &(AI)) - (V))
 
 #define fc_atomic_ptr_get(P)		(OSMemoryBarrier (), (void *) *(P))
@@ -111,13 +111,13 @@ typedef int fc_atomic_int_t;
 #endif
 
 /* reference count */
-#define FC_REF_CONSTANT ((fc_atomic_int_t) -1)
-#define FC_REF_CONSTANT_INIT {FC_REF_CONSTANT}
+#define FC_REF_CONSTANT_VALUE ((fc_atomic_int_t) -1)
+#define FC_REF_CONSTANT {FC_REF_CONSTANT_VALUE}
 typedef struct _FcRef { fc_atomic_int_t count; } FcRef;
-static inline void   FcRefInit    (FcRef *r, int v) { r->count = v; }
-static inline int    FcRefInc     (FcRef *r) { return fc_atomic_int_add (r->count, +1); }
-static inline int    FcRefDec     (FcRef *r) { return fc_atomic_int_add (r->count, -1); }
-static inline void   FcRefFinish  (FcRef *r) { r->count = FC_REF_CONSTANT; }
-static inline FcBool FcRefIsConst (FcRef *r) { return r->count == FC_REF_CONSTANT; }
+static inline void   FcRefInit     (FcRef *r, int v) { r->count = v; }
+static inline int    FcRefInc      (FcRef *r) { return fc_atomic_int_add (r->count, +1); }
+static inline int    FcRefDec      (FcRef *r) { return fc_atomic_int_add (r->count, -1); }
+static inline void   FcRefSetConst (FcRef *r) { r->count = FC_REF_CONSTANT_VALUE; }
+static inline FcBool FcRefIsConst  (const FcRef *r) { return r->count == FC_REF_CONSTANT_VALUE; }
 
 #endif /* _FCATOMIC_H_ */

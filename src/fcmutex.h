@@ -36,6 +36,8 @@
 #include <config.h>
 #endif
 
+#define FC_STMT_START do
+#define FC_STMT_END while (0)
 
 /* mutex */
 

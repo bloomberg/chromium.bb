@@ -94,7 +94,7 @@ FcConfigCreate (void)
 
     config->expr_pool = NULL;
 
-    config->ref = 1;
+    FcRefInit (&config->ref, 1);
 
     return config;
 
@@ -221,7 +221,7 @@ FcConfigReference (FcConfig *config)
 	    return 0;
     }
 
-    config->ref++;
+    FcRefInc (&config->ref);
 
     return config;
 }
@@ -232,7 +232,7 @@ FcConfigDestroy (FcConfig *config)
     FcSetName	set;
     FcExprPage	*page;
 
-    if (--config->ref > 0)
+    if (FcRefDec (&config->ref) != 1)
 	return;
 
     if (config == _fcConfig)
@@ -662,7 +662,7 @@ typedef struct _FcSubState {
 } FcSubState;
 
 static FcValue
-FcConfigPromote (FcValue v, FcValue u)
+FcConfigPromote (FcValue v, FcValue u, FcValuePromotionBuffer *buf)
 {
     if (v.type == FcTypeInteger)
     {
@@ -674,9 +674,9 @@ FcConfigPromote (FcValue v, FcValue u)
 	v.u.m = &FcIdentityMatrix;
 	v.type = FcTypeMatrix;
     }
-    else if (v.type == FcTypeString && u.type == FcTypeLangSet)
+    else if (buf && v.type == FcTypeString && u.type == FcTypeLangSet)
     {
-	v.u.l = FcLangSetPromote (v.u.s);
+	v.u.l = FcLangSetPromote (v.u.s, buf);
 	v.type = FcTypeLangSet;
     }
     return v;
@@ -692,9 +692,10 @@ FcConfigCompareValue (const FcValue	*left_o,
     FcBool	ret = FcFalse;
     FcOp	op = FC_OP_GET_OP (op_);
     int		flags = FC_OP_GET_FLAGS (op_);
+    FcValuePromotionBuffer buf1, buf2;
 
-    left = FcConfigPromote (left, right);
-    right = FcConfigPromote (right, left);
+    left = FcConfigPromote (left, right, &buf1);
+    right = FcConfigPromote (right, left, &buf2);
     if (left.type == right.type)
     {
 	switch (left.type) {
@@ -893,10 +894,10 @@ FcConfigEvaluate (FcPattern *p, FcPattern *p_pat, FcMatchKind kind, FcExpr *e)
 	  FcMatrix m;
 	  FcValue xx, xy, yx, yy;
 	  v.type = FcTypeMatrix;
-	  xx = FcConfigPromote (FcConfigEvaluate (p, p_pat, kind, e->u.mexpr->xx), v);
-	  xy = FcConfigPromote (FcConfigEvaluate (p, p_pat, kind, e->u.mexpr->xy), v);
-	  yx = FcConfigPromote (FcConfigEvaluate (p, p_pat, kind, e->u.mexpr->yx), v);
-	  yy = FcConfigPromote (FcConfigEvaluate (p, p_pat, kind, e->u.mexpr->yy), v);
+	  xx = FcConfigPromote (FcConfigEvaluate (p, p_pat, kind, e->u.mexpr->xx), v, NULL);
+	  xy = FcConfigPromote (FcConfigEvaluate (p, p_pat, kind, e->u.mexpr->xy), v, NULL);
+	  yx = FcConfigPromote (FcConfigEvaluate (p, p_pat, kind, e->u.mexpr->yx), v, NULL);
+	  yy = FcConfigPromote (FcConfigEvaluate (p, p_pat, kind, e->u.mexpr->yy), v, NULL);
 	  if (xx.type == FcTypeDouble && xy.type == FcTypeDouble &&
 	      yx.type == FcTypeDouble && yy.type == FcTypeDouble)
 	  {
@@ -987,8 +988,8 @@ FcConfigEvaluate (FcPattern *p, FcPattern *p_pat, FcMatchKind kind, FcExpr *e)
     case FcOpDivide:
 	vl = FcConfigEvaluate (p, p_pat, kind, e->u.tree.left);
 	vr = FcConfigEvaluate (p, p_pat, kind, e->u.tree.right);
-	vl = FcConfigPromote (vl, vr);
-	vr = FcConfigPromote (vr, vl);
+	vl = FcConfigPromote (vl, vr, NULL);
+	vr = FcConfigPromote (vr, vl, NULL);
 	if (vl.type == vr.type)
 	{
 	    switch ((int) vl.type) {
