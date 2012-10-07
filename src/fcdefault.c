@@ -119,7 +119,6 @@ FcDefaultFini (void)
     if (langs && fc_atomic_ptr_cmpexch (&default_langs, langs, NULL)) {
 	FcRefInit (&langs->ref, 1);
 	FcStrSetDestroy (langs);
-	langs = NULL;
     }
 }
 
@@ -212,7 +211,7 @@ FcDefaultSubstitute (FcPattern *pattern)
 	FcPatternObjectAdd (pattern, FC_FULLNAMELANG_OBJECT, namelang, FcTrue);
 	FcPatternObjectAddWithBinding (pattern, FC_FULLNAMELANG_OBJECT, v2, FcValueBindingWeak, FcTrue);
     }
-    FcSharedStrFree ((char *) v2.u.s);
+    FcSharedStrFree ((FcChar8 *) v2.u.s);
 }
 #define __fcdefault__
 #include "fcaliastail.h"

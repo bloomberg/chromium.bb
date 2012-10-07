@@ -22,6 +22,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* Objects MT-safe for readonly access. */
+
 #include "fcint.h"
 #include <dirent.h>
 #include <sys/types.h>
@@ -36,27 +38,38 @@
 #define R_OK 4
 #endif
 
-static FcConfig    *_fcConfig;
+static FcConfig    *_fcConfig; /* MT-safe */
+
+static FcConfig *
+FcConfigEnsure (void)
+{
+    FcConfig	*config;
+retry:
+    config = fc_atomic_ptr_get (&_fcConfig);
+    if (!config)
+    {
+	config = FcInitLoadConfigAndFonts ();
+
+	if (!fc_atomic_ptr_cmpexch (&_fcConfig, NULL, config)) {
+	    FcConfigDestroy (config);
+	    goto retry;
+	}
+    }
+    return config;
+}
 
 FcBool
 FcConfigInit (void)
 {
-    FcConfig	*config;
-
-    if (_fcConfig)
-	return FcTrue;
-    config = FcInitLoadConfigAndFonts ();
-    if (!config)
-	return FcFalse;
-    FcConfigSetCurrent (config);
-    return FcTrue;
+  return FcConfigEnsure () ? FcTrue : FcFalse;
 }
 
 void
 FcConfigFini (void)
 {
-    if (_fcConfig)
-	FcConfigDestroy (_fcConfig);
+    FcConfig *cfg = fc_atomic_ptr_get (&_fcConfig);
+    if (cfg && fc_atomic_ptr_cmpexch (&_fcConfig, cfg, NULL))
+	FcConfigDestroy (cfg);
 }
 
 
@@ -257,8 +270,7 @@ FcConfigDestroy (FcConfig *config)
     if (FcRefDec (&config->ref) != 1)
 	return;
 
-    if (config == _fcConfig)
-	_fcConfig = 0;
+    fc_atomic_ptr_cmpexch (&_fcConfig, config, NULL);
 
     FcStrSetDestroy (config->configDirs);
     FcStrSetDestroy (config->fontDirs);
@@ -411,25 +423,31 @@ FcConfigBuildFonts (FcConfig *config)
 FcBool
 FcConfigSetCurrent (FcConfig *config)
 {
-    if (config == _fcConfig)
+    FcConfig *cfg;
+
+retry:
+    cfg = fc_atomic_ptr_get (&_fcConfig);
+
+    if (config == cfg)
 	return FcTrue;
 
     if (!config->fonts[FcSetSystem])
 	if (!FcConfigBuildFonts (config))
 	    return FcFalse;
 
-    if (_fcConfig)
-	FcConfigDestroy (_fcConfig);
-    _fcConfig = config;
+    if (!fc_atomic_ptr_cmpexch (&_fcConfig, cfg, config))
+	goto retry;
+
+    if (cfg)
+	FcConfigDestroy (cfg);
+
     return FcTrue;
 }
 
 FcConfig *
 FcConfigGetCurrent (void)
 {
-    if (!_fcConfig)
-	FcConfigInit ();
-    return _fcConfig;
+    return FcConfigEnsure ();
 }
 
 FcBool
