@@ -1421,6 +1421,7 @@ get_default_output(struct weston_compositor *compositor)
 static void
 shell_unset_fullscreen(struct shell_surface *shsurf)
 {
+	struct workspace *ws;
 	/* undo all fullscreen things here */
 	if (shsurf->fullscreen.type == WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER &&
 	    shell_surface_is_top_fullscreen(shsurf)) {
@@ -1442,6 +1443,10 @@ shell_unset_fullscreen(struct shell_surface *shsurf)
         	               &shsurf->rotation.transform.link);
 		shsurf->saved_rotation_valid = false;
 	}
+
+	ws = get_current_workspace(shsurf->shell);
+	wl_list_remove(&shsurf->surface->layer_link);
+	wl_list_insert(&ws->layer.surface_list, &shsurf->surface->layer_link);
 }
 
 static int
