@@ -250,6 +250,18 @@ class Instruction {
     }
     Operand() {
     }
+    char ReadWriteTextPrefix() const {
+      if (read)
+        if (write)
+          return '&';
+        else
+          return '=';
+      else
+        if (write)
+          return '!';
+        else
+          return '\'';
+    }
   };
 
   Instruction(const std::string& name,
@@ -986,21 +998,18 @@ bool IsModRMRMIsUsed(const MarkedInstruction& instruction) {
   return false;
 }
 
-bool first_delimiter = true;
-
-#define FIRST_LINE_PREFIX "\n    ("
-#define SUBSEQUENT_LINES_PREFIX ") |\n    ("
+bool instruction_definition_started = false;
 
 // PrintOperatorDelimiter is a simple function: it starts a “ragel line”.
 //
 // When it's called for a first time it just starts a line, in all other
 // cases it first finishes the previous line with “(”.
 void PrintOperatorDelimiter(void) {
-  if (first_delimiter)
-    fprintf(out_file, FIRST_LINE_PREFIX);
+  if (instruction_definition_started)
+    fprintf(out_file, ") |\n    (");
   else
-    fprintf(out_file, SUBSEQUENT_LINES_PREFIX);
-  first_delimiter = false;
+    fprintf(out_file, "\n    (");
+  instruction_definition_started = true;
 }
 
 // PrintLegacyPrefixes prints all possible combinations of legacy prefixes from
@@ -1567,8 +1576,8 @@ void PrintOneSizeDefinitionNoModRM(const MarkedInstruction& instruction) {
   PrintInstructionsEndActions(instruction, false);
 }
 
-// PrintOneSizeDefinitionModRMRegister prints full definition of one
-// single which does include “ModR/M byte” but which is not used to access
+// PrintOneSizeDefinitionModRMRegister prints full definition of one signle
+// form which does include “ModR/M byte” but which is not used to access
 // memory.
 //
 // This function should handle two corner cases: when field “reg” in
@@ -1598,21 +1607,23 @@ void PrintOneSizeDefinitionModRMRegister(const MarkedInstruction& instruction) {
         case 'C':
         case 'D':
         case 'G':
-        case 'P':
         case 'V':
           operand_type = "reg";
           break;
+        case 'P':
         case 'S':
           operand_type = "reg_norex";
           break;
         case 'E':
         case 'M':
-        case 'N':
-        case 'Q':
         case 'R':
         case 'U':
         case 'W':
            operand_type = "rm";
+           break;
+        case 'N':
+        case 'Q':
+           operand_type = "rm_norex";
            break;
         default:
           if (operand->enabled || enabled(kParseOperandPositions))
@@ -1637,8 +1648,8 @@ void PrintOneSizeDefinitionModRMRegister(const MarkedInstruction& instruction) {
   PrintInstructionsEndActions(adjusted_instruction, false);
 }
 
-// PrintOneSizeDefinitionModRMMemory prints full definition of one
-// single which does include “ModR/M byte” which is used to access memory.
+// PrintOneSizeDefinitionModRMMemory prints full definition of one single
+// form which does include “ModR/M byte” which is used to access memory.
 //
 // This is the most complicated and expensive variant to parse because there
 // are so many variants: with and without base, without and without index and,
@@ -1686,10 +1697,10 @@ void PrintOneSizeDefinitionModRMMemory(const MarkedInstruction& instruction) {
           case 'C':
           case 'D':
           case 'G':
-          case 'P':
           case 'V':
             operand_type = "from_modrm_reg";
             break;
+          case 'P':
           case 'S':
             operand_type = "from_modrm_reg_norex";
             break;
@@ -2074,55 +2085,126 @@ void PrintInstructionVYZSplit(const MarkedInstruction& instruction) {
     PrintInstructionPXSplit(instruction.set_rex_w());
 }
 
-// PrintOneInstructionDefinition prints definition for the instruction.
+// PrintInstructionComment prints comment with “cannonical” representaion of
+// the instruction in a ragel comment.
+//
+// Canonical here means: all the operands are prefixed with read/write prefix
+// (“=”, “&”, “!”, and “'”), all the flags are listed in a sorted order, etc.
+void PrintInstructionComment(const Instruction& instruction) {
+  // If this is not the first instruction the we need to finish printing the
+  // previous one.
+  if (instruction_definition_started) {
+    fprintf(out_file, ") |");
+    instruction_definition_started = false;
+  }
+  // Print the comment.
+  const std::vector<Instruction::Operand>& operands = instruction.operands();
+  const std::vector<std::string>& opcodes = instruction.opcodes();
+  const std::set<std::string>& flags = instruction.flags();
+  fprintf(out_file, "\n");
+  // Instruction name.
+  fprintf(out_file, "    # %s", instruction.name().c_str());
+  // Operands.
+  for (std::vector<MarkedInstruction::Operand>::const_reverse_iterator
+         operand = operands.rbegin(); operand != operands.rend(); ++operand) {
+    fprintf(out_file, " %c%c%s%s", operand->ReadWriteTextPrefix(),
+                                   operand->type,
+                                   operand->size.c_str(),
+                                   operand->implicit ? "*" : "");
+  }
+  // Opcodes.
+  fprintf(out_file, ",");
+  for (std::vector<std::string>::const_iterator opcode = opcodes.begin();
+       opcode != opcodes.end(); ++opcode)
+    fprintf(out_file, " %s", opcode->c_str());
+  // And flags (if they exist).
+  if (flags.begin() != flags.end()) {
+    fprintf(out_file, ",");
+    for (std::set<std::string>::const_iterator flag = flags.begin();
+         flag != flags.end(); ++flag)
+      fprintf(out_file, " %s", flag->c_str());
+  }
+}
+
+// PrintOneInstruction prints definition of one instruction.
 //
 // It processes instructions one-by-one and does first preliminary split:
 // non-marked operands (which means they are 8bit/16bit/32bit/64bit operands)
 // are processed as two separate instructions—once as 8bit operand and once
 // as 16bit/32bit/64bit operand (16bit/32bit for immediates).
+void PrintOneInstruction(const MarkedInstruction& instruction) {
+  std::vector<MarkedInstruction::Operand> operands = instruction.operands();
+  // TODO(khim): Move this check to the separate method.
+  bool found_operand_with_empty_size = false;
+  for (std::vector<MarkedInstruction::Operand>::const_iterator
+         operand = operands.begin(); operand != operands.end(); ++operand) {
+    if (operand->size == "") {
+      found_operand_with_empty_size = true;
+      break;
+    }
+  }
+
+  // If there are “generic-sized operands” then we generate specialized versions
+  // with better refined sizes and print them here.
+  if (found_operand_with_empty_size) {
+    // First we print instructrion with “byte-sized operands” (this does not
+    // require modifying the opcode).
+    for (std::vector<MarkedInstruction::Operand>::iterator operand =
+         operands.begin(); operand != operands.end(); ++operand)
+      if (operand->size == "") operand->size = "b";
+    PrintInstructionVYZSplit(instruction.with_operands(operands));
+
+    // Now we print instruction with “word/dword/quadword-sized operands”
+    // (this requires setting the least significant bit of the opcode).
+    std::vector<std::string> opcodes = instruction.opcodes();
+    // TODO(khim): Create a helper function which finds the last “regular”
+    // opcode byte.
+    // Find the opcode byte to modify.  This is the last byte which does not
+    // have a letter “/” i.e. it's the last “regular” byte.
+    for (std::vector<std::string>::reverse_iterator opcode = opcodes.rbegin();
+         opcode != opcodes.rend(); ++opcode)
+      if (opcode->find('/') == opcode->npos) {
+        // Last bit of the opcode ('w' bit) which determines the size of the
+        // operand must be zero.  In textual hex form it's “0”, “2”, “4”, “6”,
+        // “8”, "a"/“A”, “c”/“C”, or “e”/“E”.
+        if (strchr("02468aceACE", *(opcode->rbegin()))) {
+          // Toggle the 'w' bit.
+          *(opcode->rbegin()) += 0x1;
+        } else {
+          fprintf(stderr, "%s: error - can not change the opcode size: %s",
+                  short_program_name, opcode->c_str());
+          exit(1);
+        }
+        break;
+      }
+    // Find the operands with an empty “size” value.  “I” (immediates) need to
+    // become “z” (“word/dword” size) while all other operands are becoming “v”
+    // (“word/dword/quadword” size).
+    operands = instruction.operands();
+    for (std::vector<MarkedInstruction::Operand>::iterator
+         operand = operands.begin(); operand != operands.end(); ++operand)
+      if (operand->size == "") {
+        if (operand->type == 'I')
+          operand->size = "z";
+        else
+          operand->size = "v";
+      }
+    PrintInstructionVYZSplit(instruction.
+                             with_opcodes(opcodes).
+                             with_operands(operands));
+  } else {
+    // No “generic-sized operands”, just print one definition here.
+    PrintInstructionVYZSplit(instruction);
+  }
+}
+
+// PrintOneInstructionDefinition prints definition for the “one_instruction”.
 void PrintOneInstructionDefinition(void) {
   for (std::vector<Instruction>::const_iterator
          instruction = instructions.begin(); instruction != instructions.end();
          ++instruction) {
-    MarkedInstruction marked_instruction(*instruction);
-    std::vector<MarkedInstruction::Operand> operands =
-      marked_instruction.operands();
-    bool found_operand_with_empty_size = false;
-    for (std::vector<MarkedInstruction::Operand>::const_iterator
-           operand = operands.begin(); operand != operands.end(); ++operand) {
-      if (operand->size == "") {
-        found_operand_with_empty_size = true;
-        break;
-      }
-    }
-    if (found_operand_with_empty_size) {
-      for (std::vector<MarkedInstruction::Operand>::iterator operand =
-           operands.begin(); operand != operands.end(); ++operand)
-        if (operand->size == "") operand->size = "b";
-      PrintInstructionVYZSplit(marked_instruction.with_operands(operands));
-      std::vector<std::string> opcodes = marked_instruction.opcodes();
-      for (std::vector<std::string>::reverse_iterator opcode = opcodes.rbegin();
-           opcode != opcodes.rend(); ++opcode)
-        if (opcode->find('/') == opcode->npos) {
-          // 'w' bit is last bit both in binary and textual form.
-          *(opcode->rbegin()) += 0x1;
-          break;
-        }
-      operands = marked_instruction.operands();
-      for (std::vector<MarkedInstruction::Operand>::iterator
-             operand = operands.begin(); operand != operands.end(); ++operand)
-        if (operand->size == "") {
-          if (operand->type == 'I')
-            operand->size = "z";
-          else
-            operand->size = "v";
-        }
-      PrintInstructionVYZSplit(marked_instruction.
-                               with_opcodes(opcodes).
-                               with_operands(operands));
-    } else {
-      PrintInstructionVYZSplit(marked_instruction);
-    }
+    PrintInstructionComment(*instruction);
+    PrintOneInstruction(MarkedInstruction(*instruction));
   }
 }
 
@@ -2132,7 +2214,7 @@ void PrintOneInstructionDefinition(void) {
 // speed is of no issue here.
 
 // Compare “file” contents with “expected_output” contents.
-void CompareFileOutput(FILE* file, const char* expected_output) {
+void CompareFileContentsToString(FILE* file, const char* expected_output) {
   size_t pos = 0;
   size_t count;
   char buf[1024];
@@ -2153,12 +2235,16 @@ void CompareFileOutput(const char* expected_output_file,
   out_file = tmpfile();
   const_file = tmpfile();
 
+  // Clear this bit: this means we can not really test PrintOperatorDelimiter
+  // function in isolation but it's so simple it's pretty hard to break it
+  // anyway and it's excercised enough by other tests.
+  instruction_definition_started = false;
   test_func();
 
-  CompareFileOutput(const_file, expected_const_file);
+  CompareFileContentsToString(const_file, expected_const_file);
   const_file = stdout;
 
-  CompareFileOutput(out_file, expected_output_file);
+  CompareFileContentsToString(out_file, expected_output_file);
   out_file = stdout;
 }
 
@@ -2183,18 +2269,17 @@ void test_fullstack_mode_nop(void) {
   instructions.push_back(Instruction("nop", operands, opcodes, flags));
 
   CompareFileOutput(
-    FIRST_LINE_PREFIX
-    "0x90 >begin_opcode @end_opcode @instruction_nop @operands_count_is_0",
+    "\n    # nop, 0x90\n"
+    "    (0x90 >begin_opcode @end_opcode @instruction_nop @operands_count_is_0",
     "",
     PrintOneInstructionDefinition);
 
   ia32_mode = false;
   CompareFileOutput(
-    SUBSEQUENT_LINES_PREFIX
-    "REX_RXB? "
-    "0x90 >begin_opcode @end_opcode @instruction_nop @operands_count_is_0"
-    SUBSEQUENT_LINES_PREFIX
-    "REXW_RXB "
+    "\n    # nop, 0x90\n"
+    "    (REX_RXB? "
+    "0x90 >begin_opcode @end_opcode @instruction_nop @operands_count_is_0) |\n"
+    "    (REXW_RXB "
     "0x90 >begin_opcode @end_opcode @instruction_nop @operands_count_is_0",
     "",
     PrintOneInstructionDefinition);
@@ -2206,52 +2291,48 @@ void test_fullstack_mode_xchg(void) {
   std::vector<std::string> opcodes;
   std::set<std::string> flags;
 
-  operands.push_back(Instruction::Operand('a', "v", true, true, true, false));
   operands.push_back(Instruction::Operand('r', "v", true, true, true, false));
+  operands.push_back(Instruction::Operand('a', "v", true, true, true, false));
   opcodes.push_back("0x90");
   instructions.push_back(Instruction("xchg", operands, opcodes, flags));
 
   CompareFileOutput(
-    FIRST_LINE_PREFIX
-    "((data16 (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
-    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "\n    # xchg &av &rv, 0x90\n"
+    "    (((data16 (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand0_from_opcode @end_opcode "
     "@instruction_xchg @operands_count_is_2 "
-    "@operand0_16bit @operand0_rax @operand1_16bit "
-    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))"
-    SUBSEQUENT_LINES_PREFIX
-    "(((0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
-    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@operand0_16bit @operand1_16bit @operand1_rax "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))) |\n"
+    "    ((((0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand0_from_opcode @end_opcode "
     "@instruction_xchg @operands_count_is_2 "
-    "@operand0_32bit @operand0_rax @operand1_32bit "
+    "@operand0_32bit @operand1_32bit @operand1_rax "
     "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))",
     "",
     PrintOneInstructionDefinition);
 
   ia32_mode = false;
   CompareFileOutput(
-    SUBSEQUENT_LINES_PREFIX
-    "((data16 REX_RXB? (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
-    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "\n    # xchg &av &rv, 0x90\n"
+    "    (((data16 REX_RXB? (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand0_from_opcode @end_opcode "
     "@instruction_xchg @operands_count_is_2 "
-    "@operand0_16bit @operand0_rax @operand1_16bit "
-    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))"
-    SUBSEQUENT_LINES_PREFIX
-    "((REX_RXB? (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
-    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@operand0_16bit @operand1_16bit @operand1_rax "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))) |\n"
+    "    (((REX_RXB? (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand0_from_opcode @end_opcode "
     "@instruction_xchg @operands_count_is_2 "
-    "@operand0_32bit @operand0_rax @operand1_32bit "
-    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))"
-    SUBSEQUENT_LINES_PREFIX
-    "((REXW_RXB (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
-    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@operand0_32bit @operand1_32bit @operand1_rax "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))) |\n"
+    "    (((REXW_RXB (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand0_from_opcode @end_opcode "
     "@instruction_xchg @operands_count_is_2 "
-    "@operand0_64bit @operand0_rax @operand1_64bit "
-    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))"
-    SUBSEQUENT_LINES_PREFIX
-    "((data16 REXW_RXB (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
-    ">begin_opcode @operand1_from_opcode @end_opcode "
+    "@operand0_64bit @operand1_64bit @operand1_rax "
+    "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))) |\n"
+    "    (((data16 REXW_RXB (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
+    ">begin_opcode @operand0_from_opcode @end_opcode "
     "@instruction_xchg @operands_count_is_2 "
-    "@operand0_64bit @operand0_rax @operand1_64bit "
+    "@operand0_64bit @operand1_64bit @operand1_rax "
     "@operand0_readwrite @operand1_readwrite) - (0x90|0x48 0x90))",
     "",
     PrintOneInstructionDefinition);
@@ -2270,26 +2351,25 @@ void test_fullstack_mode_maskmovq(void) {
   instructions.push_back(Instruction("maskmovq", operands, opcodes, flags));
 
   CompareFileOutput(
-    FIRST_LINE_PREFIX
-    "(0x0f 0xf7) >begin_opcode @end_opcode @instruction_maskmovq "
+    "\n    # maskmovq =Nq &Pq, 0x0f 0xf7\n"
+    "    ((0x0f 0xf7) >begin_opcode @end_opcode @instruction_maskmovq "
     "@operands_count_is_2 @operand0_mmx @operand1_mmx "
-    "@operand0_readwrite @operand1_read "
-    "modrm_registers @operand0_from_modrm_reg @operand1_from_modrm_rm",
+    "@operand0_readwrite @operand1_read modrm_registers "
+    "@operand0_from_modrm_reg_norex @operand1_from_modrm_rm_norex",
     "",
     PrintOneInstructionDefinition);
 
   ia32_mode = false;
   CompareFileOutput(
-    SUBSEQUENT_LINES_PREFIX
-    "REX_RXB? (0x0f 0xf7) >begin_opcode @end_opcode @instruction_maskmovq "
+    "\n    # maskmovq =Nq &Pq, 0x0f 0xf7\n"
+    "    (REX_RXB? (0x0f 0xf7) >begin_opcode @end_opcode @instruction_maskmovq "
     "@operands_count_is_2 @operand0_mmx @operand1_mmx "
     "@operand0_readwrite @operand1_read modrm_registers "
-    "@operand0_from_modrm_reg @operand1_from_modrm_rm"
-    SUBSEQUENT_LINES_PREFIX
-    "REXW_RXB (0x0f 0xf7) >begin_opcode @end_opcode @instruction_maskmovq "
+    "@operand0_from_modrm_reg_norex @operand1_from_modrm_rm_norex) |\n"
+    "    (REXW_RXB (0x0f 0xf7) >begin_opcode @end_opcode @instruction_maskmovq "
     "@operands_count_is_2 @operand0_mmx @operand1_mmx "
     "@operand0_readwrite @operand1_read modrm_registers "
-    "@operand0_from_modrm_reg @operand1_from_modrm_rm",
+    "@operand0_from_modrm_reg_norex @operand1_from_modrm_rm_norex",
     "",
     PrintOneInstructionDefinition);
 }
@@ -2308,8 +2388,8 @@ void test_fullstack_mode_maskmovdqu(void) {
   instructions.push_back(Instruction("maskmovdqu", operands, opcodes, flags));
 
   CompareFileOutput(
-    FIRST_LINE_PREFIX
-    "0x66 (0x0f 0xf7) >begin_opcode @end_opcode @not_data16_prefix "
+    "\n    # maskmovdqu =Upb &Vpb, 0x66 0x0f 0xf7\n"
+    "    (0x66 (0x0f 0xf7) >begin_opcode @end_opcode @not_data16_prefix "
     "@instruction_maskmovdqu @operands_count_is_2 "
     "@operand0_xmm @operand1_xmm @operand0_readwrite @operand1_read "
     "modrm_registers @operand0_from_modrm_reg @operand1_from_modrm_rm",
@@ -2318,13 +2398,12 @@ void test_fullstack_mode_maskmovdqu(void) {
 
   ia32_mode = false;
   CompareFileOutput(
-    SUBSEQUENT_LINES_PREFIX
-    "0x66 REX_RXB? (0x0f 0xf7) >begin_opcode @end_opcode @not_data16_prefix "
+    "\n    # maskmovdqu =Upb &Vpb, 0x66 0x0f 0xf7\n  "
+    "  (0x66 REX_RXB? (0x0f 0xf7) >begin_opcode @end_opcode @not_data16_prefix "
     "@instruction_maskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
     "@operand0_readwrite @operand1_read modrm_registers "
-    "@operand0_from_modrm_reg @operand1_from_modrm_rm"
-    SUBSEQUENT_LINES_PREFIX
-    "0x66 REXW_RXB (0x0f 0xf7) >begin_opcode @end_opcode @not_data16_prefix "
+    "@operand0_from_modrm_reg @operand1_from_modrm_rm) |\n  "
+    "  (0x66 REXW_RXB (0x0f 0xf7) >begin_opcode @end_opcode @not_data16_prefix "
     "@instruction_maskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
     "@operand0_readwrite @operand1_read modrm_registers "
     "@operand0_from_modrm_reg @operand1_from_modrm_rm",
@@ -2347,8 +2426,8 @@ void test_fullstack_mode_vmaskmovdqu(void) {
   instructions.push_back(Instruction("vmaskmovdqu", operands, opcodes, flags));
 
   CompareFileOutput(
-    FIRST_LINE_PREFIX
-    "(((0xc4 (VEX_NONE & VEX_map00001)  b_0_1111_0_01 @vex_prefix3) | "
+    "\n    # vmaskmovdqu =Upb &Vpb, 0xc4 RXB.00001 x.1111.0.01 0xf7\n"
+    "    ((((0xc4 (VEX_NONE & VEX_map00001)  b_0_1111_0_01 @vex_prefix3) | "
     "(0xc5  b_1_1111_0_01 @vex_prefix_short)) 0xf7) >begin_opcode @end_opcode "
     "@instruction_vmaskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
     "@operand0_readwrite @operand1_read "
@@ -2358,14 +2437,13 @@ void test_fullstack_mode_vmaskmovdqu(void) {
 
   ia32_mode = false;
   CompareFileOutput(
-    SUBSEQUENT_LINES_PREFIX
-    "(((0xc4 (VEX_RB & VEX_map00001)  b_0_1111_0_01 @vex_prefix3) | "
+    "\n    # vmaskmovdqu =Upb &Vpb, 0xc4 RXB.00001 x.1111.0.01 0xf7\n"
+    "    ((((0xc4 (VEX_RB & VEX_map00001)  b_0_1111_0_01 @vex_prefix3) | "
     "(0xc5  b_X_1111_0_01 @vex_prefix_short)) 0xf7) >begin_opcode @end_opcode "
     "@instruction_vmaskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
     "@operand0_readwrite @operand1_read "
-    "modrm_registers @operand0_from_modrm_reg @operand1_from_modrm_rm"
-    SUBSEQUENT_LINES_PREFIX
-    "(((0xc4 (VEX_RB & VEX_map00001)  b_0_1111_0_01 @vex_prefix3) | "
+    "modrm_registers @operand0_from_modrm_reg @operand1_from_modrm_rm) |\n"
+    "    ((((0xc4 (VEX_RB & VEX_map00001)  b_0_1111_0_01 @vex_prefix3) | "
     "(0xc5  b_X_1111_0_01 @vex_prefix_short)) 0xf7) >begin_opcode @end_opcode "
     "@instruction_vmaskmovdqu @operands_count_is_2 @operand0_xmm @operand1_xmm "
     "@operand0_readwrite @operand1_read "
@@ -2387,18 +2465,16 @@ void test_fullstack_mode_div(void) {
   instructions.push_back(Instruction("div", operands, opcodes, flags));
 
   CompareFileOutput(
-    FIRST_LINE_PREFIX
-    "0xf6 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "\n    # div !I =R, 0xf6 /6\n"
+    "    (0xf6 >begin_opcode (opcode_6 @end_opcode @instruction_div "
     "@operands_count_is_2 @operand0_8bit @operand1_8bit @operand1_immediate "
     "@operand0_read @operand1_write any* & "
-    "modrm_registers @operand0_from_modrm_rm) imm8"
-    SUBSEQUENT_LINES_PREFIX
-    "data16 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "modrm_registers @operand0_from_modrm_rm) imm8) |\n"
+    "    (data16 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
     "@operands_count_is_2 @operand0_16bit @operand1_16bit @operand1_immediate "
     "@operand0_read @operand1_write any* & "
-    "modrm_registers @operand0_from_modrm_rm) imm16"
-    SUBSEQUENT_LINES_PREFIX
-    "0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "modrm_registers @operand0_from_modrm_rm) imm16) |\n"
+    "    (0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
     "@operands_count_is_2 @operand0_32bit @operand1_32bit @operand1_immediate "
     "@operand0_read @operand1_write any* & "
     "modrm_registers @operand0_from_modrm_rm) imm32",
@@ -2407,32 +2483,27 @@ void test_fullstack_mode_div(void) {
 
   ia32_mode = false;
   CompareFileOutput(
-    SUBSEQUENT_LINES_PREFIX
-    "REX_RXB? 0xf6 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "\n    # div !I =R, 0xf6 /6\n"
+    "    (REX_RXB? 0xf6 >begin_opcode (opcode_6 @end_opcode @instruction_div "
     "@operands_count_is_2 @operand0_8bit @operand1_8bit @operand1_immediate "
     "@operand0_read @operand1_write any* & "
-    "modrm_registers @operand0_from_modrm_rm) imm8"
-    SUBSEQUENT_LINES_PREFIX
-    "REXW_RXB 0xf6 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "modrm_registers @operand0_from_modrm_rm) imm8) |\n"
+    "    (REXW_RXB 0xf6 >begin_opcode (opcode_6 @end_opcode @instruction_div "
     "@operands_count_is_2 @operand0_8bit @operand1_8bit @operand1_immediate "
     "@operand0_read @operand1_write any* & "
-    "modrm_registers @operand0_from_modrm_rm) imm8"
-    SUBSEQUENT_LINES_PREFIX
+    "modrm_registers @operand0_from_modrm_rm) imm8) |\n    ("
     "data16 REX_RXB? 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
     "@operands_count_is_2 @operand0_16bit @operand1_16bit @operand1_immediate "
     "@operand0_read @operand1_write any* & "
-    "modrm_registers @operand0_from_modrm_rm) imm16"
-    SUBSEQUENT_LINES_PREFIX
-    "REX_RXB? 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "modrm_registers @operand0_from_modrm_rm) imm16) |\n"
+    "    (REX_RXB? 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
     "@operands_count_is_2 @operand0_32bit @operand1_32bit @operand1_immediate "
     "@operand0_read @operand1_write any* & "
-    "modrm_registers @operand0_from_modrm_rm) imm32"
-    SUBSEQUENT_LINES_PREFIX
-    "REXW_RXB 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
+    "modrm_registers @operand0_from_modrm_rm) imm32) |\n"
+    "    (REXW_RXB 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
     "@operands_count_is_2 @operand0_64bit @operand1_32bit @operand1_immediate "
     "@operand0_read @operand1_write any* & "
-    "modrm_registers @operand0_from_modrm_rm) imm32"
-    SUBSEQUENT_LINES_PREFIX
+    "modrm_registers @operand0_from_modrm_rm) imm32) |\n    ("
     "data16 REXW_RXB 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
     "@operands_count_is_2 @operand0_64bit @operand1_32bit @operand1_immediate "
     "@operand0_read @operand1_write any* & "
@@ -2452,7 +2523,7 @@ void RunTest(const char *test_name, void (*test_func)(void)) {
   instructions.clear();
   ia32_mode = true;
   memset(disabled_actions, 0, sizeof(disabled_actions));
-  first_delimiter = true;
+  instruction_definition_started = false;
   out_file = stdout;
   const_file = stdout;
   out_file_name = NULL;
