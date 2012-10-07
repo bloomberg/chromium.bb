@@ -428,8 +428,7 @@ FcConfig *
 FcConfigGetCurrent (void)
 {
     if (!_fcConfig)
-	if (!FcConfigInit ())
-	    return 0;
+	FcConfigInit ();
     return _fcConfig;
 }
 
