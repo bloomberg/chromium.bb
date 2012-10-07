@@ -44,6 +44,8 @@
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcprivate.h>
 #include "fcdeprecate.h"
+#include "fcmutex.h"
+#include "fcatomic.h"
 
 #ifndef FC_CONFIG_PATH
 #define FC_CONFIG_PATH "fonts.conf"
@@ -292,8 +294,6 @@ typedef struct _FcSubst {
 typedef struct _FcCharLeaf {
     FcChar32	map[256/32];
 } FcCharLeaf;
-
-#define FC_REF_CONSTANT	    -1
 
 struct _FcCharSet {
     int		    ref;	/* reference count */

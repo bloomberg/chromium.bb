@@ -123,6 +123,7 @@ EXTRA_DIST += \
 libfontconfig_la_SOURCES = \
 	fcarch.h \
 	fcatomic.c \
+	fcatomic.h \
 	fcblanks.c \
 	fccache.c \
 	fccfg.c \
@@ -138,6 +139,7 @@ libfontconfig_la_SOURCES = \
 	fclist.c \
 	fcmatch.c \
 	fcmatrix.c \
+	fcmutex.h \
 	fcname.c \
 	fcobjs.c \
 	fcobjs.h \
