@@ -59,26 +59,32 @@ static void MD5Transform(FcChar32 buf[4], FcChar32 in[16]);
 static FcBool
 FcCacheIsMmapSafe (int fd)
 {
-    static FcBool is_initialized = FcFalse;
-    static FcBool is_env_available = FcFalse;
-    static FcBool use_mmap = FcFalse;
+    enum {
+      MMAP_NOT_INITIALIZED = 0,
+      MMAP_USE,
+      MMAP_DONT_USE,
+      MMAP_CHECK_FS,
+    } status;
+    static void *static_status;
 
-    if (!is_initialized)
+    status = (intptr_t) fc_atomic_ptr_get (&static_status);
+
+    if (status == MMAP_NOT_INITIALIZED)
     {
-	const char *env;
-
-	env = getenv ("FONTCONFIG_USE_MMAP");
-	if (env)
-	{
-	    if (FcNameBool ((const FcChar8 *)env, &use_mmap))
-		is_env_available = FcTrue;
-	}
-	is_initialized = FcTrue;
+	const char *env = getenv ("FONTCONFIG_USE_MMAP");
+	FcBool use;
+	if (env && FcNameBool ((const FcChar8 *) env, &use))
+	    status =  use ? MMAP_USE : MMAP_DONT_USE;
+	else
+	    status = MMAP_CHECK_FS;
+	fc_atomic_ptr_cmpexch (&static_status, NULL, (void *) status);
     }
-    if (is_env_available)
-	return use_mmap;
 
-    return FcIsFsMmapSafe (fd);
+    if (status == MMAP_CHECK_FS)
+	return FcIsFsMmapSafe (fd);
+    else
+	return status == MMAP_USE;
+
 }
 
 static const char bin2hex[] = { '0', '1', '2', '3',
