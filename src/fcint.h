@@ -505,8 +505,6 @@ struct _FcConfig {
     FcExprPage *expr_pool;	    /* pool of FcExpr's */
 };
 
-extern FcPrivate FcConfig	*_fcConfig;
-
 typedef struct _FcFileTime {
     time_t  time;
     FcBool  set;
@@ -568,6 +566,12 @@ FcPrivate void
 FcDirCacheReference (FcCache *cache, int nref);
 
 /* fccfg.c */
+
+FcPrivate FcBool
+FcConfigInit (void);
+
+FcPrivate void
+FcConfigFini (void);
 
 FcPrivate FcChar8 *
 FcConfigXdgCacheHome (void);

@@ -1107,7 +1107,7 @@ FcPStackPop (FcConfigParse *parse)
 }
 
 static FcBool
-FcConfigInit (FcConfigParse *parse, const FcChar8 *name, FcConfig *config, XML_Parser parser)
+FcConfigParseInit (FcConfigParse *parse, const FcChar8 *name, FcConfig *config, XML_Parser parser)
 {
     parse->pstack = 0;
     parse->pstack_static_used = 0;
@@ -2984,7 +2984,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
     if (!p)
 	goto bail1;
 
-    if (!FcConfigInit (&parse, name, config, p))
+    if (!FcConfigParseInit (&parse, name, config, p))
 	goto bail2;
 
 #ifndef ENABLE_LIBXML2

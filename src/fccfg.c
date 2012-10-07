@@ -36,7 +36,29 @@
 #define R_OK 4
 #endif
 
-FcConfig    *_fcConfig;
+static FcConfig    *_fcConfig;
+
+FcBool
+FcConfigInit (void)
+{
+    FcConfig	*config;
+
+    if (_fcConfig)
+	return FcTrue;
+    config = FcInitLoadConfigAndFonts ();
+    if (!config)
+	return FcFalse;
+    FcConfigSetCurrent (config);
+    return FcTrue;
+}
+
+void
+FcConfigFini (void)
+{
+    if (_fcConfig)
+	FcConfigDestroy (_fcConfig);
+}
+
 
 FcConfig *
 FcConfigCreate (void)
@@ -406,7 +428,7 @@ FcConfig *
 FcConfigGetCurrent (void)
 {
     if (!_fcConfig)
-	if (!FcInit ())
+	if (!FcConfigInit ())
 	    return 0;
     return _fcConfig;
 }
