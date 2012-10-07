@@ -1714,7 +1714,7 @@ decode_3d_1d(struct drm_intel_decode *ctx)
 					}
 				} else {
 					instr_out(ctx, i,
-						  "S%d: 0x%08x\n", i, data[i]);
+						  "S%d: 0x%08x\n", word, data[i]);
 				}
 				i++;
 			}
