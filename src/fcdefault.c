@@ -107,14 +107,19 @@ retry:
 void
 FcDefaultFini (void)
 {
-    if (default_lang) {
-	free (default_lang);
-	default_lang = NULL;
+    FcChar8  *lang;
+    FcStrSet *langs;
+
+    lang = fc_atomic_ptr_get (&default_lang);
+    if (lang && fc_atomic_ptr_cmpexch (&default_lang, lang, NULL)) {
+	free (lang);
     }
-    if (default_langs) {
-	FcRefInit (&default_langs->ref, 1);
-	FcStrSetDestroy (default_langs);
-	default_langs = NULL;
+
+    langs = fc_atomic_ptr_get (&default_langs);
+    if (langs && fc_atomic_ptr_cmpexch (&default_langs, langs, NULL)) {
+	FcRefInit (&langs->ref, 1);
+	FcStrSetDestroy (langs);
+	langs = NULL;
     }
 }
 
