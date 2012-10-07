@@ -27,7 +27,14 @@ namespace gdata {
 namespace util {
 
 // Returns true if gdata is currently active with the specified profile.
+// Must be called on UI thread.
+// TODO(satorux): Rework this function: crbug.com/153962
 bool IsGDataAvailable(Profile* profile);
+
+// Disables Drive for the specified profile. Used to disable Drive when
+// needed (ex. initialization of the Drive cache failed).
+// Must be called on UI thread.
+void DisableDrive(Profile* profile);
 
 // Returns true if Drive v2 API is enabled via commandline switch.
 bool IsDriveV2ApiEnabled();

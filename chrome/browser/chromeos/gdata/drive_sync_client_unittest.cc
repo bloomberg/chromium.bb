@@ -278,11 +278,15 @@ TEST_F(DriveSyncClientTest, StartInitialScan) {
 
   // Kick off the cache initialization. This will scan the contents in the
   // test cache directory.
-  cache_->RequestInitializeOnUIThread();
+  bool success = false;
+  cache_->RequestInitializeOnUIThread(
+      base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
+                 &success));
   // Start processing the files in the backlog. This will collect the
   // resource IDs of these files.
   sync_client_->StartProcessingBacklog();
   test_util::RunBlockingPoolTask();
+  ASSERT_TRUE(success);
 
   // Check the contents of the queue for fetching.
   std::vector<std::string> resource_ids =
@@ -520,7 +524,10 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
 
   // Kick off the cache initialization. This will scan the contents in the
   // test cache directory.
-  cache_->RequestInitializeOnUIThread();
+  bool initialization_success = false;
+  cache_->RequestInitializeOnUIThread(
+      base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
+                 &initialization_success));
 
   // Set the expectation so that the MockDriveFileSystem returns "new_md5"
   // for "resource_id_fetched". This simulates that the file is updated on
@@ -539,6 +546,7 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   // IDs of pinned files, with stale local cache files.
   sync_client_->StartCheckingExistingPinnedFiles();
   test_util::RunBlockingPoolTask();
+  ASSERT_TRUE(initialization_success);
 
   // Check the contents of the queue for fetching.
   std::vector<std::string> resource_ids =

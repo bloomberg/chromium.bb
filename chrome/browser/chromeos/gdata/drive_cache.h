@@ -61,6 +61,12 @@ typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
 typedef base::Callback<void(bool success, const DriveCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
+// Callback for RequestInitializeOnUIThread.
+// |success| indicates if the operation was successful.
+// TODO(satorux): Change this to DriveFileError when it becomes necessary.
+typedef base::Callback<void(bool success)>
+    InitializeCacheCallback;
+
 // DriveCache is used to maintain cache states of DriveFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
@@ -265,8 +271,11 @@ class DriveCache {
   // - re-create the |metadata_| instance.
   void ClearAllOnUIThread(const ChangeCacheStateCallback& callback);
 
-  // Utility method to call Initialize on UI thread.
-  void RequestInitializeOnUIThread();
+  // Utility method to call Initialize on UI thread. |callback| is called on
+  // UI thread when the initialization is complete.
+  // |callback| must not be null.
+  void RequestInitializeOnUIThread(
+      const InitializeCacheCallback& callback);
 
   // Utility method to call InitializeForTesting on UI thread.
   void RequestInitializeOnUIThreadForTesting();
@@ -325,8 +334,8 @@ class DriveCache {
   // with the right sequence ID. If not, DCHECK will fail.
   void AssertOnSequencedWorkerPool();
 
-  // Initializes the cache.
-  void Initialize();
+  // Initializes the cache. The result will be stored in |success|.
+  void Initialize(bool* success);
 
   // Initializes the cache with in-memory cache for testing.
   // The in-memory cache is used since it's faster than the db.

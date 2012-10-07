@@ -19,9 +19,12 @@
 #include "chrome/browser/chromeos/gdata/stale_cache_files_remover.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/google_apis/gdata_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -81,18 +84,9 @@ void DriveSystemService::Initialize(
 
   sync_client_->Initialize();
   file_system_->Initialize();
-  cache_->RequestInitializeOnUIThread();
-
-  content::DownloadManager* download_manager =
-    g_browser_process->download_status_updater() ?
-        BrowserContext::GetDownloadManager(profile_) : NULL;
-  download_observer_->Initialize(
-      download_manager,
-      cache_->GetCacheDirectoryPath(
-          DriveCache::CACHE_TYPE_TMP_DOWNLOADS));
-
-  AddDriveMountPoint();
-  file_system_->StartInitialFeedFetch();
+  cache_->RequestInitializeOnUIThread(
+      base::Bind(&DriveSystemService::OnCacheInitialized,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveSystemService::Shutdown() {
@@ -162,6 +156,39 @@ void DriveSystemService::RemoveDriveMountPoint() {
           GetFileSystemContext()->external_provider();
   if (provider && provider->HasMountPoint(mount_point))
     provider->RemoveMountPoint(mount_point);
+}
+
+void DriveSystemService::OnCacheInitialized(bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!success) {
+    LOG(WARNING) << "Failed to initialize the cache. Disabling Drive";
+    gdata::util::DisableDrive(profile_);
+    // Change the download directory to the default value if the download
+    // destination is set to under Drive mount point.
+    //
+    // TODO(satorux): This cannot be done in DisableDrive(), as there is a
+    // dependency problem. We should move this code to DisableDrive() once
+    // the dependency problem is solved. crbug.com/153962
+    PrefService* pref_service = profile_->GetPrefs();
+    if (gdata::util::IsUnderDriveMountPoint(
+            pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
+      pref_service->SetFilePath(prefs::kDownloadDefaultDirectory,
+                                download_util::GetDefaultDownloadDirectory());
+    }
+    return;
+  }
+
+  content::DownloadManager* download_manager =
+    g_browser_process->download_status_updater() ?
+        BrowserContext::GetDownloadManager(profile_) : NULL;
+  download_observer_->Initialize(
+      download_manager,
+      cache_->GetCacheDirectoryPath(
+          DriveCache::CACHE_TYPE_TMP_DOWNLOADS));
+
+  AddDriveMountPoint();
+  file_system_->StartInitialFeedFetch();
 }
 
 //===================== DriveSystemServiceFactory =============================

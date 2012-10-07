@@ -159,8 +159,12 @@ class DriveCacheTest : public testing::Test {
     mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
     cache_->AddObserver(mock_cache_observer_.get());
 
-    cache_->RequestInitializeOnUIThread();
+    bool initialization_success = false;
+    cache_->RequestInitializeOnUIThread(
+        base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
+                   &initialization_success));
     test_util::RunBlockingPoolTask();
+    ASSERT_TRUE(initialization_success);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -1578,5 +1582,29 @@ TEST_F(DriveCacheTest, StoreToCacheNoSpace) {
   EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
 }
 
+// Don't use TEST_F, as we don't want SetUp() and TearDown() for this test.
+TEST(DriveCacheExtraTest, InitializationFailure) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+
+  scoped_refptr<base::SequencedWorkerPool> pool =
+      content::BrowserThread::GetBlockingPool();
+
+  // Set the cache root to a non existent path, so the initialization fails.
+  DriveCache* cache = DriveCache::CreateDriveCacheOnUIThread(
+      FilePath::FromUTF8Unsafe("/somewhere/nonexistent/blah/blah"),
+      pool->GetSequencedTaskRunner(pool->GetSequenceToken()));
+
+  bool success = false;
+  cache->RequestInitializeOnUIThread(
+      base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
+                 &success));
+  test_util::RunBlockingPoolTask();
+  EXPECT_FALSE(success);
+
+  cache->DestroyOnUIThread();
+  test_util::RunBlockingPoolTask();
+}
 
 }   // namespace gdata

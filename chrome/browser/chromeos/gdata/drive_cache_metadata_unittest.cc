@@ -36,7 +36,7 @@ class DriveCacheMetadataTest : public testing::Test {
   // Sets up the DriveCacheMetadata object.
   void SetUpCacheMetadata() {
     metadata_ = DriveCacheMetadata::CreateDriveCacheMetadata(NULL).Pass();
-    metadata_->Initialize(cache_paths_);
+    ASSERT_TRUE(metadata_->Initialize(cache_paths_));
   }
 
   // Sets up the cache directories with various files, including stale
@@ -406,6 +406,19 @@ TEST_F(DriveCacheMetadataTest, CorruptDB) {
   EXPECT_EQ("md5foo", cache_entry.md5());
   EXPECT_EQ(DriveCache::CACHE_TYPE_PERSISTENT,
             DriveCache::GetSubDirectoryType(cache_entry));
+}
+
+// Don't use TEST_F, as we don't want SetUp() and TearDown() for this test.
+TEST(DriveCacheMetadataExtraTest, CannotOpenDB) {
+  // Create nonexistent cache paths, so the initialization fails due to the
+  // failure of opening the DB.
+  std::vector<FilePath> cache_paths =
+      DriveCache::GetCachePaths(
+          FilePath::FromUTF8Unsafe("/somewhere/nonexistent"));
+
+  scoped_ptr<DriveCacheMetadata> metadata =
+      DriveCacheMetadata::CreateDriveCacheMetadata(NULL).Pass();
+  EXPECT_FALSE(metadata->Initialize(cache_paths));
 }
 
 }  // namespace gdata

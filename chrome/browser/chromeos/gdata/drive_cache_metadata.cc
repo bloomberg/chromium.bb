@@ -21,6 +21,7 @@ enum DBOpenStatus {
   DB_OPEN_SUCCESS,
   DB_OPEN_FAILURE_CORRUPTION,
   DB_OPEN_FAILURE_OTHER,
+  DB_OPEN_FAILURE_UNRECOVERABLE,
   DB_OPEN_MAX_VALUE,
 };
 
@@ -302,7 +303,7 @@ class FakeDriveCacheMetadata : public DriveCacheMetadata {
   virtual ~FakeDriveCacheMetadata();
 
   // DriveCacheMetadata overrides:
-  virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
+  virtual bool Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
       const DriveCacheEntry& cache_entry) OVERRIDE;
@@ -330,11 +331,12 @@ FakeDriveCacheMetadata::~FakeDriveCacheMetadata() {
   AssertOnSequencedWorkerPool();
 }
 
-void FakeDriveCacheMetadata::Initialize(
+bool FakeDriveCacheMetadata::Initialize(
     const std::vector<FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
   ScanCachePaths(cache_paths, &cache_map_);
+  return true;
 }
 
 void FakeDriveCacheMetadata::AddOrUpdateCacheEntry(
@@ -424,7 +426,7 @@ class DriveCacheMetadataDB : public DriveCacheMetadata {
   virtual ~DriveCacheMetadataDB();
 
   // DriveCacheMetadata overrides:
-  virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
+  virtual bool Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
       const DriveCacheEntry& cache_entry) OVERRIDE;
@@ -455,7 +457,7 @@ DriveCacheMetadataDB::~DriveCacheMetadataDB() {
   AssertOnSequencedWorkerPool();
 }
 
-void DriveCacheMetadataDB::Initialize(
+bool DriveCacheMetadataDB::Initialize(
     const std::vector<FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
@@ -482,16 +484,22 @@ void DriveCacheMetadataDB::Initialize(
     const bool deleted = file_util::Delete(db_path, true);
     DCHECK(deleted);
     db_status = leveldb::DB::Open(options, db_path.value(), &level_db);
-    // TODO(satorux): Handle the situation where DB::Open fails because of lack
-    // of disk space, permissions, or other causes. crbug.com/150840.
-    CHECK(db_status.ok());  // Must succeed or we'll crash later.
+    if (!db_status.ok()) {
+      LOG(WARNING) << "Still failed to open: " << db_status.ToString();
+      UMA_HISTOGRAM_ENUMERATION("Drive.CacheDBOpenStatus",
+                                DB_OPEN_FAILURE_UNRECOVERABLE,
+                                DB_OPEN_MAX_VALUE);
+      // Failed to open the cache metadata DB. Drive will be disabled.
+      return false;
+    }
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "Drive.CacheDBOpenStatus", uma_status, DB_OPEN_MAX_VALUE);
+
     scan_cache = true;
   }
   DCHECK(level_db);
   level_db_.reset(level_db);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Drive.CacheDBOpenStatus", uma_status, DB_OPEN_MAX_VALUE);
 
   // We scan the cache directories to initialize the cache database if we
   // were previously using the cache map.
@@ -500,6 +508,8 @@ void DriveCacheMetadataDB::Initialize(
     ScanCachePaths(cache_paths, &cache_map);
     InsertMapIntoDB(cache_map);
   }
+
+  return true;
 }
 
 void DriveCacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {

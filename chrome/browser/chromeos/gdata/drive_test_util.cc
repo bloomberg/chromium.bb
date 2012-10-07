@@ -97,6 +97,12 @@ void CopyResultsFromGetEntryInfoPairCallback(
   *out_result = result.Pass();
 }
 
+void CopyResultFromInitializeCacheCallback(bool* out_success,
+                                           bool success) {
+  DCHECK(out_success);
+  *out_success = success;
+}
+
 void LoadChangeFeed(const std::string& relative_path,
                     DriveFileSystem* file_system,
                     int64 start_changestamp,

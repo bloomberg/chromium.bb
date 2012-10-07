@@ -71,6 +71,10 @@ class DriveSystemService : public ProfileKeyedService  {
                               DriveFileError error,
                               const FilePath& file_path);
 
+  // Called when cache initialization is done. Continues initialization if
+  // the cache initialization is successful.
+  void OnCacheInitialized(bool success);
+
   friend class DriveSystemServiceFactory;
 
   Profile* profile_;

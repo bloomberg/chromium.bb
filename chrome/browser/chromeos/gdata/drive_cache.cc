@@ -65,15 +65,15 @@ bool HasEnoughSpaceFor(int64 num_bytes) {
 }
 
 // Create cache directory paths and set permissions.
-void InitCachePaths(const std::vector<FilePath>& cache_paths) {
+bool InitCachePaths(const std::vector<FilePath>& cache_paths) {
   if (cache_paths.size() < DriveCache::NUM_CACHE_TYPES) {
     NOTREACHED();
     LOG(ERROR) << "Size of cache_paths is invalid.";
-    return;
+    return false;
   }
 
   if (!DriveCache::CreateCacheDirectories(cache_paths))
-    return;
+    return false;
 
   // Change permissions of cache persistent directory to u+rwx,og+x (711) in
   // order to allow archive files in that directory to be mounted by cros-disks.
@@ -82,6 +82,8 @@ void InitCachePaths(const std::vector<FilePath>& cache_paths) {
       file_util::FILE_PERMISSION_USER_MASK |
       file_util::FILE_PERMISSION_EXECUTE_BY_GROUP |
       file_util::FILE_PERMISSION_EXECUTE_BY_OTHERS);
+
+  return true;
 }
 
 // Remove all files under the given directory, non-recursively.
@@ -301,6 +303,15 @@ void RunGetCacheEntryCallback(
 
   if (!callback.is_null())
     callback.Run(*success, *cache_entry);
+}
+
+// Runs InitializeCacheCallback with a pointer dereferenced.
+void RunInitializeCacheCallback(const InitializeCacheCallback& callback,
+                                bool* success) {
+  DCHECK(success);
+
+  if (!callback.is_null())
+    callback.Run(*success);
 }
 
 }  // namespace
@@ -670,12 +681,20 @@ void DriveCache::ClearAllOnUIThread(const ChangeCacheStateCallback& callback) {
                  &cache_root_path_));
 }
 
-void DriveCache::RequestInitializeOnUIThread() {
+void DriveCache::RequestInitializeOnUIThread(
+    const InitializeCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  blocking_task_runner_->PostTask(
+  bool* success = new bool(false);
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DriveCache::Initialize, base::Unretained(this)));
+      base::Bind(&DriveCache::Initialize,
+                 base::Unretained(this),
+                 success),
+      base::Bind(&RunInitializeCacheCallback,
+                 callback,
+                 base::Owned(success)));
 }
 
 void DriveCache::RequestInitializeOnUIThreadForTesting() {
@@ -723,13 +742,18 @@ void DriveCache::DestroyOnUIThread() {
                  base::Unretained(this)));
 }
 
-void DriveCache::Initialize() {
+void DriveCache::Initialize(bool* success) {
   AssertOnSequencedWorkerPool();
+  DCHECK(success);
 
-  InitCachePaths(cache_paths_);
+  if (!InitCachePaths(cache_paths_)) {
+    *success = false;
+    return;
+  }
+
   metadata_ = DriveCacheMetadata::CreateDriveCacheMetadata(
       blocking_task_runner_).Pass();
-  metadata_->Initialize(cache_paths_);
+  *success = metadata_->Initialize(cache_paths_);
 }
 
 void DriveCache::InitializeForTesting() {
@@ -1461,9 +1485,21 @@ void DriveCache::ClearAll(DriveFileError* error) {
   DCHECK(error);
 
   bool success = file_util::Delete(cache_root_path_, true);
-  Initialize();
+  if (!success) {
+    LOG(WARNING) << "Failed to delete the cache directory";
+    *error = DRIVE_FILE_ERROR_FAILED;
+    return;
+  }
 
-  *error = success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
+  Initialize(&success);
+  if (!success) {
+    LOG(WARNING) << "Failed to initialize the cache";
+    *error = DRIVE_FILE_ERROR_FAILED;
+    return;
+  }
+
+  *error = DRIVE_FILE_OK;
+  return;
 }
 
 void DriveCache::OnPinned(DriveFileError* error,
