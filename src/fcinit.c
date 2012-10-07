@@ -160,8 +160,7 @@ FcInitReinitialize (void)
     config = FcInitLoadConfigAndFonts ();
     if (!config)
 	return FcFalse;
-    FcConfigSetCurrent (config);
-    return FcTrue;
+    return FcConfigSetCurrent (config);
 }
 
 FcBool
