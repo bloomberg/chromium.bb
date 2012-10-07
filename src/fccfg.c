@@ -1741,7 +1741,7 @@ FcConfigSubstitute (FcConfig	*config,
 #  define WIN32_EXTRA_LEAN
 #  include <windows.h>
 
-static FcChar8 fontconfig_path[1000] = "";
+static FcChar8 fontconfig_path[1000] = ""; /* MT-dontcare */
 
 #  if (defined (PIC) || defined (DLL_EXPORT))
 
@@ -1919,7 +1919,7 @@ FcConfigFreePath (FcChar8 **path)
     free (path);
 }
 
-static FcBool	_FcConfigHomeEnabled = FcTrue;
+static FcBool	_FcConfigHomeEnabled = FcTrue; /* MT-goodenough */
 
 FcChar8 *
 FcConfigHome (void)
