@@ -173,6 +173,20 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
   [[self findSheetInfoForParentView:activeView_] showSheet];
 }
 
+- (void)pulseSheet:(NSWindow*)sheet {
+  ConstrainedWindowSheetInfo* info = [self findSheetInfoForSheet:sheet];
+  DCHECK(info);
+  if (![activeView_ isEqual:[info parentView]])
+    return;
+  if ([[info animation] isAnimating])
+    return;
+
+  scoped_nsobject<NSAnimation> animation(
+      [[ConstrainedWindowAnimationPulse alloc] initWithWindow:[info sheet]]);
+  [info setAnimation:animation];
+  [animation startAnimation];
+}
+
 - (int)sheetCount {
   return [sheets_ count];
 }
@@ -245,21 +259,12 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
 }
 
 - (void)onOveralyWindowMouseDown:(CWSheetOverlayWindow*)overlayWindow {
-  ConstrainedWindowSheetInfo* info = nil;
   for (ConstrainedWindowSheetInfo* curInfo in sheets_.get()) {
     if ([overlayWindow isEqual:[curInfo overlayWindow]]) {
-      info = curInfo;
+      [self pulseSheet:[curInfo sheet]];
       break;
     }
   }
-  DCHECK(info);
-  if ([[info animation] isAnimating])
-    return;
-
-  scoped_nsobject<NSAnimation> animation(
-      [[ConstrainedWindowAnimationPulse alloc] initWithWindow:[info sheet]]);
-  [info setAnimation:animation];
-  [animation startAnimation];
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {

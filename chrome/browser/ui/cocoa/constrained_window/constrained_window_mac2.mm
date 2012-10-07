@@ -48,6 +48,11 @@ void ConstrainedWindowMac2::CloseConstrainedWindow() {
   delete this;
 }
 
+void ConstrainedWindowMac2::PulseConstrainedWindow() {
+  [[ConstrainedWindowSheetController controllerForSheet:window_]
+      pulseSheet:window_];
+}
+
 gfx::NativeWindow ConstrainedWindowMac2::GetNativeWindow() {
   return window_;
 }

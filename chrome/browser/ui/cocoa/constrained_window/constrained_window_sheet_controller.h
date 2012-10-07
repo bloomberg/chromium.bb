@@ -44,6 +44,10 @@
 // sheet then the sheet is made visible.
 - (void)parentViewDidBecomeActive:(NSView*)parentView;
 
+// Run a pulse animation for the given sheet. This does nothing if the sheet
+// is not visible.
+- (void)pulseSheet:(NSWindow*)sheet;
+
 // Gets the number of sheets attached to the controller's window.
 - (int)sheetCount;
 

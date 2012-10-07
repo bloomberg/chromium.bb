@@ -21,6 +21,7 @@ class ConstrainedWindowMac2 : public ConstrainedWindow {
   virtual void ShowConstrainedWindow() OVERRIDE;
   // Closes the constrained window and deletes this instance.
   virtual void CloseConstrainedWindow() OVERRIDE;
+  virtual void PulseConstrainedWindow() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
   virtual bool CanShowConstrainedWindow() OVERRIDE;
 
