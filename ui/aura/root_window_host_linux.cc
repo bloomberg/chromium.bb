@@ -31,7 +31,6 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/x/valuators.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -339,6 +338,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       current_cursor_(ui::kCursorNull),
       window_mapped_(false),
       cursor_shown_(true),
+      invisible_cursor_(ui::CreateInvisibleCursor(), xdisplay_),
       bounds_(bounds),
       focus_when_shown_(false),
       pointer_barriers_(NULL),
@@ -380,8 +380,6 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   XGetWindowAttributes(xdisplay_, x_root_window_, &attrs);
   x_root_bounds_.SetRect(attrs.x, attrs.y, attrs.width, attrs.height);
 
-  invisible_cursor_ = ui::CreateInvisibleCursor();
-
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
   // for, and do something useful.
@@ -422,8 +420,6 @@ RootWindowHostLinux::~RootWindowHostLinux() {
   UnConfineCursor();
 
   XDestroyWindow(xdisplay_, xwindow_);
-
-  XFreeCursor(xdisplay_, invisible_cursor_);
 }
 
 bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
@@ -813,7 +809,7 @@ void RootWindowHostLinux::ShowCursor(bool show) {
   if (show == cursor_shown_)
     return;
   cursor_shown_ = show;
-  SetCursorInternal(show ? current_cursor_ : invisible_cursor_);
+  SetCursorInternal(show ? current_cursor_ : invisible_cursor_.get());
 }
 
 bool RootWindowHostLinux::QueryMouseLocation(gfx::Point* location_return) {

@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/base/x/x11_atom_cache.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -102,7 +103,7 @@ class RootWindowHostLinux : public RootWindowHost,
   bool cursor_shown_;
 
   // The invisible cursor.
-  ::Cursor invisible_cursor_;
+  ui::XScopedCursor invisible_cursor_;
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
