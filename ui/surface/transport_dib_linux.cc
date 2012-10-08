@@ -22,6 +22,8 @@ TransportDIB::TransportDIB()
     : address_(kInvalidAddress),
       x_shm_(0),
       display_(NULL),
+      inflight_counter_(0),
+      detached_(false),
       size_(0) {
 }
 
@@ -137,4 +139,18 @@ XID TransportDIB::MapToX(Display* display) {
   }
 
   return x_shm_;
+}
+
+void TransportDIB::DecreaseInFlightCounter() {
+  CHECK(inflight_counter_);
+  inflight_counter_--;
+  if (!inflight_counter_ && detached_)
+    delete this;
+}
+
+void TransportDIB::Detach() {
+  CHECK(!detached_);
+  detached_ = true;
+  if (!inflight_counter_)
+    delete this;
 }
