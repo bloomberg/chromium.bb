@@ -59,9 +59,10 @@
   <section id="sect-Protocol-Wire-Format">
     <title>Wire Format</title>
     <para>
-      The protocol is sent over a UNIX domain stream socket.  Currently, the
-      endpoint is named <systemitem class="service">\wayland</systemitem>,
-      but it is subject to change.  The protocol is message-based.  A
+      The protocol is sent over a UNIX domain stream socket, where the endpoint
+      usually is named <systemitem class="service">wayland-0</systemitem>
+      (although it can be changed via <emphasis>WAYLAND_DISPLAY</emphasis>
+      in the environment).  The protocol is message-based.  A
       message sent by a client to the server is called request.  A message
       from the server to a client is called event.  Every message is
       structured as 32-bit words, values are represented in the host's
@@ -102,12 +103,23 @@
 	  </listitem>
 	</varlistentry>
 	<varlistentry>
+	  <term>fixed</term>
+	  <listitem>
+	    <para>
+	      Signed 24.8 decimal numbers. It is a signed decimal type which
+	      offers a sign bit, 23 bits of integer precision and 8 bits of
+	      decimal precision. This is exposed as an opaque struct with
+	      conversion helpers to and from double and int on the C API side.
+	    </para>
+	  </listitem>
+	</varlistentry>
+	<varlistentry>
 	  <term>string</term>
 	  <listitem>
 	    <para>
 	      Starts with an unsigned 32-bit length, followed by the
-	      string contents, including terminating NUL byte, then padding to a
-	      32-bit boundary.
+	      string contents, including terminating null byte, then padding
+	      to a 32-bit boundary.
 	    </para>
 	  </listitem>
 	</varlistentry>
