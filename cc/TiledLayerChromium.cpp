@@ -643,12 +643,12 @@ void TiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& priori
                 tile->dirtyRect = tileRect;
                 LayerTextureUpdater::Texture* backBuffer = tile->texture();
                 setPriorityForTexture(visibleContentRect(), tile->dirtyRect, drawsToRoot, smallAnimatedLayer, backBuffer->texture());
-                scoped_ptr<CCPrioritizedTexture> frontBuffer = CCPrioritizedTexture::create(backBuffer->texture()->textureManager(),
+                OwnPtr<CCPrioritizedTexture> frontBuffer = CCPrioritizedTexture::create(backBuffer->texture()->textureManager(),
                                                                                         backBuffer->texture()->size(),
                                                                                         backBuffer->texture()->format());
                 // Swap backBuffer into frontBuffer and add it to delete after commit queue.
                 backBuffer->swapTextureWith(frontBuffer);
-                layerTreeHost()->deleteTextureAfterCommit(frontBuffer.Pass());
+                layerTreeHost()->deleteTextureAfterCommit(frontBuffer.release());
             }
         }
     }

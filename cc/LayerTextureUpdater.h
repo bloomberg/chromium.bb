@@ -27,15 +27,15 @@ public:
         virtual ~Texture();
 
         CCPrioritizedTexture* texture() { return m_texture.get(); }
-        void swapTextureWith(scoped_ptr<CCPrioritizedTexture>& texture) { m_texture.swap(texture); }
+        void swapTextureWith(OwnPtr<CCPrioritizedTexture>& texture) { m_texture.swap(texture); }
         virtual void prepareRect(const IntRect& /* sourceRect */, CCRenderingStats&) { }
         virtual void updateRect(CCResourceProvider*, const IntRect& sourceRect, const IntSize& destOffset) = 0;
         virtual bool backingResourceWasEvicted() const;
     protected:
-        explicit Texture(scoped_ptr<CCPrioritizedTexture> texture);
+        explicit Texture(PassOwnPtr<CCPrioritizedTexture> texture);
 
     private:
-        scoped_ptr<CCPrioritizedTexture> m_texture;
+        OwnPtr<CCPrioritizedTexture> m_texture;
     };
 
     LayerTextureUpdater()

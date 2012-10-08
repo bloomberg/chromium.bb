@@ -2401,7 +2401,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(CCLayerTreeHostTestSurfaceNotAllocatedForLayersOu
 
 class EvictionTrackingTexture : public LayerTextureUpdater::Texture {
 public:
-    static PassOwnPtr<EvictionTrackingTexture> create(scoped_ptr<CCPrioritizedTexture> texture) { return adoptPtr(new EvictionTrackingTexture(texture.Pass())); }
+    static PassOwnPtr<EvictionTrackingTexture> create(PassOwnPtr<CCPrioritizedTexture> texture) { return adoptPtr(new EvictionTrackingTexture(texture)); }
     virtual ~EvictionTrackingTexture() { }
 
     virtual void updateRect(CCResourceProvider* resourceProvider, const IntRect&, const IntSize&) OVERRIDE
@@ -2414,8 +2414,8 @@ public:
     bool updated() const { return m_updated; }
 
 private:
-    explicit EvictionTrackingTexture(scoped_ptr<CCPrioritizedTexture> texture)
-        : LayerTextureUpdater::Texture(texture.Pass())
+    explicit EvictionTrackingTexture(PassOwnPtr<CCPrioritizedTexture> texture)
+        : LayerTextureUpdater::Texture(texture)
         , m_updated(false)
     { }
     bool m_updated;

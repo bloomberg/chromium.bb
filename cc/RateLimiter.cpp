@@ -35,12 +35,12 @@ private:
         m_rateLimiter->rateLimitContext();
     }
 
-    scoped_refptr<RateLimiter> m_rateLimiter;
+    RefPtr<RateLimiter> m_rateLimiter;
 };
 
-scoped_refptr<RateLimiter> RateLimiter::create(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client)
+PassRefPtr<RateLimiter> RateLimiter::create(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client)
 {
-    return make_scoped_refptr(new RateLimiter(context, client));
+    return adoptRef(new RateLimiter(context, client));
 }
 
 RateLimiter::RateLimiter(WebKit::WebGraphicsContext3D* context, RateLimiterClient *client)
@@ -48,6 +48,7 @@ RateLimiter::RateLimiter(WebKit::WebGraphicsContext3D* context, RateLimiterClien
     , m_active(false)
     , m_client(client)
 {
+    turnOffVerifier();
     ASSERT(context);
 }
 

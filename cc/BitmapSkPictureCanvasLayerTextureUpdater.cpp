@@ -18,8 +18,8 @@
 
 namespace cc {
 
-BitmapSkPictureCanvasLayerTextureUpdater::Texture::Texture(BitmapSkPictureCanvasLayerTextureUpdater* textureUpdater, scoped_ptr<CCPrioritizedTexture> texture)
-    : CanvasLayerTextureUpdater::Texture(texture.Pass())
+BitmapSkPictureCanvasLayerTextureUpdater::Texture::Texture(BitmapSkPictureCanvasLayerTextureUpdater* textureUpdater, PassOwnPtr<CCPrioritizedTexture> texture)
+    : CanvasLayerTextureUpdater::Texture(texture)
     , m_textureUpdater(textureUpdater)
 {
 }

@@ -10,6 +10,7 @@
 #include "CCProxy.h"
 #include <base/time.h>
 #include <limits>
+#include <wtf/OwnPtr.h>
 
 namespace cc {
 
@@ -17,7 +18,7 @@ class CCLayerTreeHost;
 
 class CCSingleThreadProxy : public CCProxy, CCLayerTreeHostImplClient {
 public:
-    static scoped_ptr<CCProxy> create(CCLayerTreeHost*);
+    static PassOwnPtr<CCProxy> create(CCLayerTreeHost*);
     virtual ~CCSingleThreadProxy();
 
     // CCProxy implementation
@@ -51,7 +52,7 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE;
     virtual void setNeedsCommitOnImplThread() OVERRIDE;
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE;
+    virtual void postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE;
     virtual void releaseContentsTexturesOnImplThread() OVERRIDE;
 
     // Called by the legacy path where RenderWidget does the scheduling.

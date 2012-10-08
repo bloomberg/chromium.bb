@@ -10,8 +10,8 @@ using namespace cc;
 
 namespace WebKitTests {
 
-FakeLayerTextureUpdater::Texture::Texture(FakeLayerTextureUpdater* layer, scoped_ptr<CCPrioritizedTexture> texture)
-    : LayerTextureUpdater::Texture(texture.Pass())
+FakeLayerTextureUpdater::Texture::Texture(FakeLayerTextureUpdater* layer, PassOwnPtr<CCPrioritizedTexture> texture)
+    : LayerTextureUpdater::Texture(texture)
     , m_layer(layer)
 {
 }

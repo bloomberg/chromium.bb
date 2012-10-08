@@ -50,7 +50,7 @@ public:
     virtual void onCanDrawStateChanged(bool) OVERRIDE { }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { }
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE { }
+    virtual void postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE { }
     virtual void releaseContentsTexturesOnImplThread() OVERRIDE { }
 
 protected:

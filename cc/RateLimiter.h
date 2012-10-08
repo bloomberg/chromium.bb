@@ -7,7 +7,8 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
-#include "base/memory/ref_counted.h"
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -24,9 +25,10 @@ public:
 // To use, construct a RateLimiter class around the context and call start() whenever calls are made on the
 // context outside of normal flow control. RateLimiter will block if the context is too far ahead of the
 // compositor.
-class RateLimiter : public base::RefCounted<RateLimiter> {
+class RateLimiter : public RefCounted<RateLimiter> {
 public:
-    static scoped_refptr<RateLimiter> create(WebKit::WebGraphicsContext3D*, RateLimiterClient*);
+    static PassRefPtr<RateLimiter> create(WebKit::WebGraphicsContext3D*, RateLimiterClient*);
+    ~RateLimiter();
 
     void start();
 
@@ -35,8 +37,6 @@ public:
 
 private:
     RateLimiter(WebKit::WebGraphicsContext3D*, RateLimiterClient*);
-    ~RateLimiter();
-    friend class base::RefCounted<RateLimiter>;
 
     class Task;
     friend class Task;

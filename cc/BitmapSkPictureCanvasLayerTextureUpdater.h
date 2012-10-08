@@ -18,7 +18,7 @@ class BitmapSkPictureCanvasLayerTextureUpdater : public SkPictureCanvasLayerText
 public:
     class Texture : public CanvasLayerTextureUpdater::Texture {
     public:
-        Texture(BitmapSkPictureCanvasLayerTextureUpdater*, scoped_ptr<CCPrioritizedTexture>);
+        Texture(BitmapSkPictureCanvasLayerTextureUpdater*, PassOwnPtr<CCPrioritizedTexture>);
 
         virtual void prepareRect(const IntRect& sourceRect, CCRenderingStats&) OVERRIDE;
         virtual void updateRect(CCResourceProvider*, const IntRect& sourceRect, const IntSize& destOffset) OVERRIDE;

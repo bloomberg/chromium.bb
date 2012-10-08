@@ -19,8 +19,8 @@ class ImageLayerTextureUpdater : public LayerTextureUpdater {
 public:
     class Texture : public LayerTextureUpdater::Texture {
     public:
-        Texture(ImageLayerTextureUpdater* textureUpdater, scoped_ptr<CCPrioritizedTexture> texture)
-            : LayerTextureUpdater::Texture(texture.Pass())
+        Texture(ImageLayerTextureUpdater* textureUpdater, PassOwnPtr<CCPrioritizedTexture> texture)
+            : LayerTextureUpdater::Texture(texture)
             , m_textureUpdater(textureUpdater)
         {
         }

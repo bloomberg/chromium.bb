@@ -71,7 +71,7 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { m_onCanDrawStateChangedCalled = true; }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { m_didRequestRedraw = true; }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { m_didRequestCommit = true; }
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE { }
+    virtual void postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE { }
     virtual void releaseContentsTexturesOnImplThread() OVERRIDE { }
 
     scoped_ptr<CCLayerTreeHostImpl> createLayerTreeHost(bool partialSwap, scoped_ptr<CCGraphicsContext> graphicsContext, PassOwnPtr<CCLayerImpl> rootPtr)

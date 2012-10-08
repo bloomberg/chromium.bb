@@ -26,7 +26,7 @@ class FrameBufferSkPictureCanvasLayerTextureUpdater : public SkPictureCanvasLaye
 public:
     class Texture : public LayerTextureUpdater::Texture {
     public:
-        Texture(FrameBufferSkPictureCanvasLayerTextureUpdater*, scoped_ptr<CCPrioritizedTexture>);
+        Texture(FrameBufferSkPictureCanvasLayerTextureUpdater*, PassOwnPtr<CCPrioritizedTexture>);
         virtual ~Texture();
 
         virtual void updateRect(CCResourceProvider*, const IntRect& sourceRect, const IntSize& destOffset) OVERRIDE;

@@ -1232,13 +1232,13 @@ void CCLayerTreeHostImpl::animateLayers(double monotonicTime, double wallClockTi
 
     TRACE_EVENT0("cc", "CCLayerTreeHostImpl::animateLayers");
 
-    scoped_ptr<CCAnimationEventsVector> events(make_scoped_ptr(new CCAnimationEventsVector));
+    OwnPtr<CCAnimationEventsVector> events(adoptPtr(new CCAnimationEventsVector));
 
     bool didAnimate = false;
     animateLayersRecursive(m_rootLayerImpl.get(), monotonicTime, wallClockTime, events.get(), didAnimate, m_needsAnimateLayers);
 
     if (!events->empty())
-        m_client->postAnimationEventsToMainThreadOnImplThread(events.Pass(), wallClockTime);
+        m_client->postAnimationEventsToMainThreadOnImplThread(events.release(), wallClockTime);
 
     if (didAnimate)
         m_client->setNeedsRedrawOnImplThread();

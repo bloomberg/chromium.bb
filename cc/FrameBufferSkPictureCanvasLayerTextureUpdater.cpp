@@ -36,8 +36,8 @@ static PassOwnPtr<SkCanvas> createAcceleratedCanvas(GrContext* grContext,
     return adoptPtr(new SkCanvas(device.get()));
 }
 
-FrameBufferSkPictureCanvasLayerTextureUpdater::Texture::Texture(FrameBufferSkPictureCanvasLayerTextureUpdater* textureUpdater, scoped_ptr<CCPrioritizedTexture> texture)
-    : LayerTextureUpdater::Texture(texture.Pass())
+FrameBufferSkPictureCanvasLayerTextureUpdater::Texture::Texture(FrameBufferSkPictureCanvasLayerTextureUpdater* textureUpdater, PassOwnPtr<CCPrioritizedTexture> texture)
+    : LayerTextureUpdater::Texture(texture)
     , m_textureUpdater(textureUpdater)
 {
 }

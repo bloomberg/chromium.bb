@@ -134,9 +134,9 @@ CCLayerTreeHost::~CCLayerTreeHost()
         m_rootLayer->setLayerTreeHost(0);
     ASSERT(CCProxy::isMainThread());
     TRACE_EVENT0("cc", "CCLayerTreeHost::~CCLayerTreeHost");
-    ASSERT(m_proxy.get());
+    ASSERT(m_proxy);
     m_proxy->stop();
-    m_proxy.reset();
+    m_proxy.clear();
     numLayerTreeInstances--;
     RateLimiterMap::iterator it = m_rateLimiters.begin();
     if (it != m_rateLimiters.end())
@@ -380,10 +380,10 @@ bool CCLayerTreeHost::commitRequested() const
     return m_proxy->commitRequested();
 }
 
-void CCLayerTreeHost::setAnimationEvents(scoped_ptr<CCAnimationEventsVector> events, double wallClockTime)
+void CCLayerTreeHost::setAnimationEvents(PassOwnPtr<CCAnimationEventsVector> events, double wallClockTime)
 {
     ASSERT(CCThreadProxy::isMainThread());
-    setAnimationEventsRecursive(*events.get(), m_rootLayer.get(), wallClockTime);
+    setAnimationEventsRecursive(*events, m_rootLayer.get(), wallClockTime);
 }
 
 void CCLayerTreeHost::didAddAnimation()
@@ -758,8 +758,8 @@ void CCLayerTreeHost::startRateLimiter(WebKit::WebGraphicsContext3D* context)
         it->second->start();
 #endif
     else {
-        scoped_refptr<RateLimiter> rateLimiter = RateLimiter::create(context, this);
-        m_rateLimiters[context] = rateLimiter;
+        RefPtr<RateLimiter> rateLimiter = RateLimiter::create(context, this);
+        m_rateLimiters.set(context, rateLimiter);
         rateLimiter->start();
     }
 }
@@ -773,7 +773,7 @@ void CCLayerTreeHost::stopRateLimiter(WebKit::WebGraphicsContext3D* context)
 #else
         it->second->stop();
 #endif
-        m_rateLimiters.erase(it);
+        m_rateLimiters.remove(it);
     }
 }
 
@@ -798,9 +798,9 @@ bool CCLayerTreeHost::requestPartialTextureUpdate()
     return true;
 }
 
-void CCLayerTreeHost::deleteTextureAfterCommit(scoped_ptr<CCPrioritizedTexture> texture)
+void CCLayerTreeHost::deleteTextureAfterCommit(PassOwnPtr<CCPrioritizedTexture> texture)
 {
-    m_deleteTextureAfterCommitList.append(texture.Pass());
+    m_deleteTextureAfterCommitList.append(texture);
 }
 
 void CCLayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)

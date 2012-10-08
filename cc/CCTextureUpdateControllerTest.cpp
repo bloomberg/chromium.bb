@@ -65,8 +65,8 @@ private:
 
 class TextureForUploadTest : public LayerTextureUpdater::Texture {
 public:
-    TextureForUploadTest()
-        : LayerTextureUpdater::Texture(scoped_ptr<CCPrioritizedTexture>())
+    TextureForUploadTest() 
+        : LayerTextureUpdater::Texture(nullptr)
         , m_evicted(false)
     {
     }

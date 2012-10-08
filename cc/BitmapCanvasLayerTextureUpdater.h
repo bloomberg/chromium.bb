@@ -23,7 +23,7 @@ class BitmapCanvasLayerTextureUpdater : public CanvasLayerTextureUpdater {
 public:
     class Texture : public LayerTextureUpdater::Texture {
     public:
-        Texture(BitmapCanvasLayerTextureUpdater*, scoped_ptr<CCPrioritizedTexture>);
+        Texture(BitmapCanvasLayerTextureUpdater*, PassOwnPtr<CCPrioritizedTexture>);
         virtual ~Texture();
 
         virtual void updateRect(CCResourceProvider*, const IntRect& sourceRect, const IntSize& destOffset) OVERRIDE;

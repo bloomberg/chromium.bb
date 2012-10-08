@@ -6,7 +6,6 @@
 #define CCPrioritizedTexture_h
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "CCPriorityCalculator.h"
 #include "CCResourceProvider.h"
 #include "CCTexture.h"
@@ -20,13 +19,13 @@ class CCPrioritizedTextureManager;
 
 class CCPrioritizedTexture {
 public:
-    static scoped_ptr<CCPrioritizedTexture> create(CCPrioritizedTextureManager* manager, IntSize size, GC3Denum format)
+    static PassOwnPtr<CCPrioritizedTexture> create(CCPrioritizedTextureManager* manager, IntSize size, GC3Denum format)
     {
-        return make_scoped_ptr(new CCPrioritizedTexture(manager, size, format));
+        return adoptPtr(new CCPrioritizedTexture(manager, size, format));
     }
-    static scoped_ptr<CCPrioritizedTexture> create(CCPrioritizedTextureManager* manager)
+    static PassOwnPtr<CCPrioritizedTexture> create(CCPrioritizedTextureManager* manager)
     {
-        return make_scoped_ptr(new CCPrioritizedTexture(manager, IntSize(), 0));
+        return adoptPtr(new CCPrioritizedTexture(manager, IntSize(), 0));
     }
     ~CCPrioritizedTexture();
 
