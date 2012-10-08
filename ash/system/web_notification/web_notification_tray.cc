@@ -13,7 +13,6 @@
 #include "ash/system/web_notification/popup_bubble.h"
 #include "ash/system/web_notification/web_notification.h"
 #include "ash/system/web_notification/web_notification_bubble.h"
-#include "ash/system/web_notification/web_notification_contents_view.h"
 #include "ash/system/web_notification/web_notification_list.h"
 #include "ash/system/web_notification/web_notification_view.h"
 #include "ash/wm/shelf_layout_manager.h"

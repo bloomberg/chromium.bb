@@ -21,6 +21,9 @@ class Widget;
 namespace ash {
 namespace internal {
 
+class TrayBubbleBorder;
+class TrayBubbleBackground;
+
 // Specialized bubble view for status area tray bubbles.
 // Mostly this handles custom anchor location and arrow and border rendering.
 class TrayBubbleView : public views::BubbleDelegateView {
@@ -64,6 +67,7 @@ class TrayBubbleView : public views::BubbleDelegateView {
                              const ui::LocatedEvent& event);
 
     views::Widget* widget_;
+    TrayBubbleView* bubble_view_;
     views::View* tray_view_;
 
     DISALLOW_COPY_AND_ASSIGN(Host);
@@ -80,8 +84,10 @@ class TrayBubbleView : public views::BubbleDelegateView {
     int max_height;
     bool can_activate;
     bool close_on_deactivate;
-    int arrow_offset;
+    SkColor top_color;
     SkColor arrow_color;
+    int arrow_offset;
+    views::BubbleBorder::Shadow shadow;
   };
 
   static TrayBubbleView* Create(views::View* anchor,
@@ -102,10 +108,14 @@ class TrayBubbleView : public views::BubbleDelegateView {
   void set_gesture_dragging(bool dragging) { is_gesture_dragging_ = dragging; }
   bool is_gesture_dragging() const { return is_gesture_dragging_; }
 
+  TrayBubbleBorder* bubble_border() { return bubble_border_; }
+
   // Overridden from views::WidgetDelegate.
   virtual bool CanActivate() const OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE;
+  virtual bool WidgetHasHitTestMask() const OVERRIDE;
+  virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Overridden from views::BubbleDelegateView.
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
@@ -124,7 +134,6 @@ class TrayBubbleView : public views::BubbleDelegateView {
 
   // Overridden from views::BubbleDelegateView.
   virtual void Init() OVERRIDE;
-  virtual gfx::Rect GetBubbleBounds() OVERRIDE;
 
   // Overridden from views::View.
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
@@ -135,6 +144,8 @@ class TrayBubbleView : public views::BubbleDelegateView {
  private:
   InitParams params_;
   Host* host_;
+  TrayBubbleBorder* bubble_border_;
+  TrayBubbleBackground* bubble_background_;
   bool is_gesture_dragging_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);

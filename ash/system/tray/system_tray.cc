@@ -337,7 +337,11 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       // This is the case where a volume control or brightness control bubble
       // is created.
       init_params.max_height = default_bubble_height_;
+      init_params.top_color = kBackgroundColor;
       init_params.arrow_color = kBackgroundColor;
+    } else {
+      init_params.top_color = kBackgroundColor;
+      init_params.arrow_color = kHeaderBackgroundColorDark;
     }
     init_params.arrow_offset = arrow_offset;
     bubble_->InitView(anchor, init_params, delegate->GetUserLoginStatus());
@@ -396,8 +400,9 @@ void SystemTray::UpdateNotificationBubble() {
     anchor_type = TrayBubbleView::ANCHOR_TYPE_TRAY;
   }
   TrayBubbleView::InitParams init_params(anchor_type, shelf_alignment());
-  init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
+  init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kBackgroundColor;
+  init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
   user::LoginStatus login_status =
       Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
   notification_bubble_->InitView(anchor, init_params, login_status);

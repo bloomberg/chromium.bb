@@ -6,7 +6,6 @@
 
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
-#include "ash/system/web_notification/web_notification_contents_view.h"
 #include "ash/system/web_notification/web_notification_list.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/system/web_notification/web_notification_view.h"
@@ -85,7 +84,7 @@ class WebNotificationButtonView : public views::View,
 
 
 // Message Center contents.
-class MessageCenterContentsView : public WebNotificationContentsView {
+class MessageCenterContentsView : public views::View {
  public:
   class ScrollContentView : public views::View {
    public:
@@ -113,10 +112,9 @@ class MessageCenterContentsView : public WebNotificationContentsView {
   };
 
   explicit MessageCenterContentsView(WebNotificationTray* tray)
-      : WebNotificationContentsView(tray) {
+      : tray_(tray) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
     scroll_content_ = new ScrollContentView;
     scroller_ = new internal::FixedSizedScrollView;
@@ -137,7 +135,8 @@ class MessageCenterContentsView : public WebNotificationContentsView {
     size_t num_children = 0;
     for (WebNotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
-      WebNotificationView* view = new WebNotificationView(tray_, *iter);
+      WebNotificationView* view =
+          new WebNotificationView(tray_, *iter, scroller_->GetScrollBarWidth());
       view->set_scroller(scroller_);
       scroll_content_->AddChildView(view);
       if (++num_children >= WebNotificationTray::kMaxVisibleTrayNotifications)
@@ -179,8 +178,10 @@ class MessageCenterContentsView : public WebNotificationContentsView {
       scroll_content_->set_preferred_size(gfx::Size());
     scroller_->SetFixedSize(scroll_size);
     scroller_->SizeToPreferredSize();
+    scroll_content_->InvalidateLayout();
   }
 
+  WebNotificationTray* tray_;
   internal::FixedSizedScrollView* scroller_;
   ScrollContentView* scroll_content_;
   WebNotificationButtonView* button_view_;

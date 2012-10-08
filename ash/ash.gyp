@@ -243,8 +243,6 @@
         'system/web_notification/web_notification.h',
         'system/web_notification/web_notification_bubble.cc',
         'system/web_notification/web_notification_bubble.h',
-        'system/web_notification/web_notification_contents_view.cc',
-        'system/web_notification/web_notification_contents_view.h',
         'system/web_notification/web_notification_list.cc',
         'system/web_notification/web_notification_list.h',
         'system/web_notification/web_notification_tray.cc',

@@ -26,7 +26,7 @@ class WebNotificationBubble : public TrayBubbleView::Host,
 
   virtual ~WebNotificationBubble();
 
-  void Initialize(WebNotificationContentsView* contents_view);
+  void Initialize(views::View* contents_view);
 
   // Updates the bubble; implementation dependent.
   virtual void UpdateBubbleView() = 0;

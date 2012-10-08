@@ -30,62 +30,6 @@ namespace {
 // detailed view.
 const int kDetailedBubbleMaxHeight = kTrayPopupItemHeight * 5;
 
-// TODO(stevenjb/jennyz): Remove this when TrayBubbleBorder is integrated with
-// BubbleBorder. See crbug.com/132772, crbug.com/139813.
-class TrayPopupItemBorder : public views::Border {
- public:
-  explicit TrayPopupItemBorder(views::View* owner, ShelfAlignment alignment)
-      : owner_(owner),
-        alignment_(alignment) {
-  }
-  virtual ~TrayPopupItemBorder() {}
-
- private:
-  // Overridden from views::Border.
-  virtual void Paint(const views::View& view,
-                     gfx::Canvas* canvas) const OVERRIDE {
-    const views::View* parent = view.parent();
-    int index = parent->GetIndexOf(&view);
-
-    // Draw a dark top-border for the first item.
-    if (index == 0)
-      canvas->FillRect(gfx::Rect(0, 0, view.width(), 1), kBorderDarkColor);
-
-    // Bottom border.
-    if ((index != parent->child_count() - 1) ||
-        (alignment_ != SHELF_ALIGNMENT_BOTTOM)) {
-      canvas->FillRect(gfx::Rect(0, view.height() - 1, view.width(), 1),
-                       kBorderLightColor);
-    }
-
-    // Left and right borders.
-    if (alignment_ != SHELF_ALIGNMENT_LEFT) {
-      canvas->FillRect(gfx::Rect(0, 0, 1, view.height()),
-                       kBorderDarkColor);
-    }
-    if (alignment_ != SHELF_ALIGNMENT_RIGHT) {
-      canvas->FillRect(gfx::Rect(view.width() - 1, 0, 1, view.height()),
-                       kBorderDarkColor);
-    }
-  }
-
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
-    const views::View* parent = owner_->parent();
-    int index = parent->GetIndexOf(owner_);
-    int left = (alignment_ == SHELF_ALIGNMENT_LEFT) ? 0 : 1;
-    int right = (alignment_ == SHELF_ALIGNMENT_RIGHT) ? 0 : 1;
-    insets->Set(index == 0 ? 1 : 0,
-                left,
-                (index != parent->child_count() - 1) ? 1 : 0,
-                right);
-  }
-
-  views::View* owner_;
-  ShelfAlignment alignment_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayPopupItemBorder);
-};
-
 // A view with some special behaviour for tray items in the popup:
 // - optionally changes background color on hover.
 class TrayPopupItemContainer : public views::View {
@@ -96,7 +40,6 @@ class TrayPopupItemContainer : public views::View {
       : hover_(false),
         change_background_(change_background) {
     set_notify_enter_exit_on_child(true);
-    set_border(new TrayPopupItemBorder(this, alignment));
     views::BoxLayout* layout = new views::BoxLayout(
         views::BoxLayout::kVertical, 0, 0, 0);
     layout->set_spread_blank_space(true);

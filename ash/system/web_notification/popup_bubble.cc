@@ -6,7 +6,6 @@
 
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/web_notification/web_notification_contents_view.h"
 #include "ash/system/web_notification/web_notification_list.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/system/web_notification/web_notification_view.h"
@@ -23,13 +22,12 @@ namespace message_center {
 const int kAutocloseDelaySeconds = 5;
 
 // Popup notifications contents.
-class PopupBubbleContentsView : public WebNotificationContentsView {
+class PopupBubbleContentsView : public views::View {
  public:
   explicit PopupBubbleContentsView(WebNotificationTray* tray)
-      : WebNotificationContentsView(tray) {
+      : tray_(tray) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
     content_ = new views::View;
     content_->SetLayoutManager(
@@ -46,10 +44,11 @@ class PopupBubbleContentsView : public WebNotificationContentsView {
     for (WebNotificationList::Notifications::const_iterator iter =
              popup_notifications.begin();
          iter != popup_notifications.end(); ++iter) {
-      WebNotificationView* view = new WebNotificationView(tray_, *iter);
+      WebNotificationView* view = new WebNotificationView(tray_, *iter, 0);
       content_->AddChildView(view);
     }
     content_->SizeToPreferredSize();
+    content_->InvalidateLayout();
     Layout();
     if (GetWidget())
       GetWidget()->GetRootView()->SchedulePaint();
@@ -60,6 +59,7 @@ class PopupBubbleContentsView : public WebNotificationContentsView {
   }
 
  private:
+  WebNotificationTray* tray_;
   views::View* content_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBubbleContentsView);
@@ -72,6 +72,7 @@ PopupBubble::PopupBubble(WebNotificationTray* tray) :
     num_popups_(0),
     dirty_(false) {
   TrayBubbleView::InitParams init_params = GetInitParams();
+  init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kBackgroundColor;
   init_params.close_on_deactivate = false;
   views::View* anchor = tray_->tray_container();

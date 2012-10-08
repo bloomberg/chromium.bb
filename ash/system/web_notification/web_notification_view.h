@@ -33,14 +33,12 @@ class WebNotificationView : public views::View,
                             public ui::ImplicitAnimationObserver {
  public:
   WebNotificationView(WebNotificationTray* tray,
-                      const WebNotification& notification);
+                      const WebNotification& notification,
+                      int scroll_bar_width);
 
   virtual ~WebNotificationView();
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
-
-  void InitView(WebNotificationTray* tray,
-                const WebNotification& notification);
 
   // views::View overrides.
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;

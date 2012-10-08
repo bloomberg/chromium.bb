@@ -4,7 +4,7 @@
 
 #include "ash/system/web_notification/web_notification_bubble.h"
 
-#include "ash/system/web_notification/web_notification_contents_view.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/system/web_notification/web_notification_view.h"
 #include "base/bind.h"
@@ -28,8 +28,7 @@ WebNotificationBubble::WebNotificationBubble(WebNotificationTray* tray)
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
-void WebNotificationBubble::Initialize(
-    WebNotificationContentsView* contents_view) {
+void WebNotificationBubble::Initialize(views::View* contents_view) {
   DCHECK(bubble_view_);
 
   bubble_view_->AddChildView(contents_view);
@@ -92,6 +91,8 @@ void WebNotificationBubble::OnWidgetClosing(views::Widget* widget) {
 TrayBubbleView::InitParams WebNotificationBubble::GetInitParams() {
   TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                          tray_->shelf_alignment());
+  init_params.top_color = kBackgroundColor;
+  init_params.arrow_color = kHeaderBackgroundColorDark;
   init_params.bubble_width = kWebNotificationWidth;
   if (tray_->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
     views::View* anchor = tray_->tray_container();

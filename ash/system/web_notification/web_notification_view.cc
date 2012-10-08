@@ -117,23 +117,14 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
 };
 
 WebNotificationView::WebNotificationView(WebNotificationTray* tray,
-                                         const WebNotification& notification)
+                                         const WebNotification& notification,
+                                         int scroll_bar_width)
     : tray_(tray),
       notification_(notification),
       icon_(NULL),
       close_button_(NULL),
       scroller_(NULL),
       gesture_scroll_amount_(0.f) {
-  InitView(tray, notification);
-}
-
-WebNotificationView::~WebNotificationView() {
-}
-
-void WebNotificationView::InitView(WebNotificationTray* tray,
-                                   const WebNotification& notification) {
-  set_border(views::Border::CreateSolidSidedBorder(
-      1, 0, 0, 0, kBorderLightColor));
   SkColor bg_color = notification.is_read ?
       kNotificationReadColor : kNotificationColor;
   set_background(views::Background::CreateSolidBackground(bg_color));
@@ -178,9 +169,9 @@ void WebNotificationView::InitView(WebNotificationTray* tray,
 
   // Notification message text.
   const int message_width = kWebNotificationWidth - kWebNotificationIconSize -
-      kWebNotificationButtonWidth - (padding_width * 3);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
-                     0, /* resize percent */
+      kWebNotificationButtonWidth - (padding_width * 3) - scroll_bar_width;
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                     100, /* resize percent */
                      views::GridLayout::FIXED,
                      message_width, message_width);
 
@@ -205,6 +196,9 @@ void WebNotificationView::InitView(WebNotificationTray* tray,
   layout->SkipColumns(2);
   layout->AddView(message, 1, 1);
   layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
+}
+
+WebNotificationView::~WebNotificationView() {
 }
 
 bool WebNotificationView::OnMousePressed(const ui::MouseEvent& event) {
