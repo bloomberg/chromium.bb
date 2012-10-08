@@ -53,7 +53,7 @@ static inline void expandDamageRectInsideRectWithFilters(FloatRect& damageRect, 
     damageRect.unite(expandedDamageRect);
 }
 
-void CCDamageTracker::updateDamageTrackingState(const Vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, CCLayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations& filters)
+void CCDamageTracker::updateDamageTrackingState(const std::vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, CCLayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations& filters)
 {
     //
     // This function computes the "damage rect" of a target surface, and updates the state
@@ -165,7 +165,7 @@ void CCDamageTracker::saveRectForNextFrame(int layerID, const FloatRect& targetS
     m_nextRectHistory->set(layerID, targetSpaceRect);
 }
 
-FloatRect CCDamageTracker::trackDamageFromActiveLayers(const Vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID)
+FloatRect CCDamageTracker::trackDamageFromActiveLayers(const std::vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID)
 {
     FloatRect damageRect = FloatRect();
 

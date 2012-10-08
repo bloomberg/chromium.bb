@@ -5,9 +5,8 @@
 #ifndef WebLayerImpl_h
 #define WebLayerImpl_h
 
+#include "base/memory/ref_counted.h"
 #include <public/WebLayer.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
 
 namespace cc {
 class LayerChromium;
@@ -18,7 +17,7 @@ namespace WebKit {
 class WebLayerImpl : public WebLayer {
 public:
     WebLayerImpl();
-    explicit WebLayerImpl(PassRefPtr<cc::LayerChromium>);
+    explicit WebLayerImpl(scoped_refptr<cc::LayerChromium>);
     virtual ~WebLayerImpl();
 
     // WebLayer implementation.
@@ -93,7 +92,7 @@ public:
     cc::LayerChromium* layer() const;
 
 protected:
-    RefPtr<cc::LayerChromium> m_layer;
+    scoped_refptr<cc::LayerChromium> m_layer;
 };
 
 } // namespace WebKit

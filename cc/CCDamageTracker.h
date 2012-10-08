@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "FloatRect.h"
+#include <vector>
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>
 
@@ -28,14 +29,14 @@ public:
 
     void didDrawDamagedArea() { m_currentDamageRect = FloatRect(); }
     void forceFullDamageNextUpdate() { m_forceFullDamageNextUpdate = true; }
-    void updateDamageTrackingState(const Vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, CCLayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations&);
+    void updateDamageTrackingState(const std::vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, CCLayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations&);
 
     const FloatRect& currentDamageRect() { return m_currentDamageRect; }
 
 private:
     CCDamageTracker();
 
-    FloatRect trackDamageFromActiveLayers(const Vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID);
+    FloatRect trackDamageFromActiveLayers(const std::vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID);
     FloatRect trackDamageFromSurfaceMask(CCLayerImpl* targetSurfaceMaskLayer);
     FloatRect trackDamageFromLeftoverRects();
 

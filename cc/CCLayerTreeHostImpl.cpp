@@ -242,7 +242,7 @@ void CCLayerTreeHostImpl::trackDamageForAllSurfaces(CCLayerImpl* rootDrawLayer, 
 
 void CCLayerTreeHostImpl::calculateRenderSurfaceLayerList(CCLayerList& renderSurfaceLayerList)
 {
-    ASSERT(renderSurfaceLayerList.isEmpty());
+    ASSERT(renderSurfaceLayerList.empty());
     ASSERT(m_rootLayerImpl);
     ASSERT(m_renderer); // For maxTextureSize.
 
@@ -284,7 +284,7 @@ bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
         occlusionTracker.setOccludingScreenSpaceRectsContainer(&frame.occludingScreenSpaceRects);
 
     // Add quads to the Render passes in FrontToBack order to allow for testing occlusion and performing culling during the tree walk.
-    typedef CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, CCLayerIteratorActions::FrontToBack> CCLayerIteratorType;
+    typedef CCLayerIterator<CCLayerImpl, std::vector<CCLayerImpl*>, CCRenderSurface, CCLayerIteratorActions::FrontToBack> CCLayerIteratorType;
 
     // Typically when we are missing a texture and use a checkerboard quad, we still draw the frame. However when the layer being
     // checkerboarded is moving due to an impl-animation, we drop the frame to avoid flashing due to the texture suddenly appearing
@@ -310,7 +310,7 @@ bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
                 appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
             else {
                 it->willDraw(m_resourceProvider.get());
-                frame.willDrawLayers.append(*it);
+                frame.willDrawLayers.push_back(*it);
 
                 if (it->hasContributingDelegatedRenderPasses()) {
                     CCRenderPass::Id contributingRenderPassId = it->firstContributingRenderPassId();

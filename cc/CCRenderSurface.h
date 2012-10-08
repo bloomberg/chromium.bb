@@ -72,7 +72,7 @@ public:
     void setContentRect(const IntRect&);
     const IntRect& contentRect() const { return m_contentRect; }
 
-    Vector<CCLayerImpl*>& layerList() { return m_layerList; }
+    std::vector<CCLayerImpl*>& layerList() { return m_layerList; }
     void addContributingDelegatedRenderPassLayer(CCLayerImpl*);
     void clearLayerLists();
 
@@ -108,8 +108,8 @@ private:
     // Uses the space of the surface's target surface.
     IntRect m_clipRect;
 
-    Vector<CCLayerImpl*> m_layerList;
-    Vector<CCDelegatedRendererLayerImpl*> m_contributingDelegatedRenderPassLayerList;
+    std::vector<CCLayerImpl*> m_layerList;
+    std::vector<CCDelegatedRendererLayerImpl*> m_contributingDelegatedRenderPassLayerList;
 
     // The nearest ancestor target surface that will contain the contents of this surface, and that is going
     // to move pixels within the surface (such as with a blur). This can point to itself.

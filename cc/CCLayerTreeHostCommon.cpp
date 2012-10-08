@@ -343,8 +343,8 @@ void setupRootLayerAndSurfaceForRecursion(LayerType* rootLayer, LayerList& rende
     rootLayer->renderSurface()->setContentRect(IntRect(IntPoint::zero(), deviceViewportSize));
     rootLayer->renderSurface()->clearLayerLists();
 
-    ASSERT(renderSurfaceLayerList.isEmpty());
-    renderSurfaceLayerList.append(rootLayer);
+    ASSERT(renderSurfaceLayerList.empty());
+    renderSurfaceLayerList.push_back(rootLayer);
 }
 
 // Recursively walks the layer tree starting at the given node and computes all the
@@ -579,7 +579,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
 
         renderSurface->setNearestAncestorThatMovesPixels(nearestAncestorThatMovesPixels);
 
-        renderSurfaceLayerList.append(layer);
+        renderSurfaceLayerList.push_back(layer);
     } else {
         layer->setDrawTransform(drawTransform);
         layer->setDrawTransformIsAnimating(animatingTransformToTarget);
@@ -637,7 +637,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     unsigned sortingStartIndex = descendants.size();
 
     if (!layerShouldBeSkipped(layer))
-        descendants.append(layer);
+        descendants.push_back(layer);
 
     WebTransformationMatrix nextScrollCompensationMatrix = computeScrollCompensationMatrixForChildren(layer, parentMatrix, currentScrollCompensationMatrix);;
 
@@ -651,7 +651,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
         if (!drawableContentRectOfChildSubtree.isEmpty()) {
             accumulatedDrawableContentRectOfChildren.unite(drawableContentRectOfChildSubtree);
             if (child->renderSurface())
-                descendants.append(child);
+                descendants.push_back(child);
         }
     }
 
@@ -727,12 +727,12 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
             //        entire subtree of surfaces to fix a crash bug. The root cause is
             //        https://bugs.webkit.org/show_bug.cgi?id=74147 and we should be able
             //        to put the original assert after fixing that.
-            while (renderSurfaceLayerList.last() != layer) {
-                renderSurfaceLayerList.last()->clearRenderSurface();
-                renderSurfaceLayerList.removeLast();
+            while (renderSurfaceLayerList.back() != layer) {
+                renderSurfaceLayerList.back()->clearRenderSurface();
+                renderSurfaceLayerList.pop_back();
             }
-            ASSERT(renderSurfaceLayerList.last() == layer);
-            renderSurfaceLayerList.removeLast();
+            ASSERT(renderSurfaceLayerList.back() == layer);
+            renderSurfaceLayerList.pop_back();
             layer->clearRenderSurface();
             return;
         }
@@ -746,7 +746,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     // drawn from back to front. If the preserves-3d property is also set on the parent then
     // skip the sorting as the parent will sort all the descendants anyway.
     if (descendants.size() && layer->preserves3D() && (!layer->parent() || !layer->parent()->preserves3D()))
-        sortLayers(&descendants.at(sortingStartIndex), descendants.end(), layerSorter);
+        sortLayers(descendants.begin() + sortingStartIndex, descendants.end(), layerSorter);
 
     if (layer->renderSurface())
         drawableContentRectOfSubtree = enclosingIntRect(layer->renderSurface()->drawableContentRect());
@@ -782,42 +782,42 @@ static void calculateVisibleRectsInternal(const LayerList& renderSurfaceLayerLis
     }
 }
 
-void CCLayerTreeHostCommon::calculateDrawTransforms(LayerChromium* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, int maxTextureSize, Vector<RefPtr<LayerChromium> >& renderSurfaceLayerList)
+void CCLayerTreeHostCommon::calculateDrawTransforms(LayerChromium* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, int maxTextureSize, std::vector<scoped_refptr<LayerChromium> >& renderSurfaceLayerList)
 {
     IntRect totalDrawableContentRect;
     WebTransformationMatrix identityMatrix;
     WebTransformationMatrix deviceScaleTransform;
     deviceScaleTransform.scale(deviceScaleFactor);
 
-    setupRootLayerAndSurfaceForRecursion<LayerChromium, Vector<RefPtr<LayerChromium> > >(rootLayer, renderSurfaceLayerList, deviceViewportSize);
+    setupRootLayerAndSurfaceForRecursion<LayerChromium, std::vector<scoped_refptr<LayerChromium> > >(rootLayer, renderSurfaceLayerList, deviceViewportSize);
 
-    cc::calculateDrawTransformsInternal<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, void>(rootLayer, rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
+    cc::calculateDrawTransformsInternal<LayerChromium, std::vector<scoped_refptr<LayerChromium> >, RenderSurfaceChromium, void>(rootLayer, rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
                                                                                                                          rootLayer->renderSurface()->contentRect(), true, 0, renderSurfaceLayerList,
                                                                                                                          rootLayer->renderSurface()->layerList(), 0, maxTextureSize, deviceScaleFactor, totalDrawableContentRect);
 }
 
-void CCLayerTreeHostCommon::calculateDrawTransforms(CCLayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, CCLayerSorter* layerSorter, int maxTextureSize, Vector<CCLayerImpl*>& renderSurfaceLayerList)
+void CCLayerTreeHostCommon::calculateDrawTransforms(CCLayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, CCLayerSorter* layerSorter, int maxTextureSize, std::vector<CCLayerImpl*>& renderSurfaceLayerList)
 {
     IntRect totalDrawableContentRect;
     WebTransformationMatrix identityMatrix;
     WebTransformationMatrix deviceScaleTransform;
     deviceScaleTransform.scale(deviceScaleFactor);
 
-    setupRootLayerAndSurfaceForRecursion<CCLayerImpl, Vector<CCLayerImpl*> >(rootLayer, renderSurfaceLayerList, deviceViewportSize);
+    setupRootLayerAndSurfaceForRecursion<CCLayerImpl, std::vector<CCLayerImpl*> >(rootLayer, renderSurfaceLayerList, deviceViewportSize);
 
-    cc::calculateDrawTransformsInternal<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, CCLayerSorter>(rootLayer, rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
+    cc::calculateDrawTransformsInternal<CCLayerImpl, std::vector<CCLayerImpl*>, CCRenderSurface, CCLayerSorter>(rootLayer, rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
                                                                                                                 rootLayer->renderSurface()->contentRect(), true, 0, renderSurfaceLayerList,
                                                                                                                 rootLayer->renderSurface()->layerList(), layerSorter, maxTextureSize, deviceScaleFactor, totalDrawableContentRect);
 }
 
-void CCLayerTreeHostCommon::calculateVisibleRects(Vector<RefPtr<LayerChromium> >& renderSurfaceLayerList)
+void CCLayerTreeHostCommon::calculateVisibleRects(std::vector<scoped_refptr<LayerChromium> >& renderSurfaceLayerList)
 {
-    calculateVisibleRectsInternal<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium>(renderSurfaceLayerList);
+    calculateVisibleRectsInternal<LayerChromium, std::vector<scoped_refptr<LayerChromium> >, RenderSurfaceChromium>(renderSurfaceLayerList);
 }
 
-void CCLayerTreeHostCommon::calculateVisibleRects(Vector<CCLayerImpl*>& renderSurfaceLayerList)
+void CCLayerTreeHostCommon::calculateVisibleRects(std::vector<CCLayerImpl*>& renderSurfaceLayerList)
 {
-    calculateVisibleRectsInternal<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface>(renderSurfaceLayerList);
+    calculateVisibleRectsInternal<CCLayerImpl, std::vector<CCLayerImpl*>, CCRenderSurface>(renderSurfaceLayerList);
 }
 
 static bool pointHitsRect(const IntPoint& viewportPoint, const WebTransformationMatrix& localSpaceToScreenSpaceTransform, FloatRect localSpaceRect)
@@ -859,11 +859,11 @@ static bool pointIsClippedBySurfaceOrClipRect(const IntPoint& viewportPoint, CCL
     return false;
 }
 
-CCLayerImpl* CCLayerTreeHostCommon::findLayerThatIsHitByPoint(const IntPoint& viewportPoint, Vector<CCLayerImpl*>& renderSurfaceLayerList)
+CCLayerImpl* CCLayerTreeHostCommon::findLayerThatIsHitByPoint(const IntPoint& viewportPoint, std::vector<CCLayerImpl*>& renderSurfaceLayerList)
 {
     CCLayerImpl* foundLayer = 0;
 
-    typedef CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, CCLayerIteratorActions::FrontToBack> CCLayerIteratorType;
+    typedef CCLayerIterator<CCLayerImpl, std::vector<CCLayerImpl*>, CCRenderSurface, CCLayerIteratorActions::FrontToBack> CCLayerIteratorType;
     CCLayerIteratorType end = CCLayerIteratorType::end(&renderSurfaceLayerList);
 
     for (CCLayerIteratorType it = CCLayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {

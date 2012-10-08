@@ -8,6 +8,7 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
+#include "base/memory/ref_counted.h"
 #include "CCLayerAnimationController.h"
 #include "CCOcclusionTracker.h"
 #include "CCPrioritizedTexture.h"
@@ -18,11 +19,9 @@
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <string>
+#include <vector>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
 
 namespace WebKit {
 class WebAnimationDelegate;
@@ -43,11 +42,11 @@ struct CCRenderingStats;
 
 // Base class for composited layers. Special layer types are derived from
 // this class.
-class LayerChromium : public RefCounted<LayerChromium>, public CCLayerAnimationControllerClient {
+class LayerChromium : public base::RefCounted<LayerChromium>, public CCLayerAnimationControllerClient {
 public:
-    static PassRefPtr<LayerChromium> create();
+    typedef std::vector<scoped_refptr<LayerChromium> > LayerList;
 
-    virtual ~LayerChromium();
+    static scoped_refptr<LayerChromium> create();
 
     // CCLayerAnimationControllerClient implementation
     virtual int id() const OVERRIDE;
@@ -61,14 +60,14 @@ public:
 
     LayerChromium* rootLayer();
     LayerChromium* parent() const;
-    void addChild(PassRefPtr<LayerChromium>);
-    void insertChild(PassRefPtr<LayerChromium>, size_t index);
-    void replaceChild(LayerChromium* reference, PassRefPtr<LayerChromium> newLayer);
+    void addChild(scoped_refptr<LayerChromium>);
+    void insertChild(scoped_refptr<LayerChromium>, size_t index);
+    void replaceChild(LayerChromium* reference, scoped_refptr<LayerChromium> newLayer);
     void removeFromParent();
     void removeAllChildren();
-    void setChildren(const Vector<RefPtr<LayerChromium> >&);
+    void setChildren(const LayerList&);
 
-    const Vector<RefPtr<LayerChromium> >& children() const { return m_children; }
+    const LayerList& children() const { return m_children; }
 
     void setAnchorPoint(const FloatPoint&);
     FloatPoint anchorPoint() const { return m_anchorPoint; }
@@ -269,6 +268,7 @@ public:
 protected:
     friend class CCLayerImpl;
     friend class TreeSynchronizer;
+    virtual ~LayerChromium();
 
     LayerChromium();
 
@@ -288,13 +288,15 @@ protected:
     // Note this rect is in layer space (not content space).
     FloatRect m_updateRect;
 
-    RefPtr<LayerChromium> m_maskLayer;
+    scoped_refptr<LayerChromium> m_maskLayer;
 
     // Constructs a CCLayerImpl of the correct runtime type for this LayerChromium type.
     virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl();
     int m_layerId;
 
 private:
+    friend class base::RefCounted<LayerChromium>;
+
     void setParent(LayerChromium*);
     bool hasAncestor(LayerChromium*) const;
     bool descendantIsFixedToContainerLayer() const;
@@ -307,7 +309,7 @@ private:
     // This should only be called from removeFromParent.
     void removeChild(LayerChromium*);
 
-    Vector<RefPtr<LayerChromium> > m_children;
+    LayerList m_children;
     LayerChromium* m_parent;
 
     // LayerChromium instances have a weak pointer to their CCLayerTreeHost.
@@ -356,7 +358,7 @@ private:
     WebKit::WebTransformationMatrix m_sublayerTransform;
 
     // Replica layer used for reflections.
-    RefPtr<LayerChromium> m_replicaLayer;
+    scoped_refptr<LayerChromium> m_replicaLayer;
 
     // Transient properties.
     OwnPtr<RenderSurfaceChromium> m_renderSurface;
@@ -379,7 +381,7 @@ private:
     WebKit::WebLayerScrollClient* m_layerScrollClient;
 };
 
-void sortLayers(Vector<RefPtr<LayerChromium> >::iterator, Vector<RefPtr<LayerChromium> >::iterator, void*);
+void sortLayers(std::vector<scoped_refptr<LayerChromium> >::iterator, std::vector<scoped_refptr<LayerChromium> >::iterator, void*);
 
 }
 #endif // USE(ACCELERATED_COMPOSITING)

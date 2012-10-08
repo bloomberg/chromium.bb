@@ -392,7 +392,7 @@ void CCLayerTreeHost::didAddAnimation()
     m_proxy->didAddAnimation();
 }
 
-void CCLayerTreeHost::setRootLayer(PassRefPtr<LayerChromium> rootLayer)
+void CCLayerTreeHost::setRootLayer(scoped_refptr<LayerChromium> rootLayer)
 {
     if (m_rootLayer == rootLayer)
         return;
@@ -554,7 +554,7 @@ static void updateLayerScale(LayerChromium* layer, float deviceScaleFactor, floa
     if (replicaMaskLayer)
         setScale(replicaMaskLayer, deviceScaleFactor, pageScaleFactor);
 
-    const Vector<RefPtr<LayerChromium> >& children = layer->children();
+    const std::vector<scoped_refptr<LayerChromium> >& children = layer->children();
     for (unsigned int i = 0; i < children.size(); ++i)
         updateLayerScale(children[i].get(), deviceScaleFactor, pageScaleFactor);
 }
@@ -596,7 +596,7 @@ void CCLayerTreeHost::setPrioritiesForSurfaces(size_t surfaceMemoryBytes)
 void CCLayerTreeHost::setPrioritiesForLayers(const LayerList& updateList)
 {
     // Use BackToFront since it's cheap and this isn't order-dependent.
-    typedef CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::BackToFront> CCLayerIteratorType;
+    typedef CCLayerIterator<LayerChromium, LayerList, RenderSurfaceChromium, CCLayerIteratorActions::BackToFront> CCLayerIteratorType;
 
     CCPriorityCalculator calculator;
     CCLayerIteratorType end = CCLayerIteratorType::end(&updateList);
@@ -676,7 +676,7 @@ bool CCLayerTreeHost::paintMasksForRenderSurface(LayerChromium* renderSurfaceLay
 bool CCLayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, CCTextureUpdateQueue& queue)
 {
     // Use FrontToBack to allow for testing occlusion and performing culling during the tree walk.
-    typedef CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::FrontToBack> CCLayerIteratorType;
+    typedef CCLayerIterator<LayerChromium, LayerList, RenderSurfaceChromium, CCLayerIteratorActions::FrontToBack> CCLayerIteratorType;
 
     bool needMoreUpdates = false;
     bool recordMetricsForFrame = true; // FIXME: In the future, disable this when about:tracing is off.

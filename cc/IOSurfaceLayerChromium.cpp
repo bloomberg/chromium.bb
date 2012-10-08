@@ -12,9 +12,9 @@
 
 namespace cc {
 
-PassRefPtr<IOSurfaceLayerChromium> IOSurfaceLayerChromium::create()
+scoped_refptr<IOSurfaceLayerChromium> IOSurfaceLayerChromium::create()
 {
-    return adoptRef(new IOSurfaceLayerChromium());
+    return make_scoped_refptr(new IOSurfaceLayerChromium());
 }
 
 IOSurfaceLayerChromium::IOSurfaceLayerChromium()

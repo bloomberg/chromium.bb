@@ -18,8 +18,6 @@ class TiledLayerChromium : public LayerChromium {
 public:
     enum TilingOption { AlwaysTile, NeverTile, AutoTile };
 
-    virtual ~TiledLayerChromium();
-
     virtual void setIsMask(bool) OVERRIDE;
 
     virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
@@ -43,6 +41,7 @@ public:
 
 protected:
     TiledLayerChromium();
+    virtual ~TiledLayerChromium();
 
     void updateTileSizeAndTilingOption();
     void updateBounds();

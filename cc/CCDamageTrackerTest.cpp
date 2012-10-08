@@ -23,7 +23,7 @@ using namespace WebKitTests;
 
 namespace {
 
-void executeCalculateDrawTransformsAndVisibility(CCLayerImpl* root, Vector<CCLayerImpl*>& renderSurfaceLayerList)
+void executeCalculateDrawTransformsAndVisibility(CCLayerImpl* root, std::vector<CCLayerImpl*>& renderSurfaceLayerList)
 {
     CCLayerSorter layerSorter;
     int dummyMaxTextureSize = 512;
@@ -55,7 +55,7 @@ void emulateDrawingOneFrame(CCLayerImpl* root)
     //   2. updating all damage trackers in the correct order
     //   3. resetting all updateRects and propertyChanged flags for all layers and surfaces.
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     executeCalculateDrawTransformsAndVisibility(root, renderSurfaceLayerList);
 
     // Iterate back-to-front, so that damage correctly propagates from descendant surfaces to ancestors.

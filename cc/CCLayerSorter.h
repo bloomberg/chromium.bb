@@ -10,6 +10,7 @@
 #include "FloatPoint3D.h"
 #include "FloatQuad.h"
 #include "FloatRect.h"
+#include <vector>
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>
 
@@ -24,7 +25,7 @@ public:
     CCLayerSorter();
     ~CCLayerSorter();
 
-    typedef Vector<CCLayerImpl*> LayerList;
+    typedef std::vector<CCLayerImpl*> LayerList;
 
     void sort(LayerList::iterator first, LayerList::iterator last);
 

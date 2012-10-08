@@ -147,9 +147,9 @@ bool CCRenderSurface::surfacePropertyChangedOnlyFromDescendant() const
 
 void CCRenderSurface::addContributingDelegatedRenderPassLayer(CCLayerImpl* layer)
 {
-    ASSERT(m_layerList.contains(layer));
+    ASSERT(std::find(m_layerList.begin(), m_layerList.end(), layer) != m_layerList.end());
     CCDelegatedRendererLayerImpl* delegatedRendererLayer = static_cast<CCDelegatedRendererLayerImpl*>(layer);
-    m_contributingDelegatedRenderPassLayerList.append(delegatedRendererLayer);
+    m_contributingDelegatedRenderPassLayerList.push_back(delegatedRendererLayer);
 }
 
 void CCRenderSurface::clearLayerLists()
