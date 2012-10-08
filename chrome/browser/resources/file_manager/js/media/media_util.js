@@ -16,10 +16,15 @@ function ThumbnailLoader(url, opt_metadata, opt_mediaType) {
     return;
   }
 
+  this.fallbackUrl_ = null;
+  this.thumbnailUrl_ = null;
   if (opt_metadata.gdata) {
     var apps = opt_metadata.gdata.driveApps;
-    if (apps.length > 0 && apps[0].docIcon) {
-      this.fallbackUrl_ = apps[0].docIcon;
+    for (var i = 0; i < apps.length; ++i) {
+      if (apps[i].docIcon && apps[i].isPrimary) {
+        this.fallbackUrl_ = apps[i].docIcon;
+        break;
+      }
     }
   }
 
@@ -50,7 +55,7 @@ ThumbnailLoader.MAX_FILE_SIZE = 1 << 20; // 1 Mb
 /**
  * If an image file does not have an embedded thumbnail we might want to use
  * the image itself as a thumbnail. If the image is too large it hurts
- * the performance very much so we allow it only for moderately sized files.
+ * the performance a lot so we allow it only for moderately sized files.
  *
  * @param {Object} metadata Metadata object
  * @return {boolean} Whether it is OK to use the image url for a preview.

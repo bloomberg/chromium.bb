@@ -82,6 +82,9 @@ const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_EXCLUSIVE_READ |
                                      base::PLATFORM_FILE_ASYNC;
 
+const char kFileBrowserExtensionId[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
+const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
+
 // Returns process id of the process the extension is running in.
 int ExtractProcessFromExtensionId(const std::string& extension_id,
                                   Profile* profile) {
@@ -95,6 +98,11 @@ int ExtractProcessFromExtensionId(const std::string& extension_id,
   content::RenderProcessHost* process = site_instance->GetProcess();
 
   return process->GetID();
+}
+
+bool IsBuiltinTask(const FileBrowserHandler* task) {
+  return (task->extension_id() == kFileBrowserExtensionId ||
+          task->extension_id() == kQuickOfficeExtensionId);
 }
 
 bool MatchesAllURLs(const FileBrowserHandler* handler) {
@@ -222,11 +230,9 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
     const DictionaryValue* mime_task_prefs =
         profile->GetPrefs()->GetDictionary(prefs::kDefaultTasksByMimeType);
     DCHECK(mime_task_prefs);
-    if (!mime_task_prefs) {
-      LOG(WARNING) << "Unable to open MIME type prefs";
-      return std::string();
-    }
-    if (mime_task_prefs->GetStringWithoutPathExpansion(mime_type, &task_id)) {
+    LOG_IF(ERROR, !mime_task_prefs) << "Unable to open MIME type prefs";
+    if (mime_task_prefs &&
+        mime_task_prefs->GetStringWithoutPathExpansion(mime_type, &task_id)) {
       VLOG(1) << "Found MIME default handler: " << task_id;
       return task_id;
     }
@@ -235,12 +241,10 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
   const DictionaryValue* suffix_task_prefs =
       profile->GetPrefs()->GetDictionary(prefs::kDefaultTasksBySuffix);
   DCHECK(suffix_task_prefs);
-  if (!suffix_task_prefs) {
-    LOG(WARNING) << "Unable to open suffix prefs";
-    return std::string();
-  }
+  LOG_IF(ERROR, !suffix_task_prefs) << "Unable to open suffix prefs";
   std::string lower_suffix = StringToLowerASCII(suffix);
-  suffix_task_prefs->GetStringWithoutPathExpansion(lower_suffix, &task_id);
+  if (suffix_task_prefs)
+    suffix_task_prefs->GetStringWithoutPathExpansion(lower_suffix, &task_id);
   VLOG_IF(1, !task_id.empty()) << "Found suffix default handler: " << task_id;
   return task_id;
 }
@@ -370,6 +374,11 @@ void FindDefaultTasks(Profile* profile,
         break;
       }
     }
+    // If it's a built in task, then we want to always insert it so that we have
+    // an initial default for all file types we can handle with built in
+    // handlers.
+    if (IsBuiltinTask(*task_iter))
+      default_tasks->insert(*task_iter);
   }
 }
 
@@ -450,17 +459,6 @@ bool GetTaskForURL(
     *handler = *default_tasks.begin();
     return true;
   }
-
-  // If there are no default tasks set, try to match one of the builtin tasks
-  // (excluding those that match all urls).
-  for (FileBrowserHandlerSet::const_iterator it = common_tasks.begin();
-       it != common_tasks.end();
-       ++it) {
-     if ((*it)->extension_id() == kFileBrowserDomain && !MatchesAllURLs(*it)) {
-       *handler = *it;
-       return true;
-     }
-   }
 
   return false;
 }

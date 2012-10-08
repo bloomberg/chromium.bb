@@ -685,6 +685,16 @@ void GetFileTasksFileBrowserFunction::FindDefaultDriveTasks(
       VLOG(1) << "Found default task for " << file_iter->file_path.value()
               << ": " << task_id;
       default_tasks->insert(task_id);
+    } else {
+      if (VLOG_IS_ON(2)) {
+        VLOG(2) << "Didn't find default task " << task_id
+                << " in available tasks";
+        VLOG(2) << "Available Tasks:";
+        for (std::set<std::string>::iterator iter = available_tasks.begin();
+             iter != available_tasks.end(); ++iter) {
+          VLOG(2) << "  " << *iter;
+        }
+      }
     }
   }
 }

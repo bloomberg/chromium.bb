@@ -1713,8 +1713,11 @@ FileManager.prototype = {
           break;
         }
       }
-      if (url)
+      if (url) {
         iconDiv.style.backgroundImage = 'url(' + url + ')';
+      } else {
+        iconDiv.style.backgroundImage = null;
+      }
     }
   };
 
@@ -2447,6 +2450,8 @@ FileManager.prototype = {
     this.selection.tasks = new FileTasks(
         this, this.selection.urls, this.selection.mimeTypes).
             display(this.taskItems_);
+    this.refreshCurrentDirectoryMetadata_();
+    this.updateUIForSelection(this.selection);
   };
 
   FileManager.prototype.updateNetworkStateAndGDataPreferences_ = function(
@@ -2463,8 +2468,8 @@ FileManager.prototype = {
       done();
     });
 
-    chrome.fileBrowserPrivate.getNetworkConnectionState(function(netwokState) {
-      self.networkState_ = netwokState;
+    chrome.fileBrowserPrivate.getNetworkConnectionState(function(networkState) {
+      self.networkState_ = networkState;
       done();
     });
   };

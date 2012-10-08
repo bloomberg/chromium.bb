@@ -118,9 +118,14 @@ void DriveWebAppsRegistry::GetWebAppsForFile(
   if (!mime_type.empty())
     FindWebAppsForSelector(mime_type, webapp_mimetypes_map_, &result_map);
 
+  // Insert found web apps into |apps|, but skip duplicate results.
+  std::set<std::string> inserted_app_ids;
   for (SelectorWebAppList::const_iterator it = result_map.begin();
        it != result_map.end(); ++it) {
-    apps->push_back(it->second);
+    if (inserted_app_ids.find(it->second->app_id) == inserted_app_ids.end()) {
+      inserted_app_ids.insert(it->second->app_id);
+      apps->push_back(it->second);
+    }
   }
 }
 
