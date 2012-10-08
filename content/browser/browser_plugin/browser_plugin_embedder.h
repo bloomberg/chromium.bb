@@ -105,6 +105,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
                         const WebKit::WebInputEvent& event,
                         IPC::Message* reply_message);
   void PluginDestroyed(int instance_id);
+  void SetGuestVisibility(int instance_id,
+                          bool guest_visible);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
@@ -144,6 +146,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // Contains guests' WebContents, mapping from their instance ids.
   ContainerInstanceMap guest_web_contents_by_instance_id_;
   RenderViewHost* render_view_host_;
+  bool visible_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginEmbedder);
 };

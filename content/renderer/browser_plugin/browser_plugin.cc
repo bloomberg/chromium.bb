@@ -71,7 +71,8 @@ BrowserPlugin::BrowserPlugin(
       resize_pending_(false),
       navigate_src_sent_(false),
       process_id_(-1),
-      persist_storage_(false) {
+      persist_storage_(false),
+      visible_(true) {
   BrowserPluginManager::Get()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
 
@@ -685,6 +686,17 @@ void BrowserPlugin::updateFocus(bool focused) {
 }
 
 void BrowserPlugin::updateVisibility(bool visible) {
+  if (visible_ == visible)
+    return;
+
+  visible_ = visible;
+  if (!navigate_src_sent_)
+    return;
+
+  BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetVisibility(
+      render_view_->GetRoutingID(),
+      instance_id_,
+      visible));
 }
 
 bool BrowserPlugin::acceptsInputEvents() {

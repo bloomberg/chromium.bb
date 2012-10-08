@@ -47,7 +47,8 @@ BrowserPluginGuest::BrowserPluginGuest(int instance_id,
       damage_buffer_scale_factor_(1.0f),
       pending_update_counter_(0),
       guest_hang_timeout_(
-          base::TimeDelta::FromMilliseconds(kGuestHangTimeoutMs)) {
+          base::TimeDelta::FromMilliseconds(kGuestHangTimeoutMs)),
+      visible_(true) {
   DCHECK(web_contents);
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
   new BrowserPluginGuestHelper(this, render_view_host);
@@ -133,6 +134,14 @@ void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
 void BrowserPluginGuest::SetIsAcceptingTouchEvents(bool accept) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_ShouldAcceptTouchEvents(instance_id(), accept));
+}
+
+void BrowserPluginGuest::SetVisibility(bool embedder_visible, bool visible) {
+  visible_ = visible;
+  if (embedder_visible && visible)
+    web_contents()->WasShown();
+  else
+    web_contents()->WasHidden();
 }
 
 WebContents* BrowserPluginGuest::GetWebContents() {

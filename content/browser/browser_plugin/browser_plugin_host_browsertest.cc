@@ -416,12 +416,24 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderSameAfterNav) {
   ASSERT_EQ(test_embedder_after_nav, test_embedder());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, VisibilityChanged) {
+// This test verifies that hiding the embedder also hides the guest.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BrowserPluginVisibilityChanged) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
 
-  // Wait for the guest to send an UpdateRectMsg, meaning it is ready.
-  test_guest()->WaitForUpdateRectMsg();
+  // Hide the Browser Plugin.
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  rvh->ExecuteJavascriptAndGetValue(string16(), ASCIIToUTF16(
+      "document.getElementById('plugin').style.visibility = 'hidden'"));
+
+  // Make sure that the guest is hidden.
+  test_guest()->WaitUntilHidden();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderVisibilityChanged) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
 
   // Hide the embedder.
   test_embedder()->web_contents()->WasHidden();

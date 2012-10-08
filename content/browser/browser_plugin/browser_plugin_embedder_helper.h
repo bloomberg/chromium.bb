@@ -67,6 +67,7 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
   void OnStop(int instance_id);
   void OnReload(int instance_id);
   void OnTerminateGuest(int instance_id);
+  void OnSetGuestVisibility(int instance_id, bool visible);
 
   BrowserPluginEmbedder* embedder_;
 

@@ -117,6 +117,11 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_NavigateGuest,
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_PluginDestroyed,
                     int /* instance_id */)
 
+// Tells the guest it has been shown or hidden.
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetVisibility,
+                    int /* instance_id */,
+                    bool /* visible */)
+
 // -----------------------------------------------------------------------------
 // These messages are from the guest renderer to the browser process
 

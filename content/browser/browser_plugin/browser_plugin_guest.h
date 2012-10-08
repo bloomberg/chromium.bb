@@ -84,6 +84,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
     embedder_render_process_host_ = render_process_host;
   }
 
+  bool visible() const { return visible_; }
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -140,6 +142,23 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // The guest needs to notify the plugin in the embedder to start (or stop)
   // accepting touch events.
   void SetIsAcceptingTouchEvents(bool accept);
+
+  // The guest WebContents is visible if both its embedder is visible and
+  // the browser plugin element is visible. If either one is not then the
+  // WebContents is marked as hidden. A hidden WebContents will consume
+  // fewer GPU and CPU resources.
+  //
+  // When the every WebContents in a RenderProcessHost is hidden, it will lower
+  // the priority of the process (see RenderProcessHostImpl::WidgetHidden).
+  //
+  // It will also send a message to the guest renderer process to cleanup
+  // resources such as dropping back buffers and adjusting memory limits (if in
+  // compositing mode, see CCLayerTreeHost::setVisible).
+  //
+  // Additionally it will slow down Javascript execution and garbage collection.
+  // See RenderThreadImpl::IdleHandler (executed when hidden) and
+  // RenderThreadImpl::IdleHandlerInForegroundTab (executed when visible).
+  void SetVisibility(bool embedder_visible, bool visible);
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContents* GetWebContents();
@@ -214,6 +233,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   IDMap<RenderViewHost> pending_updates_;
   int pending_update_counter_;
   base::TimeDelta guest_hang_timeout_;
+  bool visible_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

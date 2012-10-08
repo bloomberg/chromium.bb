@@ -191,6 +191,9 @@ class CONTENT_EXPORT BrowserPlugin :
   int process_id_;
   std::string storage_partition_id_;
   bool persist_storage_;
+  // Tracks the visibility of the browser plugin regardless of the whole
+  // embedder RenderView's visibility.
+  bool visible_;
   typedef std::vector<v8::Persistent<v8::Function> > EventListeners;
   typedef std::map<std::string, EventListeners> EventListenerMap;
   EventListenerMap event_listener_map_;

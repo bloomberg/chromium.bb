@@ -34,7 +34,8 @@ BrowserPluginEmbedder::BrowserPluginEmbedder(
     WebContentsImpl* web_contents,
     RenderViewHost* render_view_host)
     : WebContentsObserver(web_contents),
-      render_view_host_(render_view_host) {
+      render_view_host_(render_view_host),
+      visible_(true) {
   // Listen to visibility changes so that an embedder hides its guests
   // as well.
   registrar_.Add(this,
@@ -249,20 +250,26 @@ void BrowserPluginEmbedder::RenderViewGone(base::TerminationStatus status) {
 }
 
 void BrowserPluginEmbedder::WebContentsVisibilityChanged(bool visible) {
+  visible_ = visible;
   // If the embedder is hidden we need to hide the guests as well.
   for (ContainerInstanceMap::const_iterator it =
            guest_web_contents_by_instance_id_.begin();
        it != guest_web_contents_by_instance_id_.end(); ++it) {
-    WebContents* web_contents = it->second;
-    if (visible)
-      web_contents->WasShown();
-    else
-      web_contents->WasHidden();
+    WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(it->second);
+    BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
+    guest->SetVisibility(visible, guest->visible());
   }
 }
 
 void BrowserPluginEmbedder::PluginDestroyed(int instance_id) {
   DestroyGuestByInstanceID(instance_id);
+}
+
+void BrowserPluginEmbedder::SetGuestVisibility(int instance_id,
+                                               bool guest_visible) {
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  if (guest)
+    guest->SetVisibility(visible_, guest_visible);
 }
 
 void BrowserPluginEmbedder::Go(int instance_id, int relative_index) {
