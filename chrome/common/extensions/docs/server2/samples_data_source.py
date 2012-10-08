@@ -8,6 +8,7 @@ import logging
 import re
 
 import compiled_file_system as compiled_fs
+from file_system import FileNotFoundError
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
 import third_party.json_schema_compiler.model as model
 import url_constants
@@ -116,7 +117,13 @@ class SamplesDataSource(object):
         sample_files = [path for path in files
                         if path.startswith(sample_path + '/')]
         js_files = [path for path in sample_files if path.endswith('.js')]
-        js_contents = file_system.Read(js_files).Get()
+        try:
+          js_contents = file_system.Read(js_files).Get()
+        except FileNotFoundError as e:
+          logging.warning('Error fetching samples files: %s. Was a file '
+                          'deleted from a sample? This warning should go away '
+                          'in 5 minutes.' % e)
+          continue
         api_items = set()
         for js in js_contents.values():
           api_items.update(self._GetAPIItems(js))
@@ -145,7 +152,13 @@ class SamplesDataSource(object):
               'name': item,
               'link': link
             })
-        manifest_data = self._GetDataFromManifest(sample_path, file_system)
+        try:
+          manifest_data = self._GetDataFromManifest(sample_path, file_system)
+        except FileNotFoundError as e:
+          logging.warning('Error getting data from samples manifest: %s. If '
+                          'this file was deleted from a sample this message '
+                          'should go away in 5 minutes.' % e)
+          continue
         if manifest_data is None:
           continue
 
