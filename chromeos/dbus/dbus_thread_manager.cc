@@ -8,6 +8,7 @@
 
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
+#include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
@@ -20,6 +21,7 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -152,6 +154,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   virtual ~DBusThreadManagerImpl() {
+    FOR_EACH_OBSERVER(DBusThreadManagerObserver, observers_,
+                      OnDBusThreadManagerDestroying(this));
+
     // Shut down the bus. During the browser shutdown, it's ok to shut down
     // the bus synchronously.
     system_bus_->ShutdownOnDBusThreadAndBlock();
@@ -167,6 +172,18 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
     // Stop the D-Bus thread.
     dbus_thread_->Stop();
+  }
+
+  // DBusThreadManager override.
+  virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE {
+    DCHECK(observer);
+    observers_.AddObserver(observer);
+  }
+
+  // DBusThreadManager override.
+  virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE {
+    DCHECK(observer);
+    observers_.RemoveObserver(observer);
   }
 
   // DBusThreadManager override.
@@ -426,6 +443,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   std::map<dbus::ObjectPath, IBusEngineService*> ibus_engine_services_;
 
   std::string ibus_address_;
+
+  ObserverList<DBusThreadManagerObserver> observers_;
 };
 
 // static

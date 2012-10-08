@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 
+#include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/mock_bluetooth_adapter_client.h"
 #include "chromeos/dbus/mock_bluetooth_device_client.h"
 #include "chromeos/dbus/mock_bluetooth_input_client.h"
@@ -182,6 +183,20 @@ MockDBusThreadManager::MockDBusThreadManager()
       .Times(AnyNumber());
 }
 
-MockDBusThreadManager::~MockDBusThreadManager() {}
+MockDBusThreadManager::~MockDBusThreadManager() {
+  FOR_EACH_OBSERVER(DBusThreadManagerObserver, observers_,
+                    OnDBusThreadManagerDestroying(this));
+}
+
+void MockDBusThreadManager::AddObserver(DBusThreadManagerObserver* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void MockDBusThreadManager::RemoveObserver(
+    DBusThreadManagerObserver* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
 
 }  // namespace chromeos

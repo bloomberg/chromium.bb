@@ -28,6 +28,7 @@ namespace chromeos {
 PowerStateOverride::PowerStateOverride(Mode mode)
     : override_types_(0),
       request_id_(0),
+      dbus_thread_manager_(DBusThreadManager::Get()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   switch (mode) {
     case BLOCK_DISPLAY_SLEEP:
@@ -42,6 +43,8 @@ PowerStateOverride::PowerStateOverride(Mode mode)
       NOTREACHED() << "Unhandled mode " << mode;
   }
 
+  dbus_thread_manager_->AddObserver(this);
+
   // request_id_ = 0 will create a new override request.
   CallRequestPowerStateOverrides();
 
@@ -52,12 +55,16 @@ PowerStateOverride::PowerStateOverride(Mode mode)
 }
 
 PowerStateOverride::~PowerStateOverride() {
-  heartbeat_.Stop();
+  if (dbus_thread_manager_)
+    dbus_thread_manager_->RemoveObserver(this);
+  CancelRequest();
+}
 
-  PowerManagerClient* power_manager =
-      DBusThreadManager::Get()->GetPowerManagerClient();
-  if (power_manager)
-    power_manager->CancelPowerStateOverrides(request_id_);
+void PowerStateOverride::OnDBusThreadManagerDestroying(
+    DBusThreadManager* manager) {
+  DCHECK_EQ(manager, dbus_thread_manager_);
+  CancelRequest();
+  dbus_thread_manager_ = NULL;
 }
 
 void PowerStateOverride::SetRequestId(uint32 request_id) {
@@ -65,16 +72,22 @@ void PowerStateOverride::SetRequestId(uint32 request_id) {
 }
 
 void PowerStateOverride::CallRequestPowerStateOverrides() {
-  PowerManagerClient* power_manager =
-      DBusThreadManager::Get()->GetPowerManagerClient();
-  if (power_manager) {
-    power_manager->RequestPowerStateOverrides(
-        request_id_,
-        base::TimeDelta::FromSeconds(
-            kHeartbeatTimeInSecs + kRequestSlackInSecs),
-        override_types_,
-        base::Bind(&PowerStateOverride::SetRequestId,
-                   weak_ptr_factory_.GetWeakPtr()));
+  DCHECK(dbus_thread_manager_);
+  dbus_thread_manager_->GetPowerManagerClient()->RequestPowerStateOverrides(
+      request_id_,
+      base::TimeDelta::FromSeconds(
+          kHeartbeatTimeInSecs + kRequestSlackInSecs),
+      override_types_,
+      base::Bind(&PowerStateOverride::SetRequestId,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PowerStateOverride::CancelRequest() {
+  if (request_id_) {
+    DCHECK(dbus_thread_manager_);
+    dbus_thread_manager_->GetPowerManagerClient()->
+        CancelPowerStateOverrides(request_id_);
+    request_id_ = 0;
   }
 }
 

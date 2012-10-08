@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/observer_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -18,6 +19,7 @@ class Bus;
 
 namespace chromeos {
 
+class DBusThreadManagerObserver;
 class MockBluetoothAdapterClient;
 class MockBluetoothDeviceClient;
 class MockBluetoothInputClient;
@@ -54,6 +56,8 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockDBusThreadManager();
   virtual ~MockDBusThreadManager();
 
+  void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE;
+  void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE;
   MOCK_METHOD1(InitIBusBus, void(const std::string& ibus_address));
   MOCK_METHOD0(GetSystemBus, dbus::Bus*(void));
   MOCK_METHOD0(GetIBusBus, dbus::Bus*(void));
@@ -205,6 +209,8 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockSMSClient> mock_sms_client_;
   scoped_ptr<MockSpeechSynthesizerClient> mock_speech_synthesizer_client_;
   scoped_ptr<MockUpdateEngineClient> mock_update_engine_client_;
+
+  ObserverList<DBusThreadManagerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManager);
 };

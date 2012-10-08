@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace dbus {
@@ -17,6 +18,7 @@ class ObjectPath;
 
 namespace chromeos {
 
+class DBusThreadManagerObserver;
 class MockIBusClient;
 class MockIBusEngineFactoryService;
 class MockIBusEngineService;
@@ -30,6 +32,8 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   MockDBusThreadManagerWithoutGMock();
   virtual ~MockDBusThreadManagerWithoutGMock();
 
+  virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE;
   virtual void InitIBusBus(const std::string& ibus_address) OVERRIDE;
   virtual dbus::Bus* GetSystemBus() OVERRIDE;
   virtual dbus::Bus* GetIBusBus() OVERRIDE;
@@ -97,6 +101,9 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<MockIBusEngineFactoryService> mock_ibus_engine_factory_service_;
 
   dbus::Bus* ibus_bus_;
+
+  ObserverList<DBusThreadManagerObserver> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManagerWithoutGMock);
 };
 

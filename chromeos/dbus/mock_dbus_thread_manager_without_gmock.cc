@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 
+#include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
@@ -17,7 +18,22 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
     ibus_bus_(NULL) {
 }
 
-MockDBusThreadManagerWithoutGMock::~MockDBusThreadManagerWithoutGMock() {}
+MockDBusThreadManagerWithoutGMock::~MockDBusThreadManagerWithoutGMock() {
+  FOR_EACH_OBSERVER(DBusThreadManagerObserver, observers_,
+                    OnDBusThreadManagerDestroying(this));
+}
+
+void MockDBusThreadManagerWithoutGMock::AddObserver(
+    DBusThreadManagerObserver* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void MockDBusThreadManagerWithoutGMock::RemoveObserver(
+    DBusThreadManagerObserver* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
 
 void MockDBusThreadManagerWithoutGMock::InitIBusBus(
     const std::string& ibus_address) {

@@ -42,6 +42,9 @@ class PowerApiTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDown();
   }
 
+ protected:
+  static const int kRequestId = 5;  // arbitrary
+
   scoped_refptr<Extension> CreateExtensionWithId(const std::string& id) {
     return extension_test_util::CreateExtensionWithID(
         extension_test_util::MakeId(id));
@@ -63,6 +66,21 @@ class PowerApiTest : public InProcessBrowserTest {
     EXPECT_EQ(boolean_value, true);
   }
 
+  // Adds an expectation that RequestPowerStateOverrides() will be called once
+  // to create a new override.  The callback is stored in
+  // |request_id_callback_|, which should be invoked with |kRequestId|.
+  void AddRequestPowerStateOverridesExpectation() {
+    EXPECT_CALL(*power_client_, RequestPowerStateOverrides(0, _, _, _))
+        .WillOnce(testing::SaveArg<3>(&request_id_callback_));
+  }
+
+  // Adds an expectation that CancelPowerStateOverrides() will be called once to
+  // cancel an override previously created via
+  // AddRequestPowerStateOverridesExpectation().
+  void AddCancelPowerStateOverridesExpectation() {
+    EXPECT_CALL(*power_client_, CancelPowerStateOverrides(kRequestId)).Times(1);
+  }
+
   void RequestKeepAwake(scoped_refptr<Extension> extension) {
     scoped_refptr<RequestKeepAwakeFunction> function(
         new RequestKeepAwakeFunction);
@@ -75,8 +93,9 @@ class PowerApiTest : public InProcessBrowserTest {
     RunFunctionAndExpectPass(function.get(), extension);
   }
 
- protected:
   chromeos::MockPowerManagerClient* power_client_;
+
+  chromeos::PowerStateRequestIdCallback request_id_callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerApiTest);
@@ -84,11 +103,11 @@ class PowerApiTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PowerApiTest, RequestAndRelease) {
   scoped_refptr<Extension> extension(CreateExtensionWithId("0"));
-
-  EXPECT_CALL(*power_client_, RequestPowerStateOverrides(_,_,_,_)).Times(1);
+  AddRequestPowerStateOverridesExpectation();
   RequestKeepAwake(extension);
+  request_id_callback_.Run(kRequestId);
 
-  EXPECT_CALL(*power_client_, CancelPowerStateOverrides(_)).Times(1);
+  AddCancelPowerStateOverridesExpectation();
   ReleaseKeepAwake(extension);
 }
 
@@ -96,22 +115,24 @@ IN_PROC_BROWSER_TEST_F(PowerApiTest, RequestMultipleAndReleaseOne) {
   scoped_refptr<Extension> extension1(CreateExtensionWithId("1"));
   scoped_refptr<Extension> extension2(CreateExtensionWithId("2"));
 
-  EXPECT_CALL(*power_client_, RequestPowerStateOverrides(_,_,_,_)).Times(1);
+  AddRequestPowerStateOverridesExpectation();
   RequestKeepAwake(extension1);
   RequestKeepAwake(extension2);
   RequestKeepAwake(extension1);
+  request_id_callback_.Run(kRequestId);
 
-  EXPECT_CALL(*power_client_, CancelPowerStateOverrides(_)).Times(1);
+  AddCancelPowerStateOverridesExpectation();
   ReleaseKeepAwake(extension1);
 }
 
 IN_PROC_BROWSER_TEST_F(PowerApiTest, RequestOneAndReleaseMultiple) {
   scoped_refptr<Extension> extension(CreateExtensionWithId("3"));
 
-  EXPECT_CALL(*power_client_, RequestPowerStateOverrides(_,_,_,_)).Times(1);
+  AddRequestPowerStateOverridesExpectation();
   RequestKeepAwake(extension);
+  request_id_callback_.Run(kRequestId);
 
-  EXPECT_CALL(*power_client_, CancelPowerStateOverrides(_)).Times(1);
+  AddCancelPowerStateOverridesExpectation();
   ReleaseKeepAwake(extension);
   ReleaseKeepAwake(extension);
   ReleaseKeepAwake(extension);
@@ -122,12 +143,13 @@ IN_PROC_BROWSER_TEST_F(PowerApiTest, RequestMultipleAndReleaseAll) {
   scoped_refptr<Extension> extension2(CreateExtensionWithId("5"));
   scoped_refptr<Extension> extension3(CreateExtensionWithId("6"));
 
-  EXPECT_CALL(*power_client_, RequestPowerStateOverrides(_,_,_,_)).Times(1);
+  AddRequestPowerStateOverridesExpectation();
   RequestKeepAwake(extension1);
   RequestKeepAwake(extension2);
   RequestKeepAwake(extension3);
+  request_id_callback_.Run(kRequestId);
 
-  EXPECT_CALL(*power_client_, CancelPowerStateOverrides(_)).Times(1);
+  AddCancelPowerStateOverridesExpectation();
   ReleaseKeepAwake(extension3);
   ReleaseKeepAwake(extension1);
   ReleaseKeepAwake(extension2);
