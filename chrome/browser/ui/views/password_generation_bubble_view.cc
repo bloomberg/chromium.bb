@@ -158,7 +158,7 @@ void PasswordGenerationBubbleView::Init() {
   regenerate_button_ = new views::ImageButton(this);
   regenerate_button_->SetImage(
       views::CustomButton::BS_NORMAL,
-      theme_provider_->GetImageSkiaNamed(IDR_RELOAD));
+      theme_provider_->GetImageSkiaNamed(IDR_RELOAD_DIMMED));
   regenerate_button_->SetImage(
       views::CustomButton::BS_HOT,
       theme_provider_->GetImageSkiaNamed(IDR_RELOAD));
