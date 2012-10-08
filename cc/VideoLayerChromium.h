@@ -23,7 +23,7 @@ class VideoLayerChromium : public LayerChromium {
 public:
     static scoped_refptr<VideoLayerChromium> create(WebKit::WebVideoFrameProvider*);
 
-    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
 private:
     explicit VideoLayerChromium(WebKit::WebVideoFrameProvider*);

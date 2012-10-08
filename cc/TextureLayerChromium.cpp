@@ -42,9 +42,9 @@ TextureLayerChromium::~TextureLayerChromium()
     }
 }
 
-PassOwnPtr<CCLayerImpl> TextureLayerChromium::createCCLayerImpl()
+scoped_ptr<CCLayerImpl> TextureLayerChromium::createCCLayerImpl()
 {
-    return CCTextureLayerImpl::create(m_layerId);
+    return CCTextureLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
 }
 
 void TextureLayerChromium::setFlipped(bool flipped)

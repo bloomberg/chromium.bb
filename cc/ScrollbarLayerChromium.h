@@ -32,7 +32,7 @@ typedef BitmapCanvasLayerTextureUpdater ScrollLayerTextureUpdater;
 
 class ScrollbarLayerChromium : public LayerChromium {
 public:
-    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
     static scoped_refptr<ScrollbarLayerChromium> create(PassOwnPtr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
 

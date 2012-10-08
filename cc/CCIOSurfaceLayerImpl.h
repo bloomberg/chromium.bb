@@ -12,9 +12,9 @@ namespace cc {
 
 class CCIOSurfaceLayerImpl : public CCLayerImpl {
 public:
-    static PassOwnPtr<CCIOSurfaceLayerImpl> create(int id)
+    static scoped_ptr<CCIOSurfaceLayerImpl> create(int id)
     {
-        return adoptPtr(new CCIOSurfaceLayerImpl(id));
+        return make_scoped_ptr(new CCIOSurfaceLayerImpl(id));
     }
     virtual ~CCIOSurfaceLayerImpl();
 

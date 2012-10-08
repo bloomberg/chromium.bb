@@ -110,17 +110,25 @@ struct CCOcclusionTrackerTestMainThreadTypes {
     typedef RenderSurfaceChromium RenderSurfaceType;
     typedef TestContentLayerChromium ContentLayerType;
     typedef scoped_refptr<LayerChromium> LayerPtrType;
-    typedef scoped_refptr<LayerChromium> PassLayerPtrType;
     typedef scoped_refptr<ContentLayerType> ContentLayerPtrType;
-    typedef scoped_refptr<ContentLayerType> PassContentLayerPtrType;
     typedef CCLayerIterator<LayerChromium, std::vector<scoped_refptr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::FrontToBack> LayerIterator;
     typedef CCOcclusionTracker OcclusionTrackerType;
 
-    static PassLayerPtrType createLayer()
+    static LayerPtrType createLayer()
     {
         return LayerChromium::create();
     }
-    static PassContentLayerPtrType createContentLayer() { return make_scoped_refptr(new ContentLayerType()); }
+    static ContentLayerPtrType createContentLayer() { return make_scoped_refptr(new ContentLayerType()); }
+
+    static LayerPtrType passLayerPtr(ContentLayerPtrType& layer)
+    {
+        return layer.release();
+    }
+
+    static LayerPtrType passLayerPtr(LayerPtrType& layer)
+    {
+        return layer.release();
+    }
 
     static void destroyLayer(LayerPtrType& layer)
     {
@@ -132,20 +140,28 @@ struct CCOcclusionTrackerTestImplThreadTypes {
     typedef CCLayerImpl LayerType;
     typedef CCRenderSurface RenderSurfaceType;
     typedef TestContentLayerImpl ContentLayerType;
-    typedef OwnPtr<CCLayerImpl> LayerPtrType;
-    typedef PassOwnPtr<CCLayerImpl> PassLayerPtrType;
-    typedef OwnPtr<ContentLayerType> ContentLayerPtrType;
-    typedef PassOwnPtr<ContentLayerType> PassContentLayerPtrType;
+    typedef scoped_ptr<CCLayerImpl> LayerPtrType;
+    typedef scoped_ptr<ContentLayerType> ContentLayerPtrType;
     typedef CCLayerIterator<CCLayerImpl, std::vector<CCLayerImpl*>, CCRenderSurface, CCLayerIteratorActions::FrontToBack> LayerIterator;
     typedef CCOcclusionTrackerImpl OcclusionTrackerType;
 
-    static PassLayerPtrType createLayer() { return CCLayerImpl::create(nextCCLayerImplId++); }
-    static PassContentLayerPtrType createContentLayer() { return adoptPtr(new ContentLayerType(nextCCLayerImplId++)); }
+    static LayerPtrType createLayer() { return CCLayerImpl::create(nextCCLayerImplId++); }
+    static ContentLayerPtrType createContentLayer() { return make_scoped_ptr(new ContentLayerType(nextCCLayerImplId++)); }
     static int nextCCLayerImplId;
+
+    static LayerPtrType passLayerPtr(LayerPtrType& layer)
+    {
+        return layer.Pass();
+    }
+
+    static LayerPtrType passLayerPtr(ContentLayerPtrType& layer)
+    {
+        return layer.PassAs<LayerType>();
+    }
 
     static void destroyLayer(LayerPtrType& layer)
     {
-        layer.clear();
+        layer.reset();
     }
 };
 
@@ -177,7 +193,7 @@ protected:
         setProperties(layerPtr, transform, position, bounds);
 
         ASSERT(!m_root);
-        m_root = layer.release();
+        m_root = Types::passLayerPtr(layer);
         return layerPtr;
     }
 
@@ -186,7 +202,7 @@ protected:
         typename Types::LayerPtrType layer(Types::createLayer());
         typename Types::LayerType* layerPtr = layer.get();
         setProperties(layerPtr, transform, position, bounds);
-        parent->addChild(layer.release());
+        parent->addChild(Types::passLayerPtr(layer));
         return layerPtr;
     }
 
@@ -215,7 +231,7 @@ protected:
                 layerPtr->setOpaqueContentsRect(IntRect());
         }
 
-        parent->addChild(layer.release());
+        parent->addChild(Types::passLayerPtr(layer));
         return layerPtr;
     }
 
@@ -224,7 +240,7 @@ protected:
         typename Types::ContentLayerPtrType layer(Types::createContentLayer());
         typename Types::ContentLayerType* layerPtr = layer.get();
         setProperties(layerPtr, transform, position, bounds);
-        setReplica(owningLayer, layer.release());
+        setReplica(owningLayer, Types::passLayerPtr(layer));
         return layerPtr;
     }
 
@@ -233,7 +249,7 @@ protected:
         typename Types::ContentLayerPtrType layer(Types::createContentLayer());
         typename Types::ContentLayerType* layerPtr = layer.get();
         setProperties(layerPtr, identityMatrix, FloatPoint(), bounds);
-        setMask(owningLayer, layer.release());
+        setMask(owningLayer, Types::passLayerPtr(layer));
         return layerPtr;
     }
 
@@ -354,9 +370,9 @@ private:
         m_replicaLayers.push_back(layer);
     }
 
-    void setReplica(CCLayerImpl* owningLayer, PassOwnPtr<CCLayerImpl> layer)
+    void setReplica(CCLayerImpl* owningLayer, scoped_ptr<CCLayerImpl> layer)
     {
-        owningLayer->setReplicaLayer(layer);
+        owningLayer->setReplicaLayer(layer.Pass());
     }
 
     void setMask(LayerChromium* owningLayer, scoped_refptr<LayerChromium> layer)
@@ -365,9 +381,9 @@ private:
         m_maskLayers.push_back(layer);
     }
 
-    void setMask(CCLayerImpl* owningLayer, PassOwnPtr<CCLayerImpl> layer)
+    void setMask(CCLayerImpl* owningLayer, scoped_ptr<CCLayerImpl> layer)
     {
-        owningLayer->setMaskLayer(layer);
+        owningLayer->setMaskLayer(layer.Pass());
     }
 
     // These hold ownership of the layers for the duration of the test.

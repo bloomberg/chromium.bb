@@ -12,9 +12,9 @@
 
 namespace cc {
 
-PassOwnPtr<CCLayerImpl> SolidColorLayerChromium::createCCLayerImpl()
+scoped_ptr<CCLayerImpl> SolidColorLayerChromium::createCCLayerImpl()
 {
-    return CCSolidColorLayerImpl::create(id());
+    return CCSolidColorLayerImpl::create(id()).PassAs<CCLayerImpl>();
 }
 
 scoped_refptr<SolidColorLayerChromium> SolidColorLayerChromium::create()

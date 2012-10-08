@@ -5,6 +5,7 @@
 #ifndef CCLayerImpl_h
 #define CCLayerImpl_h
 
+#include "base/memory/scoped_ptr.h"
 #include "CCInputHandler.h"
 #include "CCLayerAnimationController.h"
 #include "CCRenderPass.h"
@@ -15,13 +16,11 @@
 #include "IntRect.h"
 #include "Region.h"
 #include "SkColor.h"
-#include "cc/own_ptr_vector.h"
+#include "cc/scoped_ptr_vector.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <string>
 #include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
 
 namespace cc {
 
@@ -37,9 +36,9 @@ struct CCAppendQuadsData;
 
 class CCLayerImpl : public CCLayerAnimationControllerClient {
 public:
-    static PassOwnPtr<CCLayerImpl> create(int id)
+    static scoped_ptr<CCLayerImpl> create(int id)
     {
-        return adoptPtr(new CCLayerImpl(id));
+        return make_scoped_ptr(new CCLayerImpl(id));
     }
 
     virtual ~CCLayerImpl();
@@ -53,15 +52,15 @@ public:
 
     // Tree structure.
     CCLayerImpl* parent() const { return m_parent; }
-    const OwnPtrVector<CCLayerImpl>& children() const { return m_children; }
-    void addChild(PassOwnPtr<CCLayerImpl>);
+    const ScopedPtrVector<CCLayerImpl>& children() const { return m_children; }
+    void addChild(scoped_ptr<CCLayerImpl>);
     void removeFromParent();
     void removeAllChildren();
 
-    void setMaskLayer(PassOwnPtr<CCLayerImpl>);
+    void setMaskLayer(scoped_ptr<CCLayerImpl>);
     CCLayerImpl* maskLayer() const { return m_maskLayer.get(); }
 
-    void setReplicaLayer(PassOwnPtr<CCLayerImpl>);
+    void setReplicaLayer(scoped_ptr<CCLayerImpl>);
     CCLayerImpl* replicaLayer() const { return m_replicaLayer.get(); }
 
     bool hasMask() const { return m_maskLayer; }
@@ -283,12 +282,12 @@ private:
 
     // Properties internal to CCLayerImpl
     CCLayerImpl* m_parent;
-    OwnPtrVector<CCLayerImpl> m_children;
+    ScopedPtrVector<CCLayerImpl> m_children;
     // m_maskLayer can be temporarily stolen during tree sync, we need this ID to confirm newly assigned layer is still the previous one
     int m_maskLayerId;
-    OwnPtr<CCLayerImpl> m_maskLayer;
+    scoped_ptr<CCLayerImpl> m_maskLayer;
     int m_replicaLayerId; // ditto
-    OwnPtr<CCLayerImpl> m_replicaLayer;
+    scoped_ptr<CCLayerImpl> m_replicaLayer;
     int m_layerId;
     CCLayerTreeHostImpl* m_layerTreeHostImpl;
 

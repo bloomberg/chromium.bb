@@ -34,9 +34,9 @@ void IOSurfaceLayerChromium::setIOSurfaceProperties(uint32_t ioSurfaceId, const 
     setNeedsCommit();
 }
 
-PassOwnPtr<CCLayerImpl> IOSurfaceLayerChromium::createCCLayerImpl()
+scoped_ptr<CCLayerImpl> IOSurfaceLayerChromium::createCCLayerImpl()
 {
-    return CCIOSurfaceLayerImpl::create(m_layerId);
+    return CCIOSurfaceLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
 }
 
 bool IOSurfaceLayerChromium::drawsContent() const
