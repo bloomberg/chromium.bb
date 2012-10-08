@@ -403,8 +403,9 @@ TEST_F(ProfileSyncServiceTest, FailToOpenDatabase) {
 // reenable sync.  The handler should get notified of the state
 // changes.
 // Flaky on all platforms. http://crbug.com/154491
-TEST_F(ProfileSyncServiceTest, DISABLED_DisableInvalidationsOnStop) {
-  harness_.StartSyncService();
+TEST_F(ProfileSyncServiceTest, FLAKY_DisableInvalidationsOnStop) {
+  harness_.StartSyncServiceAndSetInitialSyncEnded(
+      true, true, true, true, syncer::STORAGE_IN_MEMORY);
 
   syncer::FakeInvalidationHandler handler;
   harness_.service->RegisterInvalidationHandler(&handler);
