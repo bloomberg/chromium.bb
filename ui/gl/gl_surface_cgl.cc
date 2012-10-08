@@ -31,7 +31,7 @@ bool GLSurfaceCGL::InitializeOneOff() {
   // GPU-related stuff is very slow without this, probably because
   // the sandbox prevents loading graphics drivers or some such.
   std::vector<CGLPixelFormatAttribute> attribs;
-  if (gfx::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
     // Avoid switching to the discrete GPU just for this pixel
     // format selection.
     attribs.push_back(kCGLPFAAllowOfflineRenderers);

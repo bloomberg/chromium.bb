@@ -28,7 +28,7 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
                               GpuPreference gpu_preference) {
   DCHECK(compatible_surface);
 
-  gpu_preference = GpuSwitchingManager::GetInstance()->AdjustGpuPreference(
+  gpu_preference = ui::GpuSwitchingManager::GetInstance()->AdjustGpuPreference(
       gpu_preference);
 
   GLContextCGL* share_context = share_group() ?
@@ -37,7 +37,7 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
   std::vector<CGLPixelFormatAttribute> attribs;
   // If the system supports dual gpus then allow offline renderers for every
   // context, so that they can all be in the same share group.
-  if (GpuSwitchingManager::GetInstance()->SupportsDualGpus())
+  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
     attribs.push_back(kCGLPFAAllowOfflineRenderers);
   if (GetGLImplementation() == kGLImplementationAppleGL) {
     attribs.push_back(kCGLPFARendererID);
@@ -61,7 +61,7 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 
   // If using the discrete gpu, create a pixel format requiring it before we
   // create the context.
-  if (!GpuSwitchingManager::GetInstance()->SupportsDualGpus() ||
+  if (!ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus() ||
       gpu_preference == PreferDiscreteGpu) {
     std::vector<CGLPixelFormatAttribute> discrete_attribs;
     discrete_attribs.push_back((CGLPixelFormatAttribute) 0);

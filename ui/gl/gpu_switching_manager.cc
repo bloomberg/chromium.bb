@@ -67,7 +67,7 @@ bool SupportsOnlineAndOfflineRenderers() {
 
 }  // namespace anonymous
 
-namespace gfx {
+namespace ui {
 
 // static
 GpuSwitchingManager* GpuSwitchingManager::GetInstance() {
@@ -75,7 +75,7 @@ GpuSwitchingManager* GpuSwitchingManager::GetInstance() {
 }
 
 GpuSwitchingManager::GpuSwitchingManager()
-    : gpu_switching_option_(PreferIntegratedGpu),
+    : gpu_switching_option_(gfx::PreferIntegratedGpu),
       gpu_switching_option_set_(false),
       supports_dual_gpus_(false),
       supports_dual_gpus_set_(false) {
@@ -94,9 +94,9 @@ GpuSwitchingManager::~GpuSwitchingManager() {
 void GpuSwitchingManager::ForceUseOfIntegratedGpu() {
   DCHECK(SupportsDualGpus());
   if (gpu_switching_option_set_) {
-    DCHECK_EQ(gpu_switching_option_, PreferIntegratedGpu);
+    DCHECK_EQ(gpu_switching_option_, gfx::PreferIntegratedGpu);
   } else {
-    gpu_switching_option_ = PreferIntegratedGpu;
+    gpu_switching_option_ = gfx::PreferIntegratedGpu;
     gpu_switching_option_set_ = true;
   }
 }
@@ -104,9 +104,9 @@ void GpuSwitchingManager::ForceUseOfIntegratedGpu() {
 void GpuSwitchingManager::ForceUseOfDiscreteGpu() {
   DCHECK(SupportsDualGpus());
   if (gpu_switching_option_set_) {
-    DCHECK_EQ(gpu_switching_option_, PreferDiscreteGpu);
+    DCHECK_EQ(gpu_switching_option_, gfx::PreferDiscreteGpu);
   } else {
-    gpu_switching_option_ = PreferDiscreteGpu;
+    gpu_switching_option_ = gfx::PreferDiscreteGpu;
     gpu_switching_option_set_ = true;
 #if defined(OS_MACOSX)
     // Create a pixel format that lasts the lifespan of Chrome, so Chrome
@@ -151,8 +151,8 @@ bool GpuSwitchingManager::SupportsDualGpus() {
   return supports_dual_gpus_;
 }
 
-GpuPreference GpuSwitchingManager::AdjustGpuPreference(
-    GpuPreference gpu_preference) {
+gfx::GpuPreference GpuSwitchingManager::AdjustGpuPreference(
+    gfx::GpuPreference gpu_preference) {
   if (!gpu_switching_option_set_)
     return gpu_preference;
   return gpu_switching_option_;
@@ -169,5 +169,4 @@ void GpuSwitchingManager::SwitchToDiscreteGpuMac() {
 }
 #endif  // OS_MACOSX
 
-}  // namespace gfx
-
+}  // namespace ui

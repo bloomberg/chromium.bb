@@ -178,7 +178,7 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
   attributes.push_back(NSOpenGLPFADoubleBuffer);
   // We don't need a depth buffer - try setting its size to 0...
   attributes.push_back(NSOpenGLPFADepthSize); attributes.push_back(0);
-  if (gfx::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
+  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
     attributes.push_back(NSOpenGLPFAAllowOfflineRenderers);
   attributes.push_back(0);
 

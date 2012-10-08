@@ -392,7 +392,7 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   } else if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
-  if (gfx::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
     command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "true");
     switch (gpu_switching_) {
       case content::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
@@ -524,13 +524,13 @@ void GpuDataManagerImpl::UpdateBlacklistedFeatures(
 }
 
 void GpuDataManagerImpl::UpdateGpuSwitchingManager() {
-  if (gfx::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
     switch (gpu_switching_) {
       case content::GPU_SWITCHING_OPTION_FORCE_DISCRETE:
-        gfx::GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
+        ui::GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
         break;
       case content::GPU_SWITCHING_OPTION_FORCE_INTEGRATED:
-        gfx::GpuSwitchingManager::GetInstance()->ForceUseOfIntegratedGpu();
+        ui::GpuSwitchingManager::GetInstance()->ForceUseOfIntegratedGpu();
         break;
       case content::GPU_SWITCHING_OPTION_AUTOMATIC:
       case content::GPU_SWITCHING_OPTION_UNKNOWN:

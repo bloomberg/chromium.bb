@@ -82,9 +82,9 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     std::string option = command_line.GetSwitchValueASCII(
         switches::kGpuSwitching);
     if (option == switches::kGpuSwitchingOptionNameForceDiscrete)
-      gfx::GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
+      ui::GpuSwitchingManager::GetInstance()->ForceUseOfDiscreteGpu();
     else if (option == switches::kGpuSwitchingOptionNameForceIntegrated)
-      gfx::GpuSwitchingManager::GetInstance()->ForceUseOfIntegratedGpu();
+      ui::GpuSwitchingManager::GetInstance()->ForceUseOfIntegratedGpu();
   }
 
   // Initialization of the OpenGL bindings may fail, in which case we
