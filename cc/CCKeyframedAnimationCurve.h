@@ -7,10 +7,8 @@
 
 #include "CCAnimationCurve.h"
 #include "CCTimingFunction.h"
-#include "cc/own_ptr_vector.h"
+#include "scoped_ptr_vector.h"
 #include <public/WebTransformOperations.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -20,40 +18,40 @@ public:
     const CCTimingFunction* timingFunction() const;
 
 protected:
-    CCKeyframe(double time, PassOwnPtr<CCTimingFunction>);
+    CCKeyframe(double time, scoped_ptr<CCTimingFunction>);
     virtual ~CCKeyframe();
 
 private:
     double m_time;
-    OwnPtr<CCTimingFunction> m_timingFunction;
+    scoped_ptr<CCTimingFunction> m_timingFunction;
 };
 
 class CCFloatKeyframe : public CCKeyframe {
 public:
-    static PassOwnPtr<CCFloatKeyframe> create(double time, float value, PassOwnPtr<CCTimingFunction>);
+    static scoped_ptr<CCFloatKeyframe> create(double time, float value, scoped_ptr<CCTimingFunction>);
     virtual ~CCFloatKeyframe();
 
     float value() const;
 
-    PassOwnPtr<CCFloatKeyframe> clone() const;
+    scoped_ptr<CCFloatKeyframe> clone() const;
 
 private:
-    CCFloatKeyframe(double time, float value, PassOwnPtr<CCTimingFunction>);
+    CCFloatKeyframe(double time, float value, scoped_ptr<CCTimingFunction>);
 
     float m_value;
 };
 
 class CCTransformKeyframe : public CCKeyframe {
 public:
-    static PassOwnPtr<CCTransformKeyframe> create(double time, const WebKit::WebTransformOperations& value, PassOwnPtr<CCTimingFunction>);
+    static scoped_ptr<CCTransformKeyframe> create(double time, const WebKit::WebTransformOperations& value, scoped_ptr<CCTimingFunction>);
     virtual ~CCTransformKeyframe();
 
     const WebKit::WebTransformOperations& value() const;
 
-    PassOwnPtr<CCTransformKeyframe> clone() const;
+    scoped_ptr<CCTransformKeyframe> clone() const;
 
 private:
-    CCTransformKeyframe(double time, const WebKit::WebTransformOperations& value, PassOwnPtr<CCTimingFunction>);
+    CCTransformKeyframe(double time, const WebKit::WebTransformOperations& value, scoped_ptr<CCTimingFunction>);
 
     WebKit::WebTransformOperations m_value;
 };
@@ -61,15 +59,15 @@ private:
 class CCKeyframedFloatAnimationCurve : public CCFloatAnimationCurve {
 public:
     // It is required that the keyframes be sorted by time.
-    static PassOwnPtr<CCKeyframedFloatAnimationCurve> create();
+    static scoped_ptr<CCKeyframedFloatAnimationCurve> create();
 
     virtual ~CCKeyframedFloatAnimationCurve();
 
-    void addKeyframe(PassOwnPtr<CCFloatKeyframe>);
+    void addKeyframe(scoped_ptr<CCFloatKeyframe>);
 
     // CCAnimationCurve implementation
     virtual double duration() const OVERRIDE;
-    virtual PassOwnPtr<CCAnimationCurve> clone() const OVERRIDE;
+    virtual scoped_ptr<CCAnimationCurve> clone() const OVERRIDE;
 
     // CCFloatAnimationCurve implementation
     virtual float getValue(double t) const OVERRIDE;
@@ -79,21 +77,21 @@ private:
 
     // Always sorted in order of increasing time. No two keyframes have the
     // same time.
-    OwnPtrVector<CCFloatKeyframe> m_keyframes;
+    ScopedPtrVector<CCFloatKeyframe> m_keyframes;
 };
 
 class CCKeyframedTransformAnimationCurve : public CCTransformAnimationCurve {
 public:
     // It is required that the keyframes be sorted by time.
-    static PassOwnPtr<CCKeyframedTransformAnimationCurve> create();
+    static scoped_ptr<CCKeyframedTransformAnimationCurve> create();
 
     virtual ~CCKeyframedTransformAnimationCurve();
 
-    void addKeyframe(PassOwnPtr<CCTransformKeyframe>);
+    void addKeyframe(scoped_ptr<CCTransformKeyframe>);
 
     // CCAnimationCurve implementation
     virtual double duration() const OVERRIDE;
-    virtual PassOwnPtr<CCAnimationCurve> clone() const OVERRIDE;
+    virtual scoped_ptr<CCAnimationCurve> clone() const OVERRIDE;
 
     // CCTransformAnimationCurve implementation
     virtual WebKit::WebTransformationMatrix getValue(double t) const OVERRIDE;
@@ -103,7 +101,7 @@ private:
 
     // Always sorted in order of increasing time. No two keyframes have the
     // same time.
-    OwnPtrVector<CCTransformKeyframe> m_keyframes;
+    ScopedPtrVector<CCTransformKeyframe> m_keyframes;
 };
 
 } // namespace cc

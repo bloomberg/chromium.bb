@@ -791,12 +791,12 @@ TEST(LayerChromiumLayerTreeHostTest, destroyHostWithNonNullRootLayer)
 
 static bool addTestAnimation(LayerChromium* layer)
 {
-    OwnPtr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
-    curve->addKeyframe(CCFloatKeyframe::create(0, 0.3f, nullptr));
-    curve->addKeyframe(CCFloatKeyframe::create(1, 0.7f, nullptr));
-    OwnPtr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.release(), 0, 0, CCActiveAnimation::Opacity));
+    scoped_ptr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
+    curve->addKeyframe(CCFloatKeyframe::create(0, 0.3f, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(1, 0.7f, scoped_ptr<CCTimingFunction>()));
+    scoped_ptr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.PassAs<CCAnimationCurve>(), 0, 0, CCActiveAnimation::Opacity));
 
-    return layer->addAnimation(animation.release());
+    return layer->addAnimation(animation.Pass());
 }
 
 TEST(LayerChromiumLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)

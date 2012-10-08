@@ -10,8 +10,6 @@
 #include "CCKeyframedAnimationCurve.h"
 #include "CCTimingFunction.h"
 #include "WebAnimationCurveCommon.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 
@@ -46,7 +44,7 @@ void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe, TimingFun
 
 void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe, double x1, double y1, double x2, double y2)
 {
-    m_curve->addKeyframe(cc::CCFloatKeyframe::create(keyframe.time, keyframe.value, cc::CCCubicBezierTimingFunction::create(x1, y1, x2, y2)));
+    m_curve->addKeyframe(cc::CCFloatKeyframe::create(keyframe.time, keyframe.value, cc::CCCubicBezierTimingFunction::create(x1, y1, x2, y2).PassAs<cc::CCTimingFunction>()));
 }
 
 float WebFloatAnimationCurveImpl::getValue(double time) const
@@ -54,7 +52,7 @@ float WebFloatAnimationCurveImpl::getValue(double time) const
     return m_curve->getValue(time);
 }
 
-PassOwnPtr<cc::CCAnimationCurve> WebFloatAnimationCurveImpl::cloneToCCAnimationCurve() const
+scoped_ptr<cc::CCAnimationCurve> WebFloatAnimationCurveImpl::cloneToCCAnimationCurve() const
 {
     return m_curve->clone();
 }

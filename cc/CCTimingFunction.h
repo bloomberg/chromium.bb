@@ -7,7 +7,6 @@
 
 #include "CCAnimationCurve.h"
 #include "UnitBezier.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -25,12 +24,12 @@ protected:
 
 class CCCubicBezierTimingFunction : public CCTimingFunction {
 public:
-    static PassOwnPtr<CCCubicBezierTimingFunction> create(double x1, double y1, double x2, double y2);
+    static scoped_ptr<CCCubicBezierTimingFunction> create(double x1, double y1, double x2, double y2);
     virtual ~CCCubicBezierTimingFunction();
 
     // Partial implementation of CCFloatAnimationCurve.
     virtual float getValue(double time) const OVERRIDE;
-    virtual PassOwnPtr<CCAnimationCurve> clone() const OVERRIDE;
+    virtual scoped_ptr<CCAnimationCurve> clone() const OVERRIDE;
 
 protected:
     CCCubicBezierTimingFunction(double x1, double y1, double x2, double y2);
@@ -40,22 +39,22 @@ protected:
 
 class CCEaseTimingFunction {
 public:
-    static PassOwnPtr<CCTimingFunction> create();
+    static scoped_ptr<CCTimingFunction> create();
 };
 
 class CCEaseInTimingFunction {
 public:
-    static PassOwnPtr<CCTimingFunction> create();
+    static scoped_ptr<CCTimingFunction> create();
 };
 
 class CCEaseOutTimingFunction {
 public:
-    static PassOwnPtr<CCTimingFunction> create();
+    static scoped_ptr<CCTimingFunction> create();
 };
 
 class CCEaseInOutTimingFunction {
 public:
-    static PassOwnPtr<CCTimingFunction> create();
+    static scoped_ptr<CCTimingFunction> create();
 };
 
 } // namespace cc

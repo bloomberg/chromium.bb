@@ -8,10 +8,9 @@
 #include "CCAnimationEvents.h"
 
 #include "base/basictypes.h"
-#include "cc/own_ptr_vector.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/scoped_ptr_vector.h"
 #include <wtf/HashSet.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 class WebTransformationMatrix;
@@ -36,12 +35,12 @@ public:
 
 class CCLayerAnimationController {
 public:
-    static PassOwnPtr<CCLayerAnimationController> create(CCLayerAnimationControllerClient*);
+    static scoped_ptr<CCLayerAnimationController> create(CCLayerAnimationControllerClient*);
 
     virtual ~CCLayerAnimationController();
 
     // These methods are virtual for testing.
-    virtual void addAnimation(PassOwnPtr<CCActiveAnimation>);
+    virtual void addAnimation(scoped_ptr<CCActiveAnimation>);
     virtual void pauseAnimation(int animationId, double timeOffset);
     virtual void removeAnimation(int animationId);
     virtual void removeAnimation(int animationId, CCActiveAnimation::TargetProperty);
@@ -103,7 +102,7 @@ private:
     bool m_forceSync;
 
     CCLayerAnimationControllerClient* m_client;
-    OwnPtrVector<CCActiveAnimation> m_activeAnimations;
+    ScopedPtrVector<CCActiveAnimation> m_activeAnimations;
 
     DISALLOW_COPY_AND_ASSIGN(CCLayerAnimationController);
 };
