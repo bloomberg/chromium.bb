@@ -496,20 +496,15 @@
 }
 
 .playback-state-icon {
-  -webkit-transform: scaleX(1) scaleY(1);
-  -webkit-transition-duration: 500ms;
-  -webkit-transition-property: webkit-transform, opacity;
-  -webkit-transition-timing-function: linear;
   background-color: #202020;
   background-position: center center;
   background-repeat: no-repeat;
   border-radius: 2.5px;
-  display: none;
   height: 32px;
   left: 50%;
   margin-left: -16px;
   margin-top: -16px;
-  opacity: 1;
+  opacity: 0;
   pointer-events: none;
   position: absolute;
   top: 50%;
@@ -517,13 +512,18 @@
   z-index: 2;
 }
 
-.playback-state-icon[visible] {
-  display: block;
+.playback-state-icon[state] {
+  -webkit-animation: blowup 500ms;
 }
 
-.playback-state-icon[state] {
-  -webkit-transform: scaleX(3) scaleY(3);
-  opacity: 0;
+@-webkit-keyframes blowup {
+  from {
+    opacity: 1;
+  }
+  to {
+    -webkit-transform: scale(3);
+    opacity: 0;
+  }
 }
 
 .playback-state-icon[state='play'] {

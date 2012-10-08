@@ -962,35 +962,10 @@ VideoControls.prototype.togglePlayStateWithFeedback = function() {
 
   this.togglePlayState();
 
-  var self = this;
-
-  var delay = function(action, opt_timeout) {
-    if (self.statusIconTimer_) {
-      clearTimeout(self.statusIconTimer_);
-    }
-    self.statusIconTimer_ = setTimeout(function() {
-      self.statusIconTimer_ = null;
-      action();
-    }, opt_timeout || 0);
-  };
-
-  function hideStatusIcon() {
-    self.stateIcon_.removeAttribute('visible');
-    self.stateIcon_.removeAttribute('state');
-  }
-
-  hideStatusIcon();
-
-  // The delays are required to trigger the layout between attribute changes.
-  // Otherwise everything just goes to the final state without the animation.
-  delay(function() {
-    self.stateIcon_.setAttribute('visible', true);
-    delay(function() {
-      self.stateIcon_.setAttribute(
-          'state', self.isPlaying() ? 'play' : 'pause');
-      delay(hideStatusIcon, 1000);  /* Twice the animation duration. */
-    });
-  });
+  this.stateIcon_.removeAttribute('state');
+  setTimeout(function() {
+    this.stateIcon_.setAttribute('state', this.isPlaying() ? 'play' : 'pause');
+  }.bind(this), 0);
 };
 
 /**

@@ -503,6 +503,13 @@ function FullWindowAudioControls(container, advanceTrack, onError) {
     this.getMedia().src = '';
     this.getMedia().load();
   }.bind(this));
+
+  document.addEventListener('keydown', function(e) {
+    if (e.keyIdentifier == 'U+0020') {
+      this.togglePlayState();
+      e.preventDefault();
+    }
+  }.bind(this));
 }
 
 FullWindowAudioControls.prototype = { __proto__: AudioControls.prototype };

@@ -39,9 +39,11 @@ function FullWindowVideoControls(
   this.updateStyle();
   window.addEventListener('resize', this.updateStyle.bind(this));
 
-  playerContainer.addEventListener('keydown', function(e) {
-    if (e.keyIdentifier == 'U+0020')
+  document.addEventListener('keydown', function(e) {
+    if (e.keyIdentifier == 'U+0020') {
       this.togglePlayStateWithFeedback();
+      e.preventDefault();
+    }
   }.bind(this));
 
   videoContainer.addEventListener('click',
