@@ -4848,15 +4848,6 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
-   bug_122249b
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10RefCountedIN7WebCore14IDBObjectStoreEEnwEm
-   fun:_ZN7WebCore14IDBObjectStore6create*
-   fun:_ZN7WebCore11IDBDatabase17createObjectStoreERKN3WTF6StringERKNS_10DictionaryERi
-}
-{
    bug_122249c
    Memcheck:Leak
    fun:_Znw*
