@@ -600,11 +600,14 @@ SkBitmap* ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
   if (gfx::PNGCodec::Decode(memory->front(), memory->size(), &bitmap))
     return new SkBitmap(bitmap);
 
+#if !defined(OS_IOS)
+  // iOS does not compile or use the JPEG codec.  On other platforms,
   // 99% of our assets are PNGs, however fallback to JPEG.
   SkBitmap* allocated_bitmap =
       gfx::JPEGCodec::Decode(memory->front(), memory->size());
   if (allocated_bitmap)
     return allocated_bitmap;
+#endif
 
   NOTREACHED() << "Unable to decode theme image resource " << resource_id;
   return NULL;
