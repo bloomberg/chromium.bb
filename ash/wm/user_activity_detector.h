@@ -19,8 +19,7 @@ class UserActivityObserver;
 // Watches for input events and notifies observers that the user is active.
 class ASH_EXPORT UserActivityDetector : public aura::EventFilter {
  public:
-  // Minimum amount of time between notifications to observers that a video is
-  // playing.
+  // Minimum amount of time between notifications to observers.
   static const double kNotifyIntervalMs;
 
   UserActivityDetector();
