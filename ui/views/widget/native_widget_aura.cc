@@ -33,6 +33,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/drop_helper.h"
+#include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/native_widget_helper_aura.h"
 #include "ui/views/widget/root_view.h"
@@ -77,53 +78,6 @@ void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
 }
 
 }  // namespace
-
-// Used when SetInactiveRenderingDisabled() is invoked to track when active
-// status changes in such a way that we should enable inactive rendering.
-class NativeWidgetAura::ActiveWindowObserver
-    : public aura::WindowObserver,
-      public aura::client::ActivationChangeObserver {
- public:
-  explicit ActiveWindowObserver(NativeWidgetAura* host) : host_(host) {
-    host_->GetNativeView()->GetRootWindow()->AddObserver(this);
-    host_->GetNativeView()->AddObserver(this);
-    aura::client::GetActivationClient(host_->GetNativeView()->GetRootWindow())->
-        AddObserver(this);
-  }
-  virtual ~ActiveWindowObserver() {
-    CleanUpObservers();
-  }
-
-  // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* active,
-                                 aura::Window* old_active) {
-    if (!active || active->transient_parent() != host_->window_) {
-      host_->delegate_->EnableInactiveRendering();
-    }
-  }
-
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
-    if (window != host_->GetNativeView())
-      return;
-    CleanUpObservers();
-  }
-
- private:
-  void CleanUpObservers() {
-    if (!host_)
-      return;
-    host_->GetNativeView()->GetRootWindow()->RemoveObserver(this);
-    host_->GetNativeView()->RemoveObserver(this);
-    aura::client::GetActivationClient(host_->GetNativeView()->GetRootWindow())->
-        RemoveObserver(this);
-    host_ = NULL;
-  }
-
-  NativeWidgetAura* host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActiveWindowObserver);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, public:
@@ -672,10 +626,12 @@ gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
 }
 
 void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
-  if (!value)
+  if (!value) {
     active_window_observer_.reset();
-  else
-    active_window_observer_.reset(new ActiveWindowObserver(this));
+  } else {
+    active_window_observer_.reset(
+        new NativeWidgetAuraWindowObserver(window_, delegate_));
+  }
 }
 
 Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop(

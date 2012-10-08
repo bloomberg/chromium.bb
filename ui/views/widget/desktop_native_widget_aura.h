@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_NATIVE_WIDGET_AURA_H_
 
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 
@@ -20,10 +21,13 @@ class RootWindow;
 namespace views {
 
 class DesktopRootWindowHost;
+class NativeWidgetAuraWindowObserver;
 
+// TODO(erg): May also need to be a DragDropDelegate
 class VIEWS_EXPORT DesktopNativeWidgetAura
     : public internal::NativeWidgetPrivate,
-      public aura::WindowDelegate {
+      public aura::WindowDelegate,
+      public aura::client::ActivationDelegate {
  public:
   explicit DesktopNativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~DesktopNativeWidgetAura();
@@ -146,6 +150,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
+  // Overridden from aura::client::ActivationDelegate:
+  virtual bool ShouldActivate(const ui::Event* event) OVERRIDE;
+  virtual void OnActivated() OVERRIDE;
+  virtual void OnLostActive() OVERRIDE;
+
  private:
   // The NativeWidget owns the RootWindow. Required because the RootWindow owns
   // its RootWindowHost, so DesktopRootWindowHost can't own it.
@@ -154,6 +163,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
   base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;
+
+  scoped_ptr<NativeWidgetAuraWindowObserver> active_window_observer_;
+
+  // Can we be made active?
+  bool can_activate_;
 
   // Ownership passed to RootWindow on Init.
   DesktopRootWindowHost* desktop_root_window_host_;

@@ -25,6 +25,7 @@ class Font;
 namespace views {
 
 class DropHelper;
+class NativeWidgetAuraWindowObserver;
 class NativeWidgetHelperAura;
 class TooltipManagerAura;
 
@@ -203,7 +204,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   scoped_ptr<TooltipManagerAura> tooltip_manager_;
 
-  scoped_ptr<ActiveWindowObserver> active_window_observer_;
+  scoped_ptr<NativeWidgetAuraWindowObserver> active_window_observer_;
 
   scoped_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;

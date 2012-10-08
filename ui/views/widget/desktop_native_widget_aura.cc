@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_native_widget_aura.h"
 
 #include "base/bind.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
@@ -13,6 +14,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/widget/desktop_root_window_host.h"
+#include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -23,6 +25,7 @@ namespace views {
 DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+      can_activate_(true),
       desktop_root_window_host_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       native_widget_delegate_(delegate) {
@@ -52,6 +55,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
                                     this, params.bounds);
   root_window_.reset(
       desktop_root_window_host_->Init(window_, params));
+
+  aura::client::SetActivationDelegate(window_, this);
 }
 
 NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
@@ -330,6 +335,12 @@ gfx::Rect DesktopNativeWidgetAura::GetWorkAreaBoundsInScreen() const {
 }
 
 void DesktopNativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
+  if (!value) {
+    active_window_observer_.reset();
+  } else {
+    active_window_observer_.reset(
+        new NativeWidgetAuraWindowObserver(window_, native_widget_delegate_));
+  }
 }
 
 Widget::MoveLoopResult DesktopNativeWidgetAura::RunMoveLoop(
@@ -369,10 +380,14 @@ void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
   //
   // TODO(erg): Check that my understanding of the above is correct.
   GetWidget()->GetInputMethod()->OnFocus();
+  native_widget_delegate_->OnNativeFocus(old_focused_window);
 }
 
 void DesktopNativeWidgetAura::OnBlur() {
   GetWidget()->GetInputMethod()->OnBlur();
+
+  native_widget_delegate_->OnNativeBlur(
+      window_->GetFocusManager()->GetFocusedWindow());
 }
 
 gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
@@ -470,6 +485,29 @@ ui::EventResult DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
 ui::EventResult DesktopNativeWidgetAura::OnGestureEvent(
     ui::GestureEvent* event) {
   return native_widget_delegate_->OnGestureEvent(*event);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopNativeWidgetAura, aura::ActivationDelegate implementation:
+
+bool DesktopNativeWidgetAura::ShouldActivate(const ui::Event* event) {
+  return can_activate_ && native_widget_delegate_->CanActivate();
+}
+
+void DesktopNativeWidgetAura::OnActivated() {
+  if (GetWidget()->HasFocusManager())
+    GetWidget()->GetFocusManager()->RestoreFocusedView();
+  native_widget_delegate_->OnNativeWidgetActivationChanged(true);
+  if (IsVisible() && GetWidget()->non_client_view())
+    GetWidget()->non_client_view()->SchedulePaint();
+}
+
+void DesktopNativeWidgetAura::OnLostActive() {
+  if (GetWidget()->HasFocusManager())
+    GetWidget()->GetFocusManager()->StoreFocusedView();
+  native_widget_delegate_->OnNativeWidgetActivationChanged(false);
+  if (IsVisible() && GetWidget()->non_client_view())
+    GetWidget()->non_client_view()->SchedulePaint();
 }
 
 }  // namespace views

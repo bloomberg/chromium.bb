@@ -342,6 +342,8 @@
         'widget/native_widget.h',
         'widget/native_widget_aura.cc',
         'widget/native_widget_aura.h',
+        'widget/native_widget_aura_window_observer.cc',
+        'widget/native_widget_aura_window_observer.h',
         'widget/native_widget_delegate.h',
         'widget/native_widget_helper_aura.h',
         'widget/native_widget_private.h',
@@ -432,6 +434,8 @@
           'sources/': [
             ['exclude', '/desktop_[^/]*\\.cc$'],
             ['exclude', '/x11_[^/]*\\.cc$'],
+            ['exclude', 'widget/native_widget_aura_window_observer.cc'],
+            ['exclude', 'widget/native_widget_aura_window_observer.h'],
           ],
         }],
         ['chromeos==1', {

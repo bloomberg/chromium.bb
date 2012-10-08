@@ -19,6 +19,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/ime/input_method_bridge.h"
@@ -30,6 +31,9 @@
 #include "ui/views/widget/x11_window_event_filter.h"
 
 namespace views {
+
+DEFINE_WINDOW_PROPERTY_KEY(
+    aura::Window*, kViewsWindowForRootWindow, NULL);
 
 namespace {
 
@@ -145,6 +149,12 @@ void DesktopRootWindowHostLinux::InitX11Window(
                   reinterpret_cast<unsigned char*>(&pid), 1);
 }
 
+// static
+aura::Window* DesktopRootWindowHostLinux::GetContentWindowForXID(XID xid) {
+  aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(xid);
+  return root ? root->GetProperty(kViewsWindowForRootWindow) : NULL;
+}
+
 // TODO(erg): This method should basically be everything I need form
 // RootWindowHostLinux::RootWindowHostLinux().
 aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
@@ -157,6 +167,8 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   root_window_->Init();
   root_window_->AddChild(content_window_);
   root_window_->SetLayoutManager(new DesktopLayoutManager(root_window_));
+  root_window_->SetProperty(kViewsWindowForRootWindow, content_window_);
+  root_window_host_delegate_ = root_window_;
 
   // If we're given a parent, we need to mark ourselves as transient to another
   // window. Otherwise activation gets screwy.
@@ -406,19 +418,18 @@ void DesktopRootWindowHostLinux::SetShape(gfx::NativeRegion native_region) {
 }
 
 void DesktopRootWindowHostLinux::Activate() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  aura::client::GetActivationClient(root_window_)->ActivateWindow(
+      content_window_);
 }
 
 void DesktopRootWindowHostLinux::Deactivate() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  aura::client::GetActivationClient(root_window_)->DeactivateWindow(
+      content_window_);
 }
 
 bool DesktopRootWindowHostLinux::IsActive() const {
-  // TODO(erg):
-  //NOTIMPLEMENTED();
-  return true;
+  return aura::client::GetActivationClient(root_window_)->
+      GetActiveWindow() == content_window_;
 }
 
 void DesktopRootWindowHostLinux::Maximize() {

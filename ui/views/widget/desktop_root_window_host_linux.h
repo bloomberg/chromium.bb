@@ -51,6 +51,9 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
       const gfx::Rect& initial_bounds);
   virtual ~DesktopRootWindowHostLinux();
 
+  // A way of converting an xwindows |xid| into a |content_window_|.
+  static aura::Window* GetContentWindowForXID(XID xid);
+
  private:
   // Initializes our X11 surface to draw on. This method performs all
   // initialization related to talking to the X11 server.

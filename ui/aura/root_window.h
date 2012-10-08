@@ -40,6 +40,7 @@ class MouseEvent;
 class ScrollEvent;
 class TouchEvent;
 class Transform;
+class ViewProp;
 }
 
 namespace aura {
@@ -406,6 +407,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Used to schedule DispatchHeldMouseMove() when |mouse_move_hold_count_| goes
   // to 0.
   base::WeakPtrFactory<RootWindow> held_mouse_event_factory_;
+
+  scoped_ptr<ui::ViewProp> prop_;
 
   CompositorLock* compositor_lock_;
   bool draw_on_compositor_unlock_;

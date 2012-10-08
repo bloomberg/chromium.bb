@@ -31,6 +31,7 @@
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/view_prop.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
@@ -44,6 +45,9 @@ using std::vector;
 namespace aura {
 
 namespace {
+
+const char kRootWindowForAcceleratedWidget[] =
+    "__AURA_ROOT_WINDOW_ACCELERATED_WIDGET__";
 
 const int kCompositorLockTimeoutMs = 67;
 
@@ -149,6 +153,10 @@ RootWindow::RootWindow(const CreateParams& params)
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget()));
   DCHECK(compositor_.get());
   compositor_->AddObserver(this);
+
+  prop_.reset(new ui::ViewProp(host_->GetAcceleratedWidget(),
+                               kRootWindowForAcceleratedWidget,
+                               this));
 }
 
 RootWindow::~RootWindow() {
@@ -173,8 +181,8 @@ RootWindow::~RootWindow() {
 // static
 RootWindow* RootWindow::GetForAcceleratedWidget(
     gfx::AcceleratedWidget widget) {
-  RootWindowHost* host = RootWindowHost::GetForAcceleratedWidget(widget);
-  return host ? host->GetRootWindow() : NULL;
+  return reinterpret_cast<RootWindow*>(
+      ui::ViewProp::GetValue(widget, kRootWindowForAcceleratedWidget));
 }
 
 void RootWindow::Init() {

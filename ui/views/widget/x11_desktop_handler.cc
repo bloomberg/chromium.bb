@@ -10,7 +10,11 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/x/x11_util.h"
+
+#if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_native_widget_helper_aura.h"
+#include "ui/views/widget/desktop_root_window_host_linux.h"
+#endif
 
 namespace {
 
@@ -88,11 +92,26 @@ void X11DesktopHandler::OnWillDestroyEnv() {
 // This code should live elsewhere and should only trigger if a non-RootWindow
 // has been selected.
 void X11DesktopHandler::OnActiveWindowChanged(::Window xid) {
+#if defined(OS_CHROMEOS)
+  // This is a temporary hack because it looks like chromeos both does and
+  // doesn't include DNWHA in different targets. It'll be awesome when I can
+  // rip that out.
+  aura::Window* window = NULL;
+#else
   aura::RootWindow* root_window =
       aura::RootWindow::GetForAcceleratedWidget(xid);
+  // TODO(erg): Rip out DesktopNativeWidgetHelperAura and replace with the if
+  // block below.
   aura::Window* window = root_window ?
       views::DesktopNativeWidgetHelperAura::GetViewsWindowForRootWindow(
           root_window) : NULL;
+
+  if (!window) {
+    window = root_window ?
+             views::DesktopRootWindowHostLinux::GetContentWindowForXID(xid) :
+             NULL;
+  }
+#endif
 
   desktop_activation_client_->ActivateWindow(window);
 }
