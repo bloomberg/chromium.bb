@@ -1,0 +1,75 @@
+@hex:
+  # xchg %bp, (%rip)
+  66 87 2d 00 00 00 00
+  # xchg %rbp, (%rip)
+  48 87 2d 00 00 00 00
+  
+  # xchg %sp, (%rip)
+  66 87 25 00 00 00 00
+  # xchg %rsp, (%rip)
+  48 87 25 00 00 00 00
+  
+  # bundle alignment
+  90 90 90 90
+  
+  # xchg %r15, (%rip)
+  4c 87 3d 00 00 00 00
+  
+  # These sequences technically are safe, but xchg with memory is not 
+  # considered zero-extending instruction, so they are rejected.
+  # xchg %ebp, (%rip)
+  87 2d 00 00 00 00
+  # add %r15, %rbp
+  4c 01 fd
+  
+  # xchg %esp, (%rip)
+  87 25 00 00 00 00
+  # add %r15, %rsp
+  4c 01 fc
+@rval:
+  VALIDATOR: 0000000000000000: 66 87 2d 00 00 00 00                         xchg [%rip], %bp
+  VALIDATOR: ERROR: Changing RegBP changes the value of RegRBP
+  VALIDATOR: 0000000000000007: 48 87 2d 00 00 00 00                         xchg [%rip], %rbp
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 000000000000000e: 66 87 25 00 00 00 00                         xchg [%rip], %sp
+  VALIDATOR: ERROR: Changing RegSP changes the value of RegRSP
+  VALIDATOR: 0000000000000015: 48 87 25 00 00 00 00                         xchg [%rip], %rsp
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000020: 4c 87 3d 00 00 00 00                         xchg [%rip], %r15
+  VALIDATOR: ERROR: Illegal to change the value of register RegR15
+  VALIDATOR: 000000000000002d: 4c 01 fd                                     add %rbp, %r15
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000027: 87 2d 00 00 00 00                            xchg [%rip], %ebp
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: 0000000000000036: 4c 01 fc                                     add %rsp, %r15
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: 0000000000000030: 87 25 00 00 00 00                            xchg [%rip], %esp
+  VALIDATOR: ERROR: Illegal assignment to ESP
+  VALIDATOR: Checking jump targets: 0 to 39
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 66 87 2d 00 00 00 00                         xchg [%rip], %bp
+  0000000000000007: 48 87 2d 00 00 00 00                         xchg [%rip], %rbp
+  000000000000000e: 66 87 25 00 00 00 00                         xchg [%rip], %sp
+  0000000000000015: 48 87 25 00 00 00 00                         xchg [%rip], %rsp
+  000000000000001c: 90                                           nop
+  000000000000001d: 90                                           nop
+  000000000000001e: 90                                           nop
+  000000000000001f: 90                                           nop
+  0000000000000020: 4c 87 3d 00 00 00 00                         xchg [%rip], %r15
+  0000000000000027: 87 2d 00 00 00 00                            xchg [%rip], %ebp
+  000000000000002d: 4c 01 fd                                     add %rbp, %r15
+  0000000000000030: 87 25 00 00 00 00                            xchg [%rip], %esp
+  0000000000000036: 4c 01 fc                                     add %rsp, %r15
+@rdfa_output:
+  0: [0] error - %bpl or %bp is changed
+  7: [0] error - %bpl or %bp is changed
+  e: [0] error - %spl or %sp is changed
+  15: [0] error - %spl or %sp is changed
+  20: [0] error - %r15 is changed
+  27: [0] error - %bpl or %bp is changed
+  2d: [0] improper %rbp sandboxing
+  30: [0] error - %spl or %sp is changed
+  36: [0] improper %rsp sandboxing
+  return code: 1
