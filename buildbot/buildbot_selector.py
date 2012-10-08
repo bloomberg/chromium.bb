@@ -100,6 +100,8 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
     'lucid_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
+    'lucid_64-newlib-mips-pnacl':
+        'echo "TODO(mseaborn): add mips"',
     'precise_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
     # PNaCl Spec
@@ -193,6 +195,8 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
     'nacl-lucid_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
+    'nacl-lucid_64-newlib-mips-pnacl':
+        'echo "TODO(mseaborn): add mips"',
     'nacl-precise_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
     'nacl-arm_opt_panda':
@@ -214,10 +218,14 @@ BOT_ASSIGNMENT = {
     'lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
     'win7-glibc': 'buildbot\\buildbot_windows-glibc-makefile.bat',
-    # Toolchain gnu.
+    # Toolchain newlib x86.
     'win7-toolchain_x86': 'buildbot\\buildbot_toolchain_win.bat',
     'mac-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh mac',
     'lucid64-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
+    # Toolchain newlib arm.
+    'win7-toolchain_arm': 'echo "TODO(bradnelson)"',
+    'mac-toolchain_arm': 'echo "TODO(bradnelson)"',
+    'lucid64-toolchain_arm': 'echo "TODO(bradnelson)"',
 
     # Pnacl toolchain builders (second argument indicates trybot).
     'linux-armtools-x86_32':
@@ -242,12 +250,17 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl_toolchain_tests.sh tc-test-bot x86-32',
     'linux-pnacl-x86_64-tests-arm':
         'bash buildbot/buildbot_pnacl_toolchain_tests.sh tc-test-bot arm',
+    'linux-pnacl-x86_32-tests-mips':
+        'bash buildbot/buildbot_pnacl_toolchain_tests.sh tc-test-bot mips',
 
     # Toolchain trybots.
     'nacl-toolchain-lucid64-newlib':
         'bash buildbot/buildbot_toolchain.sh linux',
     'nacl-toolchain-mac-newlib': 'bash buildbot/buildbot_toolchain.sh mac',
     'nacl-toolchain-win7-newlib': 'buildbot\\buildbot_toolchain_win.bat',
+    'nacl-toolchain-lucid64-newlib-arm': 'echo "TODO(bradnelson)"',
+    'nacl-toolchain-mac-newlib-arm': 'echo "TODO(bradnelson)"',
+    'nacl-toolchain-win7-newlib-arm': 'echo "TODO(bradnelson)"',
     'nacl-toolchain-lucid64-glibc':
         'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
@@ -259,17 +272,11 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux true',
     'nacl-toolchain-linux-pnacl-x86_64':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux true',
+    'nacl-toolchain-linux-pnacl-mips': 'echo "TODO(mseaborn)"',
     'nacl-toolchain-mac-pnacl-x86_32':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-mac true',
     'nacl-toolchain-win7-pnacl-x86_64':
         'buildbot\\buildbot_pnacl.bat mode-buildbot-tc-x8664-win true',
-    # OBSOLETE NAMES: will be delete soon
-    'nacl-toolchain-linux-pnacl-x86_32-newlib':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux true',
-    'nacl-toolchain-linux-pnacl-x86_64-newlib':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux true',
-    'nacl-toolchain-mac-pnacl-x86_32-newlib':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-mac true',
 
     # PNaCl LLVM Merging bots
     'llvm':
