@@ -22,11 +22,11 @@ class TraceSubscriberStdioImpl
 
   void OnStart() {
     DCHECK(!file_);
+    trace_buffer_.SetOutputCallback(
+        base::Bind(&TraceSubscriberStdioImpl::Write, this));
     file_ = file_util::OpenFile(path_, "w+");
     if (IsValid()) {
       LOG(INFO) << "Logging performance trace to file: " << path_.value();
-      trace_buffer_.SetOutputCallback(
-          base::Bind(&TraceSubscriberStdioImpl::Write, this));
       trace_buffer_.Start();
     } else {
       LOG(ERROR) << "Failed to open performance trace file: " << path_.value();
@@ -49,7 +49,7 @@ class TraceSubscriberStdioImpl
     CloseFile();
   }
 
-  bool IsValid() {
+  bool IsValid() const {
     return file_ && (0 == ferror(file_));
   }
 
