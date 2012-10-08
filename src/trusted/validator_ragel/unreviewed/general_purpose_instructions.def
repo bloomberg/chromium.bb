@@ -1046,20 +1046,27 @@ tzcnt Ev Gv, 0xf3 0x0f 0xbc, CPUFeature_TZCNT
 ######## TZMSK #################################################################
 tzmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /4, CPUFeature_TBM
 ######## XADD ##################################################################
-# Textbook definition of “shrd” as per AMD/Intel manuals looks like this:
+# Textbook definition of “xadd” as per AMD/Intel manuals looks like this:
 #  xadd &G E, 0x0f 0xc0, lock nacl-amd64-zero-extends
 # For consistency with the production validators, drop support for the 16-bit
 #  version of “xadd” in ia32 mode.
+# Also, don't consider xadd with memory zero-extending.
+#  See http://code.google.com/p/nativeclient/issues/detail?id=3077
 # Note that the former 32- and 64-bit validators treat “xadd” inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2981
 xadd &Gb Eb, 0x0f 0xc0, lock
 xadd &Gw Ew, data16 0x0f 0xc1, norexw lock nacl-ia32-forbidden
-xadd &Gd Ed, 0x0f 0xc1, norexw lock nacl-amd64-zero-extends
+xadd &Gd Rd, 0x0f 0xc1, norexw lock nacl-amd64-zero-extends
+xadd &Gd Md, 0x0f 0xc1, norexw lock
 xadd &Gq Eq, rexw 0x0f 0xc1, lock amd64
 xadd &Gq Eq, data16 rexw 0x0f 0xc1, lock amd64 nacl-forbidden
 ######## XCHG ##################################################################
+# For consistency with prod. validator, don't consider exchange with memory
+# zero-extending.
+# See http://code.google.com/p/nativeclient/issues/detail?id=3071
 xchg &av rv, 0x90, nacl-amd64-zero-extends
-xchg &G E, 0x86, lock nacl-amd64-zero-extends
+xchg &G R, 0x86, lock nacl-amd64-zero-extends
+xchg &G M, 0x86, lock
 ######## XLAT ##################################################################
 xlat xb, 0xd7, nacl-forbidden
 ######## XOR ###################################################################

@@ -1,0 +1,30 @@
+@hex:
+  # Special behavior of prod. validator: xchg with memory is not considered
+  # zero-extending.
+  
+  # xchg %esi, (%rbp)
+  87 75 00
+  # sub (%rbp, %rsi, 1), %bl
+  2a 5c 35 00
+  
+  # xadd %edx, (%rsp)
+  0f c1 14 24
+  # and %bh, (%rbp,%rdx)
+  20 7c 15 00
+@rval:
+  VALIDATOR: 0000000000000003: 2a 5c 35 00                                  sub %bl, [%rbp+%rsi*1]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: 000000000000000b: 20 7c 15 00                                  and [%rbp+%rdx*1], %bh
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to f
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 87 75 00                                     xchg [%rbp], %esi
+  0000000000000003: 2a 5c 35 00                                  sub %bl, [%rbp+%rsi*1]
+  0000000000000007: 0f c1 14 24                                  xadd [%rsp], %edx
+  000000000000000b: 20 7c 15 00                                  and [%rbp+%rdx*1], %bh
+@rdfa_output:
+  3: [0] improper memory address - bad index
+  b: [0] improper memory address - bad index
+  return code: 1
