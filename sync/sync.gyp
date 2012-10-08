@@ -254,7 +254,6 @@
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         # TODO(akalin): Remove this (http://crbug.com/133352).
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
         'sync',
       ],
       'export_dependent_settings': [
@@ -296,9 +295,13 @@
             'notifier/sync_system_resources.h',
           ],
         }],
+        ['OS != "ios"', {
+          'dependencies': [
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+          ],
+        }],
       ],
     },
-
     # The sync internal API library.
     {
       'target_name': 'syncapi_core',
@@ -654,7 +657,6 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
         'sync',
         'sync_notifier',
         'test_support_sync_notifier',
@@ -668,7 +670,6 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
         'sync',
         'sync_notifier',
         'test_support_sync_notifier',
@@ -696,6 +697,16 @@
           }],
         ],
       },
+      'conditions': [
+        ['OS != "ios"', {
+          'dependencies': [
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+          ],
+          'export_dependent_settings': [
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+          ],
+        }],
+      ],
     },
 
     # Unit tests for the 'syncapi_core' target.  This cannot be a static
