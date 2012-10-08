@@ -12,14 +12,6 @@ class Profile;
 
 namespace chrome {
 
-// Sets the value of homepage related prefs to new values. Since we do not
-// want to change these values for existing users, we can not change the
-// default values under RegisterUserPrefs. Also if user already has an
-// existing profile we do not want to override those preferences so we only
-// set new values if they have not been set already. This method gets called
-// during First Run.
-void SetNewHomePagePrefs(PrefService* prefs);
-
 void RegisterBrowserPrefs(PrefService* prefs);
 void RegisterBrowserUserPrefs(PrefService* prefs);
 

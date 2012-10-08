@@ -373,9 +373,6 @@ void AutoImportPlatformCommon(
   // Launch the first run dialog only for certain builds, and only if the user
   // has not already set preferences.
   if (IsOrganicFirstRun() && !local_state_file_exists) {
-    // The home page string may be set in the preferences, but the user should
-    // initially use Chrome with the NTP as home page in organic builds.
-    profile->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
     startup_metric_utils::SetNonBrowserUIDisplayed();
     ShowFirstRunDialog(profile);
   }
