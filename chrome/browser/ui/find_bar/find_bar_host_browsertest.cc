@@ -38,10 +38,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
-#endif
-
 using content::NavigationController;
 using content::WebContents;
 
@@ -81,11 +77,7 @@ void HistoryServiceQueried(int) {
 class FindInPageControllerTest : public InProcessBrowserTest {
  public:
   FindInPageControllerTest() {
-#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
     chrome::DisableFindBarAnimationsDuringTesting(true);
-#elif defined(OS_MACOSX)
-    FindBarBridge::disable_animations_during_testing_ = true;
-#endif
   }
 
  protected:

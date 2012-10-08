@@ -5,9 +5,15 @@
 #ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_HOST_UNITTEST_UTIL_H_
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_HOST_UNITTEST_UTIL_H_
 
+#include "build/build_config.h"
+
 namespace chrome {
 
+#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK) || defined(OS_MACOSX)
 void DisableFindBarAnimationsDuringTesting(bool disable);
+#else
+static inline void DisableFindBarAnimationsDuringTesting(bool disable) {}
+#endif
 
 }  // namespace chrome
 

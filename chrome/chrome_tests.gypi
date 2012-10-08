@@ -179,6 +179,7 @@
         'browser/ssl/ssl_client_auth_requestor_mock.cc',
         'browser/ssl/ssl_client_auth_requestor_mock.h',
         'browser/ui/browser.h',
+        'browser/ui/cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm',
         'browser/ui/cocoa/run_loop_testing.h',
         'browser/ui/cocoa/run_loop_testing.mm',
         'browser/ui/cocoa/test/ui_test_utils_mac.mm',
