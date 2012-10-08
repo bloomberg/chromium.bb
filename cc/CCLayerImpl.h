@@ -386,7 +386,7 @@ private:
     FloatRect m_updateRect;
 
     // Manages animations for this layer.
-    scoped_ptr<CCLayerAnimationController> m_layerAnimationController;
+    OwnPtr<CCLayerAnimationController> m_layerAnimationController;
 
     // Manages scrollbars for this layer
     OwnPtr<CCScrollbarAnimationController> m_scrollbarAnimationController;
