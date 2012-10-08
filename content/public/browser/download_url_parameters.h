@@ -38,7 +38,7 @@ class WebContents;
 
 class CONTENT_EXPORT DownloadUrlParameters {
  public:
-  // If there is an error, the DownloadId will be invalid.
+  // The DownloadId will be invalid if-and-only-if there is an error.
   typedef base::Callback<void(DownloadId, net::Error)> OnStartedCallback;
 
   typedef std::pair<std::string, std::string> RequestHeadersNameValuePair;
