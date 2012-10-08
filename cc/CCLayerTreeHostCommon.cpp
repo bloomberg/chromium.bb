@@ -114,16 +114,27 @@ static IntRect calculateVisibleContentRect(LayerType* layer)
 {
     ASSERT(layer->renderTarget());
 
-    IntRect targetSurfaceRect = layer->renderTarget()->renderSurface()->contentRect();
-
-    targetSurfaceRect.intersect(layer->drawableContentRect());
-
-    if (targetSurfaceRect.isEmpty() || layer->contentBounds().isEmpty())
+    // Nothing is visible if the layer bounds are empty.
+    if (!layer->drawsContent() || layer->contentBounds().isEmpty() || layer->drawableContentRect().isEmpty())
         return IntRect();
 
-    const IntRect contentRect = IntRect(IntPoint(), layer->contentBounds());
-    IntRect visibleContentRect = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, contentRect, layer->drawTransform());
-    return visibleContentRect;
+    IntRect targetSurfaceClipRect;
+
+    // First, compute visible bounds in target surface space.
+    if (layer->renderTarget()->renderSurface()->clipRect().isEmpty())
+        targetSurfaceClipRect = layer->drawableContentRect();
+    else {
+        // In this case the target surface does clip layers that contribute to it. So, we
+        // have convert the current surface's clipRect from its ancestor surface space to
+        // the current surface space.
+        targetSurfaceClipRect = enclosingIntRect(CCMathUtil::projectClippedRect(layer->renderTarget()->renderSurface()->drawTransform().inverse(), layer->renderTarget()->renderSurface()->clipRect()));
+        targetSurfaceClipRect.intersect(layer->drawableContentRect());
+    }
+
+    if (targetSurfaceClipRect.isEmpty())
+        return IntRect();
+
+    return CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceClipRect, IntRect(IntPoint(), layer->contentBounds()), layer->drawTransform());
 }
 
 static bool isScaleOrTranslation(const WebTransformationMatrix& m)
@@ -556,14 +567,24 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
         // current target surface space that could cause more w < 0 headaches.
         subtreeShouldBeClipped = false;
 
-        if (layer->maskLayer())
+        if (layer->maskLayer()) {
             layer->maskLayer()->setRenderTarget(layer);
+            layer->maskLayer()->setVisibleContentRect(IntRect(IntPoint(), layer->contentBounds()));
+        }
 
-        if (layer->replicaLayer() && layer->replicaLayer()->maskLayer())
+        if (layer->replicaLayer() && layer->replicaLayer()->maskLayer()) {
             layer->replicaLayer()->maskLayer()->setRenderTarget(layer);
+            layer->replicaLayer()->maskLayer()->setVisibleContentRect(IntRect(IntPoint(), layer->contentBounds()));
+        }
 
         if (layer->filters().hasFilterThatMovesPixels())
             nearestAncestorThatMovesPixels = renderSurface;
+
+        // The render surface clipRect is expressed in the space where this surface draws, i.e. the same space as clipRectFromAncestor.
+        if (ancestorClipsSubtree)
+            renderSurface->setClipRect(clipRectFromAncestor);
+        else
+            renderSurface->setClipRect(IntRect());
 
         renderSurface->setNearestAncestorThatMovesPixels(nearestAncestorThatMovesPixels);
 
@@ -655,16 +676,14 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
         drawableContentRectOfLayer.intersect(clipRectForSubtree);
     layer->setDrawableContentRect(drawableContentRectOfLayer);
 
+    // Compute the layer's visible content rect (the rect is in content space)
+    IntRect visibleContentRectOfLayer = calculateVisibleContentRect(layer);
+    layer->setVisibleContentRect(visibleContentRectOfLayer);
+
     // Compute the remaining properties for the render surface, if the layer has one.
     if (layer->renderSurface() && layer != rootLayer) {
         RenderSurfaceType* renderSurface = layer->renderSurface();
         IntRect clippedContentRect = localDrawableContentRectOfSubtree;
-
-        // The render surface clipRect is expressed in the space where this surface draws, i.e. the same space as clipRectFromAncestor.
-        if (ancestorClipsSubtree)
-            renderSurface->setClipRect(clipRectFromAncestor);
-        else
-            renderSurface->setClipRect(IntRect());
 
         // Don't clip if the layer is reflected as the reflection shouldn't be
         // clipped. If the layer is animating, then the surface's transform to
@@ -744,31 +763,6 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
         layer->renderTarget()->renderSurface()->addContributingDelegatedRenderPassLayer(layer);
 }
 
-// FIXME: Instead of using the following function to set visibility rects on a second
-// tree pass, revise calculateVisibleContentRect() so that this can be done in a single
-// pass inside calculateDrawTransformsInternal<>().
-template<typename LayerType, typename LayerList, typename RenderSurfaceType>
-static void calculateVisibleRectsInternal(const LayerList& renderSurfaceLayerList)
-{
-    // Use BackToFront since it's cheap and this isn't order-dependent.
-    typedef CCLayerIterator<LayerType, LayerList, RenderSurfaceType, CCLayerIteratorActions::BackToFront> CCLayerIteratorType;
-
-    CCLayerIteratorType end = CCLayerIteratorType::end(&renderSurfaceLayerList);
-    for (CCLayerIteratorType it = CCLayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {
-        if (it.representsTargetRenderSurface()) {
-            LayerType* maskLayer = it->maskLayer();
-            if (maskLayer)
-                maskLayer->setVisibleContentRect(IntRect(IntPoint(), it->contentBounds()));
-            LayerType* replicaMaskLayer = it->replicaLayer() ? it->replicaLayer()->maskLayer() : 0;
-            if (replicaMaskLayer)
-                replicaMaskLayer->setVisibleContentRect(IntRect(IntPoint(), it->contentBounds()));
-        } else if (it.representsItself()) {
-            IntRect visibleContentRect = calculateVisibleContentRect(*it);
-            it->setVisibleContentRect(visibleContentRect);
-        }
-    }
-}
-
 void CCLayerTreeHostCommon::calculateDrawTransforms(LayerChromium* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, int maxTextureSize, Vector<RefPtr<LayerChromium> >& renderSurfaceLayerList)
 {
     IntRect totalDrawableContentRect;
@@ -795,16 +789,6 @@ void CCLayerTreeHostCommon::calculateDrawTransforms(CCLayerImpl* rootLayer, cons
     cc::calculateDrawTransformsInternal<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, CCLayerSorter>(rootLayer, rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
                                                                                                                 rootLayer->renderSurface()->contentRect(), true, 0, renderSurfaceLayerList,
                                                                                                                 rootLayer->renderSurface()->layerList(), layerSorter, maxTextureSize, deviceScaleFactor, totalDrawableContentRect);
-}
-
-void CCLayerTreeHostCommon::calculateVisibleRects(Vector<RefPtr<LayerChromium> >& renderSurfaceLayerList)
-{
-    calculateVisibleRectsInternal<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium>(renderSurfaceLayerList);
-}
-
-void CCLayerTreeHostCommon::calculateVisibleRects(Vector<CCLayerImpl*>& renderSurfaceLayerList)
-{
-    calculateVisibleRectsInternal<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface>(renderSurfaceLayerList);
 }
 
 static bool pointHitsRect(const IntPoint& viewportPoint, const WebTransformationMatrix& localSpaceToScreenSpaceTransform, FloatRect localSpaceRect)

@@ -570,7 +570,6 @@ void CCLayerTreeHost::updateLayers(LayerChromium* rootLayer, CCTextureUpdateQueu
     {
         TRACE_EVENT0("cc", "CCLayerTreeHost::updateLayers::calcDrawEtc");
         CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize(), m_deviceScaleFactor, rendererCapabilities().maxTextureSize, updateList);
-        CCLayerTreeHostCommon::calculateVisibleRects(updateList);
     }
 
     // Reset partial texture update requests.

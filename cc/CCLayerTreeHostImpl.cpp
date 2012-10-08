@@ -249,7 +249,6 @@ void CCLayerTreeHostImpl::calculateRenderSurfaceLayerList(CCLayerList& renderSur
     {
         TRACE_EVENT0("cc", "CCLayerTreeHostImpl::calcDrawEtc");
         CCLayerTreeHostCommon::calculateDrawTransforms(m_rootLayerImpl.get(), deviceViewportSize(), m_deviceScaleFactor, &m_layerSorter, rendererCapabilities().maxTextureSize, renderSurfaceLayerList);
-        CCLayerTreeHostCommon::calculateVisibleRects(renderSurfaceLayerList);
 
         trackDamageForAllSurfaces(m_rootLayerImpl.get(), renderSurfaceLayerList);
     }
