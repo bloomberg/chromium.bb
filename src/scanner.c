@@ -374,9 +374,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		switch (arg->type) {
 		case NEW_ID:
 		case OBJECT:
-			if (interface_name == NULL)
-				fail(ctx, "no interface name given");
-			arg->interface_name = strdup(interface_name);
+			if (interface_name)
+				arg->interface_name = strdup(interface_name);
 			break;
 		default:
 			if (interface_name != NULL)
@@ -575,7 +574,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!has_destructor)
+	if (!has_destructor && strcmp(interface->name, "wl_display") != 0)
 		printf("static inline void\n"
 		       "%s_destroy(struct %s *%s)\n"
 		       "{\n"
@@ -595,7 +594,9 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 				ret = a;
 		}
 
-		if (ret)
+		if (ret && ret->interface_name == NULL)
+			printf("static inline void *\n");
+		else if (ret)
 			printf("static inline struct %s *\n",
 			       ret->interface_name);
 		else
@@ -606,7 +607,11 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		       interface->name, interface->name);
 
 		wl_list_for_each(a, &m->arg_list, link) {
-			if (a->type == NEW_ID)
+			if (a->type == NEW_ID && a->interface_name == NULL) {
+				printf(", const struct wl_interface *interface"
+				       ", uint32_t version");
+				continue;
+			} else if (a->type == NEW_ID)
 				continue;
 			printf(", ");
 			emit_type(a);
@@ -615,17 +620,21 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 
 		printf(")\n"
 		       "{\n");
-		if (ret)
+		if (ret) {
 			printf("\tstruct wl_proxy *%s;\n\n"
 			       "\t%s = wl_proxy_create("
-			       "(struct wl_proxy *) %s,\n"
-			       "\t\t\t     &%s_interface);\n"
-			       "\tif (!%s)\n"
+			       "(struct wl_proxy *) %s,\n",
+			       ret->name, ret->name, interface->name);
+			if (ret->interface_name == NULL)
+				printf("\t\t\t     interface);\n");
+			else
+				printf("\t\t\t     &%s_interface);\n",
+				       ret->interface_name);
+
+			printf("\tif (!%s)\n"
 			       "\t\treturn NULL;\n\n",
-			       ret->name,
-			       ret->name,
-			       interface->name, ret->interface_name,
 			       ret->name);
+		}
 
 		printf("\twl_proxy_marshal((struct wl_proxy *) %s,\n"
 		       "\t\t\t %s_%s",
@@ -634,8 +643,10 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		       m->uppercase_name);
 
 		wl_list_for_each(a, &m->arg_list, link) {
+			if (a->type == NEW_ID && a->interface_name == NULL)
+				printf(", interface->name, version");
 			printf(", ");
-				printf("%s", a->name);
+			printf("%s", a->name);
 		}
 		printf(");\n");
 
@@ -644,7 +655,9 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 			       "(struct wl_proxy *) %s);\n",
 			       interface->name);
 
-		if (ret)
+		if (ret && ret->interface_name == NULL)
+			printf("\n\treturn (void *) %s;\n", ret->name);
+		else if (ret)
 			printf("\n\treturn (struct %s *) %s;\n",
 			       ret->interface_name, ret->name);
 
@@ -770,6 +783,13 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		desc_dump("\t * %s - ",
 			  m->name, mdesc ? mdesc->summary : "(none)");
 		wl_list_for_each(a, &m->arg_list, link) {
+
+			if (is_interface && a->type == NEW_ID &&
+			    a->interface_name == NULL)
+				printf("\t * @interface: name of the objects interface\n"
+				       "\t * @version: version of the objects interface\n");
+
+
 			desc_dump("\t * @%s: ",
 				  a->name, a->summary ? a->summary : "(none)");
 		}
@@ -799,6 +819,11 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 
 			if (is_interface && a->type == OBJECT)
 				printf("struct wl_resource *");
+			else if (is_interface && a->type == NEW_ID && a->interface_name == NULL)
+				printf("const char *interface, uint32_t version, uint32_t ");
+			else if (!is_interface && a->type == OBJECT && a->interface_name == NULL)
+				printf("struct wl_object *");
+
 			else if (!is_interface && a->type == NEW_ID)
 				printf("struct %s *", a->interface_name);
 			else
@@ -925,6 +950,9 @@ emit_types_forward_declarations(struct protocol *protocol,
 			switch (a->type) {
 			case NEW_ID:
 			case OBJECT:
+				if (!a->interface_name)
+					continue;
+
 				m->all_null = 0;
 				printf("extern const struct wl_interface %s_interface;\n",
 				       a->interface_name);
@@ -968,8 +996,7 @@ emit_types(struct protocol *protocol, struct wl_list *message_list)
 			switch (a->type) {
 			case NEW_ID:
 			case OBJECT:
-				if (strcmp(a->interface_name,
-					   "wl_object") != 0)
+				if (a->interface_name)
 					printf("\t&%s_interface,\n",
 					       a->interface_name);
 				else
@@ -1009,6 +1036,8 @@ emit_messages(struct wl_list *message_list,
 				printf("i");
 				break;
 			case NEW_ID:
+				if (a->interface_name == NULL)
+					printf("su");
 				printf("n");
 				break;
 			case UNSIGNED:

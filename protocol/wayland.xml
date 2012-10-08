@@ -38,9 +38,7 @@
 	the identifier.
       </description>
       <arg name="name" type="uint" summary="unique number id for object"/>
-      <arg name="interface" type="string"/>
-      <arg name="version" type="uint"/>
-      <arg name="id" type="new_id" interface="wl_object"/>
+      <arg name="id" type="new_id"/>
     </request>
 
     <request name="sync">
@@ -58,7 +56,7 @@
 	The error event is sent out when a fatal (non-recoverable)
 	error has occurred.
       </description>
-      <arg name="object_id" type="object" interface="wl_object"/>
+      <arg name="object_id" type="object"/>
       <arg name="code" type="uint"/>
       <arg name="message" type="string"/>
     </event>
