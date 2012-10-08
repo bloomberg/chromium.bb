@@ -183,7 +183,6 @@ InterfaceList::InterfaceList() {
     #include "ppapi/thunk/interfaces_ppb_public_stable.h"
   }
 
-#if !defined(OS_NACL)
   {
     Permission current_required_permission = PERMISSION_DEV;
     #include "ppapi/thunk/interfaces_ppb_public_dev.h"
@@ -192,14 +191,12 @@ InterfaceList::InterfaceList() {
     Permission current_required_permission = PERMISSION_PRIVATE;
     #include "ppapi/thunk/interfaces_ppb_private.h"
   }
-#endif
-
-  #if !defined(OS_NACL)
   {
+#if !defined(OS_NACL)
     Permission current_required_permission = PERMISSION_FLASH;
     #include "ppapi/thunk/interfaces_ppb_private_flash.h"
+#endif  // !defined(OS_NACL)
   }
-  #endif
 
   #undef PROXIED_API
   #undef PROXIED_IFACE
