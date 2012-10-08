@@ -117,6 +117,7 @@ typedef struct _FcRef { fc_atomic_int_t count; } FcRef;
 static inline void   FcRefInit     (FcRef *r, int v) { r->count = v; }
 static inline int    FcRefInc      (FcRef *r) { return fc_atomic_int_add (r->count, +1); }
 static inline int    FcRefDec      (FcRef *r) { return fc_atomic_int_add (r->count, -1); }
+static inline int    FcRefAdd      (FcRef *r, int v) { return fc_atomic_int_add (r->count, v); }
 static inline void   FcRefSetConst (FcRef *r) { r->count = FC_REF_CONSTANT_VALUE; }
 static inline FcBool FcRefIsConst  (const FcRef *r) { return r->count == FC_REF_CONSTANT_VALUE; }
 
