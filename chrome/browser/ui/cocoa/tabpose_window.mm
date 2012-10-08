@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
@@ -146,17 +146,11 @@ class ThumbnailLoader : public base::RefCountedThreadSafe<ThumbnailLoader> {
  private:
   friend class base::RefCountedThreadSafe<ThumbnailLoader>;
   ~ThumbnailLoader() {
-    ResetPaintingObserver();
   }
 
   void DidReceiveBitmap(const SkBitmap& bitmap) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    ResetPaintingObserver();
     [layer_ setThumbnail:bitmap];
-  }
-
-  void ResetPaintingObserver() {
-    g_browser_process->GetThumbnailGenerator()->MonitorRenderer(rwh_, false);
   }
 
   gfx::Size size_;
@@ -169,9 +163,6 @@ class ThumbnailLoader : public base::RefCountedThreadSafe<ThumbnailLoader> {
 
 void ThumbnailLoader::LoadThumbnail() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
-  if (!generator)  // In unit tests.
-    return;
 
   // As mentioned in ThumbnailLayer's -drawInContext:, it's sufficient to have
   // thumbnails at the zoomed-out pixel size for all but the thumbnail the user
@@ -181,10 +172,8 @@ void ThumbnailLoader::LoadThumbnail() {
   gfx::Size page_size(size_);  // Logical size the renderer renders at.
   gfx::Size pixel_size(size_);  // Physical pixel size the image is rendered at.
 
-  generator->MonitorRenderer(rwh_, true);
-
   // Will send an IPC to the renderer on the IO thread.
-  generator->AskForSnapshot(
+  g_browser_process->GetRenderWidgetSnapshotTaker()->AskForSnapshot(
       rwh_,
       base::Bind(&ThumbnailLoader::DidReceiveBitmap,
                  weak_factory_.GetWeakPtr()),

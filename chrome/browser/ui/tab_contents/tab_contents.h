@@ -36,7 +36,6 @@ class ShellWindow;
 class TabContentsTestHarness;
 class TabStripModel;
 class TabStripModelContentsCreator;
-class ThumbnailGenerator;
 class TranslationInfoBarTestContentsCreator;
 class WebDialogGtk;
 class WebDialogWindowControllerTabContentsCreator;
@@ -147,11 +146,6 @@ class TabContents : public content::WebContentsObserver {
 
   PasswordManager* password_manager() { return password_manager_.get(); }
 
-  // NOTE: This returns NULL unless in-browser thumbnail generation is enabled.
-  ThumbnailGenerator* thumbnail_generator() {
-    return thumbnail_generator_.get();
-  }
-
   // Overrides -----------------------------------------------------------------
 
   // content::WebContentsObserver overrides:
@@ -180,8 +174,6 @@ class TabContents : public content::WebContentsObserver {
   // per documentation in password_manager.h.
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
-
-  scoped_ptr<ThumbnailGenerator> thumbnail_generator_;
 
   // WebContents (MUST BE LAST) ------------------------------------------------
 

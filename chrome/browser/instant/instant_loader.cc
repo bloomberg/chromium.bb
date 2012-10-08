@@ -7,7 +7,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
@@ -407,8 +407,10 @@ void InstantLoader::SetupPreviewContents() {
   TabSpecificContentSettings::FromWebContents(new_contents)->
       SetPopupsBlocked(true);
   CoreTabHelper::FromWebContents(new_contents)->set_delegate(new_delegate);
-  if (ThumbnailGenerator* tg = preview_contents_->thumbnail_generator())
-    tg->set_enabled(false);
+  ThumbnailTabHelper* thumbnail_tab_helper =
+      ThumbnailTabHelper::FromWebContents(new_contents);
+  if (thumbnail_tab_helper)
+    thumbnail_tab_helper->set_enabled(false);
 
 #if defined(OS_MACOSX)
   // If |preview_contents_| does not currently have a RWHV, we will call
@@ -434,8 +436,10 @@ void InstantLoader::CleanupPreviewContents() {
   TabSpecificContentSettings::FromWebContents(old_contents)->
       SetPopupsBlocked(false);
   CoreTabHelper::FromWebContents(old_contents)->set_delegate(NULL);
-  if (ThumbnailGenerator* tg = preview_contents_->thumbnail_generator())
-    tg->set_enabled(true);
+  ThumbnailTabHelper* thumbnail_tab_helper =
+      ThumbnailTabHelper::FromWebContents(old_contents);
+  if (thumbnail_tab_helper)
+    thumbnail_tab_helper->set_enabled(true);
 
 #if defined(OS_MACOSX)
   if (content::RenderWidgetHostView* rwhv =

@@ -30,7 +30,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
@@ -155,6 +155,7 @@ TabContents::TabContents(WebContents* contents)
   SSLTabHelper::CreateForWebContents(contents);
   TabContentsSyncedTabDelegate::CreateForWebContents(contents);
   TabSpecificContentSettings::CreateForWebContents(contents);
+  ThumbnailTabHelper::CreateForWebContents(contents);
   TranslateTabHelper::CreateForWebContents(contents);
   ZoomController::CreateForWebContents(contents);
 
@@ -178,9 +179,6 @@ TabContents::TabContents(WebContents* contents)
   printing::PrintPreviewMessageHandler::CreateForWebContents(contents);
   printing::PrintViewManager::CreateForWebContents(contents);
 #endif
-
-  thumbnail_generator_.reset(new ThumbnailGenerator);
-  thumbnail_generator_->StartThumbnailing(web_contents_.get());
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   // If this is not an incognito window, setup to handle one-click login.

@@ -79,7 +79,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
   virtual policy::PolicyService* policy_service() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;
-  virtual ThumbnailGenerator* GetThumbnailGenerator() OVERRIDE;
+  virtual RenderWidgetSnapshotTaker* GetRenderWidgetSnapshotTaker() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
   virtual void CreateDevToolsHttpProtocolHandler(
       Profile* profile,
@@ -211,9 +211,9 @@ class BrowserProcessImpl : public BrowserProcess,
   bool checked_for_new_frames_;
   bool using_new_frames_;
 
-  // This service just sits around and makes thumbnails for tabs. It does
+  // This service just sits around and makes snapshots for renderers. It does
   // nothing in the constructor so we don't have to worry about lazy init.
-  scoped_ptr<ThumbnailGenerator> thumbnail_generator_;
+  scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;
 
   // Download status updates (like a changing application icon on dock/taskbar)
   // are global per-application. DownloadStatusUpdater does no work in the ctor

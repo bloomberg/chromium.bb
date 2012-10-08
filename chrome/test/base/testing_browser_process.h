@@ -54,7 +54,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
   virtual policy::PolicyService* policy_service() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;
-  virtual ThumbnailGenerator* GetThumbnailGenerator() OVERRIDE;
+  virtual RenderWidgetSnapshotTaker* GetRenderWidgetSnapshotTaker() OVERRIDE;
   virtual BackgroundModeManager* background_mode_manager() OVERRIDE;
   virtual StatusTray* status_tray() OVERRIDE;
   virtual SafeBrowsingService* safe_browsing_service() OVERRIDE;
@@ -122,6 +122,7 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_refptr<printing::PrintPreviewTabController>
       print_preview_tab_controller_;
   scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
+  scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;
   IOThread* io_thread_;
   scoped_refptr<SafeBrowsingService> sb_service_;
 

@@ -31,7 +31,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -624,10 +624,8 @@ class SnapshotTaker {
                                 const gfx::Size& desired_size,
                                 SkBitmap* bitmap) WARN_UNUSED_RESULT {
     bitmap_ = bitmap;
-    ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
-    generator->MonitorRenderer(rwh, true);
     snapshot_taken_ = false;
-    generator->AskForSnapshot(
+    g_browser_process->GetRenderWidgetSnapshotTaker()->AskForSnapshot(
         rwh,
         base::Bind(&SnapshotTaker::OnSnapshotTaken, base::Unretained(this)),
         page_size,
@@ -663,7 +661,7 @@ class SnapshotTaker {
   }
 
  private:
-  // Called when the ThumbnailGenerator has taken the snapshot.
+  // Called when the RenderWidgetSnapshotTaker has taken the snapshot.
   void OnSnapshotTaken(const SkBitmap& bitmap) {
     *bitmap_ = bitmap;
     snapshot_taken_ = true;

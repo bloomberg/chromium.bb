@@ -29,9 +29,9 @@ class NotificationUIManager;
 class PrefService;
 class Profile;
 class ProfileManager;
+class RenderWidgetSnapshotTaker;
 class SafeBrowsingService;
 class StatusTray;
-class ThumbnailGenerator;
 class WatchDogThread;
 
 #if defined(OS_CHROMEOS)
@@ -127,7 +127,7 @@ class BrowserProcess {
 
   virtual IconManager* icon_manager() = 0;
 
-  virtual ThumbnailGenerator* GetThumbnailGenerator() = 0;
+  virtual RenderWidgetSnapshotTaker* GetRenderWidgetSnapshotTaker() = 0;
 
   virtual AutomationProviderList* GetAutomationProviderList() = 0;
 

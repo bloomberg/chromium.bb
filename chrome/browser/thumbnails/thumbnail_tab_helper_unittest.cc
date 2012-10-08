@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
+
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
@@ -20,30 +21,30 @@
 
 using content::WebContents;
 
-typedef testing::Test ThumbnailGeneratorTest;
+typedef testing::Test ThumbnailTabHelperTest;
 
-TEST_F(ThumbnailGeneratorTest, CalculateBoringScore_Empty) {
+TEST_F(ThumbnailTabHelperTest, CalculateBoringScore_Empty) {
   SkBitmap bitmap;
-  EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(bitmap));
+  EXPECT_DOUBLE_EQ(1.0, ThumbnailTabHelper::CalculateBoringScore(bitmap));
 }
 
-TEST_F(ThumbnailGeneratorTest, CalculateBoringScore_SingleColor) {
+TEST_F(ThumbnailTabHelperTest, CalculateBoringScore_SingleColor) {
   const gfx::Size kSize(20, 10);
   gfx::Canvas canvas(kSize, ui::SCALE_FACTOR_100P, true);
-  // Fill all pixesl in black.
+  // Fill all pixels in black.
   canvas.FillRect(gfx::Rect(kSize), SK_ColorBLACK);
 
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
   // The thumbnail should deserve the highest boring score.
-  EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(bitmap));
+  EXPECT_DOUBLE_EQ(1.0, ThumbnailTabHelper::CalculateBoringScore(bitmap));
 }
 
-TEST_F(ThumbnailGeneratorTest, CalculateBoringScore_TwoColors) {
+TEST_F(ThumbnailTabHelperTest, CalculateBoringScore_TwoColors) {
   const gfx::Size kSize(20, 10);
 
   gfx::Canvas canvas(kSize, ui::SCALE_FACTOR_100P, true);
-  // Fill all pixesl in black.
+  // Fill all pixels in black.
   canvas.FillRect(gfx::Rect(kSize), SK_ColorBLACK);
   // Fill the left half pixels in white.
   canvas.FillRect(gfx::Rect(0, 0, kSize.width() / 2, kSize.height()),
@@ -54,92 +55,92 @@ TEST_F(ThumbnailGeneratorTest, CalculateBoringScore_TwoColors) {
   ASSERT_EQ(kSize.width(), bitmap.width());
   ASSERT_EQ(kSize.height(), bitmap.height());
   // The thumbnail should be less boring because two colors are used.
-  EXPECT_DOUBLE_EQ(0.5, ThumbnailGenerator::CalculateBoringScore(bitmap));
+  EXPECT_DOUBLE_EQ(0.5, ThumbnailTabHelper::CalculateBoringScore(bitmap));
 }
 
-TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_TallerThanWide) {
+TEST_F(ThumbnailTabHelperTest, GetClippedBitmap_TallerThanWide) {
   // The input bitmap is vertically long.
   gfx::Canvas canvas(gfx::Size(40, 90), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
   // The desired size is square.
-  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
-  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+  ThumbnailTabHelper::ClipResult clip_result = ThumbnailTabHelper::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailTabHelper::GetClippedBitmap(
       bitmap, 10, 10, &clip_result);
   // The clipped bitmap should be square.
   EXPECT_EQ(40, clipped_bitmap.width());
   EXPECT_EQ(40, clipped_bitmap.height());
   // The input was taller than wide.
-  EXPECT_EQ(ThumbnailGenerator::kTallerThanWide, clip_result);
+  EXPECT_EQ(ThumbnailTabHelper::kTallerThanWide, clip_result);
 }
 
-TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_WiderThanTall) {
+TEST_F(ThumbnailTabHelperTest, GetClippedBitmap_WiderThanTall) {
   // The input bitmap is horizontally long.
   gfx::Canvas canvas(gfx::Size(70, 40), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
   // The desired size is square.
-  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
-  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+  ThumbnailTabHelper::ClipResult clip_result = ThumbnailTabHelper::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailTabHelper::GetClippedBitmap(
       bitmap, 10, 10, &clip_result);
   // The clipped bitmap should be square.
   EXPECT_EQ(40, clipped_bitmap.width());
   EXPECT_EQ(40, clipped_bitmap.height());
   // The input was wider than tall.
-  EXPECT_EQ(ThumbnailGenerator::kWiderThanTall, clip_result);
+  EXPECT_EQ(ThumbnailTabHelper::kWiderThanTall, clip_result);
 }
 
-TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_TooWiderThanTall) {
+TEST_F(ThumbnailTabHelperTest, GetClippedBitmap_TooWiderThanTall) {
   // The input bitmap is horizontally very long.
   gfx::Canvas canvas(gfx::Size(90, 40), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
   // The desired size is square.
-  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
-  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+  ThumbnailTabHelper::ClipResult clip_result = ThumbnailTabHelper::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailTabHelper::GetClippedBitmap(
       bitmap, 10, 10, &clip_result);
   // The clipped bitmap should be square.
   EXPECT_EQ(40, clipped_bitmap.width());
   EXPECT_EQ(40, clipped_bitmap.height());
   // The input was wider than tall.
-  EXPECT_EQ(ThumbnailGenerator::kTooWiderThanTall, clip_result);
+  EXPECT_EQ(ThumbnailTabHelper::kTooWiderThanTall, clip_result);
 }
 
-TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_NotClipped) {
+TEST_F(ThumbnailTabHelperTest, GetClippedBitmap_NotClipped) {
   // The input bitmap is square.
   gfx::Canvas canvas(gfx::Size(40, 40), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
   // The desired size is square.
-  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
-  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+  ThumbnailTabHelper::ClipResult clip_result = ThumbnailTabHelper::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailTabHelper::GetClippedBitmap(
       bitmap, 10, 10, &clip_result);
   // The clipped bitmap should be square.
   EXPECT_EQ(40, clipped_bitmap.width());
   EXPECT_EQ(40, clipped_bitmap.height());
   // There was no need to clip.
-  EXPECT_EQ(ThumbnailGenerator::kNotClipped, clip_result);
+  EXPECT_EQ(ThumbnailTabHelper::kNotClipped, clip_result);
 }
 
-TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_NonSquareOutput) {
+TEST_F(ThumbnailTabHelperTest, GetClippedBitmap_NonSquareOutput) {
   // The input bitmap is square.
   gfx::Canvas canvas(gfx::Size(40, 40), ui::SCALE_FACTOR_100P, true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
   // The desired size is horizontally long.
-  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
-  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+  ThumbnailTabHelper::ClipResult clip_result = ThumbnailTabHelper::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailTabHelper::GetClippedBitmap(
       bitmap, 20, 10, &clip_result);
   // The clipped bitmap should have the same aspect ratio of the desired size.
   EXPECT_EQ(40, clipped_bitmap.width());
   EXPECT_EQ(20, clipped_bitmap.height());
   // The input was taller than wide.
-  EXPECT_EQ(ThumbnailGenerator::kTallerThanWide, clip_result);
+  EXPECT_EQ(ThumbnailTabHelper::kTallerThanWide, clip_result);
 }
 
 // A mock version of TopSites, used for testing ShouldUpdateThumbnail().
@@ -179,7 +180,7 @@ class MockTopSites : public history::TopSites {
   std::map<std::string, ThumbnailScore> known_url_map_;
 };
 
-TEST_F(ThumbnailGeneratorTest, ShouldUpdateThumbnail) {
+TEST_F(ThumbnailTabHelperTest, ShouldUpdateThumbnail) {
   const GURL kGoodURL("http://www.google.com/");
   const GURL kBadURL("chrome://newtab");
 
@@ -192,21 +193,21 @@ TEST_F(ThumbnailGeneratorTest, ShouldUpdateThumbnail) {
   scoped_refptr<MockTopSites> top_sites(new MockTopSites(&profile));
 
   // Should be false because it's a bad URL.
-  EXPECT_FALSE(ThumbnailGenerator::ShouldUpdateThumbnail(
+  EXPECT_FALSE(ThumbnailTabHelper::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kBadURL));
 
   // Should be true, as it's a good URL.
-  EXPECT_TRUE(ThumbnailGenerator::ShouldUpdateThumbnail(
+  EXPECT_TRUE(ThumbnailTabHelper::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kGoodURL));
 
   // Should be false, if it's in the incognito mode.
   profile.set_incognito(true);
-  EXPECT_FALSE(ThumbnailGenerator::ShouldUpdateThumbnail(
+  EXPECT_FALSE(ThumbnailTabHelper::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kGoodURL));
 
   // Should be true again, once turning off the incognito mode.
   profile.set_incognito(false);
-  EXPECT_TRUE(ThumbnailGenerator::ShouldUpdateThumbnail(
+  EXPECT_TRUE(ThumbnailTabHelper::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kGoodURL));
 
   // Add a known URL. This makes the top sites data full.
@@ -218,11 +219,11 @@ TEST_F(ThumbnailGeneratorTest, ShouldUpdateThumbnail) {
   // Should be false, as the top sites data is full, and the new URL is
   // not known.
   const GURL kAnotherGoodURL("http://www.youtube.com/");
-  EXPECT_FALSE(ThumbnailGenerator::ShouldUpdateThumbnail(
+  EXPECT_FALSE(ThumbnailTabHelper::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kAnotherGoodURL));
 
-  // Should be true, as the existing thumbnail is bad (i.e need a better one).
-  EXPECT_TRUE(ThumbnailGenerator::ShouldUpdateThumbnail(
+  // Should be true, as the existing thumbnail is bad (i.e. need a better one).
+  EXPECT_TRUE(ThumbnailTabHelper::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kGoodURL));
 
   // Replace the thumbnail score with a really good one.
@@ -236,6 +237,6 @@ TEST_F(ThumbnailGeneratorTest, ShouldUpdateThumbnail) {
 
   // Should be false, as the existing thumbnail is good enough (i.e. don't
   // need to replace the existing thumbnail which is new and good).
-  EXPECT_FALSE(ThumbnailGenerator::ShouldUpdateThumbnail(
+  EXPECT_FALSE(ThumbnailTabHelper::ShouldUpdateThumbnail(
       &profile, top_sites.get(), kGoodURL));
 }

@@ -56,7 +56,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
@@ -143,7 +143,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       did_start_(false),
       checked_for_new_frames_(false),
       using_new_frames_(false),
-      thumbnail_generator_(new ThumbnailGenerator),
+      render_widget_snapshot_taker_(new RenderWidgetSnapshotTaker),
       download_status_updater_(new DownloadStatusUpdater) {
   g_browser_process = this;
 
@@ -457,8 +457,8 @@ IconManager* BrowserProcessImpl::icon_manager() {
   return icon_manager_.get();
 }
 
-ThumbnailGenerator* BrowserProcessImpl::GetThumbnailGenerator() {
-  return thumbnail_generator_.get();
+RenderWidgetSnapshotTaker* BrowserProcessImpl::GetRenderWidgetSnapshotTaker() {
+  return render_widget_snapshot_taker_.get();
 }
 
 AutomationProviderList* BrowserProcessImpl::GetAutomationProviderList() {

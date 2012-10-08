@@ -14,6 +14,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +28,7 @@ TestingBrowserProcess::TestingBrowserProcess()
       module_ref_count_(0),
       app_locale_("en"),
       local_state_(NULL),
+      render_widget_snapshot_taker_(new RenderWidgetSnapshotTaker),
       io_thread_(NULL) {
 }
 
@@ -93,8 +95,9 @@ IconManager* TestingBrowserProcess::icon_manager() {
   return NULL;
 }
 
-ThumbnailGenerator* TestingBrowserProcess::GetThumbnailGenerator() {
-  return NULL;
+RenderWidgetSnapshotTaker*
+TestingBrowserProcess::GetRenderWidgetSnapshotTaker() {
+  return render_widget_snapshot_taker_.get();
 }
 
 BackgroundModeManager* TestingBrowserProcess::background_mode_manager() {
