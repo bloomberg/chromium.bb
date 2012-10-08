@@ -711,37 +711,6 @@ wl_display_flush(struct wl_display *display)
 	return ret;
 }
 
-WL_EXPORT void *
-wl_display_bind(struct wl_display *display,
-		uint32_t name, const struct wl_interface *interface)
-{
-	struct wl_proxy *proxy;
-
-	proxy = wl_proxy_create(&display->proxy, interface);
-	if (proxy == NULL)
-		return NULL;
-
-	wl_proxy_marshal(&display->proxy, WL_DISPLAY_BIND,
-			 name, interface->name, interface->version, proxy);
-
-	return proxy;
-}
-
-WL_EXPORT struct wl_callback *
-wl_display_sync(struct wl_display *display)
-{
-	struct wl_proxy *proxy;
-
-	proxy = wl_proxy_create(&display->proxy, &wl_callback_interface);
-
-	if (!proxy)
-		return NULL;
-
-	wl_proxy_marshal(&display->proxy, WL_DISPLAY_SYNC, proxy);
-
-	return (struct wl_callback *) proxy;
-}
-
 WL_EXPORT void
 wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data)
 {

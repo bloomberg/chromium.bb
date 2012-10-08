@@ -538,10 +538,6 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	struct arg *a, *ret;
 	int has_destructor, has_destroy;
 
-	/* We provide a hand written functions for the display object */
-	if (strcmp(interface->name, "wl_display") == 0)
-		return;
-
 	printf("static inline void\n"
 	       "%s_set_user_data(struct %s *%s, void *user_data)\n"
 	       "{\n"
