@@ -239,12 +239,12 @@ TEST(CCLayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     layer5->setDrawTransform(BehindMatrix);
     layer5->setDrawsContent(true);
 
-    std::vector<CCLayerImpl*> layerList;
-    layerList.push_back(layer1.get());
-    layerList.push_back(layer2.get());
-    layerList.push_back(layer3.get());
-    layerList.push_back(layer4.get());
-    layerList.push_back(layer5.get());
+    Vector<CCLayerImpl*> layerList;
+    layerList.append(layer1.get());
+    layerList.append(layer2.get());
+    layerList.append(layer3.get());
+    layerList.append(layer4.get());
+    layerList.append(layer5.get());
 
     ASSERT_EQ(static_cast<size_t>(5), layerList.size());
     EXPECT_EQ(1, layerList[0]->id());

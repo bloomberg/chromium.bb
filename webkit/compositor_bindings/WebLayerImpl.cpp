@@ -70,7 +70,7 @@ WebLayerImpl::WebLayerImpl()
 {
 }
 
-WebLayerImpl::WebLayerImpl(scoped_refptr<LayerChromium> layer)
+WebLayerImpl::WebLayerImpl(PassRefPtr<LayerChromium> layer)
     : m_layer(layer)
 {
 }

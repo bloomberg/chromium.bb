@@ -49,7 +49,7 @@ void FakeLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const 
     if (!m_rectToInvalidate.isEmpty()) {
         m_layer->invalidateContentRect(m_rectToInvalidate);
         m_rectToInvalidate = IntRect();
-        m_layer = NULL;
+        m_layer = 0;
     }
     resultingOpaqueRect = m_opaquePaintRect;
 }
@@ -92,10 +92,6 @@ FakeTiledLayerChromium::FakeTiledLayerChromium(CCPrioritizedTextureManager* text
 
 FakeTiledLayerWithScaledBounds::FakeTiledLayerWithScaledBounds(CCPrioritizedTextureManager* textureManager)
     : FakeTiledLayerChromium(textureManager)
-{
-}
-
-FakeTiledLayerWithScaledBounds::~FakeTiledLayerWithScaledBounds()
 {
 }
 

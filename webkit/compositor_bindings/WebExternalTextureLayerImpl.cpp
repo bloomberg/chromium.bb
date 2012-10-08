@@ -25,13 +25,13 @@ WebExternalTextureLayer* WebExternalTextureLayer::create(WebExternalTextureLayer
 WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(WebExternalTextureLayerClient* client)
     : m_client(client)
 {
-    scoped_refptr<TextureLayerChromium> layer;
+    RefPtr<TextureLayerChromium> layer;
     if (m_client)
         layer = TextureLayerChromium::create(this);
     else
         layer = TextureLayerChromium::create(0);
     layer->setIsDrawable(true);
-    m_layer = adoptPtr(new WebLayerImpl(layer));
+    m_layer = adoptPtr(new WebLayerImpl(layer.release()));
 }
 
 WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl()

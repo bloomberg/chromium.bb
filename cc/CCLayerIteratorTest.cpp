@@ -23,7 +23,7 @@ namespace {
 
 class TestLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<TestLayerChromium> create() { return make_scoped_refptr(new TestLayerChromium()); }
+    static PassRefPtr<TestLayerChromium> create() { return adoptRef(new TestLayerChromium()); }
 
     int m_countRepresentingTargetSurface;
     int m_countRepresentingContributingSurface;
@@ -41,9 +41,6 @@ private:
         setPosition(IntPoint());
         setAnchorPoint(IntPoint());
     }
-    virtual ~TestLayerChromium()
-    {
-    }
 
     bool m_drawsContent;
 };
@@ -53,10 +50,10 @@ private:
     EXPECT_EQ(contrib, layer->m_countRepresentingContributingSurface);   \
     EXPECT_EQ(itself, layer->m_countRepresentingItself);
 
-typedef CCLayerIterator<LayerChromium, std::vector<scoped_refptr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::FrontToBack> FrontToBack;
-typedef CCLayerIterator<LayerChromium, std::vector<scoped_refptr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::BackToFront> BackToFront;
+typedef CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::FrontToBack> FrontToBack;
+typedef CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::BackToFront> BackToFront;
 
-void resetCounts(std::vector<scoped_refptr<LayerChromium> >& renderSurfaceLayerList)
+void resetCounts(Vector<RefPtr<LayerChromium> >& renderSurfaceLayerList)
 {
     for (unsigned surfaceIndex = 0; surfaceIndex < renderSurfaceLayerList.size(); ++surfaceIndex) {
         TestLayerChromium* renderSurfaceLayer = static_cast<TestLayerChromium*>(renderSurfaceLayerList[surfaceIndex].get());
@@ -76,7 +73,7 @@ void resetCounts(std::vector<scoped_refptr<LayerChromium> >& renderSurfaceLayerL
     }
 }
 
-void iterateFrontToBack(std::vector<scoped_refptr<LayerChromium> >* renderSurfaceLayerList)
+void iterateFrontToBack(Vector<RefPtr<LayerChromium> >* renderSurfaceLayerList)
 {
     resetCounts(*renderSurfaceLayerList);
     int count = 0;
@@ -91,7 +88,7 @@ void iterateFrontToBack(std::vector<scoped_refptr<LayerChromium> >* renderSurfac
     }
 }
 
-void iterateBackToFront(std::vector<scoped_refptr<LayerChromium> >* renderSurfaceLayerList)
+void iterateBackToFront(Vector<RefPtr<LayerChromium> >* renderSurfaceLayerList)
 {
     resetCounts(*renderSurfaceLayerList);
     int count = 0;
@@ -108,7 +105,7 @@ void iterateBackToFront(std::vector<scoped_refptr<LayerChromium> >* renderSurfac
 
 TEST(CCLayerIteratorTest, emptyTree)
 {
-    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
+    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
 
     iterateBackToFront(&renderSurfaceLayerList);
     iterateFrontToBack(&renderSurfaceLayerList);
@@ -116,11 +113,11 @@ TEST(CCLayerIteratorTest, emptyTree)
 
 TEST(CCLayerIteratorTest, simpleTree)
 {
-    scoped_refptr<TestLayerChromium> rootLayer = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> first = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> second = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> third = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> fourth = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> rootLayer = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> first = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> second = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> third = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> fourth = TestLayerChromium::create();
 
     rootLayer->createRenderSurface();
 
@@ -129,7 +126,7 @@ TEST(CCLayerIteratorTest, simpleTree)
     rootLayer->addChild(third);
     rootLayer->addChild(fourth);
 
-    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
+    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
     CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer.get(), rootLayer->bounds(), 1, 256, renderSurfaceLayerList);
     CCLayerTreeHostCommon::calculateVisibleRects(renderSurfaceLayerList);
 
@@ -151,15 +148,15 @@ TEST(CCLayerIteratorTest, simpleTree)
 
 TEST(CCLayerIteratorTest, complexTree)
 {
-    scoped_refptr<TestLayerChromium> rootLayer = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root1 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root2 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root3 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root21 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root22 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root23 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root221 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root231 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> rootLayer = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root1 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root2 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root3 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root21 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root22 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root23 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root221 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root231 = TestLayerChromium::create();
 
     rootLayer->createRenderSurface();
 
@@ -172,7 +169,7 @@ TEST(CCLayerIteratorTest, complexTree)
     root22->addChild(root221);
     root23->addChild(root231);
 
-    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
+    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
     CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer.get(), rootLayer->bounds(), 1, 256, renderSurfaceLayerList);
     CCLayerTreeHostCommon::calculateVisibleRects(renderSurfaceLayerList);
 
@@ -202,15 +199,15 @@ TEST(CCLayerIteratorTest, complexTree)
 
 TEST(CCLayerIteratorTest, complexTreeMultiSurface)
 {
-    scoped_refptr<TestLayerChromium> rootLayer = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root1 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root2 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root3 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root21 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root22 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root23 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root221 = TestLayerChromium::create();
-    scoped_refptr<TestLayerChromium> root231 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> rootLayer = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root1 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root2 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root3 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root21 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root22 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root23 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root221 = TestLayerChromium::create();
+    RefPtr<TestLayerChromium> root231 = TestLayerChromium::create();
 
     rootLayer->createRenderSurface();
     rootLayer->renderSurface()->setContentRect(IntRect(IntPoint(), rootLayer->bounds()));
@@ -228,7 +225,7 @@ TEST(CCLayerIteratorTest, complexTreeMultiSurface)
     root23->setOpacity(0.5);
     root23->addChild(root231);
 
-    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
+    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
     CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer.get(), rootLayer->bounds(), 1, 256, renderSurfaceLayerList);
     CCLayerTreeHostCommon::calculateVisibleRects(renderSurfaceLayerList);
 

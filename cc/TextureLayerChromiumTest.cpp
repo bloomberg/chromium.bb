@@ -64,7 +64,7 @@ private:
 
 TEST_F(TextureLayerChromiumTest, syncImplWhenChangingTextureId)
 {
-    scoped_refptr<TextureLayerChromium> testLayer = TextureLayerChromium::create(0);
+    RefPtr<TextureLayerChromium> testLayer = TextureLayerChromium::create(0);
     ASSERT_TRUE(testLayer);
 
     EXPECT_CALL(*m_layerTreeHost, acquireLayerTextures()).Times(AnyNumber());
@@ -87,12 +87,12 @@ TEST_F(TextureLayerChromiumTest, syncImplWhenChangingTextureId)
 
 TEST_F(TextureLayerChromiumTest, syncImplWhenRemovingFromTree)
 {
-    scoped_refptr<LayerChromium> rootLayer = LayerChromium::create();
+    RefPtr<LayerChromium> rootLayer = LayerChromium::create();
     ASSERT_TRUE(rootLayer);
-    scoped_refptr<LayerChromium> childLayer = LayerChromium::create();
+    RefPtr<LayerChromium> childLayer = LayerChromium::create();
     ASSERT_TRUE(childLayer);
     rootLayer->addChild(childLayer);
-    scoped_refptr<TextureLayerChromium> testLayer = TextureLayerChromium::create(0);
+    RefPtr<TextureLayerChromium> testLayer = TextureLayerChromium::create(0);
     ASSERT_TRUE(testLayer);
     testLayer->setTextureId(0);
     childLayer->addChild(testLayer);

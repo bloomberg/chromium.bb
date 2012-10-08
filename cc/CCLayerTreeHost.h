@@ -6,7 +6,6 @@
 #define CCLayerTreeHost_h
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/own_ptr_vector.h"
 #include "CCAnimationEvents.h"
@@ -24,6 +23,7 @@
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
+#include <wtf/PassRefPtr.h>
 
 namespace cc {
 
@@ -152,7 +152,7 @@ public:
 
     LayerChromium* rootLayer() { return m_rootLayer.get(); }
     const LayerChromium* rootLayer() const { return m_rootLayer.get(); }
-    void setRootLayer(scoped_refptr<LayerChromium>);
+    void setRootLayer(PassRefPtr<LayerChromium>);
 
     const CCLayerTreeSettings& settings() const { return m_settings; }
 
@@ -214,7 +214,7 @@ protected:
     bool initialize();
 
 private:
-    typedef std::vector<scoped_refptr<LayerChromium> > LayerList;
+    typedef Vector<RefPtr<LayerChromium> > LayerList;
 
     void initializeRenderer();
 
@@ -247,8 +247,8 @@ private:
     int m_numTimesRecreateShouldFail;
     int m_numFailedRecreateAttempts;
 
-    scoped_refptr<LayerChromium> m_rootLayer;
-    scoped_refptr<HeadsUpDisplayLayerChromium> m_hudLayer;
+    RefPtr<LayerChromium> m_rootLayer;
+    RefPtr<HeadsUpDisplayLayerChromium> m_hudLayer;
     scoped_ptr<CCFontAtlas> m_fontAtlas;
 
     OwnPtr<CCPrioritizedTextureManager> m_contentsTextureManager;

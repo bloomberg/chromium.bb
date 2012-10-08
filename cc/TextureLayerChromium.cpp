@@ -15,9 +15,9 @@
 
 namespace cc {
 
-scoped_refptr<TextureLayerChromium> TextureLayerChromium::create(TextureLayerChromiumClient* client)
+PassRefPtr<TextureLayerChromium> TextureLayerChromium::create(TextureLayerChromiumClient* client)
 {
-    return scoped_refptr<TextureLayerChromium>(new TextureLayerChromium(client));
+    return adoptRef(new TextureLayerChromium(client));
 }
 
 TextureLayerChromium::TextureLayerChromium(TextureLayerChromiumClient* client)

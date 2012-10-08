@@ -23,7 +23,8 @@ public:
     // If this texture layer requires special preparation logic for each frame driven by
     // the compositor, pass in a non-nil client. Pass in a nil client pointer if texture updates
     // are driven by an external process.
-    static scoped_refptr<TextureLayerChromium> create(TextureLayerChromiumClient*);
+    static PassRefPtr<TextureLayerChromium> create(TextureLayerChromiumClient*);
+    virtual ~TextureLayerChromium();
 
     void clearClient() { m_client = 0; }
 
@@ -57,7 +58,6 @@ public:
 
 protected:
     explicit TextureLayerChromium(TextureLayerChromiumClient*);
-    virtual ~TextureLayerChromium();
 
 private:
     TextureLayerChromiumClient* m_client;

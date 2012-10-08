@@ -25,14 +25,11 @@ protected:
 
 class DrawsContentLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<DrawsContentLayerChromium> create() { return make_scoped_refptr(new DrawsContentLayerChromium()); }
+    static PassRefPtr<DrawsContentLayerChromium> create() { return adoptRef(new DrawsContentLayerChromium()); }
     virtual bool drawsContent() const OVERRIDE { return true; }
 
 private:
     DrawsContentLayerChromium() : LayerChromium() { }
-    virtual ~DrawsContentLayerChromium()
-    {
-    }
 };
 
 class CCHudWithRootLayerChange : public CCHeadsUpDisplayTest {
@@ -100,8 +97,8 @@ public:
     }
 
 private:
-    scoped_refptr<DrawsContentLayerChromium> m_rootLayer1;
-    scoped_refptr<DrawsContentLayerChromium> m_rootLayer2;
+    RefPtr<DrawsContentLayerChromium> m_rootLayer1;
+    RefPtr<DrawsContentLayerChromium> m_rootLayer2;
     int m_numCommits;
 };
 

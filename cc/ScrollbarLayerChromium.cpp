@@ -25,9 +25,9 @@ PassOwnPtr<CCLayerImpl> ScrollbarLayerChromium::createCCLayerImpl()
     return CCScrollbarLayerImpl::create(id());
 }
 
-scoped_refptr<ScrollbarLayerChromium> ScrollbarLayerChromium::create(PassOwnPtr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
+PassRefPtr<ScrollbarLayerChromium> ScrollbarLayerChromium::create(PassOwnPtr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
 {
-    return make_scoped_refptr(new ScrollbarLayerChromium(scrollbar, painter, geometry, scrollLayerId));
+    return adoptRef(new ScrollbarLayerChromium(scrollbar, painter, geometry, scrollLayerId));
 }
 
 ScrollbarLayerChromium::ScrollbarLayerChromium(PassOwnPtr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)

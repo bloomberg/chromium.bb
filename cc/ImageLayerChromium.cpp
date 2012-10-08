@@ -80,9 +80,9 @@ private:
     SkBitmap m_bitmap;
 };
 
-scoped_refptr<ImageLayerChromium> ImageLayerChromium::create()
+PassRefPtr<ImageLayerChromium> ImageLayerChromium::create()
 {
-    return make_scoped_refptr(new ImageLayerChromium());
+    return adoptRef(new ImageLayerChromium());
 }
 
 ImageLayerChromium::ImageLayerChromium()

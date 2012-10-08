@@ -9,11 +9,9 @@
 #if USE(ACCELERATED_COMPOSITING)
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "FloatRect.h"
 #include "IntRect.h"
 #include <public/WebTransformationMatrix.h>
-#include <vector>
 
 namespace cc {
 
@@ -58,8 +56,7 @@ public:
     const IntRect& clipRect() const { return m_clipRect; }
     void setClipRect(const IntRect& clipRect) { m_clipRect = clipRect; }
 
-    typedef std::vector<scoped_refptr<LayerChromium> > LayerList;
-    LayerList& layerList() { return m_layerList; }
+    Vector<RefPtr<LayerChromium> >& layerList() { return m_layerList; }
     // A no-op since DelegatedRendererLayers on the main thread don't have any
     // RenderPasses so they can't contribute to a surface.
     void addContributingDelegatedRenderPassLayer(LayerChromium*) { }
@@ -88,7 +85,7 @@ private:
     // Uses the space of the surface's target surface.
     IntRect m_clipRect;
 
-    LayerList m_layerList;
+    Vector<RefPtr<LayerChromium> > m_layerList;
 
     // The nearest ancestor target surface that will contain the contents of this surface, and that is going
     // to move pixels within the surface (such as with a blur). This can point to itself.

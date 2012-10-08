@@ -11,9 +11,9 @@
 
 namespace cc {
 
-scoped_refptr<VideoLayerChromium> VideoLayerChromium::create(WebKit::WebVideoFrameProvider* provider)
+PassRefPtr<VideoLayerChromium> VideoLayerChromium::create(WebKit::WebVideoFrameProvider* provider)
 {
-    return make_scoped_refptr(new VideoLayerChromium(provider));
+    return adoptRef(new VideoLayerChromium(provider));
 }
 
 VideoLayerChromium::VideoLayerChromium(WebKit::WebVideoFrameProvider* provider)

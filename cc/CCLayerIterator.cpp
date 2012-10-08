@@ -126,27 +126,24 @@ void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<L
     }
 }
 
-typedef std::vector<scoped_refptr<LayerChromium> > LayerChromiumList;
-typedef std::vector<CCLayerImpl*> CCLayerImplList;
-
 // Declare each of the above functions for LayerChromium and CCLayerImpl classes so that they are linked.
-template void CCLayerIteratorActions::BackToFront::begin(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, BackToFront> &);
-template void CCLayerIteratorActions::BackToFront::end(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, BackToFront>&);
-template void CCLayerIteratorActions::BackToFront::next(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, BackToFront>&);
+template void CCLayerIteratorActions::BackToFront::begin(CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, BackToFront> &);
+template void CCLayerIteratorActions::BackToFront::end(CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, BackToFront>&);
+template void CCLayerIteratorActions::BackToFront::next(CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, BackToFront>&);
 
-template void CCLayerIteratorActions::BackToFront::begin(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, BackToFront>&);
-template void CCLayerIteratorActions::BackToFront::end(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, BackToFront>&);
-template void CCLayerIteratorActions::BackToFront::next(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, BackToFront>&);
+template void CCLayerIteratorActions::BackToFront::begin(CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, BackToFront>&);
+template void CCLayerIteratorActions::BackToFront::end(CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, BackToFront>&);
+template void CCLayerIteratorActions::BackToFront::next(CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, BackToFront>&);
 
-template void CCLayerIteratorActions::FrontToBack::next(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::end(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, FrontToBack>&);
+template void CCLayerIteratorActions::FrontToBack::next(CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, FrontToBack>&);
+template void CCLayerIteratorActions::FrontToBack::end(CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, FrontToBack>&);
+template void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, FrontToBack>&);
+template void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, FrontToBack>&);
 
-template void CCLayerIteratorActions::FrontToBack::next(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::end(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, FrontToBack>&);
+template void CCLayerIteratorActions::FrontToBack::next(CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, FrontToBack>&);
+template void CCLayerIteratorActions::FrontToBack::end(CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, FrontToBack>&);
+template void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, FrontToBack>&);
+template void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, FrontToBack>&);
 
 } // namespace cc
 

@@ -1183,7 +1183,7 @@ private:
 
 class ContentLayerChromiumWithUpdateTracking : public ContentLayerChromium {
 public:
-    static scoped_refptr<ContentLayerChromiumWithUpdateTracking> create(ContentLayerChromiumClient* client) { return make_scoped_refptr(new ContentLayerChromiumWithUpdateTracking(client)); }
+    static PassRefPtr<ContentLayerChromiumWithUpdateTracking> create(ContentLayerChromiumClient* client) { return adoptRef(new ContentLayerChromiumWithUpdateTracking(client)); }
 
     int paintContentsCount() { return m_paintContentsCount; }
     void resetPaintContentsCount() { m_paintContentsCount = 0; }
@@ -1202,9 +1202,6 @@ private:
         setAnchorPoint(FloatPoint(0, 0));
         setBounds(IntSize(10, 10));
         setIsDrawable(true);
-    }
-    virtual ~ContentLayerChromiumWithUpdateTracking()
-    {
     }
 
     int m_paintContentsCount;
@@ -1238,12 +1235,12 @@ public:
         EXPECT_EQ(1, m_updateCheckLayer->paintContentsCount());
 
         // clear m_updateCheckLayer so CCLayerTreeHost dies.
-        m_updateCheckLayer = NULL;
+        m_updateCheckLayer.clear();
     }
 
 private:
     TestOpacityChangeLayerDelegate m_testOpacityChangeDelegate;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_updateCheckLayer;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_updateCheckLayer;
 };
 
 TEST_F(CCLayerTreeHostTestOpacityChange, runMultiThread)
@@ -1261,14 +1258,13 @@ public:
 
 class NoScaleContentLayerChromium : public ContentLayerChromium {
 public:
-    static scoped_refptr<NoScaleContentLayerChromium> create(ContentLayerChromiumClient* client) { return make_scoped_refptr(new NoScaleContentLayerChromium(client)); }
+    static PassRefPtr<NoScaleContentLayerChromium> create(ContentLayerChromiumClient* client) { return adoptRef(new NoScaleContentLayerChromium(client)); }
 
     virtual bool needsContentsScale() const OVERRIDE { return false; }
 
 private:
     explicit NoScaleContentLayerChromium(ContentLayerChromiumClient* client)
         : ContentLayerChromium(client) { }
-    virtual ~NoScaleContentLayerChromium() { }
 };
 
 class CCLayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers : public CCLayerTreeHostTest {
@@ -1365,14 +1361,14 @@ public:
 
     virtual void afterTest() OVERRIDE
     {
-        m_rootLayer = NULL;
-        m_childLayer = NULL;
+        m_rootLayer.clear();
+        m_childLayer.clear();
     }
 
 private:
     MockContentLayerChromiumClient m_client;
-    scoped_refptr<NoScaleContentLayerChromium> m_rootLayer;
-    scoped_refptr<ContentLayerChromium> m_childLayer;
+    RefPtr<NoScaleContentLayerChromium> m_rootLayer;
+    RefPtr<ContentLayerChromium> m_childLayer;
 };
 
 // Test is flaky - http://crbug.com/148490
@@ -1460,7 +1456,7 @@ public:
 
 private:
     MockContentLayerChromiumClient m_client;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_layer;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_layer;
 };
 
 TEST_F(CCLayerTreeHostTestAtomicCommit, runMultiThread)
@@ -1607,8 +1603,8 @@ public:
 
 private:
     MockContentLayerChromiumClient m_client;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_parent;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_child;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_parent;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_child;
     int m_numCommits;
 };
 
@@ -1619,7 +1615,7 @@ TEST_F(CCLayerTreeHostTestAtomicCommitWithPartialUpdate, runMultiThread)
 
 class TestLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<TestLayerChromium> create() { return make_scoped_refptr(new TestLayerChromium()); }
+    static PassRefPtr<TestLayerChromium> create() { return adoptRef(new TestLayerChromium()); }
 
     virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker* occlusion, CCRenderingStats&) OVERRIDE
     {
@@ -1635,7 +1631,6 @@ public:
 
 private:
     TestLayerChromium() : LayerChromium() { }
-    virtual ~TestLayerChromium() { }
 
     Region m_occludedScreenSpace;
 };
@@ -1652,11 +1647,11 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        scoped_refptr<TestLayerChromium> rootLayer = TestLayerChromium::create();
-        scoped_refptr<TestLayerChromium> child = TestLayerChromium::create();
-        scoped_refptr<TestLayerChromium> child2 = TestLayerChromium::create();
-        scoped_refptr<TestLayerChromium> grandChild = TestLayerChromium::create();
-        scoped_refptr<TestLayerChromium> mask = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> rootLayer = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> child = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> child2 = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> grandChild = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> mask = TestLayerChromium::create();
 
         WebTransformationMatrix identityMatrix;
         WebTransformationMatrix childTransform;
@@ -1855,11 +1850,11 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        scoped_refptr<TestLayerChromium> rootLayer = TestLayerChromium::create();
-        scoped_refptr<TestLayerChromium> child = TestLayerChromium::create();
-        scoped_refptr<TestLayerChromium> child2 = TestLayerChromium::create();
-        scoped_refptr<TestLayerChromium> grandChild = TestLayerChromium::create();
-        scoped_refptr<TestLayerChromium> mask = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> rootLayer = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> child = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> child2 = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> grandChild = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> mask = TestLayerChromium::create();
 
         WebTransformationMatrix identityMatrix;
         WebTransformationMatrix childTransform;
@@ -1949,26 +1944,26 @@ public:
         // We create enough RenderSurfaces that it will trigger Vector reallocation while computing occlusion.
         Region occluded;
         const WebTransformationMatrix identityMatrix;
-        std::vector<scoped_refptr<TestLayerChromium> > layers;
-        std::vector<scoped_refptr<TestLayerChromium> > children;
+        Vector<RefPtr<TestLayerChromium> > layers;
+        Vector<RefPtr<TestLayerChromium> > children;
         int numSurfaces = 20;
-        scoped_refptr<TestLayerChromium> replica = TestLayerChromium::create();
+        RefPtr<TestLayerChromium> replica = TestLayerChromium::create();
 
         for (int i = 0; i < numSurfaces; ++i) {
-            layers.push_back(TestLayerChromium::create());
+            layers.append(TestLayerChromium::create());
             if (!i) {
-                setTestLayerPropertiesForTesting(layers.back().get(), 0, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(200, 200), true);
-                layers.back()->createRenderSurface();
+                setTestLayerPropertiesForTesting(layers.last().get(), 0, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(200, 200), true);
+                layers.last()->createRenderSurface();
             } else {
-                setTestLayerPropertiesForTesting(layers.back().get(), layers[layers.size()-2].get(), identityMatrix, FloatPoint(0, 0), FloatPoint(1, 1), IntSize(200-i, 200-i), true);
-                layers.back()->setMasksToBounds(true);
-                layers.back()->setReplicaLayer(replica.get()); // Make it have a RenderSurface
+                setTestLayerPropertiesForTesting(layers.last().get(), layers[layers.size()-2].get(), identityMatrix, FloatPoint(0, 0), FloatPoint(1, 1), IntSize(200-i, 200-i), true);
+                layers.last()->setMasksToBounds(true);
+                layers.last()->setReplicaLayer(replica.get()); // Make it have a RenderSurface
             }
         }
 
         for (int i = 1; i < numSurfaces; ++i) {
-            children.push_back(TestLayerChromium::create());
-            setTestLayerPropertiesForTesting(children.back().get(), layers[i].get(), identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(500, 500), false);
+            children.append(TestLayerChromium::create());
+            setTestLayerPropertiesForTesting(children.last().get(), layers[i].get(), identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(500, 500), false);
         }
 
         m_layerTreeHost->setRootLayer(layers[0].get());
@@ -2184,7 +2179,7 @@ public:
     {
         EXPECT_FALSE(m_addedAnimation);
 
-        scoped_refptr<LayerChromium> layer = LayerChromium::create();
+        RefPtr<LayerChromium> layer = LayerChromium::create();
         layer->setLayerAnimationDelegate(this);
 
         // Any valid CCAnimationCurve will do here.
@@ -2287,8 +2282,8 @@ private:
     const IntSize m_scrollAmount;
     IntPoint m_finalScrollPosition;
     MockContentLayerChromiumClient m_mockDelegate;
-    scoped_refptr<LayerChromium> m_childLayer;
-    scoped_refptr<LayerChromium> m_rootScrollLayer;
+    RefPtr<LayerChromium> m_childLayer;
+    RefPtr<LayerChromium> m_rootScrollLayer;
 };
 
 TEST_F(CCLayerTreeHostTestScrollChildLayer, runMultiThread)
@@ -2380,20 +2375,20 @@ public:
         EXPECT_EQ(2, m_surfaceLayer2->paintContentsCount());
 
         // Clear layer references so CCLayerTreeHost dies.
-        m_rootLayer = NULL;
-        m_surfaceLayer1 = NULL;
-        m_replicaLayer1 = NULL;
-        m_surfaceLayer2 = NULL;
-        m_replicaLayer2 = NULL;
+        m_rootLayer.clear();
+        m_surfaceLayer1.clear();
+        m_replicaLayer1.clear();
+        m_surfaceLayer2.clear();
+        m_replicaLayer2.clear();
     }
 
 private:
     MockContentLayerChromiumClient m_mockDelegate;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_rootLayer;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_surfaceLayer1;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_replicaLayer1;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_surfaceLayer2;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_replicaLayer2;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_rootLayer;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_surfaceLayer1;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_replicaLayer1;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_surfaceLayer2;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_replicaLayer2;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(CCLayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit)
@@ -2423,7 +2418,7 @@ private:
 
 class EvictionTestLayer : public LayerChromium {
 public:
-    static scoped_refptr<EvictionTestLayer> create() { return make_scoped_refptr(new EvictionTestLayer()); }
+    static PassRefPtr<EvictionTestLayer> create() { return adoptRef(new EvictionTestLayer()); }
 
     virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE { return true; }
@@ -2441,7 +2436,6 @@ public:
 
 private:
     EvictionTestLayer() : LayerChromium() { }
-    virtual ~EvictionTestLayer() { }
 
     void createTextureIfNeeded()
     {
@@ -2638,7 +2632,7 @@ public:
 
 private:
     MockContentLayerChromiumClient m_client;
-    scoped_refptr<EvictionTestLayer> m_layer;
+    RefPtr<EvictionTestLayer> m_layer;
     CCLayerTreeHostImpl* m_implForEvictTextures;
     int m_numCommits;
 };
@@ -2734,7 +2728,7 @@ public:
 
 private:
     MockContentLayerChromiumClient m_client;
-    scoped_refptr<EvictionTestLayer> m_layer;
+    RefPtr<EvictionTestLayer> m_layer;
     CCLayerTreeHostImpl* m_implForEvictTextures;
     int m_numCommits;
 };
@@ -2784,7 +2778,7 @@ public:
         , m_numChildren(50)
     {
         for (int i = 0; i < m_numChildren; i++)
-            m_children.push_back(ContentLayerChromiumWithUpdateTracking::create(&m_client));
+            m_children.append(ContentLayerChromiumWithUpdateTracking::create(&m_client));
     }
 
     virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface()
@@ -2823,9 +2817,9 @@ public:
 
 private:
     MockContentLayerChromiumClient m_client;
-    scoped_refptr<ContentLayerChromiumWithUpdateTracking> m_parent;
+    RefPtr<ContentLayerChromiumWithUpdateTracking> m_parent;
     int m_numChildren;
-    std::vector<scoped_refptr<ContentLayerChromiumWithUpdateTracking> > m_children;
+    Vector<RefPtr<ContentLayerChromiumWithUpdateTracking> > m_children;
 };
 
 TEST_F(CCLayerTreeHostTestLostContextWhileUpdatingResources, runMultiThread)
@@ -2930,12 +2924,12 @@ public:
         EXPECT_EQ(1, m_numCommitComplete);
 
         // Clear layer references so CCLayerTreeHost dies.
-        m_contentLayer = NULL;
+        m_contentLayer.clear();
     }
 
 private:
     MockContentLayerChromiumClient m_mockDelegate;
-    scoped_refptr<LayerChromium> m_contentLayer;
+    RefPtr<LayerChromium> m_contentLayer;
     int m_numCommitComplete;
     int m_numDrawLayers;
 };

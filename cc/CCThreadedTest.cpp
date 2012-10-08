@@ -30,6 +30,7 @@
 #include <public/WebFilterOperations.h>
 #include <public/WebThread.h>
 #include <wtf/Locker.h>
+#include <wtf/PassRefPtr.h>
 
 using namespace cc;
 using namespace WebKit;
@@ -141,7 +142,7 @@ MockLayerTreeHostImpl::MockLayerTreeHostImpl(TestHooks* testHooks, const CCLayer
 // Adapts CCLayerTreeHost for test. Injects MockLayerTreeHostImpl.
 class MockLayerTreeHost : public cc::CCLayerTreeHost {
 public:
-    static scoped_ptr<MockLayerTreeHost> create(TestHooks* testHooks, cc::CCLayerTreeHostClient* client, scoped_refptr<cc::LayerChromium> rootLayer, const cc::CCLayerTreeSettings& settings)
+    static scoped_ptr<MockLayerTreeHost> create(TestHooks* testHooks, cc::CCLayerTreeHostClient* client, PassRefPtr<cc::LayerChromium> rootLayer, const cc::CCLayerTreeSettings& settings)
     {
         scoped_ptr<MockLayerTreeHost> layerTreeHost(new MockLayerTreeHost(testHooks, client, settings));
         bool success = layerTreeHost->initialize();
@@ -377,7 +378,7 @@ void CCThreadedTest::doBeginTest()
     ASSERT(CCProxy::isMainThread());
     m_client = MockLayerTreeHostClient::create(this);
 
-    scoped_refptr<LayerChromium> rootLayer = LayerChromium::create();
+    RefPtr<LayerChromium> rootLayer = LayerChromium::create();
     m_layerTreeHost = MockLayerTreeHost::create(this, m_client.get(), rootLayer, m_settings);
     ASSERT_TRUE(m_layerTreeHost.get());
     rootLayer->setLayerTreeHost(m_layerTreeHost.get());

@@ -12,9 +12,9 @@
 
 namespace cc {
 
-scoped_refptr<HeadsUpDisplayLayerChromium> HeadsUpDisplayLayerChromium::create()
+PassRefPtr<HeadsUpDisplayLayerChromium> HeadsUpDisplayLayerChromium::create()
 {
-    return make_scoped_refptr(new HeadsUpDisplayLayerChromium());
+    return adoptRef(new HeadsUpDisplayLayerChromium());
 }
 
 HeadsUpDisplayLayerChromium::HeadsUpDisplayLayerChromium()

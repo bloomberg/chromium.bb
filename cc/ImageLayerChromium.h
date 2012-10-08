@@ -18,7 +18,8 @@ class ImageLayerTextureUpdater;
 // A Layer that contains only an Image element.
 class ImageLayerChromium : public TiledLayerChromium {
 public:
-    static scoped_refptr<ImageLayerChromium> create();
+    static PassRefPtr<ImageLayerChromium> create();
+    virtual ~ImageLayerChromium();
 
     virtual bool drawsContent() const OVERRIDE;
     virtual void setTexturePriorities(const CCPriorityCalculator&) OVERRIDE;
@@ -29,7 +30,6 @@ public:
 
 private:
     ImageLayerChromium();
-    virtual ~ImageLayerChromium();
 
     void setTilingOption(TilingOption);
 

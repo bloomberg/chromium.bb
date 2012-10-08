@@ -9,9 +9,9 @@
 
 namespace cc {
 
-scoped_refptr<DelegatedRendererLayerChromium> DelegatedRendererLayerChromium::create()
+PassRefPtr<DelegatedRendererLayerChromium> DelegatedRendererLayerChromium::create()
 {
-    return scoped_refptr<DelegatedRendererLayerChromium>(new DelegatedRendererLayerChromium());
+    return adoptRef(new DelegatedRendererLayerChromium());
 }
 
 DelegatedRendererLayerChromium::DelegatedRendererLayerChromium()

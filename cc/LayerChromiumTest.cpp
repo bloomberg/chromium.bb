@@ -71,13 +71,13 @@ protected:
     {
         Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
         EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AnyNumber());
-        m_parent = NULL;
-        m_child1 = NULL;
-        m_child2 = NULL;
-        m_child3 = NULL;
-        m_grandChild1 = NULL;
-        m_grandChild2 = NULL;
-        m_grandChild3 = NULL;
+        m_parent.clear();
+        m_child1.clear();
+        m_child2.clear();
+        m_child3.clear();
+        m_grandChild1.clear();
+        m_grandChild2.clear();
+        m_grandChild3.clear();
 
         m_layerTreeHost->setRootLayer(0);
         m_layerTreeHost.reset();
@@ -132,13 +132,13 @@ protected:
     }
 
     scoped_ptr<MockCCLayerTreeHost> m_layerTreeHost;
-    scoped_refptr<LayerChromium> m_parent, m_child1, m_child2, m_child3, m_grandChild1, m_grandChild2, m_grandChild3;
+    RefPtr<LayerChromium> m_parent, m_child1, m_child2, m_child3, m_grandChild1, m_grandChild2, m_grandChild3;
     WebCompositorInitializer m_compositorInitializer;
 };
 
 TEST_F(LayerChromiumTest, basicCreateAndDestroy)
 {
-    scoped_refptr<LayerChromium> testLayer = LayerChromium::create();
+    RefPtr<LayerChromium> testLayer = LayerChromium::create();
     ASSERT_TRUE(testLayer);
 
     EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(0);
@@ -147,8 +147,8 @@ TEST_F(LayerChromiumTest, basicCreateAndDestroy)
 
 TEST_F(LayerChromiumTest, addAndRemoveChild)
 {
-    scoped_refptr<LayerChromium> parent = LayerChromium::create();
-    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    RefPtr<LayerChromium> parent = LayerChromium::create();
+    RefPtr<LayerChromium> child = LayerChromium::create();
 
     // Upon creation, layers should not have children or parent.
     ASSERT_EQ(static_cast<size_t>(0), parent->children().size());
@@ -168,11 +168,11 @@ TEST_F(LayerChromiumTest, addAndRemoveChild)
 
 TEST_F(LayerChromiumTest, insertChild)
 {
-    scoped_refptr<LayerChromium> parent = LayerChromium::create();
-    scoped_refptr<LayerChromium> child1 = LayerChromium::create();
-    scoped_refptr<LayerChromium> child2 = LayerChromium::create();
-    scoped_refptr<LayerChromium> child3 = LayerChromium::create();
-    scoped_refptr<LayerChromium> child4 = LayerChromium::create();
+    RefPtr<LayerChromium> parent = LayerChromium::create();
+    RefPtr<LayerChromium> child1 = LayerChromium::create();
+    RefPtr<LayerChromium> child2 = LayerChromium::create();
+    RefPtr<LayerChromium> child3 = LayerChromium::create();
+    RefPtr<LayerChromium> child4 = LayerChromium::create();
 
     parent->setLayerTreeHost(m_layerTreeHost.get());
 
@@ -214,9 +214,9 @@ TEST_F(LayerChromiumTest, insertChild)
 
 TEST_F(LayerChromiumTest, insertChildPastEndOfList)
 {
-    scoped_refptr<LayerChromium> parent = LayerChromium::create();
-    scoped_refptr<LayerChromium> child1 = LayerChromium::create();
-    scoped_refptr<LayerChromium> child2 = LayerChromium::create();
+    RefPtr<LayerChromium> parent = LayerChromium::create();
+    RefPtr<LayerChromium> child1 = LayerChromium::create();
+    RefPtr<LayerChromium> child2 = LayerChromium::create();
 
     ASSERT_EQ(static_cast<size_t>(0), parent->children().size());
 
@@ -236,9 +236,9 @@ TEST_F(LayerChromiumTest, insertChildPastEndOfList)
 
 TEST_F(LayerChromiumTest, insertSameChildTwice)
 {
-    scoped_refptr<LayerChromium> parent = LayerChromium::create();
-    scoped_refptr<LayerChromium> child1 = LayerChromium::create();
-    scoped_refptr<LayerChromium> child2 = LayerChromium::create();
+    RefPtr<LayerChromium> parent = LayerChromium::create();
+    RefPtr<LayerChromium> child1 = LayerChromium::create();
+    RefPtr<LayerChromium> child2 = LayerChromium::create();
 
     parent->setLayerTreeHost(m_layerTreeHost.get());
 
@@ -265,7 +265,7 @@ TEST_F(LayerChromiumTest, insertSameChildTwice)
 TEST_F(LayerChromiumTest, replaceChildWithNewChild)
 {
     createSimpleTestTree();
-    scoped_refptr<LayerChromium> child4 = LayerChromium::create();
+    RefPtr<LayerChromium> child4 = LayerChromium::create();
 
     EXPECT_FALSE(child4->parent());
 
@@ -285,8 +285,8 @@ TEST_F(LayerChromiumTest, replaceChildWithNewChildThatHasOtherParent)
     createSimpleTestTree();
 
     // create another simple tree with testLayer and child4.
-    scoped_refptr<LayerChromium> testLayer = LayerChromium::create();
-    scoped_refptr<LayerChromium> child4 = LayerChromium::create();
+    RefPtr<LayerChromium> testLayer = LayerChromium::create();
+    RefPtr<LayerChromium> child4 = LayerChromium::create();
     testLayer->addChild(child4);
     ASSERT_EQ(static_cast<size_t>(1), testLayer->children().size());
     EXPECT_EQ(child4, testLayer->children()[0]);
@@ -330,15 +330,15 @@ TEST_F(LayerChromiumTest, removeAllChildren)
 
 TEST_F(LayerChromiumTest, setChildren)
 {
-    scoped_refptr<LayerChromium> oldParent = LayerChromium::create();
-    scoped_refptr<LayerChromium> newParent = LayerChromium::create();
+    RefPtr<LayerChromium> oldParent = LayerChromium::create();
+    RefPtr<LayerChromium> newParent = LayerChromium::create();
 
-    scoped_refptr<LayerChromium> child1 = LayerChromium::create();
-    scoped_refptr<LayerChromium> child2 = LayerChromium::create();
+    RefPtr<LayerChromium> child1 = LayerChromium::create();
+    RefPtr<LayerChromium> child2 = LayerChromium::create();
 
-    std::vector<scoped_refptr<LayerChromium> > newChildren;
-    newChildren.push_back(child1);
-    newChildren.push_back(child2);
+    Vector<RefPtr<LayerChromium> > newChildren;
+    newChildren.append(child1);
+    newChildren.append(child2);
 
     // Set up and verify initial test conditions: child1 has a parent, child2 has no parent.
     oldParent->addChild(child1);
@@ -364,7 +364,7 @@ TEST_F(LayerChromiumTest, getRootLayerAfterTreeManipulations)
     // For this test we don't care about setNeedsCommit calls.
     EXPECT_CALL(*m_layerTreeHost, setNeedsCommit()).Times(AtLeast(1));
 
-    scoped_refptr<LayerChromium> child4 = LayerChromium::create();
+    RefPtr<LayerChromium> child4 = LayerChromium::create();
 
     EXPECT_EQ(m_parent.get(), m_parent->rootLayer());
     EXPECT_EQ(m_parent.get(), m_child1->rootLayer());
@@ -417,7 +417,7 @@ TEST_F(LayerChromiumTest, checkSetNeedsDisplayCausesCorrectBehavior)
     //   1. sets needsDisplay flag appropriately.
     //   2. indirectly calls setNeedsCommit, exactly once for each call to setNeedsDisplay.
 
-    scoped_refptr<LayerChromium> testLayer = LayerChromium::create();
+    RefPtr<LayerChromium> testLayer = LayerChromium::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
 
     IntSize testBounds = IntSize(501, 508);
@@ -467,10 +467,10 @@ TEST_F(LayerChromiumTest, checkSetNeedsDisplayCausesCorrectBehavior)
 
 TEST_F(LayerChromiumTest, checkPropertyChangeCausesCorrectBehavior)
 {
-    scoped_refptr<LayerChromium> testLayer = LayerChromium::create();
+    RefPtr<LayerChromium> testLayer = LayerChromium::create();
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
 
-    scoped_refptr<LayerChromium> dummyLayer = LayerChromium::create(); // just a dummy layer for this test case.
+    RefPtr<LayerChromium> dummyLayer = LayerChromium::create(); // just a dummy layer for this test case.
 
     // sanity check of initial test condition
     EXPECT_FALSE(testLayer->needsDisplay());
@@ -520,7 +520,7 @@ TEST_F(LayerChromiumTest, verifyPushPropertiesAccumulatesUpdateRect)
 {
     DebugScopedSetImplThread setImplThread;
 
-    scoped_refptr<LayerChromium> testLayer = LayerChromium::create();
+    RefPtr<LayerChromium> testLayer = LayerChromium::create();
     OwnPtr<CCLayerImpl> implLayer = CCLayerImpl::create(1);
 
     testLayer->setNeedsDisplayRect(FloatRect(FloatPoint::zero(), FloatSize(5, 5)));
@@ -565,16 +565,12 @@ public:
     const FloatRect& lastNeedsDisplayRect() const { return m_lastNeedsDisplayRect; }
 
 private:
-    virtual ~LayerChromiumWithContentScaling()
-    {
-    }
-
     FloatRect m_lastNeedsDisplayRect;
 };
 
 TEST_F(LayerChromiumTest, checkContentsScaleChangeTriggersNeedsDisplay)
 {
-    scoped_refptr<LayerChromiumWithContentScaling> testLayer = make_scoped_refptr(new LayerChromiumWithContentScaling());
+    RefPtr<LayerChromiumWithContentScaling> testLayer = adoptRef(new LayerChromiumWithContentScaling());
     testLayer->setLayerTreeHost(m_layerTreeHost.get());
 
     IntSize testBounds = IntSize(320, 240);
@@ -625,11 +621,11 @@ void assertLayerTreeHostMatchesForSubtree(LayerChromium* layer, CCLayerTreeHost*
 TEST(LayerChromiumLayerTreeHostTest, enteringTree)
 {
     WebCompositorInitializer compositorInitializer(0);
-    scoped_refptr<LayerChromium> parent = LayerChromium::create();
-    scoped_refptr<LayerChromium> child = LayerChromium::create();
-    scoped_refptr<LayerChromium> mask = LayerChromium::create();
-    scoped_refptr<LayerChromium> replica = LayerChromium::create();
-    scoped_refptr<LayerChromium> replicaMask = LayerChromium::create();
+    RefPtr<LayerChromium> parent = LayerChromium::create();
+    RefPtr<LayerChromium> child = LayerChromium::create();
+    RefPtr<LayerChromium> mask = LayerChromium::create();
+    RefPtr<LayerChromium> replica = LayerChromium::create();
+    RefPtr<LayerChromium> replicaMask = LayerChromium::create();
 
     // Set up a detached tree of layers. The host pointer should be nil for these layers.
     parent->addChild(child);
@@ -654,7 +650,7 @@ TEST(LayerChromiumLayerTreeHostTest, enteringTree)
 TEST(LayerChromiumLayerTreeHostTest, addingLayerSubtree)
 {
     WebCompositorInitializer compositorInitializer(0);
-    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    RefPtr<LayerChromium> parent = LayerChromium::create();
     scoped_ptr<FakeCCLayerTreeHost> layerTreeHost(FakeCCLayerTreeHost::create());
 
     layerTreeHost->setRootLayer(parent.get());
@@ -662,16 +658,16 @@ TEST(LayerChromiumLayerTreeHostTest, addingLayerSubtree)
     EXPECT_EQ(parent->layerTreeHost(), layerTreeHost.get());
 
     // Adding a subtree to a layer already associated with a host should set the host pointer on all layers in that subtree.
-    scoped_refptr<LayerChromium> child = LayerChromium::create();
-    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
+    RefPtr<LayerChromium> child = LayerChromium::create();
+    RefPtr<LayerChromium> grandChild = LayerChromium::create();
     child->addChild(grandChild);
 
     // Masks, replicas, and replica masks should pick up the new host too.
-    scoped_refptr<LayerChromium> childMask = LayerChromium::create();
+    RefPtr<LayerChromium> childMask = LayerChromium::create();
     child->setMaskLayer(childMask.get());
-    scoped_refptr<LayerChromium> childReplica = LayerChromium::create();
+    RefPtr<LayerChromium> childReplica = LayerChromium::create();
     child->setReplicaLayer(childReplica.get());
-    scoped_refptr<LayerChromium> childReplicaMask = LayerChromium::create();
+    RefPtr<LayerChromium> childReplicaMask = LayerChromium::create();
     childReplica->setMaskLayer(childReplicaMask.get());
 
     parent->addChild(child);
@@ -683,11 +679,11 @@ TEST(LayerChromiumLayerTreeHostTest, addingLayerSubtree)
 TEST(LayerChromiumLayerTreeHostTest, changeHost)
 {
     WebCompositorInitializer compositorInitializer(0);
-    scoped_refptr<LayerChromium> parent = LayerChromium::create();
-    scoped_refptr<LayerChromium> child = LayerChromium::create();
-    scoped_refptr<LayerChromium> mask = LayerChromium::create();
-    scoped_refptr<LayerChromium> replica = LayerChromium::create();
-    scoped_refptr<LayerChromium> replicaMask = LayerChromium::create();
+    RefPtr<LayerChromium> parent = LayerChromium::create();
+    RefPtr<LayerChromium> child = LayerChromium::create();
+    RefPtr<LayerChromium> mask = LayerChromium::create();
+    RefPtr<LayerChromium> replica = LayerChromium::create();
+    RefPtr<LayerChromium> replicaMask = LayerChromium::create();
 
     // Same setup as the previous test.
     parent->addChild(child);
@@ -713,11 +709,11 @@ TEST(LayerChromiumLayerTreeHostTest, changeHost)
 TEST(LayerChromiumLayerTreeHostTest, changeHostInSubtree)
 {
     WebCompositorInitializer compositorInitializer(0);
-    scoped_refptr<LayerChromium> firstParent = LayerChromium::create();
-    scoped_refptr<LayerChromium> firstChild = LayerChromium::create();
-    scoped_refptr<LayerChromium> secondParent = LayerChromium::create();
-    scoped_refptr<LayerChromium> secondChild = LayerChromium::create();
-    scoped_refptr<LayerChromium> secondGrandChild = LayerChromium::create();
+    RefPtr<LayerChromium> firstParent = LayerChromium::create();
+    RefPtr<LayerChromium> firstChild = LayerChromium::create();
+    RefPtr<LayerChromium> secondParent = LayerChromium::create();
+    RefPtr<LayerChromium> secondChild = LayerChromium::create();
+    RefPtr<LayerChromium> secondGrandChild = LayerChromium::create();
 
     // First put all children under the first parent and set the first host.
     firstParent->addChild(firstChild);
@@ -747,13 +743,13 @@ TEST(LayerChromiumLayerTreeHostTest, changeHostInSubtree)
 TEST(LayerChromiumLayerTreeHostTest, replaceMaskAndReplicaLayer)
 {
     WebCompositorInitializer compositorInitializer(0);
-    scoped_refptr<LayerChromium> parent = LayerChromium::create();
-    scoped_refptr<LayerChromium> mask = LayerChromium::create();
-    scoped_refptr<LayerChromium> replica = LayerChromium::create();
-    scoped_refptr<LayerChromium> maskChild = LayerChromium::create();
-    scoped_refptr<LayerChromium> replicaChild = LayerChromium::create();
-    scoped_refptr<LayerChromium> maskReplacement = LayerChromium::create();
-    scoped_refptr<LayerChromium> replicaReplacement = LayerChromium::create();
+    RefPtr<LayerChromium> parent = LayerChromium::create();
+    RefPtr<LayerChromium> mask = LayerChromium::create();
+    RefPtr<LayerChromium> replica = LayerChromium::create();
+    RefPtr<LayerChromium> maskChild = LayerChromium::create();
+    RefPtr<LayerChromium> replicaChild = LayerChromium::create();
+    RefPtr<LayerChromium> maskReplacement = LayerChromium::create();
+    RefPtr<LayerChromium> replicaReplacement = LayerChromium::create();
 
     parent->setMaskLayer(mask.get());
     parent->setReplicaLayer(replica.get());
@@ -782,8 +778,8 @@ TEST(LayerChromiumLayerTreeHostTest, replaceMaskAndReplicaLayer)
 TEST(LayerChromiumLayerTreeHostTest, destroyHostWithNonNullRootLayer)
 {
     WebCompositorInitializer compositorInitializer(0);
-    scoped_refptr<LayerChromium> root = LayerChromium::create();
-    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    RefPtr<LayerChromium> root = LayerChromium::create();
+    RefPtr<LayerChromium> child = LayerChromium::create();
     root->addChild(child);
     scoped_ptr<FakeCCLayerTreeHost> layerTreeHost(FakeCCLayerTreeHost::create());
     layerTreeHost->setRootLayer(root);
@@ -809,7 +805,7 @@ TEST(LayerChromiumLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)
     WebKit::Platform::current()->compositorSupport()->setAcceleratedAnimationEnabled(true);
 
     WebCompositorInitializer compositorInitializer(0);
-    scoped_refptr<LayerChromium> layer = LayerChromium::create();
+    RefPtr<LayerChromium> layer = LayerChromium::create();
 
     // Case 1: without a layerTreeHost, the animation should not be accepted.
     EXPECT_FALSE(addTestAnimation(layer.get()));
@@ -826,16 +822,11 @@ TEST(LayerChromiumLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)
 class MockLayerChromium : public LayerChromium {
 public:
     bool needsDisplay() const { return m_needsDisplay; }
-
-private:
-    virtual ~MockLayerChromium()
-    {
-    }
 };
 
 TEST(LayerChromiumTestWithoutFixture, setBoundsTriggersSetNeedsRedrawAfterGettingNonEmptyBounds)
 {
-    scoped_refptr<MockLayerChromium> layer(new MockLayerChromium);
+    RefPtr<MockLayerChromium> layer(adoptRef(new MockLayerChromium));
     EXPECT_FALSE(layer->needsDisplay());
     layer->setBounds(IntSize(0, 10));
     EXPECT_FALSE(layer->needsDisplay());

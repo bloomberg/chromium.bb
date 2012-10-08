@@ -14,7 +14,8 @@ namespace cc {
 
 class IOSurfaceLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<IOSurfaceLayerChromium> create();
+    static PassRefPtr<IOSurfaceLayerChromium> create();
+    virtual ~IOSurfaceLayerChromium();
 
     void setIOSurfaceProperties(uint32_t ioSurfaceId, const IntSize&);
 
@@ -26,7 +27,6 @@ protected:
     IOSurfaceLayerChromium();
 
 private:
-    virtual ~IOSurfaceLayerChromium();
 
     uint32_t m_ioSurfaceId;
     IntSize m_ioSurfaceSize;

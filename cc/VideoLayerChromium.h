@@ -21,13 +21,14 @@ class CCVideoLayerImpl;
 // A Layer that contains a Video element.
 class VideoLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<VideoLayerChromium> create(WebKit::WebVideoFrameProvider*);
+
+    static PassRefPtr<VideoLayerChromium> create(WebKit::WebVideoFrameProvider*);
+    virtual ~VideoLayerChromium();
 
     virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
 private:
     explicit VideoLayerChromium(WebKit::WebVideoFrameProvider*);
-    virtual ~VideoLayerChromium();
 
     // This pointer is only for passing to CCVideoLayerImpl's constructor. It should never be dereferenced by this class.
     WebKit::WebVideoFrameProvider* m_provider;

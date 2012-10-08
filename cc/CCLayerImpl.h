@@ -392,7 +392,7 @@ private:
     OwnPtr<CCScrollbarAnimationController> m_scrollbarAnimationController;
 };
 
-void sortLayers(std::vector<CCLayerImpl*>::iterator first, std::vector<CCLayerImpl*>::iterator end, CCLayerSorter*);
+void sortLayers(Vector<CCLayerImpl*>::iterator first, Vector<CCLayerImpl*>::iterator end, CCLayerSorter*);
 
 }
 

@@ -153,7 +153,7 @@ public:
     virtual void drawLayers(const FrameData&) OVERRIDE;
 
     // Make these public.
-    typedef std::vector<cc::CCLayerImpl*> CCLayerList;
+    typedef Vector<cc::CCLayerImpl*> CCLayerList;
     using CCLayerTreeHostImpl::calculateRenderSurfaceLayerList;
 
 protected:

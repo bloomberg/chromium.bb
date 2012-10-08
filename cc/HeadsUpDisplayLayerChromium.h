@@ -14,7 +14,8 @@ namespace cc {
 
 class HeadsUpDisplayLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<HeadsUpDisplayLayerChromium> create();
+    static PassRefPtr<HeadsUpDisplayLayerChromium> create();
+    virtual ~HeadsUpDisplayLayerChromium();
 
     virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
@@ -28,8 +29,6 @@ protected:
     HeadsUpDisplayLayerChromium();
 
 private:
-    virtual ~HeadsUpDisplayLayerChromium();
-
     scoped_ptr<CCFontAtlas> m_fontAtlas;
 };
 

@@ -24,9 +24,9 @@ namespace cc {
 
 static int s_nextLayerId = 1;
 
-scoped_refptr<LayerChromium> LayerChromium::create()
+PassRefPtr<LayerChromium> LayerChromium::create()
 {
-    return make_scoped_refptr(new LayerChromium());
+    return adoptRef(new LayerChromium());
 }
 
 LayerChromium::LayerChromium()
@@ -68,6 +68,7 @@ LayerChromium::LayerChromium()
     , m_layerAnimationDelegate(0)
     , m_layerScrollClient(0)
 {
+    turnOffVerifier(); // In the component build we don't have WTF threading initialized in this DLL so the thread verifier explodes.
     if (m_layerId < 0) {
         s_nextLayerId = 1;
         m_layerId = s_nextLayerId++;
@@ -140,20 +141,18 @@ bool LayerChromium::hasAncestor(LayerChromium* ancestor) const
     return false;
 }
 
-void LayerChromium::addChild(scoped_refptr<LayerChromium> child)
+void LayerChromium::addChild(PassRefPtr<LayerChromium> child)
 {
     insertChild(child, numChildren());
 }
 
-void LayerChromium::insertChild(scoped_refptr<LayerChromium> child, size_t index)
+void LayerChromium::insertChild(PassRefPtr<LayerChromium> child, size_t index)
 {
     index = min(index, m_children.size());
     child->removeFromParent();
     child->setParent(this);
     child->m_stackingOrderChanged = true;
-
-    LayerList::iterator iter = m_children.begin();
-    m_children.insert(iter + index, child);
+    m_children.insert(index, child);
     setNeedsCommit();
 }
 
@@ -165,19 +164,16 @@ void LayerChromium::removeFromParent()
 
 void LayerChromium::removeChild(LayerChromium* child)
 {
-    for (LayerList::iterator iter = m_children.begin(); iter != m_children.end(); ++iter)
-    {
-        if (*iter != child)
-            continue;
-
-        child->setParent(0);
-        m_children.erase(iter);
-        setNeedsCommit();
+    int foundIndex = indexOfChild(child);
+    if (foundIndex == -1)
         return;
-    }
+
+    child->setParent(0);
+    m_children.remove(foundIndex);
+    setNeedsCommit();
 }
 
-void LayerChromium::replaceChild(LayerChromium* reference, scoped_refptr<LayerChromium> newLayer)
+void LayerChromium::replaceChild(LayerChromium* reference, PassRefPtr<LayerChromium> newLayer)
 {
     ASSERT_ARG(reference, reference);
     ASSERT_ARG(reference, reference->parent() == this);
@@ -240,7 +236,7 @@ void LayerChromium::removeAllChildren()
     }
 }
 
-void LayerChromium::setChildren(const LayerList& children)
+void LayerChromium::setChildren(const Vector<RefPtr<LayerChromium> >& children)
 {
     if (children == m_children)
         return;
@@ -782,7 +778,7 @@ ScrollbarLayerChromium* LayerChromium::toScrollbarLayerChromium()
     return 0;
 }
 
-void sortLayers(std::vector<scoped_refptr<LayerChromium> >::iterator, std::vector<scoped_refptr<LayerChromium> >::iterator, void*)
+void sortLayers(Vector<RefPtr<LayerChromium> >::iterator, Vector<RefPtr<LayerChromium> >::iterator, void*)
 {
     // Currently we don't use z-order to decide what to paint, so there's no need to actually sort LayerChromiums.
 }
