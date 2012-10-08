@@ -4,6 +4,7 @@
 
 // Multiply-included message file, no traditional include guard.
 #include <string>
+#include <vector>
 
 #include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "ipc/ipc_channel_handle.h"
@@ -27,10 +28,12 @@ IPC_MESSAGE_CONTROL1(ServiceMsg_EnableCloudPrintProxy,
 
 // Tell the service process to enable the cloud proxy passing in the OAuth2
 // auth code of a robot account.
-IPC_MESSAGE_CONTROL3(ServiceMsg_EnableCloudPrintProxyWithRobot,
+IPC_MESSAGE_CONTROL5(ServiceMsg_EnableCloudPrintProxyWithRobot,
                      std::string /* robot_auth_code */,
-                     std::string /* robot_email*/,
-                     std::string /* user_email*/)
+                     std::string /* robot_email */,
+                     std::string /* user_email */,
+                     bool /* connect_new_printers */,
+                     std::vector<std::string> /* printer_blacklist */)
 
 // Tell the service process to disable the cloud proxy.
 IPC_MESSAGE_CONTROL0(ServiceMsg_DisableCloudPrintProxy)

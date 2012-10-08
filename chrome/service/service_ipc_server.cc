@@ -111,11 +111,12 @@ void ServiceIPCServer::OnEnableCloudPrintProxy(const std::string& lsid) {
 void ServiceIPCServer::OnEnableCloudPrintProxyWithRobot(
     const std::string& robot_auth_code,
     const std::string& robot_email,
-    const std::string& user_email) {
+    const std::string& user_email,
+    bool connect_new_printers,
+    const std::vector<std::string>& printer_blacklist) {
   g_service_process->GetCloudPrintProxy()->EnableForUserWithRobot(
-      robot_auth_code,
-      robot_email,
-      user_email);
+      robot_auth_code, robot_email, user_email, connect_new_printers,
+      printer_blacklist);
 }
 
 void ServiceIPCServer::OnGetCloudPrintProxyInfo() {

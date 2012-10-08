@@ -1907,6 +1907,7 @@ const char kFactoryResetRequested[] = "FactoryResetRequested";
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 
+const char kCloudPrintRoot[] = "cloud_print";
 const char kCloudPrintProxyEnabled[] = "cloud_print.enabled";
 // The unique id for this instance of the cloud print proxy.
 const char kCloudPrintProxyId[] = "cloud_print.proxy_id";

@@ -6,6 +6,7 @@
 #define CHROME_SERVICE_SERVICE_IPC_SERVER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel_handle.h"
@@ -47,7 +48,9 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   void OnEnableCloudPrintProxyWithRobot(
       const std::string& robot_auth_code,
       const std::string& robot_email,
-      const std::string& user_email);
+      const std::string& user_email,
+      bool connect_new_printers,
+      const std::vector<std::string>& printer_blacklist);
   void OnGetCloudPrintProxyInfo();
   void OnDisableCloudPrintProxy();
 

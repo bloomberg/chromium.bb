@@ -7,6 +7,7 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -44,7 +45,9 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   void EnableForUserWithRobot(
       const std::string& robot_auth_code,
       const std::string& robot_email,
-      const std::string& user_email);
+      const std::string& user_email,
+      bool connect_new_printers,
+      const std::vector<std::string>& printer_blacklist);
   void UnregisterPrintersAndDisableForUser();
   void DisableForUser();
   // Returns the proxy info.

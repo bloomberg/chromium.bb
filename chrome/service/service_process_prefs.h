@@ -49,6 +49,9 @@ class ServiceProcessPrefs {
   // Returns a list for |key|.
   const base::ListValue* GetList(const std::string& key) const;
 
+  // Set a |value| for |key|.
+  void SetValue(const std::string& key, base::Value* value);
+
   // Removes the pref specified by |key|.
   void RemovePref(const std::string& key);
 

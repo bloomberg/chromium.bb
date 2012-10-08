@@ -8,8 +8,8 @@
     "nodoc": "true",
     "functions": [
       {
-        "name": "setCredentials",
-        "description": "Sets the login credentials for Cloud Print.",
+        "name": "setupConnector",
+        "description": "Setup Cloud Print Connector.",
         "type": "function",
         "parameters": [
           {
@@ -28,16 +28,52 @@
             "description": "The login credentials(OAuth2 Auth code)."
           },
           {
+            "name": "connectNewPrinters",
+            "type": "boolean",
+            "description": "True if new printers should be connected."
+          },
+          {
+            "name": "printerBlacklist",
+            "description": "Printers that should not be connected.",
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        ]
+      },
+      {
+        "name": "getHostName",
+        "description": "Returns local hostname.",
+        "type": "function",
+        "parameters": [
+          {
             "name": "callback",
             "type": "function",
-            "description": "Called when a failure happens. Called upon success only in tests.",
-            "optional": "true",
+            "description": "Called to return host name.",
             "parameters": [
               {
                 "name": "result",
                 "type": "string",
-                "description": "A string result code. The value is non-empty on success only in tests.",
-                "optional": "true"
+                "description": "Host name."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getPrinters",
+        "description": "Returns local printers.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called to return printers.",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "List of printer names."
               }
             ]
           }

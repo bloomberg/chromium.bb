@@ -626,6 +626,7 @@ extern const char kRemoteAccessHostTalkGadgetPrefix[];
 extern const char kRemoteAccessHostRequireCurtain[];
 
 extern const char kPrintPreviewStickySettings[];
+extern const char kCloudPrintRoot[];
 extern const char kCloudPrintServiceURL[];
 extern const char kCloudPrintSigninURL[];
 extern const char kCloudPrintDialogWidth[];

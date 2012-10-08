@@ -19,6 +19,7 @@
         'chromium_code': 1,
         'json_schema_files': [
           'bookmarks.json',
+          'cloud_print_private.json',
           'content_settings.json',
           'context_menus.json',
           'cookies.json',

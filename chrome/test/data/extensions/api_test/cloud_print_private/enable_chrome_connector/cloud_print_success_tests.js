@@ -3,18 +3,27 @@
 // found in the LICENSE file.
 
 var tests = [
-  function successfulSetCreds() {
+  function successfulSetupConnector() {
     var userEmail = 'foo@gmail.com';
     var robotEmail = 'foorobot@googleusercontent.com';
     var credentials = '1/23546efa54';
-    chrome.cloudPrintPrivate.setCredentials(
-        userEmail, robotEmail, credentials,
+    chrome.cloudPrintPrivate.setupConnector(
+        userEmail, robotEmail, credentials, true, ['printer1', 'printer2']);
+    chrome.test.succeed();
+  },
+  function getHostName() {
+    chrome.cloudPrintPrivate.getHostName(
         chrome.test.callbackPass(function(result) {
-           // In test mode, we expect the API to reflect the arguments back to
-           // us appended together.
            chrome.test.assertNoLastError();
-           chrome.test.assertEq(result, userEmail + robotEmail + credentials);
-         }));
+           chrome.test.assertEq("TestHostName", result);
+        }));
+  },
+  function getPrinters() {
+    chrome.cloudPrintPrivate.getPrinters(
+        chrome.test.callbackPass(function(result) {
+             chrome.test.assertNoLastError();
+             chrome.test.assertEq(result, ['printer1', 'printer2']);
+          }));
   }
 ];
 

@@ -455,7 +455,9 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::SetMinimumFontSizeFunction>();
 
   // CloudPrint settings.
-  RegisterFunction<extensions::CloudPrintSetCredentialsFunction>();
+  RegisterFunction<extensions::CloudPrintSetupConnectorFunction>();
+  RegisterFunction<extensions::CloudPrintGetHostNameFunction>();
+  RegisterFunction<extensions::CloudPrintGetPrintersFunction>();
 
   // Experimental App API.
   RegisterFunction<extensions::AppNotifyFunction>();

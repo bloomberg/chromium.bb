@@ -76,6 +76,10 @@ const base::ListValue* ServiceProcessPrefs::GetList(
   return static_cast<const ListValue*>(value);
 }
 
+void ServiceProcessPrefs::SetValue(const std::string& key, base::Value* value) {
+  prefs_->SetValue(key, value);
+}
+
 void ServiceProcessPrefs::RemovePref(const std::string& key) {
   prefs_->RemoveValue(key);
 }
