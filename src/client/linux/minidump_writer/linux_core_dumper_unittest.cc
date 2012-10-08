@@ -105,6 +105,9 @@ TEST(LinuxCoreDumperTest, VerifyDumpWithMultipleThreads) {
   for (unsigned i = 0; i < kNumOfThreads; ++i) {
     ThreadInfo info;
     EXPECT_TRUE(dumper.GetThreadInfoByIndex(i, &info));
+    const void* stack;
+    size_t stack_len;
+    EXPECT_TRUE(dumper.GetStackInfo(&stack, &stack_len, info.stack_pointer));
     EXPECT_EQ(getpid(), info.ppid);
   }
 }

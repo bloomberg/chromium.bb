@@ -501,3 +501,83 @@ TEST(MinidumpWriterTest, AdditionalMemory) {
   delete[] memory;
   close(fds[1]);
 }
+
+// Test that an invalid thread stack pointer still results in a minidump.
+TEST(MinidumpWriterTest, InvalidStackPointer) {
+  int fds[2];
+  ASSERT_NE(-1, pipe(fds));
+
+  const pid_t child = fork();
+  if (child == 0) {
+    close(fds[1]);
+    char b;
+    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    close(fds[0]);
+    syscall(__NR_exit);
+  }
+  close(fds[0]);
+
+  ExceptionHandler::CrashContext context;
+
+  // This needs a valid context for minidump writing to work, but getting
+  // a useful one from the child is too much work, so just use one from
+  // the parent since the child is just a forked copy anyway.
+  ASSERT_EQ(0, getcontext(&context.context));
+  context.tid = child;
+
+  // Fake the child's stack pointer for its crashing thread.  NOTE: This must
+  // be an invalid memory address for the child process (stack or otherwise).
+#if defined(__i386)
+  // Try 1MB below the current stack.
+  uintptr_t invalid_stack_pointer =
+      reinterpret_cast<uintptr_t>(&context) - 1024*1024;
+  context.context.uc_mcontext.gregs[REG_ESP] = invalid_stack_pointer;
+#elif defined(__x86_64)
+  // Try 1MB below the current stack.
+  uintptr_t invalid_stack_pointer =
+      reinterpret_cast<uintptr_t>(&context) - 1024*1024;
+  context.context.uc_mcontext.gregs[REG_RSP] = invalid_stack_pointer;
+#elif defined(__ARM_EABI__)
+  // Try 1MB below the current stack.
+  uintptr_t invalid_stack_pointer =
+      reinterpret_cast<uintptr_t>(&context) - 1024*1024;
+  context.context.uc_mcontext.arm_sp = invalid_stack_pointer;
+#else
+# error "This code has not been ported to your platform yet."
+#endif
+
+  AutoTempDir temp_dir;
+  string templ = temp_dir.path() + "/minidump-writer-unittest";
+  // NOTE: In previous versions of Breakpad, WriteMinidump() would fail if
+  // presented with an invalid stack pointer.
+  ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context)));
+
+  // Read the minidump. Ensure that the memory region is present
+  Minidump minidump(templ.c_str());
+  ASSERT_TRUE(minidump.Read());
+
+  // TODO(ted.mielczarek,mkrebs): Enable this part of the test once
+  // https://breakpad.appspot.com/413002/ is committed.
+#if 0
+  // Make sure there's a thread without a stack.  NOTE: It's okay if
+  // GetThreadList() shows the error: "ERROR: MinidumpThread has a memory
+  // region problem".
+  MinidumpThreadList* dump_thread_list = minidump.GetThreadList();
+  ASSERT_TRUE(dump_thread_list);
+  bool found_empty_stack = false;
+  for (int i = 0; i < dump_thread_list->thread_count(); i++) {
+    MinidumpThread* thread = dump_thread_list->GetThreadAtIndex(i);
+    ASSERT_TRUE(thread->thread() != NULL);
+    // When the stack size is zero bytes, GetMemory() returns NULL.
+    if (thread->GetMemory() == NULL) {
+      found_empty_stack = true;
+      break;
+    }
+  }
+  // NOTE: If you fail this, first make sure that "invalid_stack_pointer"
+  // above is indeed set to an invalid address.
+  ASSERT_TRUE(found_empty_stack);
+#endif
+
+  close(fds[1]);
+}

@@ -628,6 +628,31 @@ class MinidumpWriter {
 #endif
   }
 
+  bool FillThreadStack(MDRawThread* thread, uintptr_t stack_pointer,
+                       uint8_t** stack_copy) {
+    *stack_copy = NULL;
+    const void* stack;
+    size_t stack_len;
+    if (dumper_->GetStackInfo(&stack, &stack_len, stack_pointer)) {
+      UntypedMDRVA memory(&minidump_writer_);
+      if (!memory.Allocate(stack_len))
+        return false;
+      *stack_copy = reinterpret_cast<uint8_t*>(Alloc(stack_len));
+      dumper_->CopyFromProcess(*stack_copy, thread->thread_id, stack,
+                               stack_len);
+      memory.Copy(*stack_copy, stack_len);
+      thread->stack.start_of_memory_range =
+          reinterpret_cast<uintptr_t>(stack);
+      thread->stack.memory = memory.location();
+      memory_blocks_.push_back(thread->stack);
+    } else {
+      thread->stack.start_of_memory_range = stack_pointer;
+      thread->stack.memory.data_size = 0;
+      thread->stack.memory.rva = minidump_writer_.position();
+    }
+    return true;
+  }
+
   // Write information about the threads.
   bool WriteThreadListStream(MDRawDirectory* dirent) {
     const unsigned num_threads = dumper_->threads().size();
@@ -645,6 +670,7 @@ class MinidumpWriter {
       MDRawThread thread;
       my_memset(&thread, 0, sizeof(thread));
       thread.thread_id = dumper_->threads()[i];
+
       // We have a different source of information for the crashing thread. If
       // we used the actual state of the thread we would find it running in the
       // signal handler with the alternative stack, which would be deeply
@@ -652,20 +678,9 @@ class MinidumpWriter {
       if (static_cast<pid_t>(thread.thread_id) == GetCrashThread() &&
           ucontext_ &&
           !dumper_->IsPostMortem()) {
-        const void* stack;
-        size_t stack_len;
-        if (!dumper_->GetStackInfo(&stack, &stack_len, GetStackPointer()))
+        uint8_t* stack_copy;
+        if (!FillThreadStack(&thread, GetStackPointer(), &stack_copy))
           return false;
-        UntypedMDRVA memory(&minidump_writer_);
-        if (!memory.Allocate(stack_len))
-          return false;
-        uint8_t* stack_copy = reinterpret_cast<uint8_t*>(Alloc(stack_len));
-        dumper_->CopyFromProcess(stack_copy, thread.thread_id, stack,
-                                 stack_len);
-        memory.Copy(stack_copy, stack_len);
-        thread.stack.start_of_memory_range = (uintptr_t) (stack);
-        thread.stack.memory = memory.location();
-        memory_blocks_.push_back(thread.stack);
 
         // Copy 256 bytes around crashing instruction pointer to minidump.
         const size_t kIPMemorySize = 256;
@@ -715,30 +730,26 @@ class MinidumpWriter {
           return false;
         my_memset(cpu.get(), 0, sizeof(RawContextCPU));
         CPUFillFromUContext(cpu.get(), ucontext_, float_state_);
-        PopSeccompStackFrame(cpu.get(), thread, stack_copy);
+        if (stack_copy)
+          PopSeccompStackFrame(cpu.get(), thread, stack_copy);
         thread.thread_context = cpu.location();
         crashing_thread_context_ = cpu.location();
       } else {
         ThreadInfo info;
         if (!dumper_->GetThreadInfoByIndex(i, &info))
           return false;
-        UntypedMDRVA memory(&minidump_writer_);
-        if (!memory.Allocate(info.stack_len))
+
+        uint8_t* stack_copy;
+        if (!FillThreadStack(&thread, info.stack_pointer, &stack_copy))
           return false;
-        uint8_t* stack_copy = reinterpret_cast<uint8_t*>(Alloc(info.stack_len));
-        dumper_->CopyFromProcess(stack_copy, thread.thread_id, info.stack,
-                                 info.stack_len);
-        memory.Copy(stack_copy, info.stack_len);
-        thread.stack.start_of_memory_range = (uintptr_t)(info.stack);
-        thread.stack.memory = memory.location();
-        memory_blocks_.push_back(thread.stack);
 
         TypedMDRVA<RawContextCPU> cpu(&minidump_writer_);
         if (!cpu.Allocate())
           return false;
         my_memset(cpu.get(), 0, sizeof(RawContextCPU));
         CPUFillFromThreadInfo(cpu.get(), info);
-        PopSeccompStackFrame(cpu.get(), thread, stack_copy);
+        if (stack_copy)
+          PopSeccompStackFrame(cpu.get(), thread, stack_copy);
         thread.thread_context = cpu.location();
         if (dumper_->threads()[i] == GetCrashThread()) {
           crashing_thread_context_ = cpu.location();
@@ -916,9 +927,16 @@ class MinidumpWriter {
 
   bool WriteMemoryListStream(MDRawDirectory* dirent) {
     TypedMDRVA<uint32_t> list(&minidump_writer_);
-    if (!list.AllocateObjectAndArray(memory_blocks_.size(),
-                                     sizeof(MDMemoryDescriptor)))
-      return false;
+    if (memory_blocks_.size()) {
+      if (!list.AllocateObjectAndArray(memory_blocks_.size(),
+                                       sizeof(MDMemoryDescriptor)))
+        return false;
+    } else {
+      // Still create the memory list stream, although it will have zero
+      // memory blocks.
+      if (!list.Allocate())
+        return false;
+    }
 
     dirent->stream_type = MD_MEMORY_LIST_STREAM;
     dirent->location = list.location();
