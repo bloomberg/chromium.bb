@@ -201,6 +201,8 @@
         'browser/extensions/api/messaging/message_service.h',
         'browser/extensions/api/metrics/metrics.cc',
         'browser/extensions/api/metrics/metrics.h',
+        'browser/extensions/api/notification/notification_api.cc',
+        'browser/extensions/api/notification/notification_api.h',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_api.cc',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_constants.cc',
