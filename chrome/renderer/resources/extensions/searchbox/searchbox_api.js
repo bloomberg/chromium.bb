@@ -137,9 +137,11 @@ if (!chrome.searchBox) {
       }
       for (var i = 0, result; result = clientSuggestions[i] &&
            i < MAX_CLIENT_SUGGESTIONS_TO_DEDUPE; ++i) {
-        var clientUrl = CanonicalizeUrl(result.url);
-        if (clientUrl in nativeUrls) {
-          result.duplicateOf = nativeUrls[clientUrl];
+        if (result.url) {
+          var clientUrl = CanonicalizeUrl(result.url);
+          if (clientUrl in nativeUrls) {
+            result.duplicateOf = nativeUrls[clientUrl];
+          }
         }
       }
       return true;
