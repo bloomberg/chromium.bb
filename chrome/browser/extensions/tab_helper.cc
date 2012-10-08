@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
 #include "chrome/browser/extensions/script_bubble_controller.h"
-#include "chrome/browser/extensions/webstore_inline_installer.h"
+#include "chrome/browser/extensions/webstore_standalone_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -288,15 +288,17 @@ void TabHelper::OnInlineWebstoreInstall(
     int return_route_id,
     const std::string& webstore_item_id,
     const GURL& requestor_url) {
-  WebstoreInlineInstaller::Callback callback =
+  WebstoreStandaloneInstaller::Callback callback =
       base::Bind(&TabHelper::OnInlineInstallComplete, base::Unretained(this),
                  install_id, return_route_id);
-  scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
-      web_contents(),
-      webstore_item_id,
-      WebstoreInlineInstaller::REQUIRE_VERIFIED_SITE,
-      requestor_url,
-      callback));
+  scoped_refptr<WebstoreStandaloneInstaller> installer(
+      new WebstoreStandaloneInstaller(
+          web_contents(),
+          webstore_item_id,
+          WebstoreStandaloneInstaller::REQUIRE_VERIFIED_SITE,
+          WebstoreStandaloneInstaller::INLINE_PROMPT,
+          requestor_url,
+          callback));
   installer->BeginInstall();
 }
 

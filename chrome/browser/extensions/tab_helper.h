@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/extensions/script_executor.h"
-#include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -201,7 +200,7 @@ class TabHelper : public content::WebContentsObserver,
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
-  // WebstoreInlineInstaller::Callback.
+  // WebstoreStandaloneInstaller::Callback.
   virtual void OnInlineInstallComplete(int install_id,
                                        int return_route_id,
                                        bool success,

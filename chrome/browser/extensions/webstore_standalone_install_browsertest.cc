@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/startup_helper.h"
-#include "chrome/browser/extensions/webstore_inline_installer.h"
+#include "chrome/browser/extensions/webstore_standalone_installer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -35,7 +35,7 @@ const char kAppDomain[] = "app.com";
 const char kNonAppDomain[] = "nonapp.com";
 const char kTestExtensionId[] = "ecglahbcnmdpdciemllbhojghbkagdje";
 
-class WebstoreInlineInstallTest : public InProcessBrowserTest {
+class WebstoreStandaloneInstallTest : public InProcessBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // We start the test server now instead of in
@@ -75,7 +75,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
     return page_url.ReplaceComponents(replace_host);
   }
 
-  void RunInlineInstallTest(const std::string& test_function_name) {
+  void RunTest(const std::string& test_function_name) {
     bool result = false;
     std::string script = StringPrintf("%s('%s')", test_function_name.c_str(),
         test_gallery_url_.c_str());
@@ -88,21 +88,21 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
   std::string test_gallery_url_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
+IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, Install) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
 
-  RunInlineInstallTest("runTest");
+  RunTest("runTest");
 
   const extensions::Extension* extension = browser()->profile()->
       GetExtensionService()->GetExtensionById(kTestExtensionId, false);
   EXPECT_TRUE(extension);
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest,
+IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest,
     InstallNotAllowedFromNonVerifiedDomains) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
@@ -110,34 +110,34 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest,
       browser(),
       GenerateTestServerUrl(kNonAppDomain, "install_non_verified_domain.html"));
 
-  RunInlineInstallTest("runTest1");
-  RunInlineInstallTest("runTest2");
+  RunTest("runTest1");
+  RunTest("runTest2");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, FindLink) {
+IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, FindLink) {
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "find_link.html"));
 
-  RunInlineInstallTest("runTest");
+  RunTest("runTest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
+IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, ArgumentValidation) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "argument_validation.html"));
 
-  RunInlineInstallTest("runTest");
+  RunTest("runTest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
+IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, InstallNotSupported) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ui_test_utils::NavigateToURL(
       browser(),
       GenerateTestServerUrl(kAppDomain, "install_not_supported.html"));
 
-  RunInlineInstallTest("runTest");
+  RunTest("runTest");
 
   // The inline install should fail, and a store-provided URL should be opened
   // in a new tab.
@@ -150,11 +150,11 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
 
 // The unpack failure test needs to use a different install .crx, which is
 // specified via a command-line flag, so it needs its own test subclass.
-class WebstoreInlineInstallUnpackFailureTest
-    : public WebstoreInlineInstallTest {
+class WebstoreStandaloneInstallUnpackFailureTest
+    : public WebstoreStandaloneInstallTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    WebstoreInlineInstallTest::SetUpCommandLine(command_line);
+    WebstoreStandaloneInstallTest::SetUpCommandLine(command_line);
 
     GURL crx_url = GenerateTestServerUrl(
         kWebstoreDomain, "malformed_extension.crx");
@@ -163,31 +163,33 @@ class WebstoreInlineInstallUnpackFailureTest
   }
 
   void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    WebstoreInlineInstallTest::SetUpInProcessBrowserTestFixture();
+    WebstoreStandaloneInstallTest::SetUpInProcessBrowserTestFixture();
     ExtensionInstallUI::DisableFailureUIForTests();
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest,
-    WebstoreInlineInstallUnpackFailureTest) {
+IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallUnpackFailureTest,
+    WebstoreStandaloneInstallUnpackFailureTest) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
   ui_test_utils::NavigateToURL(browser(),
       GenerateTestServerUrl(kAppDomain, "install_unpack_failure.html"));
 
-  RunInlineInstallTest("runTest");
+  RunTest("runTest");
 }
 
-class CommandLineWebstoreInstall : public WebstoreInlineInstallTest,
+class CommandLineWebstoreInstall : public WebstoreStandaloneInstallTest,
                                    public content::NotificationObserver {
  public:
-  CommandLineWebstoreInstall() : saw_install_(false) {}
+  CommandLineWebstoreInstall() : saw_install_(false), browser_open_count_(0) {}
   virtual ~CommandLineWebstoreInstall() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    WebstoreInlineInstallTest::SetUpOnMainThread();
+    WebstoreStandaloneInstallTest::SetUpOnMainThread();
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                    content::NotificationService::AllSources());
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kInstallFromWebstore, kTestExtensionId);
@@ -200,17 +202,25 @@ class CommandLineWebstoreInstall : public WebstoreInlineInstallTest,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details)  OVERRIDE {
-    ASSERT_EQ(chrome::NOTIFICATION_EXTENSION_INSTALLED, type);
-    const Extension* extension = content::Details<Extension>(details).ptr();
-    ASSERT_TRUE(extension != NULL);
-    EXPECT_EQ(extension->id(), kTestExtensionId);
-    saw_install_ = true;
+    if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
+      const Extension* extension = content::Details<Extension>(details).ptr();
+      ASSERT_TRUE(extension != NULL);
+      EXPECT_EQ(extension->id(), kTestExtensionId);
+      saw_install_ = true;
+    } else if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
+      browser_open_count_ += 1;
+    } else {
+      ASSERT_TRUE(false) << "Unexpected notification type : " << type;
+    }
   }
 
   content::NotificationRegistrar registrar_;
 
   // Have we seen an installation notification for kTestExtensionId ?
   bool saw_install_;
+
+  // How many NOTIFICATION_BROWSER_OPENED notifications have we seen?
+  int browser_open_count_;
 };
 
 IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Accept) {
@@ -220,6 +230,7 @@ IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Accept) {
   extensions::StartupHelper helper;
   EXPECT_TRUE(helper.InstallFromWebstore(*command_line, browser()->profile()));
   EXPECT_TRUE(saw_install());
+  EXPECT_EQ(0, browser_open_count_);
 }
 
 IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Cancel) {
@@ -229,4 +240,5 @@ IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Cancel) {
   extensions::StartupHelper helper;
   EXPECT_FALSE(helper.InstallFromWebstore(*command_line, browser()->profile()));
   EXPECT_FALSE(saw_install());
+  EXPECT_EQ(0, browser_open_count_);
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/webstore_inline_installer.h"
+#include "chrome/browser/extensions/webstore_standalone_installer.h"
 
 #include <vector>
 
@@ -65,7 +65,7 @@ const char kInlineInstallSupportedError[] =
 
 class SafeWebstoreResponseParser : public UtilityProcessHostClient {
  public:
-  SafeWebstoreResponseParser(WebstoreInlineInstaller *client,
+  SafeWebstoreResponseParser(WebstoreStandaloneInstaller *client,
                              const std::string& webstore_data)
       : client_(client),
         webstore_data_(webstore_data) {}
@@ -140,22 +140,24 @@ class SafeWebstoreResponseParser : public UtilityProcessHostClient {
  private:
   virtual ~SafeWebstoreResponseParser() {}
 
-  WebstoreInlineInstaller* client_;
+  WebstoreStandaloneInstaller* client_;
 
   std::string webstore_data_;
   std::string error_;
   scoped_ptr<DictionaryValue> parsed_webstore_data_;
 };
 
-WebstoreInlineInstaller::WebstoreInlineInstaller(
+WebstoreStandaloneInstaller::WebstoreStandaloneInstaller(
     WebContents* web_contents,
     std::string webstore_item_id,
     VerifiedSiteRequired require_verified_site,
+    PromptType prompt_type,
     GURL requestor_url,
     Callback callback)
     : content::WebContentsObserver(web_contents),
       id_(webstore_item_id),
       require_verified_site_(require_verified_site == REQUIRE_VERIFIED_SITE),
+      use_inline_prompt_(prompt_type == INLINE_PROMPT),
       requestor_url_(requestor_url),
       callback_(callback),
       skip_post_install_ui_(false),
@@ -164,7 +166,7 @@ WebstoreInlineInstaller::WebstoreInlineInstaller(
   CHECK(!callback.is_null());
 }
 
-void WebstoreInlineInstaller::BeginInstall() {
+void WebstoreStandaloneInstaller::BeginInstall() {
   AddRef(); // Balanced in CompleteInstall or WebContentsDestroyed.
 
   if (!Extension::IdIsValid(id_)) {
@@ -189,9 +191,9 @@ void WebstoreInlineInstaller::BeginInstall() {
   webstore_data_url_fetcher_->Start();
 }
 
-WebstoreInlineInstaller::~WebstoreInlineInstaller() {}
+WebstoreStandaloneInstaller::~WebstoreStandaloneInstaller() {}
 
-void WebstoreInlineInstaller::OnURLFetchComplete(
+void WebstoreStandaloneInstaller::OnURLFetchComplete(
     const net::URLFetcher* source) {
   CHECK_EQ(webstore_data_url_fetcher_.get(), source);
   // We shouldn't be getting UrlFetcher callbacks if the WebContents has gone
@@ -215,7 +217,7 @@ void WebstoreInlineInstaller::OnURLFetchComplete(
   parser->Start();
 }
 
-void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
+void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
     DictionaryValue* webstore_data) {
   // Check if the tab has gone away in the meantime.
   if (!web_contents()) {
@@ -325,12 +327,12 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
   helper->Start();
 }
 
-void WebstoreInlineInstaller::OnWebstoreResponseParseFailure(
+void WebstoreStandaloneInstaller::OnWebstoreResponseParseFailure(
     const std::string& error) {
   CompleteInstall(error);
 }
 
-void WebstoreInlineInstaller::OnWebstoreParseSuccess(
+void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
     const std::string& id,
     const SkBitmap& icon,
     base::DictionaryValue* manifest) {
@@ -346,12 +348,15 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
 
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  ExtensionInstallPrompt::Prompt prompt(
-      profile,
-      ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
-  prompt.SetInlineInstallWebstoreData(localized_user_count_,
-                                      average_rating_,
-                                      rating_count_);
+  ExtensionInstallPrompt::PromptType prompt_type = use_inline_prompt_ ?
+      ExtensionInstallPrompt::INLINE_INSTALL_PROMPT :
+      ExtensionInstallPrompt::INSTALL_PROMPT;
+  ExtensionInstallPrompt::Prompt prompt(profile, prompt_type);
+  if (use_inline_prompt_) {
+    prompt.SetInlineInstallWebstoreData(localized_user_count_,
+                                        average_rating_,
+                                        rating_count_);
+  }
   std::string error;
   dummy_extension_ = ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
       manifest,
@@ -367,18 +372,18 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
   }
 
   install_ui_.reset(new ExtensionInstallPrompt(NULL, web_contents(), profile));
-  install_ui_->ConfirmInlineInstall(this, dummy_extension_, &icon_, prompt);
+  install_ui_->ConfirmStandaloneInstall(this, dummy_extension_, &icon_, prompt);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
 
-void WebstoreInlineInstaller::OnWebstoreParseFailure(
+void WebstoreStandaloneInstaller::OnWebstoreParseFailure(
     const std::string& id,
     InstallHelperResultCode result_code,
     const std::string& error_message) {
   CompleteInstall(error_message);
 }
 
-void WebstoreInlineInstaller::InstallUIProceed() {
+void WebstoreStandaloneInstaller::InstallUIProceed() {
   // Check if the tab has gone away in the meantime.
   if (!web_contents()) {
     CompleteInstall("");
@@ -404,11 +409,12 @@ void WebstoreInlineInstaller::InstallUIProceed() {
   installer->Start();
 }
 
-void WebstoreInlineInstaller::InstallUIAbort(bool user_initiated) {
+void WebstoreStandaloneInstaller::InstallUIAbort(bool user_initiated) {
   CompleteInstall(kUserCancelledError);
 }
 
-void WebstoreInlineInstaller::WebContentsDestroyed(WebContents* web_contents) {
+void WebstoreStandaloneInstaller::WebContentsDestroyed(
+    WebContents* web_contents) {
   callback_.Reset();
   // Abort any in-progress fetches.
   if (webstore_data_url_fetcher_.get()) {
@@ -417,12 +423,13 @@ void WebstoreInlineInstaller::WebContentsDestroyed(WebContents* web_contents) {
   }
 }
 
-void WebstoreInlineInstaller::OnExtensionInstallSuccess(const std::string& id) {
+void WebstoreStandaloneInstaller::OnExtensionInstallSuccess(
+    const std::string& id) {
   CHECK_EQ(id_, id);
   CompleteInstall("");
 }
 
-void WebstoreInlineInstaller::OnExtensionInstallFailure(
+void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
     const std::string& id,
     const std::string& error,
     WebstoreInstaller::FailureReason cancelled) {
@@ -430,7 +437,7 @@ void WebstoreInlineInstaller::OnExtensionInstallFailure(
   CompleteInstall(error);
 }
 
-void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
+void WebstoreStandaloneInstaller::CompleteInstall(const std::string& error) {
   if (!callback_.is_null())
     callback_.Run(error.empty(), error);
 
@@ -438,7 +445,7 @@ void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
 }
 
 // static
-bool WebstoreInlineInstaller::IsRequestorURLInVerifiedSite(
+bool WebstoreStandaloneInstaller::IsRequestorURLInVerifiedSite(
     const GURL& requestor_url,
     const std::string& verified_site) {
   // Turn the verified site (which may be a bare domain, or have a port and/or a

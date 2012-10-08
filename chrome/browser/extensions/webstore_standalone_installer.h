@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_INLINE_INSTALLER_H_
-#define CHROME_BROWSER_EXTENSIONS_WEBSTORE_INLINE_INSTALLER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_STANDALONE_INSTALLER_H_
+#define CHROME_BROWSER_EXTENSIONS_WEBSTORE_STANDALONE_INSTALLER_H_
 
 #include <string>
 
@@ -28,17 +28,14 @@ namespace extensions {
 class Extension;
 class SafeWebstoreResponseParser;
 
-// TODO(asargent) - rename this class to something like
-// WebstoreStandaloneInstaller.
-//
 // Manages inline installs requested by a page (downloads and parses metadata
 // from the webstore, shows the install UI, starts the download once the user
-// confirms).  Clients must implement the WebstoreInlineInstaller::Delegate
+// confirms).  Clients must implement the WebstoreStandaloneInstaller::Delegate
 // interface to be notified when the inline install completes (successfully or
 // not). The client will not be notified if the WebContents that this install
 // request is attached to goes away.
-class WebstoreInlineInstaller
-    : public base::RefCountedThreadSafe<WebstoreInlineInstaller>,
+class WebstoreStandaloneInstaller
+    : public base::RefCountedThreadSafe<WebstoreStandaloneInstaller>,
       public ExtensionInstallPrompt::Delegate,
       public content::WebContentsObserver,
       public net::URLFetcherDelegate,
@@ -50,27 +47,33 @@ class WebstoreInlineInstaller
     DO_NOT_REQUIRE_VERIFIED_SITE
   };
 
+  enum PromptType {
+    STANDARD_PROMPT,
+    INLINE_PROMPT
+  };
+
   // A callback for when the install process completes successfully or not. If
   // there was a failure, |success| will be false and |error| may contain a
   // developer-readable error message about why it failed.
   typedef base::Callback<void(bool success, const std::string& error)> Callback;
 
-  WebstoreInlineInstaller(content::WebContents* web_contents,
-                          std::string webstore_item_id,
-                          VerifiedSiteRequired require_verified_site,
-                          GURL requestor_url,
-                          Callback callback);
+  WebstoreStandaloneInstaller(content::WebContents* web_contents,
+                              std::string webstore_item_id,
+                              VerifiedSiteRequired require_verified_site,
+                              PromptType prompt_type,
+                              GURL requestor_url,
+                              Callback callback);
 
   void set_skip_post_install_ui(bool skip) { skip_post_install_ui_ = skip; }
 
   void BeginInstall();
 
  private:
-  friend class base::RefCountedThreadSafe<WebstoreInlineInstaller>;
+  friend class base::RefCountedThreadSafe<WebstoreStandaloneInstaller>;
   friend class SafeWebstoreResponseParser;
-  FRIEND_TEST_ALL_PREFIXES(WebstoreInlineInstallerTest, DomainVerification);
+  FRIEND_TEST_ALL_PREFIXES(WebstoreStandaloneInstallerTest, DomainVerification);
 
-  virtual ~WebstoreInlineInstaller();
+  virtual ~WebstoreStandaloneInstaller();
 
   // Several delegate/client inteface implementations follow. The normal flow
   // (for successful installs) is:
@@ -126,6 +129,7 @@ class WebstoreInlineInstaller
 
   std::string id_;
   bool require_verified_site_;
+  bool use_inline_prompt_;
   GURL requestor_url_;
   Callback callback_;
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
@@ -145,9 +149,9 @@ class WebstoreInlineInstaller
   scoped_refptr<Extension> dummy_extension_;
   SkBitmap icon_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(WebstoreInlineInstaller);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(WebstoreStandaloneInstaller);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_WEBSTORE_INLINE_INSTALLER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_WEBSTORE_STANDALONE_INSTALLER_H_

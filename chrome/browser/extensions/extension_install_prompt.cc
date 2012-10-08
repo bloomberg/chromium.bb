@@ -332,7 +332,7 @@ void ExtensionInstallPrompt::ConfirmBundleInstall(
   FetchOAuthIssueAdviceIfNeeded();
 }
 
-void ExtensionInstallPrompt::ConfirmInlineInstall(
+void ExtensionInstallPrompt::ConfirmStandaloneInstall(
     Delegate* delegate,
     const Extension* extension,
     SkBitmap* icon,
@@ -342,7 +342,7 @@ void ExtensionInstallPrompt::ConfirmInlineInstall(
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
   prompt_ = prompt;
-  prompt_type_ = INLINE_INSTALL_PROMPT;
+  prompt_type_ = prompt.type();
 
   SetIcon(icon);
   FetchOAuthIssueAdviceIfNeeded();

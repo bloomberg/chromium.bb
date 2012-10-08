@@ -186,14 +186,14 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
       extensions::BundleInstaller* bundle,
       const extensions::PermissionSet* permissions);
 
-  // This is called by the inline installer to verify whether the inline
-  // install from the webstore should proceed.
+  // This is called by the standalone installer to verify whether the install
+  // from the webstore should proceed.
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmInlineInstall(Delegate* delegate,
-                                    const extensions::Extension* extension,
-                                    SkBitmap* icon,
-                                    const Prompt& prompt);
+  virtual void ConfirmStandaloneInstall(Delegate* delegate,
+                                        const extensions::Extension* extension,
+                                        SkBitmap* icon,
+                                        const Prompt& prompt);
 
   // This is called by the installer to verify whether the installation from
   // the webstore should proceed.
@@ -247,7 +247,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
 
  protected:
   friend class extensions::ExtensionWebstorePrivateApiTest;
-  friend class WebstoreInlineInstallUnpackFailureTest;
+  friend class WebstoreStandaloneInstallUnpackFailureTest;
   friend class MockGetAuthTokenFunction;
 
   // Whether or not we should record the oauth2 grant upon successful install.
