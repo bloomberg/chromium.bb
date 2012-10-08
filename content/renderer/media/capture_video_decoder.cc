@@ -154,11 +154,19 @@ void CaptureVideoDecoder::ResetOnDecoderThread(const base::Closure& closure) {
 void CaptureVideoDecoder::StopOnDecoderThread(const base::Closure& closure) {
   DVLOG(1) << "StopOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  pending_stop_cb_ = closure;
-  state_ = kStopped;
 
   if (!read_cb_.is_null())
     DeliverFrame(media::VideoFrame::CreateEmptyFrame());
+
+  if (!closure.is_null())
+    closure.Run();
+
+  if (state_ != kNormal) {
+    // Do nothing when this decoder is already stopped or in error state.
+    return;
+  }
+
+  state_ = kStopped;
 
   capture_engine_->StopCapture(this);
 }
@@ -167,8 +175,6 @@ void CaptureVideoDecoder::OnStoppedOnDecoderThread(
     media::VideoCapture* capture) {
   DVLOG(1) << "OnStoppedOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  if (!pending_stop_cb_.is_null())
-    base::ResetAndReturn(&pending_stop_cb_).Run();
 }
 
 void CaptureVideoDecoder::OnRemovedOnDecoderThread(

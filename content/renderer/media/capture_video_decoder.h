@@ -95,7 +95,6 @@ class CONTENT_EXPORT CaptureVideoDecoder
   DecoderState state_;
   bool got_first_frame_;
   ReadCB read_cb_;
-  base::Closure pending_stop_cb_;
   media::StatisticsCB statistics_cb_;
 
   media::VideoCaptureSessionId video_stream_id_;
