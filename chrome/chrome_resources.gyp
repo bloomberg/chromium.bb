@@ -172,8 +172,7 @@
               ['chromeos==1', {
                 'platform_locale_settings_grd':
                     'app/resources/locale_settings_cros.grd',
-              }],
-              ['chromeos!=1', {
+              }, {  # chromeos==0
                 'platform_locale_settings_grd':
                     'app/resources/locale_settings_linux.grd',
               }],

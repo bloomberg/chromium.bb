@@ -1991,7 +1991,7 @@
         'browser/themes/theme_service.h',
         'browser/themes/theme_service_gtk.cc',
         'browser/themes/theme_service_mac.mm',
-        'browser/themes/theme_syncable_service.cc',        
+        'browser/themes/theme_syncable_service.cc',
         'browser/themes/theme_syncable_service.h',
         'browser/thumbnails/render_widget_snapshot_taker.cc',
         'browser/thumbnails/render_widget_snapshot_taker.h',
@@ -2232,10 +2232,6 @@
         }],
         ['chromeos==0', {
           'sources/': [
-            ['exclude', 'browser/download/download_file_picker_chromeos.cc'],
-            ['exclude', 'browser/download/download_file_picker_chromeos.h'],
-            ['exclude', 'browser/download/save_package_file_picker_chromeos.cc'],
-            ['exclude', 'browser/download/save_package_file_picker_chromeos.h'],
             ['exclude', 'browser/extensions/api/input_ime/input_ime_api.cc'],
             ['exclude', 'browser/extensions/api/input_ime/input_ime_api.h'],
             ['exclude', 'browser/extensions/api/terminal/terminal_extension_helper.cc'],
@@ -2244,10 +2240,6 @@
             ['exclude', 'browser/extensions/api/terminal/terminal_private_api.h'],
             ['exclude', 'browser/extensions/extension_input_method_api.cc'],
             ['exclude', 'browser/extensions/extension_input_method_api.h'],
-            ['exclude', 'browser/icon_loader_chromeos.cc'],
-            ['exclude', 'browser/icon_manager_chromeos.cc'],
-            ['exclude', 'browser/media_gallery/mtp_device_delegate_impl_chromeos.cc'],
-            ['exclude', 'browser/media_gallery/mtp_device_delegate_impl_chromeos.h'],
             ['exclude', 'browser/net/gaia/gaia_oauth_consumer.h'],
             ['exclude', 'browser/net/gaia/gaia_oauth_fetcher.cc'],
             ['exclude', 'browser/net/gaia/gaia_oauth_fetcher.h'],
@@ -2269,11 +2261,6 @@
             ['exclude', 'browser/policy/proto/chrome_device_policy.pb.h'],
             ['exclude', 'browser/renderer_host/offline_resource_throttle.cc'],
             ['exclude', 'browser/renderer_host/offline_resource_throttle.h'],
-            ['exclude', 'browser/speech/extension_api/tts_extension_api_chromeos.cc'],
-            ['exclude', 'browser/system_monitor/media_device_notifications_chromeos.cc'],
-            ['exclude', 'browser/system_monitor/media_device_notifications_chromeos.h'],
-            ['exclude', 'browser/system_monitor/media_transfer_protocol_device_observer_chromeos.cc'],
-            ['exclude', 'browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h'],
           ],
         }, {  # chromeos==1
           'dependencies': [
@@ -2290,13 +2277,13 @@
             ['exclude', 'browser/password_manager/native_backend_gnome_x.h'],
             ['exclude', 'browser/password_manager/native_backend_kwallet_x.cc'],
             ['exclude', 'browser/password_manager/native_backend_kwallet_x.h'],
+            ['exclude', 'browser/platform_util_linux.cc'],
             ['exclude', 'browser/policy/user_cloud_policy_store.cc'],
             ['exclude', 'browser/policy/user_cloud_policy_store.h'],
             ['exclude', 'browser/policy/user_policy_signin_service.cc'],
             ['exclude', 'browser/policy/user_policy_signin_service.h'],
             ['exclude', 'browser/policy/user_policy_signin_service_factory.cc'],
             ['exclude', 'browser/policy/user_policy_signin_service_factory.h'],
-            ['exclude', 'browser/platform_util_linux.cc'],
             ['exclude', 'browser/speech/extension_api/tts_extension_api_linux.cc'],
             ['exclude', 'browser/system_monitor/removable_device_notifications_linux.cc'],
             ['exclude', 'browser/system_monitor/removable_device_notifications_linux.h'],
@@ -2353,8 +2340,8 @@
             ['OS=="win"', {
               'sources/': [
                 ['exclude', '^browser/background/background_mode_manager_aura.cc'],
-                ['exclude', '^browser/lifetime/application_lifetime_win.cc'],
                 ['exclude', '^browser/fullscreen_win.cc'],
+                ['exclude', '^browser/lifetime/application_lifetime_win.cc'],
               ],
               'dependencies': [
                 '../ui/metro_viewer/metro_viewer.gyp:metro_viewer',
@@ -2813,7 +2800,7 @@
     },
   ],
   'conditions': [
-    ['OS == "android"', {
+    ['OS=="android"', {
       'targets': [
         {
           'target_name': 'chrome_browser_jni_headers',

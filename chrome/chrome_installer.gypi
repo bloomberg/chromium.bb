@@ -48,7 +48,7 @@
         {
           'target_name': 'gcapi_test',
           'type': 'executable',
-          'dependencies': [   
+          'dependencies': [
             'common',
             'gcapi_dll',
             'gcapi_lib',
@@ -204,7 +204,7 @@
           },
           'defines': [
               '<@(nacl_win64_defines)',
-          ], 
+          ],
               'dependencies': [
               '<(DEPTH)/base/base.gyp:base_nacl_win64',
           ],
@@ -1076,7 +1076,7 @@
         {
           'target_name': 'gcapi_example',
           'type': 'executable',
-          'dependencies': [   
+          'dependencies': [
             'gcapi_lib',
           ],
           'include_dirs': [

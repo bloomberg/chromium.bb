@@ -301,8 +301,7 @@
           'sources/': [
             ['exclude', '^browser/chromeos'],
           ],
-        }],
-        ['chromeos==1', {
+        }, {  # chromeos==1
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos_test_support',
@@ -2298,15 +2297,11 @@
             ['exclude', '^browser/chromeos/'],
             ['exclude', '^browser/net/gaia/gaia_oauth_fetcher_unittest.cc'],
             ['exclude', '^browser/policy/auto_enrollment_client_unittest.cc' ],
-            ['exclude', '^browser/policy/configuration_policy_handler_chromeos_unittest.cc' ],
             ['exclude', '^browser/policy/cros_user_policy_cache_unittest.cc'],
             ['exclude', '^browser/policy/device_policy_cache_unittest.cc'],
             ['exclude', '^browser/policy/device_status_collector_unittest.cc'],
             ['exclude', '^browser/policy/enterprise_install_attributes_unittest.cc' ],
             ['exclude', '^browser/policy/network_configuration_updater_unittest.cc' ],
-            ['exclude', '^browser/policy/user_cloud_policy_store_chromeos_unittest.cc'],
-            ['exclude', '^browser/system_monitor/media_device_notifications_chromeos_unittest.cc'],
-            ['exclude', '^browser/ui/ash/ime_controller_chromeos_unittest.cc'],
             ['exclude', '^browser/ui/webui/chromeos/imageburner/'],
             ['exclude', '^browser/ui/webui/chromeos/login'],
             ['exclude', '^browser/ui/webui/options/chromeos/'],
@@ -3254,7 +3249,7 @@
             'test/data/webui/certificate_viewer_dialog_test.js',
             'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],
-        }, { #else: OS == "chromeos"
+        }, { # chromeos==1
           'sources/': [
             # Protector is disabled on CrOS.
             ['exclude', '^browser/protector'],

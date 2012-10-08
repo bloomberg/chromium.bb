@@ -367,11 +367,7 @@
             '../build/linux/system.gyp:selinux',
           ],
         }],
-        ['chromeos==0', {
-          'sources!': [
-            'common/chrome_version_info_chromeos.cc',
-          ],
-        }, {  # chromeos==1
+        ['chromeos==1', {
           'sources!': [
             'common/chrome_version_info_linux.cc',
           ],
