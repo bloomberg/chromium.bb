@@ -59,6 +59,12 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // by a command line switch.
   static bool DebugPluginLoading();
 
+  // Returns true if the plugin supports |mime_type|. |mime_type| should be all
+  // lower case.
+  static bool SupportsType(const webkit::WebPluginInfo& plugin,
+                           const std::string& mime_type,
+                           bool allow_wildcard);
+
   // Cause the plugin list to refresh next time they are accessed, regardless
   // of whether they are already loaded.
   void RefreshPlugins();
@@ -202,12 +208,6 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   bool ShouldLoadPluginUsingPluginList(
       const webkit::WebPluginInfo& info,
       std::vector<webkit::WebPluginInfo>* plugins);
-
-  // Returns true if the plugin supports |mime_type|. |mime_type| should be all
-  // lower case.
-  bool SupportsType(const webkit::WebPluginInfo& plugin,
-                    const std::string& mime_type,
-                    bool allow_wildcard);
 
   // Returns true if the given plugin supports a given file extension.
   // |extension| should be all lower case. If |mime_type| is not NULL, it will

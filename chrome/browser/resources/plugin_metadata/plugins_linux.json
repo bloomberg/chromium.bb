@@ -74,6 +74,9 @@
       "application/futuresplash",
       "application/x-shockwave-flash"
     ],
+    "matching_mime_types": [
+      "application/futuresplash"
+    ],
     "versions": [
       {
         "version": "11.1.102",
@@ -86,6 +89,25 @@
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
     "url": "http://get.adobe.com/flashplayer/",
     "displayurl": true,
+    "group_name_matcher": "Shockwave Flash"
+  },
+  "lightspark": {
+    "mime_types": [
+      "application/x-lightspark"
+    ],
+    "matching_mime_types": [
+      "application/x-lightspark"
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "requires_authorization"
+      }
+    ],
+    "lang": "en-US",
+    "name": "Lightspark",
+    "displayurl": true,
+    "url": "https://launchpad.net/lightspark",
     "group_name_matcher": "Shockwave Flash"
   },
   "redhat-icetea-java": {

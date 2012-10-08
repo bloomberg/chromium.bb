@@ -86,11 +86,6 @@ class PluginFinder {
 
   std::map<std::string, PluginMetadata*> identifier_plugin_;
 
-  // Note: Don't free memory for |name_plugin_| values
-  // since it holds pointers to same instances
-  // in |identifier_plugin_| (Double De-allocation).
-  std::map<string16, PluginMetadata*> name_plugin_;
-
   // Synchronization for the above member variables is
   // required since multiple threads can be accessing them concurrently.
   base::Lock mutex_;

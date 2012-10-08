@@ -40,7 +40,8 @@ class PluginMetadata {
                  bool url_for_display,
                  const GURL& plugin_url,
                  const GURL& help_url,
-                 const string16& group_name_matcher);
+                 const string16& group_name_matcher,
+                 const std::string& language);
   ~PluginMetadata();
 
   // Unique identifier for the plug-in.
@@ -59,10 +60,18 @@ class PluginMetadata {
   // URL to open when the user clicks on the "Problems installing?" link.
   const GURL& help_url() const { return help_url_; }
 
+  const std::string& language() const { return language_; }
+
+  bool HasMimeType(const std::string& mime_type) const;
+  void AddMimeType(const std::string& mime_type);
+  void AddMatchingMimeType(const std::string& mime_type);
+
   // Adds information about a plug-in version.
   void AddVersion(const Version& version, SecurityStatus status);
 
-  // Checks if the plug-in matches the group matcher.
+  // Checks if |plugin| mime types match all |matching_mime_types_|.
+  // If there is no |matching_mime_types_|, |group_name_matcher_| is used
+  // for matching.
   bool MatchesPlugin(const webkit::WebPluginInfo& plugin);
 
   // If |status_str| describes a valid security status, writes it to |status|
@@ -87,7 +96,10 @@ class PluginMetadata {
   bool url_for_display_;
   GURL plugin_url_;
   GURL help_url_;
+  std::string language_;
   std::map<Version, SecurityStatus, VersionComparator> versions_;
+  std::vector<std::string> all_mime_types_;
+  std::vector<std::string> matching_mime_types_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetadata);
 };
