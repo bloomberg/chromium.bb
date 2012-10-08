@@ -17,7 +17,13 @@
 NetLogLogger::NetLogLogger(const FilePath &log_path) {
   if (!log_path.empty()) {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    file_.Set(file_util::OpenFile(log_path, "w"));
+    FILE* fp = file_util::OpenFile(log_path, "w");
+    if (!fp) {
+      LOG(ERROR) << "Could not open file " << log_path.value()
+                 << " for net logging";
+      return;
+    }
+    file_.Set(fp);
 
     // Write constants to the output file.  This allows loading files that have
     // different source and event types, as they may be added and removed
