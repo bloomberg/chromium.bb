@@ -1702,6 +1702,7 @@
         'browser/ui/ash/window_positioner_unittest.cc',
         'browser/ui/auto_login_prompter_unittest.cc',
         'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
+        'browser/ui/bookmarks/bookmark_ui_utils_unittest.cc',
         'browser/ui/browser_unittest.cc',
         'browser/ui/chrome_select_file_policy_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
