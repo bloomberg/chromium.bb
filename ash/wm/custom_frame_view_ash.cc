@@ -125,6 +125,9 @@ void CustomFrameViewAsh::Layout() {
 }
 
 void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
+  if (frame_->IsFullscreen())
+    return;
+
   bool paint_as_active = ShouldPaintAsActive();
   int theme_image_id = paint_as_active ? IDR_AURA_WINDOW_HEADER_BASE_ACTIVE :
       IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
@@ -171,6 +174,9 @@ void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
 // CustomFrameViewAsh, private:
 
 int CustomFrameViewAsh::NonClientTopBorderHeight() const {
+  if (frame_->IsFullscreen())
+    return 0;
+
   // Reserve enough space to see the buttons, including any offset from top and
   // reserving space for the separator line.
   return close_button_->bounds().bottom() +
