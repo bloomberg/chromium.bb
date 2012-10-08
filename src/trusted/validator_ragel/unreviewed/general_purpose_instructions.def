@@ -648,10 +648,18 @@ lwpins Id Ed =By, 0x8f RXB.0A W.src1.0.00 0x12 /0, CPUFeature_LWP
 ######## LWPVAL ################################################################
 lwpval Id Ed =By, 0x8f RXB.0A W.src1.0.00 0x12 /1, CPUFeature_LWP
 ######## LZCNT #################################################################
+# Textbook definition of “lzcnt” as per AMD/Intel manuals looks like this:
+#   lzcnt Ev Gv, 0xf3 0x0f 0xbd, CPUFeature_LZCNT nacl-amd64-zero-extends
 # “lzcnt” is not marked as nacl-amd64-zero-extends because it is unlikely to be
 # useful for computing an address based on the number of leading zeros of a
 # value.
-lzcnt Ev Gv, 0xf3 0x0f 0xbd, CPUFeature_LZCNT
+# Also, since f3 opcode extension is counted as rep prefix, it is not allowed
+# together with data16 prefix.
+# See http://code.google.com/p/nativeclient/issues/detail?id=3076
+lzcnt Ew Gw, data16 0xf3 0x0f 0xbd, norexw CPUFeature_LZCNT nacl-forbidden
+lzcnt Ed Gd, 0xf3 0x0f 0xbd, norexw CPUFeature_LZCNT
+lzcnt Eq Gq, rexw 0xf3 0x0f 0xbd, amd64 CPUFeature_LZCNT
+lzcnt Eq Gq, data16 rexw 0xf3 0x0f 0xbd, amd64 CPUFeature_LZCNT nacl-forbidden
 ######## MFENCE ################################################################
 mfence, 0x0f 0xae 0xf0, CPUFeature_SSE2
 ######## MOV ###################################################################
@@ -814,9 +822,17 @@ pop rr, 0x58
 "popq   %fs", 0x0f 0xa1, amd64 nacl-forbidden
 "popq   %gs", 0x0f 0xa9, amd64 nacl-forbidden
 ######## POPCNT ################################################################
+# Textbook definition of “popcnt” as per AMD/Intel manuals looks like this:
+#   popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT nacl-amd64-zero-extends
 # “popcnt” is not marked as nacl-amd64-zero-extends because it is unlikely to be
 # useful for computing an address based on the number of ones in a value.
-popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT
+# Also, since f3 opcode extension is counted as rep prefix, it is not allowed
+# together with data16 prefix.
+# See http://code.google.com/p/nativeclient/issues/detail?id=3076
+popcnt Ew Gw, data16 0xf3 0x0f 0xb8, norexw CPUFeature_POPCNT nacl-forbidden
+popcnt Ed Gd, 0xf3 0x0f 0xb8, norexw CPUFeature_POPCNT
+popcnt Eq Gq, rexw 0xf3 0x0f 0xb8, amd64 CPUFeature_POPCNT
+popcnt Eq Gq, data16 rexw 0xf3 0x0f 0xb8, amd64 CPUFeature_POPCNT nacl-forbidden
 ######## POPF/POPFD/POPFQ ######################################################
 popf, data16 0x9d, norexw att-show-name-suffix-w nacl-forbidden
 popf, 0x9d, ia32 nacl-forbidden
@@ -1037,12 +1053,20 @@ test I =E, 0xf6 /0
 # test I =E, 0xf6 /1
 test G =E, 0x84
 ######## TZCNT #################################################################
+# Textbook definition of “tzcnt” as per AMD/Intel manuals looks like this:
+#   tzcnt Ev Gv, 0xf3 0x0f 0xbc, CPUFeature_TZCNT nacl-amd64-zero-extends
 # “tzcnt” is not marked as nacl-amd64-zero-extends because it is unlikely to be
 # useful for computing an address based on the number of trailing zeros of a
 # value.
 # We mark tzcnt specially to allow it independently from CPUID
-# See: http://code.google.com/p/nativeclient/issues/detail?id=2869
-tzcnt Ev Gv, 0xf3 0x0f 0xbc, CPUFeature_TZCNT
+# See http://code.google.com/p/nativeclient/issues/detail?id=2869
+# Also, since f3 opcode extension is counted as rep prefix, it is not allowed
+# together with data16 prefix.
+# See http://code.google.com/p/nativeclient/issues/detail?id=3076
+tzcnt Ew Gw, data16 0xf3 0x0f 0xbc, norexw CPUFeature_TZCNT nacl-forbidden
+tzcnt Ed Gd, 0xf3 0x0f 0xbc, norexw CPUFeature_TZCNT
+tzcnt Eq Gq, rexw 0xf3 0x0f 0xbc, amd64 CPUFeature_TZCNT
+tzcnt Eq Gq, data16 rexw 0xf3 0x0f 0xbc, amd64 CPUFeature_TZCNT nacl-forbidden
 ######## TZMSK #################################################################
 tzmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /4, CPUFeature_TBM
 ######## XADD ##################################################################

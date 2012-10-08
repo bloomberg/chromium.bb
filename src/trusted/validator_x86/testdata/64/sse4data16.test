@@ -1,0 +1,45 @@
+@hex:
+  # SSE4 uses opcode extension which looks like REP prefix.
+  # Since two prefixes are not allowed, 16-bit form of these perfectly safe
+  # instructions is invalid.
+  
+  # popcnt %ax, %bx
+  66 f3 0f b8 d8
+  f3 66 0f b8 d8
+  # lzcnt %cx, %dx
+  66 f3 0f bd d1
+  f3 66 0f bd d1
+  # tzcnt %bp, %bx
+  66 f3 0f bc dd
+  f3 66 0f bc dd
+@rval:
+  VALIDATOR: 0000000000000000: 66 f3 0f b8 d8                               popcnt %bx, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000005: f3 66 0f b8 d8                               popcnt %bx, %ax
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000000a: 66 f3 0f bd d1                               lzcnt %dx, %cx
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 000000000000000f: f3 66 0f bd d1                               lzcnt %dx, %cx
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000014: 66 f3 0f bc dd                               tzcnt %bx, %bp
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: 0000000000000019: f3 66 0f bc dd                               tzcnt %bx, %bp
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: Checking jump targets: 0 to 1e
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 66 f3 0f b8 d8                               popcnt %bx, %ax
+  0000000000000005: f3 66 0f b8 d8                               popcnt %bx, %ax
+  000000000000000a: 66 f3 0f bd d1                               lzcnt %dx, %cx
+  000000000000000f: f3 66 0f bd d1                               lzcnt %dx, %cx
+  0000000000000014: 66 f3 0f bc dd                               tzcnt %bx, %bp
+  0000000000000019: f3 66 0f bc dd                               tzcnt %bx, %bp
+@rdfa_output:
+  0: [0] unrecognized instruction
+  5: [1] unrecognized instruction
+  a: [2] unrecognized instruction
+  f: [3] unrecognized instruction
+  14: [4] unrecognized instruction
+  19: [5] unrecognized instruction
+  return code: 1
