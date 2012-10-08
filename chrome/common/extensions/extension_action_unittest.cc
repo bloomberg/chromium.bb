@@ -9,17 +9,14 @@
 
 namespace {
 
-class ExtensionActionTest : public testing::Test {
- public:
-  ExtensionActionTest()
-      : action("", ExtensionAction::TYPE_PAGE) {
-  }
+using extensions::Extension;
 
-  ExtensionAction action;
-};
+TEST(ExtensionActionTest, Title) {
+  Extension::ActionInfo action_info;
+  action_info.default_title = "Initial Title";
+  ExtensionAction action("", Extension::ActionInfo::TYPE_PAGE, action_info);
 
-TEST_F(ExtensionActionTest, Title) {
-  ASSERT_EQ("", action.GetTitle(1));
+  ASSERT_EQ("Initial Title", action.GetTitle(1));
   action.SetTitle(ExtensionAction::kDefaultTabId, "foo");
   ASSERT_EQ("foo", action.GetTitle(1));
   ASSERT_EQ("foo", action.GetTitle(100));
@@ -32,7 +29,10 @@ TEST_F(ExtensionActionTest, Title) {
   ASSERT_EQ("baz", action.GetTitle(100));
 }
 
-TEST_F(ExtensionActionTest, Visibility) {
+TEST(ExtensionActionTest, Visibility) {
+  ExtensionAction action("", Extension::ActionInfo::TYPE_PAGE,
+                         Extension::ActionInfo());
+
   ASSERT_FALSE(action.GetIsVisible(1));
   action.SetAppearance(ExtensionAction::kDefaultTabId, ExtensionAction::ACTIVE);
   ASSERT_TRUE(action.GetIsVisible(1));
@@ -51,13 +51,18 @@ TEST_F(ExtensionActionTest, Visibility) {
   action.ClearAllValuesForTab(100);
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_FALSE(action.GetIsVisible(100));
+
+  ExtensionAction browser_action("", Extension::ActionInfo::TYPE_BROWSER,
+                                 Extension::ActionInfo());
+  ASSERT_TRUE(browser_action.GetIsVisible(1));
 }
 
-TEST_F(ExtensionActionTest, ScriptBadgeAnimation) {
+TEST(ExtensionActionTest, ScriptBadgeAnimation) {
   // Supports the icon animation.
   MessageLoop message_loop;
 
-  ExtensionAction script_badge("", ExtensionAction::TYPE_SCRIPT_BADGE);
+  ExtensionAction script_badge("", Extension::ActionInfo::TYPE_SCRIPT_BADGE,
+                               Extension::ActionInfo());
   EXPECT_FALSE(script_badge.GetIconAnimation(ExtensionAction::kDefaultTabId));
   script_badge.SetAppearance(ExtensionAction::kDefaultTabId,
                              ExtensionAction::ACTIVE);
@@ -76,11 +81,12 @@ TEST_F(ExtensionActionTest, ScriptBadgeAnimation) {
   EXPECT_FALSE(script_badge.GetIconAnimation(100));
 }
 
-TEST_F(ExtensionActionTest, GetAttention) {
+TEST(ExtensionActionTest, GetAttention) {
   // Supports the icon animation.
   scoped_ptr<MessageLoop> message_loop(new MessageLoop);
 
-  ExtensionAction script_badge("", ExtensionAction::TYPE_SCRIPT_BADGE);
+  ExtensionAction script_badge("", Extension::ActionInfo::TYPE_SCRIPT_BADGE,
+                               Extension::ActionInfo());
   EXPECT_FALSE(script_badge.GetIsVisible(1));
   EXPECT_FALSE(script_badge.GetIconAnimation(1));
   script_badge.SetAppearance(1, ExtensionAction::WANTS_ATTENTION);
@@ -97,7 +103,23 @@ TEST_F(ExtensionActionTest, GetAttention) {
       << "The animation should not play again if the icon was already visible.";
 }
 
-TEST_F(ExtensionActionTest, Badge) {
+TEST(ExtensionActionTest, Icon) {
+  Extension::ActionInfo action_info;
+  action_info.default_icon.Add(16, "icon16.png");
+  ExtensionAction page_action("", Extension::ActionInfo::TYPE_PAGE,
+                              action_info);
+  ASSERT_TRUE(page_action.default_icon());
+  EXPECT_EQ("icon16.png",
+            page_action.default_icon()->Get(
+                16, ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ("",
+            page_action.default_icon()->Get(
+                17, ExtensionIconSet::MATCH_BIGGER));
+}
+
+TEST(ExtensionActionTest, Badge) {
+  ExtensionAction action("", Extension::ActionInfo::TYPE_PAGE,
+                         Extension::ActionInfo());
   ASSERT_EQ("", action.GetBadgeText(1));
   action.SetBadgeText(ExtensionAction::kDefaultTabId, "foo");
   ASSERT_EQ("foo", action.GetBadgeText(1));
@@ -111,7 +133,9 @@ TEST_F(ExtensionActionTest, Badge) {
   ASSERT_EQ("baz", action.GetBadgeText(100));
 }
 
-TEST_F(ExtensionActionTest, BadgeTextColor) {
+TEST(ExtensionActionTest, BadgeTextColor) {
+  ExtensionAction action("", Extension::ActionInfo::TYPE_PAGE,
+                         Extension::ActionInfo());
   ASSERT_EQ(0x00000000u, action.GetBadgeTextColor(1));
   action.SetBadgeTextColor(ExtensionAction::kDefaultTabId, 0xFFFF0000u);
   ASSERT_EQ(0xFFFF0000u, action.GetBadgeTextColor(1));
@@ -125,7 +149,9 @@ TEST_F(ExtensionActionTest, BadgeTextColor) {
   ASSERT_EQ(0xFF0000FFu, action.GetBadgeTextColor(100));
 }
 
-TEST_F(ExtensionActionTest, BadgeBackgroundColor) {
+TEST(ExtensionActionTest, BadgeBackgroundColor) {
+  ExtensionAction action("", Extension::ActionInfo::TYPE_PAGE,
+                         Extension::ActionInfo());
   ASSERT_EQ(0x00000000u, action.GetBadgeBackgroundColor(1));
   action.SetBadgeBackgroundColor(ExtensionAction::kDefaultTabId,
                                  0xFFFF0000u);
@@ -141,23 +167,29 @@ TEST_F(ExtensionActionTest, BadgeBackgroundColor) {
   ASSERT_EQ(0xFF0000FFu, action.GetBadgeBackgroundColor(100));
 }
 
-TEST_F(ExtensionActionTest, PopupUrl) {
+TEST(ExtensionActionTest, PopupUrl) {
   GURL url_unset;
   GURL url_foo("http://www.example.com/foo.html");
   GURL url_bar("http://www.example.com/bar.html");
   GURL url_baz("http://www.example.com/baz.html");
 
+  Extension::ActionInfo action_info;
+  action_info.default_popup_url = url_foo;
+  ExtensionAction action("", Extension::ActionInfo::TYPE_PAGE, action_info);
+
+  ASSERT_EQ(url_foo, action.GetPopupUrl(1));
+  ASSERT_EQ(url_foo, action.GetPopupUrl(100));
+  ASSERT_TRUE(action.HasPopup(1));
+  ASSERT_TRUE(action.HasPopup(100));
+
+  action.SetPopupUrl(ExtensionAction::kDefaultTabId, url_unset);
   ASSERT_EQ(url_unset, action.GetPopupUrl(1));
   ASSERT_EQ(url_unset, action.GetPopupUrl(100));
   ASSERT_FALSE(action.HasPopup(1));
   ASSERT_FALSE(action.HasPopup(100));
 
-  action.SetPopupUrl(ExtensionAction::kDefaultTabId, url_foo);
-  ASSERT_EQ(url_foo, action.GetPopupUrl(1));
-  ASSERT_EQ(url_foo, action.GetPopupUrl(100));
-
   action.SetPopupUrl(100, url_bar);
-  ASSERT_EQ(url_foo, action.GetPopupUrl(1));
+  ASSERT_EQ(url_unset, action.GetPopupUrl(1));
   ASSERT_EQ(url_bar, action.GetPopupUrl(100));
 
   action.SetPopupUrl(ExtensionAction::kDefaultTabId, url_baz);

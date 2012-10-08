@@ -5,11 +5,14 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #import "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
@@ -51,6 +54,10 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(browser());
     window_ = browser()->window()->GetNativeWindow();
     icon_ = LoadTestIcon();
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    extension_service_ = static_cast<extensions::TestExtensionSystem*>(
+        extensions::ExtensionSystem::Get(profile()))->CreateExtensionService(
+            &command_line, FilePath(), false);
   }
 
   // Load test icon from extension test directory.
@@ -99,12 +106,17 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
     }
 
     std::string error;
-    return Extension::Create(path, Extension::INVALID, extension_input_value,
-                             Extension::NO_FLAGS, &error);
+    scoped_refptr<Extension> extension =
+        Extension::Create(path, Extension::INVALID, extension_input_value,
+                          Extension::NO_FLAGS, &error);
+    extension_service_->AddExtension(extension);
+    return extension;
   }
 
   // Required to initialize the extension installed bubble.
   NSWindow* window_;  // weak, owned by CocoaProfileTest.
+
+  ExtensionService* extension_service_;
 
   // Skeleton extension to be tested; reinitialized for each test.
   scoped_refptr<Extension> extension_;

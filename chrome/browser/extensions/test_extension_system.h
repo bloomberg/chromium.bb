@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 
 class CommandLine;
@@ -78,6 +79,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ManagementPolicy> management_policy_;
+  ExtensionActionManager extension_action_manager_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<AlarmManager> alarm_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;

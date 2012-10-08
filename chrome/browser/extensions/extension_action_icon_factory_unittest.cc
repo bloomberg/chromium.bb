@@ -4,13 +4,17 @@
 
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
@@ -112,14 +116,29 @@ class ExtensionActionIconFactoryTest
     if (!valid_value.get())
       return NULL;
 
-    return Extension::Create(test_file, location, *valid_value,
-                             Extension::NO_FLAGS, &error);
+    scoped_refptr<Extension> extension =
+        Extension::Create(test_file, location, *valid_value,
+                          Extension::NO_FLAGS, &error);
+    EXPECT_TRUE(extension) << error;
+    if (extension)
+      extension_service_->AddExtension(extension);
+    return extension;
   }
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
     file_thread_.Start();
     io_thread_.Start();
+    profile_.reset(new TestingProfile);
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    extension_service_ = static_cast<extensions::TestExtensionSystem*>(
+        extensions::ExtensionSystem::Get(profile_.get()))->
+        CreateExtensionService(&command_line, FilePath(), false);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    profile_.reset();  // Get all DeleteSoon calls sent to ui_loop_.
+    ui_loop_.RunAllPending();
   }
 
   // ExtensionActionIconFactory::Observer overrides:
@@ -139,6 +158,8 @@ class ExtensionActionIconFactoryTest
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
+  scoped_ptr<TestingProfile> profile_;
+  ExtensionService* extension_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionIconFactoryTest);
 };

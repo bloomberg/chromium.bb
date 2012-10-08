@@ -98,10 +98,18 @@ static scoped_refptr<Extension> LoadManifestStrict(
   return LoadManifest(dir, test_file, Extension::NO_FLAGS);
 }
 
-static scoped_ptr<ExtensionAction> LoadAction(const std::string& manifest) {
+static scoped_ptr<Extension::ActionInfo> LoadAction(
+    const std::string& manifest) {
   scoped_refptr<Extension> extension = LoadManifest("page_action",
       manifest);
-  return extension->page_action()->CopyForTest();
+  EXPECT_TRUE(extension->page_action_info());
+  if (extension->page_action_info()) {
+    return make_scoped_ptr(new Extension::ActionInfo(
+        *extension->page_action_info()));
+  }
+  ADD_FAILURE() << "Expected manifest in " << manifest
+                << " to include a page_action section.";
+  return scoped_ptr<Extension::ActionInfo>();
 }
 
 static void LoadActionAndExpectError(const std::string& manifest,
@@ -203,7 +211,7 @@ TEST(ExtensionTest, GetAbsolutePathNoError) {
 }
 
 TEST(ExtensionTest, LoadPageActionHelper) {
-  scoped_ptr<ExtensionAction> action;
+  scoped_ptr<Extension::ActionInfo> action;
 
   // First try with an empty dictionary.
   action = LoadAction("page_action_empty.json");
@@ -216,13 +224,13 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   action = LoadAction("page_action.json");
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_EQ(id, action->id());
+  ASSERT_EQ(id, action->id);
 
   // No title, so fall back to name.
-  ASSERT_EQ(name, action->GetTitle(1));
+  ASSERT_EQ(name, action->default_title);
   ASSERT_EQ(img1,
-            action->default_icon()->Get(extension_misc::EXTENSION_ICON_ACTION,
-                                        ExtensionIconSet::MATCH_EXACTLY));
+            action->default_icon.Get(extension_misc::EXTENSION_ICON_ACTION,
+                                     ExtensionIconSet::MATCH_EXACTLY));
 
   // Same test with explicitly set type.
   action = LoadAction("page_action_type.json");
@@ -235,7 +243,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Then try without the name key. It's optional, so no error.
   action = LoadAction("page_action_no_name.json");
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_TRUE(action->GetTitle(1).empty());
+  ASSERT_TRUE(action->default_title.empty());
 
   // Then try without the icon paths key.
   action = LoadAction("page_action_no_icon.json");
@@ -248,8 +256,8 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   action = LoadAction("page_action_new_format.json");
   ASSERT_TRUE(action.get());
-  ASSERT_EQ(kTitle, action->GetTitle(1));
-  ASSERT_TRUE(action->default_icon());
+  ASSERT_EQ(kTitle, action->default_title);
+  ASSERT_FALSE(action->default_icon.empty());
 
   // Invalid title should give an error even with a valid name.
   LoadActionAndExpectError("page_action_invalid_title.json",
@@ -258,7 +266,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Invalid name should give an error only with no title.
   action = LoadAction("page_action_invalid_name.json");
   ASSERT_TRUE(NULL != action.get());
-  ASSERT_EQ(kTitle, action->GetTitle(1));
+  ASSERT_EQ(kTitle, action->default_title);
 
   LoadActionAndExpectError("page_action_invalid_name_no_title.json",
       errors::kInvalidPageActionName);
@@ -274,7 +282,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ(
       extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
-      action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
+      action->default_popup_url.spec().c_str());
 
   // Use both "popup" and "default_popup", expect failure.
   LoadActionAndExpectError("page_action_popup_and_default_popup.json",
@@ -289,24 +297,24 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ(
       extension->url().Resolve(kPopupHtmlFile).spec().c_str(),
-      action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
+      action->default_popup_url.spec().c_str());
 
   // Setting default_popup to "" is the same as having no popup.
   action = LoadAction("page_action_empty_default_popup.json");
   ASSERT_TRUE(NULL != action.get());
-  EXPECT_FALSE(action->HasPopup(ExtensionAction::kDefaultTabId));
+  EXPECT_TRUE(action->default_popup_url.is_empty());
   ASSERT_STREQ(
       "",
-      action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
+      action->default_popup_url.spec().c_str());
 
   // Setting popup to "" is the same as having no popup.
   action = LoadAction("page_action_empty_popup.json");
 
   ASSERT_TRUE(NULL != action.get());
-  EXPECT_FALSE(action->HasPopup(ExtensionAction::kDefaultTabId));
+  EXPECT_TRUE(action->default_popup_url.is_empty());
   ASSERT_STREQ(
       "",
-      action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
+      action->default_popup_url.spec().c_str());
 }
 
 TEST(ExtensionTest, IdIsValid) {

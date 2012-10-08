@@ -37,12 +37,12 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
-bool ValidateExtensionIconSet(const ExtensionIconSet* icon_set,
+bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               const Extension* extension,
                               int error_message_id,
                               std::string* error) {
-  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set->map().begin();
-       iter != icon_set->map().end();
+  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set.map().begin();
+       iter != icon_set.map().end();
        ++iter) {
     const FilePath path = extension->GetResource(iter->second).GetFilePath();
     if (!extension_file_util::ValidateFilePath(path)) {
@@ -341,16 +341,16 @@ bool ValidateExtension(const Extension* extension,
     }
   }
 
-  const ExtensionAction* action = extension->page_action();
-  if (action && action->default_icon() &&
-      !ValidateExtensionIconSet(action->default_icon(), extension,
+  const Extension::ActionInfo* action = extension->page_action_info();
+  if (action && !action->default_icon.empty() &&
+      !ValidateExtensionIconSet(action->default_icon, extension,
           IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED, error)) {
     return false;
   }
 
-  action = extension->browser_action();
-  if (action && action->default_icon() &&
-      !ValidateExtensionIconSet(action->default_icon(), extension,
+  action = extension->browser_action_info();
+  if (action && !action->default_icon.empty() &&
+      !ValidateExtensionIconSet(action->default_icon, extension,
           IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED, error)) {
     return false;
   }

@@ -26,6 +26,7 @@ class ExtensionIconSet {
   ~ExtensionIconSet();
 
   const IconMap& map() const { return map_; }
+  bool empty() const { return map_.empty(); }
 
   // Remove all icons from the set.
   void Clear();

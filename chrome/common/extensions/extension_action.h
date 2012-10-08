@@ -15,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/linear_animation.h"
@@ -40,13 +41,6 @@ class ExtensionAction {
   // Use this ID to indicate the default state for properties that take a tab_id
   // parameter.
   static const int kDefaultTabId;
-
-  // The types of extension actions.
-  enum Type {
-    TYPE_BROWSER,
-    TYPE_PAGE,
-    TYPE_SCRIPT_BADGE,
-  };
 
   enum Appearance {
     // The action icon is hidden.
@@ -118,7 +112,9 @@ class ExtensionAction {
     DISALLOW_COPY_AND_ASSIGN(IconAnimation);
   };
 
-  ExtensionAction(const std::string& extension_id, Type action_type);
+  ExtensionAction(const std::string& extension_id,
+                  extensions::Extension::ActionInfo::Type action_type,
+                  const extensions::Extension::ActionInfo& manifest_data);
   ~ExtensionAction();
 
   // Gets a copy of this, ownership passed to caller.
@@ -128,13 +124,15 @@ class ExtensionAction {
   // Given the extension action type, returns the size the extension action icon
   // should have. The icon should be square, so only one dimension is
   // returned.
-  static int GetIconSizeForType(Type type);
+  static int GetIconSizeForType(extensions::Extension::ActionInfo::Type type);
 
   // extension id
   const std::string& extension_id() const { return extension_id_; }
 
   // What kind of action is this?
-  Type action_type() const { return action_type_; }
+  extensions::Extension::ActionInfo::Type action_type() const {
+    return action_type_;
+  }
 
   // action id -- only used with legacy page actions API
   std::string id() const { return id_; }
@@ -271,7 +269,7 @@ class ExtensionAction {
                            const SkColor& text_color_in,
                            const SkColor& background_color_in,
                            int icon_width,
-                           Type action_type);
+                           extensions::Extension::ActionInfo::Type action_type);
 
   template <class T>
   struct ValueTraits {
@@ -300,7 +298,7 @@ class ExtensionAction {
   // extension manifest).
   const std::string extension_id_;
 
-  const Type action_type_;
+  const extensions::Extension::ActionInfo::Type action_type_;
 
   // Each of these data items can have both a global state (stored with the key
   // kDefaultTabId), or tab-specific state (stored with the tab_id as the key).

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -576,13 +577,13 @@ void BrowserEventRouter::ExtensionActionExecuted(
     TabContents* tab_contents) {
   const char* event_name = NULL;
   switch (extension_action.action_type()) {
-    case ExtensionAction::TYPE_BROWSER:
+    case Extension::ActionInfo::TYPE_BROWSER:
       event_name = "browserAction.onClicked";
       break;
-    case ExtensionAction::TYPE_PAGE:
+    case Extension::ActionInfo::TYPE_PAGE:
       event_name = "pageAction.onClicked";
       break;
-    case ExtensionAction::TYPE_SCRIPT_BADGE:
+    case Extension::ActionInfo::TYPE_SCRIPT_BADGE:
       event_name = "scriptBadge.onClicked";
       break;
   }

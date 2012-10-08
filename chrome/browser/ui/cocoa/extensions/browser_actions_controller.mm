@@ -531,7 +531,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 - (void)removeActionButtonForExtension:(const Extension*)extension {
-  if (!extension->browser_action())
+  if (!extension->browser_action_info())
     return;
 
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());

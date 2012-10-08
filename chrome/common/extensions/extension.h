@@ -21,7 +21,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/common/extensions/command.h"
-#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
@@ -34,6 +33,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/size.h"
 
+class ExtensionAction;
 class ExtensionResource;
 class FileBrowserHandler;
 class SkBitmap;
@@ -44,6 +44,10 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace webkit_glue {
 struct WebIntentServiceData;
 }
@@ -52,6 +56,7 @@ FORWARD_DECLARE_TEST(TabStripModelTest, Apps);
 
 namespace extensions {
 
+class ExtensionActionManager;
 class Manifest;
 class PermissionSet;
 
@@ -208,6 +213,25 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
     std::string client_id;
     std::vector<std::string> scopes;
+  };
+
+  struct ActionInfo {
+    explicit ActionInfo();
+    ~ActionInfo();
+
+    // The types of extension actions.
+    enum Type {
+      TYPE_BROWSER,
+      TYPE_PAGE,
+      TYPE_SCRIPT_BADGE,
+    };
+
+    // Empty implies the key wasn't present.
+    ExtensionIconSet default_icon;
+    std::string default_title;
+    GURL default_popup_url;
+    // action id -- only used with legacy page actions API.
+    std::string id;
   };
 
   struct InstallWarning {
@@ -624,14 +648,25 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return converted_from_user_script_;
   }
   const UserScriptList& content_scripts() const { return content_scripts_; }
-  ExtensionAction* script_badge() const { return script_badge_.get(); }
-  ExtensionAction* page_action() const { return page_action_.get(); }
-  ExtensionAction* browser_action() const { return browser_action_.get(); }
+  const ActionInfo* script_badge_info() const {
+    return script_badge_info_.get();
+  }
+  const ActionInfo* page_action_info() const { return page_action_info_.get(); }
+  const ActionInfo* browser_action_info() const {
+    return browser_action_info_.get();
+  }
+  // TODO(jyasskin): Remove these accessors in favor of access through
+  // ExtensionActionManager.  In tests, call
+  // TestExtensionSystem::CreateExtensionActionManager() to get these created.
+  ExtensionAction* script_badge() const { return script_badge_; }
+  ExtensionAction* page_action() const { return page_action_; }
+  ExtensionAction* browser_action() const { return browser_action_; }
   bool is_verbose_install_message() const {
     return !omnibox_keyword().empty() ||
-           browser_action() ||
-           (page_action() &&
-               (page_action_command() || page_action()->default_icon()));
+           browser_action_info() ||
+           (page_action_info() &&
+            (page_action_command() ||
+             !page_action_info()->default_icon.empty()));
   }
   const FileBrowserHandlerList* file_browser_handlers() const {
     return file_browser_handlers_.get();
@@ -922,9 +957,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
-  scoped_ptr<ExtensionAction> LoadExtensionActionHelper(
-      const base::DictionaryValue* extension_action,
-      ExtensionAction::Type action_type,
+  scoped_ptr<ActionInfo> LoadExtensionActionInfoHelper(
+      const base::DictionaryValue* manifest_section,
+      ActionInfo::Type action_type,
       string16* error);
 
   // Helper method that loads the OAuth2 info from the 'oauth2' manifest key.
@@ -1029,13 +1064,21 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   UserScriptList content_scripts_;
 
   // The extension's page action, if any.
-  scoped_ptr<ExtensionAction> page_action_;
+  scoped_ptr<ActionInfo> page_action_info_;
 
   // The extension's browser action, if any.
-  scoped_ptr<ExtensionAction> browser_action_;
+  scoped_ptr<ActionInfo> browser_action_info_;
 
   // The extension's script badge.  Never NULL.
-  scoped_ptr<ExtensionAction> script_badge_;
+  scoped_ptr<ActionInfo> script_badge_info_;
+
+  // The extension's page action, browser action, and script badge, if any.
+  // Owned by the ExtensionActionManager, which sets these pointers on load and
+  // sets them to NULL on unload.
+  mutable ExtensionAction* page_action_;
+  mutable ExtensionAction* browser_action_;
+  mutable ExtensionAction* script_badge_;
+  friend class ExtensionActionManager;
 
   // The extension's file browser actions, if any.
   scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;

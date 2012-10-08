@@ -29,6 +29,7 @@ namespace extensions {
 
 TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
+      extension_action_manager_(profile_),
       info_map_(new ExtensionInfoMap()) {
 }
 
@@ -36,6 +37,7 @@ TestExtensionSystem::~TestExtensionSystem() {
 }
 
 void TestExtensionSystem::Shutdown() {
+  extension_action_manager_.Shutdown();
   extension_process_manager_.reset();
 }
 

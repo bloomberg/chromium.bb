@@ -129,7 +129,7 @@ class ExtensionAction::IconWithBadgeImageSource
                            const std::string& text,
                            const SkColor& text_color,
                            const SkColor& background_color,
-                           ExtensionAction::Type action_type)
+                           extensions::Extension::ActionInfo::Type action_type)
       : gfx::CanvasImageSource(icon.size(), false),
         icon_(icon),
         spacing_(spacing),
@@ -165,7 +165,7 @@ class ExtensionAction::IconWithBadgeImageSource
   // Color of the badge.
   SkColor background_color_;
   // Type of extension action this is for.
-  ExtensionAction::Type action_type_;
+  extensions::Extension::ActionInfo::Type action_type_;
 
   DISALLOW_COPY_AND_ASSIGN(IconWithBadgeImageSource);
 };
@@ -242,11 +242,25 @@ ExtensionAction::IconAnimation::ScopedObserver::~ScopedObserver() {
     icon_animation_->RemoveObserver(observer_);
 }
 
-ExtensionAction::ExtensionAction(const std::string& extension_id,
-                                 Type action_type)
+ExtensionAction::ExtensionAction(
+    const std::string& extension_id,
+    extensions::Extension::ActionInfo::Type action_type,
+    const extensions::Extension::ActionInfo& manifest_data)
     : extension_id_(extension_id),
       action_type_(action_type),
       has_changed_(false) {
+  // Page/script actions are hidden/disabled by default, and browser actions are
+  // visible/enabled by default.
+  SetAppearance(kDefaultTabId,
+                action_type == extensions::Extension::ActionInfo::TYPE_BROWSER ?
+                ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
+  SetTitle(kDefaultTabId, manifest_data.default_title);
+  SetPopupUrl(kDefaultTabId, manifest_data.default_popup_url);
+  if (!manifest_data.default_icon.empty()) {
+    set_default_icon(make_scoped_ptr(new ExtensionIconSet(
+        manifest_data.default_icon)));
+  }
+  set_id(manifest_data.id);
 }
 
 ExtensionAction::~ExtensionAction() {
@@ -254,7 +268,8 @@ ExtensionAction::~ExtensionAction() {
 
 scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
   scoped_ptr<ExtensionAction> copy(
-      new ExtensionAction(extension_id_, action_type_));
+      new ExtensionAction(extension_id_, action_type_,
+                          extensions::Extension::ActionInfo()));
   copy->popup_url_ = popup_url_;
   copy->title_ = title_;
   copy->icon_ = icon_;
@@ -272,12 +287,13 @@ scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
 }
 
 // static
-int ExtensionAction::GetIconSizeForType(ExtensionAction::Type type) {
+int ExtensionAction::GetIconSizeForType(
+    extensions::Extension::ActionInfo::Type type) {
   switch (type) {
-    case ExtensionAction::TYPE_BROWSER:
-    case ExtensionAction::TYPE_PAGE:
+    case extensions::Extension::ActionInfo::TYPE_BROWSER:
+    case extensions::Extension::ActionInfo::TYPE_PAGE:
       return extension_misc::EXTENSION_ICON_ACTION;
-    case ExtensionAction::TYPE_SCRIPT_BADGE:
+    case extensions::Extension::ActionInfo::TYPE_SCRIPT_BADGE:
       return extension_misc::EXTENSION_ICON_BITTY;
     default:
       NOTREACHED();
@@ -331,7 +347,7 @@ bool ExtensionAction::SetAppearance(int tab_id, Appearance new_appearance) {
   // When showing a script badge for the first time on a web page, fade it in.
   // Other transitions happen instantly.
   if (old_appearance == INVISIBLE && tab_id != kDefaultTabId &&
-      action_type_ == TYPE_SCRIPT_BADGE) {
+      action_type_ == extensions::Extension::ActionInfo::TYPE_SCRIPT_BADGE) {
     RunIconAnimation(tab_id);
   }
 
@@ -397,13 +413,14 @@ int ExtensionAction::GetIconWidth(int tab_id) const {
 }
 
 // static
-void ExtensionAction::DoPaintBadge(gfx::Canvas* canvas,
-                                   const gfx::Rect& bounds,
-                                   const std::string& text,
-                                   const SkColor& text_color_in,
-                                   const SkColor& background_color_in,
-                                   int icon_width,
-                                   Type action_type) {
+void ExtensionAction::DoPaintBadge(
+    gfx::Canvas* canvas,
+    const gfx::Rect& bounds,
+    const std::string& text,
+    const SkColor& text_color_in,
+    const SkColor& background_color_in,
+    int icon_width,
+    extensions::Extension::ActionInfo::Type action_type) {
   if (text.empty())
     return;
 
@@ -437,7 +454,8 @@ void ExtensionAction::DoPaintBadge(gfx::Canvas* canvas,
   // Paint the badge background color in the right location. It is usually
   // right-aligned, but it can also be center-aligned if it is large.
   int rect_height = kBadgeHeight;
-  int bottom_margin = action_type == TYPE_BROWSER ?
+  int bottom_margin =
+      action_type == extensions::Extension::ActionInfo::TYPE_BROWSER ?
       kBottomMarginBrowserAction : kBottomMarginPageAction;
   int rect_y = bounds.bottom() - bottom_margin - kBadgeHeight;
   int rect_width = badge_width;

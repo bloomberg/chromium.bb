@@ -241,7 +241,7 @@ void ExtensionActionStorageManager::ReadFromStorage(
     const std::string& extension_id, scoped_ptr<base::Value> value) {
   const Extension* extension =
       ExtensionSystem::Get(profile_)->extension_service()->
-          GetExtensionById(extension_id, true);
+      extensions()->GetByID(extension_id);
   if (!extension)
     return;
 
@@ -352,15 +352,15 @@ bool ExtensionActionFunction::RunImpl() {
 
 void ExtensionActionFunction::NotifyChange() {
   switch (extension_action_->action_type()) {
-    case ExtensionAction::TYPE_BROWSER:
-    case ExtensionAction::TYPE_PAGE:
+    case extensions::Extension::ActionInfo::TYPE_BROWSER:
+    case extensions::Extension::ActionInfo::TYPE_PAGE:
       if (extension_->browser_action()) {
         NotifyBrowserActionChange();
       } else if (extension_->page_action()) {
         NotifyLocationBarChange();
       }
       return;
-    case ExtensionAction::TYPE_SCRIPT_BADGE:
+    case extensions::Extension::ActionInfo::TYPE_SCRIPT_BADGE:
       NotifyLocationBarChange();
       return;
   }

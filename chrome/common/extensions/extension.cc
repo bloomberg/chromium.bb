@@ -333,6 +333,9 @@ Extension::TtsVoice::~TtsVoice() {}
 Extension::OAuth2Info::OAuth2Info() {}
 Extension::OAuth2Info::~OAuth2Info() {}
 
+Extension::ActionInfo::ActionInfo() {}
+Extension::ActionInfo::~ActionInfo() {}
+
 //
 // Extension
 //
@@ -843,17 +846,11 @@ bool Extension::LoadGlobsHelper(
   return true;
 }
 
-scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
+scoped_ptr<Extension::ActionInfo> Extension::LoadExtensionActionInfoHelper(
     const DictionaryValue* extension_action,
-    ExtensionAction::Type action_type,
+    ActionInfo::Type action_type,
     string16* error) {
-  scoped_ptr<ExtensionAction> result(new ExtensionAction(id(), action_type));
-
-  // Page/script actions are hidden/disabled by default, and browser actions are
-  // visible/enabled by default.
-  result->SetAppearance(ExtensionAction::kDefaultTabId,
-                        action_type == ExtensionAction::TYPE_BROWSER ?
-                        ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
+  scoped_ptr<ActionInfo> result(new ActionInfo());
 
   if (manifest_version_ == 1) {
     // kPageActionIcons is obsolete, and used by very few extensions. Continue
@@ -866,12 +863,10 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
         std::string path;
         if (!(*iter)->GetAsString(&path) || !NormalizeAndValidatePath(&path)) {
           *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-          return scoped_ptr<ExtensionAction>();
+          return scoped_ptr<ActionInfo>();
         }
 
-        scoped_ptr<ExtensionIconSet> icon_set(new ExtensionIconSet);
-        icon_set->Add(extension_misc::EXTENSION_ICON_ACTION, path);
-        result->set_default_icon(icon_set.Pass());
+        result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION, path);
         break;
       }
     }
@@ -880,9 +875,9 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
     if (extension_action->HasKey(keys::kPageActionId)) {
       if (!extension_action->GetString(keys::kPageActionId, &id)) {
         *error = ASCIIToUTF16(errors::kInvalidPageActionId);
-        return scoped_ptr<ExtensionAction>();
+        return scoped_ptr<ActionInfo>();
       }
-      result->set_id(id);
+      result->id = id;
     }
   }
 
@@ -894,43 +889,38 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
     std::string default_icon;
     if (extension_action->GetDictionary(keys::kPageActionDefaultIcon,
                                         &icons_value)) {
-      scoped_ptr<ExtensionIconSet> default_icons(new ExtensionIconSet());
       if (!LoadIconsFromDictionary(icons_value,
                                    extension_misc::kExtensionActionIconSizes,
                                    extension_misc::kNumExtensionActionIconSizes,
-                                   default_icons.get(),
+                                   &result->default_icon,
                                    error)) {
-        return scoped_ptr<ExtensionAction>();
+        return scoped_ptr<ActionInfo>();
       }
-
-      result->set_default_icon(default_icons.Pass());
     } else if (extension_action->GetString(keys::kPageActionDefaultIcon,
                                            &default_icon) &&
                NormalizeAndValidatePath(&default_icon)) {
-      scoped_ptr<ExtensionIconSet> icon_set(new ExtensionIconSet);
-      icon_set->Add(extension_misc::EXTENSION_ICON_ACTION, default_icon);
-      result->set_default_icon(icon_set.Pass());
+      result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION,
+                               default_icon);
     } else {
       *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-      return scoped_ptr<ExtensionAction>();
+      return scoped_ptr<ActionInfo>();
     }
   }
 
   // Read the page action title from |default_title| if present, |name| if not
   // (both optional).
-  std::string title;
   if (extension_action->HasKey(keys::kPageActionDefaultTitle)) {
-    if (!extension_action->GetString(keys::kPageActionDefaultTitle, &title)) {
+    if (!extension_action->GetString(keys::kPageActionDefaultTitle,
+                                     &result->default_title)) {
       *error = ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
-      return scoped_ptr<ExtensionAction>();
+      return scoped_ptr<ActionInfo>();
     }
   } else if (manifest_version_ == 1 && extension_action->HasKey(keys::kName)) {
-    if (!extension_action->GetString(keys::kName, &title)) {
+    if (!extension_action->GetString(keys::kName, &result->default_title)) {
       *error = ASCIIToUTF16(errors::kInvalidPageActionName);
-      return scoped_ptr<ExtensionAction>();
+      return scoped_ptr<ActionInfo>();
     }
   }
-  result->SetTitle(ExtensionAction::kDefaultTabId, title);
 
   // Read the action's |popup| (optional).
   const char* popup_key = NULL;
@@ -944,7 +934,7 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
           errors::kInvalidPageActionOldAndNewKeys,
           keys::kPageActionDefaultPopup,
           keys::kPageActionPopup);
-      return scoped_ptr<ExtensionAction>();
+      return scoped_ptr<ActionInfo>();
     }
     popup_key = keys::kPageActionPopup;
   }
@@ -960,24 +950,23 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
       if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPageActionPopupPath, "<missing>");
-        return scoped_ptr<ExtensionAction>();
+        return scoped_ptr<ActionInfo>();
       }
     } else {
       *error = ASCIIToUTF16(errors::kInvalidPageActionPopup);
-      return scoped_ptr<ExtensionAction>();
+      return scoped_ptr<ActionInfo>();
     }
 
     if (!url_str.empty()) {
       // An empty string is treated as having no popup.
-      GURL url = GetResourceURL(url_str);
-      if (!url.is_valid()) {
+      result->default_popup_url = GetResourceURL(url_str);
+      if (!result->default_popup_url.is_valid()) {
         *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPageActionPopupPath, url_str);
-        return scoped_ptr<ExtensionAction>();
+        return scoped_ptr<ActionInfo>();
       }
-      result->SetPopupUrl(ExtensionAction::kDefaultTabId, url);
     } else {
-      DCHECK(!result->HasPopup(ExtensionAction::kDefaultTabId))
+      DCHECK(result->default_popup_url.is_empty())
           << "Shouldn't be possible for the popup to be set.";
     }
   }
@@ -2352,15 +2341,10 @@ bool Extension::LoadPageAction(string16* error) {
 
   // If page_action_value is not NULL, then there was a valid page action.
   if (page_action_value) {
-    page_action_ = LoadExtensionActionHelper(
-        page_action_value, ExtensionAction::TYPE_PAGE, error);
-    if (!page_action_.get())
+    page_action_info_ = LoadExtensionActionInfoHelper(
+        page_action_value, Extension::ActionInfo::TYPE_PAGE, error);
+    if (!page_action_info_.get())
       return false;  // Failed to parse page action definition.
-
-    // The action box changes the meaning of the page action area, so we need
-    // to convert page actions into browser actions.
-    if (switch_utils::AreScriptBadgesEnabled())
-      browser_action_ = page_action_.Pass();
   }
 
   return true;
@@ -2375,9 +2359,9 @@ bool Extension::LoadBrowserAction(string16* error) {
     return false;
   }
 
-  browser_action_ = LoadExtensionActionHelper(
-      browser_action_value, ExtensionAction::TYPE_BROWSER, error);
-  if (!browser_action_.get())
+  browser_action_info_ = LoadExtensionActionInfoHelper(
+      browser_action_value, Extension::ActionInfo::TYPE_BROWSER, error);
+  if (!browser_action_info_.get())
     return false;  // Failed to parse browser action definition.
   return true;
 }
@@ -2399,13 +2383,12 @@ bool Extension::LoadScriptBadge(string16* error) {
       return false;
     }
 
-    script_badge_ = LoadExtensionActionHelper(
-        script_badge_value, ExtensionAction::TYPE_SCRIPT_BADGE, error);
-    if (!script_badge_.get())
+    script_badge_info_ = LoadExtensionActionInfoHelper(
+        script_badge_value, Extension::ActionInfo::TYPE_SCRIPT_BADGE, error);
+    if (!script_badge_info_.get())
       return false;  // Failed to parse script badge definition.
   } else {
-    script_badge_.reset(
-        new ExtensionAction(id(), ExtensionAction::TYPE_SCRIPT_BADGE));
+    script_badge_info_.reset(new ActionInfo());
   }
 
   // Script badges always use their extension's title and icon so users can rely
@@ -2414,32 +2397,26 @@ bool Extension::LoadScriptBadge(string16* error) {
   // that matches the icon of a trusted extension, and users wouldn't be warned
   // during installation.
 
-  if (!script_badge_->GetTitle(ExtensionAction::kDefaultTabId).empty()) {
+  if (!script_badge_info_->default_title.empty()) {
     install_warnings_.push_back(
         InstallWarning(InstallWarning::FORMAT_TEXT,
                        errors::kScriptBadgeTitleIgnored));
   }
-  script_badge_->SetTitle(ExtensionAction::kDefaultTabId, name());
+  script_badge_info_->default_title = name();
 
-  if (script_badge_->default_icon()) {
+  if (!script_badge_info_->default_icon.empty()) {
     install_warnings_.push_back(
         InstallWarning(InstallWarning::FORMAT_TEXT,
                        errors::kScriptBadgeIconIgnored));
   }
 
-  scoped_ptr<ExtensionIconSet> icon_set(new ExtensionIconSet);
-
+  script_badge_info_->default_icon.Clear();
   for (size_t i = 0; i < extension_misc::kNumScriptBadgeIconSizes; i++) {
     std::string path = icons().Get(extension_misc::kScriptBadgeIconSizes[i],
                                    ExtensionIconSet::MATCH_BIGGER);
     if (!path.empty())
-      icon_set->Add(extension_misc::kScriptBadgeIconSizes[i], path);
-  }
-
-  if (!icon_set->map().empty()) {
-    script_badge_->set_default_icon(icon_set.Pass());
-  } else {
-    script_badge_->set_default_icon(scoped_ptr<ExtensionIconSet>());
+      script_badge_info_->default_icon.Add(
+          extension_misc::kScriptBadgeIconSizes[i], path);
   }
 
   return true;
@@ -2956,6 +2933,9 @@ Extension::Extension(const FilePath& path,
       incognito_split_mode_(false),
       offline_enabled_(false),
       converted_from_user_script_(false),
+      page_action_(NULL),
+      browser_action_(NULL),
+      script_badge_(NULL),
       background_page_is_persistent_(true),
       allow_background_js_access_(true),
       manifest_(manifest.release()),
@@ -3258,19 +3238,19 @@ std::set<FilePath> Extension::GetBrowserImages() const {
     }
   }
 
-  if (page_action() && page_action()->default_icon()) {
+  if (page_action_info() && !page_action_info()->default_icon.empty()) {
     for (ExtensionIconSet::IconMap::const_iterator iter =
-             page_action()->default_icon()->map().begin();
-         iter != page_action()->default_icon()->map().end();
+             page_action_info()->default_icon.map().begin();
+         iter != page_action_info()->default_icon.map().end();
          ++iter) {
        image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
     }
   }
 
-  if (browser_action() && browser_action()->default_icon()) {
+  if (browser_action_info() && !browser_action_info()->default_icon.empty()) {
     for (ExtensionIconSet::IconMap::const_iterator iter =
-             browser_action()->default_icon()->map().begin();
-         iter != browser_action()->default_icon()->map().end();
+             browser_action_info()->default_icon.map().begin();
+         iter != browser_action_info()->default_icon.map().end();
          ++iter) {
        image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
     }
@@ -3608,10 +3588,10 @@ scoped_refptr<const PermissionSet>
 bool Extension::HasMultipleUISurfaces() const {
   int num_surfaces = 0;
 
-  if (page_action())
+  if (page_action_info())
     ++num_surfaces;
 
-  if (browser_action())
+  if (browser_action_info())
     ++num_surfaces;
 
   if (is_app())

@@ -48,28 +48,26 @@ TEST_F(ExtensionManifestTest, ScriptBadgeBasic) {
                         .Set("default_popup", "popup.html")))
       .Build());
   ASSERT_TRUE(extension.get());
-  ASSERT_TRUE(extension->script_badge());
+  ASSERT_TRUE(extension->script_badge_info());
   EXPECT_THAT(StripMissingFlagWarning(extension->install_warnings()),
               testing::ElementsAre(/*empty*/));
 
-  const ExtensionIconSet* default_icon =
-      extension->script_badge()->default_icon();
-  // Default icon set should not be NULL.
-  ASSERT_TRUE(default_icon);
+  const ExtensionIconSet& default_icon =
+      extension->script_badge_info()->default_icon;
+  // Should have a default icon set.
+  ASSERT_FALSE(default_icon.empty());
 
   // Verify that correct icon paths are registered in default_icon.
-  EXPECT_EQ(2u, default_icon->map().size());
+  EXPECT_EQ(2u, default_icon.map().size());
   EXPECT_EQ("icon16.png",
-            default_icon->Get(extension_misc::EXTENSION_ICON_BITTY,
-                              ExtensionIconSet::MATCH_EXACTLY));
+            default_icon.Get(extension_misc::EXTENSION_ICON_BITTY,
+                             ExtensionIconSet::MATCH_EXACTLY));
   EXPECT_EQ("icon32.png",
-            default_icon->Get(2 * extension_misc::EXTENSION_ICON_BITTY,
-                              ExtensionIconSet::MATCH_EXACTLY));
+            default_icon.Get(2 * extension_misc::EXTENSION_ICON_BITTY,
+                             ExtensionIconSet::MATCH_EXACTLY));
 
-  EXPECT_EQ("my extension", extension->script_badge()->GetTitle(
-      ExtensionAction::kDefaultTabId));
-  EXPECT_TRUE(extension->script_badge()->HasPopup(
-      ExtensionAction::kDefaultTabId));
+  EXPECT_EQ("my extension", extension->script_badge_info()->default_title);
+  EXPECT_FALSE(extension->script_badge_info()->default_popup_url.is_empty());
 }
 
 TEST_F(ExtensionManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
@@ -88,7 +86,7 @@ TEST_F(ExtensionManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
                         .Set("default_icon", "malicious.png")))
       .Build());
   ASSERT_TRUE(extension.get());
-  ASSERT_TRUE(extension->script_badge());
+  ASSERT_TRUE(extension->script_badge_info());
 
   EXPECT_THAT(StripMissingFlagWarning(extension->install_warnings()),
               testing::ElementsAre(
@@ -99,17 +97,16 @@ TEST_F(ExtensionManifestTest, ScriptBadgeExplicitTitleAndIconsIgnored) {
                       Extension::InstallWarning::FORMAT_TEXT,
                       errors::kScriptBadgeIconIgnored)));
 
-  const ExtensionIconSet* default_icon =
-      extension->script_badge()->default_icon();
-  ASSERT_TRUE(default_icon);
+  const ExtensionIconSet& default_icon =
+      extension->script_badge_info()->default_icon;
+  ASSERT_FALSE(default_icon.empty());
 
-  EXPECT_EQ(1u, default_icon->map().size());
+  EXPECT_EQ(1u, default_icon.map().size());
   EXPECT_EQ("icon16.png",
-            default_icon->Get(extension_misc::EXTENSION_ICON_BITTY,
-                              ExtensionIconSet::MATCH_EXACTLY));
+            default_icon.Get(extension_misc::EXTENSION_ICON_BITTY,
+                             ExtensionIconSet::MATCH_EXACTLY));
 
-  EXPECT_EQ("my extension", extension->script_badge()->GetTitle(
-      ExtensionAction::kDefaultTabId));
+  EXPECT_EQ("my extension", extension->script_badge_info()->default_title);
 }
 
 TEST_F(ExtensionManifestTest, ScriptBadgeIconFallsBackToPuzzlePiece) {
@@ -125,20 +122,20 @@ TEST_F(ExtensionManifestTest, ScriptBadgeIconFallsBackToPuzzlePiece) {
                         .Set("128", "icon128.png")))
       .Build());
   ASSERT_TRUE(extension.get());
-  ASSERT_TRUE(extension->script_badge());
+  ASSERT_TRUE(extension->script_badge_info());
   EXPECT_THAT(extension->install_warnings(),
               testing::ElementsAre(/*empty*/));
 
-  const ExtensionIconSet* const default_icon =
-      extension->script_badge()->default_icon();
-  ASSERT_TRUE(default_icon) << "Should fall back to the 128px icon.";
-  EXPECT_EQ(2u, default_icon->map().size());
+  const ExtensionIconSet& default_icon =
+      extension->script_badge_info()->default_icon;
+  ASSERT_FALSE(default_icon.empty()) << "Should fall back to the 128px icon.";
+  EXPECT_EQ(2u, default_icon.map().size());
   EXPECT_EQ("icon128.png",
-            default_icon->Get(extension_misc::EXTENSION_ICON_BITTY,
-                              ExtensionIconSet::MATCH_EXACTLY));
+            default_icon.Get(extension_misc::EXTENSION_ICON_BITTY,
+                             ExtensionIconSet::MATCH_EXACTLY));
   EXPECT_EQ("icon128.png",
-            default_icon->Get(2 * extension_misc::EXTENSION_ICON_BITTY,
-                              ExtensionIconSet::MATCH_EXACTLY));
+            default_icon.Get(2 * extension_misc::EXTENSION_ICON_BITTY,
+                             ExtensionIconSet::MATCH_EXACTLY));
 }
 
 }  // namespace
