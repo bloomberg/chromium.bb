@@ -20,9 +20,9 @@ and whether it should upload an SDK to file storage (GSTORE)
 # std python includes
 import copy
 import datetime
-import generate_make
 import optparse
 import os
+import re
 import subprocess
 import sys
 
@@ -30,6 +30,8 @@ import sys
 import buildbot_common
 import build_updater
 import build_utils
+import generate_make
+import generate_notice
 import manifest_util
 from tests import test_server
 
@@ -168,7 +170,7 @@ def BuildStepMakePepperDirs(pepperdir, subdirs):
 
 def BuildStepCopyTextFiles(pepperdir, pepper_ver, revision):
   buildbot_common.BuildStep('Add Text Files')
-  files = ['AUTHORS', 'COPYING', 'LICENSE', 'NOTICE']
+  files = ['AUTHORS', 'COPYING', 'LICENSE']
   files = [os.path.join(SDK_SRC_DIR, filename) for filename in files]
   oshelpers.Copy(['-v'] + files + [pepperdir])
 
@@ -712,6 +714,22 @@ def BuildStepBuildLibraries(pepperdir, platform, directory, clean=True):
       clean=clean)
 
 
+def BuildStepGenerateNotice(pepperdir):
+  # Look for LICENSE files
+  license_filenames_re = re.compile('LICENSE|COPYING')
+
+  license_files = []
+  for root, _, files in os.walk(pepperdir):
+    for filename in files:
+      if license_filenames_re.match(filename):
+        path = os.path.join(root, filename)
+        license_files.append(path)
+  print '\n'.join(license_files)
+
+  notice_filename = os.path.join(pepperdir, 'NOTICE')
+  generate_notice.Generate(notice_filename, pepperdir, license_files)
+
+
 def BuildStepTarBundle(pepper_ver, tarfile):
   buildbot_common.BuildStep('Tar Pepper Bundle')
   buildbot_common.MakeDir(os.path.dirname(tarfile))
@@ -963,6 +981,7 @@ def main(args):
 
     # Ship with libraries prebuilt, so run that first.
     BuildStepBuildLibraries(pepperdir, platform, 'src')
+    BuildStepGenerateNotice(pepperdir)
 
     if not options.skip_tar:
       BuildStepTarBundle(pepper_ver, tarfile)
