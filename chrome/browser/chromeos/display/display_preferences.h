@@ -24,7 +24,12 @@ void SetDisplayLayoutPref(PrefService* pref_service,
                           int layout,
                           int offset);
 
-// Sets or updates the primary display device by its ID.
+// Stores the specified ID as the primary display ID to |pref_service|.  Clears
+// the data if the internal display's ID is specified.
+void StorePrimaryDisplayIDPref(PrefService* pref_service, int64 display_id);
+
+// Sets or updates the primary display device by its ID, and notifies the update
+// to the system.
 void SetPrimaryDisplayIDPref(PrefService* pref_service, int64 display_id);
 
 // Checks the current display settings values and notifies them to the system.

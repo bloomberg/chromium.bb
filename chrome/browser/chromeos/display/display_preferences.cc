@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -142,8 +143,19 @@ void SetDisplayLayoutPref(PrefService* pref_service,
   NotifyDisplayLayoutChanged(pref_service);
 }
 
+void StorePrimaryDisplayIDPref(PrefService* pref_service, int64 display_id) {
+  const ash::internal::MultiDisplayManager* display_manager =
+      static_cast<ash::internal::MultiDisplayManager*>(
+          aura::Env::GetInstance()->display_manager());
+
+  if (display_manager->IsInternalDisplayId(display_id))
+    pref_service->ClearPref(prefs::kPrimaryDisplayID);
+  else
+    pref_service->SetInt64(prefs::kPrimaryDisplayID, display_id);
+}
+
 void SetPrimaryDisplayIDPref(PrefService* pref_service, int64 display_id) {
-  pref_service->SetInt64(prefs::kPrimaryDisplayID, display_id);
+  StorePrimaryDisplayIDPref(pref_service, display_id);
   NotifyPrimaryDisplayIDChanged(pref_service);
 }
 
