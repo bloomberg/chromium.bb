@@ -80,7 +80,7 @@ class FetchPrebuilt(object):
                     }[self._options.platform]
       for name in linux_names:
         zip_name = 'chrome-' + name
-        if self._DoesURLExist('%s/%s.zip' % (self._url, zip_name)):
+        if pyauto_utils.DoesUrlExist('%s/%s.zip' % (self._url, zip_name)):
           self._chrome_zip_name = zip_name
           break
       else:
@@ -123,16 +123,6 @@ class FetchPrebuilt(object):
                                                               last_change))
     return last_change_url
 
-  def _DoesURLExist(self, url):
-    """Determines whether a resource exists at the given URL."""
-    parsed = urlparse.urlparse(url)
-    conn = httplib.HTTPConnection(parsed.netloc)
-    conn.request('HEAD', parsed.path)
-    response = conn.getresponse()
-    if response.status == 302:  # Redirect; follow it.
-      return self._DoesURLExist(response.getheader('location'))
-    return response.status == 200
-
   def Cleanup(self):
     """Remove old binaries, if any."""
     pass
@@ -141,7 +131,7 @@ class FetchPrebuilt(object):
     self._ParseArgs()
     if not os.path.isdir(self._outdir):
       os.makedirs(self._outdir)
-    get_remoting = self._DoesURLExist(self._remoting_zip_url)
+    get_remoting = pyauto_utils.DoesUrlExist(self._remoting_zip_url)
 
     # Fetch chrome & pyauto binaries
     print 'Fetching', self._chrome_zip_url

@@ -4,11 +4,15 @@
 
 """Utilities for PyAuto."""
 
+import httplib
 import logging
 import os
 import shutil
+import socket
 import sys
 import tempfile
+import unittest
+import urlparse
 import zipfile
 
 
@@ -192,3 +196,82 @@ def WaitForDomElement(pyauto, driver, xpath):
   """
   pyauto.WaitUntil(lambda: len(driver.find_elements_by_xpath(xpath)) > 0)
   return driver.find_element_by_xpath(xpath)
+
+
+def DoesUrlExist(url):
+  """Determines whether a resource exists at the given URL.
+
+  Args:
+    url: URL to be verified.
+
+  Returns:
+    True if url exists, otherwise False.
+  """
+  parsed = urlparse.urlparse(url)
+  try:
+    conn = httplib.HTTPConnection(parsed.netloc)
+    conn.request('HEAD', parsed.path)
+    response = conn.getresponse()
+  except (socket.gaierror, socket.error):
+    return False
+  finally:
+    conn.close()
+  # Follow both permanent (301) and temporary (302) redirects.
+  if response.status == 302 or response.status == 301:
+    return DoesUrlExist(response.getheader('location'))
+  return response.status == 200
+
+
+class _GTestTextTestResult(unittest._TextTestResult):
+  """A test result class that can print formatted text results to a stream.
+
+  Results printed in conformance with gtest output format, like:
+  [ RUN        ] autofill.AutofillTest.testAutofillInvalid: "test desc."
+  [         OK ] autofill.AutofillTest.testAutofillInvalid
+  [ RUN        ] autofill.AutofillTest.testFillProfile: "test desc."
+  [         OK ] autofill.AutofillTest.testFillProfile
+  [ RUN        ] autofill.AutofillTest.testFillProfileCrazyCharacters: "Test."
+  [         OK ] autofill.AutofillTest.testFillProfileCrazyCharacters
+  """
+
+  def __init__(self, stream, descriptions, verbosity):
+    unittest._TextTestResult.__init__(self, stream, descriptions, verbosity)
+
+  def _GetTestURI(self, test):
+    if sys.version_info[:2] <= (2, 4):
+      return '%s.%s' % (unittest._strclass(test.__class__),
+                        test._TestCase__testMethodName)
+    return '%s.%s' % (unittest._strclass(test.__class__), test._testMethodName)
+
+  def getDescription(self, test):
+    return '%s: "%s"' % (self._GetTestURI(test), test.shortDescription())
+
+  def startTest(self, test):
+    unittest.TestResult.startTest(self, test)
+    self.stream.writeln('[ RUN        ] %s' % self.getDescription(test))
+
+  def addSuccess(self, test):
+    unittest.TestResult.addSuccess(self, test)
+    self.stream.writeln('[         OK ] %s' % self._GetTestURI(test))
+
+  def addError(self, test, err):
+    unittest.TestResult.addError(self, test, err)
+    self.stream.writeln('[      ERROR ] %s' % self._GetTestURI(test))
+
+  def addFailure(self, test, err):
+    unittest.TestResult.addFailure(self, test, err)
+    self.stream.writeln('[     FAILED ] %s' % self._GetTestURI(test))
+
+
+class GTestTextTestRunner(unittest.TextTestRunner):
+  """Test Runner for displaying test results in textual format.
+
+  Results are displayed in conformance with gtest output.
+  """
+
+  def __init__(self, verbosity=1):
+    unittest.TextTestRunner.__init__(self, stream=sys.stderr,
+                                     verbosity=verbosity)
+
+  def _makeResult(self):
+    return _GTestTextTestResult(self.stream, self.descriptions, self.verbosity)
