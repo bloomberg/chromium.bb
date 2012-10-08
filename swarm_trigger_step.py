@@ -237,8 +237,9 @@ def main():
   if args:
     parser.error('Unknown args: %s' % args)
 
-  if not options.os_image:
-    parser.error('Must specify an os image')
+  if not options.os_image or options.os_image == 'None':
+    # This means the Try Server/user wants to use the current OS.
+    options.os_image = sys.platform
   if not options.data_server:
     parser.error('Must specify the data directory')
 
