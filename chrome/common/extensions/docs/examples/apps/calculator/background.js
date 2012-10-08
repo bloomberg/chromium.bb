@@ -4,9 +4,8 @@
  * found in the LICENSE file.
  **/
 
-
 /**
- * Listens for the app launching then creates the window
+ * Listens for the app launching then creates the window.
  *
  * @see http://developer.chrome.com/trunk/apps/app.window.html
  */

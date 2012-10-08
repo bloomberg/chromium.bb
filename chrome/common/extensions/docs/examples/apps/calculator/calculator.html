@@ -1,20 +1,53 @@
 <html>
-	<head>
-		<title>Calculator</title>
-		<link rel="stylesheet" type="text/css" href="style.css" />
-		<script src="jquery/jquery.min.js"></script>
-		<script src="controller.js"></script>
-		<script src="model.js"></script>
-		<script src="view.js"></script>
-	</head>
-
-	<body>
-		<div id="calc">
-			<div class="edge-top"></div>
-			<div class="edge"></div>
-			<div id="display" class="calc-display">
-			</div>
-			<div id="buttons"></div>
-		</div>
-	</body>
+  <head>
+    <title>Calculator</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="jquery/jquery.min.js"></script>
+    <script src="model.js"></script>
+    <script src="view.js"></script>
+    <script src="controller.js"></script>
+  </head>
+  <body>
+    <div id="calculator">
+      <div id="top-edge"></div>
+      <div id="top-fade"></div>
+      <div id="display">
+        <div class="equation">
+          <div class="accumulator"></div>
+          <div class="operand">0</div>
+          <div class="operator"></div>
+        </div>
+      </div>
+      <div id="buttons">
+        <div>
+          <div class="button clear"></div>
+          <div class="button negate"></div>
+          <div class="button divide"></div>
+          <div class="button multiply"></div>
+        </div>
+        <div>
+          <div class="button seven"></div>
+          <div class="button eight"></div>
+          <div class="button nine"></div>
+          <div class="button subtract"></div>
+        </div>
+        <div>
+          <div class="button four"></div>
+          <div class="button five"></div>
+          <div class="button six"></div>
+          <div class="button add"></div>
+        </div>
+        <div>
+          <div class="button one"></div>
+          <div class="button two"></div>
+          <div class="button three"></div>
+          <div class="button equals"></div>
+        </div>
+        <div>
+          <div class="button zero"></div>
+          <div class="button point"></div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
