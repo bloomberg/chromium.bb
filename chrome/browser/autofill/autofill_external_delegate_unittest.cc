@@ -61,11 +61,11 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
 
 class MockAutofillManager : public AutofillManager {
  public:
-  explicit MockAutofillManager(autofill::AutofillManagerDelegate* delegate,
-                               TabContents* tab_contents)
+  explicit MockAutofillManager(content::WebContents* web_contents,
+                               autofill::AutofillManagerDelegate* delegate)
       // Force to use the constructor designated for unit test, but we don't
       // really need personal_data in this test so we pass a NULL pointer.
-      : AutofillManager(delegate, tab_contents, NULL) {
+      : AutofillManager(web_contents, delegate, NULL) {
   }
 
   MOCK_METHOD4(OnFillAutofillFormData,
@@ -90,8 +90,8 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
     TabContentsTestHarness::SetUp();
     TabAutofillManagerDelegate::CreateForWebContents(web_contents());
     autofill_manager_ = new MockAutofillManager(
-        TabAutofillManagerDelegate::FromWebContents(web_contents()),
-        tab_contents());
+        web_contents(),
+        TabAutofillManagerDelegate::FromWebContents(web_contents()));
     external_delegate_.reset(new MockAutofillExternalDelegate(
         tab_contents(),
         autofill_manager_));

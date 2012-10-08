@@ -36,7 +36,6 @@ class CreditCard;
 class PersonalDataManager;
 class PrefService;
 class ProfileSyncService;
-class TabContents;
 
 struct FormData;
 struct FormFieldData;
@@ -50,6 +49,8 @@ class PasswordGenerator;
 
 namespace content {
 class RenderViewHost;
+class WebContents;
+
 struct PasswordForm;
 }
 
@@ -69,10 +70,10 @@ class AutofillManager : public content::NotificationObserver,
                         public ProfileSyncServiceObserver,
                         public base::RefCounted<AutofillManager> {
  public:
-  // Lifetime of |client| and |tab_contents| must exceed lifetime of
-  // AutofillManager.
-  explicit AutofillManager(autofill::AutofillManagerDelegate* delegate,
-                           TabContents* tab_contents);
+  static void CreateForWebContentsAndDelegate(
+      content::WebContents* contents,
+      autofill::AutofillManagerDelegate* delegate);
+  static AutofillManager* FromWebContents(content::WebContents* contents);
 
   // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(PrefServiceBase* prefs);
@@ -108,6 +109,9 @@ class AutofillManager : public content::NotificationObserver,
  protected:
   // Only test code should subclass AutofillManager.
   friend class base::RefCounted<AutofillManager>;
+
+  AutofillManager(content::WebContents* web_contents,
+                  autofill::AutofillManagerDelegate* delegate);
   virtual ~AutofillManager();
 
   // The string/int pair is composed of the guid string and variant index
@@ -116,8 +120,8 @@ class AutofillManager : public content::NotificationObserver,
   typedef std::pair<std::string, size_t> GUIDPair;
 
   // Test code should prefer to use this constructor.
-  AutofillManager(autofill::AutofillManagerDelegate* delegate,
-                  TabContents* tab_contents,
+  AutofillManager(content::WebContents* web_contents,
+                  autofill::AutofillManagerDelegate* delegate,
                   PersonalDataManager* personal_data);
 
   // Returns the value of the AutofillEnabled pref.
@@ -322,9 +326,6 @@ class AutofillManager : public content::NotificationObserver,
       const std::vector<FormStructure*>& forms) const;
 
   autofill::AutofillManagerDelegate* const manager_delegate_;
-
-  // The owning TabContents.
-  TabContents* tab_contents_;
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the AutofillManagerTest.

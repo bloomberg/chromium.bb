@@ -110,8 +110,9 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     popup_visible_ = true;
     ApplyAutofillSuggestions(values, labels, icons, ids);
 
-    tab_contents_->autofill_manager()->OnDidShowAutofillSuggestions(
-        has_autofill_item && !has_shown_autofill_popup_for_current_edit_);
+    AutofillManager::FromWebContents(tab_contents_->web_contents())->
+        OnDidShowAutofillSuggestions(
+            has_autofill_item && !has_shown_autofill_popup_for_current_edit_);
     has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
   }
 }

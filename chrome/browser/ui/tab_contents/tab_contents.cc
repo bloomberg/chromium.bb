@@ -115,14 +115,15 @@ TabContents::TabContents(WebContents* contents)
   AlternateErrorPageTabObserver::CreateForWebContents(contents);
   AutocompleteHistoryManager::CreateForWebContents(contents);
   TabAutofillManagerDelegate::CreateForWebContents(contents);
-  autofill_manager_ =
-      new AutofillManager(TabAutofillManagerDelegate::FromWebContents(contents),
-                          this);
+  AutofillManager::CreateForWebContentsAndDelegate(
+      contents,
+      TabAutofillManagerDelegate::FromWebContents(contents));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExternalAutofillPopup)) {
-    autofill_external_delegate_.reset(
-        AutofillExternalDelegate::Create(this, autofill_manager_.get()));
-    autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
+    autofill_external_delegate_.reset(AutofillExternalDelegate::Create(
+        this, AutofillManager::FromWebContents(contents)));
+    AutofillManager::FromWebContents(contents)->SetExternalDelegate(
+        autofill_external_delegate_.get());
     AutocompleteHistoryManager::FromWebContents(contents)->SetExternalDelegate(
         autofill_external_delegate_.get());
   }

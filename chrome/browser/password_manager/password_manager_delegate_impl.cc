@@ -124,7 +124,9 @@ InfoBarDelegate::InfoBarAutomationType
 
 void PasswordManagerDelegateImpl::FillPasswordForm(
     const PasswordFormFillData& form_data) {
-  bool disable_popup = tab_contents_->autofill_manager()->HasExternalDelegate();
+  AutofillManager* autofill_manager =
+      AutofillManager::FromWebContents(tab_contents_->web_contents());
+  bool disable_popup = autofill_manager->HasExternalDelegate();
 
   tab_contents_->web_contents()->GetRenderViewHost()->Send(
       new AutofillMsg_FillPasswordForm(

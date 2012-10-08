@@ -172,10 +172,10 @@ class TestFormStructure : public FormStructure {
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(autofill::AutofillManagerDelegate* manager_delegate,
-                      TabContents* tab_contents,
+  TestAutofillManager(content::WebContents* web_contents,
+                      autofill::AutofillManagerDelegate* manager_delegate,
                       TestPersonalDataManager* personal_manager)
-      : AutofillManager(manager_delegate, tab_contents, personal_manager),
+      : AutofillManager(web_contents, manager_delegate, personal_manager),
         autofill_enabled_(true),
         did_finish_async_form_submit_(false),
         message_loop_is_running_(false) {
@@ -298,8 +298,8 @@ void AutofillMetricsTest::SetUp() {
   TabContentsTestHarness::SetUp();
   TabAutofillManagerDelegate::CreateForWebContents(web_contents());
   autofill_manager_ = new TestAutofillManager(
+      web_contents(),
       TabAutofillManagerDelegate::FromWebContents(web_contents()),
-      tab_contents(),
       &personal_data_);
 
   file_thread_.Start();

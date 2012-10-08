@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/supports_user_data.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
@@ -67,6 +68,8 @@ using content::RenderViewHost;
 using switches::kEnableAutofillFeedback;
 
 namespace {
+
+const char* kAutofillManagerWebContentsUserDataKey = "web_contents_autofill";
 
 // We only send a fraction of the forms to upload server.
 // The rate for positive/negative matches potentially could be different.
@@ -169,11 +172,29 @@ void DeterminePossibleFieldTypesForUpload(
 
 }  // namespace
 
-AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
-                                 TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents->web_contents()),
+// static
+void AutofillManager::CreateForWebContentsAndDelegate(
+    content::WebContents* contents,
+    autofill::AutofillManagerDelegate* delegate) {
+  if (FromWebContents(contents))
+    return;
+
+  contents->SetUserData(kAutofillManagerWebContentsUserDataKey,
+                        new base::UserDataAdapter<AutofillManager>(
+                            new AutofillManager(contents, delegate)));
+}
+
+// static
+AutofillManager* AutofillManager::FromWebContents(
+    content::WebContents* contents) {
+  return base::UserDataAdapter<AutofillManager>::Get(
+      contents, kAutofillManagerWebContentsUserDataKey);
+}
+
+AutofillManager::AutofillManager(content::WebContents* web_contents,
+                                 autofill::AutofillManagerDelegate* delegate)
+    : content::WebContentsObserver(web_contents),
       manager_delegate_(delegate),
-      tab_contents_(tab_contents),
       personal_data_(NULL),
       download_manager_(delegate->GetBrowserContext(), this),
       disable_download_manager_requests_(false),
@@ -192,6 +213,7 @@ AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
   RegisterWithSyncService();
   registrar_.Init(manager_delegate_->GetPrefs());
   registrar_.Add(prefs::kPasswordGenerationEnabled, this);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       content::Source<TabContents>(tab_contents));
@@ -351,7 +373,7 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
 bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
   // Let AutoComplete know as well.
-  AutocompleteHistoryManager::FromWebContents(tab_contents_->web_contents())->
+  AutocompleteHistoryManager::FromWebContents(web_contents())->
       OnFormSubmitted(form);
 
   if (!IsAutofillEnabled())
@@ -554,7 +576,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   // Add the results from AutoComplete.  They come back asynchronously, so we
   // hand off what we generated and they will send the results back to the
   // renderer.
-  AutocompleteHistoryManager::FromWebContents(tab_contents_->web_contents())->
+  AutocompleteHistoryManager::FromWebContents(web_contents())->
       OnGetAutocompleteSuggestions(
           query_id, field.name, field.value, values, labels, icons, unique_ids);
 }
@@ -880,12 +902,11 @@ void AutofillManager::Reset() {
     external_delegate_->Reset();
 }
 
-AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
-                                 TabContents* tab_contents,
+AutofillManager::AutofillManager(content::WebContents* web_contents,
+                                 autofill::AutofillManagerDelegate* delegate,
                                  PersonalDataManager* personal_data)
-    : content::WebContentsObserver(tab_contents->web_contents()),
+    : content::WebContentsObserver(web_contents),
       manager_delegate_(delegate),
-      tab_contents_(tab_contents),
       personal_data_(personal_data),
       download_manager_(delegate->GetBrowserContext(), this),
       disable_download_manager_requests_(true),
@@ -898,7 +919,7 @@ AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
       user_did_edit_autofilled_field_(false),
       password_generation_enabled_(false),
       external_delegate_(NULL) {
-  DCHECK(tab_contents_);
+  DCHECK(web_contents);
   DCHECK(manager_delegate_);
   RegisterWithSyncService();
   // Test code doesn't need registrar_.

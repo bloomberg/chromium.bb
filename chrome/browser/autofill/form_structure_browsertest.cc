@@ -60,7 +60,7 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                        HTMLToDataURI(input)));
 
   AutofillManager* autofill_manager =
-      chrome::GetActiveTabContents(browser())->autofill_manager();
+      AutofillManager::FromWebContents(chrome::GetActiveWebContents(browser()));
   ASSERT_NE(static_cast<AutofillManager*>(NULL), autofill_manager);
   std::vector<FormStructure*> forms = autofill_manager->form_structures_.get();
   *output = FormStructureBrowserTest::FormStructuresToString(forms);

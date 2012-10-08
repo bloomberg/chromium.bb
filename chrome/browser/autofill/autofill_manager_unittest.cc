@@ -439,10 +439,10 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(autofill::AutofillManagerDelegate* delegate,
-                      TabContents* tab_contents,
+  TestAutofillManager(content::WebContents* web_contents,
+                      autofill::AutofillManagerDelegate* delegate,
                       TestPersonalDataManager* personal_data)
-      : AutofillManager(delegate, tab_contents, personal_data),
+      : AutofillManager(web_contents, delegate, personal_data),
         personal_data_(personal_data),
         autofill_enabled_(true),
         did_finish_async_form_submit_(false),
@@ -605,8 +605,8 @@ class AutofillManagerTest : public TabContentsTestHarness {
     TabContentsTestHarness::SetUp();
     TabAutofillManagerDelegate::CreateForWebContents(web_contents());
     autofill_manager_ = new TestAutofillManager(
+        web_contents(),
         TabAutofillManagerDelegate::FromWebContents(web_contents()),
-        tab_contents(),
         &personal_data_);
 
     file_thread_.Start();
@@ -3129,11 +3129,12 @@ TEST_F(AutofillManagerTest, TestTabContentsWithExternalDelegate) {
   WebContents* contents = CreateTestWebContents();
   SetContents(contents);
 
-  AutofillManager* autofill_manager = tab_contents()->autofill_manager();
+  AutofillManager* autofill_manager =
+      AutofillManager::FromWebContents(contents);
   EXPECT_TRUE(autofill_manager->external_delegate());
 
   AutocompleteHistoryManager* autocomplete_history_manager =
-      AutocompleteHistoryManager::FromWebContents(web_contents());
+      AutocompleteHistoryManager::FromWebContents(contents);
   EXPECT_TRUE(autocomplete_history_manager->external_delegate());
 }
 
