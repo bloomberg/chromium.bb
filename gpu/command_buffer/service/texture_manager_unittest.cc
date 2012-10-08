@@ -232,11 +232,11 @@ TEST_F(TextureManagerTest, ValidForTarget) {
   EXPECT_TRUE(manager_.ValidForTarget(
       GL_TEXTURE_2D, 0, kMaxTextureSize, kMaxTextureSize, 1));
   EXPECT_TRUE(manager_.ValidForTarget(
-      GL_TEXTURE_2D, kMax2dLevels - 1, kMaxTextureSize, kMaxTextureSize, 1));
-  EXPECT_TRUE(manager_.ValidForTarget(
-      GL_TEXTURE_2D, kMax2dLevels - 1, 1, kMaxTextureSize, 1));
-  EXPECT_TRUE(manager_.ValidForTarget(
-      GL_TEXTURE_2D, kMax2dLevels - 1, kMaxTextureSize, 1, 1));
+      GL_TEXTURE_2D, kMax2dLevels - 1, 1, 1, 1));
+  EXPECT_FALSE(manager_.ValidForTarget(
+      GL_TEXTURE_2D, kMax2dLevels - 1, 1, 2, 1));
+  EXPECT_FALSE(manager_.ValidForTarget(
+      GL_TEXTURE_2D, kMax2dLevels - 1, 2, 1, 1));
   // check level out of range.
   EXPECT_FALSE(manager_.ValidForTarget(
       GL_TEXTURE_2D, kMax2dLevels, kMaxTextureSize, 1, 1));
@@ -257,8 +257,9 @@ TEST_F(TextureManagerTest, ValidForTarget) {
       GL_TEXTURE_CUBE_MAP, 0,
       kMaxCubeMapTextureSize, kMaxCubeMapTextureSize, 1));
   EXPECT_TRUE(manager_.ValidForTarget(
-      GL_TEXTURE_CUBE_MAP, kMaxCubeMapLevels - 1,
-      kMaxCubeMapTextureSize, kMaxCubeMapTextureSize, 1));
+      GL_TEXTURE_CUBE_MAP, kMaxCubeMapLevels - 1, 1, 1, 1));
+  EXPECT_FALSE(manager_.ValidForTarget(
+      GL_TEXTURE_CUBE_MAP, kMaxCubeMapLevels - 1, 2, 2, 1));
   // check level out of range.
   EXPECT_FALSE(manager_.ValidForTarget(
       GL_TEXTURE_CUBE_MAP, kMaxCubeMapLevels,
@@ -271,6 +272,30 @@ TEST_F(TextureManagerTest, ValidForTarget) {
   EXPECT_FALSE(manager_.ValidForTarget(
       GL_TEXTURE_CUBE_MAP, kMaxCubeMapLevels,
       kMaxCubeMapTextureSize, 1, 2));
+
+  for (GLint level = 0; level < kMax2dLevels; ++level) {
+    EXPECT_TRUE(manager_.ValidForTarget(
+        GL_TEXTURE_2D, level, kMaxTextureSize >> level, 1, 1));
+    EXPECT_TRUE(manager_.ValidForTarget(
+        GL_TEXTURE_2D, level, 1, kMaxTextureSize >> level, 1));
+    EXPECT_FALSE(manager_.ValidForTarget(
+        GL_TEXTURE_2D, level, (kMaxTextureSize >> level) + 1, 1, 1));
+    EXPECT_FALSE(manager_.ValidForTarget(
+        GL_TEXTURE_2D, level, 1, (kMaxTextureSize >> level) + 1, 1));
+  }
+
+  for (GLint level = 0; level < kMaxCubeMapLevels; ++level) {
+    EXPECT_TRUE(manager_.ValidForTarget(
+        GL_TEXTURE_CUBE_MAP, level,
+        kMaxCubeMapTextureSize >> level,
+        kMaxCubeMapTextureSize >> level,
+        1));
+    EXPECT_FALSE(manager_.ValidForTarget(
+        GL_TEXTURE_CUBE_MAP, level,
+        (kMaxCubeMapTextureSize >> level) * 2,
+        (kMaxCubeMapTextureSize >> level) * 2,
+        1));
+  }
 }
 
 TEST_F(TextureManagerTest, ValidForTargetNPOT) {

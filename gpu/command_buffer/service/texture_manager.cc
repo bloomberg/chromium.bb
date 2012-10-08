@@ -730,7 +730,7 @@ TextureManager::TextureInfo::Ref TextureManager::CreateDefaultAndBlackTextures(
 
 bool TextureManager::ValidForTarget(
     GLenum target, GLint level, GLsizei width, GLsizei height, GLsizei depth) {
-  GLsizei max_size = MaxSizeForTarget(target);
+  GLsizei max_size = MaxSizeForTarget(target) >> level;
   return level >= 0 &&
          width >= 0 &&
          height >= 0 &&
