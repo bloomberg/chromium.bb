@@ -17,15 +17,13 @@ namespace internal {
 
 class EventClientImpl : public aura::client::EventClient {
  public:
-  explicit EventClientImpl(aura::RootWindow* root_window);
+  EventClientImpl();
   virtual ~EventClientImpl();
 
  private:
   // Overridden from aura::client::EventClient:
   virtual bool CanProcessEventsWithinSubtree(
       const aura::Window* window) const OVERRIDE;
-
-  aura::RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(EventClientImpl);
 };

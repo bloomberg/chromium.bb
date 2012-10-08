@@ -33,6 +33,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/partial_screenshot_view.h"
+#include "ash/wm/power_button_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
@@ -57,6 +58,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
+#include "base/time.h"
 #include "chromeos/display/output_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -763,10 +765,35 @@ bool AcceleratorController::PerformAction(int action,
        return HandleMediaPrevTrack();
     case POWER_PRESSED:  // fallthrough
     case POWER_RELEASED:
-       // We don't do anything with these at present, but we consume them to
-       // prevent them from getting passed to apps -- see
-       // http://crbug.com/146609.
-       return true;
+#if defined(OS_CHROMEOS)
+      if (!base::chromeos::IsRunningOnChromeOS()) {
+        // There is no powerd in linux desktop, so call the
+        // PowerButtonController here.
+        Shell::GetInstance()->power_button_controller()->
+            OnPowerButtonEvent(action == POWER_PRESSED, base::TimeTicks());
+      }
+#endif
+      // We don't do anything with these at present on the device,
+      // (power button evets are reported to us from powerm via
+      // D-BUS), but we consume them to prevent them from getting
+      // passed to apps -- see http://crbug.com/146609.
+      return true;
+    case LOCK_PRESSED:
+    case LOCK_RELEASED:
+#if defined(OS_CHROMEOS)
+      if (!base::chromeos::IsRunningOnChromeOS()) {
+        // There is no powerd in linux desktop, so call the
+        // PowerButtonController here.
+        Shell::GetInstance()->power_button_controller()->
+            OnLockButtonEvent(action == LOCK_PRESSED, base::TimeTicks());
+        return true;
+      }
+#endif
+      // LOCK_PRESSED/RELEASED in debug only action that is meant for
+      // testing lock behavior on linux desktop. If we ever reached
+      // here (when you run a debug build on the device), pass it onto
+      // apps.
+      return false;
 #if !defined(NDEBUG)
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();

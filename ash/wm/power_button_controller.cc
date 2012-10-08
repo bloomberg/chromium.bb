@@ -13,6 +13,10 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
+#endif
+
 namespace ash {
 
 namespace {
@@ -307,6 +311,13 @@ void PowerButtonController::OnShutdownTimeout() {
 
 void PowerButtonController::OnRealShutdownTimeout() {
   DCHECK(shutting_down_);
+#if defined(OS_CHROMEOS)
+  if (!base::chromeos::IsRunningOnChromeOS()) {
+    ShellDelegate* delegate = Shell::GetInstance()->delegate();
+    if (delegate)
+      delegate->Exit();
+  }
+#endif
   delegate_->RequestShutdown();
 }
 

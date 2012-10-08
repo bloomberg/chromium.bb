@@ -83,6 +83,7 @@ class ActivationController;
 class AppListController;
 class CaptureController;
 class DragDropController;
+class EventClientImpl;
 class EventRewriterEventFilter;
 class FocusCycler;
 class MagnificationController;
@@ -175,6 +176,8 @@ class ASH_EXPORT Shell : CursorDelegate,
 
   static aura::Window* GetContainer(aura::RootWindow* root_window,
                                     int container_id);
+  static const aura::Window* GetContainer(const aura::RootWindow* root_window,
+                                          int container_id);
 
   // Returns the list of containers that match |container_id| in
   // all root windows.
@@ -457,6 +460,7 @@ class ASH_EXPORT Shell : CursorDelegate,
   scoped_ptr<internal::MouseCursorEventFilter> mouse_cursor_filter_;
   scoped_ptr<internal::ScreenPositionController> screen_position_controller_;
   scoped_ptr<internal::SystemModalContainerEventFilter> modality_filter_;
+  scoped_ptr<internal::EventClientImpl> event_client_;
 
   // An event filter that rewrites or drops an event.
   scoped_ptr<internal::EventRewriterEventFilter> event_rewriter_filter_;
