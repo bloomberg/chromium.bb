@@ -37,23 +37,23 @@ Gallery.Item.prototype.isOriginal = function() { return this.original_ };
 
 // TODO: Localize?
 /**
- * @type {string} Prefix for a edited copy file name.
+ * @type {string} Suffix for a edited copy file name.
  */
-Gallery.Item.COPY_SIGNATURE = 'Edited';
+Gallery.Item.COPY_SIGNATURE = ' - Edited';
 
 /**
- * Regular exression to match 'Edited - ...'.
+ * Regular exression to match '... - Edited'.
  * @type {RegExp}
  */
 Gallery.Item.REGEXP_COPY_0 =
-    new RegExp('^' + Gallery.Item.COPY_SIGNATURE + '( - .+)$');
+    new RegExp('^(.+)' + Gallery.Item.COPY_SIGNATURE + '$');
 
 /**
- * Regular exression to match 'Edited (N) - ...'.
+ * Regular exression to match '... - Edited (N)'.
  * @type {RegExp}
  */
 Gallery.Item.REGEXP_COPY_N =
-    new RegExp('^' + Gallery.Item.COPY_SIGNATURE + ' \\((\\d+)\\)( - .+)$');
+    new RegExp('^(.+)' + Gallery.Item.COPY_SIGNATURE + ' \\((\\d+)\\)$');
 
 /**
  * Create a name for an edited copy of the file.
@@ -97,12 +97,12 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
     var matchN = Gallery.Item.REGEXP_COPY_N.exec(name);
     var match0 = Gallery.Item.REGEXP_COPY_0.exec(name);
     if (matchN && matchN[1] && matchN[2]) {
-      var copyNumber = parseInt(matchN[1], 10) + 1;
-      name = Gallery.Item.COPY_SIGNATURE + ' (' + copyNumber + ')' + matchN[2];
+      var copyNumber = parseInt(matchN[2], 10) + 1;
+      name = matchN[1] + Gallery.Item.COPY_SIGNATURE + ' (' + copyNumber + ')';
     } else if (match0 && match0[1]) {
-      name = Gallery.Item.COPY_SIGNATURE + ' (1)' + match0[1];
+      name = match0[1] + Gallery.Item.COPY_SIGNATURE + ' (1)';
     } else {
-      name = Gallery.Item.COPY_SIGNATURE + ' - ' + name;
+      name += Gallery.Item.COPY_SIGNATURE;
     }
 
     dirEntry.getFile(name + ext, {create: false, exclusive: false},
