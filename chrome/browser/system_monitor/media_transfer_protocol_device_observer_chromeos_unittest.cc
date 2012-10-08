@@ -45,7 +45,7 @@ void GetStorageInfo(const std::string& storage_name,
   if (storage_name == kStorageWithInvalidInfo)
     return;  // Do not set any storage details.
 
-  DCHECK(storage_name == kStorageWithValidInfo);
+  ASSERT_EQ(kStorageWithValidInfo, storage_name);
 
   if (id)
     *id = GetMtpDeviceId(kStorageUniqueId);

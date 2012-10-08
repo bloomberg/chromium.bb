@@ -74,7 +74,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-    DCHECK(type == chrome::NOTIFICATION_PRINT_JOB_EVENT);
+    ASSERT_EQ(chrome::NOTIFICATION_PRINT_JOB_EVENT, type);
     switch (content::Details<printing::JobEventDetails>(details)->type()) {
       case printing::JobEventDetails::JOB_DONE: {
         // Succeeded.
