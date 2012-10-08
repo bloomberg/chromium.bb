@@ -32,14 +32,6 @@
       The core global object.  This is a special singleton object.  It
       is used for internal Wayland protocol features.
     </description>
-    <request name="bind">
-      <description summary="bind an object to the display">
-	Binds a new, client-created object to the server using @name as
-	the identifier.
-      </description>
-      <arg name="name" type="uint" summary="unique number id for object"/>
-      <arg name="id" type="new_id"/>
-    </request>
 
     <request name="sync">
       <description summary="asynchronous roundtrip">
@@ -49,6 +41,10 @@
 	previous requests have been handled.
       </description>
       <arg name="callback" type="new_id" interface="wl_callback"/>
+    </request>
+
+    <request name="get_registry">
+      <arg name="callback" type="new_id" interface="wl_registry"/>
     </request>
 
     <event name="error">
@@ -74,6 +70,24 @@
 	     summary="server is out of memory"/>
     </enum>
 
+    <event name="delete_id">
+      <description summary="acknowledge object id deletion">
+	Server has deleted the id and client can now reuse it.
+      </description>
+      <arg name="id" type="uint" />
+    </event>
+  </interface>
+
+  <interface name="wl_registry" version="1">
+    <request name="bind">
+      <description summary="bind an object to the display">
+	Binds a new, client-created object to the server using @name as
+	the identifier.
+      </description>
+      <arg name="name" type="uint" summary="unique number id for object"/>
+      <arg name="id" type="new_id"/>
+    </request>
+
     <event name="global">
       <description summary="announce global object">
 	Notify the client of global objects.  These are objects that
@@ -95,13 +109,6 @@
 	Notify the client of removed global objects.
       </description>
       <arg name="name" type="uint"/>
-    </event>
-
-    <event name="delete_id">
-      <description summary="acknowledge object id deletion">
-	Server has deleted the id and client can now reuse it.
-      </description>
-      <arg name="id" type="uint" />
     </event>
   </interface>
 

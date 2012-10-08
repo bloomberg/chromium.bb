@@ -42,12 +42,6 @@
 #include "wayland-client.h"
 #include "wayland-private.h"
 
-struct wl_global_listener {
-	wl_display_global_func_t handler;
-	void *data;
-	struct wl_list link;
-};
-
 struct wl_proxy {
 	struct wl_object object;
 	struct wl_display *display;
@@ -75,13 +69,8 @@ struct wl_display {
 	int close_fd;
 	pthread_t display_thread;
 	struct wl_map objects;
-	struct wl_list global_listener_list;
-	struct wl_list global_list;
 	struct wl_event_queue queue;
 	pthread_mutex_t mutex;
-
-	wl_display_global_func_t global_handler;
-	void *global_handler_data;
 };
 
 static int wl_debug = 0;
@@ -126,36 +115,6 @@ wl_display_create_queue(struct wl_display *display)
 	wl_event_queue_init(queue);
 
 	return queue;
-}
-
-WL_EXPORT struct wl_global_listener *
-wl_display_add_global_listener(struct wl_display *display,
-			       wl_display_global_func_t handler, void *data)
-{
-	struct wl_global_listener *listener;
-	struct wl_global *global;
-
-	listener = malloc(sizeof *listener);
-	if (listener == NULL)
-		return NULL;
-
-	listener->handler = handler;
-	listener->data = data;
-	wl_list_insert(display->global_listener_list.prev, &listener->link);
-
-	wl_list_for_each(global, &display->global_list, link)
-		(*listener->handler)(display, global->id, global->interface,
-				     global->version, listener->data);
-
-	return listener;
-}
-
-WL_EXPORT void
-wl_display_remove_global_listener(struct wl_display *display,
-				  struct wl_global_listener *listener)
-{
-	wl_list_remove(&listener->link);
-	free(listener);
 }
 
 WL_EXPORT struct wl_proxy *
@@ -272,22 +231,6 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 	pthread_mutex_unlock(&proxy->display->mutex);
 }
 
-/* Can't do this, there may be more than one instance of an
- * interface... */
-WL_EXPORT uint32_t
-wl_display_get_global(struct wl_display *display,
-		      const char *interface, uint32_t version)
-{
-	struct wl_global *global;
-
-	wl_list_for_each(global, &display->global_list, link)
-		if (strcmp(interface, global->interface) == 0 &&
-		    version <= global->version)
-			return global->id;
-
-	return 0;
-}
-
 static void
 display_handle_error(void *data,
 		     struct wl_display *display, struct wl_object *object,
@@ -296,46 +239,6 @@ display_handle_error(void *data,
 	fprintf(stderr, "%s@%u: error %d: %s\n",
 		object->interface->name, object->id, code, message);
 	abort();
-}
-
-static void
-display_handle_global(void *data,
-		      struct wl_display *display,
-		      uint32_t id, const char *interface, uint32_t version)
-{
-	struct wl_global_listener *listener;
-	struct wl_global *global;
-
-	global = malloc(sizeof *global);
-	global->id = id;
-	global->interface = strdup(interface);
-	global->version = version;
-	wl_list_insert(display->global_list.prev, &global->link);
-
-	wl_list_for_each(listener, &display->global_listener_list, link)
-		(*listener->handler)(display,
-				     id, interface, version, listener->data);
-}
-
-static void
-wl_global_destroy(struct wl_global *global)
-{
-	wl_list_remove(&global->link);
-	free(global->interface);
-	free(global);
-}
-
-static void
-display_handle_global_remove(void *data,
-                             struct wl_display *display, uint32_t id)
-{
-	struct wl_global *global;
-
-	wl_list_for_each(global, &display->global_list, link)
-		if (global->id == id) {
-			wl_global_destroy(global);
-			break;
-		}
 }
 
 static void
@@ -356,8 +259,6 @@ display_handle_delete_id(void *data, struct wl_display *display, uint32_t id)
 
 static const struct wl_display_listener display_listener = {
 	display_handle_error,
-	display_handle_global,
-	display_handle_global_remove,
 	display_handle_delete_id
 };
 
@@ -435,8 +336,6 @@ wl_display_connect_to_fd(int fd)
 
 	display->fd = fd;
 	wl_map_init(&display->objects);
-	wl_list_init(&display->global_listener_list);
-	wl_list_init(&display->global_list);
 	wl_event_queue_init(&display->queue);
 
 	wl_map_insert_new(&display->objects, WL_MAP_CLIENT_SIDE, NULL);
@@ -494,18 +393,9 @@ wl_display_connect(const char *name)
 WL_EXPORT void
 wl_display_disconnect(struct wl_display *display)
 {
-	struct wl_global *global, *gnext;
-	struct wl_global_listener *listener, *lnext;
-
 	wl_connection_destroy(display->connection);
 	wl_map_release(&display->objects);
 	wl_event_queue_release(&display->queue);
-	wl_list_for_each_safe(global, gnext,
-			      &display->global_list, link)
-		wl_global_destroy(global);
-	wl_list_for_each_safe(listener, lnext,
-			      &display->global_listener_list, link)
-		free(listener);
 
 	if (display->close_fd)
 		close(display->fd);

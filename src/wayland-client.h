@@ -68,22 +68,6 @@ int wl_display_flush(struct wl_display *display);
 void wl_display_roundtrip(struct wl_display *display);
 struct wl_event_queue *wl_display_create_queue(struct wl_display *display);
 
-struct wl_global_listener;
-typedef void (*wl_display_global_func_t)(struct wl_display *display,
-					 uint32_t id,
-					 const char *interface,
-					 uint32_t version,
-					 void *data);
-void
-wl_display_remove_global_listener(struct wl_display *display,
-				  struct wl_global_listener *listener);
-struct wl_global_listener *
-wl_display_add_global_listener(struct wl_display *display,
-			       wl_display_global_func_t handler, void *data);
-uint32_t
-wl_display_get_global(struct wl_display *display,
-		      const char *interface, uint32_t version);
-
 void wl_log_set_handler_client(wl_log_func_t handler);
 
 #ifdef  __cplusplus

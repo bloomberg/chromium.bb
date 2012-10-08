@@ -86,6 +86,7 @@ struct wl_display {
 	uint32_t id;
 	uint32_t serial;
 
+	struct wl_list registry_resource_list;
 	struct wl_list global_list;
 	struct wl_list socket_list;
 	struct wl_list client_list;
@@ -901,9 +902,9 @@ wl_pointer_end_grab(struct wl_pointer *pointer)
 }
 
 static void
-display_bind(struct wl_client *client,
-	     struct wl_resource *resource, uint32_t name,
-	     const char *interface, uint32_t version, uint32_t id)
+registry_bind(struct wl_client *client,
+	      struct wl_resource *resource, uint32_t name,
+	      const char *interface, uint32_t version, uint32_t id)
 {
 	struct wl_global *global;
 	struct wl_display *display = resource->data;
@@ -920,6 +921,10 @@ display_bind(struct wl_client *client,
 		global->bind(client, global->data, version, id);
 }
 
+static const struct wl_registry_interface registry_interface = {
+	registry_bind
+};
+
 static void
 display_sync(struct wl_client *client,
 	     struct wl_resource *resource, uint32_t id)
@@ -934,9 +939,40 @@ display_sync(struct wl_client *client,
 	wl_resource_destroy(callback);
 }
 
-struct wl_display_interface display_interface = {
-	display_bind,
+static void
+unbind_resource(struct wl_resource *resource)
+{
+	wl_list_remove(&resource->link);
+	free(resource);
+}
+
+static void
+display_get_registry(struct wl_client *client,
+		     struct wl_resource *resource, uint32_t id)
+{
+	struct wl_display *display = resource->data;
+	struct wl_resource *registry_resource;
+	struct wl_global *global;
+
+	registry_resource =
+		wl_client_add_object(client, &wl_registry_interface,
+				     &registry_interface, id, display);
+	registry_resource->destroy = unbind_resource;
+
+	wl_list_insert(&display->registry_resource_list,
+		       &registry_resource->link);
+
+	wl_list_for_each(global, &display->global_list, link)
+		wl_resource_post_event(registry_resource,
+				       WL_REGISTRY_GLOBAL,
+				       global->name,
+				       global->interface->name,
+				       global->interface->version);
+}
+
+static const struct wl_display_interface display_interface = {
 	display_sync,
+	display_get_registry
 };
 
 static void
@@ -951,19 +987,11 @@ bind_display(struct wl_client *client,
 	     void *data, uint32_t version, uint32_t id)
 {
 	struct wl_display *display = data;
-	struct wl_global *global;
 
 	client->display_resource =
 		wl_client_add_object(client, &wl_display_interface,
 				     &display_interface, id, display);
 	client->display_resource->destroy = destroy_client_display_resource;
-
-	wl_list_for_each(global, &display->global_list, link)
-		wl_resource_post_event(client->display_resource,
-				       WL_DISPLAY_GLOBAL,
-				       global->name,
-				       global->interface->name,
-				       global->interface->version);
 }
 
 WL_EXPORT struct wl_display *
@@ -989,6 +1017,7 @@ wl_display_create(void)
 	wl_list_init(&display->global_list);
 	wl_list_init(&display->socket_list);
 	wl_list_init(&display->client_list);
+	wl_list_init(&display->registry_resource_list);
 
 	display->id = 1;
 	display->serial = 0;
@@ -1031,7 +1060,7 @@ wl_display_add_global(struct wl_display *display,
 		      void *data, wl_global_bind_func_t bind)
 {
 	struct wl_global *global;
-	struct wl_client *client;
+	struct wl_resource *resource;
 
 	global = malloc(sizeof *global);
 	if (global == NULL)
@@ -1043,9 +1072,9 @@ wl_display_add_global(struct wl_display *display,
 	global->bind = bind;
 	wl_list_insert(display->global_list.prev, &global->link);
 
-	wl_list_for_each(client, &display->client_list, link)
-		wl_resource_post_event(client->display_resource,
-				       WL_DISPLAY_GLOBAL,
+	wl_list_for_each(resource, &display->registry_resource_list, link)
+		wl_resource_post_event(resource,
+				       WL_REGISTRY_GLOBAL,
 				       global->name,
 				       global->interface->name,
 				       global->interface->version);
@@ -1056,11 +1085,11 @@ wl_display_add_global(struct wl_display *display,
 WL_EXPORT void
 wl_display_remove_global(struct wl_display *display, struct wl_global *global)
 {
-	struct wl_client *client;
+	struct wl_resource *resource;
 
-	wl_list_for_each(client, &display->client_list, link)
-		wl_resource_post_event(client->display_resource,
-				       WL_DISPLAY_GLOBAL_REMOVE, global->name);
+	wl_list_for_each(resource, &display->registry_resource_list, link)
+		wl_resource_post_event(resource, WL_REGISTRY_GLOBAL_REMOVE,
+				       global->name);
 	wl_list_remove(&global->link);
 	free(global);
 }
