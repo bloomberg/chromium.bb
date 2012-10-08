@@ -146,6 +146,8 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   // without raising a DOM security exception.
   bool cookie_enabled;
 
+  bool apply_page_scale_factor_in_compositor;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

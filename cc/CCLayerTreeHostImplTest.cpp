@@ -50,19 +50,32 @@ using ::testing::_;
 
 namespace {
 
-class CCLayerTreeHostImplTest : public testing::Test, public CCLayerTreeHostImplClient {
+// This test is parametrized to run all tests with the
+// CCSettings::pageScalePinchZoomEnabled field enabled and disabled.
+class CCLayerTreeHostImplTest : public testing::TestWithParam<bool>,
+                                public CCLayerTreeHostImplClient {
 public:
     CCLayerTreeHostImplTest()
         : m_onCanDrawStateChangedCalled(false)
         , m_didRequestCommit(false)
         , m_didRequestRedraw(false)
     {
+    }
+
+    virtual void SetUp()
+    {
+        CCSettings::setPageScalePinchZoomEnabled(GetParam());
         CCLayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = IntSize();
 
         m_hostImpl = CCLayerTreeHostImpl::create(settings, this);
         m_hostImpl->initializeRenderer(createContext());
         m_hostImpl->setViewportSize(IntSize(10, 10), IntSize(10, 10));
+    }
+
+    virtual void TearDown()
+    {
+        CCSettings::reset();
     }
 
     virtual void didLoseContextOnImplThread() OVERRIDE { }
@@ -182,7 +195,7 @@ public:
     virtual bool makeContextCurrent() { return false; }
 };
 
-TEST_F(CCLayerTreeHostImplTest, notifyIfCanDrawChanged)
+TEST_P(CCLayerTreeHostImplTest, notifyIfCanDrawChanged)
 {
     // Note: It is not possible to disable the renderer once it has been set,
     // so we do not need to test that disabling the renderer notifies us
@@ -229,7 +242,7 @@ TEST_F(CCLayerTreeHostImplTest, notifyIfCanDrawChanged)
     m_onCanDrawStateChangedCalled = false;
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollDeltaNoLayers)
+TEST_P(CCLayerTreeHostImplTest, scrollDeltaNoLayers)
 {
     ASSERT_FALSE(m_hostImpl->rootLayer());
 
@@ -237,7 +250,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollDeltaNoLayers)
     ASSERT_EQ(scrollInfo->scrolls.size(), 0u);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollDeltaTreeButNoChanges)
+TEST_P(CCLayerTreeHostImplTest, scrollDeltaTreeButNoChanges)
 {
     {
         OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
@@ -263,7 +276,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollDeltaTreeButNoChanges)
     expectClearedScrollDeltasRecursive(root);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollDeltaRepeatedScrolls)
+TEST_P(CCLayerTreeHostImplTest, scrollDeltaRepeatedScrolls)
 {
     IntPoint scrollPosition(20, 30);
     IntSize scrollDelta(11, -15);
@@ -296,7 +309,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollDeltaRepeatedScrolls)
     EXPECT_EQ(root->sentScrollDelta(), scrollDelta + scrollDelta2);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollRootCallsCommitAndRedraw)
+TEST_P(CCLayerTreeHostImplTest, scrollRootCallsCommitAndRedraw)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
     m_hostImpl->setViewportSize(IntSize(50, 50), IntSize(50, 50));
@@ -309,13 +322,13 @@ TEST_F(CCLayerTreeHostImplTest, scrollRootCallsCommitAndRedraw)
     EXPECT_TRUE(m_didRequestCommit);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollWithoutRootLayer)
+TEST_P(CCLayerTreeHostImplTest, scrollWithoutRootLayer)
 {
     // We should not crash when trying to scroll an empty layer tree.
     EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), CCInputHandlerClient::Wheel), CCInputHandlerClient::ScrollIgnored);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollWithoutRenderer)
+TEST_P(CCLayerTreeHostImplTest, scrollWithoutRenderer)
 {
     CCLayerTreeSettings settings;
     m_hostImpl = CCLayerTreeHostImpl::create(settings, this);
@@ -330,7 +343,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollWithoutRenderer)
     EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), CCInputHandlerClient::Wheel), CCInputHandlerClient::ScrollIgnored);
 }
 
-TEST_F(CCLayerTreeHostImplTest, replaceTreeWhileScrolling)
+TEST_P(CCLayerTreeHostImplTest, replaceTreeWhileScrolling)
 {
     const int scrollLayerId = 1;
 
@@ -352,7 +365,7 @@ TEST_F(CCLayerTreeHostImplTest, replaceTreeWhileScrolling)
     expectContains(*scrollInfo, scrollLayerId, scrollDelta);
 }
 
-TEST_F(CCLayerTreeHostImplTest, clearRootRenderSurfaceAndScroll)
+TEST_P(CCLayerTreeHostImplTest, clearRootRenderSurfaceAndScroll)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
     m_hostImpl->setViewportSize(IntSize(50, 50), IntSize(50, 50));
@@ -364,7 +377,7 @@ TEST_F(CCLayerTreeHostImplTest, clearRootRenderSurfaceAndScroll)
     EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), CCInputHandlerClient::Wheel), CCInputHandlerClient::ScrollStarted);
 }
 
-TEST_F(CCLayerTreeHostImplTest, wheelEventHandlers)
+TEST_P(CCLayerTreeHostImplTest, wheelEventHandlers)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
     m_hostImpl->setViewportSize(IntSize(50, 50), IntSize(50, 50));
@@ -380,7 +393,7 @@ TEST_F(CCLayerTreeHostImplTest, wheelEventHandlers)
     EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), CCInputHandlerClient::Gesture), CCInputHandlerClient::ScrollStarted);
 }
 
-TEST_F(CCLayerTreeHostImplTest, shouldScrollOnMainThread)
+TEST_P(CCLayerTreeHostImplTest, shouldScrollOnMainThread)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
     m_hostImpl->setViewportSize(IntSize(50, 50), IntSize(50, 50));
@@ -393,7 +406,7 @@ TEST_F(CCLayerTreeHostImplTest, shouldScrollOnMainThread)
     EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(0, 0), CCInputHandlerClient::Gesture), CCInputHandlerClient::ScrollOnMainThread);
 }
 
-TEST_F(CCLayerTreeHostImplTest, nonFastScrollableRegionBasic)
+TEST_P(CCLayerTreeHostImplTest, nonFastScrollableRegionBasic)
 {
     setupScrollAndContentsLayers(IntSize(200, 200));
     m_hostImpl->setViewportSize(IntSize(100, 100), IntSize(100, 100));
@@ -415,7 +428,7 @@ TEST_F(CCLayerTreeHostImplTest, nonFastScrollableRegionBasic)
     m_hostImpl->scrollEnd();
 }
 
-TEST_F(CCLayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
+TEST_P(CCLayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
 {
     setupScrollAndContentsLayers(IntSize(200, 200));
     m_hostImpl->setViewportSize(IntSize(100, 100), IntSize(100, 100));
@@ -434,7 +447,7 @@ TEST_F(CCLayerTreeHostImplTest, nonFastScrollableRegionWithOffset)
     EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(10, 10), CCInputHandlerClient::Wheel), CCInputHandlerClient::ScrollOnMainThread);
 }
 
-TEST_F(CCLayerTreeHostImplTest, maxScrollPositionChangedByDeviceScaleFactor)
+TEST_P(CCLayerTreeHostImplTest, maxScrollPositionChangedByDeviceScaleFactor)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
 
@@ -452,7 +465,64 @@ TEST_F(CCLayerTreeHostImplTest, maxScrollPositionChangedByDeviceScaleFactor)
     EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), IntSize(75, 75));
 }
 
-TEST_F(CCLayerTreeHostImplTest, pinchGesture)
+TEST_P(CCLayerTreeHostImplTest, implPinchZoom)
+{
+    // This test is specific to the page-scale based pinch zoom.
+    if (!CCSettings::pageScalePinchZoomEnabled())
+        return;
+
+    setupScrollAndContentsLayers(IntSize(100, 100));
+    m_hostImpl->setViewportSize(IntSize(50, 50), IntSize(50, 50));
+    initializeRendererAndDrawFrame();
+
+    CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
+    ASSERT(scrollLayer);
+
+    const float minPageScale = 1, maxPageScale = 4;
+    const WebTransformationMatrix identityScaleTransform;
+
+    // The impl-based pinch zoome should not adjust the max scroll position.
+    {
+        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        scrollLayer->setImplTransform(identityScaleTransform);
+        scrollLayer->setScrollDelta(IntSize());
+
+        float pageScaleDelta = 2;
+        m_hostImpl->pinchGestureBegin();
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(50, 50));
+        m_hostImpl->pinchGestureEnd();
+        EXPECT_TRUE(m_didRequestRedraw);
+        EXPECT_TRUE(m_didRequestCommit);
+
+        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
+
+        EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), IntSize(50, 50));
+    }
+
+    // Scrolling after a pinch gesture should always be in local space.  The scroll deltas do not
+    // have the page scale factor applied.
+    {
+        m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
+        scrollLayer->setImplTransform(identityScaleTransform);
+        scrollLayer->setScrollDelta(IntSize());
+
+        float pageScaleDelta = 2;
+        m_hostImpl->pinchGestureBegin();
+        m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(0, 0));
+        m_hostImpl->pinchGestureEnd();
+
+        IntSize scrollDelta(0, 10);
+        EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), CCInputHandlerClient::Wheel), CCInputHandlerClient::ScrollStarted);
+        m_hostImpl->scrollBy(IntPoint(), scrollDelta);
+        m_hostImpl->scrollEnd();
+
+        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), scrollDelta);
+    }
+}
+
+TEST_P(CCLayerTreeHostImplTest, pinchGesture)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
     m_hostImpl->setViewportSize(IntSize(50, 50), IntSize(50, 50));
@@ -461,12 +531,14 @@ TEST_F(CCLayerTreeHostImplTest, pinchGesture)
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     ASSERT(scrollLayer);
 
-    const float minPageScale = 0.5, maxPageScale = 4;
+    const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float maxPageScale = 4;
+    const WebTransformationMatrix identityScaleTransform;
 
     // Basic pinch zoom in gesture
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
-        scrollLayer->setPageScaleDelta(1);
+        scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(IntSize());
 
         float pageScaleDelta = 2;
@@ -483,7 +555,7 @@ TEST_F(CCLayerTreeHostImplTest, pinchGesture)
     // Zoom-in clamping
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
-        scrollLayer->setPageScaleDelta(1);
+        scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(IntSize());
         float pageScaleDelta = 10;
 
@@ -498,7 +570,7 @@ TEST_F(CCLayerTreeHostImplTest, pinchGesture)
     // Zoom-out clamping
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
-        scrollLayer->setPageScaleDelta(1);
+        scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(IntSize());
         scrollLayer->setScrollPosition(IntPoint(50, 50));
 
@@ -510,14 +582,18 @@ TEST_F(CCLayerTreeHostImplTest, pinchGesture)
         OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
 
-        // Pushed to (0,0) via clamping against contents layer size.
-        expectContains(*scrollInfo, scrollLayer->id(), IntSize(-50, -50));
+        if (!CCSettings::pageScalePinchZoomEnabled()) {
+            // Pushed to (0,0) via clamping against contents layer size.
+            expectContains(*scrollInfo, scrollLayer->id(), IntSize(-50, -50));
+        } else {
+            EXPECT_TRUE(scrollInfo->scrolls.isEmpty());
+        }
     }
 
     // Two-finger panning
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
-        scrollLayer->setPageScaleDelta(1);
+        scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollDelta(IntSize());
         scrollLayer->setScrollPosition(IntPoint(20, 20));
 
@@ -533,7 +609,7 @@ TEST_F(CCLayerTreeHostImplTest, pinchGesture)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, pageScaleAnimation)
+TEST_P(CCLayerTreeHostImplTest, pageScaleAnimation)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
     m_hostImpl->setViewportSize(IntSize(50, 50), IntSize(50, 50));
@@ -542,16 +618,18 @@ TEST_F(CCLayerTreeHostImplTest, pageScaleAnimation)
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     ASSERT(scrollLayer);
 
-    const float minPageScale = 0.5, maxPageScale = 4;
+    const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float maxPageScale = 4;
     const double startTime = 1;
     const double duration = 0.1;
     const double halfwayThroughAnimation = startTime + duration / 2;
     const double endTime = startTime + duration;
+    const WebTransformationMatrix identityScaleTransform;
 
     // Non-anchor zoom-in
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
-        scrollLayer->setPageScaleDelta(1);
+        scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollPosition(IntPoint(50, 50));
 
         m_hostImpl->startPageScaleAnimation(IntSize(0, 0), false, 2, startTime, duration);
@@ -568,7 +646,7 @@ TEST_F(CCLayerTreeHostImplTest, pageScaleAnimation)
     // Anchor zoom-out
     {
         m_hostImpl->setPageScaleFactorAndLimits(1, minPageScale, maxPageScale);
-        scrollLayer->setPageScaleDelta(1);
+        scrollLayer->setImplTransform(identityScaleTransform);
         scrollLayer->setScrollPosition(IntPoint(50, 50));
 
         m_hostImpl->startPageScaleAnimation(IntSize(25, 25), true, minPageScale, startTime, duration);
@@ -583,7 +661,7 @@ TEST_F(CCLayerTreeHostImplTest, pageScaleAnimation)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
+TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZooming)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
     m_hostImpl->setViewportSize(IntSize(50, 50), IntSize(50, 50));
@@ -592,7 +670,8 @@ TEST_F(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     ASSERT(scrollLayer);
 
-    const float minPageScale = 0.5, maxPageScale = 4;
+    const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float maxPageScale = 4;
 
     // Pinch zoom in.
     {
@@ -612,7 +691,11 @@ TEST_F(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
         m_hostImpl->pinchGestureEnd();
         scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, zoomInDelta);
-        expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
+        if (!CCSettings::pageScalePinchZoomEnabled()) {
+            expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
+        } else {
+            EXPECT_TRUE(scrollInfo->scrolls.isEmpty());
+        }
     }
 
     // Pinch zoom out.
@@ -626,18 +709,28 @@ TEST_F(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
         // Since we are pinch zooming out, we should get an update to zoom all
         // the way out to the minimum page scale.
         OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
-        EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
-        expectContains(*scrollInfo, scrollLayer->id(), IntSize(0, 0));
+        if (!CCSettings::pageScalePinchZoomEnabled()) {
+            EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
+            expectContains(*scrollInfo, scrollLayer->id(), IntSize(0, 0));
+        } else {
+            EXPECT_EQ(scrollInfo->pageScaleDelta, 1);
+            EXPECT_TRUE(scrollInfo->scrolls.isEmpty());
+        }
 
         // Once the gesture ends, we get the final scroll and page scale values.
         m_hostImpl->pinchGestureEnd();
         scrollInfo = m_hostImpl->processScrollDeltas();
-        EXPECT_EQ(scrollInfo->pageScaleDelta, zoomOutDelta);
-        expectContains(*scrollInfo, scrollLayer->id(), IntSize(8, 8));
+        if (CCSettings::pageScalePinchZoomEnabled()) {
+            EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
+            expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
+        } else {
+            EXPECT_EQ(scrollInfo->pageScaleDelta, zoomOutDelta);
+            expectContains(*scrollInfo, scrollLayer->id(), IntSize(8, 8));
+        }
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPageScale)
+TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPageScale)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
     m_hostImpl->setViewportSize(IntSize(50, 50), IntSize(50, 50));
@@ -646,7 +739,8 @@ TEST_F(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPa
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     ASSERT(scrollLayer);
 
-    const float minPageScale = 0.5, maxPageScale = 4;
+    const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float maxPageScale = 4;
     const double startTime = 1;
     const double duration = 0.1;
     const double halfwayThroughAnimation = startTime + duration / 2;
@@ -661,8 +755,14 @@ TEST_F(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPa
     // animation.
     m_hostImpl->animate(halfwayThroughAnimation, halfwayThroughAnimation);
     OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
-    EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
-    expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
+
+    if (!CCSettings::pageScalePinchZoomEnabled()) {
+        EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
+        expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
+    } else {
+        EXPECT_EQ(scrollInfo->pageScaleDelta, 1);
+        EXPECT_TRUE(scrollInfo->scrolls.isEmpty());
+    }
 
     // Scrolling during the animation is ignored.
     const IntSize scrollDelta(0, 10);
@@ -724,7 +824,7 @@ private:
     bool m_willDrawCalled;
 };
 
-TEST_F(CCLayerTreeHostImplTest, didDrawNotCalledOnHiddenLayer)
+TEST_P(CCLayerTreeHostImplTest, didDrawNotCalledOnHiddenLayer)
 {
     // The root layer is always drawn, so run this test on a child layer that
     // will be masked out by the root layer's bounds.
@@ -769,7 +869,7 @@ TEST_F(CCLayerTreeHostImplTest, didDrawNotCalledOnHiddenLayer)
     EXPECT_FALSE(layer->visibleContentRect().isEmpty());
 }
 
-TEST_F(CCLayerTreeHostImplTest, willDrawNotCalledOnOccludedLayer)
+TEST_P(CCLayerTreeHostImplTest, willDrawNotCalledOnOccludedLayer)
 {
     IntSize bigSize(1000, 1000);
     m_hostImpl->setViewportSize(bigSize, bigSize);
@@ -804,7 +904,7 @@ TEST_F(CCLayerTreeHostImplTest, willDrawNotCalledOnOccludedLayer)
     EXPECT_TRUE(topLayer->didDrawCalled());
 }
 
-TEST_F(CCLayerTreeHostImplTest, didDrawCalledOnAllLayers)
+TEST_P(CCLayerTreeHostImplTest, didDrawCalledOnAllLayers)
 {
     m_hostImpl->setRootLayer(DidDrawCheckLayer::create(1));
     DidDrawCheckLayer* root = static_cast<DidDrawCheckLayer*>(m_hostImpl->rootLayer());
@@ -856,7 +956,7 @@ private:
     }
 };
 
-TEST_F(CCLayerTreeHostImplTest, prepareToDrawFailsWhenAnimationUsesCheckerboard)
+TEST_P(CCLayerTreeHostImplTest, prepareToDrawFailsWhenAnimationUsesCheckerboard)
 {
     // When the texture is not missing, we draw as usual.
     m_hostImpl->setRootLayer(DidDrawCheckLayer::create(1));
@@ -897,7 +997,7 @@ TEST_F(CCLayerTreeHostImplTest, prepareToDrawFailsWhenAnimationUsesCheckerboard)
     m_hostImpl->didDrawAllLayers(frame);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollRootIgnored)
+TEST_P(CCLayerTreeHostImplTest, scrollRootIgnored)
 {
     OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
     root->setScrollable(false);
@@ -910,7 +1010,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollRootIgnored)
     EXPECT_FALSE(m_didRequestCommit);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollNonCompositedRoot)
+TEST_P(CCLayerTreeHostImplTest, scrollNonCompositedRoot)
 {
     // Test the configuration where a non-composited root layer is embedded in a
     // scrollable outer layer.
@@ -944,7 +1044,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollNonCompositedRoot)
     EXPECT_TRUE(m_didRequestCommit);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollChildCallsCommitAndRedraw)
+TEST_P(CCLayerTreeHostImplTest, scrollChildCallsCommitAndRedraw)
 {
     IntSize surfaceSize(10, 10);
     OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
@@ -962,7 +1062,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollChildCallsCommitAndRedraw)
     EXPECT_TRUE(m_didRequestCommit);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollMissesChild)
+TEST_P(CCLayerTreeHostImplTest, scrollMissesChild)
 {
     IntSize surfaceSize(10, 10);
     OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
@@ -977,7 +1077,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollMissesChild)
     EXPECT_FALSE(m_didRequestCommit);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollMissesBackfacingChild)
+TEST_P(CCLayerTreeHostImplTest, scrollMissesBackfacingChild)
 {
     IntSize surfaceSize(10, 10);
     OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
@@ -1000,7 +1100,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollMissesBackfacingChild)
     EXPECT_FALSE(m_didRequestCommit);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollBlockedByContentLayer)
+TEST_P(CCLayerTreeHostImplTest, scrollBlockedByContentLayer)
 {
     IntSize surfaceSize(10, 10);
     OwnPtr<CCLayerImpl> contentLayer = createScrollableLayer(1, surfaceSize);
@@ -1018,7 +1118,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollBlockedByContentLayer)
     EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), CCInputHandlerClient::Wheel), CCInputHandlerClient::ScrollOnMainThread);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
+TEST_P(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
 {
     IntSize surfaceSize(10, 10);
     float pageScale = 2;
@@ -1037,8 +1137,10 @@ TEST_F(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     // Set new page scale from main thread.
     m_hostImpl->setPageScaleFactorAndLimits(pageScale, pageScale, pageScale);
 
-    // The scale should apply to the scroll delta.
-    expectedScrollDelta.scale(pageScale);
+    if (!CCSettings::pageScalePinchZoomEnabled()) {
+        // The scale should apply to the scroll delta.
+        expectedScrollDelta.scale(pageScale);
+    }
     OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), expectedScrollDelta);
 
@@ -1046,10 +1148,10 @@ TEST_F(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), expectedMaxScroll);
 
     // The page scale delta remains constant because the impl thread did not scale.
-    EXPECT_EQ(m_hostImpl->rootLayer()->pageScaleDelta(), 1);
+    EXPECT_EQ(m_hostImpl->rootLayer()->implTransform(), WebTransformationMatrix());
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
+TEST_P(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
 {
     IntSize surfaceSize(10, 10);
     float pageScale = 2;
@@ -1070,6 +1172,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     m_hostImpl->pinchGestureBegin();
     m_hostImpl->pinchGestureUpdate(pageScale, IntPoint());
     m_hostImpl->pinchGestureEnd();
+    m_hostImpl->updateRootScrollLayerImplTransform();
 
     // The scroll delta is not scaled because the main thread did not scale.
     OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
@@ -1079,14 +1182,20 @@ TEST_F(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), expectedMaxScroll);
 
     // The page scale delta should match the new scale on the impl side.
-    EXPECT_EQ(m_hostImpl->rootLayer()->pageScaleDelta(), pageScale);
+    WebTransformationMatrix expectedScale;
+    expectedScale.scale(pageScale);
+    EXPECT_EQ(m_hostImpl->rootLayer()->implTransform(), expectedScale);
 }
 
-TEST_F(CCLayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
+TEST_P(CCLayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
 {
     IntSize surfaceSize(10, 10);
     float defaultPageScale = 1;
+    WebTransformationMatrix defaultPageScaleMatrix;
+
     float newPageScale = 2;
+    WebTransformationMatrix newPageScaleMatrix;
+    newPageScaleMatrix.scale(newPageScale);
 
     // Create a normal scrollable root layer and another scrollable child layer.
     setupScrollAndContentsLayers(surfaceSize);
@@ -1101,11 +1210,12 @@ TEST_F(CCLayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
     m_hostImpl->pinchGestureBegin();
     m_hostImpl->pinchGestureUpdate(newPageScale, IntPoint());
     m_hostImpl->pinchGestureEnd();
+    m_hostImpl->updateRootScrollLayerImplTransform();
 
     // The page scale delta should only be applied to the scrollable root layer.
-    EXPECT_EQ(root->pageScaleDelta(), newPageScale);
-    EXPECT_EQ(child->pageScaleDelta(), defaultPageScale);
-    EXPECT_EQ(grandChild->pageScaleDelta(), defaultPageScale);
+    EXPECT_EQ(root->implTransform(), newPageScaleMatrix);
+    EXPECT_EQ(child->implTransform(), defaultPageScaleMatrix);
+    EXPECT_EQ(grandChild->implTransform(), defaultPageScaleMatrix);
 
     // Make sure all the layers are drawn with the page scale delta applied, i.e., the page scale
     // delta on the root layer is applied hierarchically.
@@ -1122,7 +1232,7 @@ TEST_F(CCLayerTreeHostImplTest, pageScaleDeltaAppliedToRootScrollLayerOnly)
     EXPECT_EQ(grandChild->drawTransform().m22(), newPageScale);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
+TEST_P(CCLayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
 {
     IntSize surfaceSize(10, 10);
     OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
@@ -1148,8 +1258,12 @@ TEST_F(CCLayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
     float pageScale = 2;
     m_hostImpl->setPageScaleFactorAndLimits(pageScale, 1, pageScale);
 
-    // The scale should apply to the scroll delta.
-    expectedScrollDelta.scale(pageScale);
+    m_hostImpl->updateRootScrollLayerImplTransform();
+
+    if (!CCSettings::pageScalePinchZoomEnabled()) {
+        // The scale should apply to the scroll delta.
+        expectedScrollDelta.scale(pageScale);
+    }
     OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), scrollLayerId, expectedScrollDelta);
 
@@ -1157,10 +1271,11 @@ TEST_F(CCLayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
     EXPECT_EQ(child->maxScrollPosition(), expectedMaxScroll);
 
     // The page scale delta remains constant because the impl thread did not scale.
-    EXPECT_EQ(child->pageScaleDelta(), 1);
+    WebTransformationMatrix identityTransform;
+    EXPECT_EQ(child->implTransform(), WebTransformationMatrix());
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollChildBeyondLimit)
+TEST_P(CCLayerTreeHostImplTest, scrollChildBeyondLimit)
 {
     // Scroll a child layer beyond its maximum scroll range and make sure the
     // parent layer is scrolled on the axis on which the child was unable to
@@ -1197,7 +1312,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollChildBeyondLimit)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollEventBubbling)
+TEST_P(CCLayerTreeHostImplTest, scrollEventBubbling)
 {
     // When we try to scroll a non-scrollable child layer, the scroll delta
     // should be applied to one of its ancestors if possible.
@@ -1225,7 +1340,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollEventBubbling)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollBeforeRedraw)
+TEST_P(CCLayerTreeHostImplTest, scrollBeforeRedraw)
 {
     IntSize surfaceSize(10, 10);
     m_hostImpl->setRootLayer(createScrollableLayer(1, surfaceSize));
@@ -1240,7 +1355,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollBeforeRedraw)
     EXPECT_EQ(m_hostImpl->scrollBegin(IntPoint(5, 5), CCInputHandlerClient::Wheel), CCInputHandlerClient::ScrollStarted);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
+TEST_P(CCLayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
 
@@ -1275,7 +1390,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), wheelScrollDelta);
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
+TEST_P(CCLayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
     int childLayerId = 3;
@@ -1336,7 +1451,7 @@ TEST_F(CCLayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, scrollScaledLayer)
+TEST_P(CCLayerTreeHostImplTest, scrollScaledLayer)
 {
     setupScrollAndContentsLayers(IntSize(100, 100));
 
@@ -1454,7 +1569,7 @@ private:
     CCResourceProvider::ResourceId m_resourceId;
 };
 
-TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
+TEST_P(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
 {
     {
         OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
@@ -1646,7 +1761,7 @@ TEST_F(CCLayerTreeHostImplTest, blendingOffWhenDrawingOpaqueLayers)
 
 }
 
-TEST_F(CCLayerTreeHostImplTest, viewportCovered)
+TEST_P(CCLayerTreeHostImplTest, viewportCovered)
 {
     m_hostImpl->initializeRenderer(createContext());
     m_hostImpl->setBackgroundColor(SK_ColorGRAY);
@@ -1755,7 +1870,7 @@ public:
 // Only reshape when we know we are going to draw. Otherwise, the reshape
 // can leave the window at the wrong size if we never draw and the proper
 // viewport size is never set.
-TEST_F(CCLayerTreeHostImplTest, reshapeNotCalledUntilDraw)
+TEST_P(CCLayerTreeHostImplTest, reshapeNotCalledUntilDraw)
 {
     scoped_ptr<CCGraphicsContext> ccContext = FakeWebCompositorOutputSurface::create(adoptPtr(new ReshapeTrackerContext)).PassAs<CCGraphicsContext>();
     ReshapeTrackerContext* reshapeTracker = static_cast<ReshapeTrackerContext*>(ccContext->context3D());
@@ -1798,7 +1913,7 @@ private:
 
 // Make sure damage tracking propagates all the way to the graphics context,
 // where it should request to swap only the subBuffer that is damaged.
-TEST_F(CCLayerTreeHostImplTest, partialSwapReceivesDamageRect)
+TEST_P(CCLayerTreeHostImplTest, partialSwapReceivesDamageRect)
 {
     scoped_ptr<CCGraphicsContext> ccContext = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapTrackerContext)).PassAs<CCGraphicsContext>();
     PartialSwapTrackerContext* partialSwapTracker = static_cast<PartialSwapTrackerContext*>(ccContext->context3D());
@@ -1872,7 +1987,7 @@ TEST_F(CCLayerTreeHostImplTest, partialSwapReceivesDamageRect)
     EXPECT_EQ(expectedSwapRect.height(), actualSwapRect.height());
 }
 
-TEST_F(CCLayerTreeHostImplTest, rootLayerDoesntCreateExtraSurface)
+TEST_P(CCLayerTreeHostImplTest, rootLayerDoesntCreateExtraSurface)
 {
     CCLayerImpl* root = new FakeDrawableCCLayerImpl(1);
     CCLayerImpl* child = new FakeDrawableCCLayerImpl(2);
@@ -2012,7 +2127,7 @@ public:
     }
 };
 
-TEST_F(CCLayerTreeHostImplTest, noPartialSwap)
+TEST_P(CCLayerTreeHostImplTest, noPartialSwap)
 {
     scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new MockContext)).PassAs<CCGraphicsContext>();
     MockContext* mockContext = static_cast<MockContext*>(context->context3D());
@@ -2031,7 +2146,7 @@ TEST_F(CCLayerTreeHostImplTest, noPartialSwap)
     Mock::VerifyAndClearExpectations(&mockContext);
 }
 
-TEST_F(CCLayerTreeHostImplTest, partialSwap)
+TEST_P(CCLayerTreeHostImplTest, partialSwap)
 {
     scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new MockContext)).PassAs<CCGraphicsContext>();
     MockContext* mockContext = static_cast<MockContext*>(context->context3D());
@@ -2155,7 +2270,7 @@ static scoped_ptr<CCLayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, C
     return myHostImpl.Pass();
 }
 
-TEST_F(CCLayerTreeHostImplTest, contributingLayerEmptyScissorPartialSwap)
+TEST_P(CCLayerTreeHostImplTest, contributingLayerEmptyScissorPartialSwap)
 {
     scoped_ptr<CCLayerTreeHostImpl> myHostImpl = setupLayersForOpacity(true, this);
 
@@ -2176,7 +2291,7 @@ TEST_F(CCLayerTreeHostImplTest, contributingLayerEmptyScissorPartialSwap)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, contributingLayerEmptyScissorNoPartialSwap)
+TEST_P(CCLayerTreeHostImplTest, contributingLayerEmptyScissorNoPartialSwap)
 {
     scoped_ptr<CCLayerTreeHostImpl> myHostImpl = setupLayersForOpacity(false, this);
 
@@ -2219,7 +2334,7 @@ private:
     bool m_didLoseContextCalled;
 };
 
-TEST_F(CCLayerTreeHostImplTest, contextLostAndRestoredNotificationSentToAllLayers)
+TEST_P(CCLayerTreeHostImplTest, contextLostAndRestoredNotificationSentToAllLayers)
 {
     m_hostImpl->setRootLayer(ContextLostNotificationCheckLayer::create(1));
     ContextLostNotificationCheckLayer* root = static_cast<ContextLostNotificationCheckLayer*>(m_hostImpl->rootLayer());
@@ -2241,7 +2356,7 @@ TEST_F(CCLayerTreeHostImplTest, contextLostAndRestoredNotificationSentToAllLayer
     EXPECT_TRUE(layer2->didLoseContextCalled());
 }
 
-TEST_F(CCLayerTreeHostImplTest, finishAllRenderingAfterContextLost)
+TEST_P(CCLayerTreeHostImplTest, finishAllRenderingAfterContextLost)
 {
     CCLayerTreeSettings settings;
     m_hostImpl = CCLayerTreeHostImpl::create(settings, this);
@@ -2265,7 +2380,7 @@ private:
     unsigned m_succeedCount;
 };
 
-TEST_F(CCLayerTreeHostImplTest, contextLostDuringInitialize)
+TEST_P(CCLayerTreeHostImplTest, contextLostDuringInitialize)
 {
     CCLayerTreeSettings settings;
     m_hostImpl = CCLayerTreeHostImpl::create(settings, this);
@@ -2515,7 +2630,7 @@ static inline scoped_ptr<CCRenderPass> createRenderPassWithResource(CCResourcePr
     return pass.Pass();
 }
 
-TEST_F(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
+TEST_P(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
 {
     int layerId = 1;
 
@@ -2702,7 +2817,7 @@ private:
     unsigned m_numTextures;
 };
 
-TEST_F(CCLayerTreeHostImplTest, layersFreeTextures)
+TEST_P(CCLayerTreeHostImplTest, layersFreeTextures)
 {
     OwnPtr<CCLayerImpl> rootLayer(CCLayerImpl::create(1));
     rootLayer->setBounds(IntSize(10, 10));
@@ -2773,7 +2888,7 @@ public:
     MOCK_METHOD4(drawElements, void(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset));
 };
 
-TEST_F(CCLayerTreeHostImplTest, hasTransparentBackground)
+TEST_P(CCLayerTreeHostImplTest, hasTransparentBackground)
 {
     scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new MockDrawQuadsToFillScreenContext)).PassAs<CCGraphicsContext>();
     MockDrawQuadsToFillScreenContext* mockContext = static_cast<MockDrawQuadsToFillScreenContext*>(context->context3D());
@@ -2852,7 +2967,7 @@ public:
     using CCRendererGL::releaseRenderPassTextures;
 };
 
-TEST_F(CCLayerTreeHostImplTest, textureCachingWithClipping)
+TEST_P(CCLayerTreeHostImplTest, textureCachingWithClipping)
 {
     CCSettings::setPartialSwapEnabled(true);
 
@@ -2949,7 +3064,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithClipping)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusion)
+TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusion)
 {
     CCSettings::setPartialSwapEnabled(false);
 
@@ -3065,7 +3180,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusion)
 
 }
 
-TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
+TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
 {
     CCSettings::setPartialSwapEnabled(false);
 
@@ -3181,7 +3296,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
+TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
 {
     CCSettings::setPartialSwapEnabled(false);
 
@@ -3270,7 +3385,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
+TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
 {
     CCSettings::setPartialSwapEnabled(false);
 
@@ -3344,7 +3459,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
+TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
 {
     CCSettings::setPartialSwapEnabled(true);
 
@@ -3457,7 +3572,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, textureCachingWithScissor)
+TEST_P(CCLayerTreeHostImplTest, textureCachingWithScissor)
 {
     CCSettings::setPartialSwapEnabled(false);
 
@@ -3564,7 +3679,7 @@ TEST_F(CCLayerTreeHostImplTest, textureCachingWithScissor)
     EXPECT_TRUE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(childPassId));
 }
 
-TEST_F(CCLayerTreeHostImplTest, surfaceTextureCaching)
+TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
 {
     CCSettings::setPartialSwapEnabled(true);
 
@@ -3725,7 +3840,7 @@ TEST_F(CCLayerTreeHostImplTest, surfaceTextureCaching)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
+TEST_P(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
 {
     CCSettings::setPartialSwapEnabled(false);
 
@@ -3888,7 +4003,7 @@ TEST_F(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
     }
 }
 
-TEST_F(CCLayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
+TEST_P(CCLayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
 {
     m_hostImpl->releaseContentsTextures();
     EXPECT_TRUE(m_didRequestCommit);
@@ -4203,7 +4318,7 @@ static void verifyRenderPassTestData(TestCase& testCase, RenderPassRemovalTestDa
     EXPECT_STREQ(testCase.expectedResult, actualResult) << "In test case: " << testCase.name;
 }
 
-TEST_F(CCLayerTreeHostImplTest, testRemoveRenderPasses)
+TEST_P(CCLayerTreeHostImplTest, testRemoveRenderPasses)
 {
     scoped_ptr<CCGraphicsContext> context(createContext());
     ASSERT_TRUE(context->context3D());
@@ -4220,5 +4335,9 @@ TEST_F(CCLayerTreeHostImplTest, testRemoveRenderPasses)
         testCaseIndex++;
     }
 }
+
+INSTANTIATE_TEST_CASE_P(CCLayerTreeHostImplTests,
+                        CCLayerTreeHostImplTest,
+                        ::testing::Values(false, true));
 
 } // namespace

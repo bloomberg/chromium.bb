@@ -316,6 +316,10 @@ const char kEnableUIReleaseFrontSurface[] = "enable-ui-release-front-surface";
 // Enables touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 
+// Enables an alternative pinch-zoom gesture support, via the threaded
+// compositor.
+const char kEnablePinchInCompositor[]       = "enable-pinch-in-compositor";
+
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 

@@ -52,6 +52,110 @@ void didVisibilityChange(cc::CCLayerTreeHostImpl* id, bool visible)
 
 namespace cc {
 
+CCPinchZoomViewport::CCPinchZoomViewport()
+    : m_pageScaleFactor(1)
+    , m_pageScaleDelta(1)
+    , m_sentPageScaleDelta(1)
+    , m_minPageScaleFactor(0)
+    , m_maxPageScaleFactor(0)
+{
+}
+
+float CCPinchZoomViewport::totalPageScaleFactor() const
+{
+    return m_pageScaleFactor * m_pageScaleDelta;
+}
+
+void CCPinchZoomViewport::setPageScaleDelta(float delta)
+{
+    // Clamp to the current min/max limits.
+    float totalPageScaleFactor = m_pageScaleFactor * delta;
+    if (m_minPageScaleFactor && totalPageScaleFactor < m_minPageScaleFactor)
+        delta = m_minPageScaleFactor / m_pageScaleFactor;
+    else if (m_maxPageScaleFactor && totalPageScaleFactor > m_maxPageScaleFactor)
+        delta = m_maxPageScaleFactor / m_pageScaleFactor;
+
+    if (delta == m_pageScaleDelta)
+        return;
+
+    m_pageScaleDelta = delta;
+}
+
+bool CCPinchZoomViewport::setPageScaleFactorAndLimits(float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor)
+{
+    ASSERT(pageScaleFactor);
+
+    if (m_sentPageScaleDelta == 1 && pageScaleFactor == m_pageScaleFactor && minPageScaleFactor == m_minPageScaleFactor && maxPageScaleFactor == m_maxPageScaleFactor)
+        return false;
+
+    m_minPageScaleFactor = minPageScaleFactor;
+    m_maxPageScaleFactor = maxPageScaleFactor;
+
+    m_pageScaleFactor = pageScaleFactor;
+    return true;
+}
+
+FloatRect CCPinchZoomViewport::bounds() const
+{
+    FloatSize scaledViewportSize = m_layoutViewportSize;
+    scaledViewportSize.scale(1 / totalPageScaleFactor());
+
+    FloatRect bounds(FloatPoint(0, 0), scaledViewportSize);
+    bounds.setLocation(m_pinchViewportScrollDelta);
+
+    return bounds;
+}
+
+FloatSize CCPinchZoomViewport::applyScroll(FloatSize& delta)
+{
+    FloatSize overflow;
+    FloatRect pinchedBounds = bounds();
+
+    pinchedBounds.move(delta);
+    if (pinchedBounds.x() < 0) {
+        overflow.setWidth(pinchedBounds.x());
+        pinchedBounds.setX(0);
+    }
+
+    if (pinchedBounds.y() < 0) {
+        overflow.setHeight(pinchedBounds.y());
+        pinchedBounds.setY(0);
+    }
+
+    if (pinchedBounds.maxX() > m_layoutViewportSize.width()) {
+        overflow.setWidth(
+            pinchedBounds.maxX() - m_layoutViewportSize.width());
+        pinchedBounds.move(
+            m_layoutViewportSize.width() - pinchedBounds.maxX(), 0);
+    }
+
+    if (pinchedBounds.maxY() > m_layoutViewportSize.height()) {
+        overflow.setHeight(
+            pinchedBounds.maxY() - m_layoutViewportSize.height());
+        pinchedBounds.move(
+            0, m_layoutViewportSize.height() - pinchedBounds.maxY());
+    }
+    m_pinchViewportScrollDelta = pinchedBounds.location();
+
+    return overflow;
+}
+
+WebTransformationMatrix CCPinchZoomViewport::implTransform() const
+{
+    WebTransformationMatrix transform;
+    transform.scale(m_pageScaleDelta);
+
+    // If the pinch state is applied in the impl, then push it to the
+    // impl transform, otherwise the scale is handled by WebCore.
+    if (CCSettings::pageScalePinchZoomEnabled()) {
+        transform.scale(m_pageScaleFactor);
+        transform.translate(-m_pinchViewportScrollDelta.x(),
+                            -m_pinchViewportScrollDelta.y());
+    }
+
+    return transform;
+}
+
 class CCLayerTreeHostImplTimeSourceAdapter : public CCTimeSourceClient {
 public:
     static PassOwnPtr<CCLayerTreeHostImplTimeSourceAdapter> create(CCLayerTreeHostImpl* layerTreeHostImpl, PassRefPtr<CCDelayBasedTimeSource> timeSource)
@@ -120,11 +224,6 @@ CCLayerTreeHostImpl::CCLayerTreeHostImpl(const CCLayerTreeSettings& settings, CC
     , m_visible(true)
     , m_contentsTexturesPurged(false)
     , m_memoryAllocationLimitBytes(CCPrioritizedTextureManager::defaultMemoryAllocationLimit())
-    , m_pageScale(1)
-    , m_pageScaleDelta(1)
-    , m_sentPageScaleDelta(1)
-    , m_minPageScale(0)
-    , m_maxPageScale(0)
     , m_backgroundColor(0)
     , m_hasTransparentBackground(false)
     , m_needsAnimateLayers(false)
@@ -202,10 +301,10 @@ void CCLayerTreeHostImpl::startPageScaleAnimation(const IntSize& targetPosition,
         return;
 
     IntSize scrollTotal = flooredIntSize(m_rootScrollLayerImpl->scrollPosition() + m_rootScrollLayerImpl->scrollDelta());
-    scrollTotal.scale(m_pageScaleDelta);
-    float scaleTotal = m_pageScale * m_pageScaleDelta;
+    scrollTotal.scale(m_pinchZoomViewport.pageScaleDelta());
+    float scaleTotal = m_pinchZoomViewport.totalPageScaleFactor();
     IntSize scaledContentSize = contentSize();
-    scaledContentSize.scale(m_pageScaleDelta);
+    scaledContentSize.scale(m_pinchZoomViewport.pageScaleDelta());
 
     m_pageScaleAnimation = CCPageScaleAnimation::create(scrollTotal, scaleTotal, m_deviceViewportSize, scaledContentSize, startTime);
 
@@ -240,6 +339,13 @@ void CCLayerTreeHostImpl::trackDamageForAllSurfaces(CCLayerImpl* rootDrawLayer, 
     }
 }
 
+void CCLayerTreeHostImpl::updateRootScrollLayerImplTransform()
+{
+    if (m_rootScrollLayerImpl) {
+        m_rootScrollLayerImpl->setImplTransform(implTransform());
+    }
+}
+
 void CCLayerTreeHostImpl::calculateRenderSurfaceLayerList(CCLayerList& renderSurfaceLayerList)
 {
     ASSERT(renderSurfaceLayerList.isEmpty());
@@ -247,6 +353,8 @@ void CCLayerTreeHostImpl::calculateRenderSurfaceLayerList(CCLayerList& renderSur
     ASSERT(m_renderer); // For maxTextureSize.
 
     {
+        updateRootScrollLayerImplTransform();
+
         TRACE_EVENT0("cc", "CCLayerTreeHostImpl::calcDrawEtc");
         CCLayerTreeHostCommon::calculateDrawTransforms(m_rootLayerImpl.get(), deviceViewportSize(), m_deviceScaleFactor, &m_layerSorter, rendererCapabilities().maxTextureSize, renderSurfaceLayerList);
 
@@ -777,6 +885,8 @@ void CCLayerTreeHostImpl::setViewportSize(const IntSize& layoutViewportSize, con
     m_layoutViewportSize = layoutViewportSize;
     m_deviceViewportSize = deviceViewportSize;
 
+    m_pinchZoomViewport.setLayoutViewportSize(FloatSize(layoutViewportSize));
+
     updateMaxScrollPosition();
 
     if (m_renderer)
@@ -810,48 +920,34 @@ void CCLayerTreeHostImpl::setDeviceScaleFactor(float deviceScaleFactor)
     updateMaxScrollPosition();
 }
 
-
-void CCLayerTreeHostImpl::setPageScaleFactorAndLimits(float pageScale, float minPageScale, float maxPageScale)
+float CCLayerTreeHostImpl::pageScaleFactor() const
 {
-    if (!pageScale)
-        return;
+    return m_pinchZoomViewport.pageScaleFactor();
+}
 
-    if (m_sentPageScaleDelta == 1 && pageScale == m_pageScale && minPageScale == m_minPageScale && maxPageScale == m_maxPageScale)
-        return;
+void CCLayerTreeHostImpl::setPageScaleFactorAndLimits(float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor)
+{
+    if (!pageScaleFactor)
+      return;
 
-    m_minPageScale = minPageScale;
-    m_maxPageScale = maxPageScale;
+    float pageScaleChange = pageScaleFactor / m_pinchZoomViewport.pageScaleFactor();
+    m_pinchZoomViewport.setPageScaleFactorAndLimits(pageScaleFactor, minPageScaleFactor, maxPageScaleFactor);
 
-    float pageScaleChange = pageScale / m_pageScale;
-    m_pageScale = pageScale;
-
-    if (pageScaleChange != 1)
-        adjustScrollsForPageScaleChange(m_rootScrollLayerImpl, pageScaleChange);
+    if (!CCSettings::pageScalePinchZoomEnabled()) {
+        if (pageScaleChange != 1)
+            adjustScrollsForPageScaleChange(m_rootScrollLayerImpl, pageScaleChange);
+    }
 
     // Clamp delta to limits and refresh display matrix.
-    setPageScaleDelta(m_pageScaleDelta / m_sentPageScaleDelta);
-    m_sentPageScaleDelta = 1;
-    if (m_rootScrollLayerImpl)
-        m_rootScrollLayerImpl->setPageScaleDelta(m_pageScaleDelta);
+    setPageScaleDelta(m_pinchZoomViewport.pageScaleDelta() / m_pinchZoomViewport.sentPageScaleDelta());
+    m_pinchZoomViewport.setSentPageScaleDelta(1);
 }
 
 void CCLayerTreeHostImpl::setPageScaleDelta(float delta)
 {
-    // Clamp to the current min/max limits.
-    float finalMagnifyScale = m_pageScale * delta;
-    if (m_minPageScale && finalMagnifyScale < m_minPageScale)
-        delta = m_minPageScale / m_pageScale;
-    else if (m_maxPageScale && finalMagnifyScale > m_maxPageScale)
-        delta = m_maxPageScale / m_pageScale;
-
-    if (delta == m_pageScaleDelta)
-        return;
-
-    m_pageScaleDelta = delta;
+    m_pinchZoomViewport.setPageScaleDelta(delta);
 
     updateMaxScrollPosition();
-    if (m_rootScrollLayerImpl)
-        m_rootScrollLayerImpl->setPageScaleDelta(m_pageScaleDelta);
 }
 
 void CCLayerTreeHostImpl::updateMaxScrollPosition()
@@ -867,11 +963,22 @@ void CCLayerTreeHostImpl::updateMaxScrollPosition()
             viewBounds.scale(m_deviceScaleFactor);
         }
     }
-    viewBounds.scale(1 / m_pageScaleDelta);
 
-    // maxScroll is computed in physical pixels, but scroll positions are in layout pixels.
-    IntSize maxScroll = contentSize() - expandedIntSize(viewBounds);
+    IntSize contentBounds = contentSize();
+    if (CCSettings::pageScalePinchZoomEnabled()) {
+        // Pinch with pageScale scrolls entirely in layout space.  contentSize
+        // returns the bounds including the page scale factor, so calculate the
+        // pre page-scale layout size here.
+        float pageScaleFactor = m_pinchZoomViewport.pageScaleFactor();
+        contentBounds.setWidth(contentBounds.width() / pageScaleFactor);
+        contentBounds.setHeight(contentBounds.height() / pageScaleFactor);
+    } else {
+        viewBounds.scale(1 / m_pinchZoomViewport.pageScaleDelta());
+    }
+
+    IntSize maxScroll = contentBounds - expandedIntSize(viewBounds);
     maxScroll.scale(1 / m_deviceScaleFactor);
+
     // The viewport may be larger than the contents in some cases, such as
     // having a vertical scrollbar but no horizontal overflow.
     maxScroll.clampNegativeToZero();
@@ -959,7 +1066,7 @@ CCInputHandlerClient::ScrollStatus CCLayerTreeHostImpl::scrollBegin(const IntPoi
     return ScrollIgnored;
 }
 
-static FloatSize scrollLayerWithScreenSpaceDelta(CCLayerImpl& layerImpl, const FloatPoint& screenSpacePoint, const FloatSize& screenSpaceDelta)
+static FloatSize scrollLayerWithScreenSpaceDelta(CCPinchZoomViewport* viewport, CCLayerImpl& layerImpl, const FloatPoint& screenSpacePoint, const FloatSize& screenSpaceDelta)
 {
     // Layers with non-invertible screen space transforms should not have passed the scroll hit
     // test in the first place.
@@ -981,7 +1088,10 @@ static FloatSize scrollLayerWithScreenSpaceDelta(CCLayerImpl& layerImpl, const F
 
     // Apply the scroll delta.
     FloatSize previousDelta(layerImpl.scrollDelta());
-    layerImpl.scrollBy(localEndPoint - localStartPoint);
+    FloatSize unscrolled = layerImpl.scrollBy(localEndPoint - localStartPoint);
+
+    if (viewport)
+        viewport->applyScroll(unscrolled);
 
     // Calculate the applied scroll delta in screen space coordinates.
     FloatPoint actualLocalEndPoint = localStartPoint + layerImpl.scrollDelta() - previousDelta;
@@ -1013,9 +1123,10 @@ void CCLayerTreeHostImpl::scrollBy(const IntPoint& viewportPoint, const IntSize&
         if (!layerImpl->scrollable())
             continue;
 
+        CCPinchZoomViewport* viewport = layerImpl == m_rootScrollLayerImpl ? &m_pinchZoomViewport : 0;
         FloatSize appliedDelta;
         if (m_scrollDeltaIsInScreenSpace)
-            appliedDelta = scrollLayerWithScreenSpaceDelta(*layerImpl, viewportPoint, pendingDelta);
+            appliedDelta = scrollLayerWithScreenSpaceDelta(viewport, *layerImpl, viewportPoint, pendingDelta);
         else
             appliedDelta = scrollLayerWithLocalDelta(*layerImpl, pendingDelta);
 
@@ -1080,14 +1191,23 @@ void CCLayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta,
 
     // Keep the center-of-pinch anchor specified by (x, y) in a stable
     // position over the course of the magnify.
-    FloatPoint previousScaleAnchor(m_previousPinchAnchor.x() / m_pageScaleDelta, m_previousPinchAnchor.y() / m_pageScaleDelta);
-    setPageScaleDelta(m_pageScaleDelta * magnifyDelta);
-    FloatPoint newScaleAnchor(anchor.x() / m_pageScaleDelta, anchor.y() / m_pageScaleDelta);
+    float pageScaleDelta = m_pinchZoomViewport.pageScaleDelta();
+    FloatPoint previousScaleAnchor(m_previousPinchAnchor.x() / pageScaleDelta,
+                                   m_previousPinchAnchor.y() / pageScaleDelta);
+    setPageScaleDelta(pageScaleDelta * magnifyDelta);
+    pageScaleDelta = m_pinchZoomViewport.pageScaleDelta();
+    FloatPoint newScaleAnchor(anchor.x() / pageScaleDelta, anchor.y() / pageScaleDelta);
     FloatSize move = previousScaleAnchor - newScaleAnchor;
 
     m_previousPinchAnchor = anchor;
 
-    m_rootScrollLayerImpl->scrollBy(roundedIntSize(move));
+    if (CCSettings::pageScalePinchZoomEnabled()) {
+        // Compute the application of the delta with respect to the current page zoom of the page.
+        move.scale(1 / (m_pinchZoomViewport.pageScaleFactor() * m_deviceScaleFactor));
+    }
+
+    FloatSize scrollOverflow = CCSettings::pageScalePinchZoomEnabled() ? m_pinchZoomViewport.applyScroll(move) : move;
+    m_rootScrollLayerImpl->scrollBy(roundedIntSize(scrollOverflow));
 
     if (m_rootScrollLayerImpl->scrollbarAnimationController())
         m_rootScrollLayerImpl->scrollbarAnimationController()->didPinchGestureUpdate();
@@ -1110,7 +1230,7 @@ void CCLayerTreeHostImpl::computeDoubleTapZoomDeltas(CCScrollAndScaleSet* scroll
 {
     float pageScale = m_pageScaleAnimation->finalPageScale();
     IntSize scrollOffset = m_pageScaleAnimation->finalScrollOffset();
-    scrollOffset.scale(m_pageScale / pageScale);
+    scrollOffset.scale(m_pinchZoomViewport.pageScaleFactor() / pageScale);
     makeScrollAndScaleSet(scrollInfo, scrollOffset, pageScale);
 }
 
@@ -1123,27 +1243,27 @@ void CCLayerTreeHostImpl::computePinchZoomDeltas(CCScrollAndScaleSet* scrollInfo
     // significant amount. This also ensures only one fake delta set will be
     // sent.
     const float pinchZoomOutSensitivity = 0.95f;
-    if (m_pageScaleDelta > pinchZoomOutSensitivity)
+    if (m_pinchZoomViewport.pageScaleDelta() > pinchZoomOutSensitivity)
         return;
 
     // Compute where the scroll offset/page scale would be if fully pinch-zoomed
     // out from the anchor point.
     IntSize scrollBegin = flooredIntSize(m_rootScrollLayerImpl->scrollPosition() + m_rootScrollLayerImpl->scrollDelta());
-    scrollBegin.scale(m_pageScaleDelta);
-    float scaleBegin = m_pageScale * m_pageScaleDelta;
-    float pageScaleDeltaToSend = m_minPageScale / m_pageScale;
+    scrollBegin.scale(m_pinchZoomViewport.pageScaleDelta());
+    float scaleBegin = m_pinchZoomViewport.totalPageScaleFactor();
+    float pageScaleDeltaToSend = m_pinchZoomViewport.minPageScaleFactor() / m_pinchZoomViewport.pageScaleFactor();
     FloatSize scaledContentsSize = contentSize();
     scaledContentsSize.scale(pageScaleDeltaToSend);
 
     FloatSize anchor = toSize(m_previousPinchAnchor);
     FloatSize scrollEnd = scrollBegin + anchor;
-    scrollEnd.scale(m_minPageScale / scaleBegin);
+    scrollEnd.scale(m_pinchZoomViewport.minPageScaleFactor() / scaleBegin);
     scrollEnd -= anchor;
     scrollEnd = scrollEnd.shrunkTo(roundedIntSize(scaledContentsSize - m_deviceViewportSize)).expandedTo(FloatSize(0, 0));
     scrollEnd.scale(1 / pageScaleDeltaToSend);
     scrollEnd.scale(m_deviceScaleFactor);
 
-    makeScrollAndScaleSet(scrollInfo, roundedIntSize(scrollEnd), m_minPageScale);
+    makeScrollAndScaleSet(scrollInfo, roundedIntSize(scrollEnd), m_pinchZoomViewport.minPageScaleFactor());
 }
 
 void CCLayerTreeHostImpl::makeScrollAndScaleSet(CCScrollAndScaleSet* scrollInfo, const IntSize& scrollOffset, float pageScale)
@@ -1156,7 +1276,8 @@ void CCLayerTreeHostImpl::makeScrollAndScaleSet(CCScrollAndScaleSet* scrollInfo,
     scroll.scrollDelta = scrollOffset - toSize(m_rootScrollLayerImpl->scrollPosition());
     scrollInfo->scrolls.append(scroll);
     m_rootScrollLayerImpl->setSentScrollDelta(scroll.scrollDelta);
-    m_sentPageScaleDelta = scrollInfo->pageScaleDelta = pageScale / m_pageScale;
+    scrollInfo->pageScaleDelta = pageScale / m_pinchZoomViewport.pageScaleFactor();
+    m_pinchZoomViewport.setSentPageScaleDelta(scrollInfo->pageScaleDelta);
 }
 
 static void collectScrollDeltas(CCScrollAndScaleSet* scrollInfo, CCLayerImpl* layerImpl)
@@ -1182,18 +1303,29 @@ PassOwnPtr<CCScrollAndScaleSet> CCLayerTreeHostImpl::processScrollDeltas()
     OwnPtr<CCScrollAndScaleSet> scrollInfo = adoptPtr(new CCScrollAndScaleSet());
 
     if (m_pinchGestureActive || m_pageScaleAnimation) {
-        m_sentPageScaleDelta = scrollInfo->pageScaleDelta = 1;
-        if (m_pinchGestureActive)
-            computePinchZoomDeltas(scrollInfo.get());
-        else if (m_pageScaleAnimation.get())
-            computeDoubleTapZoomDeltas(scrollInfo.get());
+        scrollInfo->pageScaleDelta = 1;
+        m_pinchZoomViewport.setSentPageScaleDelta(1);
+        // FIXME(aelias): Make these painting optimizations compatible with
+        // compositor-side scaling.
+        if (!CCSettings::pageScalePinchZoomEnabled()) {
+            if (m_pinchGestureActive)
+                computePinchZoomDeltas(scrollInfo.get());
+            else if (m_pageScaleAnimation.get())
+                computeDoubleTapZoomDeltas(scrollInfo.get());
+        }
         return scrollInfo.release();
     }
 
     collectScrollDeltas(scrollInfo.get(), m_rootLayerImpl.get());
-    m_sentPageScaleDelta = scrollInfo->pageScaleDelta = m_pageScaleDelta;
+    scrollInfo->pageScaleDelta = m_pinchZoomViewport.pageScaleDelta();
+    m_pinchZoomViewport.setSentPageScaleDelta(scrollInfo->pageScaleDelta);
 
     return scrollInfo.release();
+}
+
+WebTransformationMatrix CCLayerTreeHostImpl::implTransform() const
+{
+    return m_pinchZoomViewport.implTransform();
 }
 
 void CCLayerTreeHostImpl::setFullRootLayerDamage()
@@ -1212,9 +1344,9 @@ void CCLayerTreeHostImpl::animatePageScale(double monotonicTime)
 
     IntSize scrollTotal = flooredIntSize(m_rootScrollLayerImpl->scrollPosition() + m_rootScrollLayerImpl->scrollDelta());
 
-    setPageScaleDelta(m_pageScaleAnimation->pageScaleAtTime(monotonicTime) / m_pageScale);
+    setPageScaleDelta(m_pageScaleAnimation->pageScaleAtTime(monotonicTime) / m_pinchZoomViewport.pageScaleFactor());
     IntSize nextScroll = m_pageScaleAnimation->scrollOffsetAtTime(monotonicTime);
-    nextScroll.scale(1 / m_pageScaleDelta);
+    nextScroll.scale(1 / m_pinchZoomViewport.pageScaleDelta());
     m_rootScrollLayerImpl->scrollBy(nextScroll - scrollTotal);
     m_client->setNeedsRedrawOnImplThread();
 

@@ -542,6 +542,23 @@ static void setScale(LayerChromium* layer, float deviceScaleFactor, float pageSc
         layer->setContentsScale(deviceScaleFactor * pageScaleFactor);
 }
 
+static LayerChromium* findFirstScrollableLayer(LayerChromium* layer)
+{
+    if (!layer)
+        return 0;
+
+    if (layer->scrollable())
+        return layer;
+
+    for (size_t i = 0; i < layer->children().size(); ++i) {
+        LayerChromium* found = findFirstScrollableLayer(layer->children()[i].get());
+        if (found)
+            return found;
+    }
+
+    return 0;
+}
+
 static void updateLayerScale(LayerChromium* layer, float deviceScaleFactor, float pageScaleFactor)
 {
     setScale(layer, deviceScaleFactor, pageScaleFactor);
@@ -568,6 +585,12 @@ void CCLayerTreeHost::updateLayers(LayerChromium* rootLayer, CCTextureUpdateQueu
     LayerList updateList;
 
     {
+        if (CCSettings::pageScalePinchZoomEnabled()) {
+            LayerChromium* rootScroll = findFirstScrollableLayer(rootLayer);
+            if (rootScroll)
+                rootScroll->setImplTransform(m_implTransform);
+        }
+
         TRACE_EVENT0("cc", "CCLayerTreeHost::updateLayers::calcDrawEtc");
         CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize(), m_deviceScaleFactor, rendererCapabilities().maxTextureSize, updateList);
     }
@@ -705,23 +728,6 @@ bool CCLayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList
     return needMoreUpdates;
 }
 
-static LayerChromium* findFirstScrollableLayer(LayerChromium* layer)
-{
-    if (!layer)
-        return 0;
-
-    if (layer->scrollable())
-        return layer;
-
-    for (size_t i = 0; i < layer->children().size(); ++i) {
-        LayerChromium* found = findFirstScrollableLayer(layer->children()[i].get());
-        if (found)
-            return found;
-    }
-
-    return 0;
-}
-
 void CCLayerTreeHost::applyScrollAndScale(const CCScrollAndScaleSet& info)
 {
     if (!m_rootLayer)
@@ -741,6 +747,11 @@ void CCLayerTreeHost::applyScrollAndScale(const CCScrollAndScaleSet& info)
     }
     if (!rootScrollDelta.isZero() || info.pageScaleDelta != 1)
         m_client->applyScrollAndScale(rootScrollDelta, info.pageScaleDelta);
+}
+
+void CCLayerTreeHost::setImplTransform(const WebKit::WebTransformationMatrix& transform)
+{
+    m_implTransform = transform;
 }
 
 void CCLayerTreeHost::startRateLimiter(WebKit::WebGraphicsContext3D* context)

@@ -2477,6 +2477,8 @@ void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
         routing_id_, input_handler_identifier, AsWeakPtr());
 
   RenderWidget::didActivateCompositor(input_handler_identifier);
+
+  ProcessAcceleratedPinchZoomFlags(*CommandLine::ForCurrentProcess());
 }
 
 // WebKit::WebFrameClient -----------------------------------------------------
@@ -3156,19 +3158,9 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
       command_line.HasSwitch(switches::kEnableViewport);
   bool enable_fixed_layout =
       command_line.HasSwitch(switches::kEnableFixedLayout);
-  bool enable_pinch = enable_viewport ||
-                      command_line.HasSwitch(switches::kEnablePinch);
 
   webview()->enableFixedLayoutMode(enable_fixed_layout || enable_viewport);
   webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
-  if (!enable_pinch &&
-      webview()->isAcceleratedCompositingActive() &&
-      webkit_preferences_.apply_default_device_scale_factor_in_compositor &&
-      device_scale_factor_ != 1) {
-    // Page scaling is disabled by default when applying a scale factor in the
-    // compositor since they are currently incompatible.
-    webview()->setPageScaleFactorLimits(1, 1);
-  }
 
   if (enable_viewport) {
     webview()->settings()->setViewportEnabled(true);
@@ -3184,6 +3176,31 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
         webview()->setFixedLayoutSize(WebSize(width, height));
     }
   }
+
+  ProcessAcceleratedPinchZoomFlags(command_line);
+}
+
+void RenderViewImpl::ProcessAcceleratedPinchZoomFlags(
+    const CommandLine& command_line) {
+  bool enable_viewport =
+      command_line.HasSwitch(switches::kEnableViewport);
+  bool enable_pinch = enable_viewport ||
+                      command_line.HasSwitch(switches::kEnablePinch);
+  bool enable_pinch_in_compositor =
+      command_line.HasSwitch(switches::kEnablePinchInCompositor);
+
+  if (!enable_pinch &&
+      webview()->isAcceleratedCompositingActive() &&
+      webkit_preferences_.apply_default_device_scale_factor_in_compositor &&
+      device_scale_factor_ != 1) {
+    // Page scaling is disabled by default when applying a scale factor in the
+    // compositor since they are currently incompatible.
+    webview()->setPageScaleFactorLimits(1, 1);
+  }
+
+  if (enable_pinch_in_compositor &&
+      webview()->isAcceleratedCompositingActive())
+    webview()->setPageScaleFactorLimits(1, 4);
 }
 
 void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {

@@ -63,6 +63,12 @@ void WebCompositor::setAcceleratedAnimationEnabled(bool enabled)
     CCSettings::setAcceleratedAnimationEnabled(enabled);
 }
 
+void WebCompositor::setPageScalePinchZoomEnabled(bool enabled)
+{
+    ASSERT(!WebCompositorImpl::initialized());
+    CCSettings::setPageScalePinchZoomEnabled(enabled);
+}
+
 void WebCompositorImpl::initialize(WebThread* implThread)
 {
     ASSERT(!s_initialized);

@@ -156,7 +156,8 @@ public:
 
     IntSize scrollDelta() const { return IntSize(); }
 
-    float pageScaleDelta() const { return 1; }
+    void setImplTransform(const WebKit::WebTransformationMatrix&);
+    const WebKit::WebTransformationMatrix& implTransform() const { return m_implTransform; }
 
     void setDoubleSided(bool);
     bool doubleSided() const { return m_doubleSided; }
@@ -374,6 +375,8 @@ private:
     IntRect m_drawableContentRect;
     float m_contentsScale;
     bool m_boundsContainPageScale;
+
+    WebKit::WebTransformationMatrix m_implTransform;
 
     WebKit::WebAnimationDelegate* m_layerAnimationDelegate;
     WebKit::WebLayerScrollClient* m_layerScrollClient;

@@ -180,13 +180,14 @@ public:
     const FloatSize& scrollDelta() const { return m_scrollDelta; }
     void setScrollDelta(const FloatSize&);
 
-    float pageScaleDelta() const { return m_pageScaleDelta; }
-    void setPageScaleDelta(float);
+    const WebKit::WebTransformationMatrix& implTransform() const { return m_implTransform; }
+    void setImplTransform(const WebKit::WebTransformationMatrix& transform);
 
     const IntSize& sentScrollDelta() const { return m_sentScrollDelta; }
     void setSentScrollDelta(const IntSize& sentScrollDelta) { m_sentScrollDelta = sentScrollDelta; }
 
-    void scrollBy(const FloatSize& scroll);
+    // Returns the delta of the scroll that was outside of the bounds of the initial scroll
+    FloatSize scrollBy(const FloatSize& scroll);
 
     bool scrollable() const { return m_scrollable; }
     void setScrollable(bool scrollable) { m_scrollable = scrollable; }
@@ -340,7 +341,7 @@ private:
     FloatSize m_scrollDelta;
     IntSize m_sentScrollDelta;
     IntSize m_maxScrollPosition;
-    float m_pageScaleDelta;
+    WebKit::WebTransformationMatrix m_implTransform;
 
     // The layer whose coordinate space this layer draws into. This can be
     // either the same layer (m_renderTarget == this) or an ancestor of this

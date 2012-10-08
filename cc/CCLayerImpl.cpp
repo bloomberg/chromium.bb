@@ -48,7 +48,6 @@ CCLayerImpl::CCLayerImpl(int id)
     , m_forceRenderSurface(false)
     , m_isContainerForFixedPositionLayers(false)
     , m_fixedToContainerLayer(false)
-    , m_pageScaleDelta(1)
     , m_renderTarget(0)
     , m_drawDepth(0)
     , m_drawOpacity(0)
@@ -175,20 +174,23 @@ CCResourceProvider::ResourceId CCLayerImpl::contentsResourceId() const
     return 0;
 }
 
-void CCLayerImpl::scrollBy(const FloatSize& scroll)
+FloatSize CCLayerImpl::scrollBy(const FloatSize& scroll)
 {
     IntSize minDelta = -toSize(m_scrollPosition);
     IntSize maxDelta = m_maxScrollPosition - toSize(m_scrollPosition);
     // Clamp newDelta so that position + delta stays within scroll bounds.
     FloatSize newDelta = (m_scrollDelta + scroll).expandedTo(minDelta).shrunkTo(maxDelta);
+    FloatSize unscrolled = m_scrollDelta + scroll - newDelta;
 
     if (m_scrollDelta == newDelta)
-        return;
+        return unscrolled;
 
     m_scrollDelta = newDelta;
     if (m_scrollbarAnimationController)
         m_scrollbarAnimationController->updateScrollOffset(this);
     noteLayerPropertyChangedForSubtree();
+
+    return unscrolled;
 }
 
 CCInputHandlerClient::ScrollStatus CCLayerImpl::tryScroll(const IntPoint& viewportPoint, CCInputHandlerClient::ScrollInputType type) const
@@ -613,12 +615,12 @@ void CCLayerImpl::setScrollDelta(const FloatSize& scrollDelta)
     noteLayerPropertyChangedForSubtree();
 }
 
-void CCLayerImpl::setPageScaleDelta(float pageScaleDelta)
+void CCLayerImpl::setImplTransform(const WebKit::WebTransformationMatrix& transform)
 {
-    if (m_pageScaleDelta == pageScaleDelta)
+    if (m_implTransform == transform)
         return;
 
-    m_pageScaleDelta = pageScaleDelta;
+    m_implTransform = transform;
     noteLayerPropertyChangedForSubtree();
 }
 

@@ -121,6 +121,13 @@ void WebCompositorSupportImpl::setAcceleratedAnimationEnabled(bool enabled) {
 #endif
 }
 
+void WebCompositorSupportImpl::setPageScalePinchZoomEnabled(bool enabled) {
+#if defined(USE_LIBCC_FOR_COMPOSITOR)
+  WebCompositorImpl::setPageScalePinchZoomEnabled(enabled);
+#else
+  WebCompositor::setPageScalePinchZoomEnabled(enabled);
+#endif
+}
 
 WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(
     WebLayerTreeViewClient* client, const WebLayer& root,

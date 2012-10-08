@@ -12,6 +12,7 @@ namespace {
 static bool s_perTilePaintingEnabled = false;
 static bool s_partialSwapEnabled = false;
 static bool s_acceleratedAnimationEnabled = false;
+static bool s_pageScalePinchZoomEnabled = false;
 } // namespace
 
 namespace cc {
@@ -24,6 +25,9 @@ void CCSettings::setPartialSwapEnabled(bool enabled) { s_partialSwapEnabled = en
 
 bool CCSettings::acceleratedAnimationEnabled() { return s_acceleratedAnimationEnabled; }
 void CCSettings::setAcceleratedAnimationEnabled(bool enabled) { s_acceleratedAnimationEnabled = enabled; }
+
+bool CCSettings::pageScalePinchZoomEnabled() { return s_pageScalePinchZoomEnabled; }
+void CCSettings::setPageScalePinchZoomEnabled(bool enabled) { s_pageScalePinchZoomEnabled = enabled; }
 
 bool CCSettings::jankInsteadOfCheckerboard()
 {
@@ -40,6 +44,7 @@ void CCSettings::reset()
     s_perTilePaintingEnabled = false;
     s_partialSwapEnabled = false;
     s_acceleratedAnimationEnabled = false;
+    s_pageScalePinchZoomEnabled = false;
 }
 
 } // namespace cc

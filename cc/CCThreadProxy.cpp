@@ -466,6 +466,7 @@ void CCThreadProxy::scheduledActionBeginFrame()
     m_pendingBeginFrameRequest = adoptPtr(new BeginFrameAndCommitState());
     m_pendingBeginFrameRequest->monotonicFrameBeginTime = monotonicallyIncreasingTime();
     m_pendingBeginFrameRequest->scrollInfo = m_layerTreeHostImpl->processScrollDeltas();
+    m_pendingBeginFrameRequest->implTransform = m_layerTreeHostImpl->implTransform();
     m_pendingBeginFrameRequest->memoryAllocationLimitBytes = m_layerTreeHostImpl->memoryAllocationLimitBytes();
     m_layerTreeHost->getEvictedContentTexturesBackings(m_pendingBeginFrameRequest->evictedContentsTexturesBackings);
 
@@ -510,6 +511,7 @@ void CCThreadProxy::beginFrame()
     // FIXME: technically, scroll deltas need to be applied for dropped commits as well.
     // Re-do the commit flow so that we don't send the scrollInfo on the BFAC message.
     m_layerTreeHost->applyScrollAndScale(*request->scrollInfo);
+    m_layerTreeHost->setImplTransform(request->implTransform);
 
     if (!m_inCompositeAndReadback && !m_layerTreeHost->visible()) {
         m_commitRequested = false;

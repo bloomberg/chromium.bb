@@ -680,6 +680,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 
+  prefs.apply_page_scale_factor_in_compositor =
+      command_line.HasSwitch(switches::kEnablePinchInCompositor);
+
   content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 
   // Disable compositing in guests until we have compositing path implemented

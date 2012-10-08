@@ -282,7 +282,7 @@ WebTransformationMatrix computeScrollCompensationForThisLayer(CCLayerImpl* scrol
     //
 
     WebTransformationMatrix partialLayerOriginTransform = parentMatrix;
-    partialLayerOriginTransform.scale(scrollingLayer->pageScaleDelta());
+    partialLayerOriginTransform.multiply(scrollingLayer->implTransform());
 
     WebTransformationMatrix scrollCompensationForThisLayer = partialLayerOriginTransform; // Step 3
     scrollCompensationForThisLayer.translate(scrollingLayer->scrollDelta().width(), scrollingLayer->scrollDelta().height()); // Step 2
@@ -470,13 +470,13 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     FloatPoint position = layer->position() - layer->scrollDelta();
 
     WebTransformationMatrix layerLocalTransform;
-    // LT = S[pageScaleDelta]
-    layerLocalTransform.scale(layer->pageScaleDelta());
-    // LT = S[pageScaleDelta] * Tr[origin] * Tr[origin2anchor]
+    // LT = M[impl transformation]
+    layerLocalTransform.multiply(layer->implTransform());
+    // LT = M[impl transformation] * Tr[origin] * Tr[origin2anchor]
     layerLocalTransform.translate3d(position.x() + anchorPoint.x() * bounds.width(), position.y() + anchorPoint.y() * bounds.height(), layer->anchorPointZ());
-    // LT = S[pageScaleDelta] * Tr[origin] * Tr[origin2anchor] * M[layer]
+    // LT = M[impl transformation] * Tr[origin] * Tr[origin2anchor] * M[layer]
     layerLocalTransform.multiply(layer->transform());
-    // LT = S[pageScaleDelta] * Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2origin]
+    // LT = S[impl transformation] * Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2origin]
     layerLocalTransform.translate3d(-anchorPoint.x() * bounds.width(), -anchorPoint.y() * bounds.height(), -layer->anchorPointZ());
 
     WebTransformationMatrix combinedTransform = parentMatrix;

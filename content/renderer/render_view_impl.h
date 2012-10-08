@@ -1167,6 +1167,10 @@ class RenderViewImpl : public RenderWidget,
   // --enable-fixed-layout[=w,h].
   void ProcessViewLayoutFlags(const CommandLine& command_line);
 
+  // Processes the command-line flags --enable-pinch and
+  // --enable-pinch-in-compositor
+  void ProcessAcceleratedPinchZoomFlags(const CommandLine& command_line);
+
   // Sends a reply to the current find operation handling if it was a
   // synchronous find request.
   void SendFindReply(int request_id,

@@ -120,7 +120,8 @@ WebPreferences::WebPreferences()
       fixed_position_creates_stacking_context(false),
       sync_xhr_in_documents_enabled(true),
       number_of_cpu_cores(1),
-      cookie_enabled(true) {
+      cookie_enabled(true),
+      apply_page_scale_factor_in_compositor(false) {
   standard_font_family_map[kCommonScript] =
       ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] =
@@ -249,6 +250,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDefaultTextEncodingName(ASCIIToUTF16(default_encoding));
   settings->setApplyDefaultDeviceScaleFactorInCompositor(
       apply_default_device_scale_factor_in_compositor);
+  settings->setApplyPageScaleFactorInCompositor(
+      apply_page_scale_factor_in_compositor);
   settings->setJavaScriptEnabled(javascript_enabled);
   settings->setWebSecurityEnabled(web_security_enabled);
   settings->setJavaScriptCanOpenWindowsAutomatically(
@@ -433,6 +436,9 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setFixedPositionCreatesStackingContext(
       fixed_position_creates_stacking_context);
+
+  settings->setApplyPageScaleFactorInCompositor(
+      apply_page_scale_factor_in_compositor);
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }

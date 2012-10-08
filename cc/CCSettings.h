@@ -18,6 +18,7 @@ public:
     static bool perTilePaintingEnabled();
     static bool partialSwapEnabled();
     static bool acceleratedAnimationEnabled();
+    static bool pageScalePinchZoomEnabled();
 
     static bool jankInsteadOfCheckerboard();
     static bool backgroundColorInsteadOfCheckerboard();
@@ -27,6 +28,7 @@ public:
     static void setPerTilePaintingEnabled(bool);
     static void setPartialSwapEnabled(bool);
     static void setAcceleratedAnimationEnabled(bool);
+    static void setPageScalePinchZoomEnabled(bool);
 
     // These settings are meant to be set only once, and only read thereafter.
     // This function is only for resetting settings in tests.

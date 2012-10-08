@@ -110,6 +110,7 @@ extern const char kEnableMonitorProfile[];
 extern const char kEnablePartialSwap[];
 extern const char kEnableUIReleaseFrontSurface[];
 extern const char kEnablePinch[];
+CONTENT_EXPORT extern const char kEnablePinchInCompositor[];
 extern const char kEnablePreparsedJsCaching[];
 CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];
 extern const char kEnablePruneGpuCommandBuffers[];

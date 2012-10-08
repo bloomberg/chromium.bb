@@ -452,6 +452,14 @@ void LayerChromium::setForceRenderSurface(bool force)
     setNeedsCommit();
 }
 
+void LayerChromium::setImplTransform(const WebTransformationMatrix& transform)
+{
+    if (m_implTransform == transform)
+        return;
+    m_implTransform = transform;
+    setNeedsCommit();
+}
+
 void LayerChromium::setDoubleSided(bool doubleSided)
 {
     if (m_doubleSided == doubleSided)

@@ -191,6 +191,7 @@ public:
     void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, double durationSec);
 
     void applyScrollAndScale(const CCScrollAndScaleSet&);
+    void setImplTransform(const WebKit::WebTransformationMatrix&);
 
     void startRateLimiter(WebKit::WebGraphicsContext3D*);
     void stopRateLimiter(WebKit::WebGraphicsContext3D*);
@@ -267,6 +268,7 @@ private:
 
     float m_pageScaleFactor;
     float m_minPageScaleFactor, m_maxPageScaleFactor;
+    WebKit::WebTransformationMatrix m_implTransform;
     bool m_triggerIdleUpdates;
 
     SkColor m_backgroundColor;

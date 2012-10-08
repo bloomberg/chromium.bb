@@ -45,6 +45,57 @@ public:
     virtual void releaseContentsTexturesOnImplThread() = 0;
 };
 
+// CCPinchZoomViewport models the bounds and offset of the viewport that is used during a pinch-zoom operation.
+// It tracks the layout-space dimensions of the viewport before any applied scale, and then tracks the layout-space
+// coordinates of the viewport respecting the pinch settings.
+class CCPinchZoomViewport {
+public:
+    CCPinchZoomViewport();
+
+    float totalPageScaleFactor() const;
+
+    void setPageScaleFactor(float factor) { m_pageScaleFactor = factor; }
+    float pageScaleFactor() const { return m_pageScaleFactor; }
+
+    void setPageScaleDelta(float delta);
+    float pageScaleDelta() const  { return m_pageScaleDelta; }
+
+    float minPageScaleFactor() const { return m_minPageScaleFactor; }
+    float maxPageScaleFactor() const { return m_maxPageScaleFactor; }
+
+    void setSentPageScaleDelta(float delta) { m_sentPageScaleDelta = delta; }
+    float sentPageScaleDelta() const { return m_sentPageScaleDelta; }
+
+    // Returns true if the passed parameters were different from those previously
+    // cached.
+    bool setPageScaleFactorAndLimits(float pageScaleFactor,
+                                     float minPageScaleFactor,
+                                     float maxPageScaleFactor);
+
+    // Returns the bounds and offset of the scaled and translated viewport to use for pinch-zoom.
+    FloatRect bounds() const;
+    const FloatPoint& scrollDelta() const { return m_pinchViewportScrollDelta; }
+
+    void setLayoutViewportSize(const FloatSize& size) { m_layoutViewportSize = size; }
+
+    // Apply the scroll offset in layout space to the offset of the pinch-zoom viewport. The viewport cannot be
+    // scrolled outside of the layout viewport bounds. Returns the component of the scroll that is un-applied due to
+    // this constraint.
+    FloatSize applyScroll(FloatSize&);
+
+    WebKit::WebTransformationMatrix implTransform() const;
+
+private:
+    float m_pageScaleFactor;
+    float m_pageScaleDelta;
+    float m_sentPageScaleDelta;
+    float m_maxPageScaleFactor;
+    float m_minPageScaleFactor;
+
+    FloatPoint m_pinchViewportScrollDelta;
+    FloatSize m_layoutViewportSize;
+};
+
 // CCLayerTreeHostImpl owns the CCLayerImpl tree as well as associated rendering state
 class CCLayerTreeHostImpl : public CCInputHandlerClient,
                             public CCRendererClient,
@@ -152,10 +203,11 @@ public:
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float);
 
-    float pageScale() const { return m_pageScale; }
-    void setPageScaleFactorAndLimits(float pageScale, float minPageScale, float maxPageScale);
+    float pageScaleFactor() const;
+    void setPageScaleFactorAndLimits(float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor);
 
     PassOwnPtr<CCScrollAndScaleSet> processScrollDeltas();
+    WebKit::WebTransformationMatrix implTransform() const;
 
     void startPageScaleAnimation(const IntSize& tragetPosition, bool useAnchor, float scale, double durationSec);
 
@@ -171,6 +223,8 @@ public:
     void setNeedsRedraw();
 
     void renderingStats(CCRenderingStats*) const;
+
+    void updateRootScrollLayerImplTransform();
 
     CCFrameRateCounter* fpsCounter() const { return m_fpsCounter.get(); }
     CCDebugRectHistory* debugRectHistory() const { return m_debugRectHistory.get(); }
@@ -267,11 +321,6 @@ private:
     bool m_contentsTexturesPurged;
     size_t m_memoryAllocationLimitBytes;
 
-    float m_pageScale;
-    float m_pageScaleDelta;
-    float m_sentPageScaleDelta;
-    float m_minPageScale, m_maxPageScale;
-
     SkColor m_backgroundColor;
     bool m_hasTransparentBackground;
 
@@ -290,6 +339,8 @@ private:
     // List of visible layers for the most recently prepared frame. Used for
     // rendering and input event hit testing.
     CCLayerList m_renderSurfaceLayerList;
+
+    CCPinchZoomViewport m_pinchZoomViewport;
 
     OwnPtr<CCFrameRateCounter> m_fpsCounter;
     OwnPtr<CCDebugRectHistory> m_debugRectHistory;
