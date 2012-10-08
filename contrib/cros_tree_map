@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -212,7 +212,7 @@ def jsonify_tree(tree, name):
     if subtree_total:
         dot_total = subtree_total - total
         if dot_total > 0:
-            children.append({'name': '<self> ' + format_bytes(dot_total),
+            children.append({'name': '. ' + format_bytes(dot_total),
                              'data': { '$area': dot_total }})
             total = subtree_total
 
