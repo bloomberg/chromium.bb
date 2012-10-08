@@ -1,0 +1,3406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ChromeOS-specific strings (included from generated_resources.grd).
+     Everything in this file is wrapped in <if expr="pp_ifdef('chromeos')">. -->
+<grit-part>
+  <!-- Idle Logout Dialog Strings -->
+  <message name="IDS_IDLE_LOGOUT_TITLE" desc="Dialog title for the idle logout dialog">
+    Are you still there?
+  </message>
+  <message name="IDS_IDLE_LOGOUT_WARNING_RESTART" desc="Restart label for the idle logout dialog">
+    This computer will reset in <ph name="LOGOUT_TIME_LEFT">$1<ex>20</ex></ph> seconds.
+Press any key to continue exploring.
+  </message>
+  <message name="IDS_IDLE_LOGOUT_WARNING_RESTART_1S" desc="Restart label for the idle logout dialog at 1 second left">
+    This computer will reset in 1 second.
+Press any key to continue exploring.
+  </message>
+  <message name="IDS_IDLE_LOGOUT_WARNING_RESTART_NOW" desc="Restart label for the idle logout dialog with no time left">
+    Going.. Going... Gone.
+  </message>
+
+  <!-- Imageburn Strings -->
+  <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
+    Checking for updates
+  </message>
+  <message name="IDS_UPDATE_VERIFYING" desc="Message that the system is verifying an update">
+    Verifying...
+  </message>
+  <message name="IDS_UPDATE_FINALIZING" desc="Message that the system is finalizing an update">
+    Finalizing...
+  </message>
+  <message name="IDS_IMAGEBURN_HEADER_TITLE" desc="Title that is displayed on image burning webpage ">
+    Create OS Recovery Media
+  </message>
+  <message name="IDS_IMAGEBURN_HEADER_DESCRIPTION" desc="Text diplayed under image burning page title">
+    If you ever need to restore your computer's operating system you'll need a recovery SD card or USB memory stick.
+  </message>
+  <message name="IDS_IMAGEBURN_HEADER_LINK" desc="Link to more info on system recovery">
+    Learn more about system recovery
+  </message>
+  <message name="IDS_IMAGEBURN_NO_DEVICES_STATUS" desc="Message telling user to insert removable media image will be burnt to">
+    Insert an SD card or USB memory stick
+  </message>
+  <message name="IDS_IMAGEBURN_NO_DEVICES_WARNING" desc="Warning that device must be at least 4GB big">
+    The device must have capacity of 4GB or greater.
+  </message>
+  <message name="IDS_IMAGEBURN_MUL_DEVICES_STATUS" desc="Message telling user to select storage device to use for burning">
+    Select a removable storage device to use
+  </message>
+  <message name="IDS_IMAGEBURN_USB_DEVICE_STATUS" desc="Message telling user that an USB memory stick has been detected">
+    USB memory stick detected
+  </message>
+  <message name="IDS_IMAGEBURN_SD_DEVICE_STATUS" desc="Message telling user that a SD card has been detected">
+    SD card detected
+  </message>
+  <message name="IDS_IMAGEBURN_DEVICES_WARNING" desc="Warning that data on selected device will be erased">
+    All files on <ph name="DEVICE_NAME">$1<ex>Kingston DataTraveler</ex></ph> will be erased.
+  </message>
+  <message name="IDS_IMAGEBURN_NO_CONNECTION_STATUS" desc="Message telling user that the device is not connected to the Internet">
+    Internet not connected
+  </message>
+  <message name="IDS_IMAGEBURN_NO_CONNECTION_WARNING" desc="Message instructing user to connect to the Internet">
+    Please connect to the Internet to proceed.
+  </message>
+  <message name="IDS_IMAGEBURN_INSUFFICIENT_SPACE_STATUS" desc="Message telling user that removable device has insufficient space">
+    Insufficient space
+  </message>
+  <message name="IDS_IMAGEBURN_INSUFFICIENT_SPACE_WARNING" desc="Message instructing user to insert device with enough capacity">
+    The storage device has a capacity of <ph name="DEVICE_CAPACITY">$1<ex>1MB</ex></ph>. Please insert a SD card or USB memory stick with at least 4GB of capacity.
+  </message>
+  <message name="IDS_IMAGEBURN_DOWNLOADING_STATUS" desc="Message telling user that the image is being downloaded">
+    Downloading recovery image...
+  </message>
+  <message name="IDS_IMAGEBURN_DOWNLOAD_PROGRESS_TEXT" desc="Information on downloaded amount">
+    <ph name="DOWNLOADED_AMOUNT">$1<ex>40kB</ex></ph> of <ph name="TOTAL_SIZE">$2<ex>250kB</ex></ph> downloaded
+  </message>
+  <message name="IDS_IMAGEBURN_DOWNLOAD_TIME_REMAINING" desc="Expected remaining time of the download">
+    Time remaining: <ph name="TIME_REMAINING">$1<ex>5s</ex></ph>
+  </message>
+  <message name="IDS_IMAGEBURN_UNZIP_STATUS" desc="Message telling user that the image is being extracted">
+    Extracting recovery image...
+  </message>
+  <message name="IDS_IMAGEBURN_BURN_STATUS" desc="Message telling user that the image is being copied">
+    Copying recovery image...
+  </message>
+  <message name="IDS_IMAGEBURN_BURN_PROGRESS_TEXT" desc="Information on burned amount">
+    <ph name="BURNT_AMOUNT">$1<ex>40kB</ex></ph> of <ph name="TOTAL_SIZE">$2<ex>250kB</ex></ph> copied
+  </message>
+  <message name="IDS_IMAGEBURN_PROGRESS_TIME_UNKNOWN" desc="Message telling user that a tast could take few minutes">
+    This may take a few minutes
+  </message>
+  <message name="IDS_IMAGEBURN_ERROR_STATUS" desc="Message telling user that an error occurred">
+    An error occurred
+  </message>
+  <message name="IDS_IMAGEBURN_DOWNLOAD_ERROR" desc="Message telling user that an error occurred during download">
+    There was a problem during recovery image download.
+  </message>
+  <message name="IDS_IMAGEBURN_EXTRACTING_ERROR" desc="Message telling user that downloaded zip could not be extracted">
+    There was a problem extracting image to the machine.
+  </message>
+  <message name="IDS_IMAGEBURN_BURN_ERROR" desc="Message telling user that something went wrong while burning the image to the device">
+    There was a problem during copying recovery image to device.
+  </message>
+  <message name="IDS_IMAGEBURN_DEVICE_NOT_FOUND_ERROR" desc="Message telling user that targetd device could not be found">
+    There was a problem while creating OS recovery media. Used storage device could not be found.
+  </message>
+  <message name="IDS_IMAGEBURN_USER_ERROR" desc="Message shown when user cancels burn process">
+    OS Recovery Media creation has been cancelled.
+  </message>
+  <message name="IDS_IMAGEBURN_NETWORK_ERROR" desc="Message shown when we loose network connectivity during download">
+    There was a problem during recovery image download. Network connection has been lost.
+  </message>
+  <message name="IDS_IMAGEBURN_SUCCESS_STATUS" desc="Message telling user that image burning was successful">
+    Success
+  </message>
+  <message name="IDS_IMAGEBURN_SUCCESS_DESC" desc="Message teling user that recovery media is ready to be used">
+    Your recovery media is ready. You may remove it from your system.
+  </message>
+  <message name="IDS_IMAGEBURN_PAGE_TITLE" desc="Image-burn html page title">
+    Create a Recovery Media
+  </message>
+  <message name="IDS_IMAGEBURN_CONFIRM_BUTTON" desc="Text on the button that starts burn process">
+    OK
+  </message>
+  <message name="IDS_IMAGEBURN_CANCEL_BUTTON" desc="Text on the button that cancels download">
+    Cancel
+  </message>
+  <message name="IDS_IMAGEBURN_RETRY_BUTTON" desc="Text on the button that triggers burn restart">
+    Try again
+  </message>
+
+  <!-- Chrome OS Strings -->
+  <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_ALT" desc="Butter bar text when prompting user for sending coupon code. Prefixed with the site name.">
+    wants to confirm you are browsing on a Chrome OS device by requesting Google to verify your coupon code.
+  </message>
+  <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL" desc="Butter bar text when prompting user for sending coupon code. Prefixed with the site name.">
+    wants to confirm you are browsing on a Chrome OS device.
+  </message>
+  <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_LEARN_MORE" desc="Text of the Learn More link on the offer butter bar.">
+    Learn More
+  </message>
+  <message name="IDS_OFFERS_CONSENT_INFOBAR_ENABLE_BUTTON" desc="Enable button label.">
+    Allow
+  </message>
+  <message name="IDS_OFFERS_CONSENT_INFOBAR_DISABLE_BUTTON" desc="Disable button label.">
+    Deny
+  </message>
+  <message name="IDS_NETWORK_CONFIG_LOADING_ERROR" desc="Error message for loading network configuration file.">
+    Error loading network configuration file: <ph name="error">$1<ex>Unknown error</ex></ph>
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_UNKNOWN" desc="Error for network configuration: Unknown error.">
+    Unknown error
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_INCORRECT_PASSWORD" desc="Error for network configuration: Incorrect password.">
+    Incorrect password
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_TYPE_MISSING" desc="Error for network configuration: Network type missing.">
+    Network type missing
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_PROP_DICT_MALFORMED" desc="Error for network configuration: Network property dictionary malformed.">
+    Network property dictionary malformed
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_EAP_DICT_MALFORMED" desc="Error for network configuration: Network EAP dictionary malformed.">
+    Network EAP dictionary malformed
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_DELETE" desc="Error for network configuration: Network delete error.">
+    Network delete error
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_NETWORK_IMPORT" desc="Error for network configuration: Network import error.">
+    Network import error
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_GUID_MISSING" desc="Error for network configuration: Certificateg GUID missing.">
+    Certificate GUID missing
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_GUID_COLLISION" desc="Error for network configuration: GUID is taken by a different certificate.">
+    Certificate GUID collision
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TYPE_MISSING" desc="Error for network configuration: Certificate type missing.">
+    Certificate type missing
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TRUST_INVALID" desc="Error for network configuration: Certificate trust invalid.">
+    Certificate trust invalid
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_TRUST_UNKNOWN" desc="Error for network configuration: Certificate trust unknown.">
+    Certificate trust unknown
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MISSING" desc="Error for network configuration: Certificate data missing.">
+    Certificate data missing
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_DATA_MALFORMED" desc="Error for network configuration: Certificate data malformed.">
+    Certificate data malformed
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_DELETE" desc="Error for network configuration: Certificate delete error.">
+    Certificate delete error
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_CERT_IMPORT" desc="Error for network configuration: Certificate import error.">
+    Certificate import error
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_MALFORMED" desc="Displayed when importing an encrypted ONC file and the ONC file is malformed.">
+    Encrypted ONC file is malformed.
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNSUPPORTED_ENCRYPTION" desc="Displayed when importing an encrypted ONC file and the ONC file uses an encryption protocol that is not supported.">
+    Encrypted ONC file uses an unsupported encryption scheme.
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECODE" desc="Displayed when importing an encrypted ONC file and the encryption parameters are not able to be parsed.">
+    Unable to parse some parameters in the encrypted ONC file.
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECRYPT" desc="Displayed when importing an encrypted ONC file and it is not able to be decrypted.">
+    Unable to decrypt the encrypted ONC file.
+  </message>
+  <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_TOO_MANY_ITERATIONS" desc="Displayed when importing an encrypted ONC file and the iteration count is too large.">
+    Passphrase iteration count is too large.
+  </message>
+  <message name="IDS_NETWORK_ENROLLMENT_HANDLER_TITLE" desc="Title of the window for generating a new network certificate.">
+    Obtain network certificate
+  </message>
+  <message name="IDS_NETWORK_ENROLLMENT_HANDLER_INSTRUCTIONS" desc="Text in the window used for generating a new network certificate.">
+    The certificate required by network "<ph name="network_name">$1<ex>My Wireless</ex></ph>" is either not installed or is no longer valid.  Please get a new certificate and try connecting again.
+  </message>
+  <message name="IDS_NETWORK_ENROLLMENT_HANDLER_BUTTON" desc="Text of the accept button for generating a new network certificate.">
+    Get new certificate
+  </message>
+  <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link on notification when there is no cellular plan">
+    Buy plan...
+  </message>
+  <message name="IDS_NETWORK_MORE_INFO_MESSAGE" desc="Message for more info link on cellular plan low data notification">
+    More info...
+  </message>
+  <message name="IDS_NETWORK_LOW_DATA_TITLE" desc="Title for network low data notification">
+    Low <ph name="network">$1<ex>YBH</ex></ph> data
+  </message>
+  <message name="IDS_NETWORK_OUT_OF_DATA_TITLE" desc="Title for network out of data notification">
+    Out of <ph name="network">$1<ex>YBH</ex></ph> data
+  </message>
+  <message name="IDS_NETWORK_DATA_REMAINING_MESSAGE" desc="Message for network data remaining notification">
+    <ph name="megabytes">$1<ex>50</ex></ph> MB remaining
+  </message>
+  <message name="IDS_NETWORK_DATA_MB_AVAILABLE_MESSAGE" desc="Message for network data available menu item in megabytes">
+    <ph name="megabytes">$1<ex>50</ex></ph> MB available
+  </message>
+  <message name="IDS_NETWORK_DATA_LESS_THAN_ONE_MB_AVAILABLE_MESSAGE" desc="Message for network data available menu item when less than 1 MB available">
+    Less than 1 MB available
+  </message>
+  <message name="IDS_NETWORK_DATA_NONE_AVAILABLE_MESSAGE" desc="Message for network data available menu item when none available">
+    No data available
+  </message>
+  <message name="IDS_NETWORK_NO_DATA_PLAN_MESSAGE" desc="Message for network data remaining notification">
+    You are out of mobile data. Purchase another plan to use <ph name="network">$1<ex>YBH</ex></ph>.
+  </message>
+  <message name="IDS_NETWORK_NEARING_EXPIRATION_TITLE" desc="Title for network nearing expiration notification">
+    Nearing <ph name="network">$1<ex>YBH</ex></ph> expiration
+  </message>
+  <message name="IDS_NETWORK_NO_DATA_PLAN_TITLE" desc="Title for no cellular data plan notification">
+    <ph name="network">$1<ex>YBH</ex></ph> no data plan
+  </message>
+  <message name="IDS_NETWORK_DATA_EXPIRED_TITLE" desc="Title for network data expired notification">
+    <ph name="network">$1<ex>YBH</ex></ph> data expired
+  </message>
+  <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">
+    Network Connection Error
+  </message>
+  <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS" desc="Message for network connection error notification with details">
+    Failed to connect to network '<ph name="name">$1<ex>GoogleGuest</ex></ph>': <ph name="details">$2<ex>Unrecognized error</ex></ph>
+  </message>
+  <message name="IDS_LOW_BATTERY_TITLE" desc="Title for low battery notification">
+    Battery Low
+  </message>
+  <message name="IDS_LOW_BATTERY_MESSAGE" desc="Message for low battery notification">
+    Less than <ph name="MINUTES">$1<ex>15 mins left</ex></ph>.
+  </message>
+  <message name="IDS_UPDATE_TITLE" desc="Title for update notification">
+    System Update
+  </message>
+  <message name="IDS_UPDATE_ERROR" desc="Notification for failed update">
+    System update failed.
+  </message>
+  <message name="IDS_UPDATE_AVAILABLE" desc="Notification for available update">
+    System update available. Preparing to download&#x2026;
+  </message>
+  <message name="IDS_UPDATE_COMPLETED" desc="Notification for update completed">
+    System update complete. Please restart the system.
+  </message>
+  <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen during OOBE">
+    Please wait while <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> installs the latest system updates.
+  </message>
+  <message name="IDS_INSTALLING_UPDATE_DESC" desc="Additional info shown on the updates installation screen during OOBE">
+    Your computer will restart when the update is complete.
+  </message>
+  <message name="IDS_DOWNLOADING" desc="The format for ETA during the update downloading stage">
+    Downloading: <ph name="STATUS">$1<ex>Less than 1 minute left</ex></ph>
+  </message>
+  <message name="IDS_DOWNLOADING_TIME_LEFT_LONG" desc="The status text for downloading estimated time left, when estimated time is more than one hour">
+    More than 1 hour left
+  </message>
+  <message name="IDS_DOWNLOADING_TIME_LEFT_STATUS_ONE_HOUR" desc="The status text for downloading estimated time when about one hour remaining.">
+    About 1 hour left
+  </message>
+  <message name="IDS_DOWNLOADING_TIME_LEFT_STATUS_MINUTES" desc="The status text for downloading estimated time left in minutes. In the localized version instead of |minutes| some abbreviation like |mins| should be used.">
+    About <ph name="TIME">$1<ex>2</ex></ph> minutes left
+  </message>
+  <message name="IDS_DOWNLOADING_TIME_LEFT_SMALL" desc="The status text for downloading estimated time left, when estimated time is less than one minute">
+    Less than 1 minute left
+  </message>
+  <message name="IDS_UPDATE_CANCEL" desc="Message telling to press Escape to cancel update on a non-official build">
+    Press ESCAPE to skip (Non-official builds only).
+  </message>
+  <message name="IDS_UPDATE_CANCELLED" desc="Message shown when the update has been cancelled by user">
+    Cancelling update...
+  </message>
+  <message name="IDS_CHECKING_FOR_UPDATE_MSG" desc="Chrome OS OOBE: message shown during checking for update stage.">
+    <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> updates automatically so you always have the freshest version.
+  </message>
+  <message name="IDS_UPDATE_MSG" desc="Chrome OS OOBE: message shown during update stage.">
+    <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> updates automatically so you always have the freshest version. When this download completes, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will restart and you'll be on your way.
+  </message>
+  <message name="IDS_WELCOME_SCREEN_GREETING" desc="Greeting message on the OOBE welcome screen">
+    Welcome!
+  </message>
+  <message name="IDS_WELCOME_SCREEN_TITLE" desc="Title of the OOBE welcome screen">
+    Connect
+  </message>
+  <message name="IDS_EULA_SCREEN_TITLE" desc="Title of the OOBE EULA screen">
+    The small print
+  </message>
+  <message name="IDS_RESET_SCREEN_TITLE" desc="Title of the reset screen">
+    Factory reset
+  </message>
+  <message name="IDS_UPDATE_SCREEN_TITLE" desc="Title of the OOBE update screen">
+    Update
+  </message>
+  <message name="IDS_SIGNIN_SCREEN_TITLE" desc="Title of OOBE/Add User sign in screen">
+    Sign in
+  </message>
+  <message name="IDS_SIGNIN_SCREEN_PASSWORD_CHANGED" desc="Title of OOBE/Add User sign in screen when password was changed">
+    You have recently changed the password. Please sign in with the new one.
+  </message>
+  <message name="IDS_NETWORK_SELECTION_TITLE" desc="Welcome title shown on network selection screen">
+    Let's get started
+  </message>
+  <message name="IDS_OOBE_LANGUAGE_SELECTION_MSG" desc="Chrome OS OOBE: label for language selection dropdown">
+    What is your language?
+  </message>
+  <message name="IDS_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown">
+    Select a network:
+  </message>
+  <message name="IDS_ANOTHER_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown on the network error screen.">
+    Or select another network:
+  </message>
+  <message name="IDS_LANGUAGE_SELECTION_SELECT" desc="Label for language selection dropdown">
+    Select your language:
+  </message>
+  <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED" desc="Medium length name for the input method for simplified Chinese which is shown following the text: Your input method has changed to...">
+    Simplified Chinese
+  </message>
+  <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL" desc="Medium length name for the input method for traditional Chinese which is show following the text: Your input method has changed to...">
+   Traditional Chinese
+  </message>
+  <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_JAPANESE" desc="Medium length name for the input method for Japanese which is show following the text: Your input method has changed to...">
+    Japanese
+  </message>
+  <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN" desc="Medium length name for the input method for Korean which is show following the text: Your input method has changed to...">
+    Korean
+  </message>
+  <message name="IDS_KEYBOARD_SELECTION_SELECT" desc="Label for keyboard selection dropdown">
+    Select your keyboard:
+  </message>
+  <message name="IDS_NETWORK_SELECTION_NONE" desc="Text shown in combobox when no network are selected">
+    No selection
+  </message>
+  <message name="IDS_NETWORK_SELECTION_NONE_SELECTED" desc="Chrome OS Out-Of-Box: Text shown in network selection combobox when no network is selected">
+    Select
+  </message>
+  <message name="IDS_NETWORK_SELECTION_CONNECTING" desc="Text shown when known device is connecting to known network">
+    Connecting to <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
+  </message>
+  <message name="IDS_NETWORK_SELECTION_CONTINUE_BUTTON" desc="Text shown on continue button">
+    Continue
+  </message>
+  <message name="IDS_NETWORK_SELECTION_ERROR" desc="Error shown when connection to network failed or timed out.">
+    <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> was unable to connect to <ph name="NETWORK_ID">$2<ex>Public Wifi</ex></ph>. Please select another network or try again.
+  </message>
+  <message name="IDS_LOGIN_TITLE" desc="Title of sign in box">
+    Sign in
+  </message>
+  <message name="IDS_LOGIN_TITLE_HINT" desc="Hint under title 'Sign in to Chrome OS'">
+    with your Google Account
+  </message>
+  <message name="IDS_LOGIN_USERNAME">
+    Email
+  </message>
+  <message name="IDS_LOGIN_PASSWORD">
+    Password
+  </message>
+  <message name="IDS_LOGIN_BUTTON">
+    Sign in
+  </message>
+  <message name="IDS_ENTER_GUEST_SESSION_BUTTON">
+    Enter
+  </message>
+  <message name="IDS_ENTER_GUEST_SESSION_BUTTON_ACCESSIBLE_NAME">
+    Browse as guest
+  </message>
+  <message name="IDS_LOGIN_REMOVE">
+    Remove
+  </message>
+  <message name="IDS_DISABLED_ADD_USER_TOOLTIP" desc="Tooltip over disabled Add user button">
+    The owner of this device has disabled new users from being added
+  </message>
+  <message name="IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE" desc="Tooltip over disabled Add user button">
+    The administrator of this device has disabled new users from being added
+  </message>
+  <message name="IDS_KIOSK_MODE_LOGIN_MESSAGE">
+    Click to start
+  </message>
+  <message name="IDS_LOGIN_CHANGE_PHOTO">
+    Change picture
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE" desc="Title for the password changed dialog box">
+    Sign in
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_TITLE" desc="Title of the dialog shown when password change has been detected">
+    Your password has changed
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_DESC" desc="Detailed description of the password changed dialog">
+    Your Google Account password has changed since the last time you signed in on this computer.
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_RESET" desc="Reset option of the password changed dialog">
+    Only retrieve synced settings and data
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_MIGRATE" desc="Migrate option of the password changed dialog">
+    Migrate all Chrome OS data to the new password
+(requires previous password)
+  </message>
+  <message name="IDS_LOGIN_PREVIOUS_PASSWORD" desc="Password field text on the password changed dialog">
+    Previous password
+  </message>
+  <message name="IDS_LOGIN_OFFLINE_EMAIL" desc="Email field text on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
+    Email
+  </message>
+  <message name="IDS_LOGIN_OFFLINE_PASSWORD" desc="Password field text on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
+    Password
+  </message>
+  <message name="IDS_LOGIN_OFFLINE_SIGNIN" desc="Sign in text on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
+    Sign In
+  </message>
+  <message name="IDS_LOGIN_OFFLINE_ERROR" desc="Error alert message on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
+    The username or password you entered is incorrect.
+  </message>
+  <message name="IDS_SCREEN_LOCK_ACTIVE_USER">
+    Currently signed in
+  </message>
+  <message name="IDS_SCREEN_LOCK_SIGN_OUT">
+    Sign out
+  </message>
+  <message name="IDS_CREATE_ACCOUNT_BUTTON">
+    Create a Google Account now
+  </message>
+  <message name="IDS_CANT_ACCESS_ACCOUNT_BUTTON">
+    Can't access your account?
+  </message>
+  <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON">
+    Skip sign-in and browse as Guest
+  </message>
+  <message name="IDS_GO_INCOGNITO_BUTTON" desc="Text shown on Chrome OS login screen button that launches guest session. Should be short.">
+    Browse as Guest
+  </message>
+  <message name="IDS_CREATE_ACCOUNT_HTML" desc="Text shown on side of Google sign-in UI.">
+    If you don't have a Google Account you can <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create a Google Account<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> now.
+  </message>
+  <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_HTML" desc="Text shown on side of Google sign-in UI.">
+    You may also skip sign in and <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Browse as Guest<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
+  </message>
+  <message name="IDS_OFFLINE_LOGIN_HTML" desc="Text which suggests enter as an existing user when valid network isn't presented.">
+    If you've already registered on this device, you can <ph name="LINK2_START">$1<ex>&gt;a&lt;</ex></ph>sign in as an existing user<ph name="LINK2_END">$2<ex>&gt;/a&lt;</ex></ph>.
+  </message>
+  <message name="IDS_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/locker screen">
+    Shut down
+  </message>
+  <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
+    Add user
+  </message>
+  <message name="IDS_LOGIN_OOBE_HELP_DIALOG_TITLE" desc="Default title for help dialogs during OOBE/login">
+    Help
+  </message>
+  <message name="IDS_LOGIN_CAPTCHA_DIALOG_TITLE" desc="Title shown for captcha input dialog">
+    Sign in
+  </message>
+  <message name="IDS_LOGIN_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
+    Type the characters you see in the picture below.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
+    Date and time
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK" desc="Title for section in settings/internet for list of wired networks (usually one)">
+    Wired network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK" desc="Title for section in settings/internet for list of wireless networks (wifi and cellular)">
+    Wireless networks
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK" desc="Title for the Wifi network group on the settings page.">
+    Wi-Fi network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK" desc="Title for the cellular network group on the settings page.">
+    Mobile data
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_VIRTUAL_NETWORK" desc="Title for section in settings/internet for list of Virtual Private Networks (VPN)">
+    Private networks
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK" desc="Title for Virtual Private Network (VPN) group on the settings page">
+    Private network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION" desc="Title for control to add a new network connection." >
+    Add connection
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ADD_CONNECTION_WIFI" desc="Menu item for adding a new Wi-Fi connection" >
+    Add Wi-Fi...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK" desc="Title for section in settings/internet for list of remembered (favirote) networks">
+    Remembered networks
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_OFFLINE" desc="Message displayed when a user is not connected to a wireless network">
+    Offline
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLED" desc="Message displayed when a type of network connection is disabled">
+    Disabled
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_ONLINE" desc="Message displayed at the top of a network popup menu indiating that the user is online.">
+    You are online.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_OTHER" desc="Menu option for connecting to a network that is not listed in the menu.">
+    Join other...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_NOT_CONNECTED" desc="Displayed for a network control when not connected.">
+    Not connected
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_OPTIONS" desc="Menu option for configuring a network.">
+    Network options...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI" desc="Menu option in the Wi-Fi menu when there is a connected Wi-Fi network.">
+    Disable Wi-Fi
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_CELLULAR" desc="Menu option in the Cellular menu when there is a connected cellular network.">
+    Disable mobile data
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_AIRPLANE_MODE" desc="Control on the settings page for disabling all wireless communication.">
+    Airplane mode
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_AIRPLANE_MODE_LABEL" desc="Description shown on the airplane mode control.">
+    Turn off all wireless connections.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_LABEL" desc="Menu item for activating the preferred networks dialog.">
+    Preferred networks...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_TITLE" desc="Title for the preferred networks dialog.">
+    Preferred Networks
+  </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_NAME">
+    Device
+  </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_DESCRIPTION">
+    Change settings specific to your device and peripherals.
+  </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION">
+    Keyboard:
+  </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
+    Keyboard settings
+  </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
+    Pointer speed:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_MOUSE_SPEED_DESCRIPTION">
+    Mouse speed:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_TOUCHPAD_SPEED_DESCRIPTION">
+    Touchpad speed:
+  </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
+    Pointer settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">
+    Touchpad
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_POINTER">
+    Pointer
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_MOUSE">
+    Mouse
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_SCREEN" desc="Title for section in settings/system for screen brightness control">
+    Screen
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH">
+    Bluetooth
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE">
+    Language
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY">
+    Accessibility
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
+    Time zone:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables 24-hour clock.">
+    Use 24-hour clock
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE" desc="In the settings tab, the display template of a timezone in the pull-down list of timezones">
+    (<ph name="UTCOffset">$1<ex>UTC-8:00</ex></ph>) <ph name="LongTZName">$2<ex>Pacific Standard Time</ex></ph> (<ph name="ExemplarCity">$3<ex>Los Angeles</ex></ph>)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION" desc="In the settings tab, the text next to the buttons for screen brightness.">
+    Brightness:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BRIGHTNESS_DECREASE" desc="In the settings tab, the text of the button to decrease the screen brightness.">
+    Decrease
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BRIGHTNESS_INCREASE" desc="In the settings tab, the text of the button to increase the screen brightness.">
+    Increase
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables tap-to-click.">
+    Enable tap-to-click
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NATURAL_SCROLL_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables natural scrolling.">
+    Enable simple scrolling direction <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;<ex>&lt;a href="$1" target="_blank"&gt;</ex></ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad touch sensitivity.">
+    Speed:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION" desc="In the settings tab, the text under the left (less sensitive) side of the slider for the touchpad touch sensitivity.">
+    Slow
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION" desc="In the settings tab, the text under the right (more sensitive) side of the slider for the touchpad touch sensitivity.">
+    Fast
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to set the primary mouse button to the right button.">
+    Swap primary mouse button
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE">
+    Disable bluetooth
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE">
+    Enable bluetooth
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ADD_BLUETOOTH_DEVICE">
+    Add a device
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES">
+    Search
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING">
+    Searching for devices...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES">
+    No devices
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND">
+    No devices found
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED">
+    Connected
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTING">
+    Connecting
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_CONNECTED">
+    Not connected
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE">
+    Add bluetooth device
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT">
+    Connect
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT">
+    Disconnect
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET">
+    Forget
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL">
+    Cancel
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY">
+    Accept
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY">
+    Reject
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR">
+    OK
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_KEY">
+    enter
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PIN_CODE_REQUEST" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.0 and older device has no display or means of input.">
+    Please enter the PIN for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.1 and later device has no display or means of input, and does not support SSP.">
+    Please enter the passkey for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PIN_CODE_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.0 and older wireless keyboard.">
+    Please enter this PIN code on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.1 and later wireless keyboard.">
+    Please enter this passkey on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
+    Please confirm this passkey is shown on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_START_CONNECTING">
+    Connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_START_DISCOVERY_FAILED">
+    Failed to start Bluetooth device discovery.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_STOP_DISCOVERY_FAILED">
+    Failed to stop Bluetooth device discovery.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CHANGE_POWER_FAILED">
+    Failed to change the power state of the Bluetooth adapter.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_FAILED">
+    Failed to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT_FAILED">
+    Failed to disconnect from "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET_FAILED">
+    Failed to disconnect and unpair from "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
+    Enable spoken feedback
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for high contrast mode.">
+    Enable high contrast mode
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_DESCRIPTION" desc="In the settings tab, the text next to the dropdown for screen magnifier.">
+    Enable screen magnifier
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_OFF" desc="In the settings tab, the option indication the screen magnifier is off.">
+    Off
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL" desc="In the settings tab, the option indication the screen magnifier is set to full.">
+    Full
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL" desc="In the settings tab, the option indication the screen magnifier is set to partial.">
+    Partial
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for virtual keyboard.">
+    Enable virtual keyboard
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_BUTTON_LABEL" desc="Label for the button opening display settings tab.">
+    Display settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_TAB_TITLE" desc="Title for the display settings tab.">
+    Manage displays
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_MIRRORING" desc="Button label to start display mirroring.">
+    Start mirroring
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STOP_MIRRORING" desc="Button label to stop display mirroring.">
+    Stop mirroring
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_SET_PRIMARY" desc="Button label to set a display primary.">
+    Make primary
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_APPLY_RESULT" desc="Button label to apply the current settings.">
+    Apply
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION" desc="Label to describe the resolution of the currently selected display.">
+    Resolution:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layout label.">
+    Keyboard layout:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_CONNECT" desc="In the settings tab, the text on the button to connect to a network.">
+    Connect
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISCONNECT" desc="In the settings tab, the text on the button to disconnect from a network.">
+    Disconnect
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_FORGET" desc="In the settings tab, the text on the button to forget this network.">
+    Forget this network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_SHARED_NETWORK" desc="In settings Internet options, the label for shared networks.">
+    Shared
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACTIVATE" desc="In the settings tab, the text on the button to activate a cellular network.">
+    Activate
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_BUY_PLAN" desc="In settings Internet options, the title for buy cellular data plan button.">
+    Buy plan
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL" desc="In settings Internet options, the title for buy cellular data plan button.">
+    No data plan
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_OPTIONS" desc="In the settings tab, the text on the button to display more options.">
+    Options...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS" desc="In the settings tab, the text on the button to display other Wi-Fi networks.">
+    Other Wi-Fi network...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS" desc="In the settings tab, the text on the button to display other cellular networks.">
+    Other mobile network...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS" desc="The title for the dialog to join a wifi network.">
+    Join Wi-Fi network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_JOIN_WIMAX_NETWORKS" desc="The title for the dialog to join a wimax network.">
+    Join Wimax network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ADD_VPN" desc="In the settings tab, the text on the button to add a private network.">
+    Add private network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_JOIN_VPN" desc="The title for the dialog to join a VPN.">
+    Join private network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_MANAGED_NETWORK" desc="Help text to show in the bubble shown on click of the controlled setting indicator on the internet settings page.">
+    This network is configured by your administrator.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES" desc="In the settings tab, the text next to the checkbox for allowing proxy settings for shared networks.">
+    Allow proxies for shared networks
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settings tab.">
+    Allow mobile data roaming
+  </message>
+<message name="IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION" desc="Tooltip for the 'enable data roaming' entry in the Mobile Data drop-down menu indicating why the command is disabled.">
+    This setting may only be modified by the owner.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settings tab.">
+    Disable mobile data roaming
+  </message>
+  <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
+    Enable guest browsing
+  </message>
+  <message name="IDS_OPTIONS_ACCOUNTS_USE_WHITELIST_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to restrict allowed user to a whitelist.">
+    Restrict sign-in to the following users:
+  </message>
+  <message name="IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to show user names and pictures on sign-in screen.">
+    Show usernames and photos on the sign-in screen
+  </message>
+  <message name="IDS_OPTIONS_ACCOUNTS_USERNAME_EDIT_HINT" desc="In the Accounts settings tab, the instruction text on an empty username edit.">
+    Enter names or addresses.
+  </message>
+  <message name="IDS_OPTIONS_ACCOUNTS_USERNAME_FORMAT" desc="In the Accounts settings tab, the text format to create user name and owner tag.">
+    <ph name="NAME">$1<ex>John Doe</ex></ph> - Owner
+  </message>
+  <message name="IDS_OPTIONS_ACCOUNTS_ADD_USERS" desc="In the Accounts settings tab, the label text above the user name edit box.">
+    Add users
+  </message>
+  <message name="IDS_OPTIONS_ACCOUNTS_OWNER_ONLY" desc="In the Accounts settings tab, the warning text noticing that only the owner can modify these settings.">
+    These settings may only be modified by the owner:
+  </message>
+  <message name="IDS_OPTIONS_PERSONAL_ACCOUNT_GROUP_NAME" desc="In sentence case: In the Personal Stuff settings tab, the title text for Account section.">
+    Account
+  </message>
+  <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">
+    Require password to wake from sleep
+  </message>
+  <message name="IDS_SET_WALLPAPER_BUTTON" desc="The button to set wallpaper.">
+    Set wallpaper...
+  </message>
+  <message name="IDS_OPTIONS_SET_WALLPAPER_DIALOG_TITLE" desc="Title of the dialog shown when user wants to change his/her wallpaper.">
+    Set Wallpaper
+  </message>
+  <message name="IDS_OPTIONS_SET_WALLPAPER_DIALOG_TEXT" desc="Text with description of what to do on Change Wallpaper dialog.">
+    Choose a picture to display on your background.
+  </message>
+  <message name="IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT" desc="Author label.">
+    Photo by
+  </message>
+  <message name="IDS_OPTIONS_SET_WALLPAPER_DAILY" desc="Label for option to change wallpaper daily.">
+    Change wallpaper daily
+  </message>
+  <message name="IDS_OPTIONS_WALLPAPER_CENTER_LAYOUT" desc="Label for option to center a customized wallpaper.">
+    Center
+  </message>
+  <message name="IDS_OPTIONS_WALLPAPER_CENTER_CROPPED_LAYOUT" desc="Label for option to center crop a customized wallpaper.">
+    Center Cropped
+  </message>
+  <message name="IDS_OPTIONS_WALLPAPER_STRETCH_LAYOUT" desc="Label for option to stretch a customized wallpaper.">
+    Stretch
+  </message>
+  <message name="IDS_OPTIONS_CUSTOME_WALLPAPER" desc="Label for option to choose a customized wallpaper.">
+    Browse...
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user.">
+    Change picture...
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_CAPTION" desc="Caption on the user picture that user must click to change it, must be short.">
+    Change
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TITLE" desc="Title of the dialog shown when user wants to change his/her picture.">
+    Change picture
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT" desc="Text with description of what to do on Change picture dialog.">
+    Choose a picture to display for your account on the sign-in screen.
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_CHOOSE_FILE" desc="Text on a button that shows file dialog to choose a picture from file.">
+    Choose a file
+  </message>
+  <message name="IDS_OPTIONS_CROP_IMAGE_DIALOG_TITLE" desc="Title of the dialog shown when user wants to crop his/her picture.">
+    Crop image
+  </message>
+  <message name="IDS_OPTIONS_CROP_IMAGE_DIALOG_TEXT" desc="Text with description of what to do on Crop image dialog.">
+    Select a square region of the image.
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
+    Take photo
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO" desc="The text on the button to discard the captured photo of the current user.">
+    Discard photo
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO" desc="The text on the button to flip the camera image horizontally.">
+    Flip camera image horizontally
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_PREVIEW_ALT" desc="Alt text for the big preview of user image.">
+    User image preview
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
+    Google Profile photo
+  </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO" desc="The text on the loading stub for Google profile image.">
+    Google Profile photo (loading)
+  </message>
+  <message name="IDS_IMAGE_SCREEN_PROFILE_PHOTO" desc="The title of the Google profile photo of the user on image selection screen. Please keep in sync with IDS_OPTIONS_CHANGE_PICTURE_PROFILE_PHOTO.">
+    * Google Profile photo
+  </message>
+  <message name="IDS_IMAGE_SCREEN_PROFILE_LOADING_PHOTO" desc="The title of the loading stub for Google profile image on image selection screen. Please keep in sync with IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO.">
+    * Google Profile photo (loading)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings Internet options, the title for the wifi tab.">
+    Wi-Fi
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN" desc="In settings Internet options, the title for the VPN (Virtual Private Network) tab.">
+    VPN
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN" desc="In settings Internet options, the title for buy cellular data plan button.">
+    Plan
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION" desc="In settings Internet options, the title for buy cellular data plan button.">
+    Connection
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_DEVICE" desc="In settings Internet options, the title for buy cellular data plan button.">
+    Device
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK" desc="In settings Internet options, the title for buy cellular data plan button.">
+    Network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_SECURITY" desc="In settings Internet options, the title for security tab.">
+    Security
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_PROXY" desc="In settings Internet options, the title for proxy tab.">
+    Proxy
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings Internet options, the label for the network id.">
+    SSID:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_BSSID" desc="In settings Internet options, the label for the network BSSID.">
+    BSSID:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY" desc="In settings Internet options, the label for the WiFi frequency.">
+    Frequency:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY_MHZ" desc="In Internet settings, the formatting for the WiFi frequency.">
+    <ph name="MHZ">$1<ex>2400</ex></ph> MHz
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH" desc="In Internet settings, the label for the WiFi signal strength.">
+    Signal Strength:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH_PERCENTAGE" desc="In Internet settings, the formatting for the WiFi signal strength.">
+    <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
+  </message>
+  <message name="IDS_OPTIONS_SETTIGNS_INTERNET_OPTIONS_NETWORK_ENCRYPTION" desc="Label in the network details dialog for showing the encryption method.">
+    Security:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD" desc="In settings Internet options, the label for the EAP method.">
+    EAP method:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_NONE" desc="In settings Internet options, a string specifying EAP method none.">
+    Choose...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_PEAP" desc="In settings Internet options, a string specifying EAP method PEAP.">
+    PEAP
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_TLS" desc="In settings Internet options, a string specifying EAP method TLS.">
+    EAP-TLS
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_TTLS" desc="In settings Internet options, a string specifying EAP method TTLS.">
+    EAP-TTLS
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD_LEAP" desc="In settings Internet options, a string specifying EAP method LEAP.">
+    LEAP
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH" desc="In settings Internet options, the label for the phase 2 authentication.">
+    Phase 2 authentication:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_AUTO" desc="In settings Internet options, a string specifying phase 2 authentication auto.">
+    Automatic
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_MD5" desc="In settings Internet options, a string specifying phase 2 authentication EAP-MD5.">
+    EAP-MD5
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_MSCHAPV2" desc="In settings Internet options, a string specifying phase 2 authentication MSCHAPv2.">
+    MSCHAPv2
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_MSCHAP" desc="In settings Internet options, a string specifying phase 2 authentication MSCHAP.">
+    MSCHAP
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_PAP" desc="In settings Internet options, a string specifying phase 2 authentication PAP.">
+    PAP
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PHASE_2_AUTH_CHAP" desc="In settings Internet options, a string specifying phase 2 authentication CHAP.">
+    CHAP
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY" desc="In settings Internet options, the user identity for authentication.">
+    Identity:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY_ANONYMOUS" desc="In settings Internet options, the anonymous identity for authentication.">
+    Anonymous identity:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA" desc="In settings Internet options, the server certificate to use.">
+    Server CA certificate:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA_DEFAULT" desc="In settings Internet options, a string specifying to use the default certificates.">
+    Default
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA_DO_NOT_CHECK" desc="In settings Internet options, a string specifying to not check certificates.">
+    Do not check
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT" desc="In settings Internet options, the x509 certificate to use.">
+    User certificate:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON" desc="In settings Internet options, the prompt on the certificate-selection button.">
+    Select certificate file
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY" desc="In settings Internet options, the label for the security.">
+    Security:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE" desc="In settings Internet options, the label for the passphrase.">
+    Password:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_SHOW" desc="In settings Internet options, the label for the passphrase visible toggle button to show passphrase.">
+    Click to show password
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_HIDE" desc="In settings Internet options, the label for the passphrase visible toggle button to hide passphrase.">
+    Click to hide password
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS" desc="In settings Internet options, the label for the checkbox to save identity and password.">
+    Save identity and password
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON" desc="In settings Internet options, Join other network, the text on the button to show advanced settings.">
+    Advanced
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE" desc="In settings Internet options, the label for the bad passphrase.">
+    Incorrect password.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED" desc="In settings Internet options, the message in network details page for password protected networks.">
+    Access to this network is protected.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY" desc="In settings Internet options, the label for the bad WEP key.">
+    Password format is incorrect.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PREFER_NETWORK" desc="In settings Internet options, the label for prefer network checkbox.">
+    Prefer this network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT" desc="In settings Internet options, the label for the auto-connect checkbox.">
+    Automatically connect to this network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK" desc="In settings Internet options, the label for the share checkbox.">
+    Share this network with other users
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_SHARED" desc="In settings Internet options, text for when a network is shared.">
+    This network is shared with other users.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings Internet options, the title for buy cellular data plan button.">
+    Buy data plan...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNKNOWN_ERROR" desc="In settings Internet options, the label for an unknown connection error.">
+    Failed to connect to network.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELL_PLAN_NAME" desc="In settings Internet options, the label displayed next to cellular plan name.">
+    Plan name:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN" desc="In settings Internet options, the message displayed while cellular data plan information is being loaded.">
+    Loading mobile data plan information, please wait...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NO_PLANS_FOUND" desc="In settings Internet options, the message displayed while cellular data plans are missing or could not be found.">
+    Plan information not available.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING" desc="In settings Internet options, the label for mobile plan remaining data info.">
+    Data remaining:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED" desc="In settings Internet options, the label of data info for mobile unlimited data plan.">
+    Unlimited
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXPIRES" desc="In settings Internet options, the label for mobile plan expiration time info.">
+    Expires:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOW_MOBILE_NOTIFICATION" desc="In settings Internet options, the label for show mobile plan data notification checkbox.">
+    Show notifications when data is low or nearing expiration
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_RECEIVED_FREE_DATA" desc="In settings Internet options, the label that tells user free data received.">
+    You received <ph name="DATA_AMOUNT">$1<ex>100MB</ex></ph> free usage on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_DATA" desc="In settings Internet options, the label that shows user has purchased a mobile data plan.">
+    You purchased <ph name="DATA_AMOUNT">$1<ex>3GB</ex></ph> of data on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA" desc="In settings Internet options, the label that shows user has purchased an unliminted mobile data plan.">
+    You purchased unlimited data on <ph name="DATE">$1<ex>January 1, 2011</ex></ph>
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT" desc="In settings Internet options, the text for customer support hyper link.">
+    Customer support
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN" desc="In settings Internet options, the label for the button to sign in.">
+    Sign in
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings Internet options, the label for connection status.">
+    Connection status:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_IP_AUTOMATIC_CONFIGURATION" desc="In the IP address fields, labels automatic connection toggle">
+    Configure automatically
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_AUTOMATIC_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the automatic DNS selection.">
+    Automatic name servers
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_GOOGLE_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the Google DNS selection.">
+    Google name servers
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the user DNS selection.">
+    Custom name servers
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_1" desc="In the name server type radio for static ip configuration, is placeholder text for server 1">
+    Server 1
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_2" desc="In the name server type radio for static ip configuration, is placeholder text for server 2">
+    Server 2
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_3" desc="In the name server type radio for static ip configuration, is placeholder text for server 3">
+    Server 3
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_4" desc="In the name server type radio for static ip configuration, is placeholder text for server 4">
+    Server 4
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings Internet options, the label for IP address.">
+    IP address:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK" desc="In settings Internet options, the label for subnet mask.">
+    Subnet mask:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_GATEWAY" desc="In settings Internet options, the label for gateway.">
+    Gateway:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER" desc="In settings Internet options, the label dns server.">
+    DNS server:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON" desc="In settings Internet options, the button to configure proxy settings.">
+    Change proxy settings...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ENABLE_SHARED_PROXIES_HINT" desc="In settings Internet options, when proxy can't be changed, the hint for user to do so by enabling the setting for IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES.">
+    To change proxy, enable "<ph name="USE_SHARED_PROXIES">$1<ex>Allow proxies for shared networks</ex></ph>" setting.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS" desc="In settings Internet options, the label hardware address.">
+    Hardware address:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE" desc="In settings Internet options, a string specifying security none.">
+    None
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP" desc="In settings Internet options, a string specifying security WEP.">
+    WEP
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_PSK" desc="In settings Internet options, a string specifying security PSK (either WPA-PSK or RSN-PSK).">
+    PSK (WPA or RSN)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
+    Password
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
+    SSID
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD" desc="In settings Internet options, a string telling the user where the network certificate is installed to.">
+    Show password
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE" desc="In settings Internet options, Title of the overlay when the user is connected.">
+    Connection details
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE" desc="In settings Internet options, Title of the overlay when the user is not connected and can.">
+    Connect to network
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK" desc="In settings Internet options, a string specifying L2TP/IPsec + PSK.">
+    L2TP/IPsec + pre-shared key
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT" desc="In settings Internet options, a string specifying L2TP/IPsec + User Certificate.">
+    L2TP/IPsec + user certificate
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN" desc="In settings Internet options, a string specifying OpenVPN.">
+    OpenVPN
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME" desc="In settings Internet options, a string specifying VPN service name.">
+    Service name:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME" desc="In settings Internet options, a string specifying VPN server hostname.">
+    Server hostname:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE" desc="In settings Internet options, a string specifying VPN provider type.">
+    Provider type:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PSK_PASSPHRASE" desc="In settings Internet options, a string specifying VPN PSK passphrase.">
+    Pre-shared key:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT" desc="In settings Internet options, a string specifying VPN user certificate.">
+    User certificate:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME" desc="In settings Internet options, a string specifying VPN username.">
+    Username:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE" desc="In settings Internet options, a string specifying VPN user passphrase.">
+    Password:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_OTP" desc="In settings Internet options, a string specifying One Time Passphrase for VPN.">
+    OTP:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_GROUP_NAME" desc="In settings Internet options, a string specifying VPN group name.">
+    Group name:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, combobox item to display when no user certificates are installed.">
+    None installed
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING" desc="In settings Internet options, when creating a VPN or enterprise Wi-Fi connection, combobox item to display when certificates are loading.">
+    Loading...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PLEASE_INSTALL_USER_CERT" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when no user certificates are installed.">
+    Please install a user certificate.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when not logged in and  user certificates are required.">
+    Login required for user certificate.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_REQUIRE_HARDWARE_BACKED" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when a non hardware-backed user certificate is selected.">
+    User certificate must be hardware-backed.
+  </message>
+  <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">
+    Reconnect
+  </message>
+  <message name="IDS_NETWORK_SSID_HINT" desc="In network menu, hint text for network name field.">
+    network name
+  </message>
+  <message name="IDS_NETWORK_PASSWORD_HINT" desc="In network menu, hint text for network password field.">
+    network password
+  </message>
+
+  <message name="IDS_NETWORK_CHOOSE_MOBILE_NETWORK" desc="Title of the window for choosing mobile network.">
+    Choose a mobile network
+  </message>
+  <message name="IDS_NETWORK_SCANNING_FOR_MOBILE_NETWORKS" desc="Text which appears while scanning for mobile networks.">
+    Scanning for networks.
+  </message>
+  <message name="IDS_NETWORK_SCANNING_THIS_MAY_TAKE_A_MINUTE" desc="Text which appears while scanning for mobile networks, right after IDS_NETWORK_SCANNING_FOR_MOBILE_NETWORKS text.">
+    This may take a minute...
+  </message>
+  <message name="IDS_NETWORK_NO_MOBILE_NETWORKS" desc="Text which appears when no mobile networks were found.">
+    No networks found.
+  </message>
+
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME" desc="Cellular service name under network details in chrome:settings/internet.">
+    Service name:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN" desc="Cellular device APN label under network details in chrome:settings/internet.">
+    Access point name:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_USERNAME" desc="Cellular device APN user name label under network details in chrome:settings/internet.">
+    User name:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_PASSWORD" desc="Cellular device APN password label under network details in chrome:settings/internet.">
+    Password:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CLEAR" desc="Cellular device use default APN settings button under network details in chrome:settings/internet.">
+    Use default
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET" desc="Cellular device set APN settings button under network details in chrome:settings/internet.">
+    Save
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACCESS_SECURITY_TAB" desc="In settings Internet options, the text of the link shown when SIM card is locked, to access security tab.">
+    To access Security settings enter the SIM card PIN
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LOCK_SIM_CARD" desc="Cellular device enable SIM card PIN lock checkbox label in chrome:settings/internet.">
+    Lock SIM card (require PIN to use mobile data)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_BUTTON" desc="Cellular device change PIN button text in chrome:settings/internet.">
+    Change PIN
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_TITLE" desc="Cellular device change PIN dialog title in chrome:settings/internet.">
+    Change SIM card PIN
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_MESSAGE" desc="Cellular device change PIN dialog message in chrome:settings/internet.">
+    Please enter old and new PIN.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_INCORRECT_ERROR" desc="Cellular device change PIN dialog error message in chrome:settings/internet.">
+    Incorrect PIN, please try again.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN" desc="Cellular device change PIN dialog old PIN label text in chrome:settings/internet.">
+    Old PIN:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_NEW_PIN" desc="Cellular device change PIN dialog new PIN label text in chrome:settings/internet.">
+    New PIN:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_RETYPE_PIN" desc="Cellular device change PIN dialog re-type new PIN label text in chrome:settings/internet.">
+    Re-type new PIN:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PINS_DONT_MATCH_ERROR" desc="Cellular device change PIN dialog message shown when entered new PINs don't match in chrome:settings/internet.">
+    PINs don't match!
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CANCEL" desc="Cellular device cancel APN settings edit button under network details in chrome:settings/internet.">
+    Cancel
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_OTHER" desc="Select user defined APN in the lost of predefined APNs under network details in chrome:settings/internet.">
+    Other...
+  </message>
+
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE" desc="In settings Internet options, Title of the section which houses the enable/disable buttons.">
+    General
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE" desc="In settings system options, the label for the customize button for languages and input">
+    Customize languages and input...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MODIFIER_KEYS_CUSTOMIZE" desc="In settings system options, the label for the customize button for modifier keys">
+    Modifier keys...
+  </message>
+
+  <message name="IDS_SIM_UNLOCK_ENTER_PIN_TITLE" desc="Title of the SIM card unlock dialog in chrome:sim-unlock.">
+    Enter SIM card PIN
+  </message>
+  <message name="IDS_SIM_ENTER_PIN_MESSAGE" desc="Message on the the SIM card dialog asking to enter PIN in chrome:sim-unlock.">
+    Please enter PIN.
+  </message>
+  <message name="IDS_SIM_UNLOCK_ENTER_PIN_TRIES_MESSAGE" desc="Message on the the SIM card unlock dialog asking to enter PIN in chrome:sim-unlock.">
+    SIM card is locked, please enter PIN. Tries left: <ph name="TRIES_COUNT">$1<ex>42</ex></ph>
+  </message>
+  <message name="IDS_SIM_UNLOCK_INCORRECT_PIN_TRIES_MESSAGE" desc="Incorrect PIN message with the number of tries left shown on SIM card unlock dialog in chrome:sim-unlock.">
+    Incorrect PIN, please try again. Tries left: <ph name="TRIES_COUNT">$1<ex>42</ex></ph>
+  </message>
+  <message name="IDS_SIM_UNLOCK_INCORRECT_PIN_TITLE" desc="Title of the Incorrect PIN stage (no tries left) shown on SIM card unlock dialog in chrome:sim-unlock.">
+    Incorrect PIN
+  </message>
+  <message name="IDS_SIM_UNLOCK_NO_PIN_TRIES_LEFT_MESSAGE" desc="Message shown when there's no PIN tries left, shown on SIM card unlock dialog in chrome:sim-unlock.">
+    You have entered the incorrect PIN too many times. Please contact <ph name="CARRIER_ID">$1<ex>your carrier</ex></ph> to obtain a new 8-digit PIN Unlocking Key.
+  </message>
+  <message name="IDS_SIM_UNLOCK_DEFAULT_CARRIER" desc="Generic carrier name shown on SIM unlock dialog. Ex.: IDS_SIM_UNLOCK_NO_PIN_TRIES_LEFT_MESSAGE, IDS_SIM_UNLOCK_ENTER_PUK_MESSAGE">
+    your carrier
+  </message>
+  <message name="IDS_SIM_UNLOCK_ENTER_PUK_BUTTON" desc="Text of the button that will take to Enter PUK dialog, part of SIM card unlock dialog in chrome:sim-unlock.">
+    Enter PIN Unlocking Key
+  </message>
+  <message name="IDS_SIM_UNLOCK_ENTER_PUK_TITLE" desc="Title of the Enter PUK dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+    Enter PIN Unlocking Key
+  </message>
+  <message name="IDS_SIM_UNLOCK_ENTER_PUK_WARNING" desc="Warning on the Enter PUK dialog with the number of tries left, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+    Your SIM card will be permanently disabled if you cannot enter the correct PIN Unlocking Key. Tries left: <ph name="TRIES_COUNT">$1<ex>42</ex></ph>
+  </message>
+  <message name="IDS_SIM_UNLOCK_ENTER_PUK_MESSAGE" desc="Message on the Enter PUK dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+    Please enter the 8-digit PIN Unlocking Key provided by <ph name="CARRIER_ID">$1<ex>your carrier</ex></ph>.
+  </message>
+  <message name="IDS_SIM_UNLOCK_CHOOSE_PIN_TITLE" desc="Title of the Choose new PIN dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+    Choose New PIN
+  </message>
+  <message name="IDS_SIM_UNLOCK_CHOOSE_PIN_MESSAGE" desc="Message on the Choose new PIN dialog, which is part of SIM card unlock dialog in chrome:sim-unlock.">
+    Please choose a new PIN.
+  </message>
+  <message name="IDS_SIM_UNLOCK_NO_PUK_TRIES_LEFT_MESSAGE" desc="Message shown when there're not PUK tries left, right after last try was used and SIM card is now disabled.">
+    You have entered the incorrect PIN Unlocking Key too many times. Your SIM card is permanently disabled.
+  </message>
+  <message name="IDS_SIM_UNLOCK_SIM_DISABLED_TITLE" desc="Title shown when there're not PUK tries left and SIM card is disabled.">
+    SIM card disabled
+  </message>
+  <message name="IDS_SIM_UNLOCK_SIM_DISABLED_MESSAGE" desc="Message shown when there're not PUK tries left and SIM card is disabled.">
+    This SIM card is disabled and cannot be used. Please contact your service provider for a replacement.
+  </message>
+
+  <message name="IDS_EULA_BACK_BUTTON" desc="Back button shown on EULA screen.">
+    Back
+  </message>
+  <message name="IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON" desc="Accept button text below EULA terms of service">
+    Accept and continue
+  </message>
+  <message name="IDS_EULA_SYSTEM_SECURITY_SETTING" desc="Link from the EULA wizard screen and title of the according dialog box">
+    System security setting
+  </message>
+  <message name="IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION" desc="Dialog box text">
+    Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in Chrome OS.
+  </message>
+  <message name="IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION_KEY" desc="Dialog box text">
+    Below is the randomly generated TPM password that has been assigned to your computer:
+  </message>
+  <message name="IDS_EULA_SYSTEM_SECURITY_SETTING_WAIT" desc="Dialog box text">
+   The TPM is being set up. Please be patient; this may take a few minutes.
+  </message>
+  <message name="IDS_EULA_TPM_BUSY" desc="Message bubble text">
+    TPM is being prepared, please wait (this may take a few minutes)...
+  </message>
+  <message name="IDS_EULA_TPM_DISABLED" desc="Tooltip text describing why 'System security setting' link is disabled.">
+    Trusted Platform Module (TPM) chip is disabled or absent.
+  </message>
+
+  <message name="IDS_RESET_SCREEN_WARNING_MSG" desc="Warning text shown on reset screen above the exclamation icon.">
+    Factory Reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device
+  </message>
+  <message name="IDS_RESET_SCREEN_WARNING_DETAILS" desc="Warning text shown on reset screen below the exclamation icon.">
+    Your device will be reset into its original factory state. All local files and media will be erased. Would you like to continue?
+  </message>
+  <message name="IDS_RESET_SCREEN_RESET" desc="Reset button text">
+    Reset
+  </message>
+
+  <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by enterprise policy">
+    This option is controlled by enterprise policy. Please contact your administrator for more information.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE"
+           desc="The title for the Chewing input settings dialog. Please note that 'Chewing' here is name of an input method and not 'an act of biting and grinding with the teeth'.">
+    Chewing input settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_AUTO_SHIFT_CUR"
+           desc="The checkbox label for a Chewing input method preference">
+    Automatically move cursor to the next character
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_ADD_PHRASE_DIRECTION"
+           desc="The checkbox label for a Chewing input method preference">
+    Add phrases in front
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_EASY_SYMBOL_INPUT"
+           desc="The checkbox label for a Chewing input method preference">
+    Easy symbol input
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_ESC_CLEAN_ALL_BUF"
+           desc="The checkbox label for a Chewing input method preference">
+    Esc cleans whole pre-edit buffer
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_FORCE_LOWER_CASE_ENGLISH"
+           desc="The checkbox label for a Chewing input method preference">
+    Ignore CapsLock status and input lowercase by default
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_PLAIN_ZHUYIN"
+           desc="The checkbox label for a Chewing input method preference">
+    Plain Zhuyin mode.  Automatic candidate selection and related options
+    are disabled or ignored.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_PHRASE_CHOICE_REARWARD"
+           desc="The checkbox label for a Chewing input method preference">
+    Choose phrases from the back, without moving the cursor
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_SPACE_AS_SELECTION"
+           desc="The checkbox label for a Chewing input method preference">
+    Press Space to select the candidate
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_MAX_CHI_SYMBOL_LEN"
+           desc="The label for a Chewing input method preference">
+    Maximum Chinese characters in pre-edit buffer, including inputing Zhuyin
+    symbols
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_CAND_PER_PAGE"
+           desc="The label for a Chewing input method preference">
+    Number of candidates to display per page
+  </message>
+
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE"
+           desc="The combobox description for the Chewing keyboard type">
+    Keyboard type
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DEFAULT"
+           desc="The combobox value for the Chewing keyboard type">
+    Default
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_HSU"
+           desc="The combobox value for the Chewing keyboard type">
+    Hsu
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_IBM"
+           desc="The combobox value for the Chewing keyboard type">
+    IBM
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_GIN_YIEH"
+           desc="The combobox value for the Chewing keyboard type">
+    Gin Yieh
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_ETEN"
+           desc="The combobox value for the Chewing keyboard type">
+    Eten
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_ETEN26"
+           desc="The combobox value for the Chewing keyboard type">
+    Eten 26
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DVORAK"
+           desc="The combobox value for the Chewing keyboard type">
+    Dvorak
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DVORAK_HSU"
+           desc="The combobox value for the Chewing keyboard type">
+    Dvorak (Hsu)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DACHEN_26"
+           desc="The combobox value for the Chewing keyboard type">
+    Dachen 26
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_HANYU"
+           desc="The combobox value for the Chewing keyboard type">
+    Hanyu
+  </message>
+
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS"
+           desc="The combobox description for the Chewing selection keys">
+    Selection keys
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234567890"
+           desc="The combobox value for the Chewing selection keys">
+    1234567890
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFGHJKLS"
+           desc="The combobox value for the Chewing selection keys">
+    asdfghjkl;
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFZXCV89"
+           desc="The combobox value for the Chewing selection keys">
+    asdfzxcv89
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_ASDFJKL789"
+           desc="The combobox value for the Chewing selection keys">
+    asdfjkl789
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUSQJKIX"
+           desc="The combobox value for the Chewing selection keys">
+    aoeu;qjkix (Dvorak)
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUHTNSID"
+           desc="The combobox value for the Chewing selection keys">
+    aoeuhtnsid (Dvorak)
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_AOEUIDHTNS"
+           desc="The combobox value for the Chewing selection keys">
+    aoeuidhtns (Dvorak)
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234QWERAS"
+           desc="The combobox value for the Chewing selection keys">
+    1234qweras
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_HSU_SEL_KEY_TYPE"
+           desc="The combobox description for the Hsu selection key type">
+    Hsu's keyboard selection keys
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_HSU_SEL_KEY_TYPE_1"
+           desc="The combobox value for the Hsu selection key type">
+    asdfjkl789
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_HSU_SEL_KEY_TYPE_2"
+           desc="The combobox value for the Hsu selection key type">
+    asdfzxcv89
+  </message>
+
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE"
+           desc="The title for the Hangul input settings dialog">
+    Hangul input settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_2_SET"
+           desc="The keyboard layout name for Korean input. (Dubeol-sik)">
+    2 Set
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_FINAL"
+           desc="The keyboard layout name for Korean input. (Sebeol-sik Final)">
+    3 Set (Final)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_390"
+           desc="The keyboard layout name for Korean input. (Sebeol-sik 390)">
+    3 Set (390)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_NO_SHIFT"
+           desc="The keyboard layout name for Korean input. (Sebeol-sik No-shift)">
+    3 Set (No shift)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_ROMAJA"
+           desc="The keyboard layout name for Korean input. (Romaja)">
+    Romaja
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE"
+           desc="The title for the Pinyin input settings dialog">
+    Pinyin input settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_CORRECT_PINYIN"
+           desc="The checkbox label for a Pinyin input method preference">
+    Automatically correct input
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_FUZZY_PINYIN"
+           desc="The checkbox label for a Pinyin input method preference">
+    Enable Fuzzy-Pinyin mode
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_SHIFT_SELECT_PINYIN"
+           desc="The checkbox label for a Pinyin input method preference">
+    Use left and right Shift keys to select 2nd and 3rd candidates
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_MINUS_EQUAL_PAGE"
+           desc="The checkbox label for a Pinyin input method preference">
+    Use - and = keys to page a candidate list
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_COMMA_PERIOD_PAGE"
+           desc="The checkbox label for a Pinyin input method preference">
+    Use , and . keys to page a candidate list
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_AUTO_COMMIT"
+           desc="The checkbox label for a Pinyin input method preference">
+    Auto-commit a string
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_DOUBLE_PINYIN"
+           desc="The checkbox label for a Pinyin input method preference">
+    Enable Double-Pinyin mode
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_CHINESE"
+           desc="The checkbox label for a Pinyin input method preference">
+    Initial input language is Chinese
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL"
+           desc="The checkbox label for a Pinyin input method preference">
+    Initial character width is Full
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL_PUNCT"
+           desc="The checkbox label for a Pinyin input method preference">
+    Initial punctuation width is Full
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_SIMPLIFIED_CHINESE"
+           desc="The checkbox label for a Pinyin input method preference">
+    Initial Chinese mode is Simplified Chinese
+  </message>
+
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA"
+           desc="The combobox description for the double Pinyin schema">
+    Double Pinyin schema
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_MSPY"
+           desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+    MSPY
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_ZRM"
+           desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+    ZRM
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_ABC"
+           desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+    ABC
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_ZGPY"
+           desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+    ZGPY
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA_PYJJ"
+           desc="The combobox value for the double Pinyin schema (might be non-translateable?)">
+    PYJJ
+  </message>
+
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE"
+           desc="The title for the Mozc Japanese input settings dialog">
+    Japanese input settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD"
+           desc="The combobox description for the Mozc input method preference">
+    Input method
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_ROMAN"
+           desc="The combobox value for the Mozc input method preference">
+    Romaji
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_KANA"
+           desc="The combobox value for the Mozc input method preference">
+    Kana
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP"
+           desc="The combobox description for the Mozc input method preference">
+    Keymap style
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_ATOK"
+           desc="The combobox value for the Mozc input method preference (might be non-translateable?)">
+    ATOK
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_MSIME"
+           desc="The combobox value for the Mozc input method preference (might be non-translateable?)">
+    MS-IME
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SESSION_KEYMAP_KOTOERI"
+           desc="The combobox value for the Mozc input method preference. When lang is ja, it should be written in Hiragana">
+    Kotoeri
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD"
+           desc="The combobox description for the Mozc input method preference">
+    Punctuation style
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_KUTEN_TOUTEN"
+           desc="The combobox value for the Mozc input method preference">
+    &#x3001;&#x3002;
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_COMMA_PERIOD"
+           desc="The combobox value for the Mozc input method preference">
+    &#xff0c;&#xff0e;
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_KUTEN_PERIOD"
+           desc="The combobox value for the Mozc input method preference">
+    &#x3001;&#xff0e;
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PUNCTUATION_METHOD_COMMA_TOUTEN"
+           desc="The combobox value for the Mozc input method preference">
+    &#xff0c;&#x3002;
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_METHOD"
+           desc="The combobox description for the Mozc input method preference">
+    Symbol style
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_METHOD_CORNER_BRACKET_MIDDLE_DOT"
+           desc="The combobox value for the Mozc input method preference">
+    &#x300c;&#x300d;&#x30fb;
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_METHOD_SQUARE_BRACKET_SLASH"
+           desc="The combobox value for the Mozc input method preference">
+    &#xff3b;&#xff3d;&#xff0f;
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_METHOD_CORNER_BRACKET_SLASH"
+           desc="The combobox value for the Mozc input method preference">
+    &#x300c;&#x300d;&#xff0f;
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SYMBOL_METHOD_SQUARE_BRACKET_MIDDLE_DOT"
+           desc="The combobox value for the Mozc input method preference">
+    &#xff3b;&#xff3d;&#x30fb;
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM"
+           desc="The combobox description for the Mozc input method preference">
+    Space input style
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM_FUNDAMENTAL_INPUT_MODE"
+           desc="The combobox value for the Mozc input method preference">
+    Follow input mode
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM_FUNDAMENTAL_FULL_WIDTH"
+           desc="The combobox value for the Mozc input method preference">
+    Fullwidth
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM_FUNDAMENTAL_HALF_WIDTH"
+           desc="The combobox value for the Mozc input method preference">
+    Halfwidth
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL"
+           desc="The combobox description for the Mozc input method preference">
+    Adjust conversion based on previous input
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL_DEFAULT_HISTORY"
+           desc="The combobox value for the Mozc input method preference">
+    Yes
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL_READ_ONLY"
+           desc="The combobox value for the Mozc input method preference">
+    Yes (don't record new data)
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL_NO_HISTORY"
+           desc="The combobox value for the Mozc input method preference">
+    No
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SELECTION_SHORTCUT"
+           desc="The combobox description for the Mozc input method preference">
+    Selection shortcut
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SELECTION_SHORTCUT_NO_SHORTCUT"
+           desc="The combobox value for the Mozc input method preference">
+    No shortcut
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SELECTION_SHORTCUT_SHORTCUT_123456789"
+           desc="The combobox value for the Mozc input method preference">
+    1 -- 9
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SELECTION_SHORTCUT_SHORTCUT_ASDFGHJKL"
+           desc="The combobox value for the Mozc input method preference">
+    A -- L
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH"
+           desc="The combobox description for the Mozc input method preference">
+    Shift key mode switch
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH_OFF"
+           desc="The combobox value for the Mozc input method preference">
+    Off
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH_ASCII_INPUT_MODE"
+           desc="The combobox value for the Mozc input method preference">
+    Alphanumeric
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH_KATAKANA_INPUT_MODE"
+           desc="The combobox value for the Mozc input method preference">
+    Katakana
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM"
+           desc="The combobox description for the Mozc input method preference">
+    Numpad style
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_INPUT_MODE"
+           desc="The combobox value for the Mozc input method preference">
+    Follow input mode
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_FULL_WIDTH"
+           desc="The combobox value for the Mozc input method preference">
+    Fullwidth
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_HALF_WIDTH"
+           desc="The combobox value for the Mozc input method preference">
+    Halfwidth
+  </message>
+  <message translateable="false"
+           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_DIRECT_INPUT"
+           desc="The combobox value for the Mozc input method preference">
+    Direct input
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_INCOGNITO_MODE"
+           desc="The checkbox label for a Mozc input method preference">
+    Temporarily disable conversion personalization, history-based suggestions and user dictionary
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_AUTO_IME_TURN_OFF"
+           desc="The checkbox label for a Mozc input method preference">
+    Automatically switch to halfwidth
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_HISTORY_SUGGEST"
+           desc="The checkbox label for a Mozc input method preference">
+    Use input history
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_USE_DICTIONARY_SUGGEST"
+           desc="The checkbox label for a Mozc input method preference">
+    Use system dictionary
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SUGGESTIONS_SIZE"
+           desc="The slider label for a Mozc input method preference">
+    Maximum number of suggestions
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
+           desc="The label for the configure button for input methods">
+    Configure...
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD"
+           desc="The label for the section header for input methods">
+    Input Method
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON"
+           desc="The label for the sign out button for changing UI language">
+    Sign out
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_INPUT_METHOD"
+           desc="Warning invoked when the user tries to remove the last input method">
+    Please add another input method before removing this one.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_INSTRUCTIONS"
+           desc="Explanatory message about how to select input methods">
+    For text input, select a language to see available input methods.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT"
+           desc="Explanatory message about how to switch input methods">
+    Press alt+shift to switch between input methods.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT"
+           desc="Explanatory message about how to select the previous input method">
+    Press ctrl+space to select the previous input method.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_IME"
+           desc="Label for extension IMEs">
+    Extension IMEs
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_DESCRIPTION"
+           desc="Description of extension IMEs">
+    Select which extension IMEs will be available in the language menu.
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_PHONETIC"
+           desc="The label for a Tamil input method">
+    Tamil input method (Phonetic)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_INSCRIPT"
+           desc="The label for a Tamil input method">
+    Tamil input method (InScript)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_TAMIL99"
+           desc="The label for a Tamil input method">
+    Tamil input method (Tamil99)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_ITRANS"
+           desc="The label for a Tamil input method">
+    Tamil input method (itrans)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_TYPEWRITER"
+           desc="The label for a Tamil input method">
+    Tamil input method (Typewriter)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD"
+           desc="The label for a input method">
+    Standard input method
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_CHINESE_CANGJIE_INPUT_METHOD"
+           desc="The label for the Chinese input method">
+    Chinese input method (cangjie)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_CHINESE_QUICK_INPUT_METHOD"
+           desc="The label for the Chinese input method">
+    Chinese input method (quick)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_PERSIAN_ISIRI_2901_INPUT_METHOD"
+           desc="The label for the Persian (Farsi) input method">
+    Persian input method (ISIRI 2901 layout)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_THAI_KESMANEE_INPUT_METHOD"
+           desc="The label for the Thai input method">
+    Thai input method (Kesmanee keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_THAI_TIS820_INPUT_METHOD"
+           desc="The label for the Thai input method">
+    Thai input method (TIS-820.2538 keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_THAI_PATTACHOTE_INPUT_METHOD"
+           desc="The label for the Thai input method">
+    Thai input method (Pattachote keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_TCVN_INPUT_METHOD"
+           desc="The label for the Vietnamese input method">
+    Vietnamese input method (TCVN6064)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_TELEX_INPUT_METHOD"
+           desc="The label for the Vietnamese input method">
+    Vietnamese input method (TELEX)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VIQR_INPUT_METHOD"
+           desc="The label for the Vietnamese input method">
+    Vietnamese input method (VIQR)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VNI_INPUT_METHOD"
+           desc="The label for the Vietnamese input method">
+    Vietnamese input method (VNI)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD"
+           desc="The label for the Chewing traditional Chinese input method">
+    Chewing input method
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD"
+           desc="The label for the Pinyin simplified Chinese input method">
+    Pinyin input method
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DV_INPUT_METHOD"
+           desc="The label for the Pinyin simplified Chinese input method">
+    Pinyin input method (for US Dvorak keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_INPUT_METHOD"
+           desc="The label for the Japanese input method for US keyboard">
+    Japanese input method (for US keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_DV_INPUT_METHOD"
+           desc="The label for the Japanese input method for US Dvorak keyboard">
+    Japanese input method (for US Dvorak keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_JP_INPUT_METHOD"
+           desc="The label for the Japanese input method for Japanese keyboard">
+    Japanese input method (for Japanese keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_INPUT_METHOD"
+           desc="The label for the Google Japanese Input input method for US keyboard">
+    Google Japanese Input (for US keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_DV_INPUT_METHOD"
+           desc="The label for the Google Japanese Input input method for US Dvorak keyboard">
+    Google Japanese Input (for US Dvorak keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_JP_INPUT_METHOD"
+           desc="The label for the Google Japanese Input input method for Japanese keyboard">
+    Google Japanese Input (for Japanese keyboard)
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_HANDWRITING_INPUT_METHOD"
+           desc="The label for the Japanese handwriting input method">
+    Handwriting input method for Japanese
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD"
+           desc="The label for the Korean input method">
+    Korean input method
+  </message>
+  <message name="IDS_OPTIONS_KEYBOARD_OVERLAY_TITLE"
+           desc="The title for 'Keyboard settings' overlay">
+    Keyboard settings
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH_LABEL"
+           desc="The label for 'Customize modifier keys' overlay">
+    Search
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_CTRL_LABEL"
+           desc="The label for 'Customize modifier keys' overlay">
+    Ctrl
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_ALT_LABEL"
+           desc="The label for 'Customize modifier keys' overlay">
+    Alt
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH"
+           desc="The dropdown list item for 'Customize modifier keys' overlay">
+    Search
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_CTRL"
+           desc="The dropdown list item for 'Customize modifier keys' overlay">
+    Ctrl
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_ALT"
+           desc="The dropdown list item for 'Customize modifier keys' overlay">
+    Alt
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_VOID"
+           desc="The dropdown list item for 'Customize modifier keys' overlay">
+    Disabled
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPS_LOCK"
+           desc="The dropdown list item for 'Customize modifier keys' overlay">
+    Caps Lock
+  </message>
+  <message name="IDS_OPTIONS_NO_POINTING_DEVICES" desc="Text shown when there is neither a touchpad nor a mouse.">
+    No mouse or touchpad was detected.
+  </message>
+  <message name="IDS_OPTIONS_POINTER_MOUSE_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Mouse only.">
+    Mouse settings
+  </message>
+  <message name="IDS_OPTIONS_POINTER_TOUCHPAD_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Touchpad only.">
+    Touchpad settings
+  </message>
+  <message name="IDS_OPTIONS_POINTER_TOUCHPAD_MOUSE_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Touchpad and Mouse.">
+    Touchpad and mouse settings
+  </message>
+  <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_TOUCHPAD" desc="The title for 'Touchpad' section of the Pointer Settings overlay.">
+    Touchpad
+  </message>
+  <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_MOUSE" desc="The title for 'Mouse' section of the Pointer Settings overlay.">
+    Mouse
+  </message>
+  <message name="IDS_STATUSBAR_ACCESSIBILITY_ENABLED" desc="The tooltip for the status bar button to indicate that accessibility is enabled.">
+    Accessibility features are enabled.
+  </message>
+  <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
+    Disable Spoken Feedback
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_LOCKED" desc="Message displayed while access to network devices is temporarily locked due to mobile network activation">
+    Please wait while we set up your mobile network.
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
+    Ethernet
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_WIFI" desc="The wifi network device.">
+    Wi-Fi
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR" desc="The cellular network device.">
+    Mobile Data
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING" desc="The network device status connecting.">
+    Connecting...
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED" desc="The network device status connected.">
+    Connected
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED" desc="The network device status disconnected.">
+    Disconnected
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_NOT_CONFIGURED" desc="The network device status not configured.">
+    Not configured
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISABLED" desc="The network device status disabled.">
+    Off
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATING" desc="The network device is activating.">
+    Activating...
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE" desc="Activate the network device.">
+    Activate <ph name="NETWORKSERVICE">$1<ex>YBH Cellular</ex></ph>
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_ENABLE" desc="Enable the network device.">
+    Enable <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISABLE" desc="Disable the network device.">
+    Disable <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DEVICE_STATUS" desc="The status of the network device.">
+    <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>: <ph name="STATUS">$2<ex>Connecting</ex></ph>
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT" desc="A menu item label with an indentation. For left-to-right languages, we use 3 spaces on the left.">
+    '''   <ph name="LABEL">$1<ex>Wifi SSID</ex></ph>'''
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_OFFLINE_MODE" desc="The offline mode.">
+    Offline mode
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG" desc="The menu item in the network menu button for opening the options dialog">
+    Network settings...
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG" desc="The menu item in the network menu button at login screen for opening the options dialog">
+    Proxy settings...
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_MORE" desc="Message for last link in the network menu requesting more technical and less common stuff (proxy settings, IP and hardware addresses)">
+    More...
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS" desc="In the network status menu, the text for submenu of private networks.">
+    Private networks
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_ADD_VPN" desc="In the network status menu, the text in Private networks submenu to add a private network.">
+    Add private network...
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_DISCONNECT_VPN" desc="In the network status menu, the text in Private networks submenu to disconnect from a private network.">
+    Disconnect private network
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT" desc="In the network status menu, the text of the top-up URL link.">
+    View account
+  </message>
+  <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
+    No networks are available
+  </message>
+  <message name="IDS_STATUSBAR_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
+    Searching for Wi-Fi networks...
+  </message>
+  <message name="IDS_STATUSBAR_BATTERY_CHARGING_PERCENTAGE" desc="In the power menu button, this shows what percentage of battery is left when power supply is connected.">
+    Charging battery: <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
+  </message>
+  <message name="IDS_STATUSBAR_BATTERY_USING_PERCENTAGE" desc="In the power menu button, this shows what percentage of battery is left when power supply is not connected.">
+    Using battery: <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
+  </message>
+  <message name="IDS_STATUSBAR_NO_BATTERY" desc="In the power menu button, menu item label shown when there is no battery installed in the device.">
+    No battery
+  </message>
+  <message name="IDS_STATUSBAR_BATTERY_TIME_UNTIL_FULL" desc="In the power menu button, this shows how much time until fully charged.">
+Charging
+<ph name="HOUR">$1<ex>2</ex></ph>:<ph name="MINUTE">$2<ex>30</ex></ph> until full
+  </message>
+  <message name="IDS_STATUSBAR_BATTERY_TIME_UNTIL_EMPTY" desc="In the power menu button, this shows how much time until empty.">
+Battery
+<ph name="HOUR">$1<ex>2</ex></ph>:<ph name="MINUTE">$2<ex>30</ex></ph> remaining
+  </message>
+  <message name="IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_FULL" desc="In the power menu button, this is the message the shows when we are calculating time until full.">
+Charging
+Calculating time until full
+  </message>
+  <message name="IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_EMPTY" desc="In the power menu button, this is the message the shows when we are calculating time until empty.">
+Battery
+Calculating remaining time
+  </message>
+  <message name="IDS_STATUSBAR_BATTERY_IS_CHARGED" desc="In the power menu button, the battery is charged message.">
+Battery full
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP" desc="Tooltip for the network menu status bar icon when no network is connected.">
+    No network
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP" desc="Tooltip for the network menu status bar icon when connecting to a network.">
+    Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+  </message>
+  <message name="IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP" desc="Tooltip for the network menu status bar icon when connected to a network.">
+    Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+  </message>
+  <message name="IDS_STATUSBAR_VOLUME_PERCENTAGE" desc="Tooltip for the volume button, shows the percentage of volume">
+    Volume: <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
+  </message>
+  <message name="IDS_STATUSBAR_VOLUME_MUTE" desc="Tooltip for the volume button when muted">
+    Volume: Muted
+  </message>
+  <message name="IDS_STATUSBAR_WINDOW_MAXIMIZE_TOOLTIP" desc="Tooltip for the layout mode button in the status bar when the window is unmaximized.">
+    Maximize
+  </message>
+  <message name="IDS_STATUSBAR_WINDOW_RESTORE_TOOLTIP" desc="Tooltip for the layout mode button in the status bar when the window is maximized.">
+    Restore
+  </message>
+  <message name="IDS_VERSION_FIELD_PREFIX" desc="Display the OS version to the user.">
+    version
+  </message>
+  <message name="IDS_PROXY_PAGE_TITLE_FORMAT" desc="The title of the proxy page for a specific network.">
+    Network proxy for <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
+  </message>
+  <message name="IDS_PROXY_CONFIG_TITLE" desc="The title of the basic proxy config.">
+    Proxy Configuration
+  </message>
+  <message name="IDS_PROXY_DIRECT_CONNECTION" desc="Radio used to tell it to just connect directly, not use a proxy.">
+    Direct Internet connection
+  </message>
+  <message name="IDS_PROXY_MANUAL_CONFIG" desc="Radio used to tell it to configure manually.">
+    Manual proxy configuration
+  </message>
+  <message name="IDS_PROXY_SAME_FORALL" desc="Radio used to tell it to use the same proxy.">
+    Use the same proxy for all protocols
+  </message>
+  <message name="IDS_PROXY_HTTP_PROXY" desc="Label for the http proxy box.">
+    HTTP proxy
+  </message>
+  <message name="IDS_PROXY_HTTP_SECURE_HTTP_PROXY" desc="Label for the secure http proxy box.">
+    Secure HTTP proxy
+  </message>
+  <message name="IDS_PROXY_FTP_PROXY" desc="Label for the ftp proxy box.">
+    FTP proxy
+  </message>
+  <message name="IDS_PROXY_SOCKS_HOST" desc="Label for the SOCKS host box.">
+    SOCKS host
+  </message>
+  <message name="IDS_PROXY_AUTOMATIC" desc="Radio to select configuring from a URL.">
+    Automatic proxy configuration
+  </message>
+  <message name="IDS_PROXY_CONFIG_URL" desc="Label for the proxy config URL box.">
+    Autoconfiguration URL
+  </message>
+  <message name="IDS_PROXY_ADVANCED_CONFIG" desc="Label for the Advanced Proxy.">
+    Advanced Configuration
+  </message>
+  <message name="IDS_PROXY_ADD_HOST" desc="Label for the Add host button.">
+    Add
+  </message>
+  <message name="IDS_PROXY_REMOVE_HOST" desc="Label for the Remove host button.">
+    Remove
+  </message>
+  <message name="IDS_PROXY_PORT" desc="Label for the Port box.">
+    Port
+  </message>
+  <message name="IDS_PROXY_BYPASS" desc="Label for the proxy bypass list.">
+    Do not use the proxy settings for these hosts and domains:
+  </message>
+
+  <!-- Accessibility strings, to be spoken -->
+  <message name="IDS_CHROMEOS_ACC_BUTTON" desc="Label indicating that a control is a pushbutton.">
+    Button
+  </message>
+  <message name="IDS_CHROMEOS_ACC_CHECKBOX_UNCHECKED" desc="Label indicating that a control is an unchecked check box.">
+    Unchecked check box
+  </message>
+  <message name="IDS_CHROMEOS_ACC_CHECKBOX_CHECKED" desc="Label indicating that a control is a checked check box.">
+    Checked check box
+  </message>
+  <message name="IDS_CHROMEOS_ACC_RADIO_UNSELECTED" desc="Label indicating that a control is an unselected radio button.">
+    Unselected radio button
+  </message>
+  <message name="IDS_CHROMEOS_ACC_RADIO_SELECTED" desc="Label indicating that a control is a selected radio button.">
+    Selected radio button
+  </message>
+  <message name="IDS_CHROMEOS_ACC_COMBOBOX" desc="Label indicating that a control is a combo box, a control that pops down a list of options to choose from.">
+    Combo box
+  </message>
+  <message name="IDS_CHROMEOS_ACC_LISTBOX" desc="Label indicating that a control is a list box, a control that shows a fixed list of options to choose from.">
+    List box
+  </message>
+  <message name="IDS_CHROMEOS_ACC_LINK" desc="Label indicating that a control is a clickable link.">
+    Link
+  </message>
+  <message name="IDS_CHROMEOS_ACC_MENU" desc="Label indicating that a control is a menu that will drop down to reveal options if you click on it.">
+    Menu
+  </message>
+  <message name="IDS_CHROMEOS_ACC_TAB" desc="Label indicating that a control is one tab in a tabbed dialog or window.">
+    Tab
+  </message>
+  <message name="IDS_CHROMEOS_ACC_TEXTBOX" desc="Label indicating that a control is an editable text box.">
+    Text box
+  </message>
+  <message name="IDS_CHROMEOS_ACC_PASSWORDBOX" desc="Label indicating that a control is a secure editable text box for a password, where the keys you type will be obscured.">
+    Password text box
+  </message>
+  <message name="IDS_CHROMEOS_ACC_INDEX_OF_COUNT" desc="Phrase indicating that the current selected item is number INDEX out of a list of COUNT choices, for example if the list is A, B, C, D, E and the user has selected C the phrase would be '3 of 5'.">
+    <ph name="INDEX">$1<ex>3</ex></ph> of <ph name="COUNT">$2<ex>5</ex></ph>
+  </message>
+  <message name="IDS_CHROMEOS_ACC_HAS_SUBMENU" desc="Phrase indicating that a menu item has a submenu.">
+    Has submenu
+  </message>
+  <message name="IDS_CHROMEOS_ACC_SELECTED" desc="Phrase indicating that a control was selected or activated.">
+    Selected
+  </message>
+  <message name="IDS_CHROMEOS_ACC_EXCLAMATION_POINT" desc="The name of the exclamation point character.">
+    Exclamation point
+  </message>
+  <message name="IDS_CHROMEOS_ACC_LEFT_PAREN" desc="The name of the left parenthesis character, abbreviated or shortened if possible.">
+    Left paren
+  </message>
+  <message name="IDS_CHROMEOS_ACC_RIGHT_PAREN" desc="The name of the left parenthesis character, abbreviated or shortened if possible.">
+    Right paren
+  </message>
+  <message name="IDS_CHROMEOS_ACC_SEMICOLON" desc="The name of the semicolon character.">
+    Semicolon
+  </message>
+  <message name="IDS_CHROMEOS_ACC_COLON" desc="The name of the colon character.">
+    Colon
+  </message>
+  <message name="IDS_CHROMEOS_ACC_QUOTE" desc="The name of the quotation mark character, abbreviated or shortened if possible.">
+    Quote
+  </message>
+  <message name="IDS_CHROMEOS_ACC_COMMA" desc="The name of the comma character.">
+    Comma
+  </message>
+  <message name="IDS_CHROMEOS_ACC_PERIOD" desc="The name of the period character.">
+    Period
+  </message>
+  <message name="IDS_CHROMEOS_ACC_SPACE" desc="The name of a space character.">
+    Space
+  </message>
+  <message name="IDS_CHROMEOS_ACC_TEXT_UNSELECTED" desc="A phrase to indicate to the user that text has been unselected.">
+    Unselected
+  </message>
+  <message name="IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_ENABLED" desc="A phrase to speak when spoken feedback is enabled.">
+    Enabling spoken feedback.
+  </message>
+  <message name="IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_DISABLED" desc="A phrase to speak when spoken feedback is disabled.">
+    Disabling spoken feedback.
+  </message>
+  <message name="IDS_CHROMEOS_ACC_USERNAME_LABEL" desc="Label for the username text field.">
+    Username.
+  </message>
+  <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN" desc="Status when signing in.">
+    Signing in.
+  </message>
+  <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD" desc="Status when signing in incognito.">
+    Entering as Guest.
+  </message>
+  <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_DEMOUSER" desc="Status when signing in the demo user.">
+    Entering Demo.
+  </message>
+  <message name="IDS_CHROMEOS_ACC_ACCOUNT_PICTURE" desc="Tooltip for the take account picture button.">
+    Take picture.
+  </message>
+
+  <!-- Audio strings -->
+  <message name="IDS_CHROMEOS_AUDIO_CRAS_DEVICE_AUTOMATIC" desc="Audio device name shown to the user when the proper device is automatically used.">
+    Automatic
+  </message>
+
+  <!-- Removable device notifications -->
+  <message name="IDS_REMOVABLE_DEVICE_DETECTION_TITLE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+    Removable device detected
+  </message>
+  <message name="IDS_REMOVABLE_DEVICE_SCANNING_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+    Scanning content...
+  </message>
+  <message name="IDS_DEVICE_UNSUPPORTED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+   Sorry, the device <ph name="DEVICE_LABEL">$1<ex>My SD card</ex></ph> is not supported at this time.
+  </message>
+  <message name="IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+   Sorry, your external storage device is not supported at this time.
+  </message>
+  <message name="IDS_DEVICE_UNKNOWN_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+   Sorry, the device <ph name="DEVICE_LABEL">$1<ex>My SD card</ex></ph> could not be recognized.
+  </message>
+  <message name="IDS_DEVICE_UNKNOWN_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+   Sorry, your external storage device could not be recognized.
+  </message>
+  <message name="IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+   Sorry, at least one partition on the device <ph name="DEVICE_LABEL">$1<ex>MySDcard</ex></ph> could not be mounted.
+  </message>
+  <message name="IDS_MULTIPART_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+   Sorry, at least one partition on your external storage device could not be mounted.
+  </message>
+  <message name="IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device but external storage is disabled by policy">
+   Sorry, your administrator has disabled external storage on your account.
+  </message>
+
+  <!-- Formatting device notifications -->
+  <message name="IDS_FORMATTING_OF_DEVICE_PENDING_TITLE" desc="Text of notification message which is shown when formatting process of some device is pending">
+    Formatting pending
+  </message>
+  <message name="IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE" desc="Text of notification message which is shown when formatting process finshes">
+    Formatting finished
+  </message>
+  <message name="IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE" desc="Text of notification message which is shown when formatting process of some device is pending">
+    The formatting process can take a couple of seconds. Please wait.
+  </message>
+  <message name="IDS_FORMATTING_STARTED_FAILURE_MESSAGE" desc="Text of notification message which is shown when formatting process can not be started.">
+    Could not start the formatting process.
+  </message>
+  <message name="IDS_FORMATTING_FINISHED_SUCCESS_MESSAGE" desc="Text of notification message which is shown when formatting finishes without any errors.">
+    Formatting finished successfully!
+  </message>
+  <message name="IDS_FORMATTING_FINISHED_FAILURE_MESSAGE" desc="Text of notification message which is shown when there are some errors while formatting.">
+    Aw, Snap! There've been some errors while formatting...
+  </message>
+
+  <!-- ChromeOS GData synchronization notifications -->
+  <message name="IDS_CHROMEOS_GDATA_SYNC_TITLE" desc="Title text of notification message which is shown when gdata sync is on progress.">
+    Syncing
+  </message>
+  <message name="IDS_CHROMEOS_GDATA_SYNC_FINISHED_FAILURE_TITLE" desc="Title text of notification message which is shown when there are some errors while gdata sync.">
+    Could not sync
+  </message>
+  <message name="IDS_CHROMEOS_GDATA_SYNC_PROGRESS_MESSAGE" desc="Text of notification message which is shown when gdata file sync is on progress.">
+    Syncing <ph name="COUNT">$1<ex>3</ex></ph> files...
+  </message>
+  <message name="IDS_CHROMEOS_GDATA_SYNC_FINISHED_SUCCESS_MESSAGE" desc="Text of notification message which is shown when gdata sync finishes without any errors.">
+    Sync complete.
+  </message>
+  <message name="IDS_CHROMEOS_GDATA_SYNC_FINISHED_FAILURE_MESSAGE" desc="Text of notification message which is shown when there are some errors while gdata sync.">
+    Unable to connect.
+  </message>
+
+  <!-- Network state strings for ChromeOS -->
+  <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Network state in about:network: UNKNOWN">
+    Unknown
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_IDLE" desc="Network state in about:network: IDLE">
+    Idle
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_CARRIER" desc="Network state in about:network: CARRIER">
+    Carrier
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_ASSOCIATION" desc="Network state in about:network: ASSOCIATION">
+    Association
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_CONFIGURATION" desc="Network state in about:network: CONFIGURATION">
+    Configuration
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_READY" desc="Network state in about:network: READY">
+    Connected
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_DISCONNECT" desc="Network state in about:network: DISCONNECT">
+    Disconnect
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_FAILURE" desc="Network state in about:network: FAILURE">
+    Failure
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE" desc="Network state in about:network: ACTIVATION_FAILURE">
+    Activation failure
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED" desc="Network state in about:network: Unrecognized">
+    Unrecognized state
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_PORTAL" desc="Network state in about:network: Portal">
+    Portal state
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_ONLINE" desc="Network state in about:network: Online">
+    Online state
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_STATE_CONNECT_REQUESTED" desc="Network state in about:network: Connect Requested">
+    Connect Requested
+  </message>
+
+  <!-- Network error strings for ChromeOS -->
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error in about:network: UNKNOWN">
+    Unknown network error
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE" desc="Network error in about:network: OUT_OF_RANGE">
+    Out of range
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_PIN_MISSING" desc="Network error in about:network: PIN_MISSING">
+    PIN missing
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_DHCP_FAILED" desc="Network error in about:network: DHCP_FAILED">
+    DHCP lookup failed
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED" desc="Network error in about:network: CONNECT_FAILED">
+    Connect failed
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE" desc="Network error in about:network: BAD_PASSPHRASE">
+    Bad passphrase
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY" desc="Network error in about:network: BAD_WEPKEY">
+    Bad WEP key
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED" desc="Network error in about:network: ACTIVATION_FAILED">
+    Activation failed
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_NEED_EVDO" desc="Network error in about:network: NEED_EVDO">
+    Need EVDO
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_NEED_HOME_NETWORK" desc="Network error in about:network: NEED_HOME_NETWORK">
+    Need home network
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED" desc="Network error in about:network: OTASP_FAILED">
+    OTASP failed
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED" desc="Network error in about:network: AAA_FAILED">
+    AAA check failed
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_INTERNAL" desc="Network error in about:network: INTERNAL">
+    Internal error
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_DNS_LOOKUP_FAILED" desc="Network error in about:network: DNS_LOOKUP_FAILED">
+    DNS lookup failed
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED" desc="Network error in about:network: HTTP_GET_FAILED">
+    HTTP get failed
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED" desc="Network error in about:network: IPSEC_PSK_AUTH_FAILED">
+    Failed to authenticate with provided pre-shared key
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_IPSEC_CERT_AUTH_FAILED" desc="Network error in about:network: IPSEC_CERT_AUTH_FAILED">
+    Failed to authenticate with provided certificate
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED" desc="Network error in about:network: PPP_AUTH_FAILED">
+    Failed to authenticate with provided username or password
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ERROR_UNRECOGNIZED" desc="Network error in about:network: Unrecognized">
+    Unrecognized error
+  </message>
+
+  <!-- Cellular network technology description strings for ChromeOS -->
+  <message name="IDS_CHROMEOS_NETWORK_CELLULAR_TECHNOLOGY_UNKNOWN" desc="Description of unknown cellular network technology. Shown under details on chrome:stettings/internet page.">
+    Unknown
+  </message>
+
+  <!-- Cellular network activation state description strings for ChromeOS -->
+  <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATED" desc="Description of state of activated cellular data plan. Shown under details on chrome:stettings/internet page.">
+    Activated
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATING" desc="Description of state of currently activating cellular data plan. Shown under details on chrome:stettings/internet page.">
+    Activating
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_NOT_ACTIVATED" desc="Description of state of unactivated cellular data plan. Shown under details on chrome:stettings/internet page.">
+    Not activated
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_PARTIALLY_ACTIVATED" desc="Description of state of partially activated cellular data plan state. Shown under details on chrome:stettings/internet page.">
+    Partially activated
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_UNKNOWN" desc="Description of cellular data plan with unknown status. Shown under details on chrome:stettings/internet page.">
+    Unknown
+  </message>
+
+  <!-- Cellular network roaming status description strings for ChromeOS -->
+  <message name="IDS_CHROMEOS_NETWORK_ROAMING_STATE_HOME" desc="Description of cellular roaming status while connected to home network. Shown under details on chrome:stettings/internet page.">
+    Home network, not roaming
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ROAMING_STATE_ROAMING" desc="Description of cellular roaming status while roaming. Shown under details on chrome:stettings/internet page.">
+    Roaming
+  </message>
+  <message name="IDS_CHROMEOS_NETWORK_ROAMING_STATE_UNKNOWN" desc="Description of unknown cellular roaming status. Shown under details on chrome:stettings/internet page.">
+    Unknown
+  </message>
+
+  <!-- Cellular network details -->
+  <message name="IDS_CHROMEOS_NETWORK_STATE" desc="Label for network state field under in chrome://options/internet">
+    Network status:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR" desc="Label for cellular network operator name under chrome://options/internet">
+    Operator:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR_CODE" desc="Label for cellular network operator code under chrome://options/internet">
+    Operator code:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_NETWORK_TECHNOLOGY" desc="Label for cellular network technology type under chrome://options/internet">
+    Technology:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACTIVATION_STATE" desc="Label for cellular network activation status under chrome://options/internet">
+    Activation status:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ROAMING_STATE" desc="Label for cellular network roaming status under chrome://options/internet">
+    Roaming status:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_RESTRICTED_POOL" desc="Label for cellular network restricted network access under chrome://options/internet">
+    Restricted IP:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ERROR_STATE" desc="Label for cellular network error details under chrome://options/internet">
+    Error details:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MANUFACTURER" desc="Label for cellular network modem manufacturer under chrome://options/internet">
+    Device manufacturer:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MODEL_ID" desc="Label for cellular network modem model under chrome://options/internet">
+    Device model:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_FIRMWARE_REVISION" desc="Label for cellular network modem firmware revision under chrome://options/internet">
+    Firmware revision:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION" desc="Label for cellular network modem hardware revision under chrome://options/internet">
+    Hardware revision:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Label for cellular network modem PRL (Preferred Roaming List) version under chrome://options/internet">
+    PRL version:
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_LEARN_MORE" desc="The text of the learn more link on the keyboard overlay.">
+    Learn more
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
+    Keyboard Overlay
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS" desc="The instructions for the keyboard overlay.">
+    Hold Control, Alt, or Shift to see keyboard shortcuts for those modifiers.
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE" desc="The instruction for hiding the keyboard overlay.">
+    Type Ctrl+Alt+/ or Escape to hide
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_LAUNCHER_ITEM" desc="The text in the keyboard overlay to explain the shortcut (Open the last launcher item).">
+    Activate last launcher item
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate last tab
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_1" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
+    Activate launcher item 1
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_2" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
+    Activate launcher item 2
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_3" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
+    Activate launcher item 3
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_4" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
+    Activate launcher item 4
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_5" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
+    Activate launcher item 5
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_6" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
+    Activate launcher item 6
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_7" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
+    Activate launcher item 7
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAUNCHER_ITEM_8" desc="The text in the keyboard overlay to explain the shortcut (Open the launcher item at the specified position).">
+    Activate launcher item 8
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_NEXT_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate next tab
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_PREVIOUS_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate previous tab
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_1" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate tab 1
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_2" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate tab 2
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_3" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate tab 3
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_4" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate tab 4
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_5" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate tab 5
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_6" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate tab 6
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_7" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate tab 7
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_TAB_8" desc="The text in the keyboard overlay to explain the shortcut.">
+    Activate tab 8
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ADD_WWW_AND_COM_AND_OPEN_ADDRESS" desc="The text in the keyboard overlay to explain the shortcut.">
+    Add www. and .com and open address
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_ALL_TABS" desc="The text in the keyboard overlay to explain the shortcut.">
+    Bookmark all tabs
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Bookmark current page
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (open the Bookmark Manager).">
+    Bookmark Manager
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_CENTER_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (center the window).">
+    Center window
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_CLEAR_BROWSING_DATA_DIALOG" desc="The text in the keyboard overlay to explain the shortcut.">
+    "Clear browsing data" dialog
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_CLOSE_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
+    Close tab
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_CLOSE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
+    Close window
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_COPY" desc="The text in the keyboard overlay to explain the shortcut.">
+    Copy
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_CUT" desc="The text in the keyboard overlay to explain the shortcut.">
+    Cut
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_CYCLE_THROUGH_INPUT_METHODS" desc="The text in the keyboard overlay to explain the shortcut.">
+    Cycle through input methods
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DECREASE_KEY_BRIGHTNESS" desc="The text in the keyboard overlay to explain the shortcut (decrease the keyboard brightness).">
+    Decrease key brightness
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DELETE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Delete
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DELETE_WORD" desc="The text in the keyboard overlay to explain the shortcut.">
+    Delete word
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DEVELOPER_TOOLS" desc="The text in the keyboard overlay to explain the shortcut.">
+    Developer Tools
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DOCK_WINDOW_LEFT" desc="The text in the keyboard overlay to explain the shortcut (dock the window to the left).">
+    Dock window left
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DOCK_WINDOW_RIGHT" desc="The text in the keyboard overlay to explain the shortcut (dock the window to the right).">
+    Dock window right
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DOM_INSPECTOR" desc="The text in the keyboard overlay to explain the shortcut.">
+    DOM Inspector
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_DOWNLOADS" desc="The text in the keyboard overlay to explain the shortcut.">
+    Downloads
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_END" desc="The text in the keyboard overlay to explain the shortcut.">
+    End
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FIND_PREVIOUS_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
+    Find previous text
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FIND_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
+    Find text
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FIND_TEXT_AGAIN" desc="The text in the keyboard overlay to explain the shortcut.">
+    Find text again
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
+    Focus address bar
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_ADDRESS_BAR_IN_SEARCH_MODE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Focus address bar in search mode
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_BOOKMARKS" desc="The text in the keyboard overlay to explain the shortcut.">
+    Focus bookmarks
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_LAUNCHER" desc="The text in the keyboard overlay to explain the shortcut (focus the application launcher).">
+    Focus launcher
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_NEXT_PANE" desc="The text in the keyboard overlay to explain the shortcut (switch focus to the next keyboard-accessible pane).">
+    Focus next pane
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_PREVIOUS_PANE" desc="The text in the keyboard overlay to explain the shortcut (switch focus to the previous keyboard-accessible pane).">
+    Focus previous pane
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_STATUS_ICON" desc="The text in the keyboard overlay to explain the shortcut.">
+    Focus status icon
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FOCUS_TOOLBAR" desc="The text in the keyboard overlay to explain the shortcut.">
+    Focus toolbar
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_FULL_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (toggles fullscreen mode).">
+    Full screen
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_GO_BACK" desc="The text in the keyboard overlay to explain the shortcut.">
+    Go back
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_GO_FORWARD" desc="The text in the keyboard overlay to explain the shortcut.">
+    Go forward
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_HELP" desc="The text in the keyboard overlay to explain the shortcut.">
+    Help
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_HISTORY" desc="The text in the keyboard overlay to explain the shortcut.">
+    History
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_HOME" desc="The text in the keyboard overlay to explain the shortcut.">
+    Home
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_INCREASE_KEY_BRIGHTNESS" desc="The text in the keyboard overlay to explain the shortcut (Increase the keyboard brightness).">
+    Increase key brightness
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS" desc="The text in the keyboard overlay to explain the shortcut.">
+    Input Unicode characters
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_JAVASCRIPT_CONSOLE" desc="The text in the keyboard overlay to explain the shortcut.">
+    JavaScript Console
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (lock the screen).">
+    Lock screen
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF" desc="The text in the keyboard overlay to explain the shortcut.">
+    Lock screen or power off
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_MAXIMIZE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (maximize or restore the window).">
+    Maximize window
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_MINIMIZE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (minimize the window).">
+    Minimize window
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_MIRROR_MONITORS" desc="The text in the keyboard overlay to explain the shortcut (Mirror the monitors).">
+    Mirror monitors
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
+    New Incognito window
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
+    New tab
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_NEW_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
+    New window
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_NEXT_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (go to the next window).">
+    Next window
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_NEXT_WORD" desc="The text in the keyboard overlay to explain the shortcut (move the text cursor to the end of the next word).">
+    Next word
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
+    Open address in new tab
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_OPEN_DIALOG" desc="The text in the keyboard overlay to explain the shortcut (open a dialog to select file).">
+    Open dialog
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILES_APP" desc="The text in the keyboard overlay to explain the shortcut (open the files app).">
+    Open Files app
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut.">
+    Page Down
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_PAGE_UP" desc="The text in the keyboard overlay to explain the shortcut.">
+    Page Up
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_PASTE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Paste
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_PASTE_AS_PLAIN_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
+    Paste as plain text
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (go to the previous window).">
+    Previous window
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_PREVIOUS_WORD" desc="The text in the keyboard overlay to explain the shortcut (move the text cursor to the start of the previous word).">
+    Previous word
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_PRINT" desc="The text in the keyboard overlay to explain the shortcut.">
+    Print
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_RELOAD_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Reload current page
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_RELOAD_IGNORING_CACHE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Reload ignoring cache
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_REOPEN_LAST_CLOSED_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
+    Reopen last-closed tab
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_REPORT_ISSUE" desc="The text in the keyboard overlay to explain the shortcut (report an issue).">
+    Report issue
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_RESET_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
+    Reset zoom
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SAVE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Save
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SCREENSHOT_REGION" desc="The text in the keyboard overlay to explain the shortcut (take a screenshot of the selected region).">
+    Screenshot region
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SCROLL_UP_ONE_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Scroll up one page
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SELECT_ALL" desc="The text in the keyboard overlay to explain the shortcut.">
+    Select all
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SELECT_PREVIOUS_INPUT_METHOD" desc="The text in the keyboard overlay to explain the shortcut.">
+    Select previous input method
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME" desc="The text in the keyboard overlay to explain the shortcut.">
+    Select "word at a time"
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
+    Sign out
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SWAP_PRIMARY_MONITOR" desc="The text in the keyboard overlay to explain the shortcut (swap primary monitor).">
+    Swap primary monitor
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT" desc="The text in the keyboard overlay to explain the shortcut.">
+    Take screenshot
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TASK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
+    Task Manager
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_ACCESSIBILITY_FEATURES" desc="The text in the keyboard overlay to explain the shortcut (enable or disable accessibility features).">
+    Toggle accessibility features
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
+    Toggle bookmark bar
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_CAPS_LOCK" desc="The text in the keyboard overlay to explain the shortcut (enable or disable caps lock).">
+    Toggle caps lock
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPEECH_INPUT" desc="The text in the keyboard overlay to explain the shortcut (start or stop speech input).">
+    Toggle speech input
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
+    Undo
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_VIEW_KEYBOARD_OVERLAY" desc="The text in the keyboard overlay to explain the shortcut.">
+    View keyboard overlay
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_VIEW_SOURCE" desc="The text in the keyboard overlay to explain the shortcut.">
+    View source
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_WORD_MOVE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Word move
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ZOOM_IN" desc="The text in the keyboard overlay to explain the shortcut.">
+    Zoom in
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ZOOM_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
+    Zoom out
+  </message>
+  <if expr="lang == 'ja'">
+    <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="In the language menu button, this shows a character set in use is set to Hiragana.">
+      Hiragana
+    </message>
+    <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA" desc="In the language menu button, this shows a character set in use is set to KATAKANA.">
+      Katakana
+    </message>
+  </if>
+  <if expr="lang != 'ja'">
+    <message translateable="false" name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="">
+      Hiragana
+    </message>
+    <message translateable="false" name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA" desc="">
+      Katakana
+    </message>
+  </if>
+  <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_DIRECT_INPUT" desc="In the language menu button, this shows a character set in use is set to 'direct input' mode.">
+    Direct input
+  </message>
+  <!-- "Half width" part is translateable. -->
+  <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA" desc="In the language menu button, this shows a character set in use is set to half width Katakana.">
+    Half width Katakana
+  </message>
+  <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_LATIN" desc="In the language menu button, this shows a character set in use is set to Latin.">
+    Latin
+  </message>
+  <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN" desc="In the language menu button, this shows a character set in use is set to wide Latin.">
+    Wide Latin
+  </message>
+  <message name="IDS_STATUSBAR_IME_KOREAN_HANJA_INPUT_MODE" desc="In the language menu button, this shows the input mode.">
+    Hanja mode
+  </message>
+  <message name="IDS_STATUSBAR_IME_KOREAN_HANGUL_INPUT_MODE" desc="In the language menu button, this shows the input mode.">
+    Hangul mode
+  </message>
+  <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH" desc="In the language menu button, this shows the input mode.">
+    Toggle Chinese/English mode
+  </message>
+  <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF" desc="In the language menu button, this shows the input mode.">
+    Toggle full/half width mode
+  </message>
+  <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF_PUNCTUATION" desc="In the language menu button, this shows the input mode.">
+    Toggle full/half width punctuation mode
+  </message>
+  <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE" desc="In the language menu button, this shows the input mode.">
+    Toggle Simplified/Traditional Chinese mode
+  </message>
+
+  <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_ENGLISH_MODE" desc="In the language menu button, this shows the input mode.">
+    English
+  </message>
+  <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_CHINESE_MODE" desc="In the language menu button, this shows the input mode.">
+    Chinese
+  </message>
+  <message name="IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_FULL_WIDTH_ENGLISH_MODE" desc="In the language menu button, this shows the input mode.">
+    Full-width English
+  </message>
+
+  <message name="IDS_STATUSBAR_LAYOUT_JAPAN" desc="In the language menu button, this shows the input mode.">
+    Japanese keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_SLOVENIA" desc="In the language menu button, this shows the input mode.">
+    Slovenian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_GERMANY" desc="In the language menu button, this shows the input mode.">
+    German keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_GERMANY_NEO2" desc="In the language menu button, this shows the input mode.">
+    German Neo 2 keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_ITALY" desc="In the language menu button, this shows the input mode.">
+    Italian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_ESTONIA" desc="In the language menu button, this shows the input mode.">
+    Estonian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_HUNGARY" desc="In the language menu button, this shows the input mode.">
+    Hungarian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_POLAND" desc="In the language menu button, this shows the input mode.">
+    Polish keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_DENMARK" desc="In the language menu button, this shows the input mode.">
+    Danish keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_CROATIA" desc="In the language menu button, this shows the input mode.">
+    Croatian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_BRAZIL" desc="In the language menu button, this shows the input mode.">
+    Brazilian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_SERBIA" desc="In the language menu button, this shows the input mode.">
+    Serbian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_CZECHIA" desc="In the language menu button, this shows the input mode.">
+    Czech keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_USA_DVORAK" desc="In the language menu button, this shows the input mode.">
+    US Dvorak keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_USA_COLEMAK" desc="In the language menu button, this shows the input mode.">
+    US Colemak keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_ROMANIA" desc="In the language menu button, this shows the input mode.">
+    Romanian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_USA" desc="In the language menu button, this shows the input mode.">
+    US keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_USA_EXTENDED" desc="In the language menu button, this shows the input mode.">
+    US extended keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL" desc="In the language menu button, this shows the input mode.">
+    US international keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_LITHUANIA" desc="In the language menu button, this shows the input mode.">
+    Lithuanian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM" desc="In the language menu button, this shows the input mode.">
+    UK keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM_DVORAK" desc="In the language menu button, this shows the input mode.">
+    UK Dvorak keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_SLOVAKIA" desc="In the language menu button, this shows the input mode.">
+    Slovakian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_RUSSIA" desc="In the language menu button, this shows the input mode.">
+    Russian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_RUSSIA_PHONETIC" desc="In the language menu button, this shows the input mode.">
+    Russian phonetic keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_GREECE" desc="In the language menu button, this shows the input mode.">
+    Greek keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_BELGIUM" desc="In the language menu button, this shows the input mode.">
+    Belgian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_BULGARIA" desc="In the language menu button, this shows the input mode.">
+    Bulgarian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_BULGARIA_PHONETIC" desc="In the language menu button, this shows the input mode.">
+    Bulgarian phonetic keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_SWITZERLAND" desc="In the language menu button, this shows the input mode.">
+    Swiss keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_SWITZERLAND_FRENCH" desc="In the language menu button, this shows the input mode.">
+    Swiss French keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_TURKEY" desc="In the language menu button, this shows the input mode.">
+    Turkish keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_PORTUGAL" desc="In the language menu button, this shows the input mode.">
+    Portuguese keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_SPAIN" desc="In the language menu button, this shows the input mode.">
+    Spanish keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_FINLAND" desc="In the language menu button, this shows the input mode.">
+    Finnish keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_UKRAINE" desc="In the language menu button, this shows the input mode.">
+    Ukrainian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_SPAIN_CATALAN" desc="In the language menu button, this shows the input mode.">
+    Catalan keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_FRANCE" desc="In the language menu button, this shows the input mode.">
+    French keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_NORWAY" desc="In the language menu button, this shows the input mode.">
+    Norwegian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_SWEDEN" desc="In the language menu button, this shows the input mode.">
+    Swedish keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_NETHERLANDS" desc="In the language menu button, this shows the input mode.">
+    Dutch keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_LATIN_AMERICAN" desc="In the language menu button, this shows the input mode.">
+    Latin American keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_LATVIA" desc="In the language menu button, this shows the input mode.">
+    Latvian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_CANADA" desc="In the language menu button, this shows the input mode.">
+    Canadian French keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH" desc="In the language menu button, this shows the input mode.">
+    Canadian English keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_ISRAEL" desc="In the language menu button, this shows the input mode.">
+    Hebrew keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_KOREA_104" desc="In the language menu button, this shows the input mode.">
+    Korean keyboard
+  </message>
+  <message name="IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE" desc="The title of the infolist window where the meanings and the usages of words are displayed.">
+    Information
+  </message>
+
+  <message name="IDS_STATUSBAR_LAYOUT_USA_MYSTERY" desc="In the language menu button, this shows the input mode.">
+    US Mystery keyboard
+  </message>
+
+  <!-- Attribution strings for stock user images, not translateable. -->
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_1">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_2">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_3">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_4">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_5">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_6">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_7">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_8">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_9">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_10">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_11">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_12">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_13">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_14">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_15">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_16">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_17">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_18">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_19">
+    Kirsten Hammelbo
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_20">
+    Igor Djurovic
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_21">
+    Romain Guy
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_22">
+    Barbara Dudzińska
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_23">
+    Romain Guy
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_24">
+    Dirk Ercken
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_25">
+    Pauline Ilott
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_26">
+    cynoclub
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_27">
+    Romain Guy
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_28">
+    Vladimir Vladimirov
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_29">
+    MOF
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_30">
+    Romain Guy
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_31">
+    Shaun Lowe
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_32">
+    Magdalena Wasiczek
+  </message>
+
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_1">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_2">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_3">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_4">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_5">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_6">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_7">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_8">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_9">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_10">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_11">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_12">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_13">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_14">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_15">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_16">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_17">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_18">
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_19">
+    http://www.istockphoto.com/Kirkham
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_20">
+    http://www.istockphoto.com/vectorig
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_21">
+    http://www.curious-creature.org/
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_22">
+    http://www.istockphoto.com/barol16
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_23">
+    http://www.curious-creature.org/
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_24">
+    http://www.istockphoto.com/kikkerdirk
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_25">
+    http://www.istockphoto.com/pollypic
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_26">
+    http://www.istockphoto.com/cynoclub
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_27">
+    http://www.curious-creature.org/
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_28">
+    http://www.istockphoto.com/portishead1
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_29">
+    http://www.istockphoto.com/MOF
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_30">
+    http://www.curious-creature.org/
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_31">
+    http://www.istockphoto.com/shaunl
+  </message>
+  <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_32">
+    http://www.magdawasiczek.pl
+  </message>
+
+  <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted.">
+    You are not authorized to use this device. For sign-in permission contact the device owner.
+  </message>
+  <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
+    Sorry, your password could not be verified. Please try again.
+  </message>
+  <message name="IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME" desc="Couldn't sign in because password is invalid for the 2nd time">
+    Sorry, your password still could not be verified. Note: if you changed your password recently, your new password will be applied once you sign out, please use the old password here.
+  </message>
+  <message name="IDS_LOGIN_ERROR_PASSWORD_CHANGED" desc="Couldn't log in because password specified matched as old one, but not new one (online) - password change has been detected.">
+    Your password has changed. Please try again with your new password.
+  </message>
+  <message name="IDS_LOGIN_ERROR_RESTRICTED" desc="Couldn't log in because account is disabled/deleted or not signed up">
+    Your account may have been deleted or disabled. Please sign out.
+  </message>
+  <message name="IDS_LOGIN_ERROR_AUTHENTICATING_NEW" desc="Couldn't sign in because username or password invalid">
+    Sorry, your email or password could not be verified. Please try again.
+  </message>
+  <message name="IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED" desc="Couldn't sign in because hosted account is used">
+    Your account does not work on <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>. Please contact your domain administrator or use a regular Google Account to sign in.
+  </message>
+  <message name="IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED" desc="Couldn't sign in because offline sign-in has failed and network is not connected">
+    Sorry, your email or password could not be verified. Try connecting to a network first.
+  </message>
+  <message name="IDS_LOGIN_ERROR_ADD_USER_OFFLINE" desc="Error message that shows up when user tries to add user without a connected network.">
+    To add a user, please connect to a network first.
+  </message>
+  <message name="IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY" desc="Couldn't sign in because nework library couldn't be loaded">
+    Can't access network library
+  </message>
+  <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about layout switching">
+    Hit Shift-Alt to switch keyboard layout.
+  </message>
+  <message name="IDS_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
+    Caps Lock is on.
+  </message>
+  <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL" desc="An error message shown when we suggest that user may be behind the captive portal.">
+    Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
+  </message>
+  <message name="IDS_LOGIN_ERROR_OWNER_REQUIRED" desc="Couldn't sign in because the machine is in policy safe mode and needs owner login">
+    Login has been resticted to the owner account only. Please reboot and sign in with the owner account. The machine will auto reboot in 30 seconds.
+  </message>
+  <message name="IDS_LOGIN_ERROR_OWNER_KEY_LOST" desc="Couldn't sign in because the owner key has been lost">
+    Login has been cancelled because some of the device settings have been corrupted.
+  </message>
+  <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
+    Enter as Guest
+  </message>
+  <message name="IDS_LOGIN_PROXY_ERROR_MESSAGE" desc="An offline message shown when a proxy error has appeared.">
+    The sign-in page failed to load using the current proxy settings. Please <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>try to sign in again<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> or use different proxy settings.
+  </message>
+  <message name="IDS_LOGIN_CAPTIVE_PORTAL_WINDOW_TITLE" desc="Title of the window which is opened to sign in to the captive portal.">
+    To use the network <ph name="NETWORK_ID">$1<ex>Adelaide Airport Wireless</ex></ph>, first complete your connection to the Internet below.
+  </message>
+  <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE" desc="An offline message title shown when we suggest that user may be behind the captive portal.">
+    Network not available
+  </message>
+  <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL" desc="An offline message shown when we suggest that user may be behind the captive portal. Translation note: enter as Guest - could also be said enter as Guest user. Word user may be added to the translation if needed.">
+    To use <ph name="NETWORK_ID">$1<ex>&gt;b&lt;Public Wifi&gt;/b&lt;</ex></ph> you may first need to <ph name="LINK_START">$2<ex>&gt;a&lt;</ex></ph>visit the network's sign-in page<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph>, which will open automatically in a few seconds. If it didn't happen, network can't be used for the Internet connection.
+  </message>
+  <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_PROXY" desc="An offline mssage shown when we suggest that user should configure the proxy.">
+    If you use a proxy server, check your proxy settings or
+    contact your network administrator to make sure the proxy
+    server is working. If you don't believe you should be using a
+    proxy server, adjust your <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>proxy settings<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
+  </message>
+  <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT" desc="An offline message shown when we suggest that user may select other network.">
+    You may also select another network.
+  </message>
+  <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE" desc="An error message shown when we suggest that user may be behind the captive portal but Guest mode is disabled.">
+    Your password cannot be verified on this current network. Please select another network.
+  </message>
+  <message name="IDS_NOTIFICATION_PANEL_TITLE" desc="Text for the title of the notification panel.">
+    Notifications
+  </message>
+  <message name="IDS_LOGIN_OFFLINE_TITLE" desc="Title of an offline message that shows up in OOBE sign-in screen.">
+    You are currently offline
+  </message>
+  <message name="IDS_LOGIN_OFFLINE_MESSAGE" desc="An offline message that shows up in OOBE sign-in screen.">
+    Please connect to the Internet to complete setup of your Chromebook.
+  </message>
+  <message name="IDS_GUEST" desc="Shown in login panel for users that would like to browse without signing in.">
+    Guest
+  </message>
+  <message name="IDS_ADD_USER" desc="Shown in login panel for adding new user to login screen.">
+    Add a user
+  </message>
+  <message name="IDS_LANGUAGES_MORE" desc="Main language list 'more' link. Expands all possible languages, not only the main ones.">
+    More...
+  </message>
+  <message name="IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT" desc="Text to display in the password field for user pod when no password has been entered.">
+    Enter password
+  </message>
+  <message name="IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the password field of a user pod on the login screen.">
+    Password for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
+  </message>
+  <message name="IDS_LOGIN_POD_REMOVE_BUTTON_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the remove button of a user pod on the login screen.">
+    Remove user <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
+  </message>
+  <message name="IDS_LOGIN_VERSION_LABEL_FORMAT" desc="Login screen version text format.">
+    <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> <ph name="PRODUCT_VERSION">$2<ex>15.0.0.0</ex></ph> (Platform <ph name="PLATFORM_VERSION">$3<ex>900.0-11.09.01</ex></ph>)
+  </message>
+  <message name="IDS_LOGIN_MANAGED_BY_LABEL_FORMAT" desc="Text format for a 'Managed by DOMAIN' label on login screen.">
+    Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>
+  </message>
+  <message name="IDS_LOGIN_MANAGED_BY_WITH_STATUS_LABEL_FORMAT" desc="Text format for a 'Managed by DOMAIN' label on login screen, with additional status message.">
+    Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph> (<ph name="STATUS">$2<ex>network error</ex></ph>)
+  </message>
+  <message name="IDS_LOGIN_MANAGED_BY_STATUS_PENDING" desc="Text for the pending status in 'Managed by DOMAIN' label on login screen.">
+    Handshake with device management service pending...
+  </message>
+  <message name="IDS_LOGIN_MANAGED_BY_STATUS_LOST_CONNECTION" desc="Text for the lost connection status in 'Managed by DOMAIN' label on login screen.">
+    Lost connection with the policy service. Please reset the device or contact your support representative.
+  </message>
+  <message name="IDS_LOGIN_MANAGED_BY_STATUS_NETWORK_ERROR" desc="Text for the network error status in 'Managed by DOMAIN' label on login screen.">
+    Network error while communicating with the device management service.
+  </message>
+  <message name="IDS_LOGIN_MANAGED_BY_NOTICE" desc="Text for the notification bar on the login screen showing that this is a managed device.">
+    This device is managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>.
+  </message>
+  <message name="IDS_LOGIN_MANAGED_REPORTING_HINT" desc="Text for the hint on reporting features displayed in the enterprise notification bar on the login screen.">
+    Device usage may be tracked.
+  </message>
+</grit-part>
