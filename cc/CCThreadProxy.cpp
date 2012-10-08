@@ -31,9 +31,9 @@ static const double contextRecreationTickRate = 0.03;
 
 namespace cc {
 
-PassOwnPtr<CCProxy> CCThreadProxy::create(CCLayerTreeHost* layerTreeHost)
+scoped_ptr<CCProxy> CCThreadProxy::create(CCLayerTreeHost* layerTreeHost)
 {
-    return adoptPtr(new CCThreadProxy(layerTreeHost));
+    return make_scoped_ptr(new CCThreadProxy(layerTreeHost)).PassAs<CCProxy>();
 }
 
 CCThreadProxy::CCThreadProxy(CCLayerTreeHost* layerTreeHost)
@@ -343,11 +343,11 @@ void CCThreadProxy::setNeedsForcedCommitOnImplThread()
     m_schedulerOnImplThread->setNeedsForcedCommit();
 }
 
-void CCThreadProxy::postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAnimationEventsVector> events, double wallClockTime)
+void CCThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector> events, double wallClockTime)
 {
     ASSERT(isImplThread());
     TRACE_EVENT0("cc", "CCThreadProxy::postAnimationEventsToMainThreadOnImplThread");
-    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadProxy::setAnimationEvents, events, wallClockTime));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadProxy::setAnimationEvents, events.release(), wallClockTime));
 }
 
 void CCThreadProxy::releaseContentsTexturesOnImplThread()
@@ -817,13 +817,15 @@ void CCThreadProxy::didCompleteSwapBuffers()
     m_layerTreeHost->didCompleteSwapBuffers();
 }
 
-void CCThreadProxy::setAnimationEvents(PassOwnPtr<CCAnimationEventsVector> events, double wallClockTime)
+void CCThreadProxy::setAnimationEvents(CCAnimationEventsVector* passed_events, double wallClockTime)
 {
+    scoped_ptr<CCAnimationEventsVector> events(make_scoped_ptr(passed_events));
+
     TRACE_EVENT0("cc", "CCThreadProxy::setAnimationEvents");
     ASSERT(isMainThread());
     if (!m_layerTreeHost)
         return;
-    m_layerTreeHost->setAnimationEvents(events, wallClockTime);
+    m_layerTreeHost->setAnimationEvents(events.Pass(), wallClockTime);
 }
 
 class CCThreadProxyContextRecreationTimer : public CCTimer, CCTimerClient {

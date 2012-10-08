@@ -43,12 +43,12 @@ public:
         return CCTexture::memorySizeBytes(m_textureSize, m_textureFormat) * textureCount;
     }
 
-    PassOwnPtr<CCPrioritizedTextureManager> createManager(size_t maxTextures)
+    scoped_ptr<CCPrioritizedTextureManager> createManager(size_t maxTextures)
     {
         return CCPrioritizedTextureManager::create(texturesMemorySize(maxTextures), 1024, 0);
     }
 
-    bool validateTexture(OwnPtr<CCPrioritizedTexture>& texture, bool requestLate)
+    bool validateTexture(scoped_ptr<CCPrioritizedTexture>& texture, bool requestLate)
     {
         textureManagerAssertInvariants(texture->textureManager());
         if (requestLate)
@@ -106,10 +106,10 @@ namespace {
 TEST_F(CCPrioritizedTextureTest, requestTextureExceedingMaxLimit)
 {
     const size_t maxTextures = 8;
-    OwnPtr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
 
     // Create textures for double our memory limit.
-    OwnPtr<CCPrioritizedTexture> textures[maxTextures*2];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures*2];
 
     for (size_t i = 0; i < maxTextures*2; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -146,8 +146,8 @@ TEST_F(CCPrioritizedTextureTest, requestTextureExceedingMaxLimit)
 TEST_F(CCPrioritizedTextureTest, changeMemoryLimits)
 {
     const size_t maxTextures = 8;
-    OwnPtr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
-    OwnPtr<CCPrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -201,9 +201,9 @@ TEST_F(CCPrioritizedTextureTest, textureManagerPartialUpdateTextures)
 {
     const size_t maxTextures = 4;
     const size_t numTextures = 4;
-    OwnPtr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
-    OwnPtr<CCPrioritizedTexture> textures[numTextures];
-    OwnPtr<CCPrioritizedTexture> moreTextures[numTextures];
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTexture> textures[numTextures];
+    scoped_ptr<CCPrioritizedTexture> moreTextures[numTextures];
 
     for (size_t i = 0; i < numTextures; ++i) {
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -260,8 +260,8 @@ TEST_F(CCPrioritizedTextureTest, textureManagerPartialUpdateTextures)
 TEST_F(CCPrioritizedTextureTest, textureManagerPrioritiesAreEqual)
 {
     const size_t maxTextures = 16;
-    OwnPtr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
-    OwnPtr<CCPrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -299,8 +299,8 @@ TEST_F(CCPrioritizedTextureTest, textureManagerPrioritiesAreEqual)
 
 TEST_F(CCPrioritizedTextureTest, textureManagerDestroyedFirst)
 {
-    OwnPtr<CCPrioritizedTextureManager> textureManager = createManager(1);
-    OwnPtr<CCPrioritizedTexture> texture = textureManager->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(1);
+    scoped_ptr<CCPrioritizedTexture> texture = textureManager->createTexture(m_textureSize, m_textureFormat);
 
     // Texture is initially invalid, but it will become available.
     EXPECT_FALSE(texture->haveBackingTexture());
@@ -316,7 +316,7 @@ TEST_F(CCPrioritizedTextureTest, textureManagerDestroyedFirst)
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         textureManager->clearAllMemory(resourceProvider());
     }
-    textureManager.clear();
+    textureManager.reset();
 
     EXPECT_FALSE(texture->canAcquireBackingTexture());
     EXPECT_FALSE(texture->haveBackingTexture());
@@ -324,9 +324,9 @@ TEST_F(CCPrioritizedTextureTest, textureManagerDestroyedFirst)
 
 TEST_F(CCPrioritizedTextureTest, textureMovedToNewManager)
 {
-    OwnPtr<CCPrioritizedTextureManager> textureManagerOne = createManager(1);
-    OwnPtr<CCPrioritizedTextureManager> textureManagerTwo = createManager(1);
-    OwnPtr<CCPrioritizedTexture> texture = textureManagerOne->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTextureManager> textureManagerOne = createManager(1);
+    scoped_ptr<CCPrioritizedTextureManager> textureManagerTwo = createManager(1);
+    scoped_ptr<CCPrioritizedTexture> texture = textureManagerOne->createTexture(m_textureSize, m_textureFormat);
 
     // Texture is initially invalid, but it will become available.
     EXPECT_FALSE(texture->haveBackingTexture());
@@ -344,7 +344,7 @@ TEST_F(CCPrioritizedTextureTest, textureMovedToNewManager)
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         textureManagerOne->clearAllMemory(resourceProvider());
     }
-    textureManagerOne.clear();
+    textureManagerOne.reset();
 
     EXPECT_FALSE(texture->canAcquireBackingTexture());
     EXPECT_FALSE(texture->haveBackingTexture());
@@ -364,15 +364,15 @@ TEST_F(CCPrioritizedTextureTest, textureMovedToNewManager)
 TEST_F(CCPrioritizedTextureTest, renderSurfacesReduceMemoryAvailableOutsideRootSurface)
 {
     const size_t maxTextures = 8;
-    OwnPtr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
 
     // Half of the memory is taken by surfaces (with high priority place-holder)
-    OwnPtr<CCPrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
     renderSurfacePlaceHolder->setToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
     renderSurfacePlaceHolder->setRequestPriority(CCPriorityCalculator::renderSurfacePriority());
 
     // Create textures to fill our memory limit.
-    OwnPtr<CCPrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -410,15 +410,15 @@ TEST_F(CCPrioritizedTextureTest, renderSurfacesReduceMemoryAvailableOutsideRootS
 TEST_F(CCPrioritizedTextureTest, renderSurfacesReduceMemoryAvailableForRequestLate)
 {
     const size_t maxTextures = 8;
-    OwnPtr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
 
     // Half of the memory is taken by surfaces (with high priority place-holder)
-    OwnPtr<CCPrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
     renderSurfacePlaceHolder->setToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
     renderSurfacePlaceHolder->setRequestPriority(CCPriorityCalculator::renderSurfacePriority());
 
     // Create textures to fill our memory limit.
-    OwnPtr<CCPrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -447,15 +447,15 @@ TEST_F(CCPrioritizedTextureTest, renderSurfacesReduceMemoryAvailableForRequestLa
 TEST_F(CCPrioritizedTextureTest, whenRenderSurfaceNotAvailableTexturesAlsoNotAvailable)
 {
     const size_t maxTextures = 8;
-    OwnPtr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
 
     // Half of the memory is taken by surfaces (with high priority place-holder)
-    OwnPtr<CCPrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
     renderSurfacePlaceHolder->setToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
     renderSurfacePlaceHolder->setRequestPriority(CCPriorityCalculator::renderSurfacePriority());
 
     // Create textures to fill our memory limit.
-    OwnPtr<CCPrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -487,11 +487,11 @@ TEST_F(CCPrioritizedTextureTest, whenRenderSurfaceNotAvailableTexturesAlsoNotAva
 TEST_F(CCPrioritizedTextureTest, requestLateBackingsSorting)
 {
     const size_t maxTextures = 8;
-    OwnPtr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
     textureManager->setMaxMemoryLimitBytes(texturesMemorySize(maxTextures));
 
     // Create textures to fill our memory limit.
-    OwnPtr<CCPrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
 

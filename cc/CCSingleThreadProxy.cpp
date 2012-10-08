@@ -18,9 +18,9 @@ using namespace WTF;
 
 namespace cc {
 
-PassOwnPtr<CCProxy> CCSingleThreadProxy::create(CCLayerTreeHost* layerTreeHost)
+scoped_ptr<CCProxy> CCSingleThreadProxy::create(CCLayerTreeHost* layerTreeHost)
 {
-    return adoptPtr(new CCSingleThreadProxy(layerTreeHost));
+    return make_scoped_ptr(new CCSingleThreadProxy(layerTreeHost)).PassAs<CCProxy>();
 }
 
 CCSingleThreadProxy::CCSingleThreadProxy(CCLayerTreeHost* layerTreeHost)
@@ -272,11 +272,11 @@ void CCSingleThreadProxy::setNeedsCommitOnImplThread()
     m_layerTreeHost->scheduleComposite();
 }
 
-void CCSingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(PassOwnPtr<CCAnimationEventsVector> events, double wallClockTime)
+void CCSingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector> events, double wallClockTime)
 {
     ASSERT(CCProxy::isImplThread());
     DebugScopedSetMainThread main;
-    m_layerTreeHost->setAnimationEvents(events, wallClockTime);
+    m_layerTreeHost->setAnimationEvents(events.Pass(), wallClockTime);
 }
 
 void CCSingleThreadProxy::releaseContentsTexturesOnImplThread()
