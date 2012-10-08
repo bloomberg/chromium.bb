@@ -26,8 +26,9 @@ class SampleMuxerMetadata {
 
   SampleMuxerMetadata();
 
-  // Bind this metadata object to the muxer instance.
-  void Init(mkvmuxer::Segment* segment);
+  // Bind this metadata object to the muxer instance.  Returns false
+  // if segment equals NULL, or Init has already been called.
+  bool Init(mkvmuxer::Segment* segment);
 
   // Parse the WebVTT file |filename| having the indicated |kind|, and
   // create a corresponding track in the segment.  Returns false on

@@ -7,8 +7,12 @@ using std::string;
 SampleMuxerMetadata::SampleMuxerMetadata() : segment_(NULL) {
 }
 
-void SampleMuxerMetadata::Init(mkvmuxer::Segment* s) {
-  segment_ = s;
+bool SampleMuxerMetadata::Init(mkvmuxer::Segment* segment) {
+  if (segment == NULL || segment_ != NULL)
+    return false;
+
+  segment_ = segment;
+  return true;
 }
 
 bool SampleMuxerMetadata::Load(const char* file, Kind kind) {
@@ -63,28 +67,28 @@ bool SampleMuxerMetadata::AddTrack(
   const char* codec_id;
 
   switch (kind) {
-  case kSubtitles:
-    type = 0x11;
-    codec_id = "D_WEBVTT/SUBTITLES";
-    break;
+    case kSubtitles:
+      type = 0x11;
+      codec_id = "D_WEBVTT/SUBTITLES";
+      break;
 
-  case kCaptions:
-    type = 0x11;
-    codec_id = "D_WEBVTT/CAPTIONS";
-    break;
+    case kCaptions:
+      type = 0x11;
+      codec_id = "D_WEBVTT/CAPTIONS";
+      break;
 
-  case kDescriptions:
-    type = 0x21;
-    codec_id = "D_WEBVTT/DESCRIPTIONS";
-    break;
+    case kDescriptions:
+      type = 0x21;
+      codec_id = "D_WEBVTT/DESCRIPTIONS";
+      break;
 
-  case kMetadata:
-    type = 0x21;
-    codec_id = "D_WEBVTT/METADATA";
-    break;
+    case kMetadata:
+      type = 0x21;
+      codec_id = "D_WEBVTT/METADATA";
+      break;
 
-  default:
-    return false;
+    default:
+      return false;
   }
 
   track->set_type(type);

@@ -131,7 +131,7 @@ int ParseArgWebVTT(
   return 0;  // not a WebVTT arg
 }
 
-} // end namespace
+}  // end namespace
 
 int main(int argc, char* argv[]) {
   char* input = NULL;
@@ -399,7 +399,11 @@ int main(int argc, char* argv[]) {
   // input file.
 
   SampleMuxerMetadata metadata;
-  metadata.Init(&muxer_segment);
+
+  if (!metadata.Init(&muxer_segment)) {
+    printf("\n Could not initialize metadata cache.\n");
+    return EXIT_FAILURE;
+  }
 
   if (!LoadMetadataFiles(metadata_files, &metadata))
     return EXIT_FAILURE;
