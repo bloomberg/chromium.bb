@@ -215,11 +215,14 @@ class Gdb(object):
     for line in result:
       if line.startswith('^'):
         return RecordParser(line).Parse()
+    raise AssertionError('No result record found in %r' % result)
 
   def _GetLastExecAsyncRecord(self, result):
     for line in reversed(result):
       if line.startswith('*'):
         return RecordParser(line).Parse()
+    raise AssertionError('No asynchronous execute status record found in %r'
+                           % result)
 
   def Command(self, command):
     status, items = self._GetResultRecord(self._SendRequest(command))
