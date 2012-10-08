@@ -369,7 +369,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     //
     // 2. The anchor point, when given as a FloatPoint object, is specified in "unit layer space",
     //    where the bounds of the layer map to [0, 1]. However, as a WebTransformationMatrix object,
-    //    the transform to the anchor point is specified in "pixel layer space", where the bounds
+    //    the transform to the anchor point is specified in "layer space", where the bounds
     //    of the layer map to [bounds.width(), bounds.height()].
     //
     // 3. Definition of various transforms used:
@@ -380,11 +380,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     //        Tr[origin2center] is the translation from the layer's origin to its center
     //        M[layer] is the layer's matrix (applied at the anchor point)
     //        M[sublayer] is the layer's sublayer transform (applied at the layer's center)
-    //        Tr[anchor2center] is the translation offset from the anchor point and the center of the layer
-    //        S[content2layer] is the ratio of a layer's contentBounds() to its bounds().
-    //
-    //    Some shortcuts and substitutions are used in the code to reduce matrix multiplications:
-    //        Tr[anchor2center] = Tr[origin2anchor].inverse() * Tr[origin2center]
+    //        S[layer2content] is the ratio of a layer's contentBounds() to its bounds().
     //
     //    Some composite transforms can help in understanding the sequence of transforms:
     //        compositeLayerTransform = Tr[origin2anchor] * M[layer] * Tr[origin2anchor].inverse()
@@ -402,28 +398,27 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     // Using these definitions, then:
     //
     // The draw transform for the layer is:
-    //        M[draw] = M[parent] * Tr[origin] * compositeLayerTransform * S[content2layer]
-    //                = M[parent] * Tr[layer->position()] * M[layer] * Tr[anchor2origin] * S[content2layer]
+    //        M[draw] = M[parent] * Tr[origin] * compositeLayerTransform * S[layer2content]
+    //                = M[parent] * Tr[layer->position() + anchor] * M[layer] * Tr[anchor2origin] * S[layer2content]
     //
     //        Interpreting the math left-to-right, this transforms from the layer's render surface to the origin of the layer in content space.
     //
     // The screen space transform is:
-    //        M[screenspace] = M[root] * Tr[origin] * compositeLayerTransform * S[content2layer]
-    //                       = M[root] * Tr[layer->position()] * M[layer] * Tr[origin2anchor].inverse() * S[content2layer]
+    //        M[screenspace] = M[root] * Tr[origin] * compositeLayerTransform * S[layer2content]
+    //                       = M[root] * Tr[layer->position() + anchor] * M[layer] * Tr[anchor2origin] * S[layer2content]
     //
     //        Interpreting the math left-to-right, this transforms from the root render surface's content space to the local layer's origin in layer space.
     //
     // The transform hierarchy that is passed on to children (i.e. the child's parentMatrix) is:
     //        M[parent]_for_child = M[parent] * Tr[origin] * compositeLayerTransform * compositeSublayerTransform
-    //                            = M[parent] * Tr[layer->position()] * M[layer] * Tr[anchor2center] * M[sublayer] * Tr[origin2center].inverse()
-    //                            = M[draw] * M[sublayer] * Tr[origin2center].inverse()
+    //                            = M[parent] * Tr[layer->position() + anchor] * M[layer] * Tr[anchor2origin] * compositeSublayerTransform
     //
     //        and a similar matrix for the full hierarchy with respect to the root.
     //
     // Finally, note that the final matrix used by the shader for the layer is P * M[draw] * S . This final product
     // is computed in drawTexturedQuad(), where:
     //        P is the projection matrix
-    //        S is the scale adjustment (to scale up to the layer size)
+    //        S is the scale adjustment (to scale up a canonical quad to the layer's size)
     //
     // When a render surface has a replica layer, that layer's transform is used to draw a second copy of the surface.
     // Transforms named here are relative to the surface, unless they specify they are relative to the replica layer.
@@ -463,10 +458,6 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     FloatPoint anchorPoint = layer->anchorPoint();
     FloatPoint position = layer->position() - layer->scrollDelta();
 
-    // Offset between anchor point and the center of the quad.
-    float centerOffsetX = (0.5 - anchorPoint.x()) * bounds.width();
-    float centerOffsetY = (0.5 - anchorPoint.y()) * bounds.height();
-
     WebTransformationMatrix layerLocalTransform;
     // LT = S[pageScaleDelta]
     layerLocalTransform.scale(layer->pageScaleDelta());
@@ -474,8 +465,8 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     layerLocalTransform.translate3d(position.x() + anchorPoint.x() * bounds.width(), position.y() + anchorPoint.y() * bounds.height(), layer->anchorPointZ());
     // LT = S[pageScaleDelta] * Tr[origin] * Tr[origin2anchor] * M[layer]
     layerLocalTransform.multiply(layer->transform());
-    // LT = S[pageScaleDelta] * Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2center]
-    layerLocalTransform.translate3d(centerOffsetX, centerOffsetY, -layer->anchorPointZ());
+    // LT = S[pageScaleDelta] * Tr[origin] * Tr[origin2anchor] * M[layer] * Tr[anchor2origin]
+    layerLocalTransform.translate3d(-anchorPoint.x() * bounds.width(), -anchorPoint.y() * bounds.height(), -layer->anchorPointZ());
 
     WebTransformationMatrix combinedTransform = parentMatrix;
     combinedTransform.multiply(layerLocalTransform);
@@ -490,10 +481,8 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
     // The drawTransform that gets computed below is effectively the layer's drawTransform, unless
     // the layer itself creates a renderSurface. In that case, the renderSurface re-parents the transforms.
     WebTransformationMatrix drawTransform = combinedTransform;
-    // M[draw] = M[parent] * LT * Tr[anchor2center] * Tr[center2origin]
-    drawTransform.translate(-layer->bounds().width() / 2.0, -layer->bounds().height() / 2.0);
     if (!layer->contentBounds().isEmpty() && !layer->bounds().isEmpty()) {
-        // M[draw] = M[parent] * LT * Tr[anchor2origin] * S[layer2content]
+        // M[draw] = M[parent] * LT * S[layer2content]
         drawTransform.scaleNonUniform(layer->bounds().width() / static_cast<double>(layer->contentBounds().width()),
                                       layer->bounds().height() / static_cast<double>(layer->contentBounds().height()));
     }
@@ -544,7 +533,6 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
         // surface content space.
         sublayerMatrix.makeIdentity();
         sublayerMatrix.scale(deviceScaleFactor);
-        sublayerMatrix.translate(0.5 * bounds.width(), 0.5 * bounds.height());
 
         // The opacity value is moved from the layer to its surface, so that the entire subtree properly inherits opacity.
         renderSurface->setDrawOpacity(drawOpacity);
@@ -626,10 +614,9 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
         CCMathUtil::flattenTransformTo2d(sublayerMatrix);
 
     // Apply the sublayer transform at the center of the layer.
+    sublayerMatrix.translate(0.5 * bounds.width(), 0.5 * bounds.height());
     sublayerMatrix.multiply(layer->sublayerTransform());
-
-    // The coordinate system given to children is located at the layer's origin, not the center.
-    sublayerMatrix.translate3d(-bounds.width() * 0.5, -bounds.height() * 0.5, 0);
+    sublayerMatrix.translate(-0.5 * bounds.width(), -0.5 * bounds.height());
 
     LayerList& descendants = (layer->renderSurface() ? layer->renderSurface()->layerList() : layerList);
 
