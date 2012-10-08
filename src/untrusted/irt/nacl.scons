@@ -121,9 +121,6 @@ def LinkIrt(output, files, libs):
 irt_core_library = LinkIrt('irt_core', irt_nonbrowser, [])
 env.SDKInstallBin('irt_core.nexe', irt_core_library)
 
-if env.Bit('enable_chrome_side'):
-  irt_library = LinkIrt('irt', irt_browser, ['ppruntime'])
-
 # TODO(mcgrathr): these should be installed, but scons is a mystery
 #env.AddHeaderToSdk(['irt.h'])
 #env.AddHeaderToSdk(['irt_ppapi.h'])
@@ -145,16 +142,6 @@ if ((env.Bit('build_arm') or env.Bit('build_x86_32'))
       check_tls_arch = 'arm-pnacl'
     else:
       check_tls_arch = 'arm-gcc'
-  if env.Bit('enable_chrome_side'):
-    node = env.CommandTest('irt_tls_test.out',
-                           ['${PYTHON}', env.File('check_tls.py'),
-                            check_tls_arch, '${OBJDUMP}', irt_library],
-                           # don't run ${PYTHON} under the emulator.
-                           direct_emulation=False,
-                           # Holy cow it takes over 30 seconds to disassemble
-                           # the ARM irt.nexe. Set test size to 'large'.
-                           size='large')
-    env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_tls_test')
   node = env.CommandTest('irt_core_tls_test.out',
                          ['${PYTHON}', env.File('check_tls.py'),
                           check_tls_arch, '${OBJDUMP}', irt_core_library],
