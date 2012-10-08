@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Thu Oct  4 12:24:28 2012. */
+/* Last generated from IDL: Fri Oct  5 16:24:42 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -74,7 +74,6 @@
 #include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_flash_print.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
-#include "ppapi/c/private/ppb_flash_udp_socket.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_network_list_private.h"
@@ -217,7 +216,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FlashFullscreen_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_MessageLoop_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Print_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0;
@@ -2636,52 +2634,6 @@ void Pnacl_M15_PPB_Flash_TCPSocket_Disconnect(PP_Resource tcp_socket) {
 
 /* End wrapper methods for PPB_Flash_TCPSocket_0_2 */
 
-/* Begin wrapper methods for PPB_Flash_UDPSocket_0_1 */
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M16_PPB_Flash_UDPSocket_Create(PP_Instance instance_id) {
-  const struct PPB_Flash_UDPSocket_0_1 *iface = Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1.real_iface;
-  return iface->Create(instance_id);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M16_PPB_Flash_UDPSocket_IsFlashUDPSocket(PP_Resource resource_id) {
-  const struct PPB_Flash_UDPSocket_0_1 *iface = Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1.real_iface;
-  return iface->IsFlashUDPSocket(resource_id);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M16_PPB_Flash_UDPSocket_Bind(PP_Resource udp_socket, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback) {
-  const struct PPB_Flash_UDPSocket_0_1 *iface = Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1.real_iface;
-  return iface->Bind(udp_socket, addr, callback);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M16_PPB_Flash_UDPSocket_RecvFrom(PP_Resource udp_socket, char* buffer, int32_t num_bytes, struct PP_CompletionCallback callback) {
-  const struct PPB_Flash_UDPSocket_0_1 *iface = Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1.real_iface;
-  return iface->RecvFrom(udp_socket, buffer, num_bytes, callback);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M16_PPB_Flash_UDPSocket_GetRecvFromAddress(PP_Resource udp_socket, struct PP_NetAddress_Private* addr) {
-  const struct PPB_Flash_UDPSocket_0_1 *iface = Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1.real_iface;
-  return iface->GetRecvFromAddress(udp_socket, addr);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M16_PPB_Flash_UDPSocket_SendTo(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback) {
-  const struct PPB_Flash_UDPSocket_0_1 *iface = Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1.real_iface;
-  return iface->SendTo(udp_socket, buffer, num_bytes, addr, callback);
-}
-
-static __attribute__((pnaclcall))
-void Pnacl_M16_PPB_Flash_UDPSocket_Close(PP_Resource udp_socket) {
-  const struct PPB_Flash_UDPSocket_0_1 *iface = Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1.real_iface;
-  iface->Close(udp_socket);
-}
-
-/* End wrapper methods for PPB_Flash_UDPSocket_0_1 */
-
 /* Begin wrapper methods for PPB_HostResolver_Private_0_1 */
 
 static __attribute__((pnaclcall))
@@ -3992,16 +3944,6 @@ struct PPB_Flash_TCPSocket_0_2 Pnacl_Wrappers_PPB_Flash_TCPSocket_0_2 = {
     .Disconnect = (void (*)(PP_Resource tcp_socket))&Pnacl_M15_PPB_Flash_TCPSocket_Disconnect
 };
 
-struct PPB_Flash_UDPSocket_0_1 Pnacl_Wrappers_PPB_Flash_UDPSocket_0_1 = {
-    .Create = (PP_Resource (*)(PP_Instance instance_id))&Pnacl_M16_PPB_Flash_UDPSocket_Create,
-    .IsFlashUDPSocket = (PP_Bool (*)(PP_Resource resource_id))&Pnacl_M16_PPB_Flash_UDPSocket_IsFlashUDPSocket,
-    .Bind = (int32_t (*)(PP_Resource udp_socket, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback))&Pnacl_M16_PPB_Flash_UDPSocket_Bind,
-    .RecvFrom = (int32_t (*)(PP_Resource udp_socket, char* buffer, int32_t num_bytes, struct PP_CompletionCallback callback))&Pnacl_M16_PPB_Flash_UDPSocket_RecvFrom,
-    .GetRecvFromAddress = (PP_Bool (*)(PP_Resource udp_socket, struct PP_NetAddress_Private* addr))&Pnacl_M16_PPB_Flash_UDPSocket_GetRecvFromAddress,
-    .SendTo = (int32_t (*)(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, const struct PP_NetAddress_Private* addr, struct PP_CompletionCallback callback))&Pnacl_M16_PPB_Flash_UDPSocket_SendTo,
-    .Close = (void (*)(PP_Resource udp_socket))&Pnacl_M16_PPB_Flash_UDPSocket_Close
-};
-
 struct PPB_HostResolver_Private_0_1 Pnacl_Wrappers_PPB_HostResolver_Private_0_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_HostResolver_Private_Create,
     .IsHostResolver = (PP_Bool (*)(PP_Resource resource))&Pnacl_M19_PPB_HostResolver_Private_IsHostResolver,
@@ -4798,12 +4740,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1 = {
-  .iface_macro = PPB_FLASH_UDPSOCKET_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Flash_UDPSocket_0_1,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1 = {
   .iface_macro = PPB_HOSTRESOLVER_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_HostResolver_Private_0_1,
@@ -5017,7 +4953,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Flash_MessageLoop_0_1,
   &Pnacl_WrapperInfo_PPB_Flash_Print_1_0,
   &Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2,
-  &Pnacl_WrapperInfo_PPB_Flash_UDPSocket_0_1,
   &Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0,

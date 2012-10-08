@@ -98,7 +98,6 @@
       'c/private/ppb_flash_menu.h',
       'c/private/ppb_flash_message_loop.h',
       'c/private/ppb_flash_tcp_socket.h',
-      'c/private/ppb_flash_udp_socket.h',
       'c/private/ppb_gpu_blacklist_private.h',
       'c/private/ppb_host_resolver_private.h',
       'c/private/ppb_instance_private.h',
