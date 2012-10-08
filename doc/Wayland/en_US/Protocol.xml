@@ -341,61 +341,6 @@
       </listitem>
     </itemizedlist>
   </section>
-  <section id="sect-Protocol-Shared-Object-Cache">
-    <title>Shared Object Cache</title>
-    <para>
-      Cache for sharing glyphs, icons, cursors across clients.  Lets clients
-      share identical objects.  The cache is a global object, advertised at
-      connect time.
-      <programlisting>
-        Interface:      cache
-        Requests:       upload(key, visual, bo, stride, width, height)
-        Events:	        item(key, bo, x, y, stride)
-                        retire(bo)
-      </programlisting>
-    </para>
-    <para>
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    Upload by passing a visual, bo, stride, width, height to the
-	    cache.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Upload returns a bo name, stride, and x, y location of object in
-	    the buffer.  Clients take a reference on the atlas bo.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Shared objects are refcounted, freed by client (when purging
-	    glyphs from the local cache) or when a client exits.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Server can't delete individual items from an atlas, but it can
-	    throw out an entire atlas bo if it becomes too sparse.  The server
-	    sends out an <type>retire</type> event when this happens, and clients
-	    must throw away any objects from that bo and reupload.  Between the
-	    server dropping the atlas and the client receiving the retire event,
-	    clients can still legally use the old atlas since they have a ref on
-	    the bo.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    cairo needs to hook into the glyph cache, and maybe also a way
-	    to create a read-only surface based on an object form the cache
-	    (icons).
-	    <function>cairo_wayland_create_cached_surface(surface-data)</function>
-	  </para>
-	</listitem>
-      </itemizedlist>
-    </para>
-  </section>
   <section id="sect-Protocol-Drag-and-Drop">
     <title>Drag and Drop</title>
     <para>
