@@ -4858,6 +4858,34 @@
    fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
 }
 {
+   bug_122249d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6WebKit17IDBCallbacksProxy9onSuccessEN3WTF10PassRefPtrIN7WebCore27IDBDatabaseBackendInterfaceEEE
+   fun:_ZN7WebCore22IDBDatabaseBackendImpl19processPendingCallsEv
+   fun:_ZN7WebCore22IDBDatabaseBackendImpl35transactionFinishedAndCompleteFiredEN3WTF10PassRefPtrINS_25IDBTransactionBackendImplEEE
+   fun:_ZN7WebCore25IDBTransactionBackendImpl6commitEv
+}
+{
+   bug_122249e
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore11ScriptState10forContextEN2v85LocalINS1_7ContextEEE
+   fun:_ZN7WebCore11ScriptState7currentEv
+   fun:_ZN7WebCore14IDBObjectStore3putENS_30IDBObjectStoreBackendInterface7PutModeEN3WTF10PassRefPtrINS_6IDBAnyEEEPNS_22ScriptExecutionContextERNS_11ScriptValueENS4_INS_6IDBKeyEEERi
+}
+{
+   bug_122249f
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore20IDBDatabaseCallbacksEEnwEm
+   fun:_ZN7WebCore24IDBDatabaseCallbacksImpl6createEv
+   fun:_ZN7WebCore10IDBFactory4openEPNS_22ScriptExecutionContextERKN3WTF6StringElRi
+   fun:_ZN7WebCore10IDBFactory4openEPNS_22ScriptExecutionContextERKN3WTF6StringERi
+   fun:_ZN7WebCore20IDBFactoryV8InternalL12openCallbackERKN2v89ArgumentsE
+}
+{
    bug_122429
    Memcheck:Leak
    fun:_Znw*
@@ -5320,21 +5348,7 @@
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
    fun:_ZN7WebCore21toWebCoreAtomicStringEN2v86HandleINS0_5ValueEEE
-   fun:_ZN7WebCore23WorkerContextV8InternalL24addEventListenerCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   ...
-   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
-   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
-   fun:_ZN2v86Script3RunEv
-   ...
-   fun:_ZN7WebCore27WorkerContextExecutionProxy8evaluateERKN3WTF6StringES4_RKNS1_12TextPositionEPNS_27WorkerContextExecutionStateE
-   fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeEPNS_11ScriptValueE
-   fun:_ZN7WebCore22WorkerScriptController8evaluateERKNS_16ScriptSourceCodeE
-   fun:_ZN7WebCore12WorkerThread12workerThreadEv
-   fun:_ZN7WebCore12WorkerThread17workerThreadStartEPv
-   fun:_ZN3WTFL16threadEntryPointEPv
-   fun:_ZN3WTFL19wtfThreadEntryPointEPv
+   fun:_ZN7WebCore*V8InternalL24addEventListenerCallbackERKN2v89ArgumentsE
 }
 {
    bug_138712
