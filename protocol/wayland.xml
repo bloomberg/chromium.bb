@@ -30,7 +30,7 @@
   <interface name="wl_display" version="1">
     <description summary="core global object">
       The core global object.  This is a special singleton object.  It
-      is used for internal wayland protocol features.
+      is used for internal Wayland protocol features.
     </description>
     <request name="bind">
       <description summary="bind an object to the display">
@@ -138,7 +138,7 @@
   <interface name="wl_shm_pool" version="1">
     <description summary="a shared memory pool">
       The wl_shm_pool object encapsulates a piece of memory shared
-      between the compsitor and client.  Through the wl_shm_pool
+      between the compositor and client.  Through the wl_shm_pool
       object, the client can allocate shared memory wl_buffer objects.
       The objects will share the same underlying mapped memory.
       Reusing the mapped memory avoids the setup/teardown overhead and
@@ -156,7 +156,7 @@
 	those advertised through the wl_shm.format event.
 
 	A buffer will keep a reference to the pool it was created from
-	so it is valid to destroy the pool immediatedly after creating
+	so it is valid to destroy the pool immediately after creating
 	a buffer from it.
       </description>
 
