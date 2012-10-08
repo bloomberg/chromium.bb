@@ -16566,6 +16566,9 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_CYCLE_THROUGH_INPUT_METHODS" desc="The text in the keyboard overlay to explain the shortcut.">
         Cycle through input methods
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_DECREASE_KEY_BRIGHTNESS" desc="The text in the keyboard overlay to explain the shortcut (decrease the keyboard brightness).">
+        Decrease key brightness
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_DELETE" desc="The text in the keyboard overlay to explain the shortcut.">
         Delete
       </message>
@@ -16623,7 +16626,7 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_FOCUS_TOOLBAR" desc="The text in the keyboard overlay to explain the shortcut.">
         Focus toolbar
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_FULLSCREEN" desc="The text in the keyboard overlay to explain the shortcut.">
+      <message name="IDS_KEYBOARD_OVERLAY_FULL_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (toggles fullscreen mode).">
         Full screen
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_GO_BACK" desc="The text in the keyboard overlay to explain the shortcut.">
@@ -16641,17 +16644,14 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_HOME" desc="The text in the keyboard overlay to explain the shortcut.">
         Home
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_INCREASE_KEY_BRIGHTNESS" desc="The text in the keyboard overlay to explain the shortcut (Increase the keyboard brightness).">
+        Increase key brightness
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS" desc="The text in the keyboard overlay to explain the shortcut.">
         Input Unicode characters
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_JAVASCRIPT_CONSOLE" desc="The text in the keyboard overlay to explain the shortcut.">
         JavaScript Console
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_KEYBOARD_BRIGHT_DOWN" desc="The text in the keyboard overlay to explain the shortcut (decrease the keyboard brightness).">
-        Decrease key brightness
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_KEYBOARD_BRIGHT_UP" desc="The text in the keyboard overlay to explain the shortcut (increase the keyboard brightness).">
-        Increase key brightness
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (lock the screen).">
         Lock screen

@@ -481,6 +481,10 @@ def OutputGrd(hotkey_data, outdir):
   """Outputs a part of messages in the grd file."""
   snippet = cStringIO.StringIO()
   for (behavior, description) in UniqueBehaviors(hotkey_data):
+    # Do not generate message for 'Show wrench menu'. It is handled manually
+    # based on branding.
+    if behavior == 'Show wrench menu':
+      continue
     snippet.write(GRD_SNIPPET_TEMPLATE %
                   (ToMessageName(behavior), ToMessageDesc(description),
                    behavior))
