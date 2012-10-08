@@ -351,7 +351,6 @@ TEST(RectTest, SkRectToRect) {
 #define EXPECT_FLOAT_AND_NAN_EQ(a, b) \
   { if (a == a || b == b) { EXPECT_FLOAT_EQ(a, b); } }
 
-
 TEST(RectTest, ScaleRect) {
   static const struct Test {
     int x1;  // source
