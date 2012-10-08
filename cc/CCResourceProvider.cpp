@@ -26,15 +26,6 @@
 
 using WebKit::WebGraphicsContext3D;
 
-namespace {
-    // Temporary variables for debugging crashes in issue 151428 in canary.
-    // Do not use these!
-    const int g_debugMaxResourcesTracked = 64;
-    unsigned int g_debugZone = 0;
-    int64 g_debugResDestroyedCount = 0;
-    cc::CCResourceProvider::ResourceId g_debugResDestroyed[g_debugMaxResourcesTracked] = { 0 };
-}
-
 namespace cc {
 
 static GC3Denum textureToStorageFormat(GC3Denum textureFormat)
@@ -237,9 +228,6 @@ void CCResourceProvider::deleteResource(ResourceId id)
     if (resource->pixels)
         delete resource->pixels;
 
-    g_debugResDestroyed[g_debugResDestroyedCount % g_debugMaxResourcesTracked] = id | g_debugZone;
-    g_debugResDestroyedCount += 1;
-
     m_resources.remove(it);
 }
 
@@ -332,23 +320,7 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId i
 {
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
-    if (it == m_resources.end()) {
-        int resourceCount = m_resources.size();
-        int64 resDestroyedCount = g_debugResDestroyedCount;
-        ResourceId resDestroyed[g_debugMaxResourcesTracked];
-        for (int64 i = 0; i < g_debugMaxResourcesTracked; ++i) {
-            resDestroyed[i] = g_debugResDestroyed[i];
-        }
-        ResourceId resToDestroy = id;
-
-        base::debug::Alias(&resourceCount);
-        base::debug::Alias(&resDestroyedCount);
-        for (int64 i = 0; i < g_debugMaxResourcesTracked; ++i) {
-            base::debug::Alias(&resDestroyed[i]);
-        }
-        base::debug::Alias(&resToDestroy);
-        CHECK(it != m_resources.end());
-    }
+    CHECK(it != m_resources.end());
 
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
     Resource* resource = &it->value;
@@ -730,16 +702,6 @@ void CCResourceProvider::trimMailboxDeque()
     }
     while (m_mailboxes.size() > maxMailboxCount)
         m_mailboxes.removeFirst();
-}
-
-void CCResourceProvider::debugNotifyEnterZone(unsigned int zone)
-{
-    g_debugZone = zone;
-}
-
-void CCResourceProvider::debugNotifyLeaveZone()
-{
-    g_debugZone = 0;
 }
 
 }
