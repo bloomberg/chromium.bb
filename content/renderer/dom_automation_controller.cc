@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/string_util.h"
 #include "content/common/view_messages.h"
 
@@ -26,6 +28,9 @@ DomAutomationController::DomAutomationController()
                                       base::Unretained(this)));
   BindCallback("sendWithId", base::Bind(&DomAutomationController::SendWithId,
                                         base::Unretained(this)));
+  BindCallback("getHistogram",
+               base::Bind(&DomAutomationController::GetHistogram,
+                          base::Unretained(this)));
 }
 
 void DomAutomationController::Send(const CppArgumentList& args,
@@ -165,4 +170,21 @@ void DomAutomationController::SetAutomationId(
 
   automation_id_ = args[0].ToInt32();
   result->Set(true);
+}
+
+void DomAutomationController::GetHistogram(const CppArgumentList& args,
+                                           CppVariant* result) {
+  if (args.size() != 1) {
+    result->SetNull();
+    return;
+  }
+  base::Histogram* histogram =
+      base::StatisticsRecorder::FindHistogram(args[0].ToString());
+  std::string output;
+  if (!histogram) {
+    output = "{}";
+  } else {
+    histogram->WriteJSON(&output);
+  }
+  result->Set(output);
 }
