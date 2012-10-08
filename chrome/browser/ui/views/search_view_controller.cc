@@ -556,6 +556,7 @@ void SearchViewController::CreateViews(State state) {
   // renderer continues to draw.  Once drawing is complete, we'll receive
   // a state change to |STATE_NTP| and make the view itself visible.
   if (state == STATE_NTP_LOADING) {
+    content_view_->SetWebContents(web_contents());
     content_view_->SetVisible(false);
     content_view_->web_contents()->WasShown();
   } else {
@@ -590,8 +591,8 @@ void SearchViewController::DestroyViews() {
   // |main_contents_view_|.
   ntp_container_->SetLayoutManager(NULL);
   ntp_container_->RemoveChildView(content_view_);
-  if (content_view_->web_contents())
-    content_view_->web_contents()->GetNativeView()->layer()->SetOpacity(1.0f);
+  if (web_contents())
+    web_contents()->GetNativeView()->layer()->SetOpacity(1.0f);
   content_view_->SetVisible(true);
   contents_container_->SetActive(content_view_);
   contents_container_->SetOverlay(NULL);

@@ -2512,15 +2512,15 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   }
   UpdateUIForContents(new_contents);
 
-  if (change_tab_contents)
-    contents_container_->SetWebContents(new_contents->web_contents());
-
 #if defined(USE_AURA)
   // |change_tab_contents| can mean same WebContents but different TabContents,
   // so let SearchViewController decide how it would handle |new_contents|.
   if (search_view_controller_.get())
     search_view_controller_->SetTabContents(new_contents);
 #endif
+
+  if (change_tab_contents)
+    contents_container_->SetWebContents(new_contents->web_contents());
 
   UpdateDevToolsForContents(new_contents);
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
