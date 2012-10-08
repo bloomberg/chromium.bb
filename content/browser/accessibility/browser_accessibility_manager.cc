@@ -135,18 +135,12 @@ void BrowserAccessibilityManager::GotMouseDown() {
   NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
 }
 
-bool BrowserAccessibilityManager::IsOSKAllowed() {
-  return osk_state_ == OSK_ALLOWED_WITHIN_FOCUSED_OBJECT ||
-         osk_state_ == OSK_ALLOWED;
-}
+bool BrowserAccessibilityManager::IsOSKAllowed(const gfx::Rect& bounds) {
+  if (!delegate_ || !delegate_->HasFocus())
+    return false;
 
-bool BrowserAccessibilityManager::ShouldRestrictOSKToControlBounds() {
-  AccessibilityMode mode =
-      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
-  if (mode == AccessibilityModeEditableTextOnly)
-    return osk_state_ == OSK_ALLOWED_WITHIN_FOCUSED_OBJECT;
-  else
-    return true;
+  gfx::Point touch_point = delegate_->GetLastTouchEventLocation();
+  return bounds.Contains(touch_point);
 }
 
 void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {

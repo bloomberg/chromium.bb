@@ -490,6 +490,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           touch_state_(new WebTouchState(this))),
       pointer_down_context_(false),
+      last_touch_location_(-1, -1),
       focus_on_editable_field_(false),
       received_focus_change_after_pointer_down_(false),
       touch_events_enabled_(false),
@@ -1530,6 +1531,8 @@ void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
   render_widget_host_->SetActive(false);
   render_widget_host_->Blur();
 
+  last_touch_location_ = gfx::Point(-1, -1);
+
   if (base::win::IsTsfAwareRequired())
     ui::TsfBridge::GetInstance()->RemoveFocusedClient(this);
 }
@@ -2244,8 +2247,12 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
     return 0;
   }
 
-  if (total == 1 && (points[0].dwFlags & TOUCHEVENTF_DOWN))
-      pointer_down_context_ = true;
+  if (total == 1 && (points[0].dwFlags & TOUCHEVENTF_DOWN)) {
+    pointer_down_context_ = true;
+    last_touch_location_ = gfx::Point(
+        TOUCH_COORD_TO_PIXEL(points[0].x),
+        TOUCH_COORD_TO_PIXEL(points[0].y));
+  }
 
   bool has_touch_handler = render_widget_host_->has_touch_handler() &&
       touch_events_enabled_;
@@ -2662,6 +2669,10 @@ void RenderWidgetHostViewWin::AccessibilitySetTextSelection(
 
   render_widget_host_->AccessibilitySetTextSelection(
       acc_obj_id, start_offset, end_offset);
+}
+
+gfx::Point RenderWidgetHostViewWin::GetLastTouchEventLocation() const {
+  return last_touch_location_;
 }
 
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,

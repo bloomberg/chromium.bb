@@ -1523,6 +1523,11 @@ void RenderWidgetHostViewGtk::AccessibilitySetTextSelection(
   host_->AccessibilitySetTextSelection(acc_obj_id, start_offset, end_offset);
 }
 
+gfx::Point RenderWidgetHostViewGtk::GetLastTouchEventLocation() const {
+  // Not needed on Linux.
+  return gfx::Point();
+}
+
 void RenderWidgetHostViewGtk::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   if (!browser_accessibility_manager_.get()) {

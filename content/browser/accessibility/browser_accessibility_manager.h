@@ -35,6 +35,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
       int acc_obj_id, int start_offset, int end_offset) = 0;
   virtual bool HasFocus() const = 0;
   virtual gfx::Rect GetViewBounds() const = 0;
+  virtual gfx::Point GetLastTouchEventLocation() const = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {
@@ -150,12 +151,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
   // Is the on-screen keyboard allowed to be shown, in response to a
   // focus event on a text box?
-  bool IsOSKAllowed();
-
-  // Should the on-screen keyboard be shown only when a touch is within the
-  // control bounds? If false, the OSK should be shown if any touch event leads
-  // to a control getting focus.
-  bool ShouldRestrictOSKToControlBounds();
+  bool IsOSKAllowed(const gfx::Rect& bounds);
 
  protected:
   BrowserAccessibilityManager(

@@ -166,6 +166,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
       int acc_obj_id, gfx::Point point) OVERRIDE;
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
+  virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE;
 
   // Get the root of the AtkObject* tree for accessibility.
   AtkObject* GetAccessible();

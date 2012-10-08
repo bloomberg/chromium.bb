@@ -237,6 +237,7 @@ class RenderWidgetHostViewWin
       int acc_obj_id, gfx::Point point) OVERRIDE;
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
+  virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE;
 
   // Overridden from ui::GestureEventHelper.
   virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
@@ -558,6 +559,11 @@ class RenderWidgetHostViewWin
 
   // Set to true if we are in the context of a WM_POINTERDOWN message
   bool pointer_down_context_;
+
+  // The global x, y coordinates of the last point a touch event was
+  // received, used to determine if it's okay to open the on-screen
+  // keyboard. Reset when the window loses focus.
+  gfx::Point last_touch_location_;
 
   // Set to true if the focus is currently on an editable field on the page.
   bool focus_on_editable_field_;
