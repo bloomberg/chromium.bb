@@ -35,7 +35,6 @@
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
-#include "ppapi/c/dev/ppp_cursor_control_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_scrollbar_dev.h"

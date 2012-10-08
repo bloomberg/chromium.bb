@@ -79,7 +79,6 @@
       'c/dev/ppb_video_decoder_dev.h',
       'c/dev/ppb_widget_dev.h',
       'c/dev/ppb_zoom_dev.h',
-      'c/dev/ppp_cursor_control_dev.h',
       'c/dev/ppp_find_dev.h',
       'c/dev/ppp_network_state_dev.h',
       'c/dev/ppp_scrollbar_dev.h',
