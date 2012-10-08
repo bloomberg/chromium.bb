@@ -3772,6 +3772,9 @@ display_create(int argc, char *argv[])
 		return NULL;
 	}
 
+	d->workspace = 0;
+	d->workspace_count = 1;
+
 	/* Set up listener so we'll catch all events. */
 	wl_display_add_global_listener(d->display,
 				       display_handle_global, d);
@@ -3793,9 +3796,6 @@ display_create(int argc, char *argv[])
 	d->theme = theme_create();
 
 	wl_list_init(&d->window_list);
-
-	d->workspace = 0;
-	d->workspace_count = 1;
 
 	return d;
 }
