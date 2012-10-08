@@ -14,53 +14,55 @@
 
 namespace cc {
 
-scoped_ptr<CCLayerImpl> TreeSynchronizer::synchronizeTrees(LayerChromium* layerChromiumRoot, scoped_ptr<CCLayerImpl> oldCCLayerImplRoot, CCLayerTreeHostImpl* hostImpl)
+PassOwnPtr<CCLayerImpl> TreeSynchronizer::synchronizeTrees(LayerChromium* layerChromiumRoot, PassOwnPtr<CCLayerImpl> oldCCLayerImplRoot, CCLayerTreeHostImpl* hostImpl)
 {
-    ScopedPtrCCLayerImplMap oldLayers;
+    OwnPtrCCLayerImplMap oldLayers;
     RawPtrCCLayerImplMap newLayers;
 
-    collectExistingCCLayerImplRecursive(oldLayers, oldCCLayerImplRoot.Pass());
+    collectExistingCCLayerImplRecursive(oldLayers, oldCCLayerImplRoot);
 
-    scoped_ptr<CCLayerImpl> newTree = synchronizeTreeRecursive(newLayers, oldLayers, layerChromiumRoot, hostImpl);
+    OwnPtr<CCLayerImpl> newTree = synchronizeTreeRecursive(newLayers, oldLayers, layerChromiumRoot, hostImpl);
 
     updateScrollbarLayerPointersRecursive(newLayers, layerChromiumRoot);
 
-    return newTree.Pass();
+    return newTree.release();
 }
 
-void TreeSynchronizer::collectExistingCCLayerImplRecursive(ScopedPtrCCLayerImplMap& oldLayers, scoped_ptr<CCLayerImpl> ccLayerImpl)
+void TreeSynchronizer::collectExistingCCLayerImplRecursive(OwnPtrCCLayerImplMap& oldLayers, PassOwnPtr<CCLayerImpl> popCCLayerImpl)
 {
+    OwnPtr<CCLayerImpl> ccLayerImpl = popCCLayerImpl;
+
     if (!ccLayerImpl)
         return;
 
-    ScopedPtrVector<CCLayerImpl>& children = ccLayerImpl->m_children;
+    OwnPtrVector<CCLayerImpl>& children = ccLayerImpl->m_children;
     for (size_t i = 0; i < children.size(); ++i)
         collectExistingCCLayerImplRecursive(oldLayers, children.take(i));
 
-    collectExistingCCLayerImplRecursive(oldLayers, ccLayerImpl->m_maskLayer.Pass());
-    collectExistingCCLayerImplRecursive(oldLayers, ccLayerImpl->m_replicaLayer.Pass());
+    collectExistingCCLayerImplRecursive(oldLayers, ccLayerImpl->m_maskLayer.release());
+    collectExistingCCLayerImplRecursive(oldLayers, ccLayerImpl->m_replicaLayer.release());
 
     int id = ccLayerImpl->id();
-    oldLayers.set(id, ccLayerImpl.Pass());
+    oldLayers.set(id, ccLayerImpl.release());
 }
 
-scoped_ptr<CCLayerImpl> TreeSynchronizer::reuseOrCreateCCLayerImpl(RawPtrCCLayerImplMap& newLayers, ScopedPtrCCLayerImplMap& oldLayers, LayerChromium* layer)
+PassOwnPtr<CCLayerImpl> TreeSynchronizer::reuseOrCreateCCLayerImpl(RawPtrCCLayerImplMap& newLayers, OwnPtrCCLayerImplMap& oldLayers, LayerChromium* layer)
 {
-    scoped_ptr<CCLayerImpl> ccLayerImpl = oldLayers.take(layer->id());
+    OwnPtr<CCLayerImpl> ccLayerImpl = oldLayers.take(layer->id());
 
     if (!ccLayerImpl)
         ccLayerImpl = layer->createCCLayerImpl();
 
-    newLayers[layer->id()] = ccLayerImpl.get();
-    return ccLayerImpl.Pass();
+    newLayers.set(layer->id(), ccLayerImpl.get());
+    return ccLayerImpl.release();
 }
 
-scoped_ptr<CCLayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrCCLayerImplMap& newLayers, ScopedPtrCCLayerImplMap& oldLayers, LayerChromium* layer, CCLayerTreeHostImpl* hostImpl)
+PassOwnPtr<CCLayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrCCLayerImplMap& newLayers, OwnPtrCCLayerImplMap& oldLayers, LayerChromium* layer, CCLayerTreeHostImpl* hostImpl)
 {
     if (!layer)
-        return scoped_ptr<CCLayerImpl>();
+        return nullptr;
 
-    scoped_ptr<CCLayerImpl> ccLayerImpl = reuseOrCreateCCLayerImpl(newLayers, oldLayers, layer);
+    OwnPtr<CCLayerImpl> ccLayerImpl = reuseOrCreateCCLayerImpl(newLayers, oldLayers, layer);
 
     ccLayerImpl->clearChildList();
     const std::vector<scoped_refptr<LayerChromium> >& children = layer->children();
@@ -79,7 +81,7 @@ scoped_ptr<CCLayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrCCLayer
         scrollbarController->setVerticalScrollbarLayer(0);
     }
 
-    return ccLayerImpl.Pass();
+    return ccLayerImpl.release();
 }
 
 void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrCCLayerImplMap& newLayers, LayerChromium* layer)
@@ -95,12 +97,9 @@ void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrCCLayer
     if (!scrollbarLayer)
         return;
 
-    RawPtrCCLayerImplMap::const_iterator iter = newLayers.find(scrollbarLayer->id());
-    CCScrollbarLayerImpl* ccScrollbarLayerImpl = iter != newLayers.end() ? static_cast<CCScrollbarLayerImpl*>(iter->second) : NULL;
-    iter = newLayers.find(scrollbarLayer->scrollLayerId());
-    CCLayerImpl* ccScrollLayerImpl = iter != newLayers.end() ? iter->second : NULL;
-
+    CCScrollbarLayerImpl* ccScrollbarLayerImpl = static_cast<CCScrollbarLayerImpl*>(newLayers.get(scrollbarLayer->id()));
     ASSERT(ccScrollbarLayerImpl);
+    CCLayerImpl* ccScrollLayerImpl = newLayers.get(scrollbarLayer->scrollLayerId());
     ASSERT(ccScrollLayerImpl);
 
     if (ccScrollbarLayerImpl->orientation() == WebKit::WebScrollbar::Horizontal)

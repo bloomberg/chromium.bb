@@ -18,7 +18,7 @@ class SolidColorLayerChromium : public LayerChromium {
 public:
     static scoped_refptr<SolidColorLayerChromium> create();
 
-    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
 protected:
     SolidColorLayerChromium();

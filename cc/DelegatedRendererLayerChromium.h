@@ -13,7 +13,7 @@ class DelegatedRendererLayerChromium : public LayerChromium {
 public:
     static scoped_refptr<DelegatedRendererLayerChromium> create();
 
-    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
 protected:
     DelegatedRendererLayerChromium();

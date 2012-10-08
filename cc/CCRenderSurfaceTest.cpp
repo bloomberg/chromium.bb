@@ -42,7 +42,7 @@ TEST(CCRenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     // This will fake that we are on the correct thread for testing purposes.
     DebugScopedSetImplThread setImplThread;
 
-    scoped_ptr<CCLayerImpl> owningLayer = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> owningLayer = CCLayerImpl::create(1);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     CCRenderSurface* renderSurface = owningLayer->renderSurface();
@@ -62,7 +62,7 @@ TEST(CCRenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setClipRect(testRect));
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setContentRect(testRect));
 
-    scoped_ptr<CCLayerImpl> dummyMask = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> dummyMask = CCLayerImpl::create(1);
     WebTransformationMatrix dummyMatrix;
     dummyMatrix.translate(1.0, 2.0);
 
@@ -79,15 +79,15 @@ TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     // This will fake that we are on the correct thread for testing purposes.
     DebugScopedSetImplThread setImplThread;
 
-    scoped_ptr<CCLayerImpl> rootLayer = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> rootLayer = CCLayerImpl::create(1);
 
-    scoped_ptr<CCLayerImpl> owningLayer = CCLayerImpl::create(2);
+    OwnPtr<CCLayerImpl> owningLayer = CCLayerImpl::create(2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     owningLayer->setRenderTarget(owningLayer.get());
     CCRenderSurface* renderSurface = owningLayer->renderSurface();
 
-    rootLayer->addChild(owningLayer.Pass());
+    rootLayer->addChild(owningLayer.release());
 
     IntRect contentRect = IntRect(IntPoint::zero(), IntSize(50, 50));
     IntRect clipRect = IntRect(IntPoint(5, 5), IntSize(40, 40));
@@ -133,15 +133,15 @@ TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     // This will fake that we are on the correct thread for testing purposes.
     DebugScopedSetImplThread setImplThread;
 
-    scoped_ptr<CCLayerImpl> rootLayer = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> rootLayer = CCLayerImpl::create(1);
 
-    scoped_ptr<CCLayerImpl> owningLayer = CCLayerImpl::create(2);
+    OwnPtr<CCLayerImpl> owningLayer = CCLayerImpl::create(2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     owningLayer->setRenderTarget(owningLayer.get());
     CCRenderSurface* renderSurface = owningLayer->renderSurface();
 
-    rootLayer->addChild(owningLayer.Pass());
+    rootLayer->addChild(owningLayer.release());
 
     IntRect contentRect = IntRect(IntPoint::zero(), IntSize(50, 50));
     WebTransformationMatrix origin;

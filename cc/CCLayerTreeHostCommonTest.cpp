@@ -92,12 +92,12 @@ WebTransformationMatrix remove3DComponentOfMatrix(const WebTransformationMatrix&
     return ret;
 }
 
-scoped_ptr<CCLayerImpl> createTreeForFixedPositionTests()
+PassOwnPtr<CCLayerImpl> createTreeForFixedPositionTests()
 {
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
-    scoped_ptr<CCLayerImpl> child = CCLayerImpl::create(2);
-    scoped_ptr<CCLayerImpl> grandChild = CCLayerImpl::create(3);
-    scoped_ptr<CCLayerImpl> greatGrandChild = CCLayerImpl::create(4);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> child = CCLayerImpl::create(2);
+    OwnPtr<CCLayerImpl> grandChild = CCLayerImpl::create(3);
+    OwnPtr<CCLayerImpl> greatGrandChild = CCLayerImpl::create(4);
 
     WebTransformationMatrix IdentityMatrix;
     FloatPoint anchor(0, 0);
@@ -108,11 +108,11 @@ scoped_ptr<CCLayerImpl> createTreeForFixedPositionTests()
     setLayerPropertiesForTesting(grandChild.get(), IdentityMatrix, IdentityMatrix, anchor, position, bounds, false);
     setLayerPropertiesForTesting(greatGrandChild.get(), IdentityMatrix, IdentityMatrix, anchor, position, bounds, false);
 
-    grandChild->addChild(greatGrandChild.Pass());
-    child->addChild(grandChild.Pass());
-    root->addChild(child.Pass());
+    grandChild->addChild(greatGrandChild.release());
+    child->addChild(grandChild.release());
+    root->addChild(child.release());
 
-    return root.Pass();
+    return root.release();
 }
 
 class LayerChromiumWithForcedDrawsContent : public LayerChromium {
@@ -741,7 +741,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     // is the direct parent of the fixed-position layer.
 
     DebugScopedSetImplThread scopedImplThread;
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
 
@@ -782,7 +782,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     // order.
 
     DebugScopedSetImplThread scopedImplThread;
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
 
@@ -825,7 +825,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     // is NOT the direct parent of the fixed-position layer.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
     CCLayerImpl* greatGrandChild = grandChild->children()[0];
@@ -869,7 +869,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     // transforms that have to be processed in the correct order.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
     CCLayerImpl* greatGrandChild = grandChild->children()[0];
@@ -931,7 +931,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     // transforms that have to be processed in the correct order.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
     CCLayerImpl* greatGrandChild = grandChild->children()[0];
@@ -993,7 +993,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     // scrollDelta.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
     CCLayerImpl* greatGrandChild = grandChild->children()[0];
@@ -1066,7 +1066,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     // surfaces is accumulated properly in the final matrix transform.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
     CCLayerImpl* greatGrandChild = grandChild->children()[0];
@@ -1074,9 +1074,9 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     // Add one more layer to the test tree for this scenario.
     {
         WebTransformationMatrix identity;
-        scoped_ptr<CCLayerImpl> fixedPositionChild = CCLayerImpl::create(5);
+        OwnPtr<CCLayerImpl> fixedPositionChild = CCLayerImpl::create(5);
         setLayerPropertiesForTesting(fixedPositionChild.get(), identity, identity, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
-        greatGrandChild->addChild(fixedPositionChild.Pass());
+        greatGrandChild->addChild(fixedPositionChild.release());
     }
     CCLayerImpl* fixedPositionChild = greatGrandChild->children()[0];
 
@@ -1177,7 +1177,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWit
     // is completely irrelevant; it should not affect the scroll compensation.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
 
@@ -1224,7 +1224,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerTha
     // should not accidentally be fixed to itself.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
 
@@ -1261,7 +1261,7 @@ TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerTha
     // be fixed to the viewport -- not the rootLayer, which may have transforms of its own.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    OwnPtr<CCLayerImpl> root = createTreeForFixedPositionTests();
     CCLayerImpl* child = root->children()[0];
     CCLayerImpl* grandChild = child->children()[0];
 
@@ -2654,7 +2654,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -2697,7 +2697,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix uninvertibleTransform;
     uninvertibleTransform.setM11(0);
@@ -2759,7 +2759,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -2803,7 +2803,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
     WebTransformationMatrix rotation45DegreesAboutCenter;
@@ -2855,7 +2855,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
 
@@ -2918,7 +2918,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents
     //
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -2928,14 +2928,14 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents
     {
         FloatPoint position(25, 25);
         IntSize bounds(50, 50);
-        scoped_ptr<CCLayerImpl> testLayer = CCLayerImpl::create(12345);
+        OwnPtr<CCLayerImpl> testLayer = CCLayerImpl::create(12345);
         setLayerPropertiesForTesting(testLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
 
         // override contentBounds
         testLayer->setContentBounds(IntSize(100, 100));
 
         testLayer->setDrawsContent(true);
-        root->addChild(testLayer.Pass());
+        root->addChild(testLayer.release());
     }
 
     std::vector<CCLayerImpl*> renderSurfaceLayerList;
@@ -2984,23 +2984,23 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, FloatPoint(0, 0), IntSize(100, 100), false);
 
     {
-        scoped_ptr<CCLayerImpl> clippingLayer = CCLayerImpl::create(123);
+        OwnPtr<CCLayerImpl> clippingLayer = CCLayerImpl::create(123);
         FloatPoint position(25, 25); // this layer is positioned, and hit testing should correctly know where the layer is located.
         IntSize bounds(50, 50);
         setLayerPropertiesForTesting(clippingLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
         clippingLayer->setMasksToBounds(true);
 
-        scoped_ptr<CCLayerImpl> child = CCLayerImpl::create(456);
+        OwnPtr<CCLayerImpl> child = CCLayerImpl::create(456);
         position = FloatPoint(-50, -50);
         bounds = IntSize(300, 300);
         setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
         child->setDrawsContent(true);
-        clippingLayer->addChild(child.Pass());
-        root->addChild(clippingLayer.Pass());
+        clippingLayer->addChild(child.release());
+        root->addChild(clippingLayer.release());
     }
 
     std::vector<CCLayerImpl*> renderSurfaceLayerList;
@@ -3050,7 +3050,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     //
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(123);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(123);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -3060,9 +3060,9 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     root->setMasksToBounds(true);
 
     {
-        scoped_ptr<CCLayerImpl> child = CCLayerImpl::create(456);
-        scoped_ptr<CCLayerImpl> grandChild = CCLayerImpl::create(789);
-        scoped_ptr<CCLayerImpl> rotatedLeaf = CCLayerImpl::create(2468);
+        OwnPtr<CCLayerImpl> child = CCLayerImpl::create(456);
+        OwnPtr<CCLayerImpl> grandChild = CCLayerImpl::create(789);
+        OwnPtr<CCLayerImpl> rotatedLeaf = CCLayerImpl::create(2468);
 
         position = FloatPoint(10, 10);
         bounds = IntSize(80, 80);
@@ -3089,9 +3089,9 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
         setLayerPropertiesForTesting(rotatedLeaf.get(), rotatedLeafTransform, identityMatrix, anchor, position, bounds, false);
         rotatedLeaf->setDrawsContent(true);
 
-        grandChild->addChild(rotatedLeaf.Pass());
-        child->addChild(grandChild.Pass());
-        root->addChild(child.Pass());
+        grandChild->addChild(rotatedLeaf.release());
+        child->addChild(grandChild.release());
+        root->addChild(child.release());
     }
 
     std::vector<CCLayerImpl*> renderSurfaceLayerList;
@@ -3154,11 +3154,11 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, FloatPoint(0, 0), IntSize(100, 100), false);
 
     {
-        scoped_ptr<CCLayerImpl> intermediateLayer = CCLayerImpl::create(123);
+        OwnPtr<CCLayerImpl> intermediateLayer = CCLayerImpl::create(123);
         FloatPoint position(10, 10); // this layer is positioned, and hit testing should correctly know where the layer is located.
         IntSize bounds(50, 50);
         setLayerPropertiesForTesting(intermediateLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
@@ -3168,13 +3168,13 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 
         // The child of the intermediateLayer is translated so that it does not overlap intermediateLayer at all.
         // If child is incorrectly clipped, we would not be able to hit it successfully.
-        scoped_ptr<CCLayerImpl> child = CCLayerImpl::create(456);
+        OwnPtr<CCLayerImpl> child = CCLayerImpl::create(456);
         position = FloatPoint(60, 60); // 70, 70 in screen space
         bounds = IntSize(20, 20);
         setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
         child->setDrawsContent(true);
-        intermediateLayer->addChild(child.Pass());
-        root->addChild(intermediateLayer.Pass());
+        intermediateLayer->addChild(child.release());
+        root->addChild(intermediateLayer.release());
     }
 
     std::vector<CCLayerImpl*> renderSurfaceLayerList;
@@ -3213,7 +3213,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -3228,9 +3228,9 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
         // The expected stacking order is:
         //   (front) child2, (second) grandChild, (third) child1, and (back) the root layer behind all other layers.
 
-        scoped_ptr<CCLayerImpl> child1 = CCLayerImpl::create(2);
-        scoped_ptr<CCLayerImpl> child2 = CCLayerImpl::create(3);
-        scoped_ptr<CCLayerImpl> grandChild1 = CCLayerImpl::create(4);
+        OwnPtr<CCLayerImpl> child1 = CCLayerImpl::create(2);
+        OwnPtr<CCLayerImpl> child2 = CCLayerImpl::create(3);
+        OwnPtr<CCLayerImpl> grandChild1 = CCLayerImpl::create(4);
 
         position = FloatPoint(10, 10);
         bounds = IntSize(50, 50);
@@ -3249,9 +3249,9 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
         setLayerPropertiesForTesting(grandChild1.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
         grandChild1->setDrawsContent(true);
 
-        child1->addChild(grandChild1.Pass());
-        root->addChild(child1.Pass());
-        root->addChild(child2.Pass());
+        child1->addChild(grandChild1.release());
+        root->addChild(child1.release());
+        root->addChild(child2.release());
     }
 
     CCLayerImpl* child1 = root->children()[0];
@@ -3319,7 +3319,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
     //
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -3334,9 +3334,9 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
         // The expected stacking order is:
         //   (front) child2, (second) grandChild, (third) child1, and (back) the root layer behind all other layers.
 
-        scoped_ptr<CCLayerImpl> child1 = CCLayerImpl::create(2);
-        scoped_ptr<CCLayerImpl> child2 = CCLayerImpl::create(3);
-        scoped_ptr<CCLayerImpl> grandChild1 = CCLayerImpl::create(4);
+        OwnPtr<CCLayerImpl> child1 = CCLayerImpl::create(2);
+        OwnPtr<CCLayerImpl> child2 = CCLayerImpl::create(3);
+        OwnPtr<CCLayerImpl> grandChild1 = CCLayerImpl::create(4);
 
         position = FloatPoint(10, 10);
         bounds = IntSize(50, 50);
@@ -3358,9 +3358,9 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
         grandChild1->setDrawsContent(true);
         grandChild1->setForceRenderSurface(true);
 
-        child1->addChild(grandChild1.Pass());
-        root->addChild(child1.Pass());
-        root->addChild(child2.Pass());
+        child1->addChild(grandChild1.release());
+        root->addChild(child1.release());
+        root->addChild(child2.release());
     }
 
     CCLayerImpl* child1 = root->children()[0];

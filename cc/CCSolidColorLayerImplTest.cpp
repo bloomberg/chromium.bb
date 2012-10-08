@@ -27,7 +27,7 @@ TEST(CCSolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
     IntSize layerSize = IntSize(800, 600);
     IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
 
-    scoped_ptr<CCSolidColorLayerImpl> layer = CCSolidColorLayerImpl::create(1);
+    OwnPtr<CCSolidColorLayerImpl> layer = CCSolidColorLayerImpl::create(1);
     layer->setVisibleContentRect(visibleContentRect);
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
@@ -50,7 +50,7 @@ TEST(CCSolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
     IntSize layerSize = IntSize(100, 100);
     IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
 
-    scoped_ptr<CCSolidColorLayerImpl> layer = CCSolidColorLayerImpl::create(1);
+    OwnPtr<CCSolidColorLayerImpl> layer = CCSolidColorLayerImpl::create(1);
     layer->setVisibleContentRect(visibleContentRect);
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
@@ -75,7 +75,7 @@ TEST(CCSolidColorLayerImplTest, verifyCorrectOpacityInQuad)
     IntSize layerSize = IntSize(100, 100);
     IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
 
-    scoped_ptr<CCSolidColorLayerImpl> layer = CCSolidColorLayerImpl::create(1);
+    OwnPtr<CCSolidColorLayerImpl> layer = CCSolidColorLayerImpl::create(1);
     layer->setVisibleContentRect(visibleContentRect);
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);

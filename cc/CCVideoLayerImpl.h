@@ -23,9 +23,9 @@ class CCVideoLayerImpl;
 class CCVideoLayerImpl : public CCLayerImpl
                        , public WebKit::WebVideoFrameProvider::Client {
 public:
-    static scoped_ptr<CCVideoLayerImpl> create(int id, WebKit::WebVideoFrameProvider* provider)
+    static PassOwnPtr<CCVideoLayerImpl> create(int id, WebKit::WebVideoFrameProvider* provider)
     {
-        return make_scoped_ptr(new CCVideoLayerImpl(id, provider));
+        return adoptPtr(new CCVideoLayerImpl(id, provider));
     }
     virtual ~CCVideoLayerImpl();
 

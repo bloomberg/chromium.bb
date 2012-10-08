@@ -34,9 +34,9 @@ protected:
     DebugScopedSetImplThread implThread;
 
     OwnPtr<CCScrollbarAnimationControllerLinearFade> m_scrollbarController;
-    scoped_ptr<CCLayerImpl> m_scrollLayer;
+    OwnPtr<CCLayerImpl> m_scrollLayer;
     CCLayerImpl* m_contentLayer;
-    scoped_ptr<CCScrollbarLayerImpl> m_scrollbarLayer;
+    OwnPtr<CCScrollbarLayerImpl> m_scrollbarLayer;
 
 };
 

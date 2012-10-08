@@ -18,7 +18,7 @@ public:
 
     void setIOSurfaceProperties(uint32_t ioSurfaceId, const IntSize&);
 
-    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
     virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
 

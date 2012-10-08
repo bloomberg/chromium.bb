@@ -12,9 +12,9 @@ namespace cc {
 
 class CCSolidColorLayerImpl : public CCLayerImpl {
 public:
-    static scoped_ptr<CCSolidColorLayerImpl> create(int id)
+    static PassOwnPtr<CCSolidColorLayerImpl> create(int id)
     {
-        return make_scoped_ptr(new CCSolidColorLayerImpl(id));
+        return adoptPtr(new CCSolidColorLayerImpl(id));
     }
     virtual ~CCSolidColorLayerImpl();
 

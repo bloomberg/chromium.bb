@@ -94,9 +94,9 @@ TiledLayerChromium::~TiledLayerChromium()
 {
 }
 
-scoped_ptr<CCLayerImpl> TiledLayerChromium::createCCLayerImpl()
+PassOwnPtr<CCLayerImpl> TiledLayerChromium::createCCLayerImpl()
 {
-    return CCTiledLayerImpl::create(id()).PassAs<CCLayerImpl>();
+    return CCTiledLayerImpl::create(id());
 }
 
 void TiledLayerChromium::updateTileSizeAndTilingOption()
