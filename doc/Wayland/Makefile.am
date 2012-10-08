@@ -17,7 +17,7 @@ noinst_DATA = Wayland $(publican_targets)
 pubdir = $(docdir)/Wayland/en-US
 
 publican_targets = $(publican_sources:$(srcdir)/en_US%=$(builddir)/en-US%) \
-	en-US/ProtocolSpec.xml
+	en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml
 
 # The Protocol.xml is purely generated and required before running publican
 en-US/ProtocolSpec.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-to-docbook.xsl
@@ -25,10 +25,16 @@ en-US/ProtocolSpec.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-to
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-to-docbook.xsl \
 		$(top_srcdir)/protocol/wayland.xml > en-US/ProtocolSpec.xml
 
+en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-interfaces-to-docbook.xsl
+	$(AM_V_GEN)$(MKDIR_P) en-US/images
+	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-interfaces-to-docbook.xsl \
+		$(top_srcdir)/protocol/wayland.xml > en-US/ProtocolInterfaces.xml
+
+
 # Copy the en_US source files into en-US destination
 # This is required for out-of-source-tree build as publican does not allow us
 # to specify the location of the source code.
-$(builddir)/en-US/%: $(srcdir)/en_US/% en-US/ProtocolSpec.xml $(publican_sources)
+$(builddir)/en-US/%: $(srcdir)/en_US/% en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml $(publican_sources)
 	$(AM_V_GEN)cp -f $< $@
 
 # Run publican for the builddir on the generated (or copied) source
@@ -38,7 +44,7 @@ Wayland: $(publican_targets)
 		--config $(srcdir)/publican.cfg
 	@touch Wayland
 
-CLEANFILES = en-US/ProtocolSpec.xml $(publican_targets)
+CLEANFILES = en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml $(publican_targets)
 
 clean-local:
 	$(AM_V_at)rm -fr en-US
