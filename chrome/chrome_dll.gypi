@@ -268,7 +268,6 @@
                 # will also need to be put into the bundle.
                 '../third_party/adobe/flash/flash_player.gyp:flash_player',
                 '../third_party/adobe/flash/flash_player.gyp:flapper_binaries',
-                '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmplugin',
                 'chrome_resources.gyp:packed_extra_resources',
                 'chrome_resources.gyp:packed_resources',
               ],
@@ -382,7 +381,6 @@
                     }],
                   ],
                 },
-                # TODO(ddorwin): Include CDM files in the Mac bundle.
                 {
                   # Copy of resources used by tests.
                   'destination': '<(PRODUCT_DIR)',
