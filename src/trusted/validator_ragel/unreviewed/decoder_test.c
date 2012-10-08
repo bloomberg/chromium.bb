@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -77,35 +78,102 @@ struct DecodeState {
   int ia32_mode;
 };
 
+const char *RegisterNameAsString(enum OperandName name, enum OperandType type,
+                                 Bool rex) {
+  /* There are not 16, but 20 8-bit registers: handle %ah/%ch/%dh/%bh case.  */
+  if (!rex && type == OPERAND_TYPE_8_BIT &&
+      name >= REG_RSP && name <= REG_RDI) {
+    static const char *kRegisterNames[REG_RDI - REG_RSP + 1] = {
+      "ah", "ch", "dh", "bh"
+    };
+    return kRegisterNames[name - REG_RSP];
+  } else if (name <= REG_R15 && type <= OPERAND_TYPES_REGISTER_MAX) {
+    static const char *kRegisterNames[REG_R15 + 1][OPERAND_TYPES_REGISTER_MAX] =
+    {
+      {   "al",   "ax",  "eax",  "rax", "st(0)", "mm0",  "xmm0",  "ymm0",
+          "es",  "cr0",  "db0",  "tr0" },
+      {   "cl",   "cx",  "ecx",  "rcx", "st(1)", "mm1",  "xmm1",  "ymm1",
+          "cs",  "cr1",  "db1",  "tr1" },
+      {   "dl",   "dx",  "edx",  "rdx", "st(2)", "mm2",  "xmm2",  "ymm2",
+          "ss",  "cr2",  "db2",  "tr2" },
+      {   "bl",   "bx",  "ebx",  "rbx", "st(3)", "mm3",  "xmm3",  "ymm3",
+          "ds",  "cr3",  "db3",  "tr3" },
+      {  "spl",   "sp",  "esp",  "rsp", "st(4)", "mm4",  "xmm4",  "ymm4",
+          "fs",  "cr4",  "db4",  "tr4" },
+      {  "bpl",   "bp",  "ebp",  "rbp", "st(5)", "mm5",  "xmm5",  "ymm5",
+          "gs",  "cr5",  "db5",  "tr5" },
+      {  "sil",   "si",  "esi",  "rsi", "st(6)", "mm6",  "xmm6",  "ymm6",
+          NULL,  "cr6",  "db6",  "tr6" },
+      {  "dil",   "di",  "edi",  "rdi", "st(7)", "mm7",  "xmm7",  "ymm7",
+          NULL,  "cr7",  "db7",  "tr7" },
+      {  "r8b",  "r8w",  "r8d",   "r8",    NULL,  NULL,  "xmm8",  "ymm8",
+          NULL,  "cr8",  "db8",  "tr8" },
+      {  "r9b",  "r9w",  "r9d",   "r9",    NULL,  NULL,  "xmm9",  "ymm9",
+          NULL,  "cr9",  "db9",  "tr9" },
+      { "r10b", "r10w", "r10d",  "r10",    NULL,  NULL, "xmm10", "ymm10",
+          NULL, "cr10", "db10", "tr10" },
+      { "r11b", "r11w", "r11d",  "r11",    NULL,  NULL, "xmm11", "ymm11",
+          NULL, "cr11", "db11", "tr11" },
+      { "r12b", "r12w", "r12d",  "r12",    NULL,  NULL, "xmm12", "ymm12",
+          NULL, "cr12", "db12", "tr12" },
+      { "r13b", "r13w", "r13d",  "r13",    NULL,  NULL, "xmm13", "ymm13",
+          NULL, "cr13", "db13", "tr13" },
+      { "r14b", "r14w", "r14d",  "r14",    NULL,  NULL, "xmm14", "ymm14",
+          NULL, "cr14", "db14", "tr14" },
+      { "r15b", "r15w", "r15d",  "r15",    NULL,  NULL, "xmm15", "ymm15",
+          NULL, "cr15", "db15", "tr15" }
+    };
+    assert(kRegisterNames[name][type]);
+    return kRegisterNames[name][type];
+  } else {
+    assert(FALSE);
+    return NULL;
+  }
+}
+
+Bool IsNameInList(const char *name, ...) {
+  va_list value_list;
+
+  va_start(value_list, name);
+
+  for (;;) {
+    const char *element = va_arg(value_list, const char*);
+    if (element) {
+      if (strcmp(name, element) == 0) {
+        va_end(value_list);
+        return TRUE;
+      }
+    } else {
+      va_end(value_list);
+      return FALSE;
+    }
+  }
+}
+
 void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
-                        struct instruction *instruction, void *userdata) {
+                        struct Instruction *instruction, void *userdata) {
   const char *instruction_name = instruction->name;
   unsigned char operands_count = instruction->operands_count;
   unsigned char rex_prefix = instruction->prefix.rex;
-  enum register_name rm_index = instruction->rm.index;
-  enum register_name rm_base = instruction->rm.base;
-#ifdef _MSC_VER
+  enum OperandName rm_index = instruction->rm.index;
+  enum OperandName rm_base = instruction->rm.base;
   Bool data16_prefix = instruction->prefix.data16;
-#else
-  _Bool data16_prefix = instruction->prefix.data16;
-#endif
   const uint8_t *p;
   char delimeter = ' ';
-  int print_rip = FALSE;
-  int rex_bits = 0;
-  int maybe_rex_bits = 0;
-  int show_name_suffix = FALSE;
-  int empty_rex_prefix_ok = FALSE;
+  Bool print_rip = FALSE;
+  Bool empty_rex_prefix_ok = FALSE;
+  Bool spurious_rex_prefix = FALSE;
 #define print_name(x) (printf((x)), shown_name += strlen((x)))
   size_t shown_name = 0;
   int i, operand_type;
 
-  /* "fwait" is nasty: any number of them will be included in other X87
-     instructions ("fclex", "finit", "fstcw", "fstsw", "fsave" have two
-     names, other instructions are unchanged) - but if after them we see
-     regular instruction then we must print all them.  This convoluted
-     logic is not needed when we  don't print anything so decoder does
-     not include it.  */
+  /*
+   * "fwait" is nasty: few of them will be included in other X87 instructions
+   * ("fclex", "finit", "fstcw", "fstsw", "fsave" have two names, other
+   * instructions are unchanged) - but if after them we see regular instruction
+   * then we must print them all.  This convoluted logic is not needed when we
+   * don't print anything so decoder does not include it.
+   */
   if (((end == begin + 1) && (begin[0] == 0x9b)) ||
       ((end == begin + 2) &&
                            ((begin[0] & 0xf0) == 0x40) && (begin[1] == 0x9b))) {
@@ -132,29 +200,41 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
           if (fwait_count < 2) {
             --begin;
             ++fwait_count;
-            if ((begin[1] & 0xf0) == 0x40) {
+            if ((begin[1] & 0xf0) == 0x40)
               break;
-            }
           } else {
             break;
           }
         } else if ((begin[-1] & 0xf0) == 0x40) {
-          if (rex_count >= 1) {
+          if (rex_count >= 1)
             break;
-          }
           --begin;
           ++rex_count;
           if (!rex_prefix) {
             rex_prefix = *begin;
-            /* Bug-to-bug compatibility, heh... */
-            if ((rex_prefix & 0x01) && (rm_base <= REG_RDI))
-              rm_base |= REG_R8;
-            if (rex_prefix & 0x02) {
-              if (rm_index <= REG_RDI)
-                rm_index |= REG_R8;
-              else if (rm_index == REG_RIZ)
-                rm_index = REG_R12;
+            /* Bug-to-bug compatibility, fun... */
+            if ((rex_prefix & 0x01) && (rm_base <= REG_RDI)) {
+              if (operands_count == 1 &&
+                  instruction->operands[0].name == REG_RM)
+                rm_base |= REG_R8;
+              else
+                spurious_rex_prefix = TRUE;
             }
+            if (rex_prefix & 0x02) {
+              if (operands_count == 1 &&
+                  instruction->operands[0].name == REG_RM) {
+                if (rm_index <= REG_RDI)
+                  rm_index |= REG_R8;
+                else if (rm_index == REG_RIZ)
+                  rm_index = REG_R12;
+                else if (rm_index == NO_REG)
+                  spurious_rex_prefix = TRUE;
+              } else {
+                spurious_rex_prefix = TRUE;
+              }
+            }
+            if (rex_prefix & 0x0c)
+              spurious_rex_prefix = TRUE;
           }
         }
       }
@@ -180,6 +260,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
     ((struct DecodeState *)userdata)->fwait = FALSE;
   }
+
   if (rex_prefix && !strcmp(instruction_name, "popq   %fs"))
     instruction_name = "popq %fs";
   if (rex_prefix && !strcmp(instruction_name, "popq   %gs"))
@@ -189,12 +270,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   if (rex_prefix && !strcmp(instruction_name, "pushq  %gs"))
     instruction_name = "pushq %gs";
   if ((data16_prefix) && (begin[0] == 0x66) && (!(rex_prefix & 0x08)) &&
-      (!strcmp(instruction_name, "fbld") ||
-       !strcmp(instruction_name, "fbstp") ||
-       !strcmp(instruction_name, "fild") ||
-       !strcmp(instruction_name, "fistp") ||
-       !strcmp(instruction_name, "fld") ||
-       !strcmp(instruction_name, "fstp"))) {
+      (IsNameInList(instruction_name,
+                    "fbld", "fbstp", "fild", "fistp", "fld", "fstp", NULL))) {
     printf("%*lx:\t66                   \tdata16\n",
            ((struct DecodeState *)userdata)->width,
            (long)(begin - (((struct DecodeState *)userdata)->offset)));
@@ -204,15 +281,16 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   printf("%*lx:\t", ((struct DecodeState *)userdata)->width,
                     (long)(begin - (((struct DecodeState *)userdata)->offset)));
   for (p = begin; p < begin + 7; ++p) {
-    if (p >= end) {
+    if (p >= end)
       printf("   ");
-    } else {
+    else
       printf("%02x ", *p);
-    }
   }
   printf("\t");
-  /* "pclmulqdq" has two-operand mnemonic names for "imm8" equal to 0x01, 0x01,
-   * 0x10, and 0x11.  Objdump mixes them with 0x2 and 0x03.  */
+  /*
+   * "pclmulqdq" has two-operand mnemonic names for "imm8" equal to 0x01, 0x01,
+   * 0x10, and 0x11.  Objdump incorrectly mixes them up with 0x2 and 0x03.
+   */
   if (!strcmp(instruction_name, "pclmulqdq")) {
     if (instruction->imm[0] < 0x04) {
       switch (instruction->imm[0]) {
@@ -222,8 +300,10 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       --operands_count;
     }
   }
-  /* "vpclmulqdq" has two-operand mnemonic names for "imm8" equal to 0x01, 0x01,
-   * 0x10, and 0x11.  Objdump mixes them with 0x2 and 0x03.  */
+  /*
+   * "vpclmulqdq" has two-operand mnemonic names for "imm8" equal to 0x01, 0x01,
+   * 0x10, and 0x11.  Objdump mixes them with 0x2 and 0x03.
+   */
   if (!strcmp(instruction_name, "vpclmulqdq")) {
     if (instruction->imm[0] < 0x04) {
       switch (instruction->imm[0]) {
@@ -233,400 +313,120 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       --operands_count;
     }
   }
+  spurious_rex_prefix |=
+    rex_prefix &&
+    (instruction->prefix.rex_b_spurious ||
+     instruction->prefix.rex_x_spurious ||
+     instruction->prefix.rex_r_spurious ||
+     instruction->prefix.rex_w_spurious);
   if (operands_count > 0) {
-    char rexw_counted = FALSE;
-    show_name_suffix = TRUE;
-    for (i=operands_count-1; i>=0; --i) {
-      if (instruction->operands[i].name == JMP_TO) {
-        /* Most control flow instructions never use suffixes, but "call" and
-           "jmp" do... unless byte offset is used.  */
-        if ((!strcmp(instruction_name, "call")) ||
-            (!strcmp(instruction_name, "jmp"))) {
-          switch (instruction->operands[i].type) {
-            case OPERAND_SIZE_8_BIT: show_name_suffix = FALSE; break;
-            case OPERAND_SIZE_16_BIT: show_name_suffix = 'w'; break;
-            case OPERAND_SIZE_32_BIT:
-              if (((struct DecodeState *)userdata)->ia32_mode) {
-                show_name_suffix = FALSE;
-              } else {
-                show_name_suffix = 'q';
-                rex_bits += (rex_prefix & 0x08) >> 3;
-                rexw_counted = TRUE;
-              }
-              break;
-            case OPERAND_SIZE_2_BIT:
-            case OPERAND_SIZE_64_BIT:
-            case OPERAND_SIZE_128_BIT:
-            case OPERAND_SIZE_256_BIT:
-            case OPERAND_FLOAT_SIZE_16_BIT:
-            case OPERAND_FLOAT_SIZE_32_BIT:
-            case OPERAND_FLOAT_SIZE_64_BIT:
-            case OPERAND_FLOAT_SIZE_80_BIT:
-            case OPERAND_X87_SIZE_16_BIT:
-            case OPERAND_X87_SIZE_32_BIT:
-            case OPERAND_X87_SIZE_64_BIT:
-            case OPERAND_X87_BCD:
-            case OPERAND_X87_ENV:
-            case OPERAND_X87_STATE:
-            case OPERAND_X87_MMX_MM_STATE:
-            case OPERAND_ST:
-            case OPERAND_SELECTOR:
-            case OPERAND_FAR_PTR:
-            case OPERAND_SEGMENT_REGISTER:
-            case OPERAND_CONTROL_REGISTER:
-            case OPERAND_DEBUG_REGISTER:
-            case OPERAND_MMX:
-            case OPERAND_XMM:
-            case OPERAND_YMM:
-              assert(FALSE);
-          }
-        } else {
-          show_name_suffix = FALSE;
-        }
-      } else if ((instruction->operands[i].name == REG_IMM) ||
-                 (instruction->operands[i].name == REG_IMM2) ||
-                 (instruction->operands[i].name == REG_RM) ||
-                 (instruction->operands[i].name == REG_PORT_DX) ||
-                 (instruction->operands[i].name == REG_ES_RDI) ||
-                 (instruction->operands[i].name == REG_DS_RSI)) {
-        if (show_name_suffix) {
-          switch (instruction->operands[i].type) {
-            case OPERAND_SIZE_8_BIT: show_name_suffix = 'b'; break;
-            case OPERAND_SIZE_16_BIT: show_name_suffix = 'w'; break;
-            case OPERAND_SIZE_32_BIT: show_name_suffix = 'l'; break;
-            case OPERAND_SIZE_64_BIT: show_name_suffix = 'q'; break;
-            case OPERAND_FLOAT_SIZE_32_BIT: show_name_suffix = 's'; break;
-            case OPERAND_FLOAT_SIZE_64_BIT: show_name_suffix = 'l'; break;
-            case OPERAND_FLOAT_SIZE_80_BIT:show_name_suffix = 't'; break;
-            case OPERAND_X87_SIZE_32_BIT: show_name_suffix = 'l'; break;
-            case OPERAND_X87_SIZE_64_BIT: show_name_suffix = 'L'; break;
-            case OPERAND_SIZE_2_BIT:
-            case OPERAND_X87_SIZE_16_BIT:
-            case OPERAND_X87_BCD:
-            case OPERAND_X87_ENV:
-            case OPERAND_X87_STATE:
-            case OPERAND_X87_MMX_MM_STATE:
-            case OPERAND_SIZE_128_BIT:
-            case OPERAND_SIZE_256_BIT:
-            case OPERAND_FAR_PTR:
-            case OPERAND_MMX:
-            case OPERAND_XMM:
-            case OPERAND_YMM:
-            case OPERAND_SELECTOR: show_name_suffix = FALSE; break;
-            case OPERAND_FLOAT_SIZE_16_BIT:
-            case OPERAND_ST:
-            case OPERAND_SEGMENT_REGISTER:
-            case OPERAND_CONTROL_REGISTER:
-            case OPERAND_DEBUG_REGISTER:
-              assert(FALSE);
-          }
-        }
-      } else {
-        /* "Empty" rex prefix (0x40) is used to select "sil"/"dil"/"spl"/"bpl".
+    if (!((struct DecodeState *)userdata)->ia32_mode)
+      for (i=0; i<operands_count; ++i)
+        /*
+         * Objdump mistakenly allows "lock" with "mov %crX,%rXX" only in ia32
+         * mode.  It's perfectly valid in amd64, too, so instead of changing
+         * the decoder we fix it here.
          */
-        if (instruction->operands[i].type == OPERAND_SIZE_8_BIT &&
-            instruction->operands[i].name <= REG_R15) {
-          empty_rex_prefix_ok = TRUE;
-        }
-        /* First argument of "rcl"/"rcr"/"rol"/"ror"/"sar/""shl"/"shr"
-           can not be used to determine size of command.  */
-        if (((i != 1) || (strcmp(instruction_name, "rcl") &&
-                          strcmp(instruction_name, "rcr") &&
-                          strcmp(instruction_name, "rol") &&
-                          strcmp(instruction_name, "ror") &&
-                          strcmp(instruction_name, "sal") &&
-                          strcmp(instruction_name, "sar") &&
-                          strcmp(instruction_name, "shl") &&
-                          strcmp(instruction_name, "shr"))) &&
-        /* Second argument of "crc32" can not be used to determine size of
-           command.  */
-            ((i != 0) || strcmp(instruction_name, "crc32"))) {
-          show_name_suffix = FALSE;
-        }
-        /* First argument of "crc32" can be used for that but objdump uses
-           suffix anyway. */
-        if ((i == 1) && (!strcmp(instruction_name, "crc32"))) {
-          switch (instruction->operands[i].type) {
-            case OPERAND_SIZE_8_BIT: show_name_suffix = 'b'; break;
-            case OPERAND_SIZE_16_BIT: show_name_suffix = 'w'; break;
-            case OPERAND_SIZE_32_BIT: show_name_suffix = 'l'; break;
-            case OPERAND_SIZE_64_BIT: show_name_suffix = 'q'; break;
-            case OPERAND_SIZE_2_BIT:
-            case OPERAND_SIZE_128_BIT:
-            case OPERAND_SIZE_256_BIT:
-            case OPERAND_FLOAT_SIZE_16_BIT:
-            case OPERAND_FLOAT_SIZE_32_BIT:
-            case OPERAND_FLOAT_SIZE_64_BIT:
-            case OPERAND_FLOAT_SIZE_80_BIT:
-            case OPERAND_X87_SIZE_16_BIT:
-            case OPERAND_X87_SIZE_32_BIT:
-            case OPERAND_X87_SIZE_64_BIT:
-            case OPERAND_X87_BCD:
-            case OPERAND_X87_ENV:
-            case OPERAND_X87_STATE:
-            case OPERAND_X87_MMX_MM_STATE:
-            case OPERAND_ST:
-            case OPERAND_SELECTOR:
-            case OPERAND_FAR_PTR:
-            case OPERAND_SEGMENT_REGISTER:
-            case OPERAND_CONTROL_REGISTER:
-            case OPERAND_DEBUG_REGISTER:
-            case OPERAND_MMX:
-            case OPERAND_XMM:
-            case OPERAND_YMM:
-              assert(FALSE);
+        if (instruction->operands[i].type == OPERAND_TYPE_CONTROL_REGISTER &&
+            *begin == 0xf0 && !instruction->prefix.lock) {
+          print_name("lock ");
+          if (rex_prefix & 0x04) {
+            if (!instruction->prefix.rex_b_spurious &&
+                instruction->prefix.rex_r_spurious &&
+                !instruction->prefix.rex_x_spurious &&
+                !instruction->prefix.rex_w_spurious)
+              spurious_rex_prefix = FALSE;
+          } else {
+            instruction->operands[i].name -= 8;
           }
         }
-      }
-      if ((instruction->operands[i].name >= REG_R8) &&
-          (instruction->operands[i].name <= REG_R15) &&
-          (instruction->operands[i].type != OPERAND_MMX)) {
-        if (!((struct DecodeState *)userdata)->ia32_mode) {
-          ++rex_bits;
-          /* HACK: objdump mistakenly allows "lock" with "mov %crX,%rXX" only in
-             32bit mode.  It's perfectly valid in 64bit mode, too, so instead of
-             changing the decoder we fix it here.  */
-          if (instruction->operands[i].type == OPERAND_CONTROL_REGISTER) {
-            if ((*begin == 0xf0) && !(instruction->prefix.lock)) {
-              print_name("lock ");
-              if (!(rex_prefix & 0x04)) {
-                instruction->operands[i].name -= 8;
-                --rex_bits;
-              }
-            }
-          }
-        }
-      } else if (instruction->operands[i].name == REG_RM) {
-        if ((rm_base >= REG_R8) &&
-            (rm_base <= REG_R15)) {
-          ++rex_bits;
-        } else if ((rm_base == NO_REG) ||
-                   (rm_base == REG_RIP)) {
-          if (strcmp(instruction_name, "movabs"))
-            ++maybe_rex_bits;
-        }
-        if ((rm_index >= REG_R8) &&
-            (rm_index <= REG_R15)) {
-          ++rex_bits;
-        }
-      }
-      if ((instruction->operands[i].type == OPERAND_SIZE_64_BIT) &&
-                                                                !rexw_counted) {
-        if (strcmp(instruction_name, "callq") &&
-            strcmp(instruction_name, "cmpxchg8b") &&
-            strcmp(instruction_name, "cvtpi2ps") &&
-            strcmp(instruction_name, "cvtpi2pd") &&
-            (strcmp(instruction_name, "extractps") ||
-             instruction->operands[i].name != REG_RM) &&
-            strcmp(instruction_name, "jmpq") &&
-            strcmp(instruction_name, "monitor") &&
-            strcmp(instruction_name, "movntq") &&
-            strcmp(instruction_name, "movhpd") &&
-            strcmp(instruction_name, "movhps") &&
-            strcmp(instruction_name, "movlpd") &&
-            strcmp(instruction_name, "movlps") &&
-            strcmp(instruction_name, "movntsd") &&
-            (strcmp(instruction_name, "movq") ||
-             (((begin[0] & 0x48) == 0x48) &&
-               (begin[1] == 0x0f) &&
-               (begin[2] == 0x6e)) ||
-             (((begin[0] & 0x48) == 0x48) &&
-               (begin[1] == 0x0f) &&
-               (begin[2] == 0x7e)) ||
-             (((begin[0] == 0x66) &&
-               (begin[1] & 0x48) == 0x48) &&
-               (begin[2] == 0x0f) &&
-               (begin[3] == 0x6e)) ||
-             (((begin[0] == 0x66) &&
-               (begin[1] & 0x48) == 0x48) &&
-               (begin[2] == 0x0f) &&
-               (begin[3] == 0x7e))) &&
-            strcmp(instruction_name, "mwait") &&
-            strcmp(instruction_name, "pf2id") &&
-            strcmp(instruction_name, "pf2iw") &&
-            strcmp(instruction_name, "pabsb") &&
-            strcmp(instruction_name, "pabsd") &&
-            strcmp(instruction_name, "pabsw") &&
-            strcmp(instruction_name, "packssdw") &&
-            strcmp(instruction_name, "packsswb") &&
-            strcmp(instruction_name, "packuswb") &&
-            strcmp(instruction_name, "paddb") &&
-            strcmp(instruction_name, "paddd") &&
-            strcmp(instruction_name, "paddq") &&
-            strcmp(instruction_name, "paddsb") &&
-            strcmp(instruction_name, "paddsw") &&
-            strcmp(instruction_name, "paddusb") &&
-            strcmp(instruction_name, "paddusw") &&
-            strcmp(instruction_name, "paddw") &&
-            strcmp(instruction_name, "palignr") &&
-            strcmp(instruction_name, "pand") &&
-            strcmp(instruction_name, "pandn") &&
-            strcmp(instruction_name, "pavgusb") &&
-            strcmp(instruction_name, "pavgb") &&
-            strcmp(instruction_name, "pavgw") &&
-            strcmp(instruction_name, "pcmpeqb") &&
-            strcmp(instruction_name, "pcmpeqd") &&
-            strcmp(instruction_name, "pcmpeqw") &&
-            strcmp(instruction_name, "pcmpgtb") &&
-            strcmp(instruction_name, "pcmpgtd") &&
-            strcmp(instruction_name, "pcmpgtw") &&
-            strcmp(instruction_name, "pfacc") &&
-            strcmp(instruction_name, "pfadd") &&
-            strcmp(instruction_name, "pfcmpge") &&
-            strcmp(instruction_name, "pfcmpgt") &&
-            strcmp(instruction_name, "pfcmpeq") &&
-            strcmp(instruction_name, "pfmax") &&
-            strcmp(instruction_name, "pfmin") &&
-            strcmp(instruction_name, "pfmul") &&
-            strcmp(instruction_name, "pfnacc") &&
-            strcmp(instruction_name, "pfpnacc") &&
-            strcmp(instruction_name, "pfrcp") &&
-            strcmp(instruction_name, "pfrcpit1") &&
-            strcmp(instruction_name, "pfrcpit2") &&
-            strcmp(instruction_name, "pfrsqit1") &&
-            strcmp(instruction_name, "pfrsqrt") &&
-            strcmp(instruction_name, "pfsub") &&
-            strcmp(instruction_name, "pfsubr") &&
-            strcmp(instruction_name, "phaddd") &&
-            strcmp(instruction_name, "phaddsw") &&
-            strcmp(instruction_name, "phaddw") &&
-            strcmp(instruction_name, "phsubd") &&
-            strcmp(instruction_name, "phsubsw") &&
-            strcmp(instruction_name, "phsubw") &&
-            strcmp(instruction_name, "pi2fd") &&
-            strcmp(instruction_name, "pi2fw") &&
-            strcmp(instruction_name, "pmaddubsw") &&
-            strcmp(instruction_name, "pmaddwd") &&
-            strcmp(instruction_name, "pmaxsw") &&
-            strcmp(instruction_name, "pmaxub") &&
-            strcmp(instruction_name, "pminsw") &&
-            strcmp(instruction_name, "pminub") &&
-            strcmp(instruction_name, "pmulhrsw") &&
-            strcmp(instruction_name, "pmulhrw") &&
-            strcmp(instruction_name, "pmulhuw") &&
-            strcmp(instruction_name, "pmulhw") &&
-            strcmp(instruction_name, "pmullw") &&
-            strcmp(instruction_name, "pmuludq") &&
-            strcmp(instruction_name, "por") &&
-            strcmp(instruction_name, "psadbw") &&
-            strcmp(instruction_name, "pshufb") &&
-            strcmp(instruction_name, "pshufhw") &&
-            strcmp(instruction_name, "pshuflw") &&
-            strcmp(instruction_name, "pshufw") &&
-            strcmp(instruction_name, "psignb") &&
-            strcmp(instruction_name, "psignd") &&
-            strcmp(instruction_name, "psignw") &&
-            strcmp(instruction_name, "pslld") &&
-            strcmp(instruction_name, "psllq") &&
-            strcmp(instruction_name, "psllw") &&
-            strcmp(instruction_name, "psrad") &&
-            strcmp(instruction_name, "psraw") &&
-            strcmp(instruction_name, "psrld") &&
-            strcmp(instruction_name, "psrlq") &&
-            strcmp(instruction_name, "psrlw") &&
-            strcmp(instruction_name, "psubb") &&
-            strcmp(instruction_name, "psubd") &&
-            strcmp(instruction_name, "psubq") &&
-            strcmp(instruction_name, "psubsb") &&
-            strcmp(instruction_name, "psubsw") &&
-            strcmp(instruction_name, "psubusb") &&
-            strcmp(instruction_name, "psubusw") &&
-            strcmp(instruction_name, "psubw") &&
-            strcmp(instruction_name, "pswapd") &&
-            strcmp(instruction_name, "pop") &&
-            strcmp(instruction_name, "punpckhbw") &&
-            strcmp(instruction_name, "punpckhdq") &&
-            strcmp(instruction_name, "punpckhqdq") &&
-            strcmp(instruction_name, "punpckhwd") &&
-            strcmp(instruction_name, "punpcklbw") &&
-            strcmp(instruction_name, "punpckldq") &&
-            strcmp(instruction_name, "punpcklqdq") &&
-            strcmp(instruction_name, "punpcklwd") &&
-            strcmp(instruction_name, "push") &&
-            strcmp(instruction_name, "pxor") &&
-            strcmp(instruction_name, "unpckhpd") &&
-            strcmp(instruction_name, "unpcklpd")) {
-          ++rex_bits;
-          rexw_counted = TRUE;
-        }
-        if ((operands_count == 2) &&
-            ((instruction->operands[1-i].type == OPERAND_CONTROL_REGISTER) ||
-             (instruction->operands[1-i].type == OPERAND_DEBUG_REGISTER))) {
-          --rex_bits;
-        }
-      }
-      if ((instruction->operands[i].type == OPERAND_SIZE_128_BIT) &&
-                                                                !rexw_counted) {
-        if (!strcmp(instruction_name, "cmpxchg16b")) {
-          ++rex_bits;
-          rexw_counted = TRUE;
-        }
-      }
-    }
   }
-  if ((!strcmp(instruction_name, "cvtsi2sd") ||
-       !strcmp(instruction_name, "cvtsi2ss")) &&
-      instruction->operands[1].name == REG_RM) {
-    if (instruction->operands[1].type == OPERAND_SIZE_32_BIT) {
-      show_name_suffix = 'l';
-    } else {
-      show_name_suffix = 'q';
-    }
+  /* Only few rare instructions show spurious REX.B in objdump.  */
+  if (!spurious_rex_prefix && instruction->prefix.rex_b_spurious)
+    if (IsNameInList(instruction_name,
+                     "ja", "jae", "jbe", "jb", "je", "jg", "jge", "jle",
+                     "jl", "jne", "jno", "jnp", "jns", "jo", "jp", "js",
+                     "jecxz", "jrcxz", "loop", "loope", "loopne", NULL))
+      spurious_rex_prefix = TRUE;
+  /* Some instructions don't show spurious REX.B in objdump.  */
+  if (spurious_rex_prefix &&
+      instruction->prefix.rex_b_spurious &&
+      !instruction->prefix.rex_r_spurious &&
+      !instruction->prefix.rex_x_spurious &&
+      !instruction->prefix.rex_w_spurious) {
+    if (operands_count > 0)
+      for (i=0; i<operands_count; ++i)
+        if (instruction->operands[i].name == REG_RM &&
+            instruction->rm.disp_type != DISP64) {
+          spurious_rex_prefix = FALSE;
+          break;
+        }
   }
-  if ((!strcmp(instruction_name, "vcvtpd2dq") ||
-       !strcmp(instruction_name, "vcvtpd2ps") ||
-       !strcmp(instruction_name, "vcvttpd2dq") ||
-       !strcmp(instruction_name, "vcvttpd2ps")) &&
-      instruction->operands[1].name == REG_RM) {
-    if (instruction->operands[1].type == OPERAND_SIZE_128_BIT) {
-      show_name_suffix = 'x';
-    } else {
-      show_name_suffix = 'y';
-    }
+  /* Some instructions don't show spurious REX.W in objdump.  */
+  if (spurious_rex_prefix &&
+      !instruction->prefix.rex_b_spurious &&
+      !instruction->prefix.rex_r_spurious &&
+      !instruction->prefix.rex_x_spurious &&
+      instruction->prefix.rex_w_spurious) {
+    if (IsNameInList(instruction_name,
+                     "ja", "jae", "jbe", "jb", "je", "jg", "jge", "jle",
+                     "jl", "jne", "jno", "jnp", "jns", "jo", "jp", "js",
+                     "jecxz", "jrcxz", "loop", "loope", "loopne",
+                     "call", "jmp", NULL) &&
+        instruction->operands[0].name == JMP_TO &&
+        instruction->operands[0].type != OPERAND_TYPE_8_BIT)
+      spurious_rex_prefix = FALSE;
+    /*
+     * Both AMD manual and Intel manual agree that mov from general purpose
+     * register to segment register has signature "mov Ew Sw", but objdump
+     * insists on 32bit/64 bit.  This is clearly an error in objdump so we fix
+     * it here and not in decoder.
+     */
+    if ((begin[0] >= 0x48) && (begin[0] <= 0x4f) && (begin[1] == 0x8e) &&
+        operands_count >=2 && instruction->operands[1].name != REG_RM)
+      spurious_rex_prefix = FALSE;
   }
-  if ((!strcmp(instruction_name, "vcvtsi2sd") ||
-       !strcmp(instruction_name, "vcvtsi2ss")) &&
-      instruction->operands[2].name == REG_RM) {
-    if (instruction->operands[2].type == OPERAND_SIZE_32_BIT) {
-      show_name_suffix = 'l';
-    } else {
-      show_name_suffix = 'q';
-    }
-  }
-  if (instruction->prefix.lock && (begin[0] == 0xf0)) {
+
+  /*
+   * If REX.W is used to owerride data16 prefix you can not really claim
+   * it's superfluous, but objdump shows it as such for the instructions
+   * which usually don't react to REX.W ("in", "out", "push", etc).
+   */
+  if (!spurious_rex_prefix && (rex_prefix & 0x08) &&
+      ((IsNameInList(instruction_name, "call", "jmp", "lcall", "ljmp", NULL) &&
+        instruction->operands[0].name != JMP_TO) ||
+       IsNameInList(instruction_name,
+                    "fldenvs", "fnstenvs", "fnsaves",
+                    "frstors", "fsaves", "fstenvs",
+                    "in", "ins", "out", "outs",
+                    "popf", "push", "pushf", NULL)))
+    spurious_rex_prefix = TRUE;
+
+  if (instruction->prefix.lock && (begin[0] == 0xf0))
     print_name("lock ");
-  }
-  if (instruction->prefix.repnz && (begin[0] == 0xf2)) {
+  if (instruction->prefix.repnz && (begin[0] == 0xf2))
     print_name("repnz ");
-  }
   if (instruction->prefix.repz && (begin[0] == 0xf3)) {
-    /* This prefix is "rep" for "ins", "lods", "movs", "outs", "stos". For other
+    /*
+     * This prefix is "rep" for "ins", "lods", "movs", "outs", "stos". For other
      * instructions print "repz".
      */
-    if ((!strcmp(instruction_name, "ins")) ||
-        (!strcmp(instruction_name, "lods")) ||
-        (!strcmp(instruction_name, "movs")) ||
-        (!strcmp(instruction_name, "outs")) ||
-        (!strcmp(instruction_name, "stos"))) {
+    if (IsNameInList(instruction_name,
+                     "ins", "lods", "movs", "outs", "stos", NULL))
       print_name("rep ");
-    } else {
+    else
       print_name("repz ");
-    }
   }
+
   if (((data16_prefix) && (rex_prefix & 0x08)) &&
-      strcmp(instruction_name, "bsf") &&
-      strcmp(instruction_name, "bsr") &&
-      strcmp(instruction_name, "fldenvs") &&
-      strcmp(instruction_name, "fnstenvs") &&
-      strcmp(instruction_name, "fnsaves") &&
-      strcmp(instruction_name, "frstors") &&
-      strcmp(instruction_name, "fsaves") &&
-      strcmp(instruction_name, "fstenvs") &&
-      strcmp(instruction_name, "movbe")) {
+      !IsNameInList(instruction_name,
+                    "bsf", "bsr", "fldenvs", "fnstenvs", "fnsaves", "frstors",
+                    "fsaves", "fstenvs", "movbe", NULL)) {
     if ((end - begin) != 3 ||
         (begin[0] != 0x66) || ((begin[1] & 0x48) != 0x48) || (begin[2] != 0x90))
       print_name("data32 ");
   }
+
   if (instruction->prefix.lock && (begin[0] != 0xf0)) {
     print_name("lock ");
   }
@@ -634,234 +434,30 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     print_name("repnz ");
   }
   if (instruction->prefix.repz && (begin[0] != 0xf3)) {
-    /* This prefix is "rep" for "ins", "lods", "movs", "outs", "stos". For other
+    /*
+     * This prefix is "rep" for "ins", "lods", "movs", "outs", "stos". For other
      * instructions print "repz".
      */
-    if ((!strcmp(instruction_name, "ins")) ||
-        (!strcmp(instruction_name, "lods")) ||
-        (!strcmp(instruction_name, "movs")) ||
-        (!strcmp(instruction_name, "outs")) ||
-        (!strcmp(instruction_name, "stos"))) {
+    if (IsNameInList(instruction_name,
+                     "ins", "lods", "movs", "outs", "stos", NULL))
       print_name("rep ");
-    } else {
+    else
       print_name("repz ");
-    }
   }
+
   if (rex_prefix == 0x40) {
-    /* First argument of "rcl"/"rcr"/"rol"/"ror"/"sar"/"shl"/"shr"
-       confuses objdump: it does not show it in this case.  */
-    if ((!empty_rex_prefix_ok ||
-         !strcmp(instruction_name, "movsbl") ||
-         !strcmp(instruction_name, "movsbw") ||
-         !strcmp(instruction_name, "movzbl") ||
-         !strcmp(instruction_name, "movzbw") ||
-         !strcmp(instruction_name, "pextrb") ||
-         !strcmp(instruction_name, "pinsrb")) &&
-        ((strcmp(instruction_name, "movsbl") &&
-          strcmp(instruction_name, "movsbw") &&
-          strcmp(instruction_name, "movzbl") &&
-          strcmp(instruction_name, "movzbw") &&
-          strcmp(instruction_name, "rcl") &&
-          strcmp(instruction_name, "rcr") &&
-          strcmp(instruction_name, "rol") &&
-          strcmp(instruction_name, "ror") &&
-          strcmp(instruction_name, "sal") &&
-          strcmp(instruction_name, "sar") &&
-          strcmp(instruction_name, "shl") &&
-          strcmp(instruction_name, "shr")) ||
-         (instruction->operands[1].name > REG_R15))) {
-      print_name("rex ");
-    }
-  }
-  if ((rex_prefix & 0x08) == 0x08) {
-    /* rex.W is ignored by "in"/"out", and "pop"/"push" commands.  */
-    if ((!strcmp(instruction_name, "in")) ||
-        (!strcmp(instruction_name, "ins")) ||
-        (!strcmp(instruction_name, "out")) ||
-        (!strcmp(instruction_name, "outs"))) {
-      rex_bits = -1;
-    }
-    if ((!strcmp(instruction_name, "pop")) ||
-        (!strcmp(instruction_name, "push"))) {
-      rex_bits = -1;
-    }
-  }
-  if (show_name_suffix == 'b') {
-    /* "cflush", "int", "invlpg", "prefetch*", and "setcc" never use suffix. */
-    if ((!strcmp(instruction_name, "clflush")) ||
-        (!strcmp(instruction_name, "enterq")) ||
-        (!strcmp(instruction_name, "int")) ||
-        (!strcmp(instruction_name, "invlpg")) ||
-        (!strcmp(instruction_name, "nop/reserved")) ||
-        (!strcmp(instruction_name, "prefetch")) ||
-        (!strcmp(instruction_name, "prefetchnta")) ||
-        (!strcmp(instruction_name, "prefetcht0")) ||
-        (!strcmp(instruction_name, "prefetcht1")) ||
-        (!strcmp(instruction_name, "prefetcht2")) ||
-        (!strcmp(instruction_name, "prefetchw")) ||
-        (!strcmp(instruction_name, "prefetch_modified")) ||
-        (!strcmp(instruction_name, "seta")) ||
-        (!strcmp(instruction_name, "setae")) ||
-        (!strcmp(instruction_name, "setbe")) ||
-        (!strcmp(instruction_name, "setb")) ||
-        (!strcmp(instruction_name, "sete")) ||
-        (!strcmp(instruction_name, "setg")) ||
-        (!strcmp(instruction_name, "setge")) ||
-        (!strcmp(instruction_name, "setle")) ||
-        (!strcmp(instruction_name, "setl")) ||
-        (!strcmp(instruction_name, "setne")) ||
-        (!strcmp(instruction_name, "setno")) ||
-        (!strcmp(instruction_name, "setnp")) ||
-        (!strcmp(instruction_name, "setns")) ||
-        (!strcmp(instruction_name, "seto")) ||
-        (!strcmp(instruction_name, "setp")) ||
-        (!strcmp(instruction_name, "sets"))) {
-      show_name_suffix = FALSE;
-    /* Instruction enter accepts two immediates: word and byte. But
-       objdump always uses suffix "q". This is supremely strange, but
-       we want to match objdump exactly, so... here goes.  */
-    } else if (!strcmp(instruction_name, "enter")) {
-      if (((struct DecodeState *)userdata)->ia32_mode) {
-        show_name_suffix = FALSE;
-      } else {
-        show_name_suffix = 'q';
-      }
-    }
-  }
-  if ((show_name_suffix == 'b') || (show_name_suffix == 'l')) {
-    /* objdump always shows "6a 01" as "pushq $1", "66 68 01 00" as
-       "pushw $1" yet "68 01 00 00 00" as "pushq $1" again.  This makes no
-       sense whatsoever so we'll just hack around here to make sure we
-       produce objdump-compatible output.  */
-    if (!strcmp(instruction_name, "push")) {
-      if (((struct DecodeState *)userdata)->ia32_mode) {
-        if (instruction->operands[0].name != REG_RM) {
-          show_name_suffix = FALSE;
+    if (operands_count > 0)
+      for (i=0; i<operands_count; ++i)
+        /*
+         * "Empty" rex prefix (0x40) is used to select "sil"/"dil"/"spl"/"bpl".
+         */
+        if (instruction->operands[i].type == OPERAND_TYPE_8_BIT &&
+            instruction->operands[i].name <= REG_RDI) {
+          empty_rex_prefix_ok = TRUE;
         }
-      } else {
-        show_name_suffix = 'q';
-      }
-    }
-  }
-  if (show_name_suffix == 'w') {
-    /* "lldt", "[ls]msw", "lret", "ltr", and "ver[rw]" newer use suffixes at
-       all.  */
-    if ((!strcmp(instruction_name, "lldt")) ||
-        (!strcmp(instruction_name, "lmsw")) ||
-        (!strcmp(instruction_name, "lret")) ||
-        (!strcmp(instruction_name, "lretq")) ||
-        (!strcmp(instruction_name, "ltr")) ||
-        (!strcmp(instruction_name, "retq")) ||
-        (!strcmp(instruction_name, "smsw")) ||
-        (!strcmp(instruction_name, "verr")) ||
-        (!strcmp(instruction_name, "verw"))) {
-       show_name_suffix = FALSE;
-    /* "callw"/"jmpw" already includes suffix in the nanme.  */
-    } else if ((!strcmp(instruction_name, "callw")) ||
-               (!strcmp(instruction_name, "jmpw"))) {
-      show_name_suffix = FALSE;
-    /* "ret" always uses suffix "q" no matter what.  */
-    } else if (!strcmp(instruction_name, "ret")) {
-      if (((struct DecodeState *)userdata)->ia32_mode) {
-        show_name_suffix = FALSE;
-      } else {
-        show_name_suffix = 'q';
-      }
-    }
-  }
-  if ((show_name_suffix == 'w') || (show_name_suffix == 'l')) {
-    /* "sldt" and "str" newer uses suffixes at all.  */
-    if ((!strcmp(instruction_name, "sldt")) ||
-        (!strcmp(instruction_name, "str"))) {
-      show_name_suffix = FALSE;
-    }
-  }
-  if (show_name_suffix == 'l') {
-    /* “calll”/“jmpl” do not exist, only “call” do.  */
-    if (((struct DecodeState *)userdata)->ia32_mode &&
-        (!strcmp(instruction_name, "call") ||
-         !strcmp(instruction_name, "jmp"))) {
-      show_name_suffix = FALSE;
-    /* “popl” does not exist, only “popq” do.  */
-    } else if (!((struct DecodeState *)userdata)->ia32_mode &&
-               !strcmp(instruction_name, "pop")) {
-      show_name_suffix = 'q';
-    } else if (!strcmp(instruction_name, "ldmxcsr") ||
-               !strcmp(instruction_name, "stmxcsr") ||
-               !strcmp(instruction_name, "vldmxcsr") ||
-               !strcmp(instruction_name, "vstmxcsr")) {
-      show_name_suffix = FALSE;
-    }
-  }
-  if (show_name_suffix == 'q') {
-    /* "callq","cmpxchg8b"/"jmpq" already include suffix in the nanme.  */
-    if ((!strcmp(instruction_name, "callq")) ||
-        (!strcmp(instruction_name, "cmpxchg8b")) ||
-        (!strcmp(instruction_name, "jmpq"))) {
-       show_name_suffix = FALSE;
-    }
-  }
-  if (rex_prefix & 0x08) {
-    /* rex.W is not shown for relative jumps with rel32 operand, but are
-       shown for relative jumps with rel8 operands.  */
-    if ((instruction->operands[0].type == OPERAND_SIZE_32_BIT) &&
-        (!strcmp(instruction_name, "ja") ||
-         !strcmp(instruction_name, "jae") ||
-         !strcmp(instruction_name, "jb") ||
-         !strcmp(instruction_name, "jbe") ||
-         !strcmp(instruction_name, "je") ||
-         !strcmp(instruction_name, "jg") ||
-         !strcmp(instruction_name, "jge") ||
-         !strcmp(instruction_name, "jl") ||
-         !strcmp(instruction_name, "jle") ||
-         !strcmp(instruction_name, "jne") ||
-         !strcmp(instruction_name, "jno") ||
-         !strcmp(instruction_name, "jnp") ||
-         !strcmp(instruction_name, "jns") ||
-         !strcmp(instruction_name, "jo") ||
-         !strcmp(instruction_name, "jp") ||
-         !strcmp(instruction_name, "js"))) {
-      ++rex_bits;
-    }
-    if (!strcmp(instruction_name, "cltq") ||
-        !strcmp(instruction_name, "cqto") ||
-        !strcmp(instruction_name, "data32 cltq") ||
-        !strcmp(instruction_name, "data32 cqto") ||
-        !strcmp(instruction_name, "data32 lcallq") ||
-        !strcmp(instruction_name, "data32 ljmpq") ||
-        !strcmp(instruction_name, "data32 popfq") ||
-        !strcmp(instruction_name, "data32 pushfq") ||
-        !strcmp(instruction_name, "fxrstor64") ||
-        !strcmp(instruction_name, "fxsave64") ||
-        !strcmp(instruction_name, "iretq") ||
-        !strcmp(instruction_name, "lretq") ||
-        !strcmp(instruction_name, "sysretq") ||
-        !strcmp(instruction_name, "xrstor64") ||
-        !strcmp(instruction_name, "xsave64") ||
-        !strcmp(instruction_name, "xsaveopt64")) {
-      ++rex_bits;
-    }
-  }
-  if (!strncmp(instruction_name, "data32 ", 7)) {
-    print_name("data32 ");
-    instruction_name += 7;
-  }
-  /* Dirty hack: both AMD manual and Intel manual agree that mov from general
-     purpose register to segment register has signature "mov Ew Sw", but
-     objdump insist on 32bit/64 bit.  This is clearly error in objdump so we
-     fix it here and not in decoder.  */
-  if ((begin[0] >= 0x48) && (begin[0] <= 0x4f) &&
-      (begin[1] == 0x8e) && (begin[2] >= 0xc0)) {
-    ++rex_bits;
-  }
-  i = (rex_prefix & 0x01) +
-      ((rex_prefix & 0x02) >> 1) +
-      ((rex_prefix & 0x04) >> 2) +
-      ((rex_prefix & 0x08) >> 3);
-  if (rex_prefix &&
-      !((i == rex_bits) ||
-        (maybe_rex_bits &&
-         (rex_prefix & 0x01) && (i == rex_bits + 1)))) {
+    if (!empty_rex_prefix_ok)
+      print_name("rex ");
+  } else if (spurious_rex_prefix) {
     print_name("rex.");
     if (rex_prefix & 0x08) {
       print_name("W");
@@ -877,433 +473,136 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
     print_name(" ");
   }
+
   printf("%s", instruction_name);
   shown_name += strlen(instruction_name);
-  if (show_name_suffix) {
-    if (show_name_suffix == 'L') {
-      print_name("ll");
-    } else {
-      printf("%c", show_name_suffix);
-      ++shown_name;
+
+  if (instruction->att_instruction_suffix) {
+    if (!IsNameInList(instruction_name,
+                      "nopw   0x0(%eax,%eax,1)",
+                      "nopw   0x0(%rax,%rax,1)",
+                      NULL)) {
+      printf("%s", instruction->att_instruction_suffix);
+      shown_name += strlen(instruction->att_instruction_suffix);
+    }
+  } else {
+    /*
+     * Objdump prints size suffixes for "crc32" instruction even when it's
+     * not really needed.
+     */
+    if (strcmp(instruction_name, "crc32") == 0) {
+      if (instruction->operands[1].type == OPERAND_TYPE_8_BIT)
+        print_name("b");
+      else if (instruction->operands[1].type == OPERAND_TYPE_16_BIT)
+        print_name("w");
+      else if (instruction->operands[1].type == OPERAND_TYPE_32_BIT)
+        print_name("l");
+      else if (instruction->operands[1].type == OPERAND_TYPE_64_BIT)
+        print_name("q");
     }
   }
-  if (!strcmp(instruction_name, "mov")) {
-    if ((instruction->operands[1].name == REG_IMM) &&
-       (instruction->operands[1].type == OPERAND_SIZE_64_BIT)) {
-      print_name("abs");
-    }
+  if (strcmp(instruction_name, "mov") == 0 &&
+      instruction->operands[1].name == REG_IMM &&
+      instruction->operands[1].type == OPERAND_TYPE_64_BIT)
+    print_name("abs");
+
+  if (IsNameInList(instruction_name,
+                   "ja", "jae", "jbe", "jb", "je", "jg", "jge", "jle",
+                   "jl", "jne", "jno", "jnp", "jns", "jo", "jp", "js",
+                   "jecxz", "jrcxz", "loop", "loope", "loopne", NULL)) {
+    if (instruction->prefix.branch_not_taken)
+      print_name(",pn");
+    else if (instruction->prefix.branch_taken)
+      print_name(",pt");
   }
-  {
-    size_t i;
-    /* Print branch hint suffixes for conditional jump instructions (Jcc).  */
-    const char* jcc_jumps[] = {
-      "ja", "jae", "jbe", "jb", "je", "jg", "jge", "jle",
-      "jl", "jne", "jno", "jnp", "jns", "jo", "jp", "js",
-      "jecxz", "jrcxz", "loop", "loope", "loopne", NULL};
-    for (i = 0; jcc_jumps[i] != NULL; ++i) {
-      if (!strcmp(instruction_name, jcc_jumps[i])) {
-        if (instruction->prefix.branch_not_taken) {
-          print_name(",pn");
-        } else if (instruction->prefix.branch_taken) {
-          print_name(",pt");
-        }
-        break;
-      }
-    }
-  }
+
 #undef print_name
-  if ((strcmp(instruction_name, "nop") || operands_count != 0) &&
-      strcmp(instruction_name, "fwait") &&
-      strcmp(instruction_name, "rex.W nop") &&
-      strcmp(instruction_name, "nopw   0x0(%eax,%eax,1)") &&
-      strcmp(instruction_name, "nopw   0x0(%rax,%rax,1)") &&
-      strcmp(instruction_name, "nopw %cs:0x0(%eax,%eax,1)") &&
-      strcmp(instruction_name, "nopw %cs:0x0(%rax,%rax,1)") &&
-      strcmp(instruction_name, "nopw   %cs:0x0(%eax,%eax,1)") &&
-      strcmp(instruction_name, "nopw   %cs:0x0(%rax,%rax,1)") &&
-      strcmp(instruction_name, "data32 nopw %cs:0x0(%eax,%eax,1)") &&
-      strcmp(instruction_name, "data32 nopw %cs:0x0(%rax,%rax,1)") &&
-      strcmp(instruction_name, "data32 data32 nopw %cs:0x0(%eax,%eax,1)") &&
-      strcmp(instruction_name, "data32 data32 nopw %cs:0x0(%rax,%rax,1)") &&
-      strcmp(instruction_name,
-                            "data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)") &&
-      strcmp(instruction_name,
-                            "data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)") &&
-      strcmp(instruction_name,
-                     "data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)") &&
-      strcmp(instruction_name,
-                     "data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)") &&
-      strcmp(instruction_name, "pop    %fs") &&
-      strcmp(instruction_name, "pop    %gs") &&
-      strcmp(instruction_name, "popq %fs") &&
-      strcmp(instruction_name, "popq %gs") &&
-      strcmp(instruction_name, "popq %mm4") &&
-      strcmp(instruction_name, "popq %mm5") &&
-      strcmp(instruction_name, "popq   %fs") &&
-      strcmp(instruction_name, "popq   %gs") &&
-      strcmp(instruction_name, "popq   %mm4") &&
-      strcmp(instruction_name, "popq   %mm5") &&
-      strcmp(instruction_name, "push   %fs") &&
-      strcmp(instruction_name, "push   %gs") &&
-      strcmp(instruction_name, "pushq %fs") &&
-      strcmp(instruction_name, "pushq %gs") &&
-      strcmp(instruction_name, "pushq %mm4") &&
-      strcmp(instruction_name, "pushq %mm5") &&
-      strcmp(instruction_name, "pushq  %fs") &&
-      strcmp(instruction_name, "pushq  %gs") &&
-      strcmp(instruction_name, "pushq  %mm4") &&
-      strcmp(instruction_name, "pushq  %mm5")) {
+  if ((strcmp(instruction_name, "nop") != 0 || operands_count != 0) &&
+      !IsNameInList(
+        instruction_name,
+        "fwait",
+        "nopw   0x0(%eax,%eax,1)",
+        "nopw   0x0(%rax,%rax,1)",
+        "nopw %cs:0x0(%eax,%eax,1)",
+        "nopw %cs:0x0(%rax,%rax,1)",
+        "nopw   %cs:0x0(%eax,%eax,1)",
+        "nopw   %cs:0x0(%rax,%rax,1)",
+        "data32 nopw %cs:0x0(%eax,%eax,1)",
+        "data32 nopw %cs:0x0(%rax,%rax,1)",
+        "data32 data32 nopw %cs:0x0(%eax,%eax,1)",
+        "data32 data32 nopw %cs:0x0(%rax,%rax,1)",
+        "data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)",
+        "data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)",
+        "data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)",
+        "data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)",
+        "data32 data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)",
+        "data32 data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)",
+        "pop    %fs",
+        "pop    %gs",
+        "popq %fs",
+        "popq %gs",
+        "popq   %fs",
+        "popq   %gs",
+        "push   %fs",
+        "push   %gs",
+        "pushq %fs",
+        "pushq %gs",
+        "pushq  %fs",
+        "pushq  %gs",
+        NULL)) {
     while (shown_name < 6) {
       printf(" ");
       ++shown_name;
     }
-    if (operands_count == 0) {
+    if (operands_count == 0)
       printf(" ");
-    }
   }
   for (i=operands_count-1; i>=0; --i) {
     printf("%c", delimeter);
-    if ((!strcmp(instruction_name, "call")) ||
-        (!strcmp(instruction_name, "data32 lcallq")) ||
-        (!strcmp(instruction_name, "data32 ljmpq")) ||
-        (!strcmp(instruction_name, "jmp")) ||
-        (!strcmp(instruction_name, "lcall")) ||
-        (!strcmp(instruction_name, "ljmp"))) {
-      if (instruction->operands[i].name != JMP_TO) {
-        printf("*");
-      }
-    } else if ((!strcmp(instruction_name, "callw")) ||
-               (!strcmp(instruction_name, "callq")) ||
-               (!strcmp(instruction_name, "jmpw")) ||
-               (!strcmp(instruction_name, "jmpq")) ||
-               (!strcmp(instruction_name, "ljmpw")) ||
-               (!strcmp(instruction_name, "ljmpq")) ||
-               (!strcmp(instruction_name, "lcallw")) ||
-               (!strcmp(instruction_name, "lcallq"))) {
+    if (IsNameInList(instruction_name, "call", "jmp", "lcall", "ljmp", NULL) &&
+        instruction->operands[i].name != JMP_TO)
       printf("*");
-    }
-    /* Dirty hack: both AMD manual and Intel manual agree that mov from general
-       purpose register to segment register has signature "mov Ew Sw", but
-       objdump insist on 32bit/64 bit.  This is clearly error in objdump so we
-       fix it here and not in decoder.  */
+    /*
+     * Both AMD manual and Intel manual agree that mov from general purpose
+     * register to segment register has signature "mov Ew Sw", but objdump
+     * insists on 32bit/64 bit.  This is clearly an error in objdump so we fix
+     * it here and not in decoder.
+     */
     if ((begin[0] >= 0x48) && (begin[0] <= 0x4f) && (begin[1] == 0x8e) &&
-        (instruction->operands[i].type == OPERAND_SIZE_16_BIT)) {
-      operand_type = OPERAND_SIZE_64_BIT;
+        (instruction->operands[i].type == OPERAND_TYPE_16_BIT)) {
+      operand_type = OPERAND_TYPE_64_BIT;
     } else if (((begin[0] == 0x8e) ||
        ((begin[0] >= 0x40) && (begin[0] <= 0x4f) && (begin[1] == 0x8e))) &&
-        (instruction->operands[i].type == OPERAND_SIZE_16_BIT)) {
-      operand_type = OPERAND_SIZE_32_BIT;
+        (instruction->operands[i].type == OPERAND_TYPE_16_BIT)) {
+      operand_type = OPERAND_TYPE_32_BIT;
     } else {
       operand_type = instruction->operands[i].type;
     }
     switch (instruction->operands[i].name) {
-      case REG_RAX: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%al"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%ax"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%eax"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%rax"); break;
-        case OPERAND_ST: printf("%%st(0)"); break;
-        case OPERAND_MMX: printf("%%mm0"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm0"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm0"); break;
-        case OPERAND_SEGMENT_REGISTER: printf("%%es"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr0"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db0"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_RCX: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%cl"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%cx"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%ecx"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%rcx"); break;
-        case OPERAND_ST: printf("%%st(1)"); break;
-        case OPERAND_MMX: printf("%%mm1"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm1"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm1"); break;
-        case OPERAND_SEGMENT_REGISTER: printf("%%cs"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr1"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db1"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_RDX: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%dl"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%dx"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%edx"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%rdx"); break;
-        case OPERAND_ST: printf("%%st(2)"); break;
-        case OPERAND_MMX: printf("%%mm2"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm2"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm2"); break;
-        case OPERAND_SEGMENT_REGISTER: printf("%%ss"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr2"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db2"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_RBX: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%bl"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%bx"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%ebx"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%rbx"); break;
-        case OPERAND_ST: printf("%%st(3)"); break;
-        case OPERAND_MMX: printf("%%mm3"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm3"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm3"); break;
-        case OPERAND_SEGMENT_REGISTER: printf("%%ds"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr3"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db3"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_RSP: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: if (rex_prefix)
-            printf("%%spl");
-          else
-            printf("%%ah");
-          break;
-        case OPERAND_SIZE_16_BIT: printf("%%sp"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%esp"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%rsp"); break;
-        case OPERAND_ST: printf("%%st(4)"); break;
-        case OPERAND_MMX: printf("%%mm4"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm4"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm4"); break;
-        case OPERAND_SEGMENT_REGISTER: printf("%%fs"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr4"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db4"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_RBP: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: if (rex_prefix)
-            printf("%%bpl");
-          else
-            printf("%%ch");
-          break;
-        case OPERAND_SIZE_16_BIT: printf("%%bp"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%ebp"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%rbp"); break;
-        case OPERAND_ST: printf("%%st(5)"); break;
-        case OPERAND_MMX: printf("%%mm5"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm5"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm5"); break;
-        case OPERAND_SEGMENT_REGISTER: printf("%%gs"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr5"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db5"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_RSI: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: if (rex_prefix)
-            printf("%%sil");
-          else
-            printf("%%dh");
-          break;
-        case OPERAND_SIZE_16_BIT: printf("%%si"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%esi"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%rsi"); break;
-        case OPERAND_ST: printf("%%st(6)"); break;
-        case OPERAND_MMX: printf("%%mm6"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm6"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm6"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr6"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db6"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_RDI: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: if (rex_prefix)
-            printf("%%dil");
-          else
-            printf("%%bh");
-          break;
-        case OPERAND_SIZE_16_BIT: printf("%%di"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%edi"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%rdi"); break;
-        case OPERAND_ST: printf("%%st(7)"); break;
-        case OPERAND_MMX: printf("%%mm7"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm7"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm7"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr7"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db7"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_R8: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%r8b"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%r8w"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%r8d"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%r8"); break;
-        case OPERAND_MMX: printf("%%mm0"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm8"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm8"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr8"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db8"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_R9: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%r9b"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%r9w"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%r9d"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%r9"); break;
-        case OPERAND_MMX: printf("%%mm1"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm9"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm9"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr9"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db9"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_R10: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%r10b"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%r10w"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%r10d"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%r10"); break;
-        case OPERAND_MMX: printf("%%mm2"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm10"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm10"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr10"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db10"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_R11: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%r11b"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%r11w"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%r11d"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%r11"); break;
-        case OPERAND_MMX: printf("%%mm3"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm11"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm11"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr11"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db11"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_R12: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%r12b"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%r12w"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%r12d"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%r12"); break;
-        case OPERAND_MMX: printf("%%mm4"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm12"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm12"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr12"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db12"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_R13: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%r13b"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%r13w"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%r13d"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%r13"); break;
-        case OPERAND_MMX: printf("%%mm5"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm13"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm13"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr13"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db13"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_R14: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%r14b"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%r14w"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%r14d"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%r14"); break;
-        case OPERAND_MMX: printf("%%mm6"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm14"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm14"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr14"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db14"); break;
-        default: assert(FALSE);
-      }
-      break;
-      case REG_R15: switch (operand_type) {
-        case OPERAND_SIZE_8_BIT: printf("%%r15b"); break;
-        case OPERAND_SIZE_16_BIT: printf("%%r15w"); break;
-        case OPERAND_SIZE_32_BIT: printf("%%r15d"); break;
-        case OPERAND_SIZE_64_BIT: printf("%%r15"); break;
-        case OPERAND_MMX: printf("%%mm7"); break;
-        case OPERAND_FLOAT_SIZE_32_BIT:
-        case OPERAND_FLOAT_SIZE_64_BIT:
-        case OPERAND_SIZE_128_BIT:
-        case OPERAND_XMM: printf("%%xmm15"); break;
-        case OPERAND_SIZE_256_BIT:
-        case OPERAND_YMM: printf("%%ymm15"); break;
-        case OPERAND_CONTROL_REGISTER: printf("%%cr15"); break;
-        case OPERAND_DEBUG_REGISTER: printf("%%db15"); break;
-        default: assert(FALSE);
-      }
-      break;
+      case REG_RAX:
+      case REG_RCX:
+      case REG_RDX:
+      case REG_RBX:
+      case REG_RSP:
+      case REG_RBP:
+      case REG_RSI:
+      case REG_RDI:
+      case  REG_R8:
+      case  REG_R9:
+      case REG_R10:
+      case REG_R11:
+      case REG_R12:
+      case REG_R13:
+      case REG_R14:
+      case REG_R15:
+        printf("%%%s", RegisterNameAsString(instruction->operands[i].name,
+                                            operand_type, rex_prefix));
+        break;
       case REG_ST:
-        assert(operand_type == OPERAND_ST);
+        assert(operand_type == OPERAND_TYPE_ST);
         printf("%%st");
         break;
-      case REG_RM: {
+      case REG_RM:
         if (instruction->rm.disp_type != DISPNONE) {
           if ((instruction->rm.disp_type == DISP64) ||
               (instruction->rm.offset >= 0))
@@ -1314,188 +613,81 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         if (((struct DecodeState *)userdata)->ia32_mode) {
           if ((rm_base != NO_REG) ||
               (rm_index != NO_REG) ||
-              (instruction->rm.scale != 0)) {
+              (instruction->rm.scale != 0))
             printf("(");
-          }
-          switch (rm_base) {
-            case REG_RAX: printf("%%eax"); break;
-            case REG_RCX: printf("%%ecx"); break;
-            case REG_RDX: printf("%%edx"); break;
-            case REG_RBX: printf("%%ebx"); break;
-            case REG_RSP: printf("%%esp"); break;
-            case REG_RBP: printf("%%ebp"); break;
-            case REG_RSI: printf("%%esi"); break;
-            case REG_RDI: printf("%%edi"); break;
-            case NO_REG: break;
-            case REG_R8:
-            case REG_R9:
-            case REG_R10:
-            case REG_R11:
-            case REG_R12:
-            case REG_R13:
-            case REG_R14:
-            case REG_R15:
-            case REG_RIP:
-            case REG_RM:
-            case REG_RIZ:
-            case REG_IMM:
-            case REG_IMM2:
-            case REG_DS_RBX:
-            case REG_ES_RDI:
-            case REG_DS_RSI:
-            case REG_PORT_DX:
-            case REG_ST:
-            case JMP_TO:
-              assert(FALSE);
-          }
-          switch (rm_index) {
-            case REG_RAX: printf(",%%eax,%d",1<<instruction->rm.scale); break;
-            case REG_RCX: printf(",%%ecx,%d",1<<instruction->rm.scale); break;
-            case REG_RDX: printf(",%%edx,%d",1<<instruction->rm.scale); break;
-            case REG_RBX: printf(",%%ebx,%d",1<<instruction->rm.scale); break;
-            case REG_RSP: printf(",%%esp,%d",1<<instruction->rm.scale); break;
-            case REG_RBP: printf(",%%ebp,%d",1<<instruction->rm.scale); break;
-            case REG_RSI: printf(",%%esi,%d",1<<instruction->rm.scale); break;
-            case REG_RDI: printf(",%%edi,%d",1<<instruction->rm.scale); break;
-            case REG_RIZ: if ((rm_base != REG_RSP) ||
-                              (instruction->rm.scale != 0))
-                printf(",%%eiz,%d",1<<instruction->rm.scale);
-              break;
-            case NO_REG: break;
-            case REG_R8:
-            case REG_R9:
-            case REG_R10:
-            case REG_R11:
-            case REG_R12:
-            case REG_R13:
-            case REG_R14:
-            case REG_R15:
-            case REG_RM:
-            case REG_RIP:
-            case REG_IMM:
-            case REG_IMM2:
-            case REG_DS_RBX:
-            case REG_ES_RDI:
-            case REG_DS_RSI:
-            case REG_PORT_DX:
-            case REG_ST:
-            case JMP_TO:
-              assert(FALSE);
+          if (rm_base != NO_REG)
+            printf("%%%s",
+                   RegisterNameAsString(rm_base, OPERAND_TYPE_32_BIT, FALSE));
+          if (rm_index == REG_RIZ) {
+            if ((rm_base != REG_RSP) || (instruction->rm.scale != 0))
+              printf(",%%eiz,%d", 1 << instruction->rm.scale);
+          } else if (rm_index != NO_REG) {
+            printf(",%%%s,%d",
+                   RegisterNameAsString(rm_index, OPERAND_TYPE_32_BIT, FALSE),
+                   1 << instruction->rm.scale);
           }
           if ((rm_base != NO_REG) ||
               (rm_index != NO_REG) ||
-              (instruction->rm.scale != 0)) {
+              (instruction->rm.scale != 0))
             printf(")");
-          }
         } else {
           if ((rm_base != NO_REG) ||
               (rm_index != REG_RIZ) ||
-              (instruction->rm.scale != 0)) {
+              (instruction->rm.scale != 0))
             printf("(");
+          if (rm_base == REG_RIP) {
+            printf("%%rip");
+            print_rip = TRUE;
+          } else if (rm_base != NO_REG) {
+            printf("%%%s",
+                   RegisterNameAsString(rm_base, OPERAND_TYPE_64_BIT, FALSE));
           }
-          switch (rm_base) {
-            case REG_RAX: printf("%%rax"); break;
-            case REG_RCX: printf("%%rcx"); break;
-            case REG_RDX: printf("%%rdx"); break;
-            case REG_RBX: printf("%%rbx"); break;
-            case REG_RSP: printf("%%rsp"); break;
-            case REG_RBP: printf("%%rbp"); break;
-            case REG_RSI: printf("%%rsi"); break;
-            case REG_RDI: printf("%%rdi"); break;
-            case REG_R8: printf("%%r8"); break;
-            case REG_R9: printf("%%r9"); break;
-            case REG_R10: printf("%%r10"); break;
-            case REG_R11: printf("%%r11"); break;
-            case REG_R12: printf("%%r12"); break;
-            case REG_R13: printf("%%r13"); break;
-            case REG_R14: printf("%%r14"); break;
-            case REG_R15: printf("%%r15"); break;
-            case REG_RIP: printf("%%rip"); print_rip = TRUE; break;
-            case NO_REG: break;
-            case REG_RM:
-            case REG_RIZ:
-            case REG_IMM:
-            case REG_IMM2:
-            case REG_DS_RBX:
-            case REG_ES_RDI:
-            case REG_DS_RSI:
-            case REG_PORT_DX:
-            case REG_ST:
-            case JMP_TO:
-              assert(FALSE);
-          }
-          switch (rm_index) {
-            case REG_RAX: printf(",%%rax,%d",1<<instruction->rm.scale); break;
-            case REG_RCX: printf(",%%rcx,%d",1<<instruction->rm.scale); break;
-            case REG_RDX: printf(",%%rdx,%d",1<<instruction->rm.scale); break;
-            case REG_RBX: printf(",%%rbx,%d",1<<instruction->rm.scale); break;
-            case REG_RSP: printf(",%%rsp,%d",1<<instruction->rm.scale); break;
-            case REG_RBP: printf(",%%rbp,%d",1<<instruction->rm.scale); break;
-            case REG_RSI: printf(",%%rsi,%d",1<<instruction->rm.scale); break;
-            case REG_RDI: printf(",%%rdi,%d",1<<instruction->rm.scale); break;
-            case REG_R8: printf(",%%r8,%d",1<<instruction->rm.scale); break;
-            case REG_R9: printf(",%%r9,%d",1<<instruction->rm.scale); break;
-            case REG_R10: printf(",%%r10,%d",1<<instruction->rm.scale); break;
-            case REG_R11: printf(",%%r11,%d",1<<instruction->rm.scale); break;
-            case REG_R12: printf(",%%r12,%d",1<<instruction->rm.scale); break;
-            case REG_R13: printf(",%%r13,%d",1<<instruction->rm.scale); break;
-            case REG_R14: printf(",%%r14,%d",1<<instruction->rm.scale); break;
-            case REG_R15: printf(",%%r15,%d",1<<instruction->rm.scale); break;
-            case REG_RIZ: if (((rm_base != NO_REG) &&
-                               (rm_base != REG_RSP) &&
-                               (rm_base != REG_R12)) ||
-                               (instruction->rm.scale != 0))
-                printf(",%%riz,%d",1<<instruction->rm.scale);
-              break;
-            case NO_REG: break;
-            case REG_RM:
-            case REG_RIP:
-            case REG_IMM:
-            case REG_IMM2:
-            case REG_DS_RBX:
-            case REG_ES_RDI:
-            case REG_DS_RSI:
-            case REG_PORT_DX:
-            case REG_ST:
-            case JMP_TO:
-              assert(FALSE);
+          if (rm_index == REG_RIZ) {
+            if ((rm_base != NO_REG &&
+                 rm_base != REG_RSP &&
+                 rm_base != REG_R12) ||
+                instruction->rm.scale != 0)
+              printf(",%%riz,%d",1 << instruction->rm.scale);
+          } else if (rm_index != NO_REG) {
+            printf(",%%%s,%d",
+                   RegisterNameAsString(rm_index, OPERAND_TYPE_64_BIT, FALSE),
+                   1 << instruction->rm.scale);
           }
           if ((rm_base != NO_REG) ||
               (rm_index != REG_RIZ) ||
-              (instruction->rm.scale != 0)) {
+              (instruction->rm.scale != 0))
             printf(")");
-          }
         }
-      }
-      break;
-      case REG_IMM: {
+        break;
+      case REG_IMM:
         printf("$0x%"NACL_PRIx64,instruction->imm[0]);
         break;
-      }
-      case REG_IMM2: {
+      case REG_IMM2:
         printf("$0x%"NACL_PRIx64,instruction->imm[1]);
         break;
-      }
-      case REG_PORT_DX: printf("(%%dx)"); break;
-      case REG_DS_RBX: if (((struct DecodeState *)userdata)->ia32_mode) {
+      case REG_PORT_DX:
+        printf("(%%dx)");
+        break;
+      case REG_DS_RBX:
+        if (((struct DecodeState *)userdata)->ia32_mode)
           printf("%%ds:(%%ebx)");
-        } else {
+        else
           printf("%%ds:(%%rbx)");
-        }
         break;
-      case REG_ES_RDI: if (((struct DecodeState *)userdata)->ia32_mode) {
+      case REG_ES_RDI:
+        if (((struct DecodeState *)userdata)->ia32_mode)
           printf("%%es:(%%edi)");
-        } else {
+        else
           printf("%%es:(%%rdi)");
-        }
         break;
-      case REG_DS_RSI: if (((struct DecodeState *)userdata)->ia32_mode) {
+      case REG_DS_RSI:
+        if (((struct DecodeState *)userdata)->ia32_mode)
           printf("%%ds:(%%esi)");
-        } else {
+        else
           printf("%%ds:(%%rsi)");
-        }
         break;
-      case JMP_TO: if (instruction->operands[0].type == OPERAND_SIZE_16_BIT)
+      case JMP_TO:
+        if (instruction->operands[0].type == OPERAND_TYPE_16_BIT)
           printf("0x%lx", (long)((end + instruction->rm.offset -
                          (((struct DecodeState *)userdata)->offset)) & 0xffff));
         else
@@ -1528,9 +720,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       }
     }
     printf("\n");
-    if (p >= end) {
+    if (p >= end)
       return;
-    }
     begin += 7;
   }
 }

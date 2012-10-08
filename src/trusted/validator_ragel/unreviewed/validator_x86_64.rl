@@ -457,9 +457,9 @@
 %% write data;
 
 Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
-                        enum validation_options options,
+                        enum ValidationOptions options,
                         const NaClCPUFeaturesX86 *cpu_features,
-                        validation_callback_func user_callback,
+                        ValidationCallbackFunc user_callback,
                         void *callback_data) {
   bitmap_word valid_targets_small;
   bitmap_word jump_dests_small;
@@ -506,9 +506,9 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
      *  2 bits for register kinds,
      *  5 bits for register numbers (16 regs plus RIZ). */
     uint32_t operand_states = 0;
-    enum register_name base = NO_REG;
-    enum register_name index = NO_REG;
-    enum register_name restricted_register = NO_REG;
+    enum OperandName base = NO_REG;
+    enum OperandName index = NO_REG;
+    enum OperandName restricted_register = NO_REG;
     uint8_t rex_prefix = FALSE;
     uint8_t vex_prefix2 = 0xe0;
     uint8_t vex_prefix3 = 0x00;

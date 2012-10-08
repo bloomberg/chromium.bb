@@ -366,26 +366,27 @@ btr Ib Ev, 0x0f 0xba /6, lock nacl-ia32-forbidden
 bts Gv Ev, 0x0f 0xab, lock nacl-forbidden
 bts Ib Ev, 0x0f 0xba /5, lock nacl-ia32-forbidden
 ######## CALL (Near) ###########################################################
-call Jw, data16 0xe8, nacl-forbidden
-call Jd, 0xe8, nacl-amd64-modifiable
-call Jd, data16 rexw 0xe8, amd64 nacl-forbidden
+call Jw, data16 0xe8, att-show-name-suffix-w nacl-forbidden
+call Jd, 0xe8, ia32
+call Jd, 0xe8, amd64 att-show-name-suffix-q nacl-amd64-modifiable
+call Jd, data16 rexw 0xe8, amd64 att-show-name-suffix-q nacl-forbidden
 # “call” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
+call Ew, data16 0xff /2, norexw att-show-name-suffix-w nacl-forbidden
 call Ed, 0xff /2, ia32 nacl-forbidden
-callq Eq, 0xff /2, amd64 nacl-forbidden
-callq Eq, data16 rexw 0xff /2, amd64 nacl-forbidden
-callw Ew, data16 0xff /2, norexw nacl-forbidden
+call Eq, 0xff /2, amd64 att-show-name-suffix-q nacl-forbidden
+call Eq, data16 rexw 0xff /2, amd64 att-show-name-suffix-q nacl-forbidden
 ######## CALL (Far) ############################################################
 # “lcall” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
+lcall Mp, data16 0xff /3, norexw att-show-name-suffix-w nacl-forbidden
 lcall Mp, 0xff /3, ia32 nacl-forbidden
-lcallq Mp, 0xff /3, amd64 nacl-forbidden
-lcallq Mp, data16 rexw 0xff /3, amd64 nacl-forbidden
-lcallw Mp, data16 0xff /3, norexw nacl-forbidden
+lcall Mp, 0xff /3, amd64 att-show-name-suffix-q nacl-forbidden
+lcall Mp, data16 rexw 0xff /3, amd64 att-show-name-suffix-q nacl-forbidden
 ######## CBW/CWDE/CDQE #########################################################
 cwtl, 0x98, norexw
 cbtw, data16 0x98, norexw
@@ -473,8 +474,8 @@ div =E, 0xf6 /6
 # AMD/Intel manual but it does complex manipulations and is very rarely used
 # (GCC, in particular, never use it).  As a rule we don't allow complex and
 # rarely used instructions such as “aaa” or “bound”.  Disable it for now.
-enter iw =Ib, 0xc8, norexw nacl-forbidden
-enterq iw =Ib, rexw 0xc8, amd64 nacl-forbidden
+enter iw =Ib, 0xc8, ia32 nacl-forbidden
+enter iw =Ib, 0xc8, amd64 att-show-name-suffix-q nacl-forbidden
 ######## IDIV ##################################################################
 # “idiv” is not marked as nacl-amd64-zero-extends because we never allowed it.
 idiv =E, 0xf6 /7
@@ -486,15 +487,24 @@ imul Iz Ev Gv, 0x69, nacl-amd64-zero-extends
 ######## IN ####################################################################
 # “in” is not marked as nacl-amd64-zero-extends just because it shouldn't be.
 in Ib ab, 0xe4, nacl-forbidden
-in Ib az, 0xe5, nacl-forbidden
+in Ib aw, data16 0xe5, nacl-forbidden
+in Ib ad, 0xe5, nacl-forbidden
+in Ib ad, rexw 0xe5, spurious-rex.w nacl-forbidden
+in Ib ad, data16 rexw 0xe5, nacl-forbidden
 in ob ab, 0xec, nacl-forbidden
-in oz az, 0xed, nacl-forbidden
+in ow aw, data16 0xed, nacl-forbidden
+in od ad, 0xed, nacl-forbidden
+in od ad, rexw 0xed, spurious-rex.w nacl-forbidden
+in od ad, data16 rexw 0xed, nacl-forbidden
 ######## INC ###################################################################
 inc E, 0xfe /0, lock nacl-amd64-zero-extends
 inc rz, 0x40, ia32
 ######## INS/INSB/INSW/INSD ####################################################
-ins ob Yb, 0x6c, rep nacl-forbidden
-ins oz Yz, 0x6d, rep nacl-forbidden
+ins ob Yb, 0x6c, rep att-show-name-suffix-b nacl-forbidden
+ins ow Yw, data16 0x6d, rep att-show-name-suffix-w nacl-forbidden
+ins od Yd, 0x6d, rep att-show-name-suffix-l nacl-forbidden
+ins od Yd, rexw 0x6d, amd64 rep att-show-name-suffix-l nacl-forbidden
+ins od Yd, data16 rexw 0x6d, amd64 rep att-show-name-suffix-l nacl-forbidden
 ######## INT ###################################################################
 int =Ib, 0xcd, nacl-forbidden
 ######## JCXZ/JECXZ/JRCXZ ######################################################
@@ -551,26 +561,27 @@ js Jw, data16 0x0f 0x88, branch_hint nacl-forbidden
 js Jd, 0x0f 0x88, branch_hint
 ######## JMP (Near) ############################################################
 jmp Jb, 0xeb
-jmp Jd, 0xe9
-jmp Jd, data16 rexw 0xe9, amd64 nacl-forbidden
-jmp Jw, data16 0xe9, norexw nacl-forbidden
+jmp Jw, data16 0xe9, norexw att-show-name-suffix-w nacl-forbidden
+jmp Jd, 0xe9, ia32
+jmp Jd, 0xe9, amd64 att-show-name-suffix-q
+jmp Jd, data16 rexw 0xe9, amd64 att-show-name-suffix-q nacl-forbidden
 # “jmp” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit jump is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
+jmp Ew, data16 0xff /4, norexw att-show-name-suffix-w nacl-forbidden
 jmp Ed, 0xff /4, ia32 nacl-forbidden
-jmpq Eq, 0xff /4, amd64 nacl-forbidden
-jmpq Eq, data16 rexw 0xff /4, amd64 nacl-forbidden
-jmpw Ew, data16 0xff /4, norexw nacl-forbidden
+jmp Eq, 0xff /4, amd64 att-show-name-suffix-q nacl-forbidden
+jmp Eq, data16 rexw 0xff /4, amd64 att-show-name-suffix-q nacl-forbidden
 ######## JMP (Far) #############################################################
 # “ljmp” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit jump is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
+ljmp Mp, data16 0xff /5, norexw att-show-name-suffix-w nacl-forbidden
 ljmp Mp, 0xff /5, ia32 nacl-forbidden
-ljmpq Mp, 0xff /5, amd64 nacl-forbidden
-ljmpq Mp, data16 rexw 0xff /5, amd64 nacl-forbidden
-ljmpw Mp, data16 0xff /5, norexw nacl-forbidden
+ljmp Mp, 0xff /5, amd64 att-show-name-suffix-q nacl-forbidden
+ljmp Mp, data16 rexw 0xff /5, amd64 att-show-name-suffix-q nacl-forbidden
 ######## LAHF ##################################################################
 # LAHF is always available in 16bit/32bit mode, but not always in 64bit mode
 lahf, 0x9f, ia32
@@ -598,7 +609,7 @@ lss Mp Gv, 0x0f 0xb2, nacl-forbidden
 lea 'Mv !Gv, 0x8d, no_memory_access nacl-amd64-zero-extends
 ######## LEAVE #################################################################
 leave, 0xc9, ia32
-leaveq, 0xc9, amd64 nacl-forbidden
+leave, 0xc9, amd64 att-show-name-suffix-q nacl-forbidden
 ######## LFENCE ################################################################
 lfence, 0x0f 0xae 0xe8, CPUFeature_SSE2
 ######## LLWPCB ################################################################
@@ -748,15 +759,19 @@ neg E, 0xf6 /3, lock nacl-amd64-zero-extends
 ######## NOP ###################################################################
 nop, 0x90, norex
 nop, 0x40 0x90, amd64 norex
-nop, 0x48 0x90, amd64 norex
+nop, 0x48 0x90, amd64 norex spurious-rex.w
 # Textbook definition of “nop” as per AMD/Intel manuals looks like this:
 #  nop 'Ev, 0x0f 0x1f /0, no_memory_access
 # For consistency with the production validators, drop support for the 16-bit
 #  version of “nop”.
-nop 'Ew, data16 0x0f 0x1f /0, no_memory_access nacl-forbidden
-nop 'Ed, 0x0f 0x1f /0, norexw no_memory_access
-nop 'Eq, rexw 0x0f 0x1f /0, amd64 no_memory_access
-nop 'Eq, data16 rexw 0x0f 0x1f /0, amd64 no_memory_access nacl-forbidden
+nop 'Ew, data16 0x0f 0x1f /0,
+  no_memory_access att-show-memory-suffix-w nacl-forbidden
+nop 'Ed, 0x0f 0x1f /0,
+  norexw att-show-memory-suffix-l no_memory_access
+nop 'Eq, rexw 0x0f 0x1f /0,
+  amd64 att-show-memory-suffix-q no_memory_access
+nop 'Eq, data16 rexw 0x0f 0x1f /0,
+  amd64 no_memory_access att-show-memory-suffix-q nacl-forbidden
 ######## NOT ###################################################################
 not E, 0xf6 /2, lock nacl-amd64-zero-extends
 ######## OR ####################################################################
@@ -767,12 +782,21 @@ or G E, 0x08, lock nacl-amd64-zero-extends
 or E G, 0x0a, nacl-amd64-zero-extends
 ######## OUT ###################################################################
 out ab =Ib, 0xe6, nacl-forbidden
-out az =Ib, 0xe7, nacl-forbidden
+out aw =Ib, data16 0xe7, nacl-forbidden
+out ad =Ib, 0xe7, nacl-forbidden
+out ad =Ib, rexw 0xe7, spurious-rex.w nacl-forbidden
+out ad =Ib, data16 rexw 0xe7, nacl-forbidden
 out ab =ob, 0xee, nacl-forbidden
-out az =oz, 0xef, nacl-forbidden
+out aw =ow, data16 0xef, nacl-forbidden
+out ad =od, 0xef, nacl-forbidden
+out ad =od, rexw 0xef, spurious-rex.w nacl-forbidden
+out ad =od, data16 rexw 0xef, nacl-forbidden
 ######## OUTS/OUTSB/OUTSW/OUTSD ################################################
-outs Xb =ob, 0x6e, rep nacl-forbidden
-outs Xz =oz, 0x6f, rep nacl-forbidden
+outs Xb =ob, 0x6e, rep att-show-name-suffix-b nacl-forbidden
+outs Xw =ow, data16 0x6f, rep att-show-name-suffix-w nacl-forbidden
+outs Xd =od, 0x6f, rep att-show-name-suffix-l nacl-forbidden
+outs Xd =od, rexw 0x6f, amd64 rep att-show-name-suffix-l nacl-forbidden
+outs Xd =od, data16 rexw 0x6f, amd64 rep att-show-name-suffix-l nacl-forbidden
 ######## PAUSE #################################################################
 pause, 0xf3 0x90, norex
 ######## POP ###################################################################
@@ -780,8 +804,9 @@ pause, 0xf3 0x90, norex
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-pop Ew, data16 0x8f /0
-pop Er, 0x8f /0
+pop Ew, data16 0x8f /0, att-show-memory-suffix-w
+pop Er, 0x8f /0, ia32 att-show-memory-suffix-l
+pop Er, 0x8f /0, amd64 att-show-memory-suffix-q
 pop rw, data16 0x58
 pop rr, 0x58
 "pop    %fs", 0x0f 0xa1, ia32 nacl-forbidden
@@ -793,10 +818,10 @@ pop rr, 0x58
 # useful for computing an address based on the number of ones in a value.
 popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT
 ######## POPF/POPFD/POPFQ ######################################################
+popf, data16 0x9d, norexw att-show-name-suffix-w nacl-forbidden
 popf, 0x9d, ia32 nacl-forbidden
-popfq, 0x9d, norexw amd64 nacl-forbidden
-popfq, data16 rexw 0x9d, amd64 nacl-forbidden
-popfw, data16 0x9d, norexw nacl-forbidden
+popf, 0x9d, norexw amd64 att-show-name-suffix-q nacl-forbidden
+popf, data16 rexw 0x9d, amd64 att-show-name-suffix-q nacl-forbidden
 ######## PREFETCH/PREFETCHW ####################################################
 prefetch Mb, 0x0f 0x0d /0, CPUFeature_3DPRFTCH no_memory_access
 prefetchw Mb, 0x0f 0x0d /1, CPUFeature_3DPRFTCH no_memory_access
@@ -830,21 +855,26 @@ prefetcht2 Mb, 0x0f 0x18 /3, CPUFeature_SSE no_memory_access
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-push =Ew, data16 0xff /6
-push =Er, 0xff /6
+push =Ew, data16 0xff /6, att-show-memory-suffix-w
+push =Er, 0xff /6, ia32 att-show-memory-suffix-l
+push =Er, 0xff /6, amd64 att-show-memory-suffix-q
 push =rw, data16 0x50
 push =rr, 0x50
-push =Iz, 0x68
-push =Ib, 0x6a
+push =Iw, data16 0x68, att-show-name-suffix-w
+push =Id, 0x68, ia32
+push =Id, 0x68, amd64 att-show-name-suffix-q
+push =Id, data16 rexw 0x68, amd64 att-show-name-suffix-q nacl-forbidden
+push =Ib, 0x6a, ia32
+push =Ib, 0x6a, amd64 att-show-name-suffix-q
 "push   %fs", 0x0f 0xa0, ia32 nacl-forbidden
 "push   %gs", 0x0f 0xa8, ia32 nacl-forbidden
 "pushq  %fs", 0x0f 0xa0, amd64 nacl-forbidden
 "pushq  %gs", 0x0f 0xa8, amd64 nacl-forbidden
 ######## PUSHF/PUSHFD/PUSHFQ ###################################################
+pushf, data16 0x9c, norexw att-show-name-suffix-w nacl-forbidden
 pushf, 0x9c, ia32 nacl-forbidden
-pushfq, 0x9c, norexw amd64 nacl-forbidden
-pushfq, data16 rexw 0x9c, amd64 nacl-forbidden
-pushfw, data16 0x9c, norexw nacl-forbidden
+pushf, 0x9c, norexw amd64 att-show-name-suffix-q nacl-forbidden
+pushf, data16 rexw 0x9c, amd64 att-show-name-suffix-q nacl-forbidden
 ######## RCL ###################################################################
 # “rcl” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
@@ -861,9 +891,9 @@ rcr cb E, 0xd2 /3
 rcr Ib E, 0xc0 /3
 ######## RET (Near) ############################################################
 ret, 0xc3, rep ia32 nacl-forbidden
-ret =Iw, 0xc2, norexw nacl-forbidden
-retq, 0xc3, rep amd64 nacl-forbidden
-retq =Iw, rexw 0xc2, amd64 nacl-forbidden
+ret, 0xc3, rep amd64 att-show-name-suffix-q nacl-forbidden
+ret =Iw, 0xc2, ia32 nacl-forbidden
+ret =Iw, 0xc2, amd64 att-show-name-suffix-q nacl-forbidden
 ######## RET (Far) #############################################################
 lret, 0xcb, norexw nacl-forbidden
 lret =Iw, 0xca, norexw nacl-forbidden

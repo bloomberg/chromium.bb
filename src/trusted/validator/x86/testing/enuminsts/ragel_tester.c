@@ -88,7 +88,7 @@ Bool RagelValidateError(const uint8_t *begin, const uint8_t *end,
 }
 
 void RagelInstruction(const uint8_t *begin, const uint8_t *end,
-                      struct instruction *instruction, void *userdata) {
+                      struct Instruction *instruction, void *userdata) {
   struct RagelDecodeState *rstate = (struct RagelDecodeState *)userdata;
   UNREFERENCED_PARAMETER(instruction);
   /* Only look at the first instruction. */
@@ -155,7 +155,7 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
     memset(chunk + tempstate.inst_num_bytes, 0xf4,
            sizeof(chunk) - tempstate.inst_num_bytes);
     res = ValidateChunkArch(chunk, sizeof(chunk), 0 /*options*/,
-                            &full_cpuid_features,
+                            &kFullCPUIDFeatures,
                             RagelValidateError, NULL);
     RState.inst_is_valid = res;
   }

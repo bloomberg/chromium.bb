@@ -21,15 +21,22 @@ import sys
 byte_machines = [
   # ModR/M parsing
   'b_00_xxx_100',
+  'b_00_xxx_101',
   'b_01_xxx_100',
   'b_10_xxx_100',
-  'b_00_xxx_101',
-  'b_xx_xxx_100',
-  'b_xx_xxx_101',
   'b_00_xxx_xxx',
+  'b_11_010_xxx',
   'b_01_xxx_xxx',
   'b_10_xxx_xxx',
+  'b_11_010_111',
+  'b_11_100_111',
+  'b_11_100_xxx',
+  'b_11_111_111',
+  'b_11_111_xxx',
+  'b_11_xxx_111',
   'b_11_xxx_xxx',
+  'b_xx_xxx_100',
+  'b_xx_xxx_101',
 
   # Opcodes
   'b_xx_000_xxx',

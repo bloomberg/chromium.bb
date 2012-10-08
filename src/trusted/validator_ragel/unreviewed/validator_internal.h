@@ -18,7 +18,7 @@
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
 
 /* Maximum set of R-DFA allowable CPUID features.  */
-extern const NaClCPUFeaturesX86 validator_cpuid_features;
+extern const NaClCPUFeaturesX86 kValidatorCPUIDFeatures;
 
 /* Macroses to suppport CPUID handling.  */
 #define SET_CPU_FEATURE(F) \
@@ -85,7 +85,7 @@ extern const NaClCPUFeaturesX86 validator_cpuid_features;
 #define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
 
 #define CPUFeature_3DNOW_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_3DNOW]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_3DNOW]
 /*
  * AMD documentation claims it's always available if CPUFeature_LM is present,
  * But Intel documentation does not even mention it!
@@ -94,91 +94,91 @@ extern const NaClCPUFeaturesX86 validator_cpuid_features;
 #define CPUFeature_3DPRFTCH_Allowed \
   CPUFeature_3DNOW_Allowed || CPUFeature_PRE_Allowed
 #define CPUFeature_AES_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_AES]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_AES]
 #define CPUFeature_AESAVX_Allowed \
   CPUFeature_AES_Allowed && CPUFeature_AVX_Allowed
 #define CPUFeature_AVX_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_AVX]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_AVX]
 #define CPUFeature_BMI1_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_BMI1]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_BMI1]
 #define CPUFeature_CLFLUSH_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_CLFLUSH]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_CLFLUSH]
 #define CPUFeature_CLMUL_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_CLMUL]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_CLMUL]
 #define CPUFeature_CLMULAVX_Allowed \
   CPUFeature_CLMUL_Allowed && CPUFeature_AVX_Allowed
 #define CPUFeature_CMOV_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_CMOV]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_CMOV]
 #define CPUFeature_CMOVx87_Allowed \
   CPUFeature_CMOV_Allowed && CPUFeature_x87_Allowed
 #define CPUFeature_CX16_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_CX16]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_CX16]
 #define CPUFeature_CX8_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_CX8]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_CX8]
 #define CPUFeature_E3DNOW_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_E3DNOW]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_E3DNOW]
 #define CPUFeature_EMMX_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_EMMX]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_EMMX]
 #define CPUFeature_EMMXSSE_Allowed \
   CPUFeature_EMMX_Allowed || CPUFeature_SSE_Allowed
 #define CPUFeature_F16C_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_F16C]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_F16C]
 #define CPUFeature_FMA_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_FMA]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_FMA]
 #define CPUFeature_FMA4_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_FMA4]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_FMA4]
 #define CPUFeature_FXSR_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_FXSR]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_FXSR]
 #define CPUFeature_LAHF_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_LAHF]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_LAHF]
 #define CPUFeature_LM_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_LM]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_LM]
 #define CPUFeature_LWP_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_LWP]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_LWP]
 /*
  * We allow lzcnt unconditionally
  * See http://code.google.com/p/nativeclient/issues/detail?id=2869
  */
 #define CPUFeature_LZCNT_Allowed TRUE
 #define CPUFeature_MMX_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_MMX]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_MMX]
 #define CPUFeature_MON_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_MON]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_MON]
 #define CPUFeature_MOVBE_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_MOVBE]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_MOVBE]
 #define CPUFeature_OSXSAVE_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_OSXSAVE]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_OSXSAVE]
 #define CPUFeature_POPCNT_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_POPCNT]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_POPCNT]
 #define CPUFeature_PRE_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_PRE]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_PRE]
 #define CPUFeature_SSE_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_SSE]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE]
 #define CPUFeature_SSE2_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_SSE2]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE2]
 #define CPUFeature_SSE3_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_SSE3]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE3]
 #define CPUFeature_SSE41_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_SSE41]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE41]
 #define CPUFeature_SSE42_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_SSE42]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE42]
 #define CPUFeature_SSE4A_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_SSE4A]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSE4A]
 #define CPUFeature_SSSE3_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_SSSE3]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_SSSE3]
 #define CPUFeature_TBM_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_TBM]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_TBM]
 #define CPUFeature_TSC_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_TSC]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_TSC]
 /*
  * We allow tzcnt unconditionally
  * See http://code.google.com/p/nativeclient/issues/detail?id=2869
  */
 #define CPUFeature_TZCNT_Allowed TRUE
 #define CPUFeature_x87_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_x87]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_x87]
 #define CPUFeature_XOP_Allowed \
-  validator_cpuid_features.data[NaClCPUFeature_XOP]
+  kValidatorCPUIDFeatures.data[NaClCPUFeature_XOP]
 
 /* Remember some information about instruction for further processing.  */
 #define GET_REX_PREFIX() rex_prefix
@@ -213,13 +213,13 @@ enum operand_kind {
 
 #define SET_OPERAND_NAME(N, S) operand_states |= ((S) << ((N) << 3))
 #define SET_OPERAND_TYPE(N, T) SET_OPERAND_TYPE_ ## T(N)
-#define SET_OPERAND_TYPE_OPERAND_SIZE_8_BIT(N) \
+#define SET_OPERAND_TYPE_OPERAND_TYPE_8_BIT(N) \
   operand_states |= OperandSandbox8bit << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OPERAND_SIZE_16_BIT(N) \
+#define SET_OPERAND_TYPE_OPERAND_TYPE_16_BIT(N) \
   operand_states |= OperandSandboxUnrestricted << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OPERAND_SIZE_32_BIT(N) \
+#define SET_OPERAND_TYPE_OPERAND_TYPE_32_BIT(N) \
   operand_states |= OperandSandboxRestricted << (5 + ((N) << 3))
-#define SET_OPERAND_TYPE_OPERAND_SIZE_64_BIT(N) \
+#define SET_OPERAND_TYPE_OPERAND_TYPE_64_BIT(N) \
   operand_states |= OperandSandboxUnrestricted << (5 + ((N) << 3))
 #define CHECK_OPERAND(N, S, T) \
   ((operand_states & (0xff << ((N) << 3))) == ((S | (T << 5)) << ((N) << 3)))
@@ -328,7 +328,7 @@ static INLINE Bool ProcessInvalidJumpTargets(
     size_t size,
     bitmap_word *valid_targets,
     bitmap_word *jump_dests,
-    validation_callback_func user_callback,
+    ValidationCallbackFunc user_callback,
     void *callback_data) {
   size_t elements = (size + NACL_HOST_WORDSIZE - 1) / NACL_HOST_WORDSIZE;
   size_t i, j;
@@ -393,8 +393,8 @@ static FORCEINLINE void rel32_operand(const uint8_t *rip,
 }
 
 static INLINE void check_access(ptrdiff_t instruction_start,
-                                enum register_name base,
-                                enum register_name index,
+                                enum OperandName base,
+                                enum OperandName index,
                                 uint8_t restricted_register,
                                 bitmap_word *valid_targets,
                                 uint32_t *instruction_info_collected) {
@@ -413,7 +413,7 @@ static INLINE void check_access(ptrdiff_t instruction_start,
 }
 
 
-static INLINE void process_0_operands(enum register_name *restricted_register,
+static INLINE void process_0_operands(enum OperandName *restricted_register,
                                       uint32_t *instruction_info_collected) {
   /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
    * instruction, not with regular instruction.  */
@@ -425,7 +425,7 @@ static INLINE void process_0_operands(enum register_name *restricted_register,
   *restricted_register = NO_REG;
 }
 
-static INLINE void process_1_operand(enum register_name *restricted_register,
+static INLINE void process_1_operand(enum OperandName *restricted_register,
                                      uint32_t *instruction_info_collected,
                                      uint8_t rex_prefix,
                                      uint32_t operand_states) {
@@ -453,7 +453,7 @@ static INLINE void process_1_operand(enum register_name *restricted_register,
 }
 
 static INLINE void process_1_operand_zero_extends(
-    enum register_name *restricted_register,
+    enum OperandName *restricted_register,
     uint32_t *instruction_info_collected, uint8_t rex_prefix,
     uint32_t operand_states) {
   /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
@@ -481,7 +481,7 @@ static INLINE void process_1_operand_zero_extends(
   }
 }
 
-static INLINE void process_2_operands(enum register_name *restricted_register,
+static INLINE void process_2_operands(enum OperandName *restricted_register,
                                       uint32_t *instruction_info_collected,
                                       uint8_t rex_prefix,
                                       uint32_t operand_states) {
@@ -518,7 +518,7 @@ static INLINE void process_2_operands(enum register_name *restricted_register,
 }
 
 static INLINE void process_2_operands_zero_extends(
-     enum register_name *restricted_register,
+     enum OperandName *restricted_register,
      uint32_t *instruction_info_collected,
      uint8_t rex_prefix, uint32_t operand_states) {
   /* Restricted %rsp or %rbp must be processed by appropriate nacl-special

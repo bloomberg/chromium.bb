@@ -33,6 +33,10 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include vex_parsing_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include att_suffix_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include set_spurious_prefixes
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include displacement_fields_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include displacement_fields_parsing
@@ -103,6 +107,7 @@
         SET_BRANCH_NOT_TAKEN(FALSE);
         SET_BRANCH_TAKEN(FALSE);
         SET_VEX_PREFIX3(0x00);
+        SET_ATT_INSTRUCTION_SUFFIX(NULL);
     })*
     $!{ process_error(current_position, userdata);
         result = FALSE;
@@ -136,6 +141,7 @@
 #define SET_IMM2_TYPE(T) imm2_operand = (T)
 #define SET_IMM2_PTR(P) imm2 = (P)
 #define SET_CPU_FEATURE(F)
+#define SET_ATT_INSTRUCTION_SUFFIX(S) instruction.att_instruction_suffix = (S)
 
 enum {
   REX_B = 1,
@@ -153,8 +159,8 @@ enum imm_mode {
 };
 
 int DecodeChunkIA32(const uint8_t *data, size_t size,
-                    process_instruction_func process_instruction,
-                    process_decoding_error_func process_error, void *userdata) {
+                    ProcessInstructionFunc process_instruction,
+                    ProcessDecodingErrorFunc process_error, void *userdata) {
   const uint8_t *current_position = data;
   const uint8_t *end_of_data = data + size;
   const uint8_t *disp = NULL;
@@ -164,7 +170,7 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   uint8_t vex_prefix3 = 0x00;
   enum imm_mode imm_operand = IMMNONE;
   enum imm_mode imm2_operand = IMMNONE;
-  struct instruction instruction;
+  struct Instruction instruction;
   int result = TRUE;
 
   int current_state;
@@ -181,6 +187,12 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   SET_REPZ_PREFIX(FALSE);
   SET_BRANCH_NOT_TAKEN(FALSE);
   SET_BRANCH_TAKEN(FALSE);
+  SET_ATT_INSTRUCTION_SUFFIX(NULL);
+  instruction.prefix.data16_spurious = FALSE;
+  instruction.prefix.rex_b_spurious = FALSE;
+  instruction.prefix.rex_x_spurious = FALSE;
+  instruction.prefix.rex_r_spurious = FALSE;
+  instruction.prefix.rex_w_spurious = FALSE;
 
   %% write init;
   %% write exec;

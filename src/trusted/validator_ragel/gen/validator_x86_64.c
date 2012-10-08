@@ -25,9 +25,9 @@ static const int x86_64_validator_en_main = 904;
 
 
 Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
-                        enum validation_options options,
+                        enum ValidationOptions options,
                         const NaClCPUFeaturesX86 *cpu_features,
-                        validation_callback_func user_callback,
+                        ValidationCallbackFunc user_callback,
                         void *callback_data) {
   bitmap_word valid_targets_small;
   bitmap_word jump_dests_small;
@@ -74,9 +74,9 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
      *  2 bits for register kinds,
      *  5 bits for register numbers (16 regs plus RIZ). */
     uint32_t operand_states = 0;
-    enum register_name base = NO_REG;
-    enum register_name index = NO_REG;
-    enum register_name restricted_register = NO_REG;
+    enum OperandName base = NO_REG;
+    enum OperandName index = NO_REG;
+    enum OperandName restricted_register = NO_REG;
     uint8_t rex_prefix = FALSE;
     uint8_t vex_prefix2 = 0xe0;
     uint8_t vex_prefix3 = 0x00;
@@ -3005,7 +3005,7 @@ tr59:
      }
 	goto st904;
 tr61:
-	{ SET_CPU_FEATURE(CPUFeature_3DNOW); }
+	{ SET_CPU_FEATURE(CPUFeature_3DNOW);     }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -3030,7 +3030,7 @@ tr61:
      }
 	goto st904;
 tr69:
-	{ SET_CPU_FEATURE(CPUFeature_TSC); }
+	{ SET_CPU_FEATURE(CPUFeature_TSC);       }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -3055,7 +3055,7 @@ tr69:
      }
 	goto st904;
 tr78:
-	{ SET_CPU_FEATURE(CPUFeature_MMX); }
+	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -3085,7 +3085,7 @@ tr96:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
                       rex_prefix, operand_states);
@@ -3111,8 +3111,8 @@ tr96:
      }
 	goto st904;
 tr100:
-	{ SET_CPU_FEATURE(CPUFeature_MON); }
-	{  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_MON);       }
+	{  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RDX); }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -3139,8 +3139,8 @@ tr100:
      }
 	goto st904;
 tr101:
-	{ SET_CPU_FEATURE(CPUFeature_MON); }
-	{  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_MON);       }
+	{  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RCX); }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -3167,7 +3167,7 @@ tr101:
      }
 	goto st904;
 tr102:
-	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -3192,7 +3192,7 @@ tr102:
      }
 	goto st904;
 tr103:
-	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -3318,7 +3318,7 @@ tr127:
 	{
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
-	{ SET_CPU_FEATURE(CPUFeature_E3DNOW); }
+	{ SET_CPU_FEATURE(CPUFeature_E3DNOW);    }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -3346,7 +3346,7 @@ tr128:
 	{
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
-	{ SET_CPU_FEATURE(CPUFeature_3DNOW); }
+	{ SET_CPU_FEATURE(CPUFeature_3DNOW);     }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -3371,7 +3371,7 @@ tr128:
      }
 	goto st904;
 tr138:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -3408,7 +3408,7 @@ tr138:
      }
 	goto st904;
 tr145:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -3433,7 +3433,7 @@ tr145:
      }
 	goto st904;
 tr146:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -3554,7 +3554,7 @@ tr186:
      }
 	goto st904;
 tr188:
-	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -3591,7 +3591,7 @@ tr188:
      }
 	goto st904;
 tr191:
-	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -3628,7 +3628,7 @@ tr191:
      }
 	goto st904;
 tr202:
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -3653,7 +3653,7 @@ tr202:
      }
 	goto st904;
 tr203:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -3749,7 +3749,7 @@ tr206:
      }
 	goto st904;
 tr216:
-	{ SET_CPU_FEATURE(CPUFeature_CX8); }
+	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -3876,7 +3876,7 @@ tr244:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
                       rex_prefix, operand_states);
@@ -3910,8 +3910,8 @@ tr256:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
     process_2_operands_zero_extends(&restricted_register,
@@ -3944,8 +3944,8 @@ tr257:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
     process_2_operands_zero_extends(&restricted_register,
@@ -3973,7 +3973,7 @@ tr257:
      }
 	goto st904;
 tr258:
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -4163,7 +4163,7 @@ tr357:
      }
 	goto st904;
 tr360:
-	{  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -4194,7 +4194,7 @@ tr360:
      }
 	goto st904;
 tr377:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -4225,7 +4225,7 @@ tr377:
      }
 	goto st904;
 tr378:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -4256,7 +4256,7 @@ tr378:
      }
 	goto st904;
 tr379:
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -4293,7 +4293,7 @@ tr379:
      }
 	goto st904;
 tr386:
-	{ SET_CPU_FEATURE(CPUFeature_CMOVx87); }
+	{ SET_CPU_FEATURE(CPUFeature_CMOVx87);   }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -4318,8 +4318,8 @@ tr386:
      }
 	goto st904;
 tr387:
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
@@ -4378,7 +4378,7 @@ tr391:
      }
 	goto st904;
 tr392:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -4415,8 +4415,8 @@ tr405:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_64_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
     process_2_operands(&restricted_register, &instruction_info_collected,
@@ -4448,7 +4448,7 @@ tr420:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
                       rex_prefix, operand_states);
@@ -4474,7 +4474,7 @@ tr420:
      }
 	goto st904;
 tr424:
-	{ SET_CPU_FEATURE(CPUFeature_CX16); }
+	{ SET_CPU_FEATURE(CPUFeature_CX16);      }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -4722,7 +4722,7 @@ tr491:
      }
 	goto st904;
 tr493:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -4850,7 +4850,7 @@ tr533:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
                       rex_prefix, operand_states);
@@ -4881,8 +4881,8 @@ tr544:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_16_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
     process_2_operands(&restricted_register, &instruction_info_collected,
@@ -4993,7 +4993,7 @@ tr616:
      }
 	goto st904;
 tr652:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -5185,8 +5185,8 @@ tr770:
      }
 	goto st904;
 tr878:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -5227,8 +5227,8 @@ tr878:
      }
 	goto st904;
 tr881:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -5257,7 +5257,7 @@ tr881:
      }
 	goto st904;
 tr883:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -5282,8 +5282,8 @@ tr883:
      }
 	goto st904;
 tr884:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -5314,8 +5314,8 @@ tr884:
      }
 	goto st904;
 tr887:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -5356,8 +5356,8 @@ tr887:
      }
 	goto st904;
 tr890:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -5386,8 +5386,8 @@ tr890:
      }
 	goto st904;
 tr892:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -5446,7 +5446,7 @@ tr997:
      }
 	goto st904;
 tr1085:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -5483,7 +5483,7 @@ tr1085:
      }
 	goto st904;
 tr1088:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -5508,8 +5508,8 @@ tr1088:
      }
 	goto st904;
 tr1226:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -5550,8 +5550,8 @@ tr1226:
      }
 	goto st904;
 tr1229:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -5580,8 +5580,8 @@ tr1229:
      }
 	goto st904;
 tr1231:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -5622,8 +5622,8 @@ tr1231:
      }
 	goto st904;
 tr1234:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -6086,7 +6086,7 @@ tr1451:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     process_1_operand(&restricted_register, &instruction_info_collected,
                       rex_prefix, operand_states);
@@ -6120,8 +6120,8 @@ tr1467:
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
                         BaseExtentionFromVEX(GET_VEX_PREFIX2()));
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
 	{ SET_OPERAND_NAME(1, REG_RAX); }
 	{
     process_2_operands_zero_extends(&restricted_register,
@@ -6158,65 +6158,65 @@ case 904:
 		goto _again;
 	}
 tr81:
-	{ SET_CPU_FEATURE(CPUFeature_CMOV); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st1;
 tr83:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st1;
 tr235:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st1;
 tr250:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st1;
 tr393:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st1;
 tr496:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st1;
 tr415:
-	{ SET_CPU_FEATURE(CPUFeature_MMX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st1;
 tr525:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st1;
 tr540:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st1;
 tr665:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st1;
 tr1165:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st1;
 tr1425:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st1;
 tr1432:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st1;
 tr1461:
 	{
@@ -6225,7 +6225,7 @@ tr1461:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st1;
 st1:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -6237,25 +6237,25 @@ case 1:
 		goto _again;
 	}
 tr139:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st2;
 tr189:
-	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	goto st2;
 tr192:
-	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
 	goto st2;
 tr217:
-	{ SET_CPU_FEATURE(CPUFeature_CX8); }
+	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
 	goto st2;
 tr380:
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	goto st2;
 tr425:
-	{ SET_CPU_FEATURE(CPUFeature_CX16); }
+	{ SET_CPU_FEATURE(CPUFeature_CX16);      }
 	goto st2;
 tr1028:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st2;
 st2:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -6305,7 +6305,7 @@ tr16:
   }
 	goto st3;
 tr140:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -6313,7 +6313,7 @@ tr140:
   }
 	goto st3;
 tr143:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6323,7 +6323,7 @@ tr143:
   }
 	goto st3;
 tr190:
-	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -6331,7 +6331,7 @@ tr190:
   }
 	goto st3;
 tr193:
-	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -6339,7 +6339,7 @@ tr193:
   }
 	goto st3;
 tr198:
-	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6349,7 +6349,7 @@ tr198:
   }
 	goto st3;
 tr200:
-	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6359,7 +6359,7 @@ tr200:
   }
 	goto st3;
 tr218:
-	{ SET_CPU_FEATURE(CPUFeature_CX8); }
+	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -6367,7 +6367,7 @@ tr218:
   }
 	goto st3;
 tr221:
-	{ SET_CPU_FEATURE(CPUFeature_CX8); }
+	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6377,7 +6377,7 @@ tr221:
   }
 	goto st3;
 tr381:
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -6385,7 +6385,7 @@ tr381:
   }
 	goto st3;
 tr384:
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6395,7 +6395,7 @@ tr384:
   }
 	goto st3;
 tr426:
-	{ SET_CPU_FEATURE(CPUFeature_CX16); }
+	{ SET_CPU_FEATURE(CPUFeature_CX16);      }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -6403,7 +6403,7 @@ tr426:
   }
 	goto st3;
 tr429:
-	{ SET_CPU_FEATURE(CPUFeature_CX16); }
+	{ SET_CPU_FEATURE(CPUFeature_CX16);      }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6413,7 +6413,7 @@ tr429:
   }
 	goto st3;
 tr1087:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6423,7 +6423,7 @@ tr1087:
   }
 	goto st3;
 tr1159:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -6472,7 +6472,7 @@ tr15:
   }
 	goto st7;
 tr141:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6482,7 +6482,7 @@ tr141:
   }
 	goto st7;
 tr194:
-	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6492,7 +6492,7 @@ tr194:
   }
 	goto st7;
 tr196:
-	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6502,7 +6502,7 @@ tr196:
   }
 	goto st7;
 tr219:
-	{ SET_CPU_FEATURE(CPUFeature_CX8); }
+	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6512,7 +6512,7 @@ tr219:
   }
 	goto st7;
 tr382:
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6522,7 +6522,7 @@ tr382:
   }
 	goto st7;
 tr427:
-	{ SET_CPU_FEATURE(CPUFeature_CX16); }
+	{ SET_CPU_FEATURE(CPUFeature_CX16);      }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6532,7 +6532,7 @@ tr427:
   }
 	goto st7;
 tr1086:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -6547,25 +6547,25 @@ st7:
 case 7:
 	goto tr14;
 tr142:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st8;
 tr195:
-	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	goto st8;
 tr197:
-	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
 	goto st8;
 tr220:
-	{ SET_CPU_FEATURE(CPUFeature_CX8); }
+	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
 	goto st8;
 tr383:
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	goto st8;
 tr428:
-	{ SET_CPU_FEATURE(CPUFeature_CX16); }
+	{ SET_CPU_FEATURE(CPUFeature_CX16);      }
 	goto st8;
 tr959:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st8;
 st8:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -6573,25 +6573,25 @@ st8:
 case 8:
 	goto tr15;
 tr144:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st9;
 tr199:
-	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR);      }
 	goto st9;
 tr201:
-	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
 	goto st9;
 tr222:
-	{ SET_CPU_FEATURE(CPUFeature_CX8); }
+	{ SET_CPU_FEATURE(CPUFeature_CX8);       }
 	goto st9;
 tr385:
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	goto st9;
 tr430:
-	{ SET_CPU_FEATURE(CPUFeature_CX16); }
+	{ SET_CPU_FEATURE(CPUFeature_CX16);      }
 	goto st9;
 tr960:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st9;
 st9:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -6599,34 +6599,34 @@ st9:
 case 9:
 	goto tr16;
 tr79:
-	{ SET_CPU_FEATURE(CPUFeature_MMX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st10;
 tr236:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st10;
 tr338:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st10;
 tr568:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st10;
 tr1163:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st10;
 tr1426:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st10;
 st10:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -6638,179 +6638,179 @@ case 10:
 		goto _again;
 	}
 tr72:
-	{ SET_CPU_FEATURE(CPUFeature_CMOV); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr89:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr237:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st11;
 tr252:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st11;
 tr394:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr497:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr413:
-	{ SET_CPU_FEATURE(CPUFeature_CMOV); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr526:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st11;
 tr541:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st11;
 tr561:
-	{ SET_CPU_FEATURE(CPUFeature_CMOV); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_CMOV);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st11;
 tr686:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE42); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr689:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_POPCNT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st11;
 tr690:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_TZCNT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st11;
 tr691:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_LZCNT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st11;
 tr1174:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr1178:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr1162:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr1164:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr1283:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr1294:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr1296:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE42); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr1305:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr1308:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_POPCNT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr1309:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_TZCNT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr1310:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_LZCNT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr1314:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr1315:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_POPCNT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_POPCNT);    }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr1316:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_TZCNT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TZCNT);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr1317:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_LZCNT); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_LZCNT);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st11;
 tr1427:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st11;
 tr1433:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st11;
 tr1463:
 	{
@@ -6819,7 +6819,7 @@ tr1463:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st11;
 st11:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -6838,29 +6838,29 @@ tr19:
   }
 	goto st12;
 tr863:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr866:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr1214:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st12;
 tr1216:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -6923,8 +6923,8 @@ tr23:
   }
 	goto st13;
 tr880:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -6937,8 +6937,8 @@ tr880:
   }
 	goto st13;
 tr889:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -6951,8 +6951,8 @@ tr889:
   }
 	goto st13;
 tr907:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -6963,8 +6963,8 @@ tr907:
   }
 	goto st13;
 tr910:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -6975,8 +6975,8 @@ tr910:
   }
 	goto st13;
 tr1228:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -6989,8 +6989,8 @@ tr1228:
   }
 	goto st13;
 tr1233:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -7003,8 +7003,8 @@ tr1233:
   }
 	goto st13;
 tr1243:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -7015,8 +7015,8 @@ tr1243:
   }
 	goto st13;
 tr1245:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -7073,8 +7073,8 @@ tr21:
   }
 	goto st17;
 tr879:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -7087,8 +7087,8 @@ tr879:
   }
 	goto st17;
 tr888:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -7101,8 +7101,8 @@ tr888:
   }
 	goto st17;
 tr1227:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -7115,8 +7115,8 @@ tr1227:
   }
 	goto st17;
 tr1232:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -7141,29 +7141,29 @@ tr22:
   }
 	goto st18;
 tr844:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr849:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr1203:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st18;
 tr1207:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -7181,29 +7181,29 @@ tr24:
   }
 	goto st19;
 tr845:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr850:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr1204:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st19;
 tr1208:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -7214,19 +7214,19 @@ st19:
 case 19:
 	goto tr34;
 tr85:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st20;
 tr339:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st20;
 tr1428:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st20;
 st20:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7427,7 +7427,7 @@ tr187:
   }
 	goto st29;
 tr205:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7435,7 +7435,7 @@ tr205:
   }
 	goto st29;
 tr238:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st29;
 tr259:
@@ -7447,7 +7447,7 @@ tr259:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st29;
 tr448:
 	{
@@ -7469,7 +7469,7 @@ tr448:
   }
 	goto st29;
 tr315:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7480,7 +7480,7 @@ tr368:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7488,7 +7488,7 @@ tr368:
   }
 	goto st29;
 tr423:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7499,8 +7499,8 @@ tr601:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7508,7 +7508,7 @@ tr601:
   }
 	goto st29;
 tr604:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7519,8 +7519,8 @@ tr669:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7528,8 +7528,8 @@ tr669:
   }
 	goto st29;
 tr1134:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7540,7 +7540,7 @@ tr1429:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st29;
 tr1469:
@@ -7555,7 +7555,7 @@ tr1469:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st29;
 st29:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7606,7 +7606,7 @@ tr294:
   }
 	goto st30;
 tr323:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7614,7 +7614,7 @@ tr323:
   }
 	goto st30;
 tr239:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st30;
 tr260:
@@ -7626,7 +7626,7 @@ tr260:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st30;
 tr280:
 	{
@@ -7651,7 +7651,7 @@ tr376:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7662,7 +7662,7 @@ tr1430:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st30;
 tr1470:
@@ -7677,7 +7677,7 @@ tr1470:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st30;
 st30:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7743,10 +7743,10 @@ case 36:
 		goto _again;
 	}
 tr147:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st37;
 tr104:
-	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
 	goto st37;
 st37:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7796,7 +7796,7 @@ tr118:
   }
 	goto st38;
 tr105:
-	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -7804,7 +7804,7 @@ tr105:
   }
 	goto st38;
 tr108:
-	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7814,7 +7814,7 @@ tr108:
   }
 	goto st38;
 tr148:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -7822,7 +7822,7 @@ tr148:
   }
 	goto st38;
 tr151:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7873,7 +7873,7 @@ tr117:
   }
 	goto st42;
 tr106:
-	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7883,7 +7883,7 @@ tr106:
   }
 	goto st42;
 tr149:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -7898,10 +7898,10 @@ st42:
 case 42:
 	goto tr116;
 tr150:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st43;
 tr107:
-	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
 	goto st43;
 st43:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7909,10 +7909,10 @@ st43:
 case 43:
 	goto tr117;
 tr152:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st44;
 tr109:
-	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
 	goto st44;
 st44:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8091,106 +8091,106 @@ st54:
 case 54:
 	goto tr137;
 tr63:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st55;
 tr68:
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st55;
 tr74:
-	{ SET_CPU_FEATURE(CPUFeature_MMX); }
+	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
 	goto st55;
 tr98:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	goto st55;
 tr160:
-	{ SET_CPU_FEATURE(CPUFeature_SSSE3); }
+	{ SET_CPU_FEATURE(CPUFeature_SSSE3);     }
 	goto st55;
 tr556:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st55;
 tr567:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE3); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE3);      }
 	goto st55;
 tr580:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSSE3); }
+	{ SET_CPU_FEATURE(CPUFeature_SSSE3);     }
 	goto st55;
 tr581:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	goto st55;
 tr583:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE42); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	goto st55;
 tr584:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_AES); }
+	{ SET_CPU_FEATURE(CPUFeature_AES);       }
 	goto st55;
 tr833:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st55;
 tr1156:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st55;
 tr1175:
-	{ SET_CPU_FEATURE(CPUFeature_FMA); }
+	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
 	goto st55;
 tr1176:
-	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st55;
 tr1177:
-	{ SET_CPU_FEATURE(CPUFeature_F16C); }
+	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st55;
 tr1280:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st55;
 tr1281:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE3); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE3);      }
 	goto st55;
 tr1288:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st55;
 tr1302:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st55;
 tr1303:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE3); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE3);      }
 	goto st55;
 tr1306:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st55;
 tr1436:
 	{
@@ -8216,49 +8216,49 @@ case 56:
 		goto _again;
 	}
 tr65:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st57;
 tr92:
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st57;
 tr99:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	goto st57;
 tr162:
-	{ SET_CPU_FEATURE(CPUFeature_MOVBE); }
+	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
 	goto st57;
 tr557:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st57;
 tr582:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	goto st57;
 tr1157:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st57;
 tr1290:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE3); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE3);      }
 	goto st57;
 tr1282:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st57;
 tr1304:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st57;
 st57:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8316,28 +8316,28 @@ case 60:
 		goto tr160;
 	goto tr57;
 tr1273:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st61;
 tr161:
-	{ SET_CPU_FEATURE(CPUFeature_MOVBE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st61;
 tr1271:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
 	goto st61;
 tr1275:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st61;
 tr422:
-	{ SET_CPU_FEATURE(CPUFeature_MOVBE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st61;
 tr679:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st61;
 tr585:
-	{ SET_CPU_FEATURE(CPUFeature_MOVBE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_MOVBE);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st61;
 st61:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8356,82 +8356,82 @@ case 62:
 		goto tr163;
 	goto tr57;
 tr91:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st63;
 tr75:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	goto st63;
 tr163:
-	{ SET_CPU_FEATURE(CPUFeature_SSSE3); }
+	{ SET_CPU_FEATURE(CPUFeature_SSSE3);     }
 	goto st63;
 tr563:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st63;
 tr587:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSSE3); }
+	{ SET_CPU_FEATURE(CPUFeature_SSSE3);     }
 	goto st63;
 tr586:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	goto st63;
 tr592:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE42); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE42);     }
 	goto st63;
 tr593:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_AES); }
+	{ SET_CPU_FEATURE(CPUFeature_AES);       }
 	goto st63;
 tr591:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_CLMUL); }
+	{ SET_CPU_FEATURE(CPUFeature_CLMUL);     }
 	goto st63;
 tr828:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st63;
 tr1158:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st63;
 tr1190:
-	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st63;
 tr1195:
-	{ SET_CPU_FEATURE(CPUFeature_F16C); }
+	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st63;
 tr1186:
-	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX); }
+	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st63;
 tr1285:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st63;
 tr1311:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st63;
 tr1307:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st63;
 st63:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8443,10 +8443,10 @@ case 63:
 		goto _again;
 	}
 tr182:
-	{ SET_CPU_FEATURE(CPUFeature_MMX); }
+	{ SET_CPU_FEATURE(CPUFeature_MMX);       }
 	goto st64;
 tr214:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	goto st64;
 tr164:
 	{
@@ -8499,7 +8499,7 @@ tr179:
   }
 	goto st64;
 tr207:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -8534,19 +8534,19 @@ tr603:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st64;
 tr602:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	goto st64;
 tr594:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -8564,7 +8564,7 @@ tr605:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -8582,13 +8582,13 @@ tr612:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st64;
 tr1096:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st64;
 tr1093:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -8619,7 +8619,7 @@ st64:
 case 64:
 	goto tr172;
 tr208:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	goto st65;
 tr362:
 	{
@@ -8630,16 +8630,16 @@ tr595:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	goto st65;
 tr606:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st65;
 tr1030:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st65;
 st65:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8689,7 +8689,7 @@ tr181:
   }
 	goto st66;
 tr209:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -8697,7 +8697,7 @@ tr209:
   }
 	goto st66;
 tr212:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -8732,7 +8732,7 @@ tr596:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -8743,7 +8743,7 @@ tr599:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -8756,7 +8756,7 @@ tr607:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -8767,7 +8767,7 @@ tr610:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -8777,7 +8777,7 @@ tr610:
   }
 	goto st66;
 tr1095:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -8787,7 +8787,7 @@ tr1095:
   }
 	goto st66;
 tr1161:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -8836,7 +8836,7 @@ tr180:
   }
 	goto st70;
 tr210:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -8861,7 +8861,7 @@ tr597:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -8874,7 +8874,7 @@ tr608:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -8884,7 +8884,7 @@ tr608:
   }
 	goto st70;
 tr1094:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -8899,7 +8899,7 @@ st70:
 case 70:
 	goto tr179;
 tr211:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	goto st71;
 tr365:
 	{
@@ -8910,16 +8910,16 @@ tr598:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	goto st71;
 tr609:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st71;
 tr963:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st71;
 st71:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8927,7 +8927,7 @@ st71:
 case 71:
 	goto tr180;
 tr213:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
 	goto st72;
 tr367:
 	{
@@ -8938,16 +8938,16 @@ tr600:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
 	goto st72;
 tr611:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
 	goto st72;
 tr964:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st72;
 st72:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8955,38 +8955,38 @@ st72:
 case 72:
 	goto tr181;
 tr73:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st73;
 tr97:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st73;
 tr414:
-	{ SET_CPU_FEATURE(CPUFeature_SSE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st73;
 tr421:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st73;
 tr562:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st73;
 tr664:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st73;
 tr1090:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st73;
 st73:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9044,35 +9044,35 @@ st79:
 case 79:
 	goto tr186;
 tr82:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st80;
 tr416:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st80;
 tr569:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st80;
 tr589:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st80;
 tr668:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41);     }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st80;
 tr1193:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st80;
 tr1196:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st80;
 st80:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9093,27 +9093,27 @@ case 81:
 		goto _again;
 	}
 tr86:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_8_BIT); }
 	goto st82;
 tr87:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
 	goto st82;
 tr401:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_64_BIT); }
 	goto st82;
 tr539:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_16_BIT); }
 	goto st82;
 tr1459:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_8_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_8_BIT); }
 	goto st82;
 st82:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9134,15 +9134,15 @@ case 83:
 		goto _again;
 	}
 tr90:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
 	goto st84;
 tr1460:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
-	{ SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+	{ SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
 	goto st84;
 st84:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9163,30 +9163,30 @@ case 85:
 		goto _again;
 	}
 tr94:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st86;
 tr418:
-	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st86;
 tr572:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st86;
 tr666:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st86;
 tr1092:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st86;
 st86:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9258,7 +9258,7 @@ tr445:
   }
 	goto st88;
 tr324:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -9266,7 +9266,7 @@ tr324:
   }
 	goto st88;
 tr241:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st88;
 tr431:
@@ -9289,11 +9289,11 @@ tr431:
   }
 	goto st88;
 tr395:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st88;
 tr464:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -9304,7 +9304,7 @@ tr492:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -9315,7 +9315,7 @@ tr1434:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st88;
 st88:
@@ -9469,10 +9469,10 @@ tr369:
   }
 	goto st96;
 tr900:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	goto st96;
 tr897:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
@@ -9546,13 +9546,13 @@ case 101:
 		goto _again;
 	}
 tr245:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st102;
 tr1453:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st102;
 st102:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9703,13 +9703,13 @@ st110:
 case 110:
 	goto tr296;
 tr246:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st111;
 tr1454:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st111;
 st111:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -9764,7 +9764,7 @@ tr312:
   }
 	goto st112;
 tr334:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -9968,7 +9968,7 @@ tr370:
   }
 	goto st123;
 tr871:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	goto st123;
 st123:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -10040,7 +10040,7 @@ tr374:
   }
 	goto st124;
 tr899:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -10050,7 +10050,7 @@ tr899:
   }
 	goto st124;
 tr915:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -10111,7 +10111,7 @@ tr372:
   }
 	goto st128;
 tr898:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	{
     SET_MODRM_BASE(BaseFromSIB(*current_position) |
                    BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -10131,7 +10131,7 @@ tr373:
   }
 	goto st129;
 tr856:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	goto st129;
 st129:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -10144,7 +10144,7 @@ tr375:
   }
 	goto st130;
 tr857:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	goto st130;
 st130:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -10161,7 +10161,7 @@ case 131:
 		goto _again;
 	}
 tr335:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -10249,7 +10249,7 @@ case 134:
 		goto _again;
 	}
 tr340:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -10331,7 +10331,7 @@ tr251:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st137;
 st137:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -10439,13 +10439,13 @@ case 138:
 		goto _again;
 	}
 tr254:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st139;
 tr1465:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st139;
 st139:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11023,15 +11023,15 @@ case 175:
 		goto tr427;
 	goto tr57;
 tr397:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st176;
 tr836:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st176;
 tr837:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st176;
 st176:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11182,10 +11182,10 @@ st184:
 case 184:
 	goto tr447;
 tr398:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st185;
 tr536:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st185;
 st185:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11354,7 +11354,7 @@ case 195:
 		goto _again;
 	}
 tr465:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -11372,7 +11372,7 @@ tr402:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st197;
 st197:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11387,7 +11387,7 @@ tr403:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st198;
 st198:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11399,10 +11399,10 @@ case 198:
 		goto _again;
 	}
 tr404:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st199;
 tr542:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st199;
 st199:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11561,7 +11561,7 @@ tr406:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st208;
 st208:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11679,7 +11679,7 @@ case 221:
 		goto _again;
 	}
 tr494:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st222;
 st222:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11700,7 +11700,7 @@ case 223:
 		goto _again;
 	}
 tr498:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st224;
 st224:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11808,7 +11808,7 @@ tr504:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st228;
 st228:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11908,7 +11908,7 @@ case 229:
 		goto _again;
 	}
 tr507:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st230;
 st230:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -11994,16 +11994,16 @@ case 232:
 		goto _again;
 	}
 tr510:
-	{ SET_CPU_FEATURE(CPUFeature_EMMX); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMX);      }
 	goto st233;
 tr573:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st233;
 tr1338:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st233;
 st233:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -12042,7 +12042,7 @@ tr253:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st236;
 st236:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -12142,7 +12142,7 @@ case 237:
 		goto _again;
 	}
 tr515:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st238;
 st238:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -12308,7 +12308,7 @@ case 245:
 		goto _again;
 	}
 tr519:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st246;
 st246:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -12337,7 +12337,7 @@ case 247:
 		goto _again;
 	}
 tr520:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st248;
 st248:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -12432,7 +12432,7 @@ case 253:
 		goto _again;
 	}
 tr524:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st254;
 st254:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -12540,7 +12540,7 @@ tr618:
   }
 	goto st257;
 tr527:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	{ SET_OPERAND_NAME(0, REG_RAX); }
 	goto st257;
 tr545:
@@ -12552,10 +12552,10 @@ tr545:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st257;
 tr642:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -12566,7 +12566,7 @@ tr660:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -12718,28 +12718,28 @@ tr566:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st272;
 tr1089:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st272;
 tr1289:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st272;
 tr1287:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st272;
 tr1312:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st272;
 st272:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -12888,7 +12888,7 @@ case 281:
 		goto _again;
 	}
 tr535:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
 	goto st282;
 st282:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -13647,7 +13647,7 @@ case 332:
 		goto _again;
 	}
 tr692:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, RMFromModRM(*current_position) |
                         BaseExtentionFromREX(GET_REX_PREFIX()) |
@@ -13718,7 +13718,7 @@ case 334:
 		goto _again;
 	}
 tr694:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st335;
 st335:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14135,7 +14135,7 @@ tr1462:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st355;
 st355:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14235,7 +14235,7 @@ case 356:
 		goto _again;
 	}
 tr711:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st357;
 st357:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14327,7 +14327,7 @@ tr714:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st360;
 st360:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14427,7 +14427,7 @@ case 361:
 		goto _again;
 	}
 tr717:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st362;
 st362:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14588,7 +14588,7 @@ tr1464:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st368;
 st368:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14688,7 +14688,7 @@ case 369:
 		goto _again;
 	}
 tr725:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st370;
 st370:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -14774,16 +14774,16 @@ case 372:
 		goto _again;
 	}
 tr728:
-	{ SET_CPU_FEATURE(CPUFeature_EMMX); }
+	{ SET_CPU_FEATURE(CPUFeature_EMMX);      }
 	goto st373;
 tr737:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st373;
 tr1323:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st373;
 st373:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15159,13 +15159,13 @@ case 396:
 		goto tr764;
 	goto tr57;
 tr764:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st397;
 tr990:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st397;
 tr991:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4); }
+	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
 	goto st397;
 st397:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15353,19 +15353,19 @@ st406:
 case 406:
 	goto tr777;
 tr765:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st407;
 tr957:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st407;
 tr992:
-	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st407;
 tr1005:
-	{ SET_CPU_FEATURE(CPUFeature_F16C); }
+	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st407;
 tr988:
-	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX); }
+	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st407;
 st407:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15377,7 +15377,7 @@ case 407:
 		goto _again;
 	}
 tr962:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st408;
 st408:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15453,19 +15453,19 @@ case 413:
 		goto tr782;
 	goto tr57;
 tr782:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st414;
 tr956:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st414;
 tr977:
-	{ SET_CPU_FEATURE(CPUFeature_FMA); }
+	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
 	goto st414;
 tr978:
-	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st414;
 tr979:
-	{ SET_CPU_FEATURE(CPUFeature_F16C); }
+	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st414;
 st414:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15477,7 +15477,7 @@ case 414:
 		goto _again;
 	}
 tr958:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st415;
 st415:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15561,12 +15561,12 @@ case 419:
 		goto tr786;
 	goto tr57;
 tr786:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st420;
 tr788:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st420;
 st420:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15654,13 +15654,13 @@ case 424:
 		goto tr793;
 	goto tr57;
 tr793:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st425;
 tr1055:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st425;
 tr1056:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4); }
+	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
 	goto st425;
 st425:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15681,19 +15681,19 @@ case 426:
 		goto _again;
 	}
 tr794:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st427;
 tr1027:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st427;
 tr1057:
-	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st427;
 tr1060:
-	{ SET_CPU_FEATURE(CPUFeature_F16C); }
+	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st427;
 tr1053:
-	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX); }
+	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st427;
 st427:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15769,19 +15769,19 @@ case 432:
 		goto tr800;
 	goto tr57;
 tr800:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st433;
 tr1026:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st433;
 tr1042:
-	{ SET_CPU_FEATURE(CPUFeature_FMA); }
+	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
 	goto st433;
 tr1043:
-	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st433;
 tr1044:
-	{ SET_CPU_FEATURE(CPUFeature_F16C); }
+	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st433;
 st433:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15865,12 +15865,12 @@ case 437:
 		goto tr803;
 	goto tr57;
 tr803:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st438;
 tr804:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st438;
 st438:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15942,13 +15942,13 @@ case 441:
 		goto tr809;
 	goto tr57;
 tr809:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st442;
 tr1123:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st442;
 tr1124:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4); }
+	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
 	goto st442;
 st442:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -15960,19 +15960,19 @@ case 442:
 		goto _again;
 	}
 tr810:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st443;
 tr1084:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st443;
 tr1125:
-	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st443;
 tr1133:
-	{ SET_CPU_FEATURE(CPUFeature_F16C); }
+	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st443;
 tr1121:
-	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX); }
+	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
 	goto st443;
 st443:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -16048,19 +16048,19 @@ case 448:
 		goto tr818;
 	goto tr57;
 tr818:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st449;
 tr1082:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st449;
 tr1110:
-	{ SET_CPU_FEATURE(CPUFeature_FMA); }
+	{ SET_CPU_FEATURE(CPUFeature_FMA);       }
 	goto st449;
 tr1111:
-	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);    }
 	goto st449;
 tr1112:
-	{ SET_CPU_FEATURE(CPUFeature_F16C); }
+	{ SET_CPU_FEATURE(CPUFeature_F16C);      }
 	goto st449;
 st449:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -16144,12 +16144,12 @@ case 453:
 		goto tr821;
 	goto tr57;
 tr821:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st454;
 tr822:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st454;
 st454:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -16221,13 +16221,13 @@ case 457:
 		goto tr827;
 	goto tr57;
 tr827:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st458;
 tr1188:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st458;
 tr1189:
-	{ SET_CPU_FEATURE(CPUFeature_FMA4); }
+	{ SET_CPU_FEATURE(CPUFeature_FMA4);      }
 	goto st458;
 st458:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -16433,29 +16433,29 @@ tr966:
   }
 	goto st472;
 tr843:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st472;
 tr848:
-	{ SET_CPU_FEATURE(CPUFeature_TBM); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_TBM);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st472;
 tr1202:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
 	goto st472;
 tr1206:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	{
     SET_OPERAND_NAME(0, GetOperandFromVexAMD64(GET_VEX_PREFIX3()));
   }
@@ -16574,7 +16574,7 @@ case 480:
 	}
 	goto tr57;
 tr855:
-	{ SET_CPU_FEATURE(CPUFeature_LWP); }
+	{ SET_CPU_FEATURE(CPUFeature_LWP);       }
 	goto st481;
 st481:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -17177,7 +17177,7 @@ tr1468:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{ SET_CPU_FEATURE(CPUFeature_x87); }
+	{ SET_CPU_FEATURE(CPUFeature_x87);       }
 	{
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
@@ -17532,20 +17532,20 @@ case 542:
 		goto tr956;
 	goto tr57;
 tr976:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st543;
 tr980:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st543;
 tr965:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st543;
 tr967:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st543;
 st543:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -17888,7 +17888,7 @@ case 563:
 		goto _again;
 	}
 tr989:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st564;
 st564:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -18434,20 +18434,20 @@ case 592:
 		goto tr1026;
 	goto tr57;
 tr1041:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st593;
 tr1045:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st593;
 tr1031:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st593;
 tr1032:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st593;
 st593:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -18790,7 +18790,7 @@ case 613:
 		goto _again;
 	}
 tr1054:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st614;
 st614:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -18978,7 +18978,7 @@ case 624:
 		goto _again;
 	}
 tr1083:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st625;
 st625:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -19203,20 +19203,20 @@ case 636:
 		goto _again;
 	}
 tr1109:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st637;
 tr1113:
-	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1);      }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st637;
 tr1097:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st637;
 tr1099:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st637;
 st637:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -19283,8 +19283,8 @@ case 640:
 		goto _again;
 	}
 tr1098:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st641;
 st641:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -19386,8 +19386,8 @@ case 647:
 		goto tr1100;
 	goto tr57;
 tr1100:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st648;
 st648:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -19572,7 +19572,7 @@ case 659:
 		goto _again;
 	}
 tr1122:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st660;
 st660:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -19621,12 +19621,12 @@ case 663:
 		goto _again;
 	}
 tr1131:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st664;
 tr1135:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st664;
 st664:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -19638,7 +19638,7 @@ case 664:
 		goto _again;
 	}
 tr1132:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st665;
 st665:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -20378,7 +20378,7 @@ case 702:
 		goto _again;
 	}
 tr1187:
-	{ SET_CPU_FEATURE(CPUFeature_XOP); }
+	{ SET_CPU_FEATURE(CPUFeature_XOP);       }
 	goto st703;
 st703:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -20427,7 +20427,7 @@ case 706:
 		goto _again;
 	}
 tr1194:
-	{ SET_CPU_FEATURE(CPUFeature_AVX); }
+	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
 	goto st707;
 st707:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -21309,7 +21309,7 @@ case 757:
 	}
 	goto tr57;
 tr1272:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st758;
 st758:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -21409,7 +21409,7 @@ tr1286:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A);     }
 	goto st766;
 st766:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -22022,7 +22022,7 @@ tr715:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st805;
 st805:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -22112,7 +22112,7 @@ tr1545:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st810;
 st810:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -22212,7 +22212,7 @@ case 811:
 		goto _again;
 	}
 tr1352:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st812;
 st812:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -22470,7 +22470,7 @@ tr1546:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st822;
 st822:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -22557,7 +22557,7 @@ case 826:
 		goto _again;
 	}
 tr1365:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st827;
 st827:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23066,7 +23066,7 @@ tr505:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st848;
 st848:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23156,7 +23156,7 @@ tr1505:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st853;
 st853:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23256,7 +23256,7 @@ case 854:
 		goto _again;
 	}
 tr1388:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st855;
 st855:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23514,7 +23514,7 @@ tr1506:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
 	goto st865;
 st865:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23584,7 +23584,7 @@ case 868:
 		goto _again;
 	}
 tr1401:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st869;
 st869:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23721,7 +23721,7 @@ case 875:
 		goto _again;
 	}
 tr1402:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st876;
 st876:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -23875,7 +23875,7 @@ case 883:
 		goto _again;
 	}
 tr1413:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st884;
 st884:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -24147,7 +24147,7 @@ case 894:
 		goto _again;
 	}
 tr1419:
-	{ SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
+	{ SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
 	goto st895;
 st895:
 	if ( ++( current_position) == ( end_of_bundle) )

@@ -174,71 +174,71 @@
   action operands_count_is_4 { SET_OPERANDS_COUNT(4); }
   action operands_count_is_5 { SET_OPERANDS_COUNT(5); }
 
-  action operand0_16bit      { SET_OPERAND_TYPE(0, OPERAND_SIZE_16_BIT); }
-  action operand0_8bit       { SET_OPERAND_TYPE(0, OPERAND_SIZE_8_BIT); }
-  action operand0_32bit      { SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
-  action operand0_64bit      { SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
-  action operand0_128bit     { SET_OPERAND_TYPE(0, OPERAND_SIZE_128_BIT); }
-  action operand0_256bit     { SET_OPERAND_TYPE(0, OPERAND_SIZE_256_BIT); }
-  action operand0_creg       { SET_OPERAND_TYPE(0, OPERAND_CONTROL_REGISTER); }
-  action operand0_dreg       { SET_OPERAND_TYPE(0, OPERAND_DEBUG_REGISTER); }
-  action operand0_farptr     { SET_OPERAND_TYPE(0, OPERAND_FAR_PTR); }
-  action operand0_float32bit { SET_OPERAND_TYPE(0, OPERAND_FLOAT_SIZE_32_BIT); }
-  action operand0_float64bit { SET_OPERAND_TYPE(0, OPERAND_FLOAT_SIZE_64_BIT); }
-  action operand0_float80bit { SET_OPERAND_TYPE(0, OPERAND_FLOAT_SIZE_80_BIT); }
-  action operand0_mmx        { SET_OPERAND_TYPE(0, OPERAND_MMX); }
-  action operand0_segreg     { SET_OPERAND_TYPE(0, OPERAND_SEGMENT_REGISTER); }
-  action operand0_selector   { SET_OPERAND_TYPE(0, OPERAND_SELECTOR); }
-  action operand0_x87        { SET_OPERAND_TYPE(0, OPERAND_ST); }
-  action operand0_x87_16bit  { SET_OPERAND_TYPE(0, OPERAND_X87_SIZE_16_BIT); }
-  action operand0_x87_32bit  { SET_OPERAND_TYPE(0, OPERAND_X87_SIZE_32_BIT); }
-  action operand0_x87_64bit  { SET_OPERAND_TYPE(0, OPERAND_X87_SIZE_64_BIT); }
-  action operand0_x87_bcd    { SET_OPERAND_TYPE(0, OPERAND_X87_BCD); }
-  action operand0_x87_env    { SET_OPERAND_TYPE(0, OPERAND_X87_ENV); }
+  action operand0_16bit      { SET_OPERAND_TYPE(0, OPERAND_TYPE_16_BIT); }
+  action operand0_8bit       { SET_OPERAND_TYPE(0, OPERAND_TYPE_8_BIT); }
+  action operand0_32bit      { SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+  action operand0_64bit      { SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+  action operand0_128bit     { SET_OPERAND_TYPE(0, OPERAND_TYPE_128_BIT); }
+  action operand0_256bit     { SET_OPERAND_TYPE(0, OPERAND_TYPE_256_BIT); }
+  action operand0_creg   { SET_OPERAND_TYPE(0, OPERAND_TYPE_CONTROL_REGISTER); }
+  action operand0_dreg     { SET_OPERAND_TYPE(0, OPERAND_TYPE_DEBUG_REGISTER); }
+  action operand0_farptr     { SET_OPERAND_TYPE(0, OPERAND_TYPE_FAR_PTR); }
+  action operand0_float32bit { SET_OPERAND_TYPE(0, OPERAND_TYPE_FLOAT_32_BIT); }
+  action operand0_float64bit { SET_OPERAND_TYPE(0, OPERAND_TYPE_FLOAT_64_BIT); }
+  action operand0_float80bit { SET_OPERAND_TYPE(0, OPERAND_TYPE_FLOAT_80_BIT); }
+  action operand0_mmx        { SET_OPERAND_TYPE(0, OPERAND_TYPE_MMX); }
+  action operand0_segreg { SET_OPERAND_TYPE(0, OPERAND_TYPE_SEGMENT_REGISTER); }
+  action operand0_selector   { SET_OPERAND_TYPE(0, OPERAND_TYPE_SELECTOR); }
+  action operand0_x87        { SET_OPERAND_TYPE(0, OPERAND_TYPE_ST); }
+  action operand0_x87_16bit  { SET_OPERAND_TYPE(0, OPERAND_TYPE_X87_16_BIT); }
+  action operand0_x87_32bit  { SET_OPERAND_TYPE(0, OPERAND_TYPE_X87_32_BIT); }
+  action operand0_x87_64bit  { SET_OPERAND_TYPE(0, OPERAND_TYPE_X87_64_BIT); }
+  action operand0_x87_bcd    { SET_OPERAND_TYPE(0, OPERAND_TYPE_X87_BCD); }
+  action operand0_x87_env    { SET_OPERAND_TYPE(0, OPERAND_TYPE_X87_ENV); }
   action operand0_x87_mmx_xmm_state {
-    SET_OPERAND_TYPE(0, OPERAND_X87_MMX_MM_STATE);
+    SET_OPERAND_TYPE(0, OPERAND_TYPE_X87_MMX_XMM_STATE);
   }
-  action operand0_x87_state  { SET_OPERAND_TYPE(0, OPERAND_X87_STATE); }
-  action operand0_xmm        { SET_OPERAND_TYPE(0, OPERAND_XMM); }
-  action operand0_ymm        { SET_OPERAND_TYPE(0, OPERAND_YMM); }
+  action operand0_x87_state  { SET_OPERAND_TYPE(0, OPERAND_TYPE_X87_STATE); }
+  action operand0_xmm        { SET_OPERAND_TYPE(0, OPERAND_TYPE_XMM); }
+  action operand0_ymm        { SET_OPERAND_TYPE(0, OPERAND_TYPE_YMM); }
 
-  action operand1_8bit       { SET_OPERAND_TYPE(1, OPERAND_SIZE_8_BIT); }
-  action operand1_16bit      { SET_OPERAND_TYPE(1, OPERAND_SIZE_16_BIT); }
-  action operand1_32bit      { SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
-  action operand1_64bit      { SET_OPERAND_TYPE(1, OPERAND_SIZE_64_BIT); }
-  action operand1_128bit     { SET_OPERAND_TYPE(1, OPERAND_SIZE_128_BIT); }
-  action operand1_256bit     { SET_OPERAND_TYPE(1, OPERAND_SIZE_256_BIT); }
-  action operand1_creg       { SET_OPERAND_TYPE(1, OPERAND_CONTROL_REGISTER); }
-  action operand1_dreg       { SET_OPERAND_TYPE(1, OPERAND_DEBUG_REGISTER); }
-  action operand1_farptr     { SET_OPERAND_TYPE(1, OPERAND_FAR_PTR); }
-  action operand1_float32bit { SET_OPERAND_TYPE(1, OPERAND_FLOAT_SIZE_32_BIT); }
-  action operand1_float64bit { SET_OPERAND_TYPE(1, OPERAND_FLOAT_SIZE_64_BIT); }
-  action operand1_mmx        { SET_OPERAND_TYPE(1, OPERAND_MMX); }
-  action operand1_segreg     { SET_OPERAND_TYPE(1, OPERAND_SEGMENT_REGISTER); }
-  action operand1_x87        { SET_OPERAND_TYPE(1, OPERAND_ST); }
-  action operand1_xmm        { SET_OPERAND_TYPE(1, OPERAND_XMM); }
-  action operand1_ymm        { SET_OPERAND_TYPE(1, OPERAND_YMM); }
+  action operand1_8bit       { SET_OPERAND_TYPE(1, OPERAND_TYPE_8_BIT); }
+  action operand1_16bit      { SET_OPERAND_TYPE(1, OPERAND_TYPE_16_BIT); }
+  action operand1_32bit      { SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
+  action operand1_64bit      { SET_OPERAND_TYPE(1, OPERAND_TYPE_64_BIT); }
+  action operand1_128bit     { SET_OPERAND_TYPE(1, OPERAND_TYPE_128_BIT); }
+  action operand1_256bit     { SET_OPERAND_TYPE(1, OPERAND_TYPE_256_BIT); }
+  action operand1_creg   { SET_OPERAND_TYPE(1, OPERAND_TYPE_CONTROL_REGISTER); }
+  action operand1_dreg     { SET_OPERAND_TYPE(1, OPERAND_TYPE_DEBUG_REGISTER); }
+  action operand1_farptr     { SET_OPERAND_TYPE(1, OPERAND_TYPE_FAR_PTR); }
+  action operand1_float32bit { SET_OPERAND_TYPE(1, OPERAND_TYPE_FLOAT_32_BIT); }
+  action operand1_float64bit { SET_OPERAND_TYPE(1, OPERAND_TYPE_FLOAT_64_BIT); }
+  action operand1_mmx        { SET_OPERAND_TYPE(1, OPERAND_TYPE_MMX); }
+  action operand1_segreg { SET_OPERAND_TYPE(1, OPERAND_TYPE_SEGMENT_REGISTER); }
+  action operand1_x87        { SET_OPERAND_TYPE(1, OPERAND_TYPE_ST); }
+  action operand1_xmm        { SET_OPERAND_TYPE(1, OPERAND_TYPE_XMM); }
+  action operand1_ymm        { SET_OPERAND_TYPE(1, OPERAND_TYPE_YMM); }
 
-  action operand2_8bit       { SET_OPERAND_TYPE(2, OPERAND_SIZE_8_BIT); }
-  action operand2_16bit      { SET_OPERAND_TYPE(2, OPERAND_SIZE_16_BIT); }
-  action operand2_32bit      { SET_OPERAND_TYPE(2, OPERAND_SIZE_32_BIT); }
-  action operand2_64bit      { SET_OPERAND_TYPE(2, OPERAND_SIZE_64_BIT); }
-  action operand2_128bit     { SET_OPERAND_TYPE(2, OPERAND_SIZE_128_BIT); }
-  action operand2_256bit     { SET_OPERAND_TYPE(2, OPERAND_SIZE_256_BIT); }
-  action operand2_float32bit { SET_OPERAND_TYPE(2, OPERAND_FLOAT_SIZE_32_BIT); }
-  action operand2_float64bit { SET_OPERAND_TYPE(2, OPERAND_FLOAT_SIZE_64_BIT); }
-  action operand2_xmm        { SET_OPERAND_TYPE(2, OPERAND_XMM); }
-  action operand2_ymm        { SET_OPERAND_TYPE(2, OPERAND_YMM); }
+  action operand2_8bit       { SET_OPERAND_TYPE(2, OPERAND_TYPE_8_BIT); }
+  action operand2_16bit      { SET_OPERAND_TYPE(2, OPERAND_TYPE_16_BIT); }
+  action operand2_32bit      { SET_OPERAND_TYPE(2, OPERAND_TYPE_32_BIT); }
+  action operand2_64bit      { SET_OPERAND_TYPE(2, OPERAND_TYPE_64_BIT); }
+  action operand2_128bit     { SET_OPERAND_TYPE(2, OPERAND_TYPE_128_BIT); }
+  action operand2_256bit     { SET_OPERAND_TYPE(2, OPERAND_TYPE_256_BIT); }
+  action operand2_float32bit { SET_OPERAND_TYPE(2, OPERAND_TYPE_FLOAT_32_BIT); }
+  action operand2_float64bit { SET_OPERAND_TYPE(2, OPERAND_TYPE_FLOAT_64_BIT); }
+  action operand2_xmm        { SET_OPERAND_TYPE(2, OPERAND_TYPE_XMM); }
+  action operand2_ymm        { SET_OPERAND_TYPE(2, OPERAND_TYPE_YMM); }
 
-  action operand3_8bit       { SET_OPERAND_TYPE(3, OPERAND_SIZE_8_BIT); }
-  action operand3_128bit     { SET_OPERAND_TYPE(3, OPERAND_SIZE_128_BIT); }
-  action operand3_256bit     { SET_OPERAND_TYPE(3, OPERAND_SIZE_256_BIT); }
-  action operand3_float32bit { SET_OPERAND_TYPE(3, OPERAND_FLOAT_SIZE_32_BIT); }
-  action operand3_float64bit { SET_OPERAND_TYPE(3, OPERAND_FLOAT_SIZE_64_BIT); }
-  action operand3_xmm        { SET_OPERAND_TYPE(3, OPERAND_XMM); }
-  action operand3_ymm        { SET_OPERAND_TYPE(3, OPERAND_YMM); }
+  action operand3_8bit       { SET_OPERAND_TYPE(3, OPERAND_TYPE_8_BIT); }
+  action operand3_128bit     { SET_OPERAND_TYPE(3, OPERAND_TYPE_128_BIT); }
+  action operand3_256bit     { SET_OPERAND_TYPE(3, OPERAND_TYPE_256_BIT); }
+  action operand3_float32bit { SET_OPERAND_TYPE(3, OPERAND_TYPE_FLOAT_32_BIT); }
+  action operand3_float64bit { SET_OPERAND_TYPE(3, OPERAND_TYPE_FLOAT_64_BIT); }
+  action operand3_xmm        { SET_OPERAND_TYPE(3, OPERAND_TYPE_XMM); }
+  action operand3_ymm        { SET_OPERAND_TYPE(3, OPERAND_TYPE_YMM); }
 
-  action operand4_2bit       { SET_OPERAND_TYPE(4, OPERAND_SIZE_2_BIT); }
+  action operand4_2bit       { SET_OPERAND_TYPE(4, OPERAND_TYPE_2_BIT); }
 
   action operand0_ds_rbx     { SET_OPERAND_NAME(0, REG_DS_RBX); }
   action operand0_ds_rsi     { SET_OPERAND_NAME(0, REG_DS_RSI); }
@@ -276,12 +276,18 @@
   action operand0_from_modrm_reg_norex {
     SET_OPERAND_NAME(0, RegFromModRM(*current_position));
   }
+  action operand0_from_modrm_rm_norex {
+    SET_OPERAND_NAME(0, RMFromModRM(*current_position));
+  }
   action operand0_from_opcode_x87 {
     SET_OPERAND_NAME(0, RegFromOpcode(*current_position));
   }
 
   action operand1_from_modrm_reg_norex {
     SET_OPERAND_NAME(1, RegFromModRM(*current_position));
+  }
+  action operand1_from_modrm_rm_norex {
+    SET_OPERAND_NAME(1, RMFromModRM(*current_position));
   }
   action operand1_from_opcode_x87 {
     SET_OPERAND_NAME(1, RegFromOpcode(*current_position));
@@ -302,9 +308,9 @@
   include operand_actions_common
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
 
-  action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_SIZE_32_BIT); }
-  action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_SIZE_32_BIT); }
-  action operand2_regsize {  SET_OPERAND_TYPE(2, OPERAND_SIZE_32_BIT); }
+  action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
+  action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
+  action operand2_regsize {  SET_OPERAND_TYPE(2, OPERAND_TYPE_32_BIT); }
 
   action operand0_absolute_disp {
     SET_OPERAND_NAME(0, REG_RM);
@@ -362,9 +368,9 @@
   include operand_actions_common
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
 
-  action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_SIZE_64_BIT); }
-  action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_SIZE_64_BIT); }
-  action operand2_regsize {  SET_OPERAND_TYPE(2, OPERAND_SIZE_64_BIT); }
+  action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
+  action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_TYPE_64_BIT); }
+  action operand2_regsize {  SET_OPERAND_TYPE(2, OPERAND_TYPE_64_BIT); }
 
   action operand0_absolute_disp {
     SET_OPERAND_NAME(0, REG_RM);
@@ -522,53 +528,77 @@
 %%{
   machine cpuid_actions;
 
-  action CPUFeature_3DNOW         { SET_CPU_FEATURE(CPUFeature_3DNOW); }
-  action CPUFeature_3DPRFTCH      { SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
-  action CPUFeature_AES           { SET_CPU_FEATURE(CPUFeature_AES); }
-  action CPUFeature_AESAVX        { SET_CPU_FEATURE(CPUFeature_AESAVX);  }
+  action CPUFeature_3DNOW         { SET_CPU_FEATURE(CPUFeature_3DNOW);     }
+  action CPUFeature_3DPRFTCH      { SET_CPU_FEATURE(CPUFeature_3DPRFTCH);  }
+  action CPUFeature_AES           { SET_CPU_FEATURE(CPUFeature_AES);       }
+  action CPUFeature_AESAVX        { SET_CPU_FEATURE(CPUFeature_AESAVX);    }
   action CPUFeature_ALTMOVCR8     { SET_CPU_FEATURE(CPUFeature_ALTMOVCR8); }
-  action CPUFeature_AVX           { SET_CPU_FEATURE(CPUFeature_AVX); }
-  action CPUFeature_BMI1          { SET_CPU_FEATURE(CPUFeature_BMI1); }
-  action CPUFeature_CLFLUSH       { SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
-  action CPUFeature_CLMUL         { SET_CPU_FEATURE(CPUFeature_CLMUL); }
-  action CPUFeature_CLMULAVX      { SET_CPU_FEATURE(CPUFeature_CLMULAVX); }
-  action CPUFeature_CMOV          { SET_CPU_FEATURE(CPUFeature_CMOV); }
-  action CPUFeature_CMOVx87       { SET_CPU_FEATURE(CPUFeature_CMOVx87); }
-  action CPUFeature_CX16          { SET_CPU_FEATURE(CPUFeature_CX16); }
-  action CPUFeature_CX8           { SET_CPU_FEATURE(CPUFeature_CX8); }
-  action CPUFeature_E3DNOW        { SET_CPU_FEATURE(CPUFeature_E3DNOW); }
-  action CPUFeature_EMMX          { SET_CPU_FEATURE(CPUFeature_EMMX); }
-  action CPUFeature_EMMXSSE       { SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
-  action CPUFeature_F16C          { SET_CPU_FEATURE(CPUFeature_F16C); }
-  action CPUFeature_FMA           { SET_CPU_FEATURE(CPUFeature_FMA); }
-  action CPUFeature_FMA4          { SET_CPU_FEATURE(CPUFeature_FMA4); }
-  action CPUFeature_FXSR          { SET_CPU_FEATURE(CPUFeature_FXSR); }
-  action CPUFeature_LAHF          { SET_CPU_FEATURE(CPUFeature_LAHF); }
-  action CPUFeature_LWP           { SET_CPU_FEATURE(CPUFeature_LWP); }
-  action CPUFeature_LZCNT         { SET_CPU_FEATURE(CPUFeature_LZCNT); }
-  action CPUFeature_MMX           { SET_CPU_FEATURE(CPUFeature_MMX); }
-  action CPUFeature_MON           { SET_CPU_FEATURE(CPUFeature_MON); }
-  action CPUFeature_MOVBE         { SET_CPU_FEATURE(CPUFeature_MOVBE); }
-  action CPUFeature_MSR           { SET_CPU_FEATURE(CPUFeature_MSR); }
-  action CPUFeature_POPCNT        { SET_CPU_FEATURE(CPUFeature_POPCNT); }
-  action CPUFeature_SEP           { SET_CPU_FEATURE(CPUFeature_SEP); }
-  action CPUFeature_SFENCE        { SET_CPU_FEATURE(CPUFeature_SFENCE); }
-  action CPUFeature_SKINIT        { SET_CPU_FEATURE(CPUFeature_SKINIT); }
-  action CPUFeature_SSE           { SET_CPU_FEATURE(CPUFeature_SSE); }
-  action CPUFeature_SSE2          { SET_CPU_FEATURE(CPUFeature_SSE2); }
-  action CPUFeature_SSE3          { SET_CPU_FEATURE(CPUFeature_SSE3); }
-  action CPUFeature_SSE41         { SET_CPU_FEATURE(CPUFeature_SSE41); }
-  action CPUFeature_SSE42         { SET_CPU_FEATURE(CPUFeature_SSE42); }
-  action CPUFeature_SSE4A         { SET_CPU_FEATURE(CPUFeature_SSE4A); }
-  action CPUFeature_SSSE3         { SET_CPU_FEATURE(CPUFeature_SSSE3); }
-  action CPUFeature_SVM           { SET_CPU_FEATURE(CPUFeature_SVM); }
-  action CPUFeature_SYSCALL       { SET_CPU_FEATURE(CPUFeature_SYSCALL); }
-  action CPUFeature_TBM           { SET_CPU_FEATURE(CPUFeature_TBM); }
-  action CPUFeature_TSC           { SET_CPU_FEATURE(CPUFeature_TSC); }
-  action CPUFeature_TSCP          { SET_CPU_FEATURE(CPUFeature_TSCP); }
-  action CPUFeature_TZCNT         { SET_CPU_FEATURE(CPUFeature_TZCNT); }
-  action CPUFeature_XOP           { SET_CPU_FEATURE(CPUFeature_XOP); }
-  action CPUFeature_x87           { SET_CPU_FEATURE(CPUFeature_x87); }
+  action CPUFeature_AVX           { SET_CPU_FEATURE(CPUFeature_AVX);       }
+  action CPUFeature_BMI1          { SET_CPU_FEATURE(CPUFeature_BMI1);      }
+  action CPUFeature_CLFLUSH       { SET_CPU_FEATURE(CPUFeature_CLFLUSH);   }
+  action CPUFeature_CLMUL         { SET_CPU_FEATURE(CPUFeature_CLMUL);     }
+  action CPUFeature_CLMULAVX      { SET_CPU_FEATURE(CPUFeature_CLMULAVX);  }
+  action CPUFeature_CMOV          { SET_CPU_FEATURE(CPUFeature_CMOV);      }
+  action CPUFeature_CMOVx87       { SET_CPU_FEATURE(CPUFeature_CMOVx87);   }
+  action CPUFeature_CX16          { SET_CPU_FEATURE(CPUFeature_CX16);      }
+  action CPUFeature_CX8           { SET_CPU_FEATURE(CPUFeature_CX8);       }
+  action CPUFeature_E3DNOW        { SET_CPU_FEATURE(CPUFeature_E3DNOW);    }
+  action CPUFeature_EMMX          { SET_CPU_FEATURE(CPUFeature_EMMX);      }
+  action CPUFeature_EMMXSSE       { SET_CPU_FEATURE(CPUFeature_EMMXSSE);   }
+  action CPUFeature_F16C          { SET_CPU_FEATURE(CPUFeature_F16C);      }
+  action CPUFeature_FMA           { SET_CPU_FEATURE(CPUFeature_FMA);       }
+  action CPUFeature_FMA4          { SET_CPU_FEATURE(CPUFeature_FMA4);      }
+  action CPUFeature_FXSR          { SET_CPU_FEATURE(CPUFeature_FXSR);      }
+  action CPUFeature_LAHF          { SET_CPU_FEATURE(CPUFeature_LAHF);      }
+  action CPUFeature_LWP           { SET_CPU_FEATURE(CPUFeature_LWP);       }
+  action CPUFeature_LZCNT         { SET_CPU_FEATURE(CPUFeature_LZCNT);     }
+  action CPUFeature_MMX           { SET_CPU_FEATURE(CPUFeature_MMX);       }
+  action CPUFeature_MON           { SET_CPU_FEATURE(CPUFeature_MON);       }
+  action CPUFeature_MOVBE         { SET_CPU_FEATURE(CPUFeature_MOVBE);     }
+  action CPUFeature_MSR           { SET_CPU_FEATURE(CPUFeature_MSR);       }
+  action CPUFeature_POPCNT        { SET_CPU_FEATURE(CPUFeature_POPCNT);    }
+  action CPUFeature_SEP           { SET_CPU_FEATURE(CPUFeature_SEP);       }
+  action CPUFeature_SFENCE        { SET_CPU_FEATURE(CPUFeature_SFENCE);    }
+  action CPUFeature_SKINIT        { SET_CPU_FEATURE(CPUFeature_SKINIT);    }
+  action CPUFeature_SSE           { SET_CPU_FEATURE(CPUFeature_SSE);       }
+  action CPUFeature_SSE2          { SET_CPU_FEATURE(CPUFeature_SSE2);      }
+  action CPUFeature_SSE3          { SET_CPU_FEATURE(CPUFeature_SSE3);      }
+  action CPUFeature_SSE41         { SET_CPU_FEATURE(CPUFeature_SSE41);     }
+  action CPUFeature_SSE42         { SET_CPU_FEATURE(CPUFeature_SSE42);     }
+  action CPUFeature_SSE4A         { SET_CPU_FEATURE(CPUFeature_SSE4A);     }
+  action CPUFeature_SSSE3         { SET_CPU_FEATURE(CPUFeature_SSSE3);     }
+  action CPUFeature_SVM           { SET_CPU_FEATURE(CPUFeature_SVM);       }
+  action CPUFeature_SYSCALL       { SET_CPU_FEATURE(CPUFeature_SYSCALL);   }
+  action CPUFeature_TBM           { SET_CPU_FEATURE(CPUFeature_TBM);       }
+  action CPUFeature_TSC           { SET_CPU_FEATURE(CPUFeature_TSC);       }
+  action CPUFeature_TSCP          { SET_CPU_FEATURE(CPUFeature_TSCP);      }
+  action CPUFeature_TZCNT         { SET_CPU_FEATURE(CPUFeature_TZCNT);     }
+  action CPUFeature_XOP           { SET_CPU_FEATURE(CPUFeature_XOP);       }
+  action CPUFeature_x87           { SET_CPU_FEATURE(CPUFeature_x87);       }
+}%%
+
+%%{
+  machine att_suffix_actions;
+
+  action att_show_name_suffix_b   { SET_ATT_INSTRUCTION_SUFFIX("b");       }
+  action att_show_name_suffix_l   { SET_ATT_INSTRUCTION_SUFFIX("l");       }
+  action att_show_name_suffix_ll  { SET_ATT_INSTRUCTION_SUFFIX("ll");      }
+  action att_show_name_suffix_t   { SET_ATT_INSTRUCTION_SUFFIX("t");       }
+  action att_show_name_suffix_s   { SET_ATT_INSTRUCTION_SUFFIX("s");       }
+  action att_show_name_suffix_q   { SET_ATT_INSTRUCTION_SUFFIX("q");       }
+  action att_show_name_suffix_w   { SET_ATT_INSTRUCTION_SUFFIX("w");       }
+  action att_show_name_suffix_x   { SET_ATT_INSTRUCTION_SUFFIX("x");       }
+  action att_show_name_suffix_y   { SET_ATT_INSTRUCTION_SUFFIX("y");       }
+}%%
+
+%%{
+  machine set_spurious_prefixes;
+
+  action set_spurious_data16_prefix { SET_SPURIOUS_DATA16();               }
+  action set_spurious_rex_b         { SET_SPURIOUS_REX_B();                }
+  action set_spurious_rex_x         { SET_SPURIOUS_REX_X();                }
+  action set_spurious_rex_r         { SET_SPURIOUS_REX_R();                }
+  action set_spurious_rex_w         { SET_SPURIOUS_REX_W();                }
 }%%
 
 %%{

@@ -7,7 +7,7 @@
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 /* All supported features are enabled */
-const NaClCPUFeaturesX86 full_cpuid_features = { { 1, 1 }, {
+const NaClCPUFeaturesX86 kFullCPUIDFeatures = { { 1, 1 }, {
   1, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
   1, /* NaClCPUFeature_AES */
   1, /* NaClCPUFeature_AVX */

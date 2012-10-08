@@ -82,7 +82,7 @@ enum validation_callback_info {
 #define kBundleSize 32
 #define kBundleMask 31
 
-enum validation_options {
+enum ValidationOptions {
   /* Call process_error function on instruction.  */
   CALL_USER_CALLBACK_ON_EACH_INSTRUCTION = 0x00000001,
   /* Process all instruction as a contiguous stream.  */
@@ -107,10 +107,10 @@ enum validation_options {
  *     return TRUE;
  *   ...
  */
-typedef Bool (*validation_callback_func) (const uint8_t *instruction_start,
-                                          const uint8_t *instruction_end,
-                                          uint32_t validation_info,
-                                          void *callback_data);
+typedef Bool (*ValidationCallbackFunc) (const uint8_t *instruction_start,
+                                        const uint8_t *instruction_end,
+                                        uint32_t validation_info,
+                                        void *callback_data);
 
 /*
  * Returns whether given piece of code is valid.
@@ -126,18 +126,18 @@ typedef Bool (*validation_callback_func) (const uint8_t *instruction_start,
  * placed there.
  */
 Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
-                        enum validation_options options,
+                        enum ValidationOptions options,
                         const NaClCPUFeaturesX86 *cpu_features,
-                        validation_callback_func user_callback,
+                        ValidationCallbackFunc user_callback,
                         void *callback_data);
 
 /*
  * See ValidateChunkAMD64
  */
 Bool ValidateChunkIA32(const uint8_t *data, size_t size,
-                       enum validation_options options,
+                       enum ValidationOptions options,
                        const NaClCPUFeaturesX86 *cpu_features,
-                       validation_callback_func user_callback,
+                       ValidationCallbackFunc user_callback,
                        void *callback_data);
 
 EXTERN_C_END

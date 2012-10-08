@@ -130,9 +130,9 @@
 
 
 Bool ValidateChunkIA32(const uint8_t *data, size_t size,
-                       enum validation_options options,
+                       enum ValidationOptions options,
                        const NaClCPUFeaturesX86 *cpu_features,
-                       validation_callback_func user_callback,
+                       ValidationCallbackFunc user_callback,
                        void *callback_data) {
   bitmap_word valid_targets_small;
   bitmap_word jump_dests_small;
