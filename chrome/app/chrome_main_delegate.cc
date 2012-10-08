@@ -411,12 +411,15 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
 #endif  // OS_POSIX
 
+  // No support for ANDROID yet as DiagnosticsMain needs wchar support.
+#if !defined(OS_ANDROID)
   // If we are in diagnostics mode this is the end of the line. After the
   // diagnostics are run the process will invariably exit.
   if (command_line.HasSwitch(switches::kDiagnostics)) {
     *exit_code = DiagnosticsMain(command_line);
     return true;
   }
+#endif
 
 #if defined(OS_WIN)
   // Must do this before any other usage of command line!
@@ -565,12 +568,15 @@ void ChromeMainDelegate::PreSandboxStartup() {
   if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
     MessageLoop::EnableHistogrammer(true);
 
+#if !defined(OS_ANDROID)
+  // Android does InitLogging when library is loaded. Skip here.
   logging::OldFileDeletionState file_state =
       logging::APPEND_TO_OLD_LOG_FILE;
   if (process_type.empty()) {
     file_state = logging::DELETE_OLD_LOG_FILE;
   }
   logging::InitChromeLogging(command_line, file_state);
+#endif
 
 #if defined(OS_WIN)
   // TODO(darin): Kill this once http://crbug.com/52609 is fixed.
