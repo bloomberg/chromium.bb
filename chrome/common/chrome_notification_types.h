@@ -661,11 +661,6 @@ enum NotificationType {
   // source is the profile.
   NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
 
-  // Sent when an extension changes a preference value. The source is the
-  // profile, and the details are an ExtensionPrefStore::ExtensionPrefDetails
-  // object.
-  NOTIFICATION_EXTENSION_PREF_CHANGED,
-
   // Sent when a recording session for speech input has started.
   NOTIFICATION_EXTENSION_SPEECH_INPUT_RECORDING_STARTED,
 
