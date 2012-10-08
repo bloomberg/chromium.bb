@@ -63,7 +63,7 @@ class DateDefaultView : public views::View,
         login == ash::user::LOGGED_IN_NONE)
       return;
 
-    date_view->SetActionable(false);
+    date_view->SetActionable(true);
 
     help_ = new ash::internal::TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_HELP,
