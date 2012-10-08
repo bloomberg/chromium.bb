@@ -1050,6 +1050,7 @@ class RenderViewImpl : public RenderWidget,
                          const string16& search_string,
                          const WebKit::WebFindOptions& options,
                          IPC::Message* reply_msg);
+  void OnUndoScrollFocusedEditableNodeIntoRect();
 #elif defined(OS_MACOSX)
   void OnCopyToFindPboard();
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);

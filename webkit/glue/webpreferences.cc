@@ -411,6 +411,7 @@ void WebPreferences::Apply(WebView* web_view) const {
 #if defined(OS_ANDROID)
   settings->setTextAutosizingFontScaleFactor(font_scale_factor);
   web_view->setIgnoreViewportTagMaximumScale(force_enable_zoom);
+  settings->setAutoZoomFocusedNodeToLegibleScale(true);
 #endif
   settings->setPasswordEchoEnabled(password_echo_enabled);
   settings->setShouldPrintBackgrounds(should_print_backgrounds);

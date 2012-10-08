@@ -1397,6 +1397,10 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SelectPopupMenuItems,
                     bool /* user canceled the popup */,
                     std::vector<int> /* selected indices */)
 
+// Tells the renderer to try to revert to the zoom level we were at before
+// ViewMsg_ScrollFocusedEditableNodeIntoView was called.
+IPC_MESSAGE_ROUTED0(ViewMsg_UndoScrollFocusedEditableNodeIntoView)
+
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,

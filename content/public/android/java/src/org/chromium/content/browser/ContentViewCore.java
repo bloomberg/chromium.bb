@@ -16,6 +16,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.ActionMode;
@@ -207,7 +208,15 @@ public class ContentViewCore implements MotionEventDelegate {
     // The AccessibilityInjector that handles loading Accessibility scripts into the web page.
     private AccessibilityInjector mAccessibilityInjector;
 
+    // Temporary notification to tell onSizeChanged to focus a form element,
+    // because the OSK was just brought up.
+    private boolean mFocusOnNextSizeChanged = false;
+    private boolean mUnfocusOnNextSizeChanged = false;
+
     private boolean mNeedUpdateOrientationChanged;
+
+    // Used to keep track of whether we should try to undo the last zoom-to-textfield operation.
+    private boolean mScrolledAndZoomedFocusedEditableNode = false;
 
     // Whether we use hardware-accelerated drawing.
     private boolean mHardwareAccelerated = false;
@@ -292,6 +301,7 @@ public class ContentViewCore implements MotionEventDelegate {
 
                     @Override
                     public void onSetFieldValue() {
+                        scrollFocusedEditableNodeIntoView();
                     }
 
                     @Override
@@ -305,9 +315,23 @@ public class ContentViewCore implements MotionEventDelegate {
 
                     @Override
                     public ResultReceiver getNewShowKeyboardReceiver() {
-                        // TODO(olilan): Add receiver when scrollFocusedEditableNodeIntoView
-                        // is upstreamed.
-                        return null;
+                        return new ResultReceiver(new Handler()) {
+                            @Override
+                            public void onReceiveResult(int resultCode, Bundle resultData) {
+                                if (resultCode == InputMethodManager.RESULT_SHOWN) {
+                                    // If OSK is newly shown, delay the form focus until
+                                    // the onSizeChanged (in order to adjust relative to the
+                                    // new size).
+                                    mFocusOnNextSizeChanged = true;
+                                } else if (resultCode ==
+                                        InputMethodManager.RESULT_UNCHANGED_SHOWN) {
+                                    // If the OSK was already there, focus the form immediately.
+                                    scrollFocusedEditableNodeIntoView();
+                                } else {
+                                    undoScrollFocusedEditableNodeIntoViewIfNeeded(false);
+                                }
+                            }
+                        };
                     }
                 }
         );
@@ -763,6 +787,7 @@ public class ContentViewCore implements MotionEventDelegate {
      * @see View#onTouchEvent(MotionEvent)
      */
     public boolean onTouchEvent(MotionEvent event) {
+        undoScrollFocusedEditableNodeIntoViewIfNeeded(false);
         return mContentViewGestureHandler.onTouchEvent(event);
     }
 
@@ -1001,6 +1026,62 @@ public class ContentViewCore implements MotionEventDelegate {
         if (mContentHeight < h) mContentHeight = h;
     }
 
+    public void updateAfterSizeChanged() {
+        // Execute a delayed form focus operation because the OSK was brought
+        // up earlier.
+        if (mFocusOnNextSizeChanged) {
+            scrollFocusedEditableNodeIntoView();
+            mFocusOnNextSizeChanged = false;
+        } else if (mUnfocusOnNextSizeChanged) {
+            undoScrollFocusedEditableNodeIntoViewIfNeeded(true);
+            mUnfocusOnNextSizeChanged = false;
+        }
+    }
+
+    private void scrollFocusedEditableNodeIntoView() {
+        if (mNativeContentViewCore != 0) {
+            Runnable scrollTask = new Runnable() {
+                @Override
+                public void run() {
+                    if (mNativeContentViewCore != 0) {
+                        nativeScrollFocusedEditableNodeIntoView(mNativeContentViewCore);
+                    }
+                }
+            };
+
+            scrollTask.run();
+
+            // The native side keeps track of whether the zoom and scroll actually occurred. It is
+            // more efficient to do it this way and sometimes fire an unnecessary message rather
+            // than synchronize with the renderer and always have an additional message.
+            mScrolledAndZoomedFocusedEditableNode = true;
+        }
+    }
+
+    private void undoScrollFocusedEditableNodeIntoViewIfNeeded(boolean backButtonPressed) {
+        // The only call to this function that matters is the first call after the
+        // scrollFocusedEditableNodeIntoView function call.
+        // If the first call to this function is a result of a back button press we want to undo the
+        // preceding scroll. If the call is a result of some other action we don't want to perform
+        // an undo.
+        // All subsequent calls are ignored since only the scroll function sets
+        // mScrolledAndZoomedFocusedEditableNode to true.
+        if (mScrolledAndZoomedFocusedEditableNode && backButtonPressed &&
+                mNativeContentViewCore != 0) {
+            Runnable scrollTask = new Runnable() {
+                @Override
+                public void run() {
+                    if (mNativeContentViewCore != 0) {
+                        nativeUndoScrollFocusedEditableNodeIntoView(mNativeContentViewCore);
+                    }
+                }
+            };
+
+            scrollTask.run();
+        }
+        mScrolledAndZoomedFocusedEditableNode = false;
+    }
+
     /**
      * @see View#onFocusedChanged(boolean, int, Rect)
      */
@@ -1018,6 +1099,24 @@ public class ContentViewCore implements MotionEventDelegate {
             return true;
         }
         return mContainerViewInternals.super_onKeyUp(keyCode, event);
+    }
+
+    /**
+     * @see View#dispatchKeyEventPreIme(KeyEvent)
+     */
+    public boolean dispatchKeyEventPreIme(KeyEvent event) {
+        try {
+            TraceEvent.begin();
+            if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && mImeAdapter.isActive()) {
+                mUnfocusOnNextSizeChanged = true;
+            } else {
+                undoScrollFocusedEditableNodeIntoViewIfNeeded(false);
+            }
+            mImeAdapter.dispatchKeyEventPreIme(event);
+            return mContainerViewInternals.super_dispatchKeyEventPreIme(event);
+        } finally {
+            TraceEvent.end();
+        }
     }
 
     /**
@@ -1894,6 +1993,8 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private native void nativeSelectPopupMenuItems(int nativeContentViewCoreImpl, int[] indices);
 
+    private native void nativeScrollFocusedEditableNodeIntoView(int nativeContentViewCoreImpl);
+    private native void nativeUndoScrollFocusedEditableNodeIntoView(int nativeContentViewCoreImpl);
     private native boolean nativeNeedsReload(int nativeContentViewCoreImpl);
 
     private native void nativeClearHistory(int nativeContentViewCoreImpl);

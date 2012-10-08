@@ -1046,6 +1046,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_FindMatchRects, OnFindMatchRects)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewMsg_SynchronousFind, OnSynchronousFind)
+    IPC_MESSAGE_HANDLER(ViewMsg_UndoScrollFocusedEditableNodeIntoView,
+                        OnUndoScrollFocusedEditableNodeIntoRect)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyToFindPboard, OnCopyToFindPboard)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
@@ -1472,10 +1474,20 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
   WebKit::WebNode node = GetFocusedNode();
   if (!node.isNull()) {
-    if (IsEditableNode(node))
+    if (IsEditableNode(node)) {
+      webview()->saveScrollAndScaleState();
       webview()->scrollFocusedNodeIntoRect(rect);
+    }
   }
 }
+
+#if defined(OS_ANDROID)
+void RenderViewImpl::OnUndoScrollFocusedEditableNodeIntoRect() {
+  const WebNode node = GetFocusedNode();
+  if (!node.isNull() && IsEditableNode(node))
+    webview()->restoreScrollAndScaleState();
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
