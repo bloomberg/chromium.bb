@@ -353,8 +353,7 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
   download_stats::RecordDownloadCount(download_stats::CANCELLED_COUNT);
 
   TransitionTo(CANCELLED_INTERNAL);
-  if (user_cancel)
-    delegate_->DownloadStopped(this);
+  delegate_->DownloadStopped(this);
 }
 
 void DownloadItemImpl::Delete(DeleteReason reason) {

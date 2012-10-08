@@ -218,6 +218,8 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
     // Between commit point (dispatch of download file release) and
     // completed.  Embedder may be opening the file in this state.
+    // Note that the DownloadItem may be deleted (by shutdown) in this
+    // state.
     COMPLETING_INTERNAL,
 
     // After embedder has had a chance to auto-open.  User may now open

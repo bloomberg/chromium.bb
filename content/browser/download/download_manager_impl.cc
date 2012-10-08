@@ -280,12 +280,6 @@ void DownloadManagerImpl::Shutdown() {
   FOR_EACH_OBSERVER(Observer, observers_, ManagerGoingDown(this));
   // TODO(benjhayden): Consider clearing observers_.
 
-  DCHECK(file_manager_);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::OnDownloadManagerShutdown,
-                 file_manager_, make_scoped_refptr(this)));
-
   AssertContainersConsistent();
 
   // Go through all downloads in downloads_.  Dangerous ones we need to
@@ -320,9 +314,19 @@ void DownloadManagerImpl::Shutdown() {
   // and all in progress downloads have been cancelled.  We can now delete
   // anything left.
 
-  active_downloads_.clear();
+  // We delete the downloads before clearing the active_downloads_ map
+  // so that downloads in the COMPLETING_INTERNAL state (which will have
+  // ignored the Cancel() above) will still show up in active_downloads_
+  // in order to satisfy the invariants enforced in AssertStateConsistent().
   STLDeleteValues(&downloads_);
+  active_downloads_.clear();
   downloads_.clear();
+
+  DCHECK(file_manager_);
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::OnDownloadManagerShutdown,
+                 file_manager_, make_scoped_refptr(this)));
 
   // We'll have nothing more to report to the observers after this point.
   observers_.Clear();
