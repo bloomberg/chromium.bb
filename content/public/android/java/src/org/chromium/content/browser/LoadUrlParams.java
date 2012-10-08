@@ -7,6 +7,8 @@ package org.chromium.content.browser;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
+import java.util.Map;
+
 /**
  * Holds parameters for ContentViewCore.LoadUrl. Parameters should match
  * counterparts in NavigationController::LoadURLParams, including default
@@ -35,7 +37,7 @@ public class LoadUrlParams {
     int mLoadUrlType;
     int mTransitionType;
     int mUaOverrideOption;
-    String mExtraHeaders;
+    private Map<String, String> mExtraHeaders;
     byte[] mPostData;
     String mBaseUrlForDataUrl;
     String mVirtualUrlForDataUrl;
@@ -142,10 +144,32 @@ public class LoadUrlParams {
 
     /**
      * Set extra headers for this load.
-     * @param extraHeaders Extra headers seperated by "\n".
+     * @param extraHeaders Extra HTTP headers for this load. Note that these
+     *                     headers will never overwrite existing ones set by Chromium.
      */
-    public void setExtraHeaders(String extraHeaders) {
+    public void setExtraHeaders(Map<String, String> extraHeaders) {
         mExtraHeaders = extraHeaders;
+    }
+
+    /**
+     * Return the extra headers as a single String separated by "\n", or null if no extra header
+     * is set. This form is suitable for passing to native
+     * NavigationController::LoadUrlParams::extra_headers.
+     */
+    String getExtraHeadersString() {
+        if (mExtraHeaders == null) return null;
+
+        StringBuilder headerBuilder = new StringBuilder();
+        for (Map.Entry<String, String> header : mExtraHeaders.entrySet()) {
+            if (headerBuilder.length() > 0) headerBuilder.append("\n");
+
+            // Header name should be lower case.
+            headerBuilder.append(header.getKey().toLowerCase());
+            headerBuilder.append(":");
+            headerBuilder.append(header.getValue());
+        }
+
+        return headerBuilder.toString();
     }
 
     /**

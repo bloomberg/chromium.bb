@@ -83,6 +83,7 @@ public class TestWebServer {
 
     private Map<String, Response> mResponseMap = new HashMap<String, Response>();
     private Map<String, Integer> mResponseCountMap = new HashMap<String, Integer>();
+    private Map<String, HttpRequest> mLastRequestMap = new HashMap<String, HttpRequest>();
 
     /**
      * Create and start a local HTTP server instance.
@@ -141,6 +142,15 @@ public class TestWebServer {
         sInstance = null;
     }
 
+    private String setResponseInternal(
+            String requestPath, byte[] responseData,
+            List<Pair<String, String>> responseHeaders) {
+        mResponseMap.put(requestPath, new Response(responseData, responseHeaders));
+        mResponseCountMap.put(requestPath, new Integer(0));
+        mLastRequestMap.put(requestPath, null);
+        return mServerUri + requestPath;
+    }
+
     /**
      * Sets a response to be returned when a particular request path is passed
      * in (with the option to specify additional headers).
@@ -155,9 +165,7 @@ public class TestWebServer {
     public String setResponse(
             String requestPath, String responseString,
             List<Pair<String, String>> responseHeaders) {
-        mResponseMap.put(requestPath, new Response(responseString.getBytes(), responseHeaders));
-        mResponseCountMap.put(requestPath, new Integer(0));
-        return mServerUri + requestPath;
+        return setResponseInternal(requestPath, responseString.getBytes(), responseHeaders);
     }
 
     /**
@@ -175,17 +183,27 @@ public class TestWebServer {
     public String setResponseBase64(
             String requestPath, String base64EncodedResponse,
             List<Pair<String, String>> responseHeaders) {
-        mResponseMap.put(requestPath,
-                new Response(Base64.decode(base64EncodedResponse, Base64.DEFAULT),
-                responseHeaders));
-        mResponseCountMap.put(requestPath, Integer.valueOf(0));
-        return mServerUri + requestPath;
+        return setResponseInternal(requestPath,
+                                   Base64.decode(base64EncodedResponse, Base64.DEFAULT),
+                                   responseHeaders);
     }
 
+    /**
+     * Get the number of requests was made at this path since it was last set.
+     */
     public int getRequestCount(String requestPath) {
         Integer count = mResponseCountMap.get(requestPath);
         if (count == null) throw new IllegalArgumentException("Path not set: " + requestPath);
         return count.intValue();
+    }
+
+    /**
+     * Returns the last HttpRequest at this path. Can return null if it is never requested.
+     */
+    public HttpRequest getLastRequest(String requestPath) {
+        if (!mLastRequestMap.containsKey(requestPath))
+            throw new IllegalArgumentException("Path not set: " + requestPath);
+        return mLastRequestMap.get(requestPath);
     }
 
     public String getBaseUrl() {
@@ -273,6 +291,7 @@ public class TestWebServer {
             }
             mResponseCountMap.put(path, Integer.valueOf(
                     mResponseCountMap.get(path).intValue() + 1));
+            mLastRequestMap.put(path, request);
         }
         StatusLine sl = httpResponse.getStatusLine();
         Log.i(TAG, sl.getStatusCode() + "(" + sl.getReasonPhrase() + ")");

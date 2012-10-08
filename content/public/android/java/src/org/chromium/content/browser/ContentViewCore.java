@@ -621,7 +621,7 @@ public class ContentViewCore implements MotionEventDelegate {
                 params.mLoadUrlType,
                 params.mTransitionType,
                 params.mUaOverrideOption,
-                params.mExtraHeaders,
+                params.getExtraHeadersString(),
                 params.mPostData,
                 params.mBaseUrlForDataUrl,
                 params.mVirtualUrlForDataUrl);
