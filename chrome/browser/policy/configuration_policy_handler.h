@@ -285,9 +285,13 @@ class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
                                const Value** url_value,
                                std::string* url_string);
 
-  // Make sure that the |path| if present in |prefs_|.  If not, set it to
+  // Make sure that the |path| is present in |prefs_|.  If not, set it to
   // a blank string.
   void EnsureStringPrefExists(PrefValueMap* prefs, const std::string& path);
+
+  // Make sure that the |path| is present in |prefs_| and is a ListValue.  If
+  // not, set it to an empty list.
+  void EnsureListPrefExists(PrefValueMap* prefs, const std::string& path);
 
   // The ConfigurationPolicyHandler handlers for each default search policy.
   std::vector<ConfigurationPolicyHandler*> handlers_;

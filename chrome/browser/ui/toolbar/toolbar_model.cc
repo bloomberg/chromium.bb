@@ -6,9 +6,11 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
@@ -198,14 +200,21 @@ NavigationController* ToolbarModel::GetNavigationController() const {
 
 string16 ToolbarModel::TryToExtractSearchTermsFromURL(const GURL& url) const {
   Profile* profile = GetProfile();
-  if (profile &&
-      chrome::search::IsInstantExtendedAPIEnabled(profile) &&
-      google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec())) {
-    // TODO(dominich): http://crbug.com/135106 - Replace this with whatever the
-    // final solution is as per http://crbug.com/139176.
-    return google_util::GetSearchTermsFromGoogleSearchURL(url.spec());
-  }
-  return string16();
+
+  // Ensure instant extended API is enabled.
+  if (!profile || !chrome::search::IsInstantExtendedAPIEnabled(profile))
+    return string16();
+
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+
+  TemplateURL *template_url = template_url_service->GetDefaultSearchProvider();
+  if (!template_url)
+    return string16();
+
+  string16 result;
+  template_url->ExtractSearchTermsFromURL(url, &result);
+  return result;
 }
 
 Profile* ToolbarModel::GetProfile() const {

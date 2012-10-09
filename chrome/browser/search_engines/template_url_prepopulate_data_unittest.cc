@@ -104,6 +104,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   entry->SetString("favicon_url", "http://foi.com/favicon.ico");
   entry->SetString("suggest_url", "");
   entry->SetString("instant_url", "");
+  entry->Set("alternate_urls", new ListValue());
   entry->SetString("encoding", "UTF-8");
   entry->SetInteger("id", 1001);
   overrides->Append(entry);

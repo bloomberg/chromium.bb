@@ -641,3 +641,104 @@ TEST_F(TemplateURLTest, ParseURLNestedParameter) {
   EXPECT_EQ(TemplateURLRef::SEARCH_TERMS, replacements[0].type);
   EXPECT_TRUE(valid);
 }
+
+TEST_F(TemplateURLTest, GetURLNoInstantURL) {
+  TemplateURLData data;
+  data.SetURL("http://google.com/?q={searchTerms}");
+  data.suggestions_url = "http://google.com/suggest?q={searchTerms}";
+  data.alternate_urls.push_back("http://google.com/alt?q={searchTerms}");
+  data.alternate_urls.push_back("{google:baseURL}/alt/#q={searchTerms}");
+  TemplateURL url(NULL, data);
+  ASSERT_EQ(3U, url.URLCount());
+  EXPECT_EQ("http://google.com/alt?q={searchTerms}", url.GetURL(0));
+  EXPECT_EQ("{google:baseURL}/alt/#q={searchTerms}", url.GetURL(1));
+  EXPECT_EQ("http://google.com/?q={searchTerms}", url.GetURL(2));
+}
+
+TEST_F(TemplateURLTest, GetURLNoSuggestionsURL) {
+  TemplateURLData data;
+  data.SetURL("http://google.com/?q={searchTerms}");
+  data.instant_url = "http://google.com/instant#q={searchTerms}";
+  data.alternate_urls.push_back("http://google.com/alt?q={searchTerms}");
+  data.alternate_urls.push_back("{google:baseURL}/alt/#q={searchTerms}");
+  TemplateURL url(NULL, data);
+  ASSERT_EQ(3U, url.URLCount());
+  EXPECT_EQ("http://google.com/alt?q={searchTerms}", url.GetURL(0));
+  EXPECT_EQ("{google:baseURL}/alt/#q={searchTerms}", url.GetURL(1));
+  EXPECT_EQ("http://google.com/?q={searchTerms}", url.GetURL(2));
+}
+
+TEST_F(TemplateURLTest, GetURLOnlyOneURL) {
+  TemplateURLData data;
+  data.SetURL("http://www.google.co.uk/");
+  TemplateURL url(NULL, data);
+  ASSERT_EQ(1U, url.URLCount());
+  EXPECT_EQ("http://www.google.co.uk/", url.GetURL(0));
+}
+
+TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
+  TemplateURLData data;
+  data.SetURL("http://google.com/?q={searchTerms}");
+  data.instant_url = "http://google.com/instant#q={searchTerms}";
+  data.alternate_urls.push_back("http://google.com/alt/#q={searchTerms}");
+  data.alternate_urls.push_back(
+      "http://google.com/alt/?ext=foo&q={searchTerms}#ref=bar");
+  TemplateURL url(NULL, data);
+  string16 result;
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/?q=something"), &result));
+  EXPECT_EQ(ASCIIToUTF16("something"), result);
+
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.ca/?q=something"), &result));
+  EXPECT_EQ(string16(), result);
+
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/foo/?q=foo"), &result));
+  EXPECT_EQ(string16(), result);
+
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("https://google.com/?q=foo"), &result));
+  EXPECT_EQ(string16(), result);
+
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com:8080/?q=foo"), &result));
+  EXPECT_EQ(string16(), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/?q=1+2+3&b=456"), &result));
+  EXPECT_EQ(ASCIIToUTF16("1 2 3"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/?q=123#q=456"), &result));
+  EXPECT_EQ(ASCIIToUTF16("456"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/?a=012&q=123&b=456#f=789"), &result));
+  EXPECT_EQ(ASCIIToUTF16("123"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(GURL(
+      "http://google.com/alt/?a=012&q=123&b=456#j=abc&q=789&h=def9"), &result));
+  EXPECT_EQ(ASCIIToUTF16("789"), result);
+
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/?q="), &result));
+  EXPECT_EQ(string16(), result);
+
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/?#q="), &result));
+  EXPECT_EQ(string16(), result);
+
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/?q=#q="), &result));
+  EXPECT_EQ(string16(), result);
+
+  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/?q=123#q="), &result));
+  EXPECT_EQ(string16(), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/?q=#q=123"), &result));
+  EXPECT_EQ(ASCIIToUTF16("123"), result);
+}

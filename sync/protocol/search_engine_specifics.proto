@@ -59,5 +59,8 @@ message SearchEngineSpecifics {
   optional int64 last_modified = 17;
   // The primary identifier of this search engine entry for Sync.
   optional string sync_guid = 18;
+  // A list of URL patterns that can be used, in addition to |url| and
+  // |instant_url|, to extract search terms from a URL.
+  repeated string alternate_urls = 19;
 }
 

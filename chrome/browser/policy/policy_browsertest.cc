@@ -633,6 +633,86 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_EQ(GURL(chrome::kAboutBlankURL), web_contents->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableInstantExtendedAPI);
+
+  // Verifies that a default search is made using the provider configured via
+  // policy. Also checks that default search can be completely disabled.
+  const string16 kKeyword(ASCIIToUTF16("testsearch"));
+  const std::string kSearchURL("http://search.example/search?q={searchTerms}");
+  const std::string kAlternateURL0(
+      "http://search.example/search#q={searchTerms}");
+  const std::string kAlternateURL1("http://search.example/#q={searchTerms}");
+
+  TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
+      browser()->profile());
+  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
+  TemplateURL* default_search = service->GetDefaultSearchProvider();
+  ASSERT_TRUE(default_search);
+  EXPECT_NE(kKeyword, default_search->keyword());
+  EXPECT_NE(kSearchURL, default_search->url());
+  EXPECT_NE(kAlternateURL0, default_search->alternate_urls()[0]);
+  EXPECT_NE(kAlternateURL1, default_search->alternate_urls()[1]);
+
+  // Override the default search provider using policies.
+  PolicyMap policies;
+  policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  policies.Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateStringValue(kKeyword));
+  policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL));
+  base::ListValue* alternate_urls = new base::ListValue();
+  alternate_urls->AppendString(kAlternateURL0);
+  alternate_urls->AppendString(kAlternateURL1);
+  policies.Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, alternate_urls);
+  provider_.UpdateChromePolicy(policies);
+  default_search = service->GetDefaultSearchProvider();
+  ASSERT_TRUE(default_search);
+  EXPECT_EQ(kKeyword, default_search->keyword());
+  EXPECT_EQ(kSearchURL, default_search->url());
+  EXPECT_EQ(kAlternateURL0, default_search->alternate_urls()[0]);
+  EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
+
+  // Verify that searching from the omnibox does search term replacement with
+  // first URL pattern.
+  chrome::FocusLocationBar(browser());
+  LocationBar* location_bar = browser()->window()->GetLocationBar();
+  ui_test_utils::SendToOmniboxAndSubmit(location_bar,
+      "http://search.example/#q=foobar");
+  OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
+  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_EQ(ASCIIToUTF16("foobar"), model->CurrentMatch().contents);
+
+  // Verify that searching from the omnibox does search term replacement with
+  // second URL pattern.
+  chrome::FocusLocationBar(browser());
+  ui_test_utils::SendToOmniboxAndSubmit(location_bar,
+      "http://search.example/search#q=banana");
+  model = location_bar->GetLocationEntry()->model();
+  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_EQ(ASCIIToUTF16("banana"), model->CurrentMatch().contents);
+
+  // Verify that searching from the omnibox does search term replacement with
+  // standard search URL pattern.
+  chrome::FocusLocationBar(browser());
+  ui_test_utils::SendToOmniboxAndSubmit(location_bar,
+      "http://search.example/search?q=tractor+parts");
+  model = location_bar->GetLocationEntry()->model();
+  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_EQ(ASCIIToUTF16("tractor parts"), model->CurrentMatch().contents);
+
+  // Verify that searching from the omnibox prioritizes hash over query.
+  chrome::FocusLocationBar(browser());
+  ui_test_utils::SendToOmniboxAndSubmit(location_bar,
+      "http://search.example/search?q=tractor+parts#q=foobar");
+  model = location_bar->GetLocationEntry()->model();
+  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_EQ(ASCIIToUTF16("foobar"), model->CurrentMatch().contents);
+}
+
 // The linux and win  bots can't create a GL context. http://crbug.com/103379
 #if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {

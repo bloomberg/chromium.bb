@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 161
+#   For your editing convenience: highest ID currently used: 162
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1566,6 +1566,24 @@
           'desc': '''Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
           This policy is optional. If not set, the default will be used which is UTF-8.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+        },
+        {
+          'name': 'DefaultSearchProviderAlternateURLs',
+          'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
+          'supported_on': ['chrome.*:24-', 'chrome_os:0.24-'],
+          'features': {'dynamic_refresh': True},
+          'example_value': ['http://search.my.company/suggest#q={searchTerms}', 'http://search.my.company/suggest/search#q={searchTerms}'],
+          'id': 162,
+          'caption': '''List of alternate URLs for the default search provider.''',
+          'desc': '''Specifies a list of alternate URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be used to extract the search terms.
+
+          This policy is optional. If not set, no alternate urls will be used to extract search terms.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },

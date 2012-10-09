@@ -83,17 +83,17 @@ struct TestItem {
     true
   },
   {
-    GURL("http://google.com/search?q=tractor+supply"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply"),
+    GURL("http://google.ca/search?q=tractor+supply"),
+    ASCIIToUTF16("google.ca/search?q=tractor+supply"),
+    ASCIIToUTF16("google.ca/search?q=tractor+supply"),
+    ASCIIToUTF16("google.ca/search?q=tractor+supply"),
     false,
     true
   },
   {
-    GURL("http://google.com/search?q=tractor+supply&espv=1"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply&espv=1"),
+    GURL("http://google.com/search?q=tractor+supply"),
+    ASCIIToUTF16("google.com/search?q=tractor+supply"),
+    ASCIIToUTF16("google.com/search?q=tractor+supply"),
     ASCIIToUTF16("tractor supply"),
     true,
     true
@@ -184,7 +184,7 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLInstantExtendedAPIDisabled) {
   }
 }
 
-// Test that we don't replace any URLs when the InstantExtended API is enabled.
+// Test that we replace URLs when the InstantExtended API is enabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURLInstantExtendedAPIEnabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableInstantExtendedAPI);

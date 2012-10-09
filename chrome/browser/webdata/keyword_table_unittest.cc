@@ -259,6 +259,8 @@ TEST_F(KeywordTableTest, GetTableContents) {
   keyword.date_created = base::Time::UnixEpoch();
   keyword.last_modified = base::Time::UnixEpoch();
   keyword.sync_guid = "1234-5678-90AB-CDEF";
+  keyword.alternate_urls.push_back("a_url1");
+  keyword.alternate_urls.push_back("a_url2");
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   keyword.SetKeyword(ASCIIToUTF16("url"));
@@ -268,12 +270,13 @@ TEST_F(KeywordTableTest, GetTableContents) {
   keyword.id = 2;
   keyword.prepopulate_id = 5;
   keyword.sync_guid = "FEDC-BA09-8765-4321";
+  keyword.alternate_urls.clear();
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   const char kTestContents[] = "1short_namekeywordhttp://favicon.url/"
-      "http://url/1001url20001234-5678-90AB-CDEF2short_nameurl"
-      "http://favicon.url/http://url/1http://originating.url/00Shift_JIS1url250"
-      "http://instant2/0FEDC-BA09-8765-4321";
+      "http://url/1001url20001234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]"
+      "2short_nameurlhttp://favicon.url/http://url/1http://originating.url/00"
+      "Shift_JIS1url250http://instant2/0FEDC-BA09-8765-4321[]";
 
   std::string contents;
   EXPECT_TRUE(keyword_table->GetTableContents("keywords",
@@ -302,6 +305,8 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   keyword.date_created = base::Time::UnixEpoch();
   keyword.last_modified = base::Time::UnixEpoch();
   keyword.sync_guid = "1234-5678-90AB-CDEF";
+  keyword.alternate_urls.push_back("a_url1");
+  keyword.alternate_urls.push_back("a_url2");
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   keyword.SetKeyword(ASCIIToUTF16("url"));
@@ -311,12 +316,14 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   keyword.id = 1;
   keyword.prepopulate_id = 5;
   keyword.sync_guid = "FEDC-BA09-8765-4321";
+  keyword.alternate_urls.clear();
   EXPECT_TRUE(keyword_table->AddKeyword(keyword));
 
   const char kTestContents[] = "1short_nameurlhttp://favicon.url/http://url/1"
       "http://originating.url/00Shift_JIS1url250http://instant2/0"
-      "FEDC-BA09-8765-43212short_namekeywordhttp://favicon.url/http://url/1001"
-      "url20001234-5678-90AB-CDEF";
+      "FEDC-BA09-8765-4321[]"
+      "2short_namekeywordhttp://favicon.url/http://url/1001"
+      "url20001234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]";
 
   std::string contents;
   EXPECT_TRUE(keyword_table->GetTableContents("keywords",

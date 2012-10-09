@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "googleurl/src/gurl.h"
+#include "googleurl/src/url_parse.h"
 
 class Profile;
 class SearchTermsData;
@@ -40,11 +41,13 @@ class TemplateURLRef {
   };
 
   // Which kind of URL within our owner we are.  This allows us to get at the
-  // correct string field.
+  // correct string field. Use |INDEXED| to indicate that the numerical
+  // |index_in_owner_| should be used instead.
   enum Type {
     SEARCH,
     SUGGEST,
     INSTANT,
+    INDEXED
   };
 
   // This struct encapsulates arguments passed to
@@ -70,6 +73,7 @@ class TemplateURLRef {
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);
+  TemplateURLRef(TemplateURL* owner, size_t index_in_owner);
   ~TemplateURLRef();
 
   // Returns the raw URL. None of the parameters will have been replaced.
@@ -127,6 +131,13 @@ class TemplateURLRef {
   // Returns true if this TemplateURLRef has a replacement term of
   // {google:baseURL} or {google:baseSuggestURL}.
   bool HasGoogleBaseURLs() const;
+
+  // Use the pattern referred to by this TemplateURLRef to match the provided
+  // |url| and extract |search_terms| from it. Returns true if the pattern
+  // matches, even if |search_terms| is empty. Returns false and an empty
+  // |search_terms| if the pattern does not match.
+  bool ExtractSearchTermsFromURL(const GURL& url,
+                                 string16* search_terms) const;
 
  private:
   friend class TemplateURL;
@@ -212,6 +223,10 @@ class TemplateURLRef {
   // What kind of URL we are.
   const Type type_;
 
+  // If |type_| is |INDEXED|, this |index_in_owner_| is used instead to refer to
+  // a url within our owner.
+  const size_t index_in_owner_;
+
   // Whether the URL has been parsed.
   mutable bool parsed_;
 
@@ -229,11 +244,12 @@ class TemplateURLRef {
   // into the string, and may be empty.
   mutable Replacements replacements_;
 
-  // Host, path and key of the search term. These are only set if the url
-  // contains one search term.
+  // Host, path, key and location of the search term. These are only set if the
+  // url contains one search term.
   mutable std::string host_;
   mutable std::string path_;
   mutable std::string search_term_key_;
+  mutable url_parse::Parsed::ComponentType search_term_key_location_;
 
   // Whether the contained URL is a pre-populated URL.
   bool prepopulated_;
@@ -325,6 +341,10 @@ struct TemplateURLData {
   // regardless of whether they have been associated with Sync.
   std::string sync_guid;
 
+  // A list of URL patterns that can be used, in addition to |url_|, to extract
+  // search terms from a URL.
+  std::vector<std::string> alternate_urls;
+
  private:
   // Private so we can enforce using the setters and thus enforce that these
   // fields are never empty.
@@ -369,6 +389,9 @@ class TemplateURL {
   const std::string& url() const { return data_.url(); }
   const std::string& suggestions_url() const { return data_.suggestions_url; }
   const std::string& instant_url() const { return data_.instant_url; }
+  const std::vector<std::string>& alternate_urls() const {
+    return data_.alternate_urls;
+  }
   const GURL& favicon_url() const { return data_.favicon_url; }
 
   const GURL& originating_url() const { return data_.originating_url; }
@@ -421,6 +444,28 @@ class TemplateURL {
 
   std::string GetExtensionId() const;
   bool IsExtensionKeyword() const;
+
+  // Returns the total number of URLs comprised in this template, including
+  // search and alternate URLs.
+  size_t URLCount() const;
+
+  // Gets the search URL at the given index. The alternate URLs, if any, are
+  // numbered starting at 0, and the primary search URL follows. This is used
+  // to decode the search term given a search URL (see
+  // ExtractSearchTermsFromURL()).
+  const std::string& GetURL(size_t index) const;
+
+  // Use the alternate URLs and the search URL to match the provided |url|
+  // and extract |search_terms| from it. Returns false and an empty
+  // |search_terms| if no search terms can be matched. The order in which the
+  // alternate URLs are listed dictates their priority, the URL at index 0
+  // is treated as the highest priority and the primary search URL is treated
+  // as the lowest priority (see GetURL()).  For example, if a TemplateURL has
+  // alternate URL "http://foo/#q={searchTerms}" and search URL
+  // "http://foo/?q={searchTerms}", and the URL to be decoded is
+  // "http://foo/?q=a#q=b", the alternate URL will match first and the decoded
+  // search term will be "b".
+  bool ExtractSearchTermsFromURL(const GURL& url, string16* search_terms);
 
  private:
   friend class TemplateURLService;

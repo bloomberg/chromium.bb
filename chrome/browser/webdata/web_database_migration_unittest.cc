@@ -195,7 +195,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 46;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 47;
 
 void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
   std::string contents;
@@ -558,8 +558,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion27ToCurrent) {
     EXPECT_EQ(std::string(), s.ColumnString(0));
 
     // Verify the data made it over.
-    stmt = "SELECT " + std::string(KeywordTable::kKeywordColumns) +
-        " FROM keywords";
+    stmt = "SELECT " + KeywordTable::GetKeywordColumns() + " FROM keywords";
     sql::Statement s2(connection.GetUniqueStatement(stmt.c_str()));
     ASSERT_TRUE(s2.Step());
     EXPECT_EQ(2, s2.ColumnInt(0));
@@ -1783,7 +1782,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion42ToCurrent) {
     EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
 
     EXPECT_TRUE(connection.DoesTableExist("keywords_backup"));
-    std::string query("SELECT " + std::string(KeywordTable::kKeywordColumns) +
+    std::string query("SELECT " + KeywordTable::GetKeywordColumns() +
                       " FROM keywords_backup");
     sql::Statement s(connection.GetUniqueStatement(query.c_str()));
     ASSERT_TRUE(s.Step());
@@ -2207,5 +2206,51 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion45CompatibleToCurrent) {
     // Check version.
     EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
     EXPECT_LE(45, VersionFromConnection(&connection));
+  }
+}
+
+// Tests that the |alternate_urls| column is added to the keyword table schema
+// for a version 45 database.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion46ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(
+      LoadDatabase(FILE_PATH_LITERAL("version_46.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 46 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 46, 46));
+
+    ASSERT_FALSE(connection.DoesColumnExist("keywords", "alternate_urls"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords_backup",
+                                            "alternate_urls"));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_FALSE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // A new column should have been created.
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "alternate_urls"));
+    ASSERT_TRUE(connection.DoesColumnExist("keywords_backup",
+                                           "alternate_urls"));
   }
 }

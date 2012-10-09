@@ -564,6 +564,13 @@
     "os": ["win", "linux", "mac", "chromeos"]
   },
 
+  "DefaultSearchProviderAlternateURLs": {
+    "pref": "default_search_provider.alternate_urls",
+    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderAlternateURLs": ["http://www.google.com/#q={searchTerms}", "http://www.google.com/search#q={searchTerms}"] },
+    "settings_pages": [],
+    "os": ["win", "linux", "mac", "chromeos"]
+  },
+
   "DefaultCookiesSetting": {
     "pref": "profile.managed_default_content_settings.cookies",
     "test_policy": { "DefaultCookiesSetting": 2 },

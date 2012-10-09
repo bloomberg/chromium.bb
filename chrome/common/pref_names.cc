@@ -419,6 +419,10 @@ const char kDefaultSearchProviderID[] = "default_search_provider.id";
 const char kDefaultSearchProviderPrepopulateID[] =
     "default_search_provider.prepopulate_id";
 
+// The alternate urls of the default search provider.
+const char kDefaultSearchProviderAlternateURLs[] =
+    "default_search_provider.alternate_urls";
+
 // The dictionary key used when the default search providers are given
 // in the preferences file. Normally they are copied from the master
 // preferences file.

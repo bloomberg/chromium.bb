@@ -85,7 +85,8 @@ bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
       (url1->favicon_url() == url2->favicon_url()) &&
       (url1->safe_for_autoreplace() == url2->safe_for_autoreplace()) &&
       (url1->show_in_default_list() == url2->show_in_default_list()) &&
-      (url1->input_encodings() == url2->input_encodings());
+      (url1->input_encodings() == url2->input_encodings()) &&
+      (url1->alternate_urls() == url2->alternate_urls());
 }
 
 const char kFirstPotentialEngineHistogramName[] =
@@ -1301,6 +1302,9 @@ syncer::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
   se_specifics->set_instant_url(turl.instant_url());
   se_specifics->set_last_modified(turl.last_modified().ToInternalValue());
   se_specifics->set_sync_guid(turl.sync_guid());
+  for (size_t i = 0; i < turl.alternate_urls().size(); ++i)
+    se_specifics->add_alternate_urls(turl.alternate_urls()[i]);
+
   return syncer::SyncData::CreateLocalData(se_specifics->sync_guid(),
                                    se_specifics->keyword(),
                                    specifics);
@@ -1360,6 +1364,9 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   data.last_modified = base::Time::FromInternalValue(specifics.last_modified());
   data.prepopulate_id = specifics.prepopulate_id();
   data.sync_guid = specifics.sync_guid();
+  data.alternate_urls.clear();
+  for (int i = 0; i < specifics.alternate_urls_size(); ++i)
+    data.alternate_urls.push_back(specifics.alternate_urls(i));
 
   TemplateURL* turl = new TemplateURL(profile, data);
   DCHECK(!turl->IsExtensionKeyword());
@@ -1627,6 +1634,7 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
   std::string keyword;
   std::string id_string;
   std::string prepopulate_id;
+  ListValue alternate_urls;
   if (t_url) {
     DCHECK(!t_url->IsExtensionKeyword());
     enabled = true;
@@ -1641,6 +1649,8 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
     keyword = UTF16ToUTF8(t_url->keyword());
     id_string = base::Int64ToString(t_url->id());
     prepopulate_id = base::Int64ToString(t_url->prepopulate_id());
+    for (size_t i = 0; i < t_url->alternate_urls().size(); ++i)
+      alternate_urls.AppendString(t_url->alternate_urls()[i]);
   }
   prefs->SetBoolean(prefs::kDefaultSearchProviderEnabled, enabled);
   prefs->SetString(prefs::kDefaultSearchProviderSearchURL, search_url);
@@ -1652,6 +1662,7 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
   prefs->SetString(prefs::kDefaultSearchProviderKeyword, keyword);
   prefs->SetString(prefs::kDefaultSearchProviderID, id_string);
   prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID, prepopulate_id);
+  prefs->Set(prefs::kDefaultSearchProviderAlternateURLs, alternate_urls);
 }
 
 bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
@@ -1700,6 +1711,8 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
   std::string id_string = prefs->GetString(prefs::kDefaultSearchProviderID);
   std::string prepopulate_id =
       prefs->GetString(prefs::kDefaultSearchProviderPrepopulateID);
+  const ListValue* alternate_urls =
+      prefs->GetList(prefs::kDefaultSearchProviderAlternateURLs);
 
   TemplateURLData data;
   data.short_name = name;
@@ -1709,6 +1722,12 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
   data.instant_url = instant_url;
   data.favicon_url = GURL(icon_url);
   data.show_in_default_list = true;
+  data.alternate_urls.clear();
+  for (size_t i = 0; i < alternate_urls->GetSize(); ++i) {
+    std::string alternate_url;
+    if (alternate_urls->GetString(i, &alternate_url))
+      data.alternate_urls.push_back(alternate_url);
+  }
   base::SplitString(encodings, ';', &data.input_encodings);
   if (!id_string.empty() && !*is_managed) {
     int64 value;

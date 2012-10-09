@@ -51,6 +51,8 @@ class Statement;
 //                          in version 38.
 //   sync_guid              See TemplateURLData::sync_guid. This was added in
 //                          version 39.
+//   alternate_urls         See TemplateURLData::alternate_urls. This was added
+//                          in version 47.
 //
 // keywords_backup          The full copy of the |keywords| table. Added in
 //                          version 43. Must be in sync with |keywords|
@@ -89,8 +91,6 @@ class KeywordTable : public WebDatabaseTable {
   // provider.  The default search provider ID and the |keywords_backup| table
   // are signed.
   static const char kBackupSignatureKey[];
-  // Comma-separated list of keyword table column names, in order.
-  static const char kKeywordColumns[];
 
   KeywordTable(sql::Connection* db, sql::MetaTable* meta_table);
   virtual ~KeywordTable();
@@ -131,16 +131,21 @@ class KeywordTable : public WebDatabaseTable {
   bool SetBuiltinKeywordVersion(int version);
   int GetBuiltinKeywordVersion();
 
+  // Returns a comma-separated list of the keyword columns for the current
+  // version of the table.
+  static std::string GetKeywordColumns();
+
   // Table migration functions.
   bool MigrateToVersion21AutoGenerateKeywordColumn();
   bool MigrateToVersion25AddLogoIDColumn();
   bool MigrateToVersion26AddCreatedByPolicyColumn();
   bool MigrateToVersion28SupportsInstantColumn();
-  bool MigrateToVersion29InstantUrlToSupportsInstant();
+  bool MigrateToVersion29InstantURLToSupportsInstant();
   bool MigrateToVersion38AddLastModifiedColumn();
   bool MigrateToVersion39AddSyncGUIDColumn();
   bool MigrateToVersion44AddDefaultSearchProviderBackup();
   bool MigrateToVersion45RemoveLogoIDAndAutogenerateColumns();
+  bool MigrateToVersion47AddAlternateURLsColumn();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, DefaultSearchProviderBackup);
@@ -194,7 +199,7 @@ class KeywordTable : public WebDatabaseTable {
   bool UpdateDefaultSearchProviderIDBackup(TemplateURLID* id);
 
   // Migrates table |name| (which should be either "keywords" or
-  // "keywords_backup" from version 44 to version 45.
+  // "keywords_backup") from version 44 to version 45.
   bool MigrateKeywordsTableForVersion45(const std::string& name);
 
   // Whether the backup was overwritten during migration.

@@ -21,11 +21,11 @@
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 // static
-const int WebDatabase::kCurrentVersionNumber = 46;
+const int WebDatabase::kCurrentVersionNumber = 47;
 
 namespace {
 
-const int kCompatibleVersionNumber = 46;
+const int kCompatibleVersionNumber = 47;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -239,7 +239,7 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
       // FALL THROUGH
 
     case 28:
-      if (!keyword_table_->MigrateToVersion29InstantUrlToSupportsInstant())
+      if (!keyword_table_->MigrateToVersion29InstantURLToSupportsInstant())
         return FailedMigrationTo(29);
 
       ChangeVersion(&meta_table_, 29, true);
@@ -341,6 +341,13 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
         return FailedMigrationTo(46);
 
       ChangeVersion(&meta_table_, 46, true);
+      // FALL THROUGH
+
+    case 46:
+      if (!keyword_table_->MigrateToVersion47AddAlternateURLsColumn())
+        return FailedMigrationTo(47);
+
+      ChangeVersion(&meta_table_, 47, true);
       // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and

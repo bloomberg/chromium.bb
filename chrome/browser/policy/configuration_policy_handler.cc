@@ -89,6 +89,9 @@ const DefaultSearchSimplePolicyHandlerEntry kDefaultSearchPolicyMap[] = {
   { key::kDefaultSearchProviderEncodings,
     prefs::kDefaultSearchProviderEncodings,
     Value::TYPE_LIST },
+  { key::kDefaultSearchProviderAlternateURLs,
+    prefs::kDefaultSearchProviderAlternateURLs,
+    Value::TYPE_LIST },
 };
 
 // List of entries determining which proxy policies can be specified, depending
@@ -651,6 +654,8 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetString(prefs::kDefaultSearchProviderEncodings, std::string());
     prefs->SetString(prefs::kDefaultSearchProviderKeyword, std::string());
     prefs->SetString(prefs::kDefaultSearchProviderInstantURL, std::string());
+    prefs->SetValue(prefs::kDefaultSearchProviderAlternateURLs,
+                    new ListValue());
   } else {
     // The search URL is required.  The other entries are optional.  Just make
     // sure that they are all specified via policy, so that the regular prefs
@@ -667,6 +672,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderEncodings);
       EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderKeyword);
       EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderInstantURL);
+      EnsureListPrefExists(prefs, prefs::kDefaultSearchProviderAlternateURLs);
 
       // For the name and keyword, default to the host if not specified.  If
       // there is no host (file: URLs?  Not sure), use "_" to guarantee that the
@@ -751,6 +757,15 @@ void DefaultSearchPolicyHandler::EnsureStringPrefExists(
   std::string value;
   if (!prefs->GetString(path, &value))
     prefs->SetString(path, value);
+}
+
+void DefaultSearchPolicyHandler::EnsureListPrefExists(
+    PrefValueMap* prefs,
+    const std::string& path) {
+  base::Value* value;
+  base::ListValue* list_value;
+  if (!prefs->GetValue(path, &value) || !value->GetAsList(&list_value))
+    prefs->SetValue(path, new ListValue());
 }
 
 
