@@ -93,7 +93,7 @@
         "ldr r6, [sp, #0x18]\n" \
         "ldr r7, [sp, #0x1c]\n" \
         "ldr r8, [sp, #0x20]\n" \
-        /* Skip r9, since it is read-only */ \
+        /* Skip r9, which is not supposed to be settable or readable */ \
         "ldr r10, [sp, #0x28]\n" \
         "ldr r11, [sp, #0x2c]\n" \
         "ldr r12, [sp, #0x30]\n" \
@@ -258,8 +258,14 @@ extern const uint8_t kX86FlagBits[5];
         "push {r0}\n"  /* Leave space for cpsr */ \
         "push {r0}\n"  /* Leave space for prog_ctr */ \
         "push {r14}\n" \
+        /* Save r0-r12 and sp; adjust sp for the pushes above */ \
         "add r14, sp, #0xc\n" \
-        "push {r0-r12, r14}\n"  /* Push most of "struct NaClSignalContext" */ \
+        "push {r10-r12, r14}\n" \
+        /* Push a dummy value for r9, which the tests need not compare */ \
+        "mov r10, #0\n" \
+        "push {r10}\n" \
+        /* Save the rest of struct NaClSignalContext */ \
+        "push {r0-r8}\n" \
         /* Now save a correct prog_ctr value */ \
         "adr r0, " #def_func "\n" \
         "str r0, [sp, #0x3c]\n" \

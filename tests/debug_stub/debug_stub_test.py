@@ -250,6 +250,8 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r6'], 0x60000007)
       self.assertEquals(registers['r7'], 0x70000008)
       self.assertEquals(registers['r8'], 0x80000009)
+      # Skip r9 because it is not supposed to be settable or readable
+      # by untrusted code.
       self.assertEquals(registers['r10'], 0xa000000b)
       self.assertEquals(registers['r11'], 0xb000000c)
       self.assertEquals(registers['r12'], 0xc000000d)

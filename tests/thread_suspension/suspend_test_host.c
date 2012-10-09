@@ -308,7 +308,10 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
   regs.r6 = 0x12340007;
   regs.r7 = 0x12340008;
   regs.r8 = 0x12340009;
-  /* In the ARM sandbox, r9 is supposed to be read-only. */
+  /*
+   * Skip r9 because it is not supposed to be settable or readable by
+   * untrusted code.
+   */
   regs.r10 = 0x1234000a;
   regs.r11 = 0x1234000b;
   regs.r12 = 0x1234000c;

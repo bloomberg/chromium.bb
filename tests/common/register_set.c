@@ -120,8 +120,6 @@ void RegsApplySandboxConstraints(struct NaClSignalContext *regs) {
   regs->prog_ctr = r15 + (uint32_t) regs->prog_ctr;
   regs->stack_ptr = r15 + (uint32_t) regs->stack_ptr;
   regs->rbp = r15 + (uint32_t) regs->rbp;
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  regs->r9 = (uintptr_t) nacl_tls_get();
 #else
   UNREFERENCED_PARAMETER(regs);
 #endif
@@ -169,6 +167,16 @@ void RegsAssertEqual(const struct NaClSignalContext *actual,
   struct NaClSignalContext copy_expected = *expected;
   RegsNormalizeFlags(&copy_actual);
   RegsNormalizeFlags(&copy_expected);
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  /*
+   * We skip comparison of r9 because it is not supposed to be
+   * settable or readable by untrusted code.  However, for debugging
+   * purposes we still include r9 in register dumps printed by
+   * RegsDump(), so r9 remains listed in kRegs[].
+   */
+  copy_expected.r9 = copy_actual.r9;
+#endif
 
   for (regnum = 0; regnum < NACL_ARRAY_SIZE(kRegs); regnum++) {
     if (RegsGetRegValue(&copy_actual, regnum) !=

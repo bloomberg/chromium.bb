@@ -89,7 +89,10 @@ void set_registers_and_stop() {
   regs.r6 = 0x60000007;
   regs.r7 = 0x70000008;
   regs.r8 = 0x80000009;
-  /* Skip r9, which is read-only for untrusted code. */
+  /*
+   * Skip r9 because it is not supposed to be settable or readable by
+   * untrusted code.
+   */
   regs.r10 = 0xa000000b;
   regs.r11 = 0xb000000c;
   regs.r12 = 0xc000000d;

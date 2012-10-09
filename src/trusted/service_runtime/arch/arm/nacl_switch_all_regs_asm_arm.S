@@ -13,13 +13,10 @@
  */
 .arm
 
-/*
- * void NaClSwitchAllRegs(struct NaClAppThread *natp,
- *                        struct NaClSignalContext *regs);
- */
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchAllRegs):
+/* void NaClSwitchAllRegsAsm(struct NaClSignalContext *regs); */
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchAllRegsAsm):
         /* Restore CPSR (flags) register, a.k.a. ASPR for user mode */
-        ldr r0, [r1, #0x40]
-        msr apsr_nzcvqg, r0
+        ldr r1, [r0, #0x40]
+        msr apsr_nzcvqg, r1
 
-        ldmia r1, {r0-pc}
+        ldmia r0, {r0-pc}

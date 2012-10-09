@@ -118,7 +118,8 @@ elif env.Bit('build_x86_64'):
 elif env.Bit('build_arm'):
   ldr_inputs += [
     'arch/arm/nacl_app.c',
-    'arch/arm/nacl_switch_all_regs_arm.S',
+    'arch/arm/nacl_switch_all_regs_arm.c',
+    'arch/arm/nacl_switch_all_regs_asm_arm.S',
     'arch/arm/nacl_switch_to_app_arm.c',
     'arch/arm/sel_rt.c',
     'arch/arm/nacl_tls.c',
