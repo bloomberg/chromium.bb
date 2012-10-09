@@ -379,4 +379,38 @@ TEST_F(ZipReaderTest, current_entry_info_Directory) {
   EXPECT_TRUE(current_entry_info->is_directory());
 }
 
+// Verifies that the ZipReader class can extract a file from a zip archive
+// stored in memory. This test opens a zip archive in a std::string object,
+// extracts its content, and verifies the content is the same as the expected
+// text.
+TEST_F(ZipReaderTest, OpenFromString) {
+  // A zip archive consisting of one file "test.txt", which is a 16-byte text
+  // file that contains "This is a test.\n".
+  const char kTestData[] =
+      "\x50\x4b\x03\x04\x0a\x00\x00\x00\x00\x00\xa4\x66\x24\x41\x13\xe8"
+      "\xcb\x27\x10\x00\x00\x00\x10\x00\x00\x00\x08\x00\x1c\x00\x74\x65"
+      "\x73\x74\x2e\x74\x78\x74\x55\x54\x09\x00\x03\x34\x89\x45\x50\x34"
+      "\x89\x45\x50\x75\x78\x0b\x00\x01\x04\x8e\xf0\x00\x00\x04\x88\x13"
+      "\x00\x00\x54\x68\x69\x73\x20\x69\x73\x20\x61\x20\x74\x65\x73\x74"
+      "\x2e\x0a\x50\x4b\x01\x02\x1e\x03\x0a\x00\x00\x00\x00\x00\xa4\x66"
+      "\x24\x41\x13\xe8\xcb\x27\x10\x00\x00\x00\x10\x00\x00\x00\x08\x00"
+      "\x18\x00\x00\x00\x00\x00\x01\x00\x00\x00\xa4\x81\x00\x00\x00\x00"
+      "\x74\x65\x73\x74\x2e\x74\x78\x74\x55\x54\x05\x00\x03\x34\x89\x45"
+      "\x50\x75\x78\x0b\x00\x01\x04\x8e\xf0\x00\x00\x04\x88\x13\x00\x00"
+      "\x50\x4b\x05\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4e\x00\x00\x00"
+      "\x52\x00\x00\x00\x00\x00";
+  std::string data(kTestData, arraysize(kTestData));
+  ZipReader reader;
+  ASSERT_TRUE(reader.OpenFromString(data));
+  FilePath target_path(FILE_PATH_LITERAL("test.txt"));
+  ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
+  ASSERT_TRUE(reader.ExtractCurrentEntryToFilePath(
+      test_dir_.AppendASCII("test.txt")));
+
+  std::string actual;
+  ASSERT_TRUE(file_util::ReadFileToString(
+      test_dir_.AppendASCII("test.txt"), &actual));
+  EXPECT_EQ(std::string("This is a test.\n"), actual);
+}
+
 }  // namespace zip

@@ -4,6 +4,9 @@
 
 #include "chrome/common/zip.h"
 
+#include <algorithm>
+
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/zlib/contrib/minizip/unzip.h"
 #include "third_party/zlib/contrib/minizip/zip.h"
@@ -106,6 +109,103 @@ void FillFdOpenFileFunc(zlib_filefunc_def* pzlib_filefunc_def, int fd) {
 }
 #endif  // defined(OS_POSIX)
 
+// A struct that contains data required for zlib functions to extract files from
+// a zip archive stored in memory directly. The following I/O API functions
+// expect their opaque parameters refer to this struct.
+struct ZipBuffer {
+  const char* data;  // weak
+  size_t length;
+  size_t offset;
+};
+
+// Opens the specified file. When this function returns a non-NULL pointer, zlib
+// uses this pointer as a stream parameter while compressing or uncompressing
+// data. (Returning NULL represents an error.) This function initializes the
+// given opaque parameter and returns it because this parameter stores all
+// information needed for uncompressing data. (This function does not support
+// writing compressed data and it returns NULL for this case.)
+void* OpenZipBuffer(void* opaque, const char* /*filename*/, int mode) {
+  if ((mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER) != ZLIB_FILEFUNC_MODE_READ) {
+    NOTREACHED();
+    return NULL;
+  }
+  ZipBuffer* buffer = static_cast<ZipBuffer*>(opaque);
+  if (!buffer || !buffer->data || !buffer->length)
+    return NULL;
+  buffer->offset = 0;
+  return opaque;
+}
+
+// Reads compressed data from the specified stream. This function copies data
+// refered by the opaque parameter and returns the size actually copied.
+uLong ReadZipBuffer(void* opaque, void* /*stream*/, void* buf, uLong size) {
+  ZipBuffer* buffer = static_cast<ZipBuffer*>(opaque);
+  DCHECK_LE(buffer->offset, buffer->length);
+  size_t remaining_bytes = buffer->length - buffer->offset;
+  if (!buffer || !buffer->data || !remaining_bytes)
+    return 0;
+  size = std::min(size, static_cast<uLong>(remaining_bytes));
+  memcpy(buf, &buffer->data[buffer->offset], size);
+  buffer->offset += size;
+  return size;
+}
+
+// Writes compressed data to the stream. This function always returns zero
+// because this implementation is only for reading compressed data.
+uLong WriteZipBuffer(void* /*opaque*/,
+                     void* /*stream*/,
+                     const void* /*buf*/,
+                     uLong /*size*/) {
+  NOTREACHED();
+  return 0;
+}
+
+// Returns the offset from the beginning of the data.
+long GetOffsetOfZipBuffer(void* opaque, void* /*stream*/) {
+  ZipBuffer* buffer = static_cast<ZipBuffer*>(opaque);
+  if (!buffer)
+    return -1;
+  return static_cast<long>(buffer->offset);
+}
+
+// Moves the current offset to the specified position.
+long SeekZipBuffer(void* opaque, void* /*stream*/, uLong offset, int origin) {
+  ZipBuffer* buffer = static_cast<ZipBuffer*>(opaque);
+  if (!buffer)
+    return -1;
+  if (origin == ZLIB_FILEFUNC_SEEK_CUR) {
+    buffer->offset = std::min(buffer->offset + static_cast<size_t>(offset),
+                              buffer->length);
+    return 0;
+  }
+  if (origin == ZLIB_FILEFUNC_SEEK_END) {
+    buffer->offset = (buffer->length > offset) ? buffer->length - offset : 0;
+    return 0;
+  }
+  if (origin == ZLIB_FILEFUNC_SEEK_SET) {
+    buffer->offset = std::min(buffer->length, static_cast<size_t>(offset));
+    return 0;
+  }
+  NOTREACHED();
+  return -1;
+}
+
+// Closes the input offset and deletes all resources used for compressing or
+// uncompressing data. This function deletes the ZipBuffer object referred by
+// the opaque parameter since zlib deletes the unzFile object and it does not
+// use this object any longer.
+int CloseZipBuffer(void* opaque, void* /*stream*/) {
+  if (opaque)
+    free(opaque);
+  return 0;
+}
+
+// Returns the last error happened when reading or writing data. This function
+// always returns zero, which means there are not any errors.
+int GetErrorOfZipBuffer(void* /*opaque*/, void* /*stream*/) {
+  return 0;
+}
+
 }  // namespace
 
 namespace zip {
@@ -130,6 +230,30 @@ unzFile OpenFdForUnzipping(int zip_fd) {
   return unzOpen2("fd", &zip_funcs);
 }
 #endif
+
+// static
+unzFile PreprareMemoryForUnzipping(const std::string& data) {
+  if (data.empty())
+    return NULL;
+
+  ZipBuffer* buffer = static_cast<ZipBuffer*>(malloc(sizeof(ZipBuffer)));
+  if (!buffer)
+    return NULL;
+  buffer->data = data.data();
+  buffer->length = data.length();
+  buffer->offset = 0;
+
+  zlib_filefunc_def zip_functions;
+  zip_functions.zopen_file = OpenZipBuffer;
+  zip_functions.zread_file = ReadZipBuffer;
+  zip_functions.zwrite_file = WriteZipBuffer;
+  zip_functions.ztell_file = GetOffsetOfZipBuffer;
+  zip_functions.zseek_file = SeekZipBuffer;
+  zip_functions.zclose_file = CloseZipBuffer;
+  zip_functions.zerror_file = GetErrorOfZipBuffer;
+  zip_functions.opaque = static_cast<void*>(buffer);
+  return unzOpen2(NULL, &zip_functions);
+}
 
 zipFile OpenForZipping(const std::string& file_name_utf8, int append_flag) {
   zlib_filefunc_def* zip_func_ptrs = NULL;

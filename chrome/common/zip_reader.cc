@@ -98,6 +98,13 @@ bool ZipReader::OpenFromFd(const int zip_fd) {
 }
 #endif
 
+bool ZipReader::OpenFromString(const std::string& data) {
+  zip_file_ = internal::PreprareMemoryForUnzipping(data);
+  if (!zip_file_)
+    return false;
+  return OpenInternal();
+}
+
 void ZipReader::Close() {
   if (zip_file_) {
     unzClose(zip_file_);
