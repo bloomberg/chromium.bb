@@ -199,19 +199,16 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	ret = ioctl(tty->fd, KDSKBMODE, K_OFF);
 	if (ret) {
 		ret = ioctl(tty->fd, KDSKBMODE, K_RAW);
-		if (ret)
+		if (ret) {
+			weston_log("failed to set keyboard mode on tty: %m\n");
 			goto err_attr;
+		}
 
 		tty->input_source = wl_event_loop_add_fd(loop, tty->fd,
 							 WL_EVENT_READABLE,
 							 on_tty_input, tty);
 		if (!tty->input_source)
 			goto err_kdkbmode;
-	}
-
-	if (ret) {
-		weston_log("failed to set K_OFF keyboard mode on tty: %m\n");
-		goto err_attr;
 	}
 
 	ret = ioctl(tty->fd, KDSETMODE, KD_GRAPHICS);
