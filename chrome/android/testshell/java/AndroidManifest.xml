@@ -13,8 +13,7 @@
             android:protectionLevel="signature" />
 
     <application android:name="org.chromium.chrome.testshell.ChromiumTestShellApplication"
-            android:label="ChromiumTestShell"
-            android:debuggable="true">
+            android:label="ChromiumTestShell">
         <activity android:name="org.chromium.chrome.testshell.ChromiumTestShellActivity"
                   android:label="ChromiumTestShellActivity"
                   android:hardwareAccelerated="true">
