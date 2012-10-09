@@ -349,7 +349,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                   0.05),
       liftoff_brush_min_radius_(prop_reg, "Liftoff Brush Min Radius", 3.0),
       liftoff_brush_max_radius_(prop_reg, "Liftoff Brush Max Radius", 8.0),
-      liftoff_brush_timeout_(prop_reg, "Liftoff Brush Timeout", 0.150),
+      liftoff_brush_timeout_(prop_reg, "Liftoff Brush Timeout", 0.142),
       tapping_finger_min_separation_(prop_reg, "Tap Min Separation", 10.0),
       vertical_scroll_snap_slope_(prop_reg, "Vertical Scroll Snap Slope",
                                   tanf(DegToRad(50.0))),  // 50 deg. from horiz.
