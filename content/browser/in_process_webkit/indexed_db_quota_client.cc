@@ -27,7 +27,14 @@ quota::QuotaStatusCode DeleteOriginDataOnWebKitThread(
   return quota::kQuotaStatusOk;
 }
 
-}  // nameapace
+int64 GetOriginUsageOnWebKitThread(
+    IndexedDBContextImpl* context,
+    const GURL& origin) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  return context->GetOriginDiskUsage(origin);
+}
+
+}  // namespace
 
 // Helper tasks ---------------------------------------------------------------
 
@@ -45,32 +52,6 @@ class IndexedDBQuotaClient::HelperTask : public quota::QuotaThreadTask {
 
  protected:
   virtual ~HelperTask() {}
-};
-
-class IndexedDBQuotaClient::GetOriginUsageTask : public HelperTask {
- public:
-  GetOriginUsageTask(
-      IndexedDBQuotaClient* client,
-      base::MessageLoopProxy* webkit_thread_message_loop,
-      const GURL& origin_url)
-      : HelperTask(client, webkit_thread_message_loop),
-        origin_url_(origin_url), usage_(0) {
-  }
-
- private:
-  virtual ~GetOriginUsageTask() {}
-
-  virtual void RunOnTargetThread() OVERRIDE {
-    usage_ = indexed_db_context_->GetOriginDiskUsage(origin_url_);
-  }
-
-  virtual void Completed() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    client_->DidGetOriginUsage(origin_url_, usage_);
-  }
-
-  GURL origin_url_;
-  int64 usage_;
 };
 
 class IndexedDBQuotaClient::GetOriginsTaskBase : public HelperTask {
@@ -183,11 +164,13 @@ void IndexedDBQuotaClient::GetOriginUsage(
     return;
   }
 
-  if (usage_for_origin_callbacks_.Add(origin_url, callback)) {
-    scoped_refptr<GetOriginUsageTask> task(
-        new GetOriginUsageTask(this, webkit_thread_message_loop_, origin_url));
-    task->Start();
-  }
+  base::PostTaskAndReplyWithResult(
+      webkit_thread_message_loop_,
+      FROM_HERE,
+      base::Bind(&GetOriginUsageOnWebKitThread,
+                 indexed_db_context_,
+                 origin_url),
+      callback);
 }
 
 void IndexedDBQuotaClient::GetOriginsForType(
@@ -246,12 +229,6 @@ void IndexedDBQuotaClient::DeleteOriginData(
                  indexed_db_context_,
                  origin),
       callback);
-}
-
-void IndexedDBQuotaClient::DidGetOriginUsage(
-    const GURL& origin_url, int64 usage) {
-  DCHECK(usage_for_origin_callbacks_.HasCallbacks(origin_url));
-  usage_for_origin_callbacks_.Run(origin_url, usage);
 }
 
 void IndexedDBQuotaClient::DidGetAllOrigins(const std::set<GURL>& origins,
