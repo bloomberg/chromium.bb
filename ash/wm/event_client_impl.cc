@@ -6,32 +6,30 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 
 namespace ash {
 namespace internal {
 
-EventClientImpl::EventClientImpl(aura::RootWindow* root_window)
-    : root_window_(root_window) {
-  aura::client::SetEventClient(root_window_, this);
+EventClientImpl::EventClientImpl() {
 }
 
 EventClientImpl::~EventClientImpl() {
-  aura::client::SetEventClient(root_window_, NULL);
 }
 
 bool EventClientImpl::CanProcessEventsWithinSubtree(
     const aura::Window* window) const {
-  if (Shell::GetInstance()->IsScreenLocked()) {
-    aura::Window* lock_screen_containers = Shell::GetContainer(
-        root_window_,
+  const aura::RootWindow* root_window =
+      window ? window->GetRootWindow() : NULL;
+  if (Shell::GetInstance()->IsScreenLocked() && root_window) {
+    const aura::Window* lock_screen_containers = Shell::GetContainer(
+        root_window,
         kShellWindowId_LockScreenContainersContainer);
-    aura::Window* lock_background_containers = Shell::GetContainer(
-        root_window_,
+    const aura::Window* lock_background_containers = Shell::GetContainer(
+        root_window,
         kShellWindowId_LockScreenBackgroundContainer);
-    aura::Window* lock_screen_related_containers = Shell::GetContainer(
-        root_window_,
+    const aura::Window* lock_screen_related_containers = Shell::GetContainer(
+        root_window,
         kShellWindowId_LockScreenRelatedContainersContainer);
     return lock_screen_containers->Contains(window) ||
         lock_background_containers->Contains(window) ||

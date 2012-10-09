@@ -25,7 +25,6 @@ namespace ash {
 class ToplevelWindowEventHandler;
 namespace internal {
 
-class EventClientImpl;
 class RootWindowLayoutManager;
 class ScreenDimmer;
 class SystemBackgroundController;
@@ -101,8 +100,6 @@ class ASH_EXPORT RootWindowController {
   // desktop background image when displaying the login screen.
   scoped_ptr<SystemBackgroundController> background_;
 
-  // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr<EventClientImpl> event_client_;
   scoped_ptr<ScreenDimmer> screen_dimmer_;
   scoped_ptr<WorkspaceController> workspace_controller_;
 
