@@ -235,6 +235,10 @@ class CrOSInterface(object):
             self._hostname)
       if 'Operation timed out' in stderr:
         raise LoginException('Timed out while logging into %s' % self._hostname)
+      if 'UNPROTECTED PRIVATE KEY FILE!' in stderr:
+        raise LoginException('Permissions for %s are too open. To fix this,\n'
+                             'chmod 600 %s' % (self._ssh_identity,
+                                               self._ssh_identity))
       if 'Permission denied (publickey,keyboard-interactive)' in stderr:
         raise KeylessLoginRequiredException(
           'Need to set up ssh auth for %s' % self._hostname)
