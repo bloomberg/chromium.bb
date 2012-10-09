@@ -1,6 +1,7 @@
 #
 #  Copyright (C) 2011 by Bert Frees <bertfrees@gmail.com>
 #  Copyright (C) 2011 by Jan Halousek <merit@login.cz>
+#  Copyright (C) 2012 by Brailcom, o.p.s.
 #
 #  This file is part of liblouis.
 #
@@ -117,8 +118,9 @@ sign        \x007C        456                 |                   VERTICAL LINE
 
 space       \x00A0        a                                       NO-BREAK SPACE
 punctuation \x00AD        36                  ­                   SOFT HYPHEN
+math        \x00B1        256-36              ±                   PLUS-MINUS SIGN
 sign        \x00B4        4                   ´                   ACUTE ACCENT
-math        \x00D7        35                  ×                   MULTIPLICATION SIGN
+math        \x00D7        346                 ×                   MULTIPLICATION SIGN
 math        \x00F7        25                  ÷                   DIVISION SIGN
 
 
@@ -204,28 +206,45 @@ letter      \x03A7        46-125              Χ                   GREEK CAPITAL
 letter      \x03A8        46-12346            Ψ                   GREEK CAPITAL LETTER PSI
 letter      \x03A9        46-2356             Ω                   GREEK CAPITAL LETTER OMEGA
 
-lowercase   \x03B1        4-1                 α                   GREEK SMALL LETTER ALPHA
-lowercase   \x03B2        4-12                β                   GREEK SMALL LETTER BETA
-lowercase   \x03B3        4-1245              γ                   GREEK SMALL LETTER GAMMA
-lowercase   \x03B4        4-145               δ                   GREEK SMALL LETTER DELTA
-lowercase   \x03B5        4-15                ε                   GREEK SMALL LETTER EPSILON
-lowercase   \x03B8        4-1456              θ                   GREEK SMALL LETTER THETA
-lowercase   \x03B9        4-24                ι                   GREEK SMALL LETTER IOTA
-lowercase   \x03BA        4-13                κ                   GREEK SMALL LETTER KAPPA
-lowercase   \x03BB        4-123               λ                   GREEK SMALL LETTER LAMDA
-lowercase   \x03BC        4-134               μ                   GREEK SMALL LETTER MU
-lowercase   \x03BD        4-1345              ν                   GREEK SMALL LETTER NU
-lowercase   \x03BE        4-1346              ξ                   GREEK SMALL LETTER XI
-lowercase   \x03BF        4-135               ο                   GREEK SMALL LETTER OMICRON
-lowercase   \x03C0        4-1234              π                   GREEK SMALL LETTER PI
-lowercase   \x03C1        4-1235              ρ                   GREEK SMALL LETTER RHO
-lowercase   \x03C3        4-234               σ                   GREEK SMALL LETTER SIGMA
-lowercase   \x03C4        4-2345              τ                   GREEK SMALL LETTER TAU
-lowercase   \x03C5        4-13456             υ                   GREEK SMALL LETTER UPSILON
-lowercase   \x03C6        4-124               φ                   GREEK SMALL LETTER PHI
-lowercase   \x03C7        4-125               χ                   GREEK SMALL LETTER CHI
-lowercase   \x03C8        4-12346             ψ                   GREEK SMALL LETTER PSI
-lowercase   \x03C9        4-2356              ω                   GREEK SMALL LETTER OMEGA
+lowercase   \x03B1        45-1                α                   GREEK SMALL LETTER ALPHA
+lowercase   \x03B2        45-12               β                   GREEK SMALL LETTER BETA
+lowercase   \x03B3        45-1245             γ                   GREEK SMALL LETTER GAMMA
+lowercase   \x03B4        45-145              δ                   GREEK SMALL LETTER DELTA
+lowercase   \x03B5        45-15               ε                   GREEK SMALL LETTER EPSILON
+lowercase   \x03B8        45-1456             θ                   GREEK SMALL LETTER THETA
+lowercase   \x03B9        45-24               ι                   GREEK SMALL LETTER IOTA
+lowercase   \x03BA        45-13               κ                   GREEK SMALL LETTER KAPPA
+lowercase   \x03BB        45-123              λ                   GREEK SMALL LETTER LAMDA
+lowercase   \x03BC        45-134              μ                   GREEK SMALL LETTER MU
+lowercase   \x03BD        45-1345             ν                   GREEK SMALL LETTER NU
+lowercase   \x03BE        45-1346             ξ                   GREEK SMALL LETTER XI
+lowercase   \x03BF        45-135              ο                   GREEK SMALL LETTER OMICRON
+lowercase   \x03C0        45-1234             π                   GREEK SMALL LETTER PI
+lowercase   \x03C1        45-1235             ρ                   GREEK SMALL LETTER RHO
+lowercase   \x03C3        45-234              σ                   GREEK SMALL LETTER SIGMA
+lowercase   \x03C4        45-2345             τ                   GREEK SMALL LETTER TAU
+lowercase   \x03C5        45-13456            υ                   GREEK SMALL LETTER UPSILON
+lowercase   \x03C6        45-124              φ                   GREEK SMALL LETTER PHI
+lowercase   \x03C7        45-125              χ                   GREEK SMALL LETTER CHI
+lowercase   \x03C8        45-12346            ψ                   GREEK SMALL LETTER PSI
+lowercase   \x03C9        45-2356             ω                   GREEK SMALL LETTER OMEGA
 
+# ----------------------------------------------------------------------------------------------
+# Other Unicode characters
+# ----------------------------------------------------------------------------------------------
+
+math        \x2030        3456-1235           ‰                   PER MILLE SIGN
+math        \x0609        3456-1235           ؉                   ARABIC-INDIC PER MILLE SIGN
+math        \x27E8        4-126               ⟨                   MATHEMATICAL LEFT ANGLE BRACKET
+math        \x27E8        4-345               ⟩                   MATHEMATICAL RIGHT ANGLE BRACKET
+math        \x2260        4-2356              ≠                   NOT EQUAL TO
+math        \x2250        5-2356              ≐                   APPROACHES THE LIMIT
+math        \x2264        126-2356            ≤                   LESS-THAN OR EQUAL TO
+math        \x2264        345-2356            ≥                   GREATER-THAN OR EQUAL TO
+math        \x22C5        3                   ⋅                   DOT OPERATOR
+math        \x2217        35                  ∗                   ASTERISK OPERATOR
+math        \x2236        25                  ∶                   RATIO
+math        \x2208        45-15               ∈                   ELEMENT OF
+math        \x2209        4-45-15             ∉                   NOT AN ELEMENT OF
 
 # ----------------------------------------------------------------------------------------------
