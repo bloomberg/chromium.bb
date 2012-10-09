@@ -41,12 +41,9 @@ va-arg-pack-1.c
 builtin-prefetch-2.c arm
 # vector broken on ARM
 simd-6.c arm,O0
-# This uses __builtin_return_address(1) (Works for x8632 O0/O3, and x8664 O0)
-# Addresses slightly off on x86-64 O3, and stock clang x86-64 O3 also.
-# Segfaults on ARM loading an uninit frame pointer (must force fp on?).
-20010122-1.c x86-64,O3
-20010122-1.c x86-32,O3
-20010122-1.c arm
+# This uses __builtin_return_address(1)
+# Segfaults because of an uninit frame pointer (must force fp on?).
+20010122-1.c
 # DCE not performed at -O0 (wontfix?)
 medce-1.c O0
 fp-cmp-7.c O0
