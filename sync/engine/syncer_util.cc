@@ -29,6 +29,11 @@
 #include "sync/util/cryptographer.h"
 #include "sync/util/time.h"
 
+// TODO(vishwath): Remove this include after node positions have
+// shifted to completely uing Ordinals.
+// See http://crbug.com/145412 .
+#include "sync/internal_api/public/base/node_ordinal.h"
+
 namespace syncer {
 
 using syncable::BASE_VERSION;
@@ -58,7 +63,7 @@ using syncable::SERVER_IS_DIR;
 using syncable::SERVER_MTIME;
 using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
-using syncable::SERVER_POSITION_IN_PARENT;
+using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
 using syncable::UNIQUE_CLIENT_TAG;
@@ -351,7 +356,8 @@ void UpdateServerFieldsFromUpdate(
                             target);
   }
   if (update.has_position_in_parent())
-    target->Put(SERVER_POSITION_IN_PARENT, update.position_in_parent());
+    target->Put(SERVER_ORDINAL_IN_PARENT,
+                Int64ToNodeOrdinal(update.position_in_parent()));
 
   target->Put(SERVER_IS_DEL, update.deleted());
   // We only mark the entry as unapplied if its version is greater than the

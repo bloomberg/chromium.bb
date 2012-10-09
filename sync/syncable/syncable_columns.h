@@ -16,14 +16,13 @@ struct ColumnSpec {
   const char* spec;
 };
 
-// Must be in exact same order as fields in syncable.
+// Must be in exact same order as fields in entry_kernel.h.
 static const ColumnSpec g_metas_columns[] = {
   //////////////////////////////////////
   // int64s
   {"metahandle", "bigint primary key ON CONFLICT FAIL"},
   {"base_version", "bigint default " CHANGES_VERSION_STRING},
   {"server_version", "bigint default 0"},
-  {"server_position_in_parent", "bigint default 0"},
   // This is the item ID that we store for the embedding application.
   {"local_external_id", "bigint default 0"},
   // These timestamps are kept in the same format as that of the
@@ -54,10 +53,13 @@ static const ColumnSpec g_metas_columns[] = {
   {"unique_server_tag", "varchar"},
   {"unique_client_tag", "varchar"},
   //////////////////////////////////////
-  // Blobs.
+  // Blobs (serialized protos).
   {"specifics", "blob"},
   {"server_specifics", "blob"},
-  {"base_server_specifics", "blob"}
+  {"base_server_specifics", "blob"},
+  //////////////////////////////////////
+  // Blobs (ordinals).
+  {"server_ordinal_in_parent", "blob"},
 };
 
 // At least enforce that there are equal number of column names and fields.

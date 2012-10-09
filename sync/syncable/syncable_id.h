@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/hash_tables.h"
 
 class MockConnectionManager;
@@ -111,7 +112,7 @@ class Id {
   static Id GetLeastIdForLexicographicComparison();
 
  private:
-  friend EntryKernel* UnpackEntry(sql::Statement* statement);
+  friend scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement);
   friend void BindFields(const EntryKernel& entry,
                          sql::Statement* statement);
   friend std::ostream& operator<<(std::ostream& out, const Id& id);

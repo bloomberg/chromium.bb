@@ -5,6 +5,7 @@
 #include "sync/syncable/mutable_entry.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/scoped_index_updater.h"
 #include "sync/syncable/scoped_kernel_lock.h"
@@ -41,6 +42,7 @@ void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
   kernel->put(MTIME, now);
   // We match the database defaults here
   kernel->put(BASE_VERSION, CHANGES_VERSION);
+  kernel->put(SERVER_ORDINAL_IN_PARENT, NodeOrdinal::CreateInitialOrdinal());
   if (!trans->directory()->InsertEntry(trans, kernel.get())) {
     return; // We failed inserting, nothing more to do.
   }
@@ -66,6 +68,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
   kernel->put(ID, id);
   kernel->put(META_HANDLE, trans->directory_->NextMetahandle());
   kernel->mark_dirty(trans->directory_->kernel_->dirty_metahandles);
+  kernel->put(SERVER_ORDINAL_IN_PARENT, NodeOrdinal::CreateInitialOrdinal());
   kernel->put(IS_DEL, true);
   // We match the database defaults here
   kernel->put(BASE_VERSION, CHANGES_VERSION);
@@ -146,13 +149,7 @@ bool MutableEntry::Put(Int64Field field, const int64& value) {
   write_transaction_->SaveOriginal(kernel_);
   if (kernel_->ref(field) != value) {
     ScopedKernelLock lock(dir());
-    if (SERVER_POSITION_IN_PARENT == field) {
-      ScopedIndexUpdater<ParentIdAndHandleIndexer> updater(lock, kernel_,
-          dir()->kernel_->parent_id_child_index);
-      kernel_->put(field, value);
-    } else {
-      kernel_->put(field, value);
-    }
+    kernel_->put(field, value);
     kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
   }
   return true;
@@ -182,6 +179,24 @@ bool MutableEntry::Put(IdField field, const Id& value) {
         // TODO(lipalani) : Propagate the error to caller. crbug.com/100444.
         NOTREACHED();
       }
+    } else {
+      kernel_->put(field, value);
+    }
+    kernel_->mark_dirty(dir()->kernel_->dirty_metahandles);
+  }
+  return true;
+}
+
+bool MutableEntry::Put(OrdinalField field, const NodeOrdinal& value) {
+  DCHECK(kernel_);
+  DCHECK(value.IsValid());
+  write_transaction_->SaveOriginal(kernel_);
+  if(!kernel_->ref(field).Equals(value)) {
+    ScopedKernelLock lock(dir());
+    if (SERVER_ORDINAL_IN_PARENT == field) {
+      ScopedIndexUpdater<ParentIdAndHandleIndexer> updater(
+          lock, kernel_, dir()->kernel_->parent_id_child_index);
+      kernel_->put(field, value);
     } else {
       kernel_->put(field, value);
     }

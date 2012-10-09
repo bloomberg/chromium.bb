@@ -38,6 +38,8 @@ const char* GetStringFieldString(StringField string_field);
 
 const char* GetProtoFieldString(ProtoField proto_field);
 
+const char* GetOrdinalFieldString(OrdinalField ordinal_field);
+
 const char* GetBitTempString(BitTemp bit_temp);
 
 }  // namespace syncable

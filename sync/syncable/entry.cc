@@ -6,7 +6,7 @@
 
 #include <iomanip>
 
-#include "net/base/escape.h"
+#include "base/json/string_escape.h"
 #include "sync/syncable/base_transaction.h"
 #include "sync/syncable/blob.h"
 #include "sync/syncable/directory.h"
@@ -127,9 +127,16 @@ std::ostream& operator<<(std::ostream& os, const Entry& entry) {
     os << g_metas_columns[i].name << ": " << field << ", ";
   }
   for ( ; i < PROTO_FIELDS_END; ++i) {
+    std::string escaped_str;
+    base::JsonDoubleQuote(
+        kernel->ref(static_cast<ProtoField>(i)).SerializeAsString(),
+        false,
+        &escaped_str);
+    os << g_metas_columns[i].name << ": " << escaped_str << ", ";
+  }
+  for ( ; i < ORDINAL_FIELDS_END; ++i) {
     os << g_metas_columns[i].name << ": "
-       << net::EscapePath(
-              kernel->ref(static_cast<ProtoField>(i)).SerializeAsString())
+       << kernel->ref(static_cast<OrdinalField>(i)).ToDebugString()
        << ", ";
   }
   os << "TempFlags: ";

@@ -77,6 +77,11 @@ TEST_F(SyncableEnumConversionsTest, GetProtoFieldString) {
       GetProtoFieldString, PROTO_FIELDS_BEGIN, PROTO_FIELDS_END - 1);
 }
 
+TEST_F(SyncableEnumConversionsTest, GetOrdinalFieldString) {
+  TestEnumStringFunction(
+      GetOrdinalFieldString, ORDINAL_FIELDS_BEGIN, ORDINAL_FIELDS_END - 1);
+}
+
 TEST_F(SyncableEnumConversionsTest, GetBitTempString) {
   TestEnumStringFunction(
       GetBitTempString, BIT_TEMPS_BEGIN, BIT_TEMPS_END - 1);

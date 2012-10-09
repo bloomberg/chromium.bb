@@ -22,6 +22,11 @@
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/time.h"
 
+// TODO(vishwath): Remove this include after node positions have
+// shifted to completely using Ordinals.
+// See http://crbug.com/145412 .
+#include "sync/internal_api/public/base/node_ordinal.h"
+
 using std::set;
 using std::string;
 using std::vector;
@@ -31,7 +36,7 @@ namespace syncer {
 using sessions::SyncSession;
 using syncable::Entry;
 using syncable::IS_DEL;
-using syncable::SERVER_POSITION_IN_PARENT;
+using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::IS_UNSYNCED;
 using syncable::Id;
@@ -231,7 +236,7 @@ int64 BuildCommitCommand::FindAnchorPosition(syncable::IdField direction,
                      syncable::GET_BY_ID,
                      next_id);
     if (!next_entry.Get(IS_UNSYNCED) && !next_entry.Get(IS_UNAPPLIED_UPDATE)) {
-      return next_entry.Get(SERVER_POSITION_IN_PARENT);
+      return NodeOrdinalToInt64(next_entry.Get(SERVER_ORDINAL_IN_PARENT));
     }
     next_id = next_entry.Get(direction);
   }

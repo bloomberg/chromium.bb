@@ -19,6 +19,11 @@
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/cryptographer.h"
 
+// TODO(vishwath): Remove this include after node positions have
+// shifted to completely using Ordinals.
+// See http://crbug.com/145412 .
+#include "sync/internal_api/public/base/node_ordinal.h"
+
 using std::vector;
 
 namespace syncer {
@@ -152,7 +157,8 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
       (SyncableIdFromProto(update.parent_id_string()) ==
           target_entry.Get(syncable::SERVER_PARENT_ID)) &&
       (update.position_in_parent() ==
-          target_entry.Get(syncable::SERVER_POSITION_IN_PARENT)) &&
+       NodeOrdinalToInt64(
+           target_entry.Get(syncable::SERVER_ORDINAL_IN_PARENT))) &&
       update.has_specifics() && update.specifics().has_encrypted() &&
       !cryptographer->CanDecrypt(update.specifics().encrypted())) {
     sync_pb::EntitySpecifics prev_specifics =

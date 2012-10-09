@@ -69,6 +69,10 @@ StringValue* IdToValue(const Id& id) {
   return id.ToValue();
 }
 
+StringValue* OrdinalToValue(const NodeOrdinal& ord) {
+  return Value::CreateStringValue(ord.ToDebugString());
+}
+
 }  // namespace
 
 DictionaryValue* EntryKernel::ToValue() const {
@@ -122,6 +126,11 @@ DictionaryValue* EntryKernel::ToValue() const {
   SetFieldValues(*this, kernel_info,
                  &GetProtoFieldString, &EntitySpecificsToValue,
                  PROTO_FIELDS_BEGIN, PROTO_FIELDS_END - 1);
+
+  // Ordinal fields
+  SetFieldValues(*this, kernel_info,
+                 &GetOrdinalFieldString, &OrdinalToValue,
+                 ORDINAL_FIELDS_BEGIN, ORDINAL_FIELDS_END - 1);
 
   // Bit temps.
   SetFieldValues(*this, kernel_info,

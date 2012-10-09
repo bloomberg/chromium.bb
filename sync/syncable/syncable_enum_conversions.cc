@@ -49,7 +49,6 @@ const char* GetInt64FieldString(Int64Field int64_field) {
                      BASE_VERSION + 1, INT64_FIELDS_END - 1);
   switch (int64_field) {
     ENUM_CASE(SERVER_VERSION);
-    ENUM_CASE(SERVER_POSITION_IN_PARENT);
     ENUM_CASE(LOCAL_EXTERNAL_ID);
     case INT64_FIELDS_END: break;
   }
@@ -143,6 +142,17 @@ const char* GetProtoFieldString(ProtoField proto_field) {
     ENUM_CASE(SERVER_SPECIFICS);
     ENUM_CASE(BASE_SERVER_SPECIFICS);
     case PROTO_FIELDS_END: break;
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* GetOrdinalFieldString(OrdinalField ordinal_field) {
+  ASSERT_ENUM_BOUNDS(SERVER_ORDINAL_IN_PARENT, SERVER_ORDINAL_IN_PARENT,
+                     ORDINAL_FIELDS_BEGIN, ORDINAL_FIELDS_END - 1);
+  switch(ordinal_field) {
+    ENUM_CASE(SERVER_ORDINAL_IN_PARENT);
+    case ORDINAL_FIELDS_END: break;
   }
   NOTREACHED();
   return "";

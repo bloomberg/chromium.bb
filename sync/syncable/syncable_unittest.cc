@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -17,6 +18,7 @@
 #include "base/test/values_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
+#include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/directory_change_delegate.h"
@@ -1366,6 +1368,39 @@ TEST_F(SyncableDirectoryTest, OldClientLeftUnsyncedDeletedLocalItem) {
   }
 }
 
+TEST_F(SyncableDirectoryTest, OrdinalWithNullSurvivesSaveAndReload) {
+  TestIdFactory id_factory;
+  Id null_child_id;
+  const char null_cstr[] = "\0null\0test";
+  std::string null_str(null_cstr, arraysize(null_cstr) - 1);
+  NodeOrdinal null_ord = NodeOrdinal(null_str);
+
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    MutableEntry parent(&trans, CREATE, id_factory.root(), "parent");
+    parent.Put(IS_DIR, true);
+    parent.Put(IS_UNSYNCED, true);
+
+    MutableEntry child(&trans, CREATE, parent.Get(ID), "child");
+    child.Put(IS_UNSYNCED, true);
+    child.Put(SERVER_ORDINAL_IN_PARENT, null_ord);
+
+    null_child_id = child.Get(ID);
+  }
+
+  EXPECT_EQ(OPENED, SimulateSaveAndReloadDir());
+
+  {
+    ReadTransaction trans(FROM_HERE, dir_.get());
+
+    Entry null_ordinal_child(&trans, GET_BY_ID, null_child_id);
+    EXPECT_TRUE(
+        null_ord.Equals(null_ordinal_child.Get(SERVER_ORDINAL_IN_PARENT)));
+  }
+
+}
+
 // An OnDirectoryBackingStore that can be set to always fail SaveChanges.
 class TestBackingStore : public OnDiskDirectoryBackingStore {
  public:
@@ -1712,6 +1747,14 @@ TEST_F(OnDiskSyncableDirectoryTest,
               << "Blob field #" << i << " changed during save/load";
     EXPECT_EQ(update_pre_save.ref((ProtoField)i).SerializeAsString(),
               update_post_save.ref((ProtoField)i).SerializeAsString())
+              << "Blob field #" << i << " changed during save/load";
+  }
+  for ( ; i < ORDINAL_FIELDS_END; ++i) {
+    EXPECT_EQ(create_pre_save.ref((OrdinalField)i).ToInternalValue(),
+              create_post_save.ref((OrdinalField)i).ToInternalValue())
+              << "Blob field #" << i << " changed during save/load";
+    EXPECT_EQ(update_pre_save.ref((OrdinalField)i).ToInternalValue(),
+              update_post_save.ref((OrdinalField)i).ToInternalValue())
               << "Blob field #" << i << " changed during save/load";
   }
 }

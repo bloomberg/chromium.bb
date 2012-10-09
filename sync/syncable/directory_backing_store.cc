@@ -22,6 +22,7 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable-inl.h"
@@ -39,7 +40,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 80;
+const int32 kCurrentDBVersion = 81;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -69,12 +70,17 @@ void BindFields(const EntryKernel& entry,
     entry.ref(static_cast<ProtoField>(i)).SerializeToString(&temp);
     statement->BindBlob(index++, temp.data(), temp.length());
   }
+  for( ; i < ORDINAL_FIELDS_END; ++i) {
+    temp = entry.ref(static_cast<OrdinalField>(i)).ToInternalValue();
+    statement->BindBlob(index++, temp.data(), temp.length());
+  }
 }
 
 // The caller owns the returned EntryKernel*.  Assumes the statement currently
-// points to a valid row in the metas table.
-EntryKernel* UnpackEntry(sql::Statement* statement) {
-  EntryKernel* kernel = new EntryKernel();
+// points to a valid row in the metas table. Returns NULL to indicate that
+// it detected a corruption in the data on unpacking.
+scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement) {
+  scoped_ptr<EntryKernel> kernel(new EntryKernel());
   DCHECK_EQ(statement->ColumnCount(), static_cast<int>(FIELD_COUNT));
   int i = 0;
   for (i = BEGIN_FIELDS; i < INT64_FIELDS_END; ++i) {
@@ -99,7 +105,21 @@ EntryKernel* UnpackEntry(sql::Statement* statement) {
     kernel->mutable_ref(static_cast<ProtoField>(i)).ParseFromArray(
         statement->ColumnBlob(i), statement->ColumnByteLength(i));
   }
-  return kernel;
+  for( ; i < ORDINAL_FIELDS_END; ++i) {
+    std::string temp;
+    statement->ColumnBlobAsString(i, &temp);
+    NodeOrdinal unpacked_ord(temp);
+
+    // Its safe to assume that an invalid ordinal is a sign that
+    // some external corruption has occurred. Return NULL to force
+    // a re-download of the sync data.
+    if(!unpacked_ord.IsValid()) {
+      DVLOG(1) << "Unpacked invalid ordinal. Signaling that the DB is corrupt";
+      return scoped_ptr<EntryKernel>(NULL);
+    }
+    kernel->mutable_ref(static_cast<OrdinalField>(i)) = unpacked_ord;
+  }
+  return kernel.Pass();
 }
 
 namespace {
@@ -124,7 +144,7 @@ string ComposeCreateTableColumnSpecs() {
 void AppendColumnList(std::string* output) {
   const char* joiner = " ";
   // Be explicit in SELECT order to match up with UnpackEntry.
-  for (int i = BEGIN_FIELDS; i < BEGIN_FIELDS + FIELD_COUNT; ++i) {
+  for (int i = BEGIN_FIELDS; i < FIELD_COUNT; ++i) {
     output->append(joiner);
     output->append(ColumnName(i));
     joiner = ", ";
@@ -323,6 +343,13 @@ bool DirectoryBackingStore::InitializeTables() {
       version_on_disk = 80;
   }
 
+  // Version 81 replaces the int64 server_position_in_parent_field
+  // with a blob server_ordinal_in_parent field.
+  if (version_on_disk == 80) {
+    if (MigrateVersion80To81())
+      version_on_disk = 81;
+  }
+
   // If one of the migrations requested it, drop columns that aren't current.
   // It's only safe to do this after migrating all the way to the current
   // version.
@@ -428,8 +455,11 @@ bool DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
   sql::Statement s(db_->GetUniqueStatement(select.c_str()));
 
   while (s.Step()) {
-    EntryKernel *kernel = UnpackEntry(&s);
-    entry_bucket->insert(kernel);
+    scoped_ptr<EntryKernel> kernel = UnpackEntry(&s);
+    // A null kernel is evidence of external data corruption.
+    if (!kernel.get())
+      return false;
+    entry_bucket->insert(kernel.release());
   }
   return s.Succeeded();
 }
@@ -503,7 +533,7 @@ bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
     values.append("VALUES ");
     const char* separator = "( ";
     int i = 0;
-    for (i = BEGIN_FIELDS; i < PROTO_FIELDS_END; ++i) {
+    for (i = BEGIN_FIELDS; i < FIELD_COUNT; ++i) {
       query.append(separator);
       values.append(separator);
       separator = ", ";
@@ -968,6 +998,7 @@ bool DirectoryBackingStore::MigrateVersion78To79() {
   SetVersion(79);
   return true;
 }
+
 bool DirectoryBackingStore::MigrateVersion79To80() {
   if (!db_->Execute(
           "ALTER TABLE share_info ADD COLUMN bag_of_chips BLOB"))
@@ -979,6 +1010,36 @@ bool DirectoryBackingStore::MigrateVersion79To80() {
   if (!update.Run())
     return false;
   SetVersion(80);
+  return true;
+}
+
+bool DirectoryBackingStore::MigrateVersion80To81() {
+  if(!db_->Execute(
+         "ALTER TABLE metas ADD COLUMN server_ordinal_in_parent BLOB"))
+    return false;
+
+  sql::Statement get_positions(db_->GetUniqueStatement(
+      "SELECT metahandle, server_position_in_parent FROM metas"));
+
+  sql::Statement put_ordinals(db_->GetUniqueStatement(
+      "UPDATE metas SET server_ordinal_in_parent = ?"
+      "WHERE metahandle = ?"));
+
+  while(get_positions.Step()) {
+    int64 metahandle = get_positions.ColumnInt64(0);
+    int64 position = get_positions.ColumnInt64(1);
+
+    const std::string& ordinal = Int64ToNodeOrdinal(position).ToInternalValue();
+    put_ordinals.BindBlob(0, ordinal.data(), ordinal.length());
+    put_ordinals.BindInt64(1, metahandle);
+
+    if(!put_ordinals.Run())
+      return false;
+    put_ordinals.Reset(true);
+  }
+
+  SetVersion(81);
+  needs_column_refresh_ = true;
   return true;
 }
 
@@ -1044,10 +1105,13 @@ bool DirectoryBackingStore::CreateTables() {
     const int64 now = TimeToProtoTime(base::Time::Now());
     sql::Statement s(db_->GetUniqueStatement(
             "INSERT INTO metas "
-            "( id, metahandle, is_dir, ctime, mtime) "
-            "VALUES ( \"r\", 1, 1, ?, ?)"));
+            "( id, metahandle, is_dir, ctime, mtime, server_ordinal_in_parent) "
+            "VALUES ( \"r\", 1, 1, ?, ?, ?)"));
     s.BindInt64(0, now);
     s.BindInt64(1, now);
+    const std::string ord =
+        NodeOrdinal::CreateInitialOrdinal().ToInternalValue();
+    s.BindBlob(2, ord.data(), ord.length());
 
     if (!s.Run())
       return false;

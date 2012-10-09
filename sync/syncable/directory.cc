@@ -8,6 +8,7 @@
 #include "base/perftimer.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/syncable/base_transaction.h"
 #include "sync/syncable/entry.h"
@@ -50,10 +51,10 @@ bool ParentIdAndHandleIndexer::Comparator::operator() (
   if (cmp != 0)
     return cmp < 0;
 
-  int64 a_position = a->ref(SERVER_POSITION_IN_PARENT);
-  int64 b_position = b->ref(SERVER_POSITION_IN_PARENT);
-  if (a_position != b_position)
-    return a_position < b_position;
+  const NodeOrdinal& a_position = a->ref(SERVER_ORDINAL_IN_PARENT);
+  const NodeOrdinal& b_position = b->ref(SERVER_ORDINAL_IN_PARENT);
+  if (!a_position.Equals(b_position))
+    return a_position.LessThan(b_position);
 
   cmp = a->ref(ID).compare(b->ref(ID));
   return cmp < 0;
@@ -1132,8 +1133,11 @@ Id Directory::ComputePrevIdFromServerPosition(
 
   // Find the natural insertion point in the parent_id_child_index, and
   // work back from there, filtering out ineligible candidates.
-  ParentIdChildIndex::iterator sibling = LocateInParentChildIndex(lock,
-      parent_id, entry->ref(SERVER_POSITION_IN_PARENT), entry->ref(ID));
+  ParentIdChildIndex::iterator sibling = LocateInParentChildIndex(
+      lock,
+      parent_id,
+      NodeOrdinalToInt64(entry->ref(SERVER_ORDINAL_IN_PARENT)),
+      entry->ref(ID));
   ParentIdChildIndex::iterator first_sibling =
       GetParentChildIndexLowerBound(lock, parent_id);
 
@@ -1176,7 +1180,8 @@ Directory::ParentIdChildIndex::iterator Directory::LocateInParentChildIndex(
     int64 position_in_parent,
     const Id& item_id_for_tiebreaking) {
   kernel_->needle.put(PARENT_ID, parent_id);
-  kernel_->needle.put(SERVER_POSITION_IN_PARENT, position_in_parent);
+  kernel_->needle.put(SERVER_ORDINAL_IN_PARENT,
+                      Int64ToNodeOrdinal(position_in_parent));
   kernel_->needle.put(ID, item_id_for_tiebreaking);
   return kernel_->parent_id_child_index->lower_bound(&kernel_->needle);
 }

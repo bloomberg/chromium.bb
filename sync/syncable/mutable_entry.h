@@ -5,6 +5,7 @@
 #ifndef SYNC_SYNCABLE_MUTABLE_ENTRY_H_
 #define SYNC_SYNCABLE_MUTABLE_ENTRY_H_
 
+#include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/metahandle_set.h"
 
@@ -49,6 +50,7 @@ class MutableEntry : public Entry {
   bool Put(Int64Field field, const int64& value);
   bool Put(TimeField field, const base::Time& value);
   bool Put(IdField field, const Id& value);
+  bool Put(OrdinalField field, const NodeOrdinal& value);
 
   // Do a simple property-only update if the PARENT_ID field.  Use with caution.
   //

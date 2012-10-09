@@ -91,6 +91,10 @@ class Entry {
     DCHECK(kernel_);
     return kernel_->ref(field);
   }
+  inline const NodeOrdinal& Get(OrdinalField field) const {
+    DCHECK(kernel_);
+    return kernel_->ref(field);
+  }
   inline bool Get(BitTemp field) const {
     DCHECK(kernel_);
     return kernel_->ref(field);

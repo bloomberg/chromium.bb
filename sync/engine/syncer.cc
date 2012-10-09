@@ -27,6 +27,11 @@
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable-inl.h"
 
+// TODO(vishwath): Remove this include after node positions have
+// shifted to completely using Ordinals.
+// See http://crbug.com/145412 .
+#include "sync/internal_api/public/base/node_ordinal.h"
+
 using base::Time;
 using base::TimeDelta;
 using sync_pb::ClientCommand;
@@ -43,7 +48,7 @@ using syncable::SERVER_IS_DIR;
 using syncable::SERVER_MTIME;
 using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
-using syncable::SERVER_POSITION_IN_PARENT;
+using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
 
@@ -241,7 +246,7 @@ void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {
   dest->Put(SERVER_IS_DEL, src->Get(SERVER_IS_DEL));
   dest->Put(IS_UNAPPLIED_UPDATE, src->Get(IS_UNAPPLIED_UPDATE));
   dest->Put(SERVER_SPECIFICS, src->Get(SERVER_SPECIFICS));
-  dest->Put(SERVER_POSITION_IN_PARENT, src->Get(SERVER_POSITION_IN_PARENT));
+  dest->Put(SERVER_ORDINAL_IN_PARENT, src->Get(SERVER_ORDINAL_IN_PARENT));
 }
 
 void ClearServerData(syncable::MutableEntry* entry) {
@@ -254,7 +259,7 @@ void ClearServerData(syncable::MutableEntry* entry) {
   entry->Put(SERVER_IS_DEL, false);
   entry->Put(IS_UNAPPLIED_UPDATE, false);
   entry->Put(SERVER_SPECIFICS, sync_pb::EntitySpecifics::default_instance());
-  entry->Put(SERVER_POSITION_IN_PARENT, 0);
+  entry->Put(SERVER_ORDINAL_IN_PARENT, Int64ToNodeOrdinal(0));
 }
 
 }  // namespace syncer

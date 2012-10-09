@@ -33,6 +33,7 @@
 #include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -96,7 +97,7 @@ using syncable::PREV_ID;
 using syncable::BASE_SERVER_SPECIFICS;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_PARENT_ID;
-using syncable::SERVER_POSITION_IN_PARENT;
+using syncable::SERVER_ORDINAL_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
 using syncable::UNIQUE_CLIENT_TAG;
@@ -2224,7 +2225,7 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   SyncShareNudge();
   syncable::Id id;
   int64 version;
-  int64 server_position_in_parent;
+  NodeOrdinal server_ordinal_in_parent;
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, syncable::GET_BY_HANDLE, entry_metahandle);
@@ -2232,14 +2233,16 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
     id = entry.Get(ID);
     EXPECT_TRUE(id.ServerKnows());
     version = entry.Get(BASE_VERSION);
-    server_position_in_parent = entry.Get(SERVER_POSITION_IN_PARENT);
+    server_ordinal_in_parent = entry.Get(SERVER_ORDINAL_IN_PARENT);
   }
   sync_pb::SyncEntity* update = mock_server_->AddUpdateFromLastCommit();
   EXPECT_EQ("Pete", update->name());
   EXPECT_EQ(id.GetServerId(), update->id_string());
   EXPECT_EQ(root_id_.GetServerId(), update->parent_id_string());
   EXPECT_EQ(version, update->version());
-  EXPECT_EQ(server_position_in_parent, update->position_in_parent());
+  EXPECT_EQ(
+      NodeOrdinalToInt64(server_ordinal_in_parent),
+      update->position_in_parent());
   SyncShareNudge();
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -4490,7 +4493,9 @@ class SyncerPositionUpdateTest : public SyncerTest {
       Entry entry_with_id(&trans, GET_BY_ID, id);
       EXPECT_TRUE(entry_with_id.good());
       EXPECT_EQ(prev_id, entry_with_id.Get(PREV_ID));
-      EXPECT_EQ(i->first, entry_with_id.Get(SERVER_POSITION_IN_PARENT));
+      EXPECT_EQ(
+          i->first,
+          NodeOrdinalToInt64(entry_with_id.Get(SERVER_ORDINAL_IN_PARENT)));
       if (next == position_map_.end()) {
         EXPECT_EQ(Id(), entry_with_id.Get(NEXT_ID));
       } else {
