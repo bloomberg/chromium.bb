@@ -261,7 +261,7 @@ class DownloadTestItemCreationObserver
 
   void WaitForDownloadItemCreation();
 
-  DownloadId download_id() const { return download_id_; }
+  int download_id() const { return download_id_; }
   net::Error error() const { return error_; }
   bool started() const { return called_back_count_ > 0; }
   bool succeeded() const { return started() && (error_ == net::OK); }
@@ -273,12 +273,10 @@ class DownloadTestItemCreationObserver
 
   ~DownloadTestItemCreationObserver();
 
-  void DownloadItemCreationCallback(DownloadId download_id,
-                                    net::Error error);
+  void DownloadItemCreationCallback(DownloadItem* item, net::Error error);
 
   // The download creation information we received.
-  DownloadId download_id_;
-
+  int download_id_;
   net::Error error_;
 
   // Count of callbacks.

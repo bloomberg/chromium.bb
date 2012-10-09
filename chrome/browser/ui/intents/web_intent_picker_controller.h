@@ -18,6 +18,7 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_reporting.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"

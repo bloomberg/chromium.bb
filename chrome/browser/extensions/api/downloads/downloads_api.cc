@@ -645,12 +645,15 @@ bool DownloadsDownloadFunction::RunImpl() {
   return true;
 }
 
-void DownloadsDownloadFunction::OnStarted(DownloadId dl_id, net::Error error) {
+void DownloadsDownloadFunction::OnStarted(
+    DownloadItem* item, net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << __FUNCTION__ << " " << dl_id << " " << error;
-  if (dl_id.local() >= 0) {
-    SetResult(base::Value::CreateIntegerValue(dl_id.local()));
+  VLOG(1) << __FUNCTION__ << " " << item << " " << error;
+  if (item) {
+    DCHECK_EQ(net::OK, error);
+    SetResult(base::Value::CreateIntegerValue(item->GetId()));
   } else {
+    DCHECK_NE(net::OK, error);
     error_ = net::ErrorToString(error);
   }
   SendResponse(error_.empty());

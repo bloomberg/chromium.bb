@@ -276,7 +276,7 @@ net::Error CallbackAndReturn(
     return net_error;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(started_cb, DownloadId::Invalid(), net_error));
+      base::Bind(started_cb, static_cast<DownloadItem*>(NULL), net_error));
 
   return net_error;
 }

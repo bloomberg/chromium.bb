@@ -53,7 +53,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void Shutdown() OVERRIDE;
   virtual void GetAllDownloads(DownloadVector* result) OVERRIDE;
   virtual bool Init(content::BrowserContext* browser_context) OVERRIDE;
-  virtual content::DownloadId StartDownload(
+  virtual content::DownloadItem* StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream) OVERRIDE;
   virtual void UpdateDownload(int32 download_id,

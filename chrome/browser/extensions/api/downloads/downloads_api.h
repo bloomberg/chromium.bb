@@ -58,7 +58,7 @@ class DownloadsDownloadFunction : public AsyncExtensionFunction {
   virtual ~DownloadsDownloadFunction();
 
  private:
-  void OnStarted(content::DownloadId dl_id, net::Error error);
+  void OnStarted(content::DownloadItem* item, net::Error error);
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDownloadFunction);
 };

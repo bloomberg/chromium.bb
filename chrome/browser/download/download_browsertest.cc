@@ -669,10 +669,10 @@ class DownloadTest : public InProcessBrowserTest {
                 creation_observer->succeeded());
       if (download_info.show_download_item) {
         EXPECT_EQ(net::OK, creation_observer->error());
-        EXPECT_NE(invalid_id, creation_observer->download_id().local());
+        EXPECT_NE(invalid_id, creation_observer->download_id());
       } else {
         EXPECT_NE(net::OK, creation_observer->error());
-        EXPECT_EQ(invalid_id, creation_observer->download_id().local());
+        EXPECT_EQ(invalid_id, creation_observer->download_id());
       }
     } else {
       // Navigate to URL normally, wait until done.

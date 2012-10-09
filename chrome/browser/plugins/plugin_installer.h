@@ -9,7 +9,6 @@
 #include "base/string16.h"
 #include "base/version.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
@@ -58,7 +57,7 @@ class PluginInstaller : public content::DownloadItem::Observer {
 
  private:
   void DownloadStarted(scoped_refptr<content::DownloadManager> dlm,
-                       content::DownloadId download_id,
+                       content::DownloadItem* item,
                        net::Error error);
   void DownloadError(const std::string& msg);
   void DownloadCancelled();

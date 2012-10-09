@@ -60,7 +60,7 @@ void BeginDownload(
   if (error != net::OK) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, content::DownloadId::Invalid(), error));
+        base::Bind(callback, static_cast<DownloadItem*>(NULL), error));
   }
 }
 
@@ -153,23 +153,18 @@ void PluginInstaller::StartInstalling(const GURL& plugin_url,
 
 void PluginInstaller::DownloadStarted(
     scoped_refptr<content::DownloadManager> dlm,
-    content::DownloadId download_id,
+    content::DownloadItem* item,
     net::Error error) {
-  if (error != net::OK) {
+  if (!item) {
+    DCHECK_NE(net::OK, error);
     std::string msg =
         base::StringPrintf("Error %d: %s", error, net::ErrorToString(error));
     DownloadError(msg);
     return;
   }
-  DownloadItem* download_item = dlm->GetDownload(download_id.local());
-  // TODO(benjhayden): DCHECK(item && item->IsInProgress()) after figuring out
-  // why DownloadStarted may get net:OK but an invalid id.
-  if (!download_item) {
-    DownloadError("Download not found");
-    return;
-  }
-  download_item->SetOpenWhenComplete(true);
-  download_item->AddObserver(this);
+  DCHECK_EQ(net::OK, error);
+  item->SetOpenWhenComplete(true);
+  item->AddObserver(this);
 }
 
 void PluginInstaller::OpenDownloadURL(const GURL& plugin_url,

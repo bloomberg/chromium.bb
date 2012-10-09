@@ -44,13 +44,13 @@ static const int kDownloadByteStreamSize = 100 * 1024;
 
 void CallStartedCBOnUIThread(
     const DownloadResourceHandler::OnStartedCallback& started_cb,
-    DownloadId id,
+    DownloadItem* item,
     net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (started_cb.is_null())
     return;
-  started_cb.Run(id, error);
+  started_cb.Run(item, error);
 }
 
 // Static function in order to prevent any accidental accesses to
@@ -66,15 +66,15 @@ static void StartOnUIThread(
     // NULL in unittests or if the page closed right after starting the
     // download.
     if (!started_cb.is_null())
-      started_cb.Run(DownloadId(), net::ERR_ACCESS_DENIED);
+      started_cb.Run(NULL, net::ERR_ACCESS_DENIED);
     return;
   }
 
-  DownloadId download_id =
-      download_manager->StartDownload(info.Pass(), stream.Pass());
+  DownloadItem* item = download_manager->StartDownload(
+      info.Pass(), stream.Pass());
 
   if (!started_cb.is_null())
-    started_cb.Run(download_id, net::OK);
+    started_cb.Run(item, net::OK);
 }
 
 }  // namespace
@@ -215,13 +215,14 @@ bool DownloadResourceHandler::OnResponseStarted(
   return true;
 }
 
-void DownloadResourceHandler::CallStartedCB(DownloadId id, net::Error error) {
+void DownloadResourceHandler::CallStartedCB(
+    DownloadItem* item, net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (started_cb_.is_null())
     return;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&CallStartedCBOnUIThread, started_cb_, id, error));
+      base::Bind(&CallStartedCBOnUIThread, started_cb_, item, error));
   started_cb_.Reset();
 }
 
@@ -356,7 +357,7 @@ bool DownloadResourceHandler::OnResponseCompleted(
   download_stats::RecordNetworkBlockage(
       base::TimeTicks::Now() - download_start_time_, total_pause_time_);
 
-  CallStartedCB(DownloadId(), error_code);
+  CallStartedCB(NULL, error_code);
 
   // Send the info down the stream.  Conditional is in case we get
   // OnResponseCompleted without OnResponseStarted.
@@ -445,7 +446,7 @@ DownloadResourceHandler::~DownloadResourceHandler() {
   // This won't do anything if the callback was called before.
   // If it goes through, it will likely be because OnWillStart() returned
   // false somewhere in the chain of resource handlers.
-  CallStartedCB(DownloadId(), net::ERR_ACCESS_DENIED);
+  CallStartedCB(NULL, net::ERR_ACCESS_DENIED);
 
   // Remove output stream callback if a stream exists.
   if (stream_writer_.get())

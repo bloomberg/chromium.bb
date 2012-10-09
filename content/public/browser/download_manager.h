@@ -115,7 +115,7 @@ class CONTENT_EXPORT DownloadManager
   // to initiate the non-source portions of a download.
   // Returns the id assigned to the download.  If the DownloadCreateInfo
   // specifies an id, that id will be used.
-  virtual DownloadId StartDownload(
+  virtual DownloadItem* StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream) = 0;
 

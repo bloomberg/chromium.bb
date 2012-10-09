@@ -29,13 +29,12 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(Init, bool(BrowserContext* browser_context));
 
   // Gasket for handling scoped_ptr arguments.
-  virtual DownloadId StartDownload(
+  virtual DownloadItem* StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream) OVERRIDE;
 
   MOCK_METHOD2(MockStartDownload,
-               DownloadId(DownloadCreateInfo*,
-                          ByteStreamReader*));
+               DownloadItem*(DownloadCreateInfo*, ByteStreamReader*));
   MOCK_METHOD4(UpdateDownload, void(int32 download_id,
                                     int64 bytes_so_far,
                                     int64 bytes_per_sec,

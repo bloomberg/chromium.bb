@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_H_
 
 #include "base/callback_forward.h"
-#include "content/public/browser/download_id.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -14,13 +13,16 @@ class URLRequest;
 }
 
 namespace content {
+
+class DownloadItem;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
 struct DownloadSaveInfo;
 
 class CONTENT_EXPORT ResourceDispatcherHost {
  public:
-  typedef base::Callback<void(DownloadId, net::Error)> DownloadStartedCallback;
+  typedef base::Callback<void(DownloadItem*, net::Error)>
+    DownloadStartedCallback;
 
   // Returns the singleton instance of the ResourceDispatcherHost.
   static ResourceDispatcherHost* Get();
@@ -35,10 +37,10 @@ class CONTENT_EXPORT ResourceDispatcherHost {
 
   // Initiates a download by explicit request of the renderer, e.g. due to
   // alt-clicking a link.  If the download is started, |started_callback| will
-  // be called on the UI thread with the DownloadId; otherwise an error code
-  // will be returned.  |is_content_initiated| is used to indicate that
-  // the request was generated from a web page, and hence may not be
-  // as trustworthy as a browser generated request.
+  // be called on the UI thread with the DownloadItem; otherwise an error code
+  // will be returned.  |is_content_initiated| is used to indicate that the
+  // request was generated from a web page, and hence may not be as trustworthy
+  // as a browser generated request.
   virtual net::Error BeginDownload(
       scoped_ptr<net::URLRequest> request,
       bool is_content_initiated,

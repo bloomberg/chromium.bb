@@ -89,7 +89,7 @@ class DownloadResourceHandler
   // Arrange for started_cb_ to be called on the UI thread with the
   // below values, nulling out started_cb_.  Should only be called
   // on the IO thread.
-  void CallStartedCB(content::DownloadId id, net::Error error);
+  void CallStartedCB(content::DownloadItem* item, net::Error error);
 
   // If the content-length header is not present (or contains something other
   // than numbers), the incoming content_length is -1 (unknown size).

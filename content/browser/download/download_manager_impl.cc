@@ -348,7 +348,7 @@ bool DownloadManagerImpl::Init(content::BrowserContext* browser_context) {
 }
 
 // We have received a message from DownloadFileManager about a new download.
-content::DownloadId DownloadManagerImpl::StartDownload(
+DownloadItem* DownloadManagerImpl::StartDownload(
     scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<content::ByteStreamReader> stream) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -380,7 +380,7 @@ content::DownloadId DownloadManagerImpl::StartDownload(
                  (delegate_ && delegate_->GenerateFileHash()), bound_net_log,
                  callback));
 
-  return download_id;
+  return GetDownload(download_id.local());
 }
 
 void DownloadManagerImpl::OnDownloadFileCreated(

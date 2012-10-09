@@ -389,7 +389,7 @@ void DownloadTestFlushObserver::PingIOThread(int cycle) {
 }
 
 DownloadTestItemCreationObserver::DownloadTestItemCreationObserver()
-    : download_id_(DownloadId::Invalid()),
+    : download_id_(DownloadId::Invalid().local()),
       error_(net::OK),
       called_back_count_(0),
       waiting_(false) {
@@ -409,10 +409,12 @@ void DownloadTestItemCreationObserver::WaitForDownloadItemCreation() {
 }
 
 void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
-    DownloadId download_id, net::Error error) {
+    DownloadItem* item,
+    net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  download_id_ = download_id;
+  if (item)
+    download_id_ = item->GetId();
   error_ = error;
   ++called_back_count_;
   DCHECK_EQ(1u, called_back_count_);

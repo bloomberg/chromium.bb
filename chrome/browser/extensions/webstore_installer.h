@@ -14,7 +14,6 @@
 #include "base/supports_user_data.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -144,7 +143,7 @@ class WebstoreInstaller :public content::NotificationObserver,
   virtual ~WebstoreInstaller();
 
   // DownloadManager::DownloadUrl callback.
-  void OnDownloadStarted(content::DownloadId id, net::Error error);
+  void OnDownloadStarted(content::DownloadItem* item, net::Error error);
 
   // DownloadItem::Observer implementation:
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;

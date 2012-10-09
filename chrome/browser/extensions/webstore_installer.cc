@@ -45,7 +45,6 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::NavigationController;
@@ -279,28 +278,21 @@ WebstoreInstaller::~WebstoreInstaller() {
   }
 }
 
-void WebstoreInstaller::OnDownloadStarted(DownloadId id, net::Error error) {
-  if (error != net::OK) {
+void WebstoreInstaller::OnDownloadStarted(
+    DownloadItem* item, net::Error error) {
+  if (!item) {
+    DCHECK_NE(net::OK, error);
     ReportFailure(net::ErrorToString(error), FAILURE_REASON_OTHER);
     return;
   }
 
-  CHECK(id.IsValid());
-
-  DownloadManager* download_manager =
-      BrowserContext::GetDownloadManager(profile_);
-  if (!download_manager)
-    return;
-  download_item_ = download_manager->GetDownload(id.local());
-  // TODO(benjhayden): DCHECK(item && item->IsInProgress()) after investigating
-  // the relationship between net::OK and invalid id.
-  if (download_item_) {
-    download_item_->AddObserver(this);
-    if (approval_.get())
-      download_item_->SetUserData(kApprovalKey, approval_.release());
-    if (delegate_)
-      delegate_->OnExtensionDownloadStarted(id_, download_item_);
-  }
+  DCHECK_EQ(net::OK, error);
+  download_item_ = item;
+  download_item_->AddObserver(this);
+  if (approval_.get())
+    download_item_->SetUserData(kApprovalKey, approval_.release());
+  if (delegate_)
+    delegate_->OnExtensionDownloadStarted(id_, download_item_);
 }
 
 void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
