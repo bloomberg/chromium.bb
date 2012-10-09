@@ -66,12 +66,6 @@ const AcceleratorData kAcceleratorData[] = {
   // Extra shortcut for display swaping as alt-f4 is taken on linux desktop.
   { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
     SWAP_PRIMARY_DISPLAY },
-  // Extra shortcut to exit on linux desktop.
-  { true, ui::VKEY_F11, ui::EF_NONE, POWER_PRESSED },
-  { false, ui::VKEY_F11, ui::EF_NONE, POWER_RELEASED },
-  // Extra shortcut to lock the screen on linux desktop.
-  { true, ui::VKEY_F11, ui::EF_SHIFT_DOWN, LOCK_PRESSED },
-  { false, ui::VKEY_F11, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
 #endif
   { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER_DIALOG },
   { true, ui::VKEY_M, ui::EF_CONTROL_DOWN, OPEN_FILE_MANAGER_TAB },
@@ -201,8 +195,6 @@ const AcceleratorAction kReservedActions[] = {
   CYCLE_FORWARD_MRU_PRESSED,  // Alt+Tab
   CYCLE_FORWARD_MRU_RELEASED,
 #if defined(OS_CHROMEOS)
-  LOCK_PRESSED,
-  LOCK_RELEASED,
   POWER_PRESSED,
   POWER_RELEASED,
   TOGGLE_MAXIMIZED_PRESSED,
@@ -240,10 +232,6 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   PRINT_VIEW_HIERARCHY,
   PRINT_WINDOW_HIERARCHY,
   ROTATE_SCREEN,
-#endif
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
-  POWER_PRESSED,
-  POWER_RELEASED,
 #endif
 };
 

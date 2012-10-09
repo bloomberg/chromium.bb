@@ -13,6 +13,7 @@
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/base_layout_manager.h"
+#include "ash/wm/event_client_impl.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
@@ -143,6 +144,8 @@ namespace internal {
 RootWindowController::RootWindowController(aura::RootWindow* root_window)
     : root_window_(root_window) {
   SetRootWindowController(root_window, this);
+
+  event_client_.reset(new EventClientImpl(root_window));
   screen_dimmer_.reset(new ScreenDimmer(root_window));
 }
 
@@ -159,6 +162,7 @@ void RootWindowController::Shutdown() {
         NULL : Shell::GetPrimaryRootWindow());
   }
   SetRootWindowController(root_window_.get(), NULL);
+  event_client_.reset();
   screen_dimmer_.reset();
   workspace_controller_.reset();
   // Forget with the display ID so that display lookup
