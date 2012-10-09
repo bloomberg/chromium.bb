@@ -12,6 +12,7 @@ if (!chrome.searchBox) {
     // =========================================================================
 
     var MAX_CLIENT_SUGGESTIONS_TO_DEDUPE = 6;
+    var MAX_ALLOWED_DEDUPE_ATTEMPTS = 5;
 
     var HTTP_REGEX = /^https?:\/\//;
 
@@ -118,25 +119,40 @@ if (!chrome.searchBox) {
     }
 
     var lastPrefixQueriedForDuplicates = '';
+    var numDedupeAttempts = 0;
 
     function DedupeClientSuggestions(clientSuggestions) {
       var userInput = GetQuery();
       if (userInput == lastPrefixQueriedForDuplicates) {
-        // Request blocked for privacy reasons.
-        // TODO(dcblack): This check is insufficient.  We should have a check
-        // such that it's only callable once per onnativesuggestions, not
-        // once per prefix.
-        return false;
+        numDedupeAttempts += 1;
+        if (numDedupeAttempts > MAX_ALLOWED_DEDUPE_ATTEMPTS) {
+          // Request blocked for privacy reasons.
+          // TODO(dcblack): This check is insufficient.  We should have a check
+          // such that it's only callable once per onnativesuggestions, not
+          // once per prefix.  Also, there is a timing problem where if the user
+          // types quickly then the client will (correctly) attempt to render
+          // stale results, and end up calling dedupe multiple times when
+          // getValue shows the same prefix.  A better solution would be to have
+          // the client send up rid ranges to dedupe against and have the
+          // binary keep around all the old suggestions ever given to this
+          // overlay.  I suspect such an approach would clean up this code quite
+          // a bit.
+          return false;
+        }
+      } else {
+        lastPrefixQueriedForDuplicates = userInput;
+        numDedupeAttempts = 1;
       }
-      lastPrefixQueriedForDuplicates = userInput;
+
       var autocompleteResults = GetAutocompleteResults();
       var nativeUrls = {};
       for (var i = 0, result; result = autocompleteResults[i]; ++i) {
         var nativeUrl = CanonicalizeUrl(result.destination_url);
         nativeUrls[nativeUrl] = result.rid;
       }
-      for (var i = 0, result; result = clientSuggestions[i] &&
+      for (var i = 0; clientSuggestions[i] &&
            i < MAX_CLIENT_SUGGESTIONS_TO_DEDUPE; ++i) {
+        var result = clientSuggestions[i];
         if (result.url) {
           var clientUrl = CanonicalizeUrl(result.url);
           if (clientUrl in nativeUrls) {
