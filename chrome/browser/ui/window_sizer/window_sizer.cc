@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
 #include "base/compiler_specific.h"
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/chrome_switches.h"
 #include "ui/gfx/screen.h"
 
 // Minimum height of the visible part of a window.
@@ -47,8 +49,10 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 
   // Overridden from WindowSizer::StateProvider:
   virtual bool GetPersistentState(gfx::Rect* bounds,
-                                  gfx::Rect* work_area) const {
+                                  gfx::Rect* work_area,
+                                  ui::WindowShowState* show_state) const {
     DCHECK(bounds);
+    DCHECK(show_state);
 
     if (!browser_ || !browser_->profile()->GetPrefs())
       return false;
@@ -57,11 +61,13 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     const DictionaryValue* wp_pref =
         browser_->profile()->GetPrefs()->GetDictionary(window_name.c_str());
     int top = 0, left = 0, bottom = 0, right = 0;
+    bool maximized = false;
     bool has_prefs = wp_pref &&
                      wp_pref->GetInteger("top", &top) &&
                      wp_pref->GetInteger("left", &left) &&
                      wp_pref->GetInteger("bottom", &bottom) &&
-                     wp_pref->GetInteger("right", &right);
+                     wp_pref->GetInteger("right", &right) &&
+                     wp_pref->GetBoolean("maximized", &maximized);
     bounds->SetRect(left, top, std::max(0, right - left),
                     std::max(0, bottom - top));
 
@@ -74,6 +80,8 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       wp_pref->GetInteger("work_area_left", &work_area_left);
       wp_pref->GetInteger("work_area_bottom", &work_area_bottom);
       wp_pref->GetInteger("work_area_right", &work_area_right);
+      if (*show_state == ui::SHOW_STATE_DEFAULT && maximized)
+        *show_state = ui::SHOW_STATE_MAXIMIZED;
     }
     work_area->SetRect(work_area_left, work_area_top,
                       std::max(0, work_area_right - work_area_left),
@@ -82,7 +90,10 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     return has_prefs;
   }
 
-  virtual bool GetLastActiveWindowState(gfx::Rect* bounds) const {
+  virtual bool GetLastActiveWindowState(
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const {
+    DCHECK(show_state);
     // Applications are always restored with the same position.
     if (!app_name_.empty())
       return false;
@@ -109,6 +120,8 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 
     if (window) {
       *bounds = window->GetRestoredBounds();
+      if (*show_state == ui::SHOW_STATE_DEFAULT && window->IsMaximized())
+        *show_state = ui::SHOW_STATE_MAXIMIZED;
       return true;
     }
 
@@ -153,26 +166,36 @@ WindowSizer::~WindowSizer() {
 }
 
 // static
-void WindowSizer::GetBrowserWindowBounds(const std::string& app_name,
-                                         const gfx::Rect& specified_bounds,
-                                         const Browser* browser,
-                                         gfx::Rect* window_bounds) {
+void WindowSizer::GetBrowserWindowBoundsAndShowState(
+    const std::string& app_name,
+    const gfx::Rect& specified_bounds,
+    const Browser* browser,
+    gfx::Rect* window_bounds,
+    ui::WindowShowState* show_state) {
   const WindowSizer sizer(new DefaultStateProvider(app_name, browser), browser);
-  sizer.DetermineWindowBounds(specified_bounds, window_bounds);
+  sizer.DetermineWindowBoundsAndShowState(specified_bounds,
+                                          window_bounds,
+                                          show_state);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, private:
 
-void WindowSizer::DetermineWindowBounds(const gfx::Rect& specified_bounds,
-                                        gfx::Rect* bounds) const {
+void WindowSizer::DetermineWindowBoundsAndShowState(
+    const gfx::Rect& specified_bounds,
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
+  DCHECK(bounds);
+  DCHECK(show_state);
+  // Pre-populate the window state with our default.
+  *show_state = GetWindowDefaultShowState();
   *bounds = specified_bounds;
   if (bounds->IsEmpty()) {
-    if (GetBoundsOverride(specified_bounds, bounds))
+    if (GetBoundsOverride(specified_bounds, bounds, show_state))
       return;
     // See if there's saved placement information.
-    if (!GetLastWindowBounds(bounds)) {
-      if (!GetSavedWindowBounds(bounds)) {
+    if (!GetLastWindowBounds(bounds, show_state)) {
+      if (!GetSavedWindowBounds(bounds, show_state)) {
         // No saved placement, figure out some sensible default size based on
         // the user's screen size.
         GetDefaultWindowBounds(bounds);
@@ -192,10 +215,12 @@ void WindowSizer::DetermineWindowBounds(const gfx::Rect& specified_bounds,
   }
 }
 
-bool WindowSizer::GetLastWindowBounds(gfx::Rect* bounds) const {
+bool WindowSizer::GetLastWindowBounds(gfx::Rect* bounds,
+                                      ui::WindowShowState* show_state) const {
   DCHECK(bounds);
+  DCHECK(show_state);
   if (!state_provider_.get() ||
-      !state_provider_->GetLastActiveWindowState(bounds))
+      !state_provider_->GetLastActiveWindowState(bounds, show_state))
     return false;
   gfx::Rect last_window_bounds = *bounds;
   bounds->Offset(kWindowTilePixels, kWindowTilePixels);
@@ -205,11 +230,15 @@ bool WindowSizer::GetLastWindowBounds(gfx::Rect* bounds) const {
   return true;
 }
 
-bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds) const {
+bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds,
+                                       ui::WindowShowState* show_state) const {
   DCHECK(bounds);
+  DCHECK(show_state);
   gfx::Rect saved_work_area;
   if (!state_provider_.get() ||
-      !state_provider_->GetPersistentState(bounds, &saved_work_area))
+      !state_provider_->GetPersistentState(bounds,
+                                           &saved_work_area,
+                                           show_state))
     return false;
   AdjustBoundsToBeVisibleOnMonitorContaining(*bounds, saved_work_area, bounds);
   return true;
@@ -332,11 +361,38 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
 
 bool WindowSizer::GetBoundsOverride(
     const gfx::Rect& specified_bounds,
-    gfx::Rect* bounds) const {
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
 #if defined(USE_ASH)
   // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
   if (chrome::ShouldOpenAshOnStartup())
-    return GetBoundsOverrideAsh(specified_bounds, bounds);
+    return GetBoundsOverrideAsh(specified_bounds, bounds, show_state);
 #endif
   return false;
+}
+
+ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
+  if (!browser_)
+    return ui::SHOW_STATE_DEFAULT;
+
+  // Only tabbed browsers use the command line or preference state, with the
+  // exception of devtools.
+  bool show_state = !browser_->is_type_tabbed() && !browser_->is_devtools();
+
+#if defined(USE_AURA)
+  // We use the apps save state on aura.
+  show_state &= !browser_->is_app();
+#endif
+
+  if (show_state)
+    return browser_->initial_show_state();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized))
+    return ui::SHOW_STATE_MAXIMIZED;
+
+  if (browser_->initial_show_state() != ui::SHOW_STATE_DEFAULT)
+    return browser_->initial_show_state();
+
+  // Otherwise we use the default which can be overridden later on.
+  return ui::SHOW_STATE_DEFAULT;
 }

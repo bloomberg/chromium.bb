@@ -85,12 +85,15 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
   : browser_(browser),
     controller_(controller),
     confirm_close_factory_(browser),
+    initial_show_state_(ui::SHOW_STATE_DEFAULT),
     attention_request_id_(0) {
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
-
-  initial_show_state_ = chrome::GetSavedWindowShowState(browser_);
+  gfx::Rect bounds;
+  chrome::GetSavedWindowBoundsAndShowState(browser_,
+                                           &bounds,
+                                           &initial_show_state_);
 }
 
 BrowserWindowCocoa::~BrowserWindowCocoa() {

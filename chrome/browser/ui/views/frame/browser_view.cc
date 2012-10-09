@@ -1636,8 +1636,7 @@ bool BrowserView::GetSavedWindowPlacement(
     ui::WindowShowState* show_state) const {
   if (!ShouldSaveOrRestoreWindowPos())
     return false;
-  *bounds = chrome::GetSavedWindowBounds(browser_.get());
-  *show_state = chrome::GetSavedWindowShowState(browser_.get());
+  chrome::GetSavedWindowBoundsAndShowState(browser_.get(), bounds, show_state);
 
 #if defined(USE_ASH)
   if (browser_->is_type_popup() || browser_->is_type_panel()) {

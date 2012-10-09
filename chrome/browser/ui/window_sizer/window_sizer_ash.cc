@@ -120,11 +120,15 @@ bool MoveRect(const gfx::Rect& work_area,
 }  // namespace
 
 bool WindowSizer::GetBoundsOverrideAsh(const gfx::Rect& specified_bounds,
-                                       gfx::Rect* bounds_in_screen) const {
+                                       gfx::Rect* bounds_in_screen,
+                                       ui::WindowShowState* show_state) const {
+  DCHECK(show_state);
+  DCHECK(bounds_in_screen);
   *bounds_in_screen = specified_bounds;
   DCHECK(bounds_in_screen->IsEmpty());
 
-  if (!GetSavedWindowBounds(bounds_in_screen))
+  ui::WindowShowState passed_show_state = *show_state;
+  if (!GetSavedWindowBounds(bounds_in_screen, show_state))
     GetDefaultWindowBounds(bounds_in_screen);
 
   if (browser_ && browser_->is_type_tabbed()) {
@@ -133,9 +137,23 @@ bool WindowSizer::GetBoundsOverrideAsh(const gfx::Rect& specified_bounds,
     // This is a window / app. See if there is no window and try to place it.
     int count = GetNumberOfValidTopLevelBrowserWindows(work_area);
     aura::Window* top_window = GetTopWindow(work_area);
-
+    // The window should not be able to reflect on itself.
+    if (browser_->window() &&
+        top_window == browser_->window()->GetNativeWindow())
+      return true;
     // If there is no valid other window we take the coordinates as is.
-    if (!count || !top_window || ash::wm::IsWindowMaximized(top_window))
+    if (!count || !top_window)
+      return true;
+
+    bool maximized = ash::wm::IsWindowMaximized(top_window);
+    // We ignore the saved show state, but look instead for the top level
+    // window's show state.
+    if (passed_show_state == ui::SHOW_STATE_DEFAULT) {
+      *show_state = maximized ? ui::SHOW_STATE_MAXIMIZED :
+                                ui::SHOW_STATE_DEFAULT;
+    }
+
+    if (maximized)
       return true;
 
     gfx::Rect other_bounds_in_screen = top_window->GetBoundsInScreen();

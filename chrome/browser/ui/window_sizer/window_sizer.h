@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
@@ -65,33 +66,46 @@ class WindowSizer {
 
     // Retrieve the persisted bounds of the window. Returns true if there was
     // persisted data to retrieve state information, false otherwise.
+    // The |show_state| variable will only be touched if there was persisted
+    // data and the |show_state| variable is SHOW_STATE_DEFAULT.
     virtual bool GetPersistentState(gfx::Rect* bounds,
-                                    gfx::Rect* work_area) const = 0;
+                                    gfx::Rect* work_area,
+                                    ui::WindowShowState* show_state) const = 0;
 
     // Retrieve the bounds of the most recent window of the matching type.
     // Returns true if there was a last active window to retrieve state
     // information from, false otherwise.
-    virtual bool GetLastActiveWindowState(gfx::Rect* bounds) const = 0;
+    // The |show_state| variable will only be touched if we have found a
+    // suitable window and the |show_state| variable is SHOW_STATE_DEFAULT.
+    virtual bool GetLastActiveWindowState(
+        gfx::Rect* bounds,
+        ui::WindowShowState* show_state) const = 0;
   };
 
-  // Determines the position and size for a window as it is created. This
-  // function uses several strategies to figure out optimal size and placement,
-  // first looking for an existing active window, then falling back to persisted
-  // data from a previous session, finally utilizing a default
-  // algorithm. If |specified_bounds| are non-empty, this value is returned
-  // instead. For use only in testing.
-  void DetermineWindowBounds(const gfx::Rect& specified_bounds,
-                             gfx::Rect* bounds) const;
+  // Determines the position and size for a window as it is created as well
+  // as the initial state. This function uses several strategies to figure out
+  // optimal size and placement, first looking for an existing active window,
+  // then falling back to persisted data from a previous session, finally
+  // utilizing a default algorithm. If |specified_bounds| are non-empty, this
+  // value is returned instead. For use only in testing.
+  // |show_state| will be overwritten and return the initial visual state of
+  // the window to use.
+  void DetermineWindowBoundsAndShowState(
+      const gfx::Rect& specified_bounds,
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const;
 
   // Determines the size, position and maximized state for the browser window.
   // See documentation for DetermineWindowBounds above. Normally,
   // |window_bounds| is calculated by calling GetLastActiveWindowState(). To
   // explicitly specify a particular window to base the bounds on, pass in a
   // non-NULL value for |browser|.
-  static void GetBrowserWindowBounds(const std::string& app_name,
-                                     const gfx::Rect& specified_bounds,
-                                     const Browser* browser,
-                                     gfx::Rect* window_bounds);
+  static void GetBrowserWindowBoundsAndShowState(
+      const std::string& app_name,
+      const gfx::Rect& specified_bounds,
+      const Browser* browser,
+      gfx::Rect* window_bounds,
+      ui::WindowShowState* show_state);
 
   // Returns the default origin for popups of the given size.
   static gfx::Point GetDefaultPopupOrigin(const gfx::Size& size,
@@ -115,13 +129,17 @@ class WindowSizer {
   // Gets the size and placement of the last window. Returns true if this data
   // is valid, false if there is no last window and the application should
   // restore saved state from preferences using RestoreWindowPosition.
-  bool GetLastWindowBounds(gfx::Rect* bounds) const;
+  // |show_state| will only be changed if it was set to SHOW_STATE_DEFAULT.
+  bool GetLastWindowBounds(gfx::Rect* bounds,
+                           ui::WindowShowState* show_state) const;
 
   // Gets the size and placement of the last window in the last session, saved
   // in local state preferences. Returns true if local state exists containing
   // this information, false if this information does not exist and a default
   // size should be used.
-  bool GetSavedWindowBounds(gfx::Rect* bounds) const;
+  // |show_state| will only be changed if it was set to SHOW_STATE_DEFAULT.
+  bool GetSavedWindowBounds(gfx::Rect* bounds,
+                            ui::WindowShowState* show_state) const;
 
   // Gets the default window position and size if there is no last window and
   // no saved window placement in prefs. This function determines the default
@@ -148,12 +166,19 @@ class WindowSizer {
   // will be called before DetermineWindowBounds. It will return true when the
   // function was setting the bounds structure to the desired size. Otherwise
   // another algorithm should get used to determine the correct bounds.
+  // |show_state| will only be changed if it was set to SHOW_STATE_DEFAULT.
   bool GetBoundsOverride(const gfx::Rect& specified_bounds,
-                         gfx::Rect* bounds) const;
+                         gfx::Rect* bounds,
+                         ui::WindowShowState* show_state) const;
 #if defined(USE_ASH)
   bool GetBoundsOverrideAsh(const gfx::Rect& specified_bounds,
-                            gfx::Rect* bounds_in_screen) const;
+                            gfx::Rect* bounds_in_screen,
+                            ui::WindowShowState* show_state) const;
 #endif
+
+  // Determine the default show state for the window - not looking at other
+  // windows or at persistent information.
+  ui::WindowShowState GetWindowDefaultShowState() const;
 
   // Providers for persistent storage and monitor metrics.
   scoped_ptr<StateProvider> state_provider_;

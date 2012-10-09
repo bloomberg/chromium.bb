@@ -50,9 +50,9 @@ void BrowserFrame::InitBrowserFrame() {
   if (browser_view_->browser()->is_type_tabbed()) {
     // Typed panel/popup can only return a size once the widget has been
     // created.
-    params.bounds = chrome::GetSavedWindowBounds(browser_view_->browser());
-    params.show_state =
-        chrome::GetSavedWindowShowState(browser_view_->browser());
+    chrome::GetSavedWindowBoundsAndShowState(browser_view_->browser(),
+                                             &params.bounds,
+                                             &params.show_state);
   }
   if (browser_view_->IsPanel()) {
     // We need to set the top-most bit when the panel window is created.

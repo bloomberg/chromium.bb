@@ -268,8 +268,11 @@ enum {
     // Note that this may leave a significant portion of the window
     // offscreen, but there will always be enough window onscreen to
     // drag the whole window back into view.
-    gfx::Rect desiredContentRect =
-        chrome::GetSavedWindowBounds(browser_.get());
+    ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
+    gfx::Rect desiredContentRect;
+    chrome::GetSavedWindowBoundsAndShowState(browser_.get(),
+                                             &desiredContentRect,
+                                             &show_state);
     gfx::Rect windowRect = desiredContentRect;
     windowRect = [self enforceMinWindowSize:windowRect];
 

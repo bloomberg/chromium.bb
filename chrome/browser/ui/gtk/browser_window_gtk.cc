@@ -1666,9 +1666,10 @@ void BrowserWindowGtk::SetGeometryHints() {
   // confused and maximizes the window, but doesn't set the
   // GDK_WINDOW_STATE_MAXIMIZED bit.  So instead, we keep track of whether to
   // maximize and call it after gtk_window_present.
-  show_state_after_show_ = chrome::GetSavedWindowShowState(browser_.get());
-
-  gfx::Rect bounds = chrome::GetSavedWindowBounds(browser_.get());
+  gfx::Rect bounds;
+  chrome::GetSavedWindowBoundsAndShowState(browser_.get(),
+                                           &bounds,
+                                           &show_state_after_show_);
   // We don't blindly call SetBounds here: that sets a forced position
   // on the window and we intentionally *don't* do that for normal
   // windows.  Most programs do not restore their window position on

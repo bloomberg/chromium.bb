@@ -488,8 +488,9 @@ bool CreateOffscreenTabFunction::RunImpl() {
     return false;
   }
 
-  WindowSizer::GetBrowserWindowBounds(
-      std::string(), gfx::Rect(), browser, &window_bounds);
+  ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
+  WindowSizer::GetBrowserWindowBoundsAndShowState(
+      std::string(), gfx::Rect(), browser, &window_bounds, &show_state);
 
   int width = window_bounds.width();
   if (create_props->HasKey(tabs_keys::kWidthKey))

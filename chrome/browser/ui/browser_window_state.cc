@@ -80,12 +80,18 @@ void SaveWindowPlacement(const Browser* browser,
     session_service->SetWindowBounds(browser->session_id(), bounds, show_state);
 }
 
-gfx::Rect GetSavedWindowBounds(const Browser* browser) {
-  gfx::Rect restored_bounds = browser->override_bounds();
-  WindowSizer::GetBrowserWindowBounds(browser->app_name(),
-                                      restored_bounds,
-                                      browser,
-                                      &restored_bounds);
+void GetSavedWindowBoundsAndShowState(const Browser* browser,
+                                      gfx::Rect* bounds,
+                                      ui::WindowShowState* show_state) {
+  DCHECK(browser);
+  DCHECK(bounds);
+  DCHECK(show_state);
+  *bounds = browser->override_bounds();
+  WindowSizer::GetBrowserWindowBoundsAndShowState(browser->app_name(),
+                                                  *bounds,
+                                                  browser,
+                                                  bounds,
+                                                  show_state);
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   bool record_mode = parsed_command_line.HasSwitch(switches::kRecordMode);
@@ -96,7 +102,7 @@ gfx::Rect GetSavedWindowBounds(const Browser* browser) {
     // resize/moves in the playback to still work, and Second we want
     // playbacks to work (as much as possible) on machines w/ different
     // screen sizes.
-    restored_bounds = gfx::Rect(0, 0, 800, 600);
+    *bounds = gfx::Rect(0, 0, 800, 600);
   }
 
   // The following options override playback/record.
@@ -105,44 +111,15 @@ gfx::Rect GetSavedWindowBounds(const Browser* browser) {
         parsed_command_line.GetSwitchValueASCII(switches::kWindowSize);
     int width, height;
     if (ParseCommaSeparatedIntegers(str, &width, &height))
-      restored_bounds.set_size(gfx::Size(width, height));
+      bounds->set_size(gfx::Size(width, height));
   }
   if (parsed_command_line.HasSwitch(switches::kWindowPosition)) {
     std::string str =
         parsed_command_line.GetSwitchValueASCII(switches::kWindowPosition);
     int x, y;
     if (ParseCommaSeparatedIntegers(str, &x, &y))
-      restored_bounds.set_origin(gfx::Point(x, y));
+      bounds->set_origin(gfx::Point(x, y));
   }
-
-  return restored_bounds;
-}
-
-ui::WindowShowState GetSavedWindowShowState(const Browser* browser) {
-  // Only tabbed browsers use the command line or preference state, with the
-  // exception of devtools.
-  bool show_state = !browser->is_type_tabbed() && !browser->is_devtools();
-
-#if defined(USE_AURA)
-  // Apps save state on aura.
-  show_state &= !browser->is_app();
-#endif
-
-  if (show_state)
-    return browser->initial_show_state();
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized))
-    return ui::SHOW_STATE_MAXIMIZED;
-
-  if (browser->initial_show_state() != ui::SHOW_STATE_DEFAULT)
-    return browser->initial_show_state();
-
-  const DictionaryValue* window_pref = browser->profile()->GetPrefs()->
-      GetDictionary(GetWindowPlacementKey(browser).c_str());
-  bool maximized = false;
-  window_pref->GetBoolean("maximized", &maximized);
-
-  return maximized ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_DEFAULT;
 }
 
 }  // namespace chrome

@@ -142,8 +142,7 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsLoaded, Test) {
   EXPECT_EQ(right, bounds.x() + bounds.width());
 
   // Find if launched window is maximized.
-  bool is_window_maximized =
-      chrome::GetSavedWindowShowState(browser()) == ui::SHOW_STATE_MAXIMIZED;
+  bool is_window_maximized = browser()->window()->IsMaximized();
   bool is_maximized = false;
   EXPECT_TRUE(root_dict->GetBoolean(kBrowserWindowPlacement + ".maximized",
       &is_maximized));
@@ -201,8 +200,7 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsMigrated, Test) {
   EXPECT_EQ(right, bounds.x() + bounds.width());
 
   // Find if launched window is maximized.
-  bool is_window_maximized =
-      chrome::GetSavedWindowShowState(browser()) == ui::SHOW_STATE_MAXIMIZED;
+  bool is_window_maximized = browser()->window()->IsMaximized();
   bool is_maximized = false;
   EXPECT_TRUE(root_dict->GetBoolean(kBrowserWindowPlacement + ".maximized",
       &is_maximized));

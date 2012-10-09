@@ -10,25 +10,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
-// Various assertions around setting show state.
-TEST_F(BrowserWithTestWindowTest, GetSavedWindowShowState) {
-  // Default show state is SHOW_STATE_DEFAULT.
-  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, chrome::GetSavedWindowShowState(browser()));
-
-  // Explicitly specifying a state should stick though.
-  browser()->set_initial_show_state(ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED,
-            chrome::GetSavedWindowShowState(browser()));
-  browser()->set_initial_show_state(ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL, chrome::GetSavedWindowShowState(browser()));
-  browser()->set_initial_show_state(ui::SHOW_STATE_MINIMIZED);
-  EXPECT_EQ(ui::SHOW_STATE_MINIMIZED,
-            chrome::GetSavedWindowShowState(browser()));
-  browser()->set_initial_show_state(ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN,
-            chrome::GetSavedWindowShowState(browser()));
-}
-
 TEST_F(BrowserWithTestWindowTest, IsReservedCommandOrKey) {
 #if defined(OS_CHROMEOS)
   const content::NativeWebKeyboardEvent event(ui::ET_KEY_PRESSED,

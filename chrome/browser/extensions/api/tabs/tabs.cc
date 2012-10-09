@@ -531,9 +531,12 @@ bool CreateWindowFunction::RunImpl() {
       // NOTE(rafaelw): It's ok if GetCurrentBrowser() returns NULL here.
       // GetBrowserWindowBounds will default to saved "default" values for
       // the app.
-      WindowSizer::GetBrowserWindowBounds(std::string(), gfx::Rect(),
-                                          GetCurrentBrowser(),
-                                          &window_bounds);
+      ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
+      WindowSizer::GetBrowserWindowBoundsAndShowState(std::string(),
+                                                      gfx::Rect(),
+                                                      GetCurrentBrowser(),
+                                                      &window_bounds,
+                                                      &show_state);
     }
 
     if (Browser::TYPE_PANEL == window_type &&

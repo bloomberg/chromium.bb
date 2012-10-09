@@ -25,9 +25,12 @@ void SaveWindowPlacement(const Browser* browser,
                          const gfx::Rect& bounds,
                          ui::WindowShowState show_state);
 
-gfx::Rect GetSavedWindowBounds(const Browser* browser);
-
-ui::WindowShowState GetSavedWindowShowState(const Browser* browser);
+// Return the |bounds| for the browser window to be used upon creation.
+// The |show_state| variable will receive the desired initial show state for
+// the window.
+void GetSavedWindowBoundsAndShowState(const Browser* browser,
+                                      gfx::Rect* bounds,
+                                      ui::WindowShowState* show_state);
 
 }  // namespace chrome
 
