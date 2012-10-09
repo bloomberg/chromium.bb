@@ -875,6 +875,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
     static const char device[] = "device";
     static const char model[] = "model";
     static const char brand[] = "brand";
+    static const char exception_info[] = "exception_info";
 
     writer.AddPairString(
         android_build_id, android_build_info->android_build_id());
@@ -888,6 +889,11 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddBoundary();
     writer.AddPairString(brand, android_build_info->brand());
     writer.AddBoundary();
+    if (android_build_info->java_exception_info() != NULL) {
+      writer.AddPairString(exception_info,
+                           android_build_info->java_exception_info());
+      writer.AddBoundary();
+    }
 #endif
     writer.Flush();
   }
