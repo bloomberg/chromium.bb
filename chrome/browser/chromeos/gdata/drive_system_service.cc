@@ -188,7 +188,6 @@ void DriveSystemService::OnCacheInitialized(bool success) {
           DriveCache::CACHE_TYPE_TMP_DOWNLOADS));
 
   AddDriveMountPoint();
-  file_system_->StartInitialFeedFetch();
 }
 
 //===================== DriveSystemServiceFactory =============================
