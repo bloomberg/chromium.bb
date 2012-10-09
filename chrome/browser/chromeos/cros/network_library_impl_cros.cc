@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/cros/network_library_impl_cros.h"
 
-#include <dbus/dbus-glib.h>
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"  // for debug output only.

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/cros/network_library.h"
 
-#include <dbus/dbus-glib.h>
-
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/time_formatting.h"

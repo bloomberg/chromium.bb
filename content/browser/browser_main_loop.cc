@@ -71,10 +71,6 @@
 #include "content/browser/device_monitor_mac.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include <dbus/dbus-glib.h>
-#endif
-
 #if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
 #endif
