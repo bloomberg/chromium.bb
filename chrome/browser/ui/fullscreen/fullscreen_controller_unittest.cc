@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -223,6 +224,9 @@ class FullscreenControllerUnitTest : public BrowserWithTestWindowTest {
                                                    int search_limit);
 
   std::string GetAndClearDebugLog();
+
+  // Runs one test of transitioning to a state and invoking an event.
+  void TestStateAndEvent(State state, Event event, bool reentrant);
 
   FullscreenControllerTestWindow* window_;
   FullscreenController* fullscreen_controller_;
@@ -519,44 +523,101 @@ std::string FullscreenControllerUnitTest::GetAndClearDebugLog() {
   return output_log;
 }
 
-// Tests -----------------------------------------------------------------------
-
-TEST_F(FullscreenControllerUnitTest, TransitionsForEachState) {
-  for (int reentrant = 0; reentrant <= 1; reentrant++) {
+void FullscreenControllerUnitTest::TestStateAndEvent(State state,
+                                                     Event event,
+                                                     bool reentrant) {
 #if defined(OS_WIN)
-    // FullscreenController verifies that WindowFullscreenStateChanged is
-    // always reentrant on Windows. It will fail if we mock asynchronous calls.
-    reentrant = 1;
+  // FullscreenController verifies that WindowFullscreenStateChanged is
+  // always reentrant on Windows. It will fail if we mock asynchronous calls.
+  if (!reentrant) {
+    debugging_log_ << "Skipping non-reentrant test on Windows.\n";
+    return;
+  }
 #endif
 
-    debugging_log_ << "\nTesting " << ((!!reentrant) ? "with" : "without")
-        << " reentrant calls.\n";
-    window_->set_reentrant(!!reentrant);
+  // When testing reentrancy there are states the fullscreen controller
+  // will be unable to remain in, as they will progress due to the
+  // reentrant window change call. Skip states that will be instantly
+  // exited by the reentrant call.
+  if (reentrant && (transition_table_[state][WINDOW_CHANGE] != state)) {
+    debugging_log_ << "Skipping reentrant test for transitory source state "
+        << GetStateString(state) << ".\n";
+    return;
+  }
 
+  debugging_log_ << "\nTest transition from state "
+      << GetStateString(state) << " via event " << GetEventString(event)
+      << (reentrant ? " with reentrant calls.\n" : ".\n");
+  window_->set_reentrant(reentrant);
+
+  debugging_log_ << " First, transition to " << GetStateString(state) << "\n";
+  ASSERT_NO_FATAL_FAILURE(TransitionToState(state))
+      << GetAndClearDebugLog();
+
+  debugging_log_ << " Then, invoke " << GetEventString(event) << "\n";
+  ASSERT_TRUE(InvokeEvent(event)) << GetAndClearDebugLog();
+}
+
+
+// Tests -----------------------------------------------------------------------
+
+#define TEST_EVENT_INNER(state, event, reentrant, reentrant_id) \
+    TEST_F(FullscreenControllerUnitTest, state##_##event##reentrant_id) { \
+      ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event, reentrant)) \
+          << GetAndClearDebugLog(); \
+    }
+    // Progress of tests can be examined by inserting the following line:
+    // LOG(INFO) << GetAndClearDebugLog(); }
+
+#define TEST_EVENT(state, event) \
+    TEST_EVENT_INNER(state, event, false, ); \
+    TEST_EVENT_INNER(state, event, true, _Reentrant);
+
+TEST_EVENT(STATE_NORMAL, TOGGLE_FULLSCREEN);
+#if defined(OS_WIN)
+TEST_EVENT(STATE_NORMAL, METRO_SNAP_TRUE);
+TEST_EVENT(STATE_NORMAL, METRO_SNAP_FALSE);
+#endif
+TEST_EVENT(STATE_NORMAL, WINDOW_CHANGE);
+
+TEST_EVENT(STATE_BROWSER_FULLSCREEN_NO_CHROME, TOGGLE_FULLSCREEN);
+#if defined(OS_WIN)
+TEST_EVENT(STATE_BROWSER_FULLSCREEN_NO_CHROME, METRO_SNAP_TRUE);
+TEST_EVENT(STATE_BROWSER_FULLSCREEN_NO_CHROME, METRO_SNAP_FALSE);
+#endif
+TEST_EVENT(STATE_BROWSER_FULLSCREEN_NO_CHROME, WINDOW_CHANGE);
+
+#if defined(OS_WIN)
+TEST_EVENT(STATE_METRO_SNAP, TOGGLE_FULLSCREEN);
+TEST_EVENT(STATE_METRO_SNAP, METRO_SNAP_TRUE);
+TEST_EVENT(STATE_METRO_SNAP, METRO_SNAP_FALSE);
+TEST_EVENT(STATE_METRO_SNAP, WINDOW_CHANGE);
+#endif
+
+TEST_EVENT(STATE_TO_NORMAL, TOGGLE_FULLSCREEN);
+#if defined(OS_WIN)
+TEST_EVENT(STATE_TO_NORMAL, METRO_SNAP_TRUE);
+TEST_EVENT(STATE_TO_NORMAL, METRO_SNAP_FALSE);
+#endif
+TEST_EVENT(STATE_TO_NORMAL, WINDOW_CHANGE);
+
+TEST_EVENT(STATE_TO_BROWSER_FULLSCREEN_NO_CHROME, TOGGLE_FULLSCREEN);
+#if defined(OS_WIN)
+TEST_EVENT(STATE_TO_BROWSER_FULLSCREEN_NO_CHROME, METRO_SNAP_TRUE);
+TEST_EVENT(STATE_TO_BROWSER_FULLSCREEN_NO_CHROME, METRO_SNAP_FALSE);
+#endif
+TEST_EVENT(STATE_TO_BROWSER_FULLSCREEN_NO_CHROME, WINDOW_CHANGE);
+
+// A single test that traverses all state and event pairs to detect lingering
+// state issues that would bleed over to other states.
+TEST_F(FullscreenControllerUnitTest, TransitionsForEachState) {
+  for (int reentrant = 0; reentrant <= 1; reentrant++) {
     for (int source_int = 0; source_int < NUM_STATES; source_int++) {
-      State state = static_cast<State>(source_int);
-
-      // When testing reentrancy there are states the fullscreen controller
-      // will be unable to remain in, as they will progress due to the
-      // reentrant window change call. Skip states that will be instantly
-      // exited by the reentrant call.
-      if (!!reentrant && (transition_table_[state][WINDOW_CHANGE] != state))
-        continue;
-
       for (int event_int = 0; event_int < NUM_EVENTS; event_int++) {
+        State state = static_cast<State>(source_int);
         Event event = static_cast<Event>(event_int);
-
-        debugging_log_ << "\nTest transition from state "
-            << GetStateString(state) << " via event "
-            << GetEventString(event) << std::endl;
-
-        debugging_log_ << " First, transition to " << GetStateString(state)
-            << std::endl;
-        ASSERT_NO_FATAL_FAILURE(TransitionToState(state))
+        ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event, !!reentrant))
             << GetAndClearDebugLog();
-
-        debugging_log_ << " Then, invoke " << GetEventString(event) << "\n";
-        ASSERT_TRUE(InvokeEvent(event)) << GetAndClearDebugLog();
       }
     }
   }
