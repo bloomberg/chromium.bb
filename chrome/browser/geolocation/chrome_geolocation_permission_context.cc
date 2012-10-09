@@ -40,7 +40,7 @@ ChromeGeolocationPermissionContext::ChromeGeolocationPermissionContext(
          new GeolocationInfoBarQueueController(
              base::Bind(
                  &ChromeGeolocationPermissionContext::NotifyPermissionSet,
-                 this),
+                 base::Unretained(this)),
              profile))) {
 }
 
