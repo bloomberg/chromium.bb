@@ -519,12 +519,10 @@ void WrenchMenuModel::Build() {
     // Metro mode, add the 'Relaunch Chrome in desktop mode'.
     AddSeparator(ui::SPACING_SEPARATOR);
     AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
-    AddSeparator(ui::SPACING_SEPARATOR);
   } else if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     // In Windows 8 desktop, add the 'Relaunch Chrome in Windows 8 mode'.
     AddSeparator(ui::SPACING_SEPARATOR);
     AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
-    AddSeparator(ui::SPACING_SEPARATOR);
   }
 #endif
 
