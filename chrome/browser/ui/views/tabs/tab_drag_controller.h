@@ -113,6 +113,13 @@ class TabDragController : public content::WebContentsDelegate,
   // Returns true if a drag started.
   bool started_drag() const { return started_drag_; }
 
+  // Returns true if mutating the TabStripModel.
+  bool is_mutating() const { return is_mutating_; }
+
+  // Returns true if we've detached from a tabstrip and are running a nested
+  // move message loop.
+  bool is_dragging_window() const { return is_dragging_window_; }
+
   // Invoked to drag to the new location, in screen coordinates.
   void Drag(const gfx::Point& point_in_screen);
 
@@ -565,8 +572,7 @@ class TabDragController : public content::WebContentsDelegate,
   // The following are needed when detaching into a browser
   // (|detach_into_browser_| is true).
 
-  // Set to true if we've detached from a tabstrip and are running a nested
-  // move message loop.
+  // See description above getter.
   bool is_dragging_window_;
 
   EndRunLoopBehavior end_run_loop_behavior_;
@@ -582,6 +588,9 @@ class TabDragController : public content::WebContentsDelegate,
 
   // If non-null set to true from destructor.
   bool* destroyed_;
+
+  // See description above getter.
+  bool is_mutating_;
 
   DISALLOW_COPY_AND_ASSIGN(TabDragController);
 };

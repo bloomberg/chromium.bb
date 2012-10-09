@@ -7,6 +7,7 @@
 #include <math.h>
 #include <set>
 
+#include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -357,7 +358,8 @@ TabDragController::TabDragController()
       waiting_for_run_loop_to_exit_(false),
       tab_strip_to_attach_to_after_exit_(NULL),
       move_loop_widget_(NULL),
-      destroyed_(NULL) {
+      destroyed_(NULL),
+      is_mutating_(false) {
   instance_ = this;
 }
 
@@ -1131,6 +1133,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
     tab_strip_point.Offset(-mouse_offset_.x(), -mouse_offset_.y());
     gfx::Rect bounds = GetDraggedViewTabStripBounds(tab_strip_point);
     int index = GetInsertionIndexForDraggedBounds(bounds);
+    AutoReset<bool> setter(&is_mutating_, true);
     for (size_t i = 0; i < drag_data_.size(); ++i) {
       int add_types = TabStripModel::ADD_NONE;
       if (attached_tabstrip_->touch_layout_.get()) {
@@ -1659,6 +1662,7 @@ void TabDragController::RevertDragAt(size_t drag_index) {
   DCHECK(started_drag_);
   DCHECK(source_tabstrip_);
 
+  AutoReset<bool> setter(&is_mutating_, true);
   TabDragData* data = &(drag_data_[drag_index]);
   if (attached_tabstrip_) {
     int index =
@@ -1754,6 +1758,7 @@ void TabDragController::CompleteDrag() {
       // the top-right corner.
       window_bounds.set_x(window_bounds.x() - window_bounds.width());
     }
+    AutoReset<bool> setter(&is_mutating_, true);
     Browser* new_browser =
         GetModel(source_tabstrip_)->delegate()->CreateNewStripWithContents(
             drag_data_[0].contents, window_bounds, dock_info_,

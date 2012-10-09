@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
 
+#include "ash/wm/property_util.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -180,6 +181,14 @@ int GetDetachY(TabStrip* tab_strip) {
       tab_strip->height() + 1;
 }
 
+bool GetTrackedByWorkspace(Browser* browser) {
+#if !defined(USE_ASH)
+  return true;
+#else
+  return ash::GetTrackedByWorkspace(browser->window()->GetNativeWindow());
+#endif
+}
+
 }  // namespace
 
 class DetachToBrowserTabDragControllerTest
@@ -290,6 +299,12 @@ class DetachToBrowserTabDragControllerTest
     }
   }
 
+  void AddBlankTabAndShow(Browser* browser) {
+    InProcessBrowserTest::AddBlankTabAndShow(browser);
+  }
+
+  Browser* browser() const { return InProcessBrowserTest::browser(); }
+
  private:
 #if defined(USE_ASH)
   scoped_ptr<aura::test::EventGenerator> event_generator_;
@@ -363,6 +378,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(tab_strip2->IsDragSessionActive());
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
 
   // Release the mouse, stopping the drag session.
   ASSERT_TRUE(ReleaseInput());
@@ -371,6 +387,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ("100 0", IDString(browser2->tab_strip_model()));
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+  EXPECT_TRUE(GetTrackedByWorkspace(browser2));
 }
 
 namespace {
@@ -419,6 +436,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // The bounds of the initial window should not have changed.
   EXPECT_EQ(initial_bounds.ToString(),
             browser()->window()->GetBounds().ToString());
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
+  EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
 }
 
 // Deletes a tab being dragged before the user moved enough to start a drag.
@@ -444,6 +464,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
 
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
 }
 
 // Deletes a tab being dragged while still attached.
@@ -472,6 +493,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
 
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
 }
 
 namespace {
@@ -505,6 +528,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
 
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
 }
 
 namespace {
@@ -542,6 +567,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
 
   EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
+
+  EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
 }
 
 namespace {
@@ -618,6 +645,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragAll) {
   EXPECT_EQ(1u, BrowserList::size());
 
   EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
 }
 
 namespace {
@@ -676,6 +705,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ("100 0 1", IDString(browser2->tab_strip_model()));
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser2));
 }
 
 namespace {
@@ -742,6 +773,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   // browser() will have been destroyed, but browser2 should remain.
   ASSERT_EQ(1u, BrowserList::size());
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser2));
 }
 
 // Creates two browsers, drags from first into the second in such a way that
@@ -783,6 +816,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ("0 100", IDString(browser2->tab_strip_model()));
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
+  EXPECT_TRUE(GetTrackedByWorkspace(browser2));
 }
 
 namespace {
@@ -839,6 +875,49 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ("100 0", IDString(browser2->tab_strip_model()));
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser2));
+}
+
+namespace {
+
+// Invoked from the nested message loop.
+void CancelOnNewTabWhenDraggingStep2(
+    DetachToBrowserTabDragControllerTest* test) {
+  ASSERT_TRUE(TabDragController::IsActive());
+  ASSERT_EQ(2u, BrowserList::size());
+
+  // Add another tab. This shoudl trigger exiting the nested loop.
+  test->AddBlankTabAndShow(*BrowserList::begin_last_active());
+}
+
+}  // namespace
+
+// Adds another tab, detaches into separate window, adds another tab and
+// verifies the run loop ends.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       CancelOnNewTabWhenDragging) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Add another tab to browser().
+  AddTabAndResetBrowser(browser());
+
+  // Move to the first tab and drag it enough so that it detaches.
+  gfx::Point tab_0_center(
+      GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::Bind(&CancelOnNewTabWhenDraggingStep2, this)));
+  QuitWhenNotDragging();
+
+  // Should be two windows and not dragging.
+  ASSERT_FALSE(TabDragController::IsActive());
+  ASSERT_EQ(2u, BrowserList::size());
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    EXPECT_TRUE(GetTrackedByWorkspace(*i));
+  }
 }
 
 #if defined(USE_ASH)
@@ -895,6 +974,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Only the new browser should be visible.
   EXPECT_FALSE(browser()->window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(new_browser->window()->GetNativeWindow()->IsVisible());
+
+  EXPECT_TRUE(GetTrackedByWorkspace(browser()));
+  EXPECT_TRUE(GetTrackedByWorkspace(new_browser));
 }
 
 // Subclass of DetachToBrowserInSeparateDisplayTabDragControllerTest that

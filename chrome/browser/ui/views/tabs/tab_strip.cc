@@ -661,6 +661,14 @@ void TabStrip::StopAllHighlighting() {
 void TabStrip::AddTabAt(int model_index,
                         const TabRendererData& data,
                         bool is_active) {
+  // Stop dragging when a new tab is added and dragging a window. Doing
+  // otherwise results in a confusing state if the user attempts to reattach. We
+  // could allow this and make TabDragController update itself during the add,
+  // but this comes up infrequently enough that it's not work the complexity.
+  if (drag_controller_.get() && !drag_controller_->is_mutating() &&
+      drag_controller_->is_dragging_window()) {
+    EndDrag(END_DRAG_COMPLETE);
+  }
   BaseTab* tab = CreateTab();
   tab->SetData(data);
   UpdateTabsClosingMap(model_index, 1);
