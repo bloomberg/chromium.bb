@@ -4,6 +4,7 @@
 
 import copy
 import hashlib
+import multiprocessing
 import os.path
 import re
 import subprocess
@@ -1747,6 +1748,10 @@ def PerformBuild(data, configurations, params):
     subprocess.check_call(arguments)
 
 
+def CallGenerateOutputForConfig(arglist):
+  (target_list, target_dicts, data, params, config_name) = arglist
+  GenerateOutputForConfig(target_list, target_dicts, data, params, config_name)
+
 def GenerateOutput(target_list, target_dicts, data, params):
   user_config = params.get('generator_flags', {}).get('config', None)
   if user_config:
@@ -1754,6 +1759,13 @@ def GenerateOutput(target_list, target_dicts, data, params):
                             user_config)
   else:
     config_names = target_dicts[target_list[0]]['configurations'].keys()
-    for config_name in config_names:
-      GenerateOutputForConfig(target_list, target_dicts, data, params,
-                              config_name)
+    if params['parallel']:
+      pool = multiprocessing.Pool(len(config_names))
+      arglists = []
+      for config_name in config_names:
+        arglists.append((target_list, target_dicts, data, params, config_name))
+      pool.map(CallGenerateOutputForConfig, arglists)
+    else:
+      for config_name in config_names:
+        GenerateOutputForConfig(target_list, target_dicts, data, params,
+                                config_name)
