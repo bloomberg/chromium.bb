@@ -91,7 +91,8 @@ class LocationBarViewMac : public LocationBar,
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);
 
-  // Set the icon image resource for the action box plus decoration.
+  // Set (or resets) the icon image resource for the action box plus decoration.
+  void ResetActionBoxIcon();
   void SetActionBoxIcon(int image_id);
 
   // Happens when the zoom changes for the active tab. |can_show_bubble| is

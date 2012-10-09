@@ -196,14 +196,15 @@ void FrameRectWithInset(StyledTextFieldCellRoundedFlags roundedFlags,
     NSRectFillUsingOperation(bezelRect, NSCompositeSourceOver);
   }
 
+  // Draw the interior before the focus ring, to make sure nothing overlaps it.
+  [self drawInteriorWithFrame:cellFrame inView:controlView];
+
   // Draw the focus ring if needed.
   if ([self showsFirstResponder]) {
     NSColor* color = [[NSColor keyboardFocusIndicatorColor]
         colorWithAlphaComponent:0.5 / lineWidth];
     FrameRectWithInset(roundedFlags, frame, 0.0, radius, lineWidth * 2, color);
   }
-
-  [self drawInteriorWithFrame:cellFrame inView:controlView];
 }
 
 @end

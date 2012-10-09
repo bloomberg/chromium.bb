@@ -140,7 +140,7 @@ class AutocompleteTextFieldObserver {
 // Updates cursor and tooltip rects depending on the contents of the text field
 // e.g. the security icon should have a default pointer shown on hover instead
 // of an I-beam.
-- (void)updateCursorAndToolTipRects;
+- (void)updateMouseTracking;
 
 // Return the appropriate menu for any decoration under |event|.
 - (NSMenu*)decorationMenuForEvent:(NSEvent*)event;

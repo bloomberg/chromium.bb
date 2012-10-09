@@ -64,3 +64,7 @@ bool LocationBarDecoration::OnMousePressed(NSRect frame) {
 NSMenu* LocationBarDecoration::GetMenu() {
   return nil;
 }
+
+ButtonDecoration* LocationBarDecoration::AsButtonDecoration() {
+  return NULL;
+}

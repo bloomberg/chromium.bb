@@ -27,10 +27,27 @@ PlusDecoration::PlusDecoration(LocationBarViewMac* owner,
       browser_(browser),
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(browser, this)) {
   SetVisible(true);
-  SetImage(OmniboxViewMac::ImageForResource(IDR_ACTION_BOX_BUTTON));
+  ResetIcon();
 }
 
 PlusDecoration::~PlusDecoration() {
+}
+
+NSPoint PlusDecoration::GetActionBoxAnchorPoint() {
+  AutocompleteTextField* field = owner_->GetAutocompleteTextField();
+  NSRect bounds = [field bounds];
+  return NSMakePoint(NSMaxX(bounds), NSMaxY(bounds));
+}
+
+void PlusDecoration::ResetIcon() {
+  SetIcons(
+      IDR_ACTION_BOX_BUTTON_NORMAL,
+      IDR_ACTION_BOX_BUTTON_HOVER,
+      IDR_ACTION_BOX_BUTTON_PUSHED);
+}
+
+void PlusDecoration::SetTemporaryIcon(int image_id) {
+  SetIcons(image_id, image_id, image_id);
 }
 
 bool PlusDecoration::AcceptsMousePress() {
@@ -44,12 +61,6 @@ bool PlusDecoration::OnMousePressed(NSRect frame) {
 
 NSString* PlusDecoration::GetToolTip() {
   return l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_ACTION_BOX_BUTTON);
-}
-
-NSPoint PlusDecoration::GetActionBoxAnchorPoint() {
-  AutocompleteTextField* field = owner_->GetAutocompleteTextField();
-  NSRect bounds = [field bounds];
-  return NSMakePoint(NSMaxX(bounds), NSMaxY(bounds));
 }
 
 void PlusDecoration::ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model) {
@@ -74,4 +85,10 @@ void PlusDecoration::ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model) {
   [pop_up_cell selectItem:nil];
   [pop_up_cell attachPopUpWithFrame:popUpFrame inView:field];
   [pop_up_cell performClickWithFrame:popUpFrame inView:field];
+}
+
+void PlusDecoration::SetIcons(int normal_id, int hover_id, int pressed_id) {
+  SetNormalImage(OmniboxViewMac::ImageForResource(normal_id));
+  SetHoverImage(OmniboxViewMac::ImageForResource(hover_id));
+  SetPressedImage(OmniboxViewMac::ImageForResource(pressed_id));
 }

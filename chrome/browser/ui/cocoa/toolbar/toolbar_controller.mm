@@ -432,7 +432,7 @@ class NotificationBridge : public content::NotificationObserver {
                shouldRestoreState:(BOOL)shouldRestore {
   locationBarView_->Update(tab, shouldRestore ? true : false);
 
-  [locationBar_ updateCursorAndToolTipRects];
+  [locationBar_ updateMouseTracking];
 
   if (browserActionsController_.get()) {
     [browserActionsController_ update];

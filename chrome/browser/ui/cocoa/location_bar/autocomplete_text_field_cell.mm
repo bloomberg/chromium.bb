@@ -5,9 +5,13 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
+#import "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
+#import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/common/extensions/extension_switch_utils.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
@@ -21,15 +25,23 @@ const CGFloat kCornerRadius = 4.0;
 // How far to inset the left-hand decorations from the field's bounds.
 const CGFloat kLeftDecorationXOffset = 5.0;
 
+NSString* const kButtonDecorationKey = @"ButtonDecoration";
+
 // How far to inset the right-hand decorations from the field's bounds.
 // TODO(shess): Why is this different from |kLeftDecorationXOffset|?
 // |kDecorationOuterXOffset|?
 CGFloat RightDecorationXOffset() {
   const CGFloat kRightDecorationXOffset = 5.0;
   const CGFloat kScriptBadgeRightDecorationXOffset = 9.0;
+  const CGFloat kActionBoxRightDecorationXOffset = 0.0;
 
-  return extensions::switch_utils::AreScriptBadgesEnabled() ?
-      kScriptBadgeRightDecorationXOffset : kRightDecorationXOffset;
+  if (extensions::switch_utils::AreScriptBadgesEnabled()) {
+    return kScriptBadgeRightDecorationXOffset;
+  } else if (extensions::switch_utils::IsActionBoxEnabled()) {
+    return kActionBoxRightDecorationXOffset;
+  } else {
+    return kRightDecorationXOffset;
+  }
 }
 
 // The amount of padding on either side reserved for drawing
@@ -41,8 +53,6 @@ CGFloat DecorationHorizontalPad() {
   return extensions::switch_utils::AreScriptBadgesEnabled() ?
       kScriptBadgeDecorationHorizontalPad : kDecorationHorizontalPad;
 }
-
-
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
@@ -161,6 +171,41 @@ size_t CalculatePositionsInFrame(
   return left_count;
 }
 
+// Wrapper for |CalculatePositionsInFrame|, that snaps the edges of the leftmost
+// and/or rightmost decorations' frames to the edge of the cell, if there are
+// left and/or right decorations and if they are ButtonDecorations.
+void CalculateSnappedPositionsInFrame(
+    NSRect frame,
+    const std::vector<LocationBarDecoration*>& left_decorations,
+    const std::vector<LocationBarDecoration*>& right_decorations,
+    std::vector<LocationBarDecoration*>* decorations,
+    std::vector<NSRect>* decoration_frames,
+    NSRect* remaining_frame,
+    NSView* control_view) {
+  // The Action Box is snapped to the right edge, so subtract the line width to
+  // draw up to but excluding the omnibox's border.
+  if (extensions::switch_utils::IsActionBoxEnabled())
+    frame.size.width -= [control_view cr_lineWidth];
+
+  size_t left_count = CalculatePositionsInFrame(frame,
+                                                left_decorations,
+                                                right_decorations,
+                                                decorations,
+                                                decoration_frames,
+                                                remaining_frame);
+
+  if (left_count > 0 && decorations->front()->AsButtonDecoration()) {
+    NSRect& snap_frame = decoration_frames->front();
+    snap_frame.size.width = NSMaxX(snap_frame) - NSMinX(frame);
+    snap_frame.origin.x = NSMinX(frame);
+  }
+  if (left_count < decoration_frames->size() &&
+      decorations->back()->AsButtonDecoration()) {
+    NSRect& snap_frame = decoration_frames->back();
+    snap_frame.size.width = NSMaxX(frame) - NSMinX(snap_frame);
+  }
+}
+
 }  // namespace
 
 @implementation AutocompleteTextFieldCell
@@ -243,6 +288,11 @@ size_t CalculatePositionsInFrame(
   return textFrame;
 }
 
+// Returns the sub-frame where clicks can happen within the cell.
+- (NSRect)clickableFrameForFrame:(NSRect)cellFrame {
+  return [super textFrameForFrame:cellFrame];
+}
+
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame {
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
@@ -287,8 +337,11 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect workingFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &workingFrame);
+
+  CalculateSnappedPositionsInFrame(cellFrame, leftDecorations_,
+                                   rightDecorations_, &decorations,
+                                   &decorationFrames, &workingFrame,
+                                   controlView);
 
   // Draw the decorations.
   for (size_t i = 0; i < decorations.size(); ++i) {
@@ -318,8 +371,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &textFrame);
+  CalculateSnappedPositionsInFrame(cellFrame, leftDecorations_,
+                                   rightDecorations_, &decorations,
+                                   &decorationFrames, &textFrame, controlView);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (NSMouseInRect(location, decorationFrames[i], flipped))
@@ -399,10 +453,119 @@ size_t CalculatePositionsInFrame(
     DCHECK_EQ([event type], NSLeftMouseUp);
   }
 
-  if (!decoration->OnMousePressed(decorationRect))
-    return NO;
+  bool handled;
+  if (decoration->AsButtonDecoration()) {
+    handled = decoration->AsButtonDecoration()->OnMousePressedWithView(
+        decorationRect, controlView);
 
-  return YES;
+    // Update tracking areas and make sure the button's state is consistent with
+    // the mouse's location (e.g. "normal" if the mouse is no longer over the
+    // decoration, "hover" otherwise).
+    [self setUpTrackingAreasInRect:cellFrame ofView:controlView];
+  } else {
+    handled = decoration->OnMousePressed(decorationRect);
+  }
+
+  return handled ? YES : NO;
+}
+
+// Helper method for the |mouseEntered:inView:| and |mouseExited:inView:|
+// messages. Retrieves the |ButtonDecoration| for the specified event (received
+// from a tracking area), and returns |NULL| if no decoration matches.
+- (ButtonDecoration*)getButtonDecorationForEvent:(NSEvent*)theEvent {
+  ButtonDecoration* bd = static_cast<ButtonDecoration*>(
+      [[[[theEvent trackingArea] userInfo] valueForKey:kButtonDecorationKey]
+          pointerValue]);
+
+  CHECK(!bd ||
+      std::count(leftDecorations_.begin(), leftDecorations_.end(), bd) ||
+      std::count(rightDecorations_.begin(), rightDecorations_.end(), bd));
+
+  return bd;
+}
+
+// Helper method for |setUpTrackingAreasInView|. Creates an |NSDictionary| to
+// be used as user information to identify which decoration is the source of an
+// event (from a tracking area).
+- (NSDictionary*)getDictionaryForButtonDecoration:
+    (ButtonDecoration*)decoration {
+  if (!decoration)
+    return nil;
+
+  DCHECK(
+    std::count(leftDecorations_.begin(), leftDecorations_.end(), decoration) ||
+    std::count(rightDecorations_.begin(), rightDecorations_.end(), decoration));
+
+  return [NSDictionary
+      dictionaryWithObject:[NSValue valueWithPointer:decoration]
+                    forKey:kButtonDecorationKey];
+}
+
+- (void)mouseEntered:(NSEvent*)theEvent
+              inView:(AutocompleteTextField*)controlView {
+  ButtonDecoration* decoration = [self getButtonDecorationForEvent:theEvent];
+  if (decoration) {
+    decoration->SetButtonState(ButtonDecoration::kButtonStateHover);
+    [controlView setNeedsDisplay:YES];
+  }
+}
+
+- (void)mouseExited:(NSEvent*)theEvent
+             inView:(AutocompleteTextField*)controlView {
+  ButtonDecoration* decoration = [self getButtonDecorationForEvent:theEvent];
+  if (decoration) {
+    decoration->SetButtonState(ButtonDecoration::kButtonStateNormal);
+    [controlView setNeedsDisplay:YES];
+  }
+}
+
+- (void)setUpTrackingAreasInRect:(NSRect)frame
+                          ofView:(AutocompleteTextField*)view {
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  NSRect textFrame;
+  NSRect cellRect = [self clickableFrameForFrame:[view bounds]];
+  CalculateSnappedPositionsInFrame(cellRect, leftDecorations_,
+                                   rightDecorations_, &decorations,
+                                   &decorationFrames, &textFrame, view);
+
+  // Remove previously-registered tracking areas, since we'll update them below.
+  for (CrTrackingArea* area in [view trackingAreas]) {
+    if ([[area userInfo] objectForKey:kButtonDecorationKey])
+      [view removeTrackingArea:area];
+  }
+
+  // Setup new tracking areas for the buttons.
+  for (size_t i = 0; i < decorations.size(); ++i) {
+    ButtonDecoration* button = decorations[i]->AsButtonDecoration();
+    if (button) {
+      // If the button isn't pressed (in which case we want to leave it as-is),
+      // update it's state since we might have missed some entered/exited events
+      // because of the removing/adding of the tracking areas.
+      if (button->GetButtonState() !=
+          ButtonDecoration::kButtonStatePressed) {
+        const NSPoint mouseLocationWindow =
+            [[view window] mouseLocationOutsideOfEventStream];
+        const NSPoint mouseLocation =
+            [view convertPoint:mouseLocationWindow fromView:nil];
+        const BOOL mouseInRect = NSMouseInRect(
+            mouseLocation, decorationFrames[i], [view isFlipped]);
+        button->SetButtonState(mouseInRect ?
+                                   ButtonDecoration::kButtonStateHover :
+                                   ButtonDecoration::kButtonStateNormal);
+        [view setNeedsDisplay:YES];
+      }
+
+      NSDictionary* info = [self getDictionaryForButtonDecoration:button];
+      scoped_nsobject<CrTrackingArea> area(
+          [[CrTrackingArea alloc] initWithRect:decorationFrames[i]
+                                       options:NSTrackingMouseEnteredAndExited |
+                                               NSTrackingActiveAlways
+                                         owner:view
+                                      userInfo:info]);
+      [view addTrackingArea:area];
+    }
+  }
 }
 
 // Given a newly created .webloc plist url file, also give it a resource

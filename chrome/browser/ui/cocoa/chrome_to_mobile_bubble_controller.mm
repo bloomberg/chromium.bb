@@ -96,7 +96,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   // Restore the Action Box icon when the bubble closes.
   LocationBarViewMac* locationBar = [controller locationBarBridge];
   if (locationBar)
-    locationBar->SetActionBoxIcon(IDR_ACTION_BOX_BUTTON);
+    locationBar->ResetActionBoxIcon();
 
   // We caught a close so we don't need to observe further notifications.
   bridge_.reset(NULL);

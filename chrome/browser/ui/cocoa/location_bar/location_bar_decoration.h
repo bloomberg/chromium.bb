@@ -9,6 +9,8 @@
 
 #import "base/basictypes.h"
 
+class ButtonDecoration;
+
 // Base class for decorations at the left and right of the location
 // bar.  For instance, the location icon.
 
@@ -79,6 +81,10 @@ class LocationBarDecoration {
 
   // Called to get the right-click menu, return |nil| for no menu.
   virtual NSMenu* GetMenu();
+
+  // Returns the current |LocationBarDecoration| as a |ButtonDecoration|, if it
+  // inherits from that class (i.e. if it needs to act as a button).
+  virtual ButtonDecoration* AsButtonDecoration();
 
   // Width returned by |GetWidthForSpace()| when the item should be
   // omitted for this width;

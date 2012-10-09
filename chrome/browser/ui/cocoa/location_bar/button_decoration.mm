@@ -1,0 +1,97 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <cmath>
+
+#import "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
+
+#include "base/logging.h"
+
+ButtonDecoration::ButtonDecoration()
+    : state_(kButtonStateNormal) {
+}
+
+ButtonDecoration::~ButtonDecoration() {
+}
+
+void ButtonDecoration::SetButtonState(ButtonDecoration::ButtonState state) {
+  state_ = state;
+}
+
+ButtonDecoration::ButtonState ButtonDecoration::GetButtonState() const {
+  return state_;
+}
+
+bool ButtonDecoration::OnMousePressedWithView(
+    NSRect frame, NSView* control_view) {
+  ButtonState old_state = GetButtonState();
+  SetButtonState(ButtonDecoration::kButtonStatePressed);
+  [control_view setNeedsDisplay:YES];
+
+  bool handled = OnMousePressed(frame);
+
+  SetButtonState(old_state);
+  return handled;
+}
+
+CGFloat ButtonDecoration::GetWidthForSpace(CGFloat width) {
+  NSImage* image = GetImage();
+  if (image) {
+    const CGFloat image_width = [image size].width;
+    if (image_width <= width)
+      return image_width;
+  }
+  return kOmittedWidth;
+}
+
+void ButtonDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
+  // Get tne inner frame that excludes the border and the shadow, and draw the
+  // image in there. Assumes that the button's images fit exactly inside that
+  // space.
+  NSRect innerFrame = NSInsetRect(frame, 0, 2 * [control_view cr_lineWidth]);
+  [GetImage() drawInRect:innerFrame
+                fromRect:NSZeroRect  // Entire image
+               operation:NSCompositeSourceOver
+                fraction:1.0
+          respectFlipped:YES
+                   hints:nil];
+}
+
+bool ButtonDecoration::OnMousePressed(NSRect frame) {
+  return false;
+}
+
+ButtonDecoration* ButtonDecoration::AsButtonDecoration() {
+  return this;
+}
+
+void ButtonDecoration::SetNormalImage(NSImage* normal_image) {
+  normal_image_.reset([normal_image retain]);
+}
+
+void ButtonDecoration::SetHoverImage(NSImage* hover_image) {
+  hover_image_.reset([hover_image retain]);
+}
+
+void ButtonDecoration::SetPressedImage(NSImage* pressed_image) {
+  pressed_image_.reset([pressed_image retain]);
+}
+
+NSImage* ButtonDecoration::GetImage() {
+  switch(state_) {
+    case kButtonStateNormal:
+      DCHECK(normal_image_.get());
+      return normal_image_.get();
+    case kButtonStateHover:
+      DCHECK(hover_image_.get());
+      return hover_image_.get();
+    case kButtonStatePressed:
+      DCHECK(pressed_image_.get());
+      return pressed_image_.get();
+    default:
+      NOTREACHED();
+      return nil;
+  }
+}

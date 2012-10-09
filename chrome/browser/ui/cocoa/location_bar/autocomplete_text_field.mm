@@ -161,13 +161,23 @@
   [editor mouseDown:theEvent];
 }
 
+// Received from tracking areas. Pass it down to the cell, and add the field.
+- (void)mouseEntered:(NSEvent*)theEvent {
+  [[self cell] mouseEntered:theEvent inView:self];
+}
+
+// Received from tracking areas. Pass it down to the cell, and add the field.
+- (void)mouseExited:(NSEvent*)theEvent {
+  [[self cell] mouseExited:theEvent inView:self];
+}
+
 // Overridden so that cursor and tooltip rects can be updated.
 - (void)setFrame:(NSRect)frameRect {
   [super setFrame:frameRect];
   if (observer_) {
     observer_->OnFrameChanged();
   }
-  [self updateCursorAndToolTipRects];
+  [self updateMouseTracking];
 }
 
 - (void)setAttributedStringValue:(NSAttributedString*)aString {
@@ -213,7 +223,7 @@
 // and ToolbarController are calling this routine directly, and I
 // think they are probably wrong.
 // http://crbug.com/40053
-- (void)updateCursorAndToolTipRects {
+- (void)updateMouseTracking {
   // This will force |resetCursorRects| to be called, as it is not to be called
   // directly.
   [[self window] invalidateCursorRectsForView:self];
@@ -226,6 +236,9 @@
   // Reload the decoration tooltips.
   [currentToolTips_ removeAllObjects];
   [[self cell] updateToolTipsInRect:[self bounds] ofView:self];
+
+  // Setup/update the tracking areas for the decorations.
+  [[self cell] setUpTrackingAreasInRect:[self bounds] ofView:self];
 }
 
 // NOTE(shess): http://crbug.com/19116 describes a weird bug which

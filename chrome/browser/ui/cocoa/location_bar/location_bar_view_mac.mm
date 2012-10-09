@@ -209,7 +209,7 @@ void LocationBarViewMac::FocusSearch() {
 
 void LocationBarViewMac::UpdateContentSettingsIcons() {
   if (RefreshContentSettingsDecorations()) {
-    [field_ updateCursorAndToolTipRects];
+    [field_ updateMouseTracking];
     [field_ setNeedsDisplay:YES];
   }
 }
@@ -506,7 +506,7 @@ bool LocationBarViewMac::IsEditable() {
 void LocationBarViewMac::OnDecorationsChanged() {
   // TODO(shess): The field-editor frame and cursor rects should not
   // change, here.
-  [field_ updateCursorAndToolTipRects];
+  [field_ updateMouseTracking];
   [field_ resetFieldEditorFrameIfNeeded];
   [field_ setNeedsDisplay:YES];
 }
@@ -517,8 +517,13 @@ void LocationBarViewMac::SetStarred(bool starred) {
   OnDecorationsChanged();
 }
 
+void LocationBarViewMac::ResetActionBoxIcon() {
+  plus_decoration_->ResetIcon();
+  OnDecorationsChanged();
+}
+
 void LocationBarViewMac::SetActionBoxIcon(int image_id) {
-  plus_decoration_->SetImage(OmniboxViewMac::ImageForResource(image_id));
+  plus_decoration_->SetTemporaryIcon(image_id);
   OnDecorationsChanged();
 }
 
@@ -580,7 +585,7 @@ void LocationBarViewMac::Observe(int type,
       if (content::Details<WebContents>(contents) != details)
         return;
 
-      [field_ updateCursorAndToolTipRects];
+      [field_ updateMouseTracking];
       [field_ setNeedsDisplay:YES];
       break;
     }
