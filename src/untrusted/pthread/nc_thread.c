@@ -350,18 +350,6 @@ int pthread_create(pthread_t *thread_id,
     new_tp = __nacl_tls_data_bss_initialize_from_template(
       NODE_TO_PAYLOAD(tls_node), TDB_SIZE);
 
-    if (__nacl_tp_tdb_offset(TDB_SIZE) < 0) {
-      /*
-       * The TDB sits before $tp but there is space for a "header"
-       * directly at $tp, of which we make no other use.  So we can
-       * store the $tp pointer value here for consistency with the
-       * x86 case.  The real utility of this is only transitional,
-       * so we might remove it later.
-       * TODO(mcgrathr): Remove this when the ARM $tp ABI transition is complete
-       */
-      *(void **) new_tp = new_tp;
-    }
-
     new_tdb = (nc_thread_descriptor_t *)
               ((char *) new_tp + __nacl_tp_tdb_offset(TDB_SIZE));
 
