@@ -374,12 +374,13 @@ void DriveResourceMetadata::RemoveEntryFromParent(
       base::Bind(callback, DRIVE_FILE_OK, parent->GetFilePath()));
 }
 
-void DriveResourceMetadata::AddEntryToResourceMap(DriveEntry* entry) {
+bool DriveResourceMetadata::AddEntryToResourceMap(DriveEntry* entry) {
   DVLOG(1) << "AddEntryToResourceMap " << entry->resource_id();
   DCHECK(!entry->resource_id().empty());
   std::pair<ResourceMap::iterator, bool> ret =
       resource_map_.insert(std::make_pair(entry->resource_id(), entry));
   DCHECK(ret.second);  // resource_id did not previously exist in the map.
+  return ret.second;
 }
 
 void DriveResourceMetadata::RemoveEntryFromResourceMap(

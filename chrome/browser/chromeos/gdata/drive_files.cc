@@ -184,6 +184,13 @@ void DriveDirectory::InitFromDocumentEntry(const DocumentEntry& doc) {
 void DriveDirectory::AddEntry(DriveEntry* entry) {
   DCHECK(!entry->parent());
 
+  // Try to add the entry to resource map.
+  if (!resource_metadata_->AddEntryToResourceMap(entry)) {
+    LOG(WARNING) << "Duplicate resource=" << entry->resource_id()
+                 << ", title=" << entry->title();
+    return;
+  }
+
   // The entry name may have been changed due to prior name de-duplication.
   // We need to first restore the file name based on the title before going
   // through name de-duplication again when it is added to another directory.
@@ -213,9 +220,6 @@ void DriveDirectory::AddEntry(DriveEntry* entry) {
            << ", file = " + entry->base_name()
            << ", parent resource = " << entry->parent_resource_id()
            << ", resource = " + entry->resource_id();
-
-  // Add entry to resource map.
-  resource_metadata_->AddEntryToResourceMap(entry);
 
   // Setup child and parent links.
   if (entry->AsDriveFile())

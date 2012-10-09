@@ -187,8 +187,9 @@ class DriveResourceMetadata {
   void RemoveEntryFromParent(const std::string& resource_id,
                              const FileMoveCallback& callback);
 
-  // Adds the entry to resource map.
-  void AddEntryToResourceMap(DriveEntry* entry);
+  // Adds the entry to resource map. Returns false if an entry with the same
+  // resource_id exists.
+  bool AddEntryToResourceMap(DriveEntry* entry);
 
   // Removes the entry from resource map.
   void RemoveEntryFromResourceMap(const std::string& resource_id);
