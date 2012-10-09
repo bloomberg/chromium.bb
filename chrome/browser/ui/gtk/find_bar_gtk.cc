@@ -541,8 +541,8 @@ void FindBarGtk::Observe(int type,
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_->SetBackground(
         theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT),
-        rb.GetBitmapNamed(IDR_CLOSE_BAR),
-        rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
+        rb.GetImageNamed(IDR_CLOSE_BAR).AsBitmap(),
+        rb.GetImageNamed(IDR_CLOSE_BAR_MASK).AsBitmap());
   }
 
   UpdateMatchLabelAppearance(match_label_failure_);

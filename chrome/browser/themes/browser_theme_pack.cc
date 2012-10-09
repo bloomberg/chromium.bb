@@ -594,17 +594,6 @@ bool BrowserThemePack::GetDisplayProperty(int id, int* result) const {
   return false;
 }
 
-SkBitmap* BrowserThemePack::GetBitmapNamed(int idr_id) const {
-  const gfx::Image* image = GetImageNamed(idr_id);
-  if (!image)
-    return NULL;
-
-  // TODO(sail): This cast should be removed. Currently we use this const_cast
-  // to avoid changing the BrowserThemePack::GetBitmapNamed API. Once we
-  // switch to using gfx::Image everywhere this can be removed.
-  return const_cast<SkBitmap*>(image->ToSkBitmap());
-}
-
 const gfx::Image* BrowserThemePack::GetImageNamed(int idr_id) const {
   int prs_id = GetPersistentIDByIDR(idr_id);
   if (prs_id == -1)

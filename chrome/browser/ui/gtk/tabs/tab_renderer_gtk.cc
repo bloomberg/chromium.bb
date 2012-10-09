@@ -112,23 +112,23 @@ TabRendererGtk::LoadingAnimation::Data::Data(
     GtkThemeService* theme_service) {
   // The loading animation image is a strip of states. Each state must be
   // square, so the height must divide the width evenly.
-  SkBitmap* loading_animation_frames =
-      theme_service->GetBitmapNamed(IDR_THROBBER);
-  DCHECK(loading_animation_frames);
-  DCHECK_EQ(loading_animation_frames->width() %
-            loading_animation_frames->height(), 0);
+  SkBitmap loading_animation_frames =
+      theme_service->GetImageNamed(IDR_THROBBER).AsBitmap();
+  DCHECK(!loading_animation_frames.isNull());
+  DCHECK_EQ(loading_animation_frames.width() %
+            loading_animation_frames.height(), 0);
   loading_animation_frame_count =
-      loading_animation_frames->width() /
-      loading_animation_frames->height();
+      loading_animation_frames.width() /
+      loading_animation_frames.height();
 
-  SkBitmap* waiting_animation_frames =
-      theme_service->GetBitmapNamed(IDR_THROBBER_WAITING);
-  DCHECK(waiting_animation_frames);
-  DCHECK_EQ(waiting_animation_frames->width() %
-            waiting_animation_frames->height(), 0);
+  SkBitmap waiting_animation_frames =
+      theme_service->GetImageNamed(IDR_THROBBER_WAITING).AsBitmap();
+  DCHECK(!waiting_animation_frames.isNull());
+  DCHECK_EQ(waiting_animation_frames.width() %
+            waiting_animation_frames.height(), 0);
   waiting_animation_frame_count =
-      waiting_animation_frames->width() /
-      waiting_animation_frames->height();
+      waiting_animation_frames.width() /
+      waiting_animation_frames.height();
 
   waiting_to_loading_frame_count_ratio =
       waiting_animation_frame_count /
@@ -394,8 +394,8 @@ void TabRendererGtk::UpdateData(WebContents* contents,
     // will eventually be chromium-themable and this code will go away.
     data_.is_default_favicon =
         (data_.favicon.pixelRef() ==
-        ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_DEFAULT_FAVICON)->pixelRef());
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_DEFAULT_FAVICON).AsBitmap().pixelRef());
   }
 
   // Loading state also involves whether we show the favicon, since that's where
@@ -759,8 +759,8 @@ void TabRendererGtk::Layout() {
         close_button_color_ = tab_text_color;
         ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
         close_button_->SetBackground(close_button_color_,
-            rb.GetBitmapNamed(IDR_TAB_CLOSE),
-            rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
+            rb.GetImageNamed(IDR_TAB_CLOSE).AsBitmap(),
+            rb.GetImageNamed(IDR_TAB_CLOSE_MASK).AsBitmap());
       }
     }
   } else {

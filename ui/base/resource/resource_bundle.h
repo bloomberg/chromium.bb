@@ -165,13 +165,6 @@ class UI_EXPORT ResourceBundle {
   // on another thread.
   std::string ReloadLocaleResources(const std::string& pref_locale);
 
-  // Gets the bitmap with the specified resource_id from the current module
-  // data. Returns a pointer to a shared instance of the SkBitmap. This shared
-  // bitmap is owned by the resource bundle and should not be freed.
-  //
-  // !! THIS IS DEPRECATED. PLEASE USE THE METHOD BELOW. !!
-  SkBitmap* GetBitmapNamed(int resource_id);
-
   // Gets image with the specified resource_id from the current module data.
   // Returns a pointer to a shared instance of gfx::ImageSkia. This shared
   // instance is owned by the resource bundle and should not be freed.

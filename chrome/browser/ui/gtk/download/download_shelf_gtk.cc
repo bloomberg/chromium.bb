@@ -25,6 +25,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -267,8 +268,8 @@ void DownloadShelfGtk::Observe(int type,
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_->SetBackground(
         theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT),
-        rb.GetBitmapNamed(IDR_CLOSE_BAR),
-        rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
+        rb.GetImageNamed(IDR_CLOSE_BAR).AsBitmap(),
+        rb.GetImageNamed(IDR_CLOSE_BAR_MASK).AsBitmap());
   }
 }
 

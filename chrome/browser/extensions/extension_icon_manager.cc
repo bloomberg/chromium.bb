@@ -100,8 +100,8 @@ void ExtensionIconManager::OnImageLoaded(const gfx::Image& image,
 void ExtensionIconManager::EnsureDefaultIcon() {
   if (default_icon_.empty()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SkBitmap* src = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
-    default_icon_ = ApplyTransforms(*src);
+    SkBitmap src = rb.GetImageNamed(IDR_EXTENSIONS_SECTION).AsBitmap();
+    default_icon_ = ApplyTransforms(src);
   }
 }
 

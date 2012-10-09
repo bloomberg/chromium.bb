@@ -283,9 +283,10 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                                            IDR_TAB_CLOSE_P,
                                            IDR_TAB_CLOSE_H,
                                            IDR_TAB_CLOSE));
-  close_button_->SetBackground(SK_ColorBLACK,
-                               rb.GetBitmapNamed(IDR_TAB_CLOSE),
-                               rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
+  close_button_->SetBackground(
+      SK_ColorBLACK,
+      rb.GetImageNamed(IDR_TAB_CLOSE).AsBitmap(),
+      rb.GetImageNamed(IDR_TAB_CLOSE_MASK).AsBitmap());
   gtk_widget_set_tooltip_text(close_button_->widget(), dismiss_text.c_str());
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonThunk), this);

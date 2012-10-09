@@ -57,7 +57,9 @@ class CustomDrawButtonBase : public content::NotificationObserver {
   int paint_override() const { return paint_override_; }
 
   // Set the background details.
-  void SetBackground(SkColor color, SkBitmap* image, SkBitmap* mask);
+  void SetBackground(SkColor color,
+                     const SkBitmap& image,
+                     const SkBitmap& mask);
 
   // Provide content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -186,7 +188,9 @@ class CustomDrawButton : public content::NotificationObserver {
   void UnsetPaintOverride();
 
   // Set the background details.
-  void SetBackground(SkColor color, SkBitmap* image, SkBitmap* mask);
+  void SetBackground(SkColor color,
+                     const SkBitmap& image,
+                     const SkBitmap& mask);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

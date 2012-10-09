@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image.h"
 
 GdkPixbuf* ThemeService::GetRTLEnabledPixbufNamed(int id) const {
   return GetPixbufImpl(id, true);
@@ -26,8 +27,8 @@ GdkPixbuf* ThemeService::GetPixbufImpl(int id, bool rtl_enabled) const {
   if (pixbufs_iter != gdk_pixbufs_.end())
     return pixbufs_iter->second;
 
-  SkBitmap* bitmap = GetBitmapNamed(id);
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(*bitmap);
+  SkBitmap bitmap = GetImageNamed(id).AsBitmap();
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
 
   // We loaded successfully.  Cache the pixbuf.
   if (pixbuf) {

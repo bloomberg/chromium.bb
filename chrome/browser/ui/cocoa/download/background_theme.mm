@@ -27,10 +27,6 @@ BackgroundTheme::BackgroundTheme(ui::ThemeProvider* provider) :
 
 BackgroundTheme::~BackgroundTheme() {}
 
-SkBitmap* BackgroundTheme::GetBitmapNamed(int id) const {
-  return NULL;
-}
-
 gfx::ImageSkia* BackgroundTheme::GetImageSkiaNamed(int id) const {
   return NULL;
 }

@@ -17,10 +17,6 @@ DefaultThemeProvider::DefaultThemeProvider() {}
 
 DefaultThemeProvider::~DefaultThemeProvider() {}
 
-SkBitmap* DefaultThemeProvider::GetBitmapNamed(int id) const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
-}
-
 gfx::ImageSkia* DefaultThemeProvider::GetImageSkiaNamed(int id) const {
   return ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }

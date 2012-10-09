@@ -2269,8 +2269,9 @@ CustomDrawButton* TabStripGtk::MakeNewTabButton() {
 void TabStripGtk::SetNewTabButtonBackground() {
   SkColor color = theme_service_->GetColor(
       ThemeService::COLOR_BUTTON_BACKGROUND);
-  SkBitmap* background = theme_service_->GetBitmapNamed(
-      IDR_THEME_WINDOW_CONTROL_BACKGROUND);
-  SkBitmap* mask = theme_service_->GetBitmapNamed(IDR_NEWTAB_BUTTON_MASK);
+  SkBitmap background = theme_service_->GetImageNamed(
+      IDR_THEME_WINDOW_CONTROL_BACKGROUND).AsBitmap();
+  SkBitmap mask = theme_service_->GetImageNamed(
+      IDR_NEWTAB_BUTTON_MASK).AsBitmap();
   newtab_button_->SetBackground(color, background, mask);
 }

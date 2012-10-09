@@ -84,12 +84,6 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   bool GetColor(int id, SkColor* color) const;
   bool GetDisplayProperty(int id, int* result) const;
 
-  // Returns a bitmap if we have a custom image for |id|, otherwise NULL. Note
-  // that this is separate from HasCustomImage() which returns whether a custom
-  // image |id| was included in the unprocessed theme and is used as a proxy
-  // for making layout decisions in the interface.
-  SkBitmap* GetBitmapNamed(int id) const;
-
   // Returns an image if we have a custom image for |id|, otherwise NULL.
   const gfx::Image* GetImageNamed(int id) const;
 

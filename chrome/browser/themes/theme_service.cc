@@ -260,14 +260,6 @@ gfx::Image ThemeService::GetImageNamed(int id) const {
   return image ? *image : gfx::Image();
 }
 
-SkBitmap* ThemeService::GetBitmapNamed(int id) const {
-  gfx::Image image = GetImageNamed(id);
-  if (image.IsEmpty())
-    return NULL;
-
-  return const_cast<SkBitmap*>(image.ToSkBitmap());
-}
-
 gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
   gfx::Image image = GetImageNamed(id);
   if (image.IsEmpty())

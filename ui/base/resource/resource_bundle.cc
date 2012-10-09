@@ -318,11 +318,6 @@ std::string ResourceBundle::ReloadLocaleResources(
   return LoadLocaleResources(pref_locale);
 }
 
-SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
-  const SkBitmap* bitmap = GetImageNamed(resource_id).ToSkBitmap();
-  return const_cast<SkBitmap*>(bitmap);
-}
-
 gfx::ImageSkia* ResourceBundle::GetImageSkiaNamed(int resource_id) {
   const gfx::ImageSkia* image = GetImageNamed(resource_id).ToImageSkia();
   return const_cast<gfx::ImageSkia*>(image);

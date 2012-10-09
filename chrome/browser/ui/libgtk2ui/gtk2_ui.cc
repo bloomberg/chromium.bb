@@ -791,7 +791,7 @@ SkBitmap Gtk2UI::GenerateTintedIcon(
     const color_utils::HSL& tint) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return SkBitmapOperations::CreateHSLShiftedBitmap(
-      *rb.GetBitmapNamed(base_id), tint);
+      rb.GetImageNamed(base_id).AsBitmap(), tint);
 }
 
 SkBitmap Gtk2UI::GenerateGTKIcon(int base_id) const {
@@ -807,13 +807,13 @@ SkBitmap Gtk2UI::GenerateGTKIcon(int base_id) const {
   DCHECK(stock_id);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap* default_bitmap = rb.GetBitmapNamed(base_id);
+  SkBitmap default_bitmap = rb.GetImageNamed(base_id).AsBitmap();
 
   gtk_widget_ensure_style(fake_frame_);
   GtkStyle* style = gtk_widget_get_style(fake_frame_);
   GtkIconSet* icon_set = gtk_style_lookup_icon_set(style, stock_id);
   if (!icon_set)
-    return *default_bitmap;
+    return default_bitmap;
 
   // Ask GTK to render the icon to a buffer, which we will steal from.
   GdkPixbuf* gdk_icon = gtk_icon_set_render_icon(
@@ -829,13 +829,13 @@ SkBitmap Gtk2UI::GenerateGTKIcon(int base_id) const {
     // This can theoretically happen if an icon theme doesn't provide a
     // specific image. This should realistically never happen, but I bet there
     // are some theme authors who don't reliably provide all icons.
-    return *default_bitmap;
+    return default_bitmap;
   }
 
   SkBitmap retval;
   retval.setConfig(SkBitmap::kARGB_8888_Config,
-                   default_bitmap->width(),
-                   default_bitmap->height());
+                   default_bitmap.width(),
+                   default_bitmap.height());
   retval.allocPixels();
   retval.eraseColor(0);
 
@@ -846,25 +846,25 @@ SkBitmap Gtk2UI::GenerateGTKIcon(int base_id) const {
 
   if (gtk_state == GTK_STATE_ACTIVE || gtk_state == GTK_STATE_PRELIGHT) {
     SkBitmap border = DrawGtkButtonBorder(gtk_state,
-                                          default_bitmap->width(),
-                                          default_bitmap->height());
+                                          default_bitmap.width(),
+                                          default_bitmap.height());
     canvas.drawBitmap(border, 0, 0);
   }
 
   canvas.drawBitmap(icon,
-                    (default_bitmap->width() / 2) - (icon.width() / 2),
-                    (default_bitmap->height() / 2) - (icon.height() / 2));
+                    (default_bitmap.width() / 2) - (icon.width() / 2),
+                    (default_bitmap.height() / 2) - (icon.height() / 2));
 
   return retval;
 }
 
 SkBitmap Gtk2UI::GenerateWrenchIcon(int base_id) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap* default_bitmap = rb.GetBitmapNamed(IDR_TOOLS);
+  SkBitmap default_bitmap = rb.GetImageNamed(IDR_TOOLS).AsBitmap();
 
   // Part 1: Tint the wrench icon according to the button tint.
   SkBitmap shifted = SkBitmapOperations::CreateHSLShiftedBitmap(
-      *default_bitmap, button_tint_);
+      default_bitmap, button_tint_);
 
   // The unhighlighted icon doesn't need to have a border composed onto it.
   if (base_id == IDR_TOOLS)
@@ -872,16 +872,16 @@ SkBitmap Gtk2UI::GenerateWrenchIcon(int base_id) const {
 
   SkBitmap retval;
   retval.setConfig(SkBitmap::kARGB_8888_Config,
-                   default_bitmap->width(),
-                   default_bitmap->height());
+                   default_bitmap.width(),
+                   default_bitmap.height());
   retval.allocPixels();
   retval.eraseColor(0);
 
   SkCanvas canvas(retval);
   SkBitmap border = DrawGtkButtonBorder(
       base_id == IDR_TOOLS_H ? GTK_STATE_PRELIGHT : GTK_STATE_ACTIVE,
-      default_bitmap->width(),
-      default_bitmap->height());
+      default_bitmap.width(),
+      default_bitmap.height());
   canvas.drawBitmap(border, 0, 0);
   canvas.drawBitmap(shifted, 0, 0);
 

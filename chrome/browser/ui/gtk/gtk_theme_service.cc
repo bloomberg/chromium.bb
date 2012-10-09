@@ -202,7 +202,7 @@ void BuildIconFromIDRWithColor(int id,
                                GtkIconSet* icon_set) {
   SkColor color = gfx::GdkColorToSkColor(style->fg[state]);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap original = *rb.GetBitmapNamed(id);
+  SkBitmap original = rb.GetImageNamed(id).AsBitmap();
 
   SkBitmap fill_color;
   fill_color.setConfig(SkBitmap::kARGB_8888_Config,
@@ -294,13 +294,6 @@ void GtkThemeService::Init(Profile* profile) {
   registrar_.Add(prefs::kUsesSystemTheme, this);
   use_gtk_ = profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
   ThemeService::Init(profile);
-}
-
-SkBitmap* GtkThemeService::GetBitmapNamed(int id) const {
-  // TODO(erg): Remove this const cast. The gfx::Image interface returns its
-  // images const. GetBitmapNamed() also should but doesn't and has a million
-  // callsites.
-  return const_cast<SkBitmap*>(GetImageNamed(id).ToSkBitmap());
 }
 
 gfx::ImageSkia* GtkThemeService::GetImageSkiaNamed(int id) const {
@@ -1050,9 +1043,9 @@ SkBitmap GtkThemeService::GenerateFrameImage(
 }
 
 SkBitmap GtkThemeService::GenerateTabImage(int base_id) const {
-  SkBitmap* base_image = GetBitmapNamed(base_id);
+  SkBitmap base_image = GetImageNamed(base_id).AsBitmap();
   SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
-      *base_image, GetTint(ThemeService::TINT_BACKGROUND_TAB));
+      base_image, GetTint(ThemeService::TINT_BACKGROUND_TAB));
   return SkBitmapOperations::CreateTiledBitmap(
       bg_tint, 0, 0, bg_tint.width(), bg_tint.height());
 }
@@ -1062,7 +1055,7 @@ SkBitmap GtkThemeService::GenerateTintedIcon(
     const color_utils::HSL& tint) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return SkBitmapOperations::CreateHSLShiftedBitmap(
-      *rb.GetBitmapNamed(base_id), tint);
+      rb.GetImageNamed(base_id).AsBitmap(), tint);
 }
 
 void GtkThemeService::GetNormalButtonTintHSL(

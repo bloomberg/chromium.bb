@@ -294,7 +294,8 @@ void ChromeContentRendererClient::SetNumberOfViews(int number_of_views) {
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_SAD_PLUGIN);
+  return const_cast<SkBitmap*>(ResourceBundle::GetSharedInstance().
+      GetImageNamed(IDR_SAD_PLUGIN).ToSkBitmap());
 }
 
 std::string ChromeContentRendererClient::GetDefaultEncoding() {

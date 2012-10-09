@@ -67,7 +67,6 @@ class GtkThemeService : public ThemeService {
   // Sets that we aren't using the system theme, then calls
   // ThemeService's implementation.
   virtual void Init(Profile* profile) OVERRIDE;
-  virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE;
   virtual gfx::Image GetImageNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;
@@ -295,7 +294,7 @@ class GtkThemeService : public ThemeService {
   GtkIconSet* fullscreen_icon_set_;
 
   // Image cache of lazily created images, created when requested by
-  // GetBitmapNamed().
+  // GetImageNamed().
   mutable ImageCache gtk_images_;
 
   PrefChangeRegistrar registrar_;

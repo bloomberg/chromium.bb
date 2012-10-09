@@ -139,14 +139,15 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
 }
 
 void CustomDrawButtonBase::SetBackground(SkColor color,
-                                         SkBitmap* image, SkBitmap* mask) {
-  if (!image || !mask) {
+                                         const SkBitmap& image,
+                                         const SkBitmap& mask) {
+  if (image.isNull() || mask.isNull()) {
     if (background_image_->valid()) {
       background_image_->UsePixbuf(NULL);
     }
   } else {
     SkBitmap img =
-        SkBitmapOperations::CreateButtonBackground(color, *image, *mask);
+        SkBitmapOperations::CreateButtonBackground(color, image, mask);
 
     GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(img);
     background_image_->UsePixbuf(pixbuf);
@@ -336,7 +337,8 @@ void CustomDrawButton::UnsetPaintOverride() {
 }
 
 void CustomDrawButton::SetBackground(SkColor color,
-                                     SkBitmap* image, SkBitmap* mask) {
+                                     const SkBitmap& image,
+                                     const SkBitmap& mask) {
   button_base_.SetBackground(color, image, mask);
 }
 

@@ -191,7 +191,6 @@ class FakeTheme : public ui::ThemeProvider {
   FakeTheme(NSColor* color) : color_(color) {}
   scoped_nsobject<NSColor> color_;
 
-  virtual SkBitmap* GetBitmapNamed(int id) const { return NULL; }
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const { return NULL; }
   virtual SkColor GetColor(int id) const { return SkColor(); }
   virtual bool GetDisplayProperty(int id, int* result) const { return false; }

@@ -694,7 +694,7 @@ gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
   gtk_widget_get_allocation(sender, &allocation);
 
   // Draw the chrome app menu icon onto the canvas.
-  const SkBitmap* badge = theme_service_->GetBitmapNamed(resource_id);
+  const gfx::ImageSkia* badge = theme_service_->GetImageSkiaNamed(resource_id);
   gfx::CanvasSkiaPaint canvas(expose, false);
   int x_offset = base::i18n::IsRTL() ? 0 : allocation.width - badge->width();
   int y_offset = 0;

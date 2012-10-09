@@ -18,16 +18,16 @@ std::vector<GdkPixbuf*>* g_throbber_waiting_frames = NULL;
 // square GdkPixbufs that get stored in |frames|.
 void MakeThrobberFrames(int resource_id, std::vector<GdkPixbuf*>* frames) {
   ui::ResourceBundle &rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap* frame_strip = rb.GetBitmapNamed(resource_id);
+  SkBitmap frame_strip = rb.GetImageNamed(resource_id).AsBitmap();
 
   // Each frame of the animation is a square, so we use the height as the
   // frame size.
-  int frame_size = frame_strip->height();
-  size_t num_frames = frame_strip->width() / frame_size;
+  int frame_size = frame_strip.height();
+  size_t num_frames = frame_strip.width() / frame_size;
 
   // Make a separate GdkPixbuf for each frame of the animation.
   for (size_t i = 0; i < num_frames; ++i) {
-    SkBitmap frame = SkBitmapOperations::CreateTiledBitmap(*frame_strip,
+    SkBitmap frame = SkBitmapOperations::CreateTiledBitmap(frame_strip,
         i * frame_size, 0, frame_size, frame_size);
     frames->push_back(gfx::GdkPixbufFromSkBitmap(frame));
   }

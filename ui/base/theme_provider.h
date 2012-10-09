@@ -50,12 +50,6 @@ class UI_EXPORT ThemeProvider {
  public:
   virtual ~ThemeProvider();
 
-  // Get the bitmap specified by |id|. An implementation of ThemeProvider should
-  // have its own source of ids (e.g. an enum, or external resource bundle).
-  // TODO(pkotwicz): Get rid of GetBitmapNamed once all code uses
-  // GetImageSkiaNamed.
-  virtual SkBitmap* GetBitmapNamed(int id) const = 0;
-
   // Get the image specified by |id|. An implementation of ThemeProvider should
   // have its own source of ids (e.g. an enum, or external resource bundle).
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const = 0;

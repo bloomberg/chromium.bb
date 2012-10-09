@@ -550,8 +550,8 @@ void BrowserTitlebar::GetButtonResources(const std::string& button_name,
 void BrowserTitlebar::UpdateButtonBackground(CustomDrawButton* button) {
   SkColor color = theme_service_->GetColor(
       ThemeService::COLOR_BUTTON_BACKGROUND);
-  SkBitmap* background =
-      theme_service_->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND);
+  SkBitmap background = theme_service_->GetImageNamed(
+      IDR_THEME_WINDOW_CONTROL_BACKGROUND).AsBitmap();
 
   // TODO(erg): For now, we just use a completely black mask and we can get
   // away with this in the short term because our buttons are rectangles. We
@@ -564,7 +564,7 @@ void BrowserTitlebar::UpdateButtonBackground(CustomDrawButton* button) {
   mask.allocPixels();
   mask.eraseColor(SK_ColorBLACK);
 
-  button->SetBackground(color, background, &mask);
+  button->SetBackground(color, background, mask);
 }
 
 void BrowserTitlebar::UpdateCustomFrame(bool use_custom_frame) {
