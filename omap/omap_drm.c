@@ -304,6 +304,7 @@ struct omap_bo * omap_bo_from_name(struct omap_device *dev, uint32_t name)
 	return bo;
 
 fail:
+	pthread_mutex_unlock(&table_lock);
 	free(bo);
 	return NULL;
 }
@@ -337,6 +338,7 @@ struct omap_bo * omap_bo_from_dmabuf(struct omap_device *dev, int fd)
 	return bo;
 
 fail:
+	pthread_mutex_unlock(&table_lock);
 	free(bo);
 	return NULL;
 }
