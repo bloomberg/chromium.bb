@@ -2364,6 +2364,7 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidOrdinal) {
 
   // Trying to unpack this entry should signal that the DB is corrupted.
   MetahandlesIndex entry_bucket;
+  STLElementDeleter<MetahandlesIndex> deleter(&entry_bucket);
   Directory::KernelLoadInfo kernel_load_info;
   ASSERT_EQ(FAILED_DATABASE_CORRUPT,
             dbs->Load(&entry_bucket, &kernel_load_info));
