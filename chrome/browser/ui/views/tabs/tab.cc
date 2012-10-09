@@ -742,7 +742,8 @@ void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
 
   if (!GetThemeProvider()->HasCustomImage(tab_id) &&
       hover_controller().ShouldDraw()) {
-    hover_controller().Draw(canvas, background_canvas.ExtractImageRep());
+    hover_controller().Draw(canvas, gfx::ImageSkia(
+        background_canvas.ExtractImageRep()));
   }
 
   // Now draw the highlights/shadows around the tab edge.

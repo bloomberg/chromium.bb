@@ -456,7 +456,8 @@ TEST_F(ImageTest, OwnershipTest) {
   {
     SkBitmap bitmap(gt::CreateBitmap(10, 10));
     EXPECT_TRUE(!bitmap.isNull());
-    image = gfx::Image(gfx::ImageSkiaRep(bitmap, ui::SCALE_FACTOR_100P));
+    image = gfx::Image(gfx::ImageSkia(
+        gfx::ImageSkiaRep(bitmap, ui::SCALE_FACTOR_100P)));
   }
   EXPECT_TRUE(!image.ToSkBitmap()->isNull());
 }

@@ -117,8 +117,8 @@ void DropdownBarView::OnPaint(gfx::Canvas* canvas) {
      canvas->Translate(bounds().origin());
      OnPaintBackground(&animating_edges);
      OnPaintBorder(&animating_edges);
-     canvas->DrawImageInt(animating_edges.ExtractImageRep(), bounds().x(),
-         animation_offset());
+     canvas->DrawImageInt(gfx::ImageSkia(animating_edges.ExtractImageRep()),
+         bounds().x(), animation_offset());
   }
 }
 

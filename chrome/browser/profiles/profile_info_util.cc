@@ -33,7 +33,7 @@ gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
   SkColor color = SkColorSetARGB(83, 0, 0, 0);
   canvas.DrawRect(gfx::Rect(x, y, length - 1, length - 1), color);
 
-  return gfx::Image(canvas.ExtractImageRep());
+  return gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
 }
 
 gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
@@ -52,7 +52,7 @@ gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
   int y = (kAvatarIconHeight - length) / 2;
   canvas.DrawImageInt(bmp, x, y);
 
-  return gfx::Image(canvas.ExtractImageRep());
+  return gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
 }
 
 gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
@@ -91,7 +91,7 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   canvas.DrawLine(gfx::Point(x2 - 1, y1 + 1), gfx::Point(x2 - 1, y2 - 1),
                   shadow_color);
 
-  return gfx::Image(canvas.ExtractImageRep());
+  return gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep()));
 }
 
 } // namespace

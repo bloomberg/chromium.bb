@@ -51,7 +51,7 @@ class UI_EXPORT ImageSkia {
   // done.
   ImageSkia(const SkBitmap& bitmap);
 
-  ImageSkia(const gfx::ImageSkiaRep& image_rep);
+  explicit ImageSkia(const gfx::ImageSkiaRep& image_rep);
 
   // Copies a reference to |other|'s storage.
   ImageSkia(const ImageSkia& other);
