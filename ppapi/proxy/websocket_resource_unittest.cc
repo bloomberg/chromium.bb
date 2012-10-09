@@ -147,11 +147,11 @@ TEST_F(WebSocketResourceTest, MessageError) {
           PpapiPluginMsg_WebSocket_ConnectReply(url, std::string()))));
 
   EXPECT_EQ(PP_OK, g_callback_result);
-  EXPECT_EQ(true, g_callback_called);
+  EXPECT_TRUE(g_callback_called);
 
   PP_Var message;
   result = websocket_iface->ReceiveMessage(res, &message, MakeCallback());
-  EXPECT_EQ(false, g_callback_called);
+  EXPECT_FALSE(g_callback_called);
 
   // Synthesize a WebSocket_ErrorReply message.
   ResourceMessageReplyParams error_reply_params(res, 0);
@@ -161,7 +161,7 @@ TEST_F(WebSocketResourceTest, MessageError) {
           PpapiPluginMsg_WebSocket_ErrorReply())));
 
   EXPECT_EQ(PP_ERROR_FAILED, g_callback_result);
-  EXPECT_EQ(true, g_callback_called);
+  EXPECT_TRUE(g_callback_called);
 }
 
 }  // namespace proxy
