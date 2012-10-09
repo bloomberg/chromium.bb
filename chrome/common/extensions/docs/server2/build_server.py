@@ -7,6 +7,7 @@
 # The package of files can then be uploaded to App Engine.
 import os
 import shutil
+import stat
 import sys
 
 SRC_DIR = os.path.join(sys.path[0], os.pardir, os.pardir, os.pardir, os.pardir,
@@ -20,6 +21,10 @@ def MakeInit(path):
   path = os.path.join(path, '__init__.py')
   with open(os.path.join(path), 'w') as f:
     os.utime(os.path.join(path), None)
+
+def OnError(function, path, excinfo):
+  os.chmod(path, stat.S_IWUSR)
+  function(path)
 
 def CopyThirdParty(src, dest, files=None):
   dest_path = os.path.join(LOCAL_THIRD_PARTY_DIR, dest)
@@ -36,7 +41,15 @@ def CopyThirdParty(src, dest, files=None):
     shutil.copy(os.path.join(src, filename), os.path.join(dest_path, filename))
 
 def main():
-  shutil.rmtree(LOCAL_THIRD_PARTY_DIR, True)
+  if os.path.isdir(LOCAL_THIRD_PARTY_DIR):
+    try:
+      shutil.rmtree(LOCAL_THIRD_PARTY_DIR, False, OnError)
+    except OSError:
+      print('*-------------------------------------------------------------*\n'
+            '| If you are receiving an upload error, try removing          |\n'
+            '| chrome/common/extensions/docs/server2/third_party manually. |\n'
+            '*-------------------------------------------------------------*\n')
+
 
   CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'handlebar'), 'handlebar')
   CopyThirdParty(os.path.join(SRC_DIR, 'ppapi', 'generators'),
