@@ -189,7 +189,13 @@ int ConstrainedWindowFrameSimple::NonClientHitTest(const gfx::Point& point) {
 
 void ConstrainedWindowFrameSimple::GetWindowMask(const gfx::Size& size,
                                                  gfx::Path* window_mask) {
+#if defined(USE_AURA)
   SkRect rect = {0, 0, size.width() - 1, size.height() - 1};
+#else
+  // There appears to be a bug in the window mask calculation on Windows
+  // which causes the width, but not the height, to be off by one.
+  SkRect rect = {0, 0, size.width(), size.height() - 1};
+#endif
   SkScalar radius = SkIntToScalar(ConstrainedWindow::kBorderRadius);
   SkScalar radii[8] = {radius, radius, radius, radius,
                        radius, radius, radius, radius};
