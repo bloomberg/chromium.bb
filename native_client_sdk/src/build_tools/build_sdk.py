@@ -922,6 +922,8 @@ def main(args):
   parser.add_option('--experimental',
       help='build experimental examples and libraries', action='store_true',
       dest='build_experimental', default=False)
+  parser.add_option('--skip-toolchain', help='Skip toolchain download/untar',
+      action='store_true', dest='skip_toolchain', default=False)
 
   global options
   options, args = parser.parse_args(args[1:])
@@ -968,11 +970,13 @@ def main(args):
   else:  # Build everything.
     BuildStepBuildToolsTests()
 
-    BuildStepDownloadToolchains(platform)
+    if not options.skip_toolchain:
+      BuildStepDownloadToolchains(platform)
     BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
     BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
     BuildStepCopyTextFiles(pepperdir, pepper_ver, clnumber)
-    BuildStepUntarToolchains(pepperdir, platform, arch, toolchains)
+    if not options.skip_toolchain:
+      BuildStepUntarToolchains(pepperdir, platform, arch, toolchains)
     BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
     InstallHeaders(os.path.join(pepperdir, 'include'), None, 'libs')
     BuildStepCopyBuildHelpers(pepperdir, platform)
