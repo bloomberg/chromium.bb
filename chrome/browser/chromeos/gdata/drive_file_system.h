@@ -32,6 +32,7 @@ class DriveResourceMetadata;
 class DriveServiceInterface;
 class DriveUploaderInterface;
 class DriveWebAppsRegistryInterface;
+class DriveScheduler;
 
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
@@ -926,6 +927,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   scoped_ptr<DriveFunctionRemove> remove_function_;
+
+  scoped_ptr<DriveScheduler> scheduler_;
 
   // WeakPtrFactory and WeakPtr bound to the UI thread.
   // Note: These should remain the last member so they'll be destroyed and

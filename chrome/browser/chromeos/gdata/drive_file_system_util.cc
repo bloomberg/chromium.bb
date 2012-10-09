@@ -30,6 +30,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
+#include "net/base/network_change_notifier.h"
 
 using content::BrowserThread;
 
@@ -435,6 +436,26 @@ DriveFileError GDataToDriveFileError(GDataErrorCode status) {
     default:
       return DRIVE_FILE_ERROR_FAILED;
   }
+}
+
+bool IsConnectionTypeCellular() {
+  bool is_cellular = false;
+  // Use switch, not if, to allow compiler to catch future enum changes.
+  // (e.g. Addition of CONNECTION_5G)
+  switch (net::NetworkChangeNotifier::GetConnectionType()) {
+    case net::NetworkChangeNotifier::CONNECTION_2G:
+    case net::NetworkChangeNotifier::CONNECTION_3G:
+    case net::NetworkChangeNotifier::CONNECTION_4G:
+      is_cellular = true;
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+    case net::NetworkChangeNotifier::CONNECTION_NONE:
+      is_cellular = false;
+      break;
+  }
+  return is_cellular;
 }
 
 }  // namespace util

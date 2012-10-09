@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/gdata/drive_files.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_function_remove.h"
+#include "chrome/browser/chromeos/gdata/drive_scheduler.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
@@ -451,6 +452,7 @@ DriveFileSystem::DriveFileSystem(
       blocking_task_runner_(blocking_task_runner),
       remove_function_(new DriveFunctionRemove(
           drive_service, ALLOW_THIS_IN_INITIALIZER_LIST(this), cache_)),
+      scheduler_(new DriveScheduler(profile, remove_function_.get())),
       ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
       ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
   // Should be created from the file browser extension API on UI thread.
@@ -472,6 +474,8 @@ void DriveFileSystem::Initialize() {
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
+
+  scheduler_->Initialize();
 
   InitializePreferenceObserver();
 }
@@ -1286,7 +1290,7 @@ void DriveFileSystem::RemoveOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  remove_function_->Remove(file_path, is_recursive, callback);
+  scheduler_->Remove(file_path, is_recursive, callback);
 }
 
 void DriveFileSystem::CreateDirectory(

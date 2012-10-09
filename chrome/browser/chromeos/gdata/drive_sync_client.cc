@@ -11,6 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -55,27 +56,6 @@ struct CompareTypeAndResourceId {
   const DriveSyncClient::SyncType sync_type;
   const std::string resource_id;
 };
-
-// Returns true if the current network connection is over cellular.
-bool IsConnectionTypeCellular() {
-  bool is_cellular = false;
-  // Use switch, not if, to allow compiler to catch future enum changes.
-  // (e.g. Addition of CONNECTION_5G)
-  switch (net::NetworkChangeNotifier::GetConnectionType()) {
-    case net::NetworkChangeNotifier::CONNECTION_2G:
-    case net::NetworkChangeNotifier::CONNECTION_3G:
-    case net::NetworkChangeNotifier::CONNECTION_4G:
-      is_cellular = true;
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-    case net::NetworkChangeNotifier::CONNECTION_WIFI:
-    case net::NetworkChangeNotifier::CONNECTION_NONE:
-      is_cellular = false;
-      break;
-  }
-  return is_cellular;
-}
 
 }  // namespace
 
@@ -214,7 +194,7 @@ bool DriveSyncClient::ShouldStopSyncLoop() {
   // Should stop if the current connection is on cellular network, and
   // fetching is disabled over cellular.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGDataOverCellular) &&
-      IsConnectionTypeCellular())
+      util::IsConnectionTypeCellular())
     return true;
 
   return false;

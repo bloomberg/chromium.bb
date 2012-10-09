@@ -269,6 +269,8 @@
         'browser/chromeos/gdata/drive_resource_metadata.cc',
         'browser/chromeos/gdata/drive_resource_metadata.h',
         'browser/chromeos/gdata/drive_service_interface.h',
+        'browser/chromeos/gdata/drive_scheduler.cc',
+        'browser/chromeos/gdata/drive_scheduler.h',
         'browser/chromeos/gdata/drive_sync_client.cc',
         'browser/chromeos/gdata/drive_sync_client.h',
         'browser/chromeos/gdata/drive_system_service.cc',

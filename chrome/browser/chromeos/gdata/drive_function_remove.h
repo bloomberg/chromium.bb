@@ -21,16 +21,21 @@ class DriveEntryProto;
 class DriveFileSystem;
 class DriveServiceInterface;
 
+// This class encapsulates the drive Remove function.  It is resposible for
+// sending the request to the drive API, then updating the local state and
+// metadata to reflect the new state.
 class DriveFunctionRemove {
  public:
   DriveFunctionRemove(DriveServiceInterface* drive_service,
                       DriveFileSystem* file_system,
                       DriveCache* cache);
-  ~DriveFunctionRemove();
+  virtual ~DriveFunctionRemove();
 
-  void Remove(const FilePath& file_path,
-              bool is_recursive,
-              const FileOperationCallback& callback);
+  // Perform the remove operation on the file at drive path |file_path|.
+  // Invokes |callback| when finished with the result of the operation.
+  virtual void Remove(const FilePath& file_path,
+                      bool is_recursive,
+                      const FileOperationCallback& callback);
 
  private:
   // Part of Remove(). Called after GetEntryInfoByPath() is complete.

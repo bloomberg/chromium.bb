@@ -1128,6 +1128,7 @@
         'browser/chromeos/gdata/drive_file_system_unittest.cc',
         'browser/chromeos/gdata/drive_file_system_util_unittest.cc',
         'browser/chromeos/gdata/drive_resource_metadata_unittest.cc',
+        'browser/chromeos/gdata/drive_scheduler_unittest.cc',
         'browser/chromeos/gdata/drive_sync_client_unittest.cc',
         'browser/chromeos/gdata/drive_test_util.cc',
         'browser/chromeos/gdata/drive_test_util.h',
