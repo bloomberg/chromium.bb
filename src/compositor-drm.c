@@ -2407,6 +2407,7 @@ output_section_done(void *data)
 		free(output_name);
 		free(output_mode);
 		free(output_transform);
+		free(output);
 		output_name = NULL;
 		output_mode = NULL;
 		output_transform = NULL;
