@@ -121,7 +121,11 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
       policy_(policy_response.Pass()),
       payload_(payload),
       completion_callback_(completion_callback),
-      validation_flags_(0) {}
+      validation_flags_(0),
+      timestamp_not_before_(0),
+      timestamp_not_after_(0),
+      allow_missing_timestamp_(false),
+      allow_key_rotation_(false) {}
 
 // static
 void CloudPolicyValidatorBase::PerformValidation(
