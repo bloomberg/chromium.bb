@@ -55,14 +55,18 @@ class ChromeosONC(policy_base.PolicyTestBase):
     wifi_expect_temp = dict(wifi_expect)
 
     for service, wifi_dict in networks['remembered_wifi'].iteritems():
-      msg = ('Wifi network %s was in the remembered_network list but '
-             'shouldn\'t be.' % wifi_dict['name'])
+      if isinstance(wifi_dict, dict) and \
+         'encryption' in wifi_dict and \
+         'name' in wifi_dict:
 
-      # wifi_dict['encryption'] will always be a string and not None.
-      self.assertTrue(wifi_expect.get(wifi_dict['name'], None) ==
-                      wifi_dict['encryption'], msg)
+        msg = ('Wifi network %s was in the remembered_network list but '
+               'shouldn\'t be.' % wifi_dict['name'])
 
-      del wifi_expect_temp[wifi_dict['name']]
+        # wifi_dict['encryption'] will always be a string and not None.
+        self.assertTrue(wifi_expect.get(wifi_dict['name'], None) ==
+                        wifi_dict['encryption'], msg)
+
+        del wifi_expect_temp[wifi_dict['name']]
 
     # Error if wifi_expect_temp is not empty.
     self.assertFalse(wifi_expect_temp, 'The following networks '
