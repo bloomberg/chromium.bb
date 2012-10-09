@@ -111,8 +111,10 @@ long backlight_set_brightness(struct backlight *backlight, long brightness)
 		goto out;
 	}
 
-	if (asprintf(&buffer, "%ld", brightness) < 0)
-		return -ENOMEM;
+	if (asprintf(&buffer, "%ld", brightness) < 0) {
+		ret = -1;
+		goto out;
+	}
 
 	ret = write(fd, buffer, strlen(buffer));
 	if (ret < 0) {
