@@ -8,6 +8,7 @@
 #include "crypto/random.h"
 #include "google_apis/google_api_keys.h"
 #include "remoting/host/pin_hash.h"
+#include "remoting/host/setup/oauth_helper.h"
 
 namespace {
 
@@ -70,9 +71,7 @@ HostStarter::HostStarter(
     google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING);
   oauth_client_info_.client_secret =
     google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING);
-  oauth_client_info_.redirect_uri =
-    "https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
-    "chrome-remote-desktop/rel/kgngmbheleoaphbjbaiobfdepmghbfah";
+  oauth_client_info_.redirect_uri = GetOauthRedirectUrl();
 }
 
 HostStarter::~HostStarter() {

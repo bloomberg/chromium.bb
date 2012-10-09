@@ -1019,9 +1019,12 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
         'remoting_host',
       ],
       'sources': [
+        'host/setup/auth_code_getter_win.cc',
+        'host/setup/auth_code_getter_win.h',
         'host/setup/daemon_controller.h',
         'host/setup/daemon_controller_linux.cc',
         'host/setup/daemon_controller_mac.cc',
@@ -1030,6 +1033,8 @@
         'host/setup/daemon_installer_win.h',
         'host/setup/host_starter.cc',
         'host/setup/host_starter.h',
+        'host/setup/oauth_helper.cc',
+        'host/setup/oauth_helper.h',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -1862,6 +1867,7 @@
         'remoting_host',
         'remoting_jingle_glue',
         'remoting_protocol',
+        'remoting_host_setup_base',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
@@ -1917,6 +1923,7 @@
         'host/resizing_host_observer_unittest.cc',
         'host/screen_recorder_unittest.cc',
         'host/server_log_entry_unittest.cc',
+        'host/setup/oauth_helper_unittest.cc',
         'host/test_key_pair.h',
         'host/video_frame_capturer_helper_unittest.cc',
         'host/video_frame_capturer_mac_unittest.cc',
