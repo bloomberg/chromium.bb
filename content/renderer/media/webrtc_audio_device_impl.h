@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "media/audio/audio_input_device.h"
 #include "media/base/audio_renderer_sink.h"
-#include "third_party/webrtc/modules/audio_device/include/audio_device.h"
+#include "third_party/webrtc/modules/audio_device/main/interface/audio_device.h"
 
 // A WebRtcAudioDeviceImpl instance implements the abstract interface
 // webrtc::AudioDeviceModule which makes it possible for a user (e.g. webrtc::
