@@ -99,6 +99,9 @@ wl_connection_demarshal(struct wl_connection *connection,
 			struct wl_map *objects,
 			const struct wl_message *message);
 
+int
+wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects);
+
 void
 wl_closure_invoke(struct wl_closure *closure,
 		  struct wl_object *target, void (*func)(void), void *data);

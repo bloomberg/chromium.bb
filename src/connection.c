@@ -706,38 +706,16 @@ wl_connection_demarshal(struct wl_connection *connection,
 			break;
 		case 'o':
 			closure->types[i] = &ffi_type_pointer;
-			object = (struct wl_object **) extra;
-			extra += sizeof *object;
-			closure->args[i] = object;
+			id = (uint32_t **) extra;
+			extra += sizeof *id;
+			closure->args[i] = id;
+			*id = p;
 
-			if (*p == 0 && !arg.nullable) {
-				printf("NULL new ID received on non-nullable "
+			if (*id == 0 && !arg.nullable) {
+				printf("NULL object received on non-nullable "
 				       "type, message %s(%s)\n", message->name,
 				       message->signature);
 				*object = NULL;
-				errno = EINVAL;
-				goto err;
-			}
-
-			*object = wl_map_lookup(objects, *p);
-			if (*object == WL_ZOMBIE_OBJECT) {
-				/* references object we've already
-				 * destroyed client side */
-				*object = NULL;
-			} else if (*object == NULL && *p != 0) {
-				printf("unknown object (%u), message %s(%s)\n",
-				       *p, message->name, message->signature);
-				*object = NULL;
-				errno = EINVAL;
-				goto err;
-			}
-
-			if (*object != NULL && message->types[i-2] != NULL &&
-			    (*object)->interface != message->types[i-2]) {
-				printf("invalid object (%u), type (%s), "
-					"message %s(%s)\n",
-				       *p, (*object)->interface->name,
-				       message->name, message->signature);
 				errno = EINVAL;
 				goto err;
 			}
@@ -826,6 +804,53 @@ wl_connection_demarshal(struct wl_connection *connection,
 	wl_connection_consume(connection, size);
 
 	return NULL;
+}
+
+int
+wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
+{
+	struct wl_object **object;
+	const struct wl_message *message;
+	const char *signature;
+	struct argument_details arg;
+	int i, count;
+	uint32_t id;
+
+	message = closure->message;
+	signature = message->signature;
+	count = arg_count_for_signature(signature) + 2;
+	for (i = 2; i < count; i++) {
+		signature = get_next_argument(signature, &arg);
+		switch (arg.type) {
+		case 'o':
+			id = **(uint32_t **) closure->args[i];
+			object = closure->args[i];
+			*object = wl_map_lookup(objects, id);
+			if (*object == WL_ZOMBIE_OBJECT) {
+				/* references object we've already
+				 * destroyed client side */
+				*object = NULL;
+			} else if (*object == NULL && id != 0) {
+				printf("unknown object (%u), message %s(%s)\n",
+				       id, message->name, message->signature);
+				*object = NULL;
+				errno = EINVAL;
+				return -1;
+			}
+
+			if (*object != NULL && message->types[i-2] != NULL &&
+			    (*object)->interface != message->types[i-2]) {
+				printf("invalid object (%u), type (%s), "
+				       "message %s(%s)\n",
+				       id, (*object)->interface->name,
+				       message->name, message->signature);
+				errno = EINVAL;
+				return -1;
+			}
+		}
+	}
+
+	return 0;
 }
 
 void

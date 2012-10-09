@@ -499,9 +499,6 @@ queue_event(struct wl_display *display, int len)
 	closure = wl_connection_demarshal(display->connection, size,
 					  &display->objects, message);
 
-	if (wl_debug)
-		wl_closure_print(closure, &proxy->object, false);
-
 	if (closure == NULL || create_proxies(proxy, closure) < 0) {
 		fprintf(stderr, "Error demarshalling event\n");
 		abort();
@@ -520,7 +517,7 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 	struct wl_closure *closure;
 	struct wl_proxy *proxy;
 	uint32_t id;
-	int opcode;
+	int opcode, ret;
 
 	closure = container_of(queue->event_list.next,
 			       struct wl_closure, link);
@@ -528,14 +525,25 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 	id = closure->buffer[0];
 	opcode = closure->buffer[1] & 0xffff;
 
+	/* Verify that the receiving object is still valid and look up
+	 * proxies for any arguments.  We have to do this just before
+	 * calling the handler, since preceeding events may have
+	 * destroyed either the proxy or the proxy args since the
+	 * event was queued. */
 	proxy = wl_map_lookup(&display->objects, id);
+	ret = wl_closure_lookup_objects(closure, &display->objects);
 
 	pthread_mutex_unlock(&display->mutex);
 
-	if (proxy != WL_ZOMBIE_OBJECT)
+	if (proxy != WL_ZOMBIE_OBJECT && ret == 0) {
+		if (wl_debug)
+			wl_closure_print(closure, &proxy->object, false);
+
 		wl_closure_invoke(closure, &proxy->object,
 				  proxy->object.implementation[opcode],
 				  proxy->user_data);
+	}
+
 	wl_closure_destroy(closure);
 
 	pthread_mutex_lock(&display->mutex);
@@ -546,7 +554,6 @@ WL_EXPORT int
 wl_display_dispatch_queue(struct wl_display *display,
 			  struct wl_event_queue *queue)
 {
-	struct wl_closure *closure;
 	int len, size;
 
 	pthread_mutex_lock(&display->mutex);
