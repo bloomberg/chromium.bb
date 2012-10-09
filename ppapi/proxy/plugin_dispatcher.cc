@@ -272,7 +272,8 @@ void PluginDispatcher::DispatchResourceReply(
   Resource* resource = PpapiGlobals::Get()->GetResourceTracker()->GetResource(
       reply_params.pp_resource());
   if (!resource) {
-    NOTREACHED();
+    if (reply_params.sequence())
+      NOTREACHED();
     return;
   }
   resource->OnReplyReceived(reply_params, nested_msg);

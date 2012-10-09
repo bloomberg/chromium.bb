@@ -34,6 +34,12 @@ RenderView* MockRendererPpapiHost::GetRenderViewForInstance(
   return NULL;
 }
 
+WebKit::WebPluginContainer* MockRendererPpapiHost::GetContainerForInstance(
+    PP_Instance instance) const {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 bool MockRendererPpapiHost::HasUserGesture(PP_Instance instance) const {
   return has_user_gesture_;
 }

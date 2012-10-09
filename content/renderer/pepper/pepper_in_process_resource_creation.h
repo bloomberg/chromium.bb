@@ -51,6 +51,8 @@ class PepperInProcessResourceCreation
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,
       const ::ppapi::URLRequestInfoData& data) OVERRIDE;
+  virtual PP_Resource CreateWebSocket(
+      PP_Instance instance) OVERRIDE;
 
  private:
   // Non-owning pointer to the host for the current plugin.

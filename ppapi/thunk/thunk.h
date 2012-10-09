@@ -76,6 +76,8 @@ PPAPI_THUNK_EXPORT const PPB_UDPSocket_Private_0_2*
     GetPPB_UDPSocket_Private_0_2_Thunk();
 PPAPI_THUNK_EXPORT const PPB_URLLoaderTrusted_0_3*
     GetPPB_URLLoaderTrusted_0_3_Thunk();
+PPAPI_THUNK_EXPORT const PPB_WebSocket_1_0*
+    GetPPB_WebSocket_1_0_Thunk();
 
 }  // namespace thunk
 }  // namespace ppapi

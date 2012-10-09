@@ -86,6 +86,8 @@ class RendererPpapiHostImpl
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
   virtual RenderView* GetRenderViewForInstance(
       PP_Instance instance) const OVERRIDE;
+  virtual WebKit::WebPluginContainer* GetContainerForInstance(
+      PP_Instance instance) const OVERRIDE;
   virtual bool HasUserGesture(PP_Instance instance) const OVERRIDE;
 
  private:

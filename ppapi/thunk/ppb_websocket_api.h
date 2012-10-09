@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_websocket.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 
@@ -19,14 +20,14 @@ namespace thunk {
 // WebSocket API. See also following official specifications.
 //  - The WebSocket Protocol http://tools.ietf.org/html/rfc6455
 //  - The WebSocket API      http://dev.w3.org/html5/websockets/
-class PPB_WebSocket_API {
+class PPAPI_THUNK_EXPORT PPB_WebSocket_API {
  public:
   virtual ~PPB_WebSocket_API() {}
 
   // Connects to the specified WebSocket server with |protocols| argument
   // defined by the WebSocket API. Returns an int32_t error code from
   // pp_errors.h.
-  virtual int32_t Connect(PP_Var url,
+  virtual int32_t Connect(const PP_Var& url,
                           const PP_Var protocols[],
                           uint32_t protocol_count,
                           scoped_refptr<TrackedCallback> callback) = 0;
@@ -34,7 +35,7 @@ class PPB_WebSocket_API {
   // Closes the established connection with specified |code| and |reason|.
   // Returns an int32_t error code from pp_errors.h.
   virtual int32_t Close(uint16_t code,
-                        PP_Var reason,
+                        const PP_Var& reason,
                         scoped_refptr<TrackedCallback> callback) = 0;
 
   // Receives a message from the WebSocket server. Caller must keep specified
@@ -45,7 +46,7 @@ class PPB_WebSocket_API {
 
   // Sends a message to the WebSocket server. Returns an int32_t error code
   // from pp_errors.h.
-  virtual int32_t SendMessage(PP_Var message) = 0;
+  virtual int32_t SendMessage(const PP_Var& message) = 0;
 
   // Returns the bufferedAmount attribute of The WebSocket API.
   virtual uint64_t GetBufferedAmount() = 0;

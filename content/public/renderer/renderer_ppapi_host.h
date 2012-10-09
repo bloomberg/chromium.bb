@@ -13,6 +13,10 @@ class PpapiHost;
 }
 }
 
+namespace WebKit {
+class WebPluginContainer;
+}
+
 namespace content {
 
 class RenderView;
@@ -33,6 +37,11 @@ class RendererPpapiHost {
   // Returns the RenderView for the given plugin instance, or NULL if the
   // instance is invalid.
   virtual RenderView* GetRenderViewForInstance(PP_Instance instance) const = 0;
+
+  // Returns the WebPluginContainer for the given plugin instance, or NULL if
+  // the instance is invalid.
+  virtual WebKit::WebPluginContainer* GetContainerForInstance(
+      PP_Instance instance) const = 0;
 
   // Returns true if the given instance is considered to be currently
   // processing a user gesture or the plugin module has the "override user

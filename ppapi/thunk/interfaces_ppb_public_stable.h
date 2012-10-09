@@ -77,6 +77,7 @@ PROXIED_IFACE(NoAPIName, PPB_URLREQUESTINFO_INTERFACE_1_0,
               PPB_URLRequestInfo_1_0)
 PROXIED_IFACE(PPB_URLResponseInfo, PPB_URLRESPONSEINFO_INTERFACE_1_0,
               PPB_URLResponseInfo_1_0)
+PROXIED_IFACE(NoAPIName, PPB_WEBSOCKET_INTERFACE_1_0, PPB_WebSocket_1_0)
 
 // Note: PPB_Var and PPB_VarArrayBuffer are special and registered manually.
 PROXIED_IFACE(NoAPIName, PPB_VIEW_INTERFACE_1_0, PPB_View_1_0)

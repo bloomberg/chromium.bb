@@ -153,6 +153,7 @@
         'proxy/ppp_messaging_proxy_unittest.cc',
         'proxy/printing_resource_unittest.cc',
         'proxy/serialized_var_unittest.cc',
+        'proxy/websocket_resource_unittest.cc',
         'shared_impl/resource_tracker_unittest.cc',
         'shared_impl/tracked_callback_unittest.cc',
         'shared_impl/var_tracker_unittest.cc',

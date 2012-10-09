@@ -17,6 +17,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/printing_resource.h"
 #include "ppapi/proxy/url_request_info_resource.h"
+#include "ppapi/proxy/websocket_resource.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/resource_tracker.h"
@@ -62,6 +63,13 @@ PP_Resource PepperInProcessResourceCreation::CreateURLRequestInfo(
   return (new ppapi::proxy::URLRequestInfoResource(
       host_impl_->in_process_router()->GetPluginConnection(),
       instance, data))->GetReference();
+}
+
+PP_Resource PepperInProcessResourceCreation::CreateWebSocket(
+    PP_Instance instance) {
+  return (new ppapi::proxy::WebSocketResource(
+      host_impl_->in_process_router()->GetPluginConnection(),
+      instance))->GetReference();
 }
 
 }  // namespace content

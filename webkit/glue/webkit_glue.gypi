@@ -252,8 +252,6 @@
         '../plugins/ppapi/ppb_video_capture_impl.h',
         '../plugins/ppapi/ppb_video_decoder_impl.cc',
         '../plugins/ppapi/ppb_video_decoder_impl.h',
-        '../plugins/ppapi/ppb_websocket_impl.cc',
-        '../plugins/ppapi/ppb_websocket_impl.h',
         '../plugins/ppapi/ppb_widget_impl.cc',
         '../plugins/ppapi/ppb_widget_impl.h',
         '../plugins/ppapi/ppb_x509_certificate_private_impl.cc',

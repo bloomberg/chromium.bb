@@ -41,6 +41,8 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   virtual bool IsValidInstance(PP_Instance instance) const OVERRIDE;
   virtual RenderView* GetRenderViewForInstance(
       PP_Instance instance) const OVERRIDE;
+  virtual WebKit::WebPluginContainer* GetContainerForInstance(
+      PP_Instance instance) const OVERRIDE;
   virtual bool HasUserGesture(PP_Instance instance) const OVERRIDE;
 
  private:
@@ -58,4 +60,3 @@ class MockRendererPpapiHost : public RendererPpapiHost {
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_MOCK_RENDERER_PPAPI_HOST_H_
-

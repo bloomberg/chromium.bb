@@ -33,7 +33,6 @@
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
-#include "webkit/plugins/ppapi/ppb_websocket_impl.h"
 #include "webkit/plugins/ppapi/ppb_x509_certificate_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
@@ -289,10 +288,6 @@ PP_Resource ResourceCreationImpl::CreateVideoDecoder(
     PP_Resource graphics3d_id,
     PP_VideoDecoder_Profile profile) {
   return PPB_VideoDecoder_Impl::Create(instance, graphics3d_id, profile);
-}
-
-PP_Resource ResourceCreationImpl::CreateWebSocket(PP_Instance instance) {
-  return PPB_WebSocket_Impl::Create(instance);
 }
 
 PP_Resource ResourceCreationImpl::CreateWheelInputEvent(

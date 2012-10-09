@@ -58,6 +58,9 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   void SendReply(const ReplyMessageContext& context,
                  const IPC::Message& msg);
 
+  // Sends the given unsolicited reply message to the plugin.
+  void SendUnsolicitedReply(PP_Resource resource, const IPC::Message& msg);
+
   // Adds the given host factory filter to the host. The PpapiHost will take
   // ownership of the pointer.
   void AddHostFactoryFilter(scoped_ptr<HostFactory> filter);

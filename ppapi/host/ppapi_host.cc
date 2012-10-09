@@ -79,6 +79,12 @@ void PpapiHost::SendReply(const ReplyMessageContext& context,
   }
 }
 
+void PpapiHost::SendUnsolicitedReply(PP_Resource resource,
+                                     const IPC::Message& msg) {
+  proxy::ResourceMessageReplyParams params(resource, 0);
+  Send(new PpapiPluginMsg_ResourceReply(params, msg));
+}
+
 void PpapiHost::AddHostFactoryFilter(scoped_ptr<HostFactory> filter) {
   host_factory_filters_.push_back(filter.release());
 }

@@ -156,6 +156,8 @@
           'proxy/url_request_info_resource.cc',
           'proxy/url_request_info_resource.h',
           'proxy/var_serialization_rules.h',
+          'proxy/websocket_resource.cc',
+          'proxy/websocket_resource.h',
         ],
         'defines': [
           'PPAPI_PROXY_IMPLEMENTATION',

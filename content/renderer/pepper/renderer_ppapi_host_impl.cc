@@ -120,6 +120,14 @@ bool RendererPpapiHostImpl::IsValidInstance(
   return !!GetAndValidateInstance(instance);
 }
 
+WebKit::WebPluginContainer* RendererPpapiHostImpl::GetContainerForInstance(
+      PP_Instance instance) const {
+  PluginInstance* instance_object = GetAndValidateInstance(instance);
+  if (!instance_object)
+    return NULL;
+  return instance_object->container();
+}
+
 bool RendererPpapiHostImpl::HasUserGesture(PP_Instance instance) const {
   PluginInstance* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)

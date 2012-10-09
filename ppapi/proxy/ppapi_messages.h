@@ -1582,3 +1582,83 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_GetDefaultPrintSettings)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply,
                      PP_PrintSettings_Dev /* print_settings */)
+
+// WebSocket ------------------------------------------------------------------
+
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_WebSocket_Create)
+
+// Establishes the connection to a server. This message requires
+// WebSocket_ConnectReply as a reply message.
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_WebSocket_Connect,
+                     std::string /* url */,
+                     std::vector<std::string> /* protocols */)
+
+// Closes established connection with graceful closing handshake. This message
+// requires WebSocket_CloseReply as a reply message.
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_WebSocket_Close,
+                     int32_t /* code */,
+                     std::string /* reason */)
+
+// Sends a text frame to the server. No reply is defined.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_WebSocket_SendText,
+                     std::string /* message */)
+
+// Sends a binary frame to the server. No reply is defined.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_WebSocket_SendBinary,
+                     std::vector<uint8_t> /* message */)
+
+// Fails the connection. This message invokes RFC6455 defined
+// _Fail the WebSocket Connection_ operation. No reply is defined.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_WebSocket_Fail,
+                     std::string /* message */)
+
+// This message is a reply to WebSocket_Connect. If the |url| and |protocols|
+// are invalid, WebSocket_ConnectReply is issued immediately and it contains
+// proper error code in its result. Otherwise, WebSocket_ConnectReply is sent
+// with valid |url|, |protocol|, and result PP_OK. |protocol| is not a passed
+// |protocols|, but a result of opening handshake negotiation. If the
+// connection can not be established successfully, WebSocket_ConnectReply is
+// not issued, but WebSocket_ClosedReply is sent instead.
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_WebSocket_ConnectReply,
+                     std::string /* url */,
+                     std::string /* protocol */)
+
+// This message is a reply to WebSocket_Close. If the operation fails,
+// WebSocket_CloseReply is issued immediately and it contains PP_ERROR_FAILED.
+// Otherwise, CloseReply will be issued after the closing handshake is
+// finished. All arguments will be valid iff the result is PP_OK and it means
+// that the client initiated closing handshake is finished gracefully.
+IPC_MESSAGE_CONTROL4(PpapiPluginMsg_WebSocket_CloseReply,
+                     unsigned long /* buffered_amount */,
+                     bool /* was_clean */,
+                     unsigned short /* code */,
+                     std::string /* reason */)
+
+// Unsolicited reply message to transmit a receiving text frame.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_WebSocket_ReceiveTextReply,
+                     std::string /* message */)
+
+// Unsolicited reply message to transmit a receiving binary frame.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_WebSocket_ReceiveBinaryReply,
+                     std::vector<uint8_t> /* message */)
+
+// Unsolicited reply message to notify a error on underlying network connetion.
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_WebSocket_ErrorReply)
+
+// Unsolicited reply message to update the buffered amount value.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_WebSocket_BufferedAmountReply,
+                     unsigned long /* buffered_amount */)
+
+// Unsolicited reply message to update |state| because of incoming external
+// events, e.g., protocol error, or unexpected network closure.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_WebSocket_StateReply,
+                     int32_t /* state */)
+
+// Unsolicited reply message to notify that the connection is closed without
+// any WebSocket_Close request. Server initiated closing handshake or
+// unexpected network errors will invoke this message.
+IPC_MESSAGE_CONTROL4(PpapiPluginMsg_WebSocket_ClosedReply,
+                     unsigned long /* buffered_amount */,
+                     bool /* was_clean */,
+                     unsigned short /* code */,
+                     std::string /* reason */)

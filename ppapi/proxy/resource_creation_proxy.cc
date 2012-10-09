@@ -39,6 +39,7 @@
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/printing_resource.h"
 #include "ppapi/proxy/url_request_info_resource.h"
+#include "ppapi/proxy/websocket_resource.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
@@ -256,6 +257,10 @@ PP_Resource ResourceCreationProxy::CreateUDPSocketPrivate(
   return PPB_UDPSocket_Private_Proxy::CreateProxyResource(instance);
 }
 
+PP_Resource ResourceCreationProxy::CreateWebSocket(PP_Instance instance) {
+  return (new WebSocketResource(GetConnection(), instance))->GetReference();
+}
+
 PP_Resource ResourceCreationProxy::CreateX509CertificatePrivate(
     PP_Instance instance) {
   return PPB_X509Certificate_Private_Proxy::CreateProxyResource(instance);
@@ -349,11 +354,6 @@ PP_Resource ResourceCreationProxy::CreateVideoDecoder(
     PP_VideoDecoder_Profile profile) {
   return PPB_VideoDecoder_Proxy::CreateProxyResource(
       instance, context3d_id, profile);
-}
-
-PP_Resource ResourceCreationProxy::CreateWebSocket(PP_Instance instance) {
-  NOTIMPLEMENTED();
-  return 0;
 }
 
 #endif  // !defined(OS_NACL)

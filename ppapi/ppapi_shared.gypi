@@ -286,7 +286,6 @@
               'thunk/ppb_url_util_thunk.cc',
               'thunk/ppb_video_capture_thunk.cc',
               'thunk/ppb_video_decoder_thunk.cc',
-              'thunk/ppb_websocket_thunk.cc',
             ],
           }],
           # We exclude a few more things for nacl_win64, to avoid pulling in
