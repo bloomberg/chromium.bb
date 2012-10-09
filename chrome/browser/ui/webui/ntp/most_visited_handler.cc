@@ -74,6 +74,12 @@ void MostVisitedHandler::RegisterMessages() {
   ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
   ChromeURLDataManager::AddDataSource(profile, thumbnail_src);
 
+#if defined(OS_ANDROID)
+  // Register chrome://touch-icon as a data source for touch icons or favicons.
+  ChromeURLDataManager::AddDataSource(profile,
+      new FaviconSource(profile, FaviconSource::ANY));
+#endif
+  // Register chrome://favicon as a data source for favicons.
   ChromeURLDataManager::AddDataSource(profile,
       new FaviconSource(profile, FaviconSource::FAVICON));
 

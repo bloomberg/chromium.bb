@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
@@ -56,12 +55,14 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #else
 #include "chrome/browser/ui/webui/ntp/android/bookmarks_handler.h"
 #include "chrome/browser/ui/webui/ntp/android/context_menu_handler.h"
+#include "chrome/browser/ui/webui/ntp/android/new_tab_page_ready_handler.h"
 #include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
 #endif
 
@@ -111,6 +112,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new RecentlyClosedTabsHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
 #if !defined(OS_ANDROID)
+    web_ui->AddMessageHandler(new NewTabPageHandler());
     if (NewTabUI::IsDiscoveryInNTPEnabled())
       web_ui->AddMessageHandler(new SuggestionsHandler());
     // Android doesn't have a sync promo/username on NTP.
@@ -127,7 +129,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     }
 #endif
 
-    web_ui->AddMessageHandler(new NewTabPageHandler());
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
   }
 
@@ -135,6 +136,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   // These handlers are specific to the Android NTP page.
   web_ui->AddMessageHandler(new BookmarksHandler());
   web_ui->AddMessageHandler(new ContextMenuHandler());
+  web_ui->AddMessageHandler(new NewTabPageReadyHandler());
   if (!GetProfile()->IsOffTheRecord())
     web_ui->AddMessageHandler(new PromoHandler());
 #else
@@ -276,9 +278,9 @@ void NewTabUI::InitializeCSSCaches() {
 
 // static
 void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
-  NewTabPageHandler::RegisterUserPrefs(prefs);
 #if !defined(OS_ANDROID)
   AppLauncherHandler::RegisterUserPrefs(prefs);
+  NewTabPageHandler::RegisterUserPrefs(prefs);
   if (NewTabUI::IsDiscoveryInNTPEnabled())
     SuggestionsHandler::RegisterUserPrefs(prefs);
 #endif
@@ -379,7 +381,14 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
   if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.
+
+    // TODO(dtrainor): Can remove this #if check once we update the
+    // accessibility script to no longer try to access urls like
+    // '?2314124523523'.
+    // See http://crbug.com/150252.
+#if !defined(OS_ANDROID)
     NOTREACHED() << path << " should not have been requested on the NTP";
+#endif
     return;
   }
 

@@ -13,7 +13,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "content/public/browser/browser_thread.h"
@@ -97,8 +96,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_SYNC_ENABLE_SYNC));
   localized_strings.SetString("bookmarkstitle",
       l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS));
-
-  NewTabPageHandler::GetLocalizedValues(profile_, &localized_strings);
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
