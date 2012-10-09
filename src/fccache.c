@@ -323,6 +323,11 @@ retry:
       FcMutexFinish (lock);
       goto retry;
     }
+
+    FcMutexLock (lock);
+    /* Initialize random state */
+    FcRandom ();
+    return;
   }
   FcMutexLock (lock);
 }
