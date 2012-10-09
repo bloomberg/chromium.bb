@@ -195,6 +195,7 @@ is_motion_event(struct input_event *e)
 		case REL_Y:
 			return 1;
 		}
+		break;
 	case EV_ABS:
 		switch (e->code) {
 		case ABS_X:
