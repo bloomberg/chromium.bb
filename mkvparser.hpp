@@ -315,6 +315,14 @@ class Track
     Track& operator=(const Track&);
 
 public:
+    class Info;
+    static long Create(
+        Segment*,
+        const Info&,
+        long long element_start,
+        long long element_size,
+        Track*&);
+
     enum Type { kVideo = 1, kAudio = 2 };
 
     Segment* const m_pSegment;
@@ -366,8 +374,8 @@ public:
 
     long GetFirst(const BlockEntry*&) const;
     long GetNext(const BlockEntry* pCurr, const BlockEntry*& pNext) const;
-    virtual bool VetEntry(const BlockEntry*) const = 0;
-    virtual long Seek(long long time_ns, const BlockEntry*&) const = 0;
+    virtual bool VetEntry(const BlockEntry*) const;
+    virtual long Seek(long long time_ns, const BlockEntry*&) const;
 
     const ContentEncoding* GetContentEncodingByIndex(unsigned long idx) const;
     unsigned long GetContentEncodingCount() const;
@@ -452,7 +460,6 @@ public:
     double GetSamplingRate() const;
     long long GetChannels() const;
     long long GetBitDepth() const;
-    bool VetEntry(const BlockEntry*) const;
     long Seek(long long time_ns, const BlockEntry*&) const;
 
 private:
