@@ -9,8 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 
+import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.android_webview.test.util.TestWebServer;
@@ -31,11 +31,12 @@ public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
             "<html><head><title>" + expectedTitle + "</title></head><body>foo</body></html>";
 
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
-        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(), data,
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(), data,
                      "text/html", false);
-        assertEquals(expectedTitle, getTitleOnUiThread(contentViewCore));
+        assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
     @SmallTest
@@ -46,18 +47,19 @@ public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
                             "L2hlYWQ+PC9odG1sPg==";
 
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
-        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(), data,
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(), data,
                      "text/html", true);
-        assertEquals(expectedTitle, getTitleOnUiThread(contentViewCore));
+        assertEquals(expectedTitle, getTitleOnUiThread(awContents));
     }
 
     /**
      * Loads url on the UI thread and blocks until onPageFinished is called.
      */
     protected void loadUrlWithExtraHeadersSync(
-            final ContentViewCore contentViewCore,
+            final AwContents awContents,
             CallbackHelper onPageFinishedHelper,
             final String url,
             final Map<String, String> extraHeaders) throws Throwable {
@@ -67,7 +69,7 @@ public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
             public void run() {
                 LoadUrlParams params = new LoadUrlParams(url);
                 params.setExtraHeaders(extraHeaders);
-                contentViewCore.loadUrl(params);
+                awContents.loadUrl(params);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
@@ -78,8 +80,9 @@ public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
     @Feature({"Android-WebView"})
     public void testLoadUrlWithExtraHeaders() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
 
         TestWebServer webServer = null;
         try {
@@ -93,7 +96,7 @@ public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
             for (int i = 0; i < headerNames.length; ++i)
               extraHeaders.put(headerNames[i], headerValues[i]);
 
-            loadUrlWithExtraHeadersSync(contentViewCore,
+            loadUrlWithExtraHeadersSync(awContents,
                                         contentsClient.getOnPageFinishedHelper(),
                                         url,
                                         extraHeaders);

@@ -7,9 +7,9 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
+import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwWebContentsDelegate;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewCore;
 
 /**
  * Tests for the ContentViewClient.addMessageToConsole() method.
@@ -24,19 +24,20 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
     private static final String TEST_MESSAGE_TWO = "The second test message.";
 
     private TestAwContentsClient mContentsClient;
-    private ContentViewCore mContentViewCore;
+    private AwContents mAwContents;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
-        mContentViewCore =
-                createAwTestContainerViewOnMainSync(mContentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(mContentsClient);
+        mAwContents = testContainerView.getAwContents();
 
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mContentViewCore.getContentSettings().setJavaScriptEnabled(true);
+                mAwContents.getContentViewCore().getContentSettings().setJavaScriptEnabled(true);
             }
         });
     }
@@ -63,7 +64,7 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
                 mContentsClient.getAddMessageToConsoleHelper();
 
         int callCount = addMessageToConsoleHelper.getCallCount();
-        loadDataSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                      getLogMessageJavaScriptData("error", "msg"),
                      "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
@@ -71,7 +72,7 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
                 addMessageToConsoleHelper.getLevel());
 
         callCount = addMessageToConsoleHelper.getCallCount();
-        loadDataSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                      getLogMessageJavaScriptData("warn", "msg"),
                      "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
@@ -79,7 +80,7 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
                 addMessageToConsoleHelper.getLevel());
 
         callCount = addMessageToConsoleHelper.getCallCount();
-        loadDataSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                      getLogMessageJavaScriptData("log", "msg"),
                      "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
@@ -97,7 +98,7 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
                 mContentsClient.getAddMessageToConsoleHelper();
 
         int callCount = addMessageToConsoleHelper.getCallCount();
-        loadDataSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                      getLogMessageJavaScriptData("log", TEST_MESSAGE_ONE),
                      "text/html", false);
         Log.w("test", getLogMessageJavaScriptData("log", TEST_MESSAGE_ONE));
@@ -105,7 +106,7 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
         assertEquals(TEST_MESSAGE_ONE, addMessageToConsoleHelper.getMessage());
 
         callCount = addMessageToConsoleHelper.getCallCount();
-        loadDataSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                      getLogMessageJavaScriptData("log", TEST_MESSAGE_TWO),
                      "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
@@ -120,7 +121,7 @@ public class ClientAddMessageToConsoleTest extends AndroidWebViewTestBase {
 
         int callCount = addMessageToConsoleHelper.getCallCount();
         String data = getLogMessageJavaScriptData("log", TEST_MESSAGE_ONE);
-        loadDataSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                      data, "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
         assertTrue("Url [" + addMessageToConsoleHelper.getSourceId() + "] expected to end with [" +

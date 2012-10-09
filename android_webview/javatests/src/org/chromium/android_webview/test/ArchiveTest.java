@@ -80,7 +80,7 @@ public class ArchiveTest extends AndroidWebViewTestBase {
         file.delete();
         assertFalse(file.exists());
 
-        loadUrlSync(mTestContainerView.getContentViewCore(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         doArchiveTest(mTestContainerView.getAwContents(), path, false, path);
@@ -91,7 +91,7 @@ public class ArchiveTest extends AndroidWebViewTestBase {
     public void testAutoGoodPath() throws Throwable {
         final String path = getActivity().getFilesDir().getAbsolutePath() + "/";
 
-        loadUrlSync(mTestContainerView.getContentViewCore(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         // Create the first archive
@@ -115,7 +115,7 @@ public class ArchiveTest extends AndroidWebViewTestBase {
         file.delete();
         assertFalse(file.exists());
 
-        loadUrlSync(mTestContainerView.getContentViewCore(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         doArchiveTest(mTestContainerView.getAwContents(), path, false, null);
@@ -129,7 +129,7 @@ public class ArchiveTest extends AndroidWebViewTestBase {
         file.delete();
         assertFalse(file.exists());
 
-        loadUrlSync(mTestContainerView.getContentViewCore(),
+        loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), TEST_PAGE);
 
         doArchiveTest(mTestContainerView.getAwContents(), path, true, null);

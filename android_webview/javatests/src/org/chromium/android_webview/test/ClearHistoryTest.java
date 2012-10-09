@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.HistoryUtils;
@@ -27,12 +28,14 @@ public class ClearHistoryTest extends AndroidWebViewTestBase {
     @Feature({"History", "Main"})
     public void testClearHistory() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final ContentViewCore contentViewCore = testContainerView.getContentViewCore();
 
         OnPageFinishedHelper onPageFinishedHelper = contentsClient.getOnPageFinishedHelper();
         for (int i = 0; i < 3; i++) {
-            loadUrlSync(contentViewCore, onPageFinishedHelper, URLS[i]);
+            loadUrlSync(awContents, onPageFinishedHelper, URLS[i]);
         }
 
         HistoryUtils.goBackSync(getInstrumentation(), contentViewCore, onPageFinishedHelper);
