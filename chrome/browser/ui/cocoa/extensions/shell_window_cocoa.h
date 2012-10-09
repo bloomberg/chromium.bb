@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/extensions/native_shell_window.h"
@@ -21,6 +22,7 @@ class ExtensionKeybindingRegistryCocoa;
 class Profile;
 class ShellWindowCocoa;
 @class ShellNSWindow;
+class SkRegion;
 
 // A window controller for a minimal window to host a web app view. Passes
 // Objective-C notifications to the C++ bridge.
@@ -87,12 +89,20 @@ class ShellWindowCocoa : public NativeShellWindow {
   // Called to handle a key event.
   bool HandledByExtensionCommand(NSEvent* event);
 
+  // Called to handle a mouse event.
+  void HandleMouseEvent(NSEvent* event);
+
+  bool use_system_drag() const { return use_system_drag_; }
+  SkRegion* draggable_region() const { return draggable_region_.get(); }
+
  protected:
   // NativeShellWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void UpdateDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void UpdateLegacyDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void HandleKeyboardEvent(
@@ -113,6 +123,11 @@ class ShellWindowCocoa : public NativeShellWindow {
   void InstallView();
   void UninstallView();
   void InstallDraggableRegionViews();
+  void UpdateDraggableRegionsForSystemDrag(
+      const std::vector<extensions::DraggableRegion>& regions,
+      const extensions::DraggableRegion* draggable_area);
+  void UpdateDraggableRegionsForCustomDrag(
+      const std::vector<extensions::DraggableRegion>& regions);
 
   ShellWindow* shell_window_; // weak - ShellWindow owns NativeShellWindow.
 
@@ -124,7 +139,21 @@ class ShellWindowCocoa : public NativeShellWindow {
   scoped_nsobject<ShellWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention
 
-  std::vector<extensions::DraggableRegion> draggable_regions_;
+  // Indicates whether system drag or custom drag should be used, depending on
+  // the complexity of draggable regions.
+  bool use_system_drag_;
+
+  // For system drag, the whole window is draggable and the non-draggable areas
+  // have to been explicitly excluded.
+  std::vector<gfx::Rect> system_drag_exclude_areas_;
+
+  // For custom drag, the whole window is non-draggable and the draggable region
+  // has to been explicitly provided.
+  scoped_ptr<SkRegion> draggable_region_;  // used in custom drag.
+
+  // Mouse location since the last mouse event, in screen coordinates. This is
+  // used in custom drag to compute the window movement.
+  NSPoint last_mouse_location_;
 
   // The Extension Command Registry used to determine which keyboard events to
   // handle.
