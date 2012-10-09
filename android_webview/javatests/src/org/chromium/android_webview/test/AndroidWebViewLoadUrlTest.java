@@ -104,7 +104,7 @@ public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
               assertEquals(1, matchingHeaders.length);
 
               Header header = matchingHeaders[0];
-              assertEquals(headerNames[i].toLowerCase(), header.getValue());
+              assertEquals(headerNames[i].toLowerCase(), header.getName());
               assertEquals(headerValues[i], header.getValue());
             }
         } finally {
