@@ -476,7 +476,6 @@
         'browser/command_updater.h',
         'browser/common/cancelable_request.cc',
         'browser/common/cancelable_request.h',
-        'browser/common/web_contents_user_data.h',
         'browser/component_updater/component_updater_configurator.cc',
         'browser/component_updater/component_updater_configurator.h',
         'browser/component_updater/component_unpacker.cc',

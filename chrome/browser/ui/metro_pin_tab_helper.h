@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_UI_METRO_PIN_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_METRO_PIN_TAB_HELPER_H_
 
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 // Per-tab class to help manage metro pinning.
-class MetroPinTabHelper : public content::WebContentsObserver,
-                          public WebContentsUserData<MetroPinTabHelper> {
+class MetroPinTabHelper
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<MetroPinTabHelper> {
  public:
   virtual ~MetroPinTabHelper();
 
@@ -25,7 +26,7 @@ class MetroPinTabHelper : public content::WebContentsObserver,
 
  private:
   explicit MetroPinTabHelper(content::WebContents* tab_contents);
-  friend class WebContentsUserData<MetroPinTabHelper>;
+  friend class content::WebContentsUserData<MetroPinTabHelper>;
 
   // Queries the metro driver about the pinned state of the current URL.
   void UpdatePinnedStateForCurrentURL();

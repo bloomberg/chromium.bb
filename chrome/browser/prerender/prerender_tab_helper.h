@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 
-#include "base/time.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/common/web_contents_user_data.h"
+#include "base/time.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "googleurl/src/gurl.h"
 
 namespace prerender {
@@ -17,8 +17,9 @@ class PrerenderManager;
 
 // PrerenderTabHelper is responsible for recording perceived pageload times
 // to compare PLT's with prerendering enabled and disabled.
-class PrerenderTabHelper : public content::WebContentsObserver,
-                           public WebContentsUserData<PrerenderTabHelper> {
+class PrerenderTabHelper
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<PrerenderTabHelper> {
  public:
   virtual ~PrerenderTabHelper();
 
@@ -46,7 +47,7 @@ class PrerenderTabHelper : public content::WebContentsObserver,
 
  private:
   explicit PrerenderTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<PrerenderTabHelper>;
+  friend class content::WebContentsUserData<PrerenderTabHelper>;
 
   // Helper class to compute pixel-based stats on the paint progress
   // between when a prerendered page is swapped in and when the onload event

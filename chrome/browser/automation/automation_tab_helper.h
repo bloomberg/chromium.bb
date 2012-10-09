@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/observer_list.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/common/web_contents_user_data.h"
+#include "base/observer_list.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class AutomationTabHelper;
 
@@ -78,7 +78,7 @@ class TabEventObserver {
 class AutomationTabHelper
     : public content::WebContentsObserver,
       public base::SupportsWeakPtr<AutomationTabHelper>,
-      public WebContentsUserData<AutomationTabHelper> {
+      public content::WebContentsUserData<AutomationTabHelper> {
  public:
   virtual ~AutomationTabHelper();
 
@@ -99,7 +99,7 @@ class AutomationTabHelper
 
  private:
   explicit AutomationTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<AutomationTabHelper>;
+  friend class content::WebContentsUserData<AutomationTabHelper>;
 
   friend class AutomationTabHelperTest;
 

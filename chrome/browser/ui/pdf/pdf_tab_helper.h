@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_PDF_PDF_TAB_HELPER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class OpenPDFInReaderPromptDelegate;
 
@@ -17,7 +17,7 @@ class WebContents;
 
 // Per-tab class to handle PDF messages.
 class PDFTabHelper : public content::WebContentsObserver,
-                     public WebContentsUserData<PDFTabHelper>  {
+                     public content::WebContentsUserData<PDFTabHelper>  {
  public:
 
   explicit PDFTabHelper(content::WebContents* web_contents);

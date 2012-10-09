@@ -9,11 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/favicon/favicon_handler_delegate.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/favicon_url.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 namespace gfx {
 class Image;
@@ -35,7 +35,7 @@ class SkBitmap;
 //
 class FaviconTabHelper : public content::WebContentsObserver,
                          public FaviconHandlerDelegate,
-                         public WebContentsUserData<FaviconTabHelper> {
+                         public content::WebContentsUserData<FaviconTabHelper> {
  public:
   virtual ~FaviconTabHelper();
 
@@ -84,7 +84,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
 
  private:
   explicit FaviconTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<FaviconTabHelper>;
+  friend class content::WebContentsUserData<FaviconTabHelper>;
 
   // content::WebContentsObserver overrides.
   virtual void NavigateToPendingEntry(

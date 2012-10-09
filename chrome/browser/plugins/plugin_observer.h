@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #include <map>
@@ -30,7 +30,7 @@ class WebContents;
 }
 
 class PluginObserver : public content::WebContentsObserver,
-                       public WebContentsUserData<PluginObserver> {
+                       public content::WebContentsUserData<PluginObserver> {
  public:
   virtual ~PluginObserver();
 
@@ -40,7 +40,7 @@ class PluginObserver : public content::WebContentsObserver,
 
  private:
   explicit PluginObserver(content::WebContents* web_contents);
-  friend class WebContentsUserData<PluginObserver>;
+  friend class content::WebContentsUserData<PluginObserver>;
 
   class PluginPlaceholderHost;
 

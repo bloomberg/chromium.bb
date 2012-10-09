@@ -8,10 +8,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
@@ -30,7 +30,7 @@ class SadTabGtk;
 // Per-tab class to manage sad tab views.
 class SadTabHelper : public content::WebContentsObserver,
                      public content::NotificationObserver,
-                     public WebContentsUserData<SadTabHelper> {
+                     public content::WebContentsUserData<SadTabHelper> {
  public:
   virtual ~SadTabHelper();
 
@@ -43,7 +43,7 @@ class SadTabHelper : public content::WebContentsObserver,
 
  private:
   explicit SadTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<SadTabHelper>;
+  friend class content::WebContentsUserData<SadTabHelper>;
 
   // Platform specific function to get an instance of the sad tab page.
   void InstallSadTab(base::TerminationStatus status);

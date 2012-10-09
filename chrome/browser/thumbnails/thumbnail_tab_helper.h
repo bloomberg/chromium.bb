@@ -7,10 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class GURL;
 class Profile;
@@ -29,9 +29,10 @@ namespace skia {
 class PlatformCanvas;
 }
 
-class ThumbnailTabHelper : public content::NotificationObserver,
-                           public content::WebContentsObserver,
-                           public WebContentsUserData<ThumbnailTabHelper> {
+class ThumbnailTabHelper
+    : public content::NotificationObserver,
+      public content::WebContentsObserver,
+      public content::WebContentsUserData<ThumbnailTabHelper> {
  public:
   // The result of clipping. This can be used to determine if the
   // generated thumbnail is good or not.
@@ -83,7 +84,7 @@ class ThumbnailTabHelper : public content::NotificationObserver,
 
  private:
   explicit ThumbnailTabHelper(content::WebContents* contents);
-  friend class WebContentsUserData<ThumbnailTabHelper>;
+  friend class content::WebContentsUserData<ThumbnailTabHelper>;
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,

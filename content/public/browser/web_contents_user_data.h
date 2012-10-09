@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMMON_WEB_CONTENTS_USER_DATA_H_
-#define CHROME_BROWSER_COMMON_WEB_CONTENTS_USER_DATA_H_
+#ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_USER_DATA_H_
+#define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_USER_DATA_H_
 
 #include "base/logging.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/web_contents.h"
+
+namespace content {
 
 // A base class for classes attached to, and scoped to, the lifetime of a
 // WebContents. For example:
@@ -18,7 +20,7 @@
 //   virtual ~FooTabHelper();
 //   // ... more public stuff here ...
 //  private:
-//   explicit FooTabHelper(content::WebContents* contents);
+//   explicit FooTabHelper(WebContents* contents);
 //   friend class WebContentsUserData<FooTabHelper>;
 //   // ... more private stuff here ...
 // }
@@ -30,7 +32,7 @@ class WebContentsUserData : public base::SupportsUserData::Data {
  public:
   // Creates an object of type T, and attaches it to the specified WebContents.
   // If an instance is already attached, does nothing.
-  static void CreateForWebContents(content::WebContents* contents) {
+  static void CreateForWebContents(WebContents* contents) {
     DCHECK(contents);
     if (!FromWebContents(contents))
       contents->SetUserData(&kLocatorKey, new T(contents));
@@ -39,11 +41,11 @@ class WebContentsUserData : public base::SupportsUserData::Data {
   // Retrieves the instance of type T that was attached to the specified
   // WebContents (via CreateForWebContents above) and returns it. If no instance
   // of the type was attached, returns NULL.
-  static T* FromWebContents(content::WebContents* contents) {
+  static T* FromWebContents(WebContents* contents) {
     DCHECK(contents);
     return static_cast<T*>(contents->GetUserData(&kLocatorKey));
   }
-  static const T* FromWebContents(const content::WebContents* contents) {
+  static const T* FromWebContents(const WebContents* contents) {
     DCHECK(contents);
     return static_cast<const T*>(contents->GetUserData(&kLocatorKey));
   }
@@ -62,6 +64,8 @@ class WebContentsUserData : public base::SupportsUserData::Data {
 //
 #define DEFINE_WEB_CONTENTS_USER_DATA_KEY(TYPE) \
 template<>                                      \
-int WebContentsUserData<TYPE>::kLocatorKey = 0;
+int content::WebContentsUserData<TYPE>::kLocatorKey = 0;
 
-#endif  // CHROME_BROWSER_COMMON_WEB_CONTENTS_USER_DATA_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_USER_DATA_H_

@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/cws_intents_registry.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -51,7 +51,7 @@ class WebIntentPickerController
     : public content::NotificationObserver,
       public WebIntentPickerDelegate,
       public extensions::WebstoreInstaller::Delegate,
-      public WebContentsUserData<WebIntentPickerController> {
+      public content::WebContentsUserData<WebIntentPickerController> {
  public:
 
   // The various states that the UI may be in. Public for testing.
@@ -141,7 +141,7 @@ class WebIntentPickerController
 
  private:
   explicit WebIntentPickerController(content::WebContents* web_contents);
-  friend class WebContentsUserData<WebIntentPickerController>;
+  friend class content::WebContentsUserData<WebIntentPickerController>;
 
   friend class WebIntentPickerControllerTest;
   friend class WebIntentPickerControllerBrowserTest;

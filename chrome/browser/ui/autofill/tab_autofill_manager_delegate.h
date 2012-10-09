@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/autofill/autofill_manager_delegate.h"
-#include "chrome/browser/common/web_contents_user_data.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
 class WebContents;
@@ -16,7 +16,7 @@ class WebContents;
 // Chrome implementation of AutofillManagerDelegate.
 class TabAutofillManagerDelegate
     : public autofill::AutofillManagerDelegate,
-      public WebContentsUserData<TabAutofillManagerDelegate> {
+      public content::WebContentsUserData<TabAutofillManagerDelegate> {
  public:
   virtual ~TabAutofillManagerDelegate() {}
 
@@ -35,7 +35,7 @@ class TabAutofillManagerDelegate
 
  private:
   explicit TabAutofillManagerDelegate(content::WebContents* web_contents);
-  friend class WebContentsUserData<TabAutofillManagerDelegate>;
+  friend class content::WebContentsUserData<TabAutofillManagerDelegate>;
 
   content::WebContents* const web_contents_;
 };

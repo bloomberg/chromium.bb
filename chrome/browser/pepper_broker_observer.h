@@ -5,17 +5,18 @@
 #ifndef CHROME_BROWSER_PEPPER_BROKER_OBSERVER_H_
 #define CHROME_BROWSER_PEPPER_BROKER_OBSERVER_H_
 
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
-class PepperBrokerObserver : public content::WebContentsObserver,
-                             public WebContentsUserData<PepperBrokerObserver> {
+class PepperBrokerObserver
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<PepperBrokerObserver> {
  public:
   virtual ~PepperBrokerObserver();
 
  private:
   explicit PepperBrokerObserver(content::WebContents* web_contents);
-  friend class WebContentsUserData<PepperBrokerObserver>;
+  friend class content::WebContentsUserData<PepperBrokerObserver>;
 
   virtual bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,

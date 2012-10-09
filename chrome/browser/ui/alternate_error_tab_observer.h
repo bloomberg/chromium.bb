@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_ALTERNATE_ERROR_TAB_OBSERVER_H_
 
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class Profile;
 
@@ -18,7 +18,7 @@ class Profile;
 class AlternateErrorPageTabObserver
     : public content::WebContentsObserver,
       public content::NotificationObserver,
-      public WebContentsUserData<AlternateErrorPageTabObserver> {
+      public content::WebContentsUserData<AlternateErrorPageTabObserver> {
  public:
   virtual ~AlternateErrorPageTabObserver();
 
@@ -26,7 +26,7 @@ class AlternateErrorPageTabObserver
 
  private:
   explicit AlternateErrorPageTabObserver(content::WebContents* web_contents);
-  friend class WebContentsUserData<AlternateErrorPageTabObserver>;
+  friend class content::WebContentsUserData<AlternateErrorPageTabObserver>;
 
   // content::WebContentsObserver overrides:
   virtual void RenderViewCreated(

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_FIND_BAR_FIND_TAB_HELPER_H_
 
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 namespace gfx {
 class RectF;
@@ -16,7 +16,7 @@ class RectF;
 
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
 class FindTabHelper : public content::WebContentsObserver,
-                      public WebContentsUserData<FindTabHelper> {
+                      public content::WebContentsUserData<FindTabHelper> {
  public:
   virtual ~FindTabHelper();
 
@@ -79,7 +79,7 @@ class FindTabHelper : public content::WebContentsObserver,
 
  private:
   explicit FindTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<FindTabHelper>;
+  friend class content::WebContentsUserData<FindTabHelper>;
 
   // Each time a search request comes in we assign it an id before passing it
   // over the IPC so that when the results come in we can evaluate whether we

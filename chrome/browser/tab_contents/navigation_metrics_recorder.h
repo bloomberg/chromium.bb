@@ -5,18 +5,18 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_METRICS_RECORDER_H_
 #define CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_METRICS_RECORDER_H_
 
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class NavigationMetricsRecorder
     : public content::WebContentsObserver,
-      public WebContentsUserData<NavigationMetricsRecorder> {
+      public content::WebContentsUserData<NavigationMetricsRecorder> {
  public:
   virtual ~NavigationMetricsRecorder();
 
  private:
   explicit NavigationMetricsRecorder(content::WebContents* web_contents);
-  friend class WebContentsUserData<NavigationMetricsRecorder>;
+  friend class content::WebContentsUserData<NavigationMetricsRecorder>;
 
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(

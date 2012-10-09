@@ -8,10 +8,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/api/prefs/pref_member.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class ZoomObserver;
 
@@ -22,7 +22,7 @@ class WebContents;
 // Per-tab class to manage the Omnibox zoom icon.
 class ZoomController : public content::NotificationObserver,
                        public content::WebContentsObserver,
-                       public WebContentsUserData<ZoomController> {
+                       public content::WebContentsUserData<ZoomController> {
  public:
   virtual ~ZoomController();
 
@@ -38,7 +38,7 @@ class ZoomController : public content::NotificationObserver,
 
  private:
   explicit ZoomController(content::WebContents* web_contents);
-  friend class WebContentsUserData<ZoomController>;
+  friend class content::WebContentsUserData<ZoomController>;
 
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(

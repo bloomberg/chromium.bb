@@ -12,10 +12,10 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class FilePath;
 class InfoBarTabHelper;
@@ -32,9 +32,10 @@ class InfoBarTabHelper;
 //   terminating the plugin.
 // - Hide the infobar if the plugin starts responding again.
 // - Keep track of all of this for any number of plugins.
-class HungPluginTabHelper : public content::WebContentsObserver,
-                            public content::NotificationObserver,
-                            public WebContentsUserData<HungPluginTabHelper> {
+class HungPluginTabHelper
+    : public content::WebContentsObserver,
+      public content::NotificationObserver,
+      public content::WebContentsUserData<HungPluginTabHelper> {
  public:
   virtual ~HungPluginTabHelper();
 
@@ -51,7 +52,7 @@ class HungPluginTabHelper : public content::WebContentsObserver,
 
  private:
   explicit HungPluginTabHelper(content::WebContents* contents);
-  friend class WebContentsUserData<HungPluginTabHelper>;
+  friend class content::WebContentsUserData<HungPluginTabHelper>;
 
   class InfoBarDelegate;
   friend class InfoBarDelegate;

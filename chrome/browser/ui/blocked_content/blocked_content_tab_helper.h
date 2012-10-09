@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_BLOCKED_CONTENT_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_BLOCKED_CONTENT_BLOCKED_CONTENT_TAB_HELPER_H_
 
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BlockedContentContainer;
@@ -18,7 +18,7 @@ class BlockedContentTabHelperDelegate;
 // Per-tab class to manage blocked popups.
 class BlockedContentTabHelper
     : public content::WebContentsObserver,
-      public WebContentsUserData<BlockedContentTabHelper> {
+      public content::WebContentsUserData<BlockedContentTabHelper> {
  public:
   virtual ~BlockedContentTabHelper();
 
@@ -62,7 +62,7 @@ class BlockedContentTabHelper
 
  private:
   explicit BlockedContentTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<BlockedContentTabHelper>;
+  friend class content::WebContentsUserData<BlockedContentTabHelper>;
 
   // Called when the blocked popup notification is shown or hidden.
   void PopupNotificationVisibilityChanged(bool visible);

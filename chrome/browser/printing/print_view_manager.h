@@ -8,10 +8,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/api/prefs/pref_member.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "printing/printed_pages_source.h"
 
 struct PrintHostMsg_DidPrintPage_Params;
@@ -32,7 +32,7 @@ class PrintViewManagerObserver;
 class PrintViewManager : public content::NotificationObserver,
                          public PrintedPagesSource,
                          public content::WebContentsObserver,
-                         public WebContentsUserData<PrintViewManager> {
+                         public content::WebContentsUserData<PrintViewManager> {
  public:
   virtual ~PrintViewManager();
 
@@ -100,7 +100,7 @@ class PrintViewManager : public content::NotificationObserver,
 
  private:
   explicit PrintViewManager(content::WebContents* web_contents);
-  friend class WebContentsUserData<PrintViewManager>;
+  friend class content::WebContentsUserData<PrintViewManager>;
 
   enum PrintPreviewState {
     NOT_PREVIEWING,

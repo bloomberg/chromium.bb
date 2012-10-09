@@ -11,8 +11,8 @@
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 struct FormData;
 
@@ -28,7 +28,7 @@ class AutofillExternalDelegate;
 class AutocompleteHistoryManager
     : public content::WebContentsObserver,
       public WebDataServiceConsumer,
-      public WebContentsUserData<AutocompleteHistoryManager> {
+      public content::WebContentsUserData<AutocompleteHistoryManager> {
  public:
   virtual ~AutocompleteHistoryManager();
 
@@ -80,7 +80,7 @@ class AutocompleteHistoryManager
 
  private:
   explicit AutocompleteHistoryManager(content::WebContents* web_contents);
-  friend class WebContentsUserData<AutocompleteHistoryManager>;
+  friend class content::WebContentsUserData<AutocompleteHistoryManager>;
 
   content::BrowserContext* browser_context_;
   scoped_ptr<AutofillWebDataService> autofill_data_;

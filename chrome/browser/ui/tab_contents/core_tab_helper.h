@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_UI_TAB_CONTENTS_CORE_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_TAB_CONTENTS_CORE_TAB_HELPER_H_
 
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class CoreTabHelperDelegate;
 
 // Per-tab class to handle functionality that is core to the operation of tabs.
 class CoreTabHelper : public content::WebContentsObserver,
-                      public WebContentsUserData<CoreTabHelper> {
+                      public content::WebContentsUserData<CoreTabHelper> {
  public:
   virtual ~CoreTabHelper();
 
@@ -27,7 +27,7 @@ class CoreTabHelper : public content::WebContentsObserver,
 
  private:
   explicit CoreTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<CoreTabHelper>;
+  friend class content::WebContentsUserData<CoreTabHelper>;
 
   // content::WebContentsObserver overrides:
   virtual void WasShown() OVERRIDE;

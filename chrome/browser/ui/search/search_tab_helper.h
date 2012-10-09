@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class OmniboxEditModel;
 
@@ -27,7 +27,7 @@ namespace search {
 // search UI model.
 class SearchTabHelper : public content::WebContentsObserver,
                         public content::NotificationObserver,
-                        public WebContentsUserData<SearchTabHelper> {
+                        public content::WebContentsUserData<SearchTabHelper> {
  public:
   virtual ~SearchTabHelper();
 
@@ -60,7 +60,7 @@ class SearchTabHelper : public content::WebContentsObserver,
 
  private:
   explicit SearchTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<SearchTabHelper>;
+  friend class content::WebContentsUserData<SearchTabHelper>;
 
   // Enum of the load states for the NTP.
   //

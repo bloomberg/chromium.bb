@@ -10,10 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "webkit/glue/resource_type.h"
 
 class GURL;
@@ -60,7 +60,7 @@ class CaptivePortalTabHelper
     : public content::WebContentsObserver,
       public content::NotificationObserver,
       public base::NonThreadSafe,
-      public WebContentsUserData<CaptivePortalTabHelper> {
+      public content::WebContentsUserData<CaptivePortalTabHelper> {
  public:
   virtual ~CaptivePortalTabHelper();
 
@@ -107,7 +107,7 @@ class CaptivePortalTabHelper
   friend class CaptivePortalBrowserTest;
   friend class CaptivePortalTabHelperTest;
 
-  friend class WebContentsUserData<CaptivePortalTabHelper>;
+  friend class content::WebContentsUserData<CaptivePortalTabHelper>;
   explicit CaptivePortalTabHelper(content::WebContents* web_contents);
 
   // Called by Observe in response to the corresponding event.

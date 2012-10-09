@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TAB_HELPER_H_
 
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 struct BookmarkNodeData;
 class BookmarkTabHelperDelegate;
@@ -18,9 +18,10 @@ class WebContents;
 }
 
 // Per-tab class to manage bookmarks.
-class BookmarkTabHelper : public content::NotificationObserver,
-                          public content::WebContentsObserver,
-                          public WebContentsUserData<BookmarkTabHelper> {
+class BookmarkTabHelper
+    : public content::NotificationObserver,
+      public content::WebContentsObserver,
+      public content::WebContentsUserData<BookmarkTabHelper> {
  public:
   // BookmarkDrag --------------------------------------------------------------
   // Interface for forwarding bookmark drag and drop to extenstions.
@@ -66,7 +67,7 @@ class BookmarkTabHelper : public content::NotificationObserver,
 
  private:
   explicit BookmarkTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<BookmarkTabHelper>;
+  friend class content::WebContentsUserData<BookmarkTabHelper>;
 
   // Updates the starred state from the bookmark bar model. If the state has
   // changed, the delegate is notified.

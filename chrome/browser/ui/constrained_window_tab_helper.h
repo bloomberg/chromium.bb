@@ -7,8 +7,8 @@
 
 #include <deque>
 
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class ConstrainedWindow;
 class ConstrainedWindowTabHelperDelegate;
@@ -16,7 +16,7 @@ class ConstrainedWindowTabHelperDelegate;
 // Per-tab class to manage constrained windows.
 class ConstrainedWindowTabHelper
     : public content::WebContentsObserver,
-      public WebContentsUserData<ConstrainedWindowTabHelper> {
+      public content::WebContentsUserData<ConstrainedWindowTabHelper> {
  public:
   virtual ~ConstrainedWindowTabHelper();
 
@@ -53,7 +53,7 @@ class ConstrainedWindowTabHelper
 
  private:
   explicit ConstrainedWindowTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<ConstrainedWindowTabHelper>;
+  friend class content::WebContentsUserData<ConstrainedWindowTabHelper>;
 
   // Overridden from content::WebContentsObserver:
   virtual void DidNavigateMainFrame(

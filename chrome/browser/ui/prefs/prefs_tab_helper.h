@@ -7,9 +7,9 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class OverlayUserPrefStore;
 class PrefService;
@@ -21,7 +21,7 @@ class WebContents;
 
 // Per-tab class to handle user preferences.
 class PrefsTabHelper : public content::NotificationObserver,
-                       public WebContentsUserData<PrefsTabHelper> {
+                       public content::WebContentsUserData<PrefsTabHelper> {
  public:
   virtual ~PrefsTabHelper();
 
@@ -34,7 +34,7 @@ class PrefsTabHelper : public content::NotificationObserver,
 
  private:
   explicit PrefsTabHelper(content::WebContents* contents);
-  friend class WebContentsUserData<PrefsTabHelper>;
+  friend class content::WebContentsUserData<PrefsTabHelper>;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class Profile;
 
@@ -24,8 +24,9 @@ class WebContents;
 // It is displayed when the user visits a known search engine URL and has not
 // searched from the omnibox before, or has not previously dismissed a similar
 // info-bar.
-class OmniboxSearchHint : public content::NotificationObserver,
-                          public WebContentsUserData<OmniboxSearchHint> {
+class OmniboxSearchHint
+    : public content::NotificationObserver,
+      public content::WebContentsUserData<OmniboxSearchHint> {
  public:
   virtual ~OmniboxSearchHint();
 
@@ -47,7 +48,7 @@ class OmniboxSearchHint : public content::NotificationObserver,
 
  private:
   explicit OmniboxSearchHint(content::WebContents* web_contents);
-  friend class WebContentsUserData<OmniboxSearchHint>;
+  friend class content::WebContentsUserData<OmniboxSearchHint>;
 
   void ShowInfoBar();
 

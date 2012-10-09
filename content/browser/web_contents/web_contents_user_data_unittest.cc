@@ -2,37 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/common/web_contents_user_data.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class WebContentsAttachedClass1
-    : public WebContentsUserData<WebContentsAttachedClass1> {
+    : public content::WebContentsUserData<WebContentsAttachedClass1> {
  public:
   virtual ~WebContentsAttachedClass1() {}
  private:
   explicit WebContentsAttachedClass1(content::WebContents* contents) {}
-  friend class WebContentsUserData<WebContentsAttachedClass1>;
+  friend class content::WebContentsUserData<WebContentsAttachedClass1>;
 };
 
 class WebContentsAttachedClass2
-    : public WebContentsUserData<WebContentsAttachedClass2> {
+    : public content::WebContentsUserData<WebContentsAttachedClass2> {
  public:
   virtual ~WebContentsAttachedClass2() {}
  private:
   explicit WebContentsAttachedClass2(content::WebContents* contents) {}
-  friend class WebContentsUserData<WebContentsAttachedClass2>;
+  friend class content::WebContentsUserData<WebContentsAttachedClass2>;
 };
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass1)
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass2)
 
-typedef ChromeRenderViewHostTestHarness WebContentsUserDataTest;
+typedef content::RenderViewHostTestHarness WebContentsUserDataTest;
 
 TEST_F(WebContentsUserDataTest, OneInstanceTwoAttachments) {
   content::WebContents* contents = web_contents();
@@ -62,7 +61,8 @@ TEST_F(WebContentsUserDataTest, OneInstanceTwoAttachments) {
 TEST_F(WebContentsUserDataTest, TwoInstancesOneAttachment) {
   content::WebContents* contents1 = web_contents();
   scoped_ptr<content::WebContents> contents2(
-      content::WebContentsTester::CreateTestWebContents(profile(), NULL));
+      content::WebContentsTester::CreateTestWebContents(
+          browser_context(), NULL));
 
   WebContentsAttachedClass1* one_class =
       WebContentsAttachedClass1::FromWebContents(contents1);

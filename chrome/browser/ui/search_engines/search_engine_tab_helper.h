@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_ENGINES_SEARCH_ENGINE_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_SEARCH_ENGINES_SEARCH_ENGINE_TAB_HELPER_H_
 
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/common/search_provider.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class SearchEngineTabHelperDelegate;
 
@@ -17,7 +17,7 @@ class SearchEngineTabHelperDelegate;
 // functionality.
 class SearchEngineTabHelper
     : public content::WebContentsObserver,
-      public WebContentsUserData<SearchEngineTabHelper> {
+      public content::WebContentsUserData<SearchEngineTabHelper> {
  public:
   virtual ~SearchEngineTabHelper();
 
@@ -32,7 +32,7 @@ class SearchEngineTabHelper
 
  private:
   explicit SearchEngineTabHelper(content::WebContents* web_contents);
-  friend class WebContentsUserData<SearchEngineTabHelper>;
+  friend class content::WebContentsUserData<SearchEngineTabHelper>;
 
   // Handles when a page specifies an OSDD (OpenSearch Description Document).
   void OnPageHasOSDD(int32 page_id,

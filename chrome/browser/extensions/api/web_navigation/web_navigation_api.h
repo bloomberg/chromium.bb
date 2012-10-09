@@ -12,7 +12,6 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/common/web_contents_user_data.h"
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "googleurl/src/gurl.h"
 
 struct RetargetingDetails;
@@ -31,7 +31,7 @@ namespace extensions {
 class WebNavigationTabObserver
     : public content::NotificationObserver,
       public content::WebContentsObserver,
-      public WebContentsUserData<WebNavigationTabObserver> {
+      public content::WebContentsUserData<WebNavigationTabObserver> {
  public:
   virtual ~WebNavigationTabObserver();
 
@@ -97,7 +97,7 @@ class WebNavigationTabObserver
 
  private:
   explicit WebNavigationTabObserver(content::WebContents* web_contents);
-  friend class WebContentsUserData<WebNavigationTabObserver>;
+  friend class content::WebContentsUserData<WebNavigationTabObserver>;
 
   // True if the transition and target url correspond to a reference fragment
   // navigation.
