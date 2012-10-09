@@ -24,7 +24,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
         <!-- The following service entries exist in order to allow us to
              start more than one sandboxed process. -->
 
@@ -33,26 +32,32 @@
         <service android:name="org.chromium.content.app.SandboxedProcessService0"
                  android:process=":sandboxed_process0"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
                  android:exported="false" />
         <service android:name="org.chromium.content.app.SandboxedProcessService1"
                  android:process=":sandboxed_process1"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
                  android:exported="false" />
         <service android:name="org.chromium.content.app.SandboxedProcessService2"
                  android:process=":sandboxed_process2"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
                  android:exported="false" />
         <service android:name="org.chromium.content.app.SandboxedProcessService3"
                  android:process=":sandboxed_process3"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
                  android:exported="false" />
         <service android:name="org.chromium.content.app.SandboxedProcessService4"
                  android:process=":sandboxed_process4"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
                  android:exported="false" />
         <service android:name="org.chromium.content.app.SandboxedProcessService5"
                  android:process=":sandboxed_process5"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
                  android:exported="false" />
     </application>
 
