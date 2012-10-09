@@ -162,21 +162,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     AutofillProfile::AdjustInferredLabels(&profile_pointers);
     FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
                       OnPersonalDataChanged());
-
-    // As all Autofill data is ready, the Autocomplete data is ready as well.
-    // If sync is not set, cull older entries of the autocomplete. Otherwise,
-    // the entries will be culled when sync is connected.
-    ProfileSyncServiceBase* sync_service =
-        ProfileSyncServiceBase::FromBrowserContext(browser_context_);
-    if (sync_service && (!sync_service->HasSyncSetupCompleted() ||
-                         !PrefServiceBase::FromBrowserContext(
-                             browser_context_)->GetBoolean(
-                                 prefs::kSyncAutofill))) {
-      scoped_ptr<AutofillWebDataService> service(
-          AutofillWebDataService::FromBrowserContext(browser_context_));
-      if (service.get())
-        service->RemoveExpiredFormElements();
-    }
   }
 }
 
