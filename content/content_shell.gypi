@@ -612,14 +612,10 @@
             '../net/net.gyp:net_java',
             '../ui/ui.gyp:ui_java',
           ],
-          'export_dependent_settings': [
-            'content_java',
-            '../base/base.gyp:base_java',
-            '../media/media.gyp:media_java',
-            '../net/net.gyp:net_java',
-            '../ui/ui.gyp:ui_java',
-          ],
-          'direct_dependent_settings': {
+          # This all_dependent_settings is used for java targets only. This will
+          # add the content_shell jar to the classpath of dependent java
+          # targets.
+          'all_dependent_settings': {
             'variables': {
               'input_jars_paths': ['<(PRODUCT_DIR)/lib.java/chromium_content_shell.jar'],
             },
