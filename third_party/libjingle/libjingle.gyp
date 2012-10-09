@@ -23,6 +23,9 @@
       'NO_SOUND_SYSTEM',
       'SRTP_RELATIVE_PATH',
       '_USE_32BIT_TIME_T',
+      # TODO(ronghuawu): Remove this once libjingle is updated to use the new
+      # webrtc.
+      'USE_WEBRTC_DEV_BRANCH',
     ],
     'configurations': {
       'Debug': {
