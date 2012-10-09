@@ -146,8 +146,7 @@ TEST_F(GpuDataManagerImplTest, GpuSideExceptions) {
   manager->InitializeForTesting(blacklist_json, gpu_info);
 
   EXPECT_TRUE(manager->GpuAccessAllowed());
-  EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL,
-            manager->GetBlacklistedFeatures());
+  EXPECT_EQ(0, manager->GetBlacklistedFeatures());
 
   // Now assue gpu process launches and full GPU info is collected.
   gpu_info.gl_renderer = "NVIDIA GeForce GT 120";

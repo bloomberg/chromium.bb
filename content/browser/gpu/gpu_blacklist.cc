@@ -1013,7 +1013,7 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
       if (is_not_primary_gpu && is_not_secondary_gpu)
         return false;
       break;
-    default:
+    case kMultiGpuCategoryNone:
       break;
   }
   switch (multi_gpu_style_) {
@@ -1025,13 +1025,13 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
       if (!gpu_info.amd_switchable)
         return false;
       break;
-    default:
+    case kMultiGpuStyleNone:
       break;
   }
-  if (driver_vendor_info_.get() != NULL &&
+  if (driver_vendor_info_.get() != NULL && !gpu_info.driver_vendor.empty() &&
       !driver_vendor_info_->Contains(gpu_info.driver_vendor))
     return false;
-  if (driver_version_info_.get() != NULL) {
+  if (driver_version_info_.get() != NULL && !gpu_info.driver_version.empty()) {
     std::string processed_driver_version;
     if (driver_version_info_->IsLexical())
       processed_driver_version = NumericalToLexical(gpu_info.driver_version);
@@ -1042,16 +1042,16 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
         !driver_version_info_->Contains(driver_version))
       return false;
   }
-  if (driver_date_info_.get() != NULL) {
+  if (driver_date_info_.get() != NULL && !gpu_info.driver_date.empty()) {
     Version driver_date;
     GetDateFromString(gpu_info.driver_date, &driver_date);
     if (!driver_date.IsValid() || !driver_date_info_->Contains(driver_date))
       return false;
   }
-  if (gl_vendor_info_.get() != NULL &&
+  if (gl_vendor_info_.get() != NULL && !gpu_info.gl_vendor.empty() &&
       !gl_vendor_info_->Contains(gpu_info.gl_vendor))
     return false;
-  if (gl_renderer_info_.get() != NULL &&
+  if (gl_renderer_info_.get() != NULL && !gpu_info.gl_renderer.empty() &&
       !gl_renderer_info_->Contains(gpu_info.gl_renderer))
     return false;
   if (perf_graphics_info_.get() != NULL &&
@@ -1080,10 +1080,32 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
 
   for (size_t i = 0; i < exceptions_.size(); ++i) {
     if (exceptions_[i]->Contains(os_type, os_version, machine_model_name,
-                                 machine_model_version, gpu_info))
+                                 machine_model_version, gpu_info) &&
+        !exceptions_[i]->NeedsMoreInfo(gpu_info))
       return false;
   }
   return true;
+}
+
+bool GpuBlacklist::GpuBlacklistEntry::NeedsMoreInfo(
+    const content::GPUInfo& gpu_info) const {
+  // We only check for missing info that might be collected with a gl context.
+  // If certain info is missing due to some error, say, we fail to collect
+  // vendor_id/device_id, then even if we launch GPU process and create a gl
+  // context, we won't gather such missing info, so we still return false.
+  if (driver_vendor_info_.get() && gpu_info.driver_vendor.empty())
+    return true;
+  if (driver_version_info_.get() && gpu_info.driver_version.empty())
+    return true;
+  if (gl_vendor_info_.get() && gpu_info.gl_vendor.empty())
+    return true;
+  if (gl_renderer_info_.get() && gpu_info.gl_renderer.empty())
+    return true;
+  for (size_t i = 0; i < exceptions_.size(); ++i) {
+    if (exceptions_[i]->NeedsMoreInfo(gpu_info))
+      return true;
+  }
+  return false;
 }
 
 GpuBlacklist::OsType GpuBlacklist::GpuBlacklistEntry::GetOsType() const {
@@ -1111,7 +1133,8 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuSwitchingOption() const {
 
 GpuBlacklist::GpuBlacklist()
     : max_entry_id_(0),
-      contains_unknown_fields_(false) {
+      contains_unknown_fields_(false),
+      needs_more_info_(false) {
 }
 
 GpuBlacklist::~GpuBlacklist() {
@@ -1209,6 +1232,10 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
   int type = 0;
   GpuSwitchingOption switching = content::GPU_SWITCHING_OPTION_UNKNOWN;
 
+  needs_more_info_ = false;
+  int possible_type = 0;
+  GpuSwitchingOption possible_switching = content::GPU_SWITCHING_OPTION_UNKNOWN;
+
   if (os == kOsAny)
     os = GetOsType();
   scoped_ptr<Version> my_os_version;
@@ -1227,14 +1254,28 @@ GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
     if (blacklist_[i]->Contains(os, *os_version, current_machine_model_name_,
                                 *current_machine_model_version_, gpu_info)) {
       if (!blacklist_[i]->disabled()) {
-        type |= blacklist_[i]->GetGpuFeatureType();
+        bool not_final = blacklist_[i]->NeedsMoreInfo(gpu_info);
+        if (not_final)
+          possible_type |= blacklist_[i]->GetGpuFeatureType();
+        else
+          type |= blacklist_[i]->GetGpuFeatureType();
         if (blacklist_[i]->GetGpuSwitchingOption() !=
-                content::GPU_SWITCHING_OPTION_UNKNOWN)
-          switching = blacklist_[i]->GetGpuSwitchingOption();
+                content::GPU_SWITCHING_OPTION_UNKNOWN) {
+          if (not_final)
+            possible_switching = blacklist_[i]->GetGpuSwitchingOption();
+          else
+            switching = blacklist_[i]->GetGpuSwitchingOption();
+        }
       }
       active_entries_.push_back(blacklist_[i]);
     }
   }
+
+  if ((possible_type != 0 && (possible_type | type) != type) ||
+      (possible_switching != content::GPU_SWITCHING_OPTION_UNKNOWN &&
+       switching == content::GPU_SWITCHING_OPTION_UNKNOWN))
+    needs_more_info_ = true;
+
   Decision decision;
   decision.blacklisted_features = static_cast<GpuFeatureType>(type);
   decision.gpu_switching = switching;

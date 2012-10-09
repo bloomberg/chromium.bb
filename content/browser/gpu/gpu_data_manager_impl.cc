@@ -299,7 +299,15 @@ bool GpuDataManagerImpl::GpuAccessAllowed() const {
   // than those in the preliminary gpu feature flags because the latter work
   // through renderer commandline switches.
   uint32 mask = ~(preliminary_gpu_feature_type_);
-  return (gpu_feature_type_ & mask) == 0;
+  if ((gpu_feature_type_ & mask) != 0)
+    return false;
+
+  if (gpu_feature_type_ == content::GPU_FEATURE_TYPE_ALL) {
+    if (gpu_blacklist_.get() && !gpu_blacklist_->needs_more_info())
+      return false;
+  }
+
+  return true;
 }
 
 void GpuDataManagerImpl::HandleGpuSwitch() {
@@ -410,6 +418,9 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   } else {
     command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "false");
   }
+
+  if (!gpu_blacklist_.get() || !gpu_blacklist_->needs_more_info())
+    command_line->AppendSwitch(switches::kSkipGpuFullInfoCollection);
 
   if (!swiftshader_path.empty())
     command_line->AppendSwitchPath(switches::kSwiftShaderPath,

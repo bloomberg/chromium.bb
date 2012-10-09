@@ -1201,3 +1201,178 @@ TEST_F(GpuBlacklistTest, Video) {
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO);
 }
 
+TEST_F(GpuBlacklistTest, NeedsMoreInfo) {
+  const std::string json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"linux\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x8086\",\n"
+      "      \"driver_version\": {\n"
+      "        \"op\": \"<\",\n"
+      "        \"number\": \"10.7\"\n"
+      "      },\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+
+  content::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+
+  Version os_version("10.7");
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(json, GpuBlacklist::kAllOs));
+
+  // The case this entry does not apply.
+  GpuFeatureType type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsMacosx, &os_version,
+      gpu_info).blacklisted_features;
+  EXPECT_EQ(0, type);
+  EXPECT_FALSE(blacklist->needs_more_info());
+
+  // The case this entry might apply, but need more info.
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsLinux, &os_version,
+      gpu_info).blacklisted_features;
+  EXPECT_EQ(0, type);
+  EXPECT_TRUE(blacklist->needs_more_info());
+
+  // The case we have full info, and this entry applies.
+  gpu_info.driver_version = "10.6";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsLinux, &os_version,
+      gpu_info).blacklisted_features;
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL, type);
+  EXPECT_FALSE(blacklist->needs_more_info());
+
+  // The case we have full info, and this entry does not apply.
+  gpu_info.driver_version = "10.8";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsLinux, &os_version,
+      gpu_info).blacklisted_features;
+  EXPECT_EQ(0, type);
+  EXPECT_FALSE(blacklist->needs_more_info());
+}
+
+TEST_F(GpuBlacklistTest, NeedsMoreInfoForExceptions) {
+  const std::string json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"linux\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x8086\",\n"
+      "      \"exceptions\": [\n"
+      "        {\n"
+      "          \"gl_renderer\": {\n"
+      "            \"op\": \"contains\",\n"
+      "            \"value\": \"mesa\"\n"
+      "          }\n"
+      "        }\n"
+      "      ],\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+
+  content::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+
+  Version os_version("10.7");
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(json, GpuBlacklist::kAllOs));
+
+  // The case this entry does not apply.
+  GpuFeatureType type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsMacosx, &os_version,
+      gpu_info).blacklisted_features;
+  EXPECT_EQ(0, type);
+  EXPECT_FALSE(blacklist->needs_more_info());
+
+  // The case this entry might apply, but need more info.
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsLinux, &os_version,
+      gpu_info).blacklisted_features;
+  EXPECT_EQ(0, type);
+  EXPECT_TRUE(blacklist->needs_more_info());
+
+  // The case we have full info, and the exception applies (so the entry
+  // does not apply).
+  gpu_info.gl_renderer = "mesa";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsLinux, &os_version,
+      gpu_info).blacklisted_features;
+  EXPECT_EQ(0, type);
+  EXPECT_FALSE(blacklist->needs_more_info());
+
+  // The case we have full info, and this entry applies.
+  gpu_info.gl_renderer = "my renderer";
+  type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsLinux, &os_version,
+      gpu_info).blacklisted_features;
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL, type);
+  EXPECT_FALSE(blacklist->needs_more_info());
+}
+
+TEST_F(GpuBlacklistTest, IgnorableEntries) {
+  // If an entry will not change the blacklist decisions, then it should not
+  // trigger the needs_more_info flag.
+  const std::string json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"linux\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x8086\",\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    },\n"
+      "    {\n"
+      "      \"id\": 2,\n"
+      "      \"os\": {\n"
+      "        \"type\": \"linux\"\n"
+      "      },\n"
+      "      \"vendor_id\": \"0x8086\",\n"
+      "      \"driver_version\": {\n"
+      "        \"op\": \"<\",\n"
+      "        \"number\": \"10.7\"\n"
+      "      },\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+
+  content::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+
+  Version os_version("10.7");
+  scoped_ptr<GpuBlacklist> blacklist(Create());
+  EXPECT_TRUE(blacklist->LoadGpuBlacklist(json, GpuBlacklist::kAllOs));
+  GpuFeatureType type = blacklist->MakeBlacklistDecision(
+      GpuBlacklist::kOsLinux, &os_version,
+      gpu_info).blacklisted_features;
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL, type);
+  EXPECT_FALSE(blacklist->needs_more_info());
+}
+

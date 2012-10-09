@@ -92,6 +92,11 @@ class CONTENT_EXPORT GpuBlacklist {
   // Returns the version of the current blacklist.
   std::string GetVersion() const;
 
+  // Check if we needs more gpu info to make the blacklisting decisions.
+  // This is computed from the last MakeBlacklistDecision() call.
+  // If yes, we should create a gl context and do a full gpu info collection.
+  bool needs_more_info() const { return needs_more_info_; }
+
  private:
   friend class GpuBlacklistTest;
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, ChromeVersionEntry);
@@ -274,6 +279,10 @@ class CONTENT_EXPORT GpuBlacklist {
                   const std::string& machine_model_name,
                   const Version& machine_model_version,
                   const content::GPUInfo& gpu_info) const;
+
+    // Determines whether we needs more gpu info to make the blacklisting
+    // decision.  It should only be checked if Contains() returns true.
+    bool NeedsMoreInfo(const content::GPUInfo& gpu_info) const;
 
     // Returns the OsType.
     OsType GetOsType() const;
@@ -465,6 +474,8 @@ class CONTENT_EXPORT GpuBlacklist {
   uint32 max_entry_id_;
 
   bool contains_unknown_fields_;
+
+  bool needs_more_info_;
 
   std::string current_machine_model_name_;
   scoped_ptr<Version> current_machine_model_version_;

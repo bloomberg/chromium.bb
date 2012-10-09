@@ -48,9 +48,6 @@
 
 namespace {
 void WarmUpSandbox(const content::GPUInfo&, bool);
-#if defined(OS_LINUX)
-void CollectGraphicsInfo(content::GPUInfo*);
-#endif
 }
 
 // Main function for starting the Gpu process.
@@ -122,19 +119,16 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   bool initialized_gl_context = false;
   // Load and initialize the GL implementation and locate the GL entry points.
   if (gfx::GLSurface::InitializeOneOff()) {
-#if defined(OS_LINUX)
-    // We collect full GPU info on demand in Win/Mac, i.e., when about:gpu
-    // page opens.  This is because we can make blacklist decisions based on
-    // preliminary GPU info.
-    // However, on Linux, we may not have enough info for blacklisting.
-    if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id ||
-        gpu_info.driver_vendor.empty() || gpu_info.driver_version.empty()) {
-      CollectGraphicsInfo(&gpu_info);
+    if (!command_line.HasSwitch(switches::kSkipGpuFullInfoCollection)) {
+      if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info))
+        VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
+      content::GetContentClient()->SetGpuInfo(gpu_info);
+
       // We know that CollectGraphicsInfo will initialize a GLContext.
       initialized_gl_context = true;
     }
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA
         gpu_info.driver_vendor == "NVIDIA") {
       base::ThreadRestrictions::AssertIOAllowed();
@@ -145,7 +139,6 @@ int GpuMain(const content::MainFunctionParams& parameters) {
       }
     }
 #endif  // OS_CHROMEOS
-#endif  // OS_LINUX
   } else {
     VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
     gpu_info.gpu_accessible = false;
@@ -312,14 +305,6 @@ void WarmUpSandbox(const content::GPUInfo& gpu_info,
   }
 #endif
 }
-
-#if defined(OS_LINUX)
-void CollectGraphicsInfo(content::GPUInfo* gpu_info) {
-  if (!gpu_info_collector::CollectGraphicsInfo(gpu_info))
-    VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
-  content::GetContentClient()->SetGpuInfo(*gpu_info);
-}
-#endif
 
 }  // namespace.
 
