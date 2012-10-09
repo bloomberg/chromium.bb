@@ -133,8 +133,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   bool complete_gpu_info_already_requested_;
 
-  content::GpuFeatureType gpu_feature_type_;
-  content::GpuFeatureType preliminary_gpu_feature_type_;
+  content::GpuFeatureType blacklisted_features_;
+  content::GpuFeatureType preliminary_blacklisted_features_;
 
   content::GpuSwitchingOption gpu_switching_;
 
