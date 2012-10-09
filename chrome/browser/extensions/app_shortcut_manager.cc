@@ -20,9 +20,6 @@
 namespace extensions {
 
 namespace {
-// Allow tests to disable shortcut creation, to prevent developers' desktops
-// becoming overrun with shortcuts.
-bool disable_shortcut_creation_for_tests = false;
 
 #if defined(OS_MACOSX)
 const int kDesiredSizes[] = {16, 32, 128, 256, 512};
@@ -73,7 +70,7 @@ void AppShortcutManager::OnImageLoaded(const gfx::Image& image,
     shortcut_info_.favicon = image;
   }
 
-  web_app::CreateShortcuts(shortcut_info_);
+  web_app::UpdateAllShortcuts(shortcut_info_);
 }
 
 void AppShortcutManager::Observe(int type,
@@ -84,18 +81,14 @@ void AppShortcutManager::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       const Extension* extension = content::Details<const Extension>(
           details).ptr();
-      if (!disable_shortcut_creation_for_tests &&
-          extension->is_platform_app() &&
-          extension->location() != Extension::LOAD) {
-        InstallApplicationShortcuts(extension);
-      }
+      if (extension->is_platform_app())
+        UpdateApplicationShortcuts(extension);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
       const Extension* extension = content::Details<const Extension>(
           details).ptr();
-      if (!disable_shortcut_creation_for_tests)
-        DeleteApplicationShortcuts(extension);
+      DeleteApplicationShortcuts(extension);
       break;
     }
     default:
@@ -104,12 +97,7 @@ void AppShortcutManager::Observe(int type,
 #endif
 }
 
-// static
-void AppShortcutManager::SetShortcutCreationDisabledForTesting(bool disabled) {
-  disable_shortcut_creation_for_tests = disabled;
-}
-
-void AppShortcutManager::InstallApplicationShortcuts(
+void AppShortcutManager::UpdateApplicationShortcuts(
     const Extension* extension) {
   shortcut_info_ = ShortcutInfoForExtensionAndProfile(extension, profile_);
 

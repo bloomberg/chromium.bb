@@ -296,6 +296,23 @@ bool CreatePlatformShortcuts(
   return success;
 }
 
+void UpdatePlatformShortcuts(
+    const FilePath& web_app_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  // Generates file name to use with persisted ico and shortcut file.
+  FilePath file_name =
+      web_app::internals::GetSanitizedFileName(shortcut_info.title);
+
+  // If an icon file exists, and is out of date, replace it with the new icon
+  // and let the shell know the icon has been modified.
+  FilePath icon_file = web_app_path.Append(file_name).ReplaceExtension(
+      FILE_PATH_LITERAL(".ico"));
+  if (file_util::PathExists(icon_file)) {
+    web_app::internals::CheckAndSaveIcon(icon_file,
+        *shortcut_info.favicon.ToSkBitmap());
+  }
+}
+
 void DeletePlatformShortcuts(
     const FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {

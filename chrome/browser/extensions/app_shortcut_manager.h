@@ -14,6 +14,7 @@
 class Profile;
 
 namespace extensions {
+
 // This class manages the installation of shortcuts for platform apps.
 class AppShortcutManager : public ImageLoadingTracker::Observer,
                            public content::NotificationObserver {
@@ -33,10 +34,8 @@ class AppShortcutManager : public ImageLoadingTracker::Observer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  static void SetShortcutCreationDisabledForTesting(bool disabled);
  private:
-  // Install the shortcuts for an application.
-  void InstallApplicationShortcuts(const Extension* extension);
+  void UpdateApplicationShortcuts(const Extension* extension);
   void DeleteApplicationShortcuts(const Extension* extension);
 
   content::NotificationRegistrar registrar_;
@@ -48,6 +47,7 @@ class AppShortcutManager : public ImageLoadingTracker::Observer,
 
   DISALLOW_COPY_AND_ASSIGN(AppShortcutManager);
 };
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_SHORTCUT_MANAGER_H_

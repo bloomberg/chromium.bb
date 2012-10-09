@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace web_app {
+
 namespace internals {
 
 bool CreatePlatformShortcuts(
@@ -35,5 +36,12 @@ void DeletePlatformShortcuts(
       shortcut_info.extension_id);
 }
 
+void UpdatePlatformShortcuts(
+    const FilePath& web_app_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  // TODO(benwells): Implement this.
+}
+
 }  // namespace internals
+
 }  // namespace web_app

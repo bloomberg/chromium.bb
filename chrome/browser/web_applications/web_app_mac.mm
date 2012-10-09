@@ -250,6 +250,7 @@ void WebAppShortcutCreator::RevealGeneratedBundleInFinder(
 }  // namespace
 
 namespace web_app {
+
 namespace internals {
 
 bool CreatePlatformShortcuts(
@@ -269,5 +270,13 @@ void DeletePlatformShortcuts(
   // mac.
 }
 
+void UpdatePlatformShortcuts(
+    const FilePath& web_app_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  // TODO(benwells): Implement this when shortcuts / weblings are enabled on
+  // mac.
+}
+
 }  // namespace internals
+
 }  // namespace web_app

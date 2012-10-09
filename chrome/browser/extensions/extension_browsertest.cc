@@ -51,12 +51,9 @@ ExtensionBrowserTest::ExtensionBrowserTest()
       target_visible_page_action_count_(-1),
       current_channel_(chrome::VersionInfo::CHANNEL_DEV) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-  extensions::AppShortcutManager::SetShortcutCreationDisabledForTesting(true);
 }
 
-ExtensionBrowserTest::~ExtensionBrowserTest() {
-  extensions::AppShortcutManager::SetShortcutCreationDisabledForTesting(false);
-}
+ExtensionBrowserTest::~ExtensionBrowserTest() {}
 
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);

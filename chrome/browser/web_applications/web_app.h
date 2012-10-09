@@ -47,12 +47,16 @@ std::string GenerateApplicationNameFromExtensionId(const std::string& id);
 std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 
 // Creates shortcuts for web application based on given shortcut data.
-// |shortcut_info| contains information about the shortcut to create.
+// |shortcut_info| contains information about the shortcuts to create.
 void CreateShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Delete all the shortcuts that have been created for the given
 // |shortcut_data| in the profile with |profile_path|.
 void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
+
+// Updates shortcuts for web application based on given shortcut data.
+// |shortcut_info| contains information about the shortcuts to update.
+void UpdateAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Creates a shortcut. Must be called on the file thread. This is used to
 // implement CreateShortcuts() above, and can also be used directly from the
@@ -95,8 +99,15 @@ bool CreatePlatformShortcuts(
 
 // Delete all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the DeleteAllShortcuts function, and
-// is executed on the FILE thread..
+// is executed on the FILE thread.
 void DeletePlatformShortcuts(
+    const FilePath& shortcut_data_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info);
+
+// Updates all the shortcuts we have added for this extension. This is the
+// platform specific implementation of the UpdateAllShortcuts function, and
+// is executed on the FILE thread.
+void UpdatePlatformShortcuts(
     const FilePath& shortcut_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 

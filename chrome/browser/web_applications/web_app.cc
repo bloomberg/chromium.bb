@@ -38,6 +38,16 @@ void DeleteShortcutsOnFileThread(
       shortcut_data_dir, shortcut_info);
 }
 
+void UpdateShortcutsOnFileThread(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
+      shortcut_info.profile_path, shortcut_info.extension_id, GURL());
+  return web_app::internals::UpdatePlatformShortcuts(
+      shortcut_data_dir, shortcut_info);
+}
+
 }  // namespace
 
 namespace web_app {
@@ -146,6 +156,15 @@ void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info) {
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&DeleteShortcutsOnFileThread, shortcut_info));
+}
+
+void UpdateAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UpdateShortcutsOnFileThread, shortcut_info));
 }
 
 bool CreateShortcutsOnFileThread(

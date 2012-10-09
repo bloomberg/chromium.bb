@@ -17,5 +17,9 @@ void DeletePlatformShortcuts(
     const FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {}
 
+void UpdatePlatformShortcuts(
+    const FilePath& web_app_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {}
+
 }  // namespace internals
 }  // namespace web_app
