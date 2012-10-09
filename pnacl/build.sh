@@ -3235,9 +3235,9 @@ driver-install-python() {
   local pydir="${destdir}/pydir"
 
   StepBanner "DRIVER" "Installing driver adaptors to ${destdir}"
+  rm -rf "${destdir}"
   mkdir -p "${destdir}"
   mkdir -p "${pydir}"
-  rm -f "${destdir}"/pnacl-* "${destdir}"/wrapper-*
 
   spushd "${DRIVER_DIR}"
 
@@ -3271,6 +3271,13 @@ driver-install() {
   if ${HOST_ARCH_X8664} && ${BUILD_PLATFORM_LINUX} && \
         [[ ${libmode} == "newlib" ]]; then
     bindir="bin64"
+    # We want to be able to locally test a toolchain on 64 bit hosts without
+    # building it twice and without extra env vars. So if a 32 bit toolchain
+    # has not already been built, just symlink the bin dirs together.
+    if [[ ! -d "${INSTALL_NEWLIB_BIN}" ]]; then
+      mkdir -p "${INSTALL_NEWLIB}"
+      ln -s ${bindir} "${INSTALL_NEWLIB_BIN}"
+    fi
   fi
   # This directory (the ${INSTALL_ROOT}/${libmode} part)
   # should be kept in sync with INSTALL_NEWLIB_BIN et al.
