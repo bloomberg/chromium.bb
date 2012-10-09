@@ -45,13 +45,17 @@ void DeviceController::KillAllListeners() {
   }
 }
 
-bool DeviceController::Start(const std::string& adb_unix_socket) {
+bool DeviceController::Init(const std::string& adb_unix_socket) {
   if (!kickstart_adb_socket_.BindUnix(adb_unix_socket,
                                       true /* abstract */)) {
-    LOG(ERROR) << "Could not BindAndListen DeviceController socket on port: "
-               << adb_unix_socket;
+    LOG(ERROR) << "Could not BindAndListen DeviceController socket on port "
+               << adb_unix_socket << ": " << safe_strerror(errno);
     return false;
   }
+  return true;
+}
+
+void DeviceController::Start() {
   while (true) {
     CleanUpDeadListeners();
     scoped_ptr<Socket> socket(new Socket);
@@ -124,8 +128,6 @@ bool DeviceController::Start(const std::string& adb_unix_socket) {
   KillAllListeners();
   CleanUpDeadListeners();
   kickstart_adb_socket_.Close();
-
-  return true;
 }
 
 }  // namespace forwarder

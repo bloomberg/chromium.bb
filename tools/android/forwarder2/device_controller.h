@@ -22,7 +22,9 @@ class DeviceController {
   explicit DeviceController(int exit_notifier_fd);
   ~DeviceController();
 
-  bool Start(const std::string& adb_unix_socket);
+  bool Init(const std::string& adb_unix_socket);
+
+  void Start();
 
  private:
   void KillAllListeners();
