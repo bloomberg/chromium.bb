@@ -9,21 +9,6 @@
   font-style: italic;
 }
 
-#gc-pagecontent table {
-  border-collapse: collapse;
-}
-
-#gc-pagecontent th {
-  text-align: left;
-  padding: 6px 12px;
-}
-
-#gc-pagecontent td {
-  padding: 6px 12px;
-  border: 1px solid #36C;
-  vertical-align: top;
-}
-
 .api_reference div.summary {
   border: 1px solid #93B4D9;
   font-family: "Courier New", courier, monospace;

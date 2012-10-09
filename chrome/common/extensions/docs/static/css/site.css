@@ -278,6 +278,34 @@ span.displayModeWarning {
   font-weight: normal;
 }
 
+#gc-pagecontent table {
+  border-collapse: collapse;
+}
+#gc-pagecontent th {
+  text-align: left;
+  padding: 6px 12px;
+}
+#gc-pagecontent td {
+  padding: 6px 12px;
+  border: 1px solid #36C;
+  vertical-align: top;
+}
+
+/* Provide a "simple" version of the table to use just for layout. */
+#gc-pagecontent table.simple,
+#gc-pagecontent table.simple th,
+#gc-pagecontent table.simple td {
+  border-collapse: separate;
+  border-style: none;
+}
+#gc-pagecontent table.simple {
+  padding: 0;
+}
+#gc-pagecontent table.simple th,
+#gc-pagecontent table.simple td {
+  padding: 1px;
+}
+
 #gc-footer {
   clear: both;
   margin: auto;
