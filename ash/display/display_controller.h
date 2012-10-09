@@ -103,6 +103,10 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   // Returns the root window for |display_id|.
   aura::RootWindow* GetRootWindowForDisplayId(int64 id);
 
+  // Sets the ID of the primary display.  If the display is not connected, it
+  // will switch the primary display when connected.
+  void SetPrimaryDisplayId(int64 id);
+
   // Sets primary display. This re-assigns the current root
   // window to given |display|.
   void SetPrimaryDisplay(const gfx::Display& display);
@@ -159,6 +163,10 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
 
   // Per-device display layout.
   std::map<std::string, DisplayLayout> secondary_layouts_;
+
+  // The ID of the display which should be primary when connected.
+  // kInvalidDisplayID if no such preference is specified.
+  int64 desired_primary_display_id_;
 
   ObserverList<Observer> observers_;
 

@@ -254,6 +254,118 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 
+TEST_F(DisplayControllerTest, SwapPrimaryById) {
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+
+  UpdateDisplay("200x200,300x300");
+  gfx::Display primary_display = gfx::Screen::GetPrimaryDisplay();
+  gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
+
+  std::string secondary_name = aura::Env::GetInstance()->
+      display_manager()->GetDisplayNameFor(secondary_display);
+  DisplayLayout secondary_layout(DisplayLayout::RIGHT, 50);
+  display_controller->SetLayoutForDisplayName(secondary_name, secondary_layout);
+
+  EXPECT_NE(primary_display.id(), secondary_display.id());
+  aura::RootWindow* primary_root =
+      display_controller->GetRootWindowForDisplayId(primary_display.id());
+  aura::RootWindow* secondary_root =
+      display_controller->GetRootWindowForDisplayId(secondary_display.id());
+  aura::Window* launcher_window =
+      Shell::GetInstance()->launcher()->widget()->GetNativeView();
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+  EXPECT_NE(primary_root, secondary_root);
+  EXPECT_EQ(primary_display.id(),
+            gfx::Screen::GetDisplayNearestPoint(gfx::Point(-100, -100)).id());
+  EXPECT_EQ(primary_display.id(),
+            gfx::Screen::GetDisplayNearestWindow(NULL).id());
+
+  // Switch primary and secondary by display ID.
+  TestObserver observer;
+  display_controller->SetPrimaryDisplayId(secondary_display.id());
+  EXPECT_EQ(secondary_display.id(), gfx::Screen::GetPrimaryDisplay().id());
+  EXPECT_EQ(primary_display.id(), ScreenAsh::GetSecondaryDisplay().id());
+  EXPECT_LT(0, observer.CountAndReset());
+
+  EXPECT_EQ(
+      primary_root,
+      display_controller->GetRootWindowForDisplayId(secondary_display.id()));
+  EXPECT_EQ(
+      secondary_root,
+      display_controller->GetRootWindowForDisplayId(primary_display.id()));
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+  EXPECT_FALSE(secondary_root->Contains(launcher_window));
+
+  const DisplayLayout& inverted_layout =
+      display_controller->GetLayoutForDisplay(primary_display);
+
+  EXPECT_EQ("left, -50", inverted_layout.ToString());
+
+  // Calling the same ID don't do anything.
+  display_controller->SetPrimaryDisplayId(secondary_display.id());
+  EXPECT_EQ(0, observer.CountAndReset());
+
+  aura::WindowTracker tracker;
+  tracker.Add(primary_root);
+  tracker.Add(secondary_root);
+
+  // Deleting 2nd display should move the primary to original primary display.
+  UpdateDisplay("200x200");
+  RunAllPendingInMessageLoop();  // RootWindow is deleted in a posted task.
+  EXPECT_EQ(1, gfx::Screen::GetNumDisplays());
+  EXPECT_EQ(primary_display.id(), gfx::Screen::GetPrimaryDisplay().id());
+  EXPECT_EQ(primary_display.id(),
+            gfx::Screen::GetDisplayNearestPoint(gfx::Point(-100, -100)).id());
+  EXPECT_EQ(primary_display.id(),
+            gfx::Screen::GetDisplayNearestWindow(NULL).id());
+  EXPECT_TRUE(tracker.Contains(primary_root));
+  EXPECT_FALSE(tracker.Contains(secondary_root));
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+
+  // Adding 2nd display with the same ID.  The 2nd display should become primary
+  // since secondary id is still stored as desirable_primary_id.
+  std::vector<gfx::Display> displays;
+  displays.push_back(primary_display);
+  displays.push_back(secondary_display);
+  aura::DisplayManager* display_manager =
+      aura::Env::GetInstance()->display_manager();
+  display_manager->OnNativeDisplaysChanged(displays);
+
+  EXPECT_EQ(2, gfx::Screen::GetNumDisplays());
+  EXPECT_EQ(secondary_display.id(), gfx::Screen::GetPrimaryDisplay().id());
+  EXPECT_EQ(primary_display.id(), ScreenAsh::GetSecondaryDisplay().id());
+  EXPECT_EQ(
+      primary_root,
+      display_controller->GetRootWindowForDisplayId(secondary_display.id()));
+  EXPECT_NE(
+      primary_root,
+      display_controller->GetRootWindowForDisplayId(primary_display.id()));
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+
+  // Deleting 2nd display and adding 2nd display with a different ID.  The 2nd
+  // display shouldn't become primary.
+  UpdateDisplay("200x200");
+  std::vector<gfx::Display> displays2;
+  gfx::Display third_display(
+      secondary_display.id() + 1, secondary_display.bounds());
+  ASSERT_NE(primary_display.id(), third_display.id());
+  displays2.push_back(primary_display);
+  displays2.push_back(third_display);
+  display_manager->OnNativeDisplaysChanged(displays2);
+  EXPECT_EQ(2, gfx::Screen::GetNumDisplays());
+  EXPECT_EQ(primary_display.id(), gfx::Screen::GetPrimaryDisplay().id());
+  EXPECT_EQ(third_display.id(), ScreenAsh::GetSecondaryDisplay().id());
+  EXPECT_EQ(
+      primary_root,
+      display_controller->GetRootWindowForDisplayId(primary_display.id()));
+  EXPECT_NE(
+      primary_root,
+      display_controller->GetRootWindowForDisplayId(third_display.id()));
+  EXPECT_TRUE(primary_root->Contains(launcher_window));
+}
+
 TEST_F(DisplayControllerTest, MAYBE_UpdateDisplayWithHostOrigin) {
   UpdateDisplay("100x200,300x400");
   ASSERT_EQ(2, gfx::Screen::GetNumDisplays());

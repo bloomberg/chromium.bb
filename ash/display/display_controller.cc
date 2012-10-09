@@ -155,7 +155,8 @@ void DisplayLayout::RegisterJSONConverter(
   converter->RegisterIntField("offset", &DisplayLayout::offset);
 }
 
-DisplayController::DisplayController() {
+DisplayController::DisplayController()
+    : desired_primary_display_id_(gfx::Display::kInvalidDisplayID) {
   // Reset primary display to make sure that tests don't use
   // stale display info from previous tests.
   primary_display_id = gfx::Display::kInvalidDisplayID;
@@ -339,6 +340,23 @@ const DisplayLayout& DisplayController::GetCurrentDisplayLayout() const {
   return default_display_layout_;
 }
 
+void DisplayController::SetPrimaryDisplayId(int64 id) {
+  desired_primary_display_id_ = id;
+
+  if (desired_primary_display_id_ == primary_display_id)
+    return;
+
+  aura::DisplayManager* display_manager =
+      aura::Env::GetInstance()->display_manager();
+  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
+    gfx::Display* display = display_manager->GetDisplayAt(i);
+    if (display->id() == id) {
+      SetPrimaryDisplay(*display);
+      break;
+    }
+  }
+}
+
 void DisplayController::SetPrimaryDisplay(
     const gfx::Display& new_primary_display) {
   internal::MultiDisplayManager* display_manager = GetDisplayManager();
@@ -379,6 +397,7 @@ void DisplayController::SetPrimaryDisplay(
                                 old_primary_display.id());
 
   primary_display_id = new_primary_display.id();
+  desired_primary_display_id_ = primary_display_id;
 
   // Update the layout.
   SetLayoutForDisplayName(
@@ -413,6 +432,9 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
   aura::RootWindow* root = AddRootWindowForDisplay(display);
   Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   UpdateDisplayBoundsForLayout();
+
+  if (desired_primary_display_id_ == display.id())
+    SetPrimaryDisplay(display);
 }
 
 void DisplayController::OnDisplayRemoved(const gfx::Display& display) {

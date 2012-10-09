@@ -20,8 +20,8 @@
 #include "ui/gfx/display.h"
 
 namespace chromeos {
-
 namespace {
+
 // Replaces dot "." by "%2E" since it's the path separater of base::Value.  Also
 // replaces "%" by "%25" for unescaping.
 void EscapeDisplayName(const std::string& name, std::string* escaped) {
@@ -65,26 +65,6 @@ void NotifyDisplayLayoutChanged(PrefService* pref_service) {
 
     display_controller->SetLayoutForDisplayName(
         UnescapeDisplayName(*it), layout);
-  }
-}
-
-// Notification is currently sent when the pref is initialized and the pref is
-// updated.  It means that the primary display isn't set when it's connected to
-// the system later.
-void NotifyPrimaryDisplayIDChanged(PrefService* pref_service) {
-  int64 id = pref_service->GetInt64(prefs::kPrimaryDisplayID);
-  if (id == gfx::Display::kInvalidDisplayID)
-    return;
-
-  aura::DisplayManager* display_manager =
-      aura::Env::GetInstance()->display_manager();
-  for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    gfx::Display* display = display_manager->GetDisplayAt(i);
-    if (display->id() == id) {
-      ash::Shell::GetInstance()->display_controller()->
-          SetPrimaryDisplay(*display);
-      return;
-    }
   }
 }
 
@@ -156,12 +136,14 @@ void StorePrimaryDisplayIDPref(PrefService* pref_service, int64 display_id) {
 
 void SetPrimaryDisplayIDPref(PrefService* pref_service, int64 display_id) {
   StorePrimaryDisplayIDPref(pref_service, display_id);
-  NotifyPrimaryDisplayIDChanged(pref_service);
+  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
+      display_id);
 }
 
 void NotifyDisplayPrefChanged(PrefService* pref_service) {
   NotifyDisplayLayoutChanged(pref_service);
-  NotifyPrimaryDisplayIDChanged(pref_service);
+  int64 id = pref_service->GetInt64(prefs::kPrimaryDisplayID);
+  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(id);
 }
 
 }  // namespace chromeos
