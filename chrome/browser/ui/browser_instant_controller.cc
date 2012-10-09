@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -33,10 +34,12 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
   profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
   ResetInstant();
   browser_->tab_strip_model()->AddObserver(this);
+  browser_->search_model()->AddObserver(this);
 }
 
 BrowserInstantController::~BrowserInstantController() {
   browser_->tab_strip_model()->RemoveObserver(this);
+  browser_->search_model()->RemoveObserver(this);
 }
 
 bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
@@ -132,6 +135,15 @@ void BrowserInstantController::Observe(
 void BrowserInstantController::TabDeactivated(TabContents* contents) {
   if (instant())
     instant_->Hide();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserInstantController, search::SearchModelObserver implementation:
+
+void BrowserInstantController::ModeChanged(const search::Mode& old_mode,
+                                           const search::Mode& new_mode) {
+  if (instant() && old_mode.is_ntp() != new_mode.is_ntp())
+    instant_->OnActiveTabModeChanged(new_mode.is_ntp());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

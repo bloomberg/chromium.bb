@@ -355,6 +355,13 @@ void InstantLoader::OnAutocompleteLostFocus() {
   rvh->Send(new ChromeViewMsg_SearchBoxBlur(rvh->GetRoutingID()));
 }
 
+void InstantLoader::OnActiveTabModeChanged(bool active_tab_is_ntp) {
+  content::RenderViewHost* rvh =
+      preview_contents_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ChromeViewMsg_SearchBoxActiveTabModeChanged(
+      rvh->GetRoutingID(), active_tab_is_ntp));
+}
+
 void InstantLoader::DidNavigate(
     const history::HistoryAddPageArgs& add_page_args) {
   last_navigation_ = add_page_args;

@@ -12,6 +12,7 @@
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/instant/instant_controller_delegate.h"
 #include "chrome/browser/instant/instant_unload_handler.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/instant_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -35,6 +36,7 @@ namespace chrome {
 
 class BrowserInstantController : public InstantControllerDelegate,
                                  public TabStripModelObserver,
+                                 public search::SearchModelObserver,
                                  public content::NotificationObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
@@ -66,6 +68,10 @@ class BrowserInstantController : public InstantControllerDelegate,
 
   // Overridden from TabStripModelObserver:
   virtual void TabDeactivated(TabContents* contents) OVERRIDE;
+
+  // Overridden from search::SearchModelObserver:
+  virtual void ModeChanged(const search::Mode& old_mode,
+                           const search::Mode& new_mode) OVERRIDE;
 
   // If this browser should have Instant, a new InstantController created;
   // otherwise any existing InstantController is destroyed.

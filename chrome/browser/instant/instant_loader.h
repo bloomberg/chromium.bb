@@ -79,6 +79,9 @@ class InstantLoader : public content::NotificationObserver {
   // Tells the preview page that the searchbox has lost focus.
   void OnAutocompleteLostFocus();
 
+  // Tells the preview page that the active tab's "NTP status" has changed.
+  void OnActiveTabModeChanged(bool active_tab_is_ntp);
+
   // Called by the history tab helper with the information that it would have
   // added to the history service had this web contents not been used for
   // Instant.

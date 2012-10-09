@@ -140,6 +140,10 @@ class InstantController : public InstantLoaderDelegate {
   // default search engine, in anticipation of the user typing a query.
   void OnAutocompleteGotFocus();
 
+  // The active tab's "NTP status" has changed. Pass the message down to the
+  // loader which will notify the renderer.
+  void OnActiveTabModeChanged(bool active_tab_is_ntp);
+
   // Returns whether the preview will be committed when the mouse or touch
   // pointer is released.
   bool commit_on_pointer_release() const;
@@ -259,6 +263,9 @@ class InstantController : public InstantLoaderDelegate {
 
   // True if the omnibox is focused, false otherwise.
   bool is_omnibox_focused_;
+
+  // True if the active tab in the current window is the NTP, false otherwise.
+  bool active_tab_is_ntp_;
 
   // Current omnibox bounds.
   gfx::Rect omnibox_bounds_;

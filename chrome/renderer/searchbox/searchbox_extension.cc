@@ -137,6 +137,15 @@ static const char kDispatchBlurEventScript[] =
     "  true;"
     "}";
 
+static const char kDispatchContextChangeEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.oncontextchange &&"
+    "    typeof window.chrome.searchBox.oncontextchange == 'function') {"
+    "  window.chrome.searchBox.oncontextchange();"
+    "  true;"
+    "}";
+
 // ----------------------------------------------------------------------------
 
 class SearchBoxExtensionWrapper : public v8::Extension {
@@ -185,6 +194,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
   // Gets whether the search box is focused.
   static v8::Handle<v8::Value> GetIsFocused(const v8::Arguments& args);
+
+  // Gets the current session context.
+  static v8::Handle<v8::Value> GetContext(const v8::Arguments& args);
 
   // Navigates the window to a URL represented by either a URL string or a
   // restricted ID.
@@ -241,6 +253,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetAutocompleteResults);
   } else if (name->Equals(v8::String::New("GetIsFocused"))) {
     return v8::FunctionTemplate::New(GetIsFocused);
+  } else if (name->Equals(v8::String::New("GetContext"))) {
+    return v8::FunctionTemplate::New(GetContext);
   } else if (name->Equals(v8::String::New("NavigateContentWindow"))) {
     return v8::FunctionTemplate::New(NavigateContentWindow);
   } else if (name->Equals(v8::String::New("SetSuggestions"))) {
@@ -371,6 +385,18 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetIsFocused(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
   return v8::Boolean::New(SearchBox::Get(render_view)->is_focused());
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetContext(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+  v8::Handle<v8::Object> context = v8::Object::New();
+  context->Set(
+      v8::String::New("isNewTabPage"),
+      v8::Boolean::New(SearchBox::Get(render_view)->active_tab_is_ntp()));
+  return context;
 }
 
 // static
@@ -633,6 +659,11 @@ void SearchBoxExtension::DispatchFocus(WebKit::WebFrame* frame) {
 // static
 void SearchBoxExtension::DispatchBlur(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchBlurEventScript);
+}
+
+// static
+void SearchBoxExtension::DispatchContextChange(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchContextChangeEventScript);
 }
 
 // static
