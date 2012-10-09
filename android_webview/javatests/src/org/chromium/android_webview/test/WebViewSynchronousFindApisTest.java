@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
@@ -63,8 +64,12 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(0, findNextOnUiThread(true));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * http://crbug.com/154809
+     */
+    @FlakyTest
     public void testFindNextBackward() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
 
