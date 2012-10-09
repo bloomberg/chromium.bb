@@ -209,6 +209,8 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
       rect.width() - kIconViewWidth - kTextTrailPadding -
       action_buttons_.size() * kActionButtonWidth -
       (!action_buttons_.empty() ? kActionButtonRightMargin : 0));
+  text_bounds.set_x(GetMirroredXWithWidthInView(text_bounds.x(),
+                                                text_bounds.width()));
 
   if (title_text_.get() && details_text_.get()) {
     gfx::Size title_size(text_bounds.width(),
