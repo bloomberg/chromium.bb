@@ -111,18 +111,6 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
   return new RendererWebIDBObjectStoreImpl(object_store);
 }
 
-// TODO(alecflett): Remove this when it is removed from webkit:
-// https://bugs.webkit.org/show_bug.cgi?id=98085
-WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
-    const WebKit::WebString& name,
-    const WebKit::WebIDBKeyPath& key_path,
-    bool auto_increment,
-    const WebKit::WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-    return createObjectStore(AutogenerateObjectStoreId, name, key_path,
-                             auto_increment, transaction, ec);
-}
-
 void RendererWebIDBDatabaseImpl::deleteObjectStore(
     const WebString& name,
     const WebIDBTransaction& transaction,

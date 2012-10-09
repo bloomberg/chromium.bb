@@ -33,12 +33,6 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       bool auto_increment,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode& ec);
-  virtual WebKit::WebIDBObjectStore* createObjectStore(
-      const WebKit::WebString& name,
-      const WebKit::WebIDBKeyPath& key_path,
-      bool auto_increment,
-      const WebKit::WebIDBTransaction& transaction,
-      WebKit::WebExceptionCode& ec);
   virtual void deleteObjectStore(
       const WebKit::WebString& name,
       const WebKit::WebIDBTransaction& transaction,

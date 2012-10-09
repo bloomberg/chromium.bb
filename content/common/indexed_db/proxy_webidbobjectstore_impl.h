@@ -63,15 +63,6 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode& ec);
 
-  // TODO(alecflett): Remove this when it is removed from webkit:
-  // https://bugs.webkit.org/show_bug.cgi?id=98085
-  virtual WebKit::WebIDBIndex* createIndex(
-      const WebKit::WebString& name,
-      const WebKit::WebIDBKeyPath& key_path,
-      bool unique,
-      bool multi_entry,
-      const WebKit::WebIDBTransaction& transaction,
-      WebKit::WebExceptionCode& ec);
   // Transfers ownership of the WebIDBIndex to the caller.
   virtual WebKit::WebIDBIndex* index(const WebKit::WebString& name,
                                      WebKit::WebExceptionCode& ec);

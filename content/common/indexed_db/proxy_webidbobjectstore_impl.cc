@@ -168,19 +168,6 @@ WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
   return new RendererWebIDBIndexImpl(index_id);
 }
 
-// TODO(alecflett): Remove this when it is removed from webkit:
-// https://bugs.webkit.org/show_bug.cgi?id=98085
-WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
-    const WebString& name,
-    const WebIDBKeyPath& key_path,
-    bool unique,
-    bool multi_entry,
-    const WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-    return createIndex(AutogenerateIndexId, name, key_path, unique, multi_entry,
-                       transaction, ec);
-}
-
 WebIDBIndex* RendererWebIDBObjectStoreImpl::index(
     const WebString& name,
     WebExceptionCode& ec) {
