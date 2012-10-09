@@ -194,6 +194,26 @@ class ChromeTests:
     if gtest_filter:
       cmd.append("--gtest_filter=%s" % gtest_filter)
 
+  @staticmethod
+  def ShowTests():
+    test_to_names = {}
+    for name, test_function in ChromeTests._test_list.iteritems():
+      test_to_names.setdefault(test_function, []).append(name)
+
+    name_to_aliases = {}
+    for names in test_to_names.itervalues():
+      names.sort(key=lambda name: len(name))
+      name_to_aliases[names[0]] = names[1:]
+
+    print
+    print "Available tests:"
+    print "----------------"
+    for name, aliases in sorted(name_to_aliases.iteritems()):
+      if aliases:
+        print "   {} (aka {})".format(name, ', '.join(aliases))
+      else:
+        print "   {}".format(name)
+
   def SetupLdPath(self, requires_build_dir):
     if requires_build_dir:
       self._EnsureBuildDirFound()
@@ -518,6 +538,9 @@ def _main():
   parser = optparse.OptionParser("usage: %prog -b <dir> -t <test> "
                                  "[-t <test> ...]")
   parser.disable_interspersed_args()
+
+  parser.add_option("", "--help-tests", dest="help_tests", action="store_true",
+                    default=False, help="List all available tests")
   parser.add_option("-b", "--build_dir",
                     help="the location of the compiler output")
   parser.add_option("-t", "--test", action="append", default=[],
@@ -553,6 +576,10 @@ def _main():
     logging_utils.config_root(logging.DEBUG)
   else:
     logging_utils.config_root()
+
+  if options.help_tests:
+    ChromeTests.ShowTests()
+    return 0
 
   if not options.test:
     parser.error("--test not specified")
