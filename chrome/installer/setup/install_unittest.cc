@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/shortcut.h"
 #include "chrome/installer/setup/install.h"
@@ -104,18 +105,24 @@ class InstallShortcutTest : public testing::Test {
     ASSERT_TRUE(fake_default_user_quick_launch_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_start_menu_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_common_start_menu_.CreateUniqueTempDir());
-    ASSERT_TRUE(PathService::Override(base::DIR_USER_DESKTOP,
-                                      fake_user_desktop_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_COMMON_DESKTOP,
-                                      fake_common_desktop_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_USER_QUICK_LAUNCH,
-                                      fake_user_quick_launch_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_DEFAULT_USER_QUICK_LAUNCH,
-                                      fake_default_user_quick_launch_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_START_MENU,
-                                      fake_start_menu_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_COMMON_START_MENU,
-                                      fake_common_start_menu_.path()));
+    user_desktop_override_.reset(
+        new base::ScopedPathOverride(base::DIR_USER_DESKTOP,
+                                     fake_user_desktop_.path()));
+    common_desktop_override_.reset(
+        new base::ScopedPathOverride(base::DIR_COMMON_DESKTOP,
+                                     fake_common_desktop_.path()));
+    user_quick_launch_override_.reset(
+        new base::ScopedPathOverride(base::DIR_USER_QUICK_LAUNCH,
+                                     fake_user_quick_launch_.path()));
+    default_user_quick_launch_override_.reset(
+        new base::ScopedPathOverride(base::DIR_DEFAULT_USER_QUICK_LAUNCH,
+                                     fake_default_user_quick_launch_.path()));
+    start_menu_override_.reset(
+        new base::ScopedPathOverride(base::DIR_START_MENU,
+                                     fake_start_menu_.path()));
+    common_start_menu_override_.reset(
+        new base::ScopedPathOverride(base::DIR_COMMON_START_MENU,
+                                     fake_common_start_menu_.path()));
 
     string16 shortcut_name(dist->GetAppShortCutName() + installer::kLnkExt);
     string16 uninstall_shorcut_name(
@@ -185,6 +192,12 @@ class InstallShortcutTest : public testing::Test {
   ScopedTempDir fake_default_user_quick_launch_;
   ScopedTempDir fake_start_menu_;
   ScopedTempDir fake_common_start_menu_;
+  scoped_ptr<base::ScopedPathOverride> user_desktop_override_;
+  scoped_ptr<base::ScopedPathOverride> common_desktop_override_;
+  scoped_ptr<base::ScopedPathOverride> user_quick_launch_override_;
+  scoped_ptr<base::ScopedPathOverride> default_user_quick_launch_override_;
+  scoped_ptr<base::ScopedPathOverride> start_menu_override_;
+  scoped_ptr<base::ScopedPathOverride> common_start_menu_override_;
 
   FilePath user_desktop_shortcut_;
   FilePath user_quick_launch_shortcut_;
