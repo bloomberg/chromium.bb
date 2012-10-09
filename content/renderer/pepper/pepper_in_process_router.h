@@ -2,9 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ppapi/proxy/connection.h"
+#include "ppapi/proxy/resource_message_params.h"
+
+namespace IPC {
+class Message;
+class MessageReplyDeserializer;
+}  // namespace
 
 namespace content {
 
@@ -36,6 +44,10 @@ class RendererPpapiHostImpl;
 // To keep things consistent, we provide an IPC::Sender for the browser channel
 // in the connection object supplied to resources. This dummy browser channel
 // will just assert and delete the message if anything is ever sent over it.
+//
+// There are two restrictions for in-process resource calls:
+// Sync messages can only be sent from the plugin to the host.
+// The host must handle sync messages synchronously.
 class PepperInProcessRouter {
  public:
   // The given host parameter owns this class and must outlive us.
@@ -53,16 +65,37 @@ class PepperInProcessRouter {
   ppapi::proxy::Connection GetPluginConnection();
 
  private:
-  class DummyBrowserChannel;
-  scoped_ptr<DummyBrowserChannel> dummy_browser_channel_;
+  bool SendToHost(IPC::Message *msg);
+  bool SendToPlugin(IPC::Message *msg);
+  void DispatchPluginMsg(IPC::Message* msg);
+  bool DummySendTo(IPC::Message *msg);
+
+  // Handles resource reply messages from the host.
+  void OnMsgResourceReply(
+      const ppapi::proxy::ResourceMessageReplyParams& reply_params,
+      const IPC::Message& nested_msg);
+
+  RendererPpapiHostImpl* host_impl_;
+
+  class Channel;
+  scoped_ptr<Channel> dummy_browser_channel_;
 
   // Renderer -> plugin channel.
-  class HostToPluginRouter;
-  scoped_ptr<HostToPluginRouter> host_to_plugin_router_;
+  scoped_ptr<Channel> host_to_plugin_router_;
 
   // Plugin -> renderer channel.
-  class PluginToHostRouter;
-  scoped_ptr<PluginToHostRouter> plugin_to_host_router_;
+  scoped_ptr<Channel> plugin_to_host_router_;
+
+  // Pending sync message id.
+  int pending_message_id_;
+
+  // Reply deserializer of the pending sync message.
+  scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
+
+  // Reply result of the pending sync message.
+  bool reply_result_;
+
+  base::WeakPtrFactory<PepperInProcessRouter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperInProcessRouter);
 };
