@@ -313,11 +313,11 @@ button_handler(struct widget *widget,
 	col = x / key_width + row * columns;
 	for (i = 0; i < sizeof(keys) / sizeof(*keys); ++i) {
 		col -= keys[i].width;
-		if (col < 0)
+		if (col < 0) {
+			keyboard_handle_key(keyboard, &keys[i]);
 			break;
+		}
 	}
-
-	keyboard_handle_key(keyboard, &keys[i]);
 
 	widget_schedule_redraw(widget);
 }
