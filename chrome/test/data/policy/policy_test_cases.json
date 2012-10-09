@@ -3,7 +3,13 @@
     "intro": "Top-level entries map a policy name to its test parameters, described below.",
 
     "pref": "The pref that this policy maps to, if any.",
+    "can_be_recommended": "Whether a recommended value may be set for the policy. Defaults to |false| if not specified.",
     "test_policy": "A policy dictionary that should trigger the managed banner in the settings UI. Usually just sets the current policy.",
+    "indicator_tests": [
+      "A list of test cases verifying that the controlled setting indicators for |pref| correctly indicate whether its value is recommended or enforced by a corresponding policy. Each test case is a dictionary with the following format:",
+      { "policy": "A policy dictionary that should affect |pref| when set as mandatory or recommended policy.",
+        "value": "The value that |pref| should take on. This must only be specified if |pref| has multiple controlled setting indicators, each corresponding to a specific value (e.g. indicators next to radio buttons).",
+        "readonly": "Whether setting the policy dictionary as recommended should cause |pref| to become read-only in the settings UI. This will be the case when the dictionary sets another policy that makes |pref| not applicable (e.g. setting 'homepage is NTP' makes the 'homepage URL' pref not applicable and read-only)."}],
     "settings_pages": ["A list of settings pages where the banner should be visible when this policy is set."],
     "os": ["List of operating systems that support this policy. Valid values:", "win", "linux", "mac", "chromeos"],
     "local_state": "Optionally indicate that |pref| is registed in local state, instead of in the profile PrefService.",
@@ -12,14 +18,22 @@
 
   "HomepageLocation": {
     "pref": "homepage",
+    "can_be_recommended": true,
     "test_policy": { "HomepageLocation": "http://chromium.org" },
+    "indicator_tests": [
+      { "policy": { "HomepageIsNewTabPage": false, "HomepageLocation": "http://chromium.org" }},
+      { "policy": { "HomepageIsNewTabPage": true, "HomepageLocation": "http://chromium.org" }, "readonly": true}],
     "settings_pages": ["chrome://settings-frame/homePageOverlay"],
     "os": ["win", "linux", "mac", "chromeos"]
   },
 
   "HomepageIsNewTabPage": {
     "pref": "homepage_is_newtabpage",
+    "can_be_recommended": true,
     "test_policy": { "HomepageIsNewTabPage": true },
+    "indicator_tests": [
+      { "policy": { "HomepageIsNewTabPage": false }, "value": "false"},
+      { "policy": { "HomepageIsNewTabPage": true }, "value": "true"}],
     "settings_pages": ["chrome://settings-frame/homePageOverlay"],
     "os": ["win", "linux", "mac", "chromeos"]
   },

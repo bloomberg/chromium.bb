@@ -9,17 +9,27 @@
             metric="Options_Homepage_IsNewTabPage" dialog-pref>
         <span i18n-content="homePageUseNewTab"></span>
       </label>
+      <span class="controlled-setting-indicator" pref="homepage_is_newtabpage"
+          value="true" dialog-pref>
+      </span>
     </div>
-    <div class="radio">
+    <div id="homepage-url-line" class="radio">
       <label>
-        <input id="homepage-use-url" type="radio" name="homepage"
-            pref="homepage_is_newtabpage" value="false"
-            metric="Options_Homepage_IsNewTabPage" dialog-pref>
+        <input type="radio" name="homepage" pref="homepage_is_newtabpage"
+            value="false" metric="Options_Homepage_IsNewTabPage" dialog-pref>
         <span i18n-content="homePageUseURL"></span>
       </label>
+      <span class="controlled-setting-indicator" pref="homepage_is_newtabpage"
+          value="false" dialog-pref>
+      </span>
       <input id="homepage-url-field" type="url" data-type="url"
-          class="weakrtl favicon-cell hbox stretch"
-          pref="homepage" dialog-pref>
+          class="weakrtl favicon-cell stretch" pref="homepage"
+          dialog-pref>
+      </input>
+      <span id="homepage-url-field-indicator"
+          class="controlled-setting-indicator" pref="homepage"
+          dialog-pref>
+      </span>
     </div>
   </div>
   <div class="action-area">
