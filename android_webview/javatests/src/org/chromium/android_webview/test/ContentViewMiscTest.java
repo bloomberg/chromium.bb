@@ -14,7 +14,6 @@ import android.net.Proxy;
 import android.test.mock.MockContext;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.ThreadUtils;
@@ -32,17 +31,14 @@ import java.util.concurrent.Callable;
 public class ContentViewMiscTest extends AndroidWebViewTestBase {
 
     private TestAwContentsClient mContentsClient;
-    private AwContents mAwContents;
     private ContentViewCore mContentViewCore;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        mAwContents = testContainerView.getAwContents();
-        mContentViewCore = testContainerView.getContentViewCore();
+        mContentViewCore =
+                createAwTestContainerViewOnMainSync(mContentsClient).getContentViewCore();
     }
 
     /**
@@ -57,7 +53,7 @@ public class ContentViewMiscTest extends AndroidWebViewTestBase {
                 .append("</body></html>");
 
         // Test flinging in the y axis
-        loadUrlSync(mAwContents , mContentsClient.getOnPageFinishedHelper(),
+        loadUrlSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(),
                 testPage.toString());
         assertEquals(0, mContentViewCore.getNativeScrollYForTest());
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -155,7 +151,7 @@ public class ContentViewMiscTest extends AndroidWebViewTestBase {
      */
     @DisabledTest
     public void testSetGetBackgroundColor() throws Throwable {
-        loadUrlSync(mAwContents , mContentsClient.getOnPageFinishedHelper(), "about:blank");
+        loadUrlSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(), "about:blank");
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

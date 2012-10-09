@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.Feature;
@@ -24,17 +23,14 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
     protected static int WAIT_TIMEOUT_SECONDS = 15;
 
     private TestAwContentsClient mContentsClient;
-    private AwContents mAwContents;
     private ContentViewCore mContentViewCore;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        mAwContents = testContainerView.getAwContents();
-        mContentViewCore = testContainerView.getContentViewCore();
+        mContentViewCore =
+                createAwTestContainerViewOnMainSync(mContentsClient).getContentViewCore();
     }
 
     protected void loadDataWithBaseUrlSync(
@@ -54,7 +50,7 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAwContents.loadUrl(LoadUrlParams.createLoadDataParamsWithBaseUrl(
+                mContentViewCore.loadUrl(LoadUrlParams.createLoadDataParamsWithBaseUrl(
                         data, mimeType, isBase64Encoded, baseUrl, historyUrl));
             }
         });
@@ -96,7 +92,7 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
             webServer.setResponseBase64("/" + CommonResources.FAVICON_FILENAME,
                     CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
 
-            ContentSettings contentSettings = getContentSettingsOnUiThread(mAwContents);
+            ContentSettings contentSettings = getContentSettingsOnUiThread(mContentViewCore);
             contentSettings.setImagesEnabled(true);
             contentSettings.setJavaScriptEnabled(true);
 
@@ -104,7 +100,7 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
                     CommonResources.getOnImageLoadedHtml(CommonResources.FAVICON_FILENAME),
                     "text/html", false, webServer.getBaseUrl(), null);
 
-            assertEquals("5", getTitleOnUiThread(mAwContents));
+            assertEquals("5", getTitleOnUiThread(mContentViewCore));
         } finally {
             if (webServer != null) webServer.shutdown();
         }
@@ -121,9 +117,9 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
                     CommonResources.getTextJavascriptHeaders(true));
             final String pageHtml = getScriptFileTestPageHtml(scriptUrl);
 
-            getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
+            getContentSettingsOnUiThread(mContentViewCore).setJavaScriptEnabled(true);
             loadDataWithBaseUrlSync(pageHtml, "text/html", false, webServer.getBaseUrl(), null);
-            assertEquals(SCRIPT_LOADED, getTitleOnUiThread(mAwContents));
+            assertEquals(SCRIPT_LOADED, getTitleOnUiThread(mContentViewCore));
 
         } finally {
             if (webServer != null) webServer.shutdown();
@@ -140,9 +136,9 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
                     CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
             final String html = getCrossOriginAccessTestPageHtml(frameUrl);
 
-            getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
+            getContentSettingsOnUiThread(mContentViewCore).setJavaScriptEnabled(true);
             loadDataWithBaseUrlSync(html, "text/html", false, webServer.getBaseUrl(), null);
-            assertEquals(frameUrl, getTitleOnUiThread(mAwContents));
+            assertEquals(frameUrl, getTitleOnUiThread(mContentViewCore));
 
         } finally {
             if (webServer != null) webServer.shutdown();
@@ -160,12 +156,12 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
             final String html = getCrossOriginAccessTestPageHtml(frameUrl);
             final String baseUrl = webServer.getBaseUrl().replaceFirst("localhost", "127.0.0.1");
 
-            getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
+            getContentSettingsOnUiThread(mContentViewCore).setJavaScriptEnabled(true);
             loadDataWithBaseUrlSync(html, "text/html", false, baseUrl, null);
 
             // TODO(mnaganov): Catch a security exception and set the title accordingly,
             // once https://bugs.webkit.org/show_bug.cgi?id=43504 is fixed.
-            assertEquals("undefined", getTitleOnUiThread(mAwContents));
+            assertEquals("undefined", getTitleOnUiThread(mContentViewCore));
 
         } finally {
             if (webServer != null) webServer.shutdown();
@@ -175,11 +171,11 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
     @SmallTest
     @Feature({"Android-WebView"})
     public void testNullBaseUrl() throws Throwable {
-        getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
+        getContentSettingsOnUiThread(mContentViewCore).setJavaScriptEnabled(true);
         final String pageHtml = "<html><body onload='document.title=document.location.href'>" +
                 "</body></html>";
         loadDataWithBaseUrlSync(pageHtml, "text/html", false, null, null);
-        assertEquals("about:blank", getTitleOnUiThread(mAwContents));
+        assertEquals("about:blank", getTitleOnUiThread(mContentViewCore));
     }
 
     @SmallTest
@@ -213,23 +209,23 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
     @SmallTest
     @Feature({"Android-WebView"})
     public void testAccessToLocalFile() throws Throwable {
-        getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
+        getContentSettingsOnUiThread(mContentViewCore).setJavaScriptEnabled(true);
         final String baseUrl = UrlUtils.getTestFileUrl("webview/");
         final String scriptFile = baseUrl + "script.js";
         final String pageHtml = getScriptFileTestPageHtml(scriptFile);
         loadDataWithBaseUrlSync(pageHtml, "text/html", false, baseUrl, null);
-        assertEquals(SCRIPT_LOADED, getTitleOnUiThread(mAwContents));
+        assertEquals(SCRIPT_LOADED, getTitleOnUiThread(mContentViewCore));
     }
 
     @SmallTest
     @Feature({"Android-WebView"})
     public void testFailedAccessToLocalFile() throws Throwable {
-        getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
+        getContentSettingsOnUiThread(mContentViewCore).setJavaScriptEnabled(true);
         final String scriptFile = UrlUtils.getTestFileUrl("webview/script.js");
         final String pageHtml = getScriptFileTestPageHtml(scriptFile);
         final String baseUrl = "http://example.com";
         loadDataWithBaseUrlSync(pageHtml, "text/html", false, baseUrl, null);
-        assertEquals(SCRIPT_NOT_LOADED, getTitleOnUiThread(mAwContents));
+        assertEquals(SCRIPT_NOT_LOADED, getTitleOnUiThread(mContentViewCore));
     }
 
     @SmallTest
@@ -246,7 +242,7 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
                     "<body>" + page1Title + "</body></html>";
 
             loadDataWithBaseUrlSync(page1Html, "text/html", false, null, historyUrl);
-            assertEquals(page1Title, getTitleOnUiThread(mAwContents));
+            assertEquals(page1Title, getTitleOnUiThread(mContentViewCore));
 
             final String page2Title = "Page2";
             final String page2Html = "<html><head><title>" + page2Title + "</title>" +
@@ -254,12 +250,12 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
 
             final TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                     mContentsClient.getOnPageFinishedHelper();
-            loadDataSync(mAwContents, onPageFinishedHelper, page2Html, "text/html", false);
-            assertEquals(page2Title, getTitleOnUiThread(mAwContents));
+            loadDataSync(mContentViewCore, onPageFinishedHelper, page2Html, "text/html", false);
+            assertEquals(page2Title, getTitleOnUiThread(mContentViewCore));
 
             HistoryUtils.goBackSync(getInstrumentation(), mContentViewCore, onPageFinishedHelper);
             // The title of the 'about.html' specified via historyUrl.
-            assertEquals(CommonResources.ABOUT_TITLE, getTitleOnUiThread(mAwContents));
+            assertEquals(CommonResources.ABOUT_TITLE, getTitleOnUiThread(mContentViewCore));
 
         } finally {
             if (webServer != null) webServer.shutdown();

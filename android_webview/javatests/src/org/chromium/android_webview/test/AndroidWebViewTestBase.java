@@ -74,11 +74,11 @@ public class AndroidWebViewTestBase
         }
     }
 
-    protected void enableJavaScriptOnUiThread(final AwContents awContents) {
+    protected void enableJavaScriptOnUiThread(final ContentViewCore contentViewCore) {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                awContents.getContentViewCore().getContentSettings().setJavaScriptEnabled(true);
+                contentViewCore.getContentSettings().setJavaScriptEnabled(true);
             }
         });
     }
@@ -86,11 +86,11 @@ public class AndroidWebViewTestBase
     /**
      * Loads url on the UI thread and blocks until onPageFinished is called.
      */
-    protected void loadUrlSync(final AwContents awContents,
+    protected void loadUrlSync(final ContentViewCore contentViewCore,
                                CallbackHelper onPageFinishedHelper,
                                final String url) throws Throwable {
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        loadUrlAsync(awContents, url);
+        loadUrlAsync(contentViewCore, url);
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
                 TimeUnit.SECONDS);
     }
@@ -98,12 +98,12 @@ public class AndroidWebViewTestBase
     /**
      * Loads url on the UI thread but does not block.
      */
-    protected void loadUrlAsync(final AwContents awContents,
+    protected void loadUrlAsync(final ContentViewCore contentViewCore,
                                 final String url) throws Throwable {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                awContents.getContentViewCore().loadUrl(new LoadUrlParams(url));
+                contentViewCore.loadUrl(new LoadUrlParams(url));
             }
         });
     }
@@ -111,12 +111,12 @@ public class AndroidWebViewTestBase
     /**
      * Loads data on the UI thread and blocks until onPageFinished is called.
      */
-    protected void loadDataSync(final AwContents awContents,
+    protected void loadDataSync(final ContentViewCore contentViewCore,
                                 CallbackHelper onPageFinishedHelper,
                                 final String data, final String mimeType,
                                 final boolean isBase64Encoded) throws Throwable {
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        loadDataAsync(awContents, data, mimeType, isBase64Encoded);
+        loadDataAsync(contentViewCore, data, mimeType, isBase64Encoded);
         onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
                 TimeUnit.SECONDS);
     }
@@ -124,32 +124,32 @@ public class AndroidWebViewTestBase
     /**
      * Loads data on the UI thread but does not block.
      */
-    protected void loadDataAsync(final AwContents awContents, final String data,
+    protected void loadDataAsync(final ContentViewCore contentViewCore, final String data,
                                  final String mimeType, final boolean isBase64Encoded)
             throws Throwable {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                awContents.loadUrl(LoadUrlParams.createLoadDataParams(
+                contentViewCore.loadUrl(LoadUrlParams.createLoadDataParams(
                         data, mimeType, isBase64Encoded));
             }
         });
     }
 
     protected AwTestContainerView createAwTestContainerView(final boolean incognito,
-            final AwContentsClient awContentsClient) {
+            final AwContentsClient contentsClient) {
         return createAwTestContainerView(incognito, new AwTestContainerView(getActivity()),
-                awContentsClient);
+                contentsClient);
     }
 
     protected AwTestContainerView createAwTestContainerView(final boolean incognito,
             final AwTestContainerView testContainerView,
-            final AwContentsClient awContentsClient) {
+            final AwContentsClient contentsClient) {
         ContentViewCore contentViewCore = new ContentViewCore(
                 getActivity(), ContentViewCore.PERSONALITY_VIEW);
         testContainerView.initialize(contentViewCore,
                 new AwContents(testContainerView, testContainerView.getInternalAccessDelegate(),
-                contentViewCore, awContentsClient, new ActivityNativeWindow(getActivity()),
+                contentViewCore, contentsClient, new ActivityNativeWindow(getActivity()),
                 incognito, false));
         getActivity().addView(testContainerView);
         return testContainerView;
@@ -175,31 +175,31 @@ public class AndroidWebViewTestBase
         return testContainerView.get();
     }
 
-    protected void destroyAwContentsOnMainSync(final AwContents awContents) {
-        if (awContents == null) return;
+    protected void destroyAwContentsOnMainSync(final AwContents contents) {
+        if (contents == null) return;
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                awContents.destroy();
+                contents.destroy();
             }
         });
     }
 
-    protected String getTitleOnUiThread(final AwContents awContents) throws Throwable {
+    protected String getTitleOnUiThread(final ContentViewCore contentViewCore) throws Throwable {
         return runTestOnUiThreadAndGetResult(new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return awContents.getContentViewCore().getTitle();
+                return contentViewCore.getTitle();
             }
         });
     }
 
     protected ContentSettings getContentSettingsOnUiThread(
-            final AwContents awContents) throws Throwable {
+            final ContentViewCore contentViewCore) throws Throwable {
         return runTestOnUiThreadAndGetResult(new Callable<ContentSettings>() {
             @Override
             public ContentSettings call() throws Exception {
-                return awContents.getContentViewCore().getContentSettings();
+                return contentViewCore.getContentSettings();
             }
         });
     }
@@ -218,7 +218,7 @@ public class AndroidWebViewTestBase
      * Executes the given snippet of JavaScript code within the given ContentView. Returns the
      * result of its execution in JSON format.
      */
-    protected String executeJavaScriptAndWaitForResult(final AwContents awContents,
+    protected String executeJavaScriptAndWaitForResult(final ContentViewCore core,
             TestAwContentsClient viewClient, final String code) throws Throwable {
         final AtomicInteger requestId = new AtomicInteger();
         TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper
@@ -227,7 +227,7 @@ public class AndroidWebViewTestBase
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                requestId.set(awContents.getContentViewCore().evaluateJavaScript(code));
+                requestId.set(core.evaluateJavaScript(code));
             }
         });
         onEvaluateJavaScriptResultHelper.waitForCallback(currentCallCount);

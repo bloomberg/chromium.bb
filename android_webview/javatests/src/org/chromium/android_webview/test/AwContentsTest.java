@@ -19,6 +19,7 @@ import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -82,12 +83,12 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         final String imageDoc = "<head/><body><img/><img/></body>";
 
         // Make sure a document that does not have images returns 0
-        loadDataSync(awContents, loadHelper, emptyDoc, mime, false);
+        loadDataSync(awContents.getContentViewCore(), loadHelper, emptyDoc, mime, false);
         int result = callDocumentHasImagesSync(awContents);
         assertEquals(0, result);
 
         // Make sure a document that does have images returns 1
-        loadDataSync(awContents, loadHelper, imageDoc, mime, false);
+        loadDataSync(awContents.getContentViewCore(), loadHelper, imageDoc, mime, false);
         result = callDocumentHasImagesSync(awContents);
         assertEquals(1, result);
     }
@@ -108,6 +109,7 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainer =
                 createAwTestContainerViewOnMainSync(false, contentClient);
+        final ContentViewCore contentView = testContainer.getContentViewCore();
         final AwContents awContents = testContainer.getAwContents();
 
         TestWebServer webServer = null;
@@ -123,31 +125,31 @@ public class AwContentsTest extends AndroidWebViewTestBase {
 
             // First load to populate cache.
             clearCacheOnUiThread(awContents, true);
-            loadUrlSync(awContents,
+            loadUrlSync(contentView,
                         contentClient.getOnPageFinishedHelper(),
                         pageUrl);
             assertEquals(1, webServer.getRequestCount(pagePath));
 
             // Load about:blank so next load is not treated as reload by webkit and force
             // revalidate with the server.
-            loadUrlSync(awContents,
+            loadUrlSync(contentView,
                         contentClient.getOnPageFinishedHelper(),
                         "about:blank");
 
             // No clearCache call, so should be loaded from cache.
-            loadUrlSync(awContents,
+            loadUrlSync(contentView,
                         contentClient.getOnPageFinishedHelper(),
                         pageUrl);
             assertEquals(1, webServer.getRequestCount(pagePath));
 
             // Same as above.
-            loadUrlSync(awContents,
+            loadUrlSync(contentView,
                         contentClient.getOnPageFinishedHelper(),
                         "about:blank");
 
             // Clear cache, so should hit server again.
             clearCacheOnUiThread(awContents, true);
-            loadUrlSync(awContents,
+            loadUrlSync(contentView,
                         contentClient.getOnPageFinishedHelper(),
                         pageUrl);
             assertEquals(2, webServer.getRequestCount(pagePath));
@@ -185,6 +187,7 @@ public class AwContentsTest extends AndroidWebViewTestBase {
     public void testGetFavicon() throws Throwable {
         final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
+        final ContentViewCore contentViewCore = testView.getContentViewCore();
 
         TestWebServer webServer = null;
         try {
@@ -200,8 +203,8 @@ public class AwContentsTest extends AndroidWebViewTestBase {
             // the page load completes which makes it slightly hard to test.
             final Bitmap defaultFavicon = awContents.getFavicon();
 
-            getContentSettingsOnUiThread(awContents).setImagesEnabled(true);
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            getContentSettingsOnUiThread(contentViewCore).setImagesEnabled(true);
+            loadUrlSync(contentViewCore, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
             assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
                 @Override

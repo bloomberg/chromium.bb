@@ -9,10 +9,10 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
-import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.CookieManager;
 import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
@@ -31,19 +31,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CookieManagerTest extends AndroidWebViewTestBase {
 
     private CookieManager mCookieManager;
-    private TestAwContentsClient mContentsClient;
-    private AwContents mAwContents;
+    private TestAwContentsClient mContentViewClient;
+    private ContentViewCore mContentViewCore;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
         mCookieManager = new CookieManager();
-        mContentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        mAwContents = testContainerView.getAwContents();
-        mAwContents.getContentViewCore().getContentSettings().setJavaScriptEnabled(true);
+        mContentViewClient = new TestAwContentsClient();
+        mContentViewCore =
+                createAwTestContainerViewOnMainSync(mContentViewClient).getContentViewCore();
+        mContentViewCore.getContentSettings().setJavaScriptEnabled(true);
         assertNotNull(mCookieManager);
     }
 
@@ -73,7 +72,7 @@ public class CookieManagerTest extends AndroidWebViewTestBase {
             assertFalse(mCookieManager.acceptCookie());
             assertFalse(mCookieManager.hasCookies());
 
-            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mContentViewCore, mContentViewClient.getOnPageFinishedHelper(), url);
             setCookie("test1", "value1");
             assertNull(mCookieManager.getCookie(url));
 
@@ -81,14 +80,14 @@ public class CookieManagerTest extends AndroidWebViewTestBase {
             responseHeaders.add(
                     Pair.create("Set-Cookie", "header-test1=header-value1; path=" + path));
             url = webServer.setResponse(path, responseStr, responseHeaders);
-            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mContentViewCore, mContentViewClient.getOnPageFinishedHelper(), url);
             assertNull(mCookieManager.getCookie(url));
 
             mCookieManager.setAcceptCookie(true);
             assertTrue(mCookieManager.acceptCookie());
 
             url = webServer.setResponse(path, responseStr, null);
-            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mContentViewCore, mContentViewClient.getOnPageFinishedHelper(), url);
             setCookie("test2", "value2");
             waitForCookie(url);
             String cookie = mCookieManager.getCookie(url);
@@ -99,7 +98,7 @@ public class CookieManagerTest extends AndroidWebViewTestBase {
             responseHeaders.add(
                     Pair.create("Set-Cookie", "header-test2=header-value2 path=" + path));
             url = webServer.setResponse(path, responseStr, responseHeaders);
-            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            loadUrlSync(mContentViewCore, mContentViewClient.getOnPageFinishedHelper(), url);
             waitForCookie(url);
             cookie = mCookieManager.getCookie(url);
             assertNotNull(cookie);
@@ -115,13 +114,13 @@ public class CookieManagerTest extends AndroidWebViewTestBase {
     private void setCookie(final String name, final String value)
             throws Throwable {
         OnEvaluateJavaScriptResultHelper onEvaluateJavaScriptResultHelper =
-                mContentsClient.getOnEvaluateJavaScriptResultHelper();
+                mContentViewClient.getOnEvaluateJavaScriptResultHelper();
         int currentCallCount = onEvaluateJavaScriptResultHelper.getCallCount();
         final AtomicInteger requestId = new AtomicInteger();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                requestId.set(mAwContents.getContentViewCore().evaluateJavaScript(
+                requestId.set(mContentViewCore.evaluateJavaScript(
                         "var expirationDate = new Date();" +
                         "expirationDate.setDate(expirationDate.getDate() + 5);" +
                         "document.cookie='" + name + "=" + value +

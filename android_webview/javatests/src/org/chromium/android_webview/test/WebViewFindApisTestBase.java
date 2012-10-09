@@ -62,7 +62,7 @@ public class WebViewFindApisTestBase extends AndroidWebViewTestBase {
         final AwContents contents =
                 createAwTestContainerViewOnMainSync(contentsClient).getAwContents();
         final String data = "<html><head></head><body>" + html + "</body></html>";
-        loadDataSync(contents, contentsClient.getOnPageFinishedHelper(),
+        loadDataSync(contents.getContentViewCore(), contentsClient.getOnPageFinishedHelper(),
                 data, "text/html", false);
         return contents;
     }

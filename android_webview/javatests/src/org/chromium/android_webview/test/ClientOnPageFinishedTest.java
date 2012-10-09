@@ -7,9 +7,9 @@ package org.chromium.android_webview.test;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
 /**
@@ -18,15 +18,14 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
 
     private TestAwContentsClient mContentsClient;
-    private AwContents mAwContents;
+    private ContentViewCore mContentViewCore;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        mAwContents = testContainerView.getAwContents();
+        mContentViewCore =
+                createAwTestContainerViewOnMainSync(mContentsClient).getContentViewCore();
     }
 
     @MediumTest
@@ -37,7 +36,7 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
 
         String html = "<html><body>Simple page.</body></html>";
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        loadDataAsync(mAwContents, html, "text/html", false);
+        loadDataAsync(mContentViewCore, html, "text/html", false);
 
         onPageFinishedHelper.waitForCallback(currentCallCount);
         assertEquals("data:text/html," + html, onPageFinishedHelper.getUrl());
@@ -58,7 +57,7 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
         String url = "http://man.id.be.really.surprised.if.this.address.existed.blah/";
         int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
         int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
-        loadUrlAsync(mAwContents, url);
+        loadUrlAsync(mContentViewCore, url);
 
         onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
         onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
@@ -84,7 +83,7 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
 
             assertEquals(0, onPageFinishedHelper.getCallCount());
             final int pageWithSubresourcesCallCount = onPageFinishedHelper.getCallCount();
-            loadDataAsync(mAwContents,
+            loadDataAsync(mContentViewCore,
                           "<html><iframe src=\"" + testPath + "\" /></html>",
                           "text/html",
                           false);
@@ -96,7 +95,7 @@ public class ClientOnPageFinishedTest extends AndroidWebViewTestBase {
             // we get is for the synchronizationUrl we know that the previous load did not schedule
             // a callback for the iframe.
             final int synchronizationPageCallCount = onPageFinishedHelper.getCallCount();
-            loadUrlAsync(mAwContents, syncUrl);
+            loadUrlAsync(mContentViewCore, syncUrl);
 
             onPageFinishedHelper.waitForCallback(synchronizationPageCallCount);
             assertEquals(syncUrl, onPageFinishedHelper.getUrl());

@@ -7,7 +7,6 @@ package org.chromium.android_webview.test;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.base.test.util.DisabledTest;
@@ -21,15 +20,14 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
 
     private TestAwContentsClient mContentsClient;
-    private AwContents mAwContents;
+    private ContentViewCore mContentViewCore;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        mAwContents = testContainerView.getAwContents();
+        mContentViewCore =
+                createAwTestContainerViewOnMainSync(mContentsClient).getContentViewCore();
     }
 
     /*@MediumTest
@@ -43,7 +41,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
 
         String url = "http://man.id.be.really.surprised.if.this.address.existed.blah/";
         int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
-        loadUrlAsync(mAwContents, url);
+        loadUrlAsync(mContentViewCore, url);
 
         onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
         assertEquals(ErrorCodeConversionHelper.ERROR_HOST_LOOKUP,
@@ -64,7 +62,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
 
         String url = "foo://some/resource";
         int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
-        loadUrlAsync(mAwContents, url);
+        loadUrlAsync(mContentViewCore, url);
 
         onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
         assertEquals(ErrorCodeConversionHelper.ERROR_UNSUPPORTED_SCHEME,
@@ -82,7 +80,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
                 mContentsClient.getOnPageFinishedHelper();
 
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        loadDataAsync(mAwContents,
+        loadDataAsync(mContentViewCore,
                       "<html><iframe src=\"http//invalid.url.co/\" /></html>",
                       "text/html",
                       false);
@@ -100,7 +98,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
             final String url = "file:///android_asset/does_not_exist.html";
             int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
             useTestResourceContext();
-            loadUrlAsync(mAwContents, url);
+            loadUrlAsync(mContentViewCore, url);
 
             onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
             assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN,
@@ -121,7 +119,7 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
             final String url = "file:///android_res/raw/does_not_exist.html";
             int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
             useTestResourceContext();
-            loadUrlAsync(mAwContents, url);
+            loadUrlAsync(mContentViewCore, url);
 
             onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount);
             assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN,

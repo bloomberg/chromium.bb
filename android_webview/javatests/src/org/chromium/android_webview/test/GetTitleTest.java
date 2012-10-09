@@ -7,10 +7,10 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.test.suitebuilder.annotation.Smoke;
 
-import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.content.browser.ContentViewCore;
 
 /**
  * A test suite for ContentView.getTitle().
@@ -23,7 +23,7 @@ public class GetTitleTest extends AndroidWebViewTestBase {
     private static final String GET_TITLE_TEST_NO_TITLE_PATH = "/get_title_test_no_title.html";
 
     private TestAwContentsClient mContentsClient;
-    private AwContents mAwContents;
+    private ContentViewCore mContentViewCore;
 
     private static class PageInfo {
         public final String mTitle;
@@ -39,9 +39,8 @@ public class GetTitleTest extends AndroidWebViewTestBase {
     public void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        mAwContents = testContainerView.getAwContents();
+        mContentViewCore =
+                createAwTestContainerViewOnMainSync(mContentsClient).getContentViewCore();
     }
 
     private static final String getHtml(String title) {
@@ -55,9 +54,9 @@ public class GetTitleTest extends AndroidWebViewTestBase {
     }
 
     private String loadFromDataAndGetTitle(String html) throws Throwable {
-        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+        loadDataSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(),
                 html, "text/html", false);
-        return getTitleOnUiThread(mAwContents);
+        return getTitleOnUiThread(mContentViewCore);
     }
 
     private PageInfo loadFromUrlAndGetTitle(String html, String filename) throws Throwable {
@@ -66,8 +65,8 @@ public class GetTitleTest extends AndroidWebViewTestBase {
             webServer = new TestWebServer(false);
 
             final String url = webServer.setResponse(filename, html, null);
-            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
-            return new PageInfo(getTitleOnUiThread(mAwContents),
+            loadUrlSync(mContentViewCore, mContentsClient.getOnPageFinishedHelper(), url);
+            return new PageInfo(getTitleOnUiThread(mContentViewCore),
                 url.replaceAll("http:\\/\\/", ""));
 
         } finally {

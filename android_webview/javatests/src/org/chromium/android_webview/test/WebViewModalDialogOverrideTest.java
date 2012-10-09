@@ -11,10 +11,10 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,12 +48,12 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
             }
         };
         AwTestContainerView view = createAwTestContainerViewOnMainSync(client);
-        final AwContents awContents = view.getAwContents();
+        final ContentViewCore contentViewCore = view.getContentViewCore();
 
-        enableJavaScriptOnUiThread(awContents);
-        loadDataSync(awContents, client.getOnPageFinishedHelper(),
+        enableJavaScriptOnUiThread(contentViewCore);
+        loadDataSync(contentViewCore, client.getOnPageFinishedHelper(),
                 EMPTY_PAGE, "text/html", false);
-        executeJavaScriptAndWaitForResult(awContents, client,
+        executeJavaScriptAndWaitForResult(contentViewCore, client,
                 "alert('" + ALERT_TEXT + "')");
         assertTrue(callbackCalled.get());
     }
@@ -81,12 +81,12 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
             }
         };
         AwTestContainerView view = createAwTestContainerViewOnMainSync(client);
-        final AwContents awContents = view.getAwContents();
+        ContentViewCore contentViewCore = view.getContentViewCore();
 
-        enableJavaScriptOnUiThread(awContents);
-        loadDataSync(awContents, client.getOnPageFinishedHelper(),
+        enableJavaScriptOnUiThread(contentViewCore);
+        loadDataSync(contentViewCore, client.getOnPageFinishedHelper(),
                 EMPTY_PAGE, "text/html", false);
-        String result = executeJavaScriptAndWaitForResult(awContents, client,
+        String result = executeJavaScriptAndWaitForResult(contentViewCore, client,
                 "prompt('" + PROMPT_TEXT + "','" + PROMPT_DEFAULT + "')");
         assertTrue(called.get());
         assertEquals("\"" + PROMPT_RESULT + "\"", result);
@@ -111,12 +111,12 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
             }
         };
         AwTestContainerView view = createAwTestContainerViewOnMainSync(client);
-        final AwContents awContents = view.getAwContents();
-        enableJavaScriptOnUiThread(awContents);
+        ContentViewCore contentViewCore = view.getContentViewCore();
+        enableJavaScriptOnUiThread(contentViewCore);
 
-        loadDataSync(awContents, client.getOnPageFinishedHelper(),
+        loadDataSync(contentViewCore, client.getOnPageFinishedHelper(),
                 EMPTY_PAGE, "text/html", false);
-        String result = executeJavaScriptAndWaitForResult(awContents, client,
+        String result = executeJavaScriptAndWaitForResult(contentViewCore, client,
                 "confirm('" + CONFIRM_TEXT + "')");
         assertTrue(called.get());
         assertEquals("true", result);
@@ -141,12 +141,12 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
             }
         };
         AwTestContainerView view = createAwTestContainerViewOnMainSync(client);
-        final AwContents awContents = view.getAwContents();
-        enableJavaScriptOnUiThread(awContents);
+        ContentViewCore contentViewCore = view.getContentViewCore();
+        enableJavaScriptOnUiThread(contentViewCore);
 
-        loadDataSync(awContents, client.getOnPageFinishedHelper(),
+        loadDataSync(contentViewCore, client.getOnPageFinishedHelper(),
                 EMPTY_PAGE, "text/html", false);
-        String result = executeJavaScriptAndWaitForResult(awContents, client,
+        String result = executeJavaScriptAndWaitForResult(contentViewCore, client,
                 "confirm('" + CONFIRM_TEXT + "')");
         assertTrue(called.get());
         assertEquals("false", result);
@@ -167,16 +167,16 @@ public class WebViewModalDialogOverrideTest extends AndroidWebViewTestBase {
             }
         };
         AwTestContainerView view = createAwTestContainerViewOnMainSync(client);
-        final AwContents awContents = view.getAwContents();
-        enableJavaScriptOnUiThread(awContents);
+        ContentViewCore contentViewCore = view.getContentViewCore();
+        enableJavaScriptOnUiThread(contentViewCore);
 
-        loadDataSync(awContents, client.getOnPageFinishedHelper(), BEFORE_UNLOAD_URL,
+        loadDataSync(contentViewCore, client.getOnPageFinishedHelper(), BEFORE_UNLOAD_URL,
                 "text/html", false);
-        enableJavaScriptOnUiThread(awContents);
+        enableJavaScriptOnUiThread(contentViewCore);
 
         // Don't wait synchronously because we don't leave the page.
         int currentCallCount = jsBeforeUnloadHelper.getCallCount();
-        loadDataAsync(awContents, EMPTY_PAGE, "text/html", false);
+        loadDataAsync(contentViewCore, EMPTY_PAGE, "text/html", false);
         jsBeforeUnloadHelper.waitForCallback(currentCallCount);
     }
 }
