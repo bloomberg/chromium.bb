@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/event_disposition.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -814,6 +815,18 @@ bool ToolbarView::HitTestRect(const gfx::Rect& rect) const {
 
 void ToolbarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
+
+  TabContents* tab_contents = GetTabContents();
+  if (tab_contents) {
+    int num_infobars = tab_contents->infobar_tab_helper()->GetInfoBarCount();
+    const chrome::search::Mode& mode(browser_->search_model()->mode());
+    if ((mode.is_ntp() || mode.is_search_results()) && num_infobars > 0) {
+      canvas->FillRect(gfx::Rect(0, height() - 1, width(), 1),
+                       ThemeService::GetDefaultColor(
+                           ThemeService::COLOR_SEARCH_SEPARATOR_LINE));
+      return;
+    }
+  }
 
   if (is_display_mode_normal())
     return;

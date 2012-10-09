@@ -82,6 +82,14 @@ struct Mode {
     return mode == MODE_SEARCH_SUGGESTIONS || mode == MODE_SEARCH_RESULTS;
   }
 
+  bool is_search_results() const {
+    return mode == MODE_SEARCH_RESULTS;
+  }
+
+  bool is_search_suggestions() const {
+    return mode == MODE_SEARCH_SUGGESTIONS;
+  }
+
   Type mode;
 
   // Mode changes can be animated.  This is transient state, once a call to

@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/ntp_background_util.h"
@@ -351,6 +352,7 @@ BrowserView::BrowserView(Browser* browser)
       ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(activate_modal_dialog_factory_(this)) {
   browser_->tab_strip_model()->AddObserver(this);
+  browser_->search_model()->AddObserver(this);
 }
 
 BrowserView::~BrowserView() {
@@ -366,6 +368,7 @@ BrowserView::~BrowserView() {
 #endif
 
   browser_->tab_strip_model()->RemoveObserver(this);
+  browser_->search_model()->RemoveObserver(this);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Stop hung plugin monitoring.
@@ -845,18 +848,23 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   // changed.  We have to do this after the block above so that the toolbars are
   // laid out correctly for calculating the maximum arrow height below.
   {
-    const LocationIconView* location_icon_view =
-        toolbar_->location_bar()->location_icon_view();
-    // The +1 in the next line creates a 1-px gap between icon and arrow tip.
-    gfx::Point icon_bottom(0, location_icon_view->GetImageBounds().bottom() -
-        LocationBarView::kIconInternalPadding + 1);
-    ConvertPointToTarget(location_icon_view, this, &icon_bottom);
-    gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
-    ConvertPointToTarget(infobar_container_, this, &infobar_top);
-
+    int top_arrow_height = 0;
+    // Hide the arrows on the Instant Extended NTP.
+    if (!chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()) ||
+        !browser()->search_model()->mode().is_ntp()) {
+      const LocationIconView* location_icon_view =
+          toolbar_->location_bar()->location_icon_view();
+      // The +1 in the next line creates a 1-px gap between icon and arrow tip.
+      gfx::Point icon_bottom(0, location_icon_view->GetImageBounds().bottom() -
+          LocationBarView::kIconInternalPadding + 1);
+      ConvertPointToTarget(location_icon_view, this, &icon_bottom);
+      gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
+      ConvertPointToTarget(infobar_container_, this, &infobar_top);
+      top_arrow_height = infobar_top.y() - icon_bottom.y();
+    }
     AutoReset<CallState> resetter(&call_state,
         is_animating ? REENTRANT_FORCE_FAST_RESIZE : REENTRANT);
-    infobar_container_->SetMaxTopArrowHeight(infobar_top.y() - icon_bottom.y());
+    infobar_container_->SetMaxTopArrowHeight(top_arrow_height);
   }
 
   // When transitioning from animating to not animating we need to make sure the
@@ -2503,7 +2511,11 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   // reparent the |contents_container_|.
   if (change_tab_contents)
     contents_container_->SetWebContents(NULL);
-  infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
+  // Hide infobars when showing Instant Extended suggestions.
+  infobar_container_->ChangeTabContents(
+      (chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()) &&
+          browser()->search_model()->mode().is_search_suggestions()) ?
+          NULL : new_contents->infobar_tab_helper());
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
@@ -2543,6 +2555,19 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
 
 gfx::Size BrowserView::GetResizeCornerSize() const {
   return ResizeCorner::GetSize();
+}
+
+void BrowserView::ModeChanged(const chrome::search::Mode& old_mode,
+                              const chrome::search::Mode& new_mode) {
+  // Hide infobars when showing Instant Extended suggestions and when moving
+  // from SUGGESTIONS to DEFAULT which happens when a URL is selected or typed
+  // from the NTP. Moving to DEFAULT will replace the infobars with those of the
+  // new tab contents, therefore we avoid the showing the current infobars for
+  // a brief moment.
+  bool hide_infobars = new_mode.is_search_suggestions() ||
+      (old_mode.is_search_suggestions() && new_mode.is_default());
+  infobar_container_->ChangeTabContents(
+      hide_infobars ? NULL : GetActiveTabContents()->infobar_tab_helper());
 }
 
 void BrowserView::CreateLauncherIcon() {
@@ -2621,6 +2646,7 @@ void BrowserView::RestackLocationBarContainer() {
     search_view_controller_->StackAtTop();
 #endif
   toolbar_->location_bar_container()->StackAtTop();
+  infobar_container_->StackAtTop();
 }
 
 bool BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)()) {
