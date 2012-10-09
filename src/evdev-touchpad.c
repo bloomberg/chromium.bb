@@ -457,19 +457,19 @@ process_key(struct touchpad_dispatch *touchpad,
 		touchpad->reset = 1;
 		break;
 	case BTN_TOOL_FINGER:
-		touchpad->finger_state =
-			~TOUCHPAD_FINGERS_ONE | e->value ?
-			TOUCHPAD_FINGERS_ONE : 0;
+		touchpad->finger_state &= ~TOUCHPAD_FINGERS_ONE;
+		if (e->value)
+			touchpad->finger_state |= TOUCHPAD_FINGERS_ONE;
 		break;
 	case BTN_TOOL_DOUBLETAP:
-		touchpad->finger_state =
-			~TOUCHPAD_FINGERS_TWO | e->value ?
-			TOUCHPAD_FINGERS_TWO : 0;
+		touchpad->finger_state &= ~TOUCHPAD_FINGERS_TWO;
+		if (e->value)
+			touchpad->finger_state |= TOUCHPAD_FINGERS_TWO;
 		break;
 	case BTN_TOOL_TRIPLETAP:
-		touchpad->finger_state =
-			~TOUCHPAD_FINGERS_THREE | e->value ?
-			TOUCHPAD_FINGERS_THREE : 0;
+		touchpad->finger_state &= ~TOUCHPAD_FINGERS_THREE;
+		if (e->value)
+			touchpad->finger_state |= TOUCHPAD_FINGERS_THREE;
 		break;
 	}
 }
