@@ -66,7 +66,7 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   login_display_->Init(users, false, true, false);
 
   static_cast<OobeUI*>(GetWebUI()->GetController())->ShowSigninScreen(
-      login_display_.get());
+      login_display_.get(), login_display_.get());
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,

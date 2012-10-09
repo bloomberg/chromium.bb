@@ -216,7 +216,7 @@ void WebUILoginDisplayHost::StartSignInScreen() {
 
   BaseLoginDisplayHost::StartSignInScreen();
   CHECK(webui_login_display_);
-  GetOobeUI()->ShowSigninScreen(webui_login_display_);
+  GetOobeUI()->ShowSigninScreen(webui_login_display_, webui_login_display_);
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     SetStatusAreaVisible(false);
 }

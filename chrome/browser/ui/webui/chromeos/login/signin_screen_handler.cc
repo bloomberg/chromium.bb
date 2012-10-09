@@ -7,23 +7,17 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/cancelable_callback.h"
 #include "base/command_line.h"
-#include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
-#include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -32,15 +26,14 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -84,13 +77,6 @@ const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
 // Max number of users to show.
 const size_t kMaxUsers = 5;
 
-// Timeout to smooth temporary network state transitions for flaky networks.
-const int kNetworkStateCheckDelayMs = 5000;
-
-const char kReasonNetworkChanged[] = "network changed";
-const char kReasonProxyChanged[] = "proxy changed";
-const char kReasonPortalDetected[] = "portal detected";
-
 // The Task posted to PostTaskAndReply in StartClearingDnsCache on the IO
 // thread.
 void ClearDnsCache(IOThread* io_thread) {
@@ -122,215 +108,12 @@ void UpdateAuthParamsFromSettings(DictionaryValue* params,
 
 } //  namespace
 
-// Class which observes network state changes and calls registered callbacks.
-// State is considered changed if connection or the active network has been
-// changed. Also, it answers to the requests about current network state.
-class NetworkStateInformer
-    : public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public content::NotificationObserver,
-      public CaptivePortalWindowProxyDelegate {
- public:
-  NetworkStateInformer(SigninScreenHandler* handler, content::WebUI* web_ui);
-  virtual ~NetworkStateInformer();
-
-  void Init();
-
-  // Adds observer's callback to be called when network state has been changed.
-  void AddObserver(const std::string& callback);
-
-  // Removes observer's callback.
-  void RemoveObserver(const std::string& callback);
-
-  // Sends current network state, network name, reason and last network type
-  // using the callback.
-  void SendState(const std::string& callback, const std::string& reason);
-
-  // NetworkLibrary::NetworkManagerObserver implementation:
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros) OVERRIDE;
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // CaptivePortalWindowProxyDelegate implementation:
-  virtual void OnPortalDetected() OVERRIDE;
-
-  // Returns active network's ID. It can be used to uniquely
-  // identify the network.
-  std::string active_network_id() {
-    return last_online_network_id_;
-  }
-
-  bool is_online() { return state_ == ONLINE; }
-
- private:
-  enum State {OFFLINE, ONLINE, CAPTIVE_PORTAL, CONNECTING};
-
-  bool UpdateState(chromeos::NetworkLibrary* cros);
-  void UpdateStateAndNotify();
-
-  void SendStateToObservers(const std::string& reason);
-
-  content::NotificationRegistrar registrar_;
-  base::hash_set<std::string> observers_;
-  ConnectionType last_network_type_;
-  std::string network_name_;
-  State state_;
-  SigninScreenHandler* handler_;
-  content::WebUI* web_ui_;
-  base::CancelableClosure check_state_;
-  std::string last_online_network_id_;
-  std::string last_connected_network_id_;
-};
-
-// NetworkStateInformer implementation -----------------------------------------
-
-NetworkStateInformer::NetworkStateInformer(SigninScreenHandler* handler,
-                                           content::WebUI* web_ui)
-    : last_network_type_(TYPE_WIFI),
-      state_(OFFLINE),
-      handler_(handler),
-      web_ui_(web_ui) {
-}
-
-void NetworkStateInformer::Init() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  UpdateState(cros);
-  cros->AddNetworkManagerObserver(this);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_SESSION_STARTED,
-                 content::NotificationService::AllSources());
-}
-
-NetworkStateInformer::~NetworkStateInformer() {
-  CrosLibrary::Get()->GetNetworkLibrary()->
-      RemoveNetworkManagerObserver(this);
-}
-
-void NetworkStateInformer::AddObserver(const std::string& callback) {
-  observers_.insert(callback);
-}
-
-void NetworkStateInformer::RemoveObserver(const std::string& callback) {
-  observers_.erase(callback);
-}
-
-void NetworkStateInformer::SendState(const std::string& callback,
-                                     const std::string& reason) {
-  base::FundamentalValue state_value(state_);
-  base::StringValue network_value(network_name_);
-  base::StringValue reason_value(reason);
-  base::FundamentalValue last_network_value(last_network_type_);
-  web_ui_->CallJavascriptFunction(callback, state_value, network_value,
-                                  reason_value, last_network_value);
-}
-
-void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
-  State new_state = OFFLINE;
-  std::string new_network_id;
-  const Network* active_network = cros->active_network();
-  if (active_network) {
-    if (active_network->online()) {
-      new_state = ONLINE;
-      new_network_id = active_network->unique_id();
-    } else if (active_network->connecting()) {
-      new_state = CONNECTING;
-      new_network_id = active_network->unique_id();
-    } else if (active_network->restricted_pool()) {
-      new_state = CAPTIVE_PORTAL;
-    }
-  }
-
-  if ((state_ != ONLINE && (new_state == ONLINE || new_state == CONNECTING)) ||
-      (state_ == ONLINE && (new_state == ONLINE || new_state == CONNECTING) &&
-       new_network_id != last_online_network_id_)) {
-    if (new_state == ONLINE)
-      last_online_network_id_ = new_network_id;
-    // Transitions {OFFLINE, PORTAL} -> ONLINE and connections to different
-    // network are processed without delay.
-    UpdateStateAndNotify();
-  } else {
-    check_state_.Cancel();
-    check_state_.Reset(
-        base::Bind(&NetworkStateInformer::UpdateStateAndNotify,
-                   base::Unretained(this)));
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        check_state_.callback(),
-        base::TimeDelta::FromMilliseconds(kNetworkStateCheckDelayMs));
-  }
-}
-
-void NetworkStateInformer::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_SESSION_STARTED)
-    registrar_.RemoveAll();
-  else if (type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED)
-    SendStateToObservers(kReasonProxyChanged);
-  else
-    NOTREACHED() << "Unknown notification: " << type;
-}
-
-void NetworkStateInformer::OnPortalDetected() {
-  SendStateToObservers(kReasonPortalDetected);
-}
-
-bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
-  State new_state = OFFLINE;
-  std::string new_network_id;
-  network_name_.clear();
-
-  const Network* active_network = cros->active_network();
-  if (active_network) {
-    if (active_network->online())
-      new_state = ONLINE;
-    else if (active_network->connecting())
-      new_state = CONNECTING;
-    else if (active_network->restricted_pool())
-      new_state = CAPTIVE_PORTAL;
-
-    new_network_id = active_network->unique_id();
-    network_name_ = active_network->name();
-    last_network_type_ = active_network->type();
-  }
-
-  bool updated = (new_state != state_) ||
-      (new_state != OFFLINE && new_network_id != last_connected_network_id_);
-  state_ = new_state;
-  if (state_ != OFFLINE)
-    last_connected_network_id_ = new_network_id;
-
-  if (updated && state_ == ONLINE)
-    handler_->OnNetworkReady();
-
-  return updated;
-}
-
-void NetworkStateInformer::UpdateStateAndNotify() {
-  // Cancel pending update request if any.
-  check_state_.Cancel();
-
-  if (UpdateState(CrosLibrary::Get()->GetNetworkLibrary()))
-    SendStateToObservers(kReasonNetworkChanged);
-}
-
-void NetworkStateInformer::SendStateToObservers(const std::string& reason) {
-  for (base::hash_set<std::string>::iterator it = observers_.begin();
-       it != observers_.end(); ++it) {
-    SendState(*it, reason);
-  }
-}
-
 // SigninScreenHandler implementation ------------------------------------------
 
-SigninScreenHandler::SigninScreenHandler()
+SigninScreenHandler::SigninScreenHandler(
+    const scoped_refptr<NetworkStateInformer>& network_state_informer)
     : delegate_(NULL),
+      native_window_delegate_(NULL),
       show_on_init_(false),
       oobe_ui_(false),
       focus_stolen_(false),
@@ -339,14 +122,18 @@ SigninScreenHandler::SigninScreenHandler()
       dns_cleared_(false),
       dns_clear_task_running_(false),
       cookies_cleared_(false),
+      network_state_informer_(network_state_informer),
       cookie_remover_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       webui_visible_(false) {
+  DCHECK(network_state_informer_);
+  network_state_informer_->AddObserver(this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowGuest, this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
+  DCHECK(network_state_informer_);
   weak_factory_.InvalidateWeakPtrs();
   if (cookie_remover_)
     cookie_remover_->RemoveObserver(this);
@@ -356,6 +143,7 @@ SigninScreenHandler::~SigninScreenHandler() {
     key_event_listener->RemoveCapsLockObserver(this);
   if (delegate_)
     delegate_->SetWebUIHandler(NULL);
+  network_state_informer_->RemoveObserver(this);
   CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowNewUser, this);
   CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowGuest, this);
 }
@@ -446,8 +234,23 @@ void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
     delegate_->SetWebUIHandler(this);
 }
 
+void SigninScreenHandler::SetNativeWindowDelegate(
+    NativeWindowDelegate* native_window_delegate) {
+  native_window_delegate_ = native_window_delegate;
+}
+
 void SigninScreenHandler::OnNetworkReady() {
   MaybePreloadAuthExtension();
+}
+
+void SigninScreenHandler::UpdateState(NetworkStateInformer::State state,
+                                      const std::string& network_name,
+                                      const std::string& reason,
+                                      ConnectionType last_network_type) {
+  for (WebUIObservers::const_iterator it = observers_.begin();
+      it != observers_.end(); ++it) {
+    SendState(*it, state, network_name, reason, last_network_type);
+  }
 }
 
 // SigninScreenHandler, private: -----------------------------------------------
@@ -471,13 +274,12 @@ void SigninScreenHandler::Initialize() {
 }
 
 gfx::NativeWindow SigninScreenHandler::GetNativeWindow() {
-  return delegate_ ? delegate_->GetNativeWindow() : NULL;
+  if (native_window_delegate_)
+    return native_window_delegate_->GetNativeWindow();
+  return NULL;
 }
 
 void SigninScreenHandler::RegisterMessages() {
-  network_state_informer_.reset(new NetworkStateInformer(this, web_ui()));
-  network_state_informer_->Init();
-
   web_ui()->RegisterMessageCallback("authenticateUser",
       base::Bind(&SigninScreenHandler::HandleAuthenticateUser,
                  base::Unretained(this)));
@@ -492,15 +294,6 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("launchIncognito",
       base::Bind(&SigninScreenHandler::HandleLaunchIncognito,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("fixCaptivePortal",
-      base::Bind(&SigninScreenHandler::HandleFixCaptivePortal,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showCaptivePortal",
-        base::Bind(&SigninScreenHandler::HandleShowCaptivePortal,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("hideCaptivePortal",
-      base::Bind(&SigninScreenHandler::HandleHideCaptivePortal,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("offlineLogin",
       base::Bind(&SigninScreenHandler::HandleOfflineLogin,
@@ -816,31 +609,6 @@ void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
     delegate_->LoginAsGuest();
 }
 
-void SigninScreenHandler::HandleFixCaptivePortal(const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  // TODO(altimofeev): move error page and captive portal window showing logic
-  // to C++ (currenly most of it is done on the JS side).
-  if (!captive_portal_window_proxy_.get()) {
-    captive_portal_window_proxy_.reset(
-        new CaptivePortalWindowProxy(network_state_informer_.get(),
-                                     GetNativeWindow()));
-  }
-  captive_portal_window_proxy_->ShowIfRedirected();
-}
-
-void SigninScreenHandler::HandleShowCaptivePortal(const base::ListValue* args) {
-  // This call is an explicit user action
-  // i.e. clicking on link so force dialog show.
-  HandleFixCaptivePortal(args);
-  captive_portal_window_proxy_->Show();
-}
-
-void SigninScreenHandler::HandleHideCaptivePortal(const base::ListValue* args) {
-  if (captive_portal_window_proxy_.get())
-    captive_portal_window_proxy_->Close();
-}
-
 void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   if (!delegate_ || delegate_->IsShowUsers()) {
     NOTREACHED();
@@ -1061,13 +829,19 @@ void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleLoginRequestNetworkState(
     const base::ListValue* args) {
+  DCHECK(network_state_informer_);
+
   std::string callback;
   std::string reason;
   if (!args->GetString(0, &callback) || !args->GetString(1, &reason)) {
     NOTREACHED();
     return;
   }
-  network_state_informer_->SendState(callback, reason);
+  SendState(callback,
+            network_state_informer_->state(),
+            network_state_informer_->network_name(),
+            reason,
+            network_state_informer_->last_network_type());
 }
 
 void SigninScreenHandler::HandleLoginAddNetworkStateObserver(
@@ -1077,7 +851,7 @@ void SigninScreenHandler::HandleLoginAddNetworkStateObserver(
     NOTREACHED();
     return;
   }
-  network_state_informer_->AddObserver(callback);
+  observers_.insert(callback);
 }
 
 void SigninScreenHandler::HandleLoginRemoveNetworkStateObserver(
@@ -1087,7 +861,7 @@ void SigninScreenHandler::HandleLoginRemoveNetworkStateObserver(
     NOTREACHED();
     return;
   }
-  network_state_informer_->RemoveObserver(callback);
+  observers_.erase(callback);
 }
 
 void SigninScreenHandler::HandleDemoWebuiReady(const base::ListValue* args) {
@@ -1211,6 +985,19 @@ bool SigninScreenHandler::DoRestrictedUsersMatchExistingOnScreen() {
     }
   }
   return true;
+}
+
+void SigninScreenHandler::SendState(const std::string& callback,
+                                    NetworkStateInformer::State state,
+                                    const std::string& network_name,
+                                    const std::string& reason,
+                                    ConnectionType last_network_type) {
+  base::FundamentalValue state_value(state);
+  base::StringValue network_value(network_name);
+  base::StringValue reason_value(reason);
+  base::FundamentalValue last_network_value(last_network_type);
+  web_ui()->CallJavascriptFunction(callback,
+      state_value, network_value, reason_value, last_network_value);
 }
 
 }  // namespace chromeos

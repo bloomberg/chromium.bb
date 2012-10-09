@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -14,9 +15,9 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/gfx/native_widget_types.h"
 
 class BrowsingDataRemover;
 
@@ -28,7 +29,7 @@ class ListValue;
 namespace chromeos {
 
 class CaptivePortalWindowProxy;
-class NetworkStateInformer;
+class NativeWindowDelegate;
 class User;
 
 // An interface for WebUILoginDisplay to call SigninScreenHandler.
@@ -55,9 +56,6 @@ class LoginDisplayWebUIHandler {
 // An interface for SigninScreenHandler to call WebUILoginDisplay.
 class SigninScreenHandlerDelegate {
  public:
-  // Returns corresponding native window.
-  virtual gfx::NativeWindow GetNativeWindow() const = 0;
-
   // Confirms sign up by provided |username| and |password| specified.
   // Used for new user login via GAIA extension.
   virtual void CompleteLogin(const std::string& username,
@@ -121,13 +119,17 @@ class SigninScreenHandlerDelegate {
 
 // A class that handles the WebUI hooks in sign-in screen in OobeDisplay
 // and LoginDisplay.
-class SigninScreenHandler : public BaseScreenHandler,
-                            public LoginDisplayWebUIHandler,
-                            public BrowsingDataRemover::Observer,
-                            public SystemKeyEventListener::CapsLockObserver,
-                            public content::NotificationObserver {
+class SigninScreenHandler
+    : public BaseScreenHandler,
+      public LoginDisplayWebUIHandler,
+      public BrowsingDataRemover::Observer,
+      public SystemKeyEventListener::CapsLockObserver,
+      public content::NotificationObserver,
+      public NetworkStateInformerDelegate,
+      public NetworkStateInformer::NetworkStateInformerObserver {
  public:
-  SigninScreenHandler();
+  SigninScreenHandler(
+      const scoped_refptr<NetworkStateInformer>& network_state_informer);
   virtual ~SigninScreenHandler();
 
   // Shows the sign in screen. |oobe_ui| indicates whether the signin
@@ -138,10 +140,20 @@ class SigninScreenHandler : public BaseScreenHandler,
   // delegate is set before Show() method will be called.
   void SetDelegate(SigninScreenHandlerDelegate* delegate);
 
-  // Called when network is connected.
-  void OnNetworkReady();
+  void SetNativeWindowDelegate(NativeWindowDelegate* native_window_delegate);
+
+  // NetworkStateInformerDelegate implementation:
+  virtual void OnNetworkReady() OVERRIDE;
+
+  // NetworkStateInformer::NetworkStateInformerObserver implementation:
+  virtual void UpdateState(NetworkStateInformer::State state,
+                           const std::string& network_name,
+                           const std::string& reason,
+                           ConnectionType last_network_type) OVERRIDE;
 
  private:
+  typedef base::hash_set<std::string> WebUIObservers;
+
   friend class ReportDnsCacheClearedOnUIThread;
 
   // BaseScreenHandler implementation:
@@ -200,9 +212,6 @@ class SigninScreenHandler : public BaseScreenHandler,
   void HandleAuthenticateUser(const base::ListValue* args);
   void HandleLaunchDemoUser(const base::ListValue* args);
   void HandleLaunchIncognito(const base::ListValue* args);
-  void HandleFixCaptivePortal(const base::ListValue* args);
-  void HandleShowCaptivePortal(const base::ListValue* args);
-  void HandleHideCaptivePortal(const base::ListValue* args);
   void HandleOfflineLogin(const base::ListValue* args);
   void HandleShutdownSystem(const base::ListValue* args);
   void HandleUserDeselected(const base::ListValue* args);
@@ -246,8 +255,18 @@ class SigninScreenHandler : public BaseScreenHandler,
   // (iii) existing users match to restricted list.
   bool DoRestrictedUsersMatchExistingOnScreen();
 
+  // Sends network state to a WebUI |callback|.
+  void SendState(const std::string& callback,
+                 NetworkStateInformer::State state,
+                 const std::string& network_name,
+                 const std::string& reason,
+                 ConnectionType last_network_type);
+
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
+
+  // A delegate used to get gfx::NativeWindow.
+  NativeWindowDelegate* native_window_delegate_;
 
   // Whether screen should be shown right after initialization.
   bool show_on_init_;
@@ -279,16 +298,13 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
 
-  // Network state informer used to keep offline message screen up.
-  scoped_ptr<NetworkStateInformer> network_state_informer_;
+  // Network state informer used to keep signin screen up.
+  scoped_refptr<NetworkStateInformer> network_state_informer_;
 
   // Email to pre-populate with.
   std::string email_;
   // Emails of the users, whose passwords have recently been changed.
   std::set<std::string> password_changed_for_;
-
-  // Proxy which manages showing of the window for captive portal entering.
-  scoped_ptr<CaptivePortalWindowProxy> captive_portal_window_proxy_;
 
   // Test credentials.
   std::string test_user_;
@@ -300,6 +316,9 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // Set to true once |LOGIN_WEBUI_VISIBLE| notification is observed.
   bool webui_visible_;
+
+  // Sign-in screen WebUI observers of network state.
+  WebUIObservers observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

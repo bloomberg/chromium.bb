@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "content/public/browser/web_ui_controller.h"
 
@@ -19,6 +20,8 @@ namespace chromeos {
 class BaseScreenHandler;
 class CoreOobeHandler;
 class ErrorScreenHandler;
+class NativeWindowDelegate;
+class NetworkStateInformer;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 }
@@ -58,13 +61,18 @@ class OobeUI : public OobeDisplay,
   void ShowOobeUI(bool show);
 
   // Shows the signin screen.
-  void ShowSigninScreen(SigninScreenHandlerDelegate* delegate);
+  void ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
+                        NativeWindowDelegate* native_window_delegate);
 
   // Resets the delegate set in ShowSigninScreen.
   void ResetSigninScreenHandlerDelegate();
 
  private:
   void AddScreenHandler(BaseScreenHandler* handler);
+
+  // Reference to NetworkStateInformer that handles changes in network
+  // state.
+  scoped_refptr<NetworkStateInformer> network_state_informer_;
 
   // Reference to CoreOobeHandler that handles common requests of Oobe page.
   CoreOobeHandler* core_handler_;

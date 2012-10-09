@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
@@ -130,6 +131,9 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       error_screen_handler_(NULL),
       signin_screen_handler_(NULL),
       user_image_screen_actor_(NULL) {
+  network_state_informer_ = new NetworkStateInformer();
+  network_state_informer_->Init();
+
   core_handler_ = new CoreOobeHandler(this);
   AddScreenHandler(core_handler_);
 
@@ -163,11 +167,13 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   user_image_screen_actor_ = user_image_screen_handler;
   AddScreenHandler(user_image_screen_handler);
 
-  error_screen_handler_ = new ErrorScreenHandler();
+  error_screen_handler_ = new ErrorScreenHandler(network_state_informer_);
   AddScreenHandler(error_screen_handler_);
 
-  signin_screen_handler_ = new SigninScreenHandler;
+  signin_screen_handler_ = new SigninScreenHandler(network_state_informer_);
   AddScreenHandler(signin_screen_handler_);
+
+  network_state_informer_->SetDelegate(signin_screen_handler_);
 
   DictionaryValue* localized_strings = new DictionaryValue();
   GetLocalizedStrings(localized_strings);
@@ -288,13 +294,19 @@ void OobeUI::ShowOobeUI(bool show) {
   core_handler_->ShowOobeUI(show);
 }
 
-void OobeUI::ShowSigninScreen(SigninScreenHandlerDelegate* delegate) {
+void OobeUI::ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
+                              NativeWindowDelegate* native_window_delegate) {
   signin_screen_handler_->SetDelegate(delegate);
+  signin_screen_handler_->SetNativeWindowDelegate(native_window_delegate);
+  error_screen_handler_->SetNativeWindowDelegate(native_window_delegate);
+
   signin_screen_handler_->Show(core_handler_->show_oobe_ui());
 }
 
 void OobeUI::ResetSigninScreenHandlerDelegate() {
   signin_screen_handler_->SetDelegate(NULL);
+  signin_screen_handler_->SetNativeWindowDelegate(NULL);
+  error_screen_handler_->SetNativeWindowDelegate(NULL);
 }
 
 }  // namespace chromeos

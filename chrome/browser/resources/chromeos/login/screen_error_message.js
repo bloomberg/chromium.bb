@@ -74,9 +74,6 @@ cr.define('login', function() {
 
     /** @inheritDoc */
     decorate: function() {
-      chrome.send('loginAddNetworkStateObserver',
-                  ['login.ErrorMessageScreen.updateState']);
-
       cr.ui.DropDown.decorate($('offline-networks-list'));
       this.updateLocalizedContent_();
     },

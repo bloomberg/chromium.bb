@@ -11,12 +11,14 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
 // WebUI-based login UI implementation.
 class WebUILoginDisplay : public LoginDisplay,
+                          public NativeWindowDelegate,
                           public SigninScreenHandlerDelegate {
  public:
   explicit WebUILoginDisplay(LoginDisplay::Delegate* delegate);
@@ -40,8 +42,10 @@ class WebUILoginDisplay : public LoginDisplay,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
   virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
 
-  // SigninScreenHandlerDelegate implementation:
+  // NativeWindowDelegate implementation:
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
+
+  // SigninScreenHandlerDelegate implementation:
   virtual void CompleteLogin(const std::string& username,
                              const std::string& password) OVERRIDE;
   virtual void Login(const std::string& username,
