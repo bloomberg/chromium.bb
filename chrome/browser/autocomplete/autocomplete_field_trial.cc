@@ -99,11 +99,11 @@ void AutocompleteFieldTrial::Activate() {
 
   // Create the suggest field trial (regardless of sticky-ness status, but
   // make it sticky if possible).
-  // Make it expire on October 1, 2012.
+  // Make it expire on March 1, 2013.
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
         kSuggestFieldTrialName, kSuggestFieldTrialNumberOfGroups,
-        "0", 2012, 10, 1, NULL));
+        "0", 2013, 3, 1, NULL));
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
     trial->UseOneTimeRandomization();
 
