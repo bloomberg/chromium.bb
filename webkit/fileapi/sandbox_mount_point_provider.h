@@ -161,8 +161,10 @@ class FILEAPI_EXPORT SandboxMountPointProvider
   // Returns update observers for the given type.
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
 
-  // Reset all observers.
-  void ResetObservers();
+  void AddSyncableFileUpdateObserver(FileUpdateObserver* observer,
+                                     base::SequencedTaskRunner* task_runner);
+  void AddSyncableFileChangeObserver(FileChangeObserver* observer,
+                                     base::SequencedTaskRunner* task_runner);
 
  private:
   friend class SandboxQuotaObserver;
@@ -199,6 +201,10 @@ class FILEAPI_EXPORT SandboxMountPointProvider
   // Observers.
   UpdateObserverList update_observers_;
   AccessObserverList access_observers_;
+
+  // Observers for syncable file systems.
+  UpdateObserverList syncable_update_observers_;
+  ChangeObserverList syncable_change_observers_;
 
   base::Time next_release_time_for_open_filesystem_stat_;
 

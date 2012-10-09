@@ -346,11 +346,10 @@ SandboxMountPointProvider::SandboxMountPointProvider(
 
   update_observers_src.AddObserver(quota_observer_.get(), file_task_runner_);
   access_observers_src.AddObserver(quota_observer_.get(), NULL);
-  update_observers_src.AddObserver(quota_observer_.get(), file_task_runner_);
-  access_observers_src.AddObserver(quota_observer_.get(), NULL);
 
   update_observers_ = UpdateObserverList(update_observers_src);
   access_observers_ = AccessObserverList(access_observers_src);
+  syncable_update_observers_ = UpdateObserverList(update_observers_src);
 }
 
 SandboxMountPointProvider::~SandboxMountPointProvider() {
@@ -408,8 +407,7 @@ SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
 }
 
 bool SandboxMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
-  FileSystemType type = url.type();
-  if (!CanHandleType(type))
+  if (!CanHandleType(url.type()))
     return false;
   // We essentially depend on quota to do our access controls, so here
   // we only check if the requested scheme is allowed or not.
@@ -456,7 +454,12 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
       new FileSystemOperationContext(context));
 
   // Copy the observer lists (assuming we only have small number of observers).
-  operation_context->set_update_observers(update_observers_);
+  if (url.type() == kFileSystemTypeSyncable) {
+    operation_context->set_update_observers(syncable_update_observers_);
+    operation_context->set_change_observers(syncable_change_observers_);
+  } else {
+    operation_context->set_update_observers(update_observers_);
+  }
   operation_context->set_access_observers(access_observers_);
 
   return new LocalFileSystemOperation(context, operation_context.Pass());
@@ -683,12 +686,28 @@ void SandboxMountPointProvider::CollectOpenFileSystemMetrics(
 
 const UpdateObserverList* SandboxMountPointProvider::GetUpdateObservers(
     FileSystemType type) const {
+  DCHECK(CanHandleType(type));
+  if (type == kFileSystemTypeSyncable)
+    return &syncable_update_observers_;
   return &update_observers_;
 }
 
-void SandboxMountPointProvider::ResetObservers() {
-  update_observers_ = UpdateObserverList();
-  access_observers_ = AccessObserverList();
+void SandboxMountPointProvider::AddSyncableFileUpdateObserver(
+    FileUpdateObserver* observer,
+    base::SequencedTaskRunner* task_runner) {
+  UpdateObserverList::Source observer_source =
+      syncable_update_observers_.source();
+  observer_source.AddObserver(observer, task_runner);
+  syncable_update_observers_ = UpdateObserverList(observer_source);
+}
+
+void SandboxMountPointProvider::AddSyncableFileChangeObserver(
+    FileChangeObserver* observer,
+    base::SequencedTaskRunner* task_runner) {
+  ChangeObserverList::Source observer_source =
+      syncable_change_observers_.source();
+  observer_source.AddObserver(observer, task_runner);
+  syncable_change_observers_ = ChangeObserverList(observer_source);
 }
 
 FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(

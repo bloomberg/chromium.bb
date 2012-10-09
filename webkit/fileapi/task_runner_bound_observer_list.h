@@ -60,8 +60,8 @@ class TaskRunnerBoundObserverList {
 
   // Creates a new list with given |observers_param|.
   explicit TaskRunnerBoundObserverList<Observer, ObserverStoreType>(
-      const Source& source)
-      : observers_(source.observers()) {}
+      const Source& observers)
+      : source_(observers) {}
 
   virtual ~TaskRunnerBoundObserverList<Observer, ObserverStoreType>() {}
 
@@ -72,8 +72,9 @@ class TaskRunnerBoundObserverList {
     COMPILE_ASSERT(
         (base::internal::ParamsUseScopedRefptrCorrectly<Params>::value),
         badunboundmethodparams);
-    for (typename ObserversListMap::const_iterator it = observers_.begin();
-         it != observers_.end(); ++it) {
+    for (typename ObserversListMap::const_iterator it =
+            source_.observers().begin();
+         it != source_.observers().end(); ++it) {
       if (!it->second.get() || it->second->RunsTasksOnCurrentThread()) {
         DispatchToMethod(UnwrapTraits::Unwrap(it->first), method, params);
         continue;
@@ -85,12 +86,14 @@ class TaskRunnerBoundObserverList {
     }
   }
 
+  const Source& source() const { return source_; }
+
  private:
   typedef base::internal::UnwrapTraits<ObserverStoreType> UnwrapTraits;
   typedef scoped_refptr<base::SequencedTaskRunner> TaskRunnerPtr;
   typedef std::map<ObserverStoreType, TaskRunnerPtr> ObserversListMap;
 
-  ObserversListMap observers_;
+  Source source_;
 };
 
 class FileAccessObserver;

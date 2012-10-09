@@ -287,7 +287,12 @@ void FileSystemContext::SetLocalFileChangeTracker(
   DCHECK(!change_tracker_.get());
   DCHECK(tracker.get());
   change_tracker_ = tracker.Pass();
-  // TODO(kinuko): Add the tracker as the observer of syncable file systems.
+  sandbox_provider_->AddSyncableFileUpdateObserver(
+      change_tracker_.get(),
+      task_runners_->file_task_runner());
+  sandbox_provider_->AddSyncableFileChangeObserver(
+      change_tracker_.get(),
+      task_runners_->file_task_runner());
 }
 
 FileSystemContext::~FileSystemContext() {}
