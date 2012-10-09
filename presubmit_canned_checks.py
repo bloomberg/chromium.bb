@@ -323,7 +323,14 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
   # Note: these are C++ specific but processed on all languages. :(
   MACROS = ('#define', '#include', '#import', '#pragma', '#if', '#endif')
 
+  # Special java statements.
+  SPECIAL_JAVA_STARTS = ('package ', 'import ')
+
   def no_long_lines(file_extension, line):
+    # Allow special java statements to be as long as neccessary.
+    if file_extension == 'java' and line.startswith(SPECIAL_JAVA_STARTS):
+      return True
+
     file_maxlen = maxlens.get(file_extension, maxlens[''])
     # Stupidly long symbols that needs to be worked around if takes 66% of line.
     long_symbol = file_maxlen * 2 / 3

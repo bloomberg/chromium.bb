@@ -1828,6 +1828,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ContentTest(check, 'A ' * 50, 'foo.java', 'A ' * 50 + 'B', 'foo.java',
                      presubmit.OutputApi.PresubmitPromptWarning)
 
+  def testCannedCheckSpecialJavaLongLines(self):
+    check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y)
+    self.ContentTest(check, 'import ' + 'A ' * 150, 'foo.java',
+                     'importSomething ' + 'A ' * 50, 'foo.java',
+                     presubmit.OutputApi.PresubmitPromptWarning)
+
   def testCannedCheckLongLinesLF(self):
     check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
     self.ContentTest(check, '012345678\n', None, '0123456789\n', None,
