@@ -37,7 +37,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_end):
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_all_regs):
         hlt  /* one byte */
-        /* Restore state from struct NaClSwitchAllRegsState. */
+        /* Restore state from struct NaClSwitchRemainingRegsState. */
         lss     0(%ecx), %esp /* stack_ptr */
         movw    0x10(%ecx), %ds /* ds */
         movl    %gs:0xc, %ecx /* new_ecx from NaClTlsSegment */

@@ -22,7 +22,7 @@
 struct NaClAppThreadSuspendedRegisters {
   x86_thread_state_t context;
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  struct NaClSwitchAllRegsState switch_state;
+  struct NaClSwitchRemainingRegsState switch_state;
 #endif
 };
 
@@ -163,7 +163,7 @@ void NaClAppThreadSetSuspendedRegistersInternal(
   context_copy.uts.ts32.__ss = NaClGetGlobalDs();
   context_copy.uts.ts32.__ecx = (uintptr_t) &state->switch_state;
   context_copy.uts.ts32.__eip = (uintptr_t) NaClSwitchRemainingRegsViaECX;
-  NaClSwitchAllRegsSetup(&state->switch_state, natp, regs);
+  NaClSwitchRemainingRegsSetup(&state->switch_state, natp, regs);
 #endif
 
   size = sizeof(context_copy) / sizeof(natural_t);

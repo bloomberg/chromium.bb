@@ -70,7 +70,7 @@ struct NaClTlsSegment {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   /*
    * These are register values to restore when returning to untrusted
-   * code using NaClSwitchAllRegs().
+   * code using NaClSwitchRemainingRegs().
    */
   uint32_t new_prog_ctr;
   uint32_t new_ecx;

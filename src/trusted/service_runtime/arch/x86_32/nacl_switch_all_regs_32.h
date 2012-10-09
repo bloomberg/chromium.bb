@@ -9,7 +9,7 @@
 
 #include "native_client/src/include/portability.h"
 
-struct NaClSwitchAllRegsState {
+struct NaClSwitchRemainingRegsState {
   /* These are adjacent because they are restored using 'lss'. */
   /* 0x00 */ uint32_t stack_ptr;
   /* 0x04 */ uint32_t ss;
@@ -22,19 +22,6 @@ struct NaClSwitchAllRegsState {
   /* 0x12 */ uint16_t es;
   /* 0x14 */ uint16_t fs;
   /* 0x16 */ uint16_t gs;
-
-  /*
-   * %ecx is missing from this list because it is restored from the %gs
-   * segment as a last step.
-   */
-  /* 0x18 */ uint32_t eax;
-  /* 0x1c */ uint32_t edx;
-  /* 0x20 */ uint32_t ebx;
-  /* 0x24 */ uint32_t ebp;
-  /* 0x28 */ uint32_t esi;
-  /* 0x2c */ uint32_t edi;
-
-  /* 0x30 */ uint32_t flags;
 };
 
 #endif

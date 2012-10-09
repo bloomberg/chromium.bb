@@ -19,7 +19,7 @@ EXTERN_C_BEGIN
 
 struct NaClAppThread;
 struct NaClSignalContext;
-struct NaClSwitchAllRegsState;
+struct NaClSwitchRemainingRegsState;
 
 void NaClInitSwitchToApp(struct NaClApp *nap);
 
@@ -34,7 +34,6 @@ extern NORETURN void NaClSwitchSavingStackPtr(
 #if NACL_OSX
 /* Same as NaClSwitchNoSSE but context in %ecx */
 extern NORETURN void NaClSwitchNoSSEViaECX();
-/* Similar to NaClSwitchAllRegs but context in %ecx */
 extern NORETURN void NaClSwitchRemainingRegsViaECX();
 extern NORETURN void NaClSwitchRemainingRegsAsmEnd();
 #endif
@@ -47,12 +46,9 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 
 NORETURN void NaClSwitchToApp(struct NaClAppThread *natp);
 
-void NaClSwitchAllRegsSetup(struct NaClSwitchAllRegsState  *state,
-                            struct NaClAppThread           *natp,
-                            const struct NaClSignalContext *regs);
-
-NORETURN void NaClSwitchAllRegs(struct NaClAppThread           *natp,
-                                const struct NaClSignalContext *regs);
+void NaClSwitchRemainingRegsSetup(struct NaClSwitchRemainingRegsState *state,
+                                  struct NaClAppThread                *natp,
+                                  const struct NaClSignalContext      *regs);
 
 EXTERN_C_END
 

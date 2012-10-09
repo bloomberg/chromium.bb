@@ -12,11 +12,9 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-NORETURN void NaClSwitchAllRegsAsm(struct NaClSwitchAllRegsState *state);
-
-void NaClSwitchAllRegsSetup(struct NaClSwitchAllRegsState *state,
-                            struct NaClAppThread *natp,
-                            const struct NaClSignalContext *regs) {
+void NaClSwitchRemainingRegsSetup(struct NaClSwitchRemainingRegsState *state,
+                                  struct NaClAppThread *natp,
+                                  const struct NaClSignalContext *regs) {
   natp->tls_values.new_prog_ctr = regs->prog_ctr;
   natp->tls_values.new_ecx = regs->ecx;
 
@@ -28,18 +26,4 @@ void NaClSwitchAllRegsSetup(struct NaClSwitchAllRegsState *state,
   state->es = natp->user.es;
   state->fs = natp->user.fs;
   state->gs = natp->user.gs;
-  state->eax = regs->eax;
-  state->edx = regs->edx;
-  state->ebx = regs->ebx;
-  state->ebp = regs->ebp;
-  state->esi = regs->esi;
-  state->edi = regs->edi;
-  state->flags = regs->flags;
-}
-
-void NaClSwitchAllRegs(struct NaClAppThread *natp,
-                       const struct NaClSignalContext *regs) {
-  struct NaClSwitchAllRegsState state;
-  NaClSwitchAllRegsSetup(&state, natp, regs);
-  NaClSwitchAllRegsAsm(&state);
 }

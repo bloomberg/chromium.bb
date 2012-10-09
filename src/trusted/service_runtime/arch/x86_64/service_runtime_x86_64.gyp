@@ -16,8 +16,6 @@
       'sources': [
         'nacl_app_64.c',
         'nacl_switch_64.S',
-        'nacl_switch_all_regs_64.c',
-        'nacl_switch_all_regs_asm_64.S',
         'nacl_switch_to_app_64.c',
         'nacl_syscall_64.S',
         'nacl_tls_64.c',
