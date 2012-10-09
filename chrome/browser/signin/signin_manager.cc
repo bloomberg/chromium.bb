@@ -428,6 +428,16 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
     return;
   } else {
     DCHECK(email_iter->first == kGetInfoEmailKey);
+
+    // When signing in with credentials, the possibly invalid name is already
+    // a Gaia normalized name.  If the name returned by GetUserInfo does not
+    // match what is expected, return an error.
+    if (type_ == SIGNIN_TYPE_WITH_CREDENTIALS &&
+        email_iter->second != possibly_invalid_username_) {
+      OnGetUserInfoKeyNotFound(kGetInfoEmailKey);
+      return;
+    }
+
     SetAuthenticatedUsername(email_iter->second);
     possibly_invalid_username_.clear();
     profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,

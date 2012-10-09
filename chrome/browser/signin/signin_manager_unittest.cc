@@ -276,6 +276,23 @@ TEST_F(SigninManagerTest, SignInWithCredentials) {
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
 }
 
+TEST_F(SigninManagerTest, SignInWithCredentialsWrongEmail) {
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  // If the email address used to start the sign in does not match the
+  // email address returned by /GetUserInfo, the sign in should fail.
+  manager_->StartSignInWithCredentials("0", "user2@gmail.com", "password");
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  SimulateValidResponseSignInWithCredentials();
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  // Should go into token service and stop.
+  EXPECT_EQ(0U, google_login_success_.size());
+  EXPECT_EQ(1U, google_login_failure_.size());
+}
+
 TEST_F(SigninManagerTest, SignInClientLoginNoGPlus) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
