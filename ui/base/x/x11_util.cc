@@ -641,8 +641,11 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
     return true;
   bool is_in_input_rects = false;
   for (int i = 0; i < input_rects_size; ++i) {
+    // The ShapeInput rects appear to be in window space, so we have to
+    // translate by the window_rect's offset to map to screen space.
     gfx::Rect input_rect =
-        gfx::Rect(input_rects[i].x, input_rects[i].y,
+        gfx::Rect(input_rects[i].x + window_rect.x(),
+                  input_rects[i].y + window_rect.y(),
                   input_rects[i].width, input_rects[i].height);
     if (input_rect.Contains(screen_loc)) {
       is_in_input_rects = true;
