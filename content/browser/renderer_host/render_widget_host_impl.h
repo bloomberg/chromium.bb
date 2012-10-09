@@ -546,7 +546,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                           bool processed);
   void OnMsgBeginSmoothScroll(int gesture_id,
                               bool scroll_down,
-                              bool scroll_far);
+                              bool scroll_far,
+                              int mouse_event_x,
+                              int mouse_event_y);
   void OnMsgSelectRangeAck();
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();

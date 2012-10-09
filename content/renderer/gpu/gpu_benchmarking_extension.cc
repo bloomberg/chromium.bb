@@ -127,19 +127,34 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  native function PrintToSkPicture();"
           "  return PrintToSkPicture(dirname);"
           "};"
+          "chrome.gpuBenchmarking.beginSmoothScrollSupportsPositioning = true;"
           "chrome.gpuBenchmarking.beginSmoothScrollDown = "
-          "    function(scroll_far, opt_callback) {"
+          "    function(scroll_far, opt_callback, opt_mouse_event_x,"
+          "             opt_mouse_event_y) {"
           "  scroll_far = scroll_far || false;"
           "  callback = opt_callback || function() { };"
           "  native function BeginSmoothScroll();"
-          "  return BeginSmoothScroll(true, scroll_far, callback);"
+          "  if (typeof opt_mouse_event_x !== 'undefined' &&"
+          "      typeof opt_mouse_event_y !== 'undefined') {"
+          "    return BeginSmoothScroll(true, scroll_far, callback,"
+          "                             opt_mouse_event_x, opt_mouse_event_y);"
+          "  } else {"
+          "    return BeginSmoothScroll(true, scroll_far, callback);"
+          "  }"
           "};"
           "chrome.gpuBenchmarking.beginSmoothScrollUp = "
-          "    function(scroll_far, opt_callback) {"
+          "    function(scroll_far, opt_callback, opt_mouse_event_x,"
+          "             opt_mouse_event_y) {"
           "  scroll_far = scroll_far || false;"
           "  callback = opt_callback || function() { };"
           "  native function BeginSmoothScroll();"
-          "  return BeginSmoothScroll(false, scroll_far, callback);"
+          "  if (typeof opt_mouse_event_x !== 'undefined' &&"
+          "      typeof opt_mouse_event_y !== 'undefined') {"
+          "    return BeginSmoothScroll(false, scroll_far, callback,"
+          "                             opt_mouse_event_x, opt_mouse_event_y);"
+          "  } else {"
+          "    return BeginSmoothScroll(false, scroll_far, callback);"
+          "  }"
           "};"
           "chrome.gpuBenchmarking.runRenderingBenchmarks = function(filter) {"
           "  native function RunRenderingBenchmarks();"
@@ -251,7 +266,9 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (!render_view_impl)
       return v8::Undefined();
 
-    if (args.Length() != 3 ||
+    // Account for the 2 optional arguments, mouse_event_x and mouse_event_y.
+    int arglen = args.Length();
+    if (arglen < 3 ||
         !args[0]->IsBoolean() ||
         !args[1]->IsBoolean() ||
         !args[2]->IsFunction())
@@ -266,6 +283,26 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     v8::Persistent<v8::Context> context =
         v8::Persistent<v8::Context>::New(web_frame->mainWorldScriptContext());
 
+    int mouse_event_x = 0;
+    int mouse_event_y = 0;
+
+    if (arglen == 3) {
+      WebKit::WebRect rect = render_view_impl->windowRect();
+      mouse_event_x = rect.x + rect.width / 2;
+      mouse_event_y = rect.y + rect.height / 2;
+    } else {
+      if (arglen != 5 ||
+          !args[0]->IsBoolean() ||
+          !args[1]->IsBoolean() ||
+          !args[2]->IsFunction() ||
+          !args[3]->IsNumber() ||
+          !args[4]->IsNumber())
+        return v8::False();
+
+      mouse_event_x = args[3]->IntegerValue();
+      mouse_event_y = args[4]->IntegerValue();
+    }
+
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
     // progress, we will leak the callback and context. This needs to be fixed,
     // somehow.
@@ -274,7 +311,9 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         scroll_far,
         base::Bind(&OnSmoothScrollCompleted,
                    callback,
-                   context));
+                   context),
+        mouse_event_x,
+        mouse_event_y);
 
     return v8::True();
   }

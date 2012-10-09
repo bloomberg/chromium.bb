@@ -176,7 +176,9 @@ class CONTENT_EXPORT RenderWidget
   // the scroll gesture.
   void BeginSmoothScroll(bool scroll_down,
                          bool scroll_far,
-                         const SmoothScrollCompletionCallback& callback);
+                         const SmoothScrollCompletionCallback& callback,
+                         int mouse_event_x,
+                         int mouse_event_y);
 
   // Close the underlying WebWidget.
   virtual void Close();

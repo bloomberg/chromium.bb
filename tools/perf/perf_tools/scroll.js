@@ -43,21 +43,57 @@
     this.element_ = opt_element || document.body;
   };
 
+  function min(a, b) {
+    if (a > b) {
+      return b;
+    }
+    return a;
+  };
+
+   function getBoundingVisibleRect(el) {
+    r = el.getBoundingClientRect();
+    cur = el;
+    while (cur && cur.parentElement) {
+      r.top += cur.parentElement.offsetTop;
+      r.left += cur.parentElement.offsetLeft;
+      r.height = min(r.height, cur.parentElement.offsetHeight);
+      r.width = min(r.width, cur.parentElement.offsetWidth);
+      cur = cur.parentElement;
+    }
+    return r;
+  };
+
+  function rectsDoIntersect(r1, r2) {
+    return (r1.right >= r2.left &&
+            r1.left <= r2.right &&
+            r1.bottom >= r2.top &&
+            r1.top <= r2.bottom);
+  };
+
   SmoothScrollDownGesture.prototype.start = function(callback) {
     this.callback_ = callback;
     if (chrome &&
         chrome.gpuBenchmarking &&
         chrome.gpuBenchmarking.beginSmoothScrollDown) {
-      chrome.gpuBenchmarking.beginSmoothScrollDown(true, function() {
-        callback();
-      });
-      return;
+      rect = getBoundingVisibleRect(this.element_);
+      if (chrome.gpuBenchmarking.beginSmoothScrollSupportsPositioning ||
+         rectsDoIntersect(rect, {left: 0,
+                                 top: 0,
+                                 right: 1,
+                                 bottom: 1,
+                                 height: 1,
+                                 width: 1})) {
+        chrome.gpuBenchmarking.beginSmoothScrollDown(true, function() {
+          callback();
+        }, rect.left + rect.width / 2, rect.top + rect.height / 2);
+        return;
+      }
     }
 
     var SCROLL_DELTA = 100;
     this.element_.scrollTop += SCROLL_DELTA;
     requestAnimationFrame(callback);
-  }
+  };
 
   /**
    * Tracks rendering performance using the gpuBenchmarking.renderingStats API.

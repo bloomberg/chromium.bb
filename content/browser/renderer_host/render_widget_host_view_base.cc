@@ -415,10 +415,13 @@ void RenderWidgetHostViewBase::UpdateScreenInfo() {
 class BasicMouseWheelSmoothScrollGesture
     : public SmoothScrollGesture {
  public:
-  BasicMouseWheelSmoothScrollGesture(bool scroll_down, bool scroll_far)
+  BasicMouseWheelSmoothScrollGesture(bool scroll_down, bool scroll_far,
+                                     int mouse_event_x, int mouse_event_y)
       : start_time_(base::TimeTicks::HighResNow()),
         scroll_down_(scroll_down),
-        scroll_far_(scroll_far) { }
+        scroll_far_(scroll_far),
+        mouse_event_x_(mouse_event_x),
+        mouse_event_y_(mouse_event_y) { }
 
   virtual bool ForwardInputEvents(base::TimeTicks now,
                                   RenderWidgetHost* host) OVERRIDE {
@@ -441,8 +444,8 @@ class BasicMouseWheelSmoothScrollGesture
     // TODO(nduca): Figure out plausible x and y values.
     event.globalX = 0;
     event.globalY = 0;
-    event.x = 0;
-    event.y = 0;
+    event.x = mouse_event_x_;
+    event.y = mouse_event_y_;
     event.windowX = event.x;
     event.windowY = event.y;
     host->ForwardWheelEvent(event);
@@ -454,11 +457,14 @@ class BasicMouseWheelSmoothScrollGesture
   base::TimeTicks start_time_;
   bool scroll_down_;
   bool scroll_far_;
+  int mouse_event_x_;
+  int mouse_event_y_;
 };
 
 SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
-    bool scroll_down, bool scroll_far) {
-  return new BasicMouseWheelSmoothScrollGesture(scroll_down, scroll_far);
+    bool scroll_down, bool scroll_far, int mouse_event_x, int mouse_event_y) {
+  return new BasicMouseWheelSmoothScrollGesture(scroll_down, scroll_far,
+                                                mouse_event_x, mouse_event_y);
 }
 
 }  // namespace content

@@ -1716,10 +1716,12 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_HandleInputEvent_ACK,
                     WebKit::WebInputEvent::Type,
                     bool /* processed */)
 
-IPC_MESSAGE_ROUTED3(ViewHostMsg_BeginSmoothScroll,
+IPC_MESSAGE_ROUTED5(ViewHostMsg_BeginSmoothScroll,
                     int /* gesture_id */,
                     bool /* scroll_down */,
-                    bool /* scroll_far */)
+                    bool /* scroll_far */,
+                    int /* mouse_event_x */,
+                    int /* mouse_event_y */)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)

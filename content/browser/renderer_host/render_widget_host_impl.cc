@@ -1606,13 +1606,15 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
 }
 
 void RenderWidgetHostImpl::OnMsgBeginSmoothScroll(
-    int gesture_id, bool scroll_down, bool scroll_far) {
+    int gesture_id, bool scroll_down, bool scroll_far, int mouse_event_x,
+    int mouse_event_y) {
   if (!view_)
     return;
   active_smooth_scroll_gestures_.insert(
       std::make_pair(gesture_id,
                      view_->CreateSmoothScrollGesture(
-                         scroll_down, scroll_far)));
+                         scroll_down, scroll_far, mouse_event_x,
+                         mouse_event_y)));
   TickActiveSmoothScrollGesture();
 }
 
