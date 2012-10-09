@@ -21,6 +21,7 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
+#include "content/common/android/device_info.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
@@ -38,6 +39,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/android/WebInputEventFactory.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/android/window_android.h"
+#include "ui/gfx/screen.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/user_agent/user_agent_util.h"
 
@@ -51,6 +53,7 @@ using base::android::HasField;
 using base::android::JavaByteArrayToByteVector;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 
@@ -93,6 +96,13 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
   // TODO(leandrogracia): make use of the hardware_accelerated argument.
 
   InitJNI(env, obj);
+
+  if (!gfx::Screen::IsDIPEnabled()) {
+    dpi_scale_ = 1;
+  } else {
+    scoped_ptr<content::DeviceInfo> device_info(new content::DeviceInfo());
+    dpi_scale_ = device_info->GetDPIScale();
+  }
 
   notification_registrar_.Add(this,
                               NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
@@ -495,6 +505,10 @@ int ContentViewCoreImpl::GetTouchPadding()
   return 48;
 }
 
+float ContentViewCoreImpl::DpiScale() const {
+  return dpi_scale_;
+}
+
 jboolean ContentViewCoreImpl::SendMouseMoveEvent(JNIEnv* env,
                                                  jobject obj,
                                                  jlong time_ms,
@@ -507,7 +521,7 @@ jboolean ContentViewCoreImpl::SendMouseMoveEvent(JNIEnv* env,
   WebKit::WebMouseEvent event = WebInputEventFactory::mouseEvent(
       WebInputEventFactory::MouseEventTypeMove,
       WebKit::WebMouseEvent::ButtonNone,
-      time_ms / 1000.0, x, y, 0, 1);
+      time_ms / 1000.0, x / DpiScale(), y / DpiScale(), 0, 1);
 
   rwhv->SendMouseEvent(event);
   return true;
@@ -532,42 +546,45 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
     return false;
   }
   WebKit::WebMouseWheelEvent event = WebInputEventFactory::mouseWheelEvent(
-      type, time_ms / 1000.0, x, y);
+      type, time_ms / 1000.0, x / DpiScale(), y / DpiScale());
 
   rwhv->SendMouseWheelEvent(event);
   return true;
 }
 
-void ContentViewCoreImpl::SendGestureEvent(WebInputEvent::Type type,
-                                           long time_ms, int x, int y) {
-  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
-      type, time_ms / 1000.0, x, y, 0, 0, 0);
-
-  if (type == WebInputEvent::GestureFlingStart)
-    event.data.flingStart.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
-
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(WebInputEvent::Type type,
+                                                      long time_ms,
+                                                      int x, int y) const {
+  WebGestureEvent event;
+  event.type = type;
+  event.x = x / DpiScale();
+  event.y = y / DpiScale();
+  event.timeStampSeconds = time_ms / 1000.0;
+  return event;
 }
 
 void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                       jint x, jint y) {
-  SendGestureEvent(
+  WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureScrollBegin, time_ms, x, y);
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms) {
-  SendGestureEvent(WebInputEvent::GestureScrollEnd, time_ms, 0, 0);
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureScrollEnd, time_ms, 0, 0);
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
                                    jint x, jint y, jint dx, jint dy) {
-  // TODO(rbyers): Stop setting generic deltaX/deltaY, crbug.com/143237
-  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
-      WebInputEvent::GestureScrollUpdate, time_ms / 1000.0, x, y, -dx, -dy, 0);
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureScrollUpdate, time_ms, x, y);
 
-  event.data.scrollUpdate.deltaX = -dx;
-  event.data.scrollUpdate.deltaY = -dy;
+  event.data.scrollUpdate.deltaX = -dx / DpiScale();
+  event.data.scrollUpdate.deltaY = -dy / DpiScale();
 
   if (GetRenderWidgetHostViewAndroid())
     GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
@@ -575,30 +592,34 @@ void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
 
 void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
                                      jint x, jint y, jint vx, jint vy) {
-  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
-      WebInputEvent::GestureFlingStart, time_ms / 1000.0, x, y, vx, vy, 0);
-  event.data.flingStart.velocityX = vx;
-  event.data.flingStart.velocityY = vy;
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureFlingStart, time_ms, x, y);
+  event.data.flingStart.velocityX = vx / DpiScale();
+  event.data.flingStart.velocityY = vy / DpiScale();
+  event.data.flingStart.sourceDevice = WebGestureEvent::Touchscreen;
 
   if (GetRenderWidgetHostViewAndroid())
     GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::FlingCancel(JNIEnv* env, jobject obj, jlong time_ms) {
-  SendGestureEvent(WebInputEvent::GestureFlingCancel, time_ms, 0, 0);
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureFlingCancel, time_ms, 0, 0);
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jint x, jint y,
                                     jboolean disambiguation_popup_tap) {
-  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
-      WebInputEvent::GestureTap, time_ms / 1000.0, x, y, 0, 0, 0);
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureTap, time_ms, x, y);
 
   event.data.tap.tapCount = 1;
   if (!disambiguation_popup_tap) {
     int touchPadding = GetTouchPadding();
-    event.data.tap.width = touchPadding;
-    event.data.tap.height = touchPadding;
+    event.data.tap.width = touchPadding / DpiScale();
+    event.data.tap.height = touchPadding / DpiScale();
   }
 
   if (GetRenderWidgetHostViewAndroid())
@@ -608,24 +629,30 @@ void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
 void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
                                          jlong time_ms,
                                          jint x, jint y) {
-  SendGestureEvent(WebInputEvent::GestureTapDown, time_ms, x, y);
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureTapDown, time_ms, x, y);
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jint x, jint y) {
-  SendGestureEvent(WebInputEvent::GestureDoubleTap, time_ms, x, y);
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureDoubleTap, time_ms, x, y);
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
                                     jint x, jint y,
                                     jboolean disambiguation_popup_tap) {
-  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
-      WebInputEvent::GestureLongPress, time_ms / 1000.0, x, y, 0, 0, 0);
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureLongPress, time_ms, x, y);
 
   if (!disambiguation_popup_tap) {
     int touchPadding = GetTouchPadding();
-    event.data.longPress.width = touchPadding;
-    event.data.longPress.height = touchPadding;
+    event.data.longPress.width = touchPadding / DpiScale();
+    event.data.longPress.height = touchPadding / DpiScale();
   }
 
   if (GetRenderWidgetHostViewAndroid())
@@ -634,19 +661,23 @@ void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
 
 void ContentViewCoreImpl::PinchBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                      jint x, jint y) {
-  SendGestureEvent(
+  WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GesturePinchBegin, time_ms, x, y);
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::PinchEnd(JNIEnv* env, jobject obj, jlong time_ms) {
-  SendGestureEvent(WebInputEvent::GesturePinchEnd, time_ms, 0, 0);
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GesturePinchEnd, time_ms, 0, 0);
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
                                   jint anchor_x, jint anchor_y, jfloat delta) {
-  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
-      WebInputEvent::GesturePinchUpdate, time_ms / 1000.0, anchor_x, anchor_y,
-      delta, delta, 0);
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GesturePinchUpdate, time_ms, anchor_x, anchor_y);
   event.data.pinchUpdate.scale = delta;
 
   if (GetRenderWidgetHostViewAndroid())
