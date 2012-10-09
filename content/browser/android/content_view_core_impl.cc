@@ -758,6 +758,21 @@ void ContentViewCoreImpl::RemoveJavascriptInterface(JNIEnv* env,
       ConvertJavaStringToUTF16(env, name));
 }
 
+void ContentViewCoreImpl::UpdateVSyncParameters(JNIEnv* env, jobject /* obj */,
+                                                jlong timebase_micros,
+                                                jlong interval_micros) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  if (!view)
+    return;
+
+  RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
+      view->GetRenderWidgetHost());
+
+  host->UpdateVSyncParameters(
+      base::TimeTicks::FromInternalValue(timebase_micros),
+      base::TimeDelta::FromMicroseconds(interval_micros));
+}
+
 void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,
                                                             jobject obj) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();

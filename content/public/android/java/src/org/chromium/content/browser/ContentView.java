@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
@@ -24,6 +25,7 @@ import android.widget.FrameLayout;
 import java.util.ArrayList;
 
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
 
 /**
@@ -417,7 +419,11 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * @VisibleForTesting
      */
     public void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
-        // TODO(nileshagrawal): Implement this.
+        mContentViewCore.getContentViewGestureHandler().fling(timeMs, x, y, velocityX, velocityY);
+    }
+
+    void endFling(long timeMs) {
+        mContentViewCore.getContentViewGestureHandler().endFling(timeMs);
     }
 
     /**
@@ -549,13 +555,99 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     @Override
+    protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
+        TraceEvent.begin();
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        mContentViewCore.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        TraceEvent.end();
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        return mContentViewCore.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean dispatchKeyEventPreIme(KeyEvent event) {
+        return mContentViewCore.dispatchKeyEventPreIme(event);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        return mContentViewCore.dispatchKeyEvent(event);
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         return mContentViewCore.onTouchEvent(event);
+    }
+
+    /**
+     * Mouse move events are sent on hover enter, hover move and hover exit.
+     * They are sent on hover exit because sometimes it acts as both a hover
+     * move and hover exit.
+     */
+    @Override
+    public boolean onHoverEvent(MotionEvent event) {
+        return mContentViewCore.onHoverEvent(event);
+    }
+
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        return mContentViewCore.onGenericMotionEvent(event);
     }
 
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
         mContentViewCore.onConfigurationChanged(newConfig);
+    }
+
+    /**
+     * Currently the ContentView scrolling happens in the native side. In
+     * the Java view system, it is always pinned at (0, 0). scrollBy() and scrollTo()
+     * are overridden, so that View's mScrollX and mScrollY will be unchanged at
+     * (0, 0). This is critical for drawing ContentView correctly.
+     */
+    @Override
+    public void scrollBy(int x, int y) {
+        mContentViewCore.scrollBy(x, y);
+    }
+
+    @Override
+    public void scrollTo(int x, int y) {
+        mContentViewCore.scrollTo(x, y);
+    }
+
+    @Override
+    protected int computeHorizontalScrollExtent() {
+        // TODO (dtrainor): Need to expose scroll events properly to public. Either make getScroll*
+        // work or expose computeHorizontalScrollOffset()/computeVerticalScrollOffset as public.
+        return mContentViewCore.computeHorizontalScrollExtent();
+    }
+
+    @Override
+    protected int computeHorizontalScrollOffset() {
+        return mContentViewCore.computeHorizontalScrollOffset();
+    }
+
+    @Override
+    protected int computeHorizontalScrollRange() {
+        return mContentViewCore.computeHorizontalScrollRange();
+    }
+
+    @Override
+    protected int computeVerticalScrollExtent() {
+        return mContentViewCore.computeVerticalScrollExtent();
+    }
+
+    @Override
+    protected int computeVerticalScrollOffset() {
+        return mContentViewCore.computeVerticalScrollOffset();
+    }
+
+    @Override
+    protected int computeVerticalScrollRange() {
+        return mContentViewCore.computeVerticalScrollRange();
     }
 
     // End FrameLayout overrides.
@@ -584,6 +676,10 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         mContentViewCore.onInitializeAccessibilityNodeInfo(info);
     }
 
+    /**
+     * Fills in scrolling values for AccessibilityEvents.
+     * @param event Event being fired.
+     */
     @Override
     public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
         super.onInitializeAccessibilityEvent(event);
@@ -752,6 +848,14 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     // this method returns built-in zoom controls. This method is used in tests.
     public View getZoomControlsForTest() {
         return mContentViewCore.getZoomControlsForTest();
+    }
+
+    /**
+     * Return the current scale of the WebView
+     * @return The current scale.
+     */
+    public float getScale() {
+        return mContentViewCore.getScale();
     }
 
     /**

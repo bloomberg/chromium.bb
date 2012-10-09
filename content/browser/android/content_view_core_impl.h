@@ -166,6 +166,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                               jboolean require_annotation);
   void RemoveJavascriptInterface(JNIEnv* env, jobject obj, jstring name);
   int GetNavigationHistory(JNIEnv* env, jobject obj, jobject context);
+  void UpdateVSyncParameters(JNIEnv* env, jobject obj, jlong timebase_micros,
+                             jlong interval_micros);
 
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
