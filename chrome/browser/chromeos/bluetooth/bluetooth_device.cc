@@ -45,6 +45,15 @@ string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
     case DEVICE_MODEM:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_MODEM,
                                         address);
+    case DEVICE_AUDIO:
+      return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_AUDIO,
+                                        address);
+    case DEVICE_CAR_AUDIO:
+      return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_CAR_AUDIO,
+                                        address);
+    case DEVICE_VIDEO:
+      return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_VIDEO,
+                                        address);
     case DEVICE_JOYSTICK:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_JOYSTICK,
                                         address);
@@ -86,6 +95,24 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
         case 0x05:
           // Modems: wired or voice gateway and common ISDN access.
           return DEVICE_MODEM;
+      }
+      break;
+    case 0x04:
+      // Audio major device class.
+      switch ((bluetooth_class_ & 0xfc) >> 2) {
+        case 0x08:
+          // Car audio.
+          return DEVICE_CAR_AUDIO;
+        case 0x0b:
+        case 0x0c:
+        case 0x0d:
+        case 0x0e:
+        case 0x0f:
+        case 0x010:
+          // Video devices.
+          return DEVICE_VIDEO;
+        default:
+          return DEVICE_AUDIO;
       }
       break;
     case 0x05:

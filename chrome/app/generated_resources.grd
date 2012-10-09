@@ -14476,6 +14476,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_BLUETOOTH_DEVICE_MODEM" desc="Text to identify bluetooth devices of the modem class.">
         Modem (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
       </message>
+      <message name="IDS_BLUETOOTH_DEVICE_AUDIO" desc="Text to identify bluetooth devices of the audio class.">
+	Audio (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
+      </message>
+      <message name="IDS_BLUETOOTH_DEVICE_CAR_AUDIO" desc="Text to identify bluetooth devices of the car audio class.">
+	Car audio (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
+      </message>
+      <message name="IDS_BLUETOOTH_DEVICE_VIDEO" desc="Text to identify bluetooth devices of the video class.">
+	Video (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
+      </message>
       <message name="IDS_BLUETOOTH_DEVICE_JOYSTICK" desc="Text to identify bluetooth devices of the joystick class.">
         Joystick (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
       </message>
