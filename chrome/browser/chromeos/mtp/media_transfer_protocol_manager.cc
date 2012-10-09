@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/media_transfer_protocol_daemon_client.h"
 #include "chromeos/dbus/mtp_file_entry.pb.h"
 #include "chromeos/dbus/mtp_storage_info.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,7 +82,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   // MediaTransferProtocolManager override.
   virtual void OpenStorage(const std::string& storage_name,
-                           OpenStorageMode mode,
+                           const std::string& mode,
                            const OpenStorageCallback& callback) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!ContainsKey(storage_info_map_, storage_name)) {

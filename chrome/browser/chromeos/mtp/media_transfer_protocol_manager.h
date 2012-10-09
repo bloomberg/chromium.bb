@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "chromeos/dbus/media_transfer_protocol_daemon_client.h"
 
 class MtpFileEntry;
 class MtpStorageInfo;
@@ -78,8 +77,10 @@ class MediaTransferProtocolManager {
       const std::string& storage_name) const = 0;
 
   // Opens |storage_name| in |mode| and runs |callback|.
+  // See third_party/cros_system_api/dbus/service_constants.h's mtpd section
+  // for valid values of |mode|. e.g. mtpd::kReadOnlyMode.
   virtual void OpenStorage(const std::string& storage_name,
-                           OpenStorageMode mode,
+                           const std::string& mode,
                            const OpenStorageCallback& callback) = 0;
 
   // Close |storage_handle| and runs |callback|.

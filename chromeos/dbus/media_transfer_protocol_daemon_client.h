@@ -14,7 +14,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
@@ -26,11 +25,6 @@ class Bus;
 }
 
 namespace chromeos {
-
-// Mode to open a storage in.
-enum OpenStorageMode {
-  OPEN_STORAGE_MODE_READ_ONLY,
-};
 
 // A class to make the actual DBus calls for mtpd service.
 // This class only makes calls, result/error handling should be done
@@ -97,7 +91,7 @@ class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
   // succeeds, otherwise, |error_callback| is called.
   // OpenStorage returns a handle in |callback|.
   virtual void OpenStorage(const std::string& storage_name,
-                           OpenStorageMode mode,
+                           const std::string& mode,
                            const OpenStorageCallback& callback,
                            const ErrorCallback& error_callback) = 0;
 
@@ -160,8 +154,8 @@ class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static MediaTransferProtocolDaemonClient*
-      Create(DBusClientImplementationType type, dbus::Bus* bus);
+  static MediaTransferProtocolDaemonClient* Create(
+      DBusClientImplementationType type, dbus::Bus* bus);
 
  protected:
   // Create() should be used instead.

@@ -24,7 +24,7 @@ class MockMediaTransferProtocolDaemonClient
                                     const GetStorageInfoCallback&,
                                     const ErrorCallback&));
   MOCK_METHOD4(OpenStorage, void(const std::string&,
-                                 OpenStorageMode mode,
+                                 const std::string&,
                                  const OpenStorageCallback&,
                                  const ErrorCallback&));
   MOCK_METHOD3(CloseStorage, void(const std::string&,

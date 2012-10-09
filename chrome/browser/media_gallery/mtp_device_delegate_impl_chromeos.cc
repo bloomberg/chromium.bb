@@ -17,6 +17,7 @@
 #include "chromeos/dbus/mtp_file_entry.pb.h"
 #include "chromeos/dbus/mtp_storage_info.pb.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using base::Bind;
 using base::PlatformFileError;
@@ -140,7 +141,7 @@ class OpenStorageWorker
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     GetMediaTransferProtocolManager()->OpenStorage(
-        storage_name_, chromeos::OPEN_STORAGE_MODE_READ_ONLY,
+        storage_name_, mtpd::kReadOnlyMode,
         Bind(&OpenStorageWorker::OnDidWorkOnUIThread, this));
   }
 

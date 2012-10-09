@@ -17,6 +17,8 @@ namespace chromeos {
 
 namespace {
 
+const char kInvalidResponseMsg[] = "Invalid Response: ";
+
 // The MediaTransferProtocolDaemonClient implementation.
 class MediaTransferProtocolDaemonClientImpl
     : public MediaTransferProtocolDaemonClient {
@@ -58,13 +60,13 @@ class MediaTransferProtocolDaemonClientImpl
 
   // MediaTransferProtocolDaemonClient override.
   virtual void OpenStorage(const std::string& storage_name,
-                           OpenStorageMode mode,
+                           const std::string& mode,
                            const OpenStorageCallback& callback,
                            const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kOpenStorage);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(storage_name);
-    DCHECK_EQ(OPEN_STORAGE_MODE_READ_ONLY, mode);
+    DCHECK_EQ(mtpd::kReadOnlyMode, mode);
     writer.AppendString(mtpd::kReadOnlyMode);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -166,7 +168,8 @@ class MediaTransferProtocolDaemonClientImpl
                                  const std::string& path,
                                  const GetFileInfoCallback& callback,
                                  const ErrorCallback& error_callback) OVERRIDE {
-    dbus::MethodCall method_call(mtpd::kMtpdInterface, "GetFileInfoByPath");
+    dbus::MethodCall method_call(mtpd::kMtpdInterface,
+                                 mtpd::kGetFileInfoByPath);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     writer.AppendString(path);
@@ -183,7 +186,7 @@ class MediaTransferProtocolDaemonClientImpl
                                uint32 file_id,
                                const GetFileInfoCallback& callback,
                                const ErrorCallback& error_callback) OVERRIDE {
-    dbus::MethodCall method_call(mtpd::kMtpdInterface, "GetFileInfoById");
+    dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kGetFileInfoById);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     writer.AppendUint32(file_id);
@@ -237,7 +240,7 @@ class MediaTransferProtocolDaemonClientImpl
     dbus::MessageReader reader(response);
     std::vector<std::string> storage_names;
     if (!reader.PopArrayOfStrings(&storage_names)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
+      LOG(ERROR) << kInvalidResponseMsg << response->ToString();
       error_callback.Run();
       return;
     }
@@ -258,7 +261,7 @@ class MediaTransferProtocolDaemonClientImpl
     dbus::MessageReader reader(response);
     MtpStorageInfo protobuf;
     if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
+      LOG(ERROR) << kInvalidResponseMsg << response->ToString();
       error_callback.Run();
       return;
     }
@@ -276,7 +279,7 @@ class MediaTransferProtocolDaemonClientImpl
     dbus::MessageReader reader(response);
     std::string handle;
     if (!reader.PopString(&handle)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
+      LOG(ERROR) << kInvalidResponseMsg << response->ToString();
       error_callback.Run();
       return;
     }
@@ -309,7 +312,7 @@ class MediaTransferProtocolDaemonClientImpl
     dbus::MessageReader reader(response);
     MtpFileEntries entries_protobuf;
     if (!reader.PopArrayOfBytesAsProto(&entries_protobuf)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
+      LOG(ERROR) << kInvalidResponseMsg << response->ToString();
       error_callback.Run();
       return;
     }
@@ -353,7 +356,7 @@ class MediaTransferProtocolDaemonClientImpl
     dbus::MessageReader reader(response);
     MtpFileEntry protobuf;
     if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
+      LOG(ERROR) << kInvalidResponseMsg << response->ToString();
       error_callback.Run();
       return;
     }
@@ -407,7 +410,7 @@ class MediaTransferProtocolDaemonClientStubImpl
       const GetStorageInfoCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {}
   virtual void OpenStorage(const std::string& storage_name,
-                           OpenStorageMode mode,
+                           const std::string& mode,
                            const OpenStorageCallback& callback,
                            const ErrorCallback& error_callback) OVERRIDE {}
   virtual void CloseStorage(const std::string& handle,
