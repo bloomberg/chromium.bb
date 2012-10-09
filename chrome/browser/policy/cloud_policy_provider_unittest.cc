@@ -58,8 +58,7 @@ class MockCloudPolicyCache : public CloudPolicyCacheBase {
 class CloudPolicyProviderTest : public testing::Test {
  protected:
   CloudPolicyProviderTest()
-      : cloud_policy_provider_(&browser_policy_connector_,
-                               POLICY_LEVEL_MANDATORY) {}
+      : cloud_policy_provider_(&browser_policy_connector_) {}
 
   void SetUp() OVERRIDE {
     registrar_.Init(&cloud_policy_provider_, &observer_);

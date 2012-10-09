@@ -11,11 +11,8 @@
 
 namespace policy {
 
-CloudPolicyProvider::CloudPolicyProvider(
-    BrowserPolicyConnector* browser_policy_connector,
-    PolicyLevel level)
-    : browser_policy_connector_(browser_policy_connector),
-      level_(level),
+CloudPolicyProvider::CloudPolicyProvider(BrowserPolicyConnector* connector)
+    : browser_policy_connector_(connector),
       initialization_complete_(false) {
   for (size_t i = 0; i < CACHE_SIZE; ++i)
     caches_[i] = NULL;
@@ -95,7 +92,6 @@ void CloudPolicyProvider::Merge() {
     if (caches_[i] && caches_[i]->IsReady())
       combined.MergeFrom(*caches_[i]->policy());
   }
-  combined.FilterLevel(level_);
 
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
   bundle->Get(POLICY_DOMAIN_CHROME, std::string()).Swap(&combined);

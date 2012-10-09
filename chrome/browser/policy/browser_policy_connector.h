@@ -190,9 +190,7 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   ConfigurationPolicyHandlerList handler_list_;
 
   scoped_ptr<ConfigurationPolicyProvider> platform_provider_;
-
-  scoped_ptr<CloudPolicyProvider> managed_cloud_provider_;
-  scoped_ptr<CloudPolicyProvider> recommended_cloud_provider_;
+  scoped_ptr<CloudPolicyProvider> cloud_provider_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<CloudPolicyDataStore> device_data_store_;

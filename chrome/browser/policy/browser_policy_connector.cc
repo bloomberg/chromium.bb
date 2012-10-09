@@ -152,14 +152,8 @@ void BrowserPolicyConnector::Init() {
 
 #if defined(OS_CHROMEOS)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
-    managed_cloud_provider_.reset(new CloudPolicyProvider(
-        this,
-        POLICY_LEVEL_MANDATORY));
-    recommended_cloud_provider_.reset(new CloudPolicyProvider(
-        this,
-        POLICY_LEVEL_RECOMMENDED));
-  }
+  if (!command_line->HasSwitch(switches::kEnableCloudPolicyService))
+    cloud_provider_.reset(new CloudPolicyProvider(this));
 
   InitializeDevicePolicy();
 #endif
@@ -208,10 +202,8 @@ scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyService(
     providers.push_back(g_testing_provider);
   if (platform_provider_.get())
     providers.push_back(platform_provider_.get());
-  if (managed_cloud_provider_.get())
-    providers.push_back(managed_cloud_provider_.get());
-  if (recommended_cloud_provider_.get())
-    providers.push_back(recommended_cloud_provider_.get());
+  if (cloud_provider_.get())
+    providers.push_back(cloud_provider_.get());
 
   // The global policy service uses the proxy provider to allow for swapping in
   // user policy after startup, while profiles use |user_cloud_policy_manager_|
@@ -412,8 +404,7 @@ void BrowserPolicyConnector::InitializeUserPolicy(
         prefs::kUserPolicyRefreshRate,
         startup_delay);
 
-    managed_cloud_provider_->SetUserPolicyCache(user_policy_cache);
-    recommended_cloud_provider_->SetUserPolicyCache(user_policy_cache);
+    cloud_provider_->SetUserPolicyCache(user_policy_cache);
   }
 }
 
@@ -567,8 +558,7 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
         new DevicePolicyCache(device_data_store_.get(),
                               install_attributes_.get());
 
-    managed_cloud_provider_->SetDevicePolicyCache(device_policy_cache);
-    recommended_cloud_provider_->SetDevicePolicyCache(device_policy_cache);
+    cloud_provider_->SetDevicePolicyCache(device_policy_cache);
 
     device_cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
         device_data_store_.get(),
