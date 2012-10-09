@@ -53,7 +53,7 @@ env.AddNodeToTestSuite(node,
                        # open a file. This won't work with the outer sandbox
                        # which is enabled in some cases.
                        is_broken=(env.PPAPIBrowserTesterIsBroken() or
-                                  env.Bit('disable_dynamic_plugin_loading')))
+                                  True))
 
 # Also check the size of this nexe.
 node = env.FileSizeTest('browser_startup_size.out',
