@@ -20,6 +20,10 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/metrics/histogram.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -274,6 +278,23 @@ void TokenService::FireTokenAvailableNotification(
 void TokenService::FireTokenRequestFailedNotification(
     const std::string& service,
     const GoogleServiceAuthError& error) {
+
+#if defined(OS_CHROMEOS)
+  std::string metric = "TokenService.TokenRequestFailed." + service;
+  // We can't use the UMA_HISTOGRAM_ENUMERATION here since the macro creates
+  // a static histogram in the function - locking us to one metric name. Since
+  // the metric name can be "TokenService.TokenRequestFailed." + one of four
+  // different values, we need to create the histogram ourselves and add the
+  // sample.
+  base::Histogram* histogram =
+      base::LinearHistogram::FactoryGet(
+          metric,
+          1,
+          GoogleServiceAuthError::NUM_STATES,
+          GoogleServiceAuthError::NUM_STATES + 1,
+          base::Histogram::kUmaTargetedHistogramFlag);
+  histogram->Add(error.state());
+#endif
 
   TokenRequestFailedDetails details(service, error);
   content::NotificationService::current()->Notify(

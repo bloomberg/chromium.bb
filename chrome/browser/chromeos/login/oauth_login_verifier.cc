@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/oauth_login_verifier.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -145,15 +146,33 @@ void OAuthLoginVerifier::OnOAuthLoginFailure(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LOG(WARNING) << "Failed to verify OAuth1 access tokens,"
                << " error.state=" << error.state();
-  if (!RetryOnError(error))
+
+  if (!RetryOnError(error)) {
+    UMA_HISTOGRAM_ENUMERATION("LoginVerifier.LoginFailureWithNoRetry",
+                              error.state(),
+                              GoogleServiceAuthError::NUM_STATES);
     delegate_->OnOAuthVerificationFailed(username_);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("LoginVerifier.LoginFailureWithRetry",
+                              error.state(),
+                              GoogleServiceAuthError::NUM_STATES);
+  }
 }
 
 void OAuthLoginVerifier::OnCookieFetchFailed(
     const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!RetryOnError(error))
+
+  if (!RetryOnError(error)) {
+    UMA_HISTOGRAM_ENUMERATION("LoginVerifier.CookieFetchFailureWithNoRetry",
+                              error.state(),
+                              GoogleServiceAuthError::NUM_STATES);
     delegate_->OnUserCookiesFetchFailed(username_);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("LoginVerifier.CookieFetchFailureWithRetry",
+                              error.state(),
+                              GoogleServiceAuthError::NUM_STATES);
+  }
 }
 
 void OAuthLoginVerifier::OnIssueAuthTokenSuccess(
