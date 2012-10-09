@@ -28,25 +28,19 @@ class APP_LIST_EXPORT AppListItemModel {
   virtual ~AppListItemModel();
 
   void SetIcon(const gfx::ImageSkia& icon);
-  const gfx::ImageSkia& icon() const {
-    return icon_;
-  }
+  const gfx::ImageSkia& icon() const { return icon_; }
 
   void SetTitle(const std::string& title);
-  const std::string& title() const {
-    return title_;
-  }
+  const std::string& title() const { return title_; }
 
   void SetHighlighted(bool highlighted);
-  bool highlighted() const {
-    return highlighted_;
-  }
+  bool highlighted() const { return highlighted_; }
 
   void AddObserver(AppListItemModelObserver* observer);
   void RemoveObserver(AppListItemModelObserver* observer);
 
   // Returns the context menu model for this item.
-  // Note the menu model is owned by this item.
+  // Note the returned menu model is owned by this item.
   virtual ui::MenuModel* GetContextMenuModel();
 
  private:

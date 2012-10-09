@@ -159,6 +159,46 @@ syncer::StringOrdinal ExtensionAppItem::GetAppLaunchOrdinal() const {
   return GetExtensionSorting(profile_)->GetAppLaunchOrdinal(extension_id_);
 }
 
+void ExtensionAppItem::Move(const ExtensionAppItem* prev,
+                            const ExtensionAppItem* next) {
+  // Does nothing if no predecessor nor successor.
+  if (!prev && !next)
+    return;
+
+  ExtensionService* service = profile_->GetExtensionService();
+  service->extension_prefs()->SetAppDraggedByUser(extension_id_);
+
+  // Handles only predecessor or only successor case.
+  if (!prev || !next) {
+    syncer::StringOrdinal page = prev ? prev->GetPageOrdinal() :
+                                        next->GetPageOrdinal();
+    GetExtensionSorting(profile_)->SetPageOrdinal(extension_id_, page);
+    service->OnExtensionMoved(extension_id_,
+                              prev ? prev->extension_id() : std::string(),
+                              next ? next->extension_id() : std::string());
+    return;
+  }
+
+  // Handles both predecessor and successor are on the same page.
+  syncer::StringOrdinal prev_page = prev->GetPageOrdinal();
+  syncer::StringOrdinal next_page = next->GetPageOrdinal();
+  if (prev_page.Equals(next_page)) {
+    GetExtensionSorting(profile_)->SetPageOrdinal(extension_id_, prev_page);
+    service->OnExtensionMoved(extension_id_,
+                              prev->extension_id(),
+                              next->extension_id());
+    return;
+  }
+
+  // Otherwise, go with |next|. This is okay because app list does not split
+  // page based ntp page ordinal.
+  // TODO(xiyuan): Revisit this when implementing paging support.
+  GetExtensionSorting(profile_)->SetPageOrdinal(extension_id_, prev_page);
+  service->OnExtensionMoved(extension_id_,
+                            prev->extension_id(),
+                            std::string());
+}
+
 void ExtensionAppItem::LoadImage(const Extension* extension) {
   icon_.reset(new extensions::IconImage(
       extension,

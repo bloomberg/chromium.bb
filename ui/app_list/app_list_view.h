@@ -7,14 +7,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
+#include "ui/app_list/apps_grid_view_delegate.h"
 #include "ui/app_list/search_box_view_delegate.h"
 #include "ui/app_list/search_result_list_view_delegate.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/button.h"
 
 namespace app_list {
 
 class AppListModel;
+class AppListItemModel;
 class AppListViewDelegate;
 class ContentsView;
 class PaginationModel;
@@ -23,7 +24,7 @@ class SearchBoxView;
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
-                                    public views::ButtonListener,
+                                    public AppsGridViewDelegate,
                                     public SearchBoxViewDelegate,
                                     public SearchResultListViewDelegate {
  public:
@@ -59,9 +60,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Overridden from views::View:
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
+  // Overridden from AppsGridViewDelegate:
+  virtual void ActivateApp(AppListItemModel* item, int event_flags) OVERRIDE;
 
   // Overridden from SearchBoxViewDelegate:
   virtual void QueryChanged(SearchBoxView* sender) OVERRIDE;

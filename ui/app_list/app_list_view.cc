@@ -162,15 +162,10 @@ bool AppListView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-void AppListView::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (sender->GetClassName() != AppListItemView::kViewClassName)
-    return;
+void AppListView::ActivateApp(AppListItemModel* item, int event_flags) {
+  if (delegate_.get())
+    delegate_->ActivateAppListItem(item, event_flags);
 
-  if (delegate_.get()) {
-    delegate_->ActivateAppListItem(
-        static_cast<AppListItemView*>(sender)->model(),
-        event.flags());
-  }
   Close();
 }
 

@@ -24,6 +24,15 @@ class PageSwitcher : public views::View,
   explicit PageSwitcher(PaginationModel* model);
   virtual ~PageSwitcher();
 
+  // Returns the page index of the page switcher button under the point. If no
+  // page switcher button is under the point, -1 is return. |point| is in
+  // PageSwitcher's coordinates.
+  int GetPageForPoint(const gfx::Point& point) const;
+
+  // Shows hover for button under the point. |point| is in PageSwitcher's
+  // coordinates.
+  void UpdateUIForDragPoint(const gfx::Point& point);
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;

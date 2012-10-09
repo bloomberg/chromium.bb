@@ -19,6 +19,7 @@ class SkBitmap;
 
 namespace views {
 class ImageView;
+class Label;
 class MenuRunner;
 }
 
@@ -26,7 +27,6 @@ namespace app_list {
 
 class AppListItemModel;
 class AppsGridView;
-class DropShadowLabel;
 
 class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                                         public views::ContextMenuController,
@@ -35,9 +35,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // Internal class name.
   static const char kViewClassName[];
 
-  AppListItemView(AppsGridView* apps_grid_view,
-                  AppListItemModel* model,
-                  views::ButtonListener* listener);
+  AppListItemView(AppsGridView* apps_grid_view, AppListItemModel* model);
   virtual ~AppListItemView();
 
   void SetIconSize(const gfx::Size& size);
@@ -67,11 +65,17 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   virtual void StateChanged() OVERRIDE;
   virtual bool ShouldEnterPushedState(const ui::Event& event) OVERRIDE;
 
+  // views::View overrides:
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+
   AppListItemModel* model_;  // Owned by AppListModel::Apps.
 
   AppsGridView* apps_grid_view_;  // Owned by views hierarchy.
   views::ImageView* icon_;  // Owned by views hierarchy.
-  DropShadowLabel* title_;  // Owned by views hierarchy.
+  views::Label* title_;  // Owned by views hierarchy.
 
   scoped_ptr<views::MenuRunner> context_menu_runner_;
 

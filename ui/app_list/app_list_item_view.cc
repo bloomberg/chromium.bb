@@ -7,10 +7,8 @@
 #include <algorithm>
 
 #include "base/utf_string_conversions.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/apps_grid_view.h"
-#include "ui/app_list/drop_shadow_label.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -18,6 +16,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -32,7 +31,6 @@ const int kIconTitleSpacing = 7;
 
 const SkColor kTitleColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
 const SkColor kTitleHoverColor = SkColorSetRGB(0x3C, 0x3C, 0x3C);
-const SkColor kTitleBackgroundColor = SkColorSetRGB(0xFC, 0xFC, 0xFC);
 
 const SkColor kHoverAndPushedColor = SkColorSetARGB(0x19, 0, 0, 0);
 const SkColor kSelectedColor = SkColorSetARGB(0x0D, 0, 0, 0);
@@ -77,14 +75,14 @@ class StaticImageView : public views::ImageView {
 const char AppListItemView::kViewClassName[] = "ui/app_list/AppListItemView";
 
 AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
-                                 AppListItemModel* model,
-                                 views::ButtonListener* listener)
-    : CustomButton(listener),
+                                 AppListItemModel* model)
+    : CustomButton(apps_grid_view),
       model_(model),
       apps_grid_view_(apps_grid_view),
       icon_(new StaticImageView),
-      title_(new DropShadowLabel) {
-  title_->SetBackgroundColor(kTitleBackgroundColor);
+      title_(new views::Label) {
+  title_->SetBackgroundColor(0);
+  title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kTitleColor);
   title_->SetFont(GetTitleFont());
 
@@ -145,7 +143,7 @@ void AppListItemView::ItemTitleChanged() {
 }
 
 void AppListItemView::ItemHighlightedChanged() {
-  apps_grid_view_->EnsureItemVisible(this);
+  apps_grid_view_->EnsureViewVisible(this);
   SchedulePaint();
 }
 
@@ -174,11 +172,11 @@ void AppListItemView::Layout() {
 }
 
 void AppListItemView::OnPaint(gfx::Canvas* canvas) {
+  if (apps_grid_view_->IsDraggedView(this))
+    return;
+
   gfx::Rect rect(GetContentsBounds());
 
-  bool selected = apps_grid_view_->IsSelectedItem(this);
-
-  canvas->FillRect(rect, kContentsBackgroundColor);
   if (model_->highlighted()) {
     canvas->FillRect(rect, kHighlightedColor);
   } else if (hover_animation_->is_animating()) {
@@ -187,7 +185,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     canvas->FillRect(rect, SkColorSetA(kHoverAndPushedColor, alpha));
   } else if (state() == BS_HOT || state() == BS_PUSHED) {
     canvas->FillRect(rect, kHoverAndPushedColor);
-  } else if (selected) {
+  } else if (apps_grid_view_->IsSelectedView(this)) {
     canvas->FillRect(rect, kSelectedColor);
   }
 }
@@ -216,12 +214,10 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 
 void AppListItemView::StateChanged() {
   if (state() == BS_HOT || state() == BS_PUSHED) {
-    // Don't auto select item if there is a running page transition.
-    if (!apps_grid_view_->HasPageTransition())
-      apps_grid_view_->SetSelectedItem(this);
+    apps_grid_view_->SetSelectedView(this);
     title_->SetEnabledColor(kTitleHoverColor);
   } else {
-    apps_grid_view_->ClearSelectedItem(this);
+    apps_grid_view_->ClearSelectedView(this);
     model_->SetHighlighted(false);
     title_->SetEnabledColor(kTitleColor);
   }
@@ -234,6 +230,28 @@ bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
     return false;
 
   return views::CustomButton::ShouldEnterPushedState(event);
+}
+
+bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
+  CustomButton::OnMousePressed(event);
+  apps_grid_view_->InitiateDrag(this, event);
+  return true;
+}
+
+void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
+  CustomButton::OnMouseReleased(event);
+  apps_grid_view_->EndDrag(false);
+}
+
+void AppListItemView::OnMouseCaptureLost() {
+  CustomButton::OnMouseCaptureLost();
+  apps_grid_view_->EndDrag(true);
+}
+
+bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
+  CustomButton::OnMouseDragged(event);
+  apps_grid_view_->UpdateDrag(this, event);
+  return true;
 }
 
 }  // namespace app_list

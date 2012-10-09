@@ -40,6 +40,11 @@ class ExtensionAppItem : public ChromeAppListItem,
   syncer::StringOrdinal GetPageOrdinal() const;
   syncer::StringOrdinal GetAppLaunchOrdinal() const;
 
+  // Update page and app launcher ordinals to put the app in between |prev| and
+  // |next|. Note that |prev| and |next| could be NULL when the app is put at
+  // the beginning or at the end.
+  void Move(const ExtensionAppItem* prev, const ExtensionAppItem* next);
+
   const std::string& extension_id() const { return extension_id_; }
 
  private:

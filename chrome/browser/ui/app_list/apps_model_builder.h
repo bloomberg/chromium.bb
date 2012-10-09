@@ -12,12 +12,14 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/base/models/list_model_observer.h"
 
 class AppListController;
 class ExtensionAppItem;
 class Profile;
 
-class AppsModelBuilder : public content::NotificationObserver {
+class AppsModelBuilder : public content::NotificationObserver,
+                         public ui::ListModelObserver {
  public:
   AppsModelBuilder(Profile* profile,
                    app_list::AppListModel::Apps* model,
@@ -54,6 +56,12 @@ class AppsModelBuilder : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ui::ListModelObserver overrides:
+  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
+  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
+  virtual void ListItemMoved(size_t index, size_t target_index) OVERRIDE;
+  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
+
   Profile* profile_;
   AppListController* controller_;
 
@@ -61,6 +69,9 @@ class AppsModelBuilder : public content::NotificationObserver {
   app_list::AppListModel::Apps* model_;
 
   std::string highlight_app_id_;
+
+  // True to ignore |model_| changes.
+  bool ignore_changes_;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

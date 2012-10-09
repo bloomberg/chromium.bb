@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -41,7 +42,8 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
                                    AppListController* controller)
     : profile_(profile),
       controller_(controller),
-      model_(model) {
+      model_(model),
+      ignore_changes_(false) {
   extensions::ExtensionPrefs* extension_prefs =
       profile_->GetExtensionService()->extension_prefs();
 
@@ -56,9 +58,12 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
 
   pref_change_registrar_.Init(extension_prefs->pref_service());
   pref_change_registrar_.Add(extensions::ExtensionPrefs::kExtensionsPref, this);
+
+  model_->AddObserver(this);
 }
 
 AppsModelBuilder::~AppsModelBuilder() {
+  model_->RemoveObserver(this);
 }
 
 void AppsModelBuilder::Build() {
@@ -103,31 +108,18 @@ void AppsModelBuilder::ResortApps() {
 
   std::sort(apps.begin(), apps.end(), &AppPrecedes);
 
+  AutoReset<bool> auto_reset(&ignore_changes_, true);
+
   // Adjusts the order of apps as needed in |model_| based on |apps|.
   for (size_t i = 0; i < apps.size(); ++i) {
     ExtensionAppItem* app_item = apps[i];
 
-    const size_t insert_index = i;
-
-    bool found = false;
-    size_t index = 0;
-
     // Finds |app_item| in remaining unsorted part in |model_|.
-    for (size_t j = insert_index; j < model_->item_count(); ++j) {
+    for (size_t j = i; j < model_->item_count(); ++j) {
       if (GetAppAt(j) == app_item) {
-        found = true;
-        index = j;
+        model_->Move(j, i);
         break;
       }
-    }
-
-    if (found) {
-      if (index != insert_index) {
-        model_->RemoveAt(index);
-        model_->AddAt(insert_index, app_item);
-      }
-    } else {
-      NOTREACHED();
     }
   }
 }
@@ -223,4 +215,24 @@ void AppsModelBuilder::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void AppsModelBuilder::ListItemsAdded(size_t start, size_t count) {
+}
+
+void AppsModelBuilder::ListItemsRemoved(size_t start, size_t count) {
+}
+
+void AppsModelBuilder::ListItemMoved(size_t index, size_t target_index) {
+  if (ignore_changes_)
+    return;
+
+  ExtensionAppItem* prev = target_index > 0 ? GetAppAt(target_index - 1) : NULL;
+  ExtensionAppItem* next = target_index + 1 < model_->item_count() ?
+      GetAppAt(target_index + 1) : NULL;
+  GetAppAt(target_index)->Move(prev, next);
+}
+
+void AppsModelBuilder::ListItemsChanged(size_t start, size_t count) {
+  NOTREACHED();
 }
