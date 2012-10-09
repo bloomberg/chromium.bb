@@ -166,7 +166,7 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 	if (asprintf(&path, "%s/%s", syspath, "device") < 0)
 		return NULL;
 
-	ret = readlink(path, buffer, sizeof(buffer));
+	ret = readlink(path, buffer, sizeof(buffer) - 1);
 	free(path);
 	if (ret < 0)
 		return NULL;
@@ -248,7 +248,7 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 		if (asprintf(&path, "%s/%s", backlight_path, "device") < 0)
 			return NULL;
 
-		ret = readlink(path, buffer, sizeof(buffer));
+		ret = readlink(path, buffer, sizeof(buffer) - 1);
 
 		if (ret < 0)
 			goto out;
