@@ -40,9 +40,9 @@ void ContentLayerPainter::paint(SkCanvas* canvas, const IntRect& contentRect, Fl
     WebKit::Platform::current()->histogramCustomCounts("Renderer4.AccelContentPaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
 }
 
-PassRefPtr<ContentLayerChromium> ContentLayerChromium::create(ContentLayerChromiumClient* client)
+scoped_refptr<ContentLayerChromium> ContentLayerChromium::create(ContentLayerChromiumClient* client)
 {
-    return adoptRef(new ContentLayerChromium(client));
+    return make_scoped_refptr(new ContentLayerChromium(client));
 }
 
 ContentLayerChromium::ContentLayerChromium(ContentLayerChromiumClient* client)

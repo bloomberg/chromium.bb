@@ -5,11 +5,11 @@
 #ifndef CCLayerTreeHostCommon_h
 #define CCLayerTreeHostCommon_h
 
+#include "base/memory/ref_counted.h"
+#include "cc/own_ptr_vector.h"
 #include "IntRect.h"
 #include "IntSize.h"
-#include "cc/own_ptr_vector.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 
 namespace cc {
@@ -22,11 +22,11 @@ class CCLayerTreeHostCommon {
 public:
     static IntRect calculateVisibleRect(const IntRect& targetSurfaceRect, const IntRect& layerBoundRect, const WebKit::WebTransformationMatrix&);
 
-    static void calculateDrawTransforms(LayerChromium* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, int maxTextureSize, Vector<RefPtr<LayerChromium> >& renderSurfaceLayerList);
-    static void calculateDrawTransforms(CCLayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, CCLayerSorter*, int maxTextureSize, Vector<CCLayerImpl*>& renderSurfaceLayerList);
+    static void calculateDrawTransforms(LayerChromium* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, int maxTextureSize, std::vector<scoped_refptr<LayerChromium> >& renderSurfaceLayerList);
+    static void calculateDrawTransforms(CCLayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, CCLayerSorter*, int maxTextureSize, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
 
     // Performs hit testing for a given renderSurfaceLayerList.
-    static CCLayerImpl* findLayerThatIsHitByPoint(const IntPoint& viewportPoint, Vector<CCLayerImpl*>& renderSurfaceLayerList);
+    static CCLayerImpl* findLayerThatIsHitByPoint(const IntPoint& viewportPoint, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
 
     template<typename LayerType> static bool renderSurfaceContributesToTarget(LayerType*, int targetSurfaceLayerID);
 
@@ -34,7 +34,7 @@ public:
     // from the given root layer (including mask and replica layers).
     template<typename LayerType> static LayerType* findLayerInSubtree(LayerType* rootLayer, int layerId);
 
-    static LayerChromium* getChildAsRawPtr(const Vector<RefPtr<LayerChromium> >& children, size_t index)
+    static LayerChromium* getChildAsRawPtr(const std::vector<scoped_refptr<LayerChromium> >& children, size_t index)
     {
         return children[index].get();
     }

@@ -16,13 +16,15 @@ namespace cc {
 // setBackgroundColor() on the base class.
 class SolidColorLayerChromium : public LayerChromium {
 public:
-    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
-    static PassRefPtr<SolidColorLayerChromium> create();
+    static scoped_refptr<SolidColorLayerChromium> create();
 
-    virtual ~SolidColorLayerChromium();
+    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
 protected:
     SolidColorLayerChromium();
+
+private:
+    virtual ~SolidColorLayerChromium();
 };
 
 }

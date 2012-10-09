@@ -34,9 +34,7 @@ class ScrollbarLayerChromium : public LayerChromium {
 public:
     virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
-    static PassRefPtr<ScrollbarLayerChromium> create(PassOwnPtr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
-
-    virtual ~ScrollbarLayerChromium();
+    static scoped_refptr<ScrollbarLayerChromium> create(PassOwnPtr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
 
     // LayerChromium interface
     virtual bool needsContentsScale() const OVERRIDE;
@@ -53,6 +51,7 @@ public:
 
 protected:
     ScrollbarLayerChromium(PassOwnPtr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
+    virtual ~ScrollbarLayerChromium();
 
 private:
     void updatePart(ScrollLayerTextureUpdater*, LayerTextureUpdater::Texture*, const IntRect&, CCTextureUpdateQueue&, CCRenderingStats&);

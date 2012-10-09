@@ -274,7 +274,7 @@ void CCLayerImpl::dumpLayerProperties(std::string* str, int indent) const
     base::StringAppendF(str, "drawsContent: %s\n", m_drawsContent ? "yes" : "no");
 }
 
-void sortLayers(Vector<CCLayerImpl*>::iterator first, Vector<CCLayerImpl*>::iterator end, CCLayerSorter* layerSorter)
+void sortLayers(std::vector<CCLayerImpl*>::iterator first, std::vector<CCLayerImpl*>::iterator end, CCLayerSorter* layerSorter)
 {
     TRACE_EVENT0("cc", "CCLayerImpl::sortLayers");
     layerSorter->sort(first, end);

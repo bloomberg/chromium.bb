@@ -51,6 +51,10 @@ public:
     }
 
 private:
+    virtual ~TestContentLayerChromium()
+    {
+    }
+
     bool m_overrideOpaqueContentsRect;
     IntRect m_opaqueContentsRect;
 };
@@ -105,18 +109,23 @@ struct CCOcclusionTrackerTestMainThreadTypes {
     typedef LayerChromium LayerType;
     typedef RenderSurfaceChromium RenderSurfaceType;
     typedef TestContentLayerChromium ContentLayerType;
-    typedef RefPtr<LayerChromium> LayerPtrType;
-    typedef PassRefPtr<LayerChromium> PassLayerPtrType;
-    typedef RefPtr<ContentLayerType> ContentLayerPtrType;
-    typedef PassRefPtr<ContentLayerType> PassContentLayerPtrType;
-    typedef CCLayerIterator<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::FrontToBack> LayerIterator;
+    typedef scoped_refptr<LayerChromium> LayerPtrType;
+    typedef scoped_refptr<LayerChromium> PassLayerPtrType;
+    typedef scoped_refptr<ContentLayerType> ContentLayerPtrType;
+    typedef scoped_refptr<ContentLayerType> PassContentLayerPtrType;
+    typedef CCLayerIterator<LayerChromium, std::vector<scoped_refptr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::FrontToBack> LayerIterator;
     typedef CCOcclusionTracker OcclusionTrackerType;
 
     static PassLayerPtrType createLayer()
     {
         return LayerChromium::create();
     }
-    static PassContentLayerPtrType createContentLayer() { return adoptRef(new ContentLayerType()); }
+    static PassContentLayerPtrType createContentLayer() { return make_scoped_refptr(new ContentLayerType()); }
+
+    static void destroyLayer(LayerPtrType& layer)
+    {
+        layer = NULL;
+    }
 };
 
 struct CCOcclusionTrackerTestImplThreadTypes {
@@ -127,12 +136,17 @@ struct CCOcclusionTrackerTestImplThreadTypes {
     typedef PassOwnPtr<CCLayerImpl> PassLayerPtrType;
     typedef OwnPtr<ContentLayerType> ContentLayerPtrType;
     typedef PassOwnPtr<ContentLayerType> PassContentLayerPtrType;
-    typedef CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, CCLayerIteratorActions::FrontToBack> LayerIterator;
+    typedef CCLayerIterator<CCLayerImpl, std::vector<CCLayerImpl*>, CCRenderSurface, CCLayerIteratorActions::FrontToBack> LayerIterator;
     typedef CCOcclusionTrackerImpl OcclusionTrackerType;
 
     static PassLayerPtrType createLayer() { return CCLayerImpl::create(nextCCLayerImplId++); }
     static PassContentLayerPtrType createContentLayer() { return adoptPtr(new ContentLayerType(nextCCLayerImplId++)); }
     static int nextCCLayerImplId;
+
+    static void destroyLayer(LayerPtrType& layer)
+    {
+        layer.clear();
+    }
 };
 
 int CCOcclusionTrackerTestImplThreadTypes::nextCCLayerImplId = 1;
@@ -148,7 +162,7 @@ protected:
 
     virtual void TearDown()
     {
-        m_root.clear();
+        Types::destroyLayer(m_root);
         m_renderSurfaceLayerListChromium.clear();
         m_renderSurfaceLayerListImpl.clear();
         m_replicaLayers.clear();
@@ -332,10 +346,10 @@ private:
         layer->setContentBounds(layer->bounds());
     }
 
-    void setReplica(LayerChromium* owningLayer, PassRefPtr<LayerChromium> layer)
+    void setReplica(LayerChromium* owningLayer, scoped_refptr<LayerChromium> layer)
     {
         owningLayer->setReplicaLayer(layer.get());
-        m_replicaLayers.append(layer);
+        m_replicaLayers.push_back(layer);
     }
 
     void setReplica(CCLayerImpl* owningLayer, PassOwnPtr<CCLayerImpl> layer)
@@ -343,10 +357,10 @@ private:
         owningLayer->setReplicaLayer(layer);
     }
 
-    void setMask(LayerChromium* owningLayer, PassRefPtr<LayerChromium> layer)
+    void setMask(LayerChromium* owningLayer, scoped_refptr<LayerChromium> layer)
     {
         owningLayer->setMaskLayer(layer.get());
-        m_maskLayers.append(layer);
+        m_maskLayers.push_back(layer);
     }
 
     void setMask(CCLayerImpl* owningLayer, PassOwnPtr<CCLayerImpl> layer)
@@ -356,13 +370,13 @@ private:
 
     // These hold ownership of the layers for the duration of the test.
     typename Types::LayerPtrType m_root;
-    Vector<RefPtr<LayerChromium> > m_renderSurfaceLayerListChromium;
-    Vector<CCLayerImpl*> m_renderSurfaceLayerListImpl;
+    std::vector<scoped_refptr<LayerChromium> > m_renderSurfaceLayerListChromium;
+    std::vector<CCLayerImpl*> m_renderSurfaceLayerListImpl;
     typename Types::LayerIterator m_layerIteratorBegin;
     typename Types::LayerIterator m_layerIterator;
     typename Types::LayerType* m_lastLayerVisited;
-    Vector<RefPtr<LayerChromium> > m_replicaLayers;
-    Vector<RefPtr<LayerChromium> > m_maskLayers;
+    std::vector<scoped_refptr<LayerChromium> > m_replicaLayers;
+    std::vector<scoped_refptr<LayerChromium> > m_maskLayers;
 };
 
 #define RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName) \

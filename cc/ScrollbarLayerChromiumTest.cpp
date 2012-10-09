@@ -51,9 +51,9 @@ TEST(ScrollbarLayerChromiumTest, resolveScrollLayerPointer)
 
     {
         OwnPtr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-        RefPtr<LayerChromium> layerTreeRoot = LayerChromium::create();
-        RefPtr<LayerChromium> child1 = LayerChromium::create();
-        RefPtr<LayerChromium> child2 = ScrollbarLayerChromium::create(scrollbar.release(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child1->id());
+        scoped_refptr<LayerChromium> layerTreeRoot = LayerChromium::create();
+        scoped_refptr<LayerChromium> child1 = LayerChromium::create();
+        scoped_refptr<LayerChromium> child2 = ScrollbarLayerChromium::create(scrollbar.release(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child1->id());
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
@@ -68,9 +68,9 @@ TEST(ScrollbarLayerChromiumTest, resolveScrollLayerPointer)
 
     { // another traverse order
         OwnPtr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-        RefPtr<LayerChromium> layerTreeRoot = LayerChromium::create();
-        RefPtr<LayerChromium> child2 = LayerChromium::create();
-        RefPtr<LayerChromium> child1 = ScrollbarLayerChromium::create(scrollbar.release(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child2->id());
+        scoped_refptr<LayerChromium> layerTreeRoot = LayerChromium::create();
+        scoped_refptr<LayerChromium> child2 = LayerChromium::create();
+        scoped_refptr<LayerChromium> child1 = ScrollbarLayerChromium::create(scrollbar.release(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child2->id());
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
@@ -91,9 +91,9 @@ TEST(ScrollbarLayerChromiumTest, scrollOffsetSynchronization)
     WebKit::WebScrollbarThemePainter painter;
 
     OwnPtr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-    RefPtr<LayerChromium> layerTreeRoot = LayerChromium::create();
-    RefPtr<LayerChromium> contentLayer = LayerChromium::create();
-    RefPtr<LayerChromium> scrollbarLayer = ScrollbarLayerChromium::create(scrollbar.release(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), layerTreeRoot->id());
+    scoped_refptr<LayerChromium> layerTreeRoot = LayerChromium::create();
+    scoped_refptr<LayerChromium> contentLayer = LayerChromium::create();
+    scoped_refptr<LayerChromium> scrollbarLayer = ScrollbarLayerChromium::create(scrollbar.release(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), layerTreeRoot->id());
     layerTreeRoot->addChild(contentLayer);
     layerTreeRoot->addChild(scrollbarLayer);
 

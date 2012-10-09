@@ -54,7 +54,7 @@ void setLayerPropertiesForTesting(CCLayerImpl* layer, const WebTransformationMat
 void executeCalculateDrawTransformsAndVisibility(LayerChromium* rootLayer, float deviceScaleFactor = 1)
 {
     WebTransformationMatrix identityMatrix;
-    Vector<RefPtr<LayerChromium> > dummyRenderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > dummyRenderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     IntSize deviceViewportSize = IntSize(rootLayer->bounds().width() * deviceScaleFactor, rootLayer->bounds().height() * deviceScaleFactor);
 
@@ -68,7 +68,7 @@ void executeCalculateDrawTransformsAndVisibility(CCLayerImpl* rootLayer, float d
     // Note: this version skips layer sorting.
 
     WebTransformationMatrix identityMatrix;
-    Vector<CCLayerImpl*> dummyRenderSurfaceLayerList;
+    std::vector<CCLayerImpl*> dummyRenderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     IntSize deviceViewportSize = IntSize(rootLayer->bounds().width() * deviceScaleFactor, rootLayer->bounds().height() * deviceScaleFactor);
 
@@ -121,6 +121,11 @@ public:
     }
 
     virtual bool drawsContent() const OVERRIDE { return true; }
+
+private:
+    virtual ~LayerChromiumWithForcedDrawsContent()
+    {
+    }
 };
 
 class MockContentLayerChromiumClient : public ContentLayerChromiumClient {
@@ -130,11 +135,11 @@ public:
     virtual void paintContents(SkCanvas*, const IntRect& clip, FloatRect& opaque) OVERRIDE { }
 };
 
-PassRefPtr<ContentLayerChromium> createDrawableContentLayerChromium(ContentLayerChromiumClient* delegate)
+scoped_refptr<ContentLayerChromium> createDrawableContentLayerChromium(ContentLayerChromiumClient* delegate)
 {
-    RefPtr<ContentLayerChromium> toReturn = ContentLayerChromium::create(delegate);
+    scoped_refptr<ContentLayerChromium> toReturn = ContentLayerChromium::create(delegate);
     toReturn->setIsDrawable(true);
-    return toReturn.release();
+    return toReturn;
 }
 
 TEST(CCLayerTreeHostCommonTest, verifyTransformsForNoOpLayer)
@@ -144,9 +149,9 @@ TEST(CCLayerTreeHostCommonTest, verifyTransformsForNoOpLayer)
     // screenSpaceTransform, and the hierarchy passed on to children
     // layers should also be identity transforms.
 
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild = LayerChromium::create();
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
     parent->addChild(child);
     child->addChild(grandChild);
 
@@ -166,7 +171,7 @@ TEST(CCLayerTreeHostCommonTest, verifyTransformsForNoOpLayer)
 TEST(CCLayerTreeHostCommonTest, verifyTransformsForSingleLayer)
 {
     WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> layer = LayerChromium::create();
+    scoped_refptr<LayerChromium> layer = LayerChromium::create();
 
     // Case 1: setting the sublayer transform should not affect this layer's draw transform or screen-space transform.
     WebTransformationMatrix arbitraryTranslation;
@@ -230,9 +235,9 @@ TEST(CCLayerTreeHostCommonTest, verifyTransformsForSingleLayer)
 TEST(CCLayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
 {
     WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild = LayerChromium::create();
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
     parent->addChild(child);
     child->addChild(grandChild);
 
@@ -308,9 +313,9 @@ TEST(CCLayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
 
 TEST(CCLayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
 {
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChild = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(child);
     child->addChild(grandChild);
 
@@ -355,10 +360,10 @@ TEST(CCLayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
 
 TEST(CCLayerTreeHostCommonTest, verifyTransformsForReplica)
 {
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromium> childReplica = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChild = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> childReplica = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(child);
     child->addChild(grandChild);
     child->setReplicaLayer(childReplica.get());
@@ -409,17 +414,17 @@ TEST(CCLayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     //   - Sanity check on recursion: verify transforms of layers described w.r.t. a render surface that is described w.r.t. an ancestor render surface.
     //   - verifying that each layer has a reference to the correct renderSurface and renderTarget values.
 
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface2 = LayerChromium::create();
-    RefPtr<LayerChromium> childOfRoot = LayerChromium::create();
-    RefPtr<LayerChromium> childOfRS1 = LayerChromium::create();
-    RefPtr<LayerChromium> childOfRS2 = LayerChromium::create();
-    RefPtr<LayerChromium> replicaOfRS1 = LayerChromium::create();
-    RefPtr<LayerChromium> replicaOfRS2 = LayerChromium::create();
-    RefPtr<LayerChromium> grandChildOfRoot = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChildOfRS1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChildOfRS2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRoot = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRS1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRS2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> replicaOfRS1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> replicaOfRS2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChildOfRoot = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChildOfRS1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChildOfRS2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(renderSurface1);
     parent->addChild(childOfRoot);
     renderSurface1->addChild(childOfRS1);
@@ -566,9 +571,9 @@ TEST(CCLayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
     // code is currently implemented, it is not expected to use a canonical orthographic
     // projection.
 
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChild = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     WebTransformationMatrix rotationAboutYAxis;
     rotationAboutYAxis.rotate3d(0, 30, 0);
@@ -612,9 +617,9 @@ TEST(CCLayerTreeHostCommonTest, verifyTransformsForDegenerateIntermediateLayer)
     // Normally this isn't a problem, because the layer wouldn't be drawn anyway, but if that layer becomes a renderSurface, then
     // its drawTransform is implicitly inherited by the rest of the subtree, which then is positioned incorrectly as a result.
 
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChild = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     // The child height is zero, but has non-zero width that should be accounted for while computing drawTransforms.
     const WebTransformationMatrix identityMatrix;
@@ -636,9 +641,9 @@ TEST(CCLayerTreeHostCommonTest, verifyTransformsForDegenerateIntermediateLayer)
 
 TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceListForRenderSurfaceWithClippedLayer)
 {
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     const WebTransformationMatrix identityMatrix;
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, FloatPoint::zero(), FloatPoint::zero(), IntSize(10, 10), false);
@@ -650,7 +655,7 @@ TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceListForRenderSurfaceWithClipp
     renderSurface1->addChild(child);
     renderSurface1->setForceRenderSurface(true);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -664,9 +669,9 @@ TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceListForRenderSurfaceWithClipp
 
 TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
 {
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     const WebTransformationMatrix identityMatrix;
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, FloatPoint::zero(), FloatPoint::zero(), IntSize(10, 10), false);
@@ -677,7 +682,7 @@ TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
     renderSurface1->setForceRenderSurface(true);
     renderSurface1->setOpacity(0);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -692,9 +697,9 @@ TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
 
 TEST(CCLayerTreeHostCommonTest, verifyForceRenderSurface)
 {
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     renderSurface1->setForceRenderSurface(true);
 
     const WebTransformationMatrix identityMatrix;
@@ -709,7 +714,7 @@ TEST(CCLayerTreeHostCommonTest, verifyForceRenderSurface)
     EXPECT_FALSE(parent->renderSurface());
     EXPECT_FALSE(renderSurface1->renderSurface());
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -1305,12 +1310,12 @@ TEST(CCLayerTreeHostCommonTest, verifyClipRectCullsRenderSurfaces)
     //
 
     const WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild = LayerChromium::create();
-    RefPtr<LayerChromium> greatGrandChild = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> leafNode1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> leafNode2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
+    scoped_refptr<LayerChromium> greatGrandChild = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(child);
     child->addChild(grandChild);
     grandChild->addChild(greatGrandChild);
@@ -1332,7 +1337,7 @@ TEST(CCLayerTreeHostCommonTest, verifyClipRectCullsRenderSurfaces)
     grandChild->setOpacity(0.5);
     greatGrandChild->setOpacity(0.4f);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -1360,10 +1365,10 @@ TEST(CCLayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     // in the renderSurfaceLayerList.
 
     const WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> leafNode = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(child);
     child->addChild(grandChild);
     grandChild->addChild(leafNode);
@@ -1377,7 +1382,7 @@ TEST(CCLayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     child->setOpacity(0.4f);
     grandChild->setOpacity(0.4f);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -1413,12 +1418,12 @@ TEST(CCLayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
     //
 
     const WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild1 = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild2 = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild3 = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild4 = LayerChromium::create();
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild3 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild4 = LayerChromium::create();
 
     parent->addChild(child);
     child->addChild(grandChild1);
@@ -1443,7 +1448,7 @@ TEST(CCLayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
     grandChild3->setOpacity(0.5);
     grandChild4->setOpacity(0.5);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -1463,16 +1468,16 @@ TEST(CCLayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
     //
 
     const WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild1 = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild2 = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild3 = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild4 = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> leafNode1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> leafNode2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> leafNode3 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> leafNode4 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild3 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild4 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode4 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(child);
     child->addChild(grandChild1);
@@ -1508,7 +1513,7 @@ TEST(CCLayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
     grandChild3->setOpacity(0.5);
     grandChild4->setOpacity(0.5);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -1525,15 +1530,15 @@ TEST(CCLayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
 
 TEST(CCLayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
 {
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface2 = LayerChromium::create();
-    RefPtr<LayerChromium> childOfRoot = LayerChromium::create();
-    RefPtr<LayerChromium> childOfRS1 = LayerChromium::create();
-    RefPtr<LayerChromium> childOfRS2 = LayerChromium::create();
-    RefPtr<LayerChromium> grandChildOfRoot = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChildOfRS1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChildOfRS2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRoot = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRS1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRS2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChildOfRoot = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChildOfRS1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChildOfRS2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(renderSurface1);
     parent->addChild(childOfRoot);
     renderSurface1->addChild(childOfRS1);
@@ -1924,10 +1929,10 @@ TEST(CCLayerTreeHostCommonTest, verifyVisibleRectForPerspectiveUnprojection)
 
 TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSimpleLayers)
 {
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child3 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(child1);
     root->addChild(child2);
     root->addChild(child3);
@@ -1959,11 +1964,11 @@ TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSimpleLay
 
 TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersClippedByLayer)
 {
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChild1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChild2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> grandChild3 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(child);
     child->addChild(grandChild1);
     child->addChild(grandChild2);
@@ -2001,11 +2006,11 @@ TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersCli
 
 TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInUnclippedRenderSurface)
 {
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child3 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
     renderSurface1->addChild(child2);
@@ -2045,11 +2050,11 @@ TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInU
 
 TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInClippedRenderSurface)
 {
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child3 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
     renderSurface1->addChild(child2);
@@ -2093,12 +2098,12 @@ TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInC
 TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSurfaceHierarchy)
 {
     // Check that clipping does not propagate down surfaces.
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface2 = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child3 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface2 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(renderSurface2);
     renderSurface2->addChild(child1);
@@ -2154,9 +2159,9 @@ TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransfor
     // Layers that have non-axis aligned bounds (due to transforms) have an expanded,
     // axis-aligned drawableContentRect and visibleContentRect.
 
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
 
@@ -2194,9 +2199,9 @@ TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransfor
     // Layers that have non-axis aligned bounds (due to transforms) have an expanded,
     // axis-aligned drawableContentRect and visibleContentRect.
 
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromium> renderSurface1 = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
 
@@ -2232,12 +2237,12 @@ TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsInHighDPI)
 {
     MockContentLayerChromiumClient client;
 
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<ContentLayerChromium> renderSurface1 = createDrawableContentLayerChromium(&client);
-    RefPtr<ContentLayerChromium> renderSurface2 = createDrawableContentLayerChromium(&client);
-    RefPtr<ContentLayerChromium> child1 = createDrawableContentLayerChromium(&client);
-    RefPtr<ContentLayerChromium> child2 = createDrawableContentLayerChromium(&client);
-    RefPtr<ContentLayerChromium> child3 = createDrawableContentLayerChromium(&client);
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<ContentLayerChromium> renderSurface1 = createDrawableContentLayerChromium(&client);
+    scoped_refptr<ContentLayerChromium> renderSurface2 = createDrawableContentLayerChromium(&client);
+    scoped_refptr<ContentLayerChromium> child1 = createDrawableContentLayerChromium(&client);
+    scoped_refptr<ContentLayerChromium> child2 = createDrawableContentLayerChromium(&client);
+    scoped_refptr<ContentLayerChromium> child3 = createDrawableContentLayerChromium(&client);
     root->addChild(renderSurface1);
     renderSurface1->addChild(renderSurface2);
     renderSurface2->addChild(child1);
@@ -2300,15 +2305,15 @@ TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
     // parent layer according to current W3C spec.
 
     const WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> frontFacingChild = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> backFacingChild = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> frontFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> backFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfFrontFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> backFacingChildOfFrontFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfBackFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> backFacingChildOfBackFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(frontFacingChild);
     parent->addChild(backFacingChild);
@@ -2350,7 +2355,7 @@ TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
     setLayerPropertiesForTesting(frontFacingChildOfBackFacingSurface.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
     setLayerPropertiesForTesting(backFacingChildOfBackFacingSurface.get(), backfaceMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2392,17 +2397,17 @@ TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
     // Verify the behavior of back-face culling when preserves-3d transform style is used.
 
     const WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> frontFacingChild = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> backFacingChild = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> frontFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> backFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfFrontFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> backFacingChildOfFrontFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfBackFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> backFacingChildOfBackFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> dummyReplicaLayer1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> dummyReplicaLayer2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> dummyReplicaLayer1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> dummyReplicaLayer2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(frontFacingChild);
     parent->addChild(backFacingChild);
@@ -2449,7 +2454,7 @@ TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
     setLayerPropertiesForTesting(frontFacingChildOfBackFacingSurface.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
     setLayerPropertiesForTesting(backFacingChildOfBackFacingSurface.get(), backfaceMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2489,12 +2494,12 @@ TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
     //
 
     const WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> child = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> animatingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> childOfAnimatingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> animatingChild = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> animatingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> childOfAnimatingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> animatingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(child);
     parent->addChild(animatingSurface);
@@ -2529,7 +2534,7 @@ TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
     setLayerPropertiesForTesting(animatingChild.get(), backfaceMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
     setLayerPropertiesForTesting(child2.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2569,11 +2574,11 @@ TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlattenin
     // when it flattens its subtree, and its parent has preserves-3d.
 
     const WebTransformationMatrix identityMatrix;
-    RefPtr<LayerChromium> parent = LayerChromium::create();
-    RefPtr<LayerChromiumWithForcedDrawsContent> frontFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> backFacingSurface = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child1 = adoptRef(new LayerChromiumWithForcedDrawsContent());
-    RefPtr<LayerChromiumWithForcedDrawsContent> child2 = adoptRef(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(frontFacingSurface);
     parent->addChild(backFacingSurface);
@@ -2595,7 +2600,7 @@ TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlattenin
     setLayerPropertiesForTesting(child1.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
     setLayerPropertiesForTesting(child2.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2625,7 +2630,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForEmptyLayerList)
     // Hit testing on an empty renderSurfaceLayerList should return a null pointer.
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
 
     IntPoint testPoint(0, 0);
     CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
@@ -2649,7 +2654,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2698,7 +2703,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
     setLayerPropertiesForTesting(root.get(), uninvertibleTransform, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2752,7 +2757,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2799,7 +2804,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
     setLayerPropertiesForTesting(root.get(), rotation45DegreesAboutCenter, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2855,7 +2860,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
     setLayerPropertiesForTesting(root.get(), perspectiveProjectionAboutCenter * translationByZ, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2919,7 +2924,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents
         root->addChild(testLayer.release());
     }
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -2983,7 +2988,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
         root->addChild(clippingLayer.release());
     }
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -3073,7 +3078,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
         root->addChild(child.release());
     }
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -3155,7 +3160,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
         root->addChild(intermediateLayer.release());
     }
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -3235,7 +3240,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
     CCLayerImpl* child2 = root->children()[1];
     CCLayerImpl* grandChild1 = child1->children()[0];
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -3343,7 +3348,7 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
     CCLayerImpl* child2 = root->children()[1];
     CCLayerImpl* grandChild1 = child1->children()[0];
 
-    Vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
@@ -3407,19 +3412,19 @@ TEST(CCLayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     MockContentLayerChromiumClient delegate;
     WebTransformationMatrix identityMatrix;
 
-    RefPtr<ContentLayerChromium> parent = createDrawableContentLayerChromium(&delegate);
+    scoped_refptr<ContentLayerChromium> parent = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), true);
 
-    RefPtr<ContentLayerChromium> child = createDrawableContentLayerChromium(&delegate);
+    scoped_refptr<ContentLayerChromium> child = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(2, 2), IntSize(10, 10), true);
 
-    RefPtr<ContentLayerChromium> childNoScale = createDrawableContentLayerChromium(&delegate);
+    scoped_refptr<ContentLayerChromium> childNoScale = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(childNoScale.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(2, 2), IntSize(10, 10), true);
 
     parent->addChild(child);
     parent->addChild(childNoScale);
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
 
     const double deviceScaleFactor = 2.5;
@@ -3479,27 +3484,27 @@ TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
     MockContentLayerChromiumClient delegate;
     WebTransformationMatrix identityMatrix;
 
-    RefPtr<ContentLayerChromium> parent = createDrawableContentLayerChromium(&delegate);
+    scoped_refptr<ContentLayerChromium> parent = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(30, 30), true);
 
-    RefPtr<ContentLayerChromium> child = createDrawableContentLayerChromium(&delegate);
+    scoped_refptr<ContentLayerChromium> child = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(2, 2), IntSize(10, 10), true);
 
     WebTransformationMatrix replicaTransform;
     replicaTransform.scaleNonUniform(1, -1);
-    RefPtr<ContentLayerChromium> replica = createDrawableContentLayerChromium(&delegate);
+    scoped_refptr<ContentLayerChromium> replica = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(replica.get(), replicaTransform, identityMatrix, FloatPoint(0, 0), FloatPoint(2, 2), IntSize(10, 10), true);
 
     // This layer should end up in the same surface as child, with the same draw
     // and screen space transforms.
-    RefPtr<ContentLayerChromium> duplicateChildNonOwner = createDrawableContentLayerChromium(&delegate);
+    scoped_refptr<ContentLayerChromium> duplicateChildNonOwner = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(duplicateChildNonOwner.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(10, 10), true);
 
     parent->addChild(child);
     child->addChild(duplicateChildNonOwner);
     child->setReplicaLayer(replica.get());
 
-    Vector<RefPtr<LayerChromium> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
 
     const double deviceScaleFactor = 1.5;
@@ -3558,11 +3563,11 @@ TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
 
 TEST(CCLayerTreeHostCommonTest, verifySubtreeSearch)
 {
-    RefPtr<LayerChromium> root = LayerChromium::create();
-    RefPtr<LayerChromium> child = LayerChromium::create();
-    RefPtr<LayerChromium> grandChild = LayerChromium::create();
-    RefPtr<LayerChromium> maskLayer = LayerChromium::create();
-    RefPtr<LayerChromium> replicaLayer = LayerChromium::create();
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
+    scoped_refptr<LayerChromium> maskLayer = LayerChromium::create();
+    scoped_refptr<LayerChromium> replicaLayer = LayerChromium::create();
 
     grandChild->setReplicaLayer(replicaLayer.get());
     child->addChild(grandChild.get());

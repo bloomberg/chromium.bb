@@ -100,7 +100,7 @@ private:
 class CCLayerTreeHostImpl : public CCInputHandlerClient,
                             public CCRendererClient,
                             public WebKit::WebCompositorOutputSurfaceClient {
-    typedef Vector<CCLayerImpl*> CCLayerList;
+    typedef std::vector<CCLayerImpl*> CCLayerList;
 
 public:
     static scoped_ptr<CCLayerTreeHostImpl> create(const CCLayerTreeSettings&, CCLayerTreeHostImplClient*);

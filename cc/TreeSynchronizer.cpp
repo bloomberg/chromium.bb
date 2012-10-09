@@ -11,7 +11,6 @@
 #include "CCScrollbarLayerImpl.h"
 #include "LayerChromium.h"
 #include "ScrollbarLayerChromium.h"
-#include <wtf/RefPtr.h>
 
 namespace cc {
 
@@ -66,7 +65,7 @@ PassOwnPtr<CCLayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrCCLayer
     OwnPtr<CCLayerImpl> ccLayerImpl = reuseOrCreateCCLayerImpl(newLayers, oldLayers, layer);
 
     ccLayerImpl->clearChildList();
-    const Vector<RefPtr<LayerChromium> >& children = layer->children();
+    const std::vector<scoped_refptr<LayerChromium> >& children = layer->children();
     for (size_t i = 0; i < children.size(); ++i)
         ccLayerImpl->addChild(synchronizeTreeRecursive(newLayers, oldLayers, children[i].get(), hostImpl));
 
@@ -90,7 +89,7 @@ void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrCCLayer
     if (!layer)
         return;
 
-    const Vector<RefPtr<LayerChromium> >& children = layer->children();
+    const std::vector<scoped_refptr<LayerChromium> >& children = layer->children();
     for (size_t i = 0; i < children.size(); ++i)
         updateScrollbarLayerPointersRecursive(newLayers, children[i].get());
 

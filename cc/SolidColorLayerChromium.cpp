@@ -17,9 +17,9 @@ PassOwnPtr<CCLayerImpl> SolidColorLayerChromium::createCCLayerImpl()
     return CCSolidColorLayerImpl::create(id());
 }
 
-PassRefPtr<SolidColorLayerChromium> SolidColorLayerChromium::create()
+scoped_refptr<SolidColorLayerChromium> SolidColorLayerChromium::create()
 {
-    return adoptRef(new SolidColorLayerChromium());
+    return make_scoped_refptr(new SolidColorLayerChromium());
 }
 
 SolidColorLayerChromium::SolidColorLayerChromium()

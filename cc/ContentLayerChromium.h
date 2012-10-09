@@ -38,9 +38,7 @@ private:
 // A layer that renders its contents into an SkCanvas.
 class ContentLayerChromium : public TiledLayerChromium {
 public:
-    static PassRefPtr<ContentLayerChromium> create(ContentLayerChromiumClient*);
-
-    virtual ~ContentLayerChromium();
+    static scoped_refptr<ContentLayerChromium> create(ContentLayerChromiumClient*);
 
     void clearClient() { m_client = 0; }
 
@@ -53,7 +51,7 @@ public:
 
 protected:
     explicit ContentLayerChromium(ContentLayerChromiumClient*);
-
+    virtual ~ContentLayerChromium();
 
 private:
     virtual LayerTextureUpdater* textureUpdater() const OVERRIDE;

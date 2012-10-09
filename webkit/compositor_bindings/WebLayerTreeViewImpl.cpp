@@ -71,7 +71,7 @@ void WebLayerTreeViewImpl::setRootLayer(const WebLayer& root)
 
 void WebLayerTreeViewImpl::clearRootLayer()
 {
-    m_layerTreeHost->setRootLayer(PassRefPtr<LayerChromium>());
+    m_layerTreeHost->setRootLayer(scoped_refptr<LayerChromium>());
 }
 
 void WebLayerTreeViewImpl::setViewportSize(const WebSize& layoutViewportSize, const WebSize& deviceViewportSize)
