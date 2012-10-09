@@ -384,10 +384,10 @@ FileManager.prototype = {
     this.dateFormatter_ = v8Intl.DateTimeFormat(
         [] /* default locale */,
         {year: 'numeric', month: 'short', day: 'numeric',
-         hour: 'numeric', minute: 'numeric'});
+         hour: 'numeric', minute: 'numeric', hour12: true});
     this.timeFormatter_ = v8Intl.DateTimeFormat(
         [] /* default locale */,
-        {hour: 'numeric', minute: 'numeric'});
+        {hour: 'numeric', minute: 'numeric', hour12: true});
 
     this.collator_ = v8Intl.Collator([], {numeric: true, sensitivity: 'base'});
 
