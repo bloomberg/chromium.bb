@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_INTENTS_WEB_INTENTS_MODEL_H_
 #define CHROME_BROWSER_UI_INTENTS_WEB_INTENTS_MODEL_H_
 
+#include "base/basictypes.h"
 #include "base/values.h"
-#include "chrome/browser/intents/web_intents_registry.h"
 #include "ui/base/models/tree_node_model.h"
+#include "webkit/glue/web_intent_service_data.h"
 
 class WebIntentsRegistry;
-struct DefaultWebIntentService;
 
 // The tree structure is a TYPE_ROOT node with title="",
 // children are TYPE_ORIGIN nodes with title=origin, whose
@@ -19,16 +19,15 @@ struct DefaultWebIntentService;
 // services.
 class WebIntentsTreeNode : public ui::TreeNode<WebIntentsTreeNode> {
  public:
-  WebIntentsTreeNode();
-  explicit WebIntentsTreeNode(const string16& title);
-
-  virtual ~WebIntentsTreeNode();
-
   enum NodeType {
     TYPE_ROOT,
     TYPE_ORIGIN,
     TYPE_SERVICE,
   };
+
+  WebIntentsTreeNode();
+  explicit WebIntentsTreeNode(const string16& title);
+  virtual ~WebIntentsTreeNode();
 
   NodeType Type() const { return type_; }
 
@@ -39,6 +38,8 @@ class WebIntentsTreeNode : public ui::TreeNode<WebIntentsTreeNode> {
 
  private:
   NodeType type_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebIntentsTreeNode);
 };
 
 // Tree node representing particular services presented by an origin.
@@ -55,11 +56,13 @@ class ServiceTreeNode : public WebIntentsTreeNode {
   bool IsBlocked() const { return blocked_; }
   bool IsDisabled() const { return disabled_; }
 
-  void SetServiceName(string16 name) { service_name_ = name; }
-  void SetServiceUrl(string16 url) { service_url_ = url; }
-  void SetIconUrl(string16 url) { icon_url_ = url; }
-  void SetAction(string16 action) { action_ = action; }
-  void AddType(string16 type) { types_.Append(Value::CreateStringValue(type)); }
+  void SetServiceName(const string16& name) { service_name_ = name; }
+  void SetServiceUrl(const string16& url) { service_url_ = url; }
+  void SetIconUrl(const string16& url) { icon_url_ = url; }
+  void SetAction(const string16& action) { action_ = action; }
+  void AddType(const string16& type) {
+    types_.Append(base::Value::CreateStringValue(type));
+  }
   void SetBlocked(bool blocked) { blocked_ = blocked; }
   void SetDisabled(bool disabled) { disabled_ = disabled; }
 
@@ -73,6 +76,8 @@ class ServiceTreeNode : public WebIntentsTreeNode {
   // TODO(gbillock): these are kind of a placeholder for exceptions data.
   bool blocked_;
   bool disabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceTreeNode);
 };
 
 // UI-backing tree model of the data in the WebIntentsRegistry.
@@ -94,8 +99,10 @@ class WebIntentsModel : public ui::TreeNodeModel<WebIntentsTreeNode> {
   void RemoveWebIntentsTreeObserver(Observer* observer);
 
   string16 GetTreeNodeId(WebIntentsTreeNode* node);
-  WebIntentsTreeNode* GetTreeNode(std::string path_id);
-  void GetChildNodeList(WebIntentsTreeNode* parent, int start, int count,
+  WebIntentsTreeNode* GetTreeNode(const std::string& path_id);
+  void GetChildNodeList(WebIntentsTreeNode* parent,
+                        int start,
+                        int count,
                         base::ListValue* nodes);
   void GetWebIntentsTreeNodeDictionary(const WebIntentsTreeNode& node,
                                        base::DictionaryValue* dict);
@@ -124,6 +131,8 @@ class WebIntentsModel : public ui::TreeNodeModel<WebIntentsTreeNode> {
   // Batch update nesting level. Incremented to indicate that we're in
   // the middle of a batch update.
   int batch_update_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebIntentsModel);
 };
 
 #endif  // CHROME_BROWSER_UI_INTENTS_WEB_INTENTS_MODEL_H_

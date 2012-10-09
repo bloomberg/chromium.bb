@@ -3,27 +3,27 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/intents/web_intents_model.h"
+
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 
 WebIntentsTreeNode::WebIntentsTreeNode()
-  : ui::TreeNode<WebIntentsTreeNode>(string16()),
-    type_(TYPE_ROOT) {}
+    : ui::TreeNode<WebIntentsTreeNode>(string16()),
+      type_(TYPE_ROOT) {}
 
 WebIntentsTreeNode::WebIntentsTreeNode(const string16& title)
-  : ui::TreeNode<WebIntentsTreeNode>(title),
-    type_(TYPE_ORIGIN) {}
+    : ui::TreeNode<WebIntentsTreeNode>(title),
+      type_(TYPE_ORIGIN) {}
 
 WebIntentsTreeNode::~WebIntentsTreeNode() {}
 
 ServiceTreeNode::ServiceTreeNode(const string16& title)
-  : WebIntentsTreeNode(title, WebIntentsTreeNode::TYPE_SERVICE),
-    blocked_(false),
-    disabled_(false) {}
+    : WebIntentsTreeNode(title, WebIntentsTreeNode::TYPE_SERVICE),
+      blocked_(false),
+      disabled_(false) {}
 
 ServiceTreeNode::~ServiceTreeNode() {}
 
@@ -58,7 +58,7 @@ string16 WebIntentsModel::GetTreeNodeId(WebIntentsTreeNode* node) {
   return string16();
 }
 
-WebIntentsTreeNode* WebIntentsModel::GetTreeNode(std::string path_id) {
+WebIntentsTreeNode* WebIntentsModel::GetTreeNode(const std::string& path_id) {
   if (path_id.empty())
     return GetRoot();
 

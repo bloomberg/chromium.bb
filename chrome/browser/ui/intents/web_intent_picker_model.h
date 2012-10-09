@@ -76,7 +76,7 @@ class WebIntentPickerModel {
   const string16& type() const { return type_; }
   void set_type(const string16& type) { type_ = type; }
 
-  GURL default_service_url() const { return default_service_url_; }
+  const GURL& default_service_url() const { return default_service_url_; }
   void set_default_service_url(const GURL& default_url) {
     default_service_url_ = default_url;
   }
