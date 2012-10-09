@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'ppb_fullscreen')
 
 nexe = env.ProgramNameForNmf('ppapi_ppb_fullscreen')
 env.Alias('ppapi_ppb_fullscreen${PROGSUFFIX}',

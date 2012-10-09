@@ -17,16 +17,6 @@
 
 Import('env')
 
-# Register new tests here as we can no longer add them to the DEPS-ed in
-# native_client/SConstruct in the same CL.
-#
-# TODO(polina, bradnelson): take out this temporary work-around for adding new
-# tests when we have a common place to add these
-# (e.g. ppapi/native_client/nacl.scons) included into native_client/SConstruct.
-env_clone = env.Clone()
-env_clone.SConscript('../ppapi_browser/ppb_fullscreen/nacl.scons',
-                     exports=['env'])
-
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 env.ComponentLibrary('ppapi_test_lib',

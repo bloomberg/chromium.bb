@@ -4,13 +4,6 @@
 
 
 trusted_scons_files = [
-    'src/shared/ppapi/build.scons',
-    'src/shared/ppapi_proxy/build.scons',
-    'src/trusted/plugin/build.scons',
-    'tests/ppapi_geturl/build.scons',
-    'tests/ppapi_messaging/build.scons',
-    'tests/ppapi_browser/ppb_file_system/build.scons',
-    'tests/ppapi_tests/build.scons',  # Build PPAPI tests from Chrome as a .so
 ]
 
 
@@ -22,7 +15,6 @@ untrusted_scons_files = [
 
 # Untrusted libraries for use by system code.
 untrusted_irt_scons_files = [
-    'src/shared/ppapi_proxy/nacl.scons',
 ]
 
 
@@ -36,6 +28,7 @@ nonvariant_test_scons_files = [
     'tests/ppapi_browser/ppb_audio/nacl.scons',
     'tests/ppapi_browser/ppb_dev/nacl.scons',
     'tests/ppapi_browser/ppb_file_system/nacl.scons',
+    'tests/ppapi_browser/ppb_fullscreen/nacl.scons',
     'tests/ppapi_browser/ppb_graphics2d/nacl.scons',
     'tests/ppapi_browser/ppb_graphics3d/nacl.scons',
     'tests/ppapi_browser/ppb_image_data/nacl.scons',
