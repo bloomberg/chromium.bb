@@ -1396,8 +1396,6 @@
           Disabling this setting is equvalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
         },
         {
-          # TODO(joaodasilva): Flag this policy with 'can_be_recommended'
-          # after fixing http://crbug.com/106684
           'name': 'RestoreOnStartupURLs',
           'type': 'list',
           'schema': {
@@ -1405,7 +1403,10 @@
             'items': { 'type': 'string' },
           },
           'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
-          'features': {'dynamic_refresh': True},
+          'features': {
+            'dynamic_refresh': True,
+            'can_be_recommended': True,
+          },
           'example_value': ['http://example.com', 'http://chromium.org'],
           'id': 38,
           'caption': '''URLs to open on startup''',
