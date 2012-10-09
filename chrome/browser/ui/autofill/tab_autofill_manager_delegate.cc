@@ -58,8 +58,7 @@ ProfileSyncServiceBase* TabAutofillManagerDelegate::GetProfileSyncService() {
 }
 
 bool TabAutofillManagerDelegate::IsSavingPasswordsEnabled() const {
-  return TabContents::FromWebContents(web_contents_)->password_manager()->
-      IsSavingEnabled();
+  return PasswordManager::FromWebContents(web_contents_)->IsSavingEnabled();
 }
 
 void TabAutofillManagerDelegate::ShowAutofillSettings() {

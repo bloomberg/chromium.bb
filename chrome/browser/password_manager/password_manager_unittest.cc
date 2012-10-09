@@ -62,13 +62,12 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
-    manager_.reset(new PasswordManager(contents(), &delegate_));
+    PasswordManager::CreateForWebContentsAndDelegate(contents(), &delegate_);
     EXPECT_CALL(delegate_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
   }
 
   virtual void TearDown() {
-    manager_.reset();
     store_ = NULL;
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -86,14 +85,15 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     return form;
   }
 
-  PasswordManager* manager() { return manager_.get(); }
+  PasswordManager* manager() {
+    return PasswordManager::FromWebContents(contents());
+  }
 
   // We create a UI thread to satisfy PasswordStore.
   content::TestBrowserThread ui_thread_;
 
   scoped_refptr<MockPasswordStore> store_;
   MockPasswordManagerDelegate delegate_;  // Owned by manager_.
-  scoped_ptr<PasswordManager> manager_;
 };
 
 MATCHER_P(FormMatches, form, "") {

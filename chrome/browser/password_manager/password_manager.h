@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/login/login_model.h"
 #include "chrome/common/password_form_fill_data.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/password_form.h"
 
 class PasswordManagerDelegate;
@@ -27,14 +28,14 @@ class PrefService;
 // database through the PasswordStore. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
 class PasswordManager : public LoginModel,
-                        public content::WebContentsObserver {
+                        public content::WebContentsObserver,
+                        public content::WebContentsUserData<PasswordManager> {
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // The delegate passed in is required to outlive the PasswordManager.
-  PasswordManager(content::WebContents* web_contents,
-                  PasswordManagerDelegate* delegate);
-
+  static void CreateForWebContentsAndDelegate(
+      content::WebContents* contents,
+      PasswordManagerDelegate* delegate);
   virtual ~PasswordManager();
 
   // Is saving new data for password autofill enabled for the current profile?
@@ -75,7 +76,14 @@ class PasswordManager : public LoginModel,
   void OnPasswordFormsRendered(
       const std::vector<content::PasswordForm>& visible_forms);
 
+ protected:
+  // Subclassed for unit tests.
+  PasswordManager(content::WebContents* web_contents,
+                  PasswordManagerDelegate* delegate);
+
  private:
+  friend class content::WebContentsUserData<PasswordManager>;
+
   // Is password autofill enabled for the current profile?
   bool IsFillingEnabled() const;
 

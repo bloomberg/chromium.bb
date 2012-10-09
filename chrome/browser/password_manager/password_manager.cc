@@ -24,6 +24,8 @@ using content::WebContents;
 using content::PasswordForm;
 using content::PasswordFormMap;
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManager)
+
 namespace {
 
 const char kSpdyProxyRealm[] = "/SpdyProxy";
@@ -62,6 +64,19 @@ void PasswordManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords,
                              true,
                              PrefService::UNSYNCABLE_PREF);
+}
+
+// static
+void PasswordManager::CreateForWebContentsAndDelegate(
+    content::WebContents* contents,
+    PasswordManagerDelegate* delegate) {
+  if (FromWebContents(contents)) {
+    DCHECK_EQ(delegate, FromWebContents(contents)->delegate_);
+    return;
+  }
+
+  contents->SetUserData(&kLocatorKey,
+                        new PasswordManager(contents, delegate));
 }
 
 PasswordManager::PasswordManager(WebContents* web_contents,

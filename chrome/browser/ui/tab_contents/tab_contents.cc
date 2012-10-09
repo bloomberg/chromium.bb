@@ -142,9 +142,9 @@ TabContents::TabContents(WebContents* contents)
   infobar_tab_helper_.reset(new InfoBarTabHelper(contents));
   MetroPinTabHelper::CreateForWebContents(contents);
   NavigationMetricsRecorder::CreateForWebContents(contents);
-  password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
-  password_manager_.reset(
-      new PasswordManager(contents, password_manager_delegate_.get()));
+  PasswordManagerDelegateImpl::CreateForWebContents(contents);
+  PasswordManager::CreateForWebContentsAndDelegate(
+      contents, PasswordManagerDelegateImpl::FromWebContents(contents));
   PepperBrokerObserver::CreateForWebContents(contents);
   PluginObserver::CreateForWebContents(contents);
   PrefsTabHelper::CreateForWebContents(contents);

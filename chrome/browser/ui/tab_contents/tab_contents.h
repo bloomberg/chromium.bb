@@ -27,8 +27,6 @@ class InfoBarTabHelper;
 class InstantLoader;
 class OffscreenTabContentsCreator;
 class PanelHost;
-class PasswordManager;
-class PasswordManagerDelegate;
 class Profile;
 class ShellWindow;
 class TabContentsTestHarness;
@@ -140,8 +138,6 @@ class TabContents : public content::WebContentsObserver {
 
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
 
-  PasswordManager* password_manager() { return password_manager_.get(); }
-
   // Overrides -----------------------------------------------------------------
 
   // content::WebContentsObserver overrides:
@@ -164,11 +160,6 @@ class TabContents : public content::WebContentsObserver {
 
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
-
-  // PasswordManager and its delegate. The delegate must outlive the manager,
-  // per documentation in password_manager.h.
-  scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
-  scoped_ptr<PasswordManager> password_manager_;
 
   // WebContents (MUST BE LAST) ------------------------------------------------
 

@@ -13,7 +13,6 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/constrained_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -433,15 +432,15 @@ void LoginDialogCallback(const GURL& request_url,
     return;
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(parent_contents);
-  if (!tab_contents) {
+  PasswordManager* password_manager =
+      PasswordManager::FromWebContents(parent_contents);
+  if (!password_manager) {
     // Same logic as above.
     handler->CancelAuth();
     return;
   }
 
   // Tell the password manager to look for saved passwords.
-  PasswordManager* password_manager = tab_contents->password_manager();
   std::vector<PasswordForm> v;
   MakeInputForPasswordManager(request_url, auth_info, handler, &v);
   password_manager->OnPasswordFormsParsed(v);

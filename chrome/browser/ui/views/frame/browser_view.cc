@@ -22,6 +22,7 @@
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/ntp_background_util.h"
+#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -2620,8 +2621,8 @@ void BrowserView::ShowPasswordGenerationBubble(
   gfx::Rect bounds(origin, rect.size());
 
   // Create the bubble.
-  TabContents* tab_contents = GetActiveTabContents();
-  if (!tab_contents)
+  WebContents* web_contents = GetActiveWebContents();
+  if (!web_contents)
     return;
 
   PasswordGenerationBubbleView* bubble =
@@ -2629,8 +2630,8 @@ void BrowserView::ShowPasswordGenerationBubble(
           form,
           bounds,
           this,
-          tab_contents->web_contents()->GetRenderViewHost(),
-          tab_contents->password_manager(),
+          web_contents->GetRenderViewHost(),
+          PasswordManager::FromWebContents(web_contents),
           password_generator,
           browser_.get(),
           GetWidget()->GetThemeProvider());

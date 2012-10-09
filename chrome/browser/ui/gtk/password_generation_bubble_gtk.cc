@@ -125,7 +125,8 @@ void PasswordGenerationBubbleGtk::OnAcceptClicked(GtkWidget* widget) {
   render_view_host->Send(new AutofillMsg_GeneratedPasswordAccepted(
       render_view_host->GetRoutingID(),
       UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(text_field_)))));
-  tab_->password_manager()->SetFormHasGeneratedPassword(form_);
+  PasswordManager::FromWebContents(tab_->web_contents())->
+      SetFormHasGeneratedPassword(form_);
   bubble_->Close();
 }
 

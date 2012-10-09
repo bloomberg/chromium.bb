@@ -12,6 +12,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/autofill_messages.h"
@@ -27,6 +28,8 @@
 #include "net/base/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManagerDelegateImpl)
 
 // After a successful *new* login attempt, we take the PasswordFormManager in
 // provisional_save_manager_ and move it to a SavePasswordInfoBarDelegate while
@@ -122,15 +125,23 @@ InfoBarDelegate::InfoBarAutomationType
 
 // PasswordManagerDelegateImpl ------------------------------------------------
 
+PasswordManagerDelegateImpl::PasswordManagerDelegateImpl(
+    content::WebContents* web_contents)
+    : web_contents_(web_contents) {
+}
+
+PasswordManagerDelegateImpl::~PasswordManagerDelegateImpl() {
+}
+
 void PasswordManagerDelegateImpl::FillPasswordForm(
     const PasswordFormFillData& form_data) {
   AutofillManager* autofill_manager =
-      AutofillManager::FromWebContents(tab_contents_->web_contents());
+      AutofillManager::FromWebContents(web_contents_);
   bool disable_popup = autofill_manager->HasExternalDelegate();
 
-  tab_contents_->web_contents()->GetRenderViewHost()->Send(
+  web_contents_->GetRenderViewHost()->Send(
       new AutofillMsg_FillPasswordForm(
-          tab_contents_->web_contents()->GetRenderViewHost()->GetRoutingID(),
+          web_contents_->GetRenderViewHost()->GetRoutingID(),
           form_data,
           disable_popup));
 }
@@ -146,24 +157,25 @@ void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
   // referenced here: crbug.com/133275
   if ((realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()) ||
       realm == GURL("https://www.google.com/")) &&
-      OneClickSigninHelper::CanOffer(tab_contents_->web_contents(),
+      OneClickSigninHelper::CanOffer(web_contents_,
           UTF16ToUTF8(form_to_save->associated_username()), true)) {
     return;
   }
 #endif
 
-  tab_contents_->infobar_tab_helper()->AddInfoBar(
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
+  tab_contents->infobar_tab_helper()->AddInfoBar(
       new SavePasswordInfoBarDelegate(
-          tab_contents_->infobar_tab_helper(), form_to_save));
+          tab_contents->infobar_tab_helper(), form_to_save));
 }
 
 Profile* PasswordManagerDelegateImpl::GetProfile() {
-  return tab_contents_->profile();
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
 bool PasswordManagerDelegateImpl::DidLastPageLoadEncounterSSLErrors() {
   content::NavigationEntry* entry =
-      tab_contents_->web_contents()->GetController().GetActiveEntry();
+      web_contents_->GetController().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return false;
