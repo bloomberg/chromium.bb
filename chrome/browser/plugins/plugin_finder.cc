@@ -33,15 +33,6 @@ namespace {
 
 typedef std::map<std::string, PluginMetadata*> PluginMap;
 
-// Gets the full path of the plug-in file as the identifier.
-static std::string GetLongIdentifier(const webkit::WebPluginInfo& plugin) {
-#if defined(OS_POSIX)
-  return plugin.path.value();
-#elif defined(OS_WIN)
-  return base::SysWideToUTF8(plugin.path.value());
-#endif
-}
-
 // Gets the base name of the file path as the identifier.
 static std::string GetIdentifier(const webkit::WebPluginInfo& plugin) {
 #if defined(OS_POSIX)
@@ -272,16 +263,13 @@ scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
        it != identifier_plugin_.end(); ++it) {
     if (!it->second->MatchesPlugin(plugin))
       continue;
+
     return it->second->Clone();
   }
 
   // The plug-in metadata was not found, create a dummy one holding
   // the name, identifier and group name only.
   std::string identifier = GetIdentifier(plugin);
-  if (identifier_plugin_.find(identifier) != identifier_plugin_.end())
-    identifier = GetLongIdentifier(plugin);
-
-  DCHECK(identifier_plugin_.find(identifier) == identifier_plugin_.end());
   PluginMetadata* metadata = new PluginMetadata(identifier,
                                                 GetGroupName(plugin),
                                                 false, GURL(), GURL(),
