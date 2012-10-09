@@ -18,12 +18,12 @@ class FakeWebCompositorOutputSurface : public WebCompositorOutputSurface {
 public:
     static inline scoped_ptr<FakeWebCompositorOutputSurface> create(PassOwnPtr<WebGraphicsContext3D> context3D)
     {
-        return scoped_ptr<FakeWebCompositorOutputSurface>(new FakeWebCompositorOutputSurface(context3D));
+        return make_scoped_ptr(new FakeWebCompositorOutputSurface(context3D));
     }
 
     static inline scoped_ptr<FakeWebCompositorOutputSurface> createSoftware(PassOwnPtr<WebCompositorSoftwareOutputDevice> softwareDevice)
     {
-        return scoped_ptr<FakeWebCompositorOutputSurface>(new FakeWebCompositorOutputSurface(softwareDevice));
+        return make_scoped_ptr(new FakeWebCompositorOutputSurface(softwareDevice));
     }
 
     virtual bool bindToClient(WebCompositorOutputSurfaceClient* client) OVERRIDE

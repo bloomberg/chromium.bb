@@ -10,7 +10,7 @@ namespace cc {
 
 scoped_ptr<CCIOSurfaceDrawQuad> CCIOSurfaceDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
 {
-    return scoped_ptr<CCIOSurfaceDrawQuad>(new CCIOSurfaceDrawQuad(sharedQuadState, quadRect, ioSurfaceSize, ioSurfaceTextureId, orientation));
+    return make_scoped_ptr(new CCIOSurfaceDrawQuad(sharedQuadState, quadRect, ioSurfaceSize, ioSurfaceTextureId, orientation));
 }
 
 CCIOSurfaceDrawQuad::CCIOSurfaceDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
@@ -27,4 +27,4 @@ const CCIOSurfaceDrawQuad* CCIOSurfaceDrawQuad::materialCast(const CCDrawQuad* q
     return static_cast<const CCIOSurfaceDrawQuad*>(quad);
 }
 
-}
+}  // namespace cc

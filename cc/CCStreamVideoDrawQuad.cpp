@@ -10,7 +10,7 @@ namespace cc {
 
 scoped_ptr<CCStreamVideoDrawQuad> CCStreamVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
 {
-    return scoped_ptr<CCStreamVideoDrawQuad>(new CCStreamVideoDrawQuad(sharedQuadState, quadRect, textureId, matrix));
+    return make_scoped_ptr(new CCStreamVideoDrawQuad(sharedQuadState, quadRect, textureId, matrix));
 }
 
 CCStreamVideoDrawQuad::CCStreamVideoDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
@@ -26,4 +26,4 @@ const CCStreamVideoDrawQuad* CCStreamVideoDrawQuad::materialCast(const CCDrawQua
     return static_cast<const CCStreamVideoDrawQuad*>(quad);
 }
 
-}
+}  // namespace cc

@@ -32,7 +32,7 @@ class CCFontAtlas {
 public:
     static scoped_ptr<CCFontAtlas> create(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
     {
-        return scoped_ptr<CCFontAtlas>(new CCFontAtlas(bitmap, asciiToRectTable, fontHeight));
+        return make_scoped_ptr(new CCFontAtlas(bitmap, asciiToRectTable, fontHeight));
     }
     ~CCFontAtlas();
 
@@ -63,7 +63,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CCFontAtlas);
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)
 

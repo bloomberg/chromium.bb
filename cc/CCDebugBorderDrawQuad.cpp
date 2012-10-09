@@ -10,7 +10,7 @@ namespace cc {
 
 scoped_ptr<CCDebugBorderDrawQuad> CCDebugBorderDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color, int width)
 {
-    return scoped_ptr<CCDebugBorderDrawQuad>(new CCDebugBorderDrawQuad(sharedQuadState, quadRect, color, width));
+    return make_scoped_ptr(new CCDebugBorderDrawQuad(sharedQuadState, quadRect, color, width));
 }
 
 CCDebugBorderDrawQuad::CCDebugBorderDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color, int width)
@@ -29,4 +29,4 @@ const CCDebugBorderDrawQuad* CCDebugBorderDrawQuad::materialCast(const CCDrawQua
     return static_cast<const CCDebugBorderDrawQuad*>(quad);
 }
 
-}
+}  // namespace cc

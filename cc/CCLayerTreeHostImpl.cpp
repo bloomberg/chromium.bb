@@ -208,7 +208,7 @@ CCLayerTreeHostImpl::FrameData::~FrameData()
 
 scoped_ptr<CCLayerTreeHostImpl> CCLayerTreeHostImpl::create(const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)
 {
-    return scoped_ptr<CCLayerTreeHostImpl>(new CCLayerTreeHostImpl(settings, client));
+    return make_scoped_ptr(new CCLayerTreeHostImpl(settings, client));
 }
 
 CCLayerTreeHostImpl::CCLayerTreeHostImpl(const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)

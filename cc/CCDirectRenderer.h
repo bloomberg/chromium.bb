@@ -49,8 +49,10 @@ protected:
 
     class CachedTexture : public CCScopedTexture {
     public:
-        static scoped_ptr<CachedTexture> create(CCResourceProvider* resourceProvider) { return scoped_ptr<CachedTexture>(new CachedTexture(resourceProvider)); }
-        virtual ~CachedTexture() { }
+        static scoped_ptr<CachedTexture> create(CCResourceProvider* resourceProvider) {
+          return make_scoped_ptr(new CachedTexture(resourceProvider));
+        }
+        virtual ~CachedTexture() {}
 
         bool isComplete() const { return m_isComplete; }
         void setIsComplete(bool isComplete) { m_isComplete = isComplete; }
@@ -98,6 +100,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CCDirectRenderer);
 };
 
-}
+}  // namespace cc
 
-#endif // CCDirectRenderer_h
+#endif  // CCDirectRenderer_h

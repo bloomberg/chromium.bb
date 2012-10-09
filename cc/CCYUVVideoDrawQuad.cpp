@@ -10,7 +10,7 @@ namespace cc {
 
 scoped_ptr<CCYUVVideoDrawQuad> CCYUVVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const CCVideoLayerImpl::FramePlane& yPlane, const CCVideoLayerImpl::FramePlane& uPlane, const CCVideoLayerImpl::FramePlane& vPlane)
 {
-    return scoped_ptr<CCYUVVideoDrawQuad>(new CCYUVVideoDrawQuad(sharedQuadState, quadRect, yPlane, uPlane, vPlane));
+    return make_scoped_ptr(new CCYUVVideoDrawQuad(sharedQuadState, quadRect, yPlane, uPlane, vPlane));
 }
 
 CCYUVVideoDrawQuad::CCYUVVideoDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const CCVideoLayerImpl::FramePlane& yPlane, const CCVideoLayerImpl::FramePlane& uPlane, const CCVideoLayerImpl::FramePlane& vPlane)
@@ -27,4 +27,4 @@ const CCYUVVideoDrawQuad* CCYUVVideoDrawQuad::materialCast(const CCDrawQuad* qua
     return static_cast<const CCYUVVideoDrawQuad*>(quad);
 }
 
-}
+}  // namespace cc

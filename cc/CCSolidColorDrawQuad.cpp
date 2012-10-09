@@ -10,7 +10,7 @@ namespace cc {
 
 scoped_ptr<CCSolidColorDrawQuad> CCSolidColorDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
 {
-    return scoped_ptr<CCSolidColorDrawQuad>(new CCSolidColorDrawQuad(sharedQuadState, quadRect, color));
+    return make_scoped_ptr(new CCSolidColorDrawQuad(sharedQuadState, quadRect, color));
 }
 
 CCSolidColorDrawQuad::CCSolidColorDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
@@ -29,4 +29,4 @@ const CCSolidColorDrawQuad* CCSolidColorDrawQuad::materialCast(const CCDrawQuad*
     return static_cast<const CCSolidColorDrawQuad*>(quad);
 }
 
-}
+}  // namespacec cc

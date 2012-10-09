@@ -20,7 +20,7 @@ namespace cc {
 
 scoped_ptr<CCDamageTracker> CCDamageTracker::create()
 {
-    return scoped_ptr<CCDamageTracker>(new CCDamageTracker());
+    return make_scoped_ptr(new CCDamageTracker());
 }
 
 CCDamageTracker::CCDamageTracker()
@@ -344,6 +344,6 @@ void CCDamageTracker::extendDamageForRenderSurface(CCLayerImpl* layer, FloatRect
         expandDamageRectInsideRectWithFilters(targetDamageRect, surfaceRectInTargetSpace, layer->backgroundFilters());
 }
 
-} // namespace cc
+}  // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

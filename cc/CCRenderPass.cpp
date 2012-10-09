@@ -19,7 +19,7 @@ namespace cc {
 
 scoped_ptr<CCRenderPass> CCRenderPass::create(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
 {
-    return scoped_ptr<CCRenderPass>(new CCRenderPass(id, outputRect, transformToRootTarget));
+    return make_scoped_ptr(new CCRenderPass(id, outputRect, transformToRootTarget));
 }
 
 CCRenderPass::CCRenderPass(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
@@ -103,4 +103,4 @@ void CCRenderPass::appendQuadsToFillScreen(CCLayerImpl* rootLayer, SkColor scree
     }
 }
 
-}
+}  // namespace cc
