@@ -20,16 +20,6 @@ class ChromeGeolocationPermissionContext
  public:
   explicit ChromeGeolocationPermissionContext(Profile* profile);
 
-  // Notifies whether or not the corresponding bridge is allowed to use
-  // geolocation via
-  // GeolocationPermissionContext::SetGeolocationPermissionResponse().
-  void NotifyPermissionSet(int render_process_id,
-                           int render_view_id,
-                           int bridge_id,
-                           const GURL& requesting_frame,
-                           base::Callback<void(bool)> callback,
-                           bool allowed);
-
   static void RegisterUserPrefs(PrefService *user_prefs);
 
   // GeolocationPermissionContext implementation:
@@ -52,6 +42,16 @@ class ChromeGeolocationPermissionContext
   void CancelPendingInfoBarRequest(int render_process_id,
                                    int render_view_id,
                                    int bridge_id);
+
+  // Notifies whether or not the corresponding bridge is allowed to use
+  // geolocation via
+  // GeolocationPermissionContext::SetGeolocationPermissionResponse().
+  void NotifyPermissionSet(int render_process_id,
+                           int render_view_id,
+                           int bridge_id,
+                           const GURL& requesting_frame,
+                           base::Callback<void(bool)> callback,
+                           bool allowed);
 
   // This must only be accessed from the UI thread.
   Profile* const profile_;
