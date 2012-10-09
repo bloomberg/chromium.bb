@@ -68,6 +68,17 @@ struct ResponseCookie {
   DISALLOW_COPY_AND_ASSIGN(ResponseCookie);
 };
 
+// Data container for FilterResponseCookies as defined in the declarative
+// WebRequest API definition.
+struct FilterResponseCookie : ResponseCookie {
+  FilterResponseCookie();
+  ~FilterResponseCookie();
+  scoped_ptr<int> age_lower_bound;
+  scoped_ptr<int> age_upper_bound;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FilterResponseCookie);
+};
+
 enum CookieModificationType {
   ADD,
   EDIT,
@@ -91,7 +102,7 @@ struct ResponseCookieModification {
   ~ResponseCookieModification();
   CookieModificationType type;
   // Used for EDIT and REMOVE.
-  scoped_ptr<ResponseCookie> filter;
+  scoped_ptr<FilterResponseCookie> filter;
   // Used for ADD and EDIT.
   scoped_ptr<ResponseCookie> modification;
  private:

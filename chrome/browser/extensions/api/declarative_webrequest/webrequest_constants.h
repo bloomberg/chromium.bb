@@ -14,6 +14,8 @@ namespace declarative_webrequest_constants {
 extern const char kOnRequest[];
 
 // Keys of dictionaries.
+extern const char kAgeLowerBoundKey[];
+extern const char kAgeUpperBoundKey[];
 extern const char kCookieKey[];
 extern const char kContentTypeKey[];
 extern const char kDirectionKey[];

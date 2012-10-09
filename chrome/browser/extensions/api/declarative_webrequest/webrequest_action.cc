@@ -52,28 +52,47 @@ scoped_ptr<helpers::RequestCookie> ParseRequestCookie(
   return result.Pass();
 }
 
-scoped_ptr<helpers::ResponseCookie> ParseResponseCookie(
-    const DictionaryValue* dict) {
-  scoped_ptr<helpers::ResponseCookie> result(new helpers::ResponseCookie);
+void ParseResponseCookieImpl(const DictionaryValue* dict,
+                             helpers::ResponseCookie* cookie) {
   std::string string_tmp;
   int int_tmp = 0;
   bool bool_tmp = false;
   if (dict->GetString(keys::kNameKey, &string_tmp))
-    result->name.reset(new std::string(string_tmp));
+    cookie->name.reset(new std::string(string_tmp));
   if (dict->GetString(keys::kValueKey, &string_tmp))
-    result->value.reset(new std::string(string_tmp));
+    cookie->value.reset(new std::string(string_tmp));
   if (dict->GetString(keys::kExpiresKey, &string_tmp))
-    result->expires.reset(new std::string(string_tmp));
+    cookie->expires.reset(new std::string(string_tmp));
   if (dict->GetInteger(keys::kMaxAgeKey, &int_tmp))
-    result->max_age.reset(new int(int_tmp));
+    cookie->max_age.reset(new int(int_tmp));
   if (dict->GetString(keys::kDomainKey, &string_tmp))
-    result->domain.reset(new std::string(string_tmp));
+    cookie->domain.reset(new std::string(string_tmp));
   if (dict->GetString(keys::kPathKey, &string_tmp))
-    result->path.reset(new std::string(string_tmp));
+    cookie->path.reset(new std::string(string_tmp));
   if (dict->GetBoolean(keys::kSecureKey, &bool_tmp))
-    result->secure.reset(new bool(bool_tmp));
+    cookie->secure.reset(new bool(bool_tmp));
   if (dict->GetBoolean(keys::kHttpOnlyKey, &bool_tmp))
-    result->http_only.reset(new bool(bool_tmp));
+    cookie->http_only.reset(new bool(bool_tmp));
+}
+
+scoped_ptr<helpers::ResponseCookie> ParseResponseCookie(
+    const DictionaryValue* dict) {
+  scoped_ptr<helpers::ResponseCookie> result(new helpers::ResponseCookie);
+  ParseResponseCookieImpl(dict, result.get());
+  return result.Pass();
+}
+
+scoped_ptr<helpers::FilterResponseCookie> ParseFilterResponseCookie(
+    const DictionaryValue* dict) {
+  scoped_ptr<helpers::FilterResponseCookie> result(
+      new helpers::FilterResponseCookie);
+  ParseResponseCookieImpl(dict, result.get());
+
+  int int_tmp = 0;
+  if (dict->GetInteger(keys::kAgeUpperBoundKey, &int_tmp))
+    result->age_upper_bound.reset(new int(int_tmp));
+  if (dict->GetInteger(keys::kAgeLowerBoundKey, &int_tmp))
+    result->age_lower_bound.reset(new int(int_tmp));
   return result.Pass();
 }
 
@@ -251,7 +270,7 @@ scoped_ptr<WebRequestAction> CreateResponseCookieAction(
       modification->type == helpers::REMOVE) {
     const DictionaryValue* filter = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kFilterKey, &filter));
-    modification->filter = ParseResponseCookie(filter);
+    modification->filter = ParseFilterResponseCookie(filter);
   }
 
   // Get new value.
