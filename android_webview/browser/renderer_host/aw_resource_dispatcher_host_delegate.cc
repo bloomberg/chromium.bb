@@ -8,6 +8,7 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/component/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
@@ -15,6 +16,8 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+
+using navigation_interception::InterceptNavigationDelegate;
 
 namespace {
 
@@ -76,6 +79,11 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
       load_flags |= net::LOAD_ONLY_FROM_CACHE;
       request->set_load_flags(load_flags);
     }
+  }
+
+  if (resource_type == ResourceType::MAIN_FRAME) {
+    throttles->push_back(InterceptNavigationDelegate::CreateThrottleFor(
+        request));
   }
 }
 

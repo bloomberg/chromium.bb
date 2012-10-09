@@ -73,8 +73,11 @@ public class TestWebServer {
     private static class Response {
         final byte[] mResponseData;
         final List<Pair<String, String>> mResponseHeaders;
+        final boolean mIsRedirect;
 
-        Response(byte[] resposneData, List<Pair<String, String>> responseHeaders) {
+        Response(byte[] resposneData, List<Pair<String, String>> responseHeaders,
+                boolean isRedirect) {
+            mIsRedirect = isRedirect;
             mResponseData = resposneData;
             mResponseHeaders = responseHeaders == null ?
                     new ArrayList<Pair<String, String>>() : responseHeaders;
@@ -142,12 +145,29 @@ public class TestWebServer {
         sInstance = null;
     }
 
+    private final static int RESPONSE_STATUS_NORMAL = 0;
+    private final static int RESPONSE_STATUS_MOVED_TEMPORARILY = 1;
+
     private String setResponseInternal(
             String requestPath, byte[] responseData,
-            List<Pair<String, String>> responseHeaders) {
-        mResponseMap.put(requestPath, new Response(responseData, responseHeaders));
+            List<Pair<String, String>> responseHeaders,
+            int status) {
+        final boolean isRedirect = (status == RESPONSE_STATUS_MOVED_TEMPORARILY);
+        mResponseMap.put(requestPath, new Response(responseData, responseHeaders, isRedirect));
         mResponseCountMap.put(requestPath, new Integer(0));
         mLastRequestMap.put(requestPath, null);
+        return getResponseUrl(requestPath);
+    }
+
+    /**
+     * Gets the URL on the server under which a particular request path will be accessible.
+     *
+     * This only gets the URL, you still need to set the response if you intend to access it.
+     *
+     * @param requestPath The path to respond to.
+     * @return The full URL including the requestPath.
+     */
+    public String getResponseUrl(String requestPath) {
         return mServerUri + requestPath;
     }
 
@@ -165,7 +185,25 @@ public class TestWebServer {
     public String setResponse(
             String requestPath, String responseString,
             List<Pair<String, String>> responseHeaders) {
-        return setResponseInternal(requestPath, responseString.getBytes(), responseHeaders);
+        return setResponseInternal(requestPath, responseString.getBytes(), responseHeaders,
+                RESPONSE_STATUS_NORMAL);
+    }
+
+    /**
+     * Sets a redirect.
+     *
+     * @param requestPath The path to respond to.
+     * @param targetPath The path to redirect to.
+     * @return The full URL including the path that should be requested to get the expected
+     *         response.
+     */
+    public String setRedirect(
+            String requestPath, String targetPath) {
+        List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
+        responseHeaders.add(Pair.create("Location", targetPath));
+
+        return setResponseInternal(requestPath, targetPath.getBytes(), responseHeaders,
+                RESPONSE_STATUS_MOVED_TEMPORARILY);
     }
 
     /**
@@ -185,7 +223,8 @@ public class TestWebServer {
             List<Pair<String, String>> responseHeaders) {
         return setResponseInternal(requestPath,
                                    Base64.decode(base64EncodedResponse, Base64.DEFAULT),
-                                   responseHeaders);
+                                   responseHeaders,
+                                   RESPONSE_STATUS_NORMAL);
     }
 
     /**
@@ -281,6 +320,11 @@ public class TestWebServer {
         Response response = mResponseMap.get(path);
         if (path.equals(SHUTDOWN_PREFIX)) {
             httpResponse = createResponse(HttpStatus.SC_OK);
+        } else if (response.mIsRedirect) {
+            httpResponse = createResponse(HttpStatus.SC_MOVED_TEMPORARILY);
+            for (Pair<String, String> header : response.mResponseHeaders) {
+                httpResponse.addHeader(header.first, header.second);
+            }
         } else if (response == null) {
             httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
         } else {

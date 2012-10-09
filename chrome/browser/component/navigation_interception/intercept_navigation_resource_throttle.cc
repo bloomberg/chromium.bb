@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/intercept_navigation_resource_throttle.h"
+#include "chrome/browser/component/navigation_interception/intercept_navigation_resource_throttle.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -19,6 +19,8 @@ using content::Referrer;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
 
+namespace navigation_interception {
+
 namespace {
 
 void CheckIfShouldIgnoreNavigationOnUIThread(
@@ -26,7 +28,7 @@ void CheckIfShouldIgnoreNavigationOnUIThread(
     int render_view_id,
     const GURL& url,
     const Referrer& referrer,
-    bool is_content_initiated,
+    bool has_user_gesture,
     InterceptNavigationResourceThrottle::CheckOnUIThreadCallback
         should_ignore_callback,
     base::Callback<void(bool)> callback) {
@@ -42,7 +44,7 @@ void CheckIfShouldIgnoreNavigationOnUIThread(
 
   bool should_ignore_navigation = false;
   should_ignore_navigation = should_ignore_callback.Run(
-      rvh, validated_url, referrer, is_content_initiated);
+      rvh, validated_url, referrer, has_user_gesture);
 
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -117,3 +119,5 @@ void InterceptNavigationResourceThrottle::OnResultObtained(
     controller()->Resume();
   }
 }
+
+} // namespace navigation_interception

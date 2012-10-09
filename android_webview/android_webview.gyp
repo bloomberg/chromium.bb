@@ -14,6 +14,7 @@
         '../chrome/chrome.gyp:renderer',
         '../content/content.gyp:content',
         '../android_webview/native/webview_native.gyp:webview_native',
+        '../chrome/browser/component/components.gyp:navigation_interception',
         '../chrome/browser/component/components.gyp:web_contents_delegate_android',
         '../chrome/browser/component/components.gyp:browser_component_jni_headers',
       ],
@@ -95,6 +96,7 @@
       'type': 'none',
       'dependencies': [
         '../content/content.gyp:content_java',
+        '../chrome/browser/component/components.gyp:navigation_interception_java',
         '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
         '../ui/ui.gyp:ui_java',
       ],
@@ -109,6 +111,7 @@
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base_java',
+        '../chrome/browser/component/components.gyp:navigation_interception_java',
         '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
         '../chrome/chrome_resources.gyp:packed_extra_resources',
         '../chrome/chrome_resources.gyp:packed_resources',
@@ -166,6 +169,7 @@
       'dependencies': [
         '../base/base.gyp:base_java',
         '../base/base.gyp:base_java_test_support',
+        '../chrome/browser/component/components.gyp:navigation_interception_java',
         '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
         '../chrome/chrome_resources.gyp:packed_extra_resources',
         '../chrome/chrome_resources.gyp:packed_resources',

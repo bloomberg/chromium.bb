@@ -6,15 +6,15 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/renderer_host/intercept_navigation_resource_throttle.h"
+#include "chrome/browser/component/navigation_interception/intercept_navigation_resource_throttle.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
-#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_resource_context.h"
@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace content;
+using namespace navigation_interception;
 using namespace ::testing;
 
 namespace {
@@ -47,7 +48,7 @@ class MockInterceptCallbackReceiver {
   MOCK_METHOD4(ShouldIgnoreNavigation, bool(RenderViewHost* source,
                                             const GURL& url,
                                             const content::Referrer& referrer,
-                                            bool is_content_initiated));
+                                            bool has_user_gesture));
 };
 
 // MockResourceController -----------------------------------------------------

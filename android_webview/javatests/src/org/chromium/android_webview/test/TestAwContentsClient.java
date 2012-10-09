@@ -75,7 +75,7 @@ class TestAwContentsClient extends NullContentsClient {
         mAddMessageToConsoleHelper.setLineNumber(consoleMessage.lineNumber());
         mAddMessageToConsoleHelper.setSourceId(consoleMessage.sourceId());
         mAddMessageToConsoleHelper.notifyCalled();
-        return true;
+        return false;
     }
 
     public class AddMessageToConsoleHelper extends CallbackHelper {

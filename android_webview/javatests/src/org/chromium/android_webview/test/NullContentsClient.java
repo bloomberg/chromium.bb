@@ -20,7 +20,7 @@ import org.chromium.android_webview.JsResultReceiver;
  */
 class NullContentsClient extends AwContentsClient {
     @Override
-    public boolean shouldOverrideUrlLoading(String url) {
+    public boolean shouldIgnoreNavigation(String url) {
         return false;
     }
 

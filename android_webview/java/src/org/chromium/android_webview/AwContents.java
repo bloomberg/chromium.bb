@@ -16,6 +16,7 @@ import android.webkit.ValueCallback;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.component.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.common.CleanupReference;
@@ -48,6 +49,7 @@ public class AwContents {
     private ContentViewCore mContentViewCore;
     private AwContentsClient mContentsClient;
     private AwContentsIoThreadClient mIoThreadClient;
+    private InterceptNavigationDelegate mInterceptNavigationDelegate;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
 
@@ -78,6 +80,13 @@ public class AwContents {
         }
     }
 
+    private class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
+        @Override
+        public boolean shouldIgnoreNavigation(String url, boolean isUserGestrue) {
+            return AwContents.this.mContentsClient.shouldIgnoreNavigation(url);
+        }
+    }
+
     /**
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param internalAccessAdapter to access private methods on containerView.
@@ -105,6 +114,7 @@ public class AwContents {
 
         mSettings = new AwSettings(mContentViewCore.getContext());
         setIoThreadClient(new IoThreadClientImpl());
+        setInterceptNavigationDelegate(new InterceptNavigationDelegateImpl());
     }
 
     public ContentViewCore getContentViewCore() {
@@ -119,6 +129,11 @@ public class AwContents {
     public void setIoThreadClient(AwContentsIoThreadClient ioThreadClient) {
         mIoThreadClient = ioThreadClient;
         nativeSetIoThreadClient(mNativeAwContents, mIoThreadClient);
+    }
+
+    public void setInterceptNavigationDelegate(InterceptNavigationDelegate delegate) {
+        mInterceptNavigationDelegate = delegate;
+        nativeSetInterceptNavigationDelegate(mNativeAwContents, delegate);
     }
 
     public void destroy() {
@@ -363,6 +378,8 @@ public class AwContents {
 
     private native void nativeSetIoThreadClient(int nativeAwContents,
             AwContentsIoThreadClient ioThreadClient);
+    private native void nativeSetInterceptNavigationDelegate(int nativeAwContents,
+            InterceptNavigationDelegate navigationInterceptionDelegate);
 
     private native int nativeFindAllSync(int nativeAwContents, String searchString);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);

@@ -43,11 +43,6 @@ public abstract class AwContentsClient extends ContentViewClient {
         }
 
         @Override
-        public boolean shouldOverrideUrlLoading(String url) {
-            return AwContentsClient.this.shouldOverrideUrlLoading(url);
-        }
-
-        @Override
         public void handleKeyboardEvent(KeyEvent event) {
             AwContentsClient.this.onUnhandledKeyEvent(event);
         }
@@ -147,7 +142,7 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract InterceptedRequestData shouldInterceptRequest(String url);
 
-    public abstract boolean shouldOverrideUrlLoading(String url);
+    public abstract boolean shouldIgnoreNavigation(String url);
 
     public abstract void onUnhandledKeyEvent(KeyEvent event);
 

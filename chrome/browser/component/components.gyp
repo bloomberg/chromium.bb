@@ -5,7 +5,8 @@
 
 {
   'includes': [
-    'web_contents_delegate_android/web_contents_delegate_android.gypi'
+    'navigation_interception/navigation_interception.gypi',
+    'web_contents_delegate_android/web_contents_delegate_android.gypi',
   ],
 
   'conditions': [
@@ -16,6 +17,7 @@
           'type': 'none',
           'sources': [
             'web_contents_delegate_android/java/src/org/chromium/chrome/browser/component/web_contents_delegate_android/WebContentsDelegateAndroid.java',
+            'navigation_interception/java/src/org/chromium/chrome/browser/component/navigation_interception/InterceptNavigationDelegate.java',
           ],
           'variables': {
             'jni_gen_dir': 'chrome/browser_component',
@@ -26,4 +28,3 @@
     }],
   ],
 }
-

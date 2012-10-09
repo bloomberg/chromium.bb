@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/component/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
@@ -36,6 +37,7 @@ using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 using content::ContentViewCore;
 using content::WebContents;
+using navigation_interception::InterceptNavigationDelegate;
 
 namespace android_webview {
 
@@ -217,6 +219,16 @@ void AwContents::SetIoThreadClient(JNIEnv* env, jobject obj, jobject client) {
   content::WebContents* web_contents = contents_container_->GetWebContents();
   AwContentsIoThreadClientImpl::Associate(
       web_contents, ScopedJavaLocalRef<jobject>(env, client));
+}
+
+void AwContents::SetInterceptNavigationDelegate(JNIEnv* env,
+                                                jobject obj,
+                                                jobject delegate) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  content::WebContents* web_contents = contents_container_->GetWebContents();
+  InterceptNavigationDelegate::Associate(
+      web_contents,
+      make_scoped_ptr(new InterceptNavigationDelegate(env, delegate)));
 }
 
 static jint Init(JNIEnv* env,
