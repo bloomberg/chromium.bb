@@ -1648,16 +1648,14 @@ TEST(ExtensionWebRequestHelpersTest,
       "Set-Cookie: name3=value3\r\n"
       "Set-Cookie: lBound1=value5; Expires=" + cookie_expiration + "\r\n"
       "Set-Cookie: lBound2=value6; Max-Age=1200\r\n"
-      "Set-Cookie: lBound3=value7; Expires=" + cookie_expiration + "\r\n"
-      "Set-Cookie: lBound4=value8; Max-Age=2000\r\n"
-      "Set-Cookie: uBound1=value9; Expires=" + cookie_expiration + "\r\n"
-      "Set-Cookie: uBound2=value10; Max-Age=1200\r\n"
-      "Set-Cookie: uBound3=value11; Expires=" + cookie_expiration + "\r\n"
-      "Set-Cookie: uBound4=value12; Max-Age=2000\r\n"
-      "Set-Cookie: uBound5=value13; Max-Age=2500\r\n"
-      "Set-Cookie: uBound6=value14; Max-Age=600; Expires=" +
+      "Set-Cookie: lBound3=value7; Max-Age=2000\r\n"
+      "Set-Cookie: uBound1=value8; Expires=" + cookie_expiration + "\r\n"
+      "Set-Cookie: uBound2=value9; Max-Age=1200\r\n"
+      "Set-Cookie: uBound3=value10; Max-Age=2000\r\n"
+      "Set-Cookie: uBound4=value11; Max-Age=2500\r\n"
+      "Set-Cookie: uBound5=value12; Max-Age=600; Expires=" +
       cookie_expiration + "\r\n"
-      "Set-Cookie: uBound7=removed; Max-Age=600\r\n"
+      "Set-Cookie: uBound6=removed; Max-Age=600\r\n"
       "\r\n";
   scoped_refptr<net::HttpResponseHeaders> base_headers(
       new net::HttpResponseHeaders(
@@ -1723,93 +1721,74 @@ TEST(ExtensionWebRequestHelpersTest,
 
   // Tests equality of the cookie lifetime with the filter value when
   // lifetime is set in the cookie's 'max-age' attribute.
+  // Note: we don't test the equality when the lifetime is set in the 'expires'
+  // attribute because the tests will be flaky. The reason is calculations will
+  // depend on fetching the current time.
   linked_ptr<ResponseCookieModification> edit_cookie_5 =
       make_linked_ptr(new ResponseCookieModification);
   edit_cookie_5->type = helpers::EDIT;
   edit_cookie_5->filter.reset(new helpers::FilterResponseCookie);
   edit_cookie_5->filter->name.reset(new std::string("lBound3"));
-  edit_cookie_5->filter->age_lower_bound.reset(new int(1200));
+  edit_cookie_5->filter->age_lower_bound.reset(new int(2000));
   edit_cookie_5->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_5->modification->value.reset(new std::string("equal_1"));
-
-  // Tests equality of the cookie lifetime with the filter value when
-  // lifetime is set in the cookie's 'expires' attribute.
-  linked_ptr<ResponseCookieModification> edit_cookie_6 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_6->type = helpers::EDIT;
-  edit_cookie_6->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_6->filter->name.reset(new std::string("lBound4"));
-  edit_cookie_6->filter->age_lower_bound.reset(new int(2000));
-  edit_cookie_6->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_6->modification->value.reset(new std::string("equal_2"));
+  edit_cookie_5->modification->value.reset(new std::string("equal_2"));
 
   // Tests 'ageUpperBound' filter when cookie lifetime is set
   // in cookie's 'max-age' attribute and its value is lower than
   // the filter's value.
+  linked_ptr<ResponseCookieModification> edit_cookie_6 =
+      make_linked_ptr(new ResponseCookieModification);
+  edit_cookie_6->type = helpers::EDIT;
+  edit_cookie_6->filter.reset(new helpers::FilterResponseCookie);
+  edit_cookie_6->filter->name.reset(new std::string("uBound1"));
+  edit_cookie_6->filter->age_upper_bound.reset(new int(2000));
+  edit_cookie_6->modification.reset(new helpers::ResponseCookie);
+  edit_cookie_6->modification->value.reset(new std::string("smaller_1"));
+
+  // Cookie lifetime is set in the cookie's 'expires' attribute.
   linked_ptr<ResponseCookieModification> edit_cookie_7 =
       make_linked_ptr(new ResponseCookieModification);
   edit_cookie_7->type = helpers::EDIT;
   edit_cookie_7->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_7->filter->name.reset(new std::string("uBound1"));
+  edit_cookie_7->filter->name.reset(new std::string("uBound2"));
   edit_cookie_7->filter->age_upper_bound.reset(new int(2000));
   edit_cookie_7->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_7->modification->value.reset(new std::string("smaller_1"));
+  edit_cookie_7->modification->value.reset(new std::string("smaller_2"));
 
-  // Cookie lifetime is set in the cookie's 'expires' attribute.
+  // Tests equality of the cookie lifetime with the filter value when
+  // lifetime is set in the cookie's 'max-age' attribute.
   linked_ptr<ResponseCookieModification> edit_cookie_8 =
       make_linked_ptr(new ResponseCookieModification);
   edit_cookie_8->type = helpers::EDIT;
   edit_cookie_8->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_8->filter->name.reset(new std::string("uBound2"));
+  edit_cookie_8->filter->name.reset(new std::string("uBound3"));
   edit_cookie_8->filter->age_upper_bound.reset(new int(2000));
   edit_cookie_8->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_8->modification->value.reset(new std::string("smaller_2"));
+  edit_cookie_8->modification->value.reset(new std::string("equal_4"));
 
-  // Tests equality of the cookie lifetime with the filter value when
-  // lifetime is set in the cookie's 'max-age' attribute.
+  // Tests 'ageUpperBound' filter when cookie lifetime is greater
+  // than the filter value. No modification is expected to be applied.
   linked_ptr<ResponseCookieModification> edit_cookie_9 =
       make_linked_ptr(new ResponseCookieModification);
   edit_cookie_9->type = helpers::EDIT;
   edit_cookie_9->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_9->filter->name.reset(new std::string("uBound3"));
-  edit_cookie_9->filter->age_upper_bound.reset(new int(1200));
+  edit_cookie_9->filter->name.reset(new std::string("uBound4"));
+  edit_cookie_9->filter->age_upper_bound.reset(new int(2501));
   edit_cookie_9->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_9->modification->value.reset(new std::string("equal_3"));
-
-  // Tests equality of the cookie lifetime with the filter value when
-  // lifetime is set in the cookie's 'expires' attribute.
-  linked_ptr<ResponseCookieModification> edit_cookie_10 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_10->type = helpers::EDIT;
-  edit_cookie_10->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_10->filter->name.reset(new std::string("uBound4"));
-  edit_cookie_10->filter->age_upper_bound.reset(new int(2000));
-  edit_cookie_10->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_10->modification->value.reset(new std::string("equal_4"));
-
-  // Tests 'ageUpperBound' filter when cookie lifetime is greater
-  // than the filter value. No modification is expected to be applied.
-  linked_ptr<ResponseCookieModification> edit_cookie_11 =
-      make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_11->type = helpers::EDIT;
-  edit_cookie_11->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_11->filter->name.reset(new std::string("uBound5"));
-  edit_cookie_11->filter->age_upper_bound.reset(new int(2501));
-  edit_cookie_11->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_11->modification->value.reset(new std::string("Will not change"));
+  edit_cookie_9->modification->value.reset(new std::string("Will not change"));
 
   // Tests 'ageUpperBound' filter when both 'max-age' and 'expires' cookie
   // attributes are provided. 'expires' value matches the filter, however
   // no modification to the cookie is expected because 'max-age' overrides
   // 'expires' and it does not match the filter.
-  linked_ptr<ResponseCookieModification> edit_cookie_12 =
+  linked_ptr<ResponseCookieModification> edit_cookie_10 =
       make_linked_ptr(new ResponseCookieModification);
-  edit_cookie_12->type = helpers::EDIT;
-  edit_cookie_12->filter.reset(new helpers::FilterResponseCookie);
-  edit_cookie_12->filter->name.reset(new std::string("uBound6"));
-  edit_cookie_12->filter->age_upper_bound.reset(new int(800));
-  edit_cookie_12->modification.reset(new helpers::ResponseCookie);
-  edit_cookie_12->modification->value.reset(new std::string("Will not change"));
+  edit_cookie_10->type = helpers::EDIT;
+  edit_cookie_10->filter.reset(new helpers::FilterResponseCookie);
+  edit_cookie_10->filter->name.reset(new std::string("uBound5"));
+  edit_cookie_10->filter->age_upper_bound.reset(new int(800));
+  edit_cookie_10->modification.reset(new helpers::ResponseCookie);
+  edit_cookie_10->modification->value.reset(new std::string("Will not change"));
 
   linked_ptr<ResponseCookieModification> remove_cookie =
       make_linked_ptr(new ResponseCookieModification);
@@ -1821,14 +1800,13 @@ TEST(ExtensionWebRequestHelpersTest,
       make_linked_ptr(new ResponseCookieModification);
   remove_cookie_2->type = helpers::REMOVE;
   remove_cookie_2->filter.reset(new helpers::FilterResponseCookie);
-  remove_cookie_2->filter->name.reset(new std::string("uBound7"));
+  remove_cookie_2->filter->name.reset(new std::string("uBound6"));
   remove_cookie_2->filter->age_upper_bound.reset(new int(700));
 
   linked_ptr<ResponseCookieModification> operations[] = {
       add_cookie, edit_cookie, edit_cookie_2, edit_cookie_3, edit_cookie_4,
       edit_cookie_5, edit_cookie_6, edit_cookie_7, edit_cookie_8,
-      edit_cookie_9, edit_cookie_10, edit_cookie_11, edit_cookie_12,
-      remove_cookie, remove_cookie_2
+      edit_cookie_9, edit_cookie_10, remove_cookie, remove_cookie_2
   };
 
   for (size_t i = 0; i < arraysize(operations); ++i) {
@@ -1856,18 +1834,14 @@ TEST(ExtensionWebRequestHelpersTest,
   expected_cookies.insert(
       "lBound1=greater_1; expires=" + cookie_expiration + "; secure");
   expected_cookies.insert("lBound2=greater_2; max-age=1200; secure");
-  expected_cookies.insert(
-      "lBound3=equal_1; expires=" + cookie_expiration +"; secure");
-  expected_cookies.insert("lBound4=equal_2; max-age=2000; secure");
+  expected_cookies.insert("lBound3=equal_2; max-age=2000; secure");
   expected_cookies.insert(
       "uBound1=smaller_1; expires=" + cookie_expiration + "; secure");
   expected_cookies.insert("uBound2=smaller_2; max-age=1200; secure");
+  expected_cookies.insert("uBound3=equal_4; max-age=2000; secure");
+  expected_cookies.insert("uBound4=value11; max-age=2500; secure");
   expected_cookies.insert(
-      "uBound3=equal_3; expires=" + cookie_expiration +"; secure");
-  expected_cookies.insert("uBound4=equal_4; max-age=2000; secure");
-  expected_cookies.insert("uBound5=value13; max-age=2500; secure");
-  expected_cookies.insert(
-      "uBound6=value14; max-age=600; expires=" + cookie_expiration+ "; secure");
+      "uBound5=value12; max-age=600; expires=" + cookie_expiration+ "; secure");
   std::set<std::string> actual_cookies;
   while (new_headers1->EnumerateHeader(&iter, "Set-Cookie", &cookie_string))
     actual_cookies.insert(cookie_string);
