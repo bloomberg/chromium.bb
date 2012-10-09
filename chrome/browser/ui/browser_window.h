@@ -343,9 +343,9 @@ class BrowserWindow : public BaseWindow {
   virtual FindBar* CreateFindBar() = 0;
 
   // Updates the |top_y| where the top of the constrained window should be
-  // positioned. On success, the method returns true and the value of |top_y| is
-  // non-negative. On failure, the method returns false nad the value of |top_y|
-  // is not defined.
+  // positioned. When implemented, the method returns true and the value of
+  // |top_y| is non-negative. When not implemented, the method returns false and
+  // the value of |top_y| is not defined.
   virtual bool GetConstrainedWindowTopY(int* top_y) = 0;
 
   // Invoked when the preferred size of the contents in current tab has been

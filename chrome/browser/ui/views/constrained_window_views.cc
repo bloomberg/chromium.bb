@@ -621,7 +621,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
       if (dialog_client_view)
         dialog_client_view->set_background(background);
     }
-    PositionWindow();
+    PositionFramelessWindow();
   }
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
@@ -633,28 +633,6 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
-}
-
-void ConstrainedWindowViews::OnSizeChanged() {
-  if (frameless_)
-    PositionWindow();
-}
-
-void ConstrainedWindowViews::PositionWindow() {
-  DCHECK(frameless_);
-  gfx::Rect bounds = GetRootView()->bounds();
-  ConstrainedWindowTabHelperDelegate* tab_helper_delegate =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_)->delegate();
-
-  BrowserWindow* browser_window =
-      tab_helper_delegate ? tab_helper_delegate->GetBrowserWindow() : NULL;
-  int top_y;
-  if (browser_window && browser_window->GetConstrainedWindowTopY(&top_y)) {
-    bounds.set_y(top_y);
-    bounds.set_x(
-        browser_window->GetBounds().width() / 2 - bounds.width() / 2);
-    SetBounds(bounds);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -701,6 +679,12 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowViews, views::Widget overrides:
 
+void ConstrainedWindowViews::CenterWindow(const gfx::Size& size) {
+  Widget::CenterWindow(size);
+  if (frameless_)
+    PositionFramelessWindow();
+}
+
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
   if (frameless_) {
     return new ConstrainedWindowFrameSimple(this);
@@ -738,4 +722,21 @@ views::internal::NativeWidgetDelegate*
 int ConstrainedWindowViews::GetNonClientComponent(const gfx::Point& point) {
   // Prevent a constrained window to be moved by the user.
   return HTNOWHERE;
+}
+
+void ConstrainedWindowViews::PositionFramelessWindow() {
+  DCHECK(frameless_);
+  gfx::Rect bounds = GetRootView()->bounds();
+  ConstrainedWindowTabHelperDelegate* tab_helper_delegate =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_)->delegate();
+
+  BrowserWindow* browser_window =
+      tab_helper_delegate ? tab_helper_delegate->GetBrowserWindow() : NULL;
+  int top_y;
+  if (browser_window && browser_window->GetConstrainedWindowTopY(&top_y)) {
+    bounds.set_y(top_y);
+    bounds.set_x(
+        browser_window->GetBounds().width() / 2 - bounds.width() / 2);
+    SetBounds(bounds);
+  }
 }

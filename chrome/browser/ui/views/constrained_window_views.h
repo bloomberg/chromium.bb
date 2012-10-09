@@ -72,8 +72,8 @@ class ConstrainedWindowViews : public views::Widget,
   virtual void FocusConstrainedWindow() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
 
-  // Respond to resize of this window.
-  void OnSizeChanged();
+  // Overridden from views::Widget:
+  void CenterWindow(const gfx::Size& size);
 
  private:
   // Overridden from views::Widget:
@@ -87,7 +87,7 @@ class ConstrainedWindowViews : public views::Widget,
   virtual int GetNonClientComponent(const gfx::Point& point) OVERRIDE;
 
   // Set the top of the window to overlap the browser chrome.
-  void PositionWindow();
+  void PositionFramelessWindow();
 
   content::WebContents* web_contents_;
 
