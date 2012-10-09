@@ -560,10 +560,11 @@ void InstantController::CommitInstantLoader(InstantLoader* loader) {
 void InstantController::SetInstantPreviewHeight(InstantLoader* loader,
                                                 int height,
                                                 InstantSizeUnits units) {
-  // TODO(samarth): we need to relax the IsOutOfDate() check to support cases
-  // where we may want to show the overlay even if the overlay does not reflect
-  // what the user has typed (e.g. doodle).
-  if (loader_ != loader || mode_ != EXTENDED || IsOutOfDate())
+  // Show even if IsOutOfDate() on the extended mode NTP to enable a search
+  // provider call SetInstantPreviewHeight() to show a custom logo, e.g. a
+  // Google doodle, before the user interacts with the page.
+  if (loader_ != loader || mode_ != EXTENDED ||
+      (IsOutOfDate() && !active_tab_is_ntp_))
     return;
 
   Show(height, units);

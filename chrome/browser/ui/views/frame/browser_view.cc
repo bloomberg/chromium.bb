@@ -2644,6 +2644,13 @@ void BrowserView::RestackLocationBarContainer() {
 #if defined(USE_AURA)
   if (search_view_controller_.get())
     search_view_controller_->StackAtTop();
+  if (preview_container_) {
+    // Keep the preview on top so that a doodle can be shown on the NTP in
+    // InstantExtended mode.
+    ui::Layer* native_view_layer =
+        preview_container_->web_contents()->GetNativeView()->layer();
+    native_view_layer->parent()->StackAtTop(native_view_layer);
+  }
 #endif
   toolbar_->location_bar_container()->StackAtTop();
   infobar_container_->StackAtTop();
