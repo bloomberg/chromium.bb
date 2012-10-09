@@ -19,6 +19,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/surface/io_surface_support_mac.h"
 
 #ifdef NDEBUG
@@ -327,12 +328,14 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
 
   [glContext_ setView:view];
   gfx::Size window_size(NSSizeToCGSize([view frame].size));
-  gfx::Size pixel_window_size = window_size.Scale(scale_factor);
+  gfx::Size pixel_window_size = gfx::ToFlooredSize(
+      window_size.Scale(scale_factor));
   glViewport(0, 0, pixel_window_size.width(), pixel_window_size.height());
 
   // TODO: After a resolution change, the DPI-ness of the view and the
   // IOSurface might not be in sync.
-  io_surface_size_ = pixel_io_surface_size_.Scale(1.0 / scale_factor);
+  io_surface_size_ = gfx::ToFlooredSize(
+      pixel_io_surface_size_.Scale(1.0 / scale_factor));
   quad_.set_size(io_surface_size_, pixel_io_surface_size_);
 
   glMatrixMode(GL_PROJECTION);

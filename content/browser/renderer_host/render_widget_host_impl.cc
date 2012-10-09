@@ -49,6 +49,7 @@
 #endif
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webpreferences.h"
@@ -1429,7 +1430,8 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
   // and backing store is never used.
   if (dib) {
     DCHECK(!params.bitmap_rect.IsEmpty());
-    gfx::Size pixel_size = params.bitmap_rect.size().Scale(params.scale_factor);
+    gfx::Size pixel_size = gfx::ToFlooredSize(
+        params.bitmap_rect.size().Scale(params.scale_factor));
     const size_t size = pixel_size.height() * pixel_size.width() * 4;
     if (dib->size() < size) {
       DLOG(WARNING) << "Transport DIB too small for given rectangle";

@@ -7,6 +7,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {
@@ -19,7 +20,7 @@ BrowserPluginBackingStore::BrowserPluginBackingStore(
     float scale_factor)
     : size_(size),
       scale_factor_(scale_factor) {
-  gfx::Size pixel_size = size.Scale(scale_factor);
+  gfx::Size pixel_size = gfx::ToFlooredSize(size.Scale(scale_factor));
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());
   bitmap_.allocPixels();

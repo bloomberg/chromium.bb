@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
 #include "ui/surface/transport_dib.h"
 
@@ -80,7 +81,7 @@ void BackingStoreMac::ScaleFactorChanged(float device_scale_factor) {
 }
 
 size_t BackingStoreMac::MemorySize() {
-  return size().Scale(device_scale_factor_).GetArea() * 4;
+  return gfx::ToFlooredSize(size().Scale(device_scale_factor_)).GetArea() * 4;
 }
 
 void BackingStoreMac::PaintToBackingStore(
@@ -98,7 +99,8 @@ void BackingStoreMac::PaintToBackingStore(
   if (!dib)
     return;
 
-  gfx::Size pixel_size = size().Scale(device_scale_factor_);
+  gfx::Size pixel_size = gfx::ToFlooredSize(
+      size().Scale(device_scale_factor_));
   gfx::Rect pixel_bitmap_rect =
       ToFlooredRect(bitmap_rect.Scale(scale_factor));
 
@@ -268,7 +270,7 @@ CGLayerRef BackingStoreMac::CreateCGLayer() {
 }
 
 CGContextRef BackingStoreMac::CreateCGBitmapContext() {
-  gfx::Size pixel_size = size().Scale(device_scale_factor_);
+  gfx::Size pixel_size = gfx::ToFlooredSize(size().Scale(device_scale_factor_));
   // A CGBitmapContext serves as a stand-in for the layer before the view is
   // in a containing window.
   CGContextRef context = CGBitmapContextCreate(NULL,

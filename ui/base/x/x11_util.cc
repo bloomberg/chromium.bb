@@ -34,6 +34,7 @@
 #include "base/threading/thread.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/x/x11_util_internal.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -472,7 +473,7 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
         skia::ImageOperations::RESIZE_BETTER,
         static_cast<int>(cursor_image->width() * scale),
         static_cast<int>(cursor_image->height() * scale));
-    hotspot_point = hotspot.Scale(scale);
+    hotspot_point = gfx::ToFlooredPoint(hotspot.Scale(scale));
     needs_scale = true;
   }
 

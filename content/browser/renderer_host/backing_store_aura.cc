@@ -13,6 +13,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace content {
 
@@ -28,7 +29,7 @@ BackingStoreAura::BackingStoreAura(RenderWidgetHost* widget,
     : BackingStore(widget, size) {
   device_scale_factor_ =
       ui::GetScaleFactorScale(GetScaleFactorForView(widget->GetView()));
-  gfx::Size pixel_size = size.Scale(device_scale_factor_);
+  gfx::Size pixel_size = gfx::ToFlooredSize(size.Scale(device_scale_factor_));
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());
   bitmap_.allocPixels();
@@ -49,10 +50,11 @@ void BackingStoreAura::ScaleFactorChanged(float device_scale_factor) {
   if (device_scale_factor == device_scale_factor_)
     return;
 
-  gfx::Size old_pixel_size = size().Scale(device_scale_factor_);
+  gfx::Size old_pixel_size = gfx::ToFlooredSize(
+      size().Scale(device_scale_factor_));
   device_scale_factor_ = device_scale_factor;
 
-  gfx::Size pixel_size = size().Scale(device_scale_factor_);
+  gfx::Size pixel_size = gfx::ToFlooredSize(size().Scale(device_scale_factor_));
   SkBitmap new_bitmap;
   new_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());
@@ -74,7 +76,7 @@ void BackingStoreAura::ScaleFactorChanged(float device_scale_factor) {
 size_t BackingStoreAura::MemorySize() {
   // NOTE: The computation may be different when the canvas is a subrectangle of
   // a larger bitmap.
-  return size().Scale(device_scale_factor_).GetArea() * 4;
+  return gfx::ToFlooredSize(size().Scale(device_scale_factor_)).GetArea() * 4;
 }
 
 void BackingStoreAura::PaintToBackingStore(
@@ -90,7 +92,7 @@ void BackingStoreAura::PaintToBackingStore(
     return;
 
   gfx::Rect pixel_bitmap_rect =
-      gfx::ToEnclosingRect(bitmap_rect.Scale(scale_factor));
+      gfx::ToEnclosedRect(bitmap_rect.Scale(scale_factor));
 
   const int width = pixel_bitmap_rect.width();
   const int height = pixel_bitmap_rect.height();

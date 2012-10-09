@@ -38,6 +38,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point3.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/screen.h"
 
 using std::vector;
@@ -387,7 +388,7 @@ void RootWindow::PostNativeEvent(const base::NativeEvent& native_event) {
 
 void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
   // TODO(oshima): Take the root window's transform into account.
-  *point = point->Scale(ui::GetDeviceScaleFactor(layer()));
+  *point = gfx::ToFlooredPoint(point->Scale(ui::GetDeviceScaleFactor(layer())));
   gfx::Point location = host_->GetLocationOnNativeScreen();
   point->Offset(location.x(), location.y());
 }
@@ -395,7 +396,8 @@ void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
 void RootWindow::ConvertPointFromNativeScreen(gfx::Point* point) const {
   gfx::Point location = host_->GetLocationOnNativeScreen();
   point->Offset(-location.x(), -location.y());
-  *point = point->Scale(1 / ui::GetDeviceScaleFactor(layer()));
+  *point = gfx::ToFlooredPoint(
+      point->Scale(1 / ui::GetDeviceScaleFactor(layer())));
 }
 
 void RootWindow::AdvanceQueuedTouchEvent(Window* window, bool processed) {

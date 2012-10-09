@@ -28,6 +28,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace {
 
@@ -754,8 +755,8 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     if (scale_content_) {
       texture_size = texture_->size();
     } else {
-      texture_size =
-          texture_->size().Scale(1.0f / texture_->device_scale_factor());
+      texture_size = gfx::ToFlooredSize(
+          texture_->size().Scale(1.0f / texture_->device_scale_factor()));
     }
 
     gfx::Size size(std::min(bounds().width(), texture_size.width()),

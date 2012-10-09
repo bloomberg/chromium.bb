@@ -51,6 +51,7 @@
 #include "ui/base/layout.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/surface/io_surface_support_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -840,7 +841,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     return;
 
   float scale = ScaleFactor(cocoa_view_);
-  gfx::Size dst_pixel_size = dst_size.Scale(scale);
+  gfx::Size dst_pixel_size = gfx::ToFlooredSize(dst_size.Scale(scale));
   if (!output->initialize(
       dst_pixel_size.width(), dst_pixel_size.height(), true))
     return;

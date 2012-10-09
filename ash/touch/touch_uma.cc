@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/events/event.h"
+#include "ui/gfx/point_conversions.h"
 
 #if defined(USE_XI2_MT)
 #include <X11/extensions/XInput2.h>
@@ -312,7 +313,8 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
 #else
     position = ui::EventLocationFromNative(event.native_event());
 #endif
-    position = position.Scale(1. / target->layer()->device_scale_factor());
+    position = gfx::ToFlooredPoint(
+        position.Scale(1. / target->layer()->device_scale_factor()));
   }
 
   position.set_x(std::min(bounds.width() - 1, std::max(0, position.x())));

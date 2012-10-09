@@ -48,6 +48,14 @@ class UI_EXPORT Point : public PointBase<Point, int> {
     return PointF(x(), y());
   }
 
+  PointF Scale(float scale) const WARN_UNUSED_RESULT {
+    return Scale(scale, scale);
+  }
+
+  PointF Scale(float x_scale, float y_scale) const WARN_UNUSED_RESULT {
+    return PointF(x() * x_scale, y() * y_scale);
+  }
+
   // Returns a string representation of point.
   std::string ToString() const;
 };

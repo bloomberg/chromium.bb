@@ -21,6 +21,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size_conversions.h"
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
@@ -406,7 +407,7 @@ void MultiDisplayManager::ScaleDisplayImpl() {
     float factor = display.device_scale_factor() == 1.0f ? 2.0f : 1.0f;
     display.SetScaleAndBounds(
         factor, gfx::Rect(display.bounds_in_pixel().origin(),
-                          display.size().Scale(factor)));
+                          gfx::ToFlooredSize(display.size().Scale(factor))));
     new_displays.push_back(display);
   }
   OnNativeDisplaysChanged(new_displays);

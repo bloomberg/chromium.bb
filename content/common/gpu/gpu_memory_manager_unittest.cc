@@ -5,6 +5,7 @@
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
+#include "ui/gfx/size_conversions.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -549,7 +550,7 @@ TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocationAndroid) {
       GetAvailableGpuMemory()) {
     size_t previous_allocation = stub.allocation_.gpu_resource_size_in_bytes;
 
-    stub.size_ = stub.size_.Scale(1, 2);
+    stub.size_ = gfx::ToFlooredSize(stub.size_.Scale(1, 2));
 
     Manage();
     EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
@@ -562,7 +563,7 @@ TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocationAndroid) {
   }
 
   // One final size increase to confirm it stays capped at maximum.
-  stub.size_ = stub.size_.Scale(1, 2);
+  stub.size_ = gfx::ToFlooredSize(stub.size_.Scale(1, 2));
 
   Manage();
   EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));

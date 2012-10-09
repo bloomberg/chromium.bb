@@ -33,15 +33,6 @@ class UI_EXPORT PointBase {
     y_ += delta_y;
   }
 
-  Class Scale(float scale) const WARN_UNUSED_RESULT {
-    return Scale(scale, scale);
-  }
-
-  Class Scale(float x_scale, float y_scale) const WARN_UNUSED_RESULT {
-    return Class(static_cast<Type>(x_ * x_scale),
-                 static_cast<Type>(y_ * y_scale));
-  }
-
   Class Add(const Class& other) const WARN_UNUSED_RESULT {
     const Class* orig = static_cast<const Class*>(this);
     Class copy = *orig;

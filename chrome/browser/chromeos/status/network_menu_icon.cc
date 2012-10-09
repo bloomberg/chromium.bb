@@ -19,6 +19,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/size_conversions.h"
 
 using std::max;
 using std::min;
@@ -182,7 +183,8 @@ class EmptyImageSource: public gfx::ImageSkiaSource {
 
   virtual gfx::ImageSkiaRep GetImageForScale(
       ui::ScaleFactor scale_factor) OVERRIDE {
-    gfx::Size pixel_size = size_.Scale(ui::GetScaleFactorScale(scale_factor));
+    gfx::Size pixel_size = gfx::ToFlooredSize(
+        size_.Scale(ui::GetScaleFactorScale(scale_factor)));
     SkBitmap empty_bitmap = GetEmptyBitmap(pixel_size);
     return gfx::ImageSkiaRep(empty_bitmap, scale_factor);
   }

@@ -10,6 +10,7 @@
 #include "base/stringprintf.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace gfx {
 namespace {
@@ -87,8 +88,8 @@ void Display::SetScaleAndBounds(
 #if defined(USE_AURA)
   bounds_in_pixel_ = bounds_in_pixel;
 #endif
-  bounds_ = gfx::Rect(
-      bounds_in_pixel.size().Scale(1.0f / device_scale_factor_));
+  bounds_ = gfx::Rect(gfx::ToFlooredSize(
+      bounds_in_pixel.size().Scale(1.0f / device_scale_factor_)));
   UpdateWorkAreaFromInsets(insets);
 }
 
@@ -108,7 +109,7 @@ void Display::UpdateWorkAreaFromInsets(const gfx::Insets& insets) {
 }
 
 gfx::Size Display::GetSizeInPixel() const {
-  return size().Scale(device_scale_factor_);
+  return gfx::ToFlooredSize(size().Scale(device_scale_factor_));
 }
 
 std::string Display::ToString() const {

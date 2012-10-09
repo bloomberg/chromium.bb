@@ -14,6 +14,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/surface/transport_dib.h"
 
 using content::RenderWidgetHost;
@@ -46,7 +47,8 @@ void RenderWidgetSnapshotTaker::AskForSnapshot(
   sequence_num++;
   float scale_factor = ui::GetScaleFactorScale(ui::GetScaleFactorForNativeView(
       renderer->GetView()->GetNativeView()));
-  gfx::Size desired_size_in_pixel = desired_size.Scale(scale_factor);
+  gfx::Size desired_size_in_pixel = gfx::ToFlooredSize(
+      desired_size.Scale(scale_factor));
   scoped_ptr<TransportDIB> thumbnail_dib(TransportDIB::Create(
       desired_size_in_pixel.GetArea() * 4, sequence_num));
 

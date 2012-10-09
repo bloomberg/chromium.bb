@@ -13,6 +13,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/point_conversions.h"
+#include "ui/gfx/size_conversions.h"
 
 const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   if (platform_cursor_)
@@ -28,13 +30,15 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   if (scale_factor_ == 1.f) {
     image = ui::SkBitmapToXcursorImage(&bitmap, hotspot_);
   } else {
-    gfx::Size scaled_size = custom_size_.Scale(scale_factor_);
+    gfx::Size scaled_size = gfx::ToFlooredSize(
+        custom_size_.Scale(scale_factor_));
     SkBitmap scaled_bitmap = skia::ImageOperations::Resize(bitmap,
         skia::ImageOperations::RESIZE_BETTER,
         scaled_size.width(),
         scaled_size.height());
     image = ui::SkBitmapToXcursorImage(&scaled_bitmap,
-                                       hotspot_.Scale(scale_factor_));
+                                       gfx::ToFlooredPoint(
+                                           hotspot_.Scale(scale_factor_)));
   }
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
   return platform_cursor_;

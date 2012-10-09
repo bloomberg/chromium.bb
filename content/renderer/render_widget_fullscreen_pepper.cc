@@ -21,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gl/gpu_preference.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -509,7 +510,7 @@ void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
                                             const gfx::Rect& resizer_rect,
                                             bool is_fullscreen) {
   if (context_) {
-    gfx::Size pixel_size = size.Scale(deviceScaleFactor());
+    gfx::Size pixel_size = gfx::ToFlooredSize(size.Scale(deviceScaleFactor()));
     context_->reshape(pixel_size.width(), pixel_size.height());
     context_->viewport(0, 0, pixel_size.width(), pixel_size.height());
   }
@@ -601,7 +602,7 @@ const float kTexCoords[] = {
 }  // anonymous namespace
 
 bool RenderWidgetFullscreenPepper::InitContext() {
-  gfx::Size pixel_size = size().Scale(deviceScaleFactor());
+  gfx::Size pixel_size = gfx::ToFlooredSize(size().Scale(deviceScaleFactor()));
   context_->reshape(pixel_size.width(), pixel_size.height());
   context_->viewport(0, 0, pixel_size.width(), pixel_size.height());
 

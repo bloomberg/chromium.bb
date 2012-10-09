@@ -21,7 +21,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/skia_util.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -75,17 +78,6 @@ bool ValidateAndConvertRect(const PP_Rect* rect,
                       rect->size.width, rect->size.height);
   }
   return true;
-}
-
-// Scale the rectangle, taking care to round coordinates outward so a
-// rectangle scaled down then scaled back up by the inverse scale would
-// fully contain the entire area affected by the original rectangle.
-gfx::Rect ScaleRectBounds(const gfx::Rect& rect, float scale) {
-  int left = static_cast<int>(floorf(rect.x() * scale));
-  int top = static_cast<int>(floorf(rect.y() * scale));
-  int right = static_cast<int>(ceilf((rect.x() + rect.width()) * scale));
-  int bottom = static_cast<int>(ceilf((rect.y() + rect.height()) * scale));
-  return gfx::Rect(left, top, right - left, bottom - top);
 }
 
 // Converts BGRA <-> RGBA.
@@ -573,7 +565,7 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
   SkAutoCanvasRestore auto_restore(canvas, true);
   canvas->clipRect(sk_invalidate_rect);
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
-  gfx::Size image_size = pixel_image_size.Scale(scale_);
+  gfx::Size image_size = gfx::ToFlooredSize(pixel_image_size.Scale(scale_));
 
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
@@ -652,13 +644,16 @@ bool PPB_Graphics2D_Impl::ConvertToLogicalPixels(float scale,
     return true;
 
   gfx::Rect original_rect = *op_rect;
-  *op_rect = ScaleRectBounds(*op_rect, scale);
+  // Take the enclosing rectangle after scaling so a rectangle scaled down then
+  // scaled back up by the inverse scale would fully contain the entire area
+  // affected by the original rectangle.
+  *op_rect = gfx::ToEnclosingRect(op_rect->Scale(scale));
   if (delta) {
     gfx::Point original_delta = *delta;
     float inverse_scale = 1.0f / scale;
-    *delta = delta->Scale(scale);
-    if (original_rect != ScaleRectBounds(*op_rect, inverse_scale) ||
-        original_delta != delta->Scale(inverse_scale)) {
+    *delta = gfx::ToFlooredPoint(delta->Scale(scale));
+    if (original_rect != gfx::ToEnclosingRect(op_rect->Scale(inverse_scale)) ||
+        original_delta != gfx::ToFlooredPoint(delta->Scale(inverse_scale))) {
       return false;
     }
   }

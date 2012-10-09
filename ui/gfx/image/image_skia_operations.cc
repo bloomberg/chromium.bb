@@ -19,6 +19,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 
@@ -325,7 +326,8 @@ class ResizeSource : public ImageSkiaSource {
       return image_rep;
 
     const float scale = ui::GetScaleFactorScale(scale_factor);
-    const Size target_pixel_size(target_dip_size_.Scale(scale));
+    const Size target_pixel_size = gfx::ToFlooredSize(
+        target_dip_size_.Scale(scale));
     const SkBitmap resized = skia::ImageOperations::Resize(
         image_rep.sk_bitmap(),
         resize_method_,

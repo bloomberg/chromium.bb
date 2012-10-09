@@ -29,6 +29,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 namespace ui {
@@ -73,7 +74,7 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
       ui::ScaleFactor scale_factor) OVERRIDE {
     scoped_ptr<SkBitmap> result(rb_->LoadBitmap(resource_id_, scale_factor));
     float scale = ui::GetScaleFactorScale(scale_factor);
-    gfx::Size size_in_pixel = size_in_dip_.Scale(scale);
+    gfx::Size size_in_pixel = gfx::ToFlooredSize(size_in_dip_.Scale(scale));
 
     if (scale_factor != SCALE_FACTOR_100P &&
         (!result.get() ||

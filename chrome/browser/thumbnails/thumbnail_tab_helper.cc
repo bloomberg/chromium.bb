@@ -16,6 +16,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -86,8 +87,8 @@ gfx::Size GetCopySizeForThumbnail(content::RenderWidgetHostView* view) {
       ui::GetScaleFactorForNativeView(view->GetNativeView());
   switch (scale_factor) {
     case ui::SCALE_FACTOR_100P:
-      copy_size =
-          copy_size.Scale(ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P));
+      copy_size = gfx::ToFlooredSize(
+          copy_size.Scale(ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P)));
       break;
     case ui::SCALE_FACTOR_200P:
       // Use the size as-is.
@@ -95,8 +96,8 @@ gfx::Size GetCopySizeForThumbnail(content::RenderWidgetHostView* view) {
     default:
       DLOG(WARNING) << "Unsupported scale factor. Use the same copy size as "
                     << "ui::SCALE_FACTOR_100P";
-      copy_size =
-          copy_size.Scale(ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P));
+      copy_size = gfx::ToFlooredSize(
+          copy_size.Scale(ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P)));
       break;
   }
   return copy_size;
@@ -108,7 +109,8 @@ gfx::Size GetThumbnailSizeInPixel() {
   // Determine the resolution of the thumbnail based on the primary monitor.
   // TODO(oshima): Use device's default scale factor.
   gfx::Display primary_display = gfx::Screen::GetPrimaryDisplay();
-  return thumbnail_size.Scale(primary_display.device_scale_factor());
+  return gfx::ToFlooredSize(
+      thumbnail_size.Scale(primary_display.device_scale_factor()));
 }
 
 // Returns the clipping rectangle that is used for creating a thumbnail with
