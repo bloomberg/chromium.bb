@@ -611,6 +611,7 @@ err:
 	printf("request too big to marshal, maximum size is %zu\n",
 	       sizeof closure->buffer);
 	errno = ENOMEM;
+	free(closure);
 
 	return NULL;
 
