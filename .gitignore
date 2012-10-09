@@ -42,6 +42,8 @@ libdrm.pc
 libdrm_intel.pc
 libdrm_nouveau.pc
 libdrm_radeon.pc
+libdrm_omap.pc
+libdrm_exynos.pc
 libkms.pc
 libtool
 ltmain.sh
@@ -76,3 +78,5 @@ tests/modeprint/modeprint
 tests/modetest/modetest
 tests/kmstest/kmstest
 tests/vbltest/vbltest
+tests/radeon/radeon_ttm
+man/*.3
