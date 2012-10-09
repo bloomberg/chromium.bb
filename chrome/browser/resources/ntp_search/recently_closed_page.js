@@ -107,6 +107,8 @@ cr.define('ntp', function() {
                   ntp.APP_LAUNCH.NTP_RECENTLY_CLOSED]);
       chrome.send('reopenTab', [data.sessionId, this.index,
           e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
+
+      e.preventDefault();
     },
   };
 
