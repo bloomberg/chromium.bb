@@ -813,14 +813,8 @@ const char HTML5FileWriter::kURLRequestContextToreDown[] =
 
 }  // namespace
 
-// Flaky test.  http://crbug.com/153499
-#if defined(OS_CHROMEOS)
-#define MAYBE_DownloadExtensionTest_PauseResumeCancel DISABLED_DownloadExtensionTest_PauseResumeCancel
-#else
-#define MAYBE_DownloadExtensionTest_PauseResumeCancel DownloadExtensionTest_PauseResumeCancel
-#endif
-IN_PROC_BROWSER_TEST_F(
-    DownloadExtensionTest, MAYBE_DownloadExtensionTest_PauseResumeCancel) {
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_PauseResumeCancel) {
   DownloadItem* download_item = CreateSlowTestDownload();
   ASSERT_TRUE(download_item);
 
@@ -1010,16 +1004,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test passing the empty query to search().
-// Crashes on ChromeOS only.  http://crbug.com/152429
-#if defined(OS_CHROMEOS)
-#define MAYBE_DownloadExtensionTest_SearchEmptyQuery \
-    DISABLED_DownloadExtensionTest_SearchEmptyQuery
-#else
-#define MAYBE_DownloadExtensionTest_SearchEmptyQuery \
-    DownloadExtensionTest_SearchEmptyQuery
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    MAYBE_DownloadExtensionTest_SearchEmptyQuery) {
+                       DownloadExtensionTest_SearchEmptyQuery) {
   ScopedCancellingItem item(CreateSlowTestDownload());
   ASSERT_TRUE(item.get());
 
@@ -1199,16 +1185,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test the |limit| option for search().
-// Crashes on ChromeOS only.  http://crbug.com/152429
-#if defined(OS_CHROMEOS)
-#define MAYBE_DownloadExtensionTest_SearchLimit \
-    DISABLED_DownloadExtensionTest_SearchLimit
-#else
-#define MAYBE_DownloadExtensionTest_SearchLimit \
-    DownloadExtensionTest_SearchLimit
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-    MAYBE_DownloadExtensionTest_SearchLimit) {
+                       DownloadExtensionTest_SearchLimit) {
   DownloadManager::DownloadVector items;
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -2005,16 +1983,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 // to interrupted, and test that that state transition is detectable by an
 // onChanged event listener.  TODO(benjhayden): Test other sources of
 // interruptions such as server death.
-// Crashes on ChromeOS only.  http://crbug.com/152429
-#if defined(OS_CHROMEOS)
-#define MAYBE_DownloadExtensionTest_Download_Cancel \
-    DISABLED_DownloadExtensionTest_Download_Cancel
-#else
-#define MAYBE_DownloadExtensionTest_Download_Cancel \
-    DownloadExtensionTest_Download_Cancel
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_Download_Cancel) {
+                       DownloadExtensionTest_Download_Cancel) {
   LoadExtension("downloads_split");
   CHECK(StartTestServer());
   std::string download_url = test_server()->GetURL(
