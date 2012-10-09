@@ -39,17 +39,30 @@ class CompiledFileSystem(object):
       self._file_system = file_system
       self._object_store = object_store
 
-    def Create(self, populate_function, namespace):
+    def Create(self, populate_function, namespace, version=None):
+      """Create a CompiledFileSystem that populates the cache by calling
+      |populate_function| on the raw filesystem data. The keys to the cache
+      are put in the namespace specified by |namespace|, and optionally adding
+      |version|.
+      """
       return CompiledFileSystem(self._file_system,
                              populate_function,
                              self._object_store,
-                             namespace)
+                             namespace,
+                             version=version)
 
-  def __init__(self, file_system, populate_function, object_store, namespace):
+  def __init__(self,
+               file_system,
+               populate_function,
+               object_store,
+               namespace,
+               version=None):
     self._file_system = file_system
     self._populate_function = populate_function
     self._object_store = object_store
     self._namespace = 'CompiledFileSystem.' + namespace
+    if version is not None:
+      self._namespace = '%s.%s' % (self._namespace, version)
 
   def _MakeKey(self, key):
     return self._namespace + '.' + key

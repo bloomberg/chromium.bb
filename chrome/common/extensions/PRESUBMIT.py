@@ -86,6 +86,21 @@ def _CheckHeadingIDs(input_api):
         bad_files.append(name)
   return bad_files
 
+def _CheckVersions(input_api, output_api, results):
+  version = '_VERSION ='
+  for affected_file in input_api.AffectedFiles():
+    if affected_file.LocalPath().endswith('PRESUBMIT.py'):
+      continue
+    if any(version in line for line in affected_file.NewContents()):
+      found = False
+      for _, text in affected_file.ChangedContents():
+        if version in text:
+          found = True
+          break
+      if not found:
+        results.append(output_api.PresubmitError(
+            '_VERSION of %s needs to be incremented.' % affected_file))
+
 def _CheckChange(input_api, output_api):
   results = [
       output_api.PresubmitError('File %s needs an id for each heading.' % name)
@@ -102,6 +117,7 @@ def _CheckChange(input_api, output_api):
                                     cwd=input_api.PresubmitLocalPath())
   except input_api.subprocess.CalledProcessError:
     results.append(output_api.PresubmitError('IntegrationTest failed!'))
+  _CheckVersions(input_api, output_api, results)
   return results
 
 def CheckChangeOnUpload(input_api, output_api):

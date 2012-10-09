@@ -10,6 +10,10 @@ from file_system import FileNotFoundError
 import compiled_file_system as compiled_fs
 from third_party.handlebar import Handlebar
 
+# Increment this version if there are changes to the table of contents dict that
+# IntroDataSource caches.
+_VERSION = 0
+
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
 class _IntroParser(HTMLParser):
@@ -61,7 +65,8 @@ class IntroDataSource(object):
   class Factory(object):
     def __init__(self, cache_factory, base_paths):
       self._cache = cache_factory.Create(self._MakeIntroDict,
-                                         compiled_fs.INTRO)
+                                         compiled_fs.INTRO,
+                                         version=_VERSION)
       self._base_paths = base_paths
 
     def _MakeIntroDict(self, intro):
