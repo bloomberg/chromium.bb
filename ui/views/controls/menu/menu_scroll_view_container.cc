@@ -48,8 +48,9 @@ class MenuScrollButton : public View {
   }
 
   virtual gfx::Size GetPreferredSize() {
-    return gfx::Size(MenuConfig::instance().scroll_arrow_height * 2 - 1,
-                     pref_height_);
+    return gfx::Size(
+        host_->GetMenuItem()->GetMenuConfig().scroll_arrow_height * 2 - 1,
+        pref_height_);
   }
 
   virtual bool CanDrop(const OSExchangeData& data) {
@@ -77,7 +78,7 @@ class MenuScrollButton : public View {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) {
-    const MenuConfig& config = MenuConfig::instance();
+    const MenuConfig& config = host_->GetMenuItem()->GetMenuConfig();
 
     // The background.
     gfx::Rect item_bounds(0, 0, width(), height());
@@ -184,7 +185,18 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
 
   MenuDelegate* delegate = content_view_->GetMenuItem()->GetDelegate();
   if (delegate) {
-    set_border(delegate->CreateMenuBorder());
+    Border* border = delegate->CreateMenuBorder();
+    if (!border) {
+      const MenuConfig& menu_config =
+          content_view_->GetMenuItem()->GetMenuConfig();
+      border = Border::CreateEmptyBorder(
+          menu_config.submenu_vertical_margin_size,
+          menu_config.submenu_horizontal_margin_size,
+          menu_config.submenu_vertical_margin_size,
+          menu_config.submenu_horizontal_margin_size);
+    }
+    set_border(border);
+
     set_background(delegate->CreateMenuBackground());
   }
 }

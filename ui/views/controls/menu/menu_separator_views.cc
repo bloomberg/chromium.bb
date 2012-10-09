@@ -8,6 +8,7 @@
 #include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 
 namespace {
 
@@ -37,19 +38,20 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
 }
 
 gfx::Size MenuSeparator::GetPreferredSize() {
-  int height = MenuConfig::instance().separator_height;
+  const MenuConfig& menu_config = parent_menu_item_->GetMenuConfig();
+  int height = menu_config.separator_height;
   switch(type_) {
     case ui::SPACING_SEPARATOR:
-      height = MenuConfig::instance().separator_spacing_height;
+      height = menu_config.separator_spacing_height;
       break;
     case ui::LOWER_SEPARATOR:
-      height = MenuConfig::instance().separator_lower_height;
+      height = menu_config.separator_lower_height;
       break;
     case ui::UPPER_SEPARATOR:
-      height = MenuConfig::instance().separator_upper_height;
+      height = menu_config.separator_upper_height;
       break;
     default:
-      height = MenuConfig::instance().separator_height;
+      height = menu_config.separator_height;
       break;
   }
   return gfx::Size(10,  // Just in case we're the only item in a menu.

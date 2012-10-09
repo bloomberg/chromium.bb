@@ -12,6 +12,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
 
@@ -52,6 +53,12 @@ ActionBoxMenu::ActionBoxMenu(Browser* browser,
       model_(model.Pass()) {
   views::MenuItemView* menu = new views::MenuItemView(this);
   menu->set_has_icons(true);
+
+  views::MenuConfig* menu_config = new views::MenuConfig();
+  CustomizeMenu(menu_config);
+  // |menu| will own MenuConfig
+  menu->set_menu_config(menu_config);
+
   menu_runner_.reset(new views::MenuRunner(menu));
 }
 
@@ -142,4 +149,8 @@ void ActionBoxMenu::PopulateMenu() {
       }
     }
   }
+}
+
+void ActionBoxMenu::CustomizeMenu(views::MenuConfig* menu_config) {
+  // TODO(yefim): add menu customization here.
 }
