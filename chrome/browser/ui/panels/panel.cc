@@ -836,4 +836,9 @@ void Panel::OnImageLoaded(const gfx::Image& image,
     native_panel_->UpdatePanelTitleBar();
   }
   app_icon_loader_.reset();
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_APP_ICON_LOADED,
+      content::Source<Panel>(this),
+      content::NotificationService::NoDetails());
 }

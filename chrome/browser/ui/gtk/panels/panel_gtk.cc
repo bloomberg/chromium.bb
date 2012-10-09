@@ -1028,6 +1028,7 @@ class GtkNativePanelTesting : public NativePanelTesting {
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
+  virtual bool VerifyAppIcon() const OVERRIDE;
   virtual void WaitForWindowCreationToComplete() const OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
@@ -1109,6 +1110,13 @@ bool GtkNativePanelTesting::VerifyDrawingAttention() const {
 bool GtkNativePanelTesting::VerifyActiveState(bool is_active) {
   // TODO(jianli): to be implemented. http://crbug.com/102737
   return false;
+}
+
+bool GtkNativePanelTesting::VerifyAppIcon() const {
+  GdkPixbuf* icon = gtk_window_get_icon(panel_gtk_->GetNativePanelHandle());
+  return icon &&
+         gdk_pixbuf_get_width(icon) == panel::kPanelAppIconSize &&
+         gdk_pixbuf_get_height(icon) == panel::kPanelAppIconSize;
 }
 
 void GtkNativePanelTesting::WaitForWindowCreationToComplete() const {

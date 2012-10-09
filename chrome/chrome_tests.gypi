@@ -3062,6 +3062,7 @@
         'browser/ui/intents/web_intent_picker_delegate_mock.cc',
         'browser/ui/intents/web_intent_picker_delegate_mock.h',
         'browser/ui/login/login_prompt_browsertest.cc',
+        'browser/ui/panels/panel_extension_browsertest.cc',
         'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',

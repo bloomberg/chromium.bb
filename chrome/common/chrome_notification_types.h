@@ -1230,6 +1230,10 @@ enum NotificationType {
   // Used only in unit testing.
   NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
 
+  // Sent when panel app icon is loaded.
+  // Used only in unit testing.
+  NOTIFICATION_PANEL_APP_ICON_LOADED,
+
   // Sent when panel strip get updated.
   // The source is the PanelStrip, no details.
   // Used only in coordination with notification balloons.

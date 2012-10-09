@@ -24,6 +24,9 @@ static const int kMinimizedPanelHeight = 4;
 // The height in pixels of the titlebar.
 static const int kTitlebarHeight = 32;
 
+// The size (width or height) of the app icon (taskbar icon).
+static const int kPanelAppIconSize = 32;
+
 // Different types of buttons that can be shown on panel's titlebar.
 enum TitlebarButtonType {
   CLOSE_BUTTON,

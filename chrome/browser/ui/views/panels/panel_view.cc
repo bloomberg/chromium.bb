@@ -24,10 +24,11 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
-#include "ui/base/win/shell.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/panels/taskbar_window_thumbnailer_win.h"
+#include "ui/base/win/shell.h"
+#include "ui/gfx/icon_util.h"
 #endif
 
 namespace {
@@ -90,6 +91,7 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
+  virtual bool VerifyAppIcon() const OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
   virtual bool IsButtonVisible(
@@ -133,6 +135,26 @@ bool NativePanelTestingWin::VerifyActiveState(bool is_active) {
   return panel_view_->GetFrameView()->paint_state() ==
          (is_active ? PanelFrameView::PAINT_AS_ACTIVE
                     : PanelFrameView::PAINT_AS_INACTIVE);
+}
+
+bool NativePanelTestingWin::VerifyAppIcon() const {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // We only care about Windows 7 and later.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return true;
+
+  HWND native_window = panel_view_->GetNativePanelHandle();
+  HICON app_icon = reinterpret_cast<HICON>(
+      ::SendMessage(native_window, WM_GETICON, ICON_BIG, 0L));
+  if (!app_icon)
+    return false;
+  scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(app_icon));
+  return bitmap.get() &&
+         bitmap->width() == panel::kPanelAppIconSize &&
+         bitmap->height() == panel::kPanelAppIconSize;
+#else
+  return true;
+#endif
 }
 
 bool NativePanelTestingWin::IsWindowSizeKnown() const {
