@@ -307,6 +307,45 @@ FcRandom(void)
     return result;
 }
 
+
+static FcMutex *cache_lock;
+
+static void
+lock_cache (void)
+{
+  FcMutex *lock;
+retry:
+  lock = fc_atomic_ptr_get (&cache_lock);
+  if (!lock) {
+    lock = (FcMutex *) malloc (sizeof (FcMutex));
+    FcMutexInit (lock);
+    if (!fc_atomic_ptr_cmpexch (&cache_lock, NULL, lock)) {
+      FcMutexFinish (lock);
+      goto retry;
+    }
+  }
+  FcMutexLock (lock);
+}
+
+static void
+unlock_cache (void)
+{
+  FcMutexUnlock (cache_lock);
+}
+
+static void
+free_lock (void)
+{
+  FcMutex *lock;
+  lock = fc_atomic_ptr_get (&cache_lock);
+  if (lock && fc_atomic_ptr_cmpexch (&cache_lock, lock, NULL)) {
+    FcMutexFinish (lock);
+    free (lock);
+  }
+}
+
+
+
 /*
  * Generate a random level number, distributed
  * so that each level is 1/4 as likely as the one before
@@ -504,6 +543,8 @@ FcCacheFini (void)
     for (i = 0; i < FC_CACHE_MAX_LEVEL; i++)
 	assert (fcCacheChains[i] == NULL);
     assert (fcCacheMaxLevel == 0);
+
+    free_lock ();
 }
 
 static FcBool
