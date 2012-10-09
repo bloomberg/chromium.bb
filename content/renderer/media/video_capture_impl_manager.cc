@@ -63,7 +63,9 @@ void VideoCaptureImplManager::FreeDevice(VideoCaptureImpl* vc) {
 
 VideoCaptureImplManager::~VideoCaptureImplManager() {
   thread_.Stop();
-  STLDeleteContainerPairSecondPointers(devices_.begin(), devices_.end());
+  // TODO(wjia): uncomment the line below after collecting enough info for
+  // crbug.com/152418.
+  // STLDeleteContainerPairSecondPointers(devices_.begin(), devices_.end());
 }
 
 VideoCaptureImplManager::Device::Device(
