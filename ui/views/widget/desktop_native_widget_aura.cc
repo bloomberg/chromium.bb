@@ -45,6 +45,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
 
 void DesktopNativeWidgetAura::InitNativeWidget(
     const Widget::InitParams& params) {
+  window_->set_user_data(this);
   window_->SetTransparent(true);
   window_->Init(params.layer_type);
   window_->Show();
@@ -373,19 +374,10 @@ void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
-  // This used to have the comment "This space intentionally left
-  // blank," except that alerting the input method of focus events is actually
-  // really important because input methods directly call InsertChar() on
-  // widgets instead of going through normal ui::Events.
-  //
-  // TODO(erg): Check that my understanding of the above is correct.
-  GetWidget()->GetInputMethod()->OnFocus();
   native_widget_delegate_->OnNativeFocus(old_focused_window);
 }
 
 void DesktopNativeWidgetAura::OnBlur() {
-  GetWidget()->GetInputMethod()->OnBlur();
-
   native_widget_delegate_->OnNativeBlur(
       window_->GetFocusManager()->GetFocusedWindow());
 }

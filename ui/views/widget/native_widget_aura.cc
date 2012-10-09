@@ -953,13 +953,13 @@ NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
-  return reinterpret_cast<NativeWidgetAura*>(native_view->user_data());
+  return reinterpret_cast<NativeWidgetPrivate*>(native_view->user_data());
 }
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow native_window) {
-  return reinterpret_cast<NativeWidgetAura*>(native_window->user_data());
+  return reinterpret_cast<NativeWidgetPrivate*>(native_window->user_data());
 }
 
 // static
@@ -981,7 +981,7 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* children) {
   {
     // Code expects widget for |native_view| to be added to |children|.
-    NativeWidgetAura* native_widget = static_cast<NativeWidgetAura*>(
+    NativeWidgetPrivate* native_widget = static_cast<NativeWidgetPrivate*>(
         GetNativeWidgetForNativeView(native_view));
     if (native_widget && native_widget->GetWidget())
       children->insert(native_widget->GetWidget());

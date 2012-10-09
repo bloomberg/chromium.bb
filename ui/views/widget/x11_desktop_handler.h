@@ -10,6 +10,7 @@
 #undef RootWindow
 
 #include "base/message_loop.h"
+#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/env_observer.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
@@ -26,8 +27,10 @@ namespace views {
 // A singleton that owns global objects related to the desktop and listens for
 // X11 events on the X11 root window. Destroys itself when aura::Env is
 // deleted.
-class VIEWS_EXPORT X11DesktopHandler : public MessageLoop::Dispatcher,
-                                       public aura::EnvObserver {
+class VIEWS_EXPORT X11DesktopHandler
+    : public MessageLoop::Dispatcher,
+      public aura::EnvObserver,
+      public aura::client::ActivationChangeObserver {
  public:
   // Returns the singleton handler.
   static X11DesktopHandler* get();
@@ -45,6 +48,10 @@ class VIEWS_EXPORT X11DesktopHandler : public MessageLoop::Dispatcher,
   // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
   virtual void OnWillDestroyEnv() OVERRIDE;
+
+  // Overridden from aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* active,
+                                 aura::Window* old_active) OVERRIDE;
 
  private:
   explicit X11DesktopHandler();
