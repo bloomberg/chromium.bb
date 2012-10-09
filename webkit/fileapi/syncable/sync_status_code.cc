@@ -8,7 +8,7 @@
 
 namespace fileapi {
 
-SyncStatusCode LevelDBStatusToSyncStatusCode(leveldb::Status status) {
+SyncStatusCode LevelDBStatusToSyncStatusCode(const leveldb::Status& status) {
   if (status.ok())
     return SYNC_STATUS_OK;
   else if (status.IsNotFound())

@@ -5,6 +5,8 @@
 #ifndef WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
 #define WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
 
+#include "webkit/fileapi/fileapi_export.h"
+
 namespace leveldb {
 class Status;
 }
@@ -38,7 +40,8 @@ enum SyncStatusCode {
   SYNC_DATABASE_ERROR_UNKNOWN = -19,
 };
 
-SyncStatusCode LevelDBStatusToSyncStatusCode(leveldb::Status status);
+FILEAPI_EXPORT SyncStatusCode LevelDBStatusToSyncStatusCode(
+    const leveldb::Status& status);
 
 }  // namespace fileapi
 
