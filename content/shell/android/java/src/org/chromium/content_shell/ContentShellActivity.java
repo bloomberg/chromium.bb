@@ -160,5 +160,11 @@ public class ContentShellActivity extends Activity {
         AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS = R.dimen.link_preview_overlay_radius;
         AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY = R.drawable.popup_zoomer_overlay;
         AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION = R.string.accessibility_content_view;
+        AppResource.STRING_MEDIA_PLAYER_MESSAGE_PLAYBACK_ERROR =
+                R.string.media_player_error_text_invalid_progressive_playback;
+        AppResource.STRING_MEDIA_PLAYER_MESSAGE_UNKNOWN_ERROR =
+                R.string.media_player_error_text_unknown;
+        AppResource.STRING_MEDIA_PLAYER_ERROR_BUTTON = R.string.media_player_error_button;
+        AppResource.STRING_MEDIA_PLAYER_ERROR_TITLE = R.string.media_player_error_title;
     }
 }
