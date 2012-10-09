@@ -13,32 +13,36 @@
 
 namespace views {
 
-void MenuConfig::Init() {
-  text_color = ui::NativeTheme::instance()->GetSystemColor(
+// static
+MenuConfig* MenuConfig::Create() {
+  MenuConfig* config = new MenuConfig();
+  config->text_color = ui::NativeTheme::instance()->GetSystemColor(
       ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
-  submenu_horizontal_margin_size = 0;
-  submenu_vertical_margin_size = 0;
-  submenu_horizontal_inset = 1;
+  config->submenu_horizontal_margin_size = 0;
+  config->submenu_vertical_margin_size = 0;
+  config->submenu_horizontal_inset = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  arrow_to_edge_padding = 20;
-  icon_to_label_padding = 4;
-  arrow_width = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia()->width();
+  config->arrow_to_edge_padding = 20;
+  config->icon_to_label_padding = 4;
+  config->arrow_width = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia()->width();
   const gfx::ImageSkia* check = rb.GetImageNamed(IDR_MENU_CHECK).ToImageSkia();
   // Add 4 to force some padding between check and label.
-  check_width = check->width() + 4;
-  check_height = check->height();
-  item_left_margin = 4;
-  item_min_height = 29;
-  separator_height = 15;
-  separator_spacing_height = 7;
-  separator_lower_height = 8;
-  separator_upper_height = 8;
-  font = rb.GetFont(ResourceBundle::BaseFont);
-  label_to_arrow_padding = 20;
-  label_to_accelerator_padding = 20;
-  always_use_icon_to_label_padding = true;
-  align_arrow_and_shortcut = true;
-  offset_context_menus = true;
+  config->check_width = check->width() + 4;
+  config->check_height = check->height();
+  config->item_left_margin = 4;
+  config->item_min_height = 29;
+  config->separator_height = 15;
+  config->separator_spacing_height = 7;
+  config->separator_lower_height = 8;
+  config->separator_upper_height = 8;
+  config->font = rb.GetFont(ResourceBundle::BaseFont);
+  config->label_to_arrow_padding = 20;
+  config->label_to_accelerator_padding = 20;
+  config->always_use_icon_to_label_padding = true;
+  config->align_arrow_and_shortcut = true;
+  config->offset_context_menus = true;
+
+  return config;
 }
 
 }  // namespace views

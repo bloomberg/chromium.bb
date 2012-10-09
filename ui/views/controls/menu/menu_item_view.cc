@@ -219,7 +219,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     CreateSubmenu();
   DCHECK_GE(submenu_->child_count(), index);
   if (type == SEPARATOR) {
-    submenu_->AddChildViewAt(new MenuSeparator(this, separator_style), index);
+    submenu_->AddChildViewAt(new MenuSeparator(separator_style), index);
     return NULL;
   }
   MenuItemView* item = new MenuItemView(this, item_id, type);
@@ -530,7 +530,7 @@ void MenuItemView::Layout() {
       x -= width - kChildXPadding;
     }
     // Position |icon_view|.
-    const MenuConfig& config = GetMenuConfig();
+    const MenuConfig& config = MenuConfig::instance();
     if (icon_view_) {
       icon_view_->SizeToPreferredSize();
       gfx::Size size = icon_view_->GetPreferredSize();
@@ -548,14 +548,6 @@ void MenuItemView::SetMargins(int top_margin, int bottom_margin) {
 
   // invalidate GetPreferredSize() cache
   pref_size_.SetSize(0,0);
-}
-
-const MenuConfig& MenuItemView::GetMenuConfig() const {
-  const MenuItemView* root_menu_item = GetRootMenuItem();
-  if (root_menu_item->menu_config_.get())
-    return *(root_menu_item->menu_config_);
-
- return MenuConfig::instance();
 }
 
 MenuItemView::MenuItemView(MenuItemView* parent,
@@ -594,7 +586,7 @@ std::string MenuItemView::GetClassName() const {
 // This is invoked prior to Running a menu.
 void MenuItemView::UpdateMenuPartSizes() {
   MenuConfig::Reset();
-  const MenuConfig& config = GetMenuConfig();
+  const MenuConfig& config = MenuConfig::instance();
 
   item_right_margin_ = config.label_to_arrow_padding + config.arrow_width +
                        config.arrow_to_edge_padding;
@@ -614,7 +606,7 @@ void MenuItemView::UpdateMenuPartSizes() {
   if (config.render_gutter)
     label_start_ += config.gutter_width + config.gutter_to_label;
 
-  MenuItemView menu_item(this, 0, NORMAL);
+  MenuItemView menu_item(NULL);
   menu_item.SetTitle(ASCIIToUTF16("blah"));  // Text doesn't matter here.
   pref_menu_height_ = menu_item.GetPreferredSize().height();
 }
@@ -672,7 +664,8 @@ int MenuItemView::GetDrawStringFlags() {
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
 
   if (has_mnemonics_) {
-    if (GetMenuConfig().show_mnemonics || GetRootMenuItem()->show_mnemonics_) {
+    if (MenuConfig::instance().show_mnemonics ||
+        GetRootMenuItem()->show_mnemonics_) {
       flags |= gfx::Canvas::SHOW_PREFIX;
     } else {
       flags |= gfx::Canvas::HIDE_PREFIX;
@@ -685,7 +678,7 @@ const gfx::Font& MenuItemView::GetFont() {
   // Check for item-specific font.
   const MenuDelegate* delegate = GetDelegate();
   return delegate ?
-      delegate->GetLabelFont(GetCommand()) : GetMenuConfig().font;
+      delegate->GetLabelFont(GetCommand()) : MenuConfig::instance().font;
 }
 
 void MenuItemView::AddEmptyMenus() {
@@ -733,7 +726,7 @@ void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
   int available_height = height() - GetTopMargin() - GetBottomMargin();
   int max_accel_width =
       parent_menu_item_->GetSubmenu()->max_accelerator_width();
-  const MenuConfig& config = GetMenuConfig();
+  const MenuConfig& config = MenuConfig::instance();
   int accel_right_margin = config.align_arrow_and_shortcut ?
                            config.arrow_to_edge_padding :  item_right_margin_;
   gfx::Rect accel_bounds(width() - accel_right_margin - max_accel_width,
@@ -770,8 +763,8 @@ int MenuItemView::GetTopMargin() {
 
   MenuItemView* root = GetRootMenuItem();
   return root && root->has_icons_
-      ? GetMenuConfig().item_top_margin :
-        GetMenuConfig().item_no_icon_top_margin;
+      ? MenuConfig::instance().item_top_margin :
+        MenuConfig::instance().item_no_icon_top_margin;
 }
 
 int MenuItemView::GetBottomMargin() {
@@ -780,8 +773,8 @@ int MenuItemView::GetBottomMargin() {
 
   MenuItemView* root = GetRootMenuItem();
   return root && root->has_icons_
-      ? GetMenuConfig().item_bottom_margin :
-        GetMenuConfig().item_no_icon_bottom_margin;
+      ? MenuConfig::instance().item_bottom_margin :
+        MenuConfig::instance().item_no_icon_bottom_margin;
 }
 
 gfx::Size MenuItemView::GetChildPreferredSize() {
@@ -836,7 +829,7 @@ MenuItemView::MenuItemDimensions MenuItemView::GetPreferredDimensions() {
   dimensions.height = std::max(dimensions.height,
       font.GetHeight() + GetBottomMargin() + GetTopMargin());
   dimensions.height = std::max(dimensions.height,
-      GetMenuConfig().item_min_height);
+      MenuConfig::instance().item_min_height);
   return dimensions;
 }
 
@@ -852,7 +845,7 @@ string16 MenuItemView::GetAcceleratorText() {
     return string16();
   }
 
-  if(!GetMenuConfig().show_accelerators)
+  if(!MenuConfig::instance().show_accelerators)
     return string16();
 
   ui::Accelerator accelerator;

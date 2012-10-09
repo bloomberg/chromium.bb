@@ -17,7 +17,7 @@
 namespace views {
 
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
-  const MenuConfig& config = parent_menu_item_->GetMenuConfig();
+  const MenuConfig& config = MenuConfig::instance();
   // The gutter is rendered before the background.
   int start_x = 0;
   const ui::NativeTheme* theme = ui::NativeTheme::instance();
@@ -42,7 +42,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
 
 gfx::Size MenuSeparator::GetPreferredSize() {
   return gfx::Size(10,  // Just in case we're the only item in a menu.
-                   parent_menu_item_->GetMenuConfig().separator_height);
+                   MenuConfig::instance().separator_height);
 }
 
 }  // namespace views

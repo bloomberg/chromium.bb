@@ -19,7 +19,7 @@
 namespace views {
 
 void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
-  const MenuConfig& config = GetMenuConfig();
+  const MenuConfig& config = MenuConfig::instance();
   bool render_selection =
       (mode == PB_NORMAL && IsSelected() &&
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&

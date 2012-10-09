@@ -128,7 +128,11 @@ void MenuDelegate::WillHideMenu(MenuItemView* menu) {
 }
 
 Border* MenuDelegate::CreateMenuBorder() {
-  return NULL;
+  return Border::CreateEmptyBorder(
+      MenuConfig::instance().submenu_vertical_margin_size,
+      MenuConfig::instance().submenu_horizontal_margin_size,
+      MenuConfig::instance().submenu_vertical_margin_size,
+      MenuConfig::instance().submenu_horizontal_margin_size);
 }
 
 Background* MenuDelegate::CreateMenuBackground() {

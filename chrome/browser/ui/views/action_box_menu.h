@@ -18,7 +18,6 @@ class ActionBoxMenuModel;
 namespace views {
 class Background;
 class Border;
-struct MenuConfig;
 class MenuItemView;
 class MenuRunner;
 class View;
@@ -65,8 +64,6 @@ class ActionBoxMenu : public views::MenuDelegate,
 
   // Populates |root_| with all the child menu items from the |model_|.
   void PopulateMenu();
-
-  void CustomizeMenu(views::MenuConfig* menu_config);
 
   Browser* browser_;
 

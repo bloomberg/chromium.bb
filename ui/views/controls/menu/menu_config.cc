@@ -51,7 +51,6 @@ MenuConfig::MenuConfig()
     item_top_margin = item_no_icon_top_margin = 12;
     item_bottom_margin = item_no_icon_bottom_margin = 13;
   }
-  Init();
 }
 
 MenuConfig::~MenuConfig() {}
@@ -64,7 +63,7 @@ void MenuConfig::Reset() {
 // static
 const MenuConfig& MenuConfig::instance() {
   if (!config_instance)
-    config_instance = new MenuConfig();
+    config_instance = Create();
   return *config_instance;
 }
 

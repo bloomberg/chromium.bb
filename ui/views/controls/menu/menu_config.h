@@ -123,8 +123,9 @@ struct VIEWS_EXPORT MenuConfig {
   bool offset_context_menus;
 
  private:
-  // Configures a MenuConfig as appropriate for the current platform.
-  void Init();
+  // Creates and configures a new MenuConfig as appropriate for the current
+  // platform.
+  static MenuConfig* Create();
 };
 
 }  // namespace views

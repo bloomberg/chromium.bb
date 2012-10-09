@@ -1556,21 +1556,19 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
 
   int x, y;
 
-  const MenuConfig& menu_config = item->GetMenuConfig();
-
   if (!item->GetParentMenuItem()) {
     // First item, position relative to initial location.
     x = state_.initial_bounds.x();
 
     // Offsets for context menu prevent menu items being selected by
     // simply opening the menu (bug 142992).
-    if (menu_config.offset_context_menus && state_.context_menu)
+    if (MenuConfig::instance().offset_context_menus && state_.context_menu)
       x += 1;
 
     y = state_.initial_bounds.bottom();
     if (state_.anchor == MenuItemView::TOPRIGHT) {
       x = x + state_.initial_bounds.width() - pref.width();
-      if (menu_config.offset_context_menus && state_.context_menu)
+      if (MenuConfig::instance().offset_context_menus && state_.context_menu)
         x -= 1;
     } else if (state_.anchor == MenuItemView::BOTTOMCENTER) {
       x = x - (pref.width() - state_.initial_bounds.width()) / 2;
@@ -1647,7 +1645,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
     }
     if (state_.monitor_bounds.width() != 0 &&
-        menu_config.offset_context_menus && state_.context_menu) {
+        MenuConfig::instance().offset_context_menus && state_.context_menu) {
       if (x + pref.width() > state_.monitor_bounds.right())
         x = state_.initial_bounds.x() - pref.width() - 1;
       if (x < state_.monitor_bounds.x())
@@ -1665,7 +1663,8 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     bool layout_is_rtl = base::i18n::IsRTL();
     bool create_on_the_right = (prefer_leading && !layout_is_rtl) ||
                                (!prefer_leading && layout_is_rtl);
-    int submenu_horizontal_inset = menu_config.submenu_horizontal_inset;
+    int submenu_horizontal_inset =
+            MenuConfig::instance().submenu_horizontal_inset;
 
     if (create_on_the_right) {
       x = item_loc.x() + item->width() - submenu_horizontal_inset;
@@ -1687,7 +1686,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
         x = item_loc.x() + item->width() - submenu_horizontal_inset;
       }
     }
-    y = item_loc.y() - menu_config.submenu_vertical_margin_size;
+    y = item_loc.y() - MenuConfig::instance().submenu_vertical_margin_size;
     if (state_.monitor_bounds.width() != 0) {
       pref.set_height(std::min(pref.height(), state_.monitor_bounds.height()));
       if (y + pref.height() > state_.monitor_bounds.bottom())

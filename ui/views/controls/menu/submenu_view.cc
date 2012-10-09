@@ -152,7 +152,7 @@ gfx::Size SubmenuView::GetPreferredSize() {
   }
   if (max_accelerator_width_ > 0) {
     max_accelerator_width_ +=
-        GetMenuItem()->GetMenuConfig().label_to_accelerator_padding;
+        MenuConfig::instance().label_to_accelerator_padding;
   }
   gfx::Insets insets = GetInsets();
   return gfx::Size(
