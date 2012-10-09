@@ -906,7 +906,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
                           const int tab_index,
                           Browser* browser,
                           bool schedule_load) {
-    DCHECK(!tab.navigations.empty());
+    // It's possible (particularly for foreign sessions) to receive a tab
+    // without valid navigations. In that case, just skip it.
+    // See crbug.com/154129.
+    if (tab.navigations.empty())
+      return NULL;
     int selected_index = tab.current_navigation_index;
     selected_index = std::max(
         0,

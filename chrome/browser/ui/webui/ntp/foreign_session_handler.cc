@@ -241,6 +241,10 @@ void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
       LOG(ERROR) << "Failed to load foreign tab.";
       return;
     }
+    if (tab->navigations.size() == 0) {
+      LOG(ERROR) << "Foreign tab no longer has valid navigations.";
+      return;
+    }
     WindowOpenDisposition disposition =
         web_ui_util::GetDispositionFromClick(args, 3);
     SessionRestore::RestoreForeignSessionTab(
