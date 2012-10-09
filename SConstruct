@@ -274,16 +274,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'sysinfo', default=not GetOption('brief_comstr'),
     desc='Print verbose system information')
 
-  BitFromArgument(env, 'disable_dynamic_plugin_loading', default=False,
-    desc='Use the version of NaCl that is built into Chromium.  '
-      'Disables use of --register-pepper-plugins, so that the '
-      'externally-built NaCl plugin and sel_ldr are not used.')
-
-  BitFromArgument(env, 'override_chrome_irt', default=False,
-    desc='When using the version of NaCl that is built into Chromium, '
-      'this prevents use of the IRT that is built into Chromium, and uses '
-      'a newly-built IRT library.')
-
   BitFromArgument(env, 'disable_flaky_tests', default=False,
     desc='Do not run potentially flaky tests - used on Chrome bots')
 

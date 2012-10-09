@@ -215,7 +215,6 @@ def BuildAndTest(options):
   # special case.
   cmd = scons + ['--verbose', '-k', 'platform=x86-%d' % bits,
       '--mode=opt-host,nacl,nacl_irt_test',
-      'disable_dynamic_plugin_loading=1',
       'chrome_browser_path=%s' % chrome_filename,
   ]
   if not options.integration_bot and not options.morenacl_bot:
