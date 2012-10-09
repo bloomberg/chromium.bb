@@ -320,18 +320,19 @@ unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
 }
 
 WebKit::WebVideoFrame* WebMediaPlayerMS::getCurrentFrame() {
-  DVLOG(1) << "WebMediaPlayerMS::getCurrentFrame";
+  DVLOG(3) << "WebMediaPlayerMS::getCurrentFrame";
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!pending_repaint_);
-  pending_repaint_ = true;
-  if (current_frame_.get())
+  if (current_frame_.get()) {
+    pending_repaint_ = true;
     return new webkit_media::WebVideoFrameImpl(current_frame_);
+  }
   return NULL;
 }
 
 void WebMediaPlayerMS::putCurrentFrame(
     WebKit::WebVideoFrame* web_video_frame) {
-  DVLOG(1) << "WebMediaPlayerMS::putCurrentFrame";
+  DVLOG(3) << "WebMediaPlayerMS::putCurrentFrame";
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(pending_repaint_);
   pending_repaint_ = false;
