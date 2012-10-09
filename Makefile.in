@@ -167,6 +167,9 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_17 = \
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	-llog
 
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_18 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@        -llog
+
 noinst_PROGRAMS =
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_doc_DATA) \
@@ -1581,9 +1584,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/libbreakpad.a
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_SOURCES = 
-@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDFLAGS = \
-@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN'
-
+@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDFLAGS =  \
+@LINUX_HOST_TRUE@	-Wl,-rpath,'$$ORIGIN' $(am__append_18)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
 

@@ -388,7 +388,7 @@ if ANDROID_HOST
 src_client_linux_linux_client_unittest_shlib_SOURCES += \
 	src/common/android/breakpad_getcontext_unittest.cc
 src_client_linux_linux_client_unittest_shlib_LDFLAGS += \
-	-llog
+	-llog -lm
 endif
 
 src_client_linux_linux_client_unittest_shlib_DEPENDENCIES = \
@@ -399,6 +399,10 @@ src_client_linux_linux_client_unittest_shlib_DEPENDENCIES = \
 src_client_linux_linux_client_unittest_SOURCES =
 src_client_linux_linux_client_unittest_LDFLAGS = \
 	-Wl,-rpath,'$$ORIGIN'
+if ANDROID_HOST
+src_client_linux_linux_client_unittest_LDFLAGS += \
+        -llog
+endif
 
 src_client_linux_linux_client_unittest_LDADD = \
 	src/client/linux/linux_client_unittest_shlib

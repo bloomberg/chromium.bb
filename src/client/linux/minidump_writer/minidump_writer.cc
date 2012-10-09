@@ -983,9 +983,6 @@ class MinidumpWriter {
   }
 
   bool WriteDSODebugStream(MDRawDirectory* dirent) {
-#if defined(__ANDROID__)
-    return false;
-#else
     ElfW(Phdr)* phdr = reinterpret_cast<ElfW(Phdr) *>(dumper_->auxv()[AT_PHDR]);
     char* base;
     int phnum = dumper_->auxv()[AT_PHNUM];
@@ -1106,7 +1103,6 @@ class MinidumpWriter {
     delete[] dso_debug_data;
 
     return true;
-#endif
   }
 
  private:
