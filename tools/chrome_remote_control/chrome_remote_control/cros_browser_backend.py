@@ -70,6 +70,9 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
       args.extend(extra_browser_args)
     args.extend(options.extra_browser_args)
     args.extend(self._common_chrome_browser_args)
+    def EscapeIfNeeded(arg):
+      return arg.replace(' ', '" "')
+    args = [EscapeIfNeeded(arg) for arg in args]
     prevent_output = not options.show_stdout
 
     # Stop old X.
@@ -146,14 +149,12 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
 class SSHReverseForwarder(object):
   def __init__(self, cri, host_port):
     self._proc = None
+    self._host_port = host_port
 
-    # TODO(nduca): Try to pick a remote port that is free in a smater way. This
-    # is idiotic.
-    self._remote_port = cri.GetRemotePort()
     self._proc = subprocess.Popen(
       cri.FormSSHCommandLine(['sleep', '99999999999'],
                              ['-R%i:localhost:%i' %
-                              (self._remote_port, host_port)]),
+                              (host_port, host_port)]),
       stdout=subprocess.PIPE,
       stderr=subprocess.PIPE,
       stdin=subprocess.PIPE,
@@ -166,7 +167,7 @@ class SSHReverseForwarder(object):
   @property
   def url(self):
     assert self._proc
-    return 'http://localhost:%i' % self._remote_port
+    return 'http://localhost:%i' % self._host_port
 
   def Close(self):
     if self._proc:
