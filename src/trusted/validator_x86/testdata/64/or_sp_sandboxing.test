@@ -1,0 +1,28 @@
+@hex:
+  # mov %esp, %esp
+  89 e4
+  # add %r15, %rsp
+  4c 01 fc
+  
+  # mov %esp, %esp
+  89 e4
+  # or %r15, %rsp
+  4c 09 fc
+  
+  # mov %esp, %esp
+  89 e4
+  # or %r15, %rsp
+  49 0b e7
+@rval:
+  VALIDATOR: Checking jump targets: 0 to f
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 89 e4                                        mov %esp, %esp
+  0000000000000002: 4c 01 fc                                     add %rsp, %r15
+  0000000000000005: 89 e4                                        mov %esp, %esp
+  0000000000000007: 4c 09 fc                                     or %rsp, %r15
+  000000000000000a: 89 e4                                        mov %esp, %esp
+  000000000000000c: 49 0b e7                                     or %rsp, %r15
+@rdfa_output:
+  return code: 0

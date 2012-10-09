@@ -137,10 +137,14 @@
     (b_0100_1000 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
     @process_0_operands;
 
-  # Special instructions used for %rbp sandboxing
+  # Special instructions used for %rsp sandboxing
   rsp_sandboxing =
     (b_0100_11x0 0x01 0xfc            | # add %r15,%rsp
-     b_0100_10x1 0x03 0xe7            | # add %r15,%rbp
+     b_0100_10x1 0x03 0xe7            | # add %r15,%rsp
+     # OR can be used as well, see
+     # http://code.google.com/p/nativeclient/issues/detail?id=3070
+     b_0100_11x0 0x09 0xfc            | # or %r15,%rsp
+     b_0100_10x1 0x0b 0xe7            | # or %r15,%rsp
      0x4a 0x8d 0x24 0x3c)               # lea (%rsp,%r15,1),%rsp
     @{ if (restricted_register == REG_RSP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
