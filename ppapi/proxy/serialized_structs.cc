@@ -8,6 +8,7 @@
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_rect.h"
+#include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
 namespace proxy {
@@ -26,13 +27,9 @@ SerializedFontDescription::SerializedFontDescription()
 SerializedFontDescription::~SerializedFontDescription() {}
 
 void SerializedFontDescription::SetFromPPFontDescription(
-    Dispatcher* dispatcher,
-    const PP_FontDescription_Dev& desc,
-    bool source_owns_ref) {
-  if (source_owns_ref)
-    face = SerializedVarSendInput(dispatcher, desc.face);
-  else
-    SerializedVarReturnValue(&face).Return(dispatcher, desc.face);
+    const PP_FontDescription_Dev& desc) {
+  StringVar* string_var = StringVar::FromPPVar(desc.face);
+  face = string_var ? string_var->value() : std::string();
 
   family = desc.family;
   size = desc.size;
@@ -44,17 +41,8 @@ void SerializedFontDescription::SetFromPPFontDescription(
 }
 
 void SerializedFontDescription::SetToPPFontDescription(
-    Dispatcher* dispatcher,
-    PP_FontDescription_Dev* desc,
-    bool dest_owns_ref) const {
-  if (dest_owns_ref) {
-    ReceiveSerializedVarReturnValue face_return_value;
-    *static_cast<SerializedVar*>(&face_return_value) = face;
-    desc->face = face_return_value.Return(dispatcher);
-  } else {
-    desc->face = SerializedVarReceiveInput(face).Get(dispatcher);
-  }
-
+    PP_FontDescription_Dev* desc) const {
+  desc->face = StringVar::StringToPPVar(face);
   desc->family = static_cast<PP_FontFamily_Dev>(family);
   desc->size = size;
   desc->weight = static_cast<PP_FontWeight_Dev>(weight);

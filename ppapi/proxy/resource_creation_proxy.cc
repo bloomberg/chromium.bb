@@ -10,6 +10,7 @@
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/flash_device_id_resource.h"
+#include "ppapi/proxy/flash_font_file_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
@@ -317,6 +318,14 @@ PP_Resource ResourceCreationProxy::CreateFileChooser(
 
 PP_Resource ResourceCreationProxy::CreateFlashDeviceID(PP_Instance instance) {
   return (new FlashDeviceIDResource(GetConnection(), instance))->GetReference();
+}
+
+PP_Resource ResourceCreationProxy::CreateFlashFontFile(
+    PP_Instance instance,
+    const PP_FontDescription_Dev* description,
+    PP_PrivateFontCharset charset) {
+  return (new FlashFontFileResource(
+      GetConnection(), instance, description, charset))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashMenu(

@@ -33,6 +33,7 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/ppb_url_request_info_api.h"
@@ -60,6 +61,8 @@ IPC::PlatformFileForTransit PlatformFileToPlatformFileForTransit(
 }
 
 void InvokePrinting(PP_Instance instance) {
+  ProxyAutoLock lock;
+
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (dispatcher) {
     dispatcher->Send(new PpapiHostMsg_PPBFlash_InvokePrinting(
@@ -162,7 +165,7 @@ PP_Bool PPB_Flash_Proxy::DrawGlyphs(PP_Instance instance,
 
   PPBFlash_DrawGlyphs_Params params;
   params.image_data = image_data->host_resource();
-  params.font_desc.SetFromPPFontDescription(dispatcher(), *font_desc, true);
+  params.font_desc.SetFromPPFontDescription(*font_desc);
   params.color = color;
   params.position = *position;
   params.clip = *clip;
@@ -631,12 +634,12 @@ void PPB_Flash_Proxy::OnHostMsgDrawGlyphs(
   if (enter.failed())
     return;
 
-  PP_FontDescription_Dev font_desc;
-  params.font_desc.SetToPPFontDescription(dispatcher(), &font_desc, false);
-
   if (params.glyph_indices.size() != params.glyph_advances.size() ||
       params.glyph_indices.empty())
     return;
+
+  PP_FontDescription_Dev font_desc;
+  params.font_desc.SetToPPFontDescription(&font_desc);
 
   *result = enter.functions()->GetFlashAPI()->DrawGlyphs(
       0,  // Unused instance param.
@@ -647,6 +650,9 @@ void PPB_Flash_Proxy::OnHostMsgDrawGlyphs(
       static_cast<uint32_t>(params.glyph_indices.size()),
       const_cast<uint16_t*>(&params.glyph_indices[0]),
       const_cast<PP_Point*>(&params.glyph_advances[0]));
+
+  // SetToPPFontDescription() creates a var which is owned by the caller.
+  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(font_desc.face);
 }
 
 void PPB_Flash_Proxy::OnHostMsgGetProxyForURL(PP_Instance instance,

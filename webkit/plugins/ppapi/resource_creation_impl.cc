@@ -131,6 +131,13 @@ PP_Resource ResourceCreationImpl::CreateFlashDeviceID(PP_Instance instance) {
   return 0;  // Not supported in-process.
 }
 
+PP_Resource ResourceCreationImpl::CreateFlashFontFile(
+    PP_Instance instance,
+    const PP_FontDescription_Dev* description,
+    PP_PrivateFontCharset charset) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateFlashMenu(
     PP_Instance instance,
     const PP_Flash_Menu* menu_data) {

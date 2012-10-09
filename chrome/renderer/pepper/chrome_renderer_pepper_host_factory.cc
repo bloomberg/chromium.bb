@@ -4,14 +4,21 @@
 
 #include "chrome/renderer/pepper/chrome_renderer_pepper_host_factory.h"
 
+#include "base/logging.h"
+#include "chrome/renderer/pepper/pepper_flash_font_file_host.h"
+#include "content/public/renderer/renderer_ppapi_host.h"
+#include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 
 using ppapi::host::ResourceHost;
 
 namespace chrome {
 
-ChromeRendererPepperHostFactory::ChromeRendererPepperHostFactory() {
+ChromeRendererPepperHostFactory::ChromeRendererPepperHostFactory(
+    content::RendererPpapiHost* host)
+    : host_(host) {
 }
 
 ChromeRendererPepperHostFactory::~ChromeRendererPepperHostFactory() {
@@ -23,7 +30,25 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
     const ppapi::proxy::ResourceMessageCallParams& params,
     PP_Instance instance,
     const IPC::Message& message) {
-  // There are no Chrome-side implementations of resources.
+  DCHECK(host == host_->GetPpapiHost());
+
+  // Make sure the plugin is giving us a valid instance for this resource.
+  if (!host_->IsValidInstance(instance))
+    return scoped_ptr<ResourceHost>();
+
+  if (host_->GetPpapiHost()->permissions().HasPermission(
+      ppapi::PERMISSION_FLASH)) {
+    switch (message.type()) {
+      case PpapiHostMsg_FlashFontFile_Create::ID:
+        PpapiHostMsg_FlashFontFile_Create::Param param;
+        if (PpapiHostMsg_FlashFontFile_Create::Read(&message, &param)) {
+          return scoped_ptr<ResourceHost>(new PepperFlashFontFileHost(
+              host_, instance, params.pp_resource(), param.a, param.b));
+        }
+        break;
+    }
+  }
+
   return scoped_ptr<ResourceHost>();
 }
 

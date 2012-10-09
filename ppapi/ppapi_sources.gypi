@@ -90,10 +90,12 @@
 
       # Private interfaces.
       'c/private/pp_file_handle.h',
+      'c/private/pp_private_font_charset.h',
       'c/private/ppb_content_decryptor_private.h',
       'c/private/ppb_flash.h',
       'c/private/ppb_flash_clipboard.h',
       'c/private/ppb_flash_file.h',
+      'c/private/ppb_flash_font_file.h',
       'c/private/ppb_flash_fullscreen.h',
       'c/private/ppb_flash_menu.h',
       'c/private/ppb_flash_message_loop.h',
@@ -263,6 +265,8 @@
       'cpp/private/flash_device_id.h',
       'cpp/private/flash_file.cc',
       'cpp/private/flash_file.h',
+      'cpp/private/flash_font_file.cc',
+      'cpp/private/flash_font_file.h',
       'cpp/private/flash_fullscreen.cc',
       'cpp/private/flash_fullscreen.h',
       'cpp/private/flash_menu.cc',

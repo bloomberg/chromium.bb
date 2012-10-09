@@ -31,6 +31,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_time.h"
+#include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -42,6 +43,7 @@
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
@@ -69,6 +71,7 @@ IPC_ENUM_TRAITS(PP_NetworkListType_Private)
 IPC_ENUM_TRAITS(PP_PrintOrientation_Dev)
 IPC_ENUM_TRAITS(PP_PrintOutputFormat_Dev)
 IPC_ENUM_TRAITS(PP_PrintScalingOption_Dev)
+IPC_ENUM_TRAITS(PP_PrivateFontCharset)
 IPC_ENUM_TRAITS(PP_TextInput_Type)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
@@ -1662,3 +1665,14 @@ IPC_MESSAGE_CONTROL4(PpapiPluginMsg_WebSocket_ClosedReply,
                      bool /* was_clean */,
                      unsigned short /* code */,
                      std::string /* reason */)
+
+#if !defined(OS_NACL) && !defined(NACL_WIN64)
+// Flash font file.
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FlashFontFile_Create,
+                     ppapi::proxy::SerializedFontDescription /* description */,
+                     PP_PrivateFontCharset /* charset */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashFontFile_GetFontTable,
+                     uint32_t /* table */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashFontFile_GetFontTableReply,
+                     std::string /* output */)
+#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)

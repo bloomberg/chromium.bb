@@ -15,6 +15,9 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/proxy_lock.h"
+#include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_pdf_api.h"
 
@@ -67,12 +70,14 @@ PP_Resource GetFontFileWithFallback(
     PP_Instance instance,
     const PP_FontDescription_Dev* description,
     PP_PrivateFontCharset charset) {
+  ProxyAutoLock lock;
+
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
 
   SerializedFontDescription desc;
-  desc.SetFromPPFontDescription(dispatcher, *description, true);
+  desc.SetFromPPFontDescription(*description);
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBPDF_GetFontFileWithFallback(
@@ -168,10 +173,13 @@ void PPB_PDF_Proxy::OnMsgGetFontFileWithFallback(
     int32_t charset,
     HostResource* result) {
   PP_FontDescription_Dev desc;
-  in_desc.SetToPPFontDescription(dispatcher(), &desc, false);
+  in_desc.SetToPPFontDescription(&desc);
   result->SetHostResource(instance,
       ppb_pdf_impl_->GetFontFileWithFallback(
           instance, &desc, static_cast<PP_PrivateFontCharset>(charset)));
+
+  // SetToPPFontDescription() creates a var which is owned by the caller.
+  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(desc.face);
 }
 
 void PPB_PDF_Proxy::OnMsgGetFontTableForPrivateFontFile(

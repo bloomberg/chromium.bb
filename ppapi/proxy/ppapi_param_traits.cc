@@ -521,7 +521,7 @@ void ParamTraits<ppapi::proxy::SerializedDirEntry>::Log(const param_type& p,
 void ParamTraits<ppapi::proxy::SerializedFontDescription>::Write(
     Message* m,
     const param_type& p) {
-  ParamTraits<ppapi::proxy::SerializedVar>::Write(m, p.face);
+  ParamTraits<std::string>::Write(m, p.face);
   ParamTraits<int32_t>::Write(m, p.family);
   ParamTraits<uint32_t>::Write(m, p.size);
   ParamTraits<int32_t>::Write(m, p.weight);
@@ -537,7 +537,7 @@ bool ParamTraits<ppapi::proxy::SerializedFontDescription>::Read(
     PickleIterator* iter,
     param_type* r) {
   return
-      ParamTraits<ppapi::proxy::SerializedVar>::Read(m, iter, &r->face) &&
+      ParamTraits<std::string>::Read(m, iter, &r->face) &&
       ParamTraits<int32_t>::Read(m, iter, &r->family) &&
       ParamTraits<uint32_t>::Read(m, iter, &r->size) &&
       ParamTraits<int32_t>::Read(m, iter, &r->weight) &&

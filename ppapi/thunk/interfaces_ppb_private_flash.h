@@ -50,6 +50,10 @@ PROXIED_IFACE(NoAPIName,
               PPB_FLASH_DEVICEID_INTERFACE_1_0,
               PPB_Flash_DeviceID_1_0)
 
+PROXIED_IFACE(NoAPIName,
+              PPB_FLASH_FONTFILE_INTERFACE_0_1,
+              PPB_Flash_FontFile_0_1)
+
 PROXIED_API(PPB_Flash_Menu)
 PROXIED_IFACE(PPB_Flash_Menu,
               PPB_FLASH_MENU_INTERFACE_0_2,

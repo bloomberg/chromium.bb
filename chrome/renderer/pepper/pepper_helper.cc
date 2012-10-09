@@ -23,7 +23,7 @@ void PepperHelper::DidCreatePepperPlugin(content::RendererPpapiHost* host) {
   // kind of filter-like system to allow dynamic additions.
   host->GetPpapiHost()->AddHostFactoryFilter(
       scoped_ptr<ppapi::host::HostFactory>(
-          new ChromeRendererPepperHostFactory));
+          new ChromeRendererPepperHostFactory(host)));
   host->GetPpapiHost()->AddInstanceMessageFilter(
       scoped_ptr<ppapi::host::InstanceMessageFilter>(
           new PepperFlashRendererMessageFilter(host)));

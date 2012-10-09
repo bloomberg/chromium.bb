@@ -5,17 +5,19 @@
 #ifndef CHROME_RENDERER_PEPPER_CHROME_RENDERER_PEPPER_HOST_FACTORY_H_
 #define CHROME_RENDERER_PEPPER_CHROME_RENDERER_PEPPER_HOST_FACTORY_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ppapi/host/host_factory.h"
-#include "ppapi/shared_impl/ppapi_permissions.h"
+
+namespace content {
+class RendererPpapiHost;
+}
 
 namespace chrome {
 
-class PepperInstanceStateAccessor;
-
 class ChromeRendererPepperHostFactory : public ppapi::host::HostFactory {
  public:
-  ChromeRendererPepperHostFactory();
+  explicit ChromeRendererPepperHostFactory(content::RendererPpapiHost* host);
   virtual ~ChromeRendererPepperHostFactory();
 
   // HostFactory.
@@ -26,6 +28,9 @@ class ChromeRendererPepperHostFactory : public ppapi::host::HostFactory {
       const IPC::Message& message) OVERRIDE;
 
  private:
+  // Not owned by this object.
+  content::RendererPpapiHost* host_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeRendererPepperHostFactory);
 };
 
