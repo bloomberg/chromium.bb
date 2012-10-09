@@ -317,6 +317,37 @@ TEST(ExceptionHandlerTest, RedeliveryToDefaultHandler) {
   ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGSEGV));
 }
 
+// Check that saving and restoring the signal handler with 'signal'
+// instead of 'sigaction' doesn't make the Breakpad signal handler
+// crash. See comments in ExceptionHandler::SignalHandler for full
+// details.
+TEST(ExceptionHandlerTest, RedeliveryOnBadSignalHandlerFlag) {
+  AutoTempDir temp_dir;
+  const pid_t child = fork();
+  if (child == 0) {
+    // Install the RaiseSIGKILL handler for SIGSEGV.
+    ASSERT_TRUE(InstallRaiseSIGKILL());
+
+    // Create a new exception handler, this installs a new SIGSEGV
+    // handler, after saving the old one.
+    ExceptionHandler handler(
+        MinidumpDescriptor(temp_dir.path()), NULL,
+        DoneCallbackReturnFalse, NULL, true, -1);
+
+    // Install the default SIGSEGV handler, saving the current one.
+    // Then re-install the current one with 'signal', this loses the
+    // SA_SIGINFO flag associated with the Breakpad handler.
+    sighandler_t old_handler = signal(SIGSEGV, SIG_DFL);
+    ASSERT_NE(old_handler, SIG_ERR);
+    ASSERT_NE(signal(SIGSEGV, old_handler), SIG_ERR);
+
+    // Crash with the exception handler in scope.
+    *reinterpret_cast<volatile int*>(NULL) = 0;
+  }
+  // SIGKILL means Breakpad's signal handler didn't crash.
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGKILL));
+}
+
 TEST(ExceptionHandlerTest, StackedHandlersDeliveredToTop) {
   AutoTempDir temp_dir;
 

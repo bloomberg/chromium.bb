@@ -292,6 +292,35 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
   // All the exception signals are blocked at this point.
   pthread_mutex_lock(&handler_stack_mutex_);
 
+  // Sometimes, Breakpad runs inside a process where some other buggy code
+  // saves and restores signal handlers temporarily with 'signal'
+  // instead of 'sigaction'. This loses the SA_SIGINFO flag associated
+  // with this function. As a consequence, the values of 'info' and 'uc'
+  // become totally bogus, generally inducing a crash.
+  //
+  // The following code tries to detect this case. When it does, it
+  // resets the signal handlers with sigaction + SA_SIGINFO and returns.
+  // This forces the signal to be thrown again, but this time the kernel
+  // will call the function with the right arguments.
+  struct sigaction cur_handler;
+  if (sigaction(sig, NULL, &cur_handler) == 0 &&
+      (cur_handler.sa_flags & SA_SIGINFO) == 0) {
+    // Reset signal handler with the right flags.
+    sigemptyset(&cur_handler.sa_mask);
+    sigaddset(&cur_handler.sa_mask, sig);
+
+    cur_handler.sa_sigaction = SignalHandler;
+    cur_handler.sa_flags = SA_ONSTACK | SA_SIGINFO;
+
+    if (sigaction(sig, &cur_handler, NULL) == -1) {
+      // When resetting the handler fails, try to reset the
+      // default one to avoid an infinite loop here.
+      signal(sig, SIG_DFL);
+    }
+    pthread_mutex_unlock(&handler_stack_mutex_);
+    return;
+  }
+
   bool handled = false;
   for (int i = handler_stack_->size() - 1; !handled && i >= 0; --i) {
     handled = (*handler_stack_)[i]->HandleSignal(sig, info, uc);
