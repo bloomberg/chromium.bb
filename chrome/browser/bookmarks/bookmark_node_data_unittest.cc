@@ -22,7 +22,8 @@ class BookmarkNodeDataTest : public testing::Test {
  public:
   BookmarkNodeDataTest()
       : ui_thread_(BrowserThread::UI, &loop_),
-        file_thread_(BrowserThread::FILE, &loop_) { }
+        file_thread_(BrowserThread::FILE, &loop_) {
+  }
 
  private:
   MessageLoop loop_;

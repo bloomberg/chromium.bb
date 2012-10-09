@@ -62,7 +62,6 @@ void BookmarkNode::SetTitle(const string16& title) {
   ui::TreeNode<BookmarkNode>::SetTitle(CollapseWhitespace(title, false));
 }
 
-
 bool BookmarkNode::IsVisible() const {
   return true;
 }
@@ -88,10 +87,10 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
                                                    const BookmarkNode*,
                                                    bool> {
  public:
-  explicit SortComparator(icu::Collator* collator) : collator_(collator) { }
+  explicit SortComparator(icu::Collator* collator) : collator_(collator) {}
 
-  // Returns true if lhs preceeds rhs.
-  bool operator() (const BookmarkNode* n1, const BookmarkNode* n2) {
+  // Returns true if |n1| preceeds |n2|.
+  bool operator()(const BookmarkNode* n1, const BookmarkNode* n2) {
     if (n1->type() == n2->type()) {
       // Types are the same, compare the names.
       if (!collator_)
@@ -591,8 +590,7 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
     RemoveNode(node->GetChild(i), removed_urls);
 }
 
-void BookmarkModel::DoneLoading(
-    BookmarkLoadDetails* details_delete_me) {
+void BookmarkModel::DoneLoading(BookmarkLoadDetails* details_delete_me) {
   DCHECK(details_delete_me);
   scoped_ptr<BookmarkLoadDetails> details(details_delete_me);
   if (loaded_) {

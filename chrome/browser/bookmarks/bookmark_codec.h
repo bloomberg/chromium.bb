@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// BookmarkCodec is responsible for encoding and decoding the BookmarkModel
-// into JSON values. The encoded values are written to disk via the
-// BookmarkService.
-
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_CODEC_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_CODEC_H_
 
@@ -25,8 +21,9 @@ class ListValue;
 class Value;
 }
 
-// BookmarkCodec is responsible for encoding/decoding bookmarks into JSON
-// values.
+// BookmarkCodec is responsible for encoding and decoding the BookmarkModel
+// into JSON values. The encoded values are written to disk via the
+// BookmarkStorage.
 class BookmarkCodec {
  public:
   // Creates an instance of the codec. During decoding, if the IDs in the file
