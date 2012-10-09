@@ -18,20 +18,27 @@ process will stop and this list must be updated.
 
 """
 
-KNOWN_INCOMPATIBLE = [
-    'base/third_party/xdg_mime',
-    'breakpad',
-    'chrome/installer/mac/third_party/xz',
-    'chrome/test/data',
-    'third_party/active_doc',
-    'third_party/apple_apsl',
-    'third_party/apple_sample_code',
-    'third_party/bsdiff',
-    'third_party/bspatch',
-    'third_party/sudden_motion_sensor',
-    'third_party/swiftshader',
-    'third_party/talloc',
-    'third_party/webdriver',
-    'third_party/wtl',
-    'tools/chrome_remote_control/third_party/websocket-client',
-]
+KNOWN_INCOMPATIBLE = {
+    # Incompatible code in the main chromium repository.
+    '.': [
+        'base/third_party/xdg_mime',
+        'breakpad',
+        'chrome/installer/mac/third_party/xz',
+        'chrome/test/data',
+        'third_party/active_doc',
+        'third_party/apple_apsl',
+        'third_party/apple_sample_code',
+        'third_party/bsdiff',
+        'third_party/bspatch',
+        'third_party/sudden_motion_sensor',
+        'third_party/swiftshader',
+        'third_party/talloc',
+        'third_party/webdriver',
+        'third_party/wtl',
+        'tools/chrome_remote_control/third_party/websocket-client',
+    ],
+    # Incompatible code in ICU.
+    'third_party/icu': [
+        'source/data/brkitr',
+    ],
+}
