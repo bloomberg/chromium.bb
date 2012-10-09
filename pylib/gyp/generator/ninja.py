@@ -7,6 +7,7 @@ import hashlib
 import multiprocessing
 import os.path
 import re
+import signal
 import subprocess
 import sys
 import gyp
@@ -1749,8 +1750,13 @@ def PerformBuild(data, configurations, params):
 
 
 def CallGenerateOutputForConfig(arglist):
+  # Ignore the interrupt signal so that the parent process catches it and
+  # kills all multiprocessing children.
+  signal.signal(signal.SIGINT, signal.SIG_IGN)
+
   (target_list, target_dicts, data, params, config_name) = arglist
   GenerateOutputForConfig(target_list, target_dicts, data, params, config_name)
+
 
 def GenerateOutput(target_list, target_dicts, data, params):
   user_config = params.get('generator_flags', {}).get('config', None)
@@ -1760,11 +1766,16 @@ def GenerateOutput(target_list, target_dicts, data, params):
   else:
     config_names = target_dicts[target_list[0]]['configurations'].keys()
     if params['parallel']:
-      pool = multiprocessing.Pool(len(config_names))
-      arglists = []
-      for config_name in config_names:
-        arglists.append((target_list, target_dicts, data, params, config_name))
-      pool.map(CallGenerateOutputForConfig, arglists)
+      try:
+        pool = multiprocessing.Pool(len(config_names))
+        arglists = []
+        for config_name in config_names:
+          arglists.append(
+              (target_list, target_dicts, data, params, config_name))
+          pool.map(CallGenerateOutputForConfig, arglists)
+      except KeyboardInterrupt, e:
+        pool.terminate()
+        raise e
     else:
       for config_name in config_names:
         GenerateOutputForConfig(target_list, target_dicts, data, params,

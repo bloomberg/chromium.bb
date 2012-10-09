@@ -17,6 +17,7 @@ import optparse
 import os.path
 import re
 import shlex
+import signal
 import subprocess
 import sys
 import threading
@@ -456,39 +457,49 @@ def CallLoadTargetBuildFile(global_flags,
      a worker process.
   """
 
-  # Apply globals so that the worker process behaves the same.
-  for key, value in global_flags.iteritems():
-    globals()[key] = value
+  try:
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-  # Save the keys so we can return data that changed.
-  data_keys = set(data)
-  aux_data_keys = set(aux_data)
+    # Apply globals so that the worker process behaves the same.
+    for key, value in global_flags.iteritems():
+      globals()[key] = value
 
-  result = LoadTargetBuildFile(build_file_path, data,
-                               aux_data, variables,
-                               includes, depth, check, False)
-  if not result:
-    return result
+    # Save the keys so we can return data that changed.
+    data_keys = set(data)
+    aux_data_keys = set(aux_data)
 
-  (build_file_path, dependencies) = result
+    result = LoadTargetBuildFile(build_file_path, data,
+                                 aux_data, variables,
+                                 includes, depth, check, False)
+    if not result:
+      return result
 
-  data_out = {}
-  for key in data:
-    if key == 'target_build_files':
-      continue
-    if key not in data_keys:
-      data_out[key] = data[key]
-  aux_data_out = {}
-  for key in aux_data:
-    if key not in aux_data_keys:
-      aux_data_out[key] = aux_data[key]
+    (build_file_path, dependencies) = result
 
-  # This gets serialized and sent back to the main process via a pipe.
-  # It's handled in LoadTargetBuildFileCallback.
-  return (build_file_path,
-          data_out,
-          aux_data_out,
-          dependencies)
+    data_out = {}
+    for key in data:
+      if key == 'target_build_files':
+        continue
+      if key not in data_keys:
+        data_out[key] = data[key]
+    aux_data_out = {}
+    for key in aux_data:
+      if key not in aux_data_keys:
+        aux_data_out[key] = aux_data[key]
+
+    # This gets serialized and sent back to the main process via a pipe.
+    # It's handled in LoadTargetBuildFileCallback.
+    return (build_file_path,
+            data_out,
+            aux_data_out,
+            dependencies)
+  except Exception, e:
+    print "Exception: ", e
+    return None
+
+
+class ParallelProcessingError(Exception):
+  pass
 
 
 class ParallelState(object):
@@ -517,12 +528,19 @@ class ParallelState(object):
     self.scheduled = set()
     # A list of dependency build file paths that haven't been scheduled yet.
     self.dependencies = []
+    # Flag to indicate if there was an error in a child process.
+    self.error = False
 
   def LoadTargetBuildFileCallback(self, result):
     """Handle the results of running LoadTargetBuildFile in another process.
     """
-    (build_file_path0, data0, aux_data0, dependencies0) = result
     self.condition.acquire()
+    if not result:
+      self.error = True
+      self.condition.notify()
+      self.condition.release()
+      return
+    (build_file_path0, data0, aux_data0, dependencies0) = result
     self.data['target_build_files'].add(build_file_path0)
     for key in data0:
       self.data[key] = data0[key]
@@ -547,34 +565,42 @@ def LoadTargetBuildFileParallel(build_file_path, data, aux_data,
   parallel_state.data = data
   parallel_state.aux_data = aux_data
 
-  parallel_state.condition.acquire()
-  while parallel_state.dependencies or parallel_state.pending:
-    if not parallel_state.dependencies:
-      parallel_state.condition.wait()
-      continue
+  try:
+    parallel_state.condition.acquire()
+    while parallel_state.dependencies or parallel_state.pending:
+      if parallel_state.error:
+        break
+      if not parallel_state.dependencies:
+        parallel_state.condition.wait()
+        continue
 
-    dependency = parallel_state.dependencies.pop()
+      dependency = parallel_state.dependencies.pop()
 
-    parallel_state.pending += 1
-    data_in = {}
-    data_in['target_build_files'] = data['target_build_files']
-    aux_data_in = {}
-    global_flags = {
-      'path_sections': globals()['path_sections'],
-      'non_configuration_keys': globals()['non_configuration_keys'],
-      'absolute_build_file_paths': globals()['absolute_build_file_paths'],
-      'multiple_toolsets': globals()['multiple_toolsets']}
+      parallel_state.pending += 1
+      data_in = {}
+      data_in['target_build_files'] = data['target_build_files']
+      aux_data_in = {}
+      global_flags = {
+        'path_sections': globals()['path_sections'],
+        'non_configuration_keys': globals()['non_configuration_keys'],
+        'absolute_build_file_paths': globals()['absolute_build_file_paths'],
+        'multiple_toolsets': globals()['multiple_toolsets']}
 
-    if not parallel_state.pool:
-      parallel_state.pool = multiprocessing.Pool(8)
-    parallel_state.pool.apply_async(
-        CallLoadTargetBuildFile,
-        args = (global_flags, dependency,
-                data_in, aux_data_in,
-                variables, includes, depth, check),
-        callback = parallel_state.LoadTargetBuildFileCallback)
+      if not parallel_state.pool:
+        parallel_state.pool = multiprocessing.Pool(8)
+      parallel_state.pool.apply_async(
+          CallLoadTargetBuildFile,
+          args = (global_flags, dependency,
+                  data_in, aux_data_in,
+                  variables, includes, depth, check),
+          callback = parallel_state.LoadTargetBuildFileCallback)
+  except KeyboardInterrupt, e:
+    parallel_state.pool.terminate()
+    raise e
 
   parallel_state.condition.release()
+  if parallel_state.error:
+    sys.exit()
 
 
 # Look for the bracket that matches the first bracket seen in a
