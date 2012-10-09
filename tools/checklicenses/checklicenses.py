@@ -238,6 +238,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/libjingle/source/talk': [  # http://crbug.com/98310
         'UNKNOWN',
     ],
+    'third_party/libjingle/source_internal/talk': [  # http://crbug.com/98310
+        'UNKNOWN',
+    ],
     'third_party/libjpeg': [  # http://crbug.com/98313
         'UNKNOWN',
     ],
