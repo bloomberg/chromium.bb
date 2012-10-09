@@ -42,16 +42,16 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
     remote_port = self._cri.GetRemotePort()
 
     args = ['/opt/google/chrome/chrome',
-            '--no-first-run',
+            '--allow-webui-compositing',
             '--aura-host-window-use-fullscreen',
-            '--force-compositing-mode',
             '--enable-smooth-scrolling',
             '--enable-threaded-compositing',
             '--enable-per-tile-painting',
-            '--enable-gpu--sandboxing',
-            '--allow-webui-compositing',
+            '--enable-gpu-sandboxing',
             '--enable-accelerated-layers',
-            '--remote-debugging-port=%i' % remote_port]
+            '--force-compositing-mode',
+            '--remote-debugging-port=%i' % remote_port,
+            '--start-maximized']
 
     if not is_content_shell:
       logging.info('Preparing user data dir')
@@ -69,6 +69,7 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
     if extra_browser_args:
       args.extend(extra_browser_args)
     args.extend(options.extra_browser_args)
+    args.extend(self._common_chrome_browser_args)
     prevent_output = not options.show_stdout
 
     # Stop old X.

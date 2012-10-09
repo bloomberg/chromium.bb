@@ -29,14 +29,15 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
 
     self._port = DEFAULT_PORT
     args = [self._executable,
-            '--no-first-run',
-            '--remote-debugging-port=%i' % self._port]
+            '--remote-debugging-port=%i' % self._port,
+            '--window-size=1280,1024']
     if not options.dont_override_profile:
       self._tmpdir = tempfile.mkdtemp()
       args.append('--user-data-dir=%s' % self._tmpdir)
     if extra_browser_args:
       args.extend(extra_browser_args)
     args.extend(options.extra_browser_args)
+    args.extend(self._common_chrome_browser_args)
     if not options.show_stdout:
       self._devnull = open(os.devnull, 'w')
       self._proc = subprocess.Popen(

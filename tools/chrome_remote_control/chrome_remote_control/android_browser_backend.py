@@ -28,8 +28,7 @@ class AndroidBrowserBackend(browser_backend.BrowserBackend):
       pseudo_exec_name = 'content_shell'
     else:
       pseudo_exec_name = 'chrome'
-    args = [pseudo_exec_name,
-            '--disable-fre', '--no-first-run']
+    args = [pseudo_exec_name, '--disable-fre']
 
     # Kill old browser.
     self._adb.KillAll(self._package)
@@ -50,6 +49,7 @@ class AndroidBrowserBackend(browser_backend.BrowserBackend):
     if extra_browser_args:
       args.extend(extra_browser_args)
     args.extend(options.extra_browser_args)
+    args.extend(self._common_chrome_browser_args)
     with tempfile.NamedTemporaryFile() as f:
       def EscapeIfNeeded(arg):
         return arg.replace(' ', '" "')

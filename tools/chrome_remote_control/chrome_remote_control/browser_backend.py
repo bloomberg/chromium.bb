@@ -16,6 +16,11 @@ class BrowserGoneException(Exception):
 class BrowserBackend(object):
   """A base class for broser backends. Provides basic functionality
   once a remote-debugger port has been established."""
+  _common_chrome_browser_args = [
+    '--disable-background-networking',
+    '--no-first-run',
+  ]
+
   def __init__(self, is_content_shell):
     self.is_content_shell = is_content_shell
     self._port = None
