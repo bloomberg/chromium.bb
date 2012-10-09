@@ -5,10 +5,10 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
+#include "base/test/scoped_path_override.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
 #include "base/test/test_shortcut_win.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -75,17 +75,13 @@ class ProfileShortcutManagerTest : public testing::Test {
  protected:
   ProfileShortcutManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        fake_user_desktop_(base::DIR_USER_DESKTOP) {
   }
 
   virtual void SetUp() OVERRIDE {
-     dist_ = BrowserDistribution::GetDistribution();
-     ASSERT_TRUE(dist_ != NULL);
-
-    // Mock the user's Desktop into a temp directory.
-    ASSERT_TRUE(fake_user_desktop_.CreateUniqueTempDir());
-    ASSERT_TRUE(PathService::Override(base::DIR_USER_DESKTOP,
-                                      fake_user_desktop_.path()));
+    dist_ = BrowserDistribution::GetDistribution();
+    ASSERT_TRUE(dist_ != NULL);
 
     TestingBrowserProcess* browser_process =
         static_cast<TestingBrowserProcess*>(g_browser_process);
@@ -167,7 +163,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfileManager> profile_manager_;
-  ScopedTempDir fake_user_desktop_;
+  base::ScopedPathOverride fake_user_desktop_;
   FilePath dest_path_;
   string16 profile_name_;
   FilePath second_dest_path_;

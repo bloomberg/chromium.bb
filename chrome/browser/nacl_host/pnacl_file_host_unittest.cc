@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,8 +17,8 @@ using pnacl_file_host::PnaclCanOpenFile;
 // Try to pass a few funny filenames with a dummy pnacl directory set.
 TEST(PnaclFileHostTest, TestFilenamesWithPnaclPath) {
   FilePath kDummyPnaclPath(FILE_PATH_LITERAL("dummy_pnacl_path"));
-  ASSERT_TRUE(PathService::Override(chrome::DIR_PNACL_COMPONENT,
-                                    kDummyPnaclPath));
+  base::ScopedPathOverride pnach_dir_override(chrome::DIR_PNACL_COMPONENT,
+                                              kDummyPnaclPath);
   ASSERT_TRUE(PathService::Get(chrome::DIR_PNACL_COMPONENT,
                                &kDummyPnaclPath));
   FilePath out_path;

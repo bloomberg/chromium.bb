@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
+#include "base/test/scoped_path_override.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -14,16 +14,11 @@
 
 class GoogleUpdateTest : public PlatformTest {
  protected:
-  GoogleUpdateTest() {}
+  GoogleUpdateTest() : user_data_dir_override_(chrome::DIR_USER_DATA) {}
   virtual ~GoogleUpdateTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    PathService::Override(chrome::DIR_USER_DATA, temp_dir_.path());
-  }
-
  private:
-  ScopedTempDir temp_dir_;
+  base::ScopedPathOverride user_data_dir_override_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleUpdateTest);
 };

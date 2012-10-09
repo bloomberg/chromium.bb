@@ -11,7 +11,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
+#include "base/test/scoped_path_override.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
@@ -46,14 +46,10 @@ class DeviceSettingsProviderTest: public testing::Test {
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
-        owner_key_util_(new MockOwnerKeyUtil()) {}
+        owner_key_util_(new MockOwnerKeyUtil()),
+        user_data_dir_override_(chrome::DIR_USER_DATA) {}
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA,
-                                 &original_user_data_dir_));
-    ASSERT_TRUE(user_data_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA,
-                                      user_data_dir_.path()));
     policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(false);
     policy_.Build();
 
@@ -73,8 +69,6 @@ class DeviceSettingsProviderTest: public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     device_settings_service_.Shutdown();
-    ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA,
-                                      original_user_data_dir_));
   }
 
   MessageLoop message_loop_;
@@ -94,8 +88,7 @@ class DeviceSettingsProviderTest: public testing::Test {
 
   scoped_ptr<DeviceSettingsProvider> provider_;
 
-  ScopedTempDir user_data_dir_;
-  FilePath original_user_data_dir_;
+  base::ScopedPathOverride user_data_dir_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsProviderTest);
@@ -289,8 +282,9 @@ TEST_F(DeviceSettingsProviderTest, PolicyLoadNotification) {
 
 TEST_F(DeviceSettingsProviderTest, StatsReportingMigration) {
   // Create the legacy consent file.
-  FilePath consent_file =
-      user_data_dir_.path().AppendASCII("Consent To Send Stats");
+  FilePath consent_file;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &consent_file));
+  consent_file = consent_file.AppendASCII("Consent To Send Stats");
   ASSERT_EQ(1, file_util::WriteFile(consent_file, "0", 1));
 
   // This should trigger migration because the metrics policy isn't in the blob.

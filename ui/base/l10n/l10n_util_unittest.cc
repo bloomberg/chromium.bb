@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/test/scoped_path_override.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -85,13 +86,9 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   scoped_ptr<base::Environment> env;
   // Use a temporary locale dir so we don't have to actually build the locale
   // pak files for this test.
-  FilePath orig_locale_dir;
-  PathService::Get(ui::DIR_LOCALES, &orig_locale_dir);
+  base::ScopedPathOverride locale_dir_override(ui::DIR_LOCALES);
   FilePath new_locale_dir;
-  EXPECT_TRUE(file_util::CreateNewTempDirectory(
-      FILE_PATH_LITERAL("l10n_util_test"),
-      &new_locale_dir));
-  PathService::Override(ui::DIR_LOCALES, new_locale_dir);
+  ASSERT_TRUE(PathService::Get(ui::DIR_LOCALES, &new_locale_dir));
   // Make fake locale files.
   std::string filenames[] = {
     "en-US",
@@ -281,8 +278,6 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 #endif  // defined(OS_WIN)
 
   // Clean up.
-  PathService::Override(ui::DIR_LOCALES, orig_locale_dir);
-  file_util::Delete(new_locale_dir, true);
   UErrorCode error_code = U_ZERO_ERROR;
   icu::Locale::setDefault(locale, error_code);
 }

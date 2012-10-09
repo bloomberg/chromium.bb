@@ -6,13 +6,15 @@
 
 #include <vector>
 
+#include "base/base_paths.h"
+#include "base/base_paths_win.h"
 #include "base/file_util.h"
 #include "base/md5.h"
-#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
@@ -38,18 +40,25 @@ class ShellUtilShortcutTest : public testing::Test {
     ASSERT_TRUE(fake_default_user_quick_launch_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_start_menu_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_common_start_menu_.CreateUniqueTempDir());
-    ASSERT_TRUE(PathService::Override(base::DIR_USER_DESKTOP,
-                                      fake_user_desktop_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_COMMON_DESKTOP,
-                                      fake_common_desktop_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_USER_QUICK_LAUNCH,
-                                      fake_user_quick_launch_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_DEFAULT_USER_QUICK_LAUNCH,
-                                      fake_default_user_quick_launch_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_START_MENU,
-                                      fake_start_menu_.path()));
-    ASSERT_TRUE(PathService::Override(base::DIR_COMMON_START_MENU,
-                                      fake_common_start_menu_.path()));
+    user_desktop_override_.reset(
+        new base::ScopedPathOverride(base::DIR_USER_DESKTOP,
+                                     fake_user_desktop_.path()));
+    common_desktop_override_.reset(
+        new base::ScopedPathOverride(base::DIR_COMMON_DESKTOP,
+                                     fake_common_desktop_.path()));
+    user_quick_launch_override_.reset(
+        new base::ScopedPathOverride(base::DIR_USER_QUICK_LAUNCH,
+                                     fake_user_quick_launch_.path()));
+    default_user_quick_launch_override_.reset(
+        new base::ScopedPathOverride(base::DIR_DEFAULT_USER_QUICK_LAUNCH,
+                                     fake_default_user_quick_launch_.path()));
+    start_menu_override_.reset(
+        new base::ScopedPathOverride(base::DIR_START_MENU,
+                                     fake_start_menu_.path()));
+    common_start_menu_override_.reset(
+        new base::ScopedPathOverride(base::DIR_COMMON_START_MENU,
+                                     fake_common_start_menu_.path()));
+
 
     FilePath icon_path;
     file_util::CreateTemporaryFileInDir(temp_dir_.path(), &icon_path);
@@ -149,6 +158,12 @@ class ShellUtilShortcutTest : public testing::Test {
   ScopedTempDir fake_default_user_quick_launch_;
   ScopedTempDir fake_start_menu_;
   ScopedTempDir fake_common_start_menu_;
+  scoped_ptr<base::ScopedPathOverride> user_desktop_override_;
+  scoped_ptr<base::ScopedPathOverride> common_desktop_override_;
+  scoped_ptr<base::ScopedPathOverride> user_quick_launch_override_;
+  scoped_ptr<base::ScopedPathOverride> default_user_quick_launch_override_;
+  scoped_ptr<base::ScopedPathOverride> start_menu_override_;
+  scoped_ptr<base::ScopedPathOverride> common_start_menu_override_;
 
   FilePath chrome_exe_;
 };

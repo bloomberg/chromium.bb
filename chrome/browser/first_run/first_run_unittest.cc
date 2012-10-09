@@ -6,7 +6,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
+#include "base/test/scoped_path_override.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/common/chrome_paths.h"
@@ -14,19 +14,17 @@
 
 class FirstRunTest : public testing::Test {
  protected:
-  FirstRunTest() {}
+  FirstRunTest() : user_data_dir_override_(chrome::DIR_USER_DATA) {}
   virtual ~FirstRunTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    PathService::Override(chrome::DIR_USER_DATA, temp_dir_.path());
     first_run::internal::GetFirstRunSentinelFilePath(&sentinel_path_);
   }
 
   FilePath sentinel_path_;
 
  private:
-  ScopedTempDir temp_dir_;
+  base::ScopedPathOverride user_data_dir_override_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunTest);
 };
