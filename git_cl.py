@@ -1384,6 +1384,8 @@ def SendUpstream(parser, args, cmd):
     viewvc_url = settings.GetViewVCUrl()
     if viewvc_url and revision:
       cl.description += ('\n\nCommitted: ' + viewvc_url + revision)
+    elif revision:
+      cl.description += ('\n\nCommitted: ' + revision)
     print ('Closing issue '
            '(you may be prompted for your codereview password)...')
     cl.CloseIssue()

@@ -1033,8 +1033,10 @@ def CMDcommit(change_info, args):
                             re.DOTALL).match(output).group(1)
       viewvc_url = gclient_utils.UpgradeToHttps(GetCodeReviewSetting('VIEW_VC'))
       change_info.description += '\n'
-      if viewvc_url:
+      if viewvc_url and revision:
         change_info.description += "\nCommitted: " + viewvc_url + revision
+      elif revision:
+        change_info.description += "\nCommitted: " + revision
       change_info.CloseIssue()
   return 0
 
