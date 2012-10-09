@@ -224,8 +224,6 @@ archived-pexe-translator-test() {
   #       bitcode versions if there was a format change.
   #       We only run with ext="" to save time, but if any bugs show up
   #       we can switch to ext=".strip-all" and diagnose the bugs.
-  # pexe archive rev: 8834
-  # pre-built translator rev: 8759
   local ext=""
 
   # Note, that the arch flag has two functions:
@@ -239,34 +237,52 @@ archived-pexe-translator-test() {
   fi
   local fast_trans_flags="${flags} -translate-fast"
 
+  # Driver flags for overriding *just* the LLC and LD from
+  # the translator, to test that the LLC and LD generated
+  # from archived pexes may work.  Note that this does not override the
+  # libaries or the driver that are part of the translator,
+  # so it is not a full override and will not work if the interface
+  # has changed.
+  local override_flags="\
+    --pnacl-driver-set-LLC_SB=${dir}/llc-new-${arch}.nexe \
+    --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
+  local fast_override_flags="\
+    --pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.fast_trans.nexe \
+    --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.fast_trans.nexe"
+
   echo "=== Translating the archived translator."
+  echo "=== Compiling Old Gold (normal mode) ==="
   ${sb_translator} ${flags} ${dir}/ld-new${ext} \
       -o ${dir}/ld-new-${arch}.nexe
+  echo "=== Compiling Old Gold (fast mode) ==="
   ${sb_translator} ${fast_trans_flags} ${dir}/ld-new${ext} \
       -o ${dir}/ld-new-${arch}.fast_trans.nexe
-  # This takes about 17min on arm with qemu
-  # With an unstripped pexe arm runs out of space (also after 17min):
-  # "terminate called after throwing an instance of 'std::bad_alloc'"
-  ${sb_translator} ${flags} ${dir}/llc${ext} \
-      -o ${dir}/llc-${arch}.nexe
-  # Drop this for arm if bots are becoming too slow
-  ${sb_translator} ${fast_trans_flags} ${dir}/llc${ext} \
-      -o ${dir}/llc-${arch}.fast_trans.nexe
+
+  if [[ ${arch} = arm || ${arch} = x86-32 ]]; then
+    # With an unstripped pexe (around rev 9444), arm and x86-32
+    # run out of memory:
+    # "terminate called after throwing an instance of 'std::bad_alloc'"
+    echo "Skipping translator archived llc for arch ${arch} (out of mem)"
+    override_flags="--pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
+    fast_override_flags="\
+      --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.fast_trans.nexe"
+  else
+    # This takes about 17min on arm with qemu
+    echo "=== Compiling Old LLC (normal mode) ==="
+    ${sb_translator} ${flags} ${dir}/llc${ext} \
+        -o ${dir}/llc-${arch}.nexe
+    echo "=== Compiling Old LLC (fast mode) ==="
+    ${sb_translator} ${fast_trans_flags} ${dir}/llc${ext} \
+        -o ${dir}/llc-${arch}.fast_trans.nexe
+  fi
 
   ls -l ${dir}
   file ${dir}/*
 
   echo "=== Running the translated archived translator to test."
-  # now actually run the two new translator nexes on the ld-new pexe
-  driver_flags="--pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.nexe \
-                --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
-  ${sb_translator} ${flags} ${driver_flags} ${dir}/ld-new${ext} \
+  ${sb_translator} ${flags} ${override_flags} ${dir}/ld-new${ext} \
       -o ${dir}/ld-new-${arch}.2.nexe
-
-  # Drop this for arm if bots are becoming too slow
-  driver_flags="--pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.fast_trans.nexe \
-                --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.fast_trans.nexe"
-  ${sb_translator} ${flags} ${driver_flags} ${dir}/ld-new${ext} \
+  ${sb_translator} ${flags} ${fast_override_flags} ${dir}/ld-new${ext} \
       -o ${dir}/ld-new-${arch}.3.nexe
 
   # TODO(robertm): Ideally we would compare the result of translation like so
