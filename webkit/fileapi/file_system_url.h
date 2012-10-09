@@ -86,7 +86,12 @@ class FILEAPI_EXPORT FileSystemURL {
   std::string spec() const;
 
   // Returns a new FileSystemURL with the given path.
-  // This doesn't change the calling instance's data.
+  // This creates a new FileSystemURL, copies all fields of this instance
+  // to that one, resets the path_ to the given |path| and resets the
+  // virtual_path to *empty*.
+  // Note that the resulting FileSystemURL always has an empty virtual_path
+  // (as virtual_path is meant to represent the path that is given in the
+  // original filesystem: URL in the current implementation).
   FileSystemURL WithPath(const FilePath& path) const;
 
   bool operator==(const FileSystemURL& that) const;

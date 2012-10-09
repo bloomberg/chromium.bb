@@ -444,4 +444,21 @@ std::string IsolatedContext::GetNewFileSystemId() const {
   return id;
 }
 
+ScopedExternalFileSystem::ScopedExternalFileSystem(
+    const std::string& mount_name,
+    FileSystemType type,
+    const FilePath& path)
+    : mount_name_(mount_name) {
+  IsolatedContext::GetInstance()->RegisterExternalFileSystem(
+      mount_name, type, path);
+}
+
+FilePath ScopedExternalFileSystem::GetVirtualRootPath() const {
+  return IsolatedContext::GetInstance()->CreateVirtualRootPath(mount_name_);
+}
+
+ScopedExternalFileSystem::~ScopedExternalFileSystem() {
+  IsolatedContext::GetInstance()->RevokeFileSystem(mount_name_);
+}
+
 }  // namespace fileapi

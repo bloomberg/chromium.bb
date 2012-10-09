@@ -243,6 +243,20 @@ class FILEAPI_EXPORT IsolatedContext {
   DISALLOW_COPY_AND_ASSIGN(IsolatedContext);
 };
 
+// Registers a scoped external filesystem which gets revoked when it scopes out.
+class FILEAPI_EXPORT ScopedExternalFileSystem {
+ public:
+  ScopedExternalFileSystem(const std::string& mount_name,
+                           FileSystemType type,
+                           const FilePath& path);
+  ~ScopedExternalFileSystem();
+
+  FilePath GetVirtualRootPath() const;
+
+ private:
+  const std::string mount_name_;
+};
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_ISOLATED_CONTEXT_H_

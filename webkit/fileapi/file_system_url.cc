@@ -12,7 +12,9 @@
 #include "webkit/fileapi/isolated_context.h"
 
 namespace fileapi {
+
 namespace {
+
 bool CrackFileSystemURL(
     const GURL& url,
     GURL* origin_url,
@@ -106,14 +108,16 @@ std::string FileSystemURL::spec() const {
 }
 
 FileSystemURL FileSystemURL::WithPath(const FilePath& path) const {
-  return FileSystemURL(origin(), type(), path);
+  FileSystemURL url = *this;
+  url.path_ = path;
+  url.virtual_path_.clear();
+  return url;
 }
 
 bool FileSystemURL::operator==(const FileSystemURL& that) const {
   return origin_ == that.origin_ &&
       type_ == that.type_ &&
       path_ == that.path_ &&
-      virtual_path_ == that.virtual_path_ &&
       filesystem_id_ == that.filesystem_id_ &&
       is_valid_ == that.is_valid_;
 }
@@ -125,10 +129,9 @@ bool FileSystemURL::Comparator::operator()(const FileSystemURL& lhs,
     return lhs.origin_ < rhs.origin_;
   if (lhs.type_ != rhs.type_)
     return lhs.type_ < rhs.type_;
-  // Compares the virtual path, i.e. the path() part of the original URL
-  // so rhs this reflects the virtual path relationship (rather than
-  // rhs of cracked paths).
-  return lhs.virtual_path_ < rhs.virtual_path_;
+  if (lhs.filesystem_id_ != rhs.filesystem_id_)
+    return lhs.filesystem_id_ < rhs.filesystem_id_;
+  return lhs.path_ < rhs.path_;
 }
 
 void FileSystemURL::MayCrackIsolatedPath() {
