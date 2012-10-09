@@ -601,12 +601,14 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (email == kGuestUser) {
     ash::Shell::GetInstance()->desktop_background_controller()->
-      SetDefaultWallpaper(ash::GetGuestWallpaperIndex(), false);
+        SetDefaultWallpaper(ash::GetGuestWallpaperIndex(), false);
     return;
   }
 
   if (!UserManager::Get()->IsKnownUser(email))
     return;
+
+  SetLastSelectedUser(email);
 
   bool new_wallpaper_ui_disabled = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kDisableNewWallpaperUI);
@@ -664,7 +666,6 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
     if (!new_wallpaper_ui_disabled)
       MigrateBuiltInWallpaper(email);
   }
-  SetLastSelectedUser(email);
 }
 
 void WallpaperManager::SetWallpaperFromImageSkia(
