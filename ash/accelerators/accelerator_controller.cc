@@ -185,6 +185,12 @@ bool HandleRotateWindows() {
   for (size_t i = 0; i < controllers.size(); ++i) {
     aura::Window* target = controllers[i]->GetContainer(
         internal::kShellWindowId_DefaultContainer);
+    // The rotation animation bases its target transform on the current
+    // rotation and position. Since there could be an animation in progress
+    // right now, queue this animation so when it starts it picks up a neutral
+    // rotation and position. Use replace so we only enqueue one at a time.
+    target->layer()->GetAnimator()->
+        set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
     scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
         new ui::LayerAnimationSequence(new ash::ScreenRotation(360)));
     target->layer()->GetAnimator()->StartAnimation(
