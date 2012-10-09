@@ -24,16 +24,68 @@
 using content::BrowserThread;
 using content::PasswordForm;
 
+namespace {
+
 // We could localize this string, but then changing your locale would cause
 // you to lose access to all your stored passwords. Maybe best not to do that.
-const char NativeBackendKWallet::kKWalletFolder[] = "Chrome Form Data";
+// Name of the folder to store passwords in.
+const char kKWalletFolder[] = "Chrome Form Data";
 
-const char NativeBackendKWallet::kKWalletServiceName[] = "org.kde.kwalletd";
-const char NativeBackendKWallet::kKWalletPath[] = "/modules/kwalletd";
-const char NativeBackendKWallet::kKWalletInterface[] = "org.kde.KWallet";
-const char NativeBackendKWallet::kKLauncherServiceName[] = "org.kde.klauncher";
-const char NativeBackendKWallet::kKLauncherPath[] = "/KLauncher";
-const char NativeBackendKWallet::kKLauncherInterface[] = "org.kde.KLauncher";
+// DBus service, path, and interface names for klauncher and kwalletd.
+const char kKWalletServiceName[] = "org.kde.kwalletd";
+const char kKWalletPath[] = "/modules/kwalletd";
+const char kKWalletInterface[] = "org.kde.KWallet";
+const char kKLauncherServiceName[] = "org.kde.klauncher";
+const char kKLauncherPath[] = "/KLauncher";
+const char kKLauncherInterface[] = "org.kde.KLauncher";
+
+// Compares two PasswordForms and returns true if they are the same.
+// If |update_check| is false, we only check the fields that are checked by
+// LoginDatabase::UpdateLogin() when updating logins; otherwise, we check the
+// fields that are checked by LoginDatabase::RemoveLogin() for removing them.
+bool CompareForms(const content::PasswordForm& a,
+                  const content::PasswordForm& b,
+                  bool update_check) {
+  // An update check doesn't care about the submit element.
+  if (!update_check && a.submit_element != b.submit_element)
+    return false;
+  return a.origin           == b.origin &&
+         a.password_element == b.password_element &&
+         a.signon_realm     == b.signon_realm &&
+         a.username_element == b.username_element &&
+         a.username_value   == b.username_value;
+}
+
+// Checks a serialized list of PasswordForms for sanity. Returns true if OK.
+// Note that |realm| is only used for generating a useful warning message.
+bool CheckSerializedValue(const uint8_t* byte_array,
+                          size_t length,
+                          const std::string& realm) {
+  const Pickle::Header* header =
+      reinterpret_cast<const Pickle::Header*>(byte_array);
+  if (length < sizeof(*header) ||
+      header->payload_size > length - sizeof(*header)) {
+    LOG(WARNING) << "Invalid KWallet entry detected (realm: " << realm << ")";
+    return false;
+  }
+  return true;
+}
+
+// Convenience function to read a GURL from a Pickle. Assumes the URL has
+// been written as a UTF-8 string. Returns true on success.
+bool ReadGURL(PickleIterator* iter, bool warn_only, GURL* url) {
+  std::string url_string;
+  if (!iter->ReadString(&url_string)) {
+    if (!warn_only)
+      LOG(ERROR) << "Failed to deserialize URL.";
+    *url = GURL();
+    return false;
+  }
+  *url = GURL(url_string);
+  return true;
+}
+
+}  // namespace
 
 NativeBackendKWallet::NativeBackendKWallet(LocalProfileId id,
                                            PrefService* prefs)
@@ -635,19 +687,7 @@ bool NativeBackendKWallet::SetLoginsList(const PasswordFormList& forms,
   return ret == 0;
 }
 
-bool NativeBackendKWallet::CompareForms(const PasswordForm& a,
-                                        const PasswordForm& b,
-                                        bool update_check) {
-  // An update check doesn't care about the submit element.
-  if (!update_check && a.submit_element != b.submit_element)
-    return false;
-  return a.origin           == b.origin &&
-         a.password_element == b.password_element &&
-         a.signon_realm     == b.signon_realm &&
-         a.username_element == b.username_element &&
-         a.username_value   == b.username_value;
-}
-
+// static
 void NativeBackendKWallet::SerializeValue(const PasswordFormList& forms,
                                           Pickle* pickle) {
   pickle->WriteInt(kPickleVersion);
@@ -670,19 +710,7 @@ void NativeBackendKWallet::SerializeValue(const PasswordFormList& forms,
   }
 }
 
-bool NativeBackendKWallet::CheckSerializedValue(const uint8_t* byte_array,
-                                                size_t length,
-                                                const std::string& realm) {
-  const Pickle::Header* header =
-      reinterpret_cast<const Pickle::Header*>(byte_array);
-  if (length < sizeof(*header) ||
-      header->payload_size > length - sizeof(*header)) {
-    LOG(WARNING) << "Invalid KWallet entry detected (realm: " << realm << ")";
-    return false;
-  }
-  return true;
-}
-
+// static
 bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
                                                 const PickleIterator& init_iter,
                                                 bool size_32, bool warn_only,
@@ -759,6 +787,7 @@ bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
   return true;
 }
 
+// static
 void NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
                                             const Pickle& pickle,
                                             PasswordFormList* forms) {
@@ -788,19 +817,6 @@ void NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
     forms->resize(saved_forms_size);
     DeserializeValueSize(signon_realm, iter, !size_32, false, forms);
   }
-}
-
-bool NativeBackendKWallet::ReadGURL(
-    PickleIterator* iter, bool warn_only, GURL* url) {
-  std::string url_string;
-  if (!iter->ReadString(&url_string)) {
-    if (!warn_only)
-      LOG(ERROR) << "Failed to deserialize URL.";
-    *url = GURL();
-    return false;
-  }
-  *url = GURL(url_string);
-  return true;
 }
 
 int NativeBackendKWallet::WalletHandle() {
