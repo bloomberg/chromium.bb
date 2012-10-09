@@ -216,15 +216,13 @@ const size_t kMaxImageCacheSize = 4;
 
 Tab::ImageCacheEntry::ImageCacheEntry()
     : resource_id(-1),
-      scale_factor(ui::SCALE_FACTOR_NONE),
-      instant_images(false) {
+      scale_factor(ui::SCALE_FACTOR_NONE) {
 }
 
 Tab::ImageCacheEntry::~ImageCacheEntry() {}
 
 Tab::TabImage Tab::tab_alpha_ = {0};
 Tab::TabImage Tab::tab_active_ = {0};
-Tab::TabImage Tab::tab_active_search_ = {0};
 Tab::TabImage Tab::tab_inactive_ = {0};
 
 // static
@@ -665,16 +663,13 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       !hover_controller().ShouldDraw();
 
   if (can_cache) {
-    const bool instant_images =
-        controller() && controller()->IsInstantExtendedAPIEnabled();
     gfx::ImageSkia cached_image(
-        GetCachedImage(tab_id, size(), canvas->scale_factor(), instant_images));
+        GetCachedImage(tab_id, size(), canvas->scale_factor()));
     if (cached_image.width() == 0) {
       gfx::Canvas tmp_canvas(size(), canvas->scale_factor(), false);
       PaintInactiveTabBackgroundUsingResourceId(&tmp_canvas, tab_id);
       cached_image = gfx::ImageSkia(tmp_canvas.ExtractImageRep());
-      SetCachedImage(tab_id, canvas->scale_factor(), instant_images,
-                     cached_image);
+      SetCachedImage(tab_id, canvas->scale_factor(), cached_image);
     }
     canvas->DrawImageInt(cached_image, 0, 0);
   } else {
@@ -694,9 +689,7 @@ void Tab::PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
 
   gfx::ImageSkia* tab_bg = GetThemeProvider()->GetImageSkiaNamed(tab_id);
 
-  TabImage* tab_image =
-      controller() && controller()->IsInstantExtendedAPIEnabled() ?
-          &tab_active_search_ : &tab_active_;
+  TabImage* tab_image = &tab_active_;
   TabImage* tab_inactive_image = &tab_inactive_;
   TabImage* alpha = &tab_alpha_;
 
@@ -769,9 +762,7 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas,
 
   int offset = GetMirroredX() + background_offset_.x();
 
-  TabImage* tab_image =
-      controller() && controller()->IsInstantExtendedAPIEnabled() ?
-          &tab_active_search_ : &tab_active_;
+  TabImage* tab_image = &tab_active_;
   TabImage* alpha = &tab_alpha_;
 
   // Draw left edge.
@@ -877,15 +868,6 @@ void Tab::LoadTabImages() {
   tab_active_.l_width = tab_active_.image_l->width();
   tab_active_.r_width = tab_active_.image_r->width();
 
-  tab_active_search_.image_l =
-      rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_LEFT_SEARCH);
-  tab_active_search_.image_c =
-      rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_CENTER_SEARCH);
-  tab_active_search_.image_r =
-      rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_RIGHT_SEARCH);
-  tab_active_search_.l_width = tab_active_search_.image_l->width();
-  tab_active_search_.r_width = tab_active_search_.image_r->width();
-
   tab_inactive_.image_l = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_LEFT);
   tab_inactive_.image_c = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_CENTER);
   tab_inactive_.image_r = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_RIGHT);
@@ -896,12 +878,11 @@ void Tab::LoadTabImages() {
 // static
 gfx::ImageSkia Tab::GetCachedImage(int resource_id,
                                    const gfx::Size& size,
-                                   ui::ScaleFactor scale_factor,
-                                   bool instant_images) {
+                                   ui::ScaleFactor scale_factor) {
   for (ImageCache::const_iterator i = image_cache_->begin();
        i != image_cache_->end(); ++i) {
     if (i->resource_id == resource_id && i->scale_factor == scale_factor &&
-        i->image.size() == size && i->instant_images == instant_images) {
+        i->image.size() == size) {
       return i->image;
     }
   }
@@ -911,13 +892,11 @@ gfx::ImageSkia Tab::GetCachedImage(int resource_id,
 // static
 void Tab::SetCachedImage(int resource_id,
                          ui::ScaleFactor scale_factor,
-                         bool instant_images,
                          const gfx::ImageSkia& image) {
   ImageCacheEntry entry;
   entry.resource_id = resource_id;
   entry.scale_factor = scale_factor;
   entry.image = image;
-  entry.instant_images = instant_images;
   image_cache_->push_front(entry);
   if (image_cache_->size() > kMaxImageCacheSize)
     image_cache_->pop_back();

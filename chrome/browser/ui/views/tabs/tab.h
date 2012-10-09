@@ -79,9 +79,6 @@ class Tab : public BaseTab {
     // Scale factor we're drawing it.
     ui::ScaleFactor scale_factor;
 
-    // Whether the image is using the instant images.
-    bool instant_images;
-
     // The image.
     gfx::ImageSkia image;
   };
@@ -135,13 +132,11 @@ class Tab : public BaseTab {
   // there isn't one cached.
   static gfx::ImageSkia GetCachedImage(int resource_id,
                                        const gfx::Size& size,
-                                       ui::ScaleFactor scale_factor,
-                                       bool instant_images);
+                                       ui::ScaleFactor scale_factor);
 
   // Caches the specified image.
   static void SetCachedImage(int resource_id,
                              ui::ScaleFactor scale_factor,
-                             bool instant_images,
                              const gfx::ImageSkia& image);
 
   // The bounds of various sections of the display.
@@ -163,7 +158,6 @@ class Tab : public BaseTab {
     int y_offset;
   };
   static TabImage tab_active_;
-  static TabImage tab_active_search_;
   static TabImage tab_inactive_;
   static TabImage tab_alpha_;
 

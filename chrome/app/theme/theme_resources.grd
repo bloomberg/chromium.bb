@@ -707,22 +707,18 @@
         <structure type="chrome_scaled_image" name="IDR_SWIPE_FORWARD" file="forward_large.png" />
         <structure type="chrome_scaled_image" name="IDR_TABPOSE_CLOSE" file="tabpose_close.png" />
       </if>
-      <!-- Instant Extended API active tab images are common for all platforms. -->
-      <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER_SEARCH" file="tab_active_center_search.png" />
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="common/tab_active_left.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT_SEARCH" file="tab_active_left_search.png" />
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="common/tab_active_right.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT_SEARCH" file="tab_active_right_search.png" />
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
            fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
            then apply IDR_TAB_CLOSE_MASK.  See chrome/browser/ui/views/tabs/tab.cc -->
