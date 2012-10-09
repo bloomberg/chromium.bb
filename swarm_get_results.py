@@ -57,17 +57,23 @@ def get_test_keys(swarm_base_url, test_name):
   return result.split()
 
 
-def swarm_get_results(swarm_base_url, test_keys):
+def swarm_get_results(swarm_base_url, test_keys, wait):
   """Retrieves the given swarm test results from the swarm server and print it
   to stdout.
   """
   outputs = []
   for test in test_keys:
     result_url = '%s/get_result?r=%s' % (swarm_base_url, test)
-    result = fetch_with_retry(result_url)
-    if result is None:
-      continue
-    outputs.append(json.loads(result))
+    while True:
+      result = fetch_with_retry(result_url)
+      if result is None:
+        continue
+      data = json.loads(result)
+      if data['output']:
+        outputs.append(data)
+        break
+      if not wait:
+        break
   return outputs
 
 
@@ -87,6 +93,9 @@ def main():
   parser.add_option(
       '-v', '--verbose', action='store_true',
       help='Print verbose logging')
+  parser.add_option(
+      '-n', '--no-wait', action='store_true',
+      help='Do not wait for completion')
   (options, args) = parser.parse_args()
   if not args:
     parser.error('Must specify one test name.')
@@ -96,7 +105,7 @@ def main():
   url = options.url.rstrip('/')
   test_name = args[0]
   test_keys = get_test_keys(url, test_name)
-  print_results(swarm_get_results(url, test_keys))
+  print_results(swarm_get_results(url, test_keys, not options.no_wait))
   return 0
 
 

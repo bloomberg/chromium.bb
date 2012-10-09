@@ -232,6 +232,9 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
       if os.path.isfile(outfile):
         # Just do a quick check that the file size matches. No need to stat()
         # again the input file, grab the value from the dict.
+        if not 'size' in metadata:
+          raise run_isolated.MappingError(
+              'Misconfigured item %s: %s' % (relfile, metadata))
         if metadata['size'] == os.stat(outfile).st_size:
           continue
         else:
@@ -271,6 +274,10 @@ def encode_multipart_formdata(fields, files,
   boundary = hashlib.md5(str(time.time())).hexdigest()
   body_list = []
   for (key, value) in fields:
+    if isinstance(key, unicode):
+      value = key.encode('utf-8')
+    if isinstance(value, unicode):
+      value = value.encode('utf-8')
     body_list.append('--' + boundary)
     body_list.append('Content-Disposition: form-data; name="%s"' % key)
     body_list.append('')
@@ -278,6 +285,12 @@ def encode_multipart_formdata(fields, files,
     body_list.append('--' + boundary)
     body_list.append('')
   for (key, filename, value) in files:
+    if isinstance(key, unicode):
+      value = key.encode('utf-8')
+    if isinstance(filename, unicode):
+      value = filename.encode('utf-8')
+    if isinstance(value, unicode):
+      value = value.encode('utf-8')
     body_list.append('--' + boundary)
     body_list.append('Content-Disposition: form-data; name="%s"; '
                      'filename="%s"' % (key, filename))
@@ -323,7 +336,7 @@ def upload_hash_content_to_blobstore(generate_upload_url, params,
     hash_contents: The contents to upload.
   """
   content_type, body = encode_multipart_formdata(
-      params.items(), [('hash_contents', 'hash_contest', hash_data)])
+      params.items(), [('hash_contents', 'hash_content', hash_data)])
 
   logging.debug('Generating url to directly upload file to blobstore')
   response = urllib2.urlopen(generate_upload_url)
@@ -455,12 +468,7 @@ def upload_sha1_tree(base_url, indir, infiles):
 
   exception = remote_uploader.next_exception()
   if exception:
-    while exception:
-      logging.error('Error uploading file to server:\n%s', exception[1])
-      exception = remote_uploader.next_exception()
-    raise run_isolated.MappingError(
-        'Encountered errors uploading hash contents to server. See logs for '
-        'exact failures')
+    raise exception[0], exception[1], exception[2]
 
 
 def process_input(filepath, prevdict, level, read_only):
@@ -1640,8 +1648,9 @@ def CMDhashtable(args):
                    len(complete_state.isolated.files))
 
       with open(complete_state.isolated_filepath, 'rb') as f:
-        manifest_hash = hashlib.sha1(f.read()).hexdigest()
-      manifest_metadata = {'sha-1': manifest_hash}
+        content = f.read()
+        manifest_hash = hashlib.sha1(content).hexdigest()
+      manifest_metadata = {'sha-1': manifest_hash, 'size': len(content)}
 
       infiles = complete_state.isolated.files
       infiles[complete_state.isolated_filepath] = manifest_metadata

@@ -7,6 +7,7 @@
 directory.
 """
 
+import datetime
 import getpass
 import hashlib
 import os
@@ -14,7 +15,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,6 +22,8 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 def run(cmd):
   print('Running: %s' % ' '.join(cmd))
   cmd = [sys.executable, os.path.join(ROOT_DIR, '..', cmd[0])] + cmd[1:]
+  if sys.platform != 'win32':
+    cmd = ['time', '-p'] + cmd
   subprocess.check_call(cmd)
 
 
@@ -30,7 +32,8 @@ def main():
   #os.environ['ISOLATE_DEBUG'] = '1'
   swarm_server = 'http://chromium-swarm.appspot.com'
   cad_server = 'http://isolateserver.appspot.com/'
-  prefix = getpass.getuser() + '-'
+  prefix = getpass.getuser() + '-' + datetime.datetime.now().isoformat() + '-'
+
   try:
     # All the files are put in a temporary directory. This is optional and
     # simply done so the current directory doesn't have the following files
@@ -65,9 +68,6 @@ def main():
           '1',
           '',
         ])
-
-    print('\nSleeping a bit; todo: remove me')
-    time.sleep(1)
 
     print('\nGetting results')
     run(

@@ -20,6 +20,8 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 def run(cmd):
   print('Running: %s' % ' '.join(cmd))
   cmd = [sys.executable, os.path.join(ROOT_DIR, '..', cmd[0])] + cmd[1:]
+  if sys.platform != 'win32':
+    cmd = ['time', '-p'] + cmd
   subprocess.check_call(cmd)
 
 
