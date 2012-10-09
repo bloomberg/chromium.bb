@@ -115,6 +115,10 @@ remoting.HostSetupDialog = function(hostController) {
     event.preventDefault();
     that.onPinSubmit_();
   };
+  var onPinConfirmFocus = function() {
+    that.validatePin_();
+  };
+
   var form = document.getElementById('ask-pin-form');
   form.addEventListener('submit', onPinSubmit, false);
   /** @param {Event} event The event. */
@@ -136,6 +140,7 @@ remoting.HostSetupDialog = function(hostController) {
   };
   this.pinEntry_.addEventListener('keypress', onDaemonPinEntryKeyPress, false);
   this.pinEntry_.addEventListener('keypress', noDigitsInPin, false);
+  this.pinConfirm_.addEventListener('focus', onPinConfirmFocus, false);
   this.pinConfirm_.addEventListener('keypress', noDigitsInPin, false);
 
   this.usageStats_ = document.getElementById('usagestats-consent');
@@ -380,6 +385,22 @@ remoting.HostSetupDialog.prototype.stopHost_ = function() {
   this.hostController_.stop(onHostStopped);
 };
 
+/**
+ * Validates the PIN and shows an error message if it's invalid.
+ * @return {boolean} true if the PIN is valid, false otherwise.
+ * @private
+ */
+remoting.HostSetupDialog.prototype.validatePin_ = function() {
+  var pin = this.pinEntry_.value;
+  var pinIsValid = remoting.HostSetupDialog.validPin_(pin);
+  if (!pinIsValid) {
+    l10n.localizeElementFromTag(
+        this.pinErrorMessage_, /*i18n-content*/'INVALID_PIN');
+  }
+  this.pinErrorDiv_.hidden = pinIsValid;
+  return pinIsValid;
+};
+
 /** @private */
 remoting.HostSetupDialog.prototype.onPinSubmit_ = function() {
   if (this.flow_.getState() != remoting.HostSetupFlow.State.ASK_PIN) {
@@ -395,14 +416,10 @@ remoting.HostSetupDialog.prototype.onPinSubmit_ = function() {
     this.prepareForPinEntry_();
     return;
   }
-  if (!remoting.HostSetupDialog.validPin_(pin1)) {
-    l10n.localizeElementFromTag(
-        this.pinErrorMessage_, /*i18n-content*/'INVALID_PIN');
-    this.pinErrorDiv_.hidden = false;
+  if (!this.validatePin_()) {
     this.prepareForPinEntry_();
     return;
   }
-  this.pinErrorDiv_.hidden = true;
   this.flow_.pin = pin1;
   this.flow_.consent = !this.usageStats_.hidden &&
       (this.usageStatsCheckbox_.value == "on");
