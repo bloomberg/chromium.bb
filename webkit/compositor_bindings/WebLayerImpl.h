@@ -57,6 +57,7 @@ public:
     virtual void setPreserves3D(bool) OVERRIDE;
     virtual void setUseParentBackfaceVisibility(bool) OVERRIDE;
     virtual void setBackgroundColor(WebColor) OVERRIDE;
+    virtual WebColor backgroundColor() const;
     virtual void setFilters(const WebFilterOperations&) OVERRIDE;
     virtual void setBackgroundFilters(const WebFilterOperations&) OVERRIDE;
     virtual void setDebugBorderColor(const WebColor&) OVERRIDE;

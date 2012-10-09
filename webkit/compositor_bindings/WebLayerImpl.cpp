@@ -257,6 +257,11 @@ void WebLayerImpl::setBackgroundColor(WebColor color)
     m_layer->setBackgroundColor(color);
 }
 
+WebColor WebLayerImpl::backgroundColor() const
+{
+    return m_layer->backgroundColor();
+}
+
 void WebLayerImpl::setFilters(const WebFilterOperations& filters)
 {
     m_layer->setFilters(filters);
