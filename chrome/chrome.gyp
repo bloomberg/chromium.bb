@@ -5,17 +5,6 @@
   'variables': {
     'chromium_code': 1,
 
-    'variables': {
-      'version_py_path': 'tools/build/version.py',
-      'version_path': 'VERSION',
-    },
-    'version_py_path': '<(version_py_path)',
-    'version_path': '<(version_path)',
-    'version_full':
-        '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
-    'version_mac_dylib':
-        '<!(python <(version_py_path) -f <(version_path) -t "@BUILD@.@PATCH_HI@.@PATCH_LO@" -e "PATCH_HI=int(PATCH)/256" -e "PATCH_LO=int(PATCH)%256")',
-
     # Define the common dependencies that contain all the actual
     # Chromium functionality.  This list gets pulled in below by
     # the link of the actual chrome (or chromium) executable on
@@ -146,8 +135,8 @@
     'chrome_installer_util.gypi',
     'chrome_renderer.gypi',
     'chrome_tests.gypi',
-    'common_constants.gypi',
     'nacl.gypi',
+    'version.gypi',
   ],
   'targets': [
     {
@@ -1005,11 +994,11 @@
           'type': 'executable',
           'dependencies': [
             'app/policy/cloud_policy_codegen.gyp:policy',
-            'common_constants',
             'installer_util',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
+            '../chrome/common_constants.gyp:common_constants',
           ],
           'include_dirs': [
             '..',
@@ -1030,11 +1019,11 @@
           'type': 'executable',
           'product_name': 'crash_service64',
           'dependencies': [
-            'common_constants_win64',
             'installer_util_nacl_win64',
             '../base/base.gyp:base_static_win64',
             '../breakpad/breakpad.gyp:breakpad_handler_win64',
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
+            '../chrome/common_constants.gyp:common_constants_win64',
           ],
           'include_dirs': [
             '..',

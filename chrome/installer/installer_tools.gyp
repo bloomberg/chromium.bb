@@ -19,9 +19,9 @@
           'type': 'executable',
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/chrome/chrome.gyp:common_constants',
             '<(DEPTH)/chrome/chrome.gyp:installer_util',
             '<(DEPTH)/chrome/chrome.gyp:installer_util_strings',
+            '<(DEPTH)/chrome/common_constants.gyp:common_constants',
           ],
           'include_dirs': [
             '<(DEPTH)',

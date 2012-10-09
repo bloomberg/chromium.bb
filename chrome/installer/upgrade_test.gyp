@@ -21,8 +21,8 @@
           'target_name': 'alternate_version_generator_lib',
           'type': 'static_library',
           'dependencies': [
-            '../chrome.gyp:common_constants',
             '../chrome.gyp:installer_util',
+            '../common_constants.gyp:common_constants',
             '../../base/base.gyp:base',
           ],
           'include_dirs': [
@@ -53,8 +53,8 @@
             # 'mini_installer.gyp:mini_installer',
             '../../base/base.gyp:test_support_base',
             '../../testing/gtest.gyp:gtest',
-            '../chrome.gyp:common_constants',
             '../chrome.gyp:installer_util',
+            '../common_constants.gyp:common_constants',
           ],
           'include_dirs': [
             '../..',
@@ -71,8 +71,8 @@
             'alternate_version_generator_lib',
             '../../base/base.gyp:test_support_base',
             '../../testing/gtest.gyp:gtest',
-            '../chrome.gyp:common_constants',
             '../chrome.gyp:installer_util',
+            '../common_constants.gyp:common_constants',
           ],
           'include_dirs': [
             '../..',

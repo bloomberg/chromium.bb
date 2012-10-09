@@ -262,7 +262,7 @@
             'installer_util_strings',
             '../base/base.gyp:base',
             '../build/temp_gyp/googleurl.gyp:googleurl',
-            '../chrome/chrome.gyp:common_constants',
+            '../chrome/common_constants.gyp:common_constants',
             '../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
             '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             '../breakpad/breakpad.gyp:breakpad_handler',

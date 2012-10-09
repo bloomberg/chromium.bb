@@ -557,7 +557,6 @@
               'dependencies': [
                 'app/policy/cloud_policy_codegen.gyp:policy_win64',
                 'chrome_version_resources',
-                'common_constants_win64',
                 'installer_util_nacl_win64',
                 'nacl_win64',
                 '../breakpad/breakpad.gyp:breakpad_handler_win64',
@@ -566,6 +565,7 @@
                 '../base/base.gyp:base_nacl_win64',
                 '../base/base.gyp:base_static_win64',
                 '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
+                '../chrome/common_constants.gyp:common_constants_win64',
                 '../crypto/crypto.gyp:crypto_nacl_win64',
                 '../ipc/ipc.gyp:ipc_win64',
                 '../sandbox/sandbox.gyp:sandbox_win64',

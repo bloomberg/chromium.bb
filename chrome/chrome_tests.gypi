@@ -4261,9 +4261,9 @@
           'product_name': 'app_mode_app_tests',
           'dependencies': [
             '../base/base.gyp:test_support_base',
+	    '../chrome/common_constants.gyp:common_constants',
             '../testing/gtest.gyp:gtest',
             'chrome.gyp:chrome',  # run time dependency
-            'common_constants',
             'app_mode_app_support',
           ],
           'sources': [
