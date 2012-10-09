@@ -21,7 +21,7 @@ namespace performance_monitor {
 namespace {
 // Needed because Database::AddMetric is overloaded, so base::Bind doesn't work.
 void AddMetricToDatabaseOnBackgroundThread(Database* database,
-                                           Metric metric) {
+                                           const Metric& metric) {
   database->AddMetric(metric);
 }
 

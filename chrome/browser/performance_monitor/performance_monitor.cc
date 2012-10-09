@@ -280,7 +280,7 @@ void PerformanceMonitor::AddEventOnBackgroundThread(scoped_ptr<Event> event) {
   database_->AddEvent(*event.get());
 }
 
-void PerformanceMonitor::AddMetricOnBackgroundThread(Metric metric) {
+void PerformanceMonitor::AddMetricOnBackgroundThread(const Metric& metric) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   database_->AddMetric(metric);
 }
@@ -434,7 +434,7 @@ void PerformanceMonitor::CallInsertIOData() {
 }
 
 void PerformanceMonitor::InsertIOData(
-    PerformanceDataForIOThread performance_data_for_io_thread) {
+    const PerformanceDataForIOThread& performance_data_for_io_thread) {
   CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   database_->AddMetric(
       Metric(METRIC_NETWORK_BYTES_READ,

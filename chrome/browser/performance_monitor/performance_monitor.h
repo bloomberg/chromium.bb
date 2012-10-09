@@ -131,9 +131,8 @@ class PerformanceMonitor : public content::NotificationObserver {
   void AddEventOnBackgroundThread(scoped_ptr<Event> event);
 
   // Since Database::AddMetric() is overloaded, base::Bind() does not work and
-  // we need a helper function. Deliberately not const & so that we will
-  // construct a new metric on the background thread.
-  void AddMetricOnBackgroundThread(Metric metric);
+  // we need a helper function.
+  void AddMetricOnBackgroundThread(const Metric& metric);
 
   // Notify any listeners that PerformanceMonitor has finished the initializing.
   void NotifyInitialized();
@@ -176,9 +175,9 @@ class PerformanceMonitor : public content::NotificationObserver {
   // any possible race conditions.
   void CallInsertIOData();
 
-  // Insert the collected IO data into the database (deliberately not const & so
-  // we create a copy and it becomes thread-safe).
-  void InsertIOData(PerformanceDataForIOThread performance_data_for_io_thread);
+  // Insert the collected IO data into the database.
+  void InsertIOData(
+      const PerformanceDataForIOThread& performance_data_for_io_thread);
 
   // The store for all performance data that must be gathered from the IO
   // thread.
