@@ -83,6 +83,7 @@ Directory::PersistedKernelInfo::PersistedKernelInfo()
     : next_id(0) {
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     reset_download_progress(ModelTypeFromInt(i));
+    transaction_version[i] = 0;
   }
 }
 
@@ -597,6 +598,7 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
            it.Good(); it.Inc()) {
         set_initial_sync_ended_for_type_unsafe(it.Get(), false);
         kernel_->persisted_info.reset_download_progress(it.Get());
+        kernel_->persisted_info.transaction_version[it.Get()] = 0;
       }
     }
   }

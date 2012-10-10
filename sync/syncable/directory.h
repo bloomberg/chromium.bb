@@ -161,6 +161,13 @@ class Directory {
 
     // Last sync timestamp fetched from the server.
     sync_pb::DataTypeProgressMarker download_progress[MODEL_TYPE_COUNT];
+    // Sync-side transaction version per data type. Monotonically incremented
+    // when updating native model. A copy is also saved in native model.
+    // Later out-of-sync models can be detected and fixed by comparing
+    // transaction versions of sync model and native model.
+    // TODO(hatiaol): implement detection and fixing of out-of-sync models.
+    //                Bug 154858.
+    int64 transaction_version[MODEL_TYPE_COUNT];
     // true iff we ever reached the end of the changelog.
     ModelTypeSet initial_sync_ended;
     // The store birthday we were given by the server. Contents are opaque to

@@ -116,10 +116,12 @@ class DirectoryBackingStoreTest : public MigrationTest {};
 
 // Generated via:
 //
-// ruby -ane '$F[1].sub!("LEGACY_", ""); $F[2] = Integer($F[2].sub!("LL", "")) / 10000 - 11644473600000; print "#{$F[0]} #{$F[1]} #{$F[2]}LL\n"'
+// ruby -ane '$F[1].sub!("LEGACY_", ""); $F[2] = Integer($F[2].sub!("LL", "")) /
+//    10000 - 11644473600000; print "#{$F[0]} #{$F[1]} #{$F[2]}LL"'
 //
 // Magic numbers taken from
-// http://stackoverflow.com/questions/5398557/java-library-for-dealing-with-win32-filetime .
+// http://stackoverflow.com/questions/5398557/
+//    java-library-for-dealing-with-win32-filetime .
 
 // Now we store them in Java format (ms since the Unix epoch).
 #define META_PROTO_TIMES_1 1263522064032LL
@@ -2370,6 +2372,22 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidOrdinal) {
             dbs->Load(&entry_bucket, &kernel_load_info));
 }
 
+TEST_F(DirectoryBackingStoreTest, MigrateVersion81To82) {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion81Database(&connection);
+  ASSERT_FALSE(connection.DoesColumnExist("models", "transaction_version"));
+
+  scoped_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
+  ASSERT_FALSE(dbs->needs_column_refresh_);
+  ASSERT_TRUE(dbs->MigrateVersion81To82());
+  ASSERT_EQ(82, dbs->GetVersion());
+  ASSERT_FALSE(dbs->needs_column_refresh_);
+
+  ASSERT_TRUE(connection.DoesColumnExist("models", "transaction_version"));
+}
+
 TEST_P(MigrationTest, ToCurrentVersion) {
   sql::Connection connection;
   ASSERT_TRUE(connection.OpenInMemory());
@@ -2415,6 +2433,9 @@ TEST_P(MigrationTest, ToCurrentVersion) {
       break;
     case 80:
       SetUpVersion80Database(&connection);
+      break;
+    case 81:
+      SetUpVersion81Database(&connection);
       break;
     default:
       // If you see this error, it may mean that you've increased the
@@ -2494,6 +2515,9 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   // Column added in version 78.
   ASSERT_TRUE(connection.DoesColumnExist("metas", "base_server_specifics"));
+
+  // Column added in version 82.
+  ASSERT_TRUE(connection.DoesColumnExist("models", "transaction_version"));
 
   // Check download_progress state (v75 migration)
   ASSERT_EQ(694,
