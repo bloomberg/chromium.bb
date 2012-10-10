@@ -16,7 +16,7 @@ function FileListBannerController(directoryModel, volumeManager, document) {
   this.driveEnabled_ = false;
 
   var board = str('CHROMEOS_RELEASE_BOARD');
-  if (board.match(/^(stumpy|lumpy)/i))
+  if (!board.match(/^x86-(mario|zgb|alex)/i))
     this.checkPromoAvailable_();
   else
     this.newWelcome_ = false;
@@ -47,11 +47,6 @@ var WELCOME_HEADER_COUNTER_KEY = 'gdataWelcomeHeaderCounter';
  * Maximum times Drive Welcome banner could have shown.
  */
 var WELCOME_HEADER_COUNTER_LIMIT = 5;
-
-/**
- * Location of the Chromebook information page.
- */
-var CHROMEBOOK_INFO_URL = 'http://google.com/chromebook';
 
 /**
  * Location of the FAQ about Google Drive.
@@ -120,7 +115,7 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
     more = util.createChild(links,
         'gdata-welcome-button gdata-welcome-start', 'a');
     more.textContent = str('GDATA_WELCOME_GET_STARTED');
-    more.href = CHROMEBOOK_INFO_URL;
+    more.href = GOOGLE_DRIVE_REDEEM;
   } else {
     title.textContent = str('GDATA_WELCOME_TITLE');
     more = util.createChild(links, 'plain-link', 'a');
