@@ -92,6 +92,8 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   set<short, kMaxFingers> non_stationary_palm_;
   // tracking ids of known fingers that are not palms.
   set<short, kMaxFingers> pointing_;
+  // tracking ids that were ever close to other fingers.
+  set<short, kMaxFingers> was_near_other_fingers_;
 
   // tracking ids that have ever travelled out of the palm envelope.
   set<short, kMaxFingers> fingers_not_in_palm_envelope_;

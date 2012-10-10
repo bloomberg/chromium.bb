@@ -121,8 +121,10 @@ bool PalmClassifyingFilterInterpreter::FingerNearOtherFinger(
     bool too_close_to_other_finger =
         finger_metrics_->FingersCloseEnoughToGesture(fs, other_fs) &&
         !SetContainsValue(palm_, other_fs.tracking_id);
-    if (too_close_to_other_finger)
+    if (too_close_to_other_finger) {
+      was_near_other_fingers_.insert(fs.tracking_id);
       return true;
+    }
   }
   return false;
 }
@@ -143,6 +145,7 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
   RemoveMissingIdsFromSet(&pointing_, hwstate);
   RemoveMissingIdsFromSet(&non_stationary_palm_, hwstate);
   RemoveMissingIdsFromSet(&fingers_not_in_palm_envelope_, hwstate);
+  RemoveMissingIdsFromSet(&was_near_other_fingers_, hwstate);
 
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
@@ -235,6 +238,7 @@ void PalmClassifyingFilterInterpreter::UpdatePalmFlags(HardwareState* hwstate) {
     FingerState* fs = &hwstate->fingers[i];
     if (SetContainsValue(palm_, fs->tracking_id) ||
         (!SetContainsValue(pointing_, fs->tracking_id) &&
+         !SetContainsValue(was_near_other_fingers_, fs->tracking_id) &&
          FingerInPalmEnvelope(*fs))) {
       // Finger is believed to be a palm, or it's ambiguous and not likely
       // co-pointing
