@@ -217,6 +217,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	paint_pixels(window->shm_data, 20, window->width, window->height, time);
 	wl_surface_damage(window->surface,
 			  20, 20, window->width - 40, window->height - 40);
+	wl_surface_commit(window->surface);
 
 	if (callback)
 		wl_callback_destroy(callback);

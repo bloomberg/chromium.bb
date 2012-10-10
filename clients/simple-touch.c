@@ -305,6 +305,7 @@ touch_create(int width, int height)
 	memset(touch->data, 64, width * height * 4);
 	wl_surface_attach(touch->surface, touch->buffer, 0, 0);
 	wl_surface_damage(touch->surface, 0, 0, width, height);
+	wl_surface_commit(touch->surface);
 
 	return touch;
 }

@@ -269,6 +269,7 @@ data_source_target(void *data,
 	wl_surface_attach(dnd_drag->drag_surface, buffer, 0, 0);
 	wl_surface_damage(dnd_drag->drag_surface, 0, 0,
 			  dnd_drag->width, dnd_drag->height);
+	wl_surface_commit(dnd_drag->drag_surface);
 }
 
 static void
@@ -450,6 +451,7 @@ dnd_button_handler(struct widget *widget,
 				  -dnd_drag->hotspot_x, -dnd_drag->hotspot_y);
 		wl_surface_damage(dnd_drag->drag_surface, 0, 0,
 				  dnd_drag->width, dnd_drag->height);
+		wl_surface_commit(dnd_drag->drag_surface);
 
 		dnd->current_drag = dnd_drag;
 		window_schedule_redraw(dnd->window);

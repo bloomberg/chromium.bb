@@ -852,6 +852,7 @@ window_attach_surface(struct window *window)
 		wl_surface_damage(window->surface, 0, 0,
 				  window->allocation.width,
 				  window->allocation.height);
+		wl_surface_commit(window->surface);
 		window->server_allocation = window->allocation;
 		cairo_surface_destroy(window->cairo_surface);
 		window->cairo_surface = NULL;
@@ -2625,6 +2626,7 @@ input_set_pointer_image_index(struct input *input, int index)
 	wl_surface_attach(input->pointer_surface, buffer, 0, 0);
 	wl_surface_damage(input->pointer_surface, 0, 0,
 			  image->width, image->height);
+	wl_surface_commit(input->pointer_surface);
 }
 
 static const struct wl_callback_listener pointer_surface_listener;
