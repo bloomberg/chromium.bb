@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Mon Oct  8 16:28:58 2012. */
+/* Last generated from IDL: Wed Oct 10 15:35:07 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -75,6 +75,7 @@
 #include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_flash_print.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
+#include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -219,6 +220,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FlashFullscreen_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_MessageLoop_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Print_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_GpuBlacklist_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
@@ -2640,6 +2642,8 @@ void Pnacl_M15_PPB_Flash_TCPSocket_Disconnect(PP_Resource tcp_socket) {
 
 /* End wrapper methods for PPB_Flash_TCPSocket_0_2 */
 
+/* Not generating wrapper methods for PPB_GpuBlacklist_Private_0_2 */
+
 /* Begin wrapper methods for PPB_HostResolver_Private_0_1 */
 
 static __attribute__((pnaclcall))
@@ -3974,6 +3978,8 @@ struct PPB_Flash_TCPSocket_0_2 Pnacl_Wrappers_PPB_Flash_TCPSocket_0_2 = {
     .Disconnect = (void (*)(PP_Resource tcp_socket))&Pnacl_M15_PPB_Flash_TCPSocket_Disconnect
 };
 
+/* Not generating wrapper interface for PPB_GpuBlacklist_Private_0_2 */
+
 struct PPB_HostResolver_Private_0_1 Pnacl_Wrappers_PPB_HostResolver_Private_0_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_HostResolver_Private_Create,
     .IsHostResolver = (PP_Bool (*)(PP_Resource resource))&Pnacl_M19_PPB_HostResolver_Private_IsHostResolver,
@@ -4782,6 +4788,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_GpuBlacklist_Private_0_2 = {
+  .iface_macro = PPB_GPUBLACKLIST_PRIVATE_INTERFACE_0_2,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1 = {
   .iface_macro = PPB_HOSTRESOLVER_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_HostResolver_Private_0_1,
@@ -5002,6 +5014,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Flash_MessageLoop_0_1,
   &Pnacl_WrapperInfo_PPB_Flash_Print_1_0,
   &Pnacl_WrapperInfo_PPB_Flash_TCPSocket_0_2,
+  &Pnacl_WrapperInfo_PPB_GpuBlacklist_Private_0_2,
   &Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Instance_Private_0_1,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1,

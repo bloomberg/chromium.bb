@@ -301,7 +301,7 @@ const void* InternalGetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_BufferTrusted_0_1_Thunk();
   if (strcmp(name, PPB_CORE_INTERFACE_1_0) == 0)
     return &core_interface;
-  if (strcmp(name, PPB_GPU_BLACKLIST_INTERFACE) == 0)
+  if (strcmp(name, PPB_GPUBLACKLIST_PRIVATE_INTERFACE) == 0)
     return PPB_GpuBlacklist_Private_Impl::GetInterface();
   if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_INTERFACE_1_0) == 0)
     return ::ppapi::thunk::GetPPB_Graphics3DTrusted_1_0_Thunk();

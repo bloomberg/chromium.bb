@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 #include "webkit/plugins/plugin_switches.h"
 
 namespace webkit {
@@ -14,10 +13,11 @@ namespace ppapi {
 
 namespace {
 
-bool IsGpuBlacklisted() {
+PP_Bool IsGpuBlacklisted() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   CHECK(command_line);
-  return command_line->HasSwitch(switches::kDisablePepper3dForUntrustedUse);
+  return PP_FromBool(
+      command_line->HasSwitch(switches::kDisablePepper3dForUntrustedUse));
 }
 
 }  // namespace

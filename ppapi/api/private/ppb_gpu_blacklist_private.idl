@@ -1,0 +1,23 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* This file contains the <code>PPB_FileRefPrivate</code> interface. */
+label Chrome {
+  M24 = 0.2
+};
+
+/** PPB_GpuBlacklist_Private interface */
+interface PPB_GpuBlacklist_Private {
+  /**
+   * Returns true if the current system's GPU is blacklisted and 3D in Chrome
+   * will be emulated via software rendering.
+   *
+   * This is used internally by the SRPC NaCl proxy (not exposed to plugins) to
+   * determine if the 3D interfaces should be exposed to plugins. We don't
+   * expose the 3D interfaces if the 3D support is software-emulated. When the
+   * SRPC proxy is removed, this interface can also be removed.
+   */
+  PP_Bool IsGpuBlacklisted();
+};

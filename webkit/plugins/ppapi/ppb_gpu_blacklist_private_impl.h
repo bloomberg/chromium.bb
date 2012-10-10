@@ -5,7 +5,7 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_GPU_BLACKLIST_PRIVATE_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_GPU_BLACKLIST_PRIVATE_IMPL_H_
 
-struct PPB_GpuBlacklist_Private;
+#include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 
 namespace webkit {
 namespace ppapi {
