@@ -74,10 +74,10 @@ std::string GetDeviceIdFromStorageInfo(const MtpStorageInfo& storage_info) {
 }
 
 // Returns the |data_store_id| string in the required format.
-// If the |data_store_id| is 65537, this function returns "(65537)".
+// If the |data_store_id| is 65537, this function returns " (65537)".
 std::string GetFormattedIdString(const std::string& data_store_id) {
-  return base::StringPrintf("%s%s%s", chrome::kLeftParen, data_store_id.c_str(),
-                            chrome::kRightParen);
+  return base::StringPrintf(" %s%s%s", chrome::kLeftParen,
+                            data_store_id.c_str(), chrome::kRightParen);
 }
 
 // Helper function to get device label from storage information.
@@ -117,7 +117,6 @@ void GetStorageInfo(const std::string& storage_name,
   DCHECK(!storage_name.empty());
   MediaTransferProtocolManager* mtp_manager =
       MediaTransferProtocolManager::GetInstance();
-  DCHECK(mtp_manager);
   const MtpStorageInfo* storage_info =
       mtp_manager->GetStorageInfo(storage_name);
 
@@ -145,8 +144,7 @@ MediaTransferProtocolDeviceObserverCros()
 
   MediaTransferProtocolManager* mtp_manager =
       MediaTransferProtocolManager::GetInstance();
-  if (mtp_manager)
-    mtp_manager->AddObserver(this);
+  mtp_manager->AddObserver(this);
   EnumerateStorages();
 }
 

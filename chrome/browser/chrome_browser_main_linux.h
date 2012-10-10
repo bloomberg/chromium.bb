@@ -33,14 +33,12 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
-#if !defined(OS_CHROMEOS)
-  scoped_refptr<chrome::RemovableDeviceNotificationsLinux>
-      removable_device_notifications_linux_;
-#endif
-
 #if defined(OS_CHROMEOS)
   chromeos::VersionLoader cros_version_loader_;
   CancelableRequestConsumer cros_consumer_;
+#else
+  scoped_refptr<chrome::RemovableDeviceNotificationsLinux>
+      removable_device_notifications_linux_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);

@@ -10,11 +10,11 @@
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/media/mtp_device_delegate.h"
 
+class FilePath;
+
 namespace base {
 class SequencedTaskRunner;
 }
-
-class FilePath;
 
 namespace chromeos {
 
