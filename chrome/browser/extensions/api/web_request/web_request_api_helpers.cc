@@ -772,9 +772,11 @@ static bool DoesResponseCookieMatchFilter(net::ParsedCookie* cookie,
   if (filter->http_only.get() && cookie->IsHttpOnly() != *filter->http_only)
     return false;
   int64 seconds_till_expiry;
-  if (filter->age_upper_bound.get() || filter->age_lower_bound.get()) {
-    if (!ParseCookieLifetime(cookie, &seconds_till_expiry))
-      return false;
+  bool lifetime_parsed = false;
+  if (filter->age_upper_bound.get() ||
+      filter->age_lower_bound.get() ||
+      (filter->session_cookie.get() && *filter->session_cookie)) {
+    lifetime_parsed = ParseCookieLifetime(cookie, &seconds_till_expiry);
   }
   if (filter->age_upper_bound.get()) {
     if (seconds_till_expiry > *filter->age_upper_bound)
@@ -783,6 +785,11 @@ static bool DoesResponseCookieMatchFilter(net::ParsedCookie* cookie,
   if (filter->age_lower_bound.get()) {
     if (seconds_till_expiry < *filter->age_lower_bound)
       return false;
+  }
+  if (filter->session_cookie.get() &&
+      *filter->session_cookie &&
+      lifetime_parsed) {
+    return false;
   }
   return true;
 }

@@ -75,6 +75,7 @@ struct FilterResponseCookie : ResponseCookie {
   ~FilterResponseCookie();
   scoped_ptr<int> age_lower_bound;
   scoped_ptr<int> age_upper_bound;
+  scoped_ptr<bool> session_cookie;
  private:
   DISALLOW_COPY_AND_ASSIGN(FilterResponseCookie);
 };

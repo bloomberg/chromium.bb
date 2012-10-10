@@ -43,6 +43,7 @@ extern const char kNamePrefixKey[];
 extern const char kNameSuffixKey[];
 extern const char kNameContainsKey[];
 extern const char kNameEqualsKey[];
+extern const char kSessionCookieKey[];
 extern const char kValuePrefixKey[];
 extern const char kValueSuffixKey[];
 extern const char kValueContainsKey[];

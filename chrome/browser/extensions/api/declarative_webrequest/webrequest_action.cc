@@ -89,10 +89,13 @@ scoped_ptr<helpers::FilterResponseCookie> ParseFilterResponseCookie(
   ParseResponseCookieImpl(dict, result.get());
 
   int int_tmp = 0;
+  bool bool_tmp = false;
   if (dict->GetInteger(keys::kAgeUpperBoundKey, &int_tmp))
     result->age_upper_bound.reset(new int(int_tmp));
   if (dict->GetInteger(keys::kAgeLowerBoundKey, &int_tmp))
     result->age_lower_bound.reset(new int(int_tmp));
+  if (dict->GetBoolean(keys::kSessionCookieKey, &bool_tmp))
+    result->session_cookie.reset(new bool(bool_tmp));
   return result.Pass();
 }
 

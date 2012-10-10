@@ -40,6 +40,7 @@ const char kNamePrefixKey[] = "namePrefix";
 const char kNameSuffixKey[] = "nameSuffix";
 const char kNameContainsKey[] = "nameContains";
 const char kNameEqualsKey[] = "nameEquals";
+const char kSessionCookieKey[] = "sessionCookie";
 const char kValuePrefixKey[] = "valuePrefix";
 const char kValueSuffixKey[] = "valueSuffix";
 const char kValueContainsKey[] = "valueContains";

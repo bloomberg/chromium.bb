@@ -378,6 +378,11 @@
             "description": "Inclusive lower bound on the cookie lifetime (specified in seconds after current time). Only cookies whose expiration date-time is set to 'now + ageLowerBound' or later fulfill this criterion. Session cookies do not meet the criterion of this filter. The cookie lifetime is calculated from either 'max-age' or 'expires' cookie attributes. If both are specified, 'max-age' is used to calculate the cookie lifetime.",
             "minimum": 0,
             "optional": true
+          },
+          "sessionCookie": {
+            "type": "boolean",
+            "description": "Filters session cookies. Session cookies have no lifetime specified in any of 'max-age' or 'expires' attributes.",
+            "optional": true
           }
         }
       },

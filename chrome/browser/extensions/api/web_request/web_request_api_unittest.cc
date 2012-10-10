@@ -1656,6 +1656,8 @@ TEST(ExtensionWebRequestHelpersTest,
       "Set-Cookie: uBound5=value12; Max-Age=600; Expires=" +
       cookie_expiration + "\r\n"
       "Set-Cookie: uBound6=removed; Max-Age=600\r\n"
+      "Set-Cookie: sessionCookie=removed; Max-Age=INVALID\r\n"
+      "Set-Cookie: sessionCookie2=removed\r\n"
       "\r\n";
   scoped_refptr<net::HttpResponseHeaders> base_headers(
       new net::HttpResponseHeaders(
@@ -1803,10 +1805,25 @@ TEST(ExtensionWebRequestHelpersTest,
   remove_cookie_2->filter->name.reset(new std::string("uBound6"));
   remove_cookie_2->filter->age_upper_bound.reset(new int(700));
 
+  linked_ptr<ResponseCookieModification> remove_cookie_3 =
+      make_linked_ptr(new ResponseCookieModification);
+  remove_cookie_3->type = helpers::REMOVE;
+  remove_cookie_3->filter.reset(new helpers::FilterResponseCookie);
+  remove_cookie_3->filter->name.reset(new std::string("sessionCookie"));
+  remove_cookie_3->filter->session_cookie.reset(new bool(true));
+
+  linked_ptr<ResponseCookieModification> remove_cookie_4 =
+        make_linked_ptr(new ResponseCookieModification);
+  remove_cookie_4->type = helpers::REMOVE;
+  remove_cookie_4->filter.reset(new helpers::FilterResponseCookie);
+  remove_cookie_4->filter->name.reset(new std::string("sessionCookie2"));
+  remove_cookie_4->filter->session_cookie.reset(new bool(true));
+
   linked_ptr<ResponseCookieModification> operations[] = {
       add_cookie, edit_cookie, edit_cookie_2, edit_cookie_3, edit_cookie_4,
       edit_cookie_5, edit_cookie_6, edit_cookie_7, edit_cookie_8,
-      edit_cookie_9, edit_cookie_10, remove_cookie, remove_cookie_2
+      edit_cookie_9, edit_cookie_10, remove_cookie, remove_cookie_2,
+      remove_cookie_3, remove_cookie_4
   };
 
   for (size_t i = 0; i < arraysize(operations); ++i) {
