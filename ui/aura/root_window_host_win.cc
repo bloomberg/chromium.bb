@@ -21,22 +21,9 @@ using std::min;
 
 namespace aura {
 
-namespace {
-
-const char* kRootWindowHostWinKey = "__AURA_ROOT_WINDOW_HOST_WIN__";
-
-}  // namespace
-
 // static
 RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
   return new RootWindowHostWin(bounds);
-}
-
-// static
-RootWindowHost* RootWindowHost::GetForAcceleratedWidget(
-    gfx::AcceleratedWidget accelerated_widget) {
-  return reinterpret_cast<RootWindowHost*>(
-      ui::ViewProp::GetValue(accelerated_widget, kRootWindowHostWinKey));
 }
 
 // static
@@ -53,7 +40,6 @@ RootWindowHostWin::RootWindowHostWin(const gfx::Rect& bounds)
       saved_window_ex_style_(0) {
   Init(NULL, bounds);
   SetWindowText(hwnd(), L"aura::RootWindow!");
-  prop_.reset(new ui::ViewProp(hwnd(), kRootWindowHostWinKey, this));
 }
 
 RootWindowHostWin::~RootWindowHostWin() {

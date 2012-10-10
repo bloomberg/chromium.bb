@@ -19,7 +19,6 @@
 
 namespace ui {
 class MouseEvent;
-class ViewProp;
 }
 
 namespace aura {
@@ -115,8 +114,6 @@ class RootWindowHostLinux : public RootWindowHost,
   bool focus_when_shown_;
 
   scoped_array<XID> pointer_barriers_;
-
-  scoped_ptr<ui::ViewProp> prop_;
 
   scoped_ptr<internal::TouchEventCalibrate> touch_calibrate_;
 

@@ -42,11 +42,6 @@ class AURA_EXPORT RootWindowHost {
 
   virtual RootWindow* GetRootWindow() = 0;
 
-  // Returns the RootWindowHost for the specified accelerated widget, or NULL if
-  // there is none associated.
-  static RootWindowHost* GetForAcceleratedWidget(
-      gfx::AcceleratedWidget accelerated_widget);
-
   // Returns the accelerated widget.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
 

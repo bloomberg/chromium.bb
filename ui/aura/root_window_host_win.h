@@ -9,10 +9,6 @@
 #include "ui/aura/root_window_host.h"
 #include "ui/base/win/window_impl.h"
 
-namespace ui {
-class ViewProp;
-}
-
 namespace aura {
 
 class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
@@ -82,8 +78,6 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
   RECT saved_window_rect_;
   DWORD saved_window_style_;
   DWORD saved_window_ex_style_;
-
-  scoped_ptr<ui::ViewProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostWin);
 };

@@ -52,10 +52,10 @@ gfx::NativeWindow DesktopScreenWin::GetWindowAtCursorScreenPoint() {
   POINT location;
   gfx::AcceleratedWidget accelerated_widget =
       GetCursorPos(&location) ? WindowFromPoint(location) : NULL;
-  RootWindowHost* host = NULL;
+  RootWindow* window = NULL;
   if (::IsWindow(accelerated_widget))
-    host = RootWindowHost::GetForAcceleratedWidget(accelerated_widget);
-  return host ? host->GetRootWindow() : NULL;
+    window = RootWindow::GetForAcceleratedWidget(accelerated_widget);
+  return window;
 }
 
 int DesktopScreenWin::GetNumDisplays() {

@@ -100,6 +100,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   explicit RootWindow(const CreateParams& params);
   virtual ~RootWindow();
 
+  // Returns the RootWindowHost for the specified accelerated widget, or NULL
+  // if there is none associated.
   static RootWindow* GetForAcceleratedWidget(gfx::AcceleratedWidget widget);
 
   ui::Compositor* compositor() { return compositor_.get(); }

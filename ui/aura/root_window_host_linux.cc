@@ -59,8 +59,6 @@ const int kXRootWindowPaddingRight = 40;
 const int kXRootWindowPaddingBottom = 30;
 const int kXRootWindowPaddingTop = 0;
 
-const char kRootWindowHostLinuxKey[] = "__AURA_ROOT_WINDOW_HOST_LINUX__";
-
 const char* kAtomsToCache[] = {
   "WM_DELETE_WINDOW",
   "_NET_WM_PING",
@@ -358,8 +356,6 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       &swa);
   base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(this, xwindow_);
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(this);
-
-  prop_.reset(new ui::ViewProp(xwindow_, kRootWindowHostLinuxKey, this));
 
   long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
                     KeyPressMask | KeyReleaseMask |
@@ -1012,13 +1008,6 @@ void RootWindowHostLinux::TranslateAndDispatchMouseEvent(
 // static
 RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
   return new RootWindowHostLinux(bounds);
-}
-
-// static
-RootWindowHost* RootWindowHost::GetForAcceleratedWidget(
-    gfx::AcceleratedWidget accelerated_widget) {
-  return reinterpret_cast<RootWindowHost*>(
-      ui::ViewProp::GetValue(accelerated_widget, kRootWindowHostLinuxKey));
 }
 
 // static
