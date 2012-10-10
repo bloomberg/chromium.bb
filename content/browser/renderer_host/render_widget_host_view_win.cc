@@ -927,7 +927,7 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool)>& callback,
-    skia::PlatformCanvas* output) {
+    skia::PlatformBitmap* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
   if (!accelerated_surface_.get())
     return;
@@ -935,13 +935,13 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurface(
   if (dst_size.IsEmpty())
     return;
 
-  if (!output->initialize(dst_size.width(), dst_size.height(), true))
+  if (!output->Allocate(dst_size.width(), dst_size.height(), true))
     return;
 
   const bool result = accelerated_surface_->CopyTo(
       src_subrect,
       dst_size,
-      output->getTopDevice()->accessBitmap(true).getPixels());
+      output->GetBitmap().getPixels());
   scoped_callback_runner.Release();
   callback.Run(result);
 }

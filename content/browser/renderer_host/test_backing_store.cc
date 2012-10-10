@@ -26,7 +26,7 @@ void TestBackingStore::PaintToBackingStore(
 }
 
 bool TestBackingStore::CopyFromBackingStore(const gfx::Rect& rect,
-                                            skia::PlatformCanvas* output) {
+                                            skia::PlatformBitmap* output) {
   return false;
 }
 

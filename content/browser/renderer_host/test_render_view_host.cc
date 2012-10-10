@@ -119,7 +119,7 @@ void TestRenderWidgetHostView::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool)>& callback,
-    skia::PlatformCanvas* output) {
+    skia::PlatformBitmap* output) {
   callback.Run(false);
 }
 

@@ -148,20 +148,19 @@ void BackingStoreAura::ScrollBackingStore(int dx, int dy,
 }
 
 bool BackingStoreAura::CopyFromBackingStore(const gfx::Rect& rect,
-                                            skia::PlatformCanvas* output) {
+                                            skia::PlatformBitmap* output) {
   const int width =
       std::min(size().width(), rect.width()) * device_scale_factor_;
   const int height =
       std::min(size().height(), rect.height()) * device_scale_factor_;
-  if (!output->initialize(width, height, true))
+  if (!output->Allocate(width, height, true))
     return false;
 
-  SkBitmap bitmap = skia::GetTopDevice(*output)->accessBitmap(true);
   SkIRect skrect = SkIRect::MakeXYWH(rect.x(), rect.y(), width, height);
   SkBitmap b;
   if (!canvas_->readPixels(skrect, &b))
     return false;
-  output->writePixels(b, rect.x(), rect.y());
+  SkCanvas(output->GetBitmap()).writePixels(b, rect.x(), rect.y());
   return true;
 }
 

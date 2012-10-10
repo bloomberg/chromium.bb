@@ -259,7 +259,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const base::Callback<void(bool)>& callback,
-      skia::PlatformCanvas* output) OVERRIDE;
+      skia::PlatformBitmap* output) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
 
   virtual void OnAccessibilityNotifications(

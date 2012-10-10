@@ -7,6 +7,7 @@
 
 // The platform-specific device will include the necessary platform headers
 // to get the surface type.
+#include "base/basictypes.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
@@ -149,6 +150,28 @@ class SK_API ScopedPlatformPaint {
   // Disallow copy and assign
   ScopedPlatformPaint(const ScopedPlatformPaint&);
   ScopedPlatformPaint& operator=(const ScopedPlatformPaint&);
+};
+
+class SK_API PlatformBitmap {
+ public:
+  PlatformBitmap();
+  ~PlatformBitmap();
+
+  // Returns true if the bitmap was able to allocate its surface.
+  bool Allocate(int width, int height, bool is_opaque);
+
+  // Returns the platform surface, or 0 if Allocate() did not return true.
+  PlatformSurface GetSurface() { return surface_; }
+
+  // Return the skia bitmap, which will be empty if Allocate() did not
+  // return true.
+  const SkBitmap& GetBitmap() { return bitmap_; }
+
+ private:
+  SkBitmap bitmap_;
+  PlatformSurface surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformBitmap);
 };
 
 }  // namespace skia

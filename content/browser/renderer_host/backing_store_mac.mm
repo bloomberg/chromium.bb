@@ -167,13 +167,12 @@ void BackingStoreMac::PaintToBackingStore(
 }
 
 bool BackingStoreMac::CopyFromBackingStore(const gfx::Rect& rect,
-                                           skia::PlatformCanvas* output) {
+                                           skia::PlatformBitmap* output) {
   // TODO(thakis): Make sure this works with HiDPI backing stores.
-  if (!output->initialize(rect.width(), rect.height(), true))
+  if (!output->Allocate(rect.width(), rect.height(), true))
     return false;
 
-  skia::ScopedPlatformPaint scoped_platform_paint(output);
-  CGContextRef temp_context = scoped_platform_paint.GetPlatformSurface();
+  CGContextRef temp_context = output->GetSurface();
   gfx::ScopedCGContextSaveGState save_gstate(temp_context);
   CGContextTranslateCTM(temp_context, 0.0, size().height());
   CGContextScaleCTM(temp_context, 1.0, -1.0);

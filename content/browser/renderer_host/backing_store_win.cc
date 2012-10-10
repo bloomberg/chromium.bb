@@ -159,12 +159,11 @@ void BackingStoreWin::PaintToBackingStore(
 }
 
 bool BackingStoreWin::CopyFromBackingStore(const gfx::Rect& rect,
-                                           skia::PlatformCanvas* output) {
-  if (!output->initialize(rect.width(), rect.height(), true))
+                                           skia::PlatformBitmap* output) {
+  if (!output->Allocate(rect.width(), rect.height(), true))
     return false;
 
-  skia::ScopedPlatformPaint scoped_platform_paint(output);
-  HDC temp_dc = scoped_platform_paint.GetPlatformSurface();
+  HDC temp_dc = output->GetSurface();
   BitBlt(temp_dc, 0, 0, rect.width(), rect.height(),
          hdc(), rect.x(), rect.y(), SRCCOPY);
   return true;

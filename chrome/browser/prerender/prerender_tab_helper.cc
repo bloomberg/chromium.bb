@@ -55,7 +55,7 @@ class PrerenderTabHelper::PixelStats {
       return;
     }
 
-    skia::PlatformCanvas* temp_canvas = new skia::PlatformCanvas;
+    skia::PlatformBitmap* temp_bitmap = new skia::PlatformBitmap;
     web_contents->GetRenderViewHost()->CopyFromBackingStore(
         gfx::Rect(),
         gfx::Size(),
@@ -63,19 +63,18 @@ class PrerenderTabHelper::PixelStats {
                    weak_factory_.GetWeakPtr(),
                    bitmap_type,
                    web_contents,
-                   base::Owned(temp_canvas)),
-        temp_canvas);
+                   base::Owned(temp_bitmap)),
+        temp_bitmap);
   }
 
  private:
   void HandleBitmapResult(BitmapType bitmap_type,
                           WebContents* web_contents,
-                          skia::PlatformCanvas* temp_canvas,
+                          skia::PlatformBitmap* temp_bitmap,
                           bool succeeded) {
     scoped_ptr<SkBitmap> bitmap;
     if (succeeded) {
-      const SkBitmap& canvas_bitmap =
-          skia::GetTopDevice(*temp_canvas)->accessBitmap(false);
+        const SkBitmap& canvas_bitmap = temp_bitmap->GetBitmap();
       bitmap.reset(new SkBitmap());
       canvas_bitmap.copyTo(bitmap.get(), SkBitmap::kARGB_8888_Config);
     }

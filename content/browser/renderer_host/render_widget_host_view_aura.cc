@@ -634,7 +634,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool)>& callback,
-    skia::PlatformCanvas* output) {
+    skia::PlatformBitmap* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
 
   std::map<uint64, scoped_refptr<ui::Texture> >::iterator it =
@@ -646,7 +646,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   DCHECK(container);
 
   gfx::Size dst_size_in_pixel = ConvertSizeToPixel(this, dst_size);
-  if (!output->initialize(
+  if (!output->Allocate(
       dst_size_in_pixel.width(), dst_size_in_pixel.height(), true))
     return;
 
@@ -656,7 +656,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     return;
 
   unsigned char* addr = static_cast<unsigned char*>(
-      output->getTopDevice()->accessBitmap(true).getPixels());
+      output->GetBitmap().getPixels());
   scoped_callback_runner.Release();
   // Wrap the callback with an internal handler so that we can inject our
   // own completion handlers (where we can call AdjustSurfaceProtection).

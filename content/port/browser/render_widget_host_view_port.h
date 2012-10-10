@@ -35,6 +35,10 @@ struct WebScreenInfo;
 }
 #endif
 
+namespace skia {
+class PlatformBitmap;
+};
+
 namespace content {
 class BackingStore;
 class SmoothScrollGesture;
@@ -161,7 +165,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const base::Callback<void(bool)>& callback,
-      skia::PlatformCanvas* output) = 0;
+      skia::PlatformBitmap* output) = 0;
 
   // Called when accelerated compositing state changes.
   virtual void OnAcceleratedCompositingStateChange() = 0;

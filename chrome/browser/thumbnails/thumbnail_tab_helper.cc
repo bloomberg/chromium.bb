@@ -406,7 +406,7 @@ void ThumbnailTabHelper::AsyncUpdateThumbnail(
                               gfx::Size(kThumbnailWidth, kThumbnailHeight),
                               &clip_result);
   gfx::Size copy_size = GetCopySizeForThumbnail(view);
-  skia::PlatformCanvas* temp_canvas = new skia::PlatformCanvas;
+  skia::PlatformBitmap* temp_bitmap = new skia::PlatformBitmap;
   render_widget_host->CopyFromBackingStore(
       copy_rect,
       copy_size,
@@ -414,8 +414,8 @@ void ThumbnailTabHelper::AsyncUpdateThumbnail(
                  weak_factory_.GetWeakPtr(),
                  web_contents,
                  clip_result,
-                 base::Owned(temp_canvas)),
-      temp_canvas);
+                 base::Owned(temp_bitmap)),
+      temp_bitmap);
 }
 
 void ThumbnailTabHelper::UpdateThumbnailWithBitmap(
@@ -435,13 +435,13 @@ void ThumbnailTabHelper::UpdateThumbnailWithBitmap(
 void ThumbnailTabHelper::UpdateThumbnailWithCanvas(
     WebContents* web_contents,
     ClipResult clip_result,
-    skia::PlatformCanvas* temp_canvas,
+    skia::PlatformBitmap* temp_bitmap,
     bool succeeded) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!succeeded)
     return;
 
-  SkBitmap bitmap = skia::GetTopDevice(*temp_canvas)->accessBitmap(false);
+  SkBitmap bitmap = temp_bitmap->GetBitmap();
   UpdateThumbnailWithBitmap(web_contents, clip_result, bitmap);
 }
 

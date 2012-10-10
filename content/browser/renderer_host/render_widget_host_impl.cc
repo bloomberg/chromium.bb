@@ -511,7 +511,7 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
     const gfx::Rect& src_subrect,
     const gfx::Size& accelerated_dst_size,
     const base::Callback<void(bool)>& callback,
-    skia::PlatformCanvas* output) {
+    skia::PlatformBitmap* output) {
   if (view_ && is_accelerated_compositing_active_) {
     TRACE_EVENT0("browser",
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");

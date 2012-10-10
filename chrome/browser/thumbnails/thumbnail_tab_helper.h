@@ -26,7 +26,7 @@ class TopSites;
 }
 
 namespace skia {
-class PlatformCanvas;
+class PlatformBitmap;
 }
 
 class ThumbnailTabHelper
@@ -120,7 +120,7 @@ class ThumbnailTabHelper
   void UpdateThumbnailWithCanvas(
       content::WebContents* web_contents,
       ClipResult clip_result,
-      skia::PlatformCanvas* temp_canvas,
+      skia::PlatformBitmap* temp_bitmap,
       bool result);
 
   // Called when a render view host was created for a WebContents.

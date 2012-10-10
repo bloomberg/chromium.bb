@@ -499,7 +499,7 @@ void BackingStoreGtk::PaintToBackingStore(
 }
 
 bool BackingStoreGtk::CopyFromBackingStore(const gfx::Rect& rect,
-                                           skia::PlatformCanvas* output) {
+                                           skia::PlatformBitmap* output) {
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
   if (visual_depth_ < 24) {
@@ -571,7 +571,7 @@ bool BackingStoreGtk::CopyFromBackingStore(const gfx::Rect& rect,
   // TODO(jhawkins): Need to convert the image data if the image bits per pixel
   // is not 32.
   // Note that this also initializes the output bitmap as opaque.
-  if (!output->initialize(width, height, true) ||
+  if (!output->Allocate(width, height, true) ||
       image->bits_per_pixel != 32) {
     if (shared_memory_support_ != ui::SHARED_MEMORY_NONE)
       DestroySharedImage(display_, image, &shminfo);
@@ -584,7 +584,7 @@ bool BackingStoreGtk::CopyFromBackingStore(const gfx::Rect& rect,
   // it and copy each row out, only up to the pixels we're actually
   // using.  This code assumes a visual mode where a pixel is
   // represented using a 32-bit unsigned int, with a byte per component.
-  SkBitmap bitmap = skia::GetTopDevice(*output)->accessBitmap(true);
+  const SkBitmap& bitmap = output->GetBitmap();
   SkAutoLockPixels alp(bitmap);
 
   for (int y = 0; y < height; y++) {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "skia/ext/bitmap_platform_device_android.h"
+#include "skia/ext/platform_canvas.h"
 
 namespace skia {
 
@@ -69,6 +70,20 @@ void BitmapPlatformDevice::DrawToNativeContext(
     PlatformSurface surface, int x, int y, const PlatformRect* src_rect) {
   // Should never be called on Android.
   SkASSERT(false);
+}
+
+// Port of PlatformBitmap to android
+
+PlatformBitmap::~PlatformBitmap() {}
+
+bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
+  bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+  if (!bitmap_.allocPixels())
+    return false;
+
+  bitmap_.setIsOpaque(is_opaque);
+  surface_ = bitmap_.getPixels();
+  return true;
 }
 
 }  // namespace skia

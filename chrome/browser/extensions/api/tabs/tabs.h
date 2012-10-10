@@ -29,7 +29,7 @@ class WebContents;
 }
 
 namespace skia {
-class PlatformCanvas;
+class PlatformBitmap;
 }
 
 // Windows
@@ -192,7 +192,7 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
   void SendResultFromBitmap(const SkBitmap& screen_capture);
 
  private:
-  void CopyFromBackingStoreComplete(skia::PlatformCanvas* canvas,
+  void CopyFromBackingStoreComplete(skia::PlatformBitmap* bitmap,
                                     bool succeeded);
 
   content::NotificationRegistrar registrar_;

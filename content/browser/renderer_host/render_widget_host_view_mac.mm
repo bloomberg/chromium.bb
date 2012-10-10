@@ -834,7 +834,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool)>& callback,
-    skia::PlatformCanvas* output) {
+    skia::PlatformBitmap* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
   if (!compositing_iosurface_.get() ||
       !compositing_iosurface_->HasIOSurface())
@@ -842,7 +842,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
 
   float scale = ScaleFactor(cocoa_view_);
   gfx::Size dst_pixel_size = gfx::ToFlooredSize(dst_size.Scale(scale));
-  if (!output->initialize(
+  if (!output->Allocate(
       dst_pixel_size.width(), dst_pixel_size.height(), true))
     return;
   scoped_callback_runner.Release();
@@ -857,7 +857,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
   compositing_iosurface_->CopyTo(
       src_pixel_gl_subrect,
       dst_pixel_size,
-      output->getTopDevice()->accessBitmap(true).getPixels(),
+      output->GetBitmap().getPixels(),
       callback);
 }
 

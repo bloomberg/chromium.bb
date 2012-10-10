@@ -20,7 +20,7 @@ class Rect;
 }
 
 namespace skia {
-class PlatformCanvas;
+class PlatformBitmap;
 }
 
 namespace content {
@@ -66,7 +66,7 @@ class CONTENT_EXPORT BackingStore {
   // will call initialize() with the correct size. The return value indicates
   // success.
   virtual bool CopyFromBackingStore(const gfx::Rect& rect,
-                                    skia::PlatformCanvas* output) = 0;
+                                    skia::PlatformBitmap* output) = 0;
 
   // Scrolls the contents of clip_rect in the backing store by dx or dy (but dx
   // and dy cannot both be non-zero).

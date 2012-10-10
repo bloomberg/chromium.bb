@@ -87,4 +87,6 @@ void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
   canvas->drawRect(rect, paint);
 }
 
+PlatformBitmap::PlatformBitmap() : surface_(0) {}
+
 }  // namespace skia

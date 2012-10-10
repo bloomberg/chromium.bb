@@ -26,7 +26,7 @@ class TestBackingStore : public BackingStore {
       const base::Closure& completion_callback,
       bool* scheduled_completion_callback) OVERRIDE;
   virtual bool CopyFromBackingStore(const gfx::Rect& rect,
-                                    skia::PlatformCanvas* output) OVERRIDE;
+                                    skia::PlatformBitmap* output) OVERRIDE;
   virtual void ScrollBackingStore(int dx, int dy,
                                   const gfx::Rect& clip_rect,
                                   const gfx::Size& view_size) OVERRIDE;

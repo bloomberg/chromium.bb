@@ -27,7 +27,7 @@ class Rect;
 }
 
 namespace skia {
-class PlatformCanvas;
+class PlatformBitmap;
 }
 
 namespace content {
@@ -178,7 +178,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void CopyFromBackingStore(const gfx::Rect& src_rect,
                                     const gfx::Size& accelerated_dest_size,
                                     const base::Callback<void(bool)>& callback,
-                                    skia::PlatformCanvas* output) = 0;
+                                    skia::PlatformBitmap* output) = 0;
 #if defined(TOOLKIT_GTK)
   // Paint the backing store into the target's |dest_rect|.
   virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
