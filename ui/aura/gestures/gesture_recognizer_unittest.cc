@@ -571,8 +571,8 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      gfx::Point actual_point(delegate->tap_location());
      EXPECT_EQ(24, delegate->bounding_box().width());
      EXPECT_EQ(24, delegate->bounding_box().height());
-     EXPECT_EQ(101, actual_point.x());
-     EXPECT_EQ(201, actual_point.y());
+     EXPECT_EQ(100, actual_point.x());
+     EXPECT_EQ(200, actual_point.y());
   }
 
   // Test with no ET_TOUCH_MOVED events but different touch points and radii.
@@ -615,8 +615,8 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      gfx::Point actual_point(delegate->tap_location());
      EXPECT_EQ(40, delegate->bounding_box().width());
      EXPECT_EQ(40, delegate->bounding_box().height());
-     EXPECT_EQ(367, actual_point.x());
-     EXPECT_EQ(291, actual_point.y());
+     EXPECT_EQ(366, actual_point.x());
+     EXPECT_EQ(290, actual_point.y());
   }
 
   // Test with a single ET_TOUCH_MOVED event.
@@ -678,7 +678,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_EQ(25, delegate->bounding_box().width());
      EXPECT_EQ(24, delegate->bounding_box().height());
      EXPECT_EQ(48, actual_point.x());
-     EXPECT_EQ(204, actual_point.y());
+     EXPECT_EQ(203, actual_point.y());
   }
 
   // Test with a few ET_TOUCH_MOVED events.
@@ -773,7 +773,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_EQ(33, delegate->bounding_box().width());
      EXPECT_EQ(32, delegate->bounding_box().height());
      EXPECT_EQ(397, actual_point.x());
-     EXPECT_EQ(149, actual_point.y());
+     EXPECT_EQ(148, actual_point.y());
   }
 }
 

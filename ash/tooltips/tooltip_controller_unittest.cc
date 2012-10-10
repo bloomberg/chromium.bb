@@ -194,7 +194,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
                                 view1->bounds().CenterPoint());
   FireTooltipTimer();
   EXPECT_TRUE(IsTooltipVisible());
-  for (int i = 0; i < 49; ++i) {
+  for (int i = 0; i < 50; i++) {
     generator.MoveMouseBy(1, 0);
     EXPECT_TRUE(IsTooltipVisible());
     EXPECT_EQ(window,
@@ -205,7 +205,7 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
     EXPECT_EQ(expected_tooltip, GetTooltipText());
     EXPECT_EQ(window, GetTooltipWindow());
   }
-  for (int i = 0; i < 49; ++i) {
+  for (int i = 0; i < 50; i++) {
     generator.MoveMouseBy(1, 0);
     EXPECT_FALSE(IsTooltipVisible());
     EXPECT_EQ(window,
@@ -397,7 +397,7 @@ TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
 
   // Moving the mouse inside |view1| should not change the state of the tooltip
   // or the timers.
-  for (int i = 0; i < 49; i++) {
+  for (int i = 0; i < 50; i++) {
     generator.MoveMouseBy(1, 0);
     EXPECT_FALSE(IsTooltipVisible());
     EXPECT_FALSE(IsTooltipTimerRunning());
@@ -452,7 +452,7 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
 
   // Moving the mouse inside |view1| should not change the state of the tooltip
   // or the timers.
-  for (int i = 0; i < 49; ++i) {
+  for (int i = 0; i < 50; i++) {
     generator.MoveMouseBy(1, 0);
     EXPECT_FALSE(IsTooltipVisible());
     EXPECT_FALSE(IsTooltipTimerRunning());

@@ -268,7 +268,7 @@ template<typename Class,
          typename Type>
 PointClass RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::
     CenterPoint() const {
-  return PointClass(x() + width() / 2, y() + height() / 2);
+  return PointClass(x() + (width() - 1) / 2, y() + (height() - 1) / 2);
 }
 
 template<typename Class,
