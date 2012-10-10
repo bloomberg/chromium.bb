@@ -78,16 +78,6 @@ class LocalFileChangeTrackerTest : public testing::Test {
     return change_tracker_.get();
   }
 
-  std::string SerializeExternalFileSystemURL(const FileSystemURL& url) {
-    return change_tracker_->SerializeExternalFileSystemURL(url);
-  }
-
-  bool DeserializeExternalFileSystemURL(
-      const std::string& serialized_url, FileSystemURL* url) {
-    return change_tracker_->DeserializeExternalFileSystemURL(
-        serialized_url, url);
-  }
-
   void VerifyChange(const FileSystemURL& url,
                     const FileChange& expected_change) {
     SCOPED_TRACE(testing::Message() << url.spec() <<
@@ -154,27 +144,6 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
   VerifyChange(URL(kURL5),
                FileChange(FileChange::FILE_CHANGE_DELETE,
                           FileChange::FILE_TYPE_FILE));
-}
-
-TEST_F(LocalFileChangeTrackerTest, SerializeExternalFileSystemURL) {
-  const std::string kFileSystemRootURI = "filesystem:http://foo.com/external/";
-
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-  const std::string kRelativePath = "dir a\\file";
-#else
-  const std::string kRelativePath = "dir a/file";
-#endif  // FILE_PATH_USES_WIN_SEPARATORS
-
-  const std::string kExternalFileSystemURL =
-      kFileSystemRootURI + kExternalFileSystemID + "/" + kRelativePath;
-  const FileSystemURL url = FileSystemURL(GURL(kExternalFileSystemURL));
-
-  const std::string serialized = SerializeExternalFileSystemURL(url);
-  EXPECT_EQ(kExternalFileSystemURL, serialized);
-
-  FileSystemURL deserialized;
-  EXPECT_TRUE(DeserializeExternalFileSystemURL(serialized, &deserialized));
-  EXPECT_EQ(url, deserialized);
 }
 
 // TODO(nhiroki): add unittests to ensure the database works successfully.

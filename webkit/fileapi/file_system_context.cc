@@ -20,6 +20,7 @@
 #include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/fileapi/test_mount_point_provider.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -204,16 +205,9 @@ void FileSystemContext::OpenSyncableFileSystem(
   DCHECK(!callback.is_null());
 
   DCHECK(type == kFileSystemTypeSyncable);
-  IsolatedContext::GetInstance()->RegisterExternalFileSystem(
-      mount_name,
-      kFileSystemTypeSyncable,
-      FilePath());
+  RegisterSyncableFileSystem(mount_name);
 
-  std::string root = GetFileSystemRootURI(
-      origin_url, kFileSystemTypeExternal).spec();
-  root.append(mount_name);
-  root.append("/");
-  GURL root_url = GURL(root);
+  GURL root_url = GetSyncableFileSystemRootURI(origin_url, mount_name);
   std::string name = GetFileSystemName(origin_url, kFileSystemTypeSyncable);
 
   FileSystemMountPointProvider* mount_point_provider =

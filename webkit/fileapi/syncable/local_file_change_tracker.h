@@ -83,10 +83,6 @@ class FILEAPI_EXPORT LocalFileChangeTracker
 
   void RecordChange(const FileSystemURL& url, const FileChange& change);
 
-  std::string SerializeExternalFileSystemURL(const FileSystemURL& url);
-  bool DeserializeExternalFileSystemURL(
-      const std::string& serialized_url, FileSystemURL* url);
-
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   FileChangeMap changes_;

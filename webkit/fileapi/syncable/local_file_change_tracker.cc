@@ -11,6 +11,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 namespace fileapi {
 
@@ -150,24 +151,20 @@ void LocalFileChangeTracker::RecordChange(
 
 SyncStatusCode LocalFileChangeTracker::MarkDirtyOnDatabase(
     const FileSystemURL& url) {
-  return tracker_db_->MarkDirty(SerializeExternalFileSystemURL(url));
+  std::string serialized_url;
+  if (!SerializeSyncableFileSystemURL(url, &serialized_url))
+    return SYNC_FILE_ERROR_INVALID_URL;
+
+  return tracker_db_->MarkDirty(serialized_url);
 }
 
 SyncStatusCode LocalFileChangeTracker::ClearDirtyOnDatabase(
     const FileSystemURL& url) {
-  return tracker_db_->ClearDirty(SerializeExternalFileSystemURL(url));
-}
+  std::string serialized_url;
+  if (!SerializeSyncableFileSystemURL(url, &serialized_url))
+    return SYNC_FILE_ERROR_INVALID_URL;
 
-std::string LocalFileChangeTracker::SerializeExternalFileSystemURL(
-    const FileSystemURL& url) {
-  return GetFileSystemRootURI(url.origin(), kFileSystemTypeExternal).spec() +
-      url.filesystem_id() + "/" + url.path().AsUTF8Unsafe();
-}
-
-bool LocalFileChangeTracker::DeserializeExternalFileSystemURL(
-    const std::string& serialized_url, FileSystemURL* url) {
-  *url = FileSystemURL(GURL(serialized_url));
-  return url->is_valid();
+  return tracker_db_->ClearDirty(serialized_url);
 }
 
 // TrackerDB -------------------------------------------------------------------
