@@ -483,33 +483,19 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Invoked whenever the pages in apps-page-list have changed so that
-     * the Slider knows about the new elements.
+     * Invoked whenever the pages in page-list have changed so that the
+     * CardSlider knows about the new elements.
      */
     updateSliderCards: function() {
       var pageNo = Math.max(0, Math.min(this.cardSlider.currentCard,
                                         this.tilePages.length - 1));
       this.cardSlider.setCards(Array.prototype.slice.call(this.tilePages),
                                pageNo);
-      switch (this.shownPage) {
-        case loadTimeData.getInteger('apps_page_id'):
-          this.cardSlider.selectCardByValue(
-              this.appsPages[Math.min(this.shownPageIndex,
-                                      this.appsPages.length - 1)]);
-          break;
-        case loadTimeData.getInteger('most_visited_page_id'):
-          if (this.mostVisitedPage)
-            this.cardSlider.selectCardByValue(this.mostVisitedPage);
-          break;
-        case loadTimeData.getInteger('recently_closed_page_id'):
-          if (this.recentlyClosedPage)
-            this.cardSlider.selectCardByValue(this.recentlyClosedPage);
-          break;
-        case loadTimeData.getInteger('other_devices_page_id'):
-          if (this.otherDevicesPage)
-            this.cardSlider.selectCardByValue(this.otherDevicesPage);
-          break;
-      }
+
+      assert(this.mostVisitedPage, 'Most Visited Page not found');
+      // NTP pages are not sticky anymore, so we should always select the Most
+      // Visited page when loading the card slider.
+      this.cardSlider.selectCardByValue(this.mostVisitedPage);
     },
 
     /**
