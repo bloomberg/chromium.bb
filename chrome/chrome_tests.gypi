@@ -511,7 +511,6 @@
         'browser/ui/browser_focus_uitest.cc',
         'browser/ui/fullscreen/fullscreen_controller_interactive_browsertest.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
-        'browser/ui/gtk/zoom_bubble_gtk_browsertest.cc',
         'browser/ui/omnibox/action_box_browsertest.cc',
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/panels/detached_panel_browsertest.cc',

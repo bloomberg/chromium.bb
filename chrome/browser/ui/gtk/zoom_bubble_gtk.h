@@ -23,21 +23,12 @@ class ZoomBubbleGtk {
   // Closes the zoom bubble.
   static void Close();
 
-  // Whether the zoom bubble is currently showing.
-  static bool IsShowing();
-
  private:
   ZoomBubbleGtk(GtkWidget* anchor, TabContents* tab_contents, bool auto_close);
   virtual ~ZoomBubbleGtk();
 
   // Convenience method to start |timer_| if |auto_close_| is true.
-  void StartTimerIfNecessary() {
-#if !defined(UNIT_TEST)
-    // Don't hide the bubble on a timeout in the tests as it makes them flakey.
-    StartTimerIfNecessaryInternal();
-#endif
-  }
-  void StartTimerIfNecessaryInternal();
+  void StartTimerIfNecessary();
 
   // Stops any close timer if |timer_| is currently running.
   void StopTimerIfNecessary();
@@ -60,12 +51,6 @@ class ZoomBubbleGtk {
                        GdkEventCrossing*);
   CHROMEGTK_CALLBACK_1(ZoomBubbleGtk, gboolean, OnMouseLeave,
                        GdkEventCrossing*);
-
-  // Friend the tests so they can access the static bubble.
-  friend class ZoomBubbleGtkTest;
-
-  // Pointer to singleton object (NULL if no bubble is open).
-  static ZoomBubbleGtk* g_bubble;
 
   // Whether the currently displayed bubble will automatically close.
   bool auto_close_;

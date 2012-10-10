@@ -20,6 +20,9 @@
 
 namespace {
 
+// Pointer to singleton object (NULL if no bubble is open).
+ZoomBubbleGtk* g_bubble = NULL;
+
 // Number of milliseconds the bubble should stay open for if it will auto-close.
 const int kBubbleCloseDelay = 1500;
 
@@ -29,9 +32,6 @@ const int kBubbleAnchorWidth = 20;
 const int kBubbleAnchorHeight = 25;
 
 }  // namespace
-
-// static
-ZoomBubbleGtk* ZoomBubbleGtk::g_bubble = NULL;
 
 // static
 void ZoomBubbleGtk::Show(GtkWidget* anchor,
@@ -59,11 +59,6 @@ void ZoomBubbleGtk::Show(GtkWidget* anchor,
 void ZoomBubbleGtk::Close() {
   if (g_bubble)
     g_bubble->CloseBubble();
-}
-
-// static
-bool ZoomBubbleGtk::IsShowing() {
-  return g_bubble != NULL;
 }
 
 ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
@@ -163,7 +158,7 @@ void ZoomBubbleGtk::Refresh() {
   StartTimerIfNecessary();
 }
 
-void ZoomBubbleGtk::StartTimerIfNecessaryInternal() {
+void ZoomBubbleGtk::StartTimerIfNecessary() {
   if (!auto_close_ || mouse_inside_)
     return;
 

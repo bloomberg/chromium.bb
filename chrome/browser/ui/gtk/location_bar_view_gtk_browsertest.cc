@@ -128,9 +128,9 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewGtkZoomTest, ZoomInTwiceAndReset) {
   ZoomIn();
   int zoom_level = GetZoomPercent(contents);
   ZoomIn();
-  EXPECT_GT(GetZoomPercent(contents), zoom_level);
-  ExpectZoomedIn(contents);
+  DCHECK_GT(GetZoomPercent(contents), zoom_level);
 
+  ExpectZoomedIn(contents);
   EXPECT_TRUE(ZoomIconIsShowing());
   ExpectIconIsResource(IDR_ZOOM_PLUS);
   ExpectTooltipContainsZoom();
@@ -160,9 +160,8 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewGtkZoomTest, ZoomOutTwiceAndReset) {
   ZoomOut();
   int zoom_level = GetZoomPercent(contents);
   ZoomOut();
-  EXPECT_LT(GetZoomPercent(contents), zoom_level);
+  DCHECK_LT(GetZoomPercent(contents), zoom_level);
   ExpectZoomedOut(contents);
-
   EXPECT_TRUE(ZoomIconIsShowing());
   ExpectIconIsResource(IDR_ZOOM_MINUS);
   ExpectTooltipContainsZoom();
