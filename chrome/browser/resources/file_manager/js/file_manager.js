@@ -1650,7 +1650,11 @@ FileManager.prototype = {
       eject.className = 'root-eject';
       eject.addEventListener('click', function(event) {
         event.stopPropagation();
-        this.dialogDom_.querySelector('command#unmount').execute(li);
+        var unmountCommand = this.dialogDom_.querySelector('command#unmount');
+        // Let's make sure 'canExecute' state of the command is properly set for
+        // the root before executing it.
+        unmountCommand.canExecuteChange(li);
+        unmountCommand.execute(li);
       }.bind(this));
       // Block other mouse handlers.
       eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
