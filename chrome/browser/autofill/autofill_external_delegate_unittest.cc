@@ -34,9 +34,9 @@ const int kAutofillProfileId = 1;
 
 class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
  public:
-  MockAutofillExternalDelegate(TabContents* tab_contents,
+  MockAutofillExternalDelegate(content::WebContents* web_contents,
                                AutofillManager* autofill_manger)
-      : TestAutofillExternalDelegate(tab_contents, autofill_manger) {}
+      : TestAutofillExternalDelegate(web_contents, autofill_manger) {}
   ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD4(ApplyAutofillSuggestions, void(
@@ -93,7 +93,7 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
         web_contents(),
         TabAutofillManagerDelegate::FromWebContents(web_contents()));
     external_delegate_.reset(new MockAutofillExternalDelegate(
-        tab_contents(),
+        web_contents(),
         autofill_manager_));
   }
 

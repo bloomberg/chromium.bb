@@ -16,7 +16,7 @@ class AutofillPopupViewViews;
 // selection and the popup that shows the values.
 class AutofillExternalDelegateViews : public AutofillExternalDelegate {
  public:
-  AutofillExternalDelegateViews(TabContents* tab_contents,
+  AutofillExternalDelegateViews(content::WebContents* web_contents,
                                 AutofillManager* autofill_manager);
 
   virtual ~AutofillExternalDelegateViews();

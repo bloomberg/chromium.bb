@@ -4,8 +4,13 @@
 
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 
-AutofillExternalDelegate* AutofillExternalDelegate::Create(
-    TabContents* tab_contents,
-    AutofillManager* manager) {
-  return new TestAutofillExternalDelegate(tab_contents, manager);
+void AutofillExternalDelegate::CreateForWebContentsAndManager(
+    content::WebContents* web_contents,
+    AutofillManager* autofill_manager) {
+  if (FromWebContents(web_contents))
+    return;
+
+  web_contents->SetUserData(
+      &kLocatorKey,
+      new TestAutofillExternalDelegate(web_contents, autofill_manager));
 }

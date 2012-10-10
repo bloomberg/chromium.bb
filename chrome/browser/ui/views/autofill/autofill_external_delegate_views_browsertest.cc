@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/autofill/autofill_external_delegate_views.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -17,9 +16,9 @@ namespace {
 
 class MockAutofillExternalDelegateViews : public AutofillExternalDelegateViews {
  public:
-  explicit MockAutofillExternalDelegateViews(TabContents* tab_contents) :
-      AutofillExternalDelegateViews(tab_contents, NULL),
-      popup_hidden_(false) {}
+  explicit MockAutofillExternalDelegateViews(content::WebContents* web_contents)
+      : AutofillExternalDelegateViews(web_contents, NULL),
+        popup_hidden_(false) {}
   ~MockAutofillExternalDelegateViews() {}
 
   void HideAutofillPopupInternal() OVERRIDE {
@@ -42,11 +41,11 @@ class AutofillExternalDelegateViewsBrowserTest : public InProcessBrowserTest {
   virtual ~AutofillExternalDelegateViewsBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    tab_contents_ = chrome::GetActiveTabContents(browser());
-    ASSERT_TRUE(tab_contents_ != NULL);
+    web_contents_ = chrome::GetActiveWebContents(browser());
+    ASSERT_TRUE(web_contents_ != NULL);
 
     autofill_external_delegate_.reset(
-        new MockAutofillExternalDelegateViews(tab_contents_));
+        new MockAutofillExternalDelegateViews(web_contents_));
   }
 
   void GeneratePopup() {
@@ -70,7 +69,7 @@ class AutofillExternalDelegateViewsBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   scoped_ptr<MockAutofillExternalDelegateViews> autofill_external_delegate_;
 };
 

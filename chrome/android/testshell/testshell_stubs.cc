@@ -18,10 +18,9 @@ TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
 }
 
 // static
-AutofillExternalDelegate* AutofillExternalDelegate::Create(
-    TabContents* tab_contents,
-    AutofillManager* manager) {
-  return NULL;
+void AutofillExternalDelegate::CreateForWebContentsAndManager(
+    content::WebContents* web_contents,
+    AutofillManager* autofill_manager) {
 }
 
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {

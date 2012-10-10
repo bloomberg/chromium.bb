@@ -16,7 +16,7 @@ class AutofillPopupViewGtk;
 
 class AutofillExternalDelegateGtk : public AutofillExternalDelegate {
  public:
-  AutofillExternalDelegateGtk(TabContents* tab_contents,
+  AutofillExternalDelegateGtk(content::WebContents* web_contents,
                               AutofillManager* autofill_manager);
 
   virtual ~AutofillExternalDelegateGtk();

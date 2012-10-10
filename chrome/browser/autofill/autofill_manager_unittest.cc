@@ -3075,9 +3075,9 @@ namespace {
 
 class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
  public:
-  explicit MockAutofillExternalDelegate(TabContents* tab_contents,
+  explicit MockAutofillExternalDelegate(content::WebContents* web_contents,
                                         AutofillManager* autofill_manager)
-      : TestAutofillExternalDelegate(tab_contents, autofill_manager) {}
+      : TestAutofillExternalDelegate(web_contents, autofill_manager) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD5(OnQuery, void(int query_id,
@@ -3099,7 +3099,7 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
 
 // Test our external delegate is called at the right time.
 TEST_F(AutofillManagerTest, TestExternalDelegate) {
-  MockAutofillExternalDelegate external_delegate(tab_contents(),
+  MockAutofillExternalDelegate external_delegate(web_contents(),
                                                  autofill_manager_);
   EXPECT_CALL(external_delegate, OnQuery(_, _, _, _, _));
   autofill_manager_->SetExternalDelegate(&external_delegate);

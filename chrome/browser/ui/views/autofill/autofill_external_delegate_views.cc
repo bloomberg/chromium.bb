@@ -6,16 +6,21 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_views.h"
 
-AutofillExternalDelegate* AutofillExternalDelegate::Create(
-    TabContents* tab_contents,
+void AutofillExternalDelegate::CreateForWebContentsAndManager(
+    content::WebContents* web_contents,
     AutofillManager* autofill_manager) {
-  return new AutofillExternalDelegateViews(tab_contents, autofill_manager);
+  if (FromWebContents(web_contents))
+    return;
+
+  web_contents->SetUserData(
+      &kLocatorKey,
+      new AutofillExternalDelegateViews(web_contents, autofill_manager));
 }
 
 AutofillExternalDelegateViews::AutofillExternalDelegateViews(
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     AutofillManager* autofill_manager)
-    : AutofillExternalDelegate(tab_contents, autofill_manager),
+    : AutofillExternalDelegate(web_contents, autofill_manager),
       popup_view_(NULL) {
 }
 

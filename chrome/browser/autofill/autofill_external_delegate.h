@@ -14,6 +14,7 @@
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
 #include "chrome/common/password_form_fill_data.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class AutofillManager;
 
@@ -31,8 +32,17 @@ class WebContents;
 
 // Delegate for external processing of Autocomplete and Autofill
 // display and selection.
-class AutofillExternalDelegate {
+class AutofillExternalDelegate
+    : public content::WebContentsUserData<AutofillExternalDelegate> {
  public:
+  // Creates an AutofillExternalDelegate and attaches it to the specified
+  // contents; the second argument is an AutofillManager managing Autofill for
+  // that WebContents.
+  //
+  // This call is implemented per-platform.
+  static void CreateForWebContentsAndManager(content::WebContents* web_contents,
+                                             AutofillManager* autofill_manager);
+
   virtual ~AutofillExternalDelegate();
 
   // When using an external Autofill delegate.  Allows Chrome to tell
@@ -78,11 +88,11 @@ class AutofillExternalDelegate {
   // Remove the given Autofill profile or credit credit.
   virtual void RemoveAutofillProfileOrCreditCard(int unique_id);
 
-  // Inform the delegate that the text field editing has ended, this is
+  // Inform the delegate that the text field editing has ended. This is
   // used to help record the metrics of when a new popup is shown.
   void DidEndTextFieldEditing();
 
-  // Inform the delegate that an autofill suggestion have been chosen. Returns
+  // Inform the delegate that an Autofill suggestion has been chosen. Returns
   // true if the suggestion was selected.
   bool DidAcceptAutofillSuggestions(const string16& value,
                                     int unique_id,
@@ -103,19 +113,14 @@ class AutofillExternalDelegate {
       const FormFieldData& form,
       const PasswordFormFillData& fill_data);
 
-  // Platforms that wish to implement an external Autofill delegate
-  // MUST implement this.  The 1st arg is the tab contents that owns
-  // this delegate; the second is the Autofill manager owned by the
-  // tab contents.
-  static AutofillExternalDelegate* Create(TabContents*,
-                                          AutofillManager*);
  protected:
-  explicit AutofillExternalDelegate(TabContents* tab_contents,
-                                    AutofillManager* autofill_manager);
+  friend class content::WebContentsUserData<AutofillExternalDelegate>;
+  AutofillExternalDelegate(content::WebContents* web_contents,
+                           AutofillManager* autofill_manager);
 
-  // Displays the the Autofill results to the user with an external
-  // Autofill popup that lives completely in the browser.  The suggestions
-  // have be correctly formatted by this point.
+  // Displays the Autofill results to the user with an external Autofill popup
+  // that lives completely in the browser.  The suggestions have been correctly
+  // formatted by this point.
   virtual void ApplyAutofillSuggestions(
       const std::vector<string16>& autofill_values,
       const std::vector<string16>& autofill_labels,
@@ -134,11 +139,9 @@ class AutofillExternalDelegate {
   // Set the bounds of the Autofill element being worked with.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
 
-  // Return the profile that this autofill delegate is currently working with.
-  Profile* profile() { return tab_contents_->profile(); }
 
-  // Return the web_contents assoicated with this delegate.
-  content::WebContents* web_contents() { return tab_contents_->web_contents(); }
+  // Return the web_contents associated with this delegate.
+  content::WebContents* web_contents() { return web_contents_; }
 
  private:
   // Fills the form with the Autofill data corresponding to |unique_id|.
@@ -168,7 +171,7 @@ class AutofillExternalDelegate {
                             std::vector<string16>* autofill_icons,
                             std::vector<int>* autofill_unique_ids);
 
-  TabContents* tab_contents_;  // weak; owns me.
+  content::WebContents* web_contents_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
 
   // Password Autofill manager, handles all password-related Autofilling.

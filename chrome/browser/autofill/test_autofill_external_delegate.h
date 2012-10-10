@@ -8,14 +8,13 @@
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 
 class AutofillManager;
-class TabContents;
 
 // This test class is meant to give tests a base AutofillExternalDelegate
 // class that requires no additional work to compile with (i.e. all the
 // pure virtual functions have been giving empty methods).
 class TestAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
-  TestAutofillExternalDelegate(TabContents* tab_contents,
+  TestAutofillExternalDelegate(content::WebContents* web_contents,
                                AutofillManager* autofill_manager);
   virtual ~TestAutofillExternalDelegate();
 

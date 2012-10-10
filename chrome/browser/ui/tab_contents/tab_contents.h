@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class AutofillExternalDelegate;
 class BasePanelBrowserTest;
 class Browser;
 class BrowserCommandsTabContentsCreator;
@@ -158,7 +157,6 @@ class TabContents : public content::WebContentsObserver {
   // (These provide API for callers and have a getter function listed in the
   // "Tab Helpers" section in the member functions area, above.)
 
-  scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
 
   // WebContents (MUST BE LAST) ------------------------------------------------

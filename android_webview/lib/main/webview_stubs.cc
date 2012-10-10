@@ -18,13 +18,12 @@ TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
 }
 
 // static
-AutofillExternalDelegate* AutofillExternalDelegate::Create(
-    TabContents* tab_contents,
-    AutofillManager* manager) {
+void AutofillExternalDelegate::CreateForWebContentsAndManager(
+    content::WebContents* web_contents,
+    AutofillManager* autofill_manager) {
   // We don't need to return a real AutofillExternalDelegate yet.
   // Eventually, WebView will need an implementation (probably shared with
   // Chrome).
-  return NULL;
 }
 
 // static

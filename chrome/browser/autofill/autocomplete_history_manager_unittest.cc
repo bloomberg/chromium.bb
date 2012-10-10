@@ -149,8 +149,8 @@ namespace {
 
 class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
  public:
-  explicit MockAutofillExternalDelegate(TabContents* tab_contents)
-      : TestAutofillExternalDelegate(tab_contents, NULL) {}
+  explicit MockAutofillExternalDelegate(content::WebContents* web_contents)
+      : TestAutofillExternalDelegate(web_contents, NULL) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   virtual void ApplyAutofillSuggestions(
@@ -193,8 +193,7 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
       scoped_ptr<AutofillWebDataService>(
           new AutofillWebDataServiceImpl(web_data_service_)));
 
-  MockAutofillExternalDelegate external_delegate(
-      TabContents::FromWebContents(contents()));
+  MockAutofillExternalDelegate external_delegate(contents());
   EXPECT_CALL(external_delegate, OnSuggestionsReturned(_, _,  _,  _,  _));
   autocomplete_history_manager.SetExternalDelegate(&external_delegate);
 

@@ -116,16 +116,15 @@ TabContents::TabContents(WebContents* contents)
   AutocompleteHistoryManager::CreateForWebContents(contents);
   TabAutofillManagerDelegate::CreateForWebContents(contents);
   AutofillManager::CreateForWebContentsAndDelegate(
-      contents,
-      TabAutofillManagerDelegate::FromWebContents(contents));
+      contents, TabAutofillManagerDelegate::FromWebContents(contents));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExternalAutofillPopup)) {
-    autofill_external_delegate_.reset(AutofillExternalDelegate::Create(
-        this, AutofillManager::FromWebContents(contents)));
+    AutofillExternalDelegate::CreateForWebContentsAndManager(
+        contents, AutofillManager::FromWebContents(contents));
     AutofillManager::FromWebContents(contents)->SetExternalDelegate(
-        autofill_external_delegate_.get());
+        AutofillExternalDelegate::FromWebContents(contents));
     AutocompleteHistoryManager::FromWebContents(contents)->SetExternalDelegate(
-        autofill_external_delegate_.get());
+        AutofillExternalDelegate::FromWebContents(contents));
   }
   BlockedContentTabHelper::CreateForWebContents(contents);
   BookmarkTabHelper::CreateForWebContents(contents);

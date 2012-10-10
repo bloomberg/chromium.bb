@@ -5,8 +5,10 @@
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 
 TestAutofillExternalDelegate::TestAutofillExternalDelegate(
-    TabContents* tab_contents, AutofillManager* autofill_manager) :
-    AutofillExternalDelegate(tab_contents, autofill_manager) {}
+    content::WebContents* web_contents,
+    AutofillManager* autofill_manager)
+    : AutofillExternalDelegate(web_contents, autofill_manager) {
+}
 
 TestAutofillExternalDelegate::~TestAutofillExternalDelegate() {}
 

@@ -18,15 +18,16 @@
 using content::RenderViewHost;
 using WebKit::WebAutofillClient;
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(AutofillExternalDelegate)
+
 AutofillExternalDelegate::~AutofillExternalDelegate() {}
 
 AutofillExternalDelegate::AutofillExternalDelegate(
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     AutofillManager* autofill_manager)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       autofill_manager_(autofill_manager),
-      password_autofill_manager_(
-          tab_contents ? tab_contents->web_contents() : NULL),
+      password_autofill_manager_(web_contents),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
       has_shown_autofill_popup_for_current_edit_(false),
@@ -110,7 +111,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     popup_visible_ = true;
     ApplyAutofillSuggestions(values, labels, icons, ids);
 
-    AutofillManager::FromWebContents(tab_contents_->web_contents())->
+    AutofillManager::FromWebContents(web_contents_)->
         OnDidShowAutofillSuggestions(
             has_autofill_item && !has_shown_autofill_popup_for_current_edit_);
     has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
@@ -153,8 +154,8 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
 }
 
 void AutofillExternalDelegate::RemoveAutocompleteEntry(const string16& value) {
-  if (tab_contents_) {
-    AutocompleteHistoryManager::FromWebContents(tab_contents_->web_contents())->
+  if (web_contents_) {
+    AutocompleteHistoryManager::FromWebContents(web_contents_)->
         OnRemoveAutocompleteEntry(autofill_query_field_.name, value);
   }
 }
@@ -179,8 +180,7 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
   if (unique_id == WebAutofillClient::MenuItemIDWarningMessage)
     return false;
 
-  RenderViewHost* host =
-      tab_contents_->web_contents()->GetRenderViewHost();
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
 
   if (unique_id == WebAutofillClient::MenuItemIDAutofillOptions) {
     // User selected 'Autofill Options'.
@@ -211,8 +211,8 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
-  if (tab_contents_ && tab_contents_->web_contents()) {
-    RenderViewHost* host = tab_contents_->web_contents()->GetRenderViewHost();
+  if (web_contents_) {
+    RenderViewHost* host = web_contents_->GetRenderViewHost();
 
     if (host)
       host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
@@ -239,7 +239,7 @@ void AutofillExternalDelegate::AddPasswordFormMapping(
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
                                                     bool is_preview) {
-  RenderViewHost* host = tab_contents_->web_contents()->GetRenderViewHost();
+  RenderViewHost* host = web_contents_->GetRenderViewHost();
 
   if (is_preview) {
     host->Send(new AutofillMsg_SetAutofillActionPreview(
@@ -350,9 +350,9 @@ void AutofillExternalDelegate::InsertDataListValues(
 
 #if defined(OS_MACOSX)
 
-AutofillExternalDelegate* AutofillExternalDelegate::Create(
-    TabContents*, AutofillManager*) {
-  return NULL;
+void AutofillExternalDelegate::CreateForWebContentsAndManager(
+    content::WebContents* web_contents,
+    AutofillManager* autofill_manager) {
 }
 
 #endif
