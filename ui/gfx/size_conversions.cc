@@ -4,7 +4,7 @@
 
 #include "ui/gfx/size_conversions.h"
 
-#include "ui/gfx/safe_floor_ceil.h"
+#include "ui/gfx/safe_integer_conversions.h"
 
 namespace gfx {
 
