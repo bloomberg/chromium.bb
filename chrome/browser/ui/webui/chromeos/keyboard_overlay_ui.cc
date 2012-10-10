@@ -153,7 +153,6 @@ struct I18nContentToMessage {
   { "keyboardOverlayNewIncognitoWindow",
     IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW },
   { "keyboardOverlayNewTab", IDS_KEYBOARD_OVERLAY_NEW_TAB },
-  { "keyboardOverlayNewTerminal", IDS_KEYBOARD_OVERLAY_NEW_TERMINAL },
   { "keyboardOverlayNewWindow", IDS_KEYBOARD_OVERLAY_NEW_WINDOW },
   { "keyboardOverlayNextWindow", IDS_KEYBOARD_OVERLAY_NEXT_WINDOW },
   { "keyboardOverlayNextWord", IDS_KEYBOARD_OVERLAY_NEXT_WORD },
