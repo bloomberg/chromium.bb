@@ -1632,6 +1632,7 @@ create_black_surface(struct weston_compositor *ec,
 	surface->private = fs_surface;
 	weston_surface_configure(surface, x, y, w, h);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1);
+	pixman_region32_fini(&surface->opaque);
 	pixman_region32_init_rect(&surface->opaque, 0, 0, w, h);
 
 	return surface;
