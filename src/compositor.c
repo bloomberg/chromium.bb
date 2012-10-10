@@ -247,7 +247,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
 	pixman_region32_init(&surface->clip);
-	pixman_region32_init(&surface->input);
+	region_init_infinite(&surface->input);
 	pixman_region32_init(&surface->transform.opaque);
 	wl_list_init(&surface->frame_callback_list);
 
