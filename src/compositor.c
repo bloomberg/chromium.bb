@@ -1887,9 +1887,13 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 {
 	struct weston_compositor *ec = seat->compositor;
 	struct wl_touch *touch = seat->seat.touch;
+	struct wl_touch_grab *grab = touch->grab;
 	struct weston_surface *es;
 	wl_fixed_t sx, sy;
-	uint32_t serial = 0;
+
+	/* Update grab's global coordinates. */
+	touch->grab_x = x;
+	touch->grab_y = y;
 
 	switch (touch_type) {
 	case WL_TOUCH_DOWN:
@@ -1908,11 +1912,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			weston_surface_from_global_fixed(es, x, y, &sx, &sy);
 		}
 
-		if (touch->focus_resource && touch->focus)
-			wl_touch_send_down(touch->focus_resource,
-					   serial, time,
-					   &touch->focus->resource,
-					   touch_id, sx, sy);
+		grab->interface->down(grab, time, touch_id, sx, sy);
 		break;
 	case WL_TOUCH_MOTION:
 		es = (struct weston_surface *) touch->focus;
@@ -1920,17 +1920,13 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			break;
 
 		weston_surface_from_global_fixed(es, x, y, &sx, &sy);
-		if (touch->focus_resource)
-			wl_touch_send_motion(touch->focus_resource,
-					     time, touch_id, sx, sy);
+		grab->interface->motion(grab, time, touch_id, sx, sy);
 		break;
 	case WL_TOUCH_UP:
 		weston_compositor_idle_release(ec);
 		seat->num_tp--;
 
-		if (touch->focus_resource)
-			wl_touch_send_up(touch->focus_resource,
-					 serial, time, touch_id);
+		grab->interface->up(grab, time, touch_id);
 		if (seat->num_tp == 0)
 			touch_set_focus(seat, NULL);
 		break;
