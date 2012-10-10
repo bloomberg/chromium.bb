@@ -16,12 +16,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class ExistingUserController;
-}
-#endif  // defined(OS_CHROMEOS)
-
 // AutomationEventObserver watches for a specific event, and pushes an
 // AutomationEvent into the AutomationEventQueue for each occurance.
 class AutomationEventObserver {
@@ -87,7 +81,6 @@ class LoginEventObserver
       public content::NotificationObserver {
  public:
   LoginEventObserver(AutomationEventQueue* event_queue,
-                     chromeos::ExistingUserController* controller,
                      AutomationProvider* automation);
   virtual ~LoginEventObserver();
 
@@ -102,7 +95,6 @@ class LoginEventObserver
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  chromeos::ExistingUserController* controller_;
   base::WeakPtr<AutomationProvider> automation_;
   content::NotificationRegistrar registrar_;
 

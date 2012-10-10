@@ -399,8 +399,7 @@ void TestingAutomationProvider::AddLoginEventObserver(
     automation_event_queue_.reset(new AutomationEventQueue);
 
   int observer_id = automation_event_queue_->AddObserver(
-      new LoginEventObserver(automation_event_queue_.get(),
-                             controller, this));
+      new LoginEventObserver(automation_event_queue_.get(), this));
 
   // Return the observer's id.
   DictionaryValue return_value;

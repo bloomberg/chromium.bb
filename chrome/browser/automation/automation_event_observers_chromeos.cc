@@ -7,14 +7,17 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "content/public/browser/notification_service.h"
 
+using chromeos::ExistingUserController;
+
 LoginEventObserver::LoginEventObserver(
     AutomationEventQueue* event_queue,
-    chromeos::ExistingUserController* controller,
     AutomationProvider* automation)
     : AutomationEventObserver(event_queue, false),
-      controller_(controller),
       automation_(automation->AsWeakPtr()) {
-  controller_->set_login_status_consumer(this);
+  ExistingUserController* controller =
+      ExistingUserController::current_controller();
+  DCHECK(controller);
+  controller->set_login_status_consumer(this);
 }
 
 LoginEventObserver::~LoginEventObserver() {}
@@ -54,6 +57,9 @@ void LoginEventObserver::_NotifyLoginEvent(const std::string& error_string) {
   if (error_string.length())
     dict->SetString("error_string", error_string);
   NotifyEvent(dict);
-  controller_->set_login_status_consumer(NULL);
+  ExistingUserController* controller =
+      ExistingUserController::current_controller();
+  if (controller)
+    controller->set_login_status_consumer(NULL);
   RemoveIfDone();
 }
