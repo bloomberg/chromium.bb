@@ -115,7 +115,17 @@ class UI_EXPORT ResourceBundle {
   // the |delegate| value. Returns the language selected.
   // NOTE: Mac ignores this and always loads up resources for the language
   // defined by the Cocoa UI (i.e., NSBundle does the language work).
+  //
+  // TODO(sergeyu): This method also loads common resources (i.e. chrome.pak).
+  // There is no way to specify which resource files are loaded, i.e. names of
+  // the files are hardcoded in ResourceBundle. Fix it to allow to specify which
+  // files are loaded (e.g. add a new method in Delegate).
   static std::string InitSharedInstanceWithLocale(
+      const std::string& pref_locale, Delegate* delegate);
+
+  // Same as InitSharedInstanceWithLocale(), but loads only localized resources,
+  // without default resource packs.
+  static std::string InitSharedInstanceLocaleOnly(
       const std::string& pref_locale, Delegate* delegate);
 
   // Initialize the ResourceBundle using given file. The second argument

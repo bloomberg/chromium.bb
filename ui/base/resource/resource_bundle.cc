@@ -148,6 +148,16 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
 }
 
 // static
+std::string ResourceBundle::InitSharedInstanceLocaleOnly(
+    const std::string& pref_locale, Delegate* delegate) {
+  DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
+  g_shared_instance_ = new ResourceBundle(delegate);
+
+  std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
+  return result;
+}
+
+// static
 void ResourceBundle::InitSharedInstanceWithPakFile(
     base::PlatformFile pak_file, bool should_load_common_resources) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
