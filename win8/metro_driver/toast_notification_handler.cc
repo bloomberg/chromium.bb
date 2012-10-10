@@ -100,15 +100,23 @@ ToastNotificationHandler::DesktopNotification::DesktopNotification(
     const wchar_t* notification_title,
     const wchar_t* notification_body,
     const wchar_t* notification_display_source,
-    const char* notification_id)
+    const char* notification_id,
+    base::win::MetroNotificationClickedHandler handler,
+    const wchar_t* handler_context)
     : origin_url(notification_origin),
       icon_url(notification_icon),
       title(notification_title),
       body(notification_body),
       display_source(notification_display_source),
-      id(notification_id) {
+      id(notification_id),
+      notification_handler(handler) {
+  if (handler_context)
+    notification_context = handler_context;
 }
 
+ToastNotificationHandler::DesktopNotification::DesktopNotification()
+    : notification_handler(NULL) {
+}
 
 ToastNotificationHandler::ToastNotificationHandler() {
   DVLOG(1) << __FUNCTION__;
@@ -127,6 +135,8 @@ void ToastNotificationHandler::DisplayNotification(
 
   DCHECK(notifier_.Get() == NULL);
   DCHECK(notification_.Get() == NULL);
+
+  notification_info_ = notification;
 
   mswr::ComPtr<winui::Notifications::IToastNotificationManagerStatics>
       toast_manager;
@@ -230,5 +240,10 @@ HRESULT ToastNotificationHandler::OnActivate(
   // etc to ChromeAppView which would enable it to ensure that the
   // correct tab in chrome is activated.
   DVLOG(1) << __FUNCTION__;
+
+  if (notification_info_.notification_handler) {
+    notification_info_.notification_handler(
+        notification_info_.notification_context.c_str());
+  }
   return S_OK;
 }

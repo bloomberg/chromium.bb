@@ -199,7 +199,7 @@ void StatusIconMetro::DisplayBalloon(const gfx::ImageSkia& icon,
             ::GetProcAddress(metro_module, "DisplayNotification"));
     DCHECK(notification);
     notification("", "", title.c_str(), contents.c_str(), L"",
-                 base::IntToString(id_).c_str());
+                 base::IntToString(id_).c_str(), NULL, NULL);
   }
 }
 

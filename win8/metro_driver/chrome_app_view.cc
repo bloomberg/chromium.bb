@@ -519,7 +519,9 @@ extern "C" __declspec(dllexport)
 void DisplayNotification(const char* origin_url, const char* icon_url,
                          const wchar_t* title, const wchar_t* body,
                          const wchar_t* display_source,
-                         const char* notification_id) {
+                         const char* notification_id,
+                         base::win::MetroNotificationClickedHandler handler,
+                         const wchar_t* handler_context) {
   // TODO(ananta)
   // Needs implementation.
   DVLOG(1) << __FUNCTION__;
@@ -529,7 +531,9 @@ void DisplayNotification(const char* origin_url, const char* icon_url,
                                                              title,
                                                              body,
                                                              display_source,
-                                                             notification_id);
+                                                             notification_id,
+                                                             handler,
+                                                             handler_context);
   globals.appview_msg_loop->PostTask(
       FROM_HERE, base::Bind(&ChromeAppView::DisplayNotification,
                             globals.view, notification));
@@ -843,6 +847,9 @@ ChromeAppView::Run() {
   options.message_loop_type = MessageLoop::TYPE_IO;
   thread.StartWithOptions(options);
 
+  // The viewer channel opened below only applies when we are launched as an
+  // AURA viewer process.
+#if defined(USE_AURA)
   ChromeChannelListener channel_listener;
   IPC::ChannelProxy chan("viewer", IPC::Channel::MODE_NAMED_CLIENT,
                          &channel_listener, thread.message_loop_proxy());
@@ -851,7 +858,7 @@ ChromeAppView::Run() {
         gfx::NativeViewId(globals.core_window)));
 
   DVLOG(1) << "ICoreWindow sent " << globals.core_window;
-
+#endif
   // And post the task that'll do the inner Metro message pumping to it.
   msg_loop.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
 
