@@ -746,7 +746,6 @@ bool InstantController::GetInstantURL(const TemplateURL* template_url,
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantURL)) {
     *instant_url = command_line->GetSwitchValueASCII(switches::kInstantURL);
-    MaybeSetRefFromURL(tab_url, instant_url);
     return template_url != NULL;
   }
 
@@ -791,29 +790,7 @@ bool InstantController::GetInstantURL(const TemplateURL* template_url,
       iter->second > kMaxInstantSupportFailures)
     return false;
 
-  MaybeSetRefFromURL(tab_url, instant_url);
   return true;
-}
-
-void InstantController::MaybeSetRefFromURL(const GURL& tab_url,
-                                           std::string* instant_url) const {
-  if (mode_ == EXTENDED) {
-    GURL url_obj(*instant_url);
-    if (!url_obj.is_valid())
-      return;
-
-    // Copy hash state so that search modes persist for query refinements.
-    if (tab_url.has_ref() &&
-        tab_url.host() == url_obj.host() &&
-        tab_url.path() == url_obj.path()) {
-      const std::string new_ref = tab_url.ref();
-      GURL::Replacements hash;
-      hash.SetRefStr(new_ref);
-      url_obj = url_obj.ReplaceComponents(hash);
-      DCHECK(url_obj.is_valid());
-      *instant_url = url_obj.spec();
-    }
-  }
 }
 
 bool InstantController::IsOutOfDate() const {
