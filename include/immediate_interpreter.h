@@ -93,6 +93,8 @@ class ScrollEventBuffer {
   size_t Size() const { return size_; }
   // 0 is newest, 1 is next newest, ..., size_ - 1 is oldest.
   const ScrollEvent& Get(size_t offset) const;
+  // For efficiency, returns dist_sq and time, from which speed can be computed.
+  void GetSpeedSq(float* dist_sq, float* dt) const;
 
  private:
   scoped_array<ScrollEvent> buf_;
@@ -555,6 +557,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Platforms with this property should set
   // fling_buffer_suppress_zero_length_scrolls_ to non-zero.
   BoolProperty fling_buffer_suppress_zero_length_scrolls_;
+  // When computing a fling, if the fling buffer has an average speed under
+  // this threshold, we do not perform a fling. Units are mm/sec.
+  DoubleProperty fling_buffer_min_avg_speed_;
 };
 
 }  // namespace gestures

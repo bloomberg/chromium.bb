@@ -279,6 +279,19 @@ const ScrollEvent& ScrollEventBuffer::Get(size_t offset) const {
   return buf_[(head_ + offset) % max_size_];
 }
 
+void ScrollEventBuffer::GetSpeedSq(float* dist_sq, float* dt) const {
+  float dx = 0.0;
+  float dy = 0.0;
+  *dt = 0.0;
+  for (size_t i = 0; i < Size(); i++) {
+    const ScrollEvent& evt = Get(i);
+    dx += evt.dx;
+    dy += evt.dy;
+    *dt += evt.dt;
+  }
+  *dist_sq = dx * dx + dy * dy;
+}
+
 ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                            FingerMetrics* finger_metrics,
                                            Tracer* tracer)
@@ -374,7 +387,10 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       pinch_enable_(prop_reg, "Pinch Enable", 1.0),
       fling_buffer_depth_(prop_reg, "Fling Buffer Depth", 3),
       fling_buffer_suppress_zero_length_scrolls_(
-          prop_reg, "Fling Buffer Suppress Zero Length Scrolls", 0) {
+          prop_reg, "Fling Buffer Suppress Zero Length Scrolls", 0),
+      fling_buffer_min_avg_speed_(prop_reg,
+                                  "Fling Buffer Min Avg Speed",
+                                  10.0) {
   InitName();
   memset(&prev_state_, 0, sizeof(prev_state_));
   if (!finger_metrics_) {
@@ -1673,6 +1689,16 @@ void ImmediateInterpreter::RegressScrollVelocity(int count, ScrollEvent* out)
 
 void ImmediateInterpreter::ComputeFling(ScrollEvent* out) const {
   ScrollEvent zero = { 0.0, 0.0, 0.0 };
+
+  // Make sure fling buffer met the minimum average speed for a fling.
+  float buf_dist_sq = 0.0;
+  float buf_dt = 0.0;
+  scroll_buffer_.GetSpeedSq(&buf_dist_sq, &buf_dt);
+  if (fling_buffer_min_avg_speed_.val_ * fling_buffer_min_avg_speed_.val_ *
+      buf_dt * buf_dt > buf_dist_sq) {
+    *out = zero;
+    return;
+  }
 
   const size_t count = ScrollEventsForFlingCount();
   if (count > scroll_buffer_.Size()) {
