@@ -81,7 +81,6 @@
         'gfx/image/image_unittest_util_mac.mm',
         'gfx/insets_unittest.cc',
         'gfx/rect_unittest.cc',
-        'gfx/safe_integer_conversions_unittest.cc',
         'gfx/screen_unittest.cc',
         'gfx/shadow_value_unittest.cc',
         'gfx/skbitmap_operations_unittest.cc',
