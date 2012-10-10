@@ -154,7 +154,7 @@ public class TestWebServer {
             int status) {
         final boolean isRedirect = (status == RESPONSE_STATUS_MOVED_TEMPORARILY);
         mResponseMap.put(requestPath, new Response(responseData, responseHeaders, isRedirect));
-        mResponseCountMap.put(requestPath, new Integer(0));
+        mResponseCountMap.put(requestPath, Integer.valueOf(0));
         mLastRequestMap.put(requestPath, null);
         return getResponseUrl(requestPath);
     }
@@ -305,6 +305,12 @@ public class TestWebServer {
         }
     }
 
+    private void servedResponseFor(String path, HttpRequest request) {
+        mResponseCountMap.put(path, Integer.valueOf(
+                mResponseCountMap.get(path).intValue() + 1));
+        mLastRequestMap.put(path, request);
+    }
+
     /**
      * Generate a response to the given request.
      * @throws InterruptedException
@@ -320,22 +326,21 @@ public class TestWebServer {
         Response response = mResponseMap.get(path);
         if (path.equals(SHUTDOWN_PREFIX)) {
             httpResponse = createResponse(HttpStatus.SC_OK);
+        } else if (response == null) {
+            httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
         } else if (response.mIsRedirect) {
             httpResponse = createResponse(HttpStatus.SC_MOVED_TEMPORARILY);
             for (Pair<String, String> header : response.mResponseHeaders) {
                 httpResponse.addHeader(header.first, header.second);
             }
-        } else if (response == null) {
-            httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
+            servedResponseFor(path, request);
         } else {
             httpResponse = createResponse(HttpStatus.SC_OK);
             httpResponse.setEntity(createEntity(response.mResponseData));
             for (Pair<String, String> header : response.mResponseHeaders) {
                 httpResponse.addHeader(header.first, header.second);
             }
-            mResponseCountMap.put(path, Integer.valueOf(
-                    mResponseCountMap.get(path).intValue() + 1));
-            mLastRequestMap.put(path, request);
+            servedResponseFor(path, request);
         }
         StatusLine sl = httpResponse.getStatusLine();
         Log.i(TAG, sl.getStatusCode() + "(" + sl.getReasonPhrase() + ")");
