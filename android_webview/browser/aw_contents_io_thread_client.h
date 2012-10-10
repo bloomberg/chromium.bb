@@ -45,6 +45,14 @@ class AwContentsIoThreadClient {
   virtual scoped_ptr<InterceptedRequestData> ShouldInterceptRequest(
       const net::URLRequest* request) = 0;
 
+  // Retrieve the AllowContentAccess setting value of this AwContents.
+  // This method is called on the IO thread only.
+  virtual bool ShouldBlockContentUrls() const = 0;
+
+  // Retrieve the AllowFileAccess setting value of this AwContents.
+  // This method is called on the IO thread only.
+  virtual bool ShouldBlockFileUrls() const = 0;
+
   // Retrieve the BlockNetworkLoads setting value of this AwContents.
   // This method is called on the IO thread only.
   virtual bool ShouldBlockNetworkLoads() const = 0;

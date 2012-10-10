@@ -6,6 +6,9 @@
 
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
+#include "android_webview/common/url_constants.h"
+#include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_process_host.h"
 
 namespace android_webview {
 
@@ -14,6 +17,14 @@ AwContentBrowserClient::AwContentBrowserClient()
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {
+}
+
+void AwContentBrowserClient::RenderProcessHostCreated(
+    content::RenderProcessHost* host) {
+  // Grant content: scheme to the whole process, since we impose per-view
+  // access checks.
+  content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+      host->GetID(), android_webview::kContentScheme);
 }
 
 void AwContentBrowserClient::ResourceDispatcherHostCreated() {

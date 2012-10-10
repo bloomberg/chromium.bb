@@ -21,6 +21,8 @@ public class AwSettings {
 
     private final Context mContext;
     private boolean mBlockNetworkLoads;  // Default depends on permission of embedding APK.
+    private boolean mAllowContentUrlAccess = true;
+    private boolean mAllowFileUrlAccess = true;
 
     public AwSettings(Context context) {
         mContext = context;
@@ -52,6 +54,46 @@ public class AwSettings {
     public boolean getBlockNetworkLoads() {
         synchronized (mAwSettingsLock) {
             return mBlockNetworkLoads;
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setAllowFileAccess}.
+     */
+    public void setAllowFileAccess(boolean allow) {
+        synchronized (mAwSettingsLock) {
+            if (mAllowFileUrlAccess != allow) {
+                mAllowFileUrlAccess = allow;
+            }
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#getAllowFileAccess}.
+     */
+    public boolean getAllowFileAccess() {
+        synchronized (mAwSettingsLock) {
+            return mAllowFileUrlAccess;
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setAllowContentAccess}.
+     */
+    public void setAllowContentAccess(boolean allow) {
+        synchronized (mAwSettingsLock) {
+            if (mAllowContentUrlAccess != allow) {
+                mAllowContentUrlAccess = allow;
+            }
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#getAllowContentAccess}.
+     */
+    public boolean getAllowContentAccess() {
+        synchronized (mAwSettingsLock) {
+            return mAllowContentUrlAccess;
         }
     }
 }

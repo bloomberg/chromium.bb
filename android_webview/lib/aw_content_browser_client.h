@@ -17,6 +17,8 @@ class AwContentBrowserClient : public chrome::ChromeContentBrowserClient {
   virtual ~AwContentBrowserClient();
 
   // Overriden methods from ContentBrowserClient.
+  virtual void RenderProcessHostCreated(
+      content::RenderProcessHost* host) OVERRIDE;
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual bool AllowGetCookie(const GURL& url,
                               const GURL& first_party,

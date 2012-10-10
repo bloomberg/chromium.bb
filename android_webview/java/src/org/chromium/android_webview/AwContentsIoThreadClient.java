@@ -22,5 +22,13 @@ public interface AwContentsIoThreadClient {
 
     // Called on the IO thread.
     @CalledByNative
+    public boolean shouldBlockContentUrls();
+
+    // Called on the IO thread.
+    @CalledByNative
+    public boolean shouldBlockFileUrls();
+
+    // Called on the IO thread.
+    @CalledByNative
     public boolean shouldBlockNetworkLoads();
 }

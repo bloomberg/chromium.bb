@@ -194,6 +194,26 @@ AwContentsIoThreadClientImpl::ShouldInterceptRequest(
       new InterceptedRequestData(ret));
 }
 
+bool AwContentsIoThreadClientImpl::ShouldBlockContentUrls() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (java_object_.is_null())
+    return false;
+
+  JNIEnv* env = AttachCurrentThread();
+  return Java_AwContentsIoThreadClient_shouldBlockContentUrls(
+      env, java_object_.obj());
+}
+
+bool AwContentsIoThreadClientImpl::ShouldBlockFileUrls() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (java_object_.is_null())
+    return false;
+
+  JNIEnv* env = AttachCurrentThread();
+  return Java_AwContentsIoThreadClient_shouldBlockFileUrls(
+      env, java_object_.obj());
+}
+
 bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (java_object_.is_null())

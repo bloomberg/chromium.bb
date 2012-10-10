@@ -75,6 +75,18 @@ public class AwContents {
 
         // Called on the IO thread.
         @Override
+        public boolean shouldBlockContentUrls() {
+            return !AwContents.this.mSettings.getAllowContentAccess();
+        }
+
+        // Called on the IO thread.
+        @Override
+        public boolean shouldBlockFileUrls() {
+            return !AwContents.this.mSettings.getAllowFileAccess();
+        }
+
+        // Called on the IO thread.
+        @Override
         public boolean shouldBlockNetworkLoads() {
             return AwContents.this.mSettings.getBlockNetworkLoads();
         }

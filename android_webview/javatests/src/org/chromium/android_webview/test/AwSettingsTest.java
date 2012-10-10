@@ -7,7 +7,6 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.test.FlakyTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AndroidProtocolHandler;
@@ -109,6 +108,14 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             AwSettingsTest.this.loadUrlSync(
                 mContentViewCore,
                 mContentViewClient.getOnPageFinishedHelper(),
+                url);
+        }
+
+        protected void loadUrlSyncAndExpectError(String url) throws Throwable {
+            AwSettingsTest.this.loadUrlSyncAndExpectError(
+                mContentViewCore,
+                mContentViewClient.getOnPageFinishedHelper(),
+                mContentViewClient.getOnReceivedErrorHelper(),
                 url);
         }
 
@@ -625,15 +632,28 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         private final String mXhrContainerUrl;
     }
 
-    class AwSettingsFileUrlAccessTestHelper extends AwSettingsTestHelper<Boolean> {
+    // A helper super class for test cases that need to access AwSettings.
+    abstract class AwSettingsWithSettingsTestHelper<T> extends AwSettingsTestHelper<T> {
+        protected AwSettings mAwSettings;
+
+        AwSettingsWithSettingsTestHelper(
+                AwTestContainerView containerView,
+                TestAwContentsClient contentViewClient,
+                boolean requiresJsEnabled) throws Throwable {
+            super(containerView.getContentViewCore(), contentViewClient, requiresJsEnabled);
+            mAwSettings =
+                    AwSettingsTest.this.getAwSettingsOnUiThread(containerView.getAwContents());
+        }
+    }
+
+    class AwSettingsFileUrlAccessTestHelper extends AwSettingsWithSettingsTestHelper<Boolean> {
         private static final String ACCESS_GRANTED_TITLE = "Hello, World!";
-        private static final String ACCESS_DENIED_TITLE = "about:blank";
 
         AwSettingsFileUrlAccessTestHelper(
-                ContentViewCore contentViewCore,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient,
                 int startIndex) throws Throwable {
-            super(contentViewCore, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mIndex = startIndex;
         }
 
@@ -649,36 +669,47 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
         @Override
         protected Boolean getCurrentValue() {
-            return mContentSettings.getAllowFileAccess();
+            return mAwSettings.getAllowFileAccess();
         }
 
         @Override
         protected void setCurrentValue(Boolean value) {
-            mContentSettings.setAllowFileAccess(value);
+            mAwSettings.setAllowFileAccess(value);
         }
 
         @Override
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            // TODO(mnaganov): Remove after https://codereview.chromium.org/11030051 lands.
+            final String pseudo_error_page = "about:blank";
+            loadUrlSync(pseudo_error_page);
             // Use query parameters to avoid hitting a cached page.
             String fileUrl = UrlUtils.getTestFileUrl("webview/hello_world.html?id=" + mIndex);
             mIndex += 2;
+            // TODO(mnaganov): Remove after https://codereview.chromium.org/11030051 lands.
             loadUrlSync(fileUrl);
-            assertEquals(
-                value == ENABLED ? ACCESS_GRANTED_TITLE : ACCESS_DENIED_TITLE,
-                getTitleOnUiThread());
+            assertEquals(value == ENABLED ? ACCESS_GRANTED_TITLE : pseudo_error_page,
+                    getTitleOnUiThread());
+            // TODO(mnaganov): Uncomment after https://codereview.chromium.org/11030051 lands.
+            /*
+            if (value == ENABLED) {
+                loadUrlSync(fileUrl);
+                assertEquals(ACCESS_GRANTED_TITLE, getTitleOnUiThread());
+            } else {
+                loadUrlSyncAndExpectError(fileUrl);
+            }
+            */
         }
 
         private int mIndex;
     }
 
-    class AwSettingsContentUrlAccessTestHelper extends AwSettingsTestHelper<Boolean> {
-        private final String mTarget;
+    class AwSettingsContentUrlAccessTestHelper extends AwSettingsWithSettingsTestHelper<Boolean> {
 
         AwSettingsContentUrlAccessTestHelper(
-                ContentViewCore contentViewCore,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient,
                 int index) throws Throwable {
-            super(contentViewCore, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mTarget = "content_access_" + index;
         }
 
@@ -694,27 +725,87 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
         @Override
         protected Boolean getCurrentValue() {
-            return mContentSettings.getAllowContentAccess();
+            return mAwSettings.getAllowContentAccess();
         }
 
         @Override
         protected void setCurrentValue(Boolean value) {
-            mContentSettings.setAllowContentAccess(value);
+            mAwSettings.setAllowContentAccess(value);
         }
 
         @Override
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
             AwSettingsTest.this.resetResourceRequestCountInContentProvider(mTarget);
-            AwSettingsTest.this.loadUrlSync(
-                mContentViewCore,
-                mContentViewClient.getOnPageFinishedHelper(),
-                AwSettingsTest.this.createContentUrl(mTarget));
+            loadUrlSync(AwSettingsTest.this.createContentUrl(mTarget));
             if (value == ENABLED) {
                 AwSettingsTest.this.ensureResourceRequestCountInContentProvider(mTarget, 1);
             } else {
                 AwSettingsTest.this.ensureResourceRequestCountInContentProvider(mTarget, 0);
             }
         }
+
+        private final String mTarget;
+    }
+
+    class AwSettingsContentUrlAccessFromFileTestHelper
+            extends AwSettingsWithSettingsTestHelper<Boolean> {
+        private static final String TARGET = "content_from_file";
+
+        AwSettingsContentUrlAccessFromFileTestHelper(
+                AwTestContainerView containerView,
+                TestAwContentsClient contentViewClient,
+                int index) throws Throwable {
+            super(containerView, contentViewClient, true);
+            mIndex = index;
+            mTempDir = getInstrumentation().getTargetContext().getCacheDir().getPath();
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mAwSettings.getAllowContentAccess();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mAwSettings.setAllowContentAccess(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            AwSettingsTest.this.resetResourceRequestCountInContentProvider(TARGET);
+            final String fileName = mTempDir + "/" + TARGET + ".html";
+            try {
+                TestFileUtil.createNewHtmlFile(fileName,
+                        TARGET,
+                        "<img src=\"" +
+                        // Adding a query avoids hitting a cached image, and also verifies
+                        // that content URL query parameters are ignored when accessing
+                        // a content provider.
+                        AwSettingsTest.this.createContentUrl(TARGET + "?id=" + mIndex) + "\">");
+                mIndex += 2;
+                loadUrlSync("file://" + fileName);
+                if (value == ENABLED) {
+                    AwSettingsTest.this.ensureResourceRequestCountInContentProvider(TARGET, 1);
+                } else {
+                    AwSettingsTest.this.ensureResourceRequestCountInContentProvider(TARGET, 0);
+                }
+            } finally {
+                TestFileUtil.deleteFile(fileName);
+            }
+        }
+
+        private int mIndex;
+        private String mTempDir;
     }
 
     // The test verifies that JavaScript is disabled upon WebView
@@ -1303,82 +1394,58 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsFileAccessFromFilesXhrTestHelper(views.getView1(), views.getClient1()));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testFileUrlAccessNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsFileUrlAccessTestHelper(views.getView0(), views.getClient0(), 0),
-            new AwSettingsFileUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
+            new AwSettingsFileUrlAccessTestHelper(views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsFileUrlAccessTestHelper(views.getContainer1(), views.getClient1(), 1));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testFileUrlAccessIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsFileUrlAccessTestHelper(views.getView0(), views.getClient0(), 0),
-            new AwSettingsFileUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
+            new AwSettingsFileUrlAccessTestHelper(views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsFileUrlAccessTestHelper(views.getContainer1(), views.getClient1(), 1));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testFileUrlAccessBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsFileUrlAccessTestHelper(views.getView0(), views.getClient0(), 0),
-            new AwSettingsFileUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
+            new AwSettingsFileUrlAccessTestHelper(views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsFileUrlAccessTestHelper(views.getContainer1(), views.getClient1(), 1));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testContentUrlAccessNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsContentUrlAccessTestHelper(views.getView0(), views.getClient0(), 0),
-            new AwSettingsContentUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
+            new AwSettingsContentUrlAccessTestHelper(views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsContentUrlAccessTestHelper(views.getContainer1(), views.getClient1(), 1));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testContentUrlAccessIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsContentUrlAccessTestHelper(views.getView0(), views.getClient0(), 0),
-            new AwSettingsContentUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
+            new AwSettingsContentUrlAccessTestHelper(views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsContentUrlAccessTestHelper(views.getContainer1(), views.getClient1(), 1));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences"})
-     * BUG=153516
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
     public void testContentUrlAccessBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsContentUrlAccessTestHelper(views.getView0(), views.getClient0(), 0),
-            new AwSettingsContentUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
+            new AwSettingsContentUrlAccessTestHelper(views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsContentUrlAccessTestHelper(views.getContainer1(), views.getClient1(), 1));
     }
 
     @SmallTest
@@ -1402,50 +1469,37 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         ensureResourceRequestCountInContentProvider(target, 0);
     }
 
-    private void doTestContentUrlFromFile(boolean addQueryParameters) throws Throwable {
-        final TestAwContentsClient contentClient = new TestAwContentsClient();
-        final ContentViewCore contentView =
-                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
-        final String target = "content_from_file_" + addQueryParameters;
-        Context context = getInstrumentation().getTargetContext();
-        final String fileName = context.getCacheDir() + "/" + target + ".html";
-        try {
-            resetResourceRequestCountInContentProvider(target);
-            TestFileUtil.createNewHtmlFile(
-                fileName,
-                target,
-                "<img src=\"" + createContentUrl(target) +
-                (addQueryParameters ? "?weather=sunny&life=good" : "") +
-                "\">");
-            loadUrlSync(
-                contentView,
-                contentClient.getOnPageFinishedHelper(),
-                "file:///" + fileName);
-            ensureResourceRequestCountInContentProvider(target, 1);
-        } finally {
-            TestFileUtil.deleteFile(fileName);
-        }
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences", "Navigation"})
+    public void testContentUrlFromFileNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsContentUrlAccessFromFileTestHelper(
+                    views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsContentUrlAccessFromFileTestHelper(
+                    views.getContainer1(), views.getClient1(), 1));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences", "Navigation"})
-     * BUG=153516
-     */
-    @FlakyTest
-    public void testContentUrlFromFile() throws Throwable {
-        doTestContentUrlFromFile(false);
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences", "Navigation"})
+    public void testContentUrlFromFileIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsContentUrlAccessFromFileTestHelper(
+                    views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsContentUrlAccessFromFileTestHelper(
+                    views.getContainer1(), views.getClient1(), 1));
     }
 
-    // Verify that the query parameters are ignored with content URLs.
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Preferences", "Navigation"})
-     * BUG=153516
-     */
-    @FlakyTest
-    public void testContentUrlWithQueryParametersFromFile() throws Throwable {
-        doTestContentUrlFromFile(true);
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences", "Navigation"})
+    public void testContentUrlFromFileBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsContentUrlAccessFromFileTestHelper(
+                    views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsContentUrlAccessFromFileTestHelper(
+                    views.getContainer1(), views.getClient1(), 1));
     }
 
     @SmallTest
@@ -1562,9 +1616,10 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         // below.
         final String expectedTitle = "Asset File";
         final TestAwContentsClient contentClient = new TestAwContentsClient();
-        final ContentViewCore contentView =
-                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
-        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        final AwTestContainerView containerView =
+                createAwTestContainerViewOnMainSync(false, contentClient);
+        final ContentViewCore contentView = containerView.getContentViewCore();
+        final AwSettings settings = getAwSettingsOnUiThread(containerView.getAwContents());
         try {
             useTestResourceContext();
             settings.setAllowFileAccess(false);
@@ -1585,9 +1640,10 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         // below.
         final String expectedTitle = "Resource File";
         final TestAwContentsClient contentClient = new TestAwContentsClient();
-        final ContentViewCore contentView =
-                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
-        final ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        final AwTestContainerView containerView =
+                createAwTestContainerViewOnMainSync(false, contentClient);
+        final ContentViewCore contentView = containerView.getContentViewCore();
+        final AwSettings settings = getAwSettingsOnUiThread(containerView.getAwContents());
         try {
             useTestResourceContext();
             settings.setAllowFileAccess(false);
@@ -1601,39 +1657,50 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
     }
 
     class ViewPair {
-        private final ContentViewCore view0;
-        private final TestAwContentsClient client0;
-        private final ContentViewCore view1;
-        private final TestAwContentsClient client1;
-
-        ViewPair(ContentViewCore view0, TestAwContentsClient client0,
-                 ContentViewCore view1, TestAwContentsClient client1) {
-            this.view0 = view0;
+        ViewPair(AwTestContainerView container0, TestAwContentsClient client0,
+                 AwTestContainerView container1, TestAwContentsClient client1) {
+            this.container0 = container0;
             this.client0 = client0;
-            this.view1 = view1;
+            this.container1 = container1;
             this.client1 = client1;
         }
 
+        AwTestContainerView getContainer0() {
+            return container0;
+        }
+
         ContentViewCore getView0() {
-            return view0;
+            return container0.getContentViewCore();
         }
 
         TestAwContentsClient getClient0() {
             return client0;
         }
 
+        AwTestContainerView getContainer1() {
+            return container1;
+        }
+
         ContentViewCore getView1() {
-            return view1;
+            return container1.getContentViewCore();
         }
 
         TestAwContentsClient getClient1() {
             return client1;
         }
+
+        private final AwTestContainerView container0;
+        private final TestAwContentsClient client0;
+        private final AwTestContainerView container1;
+        private final TestAwContentsClient client1;
     }
 
     /**
-     * Runs the tests to check if a setting works properly in the case of
-     * multiple WebViews.
+     * Verifies the following statements about a setting:
+     *  - initially, the setting has a default value;
+     *  - the setting can be switched to an alternate value and back;
+     *  - switching a setting in the first WebView doesn't affect the setting
+     *    state in the second WebView and vice versa.
      *
      * @param helper0 Test helper for the first ContentView
      * @param helper1 Test helper for the second ContentView
@@ -1683,11 +1750,9 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         TestAwContentsClient client0 = new TestAwContentsClient();
         TestAwContentsClient client1 = new TestAwContentsClient();
         return new ViewPair(
-            createAwTestContainerViewOnMainSync(
-                firstIsIncognito, client0).getContentViewCore(),
+            createAwTestContainerViewOnMainSync(firstIsIncognito, client0),
             client0,
-            createAwTestContainerViewOnMainSync(
-                secondIsIncognito, client1).getContentViewCore(),
+            createAwTestContainerViewOnMainSync(secondIsIncognito, client1),
             client1);
     }
 

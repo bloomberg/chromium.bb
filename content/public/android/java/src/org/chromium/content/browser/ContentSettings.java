@@ -87,8 +87,6 @@ public class ContentSettings {
     private boolean mJavaScriptCanOpenWindowsAutomatically = false;
     private PluginState mPluginState = PluginState.OFF;
     private boolean mDomStorageEnabled = false;
-    private boolean mAllowFileUrlAccess = true;
-    private boolean mAllowContentUrlAccess = true;
 
     // Not accessed by the native side.
     private String mDefaultUserAgent = "";
@@ -345,59 +343,6 @@ public class ContentSettings {
      */
     public boolean getDisplayZoomControls() {
         return mDisplayZoomControls;
-    }
-
-    /**
-     * Enables or disables file access within ContentView. File access is enabled by
-     * default.  Note that this enables or disables file system access only.
-     * Assets and resources are still accessible using file:///android_asset and
-     * file:///android_res.
-     */
-    public void setAllowFileAccess(boolean allow) {
-        assert mCanModifySettings;
-        synchronized (mContentSettingsLock) {
-            if (mAllowFileUrlAccess != allow) {
-                mAllowFileUrlAccess = allow;
-                mEventHandler.syncSettingsLocked();
-            }
-        }
-    }
-
-    /**
-     * Gets whether this ContentView supports file access.
-     *
-     * @see #setAllowFileAccess
-     */
-    public boolean getAllowFileAccess() {
-        synchronized (mContentSettingsLock) {
-            return mAllowFileUrlAccess;
-        }
-    }
-
-    /**
-     * Enables or disables content URL access within ContentView.  Content URL
-     * access allows ContentView to load content from a content provider installed
-     * in the system. The default is enabled.
-     */
-    public void setAllowContentAccess(boolean allow) {
-        assert mCanModifySettings;
-        synchronized (mContentSettingsLock) {
-            if (mAllowContentUrlAccess != allow) {
-                mAllowContentUrlAccess = allow;
-                mEventHandler.syncSettingsLocked();
-            }
-        }
-    }
-
-    /**
-     * Gets whether this ContentView supports content URL access.
-     *
-     * @see #setAllowContentAccess
-     */
-    public boolean getAllowContentAccess() {
-        synchronized (mContentSettingsLock) {
-            return mAllowContentUrlAccess;
-        }
     }
 
     boolean supportsMultiTouchZoom() {

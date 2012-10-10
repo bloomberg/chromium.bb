@@ -43,6 +43,7 @@ class AwResourceDispatcherHostDelegate
       AwResourceDispatcherHostDelegate>;
   AwResourceDispatcherHostDelegate();
   virtual ~AwResourceDispatcherHostDelegate();
+  void SetOnlyAllowLoadFromCache(net::URLRequest* request);
 
   DISALLOW_COPY_AND_ASSIGN(AwResourceDispatcherHostDelegate);
 };

@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/common/url_constants.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/component/navigation_interception/intercept_navigation_delegate.h"
@@ -61,23 +62,35 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     bool is_continuation_of_transferred_request,
     ScopedVector<content::ResourceThrottle>* throttles) {
 
-  // Part of Implemention of WebSettings.blockNetworkLoads.
   scoped_ptr<AwContentsIoThreadClient> io_client =
       AwContentsIoThreadClient::FromID(child_id, route_id);
   DCHECK(io_client.get());
 
+  // Part of implementation of WebSettings.allowContentAccess.
+  if (request->url().SchemeIs(android_webview::kContentScheme) &&
+      io_client->ShouldBlockContentUrls()) {
+    throttles->push_back(new CancelResourceThrottle);
+  }
+
+  // Part of implementation of WebSettings.allowFileAccess.
+  if (request->url().SchemeIsFile() && io_client->ShouldBlockFileUrls()) {
+    const GURL& url = request->url();
+    if (!url.has_path() ||
+        // Application's assets and resources are always available.
+        (url.path().find(android_webview::kAndroidResourcePath) != 0 &&
+         url.path().find(android_webview::kAndroidAssetPath) != 0)) {
+      throttles->push_back(new CancelResourceThrottle);
+    }
+  }
+
+  // Part of implementation of WebSettings.blockNetworkLoads.
   if (io_client->ShouldBlockNetworkLoads()) {
     // Need to cancel ftp since it does not support net::LOAD_ONLY_FROM_CACHE
     // flag, so must cancel the request if network load is blocked.
     if (request->url().SchemeIs(chrome::kFtpScheme)) {
       throttles->push_back(new CancelResourceThrottle);
     } else {
-      int load_flags = request->load_flags();
-      load_flags &= ~(net::LOAD_BYPASS_CACHE &
-                      net::LOAD_VALIDATE_CACHE &
-                      net::LOAD_PREFERRING_CACHE);
-      load_flags |= net::LOAD_ONLY_FROM_CACHE;
-      request->set_load_flags(load_flags);
+      SetOnlyAllowLoadFromCache(request);
     }
   }
 
@@ -98,6 +111,16 @@ content::ResourceDispatcherHostLoginDelegate*
         net::AuthChallengeInfo* auth_info,
         net::URLRequest* request) {
   return new AwLoginDelegate(auth_info, request);
+}
+
+void AwResourceDispatcherHostDelegate::SetOnlyAllowLoadFromCache(
+    net::URLRequest* request) {
+  int load_flags = request->load_flags();
+  load_flags &= ~(net::LOAD_BYPASS_CACHE &
+                  net::LOAD_VALIDATE_CACHE &
+                  net::LOAD_PREFERRING_CACHE);
+  load_flags |= net::LOAD_ONLY_FROM_CACHE;
+  request->set_load_flags(load_flags);
 }
 
 }

@@ -36,6 +36,8 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   // Implementation of AwContentsIoThreadClient.
   virtual scoped_ptr<InterceptedRequestData> ShouldInterceptRequest(
       const net::URLRequest* request) OVERRIDE;
+  virtual bool ShouldBlockContentUrls() const OVERRIDE;
+  virtual bool ShouldBlockFileUrls() const OVERRIDE;
   virtual bool ShouldBlockNetworkLoads() const OVERRIDE;
 
  private:

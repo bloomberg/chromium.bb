@@ -95,6 +95,19 @@ public class AndroidWebViewTestBase
                 TimeUnit.SECONDS);
     }
 
+    protected void loadUrlSyncAndExpectError(final ContentViewCore contentViewCore,
+            CallbackHelper onPageFinishedHelper,
+            CallbackHelper onReceivedErrorHelper,
+            final String url) throws Throwable {
+        int onErrorCallCount = onReceivedErrorHelper.getCallCount();
+        int onFinishedCallCount = onPageFinishedHelper.getCallCount();
+        loadUrlAsync(contentViewCore, url);
+        onReceivedErrorHelper.waitForCallback(onErrorCallCount, 1, WAIT_TIMEOUT_SECONDS,
+                TimeUnit.SECONDS);
+        onPageFinishedHelper.waitForCallback(onFinishedCallCount, 1, WAIT_TIMEOUT_SECONDS,
+                TimeUnit.SECONDS);
+    }
+
     /**
      * Loads url on the UI thread but does not block.
      */

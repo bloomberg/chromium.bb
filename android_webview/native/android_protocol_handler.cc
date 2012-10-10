@@ -122,7 +122,7 @@ void AndroidProtocolHandler::RegisterProtocols(
   // Register content://. Note that even though a scheme is
   // registered here, it cannot be used by child processes until access to it is
   // granted via ChildProcessSecurityPolicy::GrantScheme(). This is done in
-  // RenderViewHost.
+  // AwContentBrowserClient.
   // TODO(mnaganov): Convert into a ProtocolHandler.
   net::URLRequestJobManager* job_manager =
       net::URLRequestJobManager::GetInstance();
