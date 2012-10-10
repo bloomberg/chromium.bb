@@ -7,12 +7,6 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 
 // Infobars are implemented in Java on Android.
-
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   NOTIMPLEMENTED();
   return NULL;

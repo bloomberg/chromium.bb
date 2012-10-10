@@ -17,6 +17,9 @@ include_rules = [
   # Temporary until TabAndroid is in a more suitable place.
   "!chrome/browser/android/tab_android.h",
 
+  # Temporary until chrome dependencies are removed.
+  "!chrome/browser/api/infobars/confirm_infobar_delegate.h",
+
   # Temporary until autofill becomes a browser component.
   "!chrome/browser/autofill/autofill_external_delegate.h",
 
