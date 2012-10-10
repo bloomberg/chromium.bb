@@ -241,29 +241,23 @@ void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
 }
 
 WebDragDestDelegate* ShellWebContentsViewDelegate::GetDragDestDelegate() {
-  NOTIMPLEMENTED();
   return NULL;
 }
 
 void ShellWebContentsViewDelegate::StoreFocus() {
-  NOTIMPLEMENTED();
 }
 
 void ShellWebContentsViewDelegate::RestoreFocus() {
-  NOTIMPLEMENTED();
 }
 
 bool ShellWebContentsViewDelegate::Focus() {
-  NOTIMPLEMENTED();
   return false;
 }
 
 void ShellWebContentsViewDelegate::TakeFocus(bool reverse) {
-  NOTIMPLEMENTED();
 }
 
 void ShellWebContentsViewDelegate::SizeChanged(const gfx::Size& size) {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace content
