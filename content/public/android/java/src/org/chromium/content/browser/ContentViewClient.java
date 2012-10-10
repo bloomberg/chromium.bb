@@ -7,15 +7,10 @@ package org.chromium.content.browser;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.KeyEvent;
 
-import org.chromium.base.AccessedByNative;
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
 
 import java.net.URISyntaxException;
@@ -36,14 +31,10 @@ public class ContentViewClient {
     // Tag used for logging.
     private static final String TAG = "ContentViewClient";
 
-    // Native class pointer which will be set by nativeInit()
-    @AccessedByNative
-    private int mNativeClazz = 0;
-
     public void onUpdateTitle(String title) {
     }
 
-    public void onTabCrash(int pid) {
+    public void onTabCrash() {
     }
 
     public boolean shouldOverrideKeyEvent(KeyEvent event) {
