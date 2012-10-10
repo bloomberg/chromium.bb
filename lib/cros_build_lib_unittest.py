@@ -72,9 +72,10 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
     cros_signals.SignalModuleUsable().AndReturn(True)
     ignore_sigint = kwds.pop('ignore_sigint', False)
 
-    for val in ('cwd', 'env', 'stdin', 'stdout', 'stderr'):
+    for val in ('cwd', 'stdin', 'stdout', 'stderr'):
       kwds.setdefault(val, None)
     kwds.setdefault('shell', False)
+    kwds.setdefault('env', mox.IgnoreArg())
     kwds['close_fds'] = True
 
     # Make some arbitrary functors we can pretend are signal handlers.
