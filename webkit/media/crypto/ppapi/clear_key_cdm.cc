@@ -236,8 +236,6 @@ cdm::Status ClearKeyCdm::Decrypt(
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig& video_decoder_config) {
   NOTIMPLEMENTED();
-  // TODO(tomfinegan): Determine the proper error to return here once there
-  // are callers for this method.
   return cdm::kSessionError;
 }
 

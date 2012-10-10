@@ -633,10 +633,12 @@ void CdmWrapper::DeliverBlock(int32_t result,
     case cdm::kNoKey:
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_NOKEY;
       break;
-    case cdm::kSessionError:
-    default:
+    case cdm::kDecryptError:
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
+      break;
+    default:
       PP_DCHECK(false);
+      decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
   }
 
   const pp::Buffer_Dev& buffer =

@@ -157,6 +157,11 @@ struct VideoDecoderConfig {
   int32_t extra_data_size;
 };
 
+// ContentDecryptionModule interface that all CDMs need to implement.
+// Note: ContentDecryptionModule implementations must use the allocator
+// provided in CreateCdmInstance() to allocate any Buffer that needs to
+// be passed back to the caller. Implementations must call Buffer::Destroy()
+// when a Buffer is created that will never be returned to the caller.
 class ContentDecryptionModule {
  public:
   // Generates a |key_request| given the |init_data|.
@@ -165,8 +170,8 @@ class ContentDecryptionModule {
   // in which case the callee should have allocated memory for the output
   // parameters (e.g |session_id| in |key_request|) and passed the ownership
   // to the caller.
-  // Returns kError if any error happened, in which case the |key_request|
-  // should not be used by the caller.
+  // Returns kSessionError if any error happened, in which case the
+  // |key_request| should not be used by the caller.
   //
   // TODO(xhwang): It's not safe to pass the ownership of the dynamically
   // allocated memory over library boundaries. Fix it after related PPAPI change
@@ -177,7 +182,8 @@ class ContentDecryptionModule {
 
   // Adds the |key| to the CDM to be associated with |key_id|.
   //
-  // Returns kSuccess if the key was successfully added, kError otherwise.
+  // Returns kSuccess if the key was successfully added, kSessionError
+  // otherwise.
   virtual Status AddKey(const char* session_id,
                         int session_id_size,
                         const uint8_t* key,
@@ -188,8 +194,8 @@ class ContentDecryptionModule {
   // Cancels any pending key request made to the CDM for |session_id|.
   //
   // Returns kSuccess if all pending key requests for |session_id| were
-  // successfully canceled or there was no key request to be canceled, kError
-  // otherwise.
+  // successfully canceled or there was no key request to be canceled,
+  // kSessionError otherwise.
   virtual Status CancelKeyRequest(const char* session_id,
                                   int session_id_size) = 0;
 
@@ -203,13 +209,9 @@ class ContentDecryptionModule {
   // |data| in |decrypted_buffer| to the caller.
   // Returns kNoKey if the CDM did not have the necessary decryption key
   // to decrypt.
-  // Returns kError if any other error happened.
+  // Returns kDecryptError if any other error happened.
   // If the return value is not kSuccess, |decrypted_buffer| should be ignored
   // by the caller.
-  //
-  // TODO(xhwang): It's not safe to pass the ownership of the dynamically
-  // allocated memory over library boundaries. Fix it after related PPAPI change
-  // and sample CDM are landed.
   virtual Status Decrypt(const InputBuffer& encrypted_buffer,
                          DecryptedBlock* decrypted_buffer) = 0;
 
@@ -218,8 +220,11 @@ class ContentDecryptionModule {
   //
   // Returns kSuccess if the |video_decoder_config| is supported and the CDM
   // video decoder is successfully initialized.
-  // Returns kError if |video_decoder_config| is not supported. The CDM may
-  // still be able to do Decrypt().
+  // Returns kSessionError if |video_decoder_config| is not supported. The CDM
+  // may still be able to do Decrypt().
+  //
+  // TODO(tomfinegan): Determine the proper error to return here once there
+  // are callers for this method.
   //
   // TODO(xhwang): Add stream ID here and in the following video decoder
   // functions when we need to support multiple video streams in one CDM.
@@ -238,13 +243,10 @@ class ContentDecryptionModule {
   // to decrypt.
   // Returns kNeedMoreData if more data was needed by the decoder to generate
   // a decoded frame (e.g. during initialization).
-  // Returns kError if any other (decryption or decoding) error happened.
+  // Returns kDecryptError if any decryption error happened.
+  // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |video_frame| should be ignored by
   // the caller.
-  //
-  // TODO(xhwang): It's not safe to pass the ownership of the dynamically
-  // allocated memory over library boundaries. Fix it after related PPAPI change
-  // and sample CDM are landed.
   virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
                                        VideoFrame* video_frame) = 0;
 
