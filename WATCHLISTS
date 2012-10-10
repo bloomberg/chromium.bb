@@ -550,7 +550,7 @@
                   'dominich+watch@chromium.org', 'mmenke@chromium.org',
                   'gavinp+prer@chromium.org'],
     'pyauto': ['anantha@chromium.org',
-               'nirnimesh@chromium.org', 'dyu@chromium.org',
+               'dyu@chromium.org',
                'dennisjeffrey@chromium.org'],
     'remoting': ['alexeypa+watch@chromium.org',
                  'dcaiafa+watch@chromium.org',
