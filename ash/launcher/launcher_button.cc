@@ -275,6 +275,7 @@ ui::EventResult LauncherButton::OnGestureEvent(
       host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, event);
       return ui::ER_CONSUMED;
     case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
       host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
       return ui::ER_CONSUMED;
     default:
