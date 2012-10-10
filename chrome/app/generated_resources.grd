@@ -6415,6 +6415,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEBUG_PACKED_APP_DESCRIPTION" desc="Description of the flag to enable debugging context menu options for packed apps.">
         Enables debugging context menu options such as Inspect Element for packed applications.
       </message>
+      <message name="IDS_FLAGS_ENABLE_PASSWORD_GENERATION_NAME" desc="Name of the flag to enable password generation.">
+        Enable password generation.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_PASSWORD_GENERATION_DESCRIPTION" desc="Description of flag to enable password generation.">
+        Allow the user to have Chrome generate passwords when it detects account creation pages.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

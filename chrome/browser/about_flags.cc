@@ -932,6 +932,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDebugPackedApps)
   },
+  {
+    "enable-password-generation",
+    IDS_FLAGS_ENABLE_PASSWORD_GENERATION_NAME,
+    IDS_FLAGS_ENABLE_PASSWORD_GENERATION_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnablePasswordGeneration)
+  },
 };
 
 const Experiment* experiments = kExperiments;
