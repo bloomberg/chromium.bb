@@ -4,7 +4,6 @@
 
 include_rules = [
   # Temporary until we implement our own versions of the *Client classes.
-  "!chrome/common/chrome_content_client.h",
   "!chrome/browser/chrome_content_browser_client.h",
   "!chrome/renderer/chrome_content_renderer_client.h",
   # Needed for content: scheme registation, will be moved away together with *Client classes.
@@ -27,9 +26,6 @@ include_rules = [
   "!chrome/browser/browser_process.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_manager.h",
-
-  # Temporary until the javascript dialog creator is unpicked from WebView.
-  "!chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h",
 
   # Temporary until fixing bug 153758.
   "!ui/base/ui_base_switches.h",

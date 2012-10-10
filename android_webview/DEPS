@@ -15,4 +15,6 @@ include_rules = [
   "+jni",
   "+net",
   "+ui/android",
+  "+ui/base",
+  "+webkit",
 ]

@@ -10,11 +10,11 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "jni/ContentSettings_jni.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/user_agent/user_agent.h"
-#include "webkit/user_agent/user_agent_util.h"
 
 using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF16;
@@ -343,9 +343,8 @@ static jint Init(JNIEnv* env, jobject obj, jint nativeContentViewCore,
 }
 
 static jstring GetDefaultUserAgent(JNIEnv* env, jclass clazz) {
-  // "Version/4.0" had been hardcoded in the legacy WebView.
-  std::string ua = webkit_glue::BuildUserAgentFromProduct("Version/4.0");
-  return base::android::ConvertUTF8ToJavaString(env, ua).Release();
+  return base::android::ConvertUTF8ToJavaString(
+      env, GetContentClient()->GetUserAgent()).Release();
 }
 
 }  // namespace content

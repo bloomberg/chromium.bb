@@ -5,8 +5,8 @@
 #ifndef ANDROID_WEBVIEW_LIB_MAIN_AW_MAIN_DELEGATE_H_
 #define ANDROID_WEBVIEW_LIB_MAIN_AW_MAIN_DELEGATE_H_
 
+#include "android_webview/common/aw_content_client.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/chrome_content_client.h"
 #include "content/public/app/content_main_delegate.h"
 
 namespace content {
@@ -35,7 +35,7 @@ class AwMainDelegate : public content::ContentMainDelegate {
       CreateContentRendererClient() OVERRIDE;
 
   scoped_ptr<content::BrowserMainRunner> browser_runner_;
-  chrome::ChromeContentClient chrome_content_client_;
+  android_webview::AwContentClient content_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMainDelegate);
 };

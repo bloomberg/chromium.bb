@@ -62,7 +62,7 @@ AwMainDelegate::~AwMainDelegate() {
 }
 
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
-  content::SetContentClient(&chrome_content_client_);
+  content::SetContentClient(&content_client_);
 
   return false;
 }

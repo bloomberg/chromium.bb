@@ -25,6 +25,8 @@
       'sources': [
         'common/android_webview_message_generator.cc',
         'common/android_webview_message_generator.h',
+        'common/aw_content_client.cc',
+        'common/aw_content_client.h',
         'common/render_view_messages.cc',
         'common/render_view_messages.h',
         'common/url_constants.cc',
