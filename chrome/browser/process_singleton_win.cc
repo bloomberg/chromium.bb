@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -201,16 +202,19 @@ bool ShouldLaunchInWindows8ImmersiveMode(const FilePath& user_data_dir) {
   if (default_user_data_dir != user_data_dir)
     return false;
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUninstall))
+    return false;
+
   base::win::RegKey reg_key;
   LONG key_result = reg_key.Create(HKEY_CURRENT_USER,
                                    chrome::kMetroRegistryPath,
                                    KEY_READ);
   if (key_result == ERROR_SUCCESS) {
     DWORD reg_value = 0;
-    reg_key.ReadValueDW(chrome::kLaunchModeValue,
-                        &reg_value);
-    if (reg_value == 1)
-      return true;
+    if (reg_key.ReadValueDW(chrome::kLaunchModeValue, &reg_value)
+          == ERROR_SUCCESS) {
+      return reg_value == 1;
+    }
   }
   return base::win::IsMachineATablet();
 }
