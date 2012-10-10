@@ -71,9 +71,11 @@ cr.define('cr.ui.table', function() {
     },
 
     renderFunction_: function(dataItem, table) {
+      // `This` must not be accessed here, since it may be anything, especially
+      // not a pointer to this object.
+
       var cm = table.columnModel;
       var listItem = List.prototype.createItem.call(table.list, '');
-
       listItem.className = 'table-row';
 
       for (var i = 0; i < cm.size; i++) {
