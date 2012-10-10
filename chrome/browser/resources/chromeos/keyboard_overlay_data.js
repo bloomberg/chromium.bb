@@ -15856,6 +15856,7 @@ var keyboardOverlayData = {
     'space<>SHIFT': 'keyboardOverlayScrollUpOnePage',
     'switch window<>CTRL': 'keyboardOverlayTakeScreenshot',
     'switch window<>CTRL<>SHIFT': 'keyboardOverlayScreenshotRegion',
+    't<>ALT<>CTRL': 'keyboardOverlayNewTerminal',
     't<>ALT<>SHIFT': 'keyboardOverlayFocusToolbar',
     't<>CTRL': 'keyboardOverlayNewTab',
     't<>CTRL<>SHIFT': 'keyboardOverlayReopenLastClosedTab',

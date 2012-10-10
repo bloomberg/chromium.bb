@@ -2797,6 +2797,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
     New tab
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_NEW_TERMINAL" desc="The text in the keyboard overlay to explain the shortcut (Open a new terminal tab).">
+    New terminal
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_NEW_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
     New window
   </message>
