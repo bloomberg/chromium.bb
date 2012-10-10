@@ -8,7 +8,6 @@
 #include <windows.h>
 #include <unknwn.h>
 #include <intshcut.h>
-#include <pstore.h>
 #include <shlguid.h>
 #include <urlhist.h>
 #include <shlobj.h>
@@ -35,6 +34,7 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_unittest_utils.h"
 #include "chrome/browser/importer/ie_importer.h"
+#include "chrome/browser/importer/pstore_declarations.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"

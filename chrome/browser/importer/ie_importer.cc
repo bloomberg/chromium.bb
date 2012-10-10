@@ -6,7 +6,6 @@
 
 #include <ole2.h>
 #include <intshcut.h>
-#include <pstore.h>
 #include <shlobj.h>
 #include <urlhist.h>
 #include <wininet.h>
@@ -29,6 +28,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/importer/pstore_declarations.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_util.h"
