@@ -21,7 +21,6 @@
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/sandbox_file_stream_writer.h"
-#include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
 

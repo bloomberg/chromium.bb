@@ -15,6 +15,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"

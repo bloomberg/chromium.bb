@@ -5,7 +5,13 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_CONTEXT_H_
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+#include "googleurl/src/gurl.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
@@ -14,13 +20,8 @@
 #include "webkit/fileapi/media/mtp_device_delegate.h"
 #endif
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace fileapi {
 
-class FileSystemContext;
 class MediaPathFilter;
 
 class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {

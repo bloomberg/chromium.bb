@@ -23,14 +23,10 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/quota/mock_special_storage_policy.h"
-
-using base::PlatformFile;
-using base::PlatformFileError;
 
 namespace fileapi {
 
@@ -164,7 +160,7 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     return sandbox_provider()->GetFileUtil(kFileSystemTypeTemporary);
   }
 
-  void OnValidate(PlatformFileError result) {
+  void OnValidate(base::PlatformFileError result) {
     EXPECT_NE(base::PLATFORM_FILE_OK, result);  // We told it not to create.
   }
 

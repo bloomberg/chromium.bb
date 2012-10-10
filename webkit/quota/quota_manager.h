@@ -23,6 +23,7 @@
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_database.h"
 #include "webkit/quota/quota_task.h"
+#include "webkit/quota/quota_types.h"
 #include "webkit/quota/special_storage_policy.h"
 
 class FilePath;

@@ -16,12 +16,12 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
+#include "webkit/quota/special_storage_policy.h"
 
 class FilePath;
 
 namespace quota {
 class QuotaManagerProxy;
-class SpecialStoragePolicy;
 }
 
 namespace webkit_blob {
