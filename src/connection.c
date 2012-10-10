@@ -806,6 +806,19 @@ wl_connection_demarshal(struct wl_connection *connection,
 	return NULL;
 }
 
+static int
+interface_equal(const struct wl_interface *a, const struct wl_interface *b)
+{
+	/* In most cases the pointer equality test is sufficient.
+	 * However, in some cases, depending on how things are split
+	 * across shared objects, we can end up with multiple
+	 * instances of the interface metadata constants.  So if the
+	 * pointers match, the interfaces are equal, if they don't
+	 * match we have to compare the interface names. */
+
+	return a == b || strcmp(a->name, b->name) == 0;
+}
+
 int
 wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
 {
@@ -839,7 +852,8 @@ wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
 			}
 
 			if (*object != NULL && message->types[i-2] != NULL &&
-			    (*object)->interface != message->types[i-2]) {
+			    !interface_equal((*object)->interface,
+					     message->types[i-2])) {
 				printf("invalid object (%u), type (%s), "
 				       "message %s(%s)\n",
 				       id, (*object)->interface->name,
