@@ -763,7 +763,8 @@ resize_handler(struct widget *widget,
 	columns = (width - m) / (int32_t) terminal->extents.max_x_advance;
 	rows = (height - m) / (int32_t) terminal->extents.height;
 
-	if (window_is_fullscreen(terminal->window)) {
+	if (!window_is_fullscreen(terminal->window) &&
+	    !window_is_maximized(terminal->window)) {
 		width = columns * terminal->extents.max_x_advance + m;
 		height = rows * terminal->extents.height + m;
 		widget_set_size(terminal->widget, width, height);
@@ -777,7 +778,8 @@ terminal_resize(struct terminal *terminal, int columns, int rows)
 {
 	int32_t width, height, m;
 
-	if (window_is_fullscreen(terminal->window))
+	if (window_is_fullscreen(terminal->window) ||
+	    window_is_maximized(terminal->window))
 		return;
 
 	m = 2 * terminal->margin;
