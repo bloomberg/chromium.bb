@@ -42,6 +42,8 @@ static const int64 kDurationOfNearScrollGestureMs = 150;
 // How long a smooth scroll gesture should run when it is a far scroll.
 static const int64 kDurationOfFarScrollGestureMs = 500;
 
+static const int64 kWheelTicksPerSecond = 1500;
+
 // static
 RenderWidgetHostViewPort* RenderWidgetHostViewPort::FromRWHV(
     RenderWidgetHostView* rwhv) {
@@ -418,6 +420,7 @@ class BasicMouseWheelSmoothScrollGesture
   BasicMouseWheelSmoothScrollGesture(bool scroll_down, bool scroll_far,
                                      int mouse_event_x, int mouse_event_y)
       : start_time_(base::TimeTicks::HighResNow()),
+        last_forward_time_(start_time_),
         scroll_down_(scroll_down),
         scroll_far_(scroll_far),
         mouse_event_x_(mouse_event_x),
@@ -434,11 +437,23 @@ class BasicMouseWheelSmoothScrollGesture
     if (now - start_time_ > base::TimeDelta::FromMilliseconds(duration_in_ms))
       return false;
 
+    // Figure out how many wheel ticks to send.
+    double seconds_since_last_tick = (now - last_forward_time_).InSecondsF();
+    int num_wheel_ticks = static_cast<int>(
+        seconds_since_last_tick * kWheelTicksPerSecond);
+    if (!num_wheel_ticks) {
+      TRACE_EVENT_INSTANT1("input", "NoMovement",
+                           "seconds_since_last_tick", seconds_since_last_tick);
+      return true;
+    }
+
+    last_forward_time_ = now;
+
     WebKit::WebMouseWheelEvent event;
     event.type = WebKit::WebInputEvent::MouseWheel;
     // TODO(nduca): Figure out plausible value.
     event.deltaY = scroll_down_ ? -10 : 10;
-    event.wheelTicksY = scroll_down_ ? 1 : -1;
+    event.wheelTicksY = (scroll_down_ ? 1 : -1) * num_wheel_ticks;
     event.modifiers = 0;
 
     // TODO(nduca): Figure out plausible x and y values.
@@ -455,6 +470,7 @@ class BasicMouseWheelSmoothScrollGesture
  private:
   virtual ~BasicMouseWheelSmoothScrollGesture() { }
   base::TimeTicks start_time_;
+  base::TimeTicks last_forward_time_;
   bool scroll_down_;
   bool scroll_far_;
   int mouse_event_x_;

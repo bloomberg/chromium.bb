@@ -148,6 +148,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      tick_active_smooth_scroll_gestures_task_posted_(false),
       gesture_event_filter_(new GestureEventFilter(this)) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
@@ -1594,6 +1595,12 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
     ProcessGestureAck(processed, type);
   }
 
+  // If an input ack is pending, then hold off ticking the gesture
+  // until we get an input ack.
+  if (in_process_event_types_.size() == 0 &&
+      !active_smooth_scroll_gestures_.empty())
+    TickActiveSmoothScrollGesture();
+
   // This is used only for testing, and the other end does not use the
   // source object.  On linux, specifying
   // Source<RenderWidgetHost> results in a very strange
@@ -1617,21 +1624,45 @@ void RenderWidgetHostImpl::OnMsgBeginSmoothScroll(
                      view_->CreateSmoothScrollGesture(
                          scroll_down, scroll_far, mouse_event_x,
                          mouse_event_y)));
+
+  // If an input ack is pending, then hold off ticking the gesture
+  // until we get an input ack.
+  if (!in_process_event_types_.empty())
+    return;
+  if (tick_active_smooth_scroll_gestures_task_posted_)
+    return;
   TickActiveSmoothScrollGesture();
 }
 
 void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
-  if (active_smooth_scroll_gestures_.size() == 0)
+  TRACE_EVENT0("input", "RenderWidgetHostImpl::TickActiveSmoothScrollGesture");
+  tick_active_smooth_scroll_gestures_task_posted_ = false;
+  if (active_smooth_scroll_gestures_.empty()) {
+    TRACE_EVENT_INSTANT0("input", "EarlyOut_NoActiveScrollGesture");
     return;
+  }
 
-  TimeTicks now = TimeTicks::HighResNow();
+  base::TimeTicks now = TimeTicks::HighResNow();
+  base::TimeDelta preferred_interval =
+      base::TimeDelta::FromMilliseconds(kSyntheticScrollMessageIntervalMs);
+  base::TimeDelta time_until_next_ideal_interval =
+      (last_smooth_scroll_gestures_tick_time_ + preferred_interval) -
+      now;
+  if (time_until_next_ideal_interval.InMilliseconds() > 0) {
+    TRACE_EVENT_INSTANT1(
+        "input", "EarlyOut_TickedTooRecently",
+        "delay", time_until_next_ideal_interval.InMilliseconds());
+    // Post a task.
+    tick_active_smooth_scroll_gestures_task_posted_ = true;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RenderWidgetHostImpl::TickActiveSmoothScrollGesture,
+                   weak_factory_.GetWeakPtr()),
+        time_until_next_ideal_interval);
+    return;
+  }
 
-  // Post the next tick right away so it is regular.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&RenderWidgetHostImpl::TickActiveSmoothScrollGesture,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kSyntheticScrollMessageIntervalMs));
+  last_smooth_scroll_gestures_tick_time_ = now;
 
   // Separate ticking of gestures from sending their completion messages.
   std::vector<int> ids_that_are_done;
@@ -1655,6 +1686,19 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
 
     Send(new ViewMsg_SmoothScrollCompleted(routing_id_, id));
   }
+
+  // No need to post the next tick if an input is in flight.
+  if (!in_process_event_types_.empty())
+    return;
+
+  TRACE_EVENT_INSTANT1("input", "PostTickTask",
+                       "delay", preferred_interval.InMilliseconds());
+  tick_active_smooth_scroll_gestures_task_posted_ = true;
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RenderWidgetHostImpl::TickActiveSmoothScrollGesture,
+                 weak_factory_.GetWeakPtr()),
+      preferred_interval);
 }
 
 void RenderWidgetHostImpl::OnMsgSelectRangeAck() {

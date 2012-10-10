@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "content/common/view_message_enums.h"
@@ -825,6 +826,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   typedef std::map<int, scoped_refptr<SmoothScrollGesture> >
       SmoothScrollGestureMap;
   SmoothScrollGestureMap active_smooth_scroll_gestures_;
+  base::TimeTicks last_smooth_scroll_gestures_tick_time_;
+  bool tick_active_smooth_scroll_gestures_task_posted_;
 
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
 
