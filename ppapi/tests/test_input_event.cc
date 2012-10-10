@@ -277,12 +277,8 @@ bool TestInputEvent::AreEquivalentEvents(PP_Resource received,
             expected_point.pressure != received_point.pressure)
           return false;
 
-        // The expected position is in the page coordinate system, and the
-        // received event is in the plugins coordinate system.
-        if (expected_point.position.x != received_point.position.x +
-            view_rect_.x() ||
-            expected_point.position.y != received_point.position.y +
-            view_rect_.y())
+        if (expected_point.position.x != received_point.position.x ||
+            expected_point.position.y != received_point.position.y)
           return false;
       }
       return true;
