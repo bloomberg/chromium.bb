@@ -27,8 +27,18 @@ class AURA_EXPORT StackingClient {
   virtual Window* GetDefaultParent(Window* window, const gfx::Rect& bounds) = 0;
 };
 
+// Set/Get the default stacking client.
 AURA_EXPORT void SetStackingClient(StackingClient* stacking_client);
 AURA_EXPORT StackingClient* GetStackingClient();
+
+// Set/Get a stacking client for a specific window. Setting the stacking client
+// sets the stacking client on the window's RootWindow, not the window itself.
+// Likewise getting obtains it from the window's RootWindow. If |window| is
+// non-NULL it must be in a RootWindow. If |window| is NULL, the default
+// stacking client is used.
+AURA_EXPORT void SetStackingClient(Window* window,
+                                   StackingClient* stacking_client);
+AURA_EXPORT StackingClient* GetStackingClient(Window* window);
 
 }  // namespace client
 }  // namespace aura

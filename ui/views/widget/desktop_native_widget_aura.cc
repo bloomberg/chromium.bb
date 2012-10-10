@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_native_widget_aura.h"
 
 #include "base/bind.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
@@ -16,8 +17,36 @@
 #include "ui/views/widget/desktop_root_window_host.h"
 #include "ui/views/widget/native_widget_aura_window_observer.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_aura_utils.h"
 
 namespace views {
+
+namespace {
+
+class DesktopNativeWidgetAuraStackingClient :
+    public aura::client::StackingClient {
+ public:
+  explicit DesktopNativeWidgetAuraStackingClient(aura::RootWindow* root_window)
+      : root_window_(root_window) {
+    aura::client::SetStackingClient(root_window_, this);
+  }
+  virtual ~DesktopNativeWidgetAuraStackingClient() {
+    aura::client::SetStackingClient(root_window_, NULL);
+  }
+
+  // Overridden from client::StackingClient:
+  virtual aura::Window* GetDefaultParent(aura::Window* window,
+                                         const gfx::Rect& bounds) OVERRIDE {
+    return root_window_;
+  }
+
+ private:
+  aura::RootWindow* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAuraStackingClient);
+};
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, public:
@@ -46,6 +75,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
 void DesktopNativeWidgetAura::InitNativeWidget(
     const Widget::InitParams& params) {
   window_->set_user_data(this);
+  window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetTransparent(true);
   window_->Init(params.layer_type);
   window_->Show();
@@ -56,6 +86,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
                                     this, params.bounds);
   root_window_.reset(
       desktop_root_window_host_->Init(window_, params));
+  stacking_client_.reset(
+      new DesktopNativeWidgetAuraStackingClient(root_window_.get()));
 
   aura::client::SetActivationDelegate(window_, this);
 }

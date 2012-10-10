@@ -38,6 +38,7 @@
 #include "ui/views/widget/native_widget_helper_aura.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
+#include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_WIN)
@@ -49,29 +50,6 @@
 namespace views {
 
 namespace {
-
-aura::client::WindowType GetAuraWindowTypeForWidgetType(
-    Widget::InitParams::Type type) {
-  switch (type) {
-    case Widget::InitParams::TYPE_WINDOW:
-      return aura::client::WINDOW_TYPE_NORMAL;
-    case Widget::InitParams::TYPE_PANEL:
-      return aura::client::WINDOW_TYPE_PANEL;
-    case Widget::InitParams::TYPE_CONTROL:
-      return aura::client::WINDOW_TYPE_CONTROL;
-    case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
-    case Widget::InitParams::TYPE_POPUP:
-    case Widget::InitParams::TYPE_BUBBLE:
-      return aura::client::WINDOW_TYPE_POPUP;
-    case Widget::InitParams::TYPE_MENU:
-      return aura::client::WINDOW_TYPE_MENU;
-    case Widget::InitParams::TYPE_TOOLTIP:
-      return aura::client::WINDOW_TYPE_TOOLTIP;
-    default:
-      NOTREACHED() << "Unhandled widget type " << type;
-      return aura::client::WINDOW_TYPE_UNKNOWN;
-  }
-}
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
@@ -145,24 +123,15 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     gfx::NativeView parent = params.GetParent();
     if (parent && parent->type() != aura::client::WINDOW_TYPE_UNKNOWN) {
       parent->AddTransientChild(window_);
-
-      // TODO(erg): The StackingClient interface implies that there is only a
-      // single root window. Solving this would require setting a stacking
-      // client per root window instead. For now, we hax our way around this by
-      // forcing the parent to be the root window instead of passing NULL as
-      // the parent which will dispatch to the stacking client.
-      if (desktop_helper_.get())
-        parent = parent->GetRootWindow();
-      else
-        parent = NULL;
+      parent = NULL;
     }
     // SetAlwaysOnTop before SetParent so that always-on-top container is used.
     SetAlwaysOnTop(params.keep_on_top);
     // If the parent is not specified, find the default parent for
     // the |window_| using the desired |window_bounds|.
     if (!parent) {
-      parent = aura::client::GetStackingClient()->GetDefaultParent(
-          window_, window_bounds);
+      parent = aura::client::GetStackingClient(params.GetParent())->
+          GetDefaultParent(window_, window_bounds);
     } else if (window_bounds == gfx::Rect()) {
       // If a parent is specified but no bounds are given,
       // use the origin of the parent's display so that the widget

@@ -351,6 +351,8 @@
         'widget/native_widget_win.h',
         'widget/widget.cc',
         'widget/widget.h',
+        'widget/widget_aura_utils.cc',
+        'widget/widget_aura_utils.h',
         'widget/widget_delegate.cc',
         'widget/widget_delegate.h',
         'widget/widget_hwnd_utils.cc',
@@ -436,6 +438,8 @@
             ['exclude', '/x11_[^/]*\\.cc$'],
             ['exclude', 'widget/native_widget_aura_window_observer.cc'],
             ['exclude', 'widget/native_widget_aura_window_observer.h'],
+            ['exclude', 'widget/widget_aura_utils.cc'],
+            ['exclude', 'widget/widget_aura_utils.h'],
           ],
         }],
         ['chromeos==1', {

@@ -59,7 +59,7 @@ void InfoBarContainerView::PlatformSpecificAddInfoBar(InfoBar* infobar,
 
 void InfoBarContainerView::StackAtTop() {
 #if defined(USE_AURA)
-  if (layer())
+  if (layer() && layer()->parent())
     layer()->parent()->StackAtTop(layer());
 #endif
 }

@@ -12,10 +12,9 @@
 
 namespace aura {
 class RootWindow;
+namespace client {
+class StackingClient;
 }
-
-namespace aura {
-class RootWindow;
 }
 
 namespace views {
@@ -173,6 +172,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   DesktopRootWindowHost* desktop_root_window_host_;
   aura::Window* window_;
   internal::NativeWidgetDelegate* native_widget_delegate_;
+
+  scoped_ptr<aura::client::StackingClient> stacking_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };
