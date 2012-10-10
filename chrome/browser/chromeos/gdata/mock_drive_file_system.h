@@ -12,6 +12,8 @@
 
 namespace gdata {
 
+class DriveFileSystemObserver;
+
 // Mock for DriveFileSystemInterface.
 class MockDriveFileSystem : public DriveFileSystemInterface {
  public:
@@ -20,8 +22,9 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
 
   // DriveFileSystemInterface overrides.
   MOCK_METHOD0(Initialize, void());
-  MOCK_METHOD1(AddObserver, void(Observer* observer));
-  MOCK_METHOD1(RemoveObserver, void(Observer* observer));
+  MOCK_METHOD1(AddObserver, void(DriveFileSystemObserver* observer));
+  MOCK_METHOD1(RemoveObserver,
+               void(DriveFileSystemObserver* observer));
   MOCK_METHOD0(StartInitialFeedFetch, void());
   MOCK_METHOD0(StartUpdates, void());
   MOCK_METHOD0(StopUpdates, void());

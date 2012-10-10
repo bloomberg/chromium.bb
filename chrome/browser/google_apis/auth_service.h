@@ -20,6 +20,7 @@ class Profile;
 namespace gdata {
 
 class OperationRegistry;
+class AuthServiceObserver;
 
 // This class provides authentication for Google services.
 // It integrates specific service integration with OAuth2 stack
@@ -27,22 +28,13 @@ class OperationRegistry;
 // All public functions must be called on UI thread.
 class AuthService : public content::NotificationObserver {
  public:
-  class Observer {
-   public:
-    // Triggered when a new OAuth2 refresh token is received from TokenService.
-    virtual void OnOAuth2RefreshTokenChanged() = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   explicit AuthService(const std::vector<std::string>& scopes);
   virtual ~AuthService();
 
   // Adds and removes the observer. AddObserver() should be called before
   // Initialize() as it can change the refresh token.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(AuthServiceObserver* observer);
+  void RemoveObserver(AuthServiceObserver* observer);
 
   // Initializes the auth service. Starts TokenService to retrieve the
   // refresh token.
@@ -91,7 +83,7 @@ class AuthService : public content::NotificationObserver {
   std::string refresh_token_;
   std::string access_token_;
   std::vector<std::string> scopes_;
-  ObserverList<Observer> observers_;
+  ObserverList<AuthServiceObserver> observers_;
 
   content::NotificationRegistrar registrar_;
 

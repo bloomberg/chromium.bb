@@ -14,7 +14,7 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader_observer.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/notification_observer.h"
 
@@ -27,16 +27,20 @@ class SequencedTaskRunner;
 
 namespace gdata {
 
+class DocumentFeed;
+class DriveFileSystemObserver;
 class DriveFunctionRemove;
 class DriveResourceMetadata;
 class DriveServiceInterface;
+class DriveScheduler;
 class DriveUploaderInterface;
 class DriveWebAppsRegistryInterface;
-class DriveScheduler;
+class GDataWapiFeedLoader;
+struct LoadFeedParams;
 
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
-                        public GDataWapiFeedLoader::Observer,
+                        public GDataWapiFeedLoaderObserver,
                         public content::NotificationObserver {
  public:
   DriveFileSystem(Profile* profile,
@@ -49,10 +53,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // DriveFileSystem overrides.
   virtual void Initialize() OVERRIDE;
-  virtual void AddObserver(
-      DriveFileSystemInterface::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      DriveFileSystemInterface::Observer* observer) OVERRIDE;
+  virtual void AddObserver(DriveFileSystemObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(DriveFileSystemObserver* observer) OVERRIDE;
   virtual void StartInitialFeedFetch() OVERRIDE;
   virtual void StartUpdates() OVERRIDE;
   virtual void StopUpdates() OVERRIDE;
@@ -922,7 +924,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // The loader is used to load the feeds.
   scoped_ptr<GDataWapiFeedLoader> feed_loader_;
 
-  ObserverList<DriveFileSystemInterface::Observer> observers_;
+  ObserverList<DriveFileSystemObserver> observers_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

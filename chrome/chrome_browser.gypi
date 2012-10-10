@@ -681,6 +681,7 @@
         'browser/google/google_util.h',
         'browser/google_apis/auth_service.cc',
         'browser/google_apis/auth_service.h',
+        'browser/google_apis/auth_service_observer.h',
         'browser/google_apis/drive_api_operations.cc',
         'browser/google_apis/drive_api_operations.h',
         'browser/google_apis/drive_api_parser.cc',

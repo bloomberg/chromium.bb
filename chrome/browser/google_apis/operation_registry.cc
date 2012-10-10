@@ -149,11 +149,11 @@ OperationRegistry::~OperationRegistry() {
   DCHECK(in_flight_operations_.IsEmpty());
 }
 
-void OperationRegistry::AddObserver(Observer* observer) {
+void OperationRegistry::AddObserver(OperationRegistryObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void OperationRegistry::RemoveObserver(Observer* observer) {
+void OperationRegistry::RemoveObserver(OperationRegistryObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
@@ -278,7 +278,9 @@ void OperationRegistry::OnOperationAuthFailed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "GDataOperation authentication failed.";
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnAuthenticationFailed());
+  FOR_EACH_OBSERVER(OperationRegistryObserver,
+                    observer_list_,
+                    OnAuthenticationFailed());
 }
 
 bool OperationRegistry::IsFileTransferOperation(
@@ -339,7 +341,9 @@ bool OperationRegistry::ShouldNotifyStatusNow(
 void OperationRegistry::NotifyStatusToObservers() {
   OperationProgressStatusList list(GetProgressStatusList());
   if (ShouldNotifyStatusNow(list))
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnProgressUpdate(list));
+    FOR_EACH_OBSERVER(OperationRegistryObserver,
+                      observer_list_,
+                      OnProgressUpdate(list));
 }
 
 }  // namespace gdata

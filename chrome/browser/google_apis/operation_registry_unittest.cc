@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,7 +58,7 @@ class MockOtherOperation : public MockOperation {
                       FilePath(FILE_PATH_LITERAL("/dummy/other"))) {}
 };
 
-class TestObserver : public OperationRegistry::Observer {
+class TestObserver : public OperationRegistryObserver {
  public:
   virtual void OnProgressUpdate(
       const OperationProgressStatusList& list) OVERRIDE {

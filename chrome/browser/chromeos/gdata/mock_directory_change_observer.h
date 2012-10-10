@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DIRECTORY_CHANGE_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DIRECTORY_CHANGE_OBSERVER_H_
 
-#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
+#include "base/file_path.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gdata {
 
 // Mock for DriveFileSystemInterface::Observer::OnDirectoryChanged().
-class MockDirectoryChangeObserver : public DriveFileSystemInterface::Observer {
+class MockDirectoryChangeObserver : public DriveFileSystemObserver {
  public:
   MockDirectoryChangeObserver();
   virtual ~MockDirectoryChangeObserver();

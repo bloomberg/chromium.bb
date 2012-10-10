@@ -15,8 +15,10 @@
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_observer.h"
+#include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -28,6 +30,11 @@ class FileBrowserNotifications;
 class PrefChangeRegistrar;
 class Profile;
 
+namespace gdata {
+class DriveEntryProto;
+class DriveFileSystemInterface;
+}
+
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
 class FileBrowserEventRouter
@@ -35,8 +42,8 @@ class FileBrowserEventRouter
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver,
-      public gdata::DriveServiceObserver,
-      public gdata::DriveFileSystemInterface::Observer {
+      public gdata::DriveFileSystemObserver,
+      public gdata::DriveServiceObserver {
  public:
   // RefcountedProfileKeyedService overrides.
   virtual void ShutdownOnUIThread() OVERRIDE;

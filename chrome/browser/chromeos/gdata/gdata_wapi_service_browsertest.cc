@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_service.h"
+#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"

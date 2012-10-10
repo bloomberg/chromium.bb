@@ -8,18 +8,22 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_observer.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace gdata{
 
 class DriveCache;
-class DriveFileSystem;
+class DriveCacheEntry;
+class DriveFileSystemInterface;
 
 // This class removes stale cache files, which are present locally, but no
 // longer present on the server. This can happen if files are removed from the
 // server from other devices, or from the web interface.
-class StaleCacheFilesRemover : public DriveFileSystemInterface::Observer {
+class StaleCacheFilesRemover : public DriveFileSystemObserver {
  public:
   StaleCacheFilesRemover(DriveFileSystemInterface* file_system,
                          DriveCache* cache);

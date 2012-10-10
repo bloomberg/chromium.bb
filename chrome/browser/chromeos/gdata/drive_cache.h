@@ -27,6 +27,7 @@ namespace gdata {
 
 class DriveCacheEntry;
 class DriveCacheMetadata;
+class DriveCacheObserver;
 
 // Callback for SetMountedStateOnUIThread and ClearAllOnUIThread.
 typedef base::Callback<void(DriveFileError error,
@@ -109,24 +110,6 @@ class DriveCache {
     FILE_OPERATION_COPY,
   };
 
-  // Used to notify events. All events are notified on UI thread.
-  class Observer {
-   public:
-    // Triggered when a file has been pinned successfully.
-    virtual void OnCachePinned(const std::string& resource_id,
-                               const std::string& md5) {}
-
-    // Triggered when a file has been unpinned successfully.
-    virtual void OnCacheUnpinned(const std::string& resource_id,
-                                 const std::string& md5) {}
-
-    // Triggered when a dirty file has been committed (saved) successfully.
-    virtual void OnCacheCommitted(const std::string& resource_id) {}
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   // Returns the sub-directory under drive cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
   //
@@ -149,11 +132,11 @@ class DriveCache {
 
   // Adds observer.
   // Must be called on UI thread.
-  void AddObserver(Observer* observer);
+  void AddObserver(DriveCacheObserver* observer);
 
   // Removes observer.
   // Must be called on UI thread.
-  void RemoveObserver(Observer* observer);
+  void RemoveObserver(DriveCacheObserver* observer);
 
   // Gets the cache entry by the given resource ID and MD5.
   // See also GetCacheEntry().
@@ -452,7 +435,7 @@ class DriveCache {
   scoped_ptr<DriveCacheMetadata> metadata_;
 
   // List of observers, this member must be accessed on UI thread.
-  ObserverList<Observer> observers_;
+  ObserverList<DriveCacheObserver> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

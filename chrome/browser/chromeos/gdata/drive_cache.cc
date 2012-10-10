@@ -14,6 +14,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_cache_metadata.h"
+#include "chrome/browser/chromeos/gdata/drive_cache_observer.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -373,12 +374,12 @@ bool DriveCache::IsUnderDriveCacheDirectory(const FilePath& path) const {
   return cache_root_path_ == path || cache_root_path_.IsParent(path);
 }
 
-void DriveCache::AddObserver(Observer* observer) {
+void DriveCache::AddObserver(DriveCacheObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
-void DriveCache::RemoveObserver(Observer* observer) {
+void DriveCache::RemoveObserver(DriveCacheObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
@@ -1513,7 +1514,9 @@ void DriveCache::OnPinned(DriveFileError* error,
     callback.Run(*error, resource_id, md5);
 
   if (*error == DRIVE_FILE_OK)
-    FOR_EACH_OBSERVER(Observer, observers_, OnCachePinned(resource_id, md5));
+    FOR_EACH_OBSERVER(DriveCacheObserver,
+                      observers_,
+                      OnCachePinned(resource_id, md5));
 }
 
 void DriveCache::OnUnpinned(DriveFileError* error,
@@ -1527,7 +1530,9 @@ void DriveCache::OnUnpinned(DriveFileError* error,
     callback.Run(*error, resource_id, md5);
 
   if (*error == DRIVE_FILE_OK)
-    FOR_EACH_OBSERVER(Observer, observers_, OnCacheUnpinned(resource_id, md5));
+    FOR_EACH_OBSERVER(DriveCacheObserver,
+                      observers_,
+                      OnCacheUnpinned(resource_id, md5));
 
   // Now the file is moved from "persistent" to "tmp" directory.
   // It's a chance to free up space if needed.
@@ -1551,7 +1556,9 @@ void DriveCache::OnCommitDirty(DriveFileError* error,
     callback.Run(*error, resource_id, md5);
 
   if (*error == DRIVE_FILE_OK)
-    FOR_EACH_OBSERVER(Observer, observers_, OnCacheCommitted(resource_id));
+    FOR_EACH_OBSERVER(DriveCacheObserver,
+                      observers_,
+                      OnCacheCommitted(resource_id));
 }
 
 void DriveCache::GetCacheEntryHelper(const std::string& resource_id,

@@ -16,6 +16,8 @@
 
 namespace gdata {
 
+class OperationRegistryObserver;
+
 // Unique ID to identify each operation.
 typedef int32 OperationID;
 
@@ -66,24 +68,12 @@ struct OperationProgressStatus {
 };
 typedef std::vector<OperationProgressStatus> OperationProgressStatusList;
 
-
 // This class tracks all the in-flight GData operation objects and manage their
 // lifetime.
 class OperationRegistry {
  public:
   OperationRegistry();
   ~OperationRegistry();
-
-  // Observer interface for listening changes in the active set of operations.
-  class Observer {
-   public:
-    // Called when a GData operation started, made some progress, or finished.
-    virtual void OnProgressUpdate(const OperationProgressStatusList& list) = 0;
-    // Called when GData authentication failed.
-    virtual void OnAuthenticationFailed() {}
-   protected:
-    virtual ~Observer() {}
-  };
 
   // Base class for operations that this registry class can maintain.
   // NotifyStart() passes the ownership of the Operation object to the registry.
@@ -143,8 +133,8 @@ class OperationRegistry {
 
   // Sets an observer. The registry do NOT own observers; before destruction
   // they need to be removed from the registry.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(OperationRegistryObserver* observer);
+  void RemoveObserver(OperationRegistryObserver* observer);
 
   // Disables the notification suppression for testing purpose.
   void DisableNotificationFrequencyControlForTest();
@@ -173,11 +163,26 @@ class OperationRegistry {
 
   typedef IDMap<Operation, IDMapOwnPointer> OperationIDMap;
   OperationIDMap in_flight_operations_;
-  ObserverList<Observer> observer_list_;
+  ObserverList<OperationRegistryObserver> observer_list_;
   base::Time last_notification_;
   bool do_notification_frequency_control_;
 
   DISALLOW_COPY_AND_ASSIGN(OperationRegistry);
+};
+
+// Observer interface for listening changes in the active set of operations.
+class OperationRegistryObserver {
+ public:
+  // Called when a GData operation started, made some progress, or finished.
+  virtual void OnProgressUpdate(const OperationProgressStatusList& list) {
+  }
+
+  // Called when GData authentication failed.
+  virtual void OnAuthenticationFailed() {
+  }
+
+ protected:
+  virtual ~OperationRegistryObserver() {}
 };
 
 }  // namespace gdata

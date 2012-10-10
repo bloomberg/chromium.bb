@@ -7,13 +7,13 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/gdata/drive_cache.h"
+#include "chrome/browser/chromeos/gdata/drive_cache_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gdata {
 
 // Mock for DriveCache::Observer.
-class MockDriveCacheObserver : public DriveCache::Observer {
+class MockDriveCacheObserver : public DriveCacheObserver {
  public:
   MockDriveCacheObserver();
   virtual ~MockDriveCacheObserver();

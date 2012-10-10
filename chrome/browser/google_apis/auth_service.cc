@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/operations_base.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/signin/token_service.h"
@@ -37,7 +38,9 @@ void AuthService::Initialize(Profile* profile) {
                  content::Source<TokenService>(service));
 
   if (!refresh_token_.empty())
-    FOR_EACH_OBSERVER(Observer, observers_, OnOAuth2RefreshTokenChanged());
+    FOR_EACH_OBSERVER(AuthServiceObserver,
+                      observers_,
+                      OnOAuth2RefreshTokenChanged());
 }
 
 AuthService::AuthService(const std::vector<std::string>& scopes)
@@ -96,11 +99,11 @@ void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
   callback.Run(error, access_token);
 }
 
-void AuthService::AddObserver(Observer* observer) {
+void AuthService::AddObserver(AuthServiceObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void AuthService::RemoveObserver(Observer* observer) {
+void AuthService::RemoveObserver(AuthServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -122,7 +125,9 @@ void AuthService::Observe(int type,
   } else {
     refresh_token_.clear();
   }
-  FOR_EACH_OBSERVER(Observer, observers_, OnOAuth2RefreshTokenChanged());
+  FOR_EACH_OBSERVER(AuthServiceObserver,
+                    observers_,
+                    OnOAuth2RefreshTokenChanged());
 }
 
 }  // namespace gdata

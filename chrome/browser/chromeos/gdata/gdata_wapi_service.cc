@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_operations.h"
 #include "chrome/browser/google_apis/gdata_operations.h"
 #include "chrome/browser/google_apis/gdata_util.h"

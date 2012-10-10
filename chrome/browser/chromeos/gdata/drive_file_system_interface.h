@@ -17,6 +17,7 @@ namespace gdata {
 
 class DocumentEntry;
 class DriveEntryProto;
+class DriveFileSystemObserver;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
@@ -72,41 +73,13 @@ class DriveFileSystemInterface {
  public:
   virtual ~DriveFileSystemInterface() {}
 
-  // Used to notify events on the file system.
-  // All events are notified on UI thread.
-  class Observer {
-   public:
-    // Triggered when a content of a directory has been changed.
-    // |directory_path| is a virtual directory path (/drive/...) representing
-    // changed directory.
-    virtual void OnDirectoryChanged(const FilePath& directory_path) {}
-
-    // Triggered when the file system is initially loaded.
-    virtual void OnInitialLoadFinished(DriveFileError error) {}
-
-    // Triggered when a document feed is fetched. |num_accumulated_entries|
-    // tells the number of entries fetched so far.
-    virtual void OnDocumentFeedFetched(int num_accumulated_entries) {}
-
-    // Triggered when the feed from the server is loaded.
-    virtual void OnFeedFromServerLoaded() {}
-
-    // Triggered when the file system is mounted.
-    virtual void OnFileSystemMounted() {}
-    // Triggered when the file system is being unmounted.
-    virtual void OnFileSystemBeingUnmounted() {}
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   // Initializes the object. This function should be called before any
   // other functions.
   virtual void Initialize() = 0;
 
   // Adds and removes the observer.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
+  virtual void AddObserver(DriveFileSystemObserver* observer) = 0;
+  virtual void RemoveObserver(DriveFileSystemObserver* observer) = 0;
 
   // Starts initial feed fetch from the server.
   virtual void StartInitialFeedFetch() = 0;

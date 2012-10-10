@@ -27,6 +27,7 @@ class DocumentFeed;
 class DriveCache;
 class DriveServiceInterface;
 class DriveWebAppsRegistryInterface;
+class GDataWapiFeedLoaderObserver;
 struct GetDocumentsUiState;
 struct LoadFeedParams;
 
@@ -91,26 +92,6 @@ struct LoadRootFeedParams {
 // Documents List API) and load the cached proto file.
 class GDataWapiFeedLoader {
  public:
-  // Used to notify events from the loader.
-  // All events are notified on UI thread.
-  class Observer {
-   public:
-    // Triggered when a content of a directory has been changed.
-    // |directory_path| is a virtual directory path representing the
-    // changed directory.
-    virtual void OnDirectoryChanged(const FilePath& directory_path) {}
-
-    // Triggered when a document feed is fetched. |num_accumulated_entries|
-    // tells the number of entries fetched so far.
-    virtual void OnDocumentFeedFetched(int num_accumulated_entries) {}
-
-    // Triggered when the feed from the server is loaded.
-    virtual void OnFeedFromServerLoaded() {}
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   GDataWapiFeedLoader(
       DriveResourceMetadata* resource_metadata,
       DriveServiceInterface* drive_service,
@@ -120,8 +101,8 @@ class GDataWapiFeedLoader {
   ~GDataWapiFeedLoader();
 
   // Adds and removes the observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(GDataWapiFeedLoaderObserver* observer);
+  void RemoveObserver(GDataWapiFeedLoaderObserver* observer);
 
   // Starts root feed load from the cache. If successful, runs |callback| to
   // tell the caller that the loading was successful.
@@ -253,7 +234,7 @@ class GDataWapiFeedLoader {
   DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
   DriveCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  ObserverList<Observer> observers_;
+  ObserverList<GDataWapiFeedLoaderObserver> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

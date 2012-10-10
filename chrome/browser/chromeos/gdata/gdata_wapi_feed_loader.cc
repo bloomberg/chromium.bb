@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_util.h"
@@ -229,12 +230,13 @@ GDataWapiFeedLoader::GDataWapiFeedLoader(
 GDataWapiFeedLoader::~GDataWapiFeedLoader() {
 }
 
-void GDataWapiFeedLoader::AddObserver(Observer* observer) {
+void GDataWapiFeedLoader::AddObserver(GDataWapiFeedLoaderObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
-void GDataWapiFeedLoader::RemoveObserver(Observer* observer) {
+void GDataWapiFeedLoader::RemoveObserver(
+    GDataWapiFeedLoaderObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
@@ -508,7 +510,9 @@ void GDataWapiFeedLoader::OnFeedFromServerLoaded(
   if (!params->load_finished_callback.is_null())
     params->load_finished_callback.Run(DRIVE_FILE_OK);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnFeedFromServerLoaded());
+  FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver,
+                    observers_,
+                    OnFeedFromServerLoaded());
 }
 
 void GDataWapiFeedLoader::OnGetDocuments(
@@ -611,7 +615,7 @@ void GDataWapiFeedLoader::OnParseFeed(scoped_ptr<LoadFeedParams> params,
   }
 
   // Notify the observers that all document feeds are fetched.
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver, observers_,
                     OnDocumentFeedFetched(num_accumulated_entries));
 
   UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
@@ -715,7 +719,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
   }
 
   // Notify the observers that all document feeds are fetched.
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver, observers_,
                     OnDocumentFeedFetched(num_accumulated_entries));
 
   UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
@@ -741,7 +745,7 @@ void GDataWapiFeedLoader::OnNotifyDocumentFeedFetched(
   if (ui_state->num_showing_documents + kFetchUiUpdateStep <=
       ui_state->num_fetched_documents) {
     ui_state->num_showing_documents += kFetchUiUpdateStep;
-    FOR_EACH_OBSERVER(Observer, observers_,
+    FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver, observers_,
                       OnDocumentFeedFetched(ui_state->num_showing_documents));
 
     int num_remaining_ui_updates =
@@ -902,7 +906,7 @@ DriveFileError GDataWapiFeedLoader::UpdateFromFeed(
   if (should_notify_directory_changed) {
     for (std::set<FilePath>::iterator dir_iter = changed_dirs.begin();
         dir_iter != changed_dirs.end(); ++dir_iter) {
-      FOR_EACH_OBSERVER(Observer, observers_,
+      FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver, observers_,
                         OnDirectoryChanged(*dir_iter));
     }
   }

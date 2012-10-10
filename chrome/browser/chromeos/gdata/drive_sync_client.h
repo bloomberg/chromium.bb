@@ -13,7 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
-#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_cache_observer.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_observer.h"
+#include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "content/public/browser/notification_observer.h"
 #include "net/base/network_change_notifier.h"
 
@@ -21,6 +23,9 @@ class Profile;
 class PrefChangeRegistrar;
 
 namespace gdata {
+
+class DriveEntryProto;
+class DriveFileSystemInterface;
 
 // The DriveSyncClient is used to synchronize pinned files on Drive and the
 // cache on the local drive. The sync client works as follows.
@@ -40,8 +45,8 @@ namespace gdata {
 // edited) files to Drive. Will work on this once downloading is done.
 // crosbug.com/27836.
 class DriveSyncClient
-    : public DriveFileSystemInterface::Observer,
-      public DriveCache::Observer,
+    : public DriveFileSystemObserver,
+      public DriveCacheObserver,
       public content::NotificationObserver,
       public net::NetworkChangeNotifier::ConnectionTypeObserver{
  public:

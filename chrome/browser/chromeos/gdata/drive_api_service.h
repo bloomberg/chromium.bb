@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/google_apis/auth_service.h"
+#include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/gdata_operations.h"
 
 class FilePath;
@@ -25,8 +26,8 @@ class OperationRunner;
 // Details of API call are abstracted in each operation class and this class
 // works as a thin wrapper for the API.
 class DriveAPIService : public DriveServiceInterface,
-                        public AuthService::Observer,
-                        public OperationRegistry::Observer {
+                        public AuthServiceObserver,
+                        public OperationRegistryObserver {
  public:
   // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
