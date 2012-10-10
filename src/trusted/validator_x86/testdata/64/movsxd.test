@@ -1,0 +1,24 @@
+@hex:
+  # movslq %ebp, %edx
+  63 d5
+  # sub (%rbp, %rdx), %eax
+  2b 44 15 00
+  
+  # movslq %ebp, %rdx
+  48 63 d5
+  # sub (%rbp, %rdx), %eax
+  2b 44 15 00
+@rval:
+  VALIDATOR: 0000000000000009: 2b 44 15 00                                  sub %eax, [%rbp+%rdx*1]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to d
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 63 d5                                        movsxd %edx, %ebp
+  0000000000000002: 2b 44 15 00                                  sub %eax, [%rbp+%rdx*1]
+  0000000000000006: 48 63 d5                                     movsxd %rdx, %ebp
+  0000000000000009: 2b 44 15 00                                  sub %eax, [%rbp+%rdx*1]
+@rdfa_output:
+  9: [0] improper memory address - bad index
+  return code: 1
