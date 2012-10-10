@@ -477,6 +477,9 @@ struct weston_surface {
 
 		/* wl_surface.damage */
 		pixman_region32_t damage;
+
+		/* wl_surface.set_opaque_region */
+		pixman_region32_t opaque;
 	} pending;
 
 	/*

@@ -275,6 +275,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->pending.buffer_destroy_listener.notify =
 		surface_handle_pending_buffer_destroy;
 	pixman_region32_init(&surface->pending.damage);
+	pixman_region32_init(&surface->pending.opaque);
 
 	return surface;
 }
@@ -781,6 +782,7 @@ destroy_surface(struct wl_resource *resource)
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
 
+	pixman_region32_fini(&surface->pending.opaque);
 	pixman_region32_fini(&surface->pending.damage);
 
 	if (surface->pending.buffer)
@@ -831,8 +833,6 @@ weston_surface_attach(struct weston_surface *surface, struct wl_buffer *buffer)
 		if (surface->geometry.width != buffer->width ||
 		    surface->geometry.height != buffer->height) {
 			undef_region(&surface->input);
-			pixman_region32_fini(&surface->opaque);
-			pixman_region32_init(&surface->opaque);
 		}
 	} else {
 		if (weston_surface_is_mapped(surface))
@@ -1216,20 +1216,13 @@ surface_set_opaque_region(struct wl_client *client,
 	struct weston_surface *surface = resource->data;
 	struct weston_region *region;
 
-	pixman_region32_fini(&surface->opaque);
-
 	if (region_resource) {
 		region = region_resource->data;
-		pixman_region32_init_rect(&surface->opaque, 0, 0,
-					  surface->geometry.width,
-					  surface->geometry.height);
-		pixman_region32_intersect(&surface->opaque,
-					  &surface->opaque, &region->region);
+		pixman_region32_copy(&surface->pending.opaque,
+				     &region->region);
 	} else {
-		pixman_region32_init(&surface->opaque);
+		empty_region(&surface->pending.opaque);
 	}
-
-	surface->geometry.dirty = 1;
 }
 
 static void
@@ -1274,6 +1267,15 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 			      &surface->pending.damage);
 	empty_region(&surface->pending.damage);
 	weston_surface_schedule_repaint(surface);
+
+	/* wl_surface.set_opaque_region */
+	pixman_region32_fini(&surface->opaque);
+	pixman_region32_init_rect(&surface->opaque, 0, 0,
+				  surface->geometry.width,
+				  surface->geometry.height);
+	pixman_region32_intersect(&surface->opaque,
+				  &surface->opaque, &surface->pending.opaque);
+	surface->geometry.dirty = 1;
 }
 
 static const struct wl_surface_interface surface_interface = {

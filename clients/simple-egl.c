@@ -401,8 +401,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	glDisableVertexAttribArray(window->gl.pos);
 	glDisableVertexAttribArray(window->gl.col);
 
-	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
-
 	if (window->opaque || window->fullscreen) {
 		region = wl_compositor_create_region(window->display->compositor);
 		wl_region_add(region, 0, 0,
@@ -411,6 +409,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		wl_surface_set_opaque_region(window->surface, region);
 		wl_region_destroy(region);
 	}
+
+	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
 
 	window->callback = wl_surface_frame(window->surface);
 	wl_callback_add_listener(window->callback, &frame_listener, window);
