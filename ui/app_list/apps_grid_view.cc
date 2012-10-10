@@ -153,9 +153,11 @@ void AppsGridView::EndDrag(bool cancel) {
     MoveItemInModel(drag_view_, drop_target_);
 
   dragging_ = false;
-  drag_view_ = NULL;
   drop_target_ = Index();
-  AnimateToIdealBounds();
+  if (drag_view_) {
+    drag_view_ = NULL;
+    AnimateToIdealBounds();
+  }
 
   page_flip_timer_.Stop();
   page_flip_target_ = -1;
@@ -249,6 +251,8 @@ void AppsGridView::ViewHierarchyChanged(bool is_add,
 
     if (drag_view_ == child)
       EndDrag(true);
+
+    bounds_animator_.StopAnimatingView(child);
   }
 }
 
@@ -521,6 +525,7 @@ void AppsGridView::ButtonPressed(views::Button* sender,
 
 void AppsGridView::ListItemsAdded(size_t start, size_t count) {
   EndDrag(true);
+  bounds_animator_.Cancel();
 
   for (size_t i = start; i < start + count; ++i) {
     views::View* view = CreateViewForItemAtIndex(i);
@@ -536,6 +541,7 @@ void AppsGridView::ListItemsAdded(size_t start, size_t count) {
 
 void AppsGridView::ListItemsRemoved(size_t start, size_t count) {
   EndDrag(true);
+  bounds_animator_.Cancel();
 
   for (size_t i = 0; i < count; ++i) {
     views::View* view = view_model_.view_at(start);
