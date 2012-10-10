@@ -38,9 +38,9 @@ NSAttributedString* GetAttributedLabelString(
   [paragraphStyle setLineBreakMode:lineBreakMode];
 
   NSDictionary* attributes = @{
-      font.GetNativeFont(): NSFontAttributeName,
-      color: NSForegroundColorAttributeName,
-      paragraphStyle.get(): NSParagraphStyleAttributeName
+      NSFontAttributeName:            font.GetNativeFont(),
+      NSForegroundColorAttributeName: color,
+      NSParagraphStyleAttributeName:  paragraphStyle.get()
   };
   return [[[NSAttributedString alloc] initWithString:string
                                           attributes:attributes] autorelease];
