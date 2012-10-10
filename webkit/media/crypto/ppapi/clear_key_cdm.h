@@ -24,7 +24,7 @@ namespace webkit_media {
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public cdm::ContentDecryptionModule {
  public:
-  explicit ClearKeyCdm(cdm::Allocator* allocator);
+  explicit ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost*);
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
@@ -40,6 +40,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
                              int key_id_size) OVERRIDE;
   virtual cdm::Status CancelKeyRequest(const char* session_id,
                                        int session_id_size) OVERRIDE;
+  virtual void TimerExpired(cdm::KeyMessage* msg, bool* populated) OVERRIDE;
   virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_block) OVERRIDE;
   virtual cdm::Status InitializeVideoDecoder(

@@ -19,6 +19,7 @@ typedef __int64 int64_t;
 namespace cdm {
 class Allocator;
 class Buffer;
+class CdmHost;
 class ContentDecryptionModule;
 class DecryptedBlock;
 class KeyMessage;
@@ -26,8 +27,10 @@ class VideoFrame;
 }
 
 extern "C" {
+// Caller retains ownership of arguments, which must outlive the call to
+// DestroyCdmInstance below.
 CDM_EXPORT cdm::ContentDecryptionModule* CreateCdmInstance(
-    cdm::Allocator* allocator);
+    cdm::Allocator* allocator, cdm::CdmHost* host);
 CDM_EXPORT void DestroyCdmInstance(cdm::ContentDecryptionModule* instance);
 CDM_EXPORT const char* GetCdmVersion();
 }
@@ -190,6 +193,9 @@ class ContentDecryptionModule {
   virtual Status CancelKeyRequest(const char* session_id,
                                   int session_id_size) = 0;
 
+  // Optionally populates |*msg| and indicates so in |*populated|.
+  virtual void TimerExpired(KeyMessage* msg, bool* populated) = 0;
+
   // Decrypts the |encrypted_buffer|.
   //
   // Returns kSuccess if decryption succeeded, in which case the callee
@@ -284,6 +290,19 @@ class Allocator {
  protected:
   Allocator() {}
   virtual ~Allocator() {}
+};
+
+class CdmHost {
+ public:
+  CdmHost() {}
+  virtual ~CdmHost() {}
+
+  // Requests the host to call ContentDecryptionModule::TimerFired() |delay_ms|
+  // from now.
+  virtual void SetTimer(int64 delay_ms) = 0;
+
+  // Returns the current epoch wall time in milliseconds.
+  virtual double GetCurrentWallTimeMs() = 0;
 };
 
 // Represents a decrypted block that has not been decoded.

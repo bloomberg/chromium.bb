@@ -358,7 +358,8 @@ int64_t VideoFrameImpl::timestamp() const {
 // A wrapper class for abstracting away PPAPI interaction and threading for a
 // Content Decryption Module (CDM).
 class CdmWrapper : public pp::Instance,
-                   public pp::ContentDecryptor_Private {
+                   public pp::ContentDecryptor_Private,
+                   public cdm::CdmHost {
  public:
   CdmWrapper(PP_Instance instance, pp::Module* module);
   virtual ~CdmWrapper();
@@ -382,6 +383,10 @@ class CdmWrapper : public pp::Instance,
       pp::Buffer_Dev encrypted_frame,
       const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) OVERRIDE;
 
+  // CdmHost methods.
+  virtual void SetTimer(int64 delay_ms) OVERRIDE;
+  virtual double GetCurrentWallTimeMs() OVERRIDE;
+
  private:
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
   typedef linked_ptr<KeyMessageImpl> LinkedKeyMessage;
@@ -401,6 +406,9 @@ class CdmWrapper : public pp::Instance,
                     const cdm::Status& status,
                     const LinkedVideoFrame& video_frame,
                     const PP_DecryptTrackingInfo& tracking_info);
+
+  // Helper for SetTimer().
+  void TimerExpired(int32 result);
 
   PpbBufferAllocator allocator_;
   pp::CompletionCallbackFactory<CdmWrapper> callback_factory_;
@@ -443,7 +451,7 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
   PP_DCHECK(!key_system.empty());
 
   if (!cdm_) {
-    cdm_ = CreateCdmInstance(&allocator_);
+    cdm_ = CreateCdmInstance(&allocator_, this);
     if (!cdm_)
       return;
   }
@@ -553,12 +561,42 @@ void CdmWrapper::DecryptAndDecodeFrame(
       encrypted_video_frame_info.encryption_info.tracking_info));
 }
 
+void CdmWrapper::SetTimer(int64 delay_ms) {
+  // NOTE: doesn't really need to run on the main thread; could just as well run
+  // on a helper thread if |cdm_| were thread-friendly and care was taken.  We
+  // only use CallOnMainThread() here to get delayed-execution behavior.
+  pp::Module::Get()->core()->CallOnMainThread(
+      delay_ms,
+      callback_factory_.NewCallback(&CdmWrapper::TimerExpired),
+      PP_OK);
+}
+
+void CdmWrapper::TimerExpired(int32 result) {
+  PP_DCHECK(result == PP_OK);
+  bool populated;
+  KeyMessageImpl key_message;
+  cdm_->TimerExpired(&key_message, &populated);
+  if (!populated)
+    return;
+  // TODO(xhwang): do something with this?
+}
+
+double CdmWrapper::GetCurrentWallTimeMs() {
+  // TODO(fischman): figure out whether this requires an IPC round-trip per
+  // call, and if that's a problem for the frequency of calls.  If it is,
+  // optimize by proactively sending wall-time across the IPC boundary on some
+  // existing calls, or add a periodic task to update a plugin-side clock.
+  return pp::Module::Get()->core()->GetTime();
+}
+
 void CdmWrapper::KeyAdded(int32_t result, const std::string& session_id) {
+  PP_DCHECK(result == PP_OK);
   pp::ContentDecryptor_Private::KeyAdded(key_system_, session_id);
 }
 
 void CdmWrapper::KeyMessage(int32_t result,
                             const LinkedKeyMessage& key_message) {
+  PP_DCHECK(result == PP_OK);
   pp::Buffer_Dev message_buffer =
       static_cast<const PpbBuffer*>(key_message->message())->buffer_dev();
   pp::ContentDecryptor_Private::KeyMessage(
@@ -571,6 +609,7 @@ void CdmWrapper::KeyMessage(int32_t result,
 // TODO(xhwang): Support MediaKeyError (see spec: http://goo.gl/rbdnR) in CDM
 // interface and in this function.
 void CdmWrapper::KeyError(int32_t result, const std::string& session_id) {
+  PP_DCHECK(result == PP_OK);
   pp::ContentDecryptor_Private::KeyError(key_system_,
                                          session_id,
                                          kUnknownError,
@@ -581,6 +620,7 @@ void CdmWrapper::DeliverBlock(int32_t result,
                               const cdm::Status& status,
                               const LinkedDecryptedBlock& decrypted_block,
                               const PP_DecryptTrackingInfo& tracking_info) {
+  PP_DCHECK(result == PP_OK);
   PP_DecryptedBlockInfo decrypted_block_info;
   decrypted_block_info.tracking_info = tracking_info;
   decrypted_block_info.tracking_info.timestamp = decrypted_block->timestamp();
@@ -612,6 +652,7 @@ void CdmWrapper::DeliverFrame(
     const cdm::Status& status,
     const LinkedVideoFrame& video_frame,
     const PP_DecryptTrackingInfo& tracking_info) {
+  PP_DCHECK(result == PP_OK);
   PP_DecryptedFrameInfo decrypted_frame_info;
   decrypted_frame_info.tracking_info = tracking_info;
 

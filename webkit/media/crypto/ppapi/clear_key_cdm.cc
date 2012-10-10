@@ -62,8 +62,9 @@ static Type* AllocateAndCopy(const Type* data, int size) {
   return copy;
 }
 
-cdm::ContentDecryptionModule* CreateCdmInstance(cdm::Allocator* allocator) {
-  return new webkit_media::ClearKeyCdm(allocator);
+cdm::ContentDecryptionModule* CreateCdmInstance(
+    cdm::Allocator* allocator, cdm::CdmHost* host) {
+  return new webkit_media::ClearKeyCdm(allocator, host);
 }
 
 void DestroyCdmInstance(cdm::ContentDecryptionModule* instance) {
@@ -123,7 +124,7 @@ void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
   NOTREACHED();
 }
 
-ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator)
+ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost*)
     : decryptor_(&client_), allocator_(allocator) {
   DCHECK(allocator_);
 }
@@ -184,6 +185,11 @@ cdm::Status ClearKeyCdm::CancelKeyRequest(const char* session_id,
   ScopedResetter<Client> auto_resetter(&client_);
   decryptor_.CancelKeyRequest("", std::string(session_id, session_id_size));
   return cdm::kSuccess;
+}
+
+void ClearKeyCdm::TimerExpired(cdm::KeyMessage* msg, bool* populated) {
+  // TODO(xhwang): do something with this?
+  NOTREACHED() << "Wouldn't it be nice if CdmHost::SetTimer() was used?";
 }
 
 static void CopyDecryptResults(
