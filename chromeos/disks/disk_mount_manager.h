@@ -236,7 +236,9 @@ class CHROMEOS_EXPORT DiskMountManager {
                          MountType type) = 0;
 
   // Unmounts a mounted disk.
-  virtual void UnmountPath(const std::string& mount_path) = 0;
+  // |UnmountOptions| enum defined in chromeos/dbus/cros_disks_client.h.
+  virtual void UnmountPath(const std::string& mount_path,
+                           UnmountOptions options) = 0;
 
   // Formats device given its file path.
   // Example: file_path: /dev/sdb1

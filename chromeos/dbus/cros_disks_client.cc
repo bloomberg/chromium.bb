@@ -28,8 +28,9 @@ const char* kDefaultMountOptions[] = {
 
 const char* kDefaultUnmountOptions[] = {
   "force",
-  "lazy",
 };
+
+const char kLazyUnmountOption[] = "lazy";
 
 const char kMountLabelOption[] = "mountlabel";
 
@@ -150,15 +151,20 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   virtual void Unmount(const std::string& device_path,
+                       UnmountOptions options,
                        const UnmountCallback& callback,
-                       const ErrorCallback& error_callback) OVERRIDE {
+                       const UnmountCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kUnmount);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(device_path);
-    std::vector<std::string> unmount_options(kDefaultUnmountOptions,
-                                             kDefaultUnmountOptions +
-                                             arraysize(kDefaultUnmountOptions));
+
+    std::vector<std::string> unmount_options(
+        kDefaultUnmountOptions,
+        kDefaultUnmountOptions + arraysize(kDefaultUnmountOptions));
+    if (options == UNMOUNT_OPTIONS_LAZY)
+      unmount_options.push_back(kLazyUnmountOption);
+
     writer.AppendArrayOfStrings(unmount_options);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CrosDisksClientImpl::OnUnmount,
@@ -276,10 +282,10 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // Handles the result of Unount and calls |callback| or |error_callback|.
   void OnUnmount(const std::string& device_path,
                  const UnmountCallback& callback,
-                 const ErrorCallback& error_callback,
+                 const UnmountCallback& error_callback,
                  dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      error_callback.Run(device_path);
       return;
     }
     callback.Run(device_path);
@@ -400,8 +406,9 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
                      const MountCallback& callback,
                      const ErrorCallback& error_callback) OVERRIDE {}
   virtual void Unmount(const std::string& device_path,
+                       UnmountOptions options,
                        const UnmountCallback& callback,
-                       const ErrorCallback& error_callback) OVERRIDE {}
+                       const UnmountCallback& error_callback) OVERRIDE {}
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {}

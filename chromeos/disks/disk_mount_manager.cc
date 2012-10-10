@@ -81,12 +81,16 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual void UnmountPath(const std::string& mount_path) OVERRIDE {
+  virtual void UnmountPath(const std::string& mount_path,
+                           UnmountOptions options) OVERRIDE {
     UnmountChildMounts(mount_path);
-    cros_disks_client_->Unmount(mount_path,
+    cros_disks_client_->Unmount(mount_path, options,
                                 base::Bind(&DiskMountManagerImpl::OnUnmountPath,
-                                           weak_ptr_factory_.GetWeakPtr()),
-                                base::Bind(&base::DoNothing));
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           true),
+                                base::Bind(&DiskMountManagerImpl::OnUnmountPath,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           false));
   }
 
   // DiskMountManager override.
@@ -135,7 +139,7 @@ class DiskMountManagerImpl : public DiskMountManager {
     }
     // Formatting process continues, after unmounting.
     formatting_pending_[disk->device_path()] = disk->file_path();
-    UnmountPath(disk->mount_path());
+    UnmountPath(disk->mount_path(), UNMOUNT_OPTIONS_NONE);
   }
 
   // DiskMountManager override.
@@ -176,13 +180,11 @@ class DiskMountManagerImpl : public DiskMountManager {
       for (size_t i = 0; i < devices_to_unmount.size(); ++i) {
         cros_disks_client_->Unmount(
             devices_to_unmount[i],
+            UNMOUNT_OPTIONS_NONE,
             base::Bind(&DiskMountManagerImpl::OnUnmountDeviceRecursive,
                        weak_ptr_factory_.GetWeakPtr(), cb_data, true),
             base::Bind(&DiskMountManagerImpl::OnUnmountDeviceRecursive,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       cb_data,
-                       false,
-                       devices_to_unmount[i]));
+                       weak_ptr_factory_.GetWeakPtr(), cb_data, false));
       }
     } else {
       LOG(WARNING) << "Unmount recursive request failed for device "
@@ -242,7 +244,7 @@ class DiskMountManagerImpl : public DiskMountManager {
          ++it) {
       if (StartsWithASCII(it->second.source_path, mount_path,
                           true /*case sensitive*/)) {
-        UnmountPath(it->second.mount_path);
+        UnmountPath(it->second.mount_path, UNMOUNT_OPTIONS_NONE);
       }
     }
   }
@@ -253,7 +255,7 @@ class DiskMountManagerImpl : public DiskMountManager {
                                 const std::string& mount_path) {
     if (success) {
       // Do standard processing for Unmount event.
-      OnUnmountPath(mount_path);
+      OnUnmountPath(true, mount_path);
       LOG(INFO) << mount_path <<  " unmounted.";
     }
     // This is safe as long as all callbacks are called on the same thread as
@@ -309,34 +311,44 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // Callback for UnmountPath.
-  void OnUnmountPath(const std::string& mount_path) {
+  void OnUnmountPath(bool success, const std::string& mount_path) {
     MountPointMap::iterator mount_points_it = mount_points_.find(mount_path);
     if (mount_points_it == mount_points_.end())
       return;
-    // TODO(tbarzic): Add separate, PathUnmounted event to Observer.
     NotifyMountCompleted(
-        UNMOUNTING, MOUNT_ERROR_NONE,
+        UNMOUNTING,
+        success ? MOUNT_ERROR_NONE : MOUNT_ERROR_INTERNAL,
         MountPointInfo(mount_points_it->second.source_path,
                        mount_points_it->second.mount_path,
                        mount_points_it->second.mount_type,
                        mount_points_it->second.mount_condition));
+
     std::string path(mount_points_it->second.source_path);
-    mount_points_.erase(mount_points_it);
+    if (success)
+      mount_points_.erase(mount_points_it);
+
     DiskMap::iterator iter = disks_.find(path);
     if (iter == disks_.end()) {
       // disk might have been removed by now.
       return;
     }
+
     Disk* disk = iter->second;
     DCHECK(disk);
-    disk->clear_mount_path();
+    if (success)
+      disk->clear_mount_path();
+
     // Check if there is a formatting scheduled.
     PathMap::iterator it = formatting_pending_.find(disk->device_path());
     if (it != formatting_pending_.end()) {
       // Copy the string before it gets erased.
       const std::string file_path = it->second;
       formatting_pending_.erase(it);
-      FormatUnmountedDevice(file_path);
+      if (success) {
+        FormatUnmountedDevice(file_path);
+      } else {
+        OnFormatDevice(file_path, false);
+      }
     }
   }
 

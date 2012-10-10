@@ -18,6 +18,8 @@ class Bus;
 class Response;
 }
 
+// TODO(tbarzic): We should probably move these enums inside CrosDisksClient,
+// to be clearer where they come from.
 namespace chromeos {
 
 // Enum describing types of mount used by cros-disks.
@@ -62,6 +64,12 @@ enum MountEventType {
   DEVICE_REMOVED,
   DEVICE_SCANNED,
   FORMATTING_FINISHED,
+};
+
+// Additional unmount flags to be added to unmount request.
+enum UnmountOptions {
+  UNMOUNT_OPTIONS_NONE,
+  UNMOUNT_OPTIONS_LAZY,  // Do lazy unmount.
 };
 
 // A class to represent information about a disk sent from cros-disks.
@@ -219,8 +227,9 @@ class CHROMEOS_EXPORT CrosDisksClient {
   // Calls Unmount method.  |callback| is called after the method call succeeds,
   // otherwise, |error_callback| is called.
   virtual void Unmount(const std::string& device_path,
+                       UnmountOptions options,
                        const UnmountCallback& callback,
-                       const ErrorCallback& error_callback) = 0;
+                       const UnmountCallback& error_callback) = 0;
 
   // Calls EnumerateAutoMountableDevices method.  |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.

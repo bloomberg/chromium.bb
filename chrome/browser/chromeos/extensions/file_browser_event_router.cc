@@ -399,7 +399,8 @@ void FileBrowserEventRouter::Observe(
            it != mounts.end(); ++it) {
         LOG(INFO) << "Unmounting " << it->second.mount_path
                   << " because of policy.";
-        manager->UnmountPath(it->second.mount_path);
+        manager->UnmountPath(it->second.mount_path,
+                             chromeos::UNMOUNT_OPTIONS_NONE);
       }
       return;
     } else if (*pref_name == prefs::kDisableGDataOverCellular ||
@@ -571,7 +572,8 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
 
   // If there were no error or some special conditions occured, add mountPath
   // to the event.
-  if (error_code == chromeos::MOUNT_ERROR_NONE ||
+  if (event == DiskMountManager::UNMOUNTING ||
+      error_code == chromeos::MOUNT_ERROR_NONE ||
       mount_info.mount_condition) {
     // Convert mount point path to relative path with the external file system
     // exposed within File API.
@@ -642,7 +644,8 @@ void FileBrowserEventRouter::OnDiskRemoved(
   VLOG(1) << "Disk removed: " << disk->device_path();
 
   if (!disk->mount_path().empty()) {
-    DiskMountManager::GetInstance()->UnmountPath(disk->mount_path());
+    DiskMountManager::GetInstance()->UnmountPath(
+        disk->mount_path(), chromeos::UNMOUNT_OPTIONS_LAZY);
   }
   DispatchDiskEvent(disk, false);
 }

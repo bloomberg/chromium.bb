@@ -1448,7 +1448,8 @@ void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
     SendResponse(false);
     return;
   }
-  DiskMountManager::GetInstance()->UnmountPath(files[0].local_path.value());
+  DiskMountManager::GetInstance()->UnmountPath(files[0].local_path.value(),
+                                               chromeos::UNMOUNT_OPTIONS_NONE);
   SendResponse(true);
 }
 

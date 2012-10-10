@@ -23,9 +23,10 @@ class MockCrosDisksClient : public CrosDisksClient {
                            MountType,
                            const MountCallback&,
                            const ErrorCallback&));
-  MOCK_METHOD3(Unmount, void(const std::string&,
+  MOCK_METHOD4(Unmount, void(const std::string&,
+                             UnmountOptions,
                              const UnmountCallback&,
-                             const ErrorCallback&));
+                             const UnmountCallback&));
   MOCK_METHOD2(EnumerateAutoMountableDevices,
                void(const EnumerateAutoMountableDevicesCallback&,
                     const ErrorCallback&));
