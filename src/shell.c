@@ -3475,6 +3475,7 @@ debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 		weston_surface_configure(surface, 0, 0, 8192, 8192);
 		wl_list_insert(&compositor->fade_layer.surface_list,
 			       &surface->layer_link);
+		pixman_region32_fini(&surface->input);
 		pixman_region32_init(&surface->input);
 
 		/* Here's the dirty little trick that makes the
