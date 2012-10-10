@@ -108,6 +108,7 @@ class OptionParser(optparse.OptionParser):
         is False, then no --cache-dir option will be added.
     """
     self.debug_enabled = False
+    self.caching_group = self.debug_group = None
     self.logging_enabled = kwargs.pop("logging", self.ALLOW_LOGGING)
     if self.logging_enabled:
       log_levels = tuple(x.lower() for x in kwargs.pop(
@@ -122,7 +123,7 @@ class OptionParser(optparse.OptionParser):
     optparse.OptionParser.__init__(self, usage=usage, **kwargs)
 
     if self.logging_enabled:
-      group = self.add_option_group("Debug options")
+      self.debug_group = group = self.add_option_group("Debug options")
       group.add_option("--log-level", choices=log_levels, default=default_level,
                       help="Set logging level to report at.")
       if self.debug_enabled:
@@ -131,10 +132,11 @@ class OptionParser(optparse.OptionParser):
                         help="Alias for `--log-level=debug`.  Useful for "
                         "debugging bugs/failures.")
     if self.caching:
-      group = self.add_option_group("Caching Options")
-      group.add_option("--cache-dir", default=None, type='path',
-                       help="Override the calculated chromeos cache directory; "
-                       "typically defaults to '$REPO/.cache' .")
+      self.caching_group = self.add_option_group("Caching Options")
+      self.caching_group.add_option(
+          "--cache-dir", default=None, type='path',
+          help="Override the calculated chromeos cache directory; "
+          "typically defaults to '$REPO/.cache' .")
 
   def DoPostParseSetup(self, opts, args):
     """Method called to handle post opts/args setup.

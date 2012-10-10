@@ -944,10 +944,9 @@ def _CreateParser():
   #
   # Debug options
   #
-  group = parser.get_option_group('--debug')
-
   # Temporary hack; in place till --dry-run replaces --debug.
   # pylint: disable=W0212
+  group = parser.debug_group
   debug = [x for x in group.option_list if x._long_opts == ['--debug']][0]
   debug.help += "  Currently functions as --dry-run in addition."
   debug.pass_through = True
