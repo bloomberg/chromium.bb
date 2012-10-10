@@ -272,15 +272,21 @@ Chrome supports. -->
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">
         Make Google Chrome the default browser
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
+                 desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
+          Get Started with Chrome OS
+        </message>
+      </if>
       <if expr="pp_ifdef('ios')">
         <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
                  desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show. [Length: 14em]">
           Welcome
         </message>
       </if>
-      <if expr="not pp_ifdef('ios')">
+      <if expr="not pp_ifdef('chromeos') and not pp_ifdef('ios')">
         <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
-                 desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
+                 desc="Title for the hard-coded thumbnail that represents the Google Chrome OS Welcome page. This is used on the NTP when there aren't enough thumbnails to show.">
           Welcome to Google Chrome
         </message>
       </if>
