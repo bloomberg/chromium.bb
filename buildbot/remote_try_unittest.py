@@ -94,7 +94,7 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
       cros_build_lib.RunGitCommand(tmp_repo, ['add', vpath])
       cros_build_lib.RunGitCommand(
             tmp_repo, ['commit', '-m', 'setting version to %s' % version])
-      cros_build_lib.RunGitCommand(tmp_repo, ['push', path])
+      cros_build_lib.RunGitCommand(tmp_repo, ['push', path, 'master:master'])
       shutil.rmtree(tmp_repo)
 
   def _CreateJob(self, mirror=True):
