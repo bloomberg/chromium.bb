@@ -47,14 +47,13 @@ HOTKEY_SPREADSHEET_KEY = '0AqzoqbAMLyEPdE1RQXdodk1qVkFyTWtQbUxROVM1cXc'
 CC_OUTDIR = 'chrome/browser/ui/webui/chromeos'
 CC_FILENAME = 'keyboard_overlay_ui.cc'
 GRD_OUTDIR = 'chrome/app'
-GRD_FILENAME = 'generated_resources.grd'
+GRD_FILENAME = 'chromeos_strings.grdp'
 JS_OUTDIR = 'chrome/browser/resources/chromeos'
 JS_FILENAME = 'keyboard_overlay_data.js'
 CC_START = r'IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE },'
 CC_END = r'};'
-GRD_START = """Escape to hide
-      </message>"""
-GRD_END = r'    </if>'
+GRD_START = r'  <!-- BEGIN GENERATED KEYBOARD OVERLAY STRINGS -->'
+GRD_END = r'  <!-- END GENERATED KEYBOARD OVERLAY STRINGS -->'
 
 LABEL_MAP = {
   'glyph_arrow_down': 'down',
@@ -162,9 +161,9 @@ COPYRIGHT_HEADER_TEMPLATE=(
 """)
 
 # A snippet for grd file
-GRD_SNIPPET_TEMPLATE="""      <message name="%s" desc="%s">
-        %s
-      </message>
+GRD_SNIPPET_TEMPLATE="""  <message name="%s" desc="%s">
+    %s
+  </message>
 """
 
 # A snippet for C++ file
