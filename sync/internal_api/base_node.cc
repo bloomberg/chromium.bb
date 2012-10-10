@@ -181,7 +181,7 @@ int64 BaseNode::GetId() const {
   return GetEntry()->Get(syncable::META_HANDLE);
 }
 
-const base::Time& BaseNode::GetModificationTime() const {
+base::Time BaseNode::GetModificationTime() const {
   return GetEntry()->Get(syncable::MTIME);
 }
 

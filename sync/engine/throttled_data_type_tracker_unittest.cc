@@ -4,6 +4,7 @@
 
 #include "sync/engine/throttled_data_type_tracker.h"
 
+#include "base/time.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,4 +65,3 @@ TEST(ThrottledDataTypeTrackerTest, UnthrottleSomeTypesTest) {
 }
 
 }  // namespace syncer
-

@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "base/time.h"
 #include "sync/engine/sync_engine_event.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/traffic_recorder.h"

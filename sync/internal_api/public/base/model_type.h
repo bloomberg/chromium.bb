@@ -13,7 +13,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/enum_set.h"
 

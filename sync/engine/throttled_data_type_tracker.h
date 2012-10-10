@@ -10,6 +10,10 @@
 #include "base/gtest_prod_util.h"
 #include "sync/internal_api/public/base/model_type.h"
 
+namespace base {
+class TimeTicks;
+}
+
 namespace syncer {
 
 class AllStatus;

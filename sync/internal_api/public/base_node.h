@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
@@ -88,7 +89,7 @@ class BaseNode {
   virtual int64 GetId() const;
 
   // Returns the modification time of the object.
-  const base::Time& GetModificationTime() const;
+  base::Time GetModificationTime() const;
 
   // Nodes are hierarchically arranged into a single-rooted tree.
   // InitByRootLookup on ReadNode allows access to the root. GetParentId is
