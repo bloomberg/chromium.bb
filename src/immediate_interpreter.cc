@@ -372,7 +372,9 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       pinch_certain_min_movement_(prop_reg,
                                   "Pinch Certain Minimal Movement", 8.0),
       pinch_enable_(prop_reg, "Pinch Enable", 1.0),
-      fling_buffer_depth_(prop_reg, "Fling Buffer Depth", 3) {
+      fling_buffer_depth_(prop_reg, "Fling Buffer Depth", 3),
+      fling_buffer_suppress_zero_length_scrolls_(
+          prop_reg, "Fling Buffer Suppress Zero Length Scrolls", 0) {
   InitName();
   memset(&prev_state_, 0, sizeof(prev_state_));
   if (!finger_metrics_) {
@@ -1790,10 +1792,8 @@ void ImmediateInterpreter::FillResultGesture(
       if (prev_scroll_fingers_ != fingers)
         scroll_buffer_.Clear();
       prev_scroll_fingers_ = fingers;
-      // Some platforms report fingers as perfectly stationary for a few frames
-      // before they report lift off. We don't include these non-movement
-      // frames in the scroll buffer, because that would suppress fling.
-      if (!FloatEq(dx, 0.0) || !FloatEq(dy, 0.0))
+      if (!fling_buffer_suppress_zero_length_scrolls_.val_ ||
+          !FloatEq(dx, 0.0) || !FloatEq(dy, 0.0))
         scroll_buffer_.Insert(dx, dy,
                               hwstate.timestamp - prev_state_.timestamp);
       if (max_mag_sq > 0) {

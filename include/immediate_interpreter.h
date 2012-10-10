@@ -549,6 +549,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // interpolation, this should be 6, to ensure that the scroll events for 3
   // actual hardware states are used.
   IntProperty fling_buffer_depth_;
+  // Some platforms report fingers as perfectly stationary for a few frames
+  // before they report lift off. We don't include these non-movement
+  // frames in the scroll buffer, because that would suppress fling.
+  // Platforms with this property should set
+  // fling_buffer_suppress_zero_length_scrolls_ to non-zero.
+  BoolProperty fling_buffer_suppress_zero_length_scrolls_;
 };
 
 }  // namespace gestures
