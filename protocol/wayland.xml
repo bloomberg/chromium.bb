@@ -635,9 +635,37 @@
 
     <request name="attach">
       <description summary="set the surface contents">
-	Copy the contents of a buffer into this surface. The x and y
-	arguments specify the location of the new buffers upper left
-	corner, relative to the old buffers upper left corner.
+	Set the contents of a buffer into this surface. The x and y
+	arguments specify the location of the new pending buffer's upper
+	left corner, relative to the current buffer's upper left corner. In
+	other words, the x and y, and the width and height of the wl_buffer
+	together define in which directions the surface's size changes.
+
+	Surface contents are double-buffered state, see wl_surface.commit.
+
+	The initial surface contents are void; there is no content.
+	wl_surface.attach assigns the given wl_buffer as the pending wl_buffer.
+	wl_surface.commit applies the pending wl_buffer as the new
+	surface contents, and the size of the surface becomes the size of
+	the wl_buffer. The wl_buffer is also kept as pending, until
+	changed by wl_surface.attach or the wl_buffer is destroyed.
+
+	Committing a pending wl_buffer allows the compositor to read the
+	pixels in the wl_buffer. The compositor may access the pixels at any
+	time after the wl_surface.commit request. When the compositor will
+	not access the pixels anymore, it will send the wl_buffer.release
+	event. Only after receiving wl_buffer.release, the client may re-use
+	the wl_buffer.
+
+	Destroying the wl_buffer after wl_buffer.release does not change the
+	surface contents, even if the wl_buffer is still pending for the
+	next commit. In such case, the next commit does not change the
+	surface contents. However, if the client destroys the wl_buffer
+	before receiving wl_buffer.release, the surface contents become
+	undefined immediately.
+
+	Only if wl_surface.attach is sent with a nil wl_buffer, the
+	following wl_surface.commit will remove the surface content.
       </description>
 
       <arg name="buffer" type="object" interface="wl_buffer" allow-null="true"/>
@@ -647,10 +675,21 @@
 
     <request name="damage">
       <description summary="mark part of the surface damaged">
-	After attaching a new buffer, this request is used to describe
-	the regions where the new buffer is different from the
-	previous buffer and needs to be repainted.  Coordinates are
-	relative to the new buffer.
+	This request is used to describe the regions where the pending
+	buffer (or if pending buffer is none, the current buffer as updated
+	in-place) on the next wl_surface.commit will be different from the
+	current buffer, and needs to be repainted. The pending buffer can be
+	set by wl_surface.attach. The compositor ignores the parts of the
+	damage that fall outside of the surface.
+
+	Damage is double-buffered state, see wl_surface.commit.
+
+	The initial value for pending damage is empty: no damage.
+	wl_surface.damage adds pending damage: the new pending damage is the
+	union of old pending damage and the given rectangle.
+	wl_surface.commit assigns pending damage as the current damage, and
+	clears pending damage. The server will clear the current damage as
+	it repaints the surface.
       </description>
 
       <arg name="x" type="int"/>
@@ -672,37 +711,73 @@
 
     <request name="set_opaque_region">
       <description summary="set opaque region">
-	This requests sets the region of the surface that contain
+	This request sets the region of the surface that contains
 	opaque content.  The opaque region is an optimization hint for
 	the compositor that lets it optimize out redrawing of content
 	behind opaque regions.  Setting an opaque region is not
 	required for correct behaviour, but marking transparent
 	content as opaque will result in repaint artifacts.
+	The compositor ignores the parts of the opaque region that fall
+	outside of the surface.
 
-	The region will be clipped to the extents of the current
-	surface size.  Setting the region has copy semantics, and the
-	region object can be destroyed immediately after setting the
-	opaque region.  If a buffer of a different size is attached or
-	if a nil region is set, the opaque region will revert back to
-	default.  The default opaque region is empty.
+	Opaque region is double-buffered state, see wl_surface.commit.
+
+	wl_surface.set_opaque_region changes the pending opaque region.
+	wl_surface.commit copies the pending region to the current region.
+	Otherwise the pending and current regions are never changed.
+
+	The initial value for opaque region is empty. Setting the pending
+	opaque region has copy semantics, and the wl_region object can be
+	destroyed immediately. A nil wl_region causes the pending opaque
+	region to be set to empty.
       </description>
 
-      <arg name="region" type="object" interface="wl_region"/>
+      <arg name="region" type="object" interface="wl_region" allow-null="true"/>
     </request>
 
     <request name="set_input_region">
       <description summary="set input region">
-	This requests sets the region of the surface that can receive
-	pointer and touch events.  The region will be clipped to the
-	extents of the current surface size.  Setting the region has
-	copy semantics, and the region object can be destroyed
-	immediately after setting the input region.  If a buffer of a
-	different size is attached or if a nil region is passed, the
-	input region will revert back to default.  The default input
-	region is the entire surface.
+	This request sets the region of the surface that can receive
+	pointer and touch events. Input events happening outside of
+	this region will try the next surface in the server surface
+	stack. The compositor ignores the parts of the input region that
+	fall outside of the surface.
+
+	Input region is double-buffered state, see wl_surface.commit.
+
+	wl_surface.set_input_region changes the pending input region.
+	wl_surface.commit copies the pending region to the current region.
+	Otherwise the pending and current regions are never changed.
+
+	The initial value for input region is infinite. That means the whole
+	surface will accept input. Setting the pending input region has copy
+	semantics, and the wl_region object can be destroyed immediately. A
+	nil wl_region causes the input region to be set to infinite.
       </description>
 
       <arg name="region" type="object" interface="wl_region" allow-null="true"/>
+    </request>
+
+    <request name="commit">
+      <description summary="commit pending surface state">
+	Surface state (input, opaque, and damage regions, attached buffers,
+	etc.) is double-buffered. Protocol requests modify the pending
+	state, as opposed to current state in use by the compositor. Commit
+	request atomically applies all pending state, replacing the current
+	state. After commit, the new pending state is as documented for each
+	related request.
+
+	On commit, a pending wl_buffer is applied first, all other state
+	second. This means that all coordinates in double-buffered state are
+	relative to the new wl_buffer coming into use, except for
+	wl_surface.attach itself. If the pending wl_buffer is none, the
+	coordinates are relative to the current surface contents.
+
+	All requests that need a commit to become effective are documented
+	to affect double-buffered state.
+
+	Other interfaces may add further double-buffered surface state.
+      </description>
     </request>
 
     <event name="enter">
