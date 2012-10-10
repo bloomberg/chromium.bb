@@ -343,8 +343,16 @@ void PanelView::DeactivatePanel() {
     return;
 
 #if defined(OS_WIN) && !defined(AURA) && !defined(USE_ASH)
-  ::SetForegroundWindow(::GetDesktopWindow());
+  // Need custom behavior for always-on-top panels to avoid
+  // the OS activating a minimized panel when this one is
+  // deactivated.
+  if (always_on_top_) {
+    ::SetForegroundWindow(::GetDesktopWindow());
+    return;
+  }
 #endif
+
+  window_->Deactivate();
 }
 
 bool PanelView::IsPanelActive() const {
