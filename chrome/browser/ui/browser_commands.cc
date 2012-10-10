@@ -607,7 +607,7 @@ void BookmarkCurrentPage(Browser* browser) {
   GURL url;
   string16 title;
   WebContents* web_contents = GetActiveWebContents(browser);
-  bookmark_utils::GetURLAndTitleToBookmark(web_contents, &url, &title);
+  GetURLAndTitleToBookmark(web_contents, &url, &title);
   bool was_bookmarked = model->IsBookmarked(url);
   if (!was_bookmarked && web_contents->GetBrowserContext()->IsOffTheRecord()) {
     // If we're incognito the favicon may not have been saved. Save it now

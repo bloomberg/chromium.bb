@@ -801,8 +801,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     parent = bookmarkModel_->bookmark_bar_node();
   GURL url;
   string16 title;
-  bookmark_utils::GetURLAndTitleToBookmark(
-      chrome::GetActiveWebContents(browser_), &url, &title);
+  chrome::GetURLAndTitleToBookmark(chrome::GetActiveWebContents(browser_),
+                                   &url, &title);
   BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
                        BookmarkEditor::EditDetails::AddNodeInFolder(

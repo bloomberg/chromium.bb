@@ -11,12 +11,15 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace chrome {
 
 namespace {
 
@@ -40,11 +43,11 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
   if (child_count < bookmark_utils::num_urls_before_prompting)
     return true;
 
-  return chrome::ShowMessageBox(parent,
+  return ShowMessageBox(parent,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
                                  base::IntToString16(child_count)),
-      chrome::MESSAGE_BOX_TYPE_QUESTION) == chrome::MESSAGE_BOX_RESULT_YES;
+      MESSAGE_BOX_TYPE_QUESTION) == MESSAGE_BOX_RESULT_YES;
 }
 
 // Implementation of OpenAll. Opens all nodes of type URL and any children of
@@ -107,9 +110,18 @@ bool NodeHasURLs(const BookmarkNode* node) {
   return false;
 }
 
-}  // namespace
+// Returns in |urls|, the url and title pairs for each open tab in browser.
+void GetURLsForOpenTabs(Browser* browser,
+                        std::vector<std::pair<GURL, string16> >* urls) {
+  for (int i = 0; i < browser->tab_count(); ++i) {
+    std::pair<GURL, string16> entry;
+    GetURLAndTitleToBookmark(GetWebContentsAt(browser, i),
+                             &(entry.first), &(entry.second));
+    urls->push_back(entry);
+  }
+}
 
-namespace chrome {
+}  // namespace
 
 void OpenAll(gfx::NativeWindow parent,
              content::PageNavigator* navigator,
@@ -135,11 +147,11 @@ void OpenAll(gfx::NativeWindow parent,
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
                                gfx::NativeWindow window) {
   DCHECK(node && node->is_folder() && !node->empty());
-  return chrome::ShowMessageBox(window,
+  return ShowMessageBox(window,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       l10n_util::GetStringFUTF16Int(IDS_BOOKMARK_EDITOR_CONFIRM_DELETE,
                                     ChildURLCountTotal(node)),
-      chrome::MESSAGE_BOX_TYPE_QUESTION) == chrome::MESSAGE_BOX_RESULT_YES;
+      MESSAGE_BOX_TYPE_QUESTION) == MESSAGE_BOX_RESULT_YES;
 }
 
 void ShowBookmarkAllTabsDialog(Browser* browser) {
@@ -149,11 +161,11 @@ void ShowBookmarkAllTabsDialog(Browser* browser) {
 
   BookmarkEditor::EditDetails details =
       BookmarkEditor::EditDetails::AddFolder(model->GetParentForNewNodes(), -1);
-  bookmark_utils::GetURLsForOpenTabs(browser, &(details.urls));
+  GetURLsForOpenTabs(browser, &(details.urls));
   DCHECK(!details.urls.empty());
 
-  BookmarkEditor::Show(browser->window()->GetNativeWindow(),
-                       profile, details, BookmarkEditor::SHOW_TREE);
+  BookmarkEditor::Show(browser->window()->GetNativeWindow(), profile, details,
+                       BookmarkEditor::SHOW_TREE);
 }
 
 bool HasBookmarkURLs(const std::vector<const BookmarkNode*>& selection) {
@@ -162,6 +174,13 @@ bool HasBookmarkURLs(const std::vector<const BookmarkNode*>& selection) {
       return true;
   }
   return false;
+}
+
+void GetURLAndTitleToBookmark(content::WebContents* web_contents,
+                              GURL* url,
+                              string16* title) {
+  *url = web_contents->GetURL();
+  *title = web_contents->GetTitle();
 }
 
 }  // namespace chrome

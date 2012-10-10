@@ -7,14 +7,17 @@
 
 #include <vector>
 
+#include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BookmarkNode;
 class Browser;
+class GURL;
 
 namespace content {
 class PageNavigator;
+class WebContents;
 }
 
 namespace chrome {
@@ -43,6 +46,11 @@ void ShowBookmarkAllTabsDialog(Browser* browser);
 
 // Returns true if |selection| has at least one bookmark of type url.
 bool HasBookmarkURLs(const std::vector<const BookmarkNode*>& selection);
+
+// Fills in the URL and title for a bookmark of |web_contents|.
+void GetURLAndTitleToBookmark(content::WebContents* web_contents,
+                              GURL* url,
+                              string16* title);
 
 }  // namespace chrome
 

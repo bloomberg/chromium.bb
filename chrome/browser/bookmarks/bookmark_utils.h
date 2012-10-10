@@ -20,10 +20,6 @@ class Browser;
 class PrefServiceBase;
 class Profile;
 
-namespace content {
-class WebContents;
-}
-
 namespace ui {
 class DropTargetEvent;
 }
@@ -168,16 +164,6 @@ void ToggleWhenVisible(Profile* profile);
 
 // Register user preferences for BookmarksBar.
 void RegisterUserPrefs(PrefServiceBase* prefs);
-
-// Fills in the URL and title for a bookmark of |web_contents|.
-void GetURLAndTitleToBookmark(content::WebContents* web_contents,
-                              GURL* url,
-                              string16* title);
-
-// Returns, by reference in |urls|, the url and title pairs for each open
-// tab in browser.
-void GetURLsForOpenTabs(Browser* browser,
-                        std::vector<std::pair<GURL, string16> >* urls);
 
 // Returns the parent for newly created folders/bookmarks. If |selection| has
 // one element and it is a folder, |selection[0]| is returned, otherwise
