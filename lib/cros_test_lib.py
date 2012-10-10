@@ -262,6 +262,7 @@ class TestCase(unittest.TestCase):
   def setUp(self):
     self.__saved_env__ = os.environ.copy()
     self.__saved_cwd__ = os.getcwd()
+    self.__saved_umask__ = os.umask(022)
 
   def tearDown(self):
     for var in set(os.environ).difference(self.__saved_env__):
@@ -270,6 +271,7 @@ class TestCase(unittest.TestCase):
     # saved copy.
     os.environ.update(self.__saved_env__)
     os.chdir(self.__saved_cwd__)
+    os.umask(self.__saved_umask__)
 
   def assertRaises2(self, exception, functor, *args, **kwargs):
     """Like assertRaises, just with checking of the excpetion.
