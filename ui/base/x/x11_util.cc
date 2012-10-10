@@ -99,7 +99,7 @@ int DefaultX11ErrorHandler(Display* d, XErrorEvent* e) {
          base::Bind(&LogErrorEventDescription, d, *e));
   } else {
     LOG(ERROR)
-        << "X Error detected: "
+        << "X error received: "
         << "serial " << e->serial << ", "
         << "error_code " << static_cast<int>(e->error_code) << ", "
         << "request_code " << static_cast<int>(e->request_code) << ", "
@@ -110,7 +110,7 @@ int DefaultX11ErrorHandler(Display* d, XErrorEvent* e) {
 
 int DefaultX11IOErrorHandler(Display* d) {
   // If there's an IO error it likely means the X server has gone away
-  LOG(ERROR) << "X IO Error detected";
+  LOG(ERROR) << "X IO error received (X server probably went away)";
   _exit(1);
 }
 
@@ -1620,7 +1620,7 @@ void LogErrorEventDescription(Display* dpy,
   }
 
   LOG(ERROR)
-      << "X Error detected: "
+      << "X error received: "
       << "serial " << error_event.serial << ", "
       << "error_code " << static_cast<int>(error_event.error_code)
       << " (" << error_str << "), "

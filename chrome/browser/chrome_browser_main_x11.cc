@@ -59,7 +59,7 @@ int BrowserX11IOErrorHandler(Display* d) {
   // If there's an IO error it likely means the X server has gone away
   if (!g_in_x11_io_error_handler) {
     g_in_x11_io_error_handler = true;
-    LOG(ERROR) << "X IO Error detected";
+    LOG(ERROR) << "X IO error received (X server probably went away)";
     browser_shutdown::SetShuttingDownWithoutClosingBrowsers(true);
     browser::SessionEnding();
   }
