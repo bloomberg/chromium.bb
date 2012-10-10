@@ -4,8 +4,9 @@
 
 #include "chrome/app/hard_error_handler_win.h"
 
-#if defined(_WIN32_WINNT_WIN8)
-// The Windows 8 SDK defines FACILITY_VISUALCPP in winerror.h.
+#if defined(_WIN32_WINNT_WIN8) && _MSC_VER < 1700
+// The Windows 8 SDK defines FACILITY_VISUALCPP in winerror.h, and in
+// delayimp.h previous to VS2012.
 #undef FACILITY_VISUALCPP
 #endif
 #include <DelayIMP.h>
@@ -20,9 +21,9 @@
 
 namespace {
 
-const int32 kExceptionModuleNotFound = VcppException(ERROR_SEVERITY_ERROR,
+const DWORD kExceptionModuleNotFound = VcppException(ERROR_SEVERITY_ERROR,
                                                      ERROR_MOD_NOT_FOUND);
-const int32 kExceptionEntryPtNotFound = VcppException(ERROR_SEVERITY_ERROR,
+const DWORD kExceptionEntryPtNotFound = VcppException(ERROR_SEVERITY_ERROR,
                                                       ERROR_PROC_NOT_FOUND);
 
 const int32 NT_STATUS_ENTRYPOINT_NOT_FOUND = 0xC0000139;
