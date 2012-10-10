@@ -600,7 +600,47 @@ class MoxOutputTestCase(OutputTestCase, MoxTestCase):
   """Conevenience class mixing OutputTestCase and MoxTestCase."""
 
 
-def main():
-  """Helper wrapper around unittest.main.  Invoke this, not unittest.main."""
+def FindTests(directory, module_namespace=''):
+  """Find all *_unittest.py, and return their python namespaces.
+
+  Args:
+    directory: The directory to scan for tests.
+    module_namespace: What namespace to prefix all found tests with.
+  Returns:
+    A list of python unittests in python namespace form.
+  """
+  results = cros_build_lib.RunCommandCaptureOutput(
+      ['find', '.', '-name', '*_unittest.py', '-printf', '%P\n'],
+      cwd=directory, print_cmd=False).output.splitlines()
+  # Drop the trailing .py, inject in the name if one was given.
+  if module_namespace:
+    module_namespace += '.'
+  return [module_namespace + x[:-3].replace('/', '.') for x in results]
+
+
+def main(**kwds):
+  """Helper wrapper around unittest.main.  Invoke this, not unittest.main.
+
+  Any passed in kwds are passed directly down to unittest.main; via this, you
+  can inject custom argv for example (to limit what tests run).
+  """
+  # Default to exit=True; this matches old behaviour, and allows unittest
+  # to trigger sys.exit on its own.  Unfortunately, the exit keyword is only
+  # available in 2.7- as such, handle it ourselves.
+  allow_exit = kwds.pop('exit', True)
   cros_build_lib.SetupBasicLogging()
-  unittest.main()
+  try:
+    unittest.main(**kwds)
+    raise SystemExit(0)
+  except SystemExit, e:
+    if e.__class__ != SystemExit or allow_exit:
+      raise
+    # Redo the exit code ourselves- unittest throws True on occasion.
+    # This is why the lack of typing for SystemExit code attribute makes life
+    # suck, in parallel to unittest being special.
+    # Finally, note that it's possible for code to be a string...
+    if isinstance(e.code, (int, long)):
+      # This is done since exit code may be something other than 1/0; if they
+      # explicitly pass it, we'll honor it.
+      return e.code
+    return 1 if e.code else 0
