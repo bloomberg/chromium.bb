@@ -239,6 +239,9 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
     case Extension::TYPE_LEGACY_PACKAGED_APP:
       ++url_stats_.app_count;
       break;
+    case Extension::TYPE_PLATFORM_APP:
+      ++url_stats_.platform_app_count;
+      break;
     case Extension::TYPE_UNKNOWN:
     default:
       ++url_stats_.pending_count;
@@ -302,6 +305,8 @@ void ExtensionDownloader::ReportStats() const {
                            url_stats_.theme_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckApp",
                            url_stats_.app_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckPackagedApp",
+                           url_stats_.platform_app_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckPending",
                            url_stats_.pending_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckGoogleUrl",

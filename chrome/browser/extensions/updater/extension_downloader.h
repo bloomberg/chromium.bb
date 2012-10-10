@@ -85,10 +85,12 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
           extension_count(0),
           theme_count(0),
           app_count(0),
+          platform_app_count(0),
           pending_count(0) {}
 
     int no_url_count, google_url_count, other_url_count;
-    int extension_count, theme_count, app_count, pending_count;
+    int extension_count, theme_count, app_count, platform_app_count,
+        pending_count;
   };
 
   // We need to keep track of some information associated with a url
