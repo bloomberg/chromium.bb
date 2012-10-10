@@ -48,7 +48,7 @@ static char *option_shell;
 static struct wl_list terminal_list;
 
 static struct terminal *
-terminal_create(struct display *display, int fullscreen);
+terminal_create(struct display *display);
 static void
 terminal_destroy(struct terminal *terminal);
 static int
@@ -404,7 +404,6 @@ struct terminal {
 	int escape_flags;
 	struct utf8_state_machine state_machine;
 	int margin;
-	int fullscreen;
 	struct color_scheme *color_scheme;
 	struct terminal_color color_table[256];
 	cairo_font_extents_t extents;
@@ -764,7 +763,7 @@ resize_handler(struct widget *widget,
 	columns = (width - m) / (int32_t) terminal->extents.max_x_advance;
 	rows = (height - m) / (int32_t) terminal->extents.height;
 
-	if (!terminal->fullscreen) {
+	if (window_is_fullscreen(terminal->window)) {
 		width = columns * terminal->extents.max_x_advance + m;
 		height = rows * terminal->extents.height + m;
 		widget_set_size(terminal->widget, width, height);
@@ -778,7 +777,7 @@ terminal_resize(struct terminal *terminal, int columns, int rows)
 {
 	int32_t width, height, m;
 
-	if (terminal->fullscreen)
+	if (window_is_fullscreen(terminal->window))
 		return;
 
 	m = 2 * terminal->margin;
@@ -2065,8 +2064,7 @@ fullscreen_handler(struct window *window, void *data)
 {
 	struct terminal *terminal = data;
 
-	terminal->fullscreen ^= 1;
-	window_set_fullscreen(window, terminal->fullscreen);
+	window_set_fullscreen(window, !window_is_fullscreen(terminal->window));
 }
 
 static int
@@ -2097,8 +2095,7 @@ handle_bound_key(struct terminal *terminal,
 		return 1;
 
 	case XKB_KEY_N:
-		new_terminal =
-			terminal_create(terminal->display, option_fullscreen);
+		new_terminal = terminal_create(terminal->display);
 		if (terminal_run(new_terminal, option_shell))
 			terminal_destroy(new_terminal);
 
@@ -2448,7 +2445,7 @@ motion_handler(struct widget *widget,
 }
 
 static struct terminal *
-terminal_create(struct display *display, int fullscreen)
+terminal_create(struct display *display)
 {
 	struct terminal *terminal;
 	cairo_surface_t *surface;
@@ -2459,7 +2456,6 @@ terminal_create(struct display *display, int fullscreen)
 		return terminal;
 
 	memset(terminal, 0, sizeof *terminal);
-	terminal->fullscreen = fullscreen;
 	terminal->color_scheme = &DEFAULT_COLORS;
 	terminal_init(terminal);
 	terminal->margin_top = 0;
@@ -2571,8 +2567,8 @@ terminal_run(struct terminal *terminal, const char *path)
 	display_watch_fd(terminal->display, terminal->master,
 			 EPOLLIN | EPOLLHUP, &terminal->io_task);
 
-	window_set_fullscreen(terminal->window, terminal->fullscreen);
-	if (!terminal->fullscreen)
+	window_set_fullscreen(terminal->window, option_fullscreen);
+	if (!window_is_fullscreen(terminal->window))
 		terminal_resize(terminal, 80, 24);
 
 	return 0;
@@ -2621,7 +2617,7 @@ int main(int argc, char *argv[])
 	}
 
 	wl_list_init(&terminal_list);
-	terminal = terminal_create(d, option_fullscreen);
+	terminal = terminal_create(d);
 	if (terminal_run(terminal, option_shell))
 		exit(EXIT_FAILURE);
 
