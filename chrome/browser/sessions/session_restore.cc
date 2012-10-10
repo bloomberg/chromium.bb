@@ -768,7 +768,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // After the for loop, this contains the browser to activate, if one of the
     // windows has the same id as specified in active_window_id.
     Browser* browser_to_activate = NULL;
+#if defined(OS_WIN)
     int selected_tab_to_activate = -1;
+#endif
 
     // Determine if there is a visible window.
     bool has_visible_browser = false;
@@ -844,7 +846,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
       ShowBrowser(browser, selected_tab_index);
       if ((*i)->window_id.id() == active_window_id) {
         browser_to_activate = browser;
+#if defined(OS_WIN)
         selected_tab_to_activate = selected_tab_index;
+#endif
       }
       if (clobber_existing_tab_ && i == windows->begin() &&
           (*i)->type == Browser::TYPE_TABBED && active_tab &&
