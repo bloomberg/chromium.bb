@@ -131,6 +131,10 @@ void TapRecord::Update(const HardwareState& hwstate,
           (*it).second = *fs;
         }
       }
+      stime_t finger_age = hwstate.timestamp -
+          immediate_interpreter_->finger_origin_timestamp(fs->tracking_id);
+      if (finger_age > immediate_interpreter_->tap_max_finger_age())
+        fingers_below_max_age_ = false;
     }
   }
   Log("Done Updating TapRecord.");
@@ -142,6 +146,7 @@ void TapRecord::Clear() {
   t5r2_ = false;
   t5r2_touched_size_ = 0;
   t5r2_released_size_ = 0;
+  fingers_below_max_age_ = true;
   touched_.clear();
   released_.clear();
 }
@@ -226,6 +231,10 @@ bool TapRecord::MinTapPressureMet() const {
   return t5r2_ || !min_tap_pressure_met_.empty();
 }
 
+bool TapRecord::FingersBelowMaxAge() const {
+  return fingers_below_max_age_;
+}
+
 int TapRecord::TapType() const {
   size_t touched_size =
       t5r2_ ? t5r2_touched_size_ : min_cotap_pressure_met_.size();
@@ -302,6 +311,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
       tap_min_pressure_(prop_reg, "Tap Minimum Pressure", 25.0),
       tap_max_movement_(prop_reg, "Tap Maximum Movement", 0.0001),
+      tap_max_finger_age_(prop_reg, "Tap Maximum Finger Age", 1.2),
       three_finger_click_enable_(prop_reg, "Three Finger Click Enable", 0),
       t5r2_three_finger_click_enable_(prop_reg,
                                       "T5R2 Three Finger Click Enable",
@@ -385,6 +395,7 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     return 0;
   }
 
+  FillOriginInfo(*hwstate);
   result_.type = kGestureTypeNull;
   const bool same_fingers = prev_state_.SameFingersAs(*hwstate) &&
       (hwstate->buttons_down == prev_state_.buttons_down);
@@ -431,6 +442,17 @@ Gesture* ImmediateInterpreter::HandleTimerImpl(stime_t now, stime_t* timeout) {
                    now,
                    timeout);
   return result_.type != kGestureTypeNull ? &result_ : NULL;
+}
+
+void ImmediateInterpreter::FillOriginInfo(
+    const HardwareState& hwstate) {
+  RemoveMissingIdsFromMap(&origin_timestamps_, hwstate);
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    if (MapContainsKey(origin_timestamps_, fs.tracking_id))
+      continue;
+    origin_timestamps_[fs.tracking_id] = hwstate.timestamp;
+  }
 }
 
 void ImmediateInterpreter::ResetSameFingersState(stime_t now) {
@@ -1088,7 +1110,7 @@ void ImmediateInterpreter::UpdateTapState(
     // See if fingers were added
     for (set<short, kMaxGesturingFingers>::const_iterator it =
              tap_gs_fingers.begin(), e = tap_gs_fingers.end(); it != e; ++it)
-      if (!prev_state_.GetFingerState(*it)) {
+      if (!SetContainsValue(prev_tap_gs_fingers_, *it)) {
         // Gesturing finger wasn't in prev state. It's new.
         const FingerState* fs = hwstate->GetFingerState(*it);
         if (FingerTooCloseToTap(*hwstate, *fs) ||
@@ -1197,7 +1219,8 @@ void ImmediateInterpreter::UpdateTapState(
           tap_record_.TapComplete(),
           tap_record_.Moving(*hwstate, tap_move_dist_.val_));
       if (tap_record_.TapComplete()) {
-        if (!tap_record_.MinTapPressureMet()) {
+        if (!tap_record_.MinTapPressureMet() ||
+            !tap_record_.FingersBelowMaxAge()) {
           SetTapToClickState(kTtcIdle, now);
         } else if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           SetTapToClickState(kTtcTapComplete, now);

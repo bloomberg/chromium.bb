@@ -29,7 +29,8 @@ class TapRecord {
       : immediate_interpreter_(immediate_interpreter),
         t5r2_(false),
         t5r2_touched_size_(0),
-        t5r2_released_size_(0) {}
+        t5r2_released_size_(0),
+        fingers_below_max_age_(true) {}
   void Update(const HardwareState& hwstate,
               const HardwareState& prev_hwstate,
               const set<short, kMaxTapFingers>& added,
@@ -49,6 +50,7 @@ class TapRecord {
   int TapType() const;
   // If any contact has met the minimum pressure threshold
   bool MinTapPressureMet() const;
+  bool FingersBelowMaxAge() const;
  private:
   void NoteTouch(short the_id, const FingerState& fs);  // Adds to touched_
   void NoteRelease(short the_id);  // Adds to released_
@@ -74,6 +76,8 @@ class TapRecord {
   bool t5r2_;  // if set, use T5R2 hacks
   unsigned short t5r2_touched_size_;  // number of contacts that have arrived
   unsigned short t5r2_released_size_;  // number of contacts that have left
+  // Whether all the fingers have age less than "Tap Maximum Finger Age".
+  bool fingers_below_max_age_;
 };
 
 struct ScrollEvent {
@@ -161,6 +165,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   TapToClickState tap_to_click_state() const { return tap_to_click_state_; }
 
   float tap_min_pressure() const { return tap_min_pressure_.val_; }
+
+  stime_t tap_max_finger_age() const { return tap_max_finger_age_.val_; }
+
+  stime_t finger_origin_timestamp(short finger_id) const {
+    return origin_timestamps_[finger_id];
+  }
 
  private:
   // Reset the member variables corresponding to same-finger state and
@@ -315,6 +325,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   Gesture result_;
   Gesture prev_result_;
 
+  // Time when a contact arrived. Persists even when fingers change.
+  map<short, stime_t, kMaxFingers> origin_timestamps_;
+
   // Button data
   // Which button we are going to send/have sent for the physical btn press
   int button_type_;  // left, middle, or right
@@ -423,6 +436,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Maximum distance [mm] per frame that a finger can move and still be
   // considered stationary.
   DoubleProperty tap_max_movement_;
+  // Maximum finger age for a finger to trigger tap.
+  DoubleProperty tap_max_finger_age_;
   // If three finger click should be enabled. This is a temporary flag so that
   // we can deploy this feature behind a file while we work out the bugs.
   BoolProperty three_finger_click_enable_;
