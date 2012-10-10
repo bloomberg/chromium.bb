@@ -134,17 +134,13 @@ CCLayerTreeHost::~CCLayerTreeHost()
         m_rootLayer->setLayerTreeHost(0);
     ASSERT(CCProxy::isMainThread());
     TRACE_EVENT0("cc", "CCLayerTreeHost::~CCLayerTreeHost");
-    ASSERT(m_proxy);
+    ASSERT(m_proxy.get());
     m_proxy->stop();
-    m_proxy.clear();
+    m_proxy.reset();
     numLayerTreeInstances--;
     RateLimiterMap::iterator it = m_rateLimiters.begin();
     if (it != m_rateLimiters.end())
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        it->value->stop();
-#else
         it->second->stop();
-#endif
 }
 
 void CCLayerTreeHost::setSurfaceReady()
@@ -380,10 +376,10 @@ bool CCLayerTreeHost::commitRequested() const
     return m_proxy->commitRequested();
 }
 
-void CCLayerTreeHost::setAnimationEvents(PassOwnPtr<CCAnimationEventsVector> events, double wallClockTime)
+void CCLayerTreeHost::setAnimationEvents(scoped_ptr<CCAnimationEventsVector> events, double wallClockTime)
 {
     ASSERT(CCThreadProxy::isMainThread());
-    setAnimationEventsRecursive(*events, m_rootLayer.get(), wallClockTime);
+    setAnimationEventsRecursive(*events.get(), m_rootLayer.get(), wallClockTime);
 }
 
 void CCLayerTreeHost::didAddAnimation()
@@ -762,14 +758,10 @@ void CCLayerTreeHost::startRateLimiter(WebKit::WebGraphicsContext3D* context)
     ASSERT(context);
     RateLimiterMap::iterator it = m_rateLimiters.find(context);
     if (it != m_rateLimiters.end())
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        it->value->start();
-#else
         it->second->start();
-#endif
     else {
-        RefPtr<RateLimiter> rateLimiter = RateLimiter::create(context, this);
-        m_rateLimiters.set(context, rateLimiter);
+        scoped_refptr<RateLimiter> rateLimiter = RateLimiter::create(context, this);
+        m_rateLimiters[context] = rateLimiter;
         rateLimiter->start();
     }
 }
@@ -778,12 +770,8 @@ void CCLayerTreeHost::stopRateLimiter(WebKit::WebGraphicsContext3D* context)
 {
     RateLimiterMap::iterator it = m_rateLimiters.find(context);
     if (it != m_rateLimiters.end()) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        it->value->stop();
-#else
         it->second->stop();
-#endif
-        m_rateLimiters.remove(it);
+        m_rateLimiters.erase(it);
     }
 }
 
@@ -808,9 +796,9 @@ bool CCLayerTreeHost::requestPartialTextureUpdate()
     return true;
 }
 
-void CCLayerTreeHost::deleteTextureAfterCommit(PassOwnPtr<CCPrioritizedTexture> texture)
+void CCLayerTreeHost::deleteTextureAfterCommit(scoped_ptr<CCPrioritizedTexture> texture)
 {
-    m_deleteTextureAfterCommitList.append(texture);
+    m_deleteTextureAfterCommitList.append(texture.Pass());
 }
 
 void CCLayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)

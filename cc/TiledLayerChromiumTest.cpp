@@ -165,7 +165,7 @@ public:
     CCRenderingStats m_stats;
     FakeTextureUploader m_uploader;
     CCPriorityCalculator m_priorityCalculator;
-    OwnPtr<CCPrioritizedTextureManager> m_textureManager;
+    scoped_ptr<CCPrioritizedTextureManager> m_textureManager;
     TestCCOcclusionTracker* m_occlusion;
 };
 

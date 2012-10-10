@@ -6,6 +6,7 @@
 #define CCPrioritizedTextureManager_h
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "CCPrioritizedTexture.h"
 #include "CCPriorityCalculator.h"
 #include "CCTexture.h"
@@ -23,13 +24,13 @@ class CCPriorityCalculator;
 
 class CCPrioritizedTextureManager {
 public:
-    static PassOwnPtr<CCPrioritizedTextureManager> create(size_t maxMemoryLimitBytes, int maxTextureSize, int pool)
+    static scoped_ptr<CCPrioritizedTextureManager> create(size_t maxMemoryLimitBytes, int maxTextureSize, int pool)
     {
-        return adoptPtr(new CCPrioritizedTextureManager(maxMemoryLimitBytes, maxTextureSize, pool));
+        return make_scoped_ptr(new CCPrioritizedTextureManager(maxMemoryLimitBytes, maxTextureSize, pool));
     }
-    PassOwnPtr<CCPrioritizedTexture> createTexture(IntSize size, GC3Denum format)
+    scoped_ptr<CCPrioritizedTexture> createTexture(IntSize size, GC3Denum format)
     {
-        return adoptPtr(new CCPrioritizedTexture(this, size, format));
+        return make_scoped_ptr(new CCPrioritizedTexture(this, size, format));
     }
     ~CCPrioritizedTextureManager();
 

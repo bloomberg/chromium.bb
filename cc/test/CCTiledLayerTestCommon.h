@@ -26,7 +26,7 @@ class FakeLayerTextureUpdater : public cc::LayerTextureUpdater {
 public:
     class Texture : public cc::LayerTextureUpdater::Texture {
     public:
-        Texture(FakeLayerTextureUpdater*, PassOwnPtr<cc::CCPrioritizedTexture>);
+        Texture(FakeLayerTextureUpdater*, scoped_ptr<cc::CCPrioritizedTexture>);
         virtual ~Texture();
 
         virtual void updateRect(cc::CCResourceProvider* , const cc::IntRect&, const cc::IntSize&) OVERRIDE;

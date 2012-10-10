@@ -6,9 +6,9 @@
 #define CCLayerTreeHost_h
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/own_ptr_vector.h"
 #include "CCAnimationEvents.h"
 #include "CCGraphicsContext.h"
 #include "CCLayerTreeHostClient.h"
@@ -19,11 +19,20 @@
 #include "CCRenderingStats.h"
 #include "IntRect.h"
 #include "RateLimiter.h"
+#include "scoped_ptr_vector.h"
 #include "SkColor.h"
 #include <limits>
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+
+#if defined(COMPILER_GCC)
+namespace BASE_HASH_NAMESPACE {
+template<>
+struct hash<WebKit::WebGraphicsContext3D*> {
+  size_t operator()(WebKit::WebGraphicsContext3D* ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+} // namespace BASE_HASH_NAMESPACE
+#endif // COMPILER
 
 namespace cc {
 
@@ -147,7 +156,7 @@ public:
     void setNeedsRedraw();
     bool commitRequested() const;
 
-    void setAnimationEvents(PassOwnPtr<CCAnimationEventsVector>, double wallClockTime);
+    void setAnimationEvents(scoped_ptr<CCAnimationEventsVector>, double wallClockTime);
     virtual void didAddAnimation();
 
     LayerChromium* rootLayer() { return m_rootLayer.get(); }
@@ -201,7 +210,7 @@ public:
 
     bool bufferedUpdates();
     bool requestPartialTextureUpdate();
-    void deleteTextureAfterCommit(PassOwnPtr<CCPrioritizedTexture>);
+    void deleteTextureAfterCommit(scoped_ptr<CCPrioritizedTexture>);
 
     void setDeviceScaleFactor(float);
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
@@ -242,7 +251,7 @@ private:
     int m_commitNumber;
     CCRenderingStats m_renderingStats;
 
-    OwnPtr<CCProxy> m_proxy;
+    scoped_ptr<CCProxy> m_proxy;
     bool m_rendererInitialized;
     bool m_contextLost;
     int m_numTimesRecreateShouldFail;
@@ -252,8 +261,8 @@ private:
     scoped_refptr<HeadsUpDisplayLayerChromium> m_hudLayer;
     scoped_ptr<CCFontAtlas> m_fontAtlas;
 
-    OwnPtr<CCPrioritizedTextureManager> m_contentsTextureManager;
-    OwnPtr<CCPrioritizedTexture> m_surfaceMemoryPlaceholder;
+    scoped_ptr<CCPrioritizedTextureManager> m_contentsTextureManager;
+    scoped_ptr<CCPrioritizedTexture> m_surfaceMemoryPlaceholder;
 
     CCLayerTreeSettings m_settings;
 
@@ -263,7 +272,7 @@ private:
 
     bool m_visible;
 
-    typedef HashMap<WebKit::WebGraphicsContext3D*, RefPtr<RateLimiter> > RateLimiterMap;
+    typedef base::hash_map<WebKit::WebGraphicsContext3D*, scoped_refptr<RateLimiter> > RateLimiterMap;
     RateLimiterMap m_rateLimiters;
 
     float m_pageScaleFactor;
@@ -274,7 +283,7 @@ private:
     SkColor m_backgroundColor;
     bool m_hasTransparentBackground;
 
-    typedef OwnPtrVector<CCPrioritizedTexture> TextureList;
+    typedef ScopedPtrVector<CCPrioritizedTexture> TextureList;
     TextureList m_deleteTextureAfterCommitList;
     size_t m_partialTextureUpdateRequests;
 
