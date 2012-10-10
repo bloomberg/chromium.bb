@@ -233,6 +233,14 @@ public class ContentSettings {
     }
 
     /**
+     * @returns the default User-Agent used by each ContentViewCore instance, i.e. unless
+     * overridden by {@link #setUserAgentString()}
+     */
+    public static String getDefaultUserAgent() {
+        return nativeGetDefaultUserAgent();
+    }
+
+    /**
      * Set the WebView's user-agent string. If the string "ua" is null or empty,
      * it will use the system default user-agent string.
      */
