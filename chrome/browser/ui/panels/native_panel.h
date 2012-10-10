@@ -45,7 +45,7 @@ class NativePanel {
   virtual void UpdatePanelTitleBar() = 0;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) = 0;
   virtual void NotifyPanelOnUserChangedTheme() = 0;
-  virtual void PanelWebContentsFocused(content::WebContents* contents) {}
+  virtual void PanelWebContentsFocused(content::WebContents* contents) = 0;
   virtual void PanelCut() = 0;
   virtual void PanelCopy() = 0;
   virtual void PanelPaste() = 0;
@@ -114,7 +114,6 @@ class NativePanelTesting {
   // Verifies, on a deepest possible level, if the native panel is really
   // showing a correct app icon (taskbar icon).
   virtual bool VerifyAppIcon() const = 0;
-  virtual void WaitForWindowCreationToComplete() const { }
 
   virtual bool IsWindowSizeKnown() const = 0;
   virtual bool IsAnimatingBounds() const = 0;

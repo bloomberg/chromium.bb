@@ -161,6 +161,10 @@ void PanelCocoa::NotifyPanelOnUserChangedTheme() {
   NOTIMPLEMENTED();
 }
 
+void PanelCocoa::PanelWebContentsFocused(content::WebContents* contents) {
+  // Nothing to do.
+}
+
 void PanelCocoa::PanelCut() {
   // Nothing to do since we do not have panel-specific system menu on Mac.
 }
