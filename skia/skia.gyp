@@ -242,11 +242,6 @@
         # Temporarily ignore fix to antialias coverage, until we can rebaseline
         'SK_USE_LEGACY_AA_COVERAGE',
 
-        # Temporarily use SkPaint to keep a scale factor needed for correct
-        # font rendering in high DPI mode.
-        # See https://codereview.appspot.com/6495089/
-        'SK_SUPPORT_HINTING_SCALE_FACTOR',
-
         # Temporarily keep old int-srcrect behavior, until we determine if
         # the few failures are a bug or not.
         'SK_SUPPORT_INT_SRCRECT_DRAWBITMAPRECT',
@@ -339,6 +334,14 @@
         }],
         [ 'OS != "win"', {
           'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
+        }],
+        [ 'chromeos == 1', {
+          'defines': [
+            # Temporarily use SkPaint to keep a scale factor needed for correct
+            # font rendering in high DPI mode.
+            # See https://codereview.appspot.com/6495089/
+            'SK_SUPPORT_HINTING_SCALE_FACTOR',
+          ],
         }],
         [ 'armv7 == 1', {
           'defines': [
@@ -583,9 +586,13 @@
           'SK_DEFERRED_CANVAS_USES_GPIPE=1',
           'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
           'GR_AGGRESSIVE_SHADER_OPTS=1',
-          'SK_SUPPORT_HINTING_SCALE_FACTOR',
         ],
         'conditions': [
+          [ 'chromeos == 1', {
+            'defines': [
+            'SK_SUPPORT_HINTING_SCALE_FACTOR',
+          ],
+          }],
           ['OS=="android"', {
             'dependencies!': [
               'skia_opts',
