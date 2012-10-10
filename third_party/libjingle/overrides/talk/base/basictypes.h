@@ -55,7 +55,9 @@ const int kForever = -1;
 }
 
 #ifdef WIN32
-#define alignof(t) __alignof(t)
+#if _MSC_VER < 1700
+  #define alignof(t) __alignof(t)
+#endif
 #else  // !WIN32
 #define alignof(t) __alignof__(t)
 #endif  // !WIN32
