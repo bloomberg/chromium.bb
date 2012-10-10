@@ -18,3 +18,7 @@ When defining NOMINMAX before including windows.h, min and max aren't
 defined. __min and __max are always defined though. So use them instead.
 
 This patch simply consist of a search of replace for both term."
+
+---
+
+Cherry pick of http://sourceforge.net/tracker/index.php?func=detail&aid=1871358&group_id=109071&atid=652374
