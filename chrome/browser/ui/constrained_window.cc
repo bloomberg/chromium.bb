@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/constrained_window.h"
 
 #include "base/logging.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -21,7 +22,7 @@ int ConstrainedWindow::GetCloseButtonSize() {
 
 // static
 SkColor ConstrainedWindow::GetBackgroundColor() {
-  return SkColorSetRGB(0xfb, 0xfb, 0xfb);
+  return ThemeService::GetDefaultColor(ThemeService::COLOR_CONTROL_BACKGROUND);
 }
 
 // static

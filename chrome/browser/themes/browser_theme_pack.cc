@@ -38,7 +38,7 @@ namespace {
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets.
-const int kThemePackVersion = 24;
+const int kThemePackVersion = 25;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16. kHeaderID should always have the maximum value because we want the
@@ -55,7 +55,7 @@ const int kScaleFactorsID = kMaxID - 6;
 
 // Static size of the tint/color/display property arrays that are mmapped.
 const int kTintArraySize = 6;
-const int kColorArraySize = 19;
+const int kColorArraySize = 18;
 const int kDisplayPropertySize = 3;
 
 // The sum of kFrameBorderThickness and kNonClientRestoredExtraThickness from
@@ -253,7 +253,6 @@ StringToIntTable kColorTable[] = {
   { "ntp_section_link", ThemeService::COLOR_NTP_SECTION_LINK },
   { "ntp_section_link_underline",
     ThemeService::COLOR_NTP_SECTION_LINK_UNDERLINE },
-  { "control_background", ThemeService::COLOR_CONTROL_BACKGROUND },
   { "button_background", ThemeService::COLOR_BUTTON_BACKGROUND },
   { NULL, 0 }
 };

@@ -611,18 +611,8 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 #endif
   Init(params);
 
-  if (frameless_) {
-    // Set the dialog background color.
-    if (widget_delegate && widget_delegate->AsDialogDelegate()) {
-      views::Background* background = views::Background::CreateSolidBackground(
-          ConstrainedWindow::GetBackgroundColor());
-      views::DialogClientView* dialog_client_view =
-          widget_delegate->AsDialogDelegate()->GetDialogClientView();
-      if (dialog_client_view)
-        dialog_client_view->set_background(background);
-    }
+  if (frameless_)
     PositionFramelessWindow();
-  }
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
