@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <functional>
 #include <set>
 
 #include "base/bind.h"

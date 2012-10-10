@@ -4,6 +4,8 @@
 
 #include "webkit/appcache/appcache_service.h"
 
+#include <functional>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"

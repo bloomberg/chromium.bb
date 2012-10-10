@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 
 #include "base/logging.h"
