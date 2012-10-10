@@ -16,7 +16,6 @@ class Time;
 }  // namespace base
 
 namespace net {
-class URLRequest;
 class URLRequestContext;
 }  // namespace net
 

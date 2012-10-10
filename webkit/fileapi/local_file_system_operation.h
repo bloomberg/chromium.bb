@@ -5,44 +5,26 @@
 #ifndef WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_OPERATION_H_
 #define WEBKIT_FILEAPI_LOCAL_FILE_SYSTEM_OPERATION_H_
 
-#include <string>
 #include <vector>
 
-#include "base/file_path.h"
-#include "base/file_util_proxy.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/platform_file.h"
-#include "base/process.h"
+#include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/fileapi/fileapi_export.h"
-#include "webkit/quota/quota_manager.h"
-
-namespace base {
-class Time;
-}
+#include "webkit/quota/quota_types.h"
 
 namespace chromeos {
 class CrosMountPointProvider;
 }
 
-namespace net {
-class URLRequest;
-class URLRequestContext;
-}  // namespace net
-
 namespace fileapi {
 
 class FileSystemContext;
-class FileSystemOperationTest;
-class FileSystemURL;
-class FileWriterDelegate;
 
 // FileSystemOperation implementation for local file systems.
 class FILEAPI_EXPORT LocalFileSystemOperation

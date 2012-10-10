@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_types.h"
