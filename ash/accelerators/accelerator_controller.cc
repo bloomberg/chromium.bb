@@ -719,19 +719,7 @@ bool AcceleratorController::PerformAction(int action,
         shell->delegate()->RecordUserMetricsAction(
             UMA_ACCEL_MAXIMIZE_RESTORE_F4);
       }
-      aura::Window* window = wm::GetActiveWindow();
-      if (!window)
-        return true;
-      if (wm::IsWindowFullscreen(window)) {
-        // Chrome also uses VKEY_F4 as a shortcut. Its action is to toggle
-        // fullscreen. We return false below so Chrome will process the
-        // shortcut again and, in case of VKEY_F4, exit fullscreen.
-        return false;
-      }
-      if (wm::IsWindowMaximized(window))
-        wm::RestoreWindow(window);
-      else if (wm::CanMaximizeWindow(window))
-        wm::MaximizeWindow(window);
+      shell->delegate()->ToggleMaximized();
       return true;
     }
     case TOGGLE_MAXIMIZED_RELEASED: {

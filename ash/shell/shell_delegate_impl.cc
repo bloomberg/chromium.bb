@@ -9,6 +9,7 @@
 #include "ash/shell/launcher_delegate_impl.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/window_util.h"
 #include "base/message_loop.h"
 #include "ui/aura/window.h"
 
@@ -73,6 +74,12 @@ void ShellDelegateImpl::NewWindow(bool incognito) {
   create_params.can_resize = true;
   create_params.can_maximize = true;
   ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
+}
+
+void ShellDelegateImpl::ToggleMaximized() {
+  aura::Window* window = ash::wm::GetActiveWindow();
+  if (window)
+    ash::wm::ToggleMaximizedWindow(window);
 }
 
 void ShellDelegateImpl::OpenFileManager(bool as_dialog) {

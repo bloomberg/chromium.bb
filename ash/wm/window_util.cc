@@ -100,6 +100,13 @@ void RestoreWindow(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
+void ToggleMaximizedWindow(aura::Window* window) {
+  if (ash::wm::IsWindowMaximized(window))
+    ash::wm::RestoreWindow(window);
+  else if (ash::wm::CanMaximizeWindow(window))
+    ash::wm::MaximizeWindow(window);
+}
+
 void CenterWindow(aura::Window* window) {
   const gfx::Display display = gfx::Screen::GetDisplayNearestWindow(window);
   gfx::Rect center = display.work_area().Center(window->bounds().size());

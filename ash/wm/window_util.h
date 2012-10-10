@@ -62,6 +62,9 @@ ASH_EXPORT void MinimizeWindow(aura::Window* window);
 // Restores |window|, which must not be NULL.
 ASH_EXPORT void RestoreWindow(aura::Window* window);
 
+// Maximizes or restores |window| based on its state. |window| must not be NULL.
+ASH_EXPORT void ToggleMaximizedWindow(aura::Window* window);
+
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
 

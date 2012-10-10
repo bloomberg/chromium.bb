@@ -182,6 +182,18 @@ void ChromeShellDelegate::NewWindow(bool is_incognito) {
       is_incognito ? profile->GetOffTheRecordProfile() : profile);
 }
 
+void ChromeShellDelegate::ToggleMaximized() {
+  aura::Window* window = ash::wm::GetActiveWindow();
+  if (!window)
+    return;
+  // Get out of fullscreen when in fullscreen mode.
+  if (ash::wm::IsWindowFullscreen(window)) {
+    chrome::ToggleFullscreenMode(GetTargetBrowser());
+    return;
+  }
+  ash::wm::ToggleMaximizedWindow(window);
+}
+
 void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
 #if defined(OS_CHROMEOS)
   if (as_dialog) {

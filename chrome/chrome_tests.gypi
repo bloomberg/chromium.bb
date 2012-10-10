@@ -3033,6 +3033,7 @@
         'browser/task_manager/task_manager_notification_browsertest.cc',
         'browser/translate/translate_manager_browsertest.cc',
         'browser/ui/ash/caps_lock_handler_browsertest.cc',
+        'browser/ui/ash/chrome_shell_delegate_browsertest.cc',
         'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
         'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',
         'browser/ui/ash/shelf_browsertest.cc',
