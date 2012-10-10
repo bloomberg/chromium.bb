@@ -4,22 +4,23 @@
 
 package org.chromium.content.browser.test.util;
 
-import android.app.Activity;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-
-import org.chromium.content.browser.test.util.UiUtils;
+import android.test.ActivityInstrumentationTestCase2;
 
 /**
  * Touch-related functionality reused across test cases.
  */
 public class TouchCommon {
-    private Activity mActivity;
+    private ActivityInstrumentationTestCase2 mActivityTestCase;
 
-    public TouchCommon(Activity activity) {
-        mActivity = activity;
+    // TODO(leandrogracia): This method should receive and use an activity
+    // instead of the ActivityInstrumentationTestCase2. However this is causing
+    // problems downstream. Any fix for this should be landed downstream first.
+    public TouchCommon(ActivityInstrumentationTestCase2 activityTestCase) {
+        mActivityTestCase = activityTestCase;
     }
 
     /**
@@ -132,7 +133,8 @@ public class TouchCommon {
                                                MotionEvent.ACTION_DOWN, x, y, 0);
         dispatchTouchEvent(event);
 
-        int longPressTimeout = ViewConfiguration.get(mActivity).getLongPressTimeout();
+        int longPressTimeout = ViewConfiguration.get(
+                mActivityTestCase.getActivity()).getLongPressTimeout();
 
         // Long press is flaky with just longPressTimeout. Doubling the time to be safe.
         SystemClock.sleep(longPressTimeout * 2);
@@ -162,9 +164,10 @@ public class TouchCommon {
      * @param event
      */
     private void dispatchTouchEvent(final MotionEvent event) {
-        final View view = mActivity.findViewById(android.R.id.content).getRootView();
+        final View view = mActivityTestCase.getActivity().findViewById(
+                android.R.id.content).getRootView();
         try {
-            UiUtils.runOnUiThread(mActivity, new Runnable() {
+            mActivityTestCase.runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     view.dispatchTouchEvent(event);

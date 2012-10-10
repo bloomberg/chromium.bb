@@ -78,7 +78,7 @@ public class DOMUtils {
         int clickX = (int)(bounds.exactCenterX() * scale + 0.5);
         int clickY = (int)(bounds.exactCenterY() * scale + 0.5);
 
-        TouchCommon touchCommon = new TouchCommon(activityTestCase.getActivity());
+        TouchCommon touchCommon = new TouchCommon(activityTestCase);
         touchCommon.singleClickView(view, clickX, clickY);
     }
 
@@ -97,7 +97,7 @@ public class DOMUtils {
         int clickX = (int)(bounds.exactCenterX() * scale + 0.5);
         int clickY = (int)(bounds.exactCenterY() * scale + 0.5);
 
-        TouchCommon touchCommon = new TouchCommon(activityTestCase.getActivity());
+        TouchCommon touchCommon = new TouchCommon(activityTestCase);
         touchCommon.longPressView(view, clickX, clickY);
     }
 
