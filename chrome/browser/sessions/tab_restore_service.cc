@@ -1162,7 +1162,8 @@ void TabRestoreService::UpdateTabBrowserIDs(SessionID::id_type old_id,
 
 void TabRestoreService::OnGotPreviousSession(
     Handle handle,
-    std::vector<SessionWindow*>* windows) {
+    std::vector<SessionWindow*>* windows,
+    SessionID::id_type ignored_active_window) {
   std::vector<Entry*> entries;
   CreateEntriesFromWindows(windows, &entries);
   // Previous session tabs go first.

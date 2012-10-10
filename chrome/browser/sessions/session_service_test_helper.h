@@ -10,10 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/sessions/session_id.h"
 
 class SessionBackend;
 class SessionCommand;
-class SessionID;
 class SessionService;
 struct SessionTab;
 struct SessionWindow;
@@ -26,9 +26,6 @@ class SessionServiceTestHelper {
   explicit SessionServiceTestHelper();
   explicit SessionServiceTestHelper(SessionService* service);
   ~SessionServiceTestHelper();
-
-  void RestoreSessionFromCommands(const std::vector<SessionCommand*>& commands,
-                                  std::vector<SessionWindow*>* valid_windows);
 
   void PrepareTabInWindow(const SessionID& window_id,
                           const SessionID& tab_id,
@@ -47,7 +44,8 @@ class SessionServiceTestHelper {
       bool force_browser_not_alive_with_no_windows);
 
   // Reads the contents of the last session.
-  void ReadWindows(std::vector<SessionWindow*>* windows);
+  void ReadWindows(std::vector<SessionWindow*>* windows,
+                   SessionID::id_type* active_window_id);
 
   void AssertTabEquals(SessionID& window_id,
                        SessionID& tab_id,

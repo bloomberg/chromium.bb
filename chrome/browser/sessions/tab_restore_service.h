@@ -327,9 +327,11 @@ class TabRestoreService : public BaseSessionService {
 
   // Callback from SessionService when we've received the windows from the
   // previous session. This creates and add entries to |staging_entries_|
-  // and invokes LoadStateChanged.
+  // and invokes LoadStateChanged. |ignored_active_window| is ignored because
+  // we don't need to restore activation.
   void OnGotPreviousSession(Handle handle,
-                            std::vector<SessionWindow*>* windows);
+                            std::vector<SessionWindow*>* windows,
+                            SessionID::id_type ignored_active_window);
 
   // Converts a SessionWindow into a Window, returning true on success. We use 0
   // as the timestamp here since we do not know when the window/tab was closed.

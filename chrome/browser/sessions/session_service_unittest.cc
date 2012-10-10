@@ -84,13 +84,19 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     }
   }
 
-  void ReadWindows(std::vector<SessionWindow*>* windows) {
+  void ReadWindows(std::vector<SessionWindow*>* windows,
+                   SessionID::id_type* active_window_id) {
     // Forces closing the file.
     helper_.set_service(NULL);
 
     SessionService* session_service = new SessionService(path_);
     helper_.set_service(session_service);
-    helper_.ReadWindows(windows);
+
+    SessionID::id_type* non_null_active_window_id = active_window_id;
+    SessionID::id_type dummy_active_window_id = 0;
+    if (!non_null_active_window_id)
+      non_null_active_window_id = &dummy_active_window_id;
+    helper_.ReadWindows(windows, non_null_active_window_id);
   }
 
   // Configures the session service with one window with one tab and a single
@@ -109,7 +115,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
       helper_.service()->SetPinnedState(window_id, tab_id, pinned_state);
 
     ScopedVector<SessionWindow> windows;
-    ReadWindows(&(windows.get()));
+    ReadWindows(&(windows.get()), NULL);
 
     EXPECT_EQ(1U, windows.size());
     if (HasFatalFailure())
@@ -122,6 +128,31 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
 
     return tab->pinned;
+  }
+
+  void CreateAndWriteSessionWithTwoWindows(
+      const SessionID& window2_id,
+      const SessionID& tab1_id,
+      const SessionID& tab2_id,
+      TabNavigation* nav1,
+      TabNavigation* nav2) {
+    *nav1 =
+        SessionTypesTestHelper::CreateNavigation("http://google.com", "abc");
+    *nav2 =
+        SessionTypesTestHelper::CreateNavigation("http://google2.com", "abcd");
+
+    helper_.PrepareTabInWindow(window_id, tab1_id, 0, true);
+    UpdateNavigation(window_id, tab1_id, *nav1, true);
+
+    const gfx::Rect window2_bounds(3, 4, 5, 6);
+    service()->SetWindowType(
+        window2_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
+    service()->SetWindowBounds(window2_id,
+                               window2_bounds,
+                               ui::SHOW_STATE_MAXIMIZED);
+    helper_.PrepareTabInWindow(window2_id, tab2_id, 0, true);
+    UpdateNavigation(window2_id, tab2_id, *nav2, true);
+
   }
 
   SessionService* service() { return helper_.service(); }
@@ -154,7 +185,7 @@ TEST_F(SessionServiceTest, Basic) {
   UpdateNavigation(window_id, tab_id, nav1, true);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_TRUE(window_bounds == windows[0]->bounds);
@@ -182,7 +213,7 @@ TEST_F(SessionServiceTest, PersistPostData) {
   UpdateNavigation(window_id, tab_id, nav1, true);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
 }
@@ -205,7 +236,7 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
   service()->TabClosed(window_id, tab2_id, false);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
@@ -235,7 +266,7 @@ TEST_F(SessionServiceTest, Pruning) {
   service()->TabNavigationPathPrunedFromBack(window_id, tab_id, 3);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
@@ -256,26 +287,14 @@ TEST_F(SessionServiceTest, TwoWindows) {
   SessionID window2_id;
   SessionID tab1_id;
   SessionID tab2_id;
+  TabNavigation nav1;
+  TabNavigation nav2;
 
-  TabNavigation nav1 =
-      SessionTypesTestHelper::CreateNavigation("http://google.com", "abc");
-  TabNavigation nav2 =
-      SessionTypesTestHelper::CreateNavigation("http://google2.com", "abcd");
-
-  helper_.PrepareTabInWindow(window_id, tab1_id, 0, true);
-  UpdateNavigation(window_id, tab1_id, nav1, true);
-
-  const gfx::Rect window2_bounds(3, 4, 5, 6);
-  service()->SetWindowType(
-      window2_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
-  service()->SetWindowBounds(window2_id,
-                             window2_bounds,
-                             ui::SHOW_STATE_MAXIMIZED);
-  helper_.PrepareTabInWindow(window2_id, tab2_id, 0, true);
-  UpdateNavigation(window2_id, tab2_id, nav2, true);
+  CreateAndWriteSessionWithTwoWindows(
+      window2_id, tab1_id, tab2_id, &nav1, &nav2);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(2U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
@@ -328,7 +347,7 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
   helper_.PrepareTabInWindow(window2_id, tab2_id, 0, true);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
@@ -359,7 +378,7 @@ TEST_F(SessionServiceTest, ClosingWindowDoesntCloseTabs) {
   service()->WindowClosing(window_id);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
@@ -403,7 +422,7 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   service()->WindowClosed(window2_id);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
@@ -443,7 +462,7 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   UpdateNavigation(window2_id, tab2_id, nav2, true);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
@@ -483,7 +502,7 @@ TEST_F(SessionServiceTest, RestorePopup) {
   UpdateNavigation(window2_id, tab2_id, nav2, true);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(2U, windows.size());
   int tabbed_index = windows[0]->type == Browser::TYPE_TABBED ?
@@ -533,7 +552,7 @@ TEST_F(SessionServiceTest, RestoreApp) {
   UpdateNavigation(window2_id, tab2_id, nav2, true);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(2U, windows.size());
   int tabbed_index = windows[0]->type == Browser::TYPE_TABBED ?
@@ -557,7 +576,7 @@ TEST_F(SessionServiceTest, RestoreApp) {
   helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
 }
-#endif
+#endif  // defined (USE_AURA)
 
 // Tests pruning from the front.
 TEST_F(SessionServiceTest, PruneFromFront) {
@@ -580,7 +599,7 @@ TEST_F(SessionServiceTest, PruneFromFront) {
 
   // Read back in.
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
@@ -623,7 +642,7 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
 
   // Read back in.
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(0U, windows.size());
 }
@@ -657,7 +676,7 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
   helper_.SetTabExtensionAppID(window_id, tab_id, app_id);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
   EXPECT_TRUE(app_id == windows[0]->tabs[0]->extension_app_id);
@@ -680,7 +699,7 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
   helper_.SetTabUserAgentOverride(window_id, tab_id, user_agent_override);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
 
   SessionTab* tab = windows[0]->tabs[0];
@@ -711,7 +730,7 @@ TEST_F(SessionServiceTest, CloseTabUserGesture) {
   service()->TabClosed(window_id, tab_id, true);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   ASSERT_TRUE(windows.empty());
 }
@@ -729,7 +748,7 @@ TEST_F(SessionServiceTest, DontPersistDefault) {
                              ui::SHOW_STATE_DEFAULT);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
   ASSERT_EQ(1U, windows.size());
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, windows[0]->show_state);
 }
@@ -768,7 +787,7 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
   UpdateNavigation(window_id, tab_id, nav2, true);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 2);
 
@@ -803,7 +822,7 @@ TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
   UpdateNavigation(window_id, tab_id, nav1, true);
 
   ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
+  ReadWindows(&(windows.get()), NULL);
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
 
@@ -834,8 +853,123 @@ TEST_F(SessionServiceTest, CanOpenV1TabClosed) {
   SessionService* session_service = new SessionService(path_);
   helper_.set_service(session_service);
   ScopedVector<SessionWindow> windows;
-  helper_.ReadWindows(&(windows.get()));
+  SessionID::id_type active_window_id = 0;
+  helper_.ReadWindows(&(windows.get()), &active_window_id);
   ASSERT_EQ(1u, windows.size());
   EXPECT_EQ(1u, windows[0]->tabs.size());
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
+
+TEST_F(SessionServiceTest, ReplacePendingNavigation) {
+  const std::string base_url("http://google.com/");
+  SessionID tab_id;
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+
+  // Add 5 navigations, some with the same index
+  for (int i = 0; i < 5; ++i) {
+    TabNavigation nav =
+        SessionTypesTestHelper::CreateNavigation(
+            base_url + base::IntToString(i), "a");
+    nav.set_index(i / 2);
+    UpdateNavigation(window_id, tab_id, nav, true);
+  }
+
+  // Read back in.
+  ScopedVector<SessionWindow> windows;
+  ReadWindows(&(windows.get()), NULL);
+
+  // The ones with index 0, and 2 should have been replaced by 1 and 3.
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(1U, windows[0]->tabs.size());
+  EXPECT_EQ(3U, windows[0]->tabs[0]->navigations.size());
+  EXPECT_EQ(GURL(base_url + base::IntToString(1)),
+            windows[0]->tabs[0]->navigations[0].virtual_url());
+  EXPECT_EQ(GURL(base_url + base::IntToString(3)),
+            windows[0]->tabs[0]->navigations[1].virtual_url());
+  EXPECT_EQ(GURL(base_url + base::IntToString(4)),
+            windows[0]->tabs[0]->navigations[2].virtual_url());
+}
+
+TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
+  const std::string base_url("http://google.com/");
+  SessionID tab_id;
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+
+  for (int i = 0; i < 5; ++i) {
+    TabNavigation nav =
+        SessionTypesTestHelper::CreateNavigation(
+            base_url + base::IntToString(i), "a");
+    nav.set_index(i);
+    UpdateNavigation(window_id, tab_id, nav, true);
+  }
+
+  // Prune all those navigations.
+  helper_.service()->TabNavigationPathPrunedFromFront(window_id, tab_id, 5);
+
+  // Add another navigation to replace the last one.
+  TabNavigation nav =
+    SessionTypesTestHelper::CreateNavigation(
+        base_url + base::IntToString(5), "a");
+  nav.set_index(4);
+  UpdateNavigation(window_id, tab_id, nav, true);
+
+  // Read back in.
+  ScopedVector<SessionWindow> windows;
+  ReadWindows(&(windows.get()), NULL);
+
+  // We should still have that last navigation at the end,
+  // even though it replaced one that was set before the prune.
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(1U, windows[0]->tabs.size());
+  ASSERT_EQ(1U, windows[0]->tabs[0]->navigations.size());
+  EXPECT_EQ(GURL(base_url + base::IntToString(5)),
+            windows[0]->tabs[0]->navigations[0].virtual_url());
+}
+
+TEST_F(SessionServiceTest, RestoreActivation1) {
+  SessionID window2_id;
+  SessionID tab1_id;
+  SessionID tab2_id;
+  TabNavigation nav1;
+  TabNavigation nav2;
+
+  CreateAndWriteSessionWithTwoWindows(
+      window2_id, tab1_id, tab2_id, &nav1, &nav2);
+
+  service()->ScheduleCommand(
+      service()->CreateSetActiveWindowCommand(window2_id));
+  service()->ScheduleCommand(
+      service()->CreateSetActiveWindowCommand(window_id));
+
+  ScopedVector<SessionWindow> windows;
+  SessionID::id_type active_window_id = 0;
+  ReadWindows(&(windows.get()), &active_window_id);
+  EXPECT_EQ(window_id.id(), active_window_id);
+}
+
+// It's easier to have two separate tests with setup/teardown than to manualy
+// reset the state for the different flavors of the test.
+TEST_F(SessionServiceTest, RestoreActivation2) {
+  SessionID window2_id;
+  SessionID tab1_id;
+  SessionID tab2_id;
+  TabNavigation nav1;
+  TabNavigation nav2;
+
+  CreateAndWriteSessionWithTwoWindows(
+      window2_id, tab1_id, tab2_id, &nav1, &nav2);
+
+  service()->ScheduleCommand(
+      service()->CreateSetActiveWindowCommand(window2_id));
+  service()->ScheduleCommand(
+      service()->CreateSetActiveWindowCommand(window_id));
+  service()->ScheduleCommand(
+      service()->CreateSetActiveWindowCommand(window2_id));
+
+  ScopedVector<SessionWindow> windows;
+  SessionID::id_type active_window_id = 0;
+  ReadWindows(&(windows.get()), &active_window_id);
+  EXPECT_EQ(window2_id.id(), active_window_id);
+}

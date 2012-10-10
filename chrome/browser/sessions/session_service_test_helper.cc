@@ -21,12 +21,6 @@ SessionServiceTestHelper::SessionServiceTestHelper(SessionService* service)
 
 SessionServiceTestHelper::~SessionServiceTestHelper() {}
 
-void SessionServiceTestHelper::RestoreSessionFromCommands(
-    const std::vector<SessionCommand*>& commands,
-    std::vector<SessionWindow*>* valid_windows) {
-  service()->RestoreSessionFromCommands(commands, valid_windows);
-}
-
 void SessionServiceTestHelper::PrepareTabInWindow(const SessionID& window_id,
                                                   const SessionID& tab_id,
                                                   int visual_index,
@@ -59,11 +53,13 @@ void SessionServiceTestHelper::SetForceBrowserNotAliveWithNoWindows(
 
 // Be sure and null out service to force closing the file.
 void SessionServiceTestHelper::ReadWindows(
-    std::vector<SessionWindow*>* windows) {
+    std::vector<SessionWindow*>* windows,
+    SessionID::id_type* active_window_id) {
   Time last_time;
   ScopedVector<SessionCommand> read_commands;
   backend()->ReadLastSessionCommandsImpl(&(read_commands.get()));
-  RestoreSessionFromCommands(read_commands.get(), windows);
+  service()->RestoreSessionFromCommands(
+      read_commands.get(), windows, active_window_id);
 }
 
 void SessionServiceTestHelper::AssertTabEquals(SessionID& window_id,

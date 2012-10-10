@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
@@ -52,7 +53,8 @@ class WebContents;
 // SessionService rebuilds the contents of the file from the open state
 // of the browser.
 class SessionService : public BaseSessionService,
-                       public content::NotificationObserver {
+                       public content::NotificationObserver,
+                       public chrome::BrowserListObserver {
   friend class SessionServiceTestHelper;
  public:
   // Used to distinguish an application window from a normal one.
@@ -181,9 +183,10 @@ class SessionService : public BaseSessionService,
   // The contents of the supplied vector are deleted after the callback is
   // notified. To take ownership of the vector clear it before returning.
   //
-  // The time gives the time the session was closed.
-  typedef base::Callback<void(Handle, std::vector<SessionWindow*>*)>
-      SessionCallback;
+  // The session ID is the id of the window that was last active.
+  typedef base::Callback<void(Handle,
+                              std::vector<SessionWindow*>*,
+                              SessionID::id_type)> SessionCallback;
 
   // Fetches the contents of the last session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
@@ -200,6 +203,10 @@ class SessionService : public BaseSessionService,
   virtual void Save() OVERRIDE;
 
  private:
+  // Allow tests to access our innards for testing purposes.
+  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RestoreActivation1);
+  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RestoreActivation2);
+
   typedef std::map<SessionID::id_type, std::pair<int, int> > IdToRange;
   typedef std::map<SessionID::id_type, SessionTab*> IdToSessionTab;
   typedef std::map<SessionID::id_type, SessionWindow*> IdToSessionWindow;
@@ -224,6 +231,11 @@ class SessionService : public BaseSessionService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // chrome::BrowserListObserver
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE {}
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE {}
+  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
 
   // Sets the application extension id of the specified tab.
   void SetTabExtensionAppID(const SessionID& window_id,
@@ -263,6 +275,8 @@ class SessionService : public BaseSessionService,
       const SessionID& tab_id,
       const std::string& session_storage_persistent_id);
 
+  SessionCommand* CreateSetActiveWindowCommand(const SessionID& window_id);
+
   // Callback from the backend for getting the commands from the save file.
   // Converts the commands in SessionWindows and notifies the real callback.
   void OnGotSessionCommands(
@@ -271,12 +285,12 @@ class SessionService : public BaseSessionService,
 
   // Converts the commands into SessionWindows. On return any valid
   // windows are added to valid_windows. It is up to the caller to delete
-  // the windows added to valid_windows.
-  //
-  // If ignore_recent_closes is true, any window/tab closes within in a certain
-  // time frame are ignored.
+  // the windows added to valid_windows. |active_window_id| will be set with the
+  // id of the last active window, but it's only valid when this id corresponds
+  // to the id of one of the windows in valid_windows.
   void RestoreSessionFromCommands(const std::vector<SessionCommand*>& commands,
-                                  std::vector<SessionWindow*>* valid_windows);
+                                  std::vector<SessionWindow*>* valid_windows,
+                                  SessionID::id_type* active_window_id);
 
   // Iterates through the vector updating the selected_tab_index of each
   // SessionWindow based on the actual tabs that were restored.
@@ -317,15 +331,17 @@ class SessionService : public BaseSessionService,
   void AddTabsToWindows(std::map<int, SessionTab*>* tabs,
                         std::map<int, SessionWindow*>* windows);
 
-  // Creates tabs and windows from the specified commands. The created tabs
-  // and windows are added to |tabs| and |windows| respectively. It is up to
-  // the caller to delete the tabs and windows added to |tabs| and |windows|.
+  // Creates tabs and windows from the commands specified in |data|. The created
+  // tabs and windows are added to |tabs| and |windows| respectively, with the
+  // id of the active window set in |active_window_id|. It is up to the caller
+  // to delete the tabs and windows added to |tabs| and |windows|.
   //
   // This does NOT add any created SessionTabs to SessionWindow.tabs, that is
   // done by AddTabsToWindows.
   bool CreateTabsAndWindows(const std::vector<SessionCommand*>& data,
                             std::map<int, SessionTab*>* tabs,
-                            std::map<int, SessionWindow*>* windows);
+                            std::map<int, SessionWindow*>* windows,
+                            SessionID::id_type* active_window_id);
 
   // Adds commands to commands that will recreate the state of the specified
   // tab. This adds at most kMaxNavigationCountToPersist navigations (in each
@@ -376,16 +392,19 @@ class SessionService : public BaseSessionService,
 
   // Returns true if there is only one window open with a single tab that shares
   // our profile.
-  bool IsOnlyOneTabLeft();
+  bool IsOnlyOneTabLeft() const;
 
   // Returns true if there are open trackable browser windows whose ids do
   // match |window_id| with our profile. A trackable window is a window from
   // which |should_track_changes_for_browser_type| returns true. See
   // |should_track_changes_for_browser_type| for details.
-  bool HasOpenTrackableBrowsers(const SessionID& window_id);
+  bool HasOpenTrackableBrowsers(const SessionID& window_id) const;
 
   // Returns true if changes to tabs in the specified window should be tracked.
-  bool ShouldTrackChangesToWindow(const SessionID& window_id);
+  bool ShouldTrackChangesToWindow(const SessionID& window_id) const;
+
+  // Returns true if we track changes to the specified browser.
+  bool ShouldTrackBrowser(Browser* browser) const;
 
   // Returns true if we track changes to the specified browser type.
   static bool should_track_changes_for_browser_type(

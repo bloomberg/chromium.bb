@@ -76,6 +76,7 @@ static const SessionCommand::id_type kCommandTabClosed = 16;
 static const SessionCommand::id_type kCommandWindowClosed = 17;
 static const SessionCommand::id_type kCommandSetTabUserAgentOverride = 18;
 static const SessionCommand::id_type kCommandSessionStorageAssociated = 19;
+static const SessionCommand::id_type kCommandSetActiveWindow = 20;
 
 // Every kWritesPerReset commands triggers recreating the file.
 static const int kWritesPerReset = 250;
@@ -128,6 +129,8 @@ struct WindowBoundsPayload3 {
   int32 h;
   int32 show_state;
 };
+
+typedef SessionID::id_type ActiveWindowPayload;
 
 struct IDAndIndexPayload {
   SessionID::id_type id;
@@ -220,6 +223,9 @@ SessionService::SessionService(const FilePath& save_path)
 }
 
 SessionService::~SessionService() {
+  // The BrowserList should outlive the SessionService since it's static and
+  // the SessionService is a ProfileKeyedService.
+  BrowserList::RemoveObserver(this);
   Save();
 }
 
@@ -533,6 +539,8 @@ void SessionService::Init() {
   registrar_.Add(
       this, chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
       content::NotificationService::AllSources());
+
+  BrowserList::AddObserver(this);
 }
 
 bool SessionService::ShouldNewWindowStartSession() {
@@ -587,11 +595,10 @@ void SessionService::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
       Browser* browser = content::Source<Browser>(source).ptr();
-      AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
-      if (browser->profile() != profile() ||
-          !should_track_changes_for_browser_type(browser->type(), app_type))
+      if (!ShouldTrackBrowser(browser))
         return;
 
+      AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
       RestoreIfNecessary(std::vector<GURL>(), browser);
       SetWindowType(browser->session_id(), browser->type(), app_type);
       SetWindowAppName(browser->session_id(), browser->app_name());
@@ -694,6 +701,11 @@ void SessionService::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void SessionService::OnBrowserSetLastActive(Browser* browser) {
+  if (ShouldTrackBrowser(browser))
+    ScheduleCommand(CreateSetActiveWindowCommand(browser->session_id()));
 }
 
 void SessionService::SetTabExtensionAppID(
@@ -831,6 +843,16 @@ SessionCommand* SessionService::CreateSessionStorageAssociatedCommand(
   return new SessionCommand(kCommandSessionStorageAssociated, pickle);
 }
 
+SessionCommand* SessionService::CreateSetActiveWindowCommand(
+    const SessionID& window_id) {
+  ActiveWindowPayload payload = 0;
+  payload = window_id.id();
+  SessionCommand* command =
+      new SessionCommand(kCommandSetActiveWindow, sizeof(payload));
+  memcpy(command->contents(), &payload, sizeof(payload));
+  return command;
+}
+
 void SessionService::OnGotSessionCommands(
     Handle handle,
     scoped_refptr<InternalGetCommandsRequest> request) {
@@ -838,20 +860,22 @@ void SessionService::OnGotSessionCommands(
     return;
 
   ScopedVector<SessionWindow> valid_windows;
+  SessionID::id_type active_window_id = 0;
   RestoreSessionFromCommands(
-      request->commands, &(valid_windows.get()));
-  static_cast<InternalSessionRequest*>(request.get())->
-      real_callback.Run(request->handle(), &(valid_windows.get()));
+      request->commands, &(valid_windows.get()), &active_window_id);
+  static_cast<InternalSessionRequest*>(request.get())->real_callback.Run(
+      request->handle(), &(valid_windows.get()), active_window_id);
 }
 
 void SessionService::RestoreSessionFromCommands(
     const std::vector<SessionCommand*>& commands,
-    std::vector<SessionWindow*>* valid_windows) {
+    std::vector<SessionWindow*>* valid_windows,
+    SessionID::id_type* active_window_id) {
   std::map<int, SessionTab*> tabs;
   std::map<int, SessionWindow*> windows;
 
   VLOG(1) << "RestoreSessionFromCommands " << commands.size();
-  if (CreateTabsAndWindows(commands, &tabs, &windows)) {
+  if (CreateTabsAndWindows(commands, &tabs, &windows, active_window_id)) {
     AddTabsToWindows(&tabs, &windows);
     SortTabsBasedOnVisualOrderAndPrune(&windows, valid_windows);
     UpdateSelectedTabIndex(valid_windows);
@@ -950,7 +974,7 @@ void SessionService::SortTabsBasedOnVisualOrderAndPrune(
       // Valid window; sort the tabs and add it to the list of valid windows.
       std::sort(window->tabs.begin(), window->tabs.end(),
                 &TabVisualIndexSortFunction);
-      // Add the window such that older windows appear first.
+      // Otherwise, add the window such that older windows appear first.
       if (valid_windows->empty()) {
         valid_windows->push_back(window);
       } else {
@@ -998,7 +1022,8 @@ void SessionService::AddTabsToWindows(std::map<int, SessionTab*>* tabs,
 bool SessionService::CreateTabsAndWindows(
     const std::vector<SessionCommand*>& data,
     std::map<int, SessionTab*>* tabs,
-    std::map<int, SessionWindow*>* windows) {
+    std::map<int, SessionWindow*>* windows,
+    SessionID::id_type* active_window_id) {
   // If the file is corrupt (command with wrong size, or unknown command), we
   // still return true and attempt to restore what we we can.
   VLOG(1) << "CreateTabsAndWindows";
@@ -1241,6 +1266,16 @@ bool SessionService::CreateTabsAndWindows(
         break;
       }
 
+      case kCommandSetActiveWindow: {
+        ActiveWindowPayload payload;
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
+          return true;
+        }
+        *active_window_id = payload;
+        break;
+      }
+
       default:
         VLOG(1) << "Failed reading an unknown command " << command->id();
         return true;
@@ -1387,9 +1422,7 @@ void SessionService::BuildCommandsFromBrowsers(
     // for us to get a handle to a browser that is about to be removed. If
     // the tab count is 0 or the window is NULL, the browser is about to be
     // deleted, so we ignore it.
-    AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
-    if (should_track_changes_for_browser_type(browser->type(), app_type) &&
-        browser->tab_count() &&
+    if (ShouldTrackBrowser(browser) && browser->tab_count() &&
         browser->window()) {
       BuildCommandsForBrowser(browser, commands, tab_to_available_range,
                               windows_to_track);
@@ -1414,23 +1447,25 @@ void SessionService::ScheduleReset() {
 }
 
 bool SessionService::ReplacePendingCommand(SessionCommand* command) {
-  // We only optimize page navigations, which can happen quite frequently and
-  // are expensive. If necessary, other commands could be searched for as
-  // well.
-  if (command->id() != kCommandUpdateTabNavigation)
-    return false;
-  scoped_ptr<Pickle> command_pickle(command->PayloadAsPickle());
-  PickleIterator iterator(*command_pickle);
-  SessionID::id_type command_tab_id;
-  int command_nav_index;
-  if (!command_pickle->ReadInt(&iterator, &command_tab_id) ||
-      !command_pickle->ReadInt(&iterator, &command_nav_index)) {
+  // We optimize page navigations, which can happen quite frequently and
+  // are expensive. And activation is like Highlander, there can only be one!
+  if (command->id() != kCommandUpdateTabNavigation &&
+      command->id() != kCommandSetActiveWindow) {
     return false;
   }
   for (std::vector<SessionCommand*>::reverse_iterator i =
        pending_commands().rbegin(); i != pending_commands().rend(); ++i) {
     SessionCommand* existing_command = *i;
-    if (existing_command->id() == kCommandUpdateTabNavigation) {
+    if (command->id() == kCommandUpdateTabNavigation &&
+        existing_command->id() == kCommandUpdateTabNavigation) {
+      scoped_ptr<Pickle> command_pickle(command->PayloadAsPickle());
+      PickleIterator iterator(*command_pickle);
+      SessionID::id_type command_tab_id;
+      int command_nav_index;
+      if (!command_pickle->ReadInt(&iterator, &command_tab_id) ||
+          !command_pickle->ReadInt(&iterator, &command_nav_index)) {
+        return false;
+      }
       SessionID::id_type existing_tab_id;
       int existing_nav_index;
       {
@@ -1455,6 +1490,12 @@ bool SessionService::ReplacePendingCommand(SessionCommand* command) {
         return true;
       }
       return false;
+    }
+    if (command->id() == kCommandSetActiveWindow &&
+        existing_command->id() == kCommandSetActiveWindow) {
+      *i = command;
+      delete existing_command;
+      return true;
     }
   }
   return false;
@@ -1489,7 +1530,7 @@ void SessionService::CommitPendingCloses() {
   pending_window_close_ids_.clear();
 }
 
-bool SessionService::IsOnlyOneTabLeft() {
+bool SessionService::IsOnlyOneTabLeft() const {
   if (!profile()) {
     // We're testing, always return false.
     return false;
@@ -1500,9 +1541,7 @@ bool SessionService::IsOnlyOneTabLeft() {
        i != BrowserList::end(); ++i) {
     Browser* browser = *i;
     const SessionID::id_type window_id = browser->session_id().id();
-    AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
-    if (should_track_changes_for_browser_type(browser->type(), app_type) &&
-        browser->profile() == profile() &&
+    if (ShouldTrackBrowser(browser) &&
         window_closing_ids_.find(window_id) == window_closing_ids_.end()) {
       if (++window_count > 1)
         return false;
@@ -1515,7 +1554,8 @@ bool SessionService::IsOnlyOneTabLeft() {
   return true;
 }
 
-bool SessionService::HasOpenTrackableBrowsers(const SessionID& window_id) {
+bool SessionService::HasOpenTrackableBrowsers(
+    const SessionID& window_id) const {
   if (!profile()) {
     // We're testing, always return false.
     return true;
@@ -1525,21 +1565,25 @@ bool SessionService::HasOpenTrackableBrowsers(const SessionID& window_id) {
        i != BrowserList::end(); ++i) {
     Browser* browser = *i;
     const SessionID::id_type browser_id = browser->session_id().id();
-    AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
     if (browser_id != window_id.id() &&
         window_closing_ids_.find(browser_id) == window_closing_ids_.end() &&
-        should_track_changes_for_browser_type(browser->type(), app_type) &&
-        browser->profile() == profile()) {
+        ShouldTrackBrowser(browser)) {
       return true;
     }
   }
   return false;
 }
 
-bool SessionService::ShouldTrackChangesToWindow(const SessionID& window_id) {
+bool SessionService::ShouldTrackChangesToWindow(
+    const SessionID& window_id) const {
   return windows_tracking_.find(window_id.id()) != windows_tracking_.end();
 }
 
+bool SessionService::ShouldTrackBrowser(Browser* browser) const {
+  AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
+  return browser->profile() == profile() &&
+         should_track_changes_for_browser_type(browser->type(), app_type);
+}
 
 bool SessionService::should_track_changes_for_browser_type(Browser::Type type,
                                                            AppType app_type) {
