@@ -156,7 +156,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
                     '>(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -197,7 +197,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
                     '>(source_list_newlib64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -238,7 +238,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
                     '>(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -279,7 +279,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
                     '>(source_list_newlib32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -412,7 +412,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
                     '>(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -453,7 +453,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
                     '>(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -494,7 +494,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
                     '>(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -535,7 +535,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
                     '>(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -576,7 +576,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
                     '>(source_list_glibc64)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -617,7 +617,7 @@
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
                     '>(source_list_glibc32)',
-                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.untar',
+                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -694,7 +694,7 @@
               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
               '>@(extra_deps_pnacl_newlib)',
               '>(source_list_pnacl_newlib)',
-              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.untar',
+              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.prep',
             ],
             'outputs': ['>(out_pnacl_newlib)'],
             'action': [
@@ -735,7 +735,7 @@
               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
               '>@(extra_deps_pnacl_newlib)',
               '>(source_list_pnacl_newlib)',
-              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.untar',
+              '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.prep',
             ],
             'outputs': ['>(out_pnacl_newlib)'],
             'action': [

@@ -8,12 +8,21 @@
     'build/common.gypi',
   ],
   ######################################################################
+  'variables': {
+    'disable_glibc%': 0,
+    'disable_newlib%': 0,
+    'disable_pnacl%': 0,
+    'disable_glibc_untar%': 0,
+    'disable_newlib_untar%': 0,
+    'disable_pnacl_untar%': 0,
+  },
   'targets' : [
     {
       'target_name': 'prep_toolchain',
       'type': 'none',
       'dependencies': [
         'untar_toolchains',
+        'prep_nacl_sdk',
       ],
       'conditions': [
         ['target_arch=="ia32" or target_arch=="x64"', {
@@ -30,12 +39,12 @@
       'target_name': 'untar_toolchains',
       'type': 'none',
       'variables': {
-        'disable_glibc%': 0,
-        'disable_newlib%': 0,
-        'disable_pnacl%': 0,
+        'newlib_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib',
+        'glibc_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc',
+        'pnacl_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl',
       },
       'conditions': [
-        ['disable_newlib==0', {
+        ['disable_newlib==0 and disable_newlib_untar==0', {
           'actions': [
             {
               'action_name': 'Untar newlib',
@@ -45,7 +54,7 @@
                  '<(DEPTH)/native_client/build/cygtar.py',
                  '<(DEPTH)/native_client/toolchain/.tars/naclsdk_<(OS)_x86.tgz',
               ],
-              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.untar'],
+              'outputs': ['>(newlib_dir)/stamp.untar'],
               'action': [
                 '>(python_exe)',
                 '<(DEPTH)/native_client/build/untar_toolchain.py',
@@ -58,7 +67,7 @@
             },
           ]
         }],
-        ['disable_glibc==0', {
+        ['disable_glibc==0 and disable_glibc_untar==0', {
           'actions': [
             {
               'action_name': 'Untar glibc',
@@ -68,7 +77,7 @@
                  '<(DEPTH)/native_client/build/cygtar.py',
                  '<(DEPTH)/native_client/toolchain/.tars/toolchain_<(OS)_x86.tar.bz2',
               ],
-              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.untar'],
+              'outputs': ['>(glibc_dir)/stamp.untar'],
               'action': [
                 '>(python_exe)',
                 '<(DEPTH)/native_client/build/untar_toolchain.py',
@@ -81,7 +90,7 @@
             },
           ]
         }],
-        ['disable_pnacl==0', {
+        ['disable_pnacl==0 and disable_pnacl_untar==0', {
           'actions': [
             {
               'action_name': 'Untar pnacl',
@@ -91,7 +100,7 @@
                  '<(DEPTH)/native_client/build/cygtar.py',
                  '<(DEPTH)/native_client/toolchain/.tars/naclsdk_pnacl_<(OS)_x86.tgz',
               ],
-              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.untar'],
+              'outputs': ['>(pnacl_dir)/stamp.untar'],
               'action': [
                 '>(python_exe)',
                 '<(DEPTH)/native_client/build/untar_toolchain.py',
@@ -107,90 +116,80 @@
       ]
     },
     {
-      'target_name': 'copy_headers',
+      'target_name': 'prep_nacl_sdk',
       'type': 'none',
-      'actions': [
-        {
-          'action_name': 'Install crt1.o 32',
-          'msvs_cygwin_shell': 0,
-          'description': 'Install crt1.o 32',
-          'inputs': [
-            'src/untrusted/stubs/crt1.x',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/32/crt1.o',
-          ],
-          'action': [
-            '>(python_exe)',
-            '<(DEPTH)/native_client/build/copy_sources.py',
-            'src/untrusted/stubs/crt1.x',
-            '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/32/crt1.o',
-          ],
-        },
-        {
-          'action_name': 'Install crt1.o 64',
-          'msvs_cygwin_shell': 0,
-          'description': 'Install crt1.o 64',
-          'inputs': [
-            'src/untrusted/stubs/crt1.x',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crt1.o',
-          ],
-          'action': [
-            '>(python_exe)',
-            '<(DEPTH)/native_client/build/copy_sources.py',
-            'src/untrusted/stubs/crt1.x',
-            '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/crt1.o',
-          ],
-        },
+      'dependencies': [
+        'untar_toolchains',
       ],
-      'copies': [
-        # NEWLIB copies
-        {
-          'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include/nacl',
-          # Alphabetical order in dst dir for easier verification.
-          'files': [
-            '<(DEPTH)/native_client/src/untrusted/irt/irt.h',
-            '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
-            '<(DEPTH)/native_client/src/untrusted/nacl/nacl_dyncode.h',
-            '<(DEPTH)/native_client/src/shared/imc/nacl_imc_c.h',
-            '<(DEPTH)/native_client/src/shared/imc/nacl_imc.h',
-            '<(DEPTH)/native_client/src/include/nacl/nacl_inttypes.h',
-            '<(DEPTH)/native_client/src/shared/platform/nacl_log.h',
-            '<(DEPTH)/native_client/src/shared/srpc/nacl_srpc.h',
-            '<(DEPTH)/native_client/src/shared/platform/nacl_threads.h',
-            '<(DEPTH)/native_client/src/shared/platform/refcount_base.h',
-            '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.h'
-          ],
-        },
-        {
-          'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include',
-          'files': [
-            '<(DEPTH)/native_client/src/untrusted/pthread/pthread.h',
-            '<(DEPTH)/native_client/src/untrusted/pthread/semaphore.h'
-          ],
-        },
-        # GLIBC copies
-        {
-          # Alphabetical order in dst dir for easier verification.
-          'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include/nacl',
-          'files': [
-            '<(DEPTH)/native_client/src/untrusted/irt/irt.h',
-            '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
-            '<(DEPTH)/native_client/src/shared/imc/nacl_imc.h',
-            '<(DEPTH)/native_client/src/include/nacl/nacl_inttypes.h',
-            '<(DEPTH)/native_client/src/shared/platform/nacl_log.h',
-            '<(DEPTH)/native_client/src/shared/srpc/nacl_srpc.h',
-            '<(DEPTH)/native_client/src/shared/platform/nacl_threads.h',
-            '<(DEPTH)/native_client/src/shared/platform/refcount_base.h',
-            '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.h'
-          ],
-        },
-      ],
+      'variables': {
+        'newlib_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib',
+        'glibc_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc',
+        'pnacl_dir': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl',
+      },
+      'conditions': [
+        ['disable_newlib==0', {
+          'actions': [
+            {
+              'action_name': 'Prep newlib',
+              'msvs_cygwin_shell': 0,
+              'description': 'Prep newlib',
+              'inputs': [
+                 '<(newlib_dir)/stamp.untar',
+                 '>!@pymod_do_main(prep_nacl_sdk --inputs --tool newlib)',
+              ],
+              'outputs': ['<(newlib_dir)/stamp.prep'],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/prep_nacl_sdk.py',
+                '--tool', 'newlib',
+                '--path', '<(newlib_dir)',
+              ],
+            },
+          ]
+        }],
+        ['disable_glibc==0', {
+          'actions': [
+            {
+              'action_name': 'Prep glibc',
+              'msvs_cygwin_shell': 0,
+              'description': 'Prep glibc',
+              'inputs': [
+                 '<(glibc_dir)/stamp.untar',
+                 '>!@pymod_do_main(prep_nacl_sdk --inputs --tool glibc)',
+              ],
+              'outputs': ['<(glibc_dir)/stamp.prep'],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/prep_nacl_sdk.py',
+                '--tool', 'glibc',
+                '--path', '<(glibc_dir)',
+              ],
+            },
+          ]
+        }],
+        ['disable_pnacl==0', {
+          'actions': [
+            {
+              'action_name': 'Prep pnacl',
+              'msvs_cygwin_shell': 0,
+              'description': 'Prep pnacl',
+              'inputs': [
+                 '<(pnacl_dir)/stamp.untar',
+                 '>!@pymod_do_main(prep_nacl_sdk --inputs --tool pnacl)',
+              ],
+              'outputs': ['<(pnacl_dir)/stamp.prep'],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/prep_nacl_sdk.py',
+                '--tool', 'pnacl',
+                '--path', '<(pnacl_dir)',
+              ],
+            },
+          ]
+        }],
+      ]
     },
   ],
-
   'conditions': [
     ['target_arch=="ia32" or target_arch=="x64"', {
       'targets' : [
@@ -199,7 +198,7 @@
           'type': 'none',
           'dependencies': [
             'untar_toolchains',
-            'copy_headers'
+            'prep_nacl_sdk'
           ],
           'variables': {
             'nlib_target': 'crt_init_dummy',
@@ -226,7 +225,7 @@
           'type': 'none',
           'dependencies': [
             'untar_toolchains',
-            'copy_headers'
+            'prep_nacl_sdk'
           ],
           'variables': {
             'nlib_target': 'crt_fini_dummy',
@@ -257,7 +256,7 @@
           'type': 'none',
           'dependencies': [
             'untar_toolchains',
-            'copy_headers'
+            'prep_nacl_sdk'
           ],
           'variables': {
             'nlib_target': 'crt_init_dummy',
@@ -284,7 +283,7 @@
           'type': 'none',
           'dependencies': [
             'untar_toolchains',
-            'copy_headers'
+            'prep_nacl_sdk'
           ],
           'variables': {
             'nlib_target': 'crt_fini_dummy',

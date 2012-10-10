@@ -32,7 +32,7 @@ def ErrOut(text):
 
 def MakeDir(outdir):
   if outdir and not os.path.exists(outdir):
-    # There may be a race creating this directory, so ignore failure
+    # There may be a race creating this directory, so ignore failure.
     try:
       os.makedirs(outdir)
     except OSError:
@@ -53,6 +53,14 @@ def ArgToList(opt):
     if optitem:
       outlist.append(optitem)
   return outlist
+
+
+def IsStale(ts1, ts2, rebuilt=False):
+  # If just rebuilt timestamps may be equal due to time granularity.
+  if rebuilt:
+    return ts1 < ts2
+  # If about to build, be conservative and rebuilt just in case.
+  return ts1 <= ts2
 
 
 class Builder(object):
@@ -275,16 +283,28 @@ class Builder(object):
       path = os.path.normpath(os.path.join(self.toolchain, path[1:]))
     return path
 
-  def NeedsRebuild(self, outd, out, src):
+  def NeedsRebuild(self, outd, out, src, rebuilt=False):
     if not os.path.isfile(outd):
+      if rebuilt:
+        print 'Could not find dependency file %s.' % outd
       return True
     if not os.path.isfile(out):
+      if rebuilt:
+        print 'Could not find output file %s.' % out
       return True
     out_tm = os.path.getmtime(out)
     outd_tm = os.path.getmtime(outd)
     src_tm = os.path.getmtime(src)
-    if out_tm <= src_tm or outd_tm <= src_tm:
+    if IsStale(out_tm, src_tm, rebuilt):
+      if rebuilt:
+        print 'Output %s is older than source %s.' % (out, src)
       return True
+
+    if IsStale(outd_tm, src_tm, rebuilt):
+      if rebuilt:
+        print 'Dependency file is older than source %s.' % src
+      return True
+
     # Decode emitted makefile.
     fh = open(outd, 'r')
     deps = fh.read()
@@ -298,7 +318,14 @@ class Builder(object):
     # Check if any input has changed.
     for filename in deps:
       file_tm = os.path.getmtime(filename)
-      if out_tm <= file_tm or outd_tm <= file_tm:
+      if IsStale(out_tm, file_tm, rebuilt):
+        if rebuilt:
+          print 'Dependency %s is older than output %s.' % (filename, out)
+        return True
+
+      if IsStale(outd_tm, file_tm, rebuilt):
+        if rebuilt:
+          print 'Dependency %s is older than dep file %s.' % (filename, outd)
         return True
     return False
 
@@ -342,8 +369,9 @@ class Builder(object):
     if err:
       self.CleanOutput(outd)
       ErrOut('\nFAILED with %d: %s\n\n' % (err, ' '.join(cmd_line)))
-    else:
-      assert not self.NeedsRebuild(outd, out, src)
+    elif self.NeedsRebuild(outd, out, src, True):
+      ErrOut('\nFailed to compile %s to %s with deps %s and cmdline:\t%s' %
+          (src, out, outd, ' '.join(cmd_line)))
     return out
 
   def Link(self, srcs):

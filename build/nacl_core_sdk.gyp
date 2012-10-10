@@ -27,7 +27,6 @@
         ['target_arch!="arm"', {
           'dependencies': [
             '../src/shared/imc/imc.gyp:imc_lib',
-            '../src/trusted/weak_ref/weak_ref.gyp:weak_ref_lib',
             '../src/untrusted/valgrind/valgrind.gyp:dynamic_annotations_lib',
             '../src/untrusted/valgrind/valgrind.gyp:valgrind_lib',
           ],
