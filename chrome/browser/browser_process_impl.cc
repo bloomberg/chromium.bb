@@ -97,7 +97,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/oom_priority_manager.h"
+#include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)

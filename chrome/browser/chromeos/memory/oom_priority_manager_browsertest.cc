@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/oom_priority_manager.h"
+#include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/low_memory_observer.h"
+#include "chrome/browser/chromeos/memory/low_memory_observer.h"
 
 #include <fcntl.h>
 
@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/oom_priority_manager.h"
+#include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/zygote_host_linux.h"
 

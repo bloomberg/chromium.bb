@@ -77,7 +77,7 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   UMA_HISTOGRAM_COUNTS("SadTab.Created", kind_);
 
   // These stats should use the same counting approach and bucket size used for
-  // tab discard events in chrome/browser/oom_priority_manager.cc so they can be
+  // tab discard events in chromeos::OomPriorityManager so they can be
   // directly compared.
   // TODO(jamescook): Maybe track time between sad tabs?
   switch (kind_) {
@@ -226,7 +226,7 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
     UMA_HISTOGRAM_COUNTS("SadTab.Displayed", kind_);
 
     // These stats should use the same counting approach and bucket size used
-    // for tab discard events in chrome/browser/oom_priority_manager.cc so they
+    // for tab discard events in chromeos::OomPriorityManager so they
     // can be directly compared.
     switch (kind_) {
       case chrome::SAD_TAB_KIND_CRASHED: {
