@@ -184,7 +184,7 @@ void UpdateStats(const GpuBlacklist* blacklist,
         0, max_entry_id + 1);
   } else {
     std::vector<uint32> flag_entries;
-    blacklist->GetDecisionEntries(flag_entries, disabled);
+    blacklist->GetDecisionEntries(&flag_entries, disabled);
     DCHECK_GT(flag_entries.size(), 0u);
     for (size_t i = 0; i < flag_entries.size(); ++i) {
       UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
@@ -196,7 +196,7 @@ void UpdateStats(const GpuBlacklist* blacklist,
   // us to understand the impact of an entry before enable it.
   std::vector<uint32> flag_disabled_entries;
   disabled = true;
-  blacklist->GetDecisionEntries(flag_disabled_entries, disabled);
+  blacklist->GetDecisionEntries(&flag_disabled_entries, disabled);
   for (size_t i = 0; i < flag_disabled_entries.size(); ++i) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerDisabledEntry",
         flag_disabled_entries[i], max_entry_id + 1);

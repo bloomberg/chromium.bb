@@ -72,7 +72,7 @@ class CONTENT_EXPORT GpuBlacklist {
   // Collects the active entries from the last MakeBlacklistDecision() call.
   // If disabled set to true, return entries that are disabled; otherwise,
   // return enabled entries.
-  void GetDecisionEntries(std::vector<uint32>& entry_ids,
+  void GetDecisionEntries(std::vector<uint32>* entry_ids,
                           bool disabled) const;
 
   // Returns the description and bugs from active entries from the last
@@ -84,7 +84,7 @@ class CONTENT_EXPORT GpuBlacklist {
   //    "crBugs": [1234],
   //    "webkitBugs": []
   // }
-  void GetBlacklistReasons(ListValue* problem_list) const;
+  void GetBlacklistReasons(base::ListValue* problem_list) const;
 
   // Return the largest entry id.  This is used for histogramming.
   uint32 max_entry_id() const;
@@ -101,10 +101,10 @@ class CONTENT_EXPORT GpuBlacklist {
   friend class GpuBlacklistTest;
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, ChromeVersionEntry);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, CurrentBlacklistValidation);
-  FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownField);
+  FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, DualGpuModel);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownExceptionField);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownFeature);
-  FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, DualGpuModel);
+  FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownField);
 
   enum BrowserVersionSupport {
     kSupported,
@@ -484,4 +484,3 @@ class CONTENT_EXPORT GpuBlacklist {
 };
 
 #endif  // CONTENT_BROWSER_GPU_GPU_BLACKLIST_H_
-
