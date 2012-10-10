@@ -55,3 +55,10 @@
   000000000000001b: 66 e8                                        invalid
   000000000000001d: f0 ff 90                                     invalid
   0000000000000020: 90                                           nop
+@rdfa_output:
+  1b: [0] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  errors reported by old validator but not by rdfa one:
+    0x1d - old validator recovered in the middle of the jump
+           instruction, thus second spurious error

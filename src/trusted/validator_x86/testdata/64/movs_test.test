@@ -62,3 +62,15 @@
   0000000000000024: 89 ff                                        mov %edi, %edi
   0000000000000026: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
   000000000000002a: a4                                           movsb [%rdi], [%rsi]
+@rdfa_output:
+  2a: [0] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  Zero-extending happened in the end of the bundle, so old validator
+  reported that sequence crossed bundle boundary, and RDFA validator
+  did not allow string instruction with improperly prepared %rsi.
+  
+  errors reported by old validator but not by rdfa one:
+    0x20
+  errors reported by rdfa validator but not by old one:
+    0x2a

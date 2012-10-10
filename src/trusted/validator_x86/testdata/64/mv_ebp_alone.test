@@ -29,3 +29,12 @@
   0000000000000000: 44 89 dd                                     mov %ebp, %r11d
 @vdis:
   0000000000000000: 44 89 dd                                     mov %ebp, %r11d
+@rdfa_output:
+  3: [0] improper %rbp sandboxing
+  return code: 1
+@validators_disagree:
+  Same problem reported in different ways.
+  errors reported by old validator but not by rdfa one:
+    0x0
+  errors reported by rdfa validator but not by old one:
+    0x3

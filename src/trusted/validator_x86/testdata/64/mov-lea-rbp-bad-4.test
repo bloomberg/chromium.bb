@@ -43,3 +43,10 @@
 @vdis:
   0000000000000000: 89 cd                                        mov %ebp, %ecx
   0000000000000002: 4a 8d 6c 3d 01                               lea %rbp, [%rbp+%r15*1+0x1]
+@rdfa_output:
+  2: [0] improper %rbp sandboxing
+  2: [0] error - %bpl or %bp is changed
+  return code: 1
+@validators_disagree:
+  errors reported by old validator but not by rdfa one:
+    0x0 - same error, but it's reported by RDFA differently

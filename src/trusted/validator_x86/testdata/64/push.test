@@ -33,3 +33,9 @@
   0000000000000015: 90                                           nop
   0000000000000016: 90                                           nop
   0000000000000017: 90                                           nop
+@rdfa_output:
+  f: [0] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  errors reported by old validator but not by rdfa one:
+    0x12 - old validators recovers in the middle of invalid instruction
