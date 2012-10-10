@@ -139,11 +139,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionUnloadAck(const std::string& extension_id);
   void OnExtensionGenerateUniqueID(int* unique_id);
   void OnExtensionResumeRequests(int route_id);
-#if defined(USE_TCMALLOC)
-  void OnRendererTcmalloc(const std::string& output);
-  void OnWriteTcmallocHeapProfile(const FilePath::StringType& filename,
-                                  const std::string& output);
-#endif
   void OnAllowDatabase(int render_view_id,
                        const GURL& origin_url,
                        const GURL& top_origin_url,

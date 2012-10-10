@@ -216,12 +216,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetCacheCapacities, OnSetCacheCapacities)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_ClearCache, OnClearCache)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
-#if defined(USE_TCMALLOC)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetTcmallocHeapProfiling,
-                        OnSetTcmallocHeapProfiling)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_WriteTcmallocHeapProfile,
-                        OnWriteTcmallocHeapProfile)
-#endif
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetV8HeapStats, OnGetV8HeapStats)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetCacheResourceStats,
                         OnGetCacheResourceStats)
@@ -265,40 +259,6 @@ void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
   WebCache::getResourceTypeStats(&stats);
   RenderThread::Get()->Send(new ChromeViewHostMsg_ResourceTypeStats(stats));
 }
-
-#if defined(USE_TCMALLOC)
-void ChromeRenderProcessObserver::OnSetTcmallocHeapProfiling(
-    bool profiling, const std::string& filename_prefix) {
-#if !defined(OS_WIN)
-  // TODO(stevenjb): Create MallocExtension wrappers for HeapProfile functions.
-  if (profiling)
-    HeapProfilerStart(filename_prefix.c_str());
-  else
-    HeapProfilerStop();
-#endif
-}
-
-void ChromeRenderProcessObserver::OnWriteTcmallocHeapProfile(
-    const FilePath::StringType& filename) {
-#if !defined(OS_WIN)
-  // TODO(stevenjb): Create MallocExtension wrappers for HeapProfile functions.
-  if (!IsHeapProfilerRunning())
-    return;
-  char* profile = GetHeapProfile();
-  if (!profile) {
-    LOG(WARNING) << "Unable to get heap profile.";
-    return;
-  }
-  // The render process can not write to a file, so copy the result into
-  // a string and pass it to the handler (which runs on the browser host).
-  std::string result(profile);
-  delete profile;
-  RenderThread::Get()->Send(
-      new ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK(filename, result));
-#endif
-}
-
-#endif
 
 void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
     const std::string& field_trial_name,

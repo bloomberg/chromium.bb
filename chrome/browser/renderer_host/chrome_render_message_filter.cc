@@ -112,10 +112,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_UnloadAck, OnExtensionUnloadAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ResumeRequests,
                         OnExtensionResumeRequests);
-#if defined(USE_TCMALLOC)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK,
-                        OnWriteTcmallocHeapProfile)
-#endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDOMStorage, OnAllowDOMStorage)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowFileSystem, OnAllowFileSystem)
@@ -472,15 +468,6 @@ void ChromeRenderMessageFilter::OnExtensionResumeRequests(int route_id) {
   content::ResourceDispatcherHost::Get()->ResumeBlockedRequestsForRoute(
       render_process_id_, route_id);
 }
-
-#if defined(USE_TCMALLOC)
-void ChromeRenderMessageFilter::OnWriteTcmallocHeapProfile(
-    const FilePath::StringType& filepath,
-    const std::string& output) {
-  VLOG(0) << "Writing renderer heap profile dump to: " << filepath;
-  file_util::WriteFile(FilePath(filepath), output.c_str(), output.size());
-}
-#endif
 
 void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
                                                 const GURL& origin_url,

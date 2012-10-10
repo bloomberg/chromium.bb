@@ -260,19 +260,6 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,
                      std::string /* field trial name */,
                      std::string /* group name that was assigned. */)
 
-#if defined(USE_TCMALLOC)
-// Asks the renderer to enable/disable Tcmalloc heap profiling.
-// Note: filename_prefix arg is effectively ignored since the render process
-// will be unable to write files to disk. Instead use WriteTcmallocHeapProfile
-// to write a profile file.
-IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetTcmallocHeapProfiling,
-                     bool /* enable profiling */,
-                     std::string /* filename prefix for profiles */)
-// Asks the renderer to write the Tcmalloc heap profile to a file.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_WriteTcmallocHeapProfile,
-                     FilePath::StringType /* filepath */)
-#endif
-
 // Asks the renderer to send back V8 heap stats.
 IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetV8HeapStats)
 
@@ -545,13 +532,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ChromeViewHostMsg_GetSearchProviderInstallState,
 IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_RendererHistograms,
                      int, /* sequence number of Renderer Histograms. */
                      std::vector<std::string>)
-
-#if defined USE_TCMALLOC
-// Send back tcmalloc profile to write to a file.
-IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK,
-                     FilePath::StringType  /* filepath */,
-                     std::string  /* heap profile */)
-#endif
 
 // Sends back stats about the V8 heap.
 IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_V8HeapStats,
