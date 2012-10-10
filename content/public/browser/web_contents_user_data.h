@@ -15,13 +15,13 @@ namespace content {
 // WebContents. For example:
 //
 // --- in foo_tab_helper.h ---
-// class FooTabHelper : public WebContentsUserData<FooTabHelper> {
+// class FooTabHelper : public content::WebContentsUserData<FooTabHelper> {
 //  public:
 //   virtual ~FooTabHelper();
 //   // ... more public stuff here ...
 //  private:
-//   explicit FooTabHelper(WebContents* contents);
-//   friend class WebContentsUserData<FooTabHelper>;
+//   explicit FooTabHelper(content::WebContents* contents);
+//   friend class content::WebContentsUserData<FooTabHelper>;
 //   // ... more private stuff here ...
 // }
 // --- in foo_tab_helper.cc ---
