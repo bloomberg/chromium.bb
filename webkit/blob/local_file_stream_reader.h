@@ -47,14 +47,8 @@ class BLOB_EXPORT LocalFileStreamReader : public FileStreamReader {
   // FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
-
-  // Returns the length of the file if it could successfully retrieve the
-  // file info *and* its last modification time equals to
-  // expected_modification_time_ (rv >= 0 cases).
-  // Otherwise, a negative error code is returned (rv < 0 cases).
-  // If the stream is deleted while it has an in-flight GetLength operation
-  // |callback| will not be called.
-  int GetLength(const net::Int64CompletionCallback& callback);
+  virtual int GetLength(
+      const net::Int64CompletionCallback& callback) OVERRIDE;
 
  private:
   int Open(const net::CompletionCallback& callback);

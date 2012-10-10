@@ -31,6 +31,20 @@ void ReadAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
     callback.Run(rv);
 }
 
+void GetLengthAdapter(base::WeakPtr<FileSystemFileStreamReader> reader,
+                      const net::Int64CompletionCallback& callback) {
+  if (!reader.get())
+    return;
+  int rv = reader->GetLength(callback);
+  if (rv != net::ERR_IO_PENDING)
+    callback.Run(rv);
+}
+
+void Int64CallbackAdapter(const net::Int64CompletionCallback& callback,
+                          int value) {
+  callback.Run(value);
+}
+
 }  // namespace
 
 FileSystemFileStreamReader::FileSystemFileStreamReader(
@@ -52,6 +66,24 @@ int FileSystemFileStreamReader::Read(
     const net::CompletionCallback& callback) {
   if (local_file_reader_.get())
     return local_file_reader_->Read(buf, buf_len, callback);
+  return CreateSnapshot(
+      base::Bind(&ReadAdapter, weak_factory_.GetWeakPtr(),
+                 make_scoped_refptr(buf), buf_len, callback),
+      callback);
+}
+
+int FileSystemFileStreamReader::GetLength(
+    const net::Int64CompletionCallback& callback) {
+  if (local_file_reader_.get())
+    return local_file_reader_->GetLength(callback);
+  return CreateSnapshot(
+      base::Bind(&GetLengthAdapter, weak_factory_.GetWeakPtr(), callback),
+      base::Bind(&Int64CallbackAdapter, callback));
+}
+
+int FileSystemFileStreamReader::CreateSnapshot(
+    const base::Closure& callback,
+    const net::CompletionCallback& error_callback) {
   DCHECK(!has_pending_create_snapshot_);
   base::PlatformFileError error_code;
   FileSystemOperation* operation =
@@ -63,15 +95,14 @@ int FileSystemFileStreamReader::Read(
       url_,
       base::Bind(&FileSystemFileStreamReader::DidCreateSnapshot,
                  weak_factory_.GetWeakPtr(),
-                 base::Bind(&ReadAdapter, weak_factory_.GetWeakPtr(),
-                            make_scoped_refptr(buf), buf_len, callback),
-                 callback));
+                 callback,
+                 error_callback));
   return net::ERR_IO_PENDING;
 }
 
 void FileSystemFileStreamReader::DidCreateSnapshot(
-    const base::Closure& read_closure,
-    const net::CompletionCallback& callback,
+    const base::Closure& callback,
+    const net::CompletionCallback& error_callback,
     base::PlatformFileError file_error,
     const base::PlatformFileInfo& file_info,
     const FilePath& platform_path,
@@ -81,7 +112,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
   has_pending_create_snapshot_ = false;
 
   if (file_error != base::PLATFORM_FILE_OK) {
-    callback.Run(net::PlatformFileErrorToNetError(file_error));
+    error_callback.Run(net::PlatformFileErrorToNetError(file_error));
     return;
   }
 
@@ -93,7 +124,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
           file_system_context_->task_runners()->file_task_runner(),
           platform_path, initial_offset_, base::Time()));
 
-  read_closure.Run();
+  callback.Run();
 }
 
 }  // namespace fileapi

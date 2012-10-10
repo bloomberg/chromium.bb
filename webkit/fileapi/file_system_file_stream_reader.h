@@ -38,14 +38,18 @@ class FileSystemFileStreamReader : public webkit_blob::FileStreamReader {
                              int64 initial_offset);
   virtual ~FileSystemFileStreamReader();
 
-  // FileReader override.
+  // FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
+  virtual int GetLength(
+      const net::Int64CompletionCallback& callback) OVERRIDE;
 
  private:
+  int CreateSnapshot(const base::Closure& callback,
+                     const net::CompletionCallback& error_callback);
   void DidCreateSnapshot(
-      const base::Closure& read_closure,
-      const net::CompletionCallback& callback,
+      const base::Closure& callback,
+      const net::CompletionCallback& error_callback,
       base::PlatformFileError file_error,
       const base::PlatformFileInfo& file_info,
       const FilePath& platform_path,
