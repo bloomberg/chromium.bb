@@ -2466,3 +2466,29 @@
    fun:_ZN16RenderThreadImplC1ERKSs
    fun:_ZN21WebRTCAudioDeviceTest5SetUpEv
 }
+{
+   bug_155053a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
+   fun:_ZN9HALSystem15InitializeShellEv
+   fun:_ZN9HALSystem16CheckOutInstanceEv
+   fun:AudioObjectGetPropertyDataSize
+   fun:_ZN5mediaL18GetAudioDeviceInfoEbPSt4listINS_15AudioDeviceNameESaIS1_EE
+   fun:_ZN5media15AudioManagerMac24GetAudioInputDeviceNamesEPSt4listINS_15AudioDeviceNameESaIS2_EE
+   fun:_ZN12media_stream23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
+}
+{
+   bug_155053b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
+   fun:_ZN16HALDefaultDevice22InstallServerListenersEv
+   fun:_ZN16HALDefaultDevice10InitializeEv
+   fun:_ZN9HALSystem15InitializeShellEv
+   fun:_ZN9HALSystem16CheckOutInstanceEv
+   fun:AudioObjectGetPropertyDataSize
+   fun:_ZN5mediaL18GetAudioDeviceInfoEbPSt4listINS_15AudioDeviceNameESaIS1_EE
+   fun:_ZN5media15AudioManagerMac24GetAudioInputDeviceNamesEPSt4listINS_15AudioDeviceNameESaIS2_EE
+   fun:_ZN12media_stream23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
+}
