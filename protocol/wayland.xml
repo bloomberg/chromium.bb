@@ -337,8 +337,13 @@
 	The icon surface is an optional (can be nil) surface that
 	provides an icon to be moved around with the cursor.  Initially,
 	the top-left corner of the icon surface is placed at the cursor
-	hotspot, but subsequent surface.attach request can move the
-	relative position.
+	hotspot, but subsequent wl_surface.attach request can move the
+	relative position. Attach requests must be confirmed with
+	wl_surface.commit as usual.
+
+	The current and pending input regions of the wl_surface are
+	cleared, and wl_surface.set_input_region is ignored until the
+	wl_surface is destroyed.
       </description>
       <arg name="source" type="object" interface="wl_data_source" allow-null="true"/>
       <arg name="origin" type="object" interface="wl_surface"/>
@@ -747,7 +752,9 @@
 
 	wl_surface.set_input_region changes the pending input region.
 	wl_surface.commit copies the pending region to the current region.
-	Otherwise the pending and current regions are never changed.
+	Otherwise the pending and current regions are never changed,
+	except cursor and icon surfaces are special cases, see
+	wl_pointer.set_cursor and wl_data_device.start_drag.
 
 	The initial value for input region is infinite. That means the whole
 	surface will accept input. Setting the pending input region has copy
@@ -869,11 +876,16 @@
 
 	On surface.attach requests to the pointer surface, hotspot_x
 	and hotspot_y are decremented by the x and y parameters
-	passed to the request.
+	passed to the request. Attach must be confirmed by
+	wl_surface.commit as usual.
 
 	The hotspot can also be updated by passing the current set
 	pointer surface to this request with new values for hotspot_x
 	and/or hotspot_y.
+
+	The current and pending input regions of the wl_surface are
+	cleared, and wl_surface.set_input_region is ignored until the
+	wl_surface is destroyed.
       </description>
 
       <arg name="serial" type="uint"/>
