@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "remoting/host/chromoting_host.h"
-#include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/continue_window.h"
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/local_input_monitor.h"
@@ -24,8 +23,10 @@ static const int kContinueWindowHideTimeoutMs = 60 * 1000;
 
 namespace remoting {
 
-It2MeHostUserInterface::It2MeHostUserInterface(ChromotingHostContext* context)
-    : HostUserInterface(context),
+It2MeHostUserInterface::It2MeHostUserInterface(
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : HostUserInterface(network_task_runner, ui_task_runner),
       ALLOW_THIS_IN_INITIALIZER_LIST(timer_weak_factory_(this)) {
 }
 

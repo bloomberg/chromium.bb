@@ -478,7 +478,8 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
 
   // The UserInterface object needs to be created on the UI thread.
   it2me_host_user_interface_.reset(
-      new It2MeHostUserInterface(host_context_.get()));
+      new It2MeHostUserInterface(host_context_->network_task_runner(),
+                                 host_context_->ui_task_runner()));
 
   ReadPolicyAndConnect(uid, auth_token, auth_service);
 

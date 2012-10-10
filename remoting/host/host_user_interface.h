@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/host_status_observer.h"
@@ -21,16 +22,20 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 class ChromotingHost;
-class ChromotingHostContext;
 class DisconnectWindow;
 class LocalInputMonitor;
-class SignalStrategy;
 
 class HostUserInterface : public HostStatusObserver {
  public:
-  HostUserInterface(ChromotingHostContext* context);
+  HostUserInterface(
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   virtual ~HostUserInterface();
 
+  // Start the HostUserInterface for |host|.  |disconnect_callback| will be
+  // called on |ui_task_runner| when |host| is shut down.  |host| must remain
+  // valid at least until ChromotingHost::Shutdown() completes.
+  // Start must be called from |network_task_runner_|.
   virtual void Start(ChromotingHost* host,
                      const base::Closure& disconnect_callback);
 
@@ -81,9 +86,12 @@ class HostUserInterface : public HostStatusObserver {
 
   ChromotingHost* host_;
 
-  // Host context used to make sure operations are run on the correct thread.
-  // This is owned by the ChromotingHost.
-  ChromotingHostContext* context_;
+  // Thread on which the ChromotingHost processes network events.
+  // Notifications from the host, and some calls into it, use this thread.
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+
+  // Thread on which to run the user interface.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Used to ask the host to disconnect the session.
   base::Closure disconnect_callback_;

@@ -216,7 +216,9 @@ class HostProcess
 #endif  // OS_MACOSX
 
       if (want_user_interface) {
-        host_user_interface_.reset(new HostUserInterface(context_.get()));
+        host_user_interface_.reset(
+            new HostUserInterface(context_->network_task_runner(),
+                                  context_->ui_task_runner()));
       }
 
       StartWatchingPolicy();

@@ -24,9 +24,12 @@ class ContinueWindow;
 //   IT2Me-specific handling of multiple connection attempts.
 class It2MeHostUserInterface : public HostUserInterface {
  public:
-  It2MeHostUserInterface(ChromotingHostContext* context);
+  It2MeHostUserInterface(
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   virtual ~It2MeHostUserInterface();
 
+  // HostUserInterface overrides.
   virtual void Start(ChromotingHost* host,
                      const base::Closure& disconnect_callback)  OVERRIDE;
 

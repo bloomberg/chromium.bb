@@ -132,7 +132,9 @@ class ChromotingHostTest : public testing::Test {
     disconnect_window_ = new MockDisconnectWindow();
     continue_window_ = new MockContinueWindow();
     local_input_monitor_ = new MockLocalInputMonitor();
-    it2me_host_user_interface_.reset(new It2MeHostUserInterface(&context_));
+    it2me_host_user_interface_.reset(
+        new It2MeHostUserInterface(context_.network_task_runner(),
+                                   context_.ui_task_runner()));
     it2me_host_user_interface_->StartForTest(
         host_,
         base::Bind(&ChromotingHost::Shutdown, host_, base::Closure()),
