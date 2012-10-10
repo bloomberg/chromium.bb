@@ -782,7 +782,7 @@ class Manifest(object):
       if self.manifest_include_dir is None:
         raise OSError(
             errno.ENOENT, "No manifest_include_dir given, but an include was "
-            "encountered; target=%r." % name)
+            "encountered; attrs=%r" % (attrs,))
       # Include is calculated relative to the manifest that has the include;
       # thus set the path temporarily to the dirname of the target.
       original_include_dir = self.manifest_include_dir

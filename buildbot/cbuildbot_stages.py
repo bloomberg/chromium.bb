@@ -313,7 +313,8 @@ class BootstrapStage(PatchChangesStage):
     # exceptions.
     # TODO(rcui): Do validation on other manifests if we start relying on them.
     cros_build_lib.Manifest.Cached(
-        os.path.join(checkout_dir, constants.DEFAULT_MANIFEST))
+        os.path.join(checkout_dir, constants.DEFAULT_MANIFEST),
+        manifest_include_dir=checkout_dir)
     return checkout_dir
 
   #pylint: disable=E1101
