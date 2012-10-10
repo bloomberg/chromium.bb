@@ -14,10 +14,12 @@
 
 struct libusb_device;
 struct libusb_device_handle;
+struct libusb_iso_packet_descriptor;
 struct libusb_transfer;
 
 typedef libusb_device* PlatformUsbDevice;
 typedef libusb_device_handle* PlatformUsbDeviceHandle;
+typedef libusb_iso_packet_descriptor* PlatformUsbIsoPacketDescriptor;
 typedef libusb_transfer* PlatformUsbTransferHandle;
 
 class UsbService;
@@ -35,6 +37,13 @@ enum UsbTransferStatus {
   USB_TRANSFER_DISCONNECT,
   USB_TRANSFER_OVERFLOW,
   USB_TRANSFER_LENGTH_SHORT,
+};
+
+enum UsbTransferType {
+  USB_TRANSFER_CONTROL = 0,
+  USB_TRANSFER_BULK,
+  USB_TRANSFER_INTERRUPT,
+  USB_TRANSFER_ISOCHRONOUS,
 };
 
 typedef base::Callback<void(UsbTransferStatus, scoped_refptr<net::IOBuffer>,
@@ -123,7 +132,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
     Transfer();
     ~Transfer();
 
-    bool control_transfer;
+    UsbTransferType transfer_type;
     scoped_refptr<net::IOBuffer> buffer;
     size_t length;
     UsbTransferCallback callback;
@@ -136,7 +145,7 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
   // the completion callback until the transfer finishes, whereupon it invokes
   // the callback then releases the buffer.
   void SubmitTransfer(PlatformUsbTransferHandle handle,
-                      bool control_transfer,
+                      UsbTransferType transfer_type,
                       net::IOBuffer* buffer,
                       const size_t length,
                       const UsbTransferCallback& callback);

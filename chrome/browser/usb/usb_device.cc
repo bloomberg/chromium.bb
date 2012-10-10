@@ -123,28 +123,67 @@ void UsbDevice::TransferComplete(PlatformUsbTransferHandle handle) {
   DCHECK(transfer->length >= actual_length) <<
       "data too big for our buffer (libusb failure?)";
 
-  // If the transfer is a control transfer we do not expose the control transfer
-  // setup header to the caller, this logic strips off the header (if present)
-  // before invoking the callback provided with the transfer with it.
   scoped_refptr<net::IOBuffer> buffer = transfer->buffer;
-  if (transfer->control_transfer && actual_length > 0) {
-    CHECK(transfer->length >= LIBUSB_CONTROL_SETUP_SIZE) <<
-        "buffer was not correctly set: too small for the control header";
+  switch (transfer->transfer_type) {
+    case USB_TRANSFER_CONTROL:
+      // If the transfer is a control transfer we do not expose the control
+      // setup header to the caller. This logic strips off the header if
+      // present before invoking the callback provided with the transfer.
+      if (actual_length > 0) {
+        CHECK(transfer->length >= LIBUSB_CONTROL_SETUP_SIZE) <<
+            "buffer was not correctly set: too small for the control header";
 
-    if (transfer->length >= actual_length &&
-        actual_length >= LIBUSB_CONTROL_SETUP_SIZE) {
-      // If the payload is zero bytes long, pad out the allocated buffer size to
-      // one byte so that an IOBuffer of that size can be allocated.
-      scoped_refptr<net::IOBuffer> resized_buffer = new net::IOBuffer(
-          std::max(actual_length, static_cast<size_t>(1)));
-      memcpy(resized_buffer->data(), buffer->data() + LIBUSB_CONTROL_SETUP_SIZE,
-          actual_length);
-      buffer = resized_buffer;
-    }
+        if (transfer->length >= actual_length &&
+            actual_length >= LIBUSB_CONTROL_SETUP_SIZE) {
+          // If the payload is zero bytes long, pad out the allocated buffer
+          // size to one byte so that an IOBuffer of that size can be allocated.
+          scoped_refptr<net::IOBuffer> resized_buffer = new net::IOBuffer(
+              std::max(actual_length, static_cast<size_t>(1)));
+          memcpy(resized_buffer->data(),
+                 buffer->data() + LIBUSB_CONTROL_SETUP_SIZE,
+                 actual_length);
+          buffer = resized_buffer;
+        }
+      }
+      break;
+
+    case USB_TRANSFER_ISOCHRONOUS:
+      // Isochronous replies might carry data in the different isoc packets even
+      // if the transfer actual_data value is zero. Furthermore, not all of the
+      // received packets might contain data, so we need to calculate how many
+      // data bytes we are effectively providing and pack the results.
+      if (actual_length == 0) {
+        size_t packet_buffer_start = 0;
+        for (int i = 0; i < handle->num_iso_packets; ++i) {
+          PlatformUsbIsoPacketDescriptor packet = &handle->iso_packet_desc[i];
+          if (packet->actual_length > 0) {
+            // We don't need to copy as long as all packets until now provide
+            // all the data the packet can hold.
+            if (actual_length < packet_buffer_start) {
+              CHECK(packet_buffer_start + packet->actual_length <=
+                    transfer->length);
+              memmove(buffer->data() + actual_length,
+                      buffer->data() + packet_buffer_start,
+                      packet->actual_length);
+            }
+            actual_length += packet->actual_length;
+          }
+
+          packet_buffer_start += packet->length;
+        }
+      }
+      break;
+
+    case USB_TRANSFER_BULK:
+    case USB_TRANSFER_INTERRUPT:
+      break;
+
+    default:
+      NOTREACHED() << "Invalid usb transfer type";
   }
 
   transfer->callback.Run(ConvertTransferStatus(handle->status), buffer,
-                         handle->actual_length);
+                         actual_length);
 
   transfers_.erase(handle);
   libusb_free_transfer(handle);
@@ -200,7 +239,8 @@ void UsbDevice::ControlTransfer(const TransferDirection direction,
   libusb_fill_control_transfer(transfer, handle_, reinterpret_cast<uint8*>(
       resized_buffer->data()), reinterpret_cast<libusb_transfer_cb_fn>(
           &HandleTransferCompletion), this, timeout);
-  SubmitTransfer(transfer, true, resized_buffer, resized_length, callback);
+  SubmitTransfer(transfer, USB_TRANSFER_CONTROL, resized_buffer, resized_length,
+                 callback);
 }
 
 void UsbDevice::BulkTransfer(const TransferDirection direction,
@@ -214,7 +254,7 @@ void UsbDevice::BulkTransfer(const TransferDirection direction,
       reinterpret_cast<uint8*>(buffer->data()), length,
       reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
       timeout);
-  SubmitTransfer(transfer, false, buffer, length, callback);
+  SubmitTransfer(transfer, USB_TRANSFER_BULK, buffer, length, callback);
 }
 
 void UsbDevice::InterruptTransfer(const TransferDirection direction,
@@ -228,7 +268,7 @@ void UsbDevice::InterruptTransfer(const TransferDirection direction,
       reinterpret_cast<uint8*>(buffer->data()), length,
       reinterpret_cast<libusb_transfer_cb_fn>(&HandleTransferCompletion), this,
       timeout);
-  SubmitTransfer(transfer, false, buffer, length, callback);
+  SubmitTransfer(transfer, USB_TRANSFER_INTERRUPT, buffer, length, callback);
 }
 
 void UsbDevice::IsochronousTransfer(const TransferDirection direction,
@@ -251,7 +291,7 @@ void UsbDevice::IsochronousTransfer(const TransferDirection direction,
       timeout);
   libusb_set_iso_packet_lengths(transfer, packet_length);
 
-  SubmitTransfer(transfer, false, buffer, length, callback);
+  SubmitTransfer(transfer, USB_TRANSFER_ISOCHRONOUS, buffer, length, callback);
 }
 
 void UsbDevice::CheckDevice() {
@@ -259,12 +299,12 @@ void UsbDevice::CheckDevice() {
 }
 
 void UsbDevice::SubmitTransfer(PlatformUsbTransferHandle handle,
-                               bool control_transfer,
+                               UsbTransferType transfer_type,
                                net::IOBuffer* buffer,
                                const size_t length,
                                const UsbTransferCallback& callback) {
   Transfer transfer;
-  transfer.control_transfer = control_transfer;
+  transfer.transfer_type = transfer_type;
   transfer.buffer = buffer;
   transfer.length = length;
   transfer.callback = callback;
