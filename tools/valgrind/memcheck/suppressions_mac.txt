@@ -734,8 +734,7 @@
    ...
    fun:_ZN9HALSystem15InitializeShellEv
    fun:_ZN9HALSystem16CheckOutInstanceEv
-   fun:AudioObjectGetPropertyData
-   fun:*16HasAudioHardware*
+   fun:AudioObjectGetPropertyData*
 }
 {
    bug_47949_a
