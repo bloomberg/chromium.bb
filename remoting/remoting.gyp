@@ -1534,6 +1534,7 @@
       'sources': [
         'client/audio_decode_scheduler.cc',
         'client/audio_decode_scheduler.h',
+        'client/audio_player.cc',
         'client/audio_player.h',
         'client/chromoting_client.cc',
         'client/chromoting_client.h',
@@ -1903,6 +1904,7 @@
         'base/compressor_zlib_unittest.cc',
         'base/decompressor_zlib_unittest.cc',
         'base/util_unittest.cc',
+        'client/audio_player_unittest.cc',
         'client/key_event_mapper_unittest.cc',
         'client/plugin/mac_key_event_processor_unittest.cc',
         'codec/codec_test.cc',
