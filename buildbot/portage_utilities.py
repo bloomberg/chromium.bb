@@ -14,9 +14,9 @@ import re
 import shutil
 import sys
 
-from chromite.lib import cros_build_lib
 from chromite.buildbot import constants
-from chromite.buildbot import gerrit_helper
+from chromite.lib import cros_build_lib
+from chromite.lib import gerrit
 
 _CACHE_OVERLAY = '%(build_root)s/src/third_party/portage-stable'
 _PUBLIC_OVERLAY = '%(build_root)s/src/third_party/chromiumos-overlay'
@@ -520,7 +520,7 @@ class EBuild(object):
       if len(ebuilds_for_change) == 0:
         continue
 
-      helper = gerrit_helper.GetGerritHelperForChange(change)
+      helper = gerrit.GetGerritHelperForChange(change)
       latest_sha1 = helper.GetLatestSHA1ForBranch(change.project,
                                                   change.tracking_branch)
       for ebuild in ebuilds_for_change:

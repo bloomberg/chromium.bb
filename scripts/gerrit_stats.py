@@ -6,7 +6,7 @@
 
 import optparse
 from chromite.buildbot import constants
-from chromite.buildbot import gerrit_helper
+from chromite.lib import gerrit
 import logging
 
 
@@ -18,7 +18,7 @@ def find_user(helper, username):
   try:
     helper.Query('( %s ) limit:0' % ' OR '.join(owners))
     return emails
-  except gerrit_helper.GerritException:
+  except gerrit.GerritException:
     # find the offender.
     pass
   recomposed = []
@@ -26,7 +26,7 @@ def find_user(helper, username):
     try:
       helper.Query("%s limit:0" % email)
       recomposed.append(email)
-    except gerrit_helper.GerritException:
+    except gerrit.GerritException:
       pass
   if not recomposed:
     raise Exception("no email addresses found for %r" % username)
@@ -58,7 +58,7 @@ def main(argv):
   logging.getLogger().setLevel(logging.WARNING)
   query = []
 
-  helper = gerrit_helper.GerritHelper(constants.INTERNAL_REMOTE if opts.internal
+  helper = gerrit.GerritHelper(constants.INTERNAL_REMOTE if opts.internal
                                       else constants.EXTERNAL_REMOTE)
   recomposed_args = []
   for arg in args:

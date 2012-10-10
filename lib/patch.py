@@ -4,12 +4,12 @@
 
 """Module that handles the processing of patches to the source tree."""
 
-import constants
 import logging
 import os
 import random
 import re
 
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 
 _MAXIMUM_GERRIT_NUMBER_LENGTH = 6

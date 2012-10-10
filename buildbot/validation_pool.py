@@ -18,11 +18,11 @@ from xml.dom import minidom
 
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
-from chromite.buildbot import gerrit_helper
 from chromite.buildbot import lkgm_manager
-from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
+from chromite.lib import gerrit
+from chromite.lib import patch as cros_patch
 
 _BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
 _BUILD_INT_DASHBOARD = 'http://uberchromegw.corp.google.com/i/chromeos'
@@ -89,11 +89,11 @@ def _RunCommand(cmd, dryrun):
     cros_build_lib.RunCommand(cmd, error_code_ok=True)
 
 
-class GerritHelperNotAvailable(gerrit_helper.GerritException):
+class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
 
   def __init__(self, remote=constants.EXTERNAL_REMOTE):
-    gerrit_helper.GerritException.__init__()
+    gerrit.GerritException.__init__()
     # Stringify the pool so that serialization doesn't try serializing
     # the actual HelperPool.
     self.remote = remote
@@ -133,12 +133,12 @@ class HelperPool(object):
       An appropriately configured HelperPool instance.
     """
     if cros:
-      cros = gerrit_helper.GerritHelper(constants.EXTERNAL_REMOTE)
+      cros = gerrit.GerritHelper(constants.EXTERNAL_REMOTE)
     else:
       cros = None
 
     if cros_internal:
-      cros_internal = gerrit_helper.GerritHelper(constants.INTERNAL_REMOTE)
+      cros_internal = gerrit.GerritHelper(constants.INTERNAL_REMOTE)
     else:
       cros_internal = None
 
@@ -178,8 +178,8 @@ def _PatchWrapException(functor):
   def f(self, parent, *args, **kwds):
     try:
       return functor(self, parent, *args, **kwds)
-    except gerrit_helper.GerritException, e:
-      if isinstance(e, gerrit_helper.QueryNotSpecific):
+    except gerrit.GerritException, e:
+      if isinstance(e, gerrit.QueryNotSpecific):
         e = ("%s\nSuggest you use gerrit numbers instead (prefixed with a * "
              "if it's an internal change)." % e)
       new_exc = cros_patch.PatchException(parent, e)
@@ -223,14 +223,14 @@ class PatchSeries(object):
     self._lookup_cache = cros_patch.PatchCache()
     self._change_deps_cache = {}
 
-  def GetTrackingBranchForChange(self, change, gerrit=False):
+  def GetTrackingBranchForChange(self, change, for_gerrit=False):
     """Identify the branch to work against for this change.
 
     Args:
       gerrit: If True, give the shortened form; no refs/heads, no refs/remotes.
     """
     ref = self.manifest.GetProjectsLocalRevision(change.project)
-    return cros_build_lib.StripLeadingRefs(ref) if gerrit else ref
+    return cros_build_lib.StripLeadingRefs(ref) if for_gerrit else ref
 
   def GetGitRepoForChange(self, change):
     return self.manifest.GetProjectPath(change.project, True)
@@ -1070,7 +1070,7 @@ class ValidationPool(object):
           patch = helper.GrabPatchFromGerrit(project, change, commit)
           pool.changes.append(patch)
           break
-        except gerrit_helper.QueryHasNoResults:
+        except gerrit.QueryHasNoResults:
           pass
       else:
         raise NoMatchingChangeFoundException(

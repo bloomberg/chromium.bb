@@ -24,13 +24,13 @@ from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
-from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import trybot_patch_pool
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import patch as cros_patch
 
 _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'

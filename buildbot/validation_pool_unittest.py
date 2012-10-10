@@ -21,13 +21,13 @@ import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.buildbot import cbuildbot_results as results_lib
-from chromite.buildbot import gerrit_helper
-from chromite.buildbot import patch as cros_patch
-from chromite.buildbot import patch_unittest
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gerrit
+from chromite.lib import patch as cros_patch
+from chromite.lib import patch_unittest
 
 _GetNumber = iter(itertools.count()).next
 
@@ -75,8 +75,8 @@ class base(cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
     # Supress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or the tests are bad.
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'Query')
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, '_SqlQuery')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, '_SqlQuery')
     self._patch_counter = (itertools.count(1)).next
     self.build_root = 'fakebuildroot'
 
@@ -122,11 +122,11 @@ class base(cros_test_lib.MoxTestCase):
 
   def MakeHelper(self, cros_internal=None, cros=None):
     if cros_internal:
-      cros_internal = self.mox.CreateMock(gerrit_helper.GerritHelper)
+      cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
       cros_internal.version = '2.1'
       cros_internal.remote = constants.INTERNAL_REMOTE
     if cros:
-      cros = self.mox.CreateMock(gerrit_helper.GerritHelper)
+      cros = self.mox.CreateMock(gerrit.GerritHelper)
       cros.remote = constants.EXTERNAL_REMOTE
       cros.version = '2.1'
     return validation_pool.HelperPool(cros_internal=cros_internal,
@@ -142,7 +142,7 @@ class TestPatchSeries(base):
     # All tests should set their content merging projects via
     # SetContentMergingProjects since FindContentMergingProjects
     # requires admin rights in gerrit.
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper,
+    self.mox.StubOutWithMock(gerrit.GerritHelper,
                              'FindContentMergingProjects')
 
   @staticmethod
@@ -487,7 +487,7 @@ class TestCoreLogic(base):
   validation_pool.ValidationPool."""
 
   def setUp(self):
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper,
+    self.mox.StubOutWithMock(gerrit.GerritHelper,
                              'FindContentMergingProjects')
 
   def MakePool(self, overlays=constants.PUBLIC_OVERLAYS, build_number=1,
@@ -584,7 +584,7 @@ class TestCoreLogic(base):
     master_pool = self.MakePool(dryrun=False)
     slave_pool = self.MakePool(is_master=False)
 
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'RemoveCommitReady')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, 'RemoveCommitReady')
 
     for failure in notified_patches:
       master_pool._SendNotification(
@@ -595,7 +595,7 @@ class TestCoreLogic(base):
       # thinking that the first arg isn't passed in; we suppress it to suppress
       # the pylnt bug.
       # pylint: disable=E1120
-      gerrit_helper.GerritHelper.RemoveCommitReady(failure.patch, dryrun=False)
+      gerrit.GerritHelper.RemoveCommitReady(failure.patch, dryrun=False)
 
     self.mox.ReplayAll()
     master_pool._HandleApplyFailure(notified_patches)
@@ -615,14 +615,14 @@ class TestCoreLogic(base):
     self.mox.StubOutWithMock(pool, '_SubmitChange')
     self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
 
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'IsChangeCommitted')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, 'IsChangeCommitted')
 
     pool._SubmitChange(patch1).AndReturn(None)
-    gerrit_helper.GerritHelper.IsChangeCommitted(
+    gerrit.GerritHelper.IsChangeCommitted(
         str(patch1.gerrit_number), False).AndReturn(True)
 
     pool._SubmitChange(patch2).AndReturn(None)
-    gerrit_helper.GerritHelper.IsChangeCommitted(
+    gerrit.GerritHelper.IsChangeCommitted(
         str(patch2.gerrit_number), False).InAnyOrder().AndReturn(False)
 
     pool._HandleCouldNotSubmit(patch2).InAnyOrder()
@@ -649,11 +649,11 @@ class TestCoreLogic(base):
     self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
     self.mox.StubOutWithMock(pool, '_HandleApplyFailure')
 
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'IsChangeCommitted')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, 'IsChangeCommitted')
 
     for patch in passed:
       pool._SubmitChange(patch).AndReturn(None)
-      gerrit_helper.GerritHelper.IsChangeCommitted(
+      gerrit.GerritHelper.IsChangeCommitted(
           str(patch.gerrit_number), False).AndReturn(True)
 
     pool._HandleApplyFailure(failed)
@@ -673,14 +673,14 @@ class TestCoreLogic(base):
     self.mox.StubOutWithMock(pool, '_SubmitChange')
     self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
 
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'IsChangeCommitted')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, 'IsChangeCommitted')
 
     pool._SubmitChange(patch1).AndReturn(None)
-    gerrit_helper.GerritHelper.IsChangeCommitted(
+    gerrit.GerritHelper.IsChangeCommitted(
         str(patch1.gerrit_number), False).AndReturn(True)
 
     pool._SubmitChange(patch2).AndReturn(None)
-    gerrit_helper.GerritHelper.IsChangeCommitted(
+    gerrit.GerritHelper.IsChangeCommitted(
         str(patch2.gerrit_number), False).AndReturn(True)
 
     pool._IsTreeOpen().AndReturn(True)

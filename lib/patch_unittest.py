@@ -6,21 +6,25 @@
 
 """Unittests for commands.  Needs to be run inside of chroot for mox."""
 
+import os
+import sys
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))))
+
 import itertools
 import mox
-import os
 import sys
 import copy
 import shutil
 import time
 
-import constants
-sys.path.insert(0, constants.SOURCE_ROOT)
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gerrit
 from chromite.lib import osutils
-from chromite.buildbot import patch as cros_patch
-from chromite.buildbot import gerrit_helper
+from chromite.lib import patch as cros_patch
 
 _GetNumber = iter(itertools.count()).next
 
@@ -582,7 +586,7 @@ class TestGerritPatch(TestGitRepoPatch):
     # Note we should be checking a known open one; seems rather likely
     # that'll get closed inadvertantly thus breaking the tests (not
     # an acceptable risk in the authors opinion).
-    merged, abandoned, still_open = gerrit_helper.GetGerritPatchInfo(
+    merged, abandoned, still_open = gerrit.GetGerritPatchInfo(
         [GERRIT_MERGED_CHANGEID, GERRIT_ABANDONED_CHANGEID,
          GERRIT_OPEN_CHANGEID])
     self.assertTrue(merged.IsAlreadyMerged())

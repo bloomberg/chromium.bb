@@ -41,11 +41,11 @@ import sys
 import tempfile
 
 from chromite.buildbot import constants
-from chromite.buildbot import gerrit_helper
-from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import repository
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import gerrit
+from chromite.lib import patch as cros_patch
 
 
 _USAGE = """
@@ -156,7 +156,7 @@ def main(argv):
     parser.error('Not enough arguments specified')
 
   changes = args[0:-1]
-  patches = gerrit_helper.GetGerritPatchInfo(changes)
+  patches = gerrit.GetGerritPatchInfo(changes)
   branch = args[-1]
 
   # Suppress all cros_build_lib info output unless we're running debug.

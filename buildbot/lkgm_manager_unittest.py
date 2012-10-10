@@ -19,10 +19,10 @@ if __name__ == '__main__':
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
-from chromite.buildbot import patch
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import patch
 
 
 # pylint: disable=E1120,W0212,R0904

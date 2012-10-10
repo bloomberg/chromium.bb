@@ -10,8 +10,8 @@ import logging
 import operator
 
 from chromite.buildbot import constants
-from chromite.buildbot import patch as cros_patch
 from chromite.lib import cros_build_lib
+from chromite.lib import patch as cros_patch
 
 
 class GerritException(Exception):
