@@ -559,6 +559,55 @@ static const struct wl_pointer_grab_interface
 	default_grab_button
 };
 
+static void default_grab_touch_down(struct wl_touch_grab *grab,
+		uint32_t time,
+		int touch_id,
+		wl_fixed_t sx,
+		wl_fixed_t sy)
+{
+	struct wl_touch *touch = grab->touch;
+	uint32_t serial;
+
+	if (touch->focus_resource && touch->focus) {
+		serial = wl_display_next_serial(touch->focus_resource->client->display);
+		wl_touch_send_down(touch->focus_resource, serial, time,
+				&touch->focus->resource, touch_id, sx, sy);
+	}
+}
+
+static void default_grab_touch_up(struct wl_touch_grab *grab,
+		uint32_t time,
+		int touch_id)
+{
+	struct wl_touch *touch = grab->touch;
+	uint32_t serial;
+
+	if (touch->focus_resource) {
+		serial = wl_display_next_serial(touch->focus_resource->client->display);
+		wl_touch_send_up(touch->focus_resource, serial, time, touch_id);
+	}
+}
+
+static void default_grab_touch_motion(struct wl_touch_grab *grab,
+		uint32_t time,
+		int touch_id,
+		wl_fixed_t sx,
+		wl_fixed_t sy)
+{
+	struct wl_touch *touch = grab->touch;
+
+	if (touch->focus_resource) {
+		wl_touch_send_motion(touch->focus_resource, time,
+				touch_id, sx, sy);
+	}
+}
+
+static const struct wl_touch_grab_interface default_touch_grab_interface = {
+	default_grab_touch_down,
+	default_grab_touch_up,
+	default_grab_touch_motion
+};
+
 static void
 default_grab_key(struct wl_keyboard_grab *grab,
 		 uint32_t time, uint32_t key, uint32_t state)
@@ -678,6 +727,10 @@ wl_touch_init(struct wl_touch *touch)
 	memset(touch, 0, sizeof *touch);
 	wl_list_init(&touch->resource_list);
 	touch->focus_listener.notify = lose_touch_focus;
+	touch->default_grab.interface = &default_touch_grab_interface;
+	touch->default_grab.touch = touch;
+	touch->grab = &touch->default_grab;
+	wl_signal_init(&touch->focus_signal);
 }
 
 WL_EXPORT void
@@ -900,6 +953,19 @@ wl_pointer_end_grab(struct wl_pointer *pointer)
 	interface = pointer->grab->interface;
 	interface->focus(pointer->grab, pointer->current,
 			 pointer->current_x, pointer->current_y);
+}
+
+WL_EXPORT void
+wl_touch_start_grab(struct wl_touch *touch, struct wl_touch_grab *grab)
+{
+	touch->grab = grab;
+	grab->touch = touch;
+}
+
+WL_EXPORT void
+wl_touch_end_grab(struct wl_touch *touch)
+{
+	touch->grab = &touch->default_grab;
 }
 
 static void

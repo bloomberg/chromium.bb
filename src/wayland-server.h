@@ -226,6 +226,29 @@ struct wl_keyboard_grab {
 	uint32_t key;
 };
 
+struct wl_touch_grab;
+struct wl_touch_grab_interface {
+	void (*down)(struct wl_touch_grab *grab,
+			uint32_t time,
+			int touch_id,
+			wl_fixed_t sx,
+			wl_fixed_t sy);
+	void (*up)(struct wl_touch_grab *grab,
+			uint32_t time,
+			int touch_id);
+	void (*motion)(struct wl_touch_grab *grab,
+			uint32_t time,
+			int touch_id,
+			wl_fixed_t sx,
+			wl_fixed_t sy);
+};
+
+struct wl_touch_grab {
+	const struct wl_touch_grab_interface *interface;
+	struct wl_touch *touch;
+	struct wl_surface *focus;
+};
+
 struct wl_data_offer {
 	struct wl_resource resource;
 	struct wl_data_source *source;
@@ -301,6 +324,13 @@ struct wl_touch {
 	struct wl_resource *focus_resource;
 	struct wl_listener focus_listener;
 	uint32_t focus_serial;
+	struct wl_signal focus_signal;
+
+	struct wl_touch_grab *grab;
+	struct wl_touch_grab default_grab;
+	wl_fixed_t grab_x, grab_y;
+	uint32_t grab_serial;
+	uint32_t grab_time;
 };
 
 struct wl_seat {
@@ -410,6 +440,11 @@ void
 wl_touch_init(struct wl_touch *touch);
 void
 wl_touch_release(struct wl_touch *touch);
+void
+wl_touch_start_grab(struct wl_touch *device,
+		struct wl_touch_grab *grab);
+void
+wl_touch_end_grab(struct wl_touch *touch);
 
 void
 wl_data_device_set_keyboard_focus(struct wl_seat *seat);
