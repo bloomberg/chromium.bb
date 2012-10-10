@@ -244,7 +244,7 @@ archived-pexe-translator-test() {
   # so it is not a full override and will not work if the interface
   # has changed.
   local override_flags="\
-    --pnacl-driver-set-LLC_SB=${dir}/llc-new-${arch}.nexe \
+    --pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.nexe \
     --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
   local fast_override_flags="\
     --pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.fast_trans.nexe \
