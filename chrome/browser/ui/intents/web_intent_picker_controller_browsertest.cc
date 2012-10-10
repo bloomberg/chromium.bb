@@ -25,12 +25,16 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/escape.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -202,7 +206,7 @@ class IntentsDispatcherMock : public content::WebIntentsDispatcher {
 };
 
 class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
- protected:
+ public:
   WebIntentPickerControllerBrowserTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -335,6 +339,13 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
 
     std::copy(image_data.begin(), image_data.end(),
               std::back_inserter(icon_response_));
+  }
+
+  void ClickLocationBarButton(content::WebContents* service_web_contents) {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    WebIntentPickerController* service_controller =
+        WebIntentPickerController::FromWebContents(service_web_contents);
+    service_controller->LocationBarPickerButtonClicked();
   }
 
   WebIntentPickerMock picker_;
@@ -707,4 +718,60 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   // context has changed.
   ASSERT_EQ(1, browser()->tab_count());
   EXPECT_FALSE(dispatcher.dispatched_);
+}
+
+IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
+                       ChooseAnotherService) {
+  AddWebIntentService(kAction1, kServiceURL1);
+  AddWebIntentService(kAction1, kServiceURL2);
+  AddCWSExtensionServiceEmpty(kAction1);
+
+  // Bring up the picker to get the test-installed services so we can create a
+  // default with the right defaulting fingerprint.
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType1;
+  IntentsDispatcherMock dispatcher1(intent);
+  controller_->SetIntentsDispatcher(&dispatcher1);
+  controller_->ShowDialog(kAction1, kType1);
+  picker_.Wait();
+  int64 service_hash = DigestServices();
+  SetDefaultService(kAction1, kServiceURL1.spec(), service_hash);
+
+  // Reset the picker for the real dispatch.
+  picker_.MockClose();
+  SetupMockPicker();
+
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
+      content::Source<content::WebContentsDelegate>(browser())));
+  controller_->ShowDialog(kAction1, kType1);
+  new_tab_observer.Wait();
+  content::WebContents* service_web_contents = new_tab_observer.GetTab();
+
+  EXPECT_EQ(2, picker_.num_installed_services_);
+
+  // The tab is shown immediately without needing to call OnServiceChosen.
+  ASSERT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(GURL(kServiceURL1),
+            chrome::GetActiveWebContents(browser())->GetURL());
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_CLOSING,
+      content::NotificationService::AllSources());
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&WebIntentPickerControllerBrowserTest::ClickLocationBarButton,
+                 base::Unretained(this),
+                 service_web_contents));
+  observer.Wait();
+  picker_.Wait();
+
+  // The service tab is closed and the picker is shown again
+  // on the original tab.
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(2, picker_.num_installed_services_);
+  EXPECT_EQ(0, picker_.num_inline_disposition_);
 }
