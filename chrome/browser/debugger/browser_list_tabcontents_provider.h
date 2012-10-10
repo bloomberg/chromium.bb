@@ -12,10 +12,6 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 
-namespace content {
-class WebContents;
-}
-
 class BrowserListTabContentsProvider
     : public content::DevToolsHttpHandlerDelegate {
  public:
@@ -27,6 +23,7 @@ class BrowserListTabContentsProvider
   virtual bool BundlesFrontendResources() OVERRIDE;
   virtual FilePath GetDebugFrontendDir() OVERRIDE;
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
+  virtual content::RenderViewHost* CreateNewTarget() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserListTabContentsProvider);

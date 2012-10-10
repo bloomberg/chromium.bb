@@ -127,7 +127,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     }
   }
 #endif
-  devtools_delegate_ = new ShellDevToolsDelegate(port);
+  devtools_delegate_ = new ShellDevToolsDelegate(browser_context_.get(), port);
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     Shell::CreateNewWindow(browser_context_.get(),

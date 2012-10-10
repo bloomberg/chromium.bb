@@ -70,6 +70,10 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     return "";
   }
 
+  content::RenderViewHost* CreateNewTarget() {
+    return NULL;
+  }
+
  private:
   static void PopulatePageThumbnails() {
     Profile* profile =

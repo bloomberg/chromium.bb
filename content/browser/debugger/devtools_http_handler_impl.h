@@ -18,7 +18,9 @@
 #include "net/server/http_server.h"
 
 namespace base {
+class DictionaryValue;
 class Thread;
+class Value;
 }
 
 namespace net {
@@ -68,6 +70,10 @@ class DevToolsHttpHandlerImpl
 
   void OnJsonRequestUI(int connection_id,
                        const net::HttpServerRequestInfo& info);
+  void OnNewTargetRequestUI(int connection_id,
+                            const net::HttpServerRequestInfo& info);
+  void OnCloseTargetRequestUI(int connection_id,
+                              const net::HttpServerRequestInfo& info);
   void OnThumbnailRequestUI(int connection_id,
                        const net::HttpServerRequestInfo& info);
   void OnWebSocketRequestUI(int connection_id,
@@ -81,6 +87,9 @@ class DevToolsHttpHandlerImpl
   void Send200(int connection_id,
                const std::string& data,
                const std::string& mime_type = "text/html");
+  void SendJson(int connection_id,
+                const net::HttpServerRequestInfo& info,
+                const base::Value& value);
   void Send404(int connection_id);
   void Send500(int connection_id,
                const std::string& message);
@@ -92,6 +101,11 @@ class DevToolsHttpHandlerImpl
   // Returns the front end url without the host at the beginning.
   std::string GetFrontendURLInternal(const std::string rvh_id,
                                      const std::string& host);
+
+  PageInfo CreatePageInfo(RenderViewHost* rvh);
+
+  base::DictionaryValue* SerializePageInfo(const PageInfo& page_info,
+                                           const std::string& host);
 
   // The thread used by the devtools handler to run server socket.
   scoped_ptr<base::Thread> thread_;

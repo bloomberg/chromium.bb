@@ -27,7 +27,9 @@ const char kFrontEndURL[] =
 
 namespace content {
 
-ShellDevToolsDelegate::ShellDevToolsDelegate(int port) {
+ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context,
+                                             int port)
+    : browser_context_(browser_context) {
   devtools_http_handler_ = DevToolsHttpHandler::Start(
       new net::UnixDomainSocketWithAbstractNamespaceFactory(
           kSocketName,
@@ -60,6 +62,10 @@ FilePath ShellDevToolsDelegate::GetDebugFrontendDir() {
 
 std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
   return "";
+}
+
+RenderViewHost* ShellDevToolsDelegate::CreateNewTarget() {
+  return NULL;
 }
 
 }  // namespace content

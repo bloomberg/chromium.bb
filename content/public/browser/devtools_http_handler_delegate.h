@@ -14,7 +14,7 @@ class GURL;
 
 namespace content {
 
-class WebContents;
+class RenderViewHost;
 
 class DevToolsHttpHandlerDelegate {
  public:
@@ -33,6 +33,9 @@ class DevToolsHttpHandlerDelegate {
   // Get a thumbnail for a given page. Returns non-empty string iff we have the
   // thumbnail.
   virtual std::string GetPageThumbnailData(const GURL& url) = 0;
+
+  // Creates new inspectable target and returns its render view host.
+  virtual RenderViewHost* CreateNewTarget() = 0;
 };
 
 }  // namespace content
