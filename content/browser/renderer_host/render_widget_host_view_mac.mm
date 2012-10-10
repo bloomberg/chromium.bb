@@ -1229,8 +1229,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
   // TODO(jbates) http://crbug.com/105344 This will be removed when there are no
   // plugin windows.
   if (params.window == gfx::kNullPluginWindow) {
-    NOTIMPLEMENTED();
-    AckPendingSwapBuffers();
+    if (CompositorSwapBuffers(params.surface_handle, params.surface_size))
+      AckPendingSwapBuffers();
   } else {
     // Deprecated accelerated plugin code path.
     AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);

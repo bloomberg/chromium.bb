@@ -134,6 +134,7 @@ void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params) {
   params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
+  params.surface_size = surface_->GetSize();
 #if defined(OS_MACOSX)
   params.window = handle_;
 #endif
