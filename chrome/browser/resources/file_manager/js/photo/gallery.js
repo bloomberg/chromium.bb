@@ -51,6 +51,11 @@ function Gallery(context) {
 }
 
 /**
+ * Flag to enable the mosaic view.
+ */
+Gallery.ENABLE_MOSAIC = false;
+
+/**
  * Create and initialize a Gallery object based on a context.
  *
  * @param {Object} context Gallery context.
@@ -201,12 +206,15 @@ Gallery.prototype.initDom_ = function() {
   this.prompt_ = new ImageEditor.Prompt(
       this.container_, this.displayStringFunction_);
 
-  this.modeButton_ = util.createChild(this.toolbar_, 'button mode');
-  this.modeButton_.addEventListener('click', this.toggleMode_.bind(this, null));
+  if (Gallery.ENABLE_MOSAIC) {
+    this.modeButton_ = util.createChild(this.toolbar_, 'button mode');
+    this.modeButton_.addEventListener('click',
+        this.toggleMode_.bind(this, null));
 
-  this.mosaicMode_ = new MosaicMode(content,
-      this.dataModel_, this.selectionModel_, this.metadataCache_,
-      this.toggleMode_.bind(this, null));
+    this.mosaicMode_ = new MosaicMode(content,
+        this.dataModel_, this.selectionModel_, this.metadataCache_,
+        this.toggleMode_.bind(this, null));
+  }
 
   this.slideMode_ = new SlideMode(this.container_, content,
       this.toolbar_, this.prompt_,
@@ -247,6 +255,12 @@ Gallery.prototype.initDom_ = function() {
  * @param {Array.<string>} selectedUrls Array of selected urls.
  */
 Gallery.prototype.load = function(urls, selectedUrls) {
+  if (!this.mosaicMode_ && selectedUrls.length > 1) {
+    // If the mosaic is disabled revert to the old multiple selection behavior.
+    urls = selectedUrls;  // Only show the items selected in the file list.
+    selectedUrls = selectedUrls.slice(0, 1);  // Force single selection.
+  }
+
   var items = [];
   for (var index = 0; index < urls.length; ++index) {
     items.push(new Gallery.Item(urls[index]));
@@ -266,10 +280,11 @@ Gallery.prototype.load = function(urls, selectedUrls) {
   if (this.selectionModel_.selectedIndexes.length == 0)
     this.onSelection_();
 
-  var mosaic = this.mosaicMode_.getMosaic();
-  if (selectedUrls.length != 1 ||
+  var mosaic = this.mosaicMode_ && this.mosaicMode_.getMosaic();
+  if (mosaic &&
+      (selectedUrls.length != 1 ||
       (this.context_.pageState &&
-          this.context_.pageState.gallery == 'mosaic')) {
+          this.context_.pageState.gallery == 'mosaic'))) {
     this.setCurrentMode_(this.mosaicMode_);
     mosaic.init();
     mosaic.show();
@@ -281,7 +296,7 @@ Gallery.prototype.load = function(urls, selectedUrls) {
         this.inactivityWatcher_.startActivity();
         this.inactivityWatcher_.stopActivity(Gallery.FIRST_FADE_TIMEOUT);
       }.bind(this),
-      mosaic.init.bind(mosaic));
+      mosaic ? mosaic.init.bind(mosaic) : function() {});
   }
 };
 
@@ -366,9 +381,12 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
     console.error('Invalid Gallery mode');
 
   this.currentMode_ = mode;
-  var oppositeMode =
-      mode == this.slideMode_ ? this.mosaicMode_ : this.slideMode_;
-  this.modeButton_.title = this.displayStringFunction_(oppositeMode.getName());
+  if (this.modeButton_) {
+    var oppositeMode =
+        mode == this.slideMode_ ? this.mosaicMode_ : this.slideMode_;
+    this.modeButton_.title =
+        this.displayStringFunction_(oppositeMode.getName());
+  }
   this.container_.setAttribute('mode', this.currentMode_.getName());
   this.updateSelectionAndState_();
 };
@@ -380,6 +398,9 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
  * @private
  */
 Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
+  if (!this.modeButton_)
+    return;
+
   if (this.changingMode_) // Do not re-enter while changing the mode.
     return;
 
