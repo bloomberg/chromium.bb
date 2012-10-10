@@ -54,7 +54,13 @@ from _emerge.actions import adjust_configs
 from _emerge.actions import load_emerge_config
 from _emerge.create_depgraph_params import create_depgraph_params
 from _emerge.depgraph import backtrack_depgraph
-from _emerge.main import clean_logs
+try:
+  from _emerge.main import clean_logs
+except ImportError:
+  # Older portage versions did not provide clean_logs, so stub it.
+  # We need this if running in an older chroot that hasn't yet upgraded
+  # the portage version.
+  clean_logs = lambda x: None
 from _emerge.main import emerge_main
 from _emerge.main import parse_opts
 from _emerge.Package import Package
