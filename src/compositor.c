@@ -1985,8 +1985,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	struct weston_surface *surface = NULL;
 
 	if (surface_resource)
-		surface = container_of(surface_resource->data,
-				       struct weston_surface, surface);
+		surface = surface_resource->data;
 
 	if (seat->seat.pointer->focus == NULL)
 		return;
