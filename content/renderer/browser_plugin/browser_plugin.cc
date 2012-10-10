@@ -320,6 +320,9 @@ void BrowserPlugin::UpdateRect(
 void BrowserPlugin::GuestCrashed() {
   guest_crashed_ = true;
   container_->invalidate();
+  // We won't paint the contents of the current backing store again so we might
+  // as well toss it out and save memory.
+  backing_store_.reset();
 
   if (!HasListeners(kCrashEventName))
     return;
@@ -539,8 +542,12 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
           GetSadPluginBitmap();
     // TODO(fsamuel): Do we want to paint something other than a sad plugin
     // on crash? See http://www.crbug.com/140266.
-    webkit::PaintSadPlugin(canvas, plugin_rect_, *sad_guest_);
-    return;
+    // content_shell does not have the sad plugin bitmap, so we'll paint black
+    // instead to make it clear that something went wrong.
+    if (sad_guest_) {
+      webkit::PaintSadPlugin(canvas, plugin_rect_, *sad_guest_);
+      return;
+    }
   }
   SkAutoCanvasRestore auto_restore(canvas, true);
   canvas->translate(plugin_rect_.x(), plugin_rect_.y());
@@ -550,13 +557,13 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
       SkIntToScalar(plugin_rect_.width()),
       SkIntToScalar(plugin_rect_.height()));
   canvas->clipRect(image_data_rect);
-  // Paint white in case we have nothing in our backing store or we need to
-  // show a gutter.
+  // Paint black or white in case we have nothing in our backing store or we
+  // need to show a gutter.
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(SK_ColorWHITE);
+  paint.setColor(guest_crashed_ ? SK_ColorBLACK : SK_ColorWHITE);
   canvas->drawRect(image_data_rect, paint);
-  // Stay at white if we have never set a non-empty src, or we don't yet have a
+  // Stay a solid color if we have never set a non-empty src, or we don't have a
   // backing store.
   if (!backing_store_.get() || !navigate_src_sent_)
     return;
