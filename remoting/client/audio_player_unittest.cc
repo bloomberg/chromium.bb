@@ -4,8 +4,8 @@
 
 #include "remoting/client/audio_player.h"
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/client/audio_player.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -26,13 +26,13 @@ namespace remoting {
 
 class FakeAudioPlayer : public AudioPlayer {
  public:
-  FakeAudioPlayer() {};
+  FakeAudioPlayer() {}
 
-  bool ResetAudioPlayer(AudioPacket::SamplingRate) {
+  bool ResetAudioPlayer(AudioPacket::SamplingRate) OVERRIDE {
     return true;
   };
 
-  uint32 GetSamplesPerFrame() {
+  uint32 GetSamplesPerFrame() OVERRIDE {
     return kAudioSamplesPerFrame;
   };
 };
@@ -44,7 +44,12 @@ class AudioPlayerTest : public ::testing::Test {
     buffer_.reset(new char[kAudioFrameBytes + kPaddingBytes]);
   }
 
-  virtual void TearDown() {}
+  virtual void TearDown() {
+    // Drain the samples from |audio_|.
+    while (GetNumQueuedPackets() > 0) {
+      ConsumeAudioFrame();
+    }
+  }
 
   void ConsumeAudioFrame() {
     uint8* buffer = reinterpret_cast<uint8*>(buffer_.get());
