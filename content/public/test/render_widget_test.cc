@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/render_widget_browsertest.h"
+#include "content/public/test/render_widget_test.h"
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -146,10 +146,6 @@ void RenderWidgetTest::OutputBitmapToFile(const SkBitmap& bitmap,
       file_path,
       reinterpret_cast<const char*>(bitmap_data->front()),
       bitmap_data->size()));
-}
-
-TEST_F(RenderWidgetTest, OnMsgPaintAtSize) {
-  TestResizeAndPaint();
 }
 
 }  // namespace content

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_RENDER_WIDGET_BROWSERTEST_H_
-#define CONTENT_PUBLIC_TEST_RENDER_WIDGET_BROWSERTEST_H_
+#ifndef CONTENT_PUBLIC_TEST_RENDER_WIDGET_TEST_H_
+#define CONTENT_PUBLIC_TEST_RENDER_WIDGET_TEST_H_
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -57,4 +57,4 @@ class RenderWidgetTest : public RenderViewTest {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_TEST_RENDER_WIDGET_BROWSERTEST_H_
+#endif  // CONTENT_PUBLIC_TEST_RENDER_WIDGET_TEST_H_

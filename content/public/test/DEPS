@@ -10,5 +10,6 @@ specific_include_rules = {
     "+content",
     "+media/base",
     "+third_party/iaccessible2",
+    "+ui/base/resource/resource_bundle.h",
   ],
 }
