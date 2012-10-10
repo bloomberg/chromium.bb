@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -439,6 +440,18 @@ bool CreateSentinel() {
   if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
     return false;
   return file_util::WriteFile(first_run_sentinel, "", 0) != -1;
+}
+
+std::string GetPingDelayPrefName() {
+  return base::StringPrintf("%s.%s",
+                            installer::master_preferences::kDistroDict,
+                            installer::master_preferences::kDistroPingDelay);
+}
+
+void RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(GetPingDelayPrefName().c_str(),
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 bool RemoveSentinel() {

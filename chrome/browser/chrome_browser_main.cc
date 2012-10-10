@@ -1230,9 +1230,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 
   PrefService* pref_service = profile_->GetPrefs();
-  bool is_google_homepage = pref_service &&
-      google_util::IsGoogleHomePageUrl(
-          pref_service->GetString(prefs::kHomePage));
+  bool is_google_homepage = google_util::IsGoogleHomePageUrl(
+      pref_service->GetString(prefs::kHomePage));
 
   bool is_google_in_startpages = false;
   SessionStartupPref session_startup_prefs =
@@ -1244,7 +1243,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                                             IsGoogleUrl) > 0;
   }
 
-  RLZTracker::InitRlzDelayed(is_first_run_, master_prefs_->ping_delay,
+  int ping_delay = is_first_run_ ? master_prefs_->ping_delay :
+      pref_service->GetInteger(first_run::GetPingDelayPrefName().c_str());
+  RLZTracker::InitRlzDelayed(is_first_run_, ping_delay,
                              is_google_default_search, is_google_homepage,
                              is_google_in_startpages);
 

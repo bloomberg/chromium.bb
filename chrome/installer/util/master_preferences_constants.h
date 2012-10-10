@@ -34,6 +34,8 @@ extern const char kChromeShortcutIconIndex[];
 extern const char kCreateAllShortcuts[];
 // Boolean pref that disables all logging.
 extern const char kDisableLogging[];
+// Name of the dictionary that holds the distribution values.
+extern const char kDistroDict[];
 // Boolean pref that triggers silent import of the default browser bookmarks.
 extern const char kDistroImportBookmarksPref[];
 // String pref that triggers silent import of bookmarks from the html file at

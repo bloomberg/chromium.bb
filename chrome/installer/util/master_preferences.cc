@@ -17,7 +17,6 @@
 
 namespace {
 
-const char kDistroDict[] = "distribution";
 const char kFirstRunTabs[] = "first_run_tabs";
 
 base::LazyInstance<installer::MasterPreferences> g_master_preferences =
@@ -109,7 +108,8 @@ MasterPreferences::MasterPreferences(const FilePath& prefs_path)
   } else {
     preferences_read_from_file_ = true;
     // Cache a pointer to the distribution dictionary.
-    master_dictionary_->GetDictionary(kDistroDict, &distribution_);
+    master_dictionary_->GetDictionary(
+        installer::master_preferences::kDistroDict, &distribution_);
   }
 
   InitializeProductFlags();
@@ -169,10 +169,10 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
       installer::master_preferences::kAltShortcutText },
   };
 
-  std::string name(kDistroDict);
+  std::string name(installer::master_preferences::kDistroDict);
   for (int i = 0; i < arraysize(translate_switches); ++i) {
     if (cmd_line.HasSwitch(translate_switches[i].cmd_line_switch)) {
-      name.resize(arraysize(kDistroDict) - 1);
+      name.assign(installer::master_preferences::kDistroDict);
       name.append(".").append(translate_switches[i].distribution_switch);
       master_dictionary_->SetBoolean(name, true);
     }
@@ -182,7 +182,7 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
   std::wstring str_value(cmd_line.GetSwitchValueNative(
       installer::switches::kLogFile));
   if (!str_value.empty()) {
-    name.resize(arraysize(kDistroDict) - 1);
+    name.assign(installer::master_preferences::kDistroDict);
     name.append(".").append(installer::master_preferences::kLogFile);
     master_dictionary_->SetString(name, str_value);
   }
@@ -195,14 +195,15 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
     env->GetVar(kGoogleUpdateIsMachineEnvVar, &is_machine_var);
     if (!is_machine_var.empty() && is_machine_var[0] == '1') {
       VLOG(1) << "Taking system-level from environment.";
-      name.resize(arraysize(kDistroDict) - 1);
+      name.assign(installer::master_preferences::kDistroDict);
       name.append(".").append(installer::master_preferences::kSystemLevel);
       master_dictionary_->SetBoolean(name, true);
     }
   }
 
   // Cache a pointer to the distribution dictionary. Ignore errors if any.
-  master_dictionary_->GetDictionary(kDistroDict, &distribution_);
+  master_dictionary_->GetDictionary(installer::master_preferences::kDistroDict,
+                                    &distribution_);
 
   InitializeProductFlags();
 #endif
