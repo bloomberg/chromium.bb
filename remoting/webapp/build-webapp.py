@@ -194,8 +194,6 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   # Set the correct API keys.
   apiClientId = google_api_keys.GetClientID('REMOTING')
   apiClientSecret = google_api_keys.GetClientSecret('REMOTING')
-  # TODO(jamiewalch): Get rid of the useOfficialClientId hack (crbug.com/150042)
-  oauth2UseOfficialClientId = 'true';
 
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'API_CLIENT_ID'",
@@ -203,9 +201,6 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'API_CLIENT_SECRET'",
                  "'" + apiClientSecret + "'")
-  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
-                 "OAUTH2_USE_OFFICIAL_CLIENT_ID",
-                 oauth2UseOfficialClientId)
 
   # Make the zipfile.
   createZip(zip_path, destination)

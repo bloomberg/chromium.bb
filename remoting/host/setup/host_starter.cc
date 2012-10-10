@@ -137,7 +137,6 @@ void HostStarter::OnHostRegistered() {
   scoped_ptr<base::DictionaryValue> config(new base::DictionaryValue());
   config->SetString("xmpp_login", user_email_);
   config->SetString("oauth_refresh_token", refresh_token_);
-  config->SetBoolean("oauth_use_official_client_id", true);
   config->SetString("host_id", host_id_);
   config->SetString("host_name", host_name_);
   config->SetString("private_key", key_pair_.GetAsString());

@@ -119,11 +119,6 @@ class HostProcess
   explicit HostProcess(scoped_ptr<ChromotingHostContext> context)
       : context_(context.Pass()),
         config_(FilePath()),
-#ifdef OFFICIAL_BUILD
-        oauth_use_official_client_id_(true),
-#else
-        oauth_use_official_client_id_(false),
-#endif
         allow_nat_traversal_(true),
         restarting_(false),
         shutting_down_(false),
@@ -378,13 +373,6 @@ class HostProcess
       return false;
     }
 
-    // It is okay to not have this value and we will use the default value
-    // depending on whether this is an official build or not.
-    // If the client-Id type to use is not specified we default based on
-    // the build type.
-    config_.GetBoolean(kOAuthUseOfficialClientIdConfigPath,
-                       &oauth_use_official_client_id_);
-
     if (!oauth_refresh_token_.empty()) {
       xmpp_auth_token_ = "";  // This will be set to the access token later.
       xmpp_auth_service_ = "oauth2";
@@ -523,20 +511,9 @@ class HostProcess
 
     if (!oauth_refresh_token_.empty()) {
       OAuthClientInfo client_info = {
-        kUnofficialOAuth2ClientId,
-        kUnofficialOAuth2ClientSecret
+          google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING),
+          google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING)
       };
-
-#ifdef OFFICIAL_BUILD
-      if (oauth_use_official_client_id_) {
-        OAuthClientInfo official_client_info = {
-            google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING),
-            google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING)
-        };
-
-        client_info = official_client_info;
-      }
-#endif  // OFFICIAL_BUILD
 
       scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
           new SignalingConnector::OAuthCredentials(
@@ -690,7 +667,6 @@ class HostProcess
   std::string xmpp_auth_service_;
 
   std::string oauth_refresh_token_;
-  bool oauth_use_official_client_id_;
 
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   bool allow_nat_traversal_;
