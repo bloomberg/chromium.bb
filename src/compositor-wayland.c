@@ -307,12 +307,10 @@ wayland_output_repaint(struct weston_output *output_base,
 	struct weston_compositor *ec = output->base.compositor;
 	struct wl_callback *callback;
 
-	ec->renderer->repaint_output(&output->base, damage);
-
 	callback = wl_surface_frame(output->parent.surface);
 	wl_callback_add_listener(callback, &frame_listener, output);
 
-	return;
+	ec->renderer->repaint_output(&output->base, damage);
 }
 
 static void

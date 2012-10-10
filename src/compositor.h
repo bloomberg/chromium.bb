@@ -483,6 +483,9 @@ struct weston_surface {
 
 		/* wl_surface.set_input_region */
 		pixman_region32_t input;
+
+		/* wl_surface.frame */
+		struct wl_list frame_callback_list;
 	} pending;
 
 	/*

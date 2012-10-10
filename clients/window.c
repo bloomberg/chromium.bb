@@ -2670,14 +2670,14 @@ pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 	else
 		i = wl_cursor_frame(cursor, time - input->cursor_anim_start);
 
+	if (cursor->image_count > 1) {
+		input->cursor_frame_cb =
+			wl_surface_frame(input->pointer_surface);
+		wl_callback_add_listener(input->cursor_frame_cb,
+					 &pointer_surface_listener, input);
+	}
+
 	input_set_pointer_image_index(input, i);
-
-	if (cursor->image_count == 1)
-		return;
-
-	input->cursor_frame_cb = wl_surface_frame(input->pointer_surface);
-	wl_callback_add_listener(input->cursor_frame_cb,
-				 &pointer_surface_listener, input);
 }
 
 static const struct wl_callback_listener pointer_surface_listener = {
@@ -2973,12 +2973,12 @@ idle_redraw(struct task *task, uint32_t events)
 
 	window_create_surface(window);
 	widget_redraw(window->widget);
-	window_flush(window);
 	window->redraw_needed = 0;
 	wl_list_init(&window->redraw_task.link);
 
 	window->frame_cb = wl_surface_frame(window->surface);
 	wl_callback_add_listener(window->frame_cb, &listener, window);
+	window_flush(window);
 }
 
 void

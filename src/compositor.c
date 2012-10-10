@@ -266,6 +266,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	pixman_region32_init(&surface->pending.damage);
 	pixman_region32_init(&surface->pending.opaque);
 	region_init_infinite(&surface->pending.input);
+	wl_list_init(&surface->pending.frame_callback_list);
 
 	return surface;
 }
@@ -767,6 +768,10 @@ destroy_surface(struct wl_resource *resource)
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
 
+	wl_list_for_each_safe(cb, next,
+			      &surface->pending.frame_callback_list, link)
+		wl_resource_destroy(&cb->resource);
+
 	pixman_region32_fini(&surface->pending.input);
 	pixman_region32_fini(&surface->pending.opaque);
 	pixman_region32_fini(&surface->pending.damage);
@@ -990,7 +995,6 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 		wl_callback_send_done(&cb->resource, msecs);
 		wl_resource_destroy(&cb->resource);
 	}
-	wl_list_init(&frame_callback_list);
 
 	wl_list_for_each_safe(animation, next, &output->animation_list, link) {
 		animation->frame_counter++;
@@ -1170,14 +1174,14 @@ surface_frame(struct wl_client *client,
 	      struct wl_resource *resource, uint32_t callback)
 {
 	struct weston_frame_callback *cb;
-	struct weston_surface *es = resource->data;
+	struct weston_surface *surface = resource->data;
 
 	cb = malloc(sizeof *cb);
 	if (cb == NULL) {
 		wl_resource_post_no_memory(resource);
 		return;
 	}
-		
+
 	cb->resource.object.interface = &wl_callback_interface;
 	cb->resource.object.id = callback;
 	cb->resource.destroy = destroy_frame_callback;
@@ -1185,7 +1189,7 @@ surface_frame(struct wl_client *client,
 	cb->resource.data = cb;
 
 	wl_client_add_resource(client, &cb->resource);
-	wl_list_insert(es->frame_callback_list.prev, &cb->link);
+	wl_list_insert(surface->pending.frame_callback_list.prev, &cb->link);
 }
 
 static void
@@ -1257,6 +1261,11 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 				  surface->geometry.height);
 	pixman_region32_intersect(&surface->input,
 				  &surface->input, &surface->pending.input);
+
+	/* wl_surface.frame */
+	wl_list_insert_list(&surface->frame_callback_list,
+			    &surface->pending.frame_callback_list);
+	wl_list_init(&surface->pending.frame_callback_list);
 
 	weston_surface_schedule_repaint(surface);
 }

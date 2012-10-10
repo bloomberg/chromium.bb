@@ -410,10 +410,10 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		wl_region_destroy(region);
 	}
 
-	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
-
 	window->callback = wl_surface_frame(window->surface);
 	wl_callback_add_listener(window->callback, &frame_listener, window);
+
+	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
 }
 
 static const struct wl_callback_listener frame_listener = {
