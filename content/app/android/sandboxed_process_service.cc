@@ -30,14 +30,17 @@ class SurfaceTexturePeerSandboxedImpl : public content::SurfaceTexturePeer {
   virtual ~SurfaceTexturePeerSandboxedImpl() {
   }
 
-  virtual void EstablishSurfaceTexturePeer(base::ProcessHandle pid,
-                                           SurfaceTextureTarget type,
-                                           jobject j_surface_texture,
-                                           int primary_id,
-                                           int secondary_id) {
+  virtual void EstablishSurfaceTexturePeer(
+      base::ProcessHandle pid,
+      SurfaceTextureTarget type,
+      scoped_refptr<content::SurfaceTextureBridge> surface_texture_bridge,
+      int primary_id,
+      int secondary_id) {
     JNIEnv* env = base::android::AttachCurrentThread();
     content::Java_SandboxedProcessService_establishSurfaceTexturePeer(
-        env, service_, pid, type, j_surface_texture, primary_id, secondary_id);
+        env, service_, pid, type,
+        surface_texture_bridge->j_surface_texture().obj(), primary_id,
+        secondary_id);
     CheckException(env);
   }
 

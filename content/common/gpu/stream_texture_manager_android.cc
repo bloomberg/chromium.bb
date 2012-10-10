@@ -15,7 +15,7 @@ namespace content {
 
 StreamTextureManagerAndroid::StreamTextureAndroid::StreamTextureAndroid(
     GpuChannel* channel, int service_id)
-    : surface_texture_(new SurfaceTextureBridge(service_id)),
+    : surface_texture_bridge_(new SurfaceTextureBridge(service_id)),
       has_updated_(false),
       channel_(channel) {
   memset(current_matrix_, 0, sizeof(current_matrix_));
@@ -25,12 +25,12 @@ StreamTextureManagerAndroid::StreamTextureAndroid::~StreamTextureAndroid() {
 }
 
 void StreamTextureManagerAndroid::StreamTextureAndroid::Update() {
-  surface_texture_->UpdateTexImage();
+  surface_texture_bridge_->UpdateTexImage();
   if (matrix_callback_.is_null())
     return;
 
   float mtx[16];
-  surface_texture_->GetTransformMatrix(mtx);
+  surface_texture_bridge_->GetTransformMatrix(mtx);
 
   // Only query the matrix once we have bound a valid frame.
   if (has_updated_ && memcmp(current_matrix_, mtx, sizeof(mtx)) != 0) {
@@ -111,9 +111,10 @@ void StreamTextureManagerAndroid::RegisterStreamTextureProxy(
           base::Unretained(this),
           route_id);
     stream_texture->set_matrix_changed_callback(matrix_cb);
-    stream_texture->bridge()->SetFrameAvailableCallback(frame_cb);
-    stream_texture->bridge()->SetDefaultBufferSize(initial_size.width(),
-                                                   initial_size.height());
+    stream_texture->surface_texture_bridge()->SetFrameAvailableCallback(
+        frame_cb);
+    stream_texture->surface_texture_bridge()->SetDefaultBufferSize(
+        initial_size.width(), initial_size.height());
   }
 }
 
@@ -127,7 +128,7 @@ void StreamTextureManagerAndroid::EstablishStreamTexture(
     SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
         process,
         type,
-        stream_texture->bridge()->j_surface_texture().obj(),
+        stream_texture->surface_texture_bridge(),
         primary_id,
         secondary_id);
   }

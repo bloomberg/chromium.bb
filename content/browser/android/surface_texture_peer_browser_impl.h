@@ -26,7 +26,7 @@ class SurfaceTexturePeerBrowserImpl : public SurfaceTexturePeer {
   virtual void EstablishSurfaceTexturePeer(
       base::ProcessHandle render_process_handle,
       SurfaceTextureTarget type,
-      jobject j_surface_texture,
+      scoped_refptr<SurfaceTextureBridge> surface_texture_bridge,
       int render_view_id,
       int player_id) OVERRIDE;
 

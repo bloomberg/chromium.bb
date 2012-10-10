@@ -5,9 +5,8 @@
 #ifndef CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
 #define CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
 
-#include <jni.h>
-
 #include "base/process.h"
+#include "content/common/android/surface_texture_bridge.h"
 
 namespace content {
 
@@ -26,11 +25,12 @@ class SurfaceTexturePeer {
 
   // Establish the producer end for the given surface texture in another
   // process.
-  virtual void EstablishSurfaceTexturePeer(base::ProcessHandle pid,
-                                           SurfaceTextureTarget type,
-                                           jobject j_surface_texture,
-                                           int primary_id,
-                                           int secondary_id) = 0;
+  virtual void EstablishSurfaceTexturePeer(
+      base::ProcessHandle pid,
+      SurfaceTextureTarget type,
+      scoped_refptr<SurfaceTextureBridge> surface_texture_bridge,
+      int primary_id,
+      int secondary_id) = 0;
 
  protected:
   SurfaceTexturePeer();
