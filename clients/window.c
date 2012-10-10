@@ -837,6 +837,13 @@ window_attach_surface(struct window *window)
 		window->opaque_region = NULL;
 	}
 
+	if (window->input_region) {
+		wl_surface_set_input_region(window->surface,
+					    window->input_region);
+		wl_region_destroy(window->input_region);
+		window->input_region = NULL;
+	}
+
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_EGL
 	case WINDOW_BUFFER_TYPE_EGL_WINDOW:
@@ -866,13 +873,6 @@ window_attach_surface(struct window *window)
 		break;
 	default:
 		return;
-	}
-
-	if (window->input_region) {
-		wl_surface_set_input_region(window->surface,
-					    window->input_region);
-		wl_region_destroy(window->input_region);
-		window->input_region = NULL;
 	}
 }
 

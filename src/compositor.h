@@ -480,6 +480,9 @@ struct weston_surface {
 
 		/* wl_surface.set_opaque_region */
 		pixman_region32_t opaque;
+
+		/* wl_surface.set_input_region */
+		pixman_region32_t input;
 	} pending;
 
 	/*

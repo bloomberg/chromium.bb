@@ -203,29 +203,18 @@ surface_handle_pending_buffer_destroy(struct wl_listener *listener, void *data)
 	surface->pending.buffer = NULL;
 }
 
-static const pixman_region32_data_t undef_region_data;
-
-static void
-undef_region(pixman_region32_t *region)
-{
-	if (region->data != &undef_region_data)
-		pixman_region32_fini(region);
-	region->data = (pixman_region32_data_t *) &undef_region_data;
-}
-
-static int
-region_is_undefined(pixman_region32_t *region)
-{
-	return region->data == &undef_region_data;
-}
-
 static void
 empty_region(pixman_region32_t *region)
 {
-	if (!region_is_undefined(region))
-		pixman_region32_fini(region);
-
+	pixman_region32_fini(region);
 	pixman_region32_init(region);
+}
+
+static void
+region_init_infinite(pixman_region32_t *region)
+{
+	pixman_region32_init_rect(region, INT32_MIN, INT32_MIN,
+				  UINT32_MAX, UINT32_MAX);
 }
 
 WL_EXPORT struct weston_surface *
@@ -258,7 +247,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
 	pixman_region32_init(&surface->clip);
-	undef_region(&surface->input);
+	pixman_region32_init(&surface->input);
 	pixman_region32_init(&surface->transform.opaque);
 	wl_list_init(&surface->frame_callback_list);
 
@@ -276,6 +265,7 @@ weston_surface_create(struct weston_compositor *compositor)
 		surface_handle_pending_buffer_destroy;
 	pixman_region32_init(&surface->pending.damage);
 	pixman_region32_init(&surface->pending.opaque);
+	region_init_infinite(&surface->pending.input);
 
 	return surface;
 }
@@ -530,11 +520,6 @@ weston_surface_update_transform(struct weston_surface *surface)
 	pixman_region32_fini(&surface->transform.opaque);
 	pixman_region32_init(&surface->transform.opaque);
 
-	if (region_is_undefined(&surface->input))
-		pixman_region32_init_rect(&surface->input, 0, 0, 
-					  surface->geometry.width,
-					  surface->geometry.height);
-
 	/* transform.position is always in transformation_list */
 	if (surface->geometry.transformation_list.next ==
 	    &surface->transform.position.link &&
@@ -782,6 +767,7 @@ destroy_surface(struct wl_resource *resource)
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
 
+	pixman_region32_fini(&surface->pending.input);
 	pixman_region32_fini(&surface->pending.opaque);
 	pixman_region32_fini(&surface->pending.damage);
 
@@ -797,8 +783,7 @@ destroy_surface(struct wl_resource *resource)
 	pixman_region32_fini(&surface->damage);
 	pixman_region32_fini(&surface->opaque);
 	pixman_region32_fini(&surface->clip);
-	if (!region_is_undefined(&surface->input))
-		pixman_region32_fini(&surface->input);
+	pixman_region32_fini(&surface->input);
 
 	wl_list_for_each_safe(cb, next, &surface->frame_callback_list, link)
 		wl_resource_destroy(&cb->resource);
@@ -827,13 +812,8 @@ weston_surface_attach(struct weston_surface *surface, struct wl_buffer *buffer)
 
 	if (buffer) {
 		buffer->busy_count++;
-		wl_signal_add(&buffer->resource.destroy_signal, 
+		wl_signal_add(&buffer->resource.destroy_signal,
 			      &surface->buffer_destroy_listener);
-
-		if (surface->geometry.width != buffer->width ||
-		    surface->geometry.height != buffer->height) {
-			undef_region(&surface->input);
-		}
 	} else {
 		if (weston_surface_is_mapped(surface))
 			weston_surface_unmap(surface);
@@ -1235,18 +1215,12 @@ surface_set_input_region(struct wl_client *client,
 
 	if (region_resource) {
 		region = region_resource->data;
-		pixman_region32_init_rect(&surface->input, 0, 0,
-					  surface->geometry.width,
-					  surface->geometry.height);
-		pixman_region32_intersect(&surface->input,
-					  &surface->input, &region->region);
+		pixman_region32_copy(&surface->pending.input,
+				     &region->region);
 	} else {
-		pixman_region32_init_rect(&surface->input, 0, 0,
-					  surface->geometry.width,
-					  surface->geometry.height);
+		pixman_region32_fini(&surface->pending.input);
+		region_init_infinite(&surface->pending.input);
 	}
-
-	weston_surface_schedule_repaint(surface);
 }
 
 static void
@@ -1266,7 +1240,6 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	pixman_region32_union(&surface->damage, &surface->damage,
 			      &surface->pending.damage);
 	empty_region(&surface->pending.damage);
-	weston_surface_schedule_repaint(surface);
 
 	/* wl_surface.set_opaque_region */
 	pixman_region32_fini(&surface->opaque);
@@ -1276,6 +1249,16 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	pixman_region32_intersect(&surface->opaque,
 				  &surface->opaque, &surface->pending.opaque);
 	surface->geometry.dirty = 1;
+
+	/* wl_surface.set_input_region */
+	pixman_region32_fini(&surface->input);
+	pixman_region32_init_rect(&surface->input, 0, 0,
+				  surface->geometry.width,
+				  surface->geometry.height);
+	pixman_region32_intersect(&surface->input,
+				  &surface->input, &surface->pending.input);
+
+	weston_surface_schedule_repaint(surface);
 }
 
 static const struct wl_surface_interface surface_interface = {
@@ -1972,7 +1955,7 @@ pointer_cursor_surface_configure(struct weston_surface *es,
 	weston_surface_configure(seat->sprite, x, y,
 				 es->buffer->width, es->buffer->height);
 
-	empty_region(&es->input);
+	empty_region(&es->pending.input);
 
 	if (!weston_surface_is_mapped(es)) {
 		wl_list_insert(&es->compositor->cursor_layer.surface_list,
@@ -2408,6 +2391,8 @@ weston_seat_release(struct weston_seat *seat)
 static void
 drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
+	empty_region(&es->pending.input);
+
 	weston_surface_configure(es,
 				 es->geometry.x + sx, es->geometry.y + sy,
 				 es->buffer->width, es->buffer->height);
@@ -2444,7 +2429,7 @@ static void
 device_release_drag_surface(struct weston_seat *seat)
 {
 	seat->drag_surface->configure = NULL;
-	undef_region(&seat->drag_surface->input);
+	empty_region(&seat->drag_surface->pending.input);
 	wl_list_remove(&seat->drag_surface_destroy_listener.link);
 	seat->drag_surface = NULL;
 }
@@ -2499,11 +2484,6 @@ weston_seat_update_drag_surface(struct weston_seat *seat,
 	/* the client may not have attached a buffer to the drag surface
 	 * when we setup it up, so check if map is needed on every update */
 	device_map_drag_surface(seat);
-
-	/* the client may have attached a buffer with a different size to
-	 * the drag surface, causing the input region to be reset */
-	if (region_is_undefined(&seat->drag_surface->input))
-		empty_region(&seat->drag_surface->input);
 
 	if (!dx && !dy)
 		return;
