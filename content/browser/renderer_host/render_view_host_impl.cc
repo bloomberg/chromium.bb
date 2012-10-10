@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -170,6 +171,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       run_modal_opener_id_(MSG_ROUTING_NONE),
       is_waiting_for_beforeunload_ack_(false),
       is_waiting_for_unload_ack_(false),
+      has_timed_out_on_unload_(false),
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
@@ -448,12 +450,19 @@ void RenderViewHostImpl::OnSwapOutACK(bool timed_out) {
   decrement_in_flight_event_count();
   StopHangMonitorTimeout();
   is_waiting_for_unload_ack_ = false;
+  has_timed_out_on_unload_ = timed_out;
   delegate_->SwappedOut(this);
 }
 
 void RenderViewHostImpl::WasSwappedOut() {
   // Don't bother reporting hung state anymore.
   StopHangMonitorTimeout();
+
+  // If we have timed out on running the unload handler, we consider
+  // the process hung and we should terminate it if there are no other tabs
+  // using the process. If there are other views using this process, the
+  // unresponsive renderer timeout will catch it.
+  bool hung = has_timed_out_on_unload_;
 
   // Now that we're no longer the active RVH in the tab, start filtering out
   // most IPC messages.  Usually the renderer will have stopped sending
@@ -462,6 +471,44 @@ void RenderViewHostImpl::WasSwappedOut() {
   // We filter them out, as long as that won't cause problems (e.g., we
   // still allow synchronous messages through).
   SetSwappedOut(true);
+
+  // If we are not running the renderer in process and no other tab is using
+  // the hung process, consider it eligible to be killed, assuming it is a real
+  // process (unit tests don't have real processes).
+  if (hung) {
+    base::ProcessHandle process_handle = GetProcess()->GetHandle();
+    int views = 0;
+
+    // Count the number of widget hosts for the process, which is equivalent to
+    // views using the process as of this writing.
+    content::RenderProcessHost::RenderWidgetHostsIterator iter(
+        GetProcess()->GetRenderWidgetHostsIterator());
+    for (; !iter.IsAtEnd(); iter.Advance())
+      ++views;
+
+    if (!content::RenderProcessHost::run_renderer_in_process() &&
+        process_handle && views <= 1) {
+      // The process can safely be terminated, only if WebContents sets
+      // SuddenTerminationAllowed, which indicates that the timer has expired.
+      // This is not the case if we load data URLs or about:blank. The reason
+      // is that those have no network requests and this code is hit without
+      // setting the unresponsiveness timer. This allows a corner case where a
+      // navigation to a data URL will leave a process running, if the
+      // beforeunload handler completes fine, but the unload handler hangs.
+      // At this time, the complexity to solve this edge case is not worthwhile.
+      if (SuddenTerminationAllowed()) {
+        // We should kill the process, but for now, just log the data so we can
+        // diagnose the kill rate and investigate if separate timer is needed.
+        // http://crbug.com/104346.
+
+        // Log a histogram point to help us diagnose how many of those kills
+        // we have performed. 1 is the enum value for RendererType Normal for
+        // the histogram.
+        UMA_HISTOGRAM_PERCENTAGE(
+            "BrowserRenderProcessHost.ChildKillsUnresponsive", 1);
+      }
+    }
+  }
 
   // Inform the renderer that it can exit if no one else is using it.
   Send(new ViewMsg_WasSwappedOut(GetRoutingID()));
@@ -1963,6 +2010,7 @@ void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
   // can cause navigations to be ignored in OnMsgNavigate.
   is_waiting_for_beforeunload_ack_ = false;
   is_waiting_for_unload_ack_ = false;
+  has_timed_out_on_unload_ = false;
 }
 
 void RenderViewHostImpl::ClearPowerSaveBlockers() {

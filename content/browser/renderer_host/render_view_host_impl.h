@@ -649,6 +649,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // is_waiting_for_beforeunload_ack_, unload_ack_is_for_cross_site_transition_.
   bool is_waiting_for_unload_ack_;
 
+  // Set to true when waiting for ViewHostMsg_SwapOut_ACK has timed out.
+  bool has_timed_out_on_unload_;
+
   // Valid only when is_waiting_for_beforeunload_ack_ or
   // is_waiting_for_unload_ack_ is true.  This tells us if the unload request
   // is for closing the entire tab ( = false), or only this RenderViewHost in
