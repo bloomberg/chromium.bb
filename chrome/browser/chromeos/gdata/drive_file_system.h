@@ -38,6 +38,10 @@ class DriveWebAppsRegistryInterface;
 class GDataWapiFeedLoader;
 struct LoadFeedParams;
 
+namespace file_system {
+class MoveOperation;
+}
+
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
                         public GDataWapiFeedLoaderObserver,
@@ -403,26 +407,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                const FilePath::StringType& new_name,
                                const FileOperationCallback& callback);
 
-  // Renames a file or directory at |file_path| to |new_name| in the same
-  // directory. |callback| will receive the new file path if the operation is
-  // successful. If the new name already exists in the same directory, the file
-  // name is uniquified by adding a parenthesized serial number like
-  // "foo (2).txt"
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void Rename(const FilePath& file_path,
-              const FilePath::StringType& new_name,
-              const FileMoveCallback& callback);
-
-  // Part of Rename(). Called after GetEntryInfoByPath() is complete.
-  // |callback| must not be null.
-  void RenameAfterGetEntryInfo(const FilePath& file_path,
-                               const FilePath::StringType& new_name,
-                               const FileMoveCallback& callback,
-                               DriveFileError error,
-                               scoped_ptr<DriveEntryProto> entry_proto);
-
   // Moves a file or directory at |file_path| in the root directory to
   // another directory at |dir_path|. This function does nothing if
   // |dir_path| points to the root directory.
@@ -439,28 +423,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> result);
-
-  // Part of RemoveEntryFromNonRootDirectory(). Called after
-  // GetEntryInfoPairByPaths() is complete. |callback| must not be null.
-  void RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
-    const FileMoveCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result);
-
-  // Removes a file or directory at |file_path| from the current directory if
-  // it's not in the root directory. This essentially moves an entry to the
-  // root directory on the server side.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void RemoveEntryFromNonRootDirectory(const FileMoveCallback& callback,
-                                       DriveFileError error,
-                                       const FilePath& file_path);
-
-  // A pass-through callback used for bridging from
-  // FileMoveCallback to FileOperationCallback.
-  void OnFilePathUpdated(const FileOperationCallback& cllback,
-                         DriveFileError error,
-                         const FilePath& file_path);
 
   // Invoked upon completion of MarkDirtyInCache initiated by OpenFile. Invokes
   // |callback| with |cache_file_path|, which is the path of the cache file
@@ -527,15 +489,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                const std::string& resource_id,
                                const std::string& md5);
 
-  // Callback for handling resource rename attempt. Renames a file or
-  // directory at |file_path| on the client side.
-  // |callback| must not be null.
-  void RenameEntryLocally(const FilePath& file_path,
-                          const FilePath::StringType& new_name,
-                          const FileMoveCallback& callback,
-                          GDataErrorCode status,
-                          const GURL& document_url);
-
   // Moves entry specified by |file_path| to the directory specified by
   // |dir_path| and calls |callback| asynchronously.
   // |callback| must not be null.
@@ -544,14 +497,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                             const FileMoveCallback& callback,
                             GDataErrorCode status,
                             const GURL& document_url);
-
-  // Callback when an entry is moved to another directory on the client side.
-  // Notifies the directory change and runs |callback|.
-  // |callback| must not be null.
-  void NotifyAndRunFileMoveCallback(
-      const FileMoveCallback& callback,
-      DriveFileError error,
-      const FilePath& moved_file_path);
 
   // Callback when an entry is moved to another directory on the client side.
   // Notifies the directory change and runs |callback|.
@@ -848,13 +793,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> result);
 
-  // Part of MoveOnUIThread(). Called after GetEntryInfoPairByPaths() is
-  // complete. |callback| must not be null.
-  void MoveOnUIThreadAfterGetEntryInfoPair(
-    const FilePath& dest_file_path,
-    const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result);
-
   // Part of RequestDirectoryRefreshOnUIThread(). Called after
   // GetEntryInfoByPath() is complete.
   void RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
@@ -928,6 +866,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
+  scoped_ptr<file_system::MoveOperation> move_operation_;
   scoped_ptr<DriveFunctionRemove> remove_function_;
 
   scoped_ptr<DriveScheduler> scheduler_;

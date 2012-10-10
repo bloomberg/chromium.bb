@@ -283,6 +283,8 @@
         'browser/chromeos/gdata/drive_uploader.h',
         'browser/chromeos/gdata/drive_webapps_registry.cc',
         'browser/chromeos/gdata/drive_webapps_registry.h',
+        'browser/chromeos/gdata/file_system/move_operation.cc',
+        'browser/chromeos/gdata/file_system/move_operation.h',
         'browser/chromeos/gdata/file_write_helper.cc',
         'browser/chromeos/gdata/file_write_helper.h',
         'browser/chromeos/gdata/gdata_contacts_service.cc',

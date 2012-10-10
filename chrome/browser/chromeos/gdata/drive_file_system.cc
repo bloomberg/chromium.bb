@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/gdata/drive_scheduler.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_uploader.h"
+#include "chrome/browser/chromeos/gdata/file_system/move_operation.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -452,6 +453,8 @@ DriveFileSystem::DriveFileSystem(
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
+      move_operation_(new file_system::MoveOperation(
+          drive_service, ALLOW_THIS_IN_INITIALIZER_LIST(this), cache_)),
       remove_function_(new DriveFunctionRemove(
           drive_service, ALLOW_THIS_IN_INITIALIZER_LIST(this), cache_)),
       scheduler_(new DriveScheduler(profile, remove_function_.get())),
@@ -995,67 +998,6 @@ void DriveFileSystem::CopyDocumentToDirectory(
                  callback));
 }
 
-void DriveFileSystem::Rename(const FilePath& file_path,
-                             const FilePath::StringType& new_name,
-                             const FileMoveCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // It is a no-op if the file is renamed to the same name.
-  if (file_path.BaseName().value() == new_name) {
-    callback.Run(DRIVE_FILE_OK, file_path);
-    return;
-  }
-
-  // Get the edit URL of an entry at |file_path|.
-  resource_metadata_->GetEntryInfoByPath(
-      file_path,
-      base::Bind(
-          &DriveFileSystem::RenameAfterGetEntryInfo,
-          ui_weak_ptr_,
-          file_path,
-          new_name,
-          callback));
-}
-
-void DriveFileSystem::RenameAfterGetEntryInfo(
-    const FilePath& file_path,
-    const FilePath::StringType& new_name,
-    const FileMoveCallback& callback,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error, file_path);
-    return;
-  }
-  DCHECK(entry_proto.get());
-
-  // Drop the .g<something> extension from |new_name| if the file being
-  // renamed is a hosted document and |new_name| has the same .g<something>
-  // extension as the file.
-  FilePath::StringType file_name = new_name;
-  if (entry_proto->has_file_specific_info() &&
-      entry_proto->file_specific_info().is_hosted_document()) {
-    FilePath new_file(file_name);
-    if (new_file.Extension() ==
-        entry_proto->file_specific_info().document_extension()) {
-      file_name = new_file.RemoveExtension().value();
-    }
-  }
-
-  drive_service_->RenameResource(
-      GURL(entry_proto->edit_url()),
-      file_name,
-      base::Bind(&DriveFileSystem::RenameEntryLocally,
-                 ui_weak_ptr_,
-                 file_path,
-                 file_name,
-                 callback));
-}
-
 void DriveFileSystem::Move(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
                            const FileOperationCallback& callback) {
@@ -1073,77 +1015,7 @@ void DriveFileSystem::Move(const FilePath& src_file_path,
 void DriveFileSystem::MoveOnUIThread(const FilePath& src_file_path,
                                      const FilePath& dest_file_path,
                                      const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  resource_metadata_->GetEntryInfoPairByPaths(
-      src_file_path,
-      dest_file_path.DirName(),
-      base::Bind(&DriveFileSystem::MoveOnUIThreadAfterGetEntryInfoPair,
-                 ui_weak_ptr_,
-                 dest_file_path,
-                 callback));
-}
-
-void DriveFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
-    const FilePath& dest_file_path,
-    const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(result.get());
-
-  if (result->first.error != DRIVE_FILE_OK) {
-    callback.Run(result->first.error);
-    return;
-  } else if (result->second.error != DRIVE_FILE_OK) {
-    callback.Run(result->second.error);
-    return;
-  }
-
-  scoped_ptr<DriveEntryProto> dest_parent_proto = result->second.proto.Pass();
-  if (!dest_parent_proto->file_info().is_directory()) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  }
-
-  // If the file/directory is moved to the same directory, just rename it.
-  const FilePath& src_file_path = result->first.path;
-  const FilePath& dest_parent_path = result->second.path;
-  DCHECK_EQ(dest_parent_path.value(), dest_file_path.DirName().value());
-  if (src_file_path.DirName() == dest_parent_path) {
-    FileMoveCallback final_file_path_update_callback =
-        base::Bind(&DriveFileSystem::OnFilePathUpdated,
-                   ui_weak_ptr_,
-                   callback);
-
-    Rename(src_file_path, dest_file_path.BaseName().value(),
-           final_file_path_update_callback);
-    return;
-  }
-
-  // Otherwise, the move operation involves three steps:
-  // 1. Renames the file at |src_file_path| to basename(|dest_file_path|)
-  //    within the same directory. The rename operation is a no-op if
-  //    basename(|src_file_path|) equals to basename(|dest_file_path|).
-  // 2. Removes the file from its parent directory (the file is not deleted),
-  //    which effectively moves the file to the root directory.
-  // 3. Adds the file to the parent directory of |dest_file_path|, which
-  //    effectively moves the file from the root directory to the parent
-  //    directory of |dest_file_path|.
-  const FileMoveCallback add_file_to_directory_callback =
-      base::Bind(&DriveFileSystem::MoveEntryFromRootDirectory,
-                 ui_weak_ptr_,
-                 dest_parent_path,
-                 callback);
-
-  const FileMoveCallback remove_file_from_directory_callback =
-      base::Bind(&DriveFileSystem::RemoveEntryFromNonRootDirectory,
-                 ui_weak_ptr_,
-                 add_file_to_directory_callback);
-
-  Rename(src_file_path, dest_file_path.BaseName().value(),
-         remove_file_from_directory_callback);
+  move_operation_->Move(src_file_path, dest_file_path, callback);
 }
 
 void DriveFileSystem::MoveEntryFromRootDirectory(
@@ -1204,67 +1076,6 @@ void DriveFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
                  file_path,
                  dir_path,
                  base::Bind(&DriveFileSystem::NotifyAndRunFileOperationCallback,
-                            ui_weak_ptr_,
-                            callback)));
-}
-
-void DriveFileSystem::RemoveEntryFromNonRootDirectory(
-    const FileMoveCallback& callback,
-    DriveFileError error,
-    const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  const FilePath dir_path = file_path.DirName();
-  // Return if there is an error or |dir_path| is the root directory.
-  if (error != DRIVE_FILE_OK || dir_path == FilePath(kDriveRootDirectory)) {
-    callback.Run(error, file_path);
-    return;
-  }
-
-  resource_metadata_->GetEntryInfoPairByPaths(
-      file_path,
-      dir_path,
-      base::Bind(
-          &DriveFileSystem::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair,
-          ui_weak_ptr_,
-          callback));
-}
-
-void DriveFileSystem::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
-    const FileMoveCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(result.get());
-
-  const FilePath& file_path = result->first.path;
-  if (result->first.error != DRIVE_FILE_OK) {
-    callback.Run(result->first.error, file_path);
-    return;
-  } else if (result->second.error != DRIVE_FILE_OK) {
-    callback.Run(result->second.error, file_path);
-    return;
-  }
-
-  scoped_ptr<DriveEntryProto> entry_proto = result->first.proto.Pass();
-  scoped_ptr<DriveEntryProto> dir_proto = result->second.proto.Pass();
-
-  if (!dir_proto->file_info().is_directory()) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, file_path);
-    return;
-  }
-
-  // The entry is moved to the root directory.
-  drive_service_->RemoveResourceFromDirectory(
-      GURL(dir_proto->content_url()),
-      GURL(entry_proto->edit_url()),
-      entry_proto->resource_id(),
-      base::Bind(&DriveFileSystem::MoveEntryToDirectory,
-                 ui_weak_ptr_,
-                 file_path,
-                 resource_metadata_->root()->GetFilePath(),
-                 base::Bind(&DriveFileSystem::NotifyAndRunFileMoveCallback,
                             ui_weak_ptr_,
                             callback)));
 }
@@ -2375,14 +2186,6 @@ DriveFileError DriveFileSystem::UpdateFromFeedForTesting(
                                       root_feed_changestamp);
 }
 
-void DriveFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
-                                        DriveFileError error,
-                                        const FilePath& /* file_path */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback.is_null())
-    callback.Run(error);
-}
-
 void DriveFileSystem::OnCopyDocumentCompleted(
     const FilePath& dir_path,
     const FileOperationCallback& callback,
@@ -2515,29 +2318,6 @@ void DriveFileSystem::OnDownloadStoredToCache(DriveFileError error,
   // Nothing much to do here for now.
 }
 
-void DriveFileSystem::RenameEntryLocally(
-    const FilePath& file_path,
-    const FilePath::StringType& new_name,
-    const FileMoveCallback& callback,
-    GDataErrorCode status,
-    const GURL& /* document_url */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  const DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error, FilePath());
-    return;
-  }
-
-  resource_metadata_->RenameEntry(
-      file_path,
-      new_name,
-      base::Bind(&DriveFileSystem::NotifyAndRunFileMoveCallback,
-                 ui_weak_ptr_,
-                 callback));
-}
-
 void DriveFileSystem::MoveEntryToDirectory(
     const FilePath& file_path,
     const FilePath& directory_path,
@@ -2554,19 +2334,6 @@ void DriveFileSystem::MoveEntryToDirectory(
   }
 
   resource_metadata_->MoveEntryToDirectory(file_path, directory_path, callback);
-}
-
-void DriveFileSystem::NotifyAndRunFileMoveCallback(
-    const FileMoveCallback& callback,
-    DriveFileError error,
-    const FilePath& moved_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error == DRIVE_FILE_OK)
-    OnDirectoryChanged(moved_file_path.DirName());
-
-  callback.Run(error, moved_file_path);
 }
 
 void DriveFileSystem::NotifyAndRunFileOperationCallback(
