@@ -907,8 +907,10 @@ SlideMode.OVERWRITE_BUBBLE_MAX_TIMES = 5;
  * @private
  */
 SlideMode.prototype.shouldOverwriteOriginal_ = function() {
-  return SlideMode.OVERWRITE_KEY in localStorage &&
-      (localStorage[SlideMode.OVERWRITE_KEY] == 'true');
+  if (!(SlideMode.OVERWRITE_KEY in localStorage))
+    return true;  // Out-of-the box default is 'true'.
+
+  return localStorage[SlideMode.OVERWRITE_KEY] == 'true';
 };
 
 /**
@@ -917,7 +919,7 @@ SlideMode.prototype.shouldOverwriteOriginal_ = function() {
  * @private
  */
 SlideMode.prototype.onOverwriteOriginalClick_ = function(event) {
-  localStorage['gallery-overwrite-original'] = event.target.checked;
+  localStorage[SlideMode.OVERWRITE_KEY] = event.target.checked;
 };
 
 /**
