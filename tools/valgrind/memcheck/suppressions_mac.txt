@@ -311,6 +311,7 @@
    fun:+[QTCaptureDevice inputDevices]
    fun:+[QTCaptureDevice inputDevicesWithMediaType:]
    fun:+[VideoCaptureDeviceQTKit deviceNames]
+   ...
    fun:_ZN5media18VideoCaptureDevice14GetDeviceNamesEPSt4listINS0_4NameESaIS2_EE
    fun:_ZN5media21VideoCaptureDeviceMac4InitEv
    fun:_ZN5media18VideoCaptureDevice6CreateERKNS0_4NameE
