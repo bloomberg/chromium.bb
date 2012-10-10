@@ -705,10 +705,20 @@
 
     <request name="frame">
       <description summary="request repaint feedback">
-	Request notification when the next frame is displayed.  Useful
+	Request notification when the next frame is displayed. Useful
 	for throttling redrawing operations, and driving animations.
+	The frame request will take effect on the next wl_surface.commit.
 	The notification will only be posted for one frame unless
 	requested again.
+
+	A server should avoid signalling the frame callbacks if the
+	surface is not visible in any way, e.g. the surface is off-screen,
+	or completely obscured by other opaque surfaces.
+
+	A client can request a frame callback even without an attach,
+	damage, or any other state changes. wl_surface.commit triggers a
+	repaint, so the callback event will arrive after the next output
+	refresh where the surface is visible.
       </description>
 
       <arg name="callback" type="new_id" interface="wl_callback"/>
