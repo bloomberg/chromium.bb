@@ -341,171 +341,29 @@
       </listitem>
     </itemizedlist>
   </section>
-  <section id="sect-Protocol-Drag-and-Drop">
-    <title>Drag and Drop</title>
+  <section id="sect-Protocol-data-sharing">
+    <title>Data sharing between client (selection and drag and drop)</title>
     <para>
-      Multi-device aware. Orthogonal to rest of wayland, as it is its own
-      toplevel object.  Since the compositor determines the drag target, it
-      works with transformed surfaces (dragging to a scaled down window in
-      expose mode, for example).
+      The Wayland 1.0 protocol provides its clients a mechanism for sharing
+      data that allows the implementation of selection and drag and drop.
+      The client providing the data creates a wl_data_source object and the
+      clients obtaining the data will see it as wl_data_offer object. This
+      interface allows the clients to agree on a mutually supported mime type
+      and transfer the data through an fd that is passed through the protocol.
+    </para>
+    <para>
+      The next section explains the negotiation between data source and data
+      offer objects. <xref linkend="sect-Protocol-data-sharing-devices"/>
+      explains how these objects are created and passed to different client
+      using the wl_data_device interface, that implements selection and drag
+      and drop support.
     </para>
     <para>
       See <xref linkend="protocol-spec-interface-wl_data_offer"/>,
-      <xref linkend="protocol-spec-interface-wl_data_source"/> and
-      <xref linkend="protocol-spec-interface-wl_data_offer"/> for
+      <xref linkend="protocol-spec-interface-wl_data_source"/>,
+      <xref linkend="protocol-spec-interface-wl_data_device"/> and
+      <xref linkend="protocol-spec-interface-wl_data_device_manager"/> for
       protocol descriptions.
-    </para>
-    <para>
-      Issues: 
-      <itemizedlist>
-	<listitem>
-	  <para>
-	    we can set the cursor image to the current cursor + dragged
-	    object, which will last as long as the drag, but maybe an request to
-	    attach an image to the cursor will be more convenient?
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Should drag.send() destroy the object?  There's nothing to do
-	    after the data has been transferred.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    How do we marshal several mime-types?  We could make the drag
-	    setup a multi-step operation: dnd.create, drag.offer(mime-type1),
-	    drag.offer(mime-type2), drag.activate().  The drag object could send
-	    multiple offer events on each motion event.  Or we could just
-	    implement an array type, but that's a pain to work with.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Middle-click drag to pop up menu?  Ctrl/Shift/Alt drag?
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Send a file descriptor over the protocol to let initiator and
-	    source exchange data out of band?
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    Action? Specify action when creating the drag object? Ask
-	    action?
-	  </para>
-	</listitem>
-      </itemizedlist>
-    </para>
-    <para>
-      Sequence of events:
-      <orderedlist>
-	<listitem>
-	  <para>
-	    The initiator surface receives a click (which grabs the input
-	    device to that surface) and then enough motion to decide that a drag
-	    is starting.  Wayland has no subwindows, so it's entirely up to the
-	    application to decide whether or not a draggable object within the
-	    surface was clicked.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    The initiator creates a drag object by calling the
-	    <function>create_drag</function> method on the dnd global
-	    object.  As for any client created object, the client allocates
-	    the id.  The <function>create_drag</function> method also takes
-	    the originating surface, the device that's dragging and the
-	    mime-types supported.  If the surface
-	    has indeed grabbed the device passed in, the server will create an
-	    active drag object for the device.  If the grab was released in the
-	    meantime, the drag object will be in-active, that is, the same state
-	    as when the grab is released.  In that case, the client will receive
-	    a button up event, which will let it know that the drag finished.
-	    To the client it will look like the drag was immediately cancelled
-	    by the grab ending.
-	  </para>
-	  <para>
-	    The special mime-type application/x-root-target indicates that the
-	    initiator is looking for drag events to the root window as well.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    To indicate the object being dragged, the initiator can replace
-	    the pointer image with an larger image representing the data being
-	    dragged with the cursor image overlaid.  The pointer image will
-	    remain in place as long as the grab is in effect, since the
-	    initiating surface keeps pointer focus, and no other surface
-	    receives enter events.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    As long as the grab is active (or until the initiator cancels
-	    the drag by destroying the drag object), the drag object will send
-	    <function>offer</function> events to surfaces it moves across. As for motion
-	    events, these events contain the surface local coordinates of the
-	    device as well as the list of mime-types offered.  When a device
-	    leaves a surface, it will send an <function>offer</function> event with an empty
-	    list of mime-types to indicate that the device left the surface.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    If a surface receives an offer event and decides that it's in an
-	    area that can accept a drag event, it should call the
-	    <function>accept</function> method on the drag object in the event.  The surface
-	    passes a mime-type in the request, picked from the list in the offer
-	    event, to indicate which of the types it wants.  At this point, the
-	    surface can update the appearance of the drop target to give
-	    feedback to the user that the drag has a valid target.  If the
-	    <function>offer</function> event moves to a different drop target (the surface
-	    decides the offer coordinates is outside the drop target) or leaves
-	    the surface (the offer event has an empty list of mime-types) it
-	    should revert the appearance of the drop target to the inactive
-	    state.  A surface can also decide to retract its drop target (if the
-	    drop target disappears or moves, for example), by calling the accept
-	    method with a NULL mime-type.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    When a target surface sends an <function>accept</function> request, the drag
-	    object will send a <function>target</function> event to the initiator surface.
-	    This tells the initiator that the drag currently has a potential
-	    target and which of the offered mime-types the target wants.  The
-	    initiator can change the pointer image or drag source appearance to
-	    reflect this new state.  If the target surface retracts its drop
-	    target of if the surface disappears, a <function>target</function> event with a
-	    NULL mime-type will be sent.
-	  </para>
-	  <para>
-	    If the initiator listed application/x-root-target as a valid
-	    mime-type, dragging into the root window will make the drag object
-	    send a <function>target</function> event with the application/x-root-target
-	    mime-type.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    When the grab is released (indicated by the button release
-	    event), if the drag has an active target, the initiator calls the
-	    <function>send</function> method on the drag object to send the data to be
-	    transferred by the drag operation, in the format requested by the
-	    target.  The initiator can then destroy the drag object by calling
-	    the <function>destroy</function> method.
-	  </para>
-	</listitem>
-	<listitem>
-	  <para>
-	    The drop target receives a <function>data</function> event from the drag
-	    object with the requested data.
-	  </para>
-	</listitem>
-      </orderedlist>
     </para>
     <para>
       MIME is defined in RFC's 2045-2049. A
@@ -513,5 +371,86 @@
       registry of MIME types</ulink> is maintained by the Internet Assigned
       Numbers Authority (IANA).
     </para>
+    <section>
+      <title>Data negotiation</title>
+      <para>
+	A client providing data to other clients will create a wl_data_source
+	object and advertise the mime types for the formats it supports for
+	that data through the <function>wl_data_source.offer</function>
+	request. On the receiving end, the data offer object will generate one
+	<function>wl_data_offer.offer</function> event for each supported mime
+	type.
+      </para>
+      <para>
+	The actual data transfer happens when the receiving client sends a
+	<function>wl_data_offer.receive</function> request. This request takes
+	a mime type and an fd as arguments. This request will generate a
+	<function>wl_data_source.send</function> event on the sending client
+	with the same arguments, and the latter client is expected to write its
+	data to the given fd using the chosen mime type.
+      </para>
+    </section>
+    <section id="sect-Protocol-data-sharing-devices">
+      <title>Data devices</title>
+      <para>
+	Data devices glue data sources and offers together. A data device is
+	associated with a wl_seat and is obtained by the clients using the
+	wl_data_device_manager factory object, which is also responsible for
+	creating data sources.
+      </para>
+      <para>
+	Clients are informed of new data offers through the
+	<function>wl_data_device.data_offer</function> event. After this
+	event is generated the data offer will advertise the available mime
+	types. New data offers are introduced prior to their use for
+	selection or drag and drop.
+      </para>
+      <section>
+	<title>Selection</title>
+	<para>
+	  Each data device has a selection data source. Clients create a data
+	  source object using the device manager and may set it as the
+	  current selection for a given data device. Whenever the current
+	  selection changes, the client with keyboard focus receives a
+	  <function>wl_data_device.selection</function> event. This event is
+	  also generated on a client immediately before it receives keyboard
+	  focus.
+	</para>
+	<para>
+	  The data offer is introduced with
+	  <function>wl_data_device.data_offer</function> event before the
+	  selection event.
+	</para>
+      </section>
+      <section>
+	<title>Drag and Drop</title>
+	<para>
+	  A drag and drop operation is started using the
+	  <function>wl_data_device.start_drag</function> request. This
+	  requests causes a pointer grab that will generate enter, motion and
+	  leave events on the data device. A data source is supplied as
+	  argument to start_drag, and data offers associated with it are
+	  supplied to clients surfaces under the pointer in the
+	  <function>wl_data_device.enter</function> event. The data offer
+	  is introduced to the client prior to the enter event with the
+	  <function>wl_data_device.data_offer</function> event.
+	</para>
+	<para>
+	  Clients are expected to provide feedback to the data sending client
+	  by calling the <function>wl_data_offer.accept</function> request with
+	  a mime type it accepts. If none of the advertised mime types is
+	  supported by the receiving client, it should supply NULL to the
+	  accept request. The accept request causes the sending client to
+	  receive a <function>wl_data_source.target</function> event with the
+	  chosen mime type.
+	</para>
+	<para>
+	  When the drag ends, the receiving client receives a
+	  <function>wl_data_device.drop</function> event at which it is expect
+	  to trasnfer the data using the
+	  <function>wl_data_offer.receive</function> request.
+	</para>
+      </section>
+    </section>
   </section>
 </chapter>
