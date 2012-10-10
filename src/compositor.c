@@ -193,6 +193,16 @@ surface_handle_buffer_destroy(struct wl_listener *listener, void *data)
 	es->buffer = NULL;
 }
 
+static void
+surface_handle_pending_buffer_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_surface *surface =
+		container_of(listener, struct weston_surface,
+			     pending.buffer_destroy_listener);
+
+	surface->pending.buffer = NULL;
+}
+
 static const pixman_region32_data_t undef_region_data;
 
 static void
@@ -261,6 +271,9 @@ weston_surface_create(struct weston_compositor *compositor)
 	weston_matrix_init(&surface->transform.position.matrix);
 	pixman_region32_init(&surface->transform.boundingbox);
 	surface->geometry.dirty = 1;
+
+	surface->pending.buffer_destroy_listener.notify =
+		surface_handle_pending_buffer_destroy;
 
 	return surface;
 }
@@ -767,6 +780,9 @@ destroy_surface(struct wl_resource *resource)
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
 
+	if (surface->pending.buffer)
+		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
+
 	if (surface->buffer)
 		wl_list_remove(&surface->buffer_destroy_listener.link);
 
@@ -797,33 +813,31 @@ weston_surface_destroy(struct weston_surface *surface)
 }
 
 static void
-weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
+weston_surface_attach(struct weston_surface *surface, struct wl_buffer *buffer)
 {
-	struct weston_surface *es = (struct weston_surface *) surface;
-
-	if (es->buffer) {
-		weston_buffer_post_release(es->buffer);
-		wl_list_remove(&es->buffer_destroy_listener.link);
+	if (surface->buffer) {
+		weston_buffer_post_release(surface->buffer);
+		wl_list_remove(&surface->buffer_destroy_listener.link);
 	}
 
 	if (buffer) {
 		buffer->busy_count++;
 		wl_signal_add(&buffer->resource.destroy_signal, 
-			      &es->buffer_destroy_listener);
+			      &surface->buffer_destroy_listener);
 
-		if (es->geometry.width != buffer->width ||
-		    es->geometry.height != buffer->height) {
-			undef_region(&es->input);
-			pixman_region32_fini(&es->opaque);
-			pixman_region32_init(&es->opaque);
+		if (surface->geometry.width != buffer->width ||
+		    surface->geometry.height != buffer->height) {
+			undef_region(&surface->input);
+			pixman_region32_fini(&surface->opaque);
+			pixman_region32_init(&surface->opaque);
 		}
 	} else {
-		if (weston_surface_is_mapped(es))
-			weston_surface_unmap(es);
+		if (weston_surface_is_mapped(surface))
+			weston_surface_unmap(surface);
 	}
 
-	es->compositor->renderer->attach(es, buffer);
-	es->buffer = buffer;
+	surface->compositor->renderer->attach(surface, buffer);
+	surface->buffer = buffer;
 }
 
 WL_EXPORT void
@@ -1126,16 +1140,25 @@ surface_attach(struct wl_client *client,
 	       struct wl_resource *resource,
 	       struct wl_resource *buffer_resource, int32_t sx, int32_t sy)
 {
-	struct weston_surface *es = resource->data;
+	struct weston_surface *surface = resource->data;
 	struct wl_buffer *buffer = NULL;
 
 	if (buffer_resource)
 		buffer = buffer_resource->data;
 
-	weston_surface_attach(&es->surface, buffer);
+	if (surface->pending.buffer)
+		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
 
-	if (buffer && es->configure)
-		es->configure(es, sx, sy);
+	surface->pending.sx = sx;
+	surface->pending.sy = sy;
+	surface->pending.buffer = buffer;
+	if (buffer) {
+		wl_signal_add(&buffer->resource.destroy_signal,
+			      &surface->pending.buffer_destroy_listener);
+		surface->pending.remove_contents = 0;
+	} else {
+		surface->pending.remove_contents = 1;
+	}
 }
 
 static void
@@ -1230,13 +1253,28 @@ surface_set_input_region(struct wl_client *client,
 	weston_surface_schedule_repaint(surface);
 }
 
+static void
+surface_commit(struct wl_client *client, struct wl_resource *resource)
+{
+	struct weston_surface *surface = resource->data;
+
+	/* wl_surface.attach */
+	if (surface->pending.buffer || surface->pending.remove_contents)
+		weston_surface_attach(surface, surface->pending.buffer);
+
+	if (surface->buffer && surface->configure)
+		surface->configure(surface, surface->pending.sx,
+				   surface->pending.sy);
+}
+
 static const struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
 	surface_damage,
 	surface_frame,
 	surface_set_opaque_region,
-	surface_set_input_region
+	surface_set_input_region,
+	surface_commit
 };
 
 static void

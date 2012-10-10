@@ -466,6 +466,16 @@ struct weston_surface {
 	struct wl_buffer *buffer;
 	struct wl_listener buffer_destroy_listener;
 
+	/* All the pending state, that wl_surface.commit will apply. */
+	struct {
+		/* wl_surface.attach */
+		int remove_contents;
+		struct wl_buffer *buffer;
+		struct wl_listener buffer_destroy_listener;
+		int32_t sx;
+		int32_t sy;
+	} pending;
+
 	/*
 	 * If non-NULL, this function will be called on surface::attach after
 	 * a new buffer has been set up for this surface. The integer params
