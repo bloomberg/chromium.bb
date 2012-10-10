@@ -706,6 +706,11 @@ void PluginServiceImpl::RegisterInternalPlugin(
   plugin_list_->RegisterInternalPlugin(info, add_at_beginning);
 }
 
+void PluginServiceImpl::GetInternalPlugins(
+    std::vector<webkit::WebPluginInfo>* plugins) {
+  plugin_list_->GetInternalPlugins(plugins);
+}
+
 webkit::npapi::PluginList* PluginServiceImpl::GetPluginList() {
   return plugin_list_;
 }

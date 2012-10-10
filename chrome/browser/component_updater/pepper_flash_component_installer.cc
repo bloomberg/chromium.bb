@@ -18,6 +18,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -163,12 +164,38 @@ bool MakePepperFlashPluginInfo(const FilePath& flash_path,
   return true;
 }
 
+bool IsPepperFlash(const webkit::WebPluginInfo& plugin) {
+  // We try to recognize Pepper Flash by the following criteria:
+  // * It is a Pepper plug-in.
+  // * It has the special Flash permissions.
+  return webkit::IsPepperPlugin(plugin) &&
+         (plugin.pepper_permissions & ppapi::PERMISSION_FLASH);
+}
+
 void RegisterPepperFlashWithChrome(const FilePath& path,
                                    const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::PepperPluginInfo plugin_info;
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
+
+  std::vector<webkit::WebPluginInfo> plugins;
+  PluginService::GetInstance()->GetInternalPlugins(&plugins);
+  for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
+       it != plugins.end(); ++it) {
+    if (!IsPepperFlash(*it))
+      continue;
+
+    // If the version we're trying to register is older than the existing one,
+    // don't do it.
+    if (version.IsOlderThan(UTF16ToUTF8(it->version)))
+      return;
+
+    // If the version is newer, remove the old one first.
+    PluginService::GetInstance()->UnregisterInternalPlugin(it->path);
+    break;
+  }
+
   bool add_to_front = IsPepperFlashEnabledByDefault();
   PluginService::GetInstance()->RegisterInternalPlugin(
       plugin_info.ToWebPluginInfo(), add_to_front);
