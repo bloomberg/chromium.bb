@@ -696,8 +696,12 @@ int ChromeMainDelegate::RunProcess(
 void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
   if (SubprocessNeedsResourceBundle(process_type))
     ResourceBundle::CleanupSharedInstance();
-
+#if !defined(OS_ANDROID)
   logging::CleanupChromeLogging();
+#else
+  // Android doesn't use InitChromeLogging, so we close the log file manually.
+  logging::CloseLogFile();
+#endif  // !defined(OS_ANDROID)
 }
 
 #if defined(OS_MACOSX)
