@@ -197,20 +197,6 @@ class DownloadItemFactoryImpl : public content::DownloadItemFactory {
 
 }  // namespace
 
-namespace content {
-
-bool DownloadManager::EnsureNoPendingDownloadsForTesting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool result = true;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&EnsureNoPendingDownloadJobsOnIO, &result));
-  MessageLoop::current()->Run();
-  return result;
-}
-
-}  // namespace content
-
 DownloadManagerImpl::DownloadManagerImpl(
     DownloadFileManager* file_manager,
     scoped_ptr<content::DownloadItemFactory> factory,

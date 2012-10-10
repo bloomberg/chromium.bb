@@ -822,15 +822,6 @@ class DownloadTest : public InProcessBrowserTest {
     }
   }
 
-  bool EnsureNoPendingDownloads() {
-    bool result = true;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&EnsureNoPendingDownloadJobsOnIO, &result));
-    MessageLoop::current()->Run();
-    return result && DownloadManager::EnsureNoPendingDownloadsForTesting();
-  }
-
   // A mock install prompt that simulates the user allowing an install request.
   void SetAllowMockInstallPrompt() {
     gfx::NativeWindow parent =
@@ -997,7 +988,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   ui_test_utils::NavigateToURL(browser(), same_site_url);
 
   // Make sure the initial navigation didn't trigger a download.
-  EXPECT_TRUE(EnsureNoPendingDownloads());
+  std::vector<content::DownloadItem*> items;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&items);
+  EXPECT_EQ(0u, items.size());
 
   // Disable downloads for the tab.
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
@@ -1036,8 +1029,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
-  // Verify that there's no pending download.
-  EXPECT_TRUE(EnsureNoPendingDownloads());
+  // Verify that there's no pending download.  The resource throttle
+  // should have deleted it before it created a download item, so it
+  // shouldn't be available as a cancelled download either.
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&items);
+  EXPECT_EQ(0u, items.size());
 }
 
 // Download a 0-size file with a content-disposition header, verify that the

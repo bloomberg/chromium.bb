@@ -208,7 +208,6 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     DownloadManager* download_manager,
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log) {
-
   return new DownloadFileWithDelay(
       info, stream.Pass(), new DownloadRequestHandle(info->request_handle),
       download_manager, calculate_hash,
@@ -259,6 +258,77 @@ bool WasPersisted(DownloadItem* item) {
   return item->IsPersisted();
 }
 
+class CountingDownloadFile : public DownloadFileImpl {
+ public:
+  CountingDownloadFile(
+      const DownloadCreateInfo* info,
+      scoped_ptr<content::ByteStreamReader> stream,
+      DownloadRequestHandleInterface* request_handle,
+      scoped_refptr<content::DownloadManager> download_manager,
+      bool calculate_hash,
+      scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
+      const net::BoundNetLog& bound_net_log)
+      : DownloadFileImpl(info, stream.Pass(), request_handle, download_manager,
+                         calculate_hash, power_save_blocker.Pass(),
+                         bound_net_log) {}
+
+  virtual ~CountingDownloadFile() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    active_files_--;
+  }
+
+  virtual content::DownloadInterruptReason Initialize() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    active_files_++;
+    return DownloadFileImpl::Initialize();
+  }
+
+  static void GetNumberActiveFiles(int* result) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    *result = active_files_;
+  }
+
+  // Can be called on any thread, and will block (running message loop)
+  // until data is returned.
+  static int GetNumberActiveFilesFromFileThread() {
+    int result = -1;
+    BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
+        base::Bind(&CountingDownloadFile::GetNumberActiveFiles, &result),
+        MessageLoop::current()->QuitClosure());
+    MessageLoop::current()->Run();
+    DCHECK_NE(-1, result);
+    return result;
+  }
+
+ private:
+  static int active_files_;
+};
+
+int CountingDownloadFile::active_files_ = 0;
+
+class CountingDownloadFileFactory : public DownloadFileFactory {
+ public:
+  CountingDownloadFileFactory() {}
+  virtual ~CountingDownloadFileFactory() {}
+
+  // DownloadFileFactory interface.
+  virtual content::DownloadFile* CreateFile(
+      DownloadCreateInfo* info,
+      scoped_ptr<content::ByteStreamReader> stream,
+      DownloadManager* download_manager,
+      bool calculate_hash,
+      const net::BoundNetLog& bound_net_log) OVERRIDE {
+    return new CountingDownloadFile(
+        info, stream.Pass(), new DownloadRequestHandle(info->request_handle),
+        download_manager, calculate_hash,
+        scoped_ptr<content::PowerSaveBlocker>(
+            new content::PowerSaveBlocker(
+                content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+                "Download in progress")).Pass(),
+        bound_net_log);
+  }
+};
+
 }  // namespace
 
 class DownloadContentTest : public ContentBrowserTest {
@@ -298,13 +368,21 @@ class DownloadContentTest : public ContentBrowserTest {
     return new DownloadTestObserverInProgress(download_manager, num_downloads);
   }
 
+  // Note: Cannot be used with other alternative DownloadFileFactorys
+  void SetupEnsureNoPendingDownloads() {
+    GetDownloadFileManager()->SetFileFactoryForTesting(
+        scoped_ptr<content::DownloadFileFactory>(
+            new CountingDownloadFileFactory()).Pass());
+  }
+
   bool EnsureNoPendingDownloads() {
     bool result = true;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&EnsureNoPendingDownloadJobsOnIO, &result));
     MessageLoop::current()->Run();
-    return result && DownloadManager::EnsureNoPendingDownloadsForTesting();
+    return result &&
+        (CountingDownloadFile::GetNumberActiveFilesFromFileThread() == 0);
   }
 
   void DownloadAndWait(Shell* shell, const GURL& url) {
@@ -377,6 +455,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
   // DownloadItem, and wait for the state that indicates the item has been
   // entered in the history and made visible in the UI.
 
+  SetupEnsureNoPendingDownloads();
+
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
   scoped_ptr<DownloadTestObserver> observer(CreateInProgressWaiter(shell(), 1));
@@ -401,6 +481,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
 // Check that downloading multiple (in this case, 2) files does not result in
 // corrupted files.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
+  SetupEnsureNoPendingDownloads();
+
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
   scoped_ptr<DownloadTestObserver> observer1(

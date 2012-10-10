@@ -60,10 +60,6 @@ class DownloadUrlParameters;
 class CONTENT_EXPORT DownloadManager
     : public base::RefCountedThreadSafe<DownloadManager> {
  public:
-  // A method that can be used in tests to ensure that all the internal download
-  // classes have no pending downloads.
-  static bool EnsureNoPendingDownloadsForTesting();
-
   // Sets/Gets the delegate for this DownloadManager. The delegate has to live
   // past its Shutdown method being called (by the DownloadManager).
   virtual void SetDelegate(DownloadManagerDelegate* delegate) = 0;
