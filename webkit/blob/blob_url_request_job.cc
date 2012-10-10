@@ -271,11 +271,7 @@ void BlobURLRequestJob::Seek(int64 offset) {
   const BlobData::Item& item = blob_data_->items().at(current_item_index_);
   if (item.type() == BlobData::Item::TYPE_FILE) {
     DeleteCurrentFileReader();
-    index_to_reader_[current_item_index_] = new LocalFileStreamReader(
-        file_thread_proxy_,
-        item.path(),
-        item.offset() + offset,
-        item.expected_modification_time());
+    CreateFileStreamReader(current_item_index_, offset);
   }
 }
 
@@ -533,17 +529,25 @@ LocalFileStreamReader* BlobURLRequestJob::GetFileStreamReader(size_t index) {
   const BlobData::Item& item = blob_data_->items().at(index);
   if (item.type() != BlobData::Item::TYPE_FILE)
     return NULL;
-  // TODO(kinuko): Create appropriate FileStreamReader for TYPE_FILE_FILESYSTEM.
-  // http://crbug.com/141835
-  if (index_to_reader_.find(index) == index_to_reader_.end()) {
-    index_to_reader_[index] = new LocalFileStreamReader(
-        file_thread_proxy_,
-        item.path(),
-        item.offset(),
-        item.expected_modification_time());
-  }
+  if (index_to_reader_.find(index) == index_to_reader_.end())
+    CreateFileStreamReader(index, 0);
   DCHECK(index_to_reader_[index]);
   return index_to_reader_[index];
+}
+
+void BlobURLRequestJob::CreateFileStreamReader(size_t index,
+                                               int64 additional_offset) {
+  DCHECK_LT(index, blob_data_->items().size());
+  const BlobData::Item& item = blob_data_->items().at(index);
+  DCHECK_EQ(BlobData::Item::TYPE_FILE, item.type());
+  DCHECK_EQ(0U, index_to_reader_.count(index));
+  // TODO(kinuko): Create appropriate FileStreamReader for TYPE_FILE_FILESYSTEM.
+  // http://crbug.com/141835
+  index_to_reader_[index] = new LocalFileStreamReader(
+      file_thread_proxy_,
+      item.path(),
+      item.offset() + additional_offset,
+      item.expected_modification_time());
 }
 
 }  // namespace webkit_blob

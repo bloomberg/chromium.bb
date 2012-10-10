@@ -82,6 +82,9 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   // If the item at |index| is not of TYPE_FILE this returns NULL.
   LocalFileStreamReader* GetFileStreamReader(size_t index);
 
+  // Creates a FileStreamReader for the item at |index| with additional_offset.
+  void CreateFileStreamReader(size_t index, int64 additional_offset);
+
   base::WeakPtrFactory<BlobURLRequestJob> weak_factory_;
   scoped_refptr<BlobData> blob_data_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
