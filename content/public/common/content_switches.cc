@@ -301,9 +301,9 @@ const char kEnableLogging[]                 = "enable-logging";
 // Disable Media Source API on <audio>/<video> elements.
 const char kDisableMediaSource[]             = "disable-media-source";
 
-// Enables using WebMediaPlayerMS for src of <audio>/<video> derived from
+// Disables using WebMediaPlayerMS for src of <audio>/<video> derived from
 // media stream.
-const char kEnableWebMediaPlayerMS[]        = "enable-web-media-player-ms";
+const char kDisableWebMediaPlayerMS[]       = "disable-web-media-player-ms";
 
 // On Windows, converts the page to the currently-installed monitor profile.
 // This does NOT enable color management for images. The source is still

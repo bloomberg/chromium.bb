@@ -146,8 +146,13 @@ WebKit::WebMediaStreamDescriptor MediaStreamImpl::GetMediaStream(
 }
 
 bool MediaStreamImpl::IsMediaStream(const GURL& url) {
-  DCHECK(CalledOnValidThread());
-  WebKit::WebMediaStreamDescriptor descriptor(GetMediaStream(url));
+  return CheckMediaStream(url);
+}
+
+// static
+bool MediaStreamImpl::CheckMediaStream(const GURL& url) {
+  WebKit::WebMediaStreamDescriptor descriptor(
+      WebKit::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
 
   if (descriptor.isNull() || !descriptor.extraData())
     return false;  // This is not a valid stream.

@@ -2649,12 +2649,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   if (!media_player) {
     // TODO(wjia): when all patches related to WebMediaPlayerMS have been
     // landed, remove the switch. Refer to crbug.com/142988.
-    if (cmd_line->HasSwitch(switches::kEnableWebMediaPlayerMS)) {
+    if (!cmd_line->HasSwitch(switches::kDisableWebMediaPlayerMS) &&
+        MediaStreamImpl::CheckMediaStream(url)) {
       EnsureMediaStreamImpl();
-      if (media_stream_impl_ && media_stream_impl_->IsMediaStream(url)) {
-        return new webkit_media::WebMediaPlayerMS(
-            frame, client, AsWeakPtr(), media_stream_impl_, render_media_log);
-      }
+      return new webkit_media::WebMediaPlayerMS(
+          frame, client, AsWeakPtr(), media_stream_impl_, render_media_log);
     }
 
     media_player = new webkit_media::WebMediaPlayerImpl(
