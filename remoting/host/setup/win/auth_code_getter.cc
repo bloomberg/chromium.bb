@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/setup/win/auth_code_getter.h"
+
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
-#include "remoting/host/setup/auth_code_getter_win.h"
 #include "remoting/host/setup/oauth_helper.h"
 
 namespace {

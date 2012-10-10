@@ -1039,8 +1039,6 @@
         'remoting_host',
       ],
       'sources': [
-        'host/setup/auth_code_getter_win.cc',
-        'host/setup/auth_code_getter_win.h',
         'host/setup/daemon_controller.h',
         'host/setup/daemon_controller_linux.cc',
         'host/setup/daemon_controller_mac.cc',
@@ -1051,6 +1049,8 @@
         'host/setup/host_starter.h',
         'host/setup/oauth_helper.cc',
         'host/setup/oauth_helper.h',
+        'host/setup/win/auth_code_getter.cc',
+        'host/setup/win/auth_code_getter.h',
       ],
       'conditions': [
         ['OS=="win"', {

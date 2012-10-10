@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_WIN_AUTH_CODE_GETTER_WIN_H
-#define REMOTING_HOST_WIN_AUTH_CODE_GETTER_WIN_H
+#ifndef REMOTING_HOST_SETUP_WIN_AUTH_CODE_GETTER_H
+#define REMOTING_HOST_SETUP_WIN_AUTH_CODE_GETTER_H
 
 #include <ole2.h>
 #include <exdisp.h>
@@ -55,4 +55,4 @@ class AuthCodeGetter : public base::NonThreadSafe {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_WIN_AUTH_CODE_GETTER_WIN_H
+#endif  // REMOTING_HOST_SETUP_WIN_AUTH_CODE_GETTER_H
