@@ -236,12 +236,28 @@
     <request name="destroy" type="destructor">
       <description summary="destroy a buffer">
 	Destroy a buffer.  This will invalidate the object id.
+
+	For possible side-effects to a surface, see wl_surface.attach.
       </description>
     </request>
 
     <event name="release">
       <description summary="compositor releases buffer">
-	Sent when an attached buffer is no longer used by the compositor.
+	Sent when this wl_buffer is no longer used by the compositor.
+
+	If a client does not get a release event before the frame callback
+	requested in the same wl_surface.commit that attaches this wl_buffer
+	to a surface, then the client may assume, that the compositor will
+	be using this wl_buffer until the client attaches another wl_buffer.
+	Therefore the client will need a second wl_buffer to update the
+	surface contents again.
+
+	Otherwise, if a release event arrives before the frame callback, the
+	client is immediately free to re-use the buffer and its backing
+	storage, and does not necessarily need a second buffer. Typically
+	this is possible, when the compositor maintains a copy of the
+	wl_surface contents, e.g. as a GL texture. This is an important
+	optimization for GL(ES) compositors with wl_shm clients.
       </description>
     </event>
   </interface>
