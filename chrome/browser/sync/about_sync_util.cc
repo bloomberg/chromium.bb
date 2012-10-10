@@ -232,7 +232,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   IntSyncStat updates_received(section_counters, "Updates Downloaded");
   IntSyncStat tombstone_updates(section_counters, "Tombstone Updates");
   IntSyncStat reflected_updates(section_counters, "Reflected Updates");
-  IntSyncStat successful_commits(section_counters, "Syccessful Commits");
+  IntSyncStat successful_commits(section_counters, "Successful Commits");
   IntSyncStat conflicts_resolved_local_wins(section_counters,
                                      "Conflicts Resolved: Client Wins");
   IntSyncStat conflicts_resolved_server_wins(section_counters,
