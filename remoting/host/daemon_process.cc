@@ -43,6 +43,12 @@ bool DaemonProcess::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
+void DaemonProcess::OnPermanentError() {
+  DCHECK(main_task_runner()->BelongsToCurrentThread());
+
+  Stop();
+}
+
 DaemonProcess::DaemonProcess(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,

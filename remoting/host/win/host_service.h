@@ -26,12 +26,6 @@ class AutoThreadTaskRunner;
 class Stoppable;
 class WtsConsoleObserver;
 
-#if defined(REMOTING_MULTI_PROCESS)
-class DaemonProcess;
-#else  // !defined(REMOTING_MULTI_PROCESS)
-class WtsSessionProcessLauncher;
-#endif  // !defined(REMOTING_MULTI_PROCESS)
-
 class HostService : public WtsConsoleMonitor {
  public:
   static HostService* GetInstance();

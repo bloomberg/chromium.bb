@@ -32,11 +32,6 @@ const WINSTATIONINFOCLASS kCreateProcessPipeNameClass =
 const int kPipeBusyWaitTimeoutMs = 2000;
 const int kPipeConnectMaxAttempts = 3;
 
-// The minimum and maximum delays between attempts to inject host process into
-// a session.
-const int kMaxLaunchDelaySeconds = 60;
-const int kMinLaunchDelaySeconds = 1;
-
 // Name of the default session desktop.
 const char kDefaultDesktopName[] = "winsta0\\default";
 

@@ -39,7 +39,7 @@
 #include "remoting/host/win/wts_console_observer.h"
 
 #if !defined(REMOTING_MULTI_PROCESS)
-#include "remoting/host/win/wts_session_process_launcher.h"
+#include "remoting/host/win/wts_console_session_process_driver.h"
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
 using base::StringPrintf;
@@ -213,8 +213,8 @@ void HostService::CreateLauncher(
 
 #else  // !defined(REMOTING_MULTI_PROCESS)
 
-  // Create the session process launcher.
-  child_.reset(new WtsSessionProcessLauncher(
+  // Create the console session process driver.
+  child_.reset(new WtsConsoleSessionProcessDriver(
       base::Bind(&HostService::OnChildStopped, base::Unretained(this)),
       this,
       main_task_runner_,
@@ -249,7 +249,7 @@ int HostService::Elevate() {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
                                 kCopiedSwitchNames,
-                                _countof(kCopiedSwitchNames));
+                                arraysize(kCopiedSwitchNames));
   CommandLine::StringType parameters = command_line.GetCommandLineString();
 
   // Launch the child process requesting elevation.

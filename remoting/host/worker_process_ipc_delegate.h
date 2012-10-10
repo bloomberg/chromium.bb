@@ -25,6 +25,9 @@ class WorkerProcessIpcDelegate {
 
   // Processes messages sent by the client.
   virtual bool OnMessageReceived(const IPC::Message& message) = 0;
+
+  // Notifies that a permanent error was encountered.
+  virtual void OnPermanentError() = 0;
 };
 
 }  // namespace remoting

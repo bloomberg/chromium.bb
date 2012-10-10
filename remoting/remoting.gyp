@@ -592,6 +592,7 @@
             '../base/base.gyp:base_static',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../ipc/ipc.gyp:ipc',
+            '../net/net.gyp:net',
             'remoting_base',
             'remoting_breakpad',
             'remoting_version_resources',
@@ -619,12 +620,16 @@
             'host/win/launch_process_with_token.h',
             'host/win/omaha.cc',
             'host/win/omaha.h',
+            'host/win/unprivileged_process_delegate.cc',
+            'host/win/unprivileged_process_delegate.h',
             'host/win/worker_process_launcher.cc',
             'host/win/worker_process_launcher.h',
             'host/win/wts_console_monitor.h',
             'host/win/wts_console_observer.h',
-            'host/win/wts_session_process_launcher.cc',
-            'host/win/wts_session_process_launcher.h',
+            'host/win/wts_console_session_process_driver.cc',
+            'host/win/wts_console_session_process_driver.h',
+            'host/win/wts_session_process_delegate.cc',
+            'host/win/wts_session_process_delegate.h',
             'host/worker_process_ipc_delegate.h',
           ],
           'msvs_settings': {
@@ -1944,6 +1949,9 @@
         'host/video_frame_capturer_helper_unittest.cc',
         'host/video_frame_capturer_mac_unittest.cc',
         'host/video_frame_capturer_unittest.cc',
+        'host/win/worker_process_launcher.cc',
+        'host/win/worker_process_launcher.h',
+        'host/win/worker_process_launcher_unittest.cc',
         'jingle_glue/chromium_socket_factory_unittest.cc',
         'jingle_glue/fake_signal_strategy.cc',
         'jingle_glue/fake_signal_strategy.h',
@@ -1981,6 +1989,9 @@
       ],
       'conditions': [
         [ 'OS=="win"', {
+          'dependencies': [
+            '../ipc/ipc.gyp:ipc',
+          ],
           'include_dirs': [
             '../breakpad/src',
           ],
