@@ -35,9 +35,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/plugin/content_plugin_client.h"
-#include "content/public/renderer/content_renderer_client.h"
-#include "content/public/utility/content_utility_client.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media.h"
@@ -53,6 +50,12 @@
 #include "base/allocator/type_profiler.h"
 #include "base/allocator/type_profiler_tcmalloc.h"
 #endif
+#endif
+
+#if !defined(OS_IOS)
+#include "content/public/plugin/content_plugin_client.h"
+#include "content/public/renderer/content_renderer_client.h"
+#include "content/public/utility/content_utility_client.h"
 #endif
 
 #if defined(OS_WIN)
@@ -158,12 +161,14 @@ namespace content {
 
 base::LazyInstance<ContentBrowserClient>
     g_empty_content_browser_client = LAZY_INSTANCE_INITIALIZER;
+#if !defined(OS_IOS)
 base::LazyInstance<ContentPluginClient>
     g_empty_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentRendererClient>
     g_empty_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentUtilityClient>
     g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
+#endif  // !OS_IOS
 
 #if defined(OS_WIN)
 
@@ -196,7 +201,7 @@ void SendTaskPortToParentProcess() {
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_IOS)
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
 void SetupSignalHandlers() {
@@ -220,7 +225,7 @@ void SetupSignalHandlers() {
   CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
 }
 
-#endif  // OS_POSIX
+#endif  // OS_POSIX && !OS_IOS
 
 void CommonSubprocessInit(const std::string& process_type) {
 #if defined(OS_WIN)
@@ -308,6 +313,7 @@ class ContentClientInitializer {
         content_client->browser_ = &g_empty_content_browser_client.Get();
     }
 
+#if !defined(OS_IOS)
     if (process_type == switches::kPluginProcess ||
         process_type == switches::kPpapiPluginProcess) {
       if (delegate)
@@ -327,6 +333,7 @@ class ContentClientInitializer {
       if (!content_client->utility_)
         content_client->utility_ = &g_empty_content_utility_client.Get();
     }
+#endif  // !OS_IOS
   }
 };
 
