@@ -18,7 +18,7 @@ SyncStatusCode LevelDBStatusToSyncStatusCode(const leveldb::Status& status) {
   else if (status.IsIOError())
     return SYNC_DATABASE_ERROR_IO_ERROR;
   else
-    return SYNC_DATABASE_ERROR_UNKNOWN;
+    return SYNC_DATABASE_ERROR_FAILED;
 }
 
 }  // namespace fileapi

@@ -200,7 +200,7 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::Init(
       return Repair(path);
   }
   NOTREACHED();
-  return SYNC_DATABASE_ERROR_UNKNOWN;
+  return SYNC_DATABASE_ERROR_FAILED;
 }
 
 SyncStatusCode LocalFileChangeTracker::TrackerDB::Repair(

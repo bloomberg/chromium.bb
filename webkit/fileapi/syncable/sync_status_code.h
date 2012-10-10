@@ -15,6 +15,7 @@ namespace fileapi {
 
 enum SyncStatusCode {
   SYNC_STATUS_OK = 0,
+  SYNC_STATUS_UNKNOWN = -1000,
 
   // Basic ones that could be directly mapped to PlatformFileError.
   SYNC_FILE_ERROR_FAILED = -1,
@@ -37,7 +38,7 @@ enum SyncStatusCode {
   SYNC_DATABASE_ERROR_NOT_FOUND = -16,
   SYNC_DATABASE_ERROR_CORRUPTION = -17,
   SYNC_DATABASE_ERROR_IO_ERROR = -18,
-  SYNC_DATABASE_ERROR_UNKNOWN = -19,
+  SYNC_DATABASE_ERROR_FAILED = -19,
 };
 
 FILEAPI_EXPORT SyncStatusCode LevelDBStatusToSyncStatusCode(
