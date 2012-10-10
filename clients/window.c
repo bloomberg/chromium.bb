@@ -2979,6 +2979,12 @@ window_schedule_redraw(struct window *window)
 	}
 }
 
+int
+window_is_fullscreen(struct window *window)
+{
+	return window->type == TYPE_FULLSCREEN;
+}
+
 void
 window_set_fullscreen(struct window *window, int fullscreen)
 {
@@ -3001,6 +3007,12 @@ window_set_fullscreen(struct window *window, int fullscreen)
 				       window->saved_allocation.width,
 				       window->saved_allocation.height);
 	}
+}
+
+int
+window_is_maximized(struct window *window)
+{
+	return window->type == TYPE_MAXIMIZED;
 }
 
 void

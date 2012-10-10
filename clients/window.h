@@ -281,8 +281,14 @@ display_surface_damage(struct display *display, cairo_surface_t *cairo_surface,
 void
 window_set_buffer_type(struct window *window, enum window_buffer_type type);
 
+int
+window_is_fullscreen(struct window *window);
+
 void
 window_set_fullscreen(struct window *window, int fullscreen);
+
+int
+window_is_maximized(struct window *window);
 
 void
 window_set_maximized(struct window *window, int maximized);
