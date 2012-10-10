@@ -174,6 +174,10 @@ WebKit::WebCString PasswordGenerationManager::imageNameForReadOnlyState() {
   return imageNameForNormalState();
 }
 
+WebKit::WebCString PasswordGenerationManager::imageNameForHoverState() {
+  return WebKit::WebCString("generatePasswordHover");
+}
+
 void PasswordGenerationManager::handleClick(WebKit::WebInputElement& element) {
   gfx::Rect rect(element.decorationElementFor(this).boundsInViewportSpace());
   scoped_ptr<content::PasswordForm> password_form(

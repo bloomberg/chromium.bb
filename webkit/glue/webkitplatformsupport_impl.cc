@@ -543,6 +543,8 @@ const DataResource kDataResources[] = {
   { "soloCC", IDR_AUTOFILL_CC_SOLO, ui::SCALE_FACTOR_100P },
   { "visaCC", IDR_AUTOFILL_CC_VISA, ui::SCALE_FACTOR_100P },
   { "generatePassword", IDR_PASSWORD_GENERATION_ICON, ui::SCALE_FACTOR_100P },
+  { "generatePasswordHover",
+    IDR_PASSWORD_GENERATION_ICON_HOVER, ui::SCALE_FACTOR_100P },
 };
 
 }  // namespace

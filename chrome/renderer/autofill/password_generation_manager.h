@@ -54,6 +54,7 @@ class PasswordGenerationManager : public content::RenderViewObserver,
   virtual WebKit::WebCString imageNameForNormalState() OVERRIDE;
   virtual WebKit::WebCString imageNameForDisabledState() OVERRIDE;
   virtual WebKit::WebCString imageNameForReadOnlyState() OVERRIDE;
+  virtual WebKit::WebCString imageNameForHoverState() OVERRIDE;
   virtual void handleClick(WebKit::WebInputElement& element) OVERRIDE;
   virtual void willDetach(const WebKit::WebInputElement& element) OVERRIDE;
 

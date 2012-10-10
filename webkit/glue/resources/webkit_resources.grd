@@ -149,6 +149,7 @@
       <structure type="chrome_scaled_image" name="IDR_PDF_PAGE_INDICATOR_BACKGROUND" file="pdf_page_indicator_background.png" />
       <structure type="chrome_scaled_image" name="IDR_PDF_PAGE_DROPSHADOW" file="pdf_dropshadow.png" />
       <structure type="chrome_scaled_image" name="IDR_PASSWORD_GENERATION_ICON" file="password_generation.png" />
+      <structure type="chrome_scaled_image" name="IDR_PASSWORD_GENERATION_ICON_HOVER" file="password_generation_hover.png" />
     </structures>
   </release>
 </grit>
