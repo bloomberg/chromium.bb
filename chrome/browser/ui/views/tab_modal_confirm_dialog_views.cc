@@ -22,7 +22,14 @@
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
     TabModalConfirmDialogDelegate* delegate,
     TabContents* tab_contents) {
-  return new TabModalConfirmDialogViews(delegate, tab_contents);
+  // TODO(wittman): We're using this dialog during development; disable
+  // Chrome style here at flag-flip time.
+  bool enable_chrome_style =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFramelessConstrainedDialogs);
+  return new TabModalConfirmDialogViews(delegate,
+                                        tab_contents,
+                                        enable_chrome_style);
 }
 
 namespace {
@@ -34,12 +41,12 @@ const int kChromeStyleButtonHEdgeMargin = 0;
 const int kChromeStyleDialogButtonLabelSpacing = 24;
 
 views::MessageBoxView::InitParams CreateMessageBoxViewInitParams(
-    const string16& message)
+    const string16& message,
+    bool enable_chrome_style)
 {
   views::MessageBoxView::InitParams params(message);
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableFramelessConstrainedDialogs)) {
+  if (enable_chrome_style) {
     params.top_inset = kChromeStyleUniformInset;
     params.bottom_inset = kChromeStyleUniformInset;
     params.left_inset = kChromeStyleUniformInset;
@@ -57,12 +64,15 @@ views::MessageBoxView::InitParams CreateMessageBoxViewInitParams(
 
 TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     TabModalConfirmDialogDelegate* delegate,
-    TabContents* tab_contents)
+    TabContents* tab_contents,
+    bool enable_chrome_style)
     : delegate_(delegate),
       message_box_view_(new views::MessageBoxView(
-          CreateMessageBoxViewInitParams(delegate->GetMessage()))) {
+          CreateMessageBoxViewInitParams(delegate->GetMessage(),
+                                         enable_chrome_style))) {
   delegate_->set_window(new ConstrainedWindowViews(tab_contents->web_contents(),
-                        this));
+                                                   this,
+                                                   enable_chrome_style));
 }
 
 TabModalConfirmDialogViews::~TabModalConfirmDialogViews() {

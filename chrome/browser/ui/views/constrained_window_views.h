@@ -60,7 +60,8 @@ class ConstrainedWindowViews : public views::Widget,
                                public NativeConstrainedWindowDelegate {
  public:
   ConstrainedWindowViews(content::WebContents* web_contents,
-                         views::WidgetDelegate* widget_delegate);
+                         views::WidgetDelegate* widget_delegate,
+                         bool enable_chrome_style);
   virtual ~ConstrainedWindowViews();
 
   // Returns the WebContents that constrains this Constrained Window.
@@ -87,14 +88,15 @@ class ConstrainedWindowViews : public views::Widget,
   virtual int GetNonClientComponent(const gfx::Point& point) OVERRIDE;
 
   // Set the top of the window to overlap the browser chrome.
-  void PositionFramelessWindow();
+  void PositionChromeStyleWindow();
 
   content::WebContents* web_contents_;
 
-  // Whether the window is frameless.
-  bool frameless_;
-
   NativeConstrainedWindow* native_constrained_window_;
+
+  // TODO(wittman): remove once all constrained window dialogs are moved
+  // over to Chrome style.
+  const bool enable_chrome_style_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowViews);
 };

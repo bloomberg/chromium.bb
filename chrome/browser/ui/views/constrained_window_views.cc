@@ -580,18 +580,18 @@ class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
 
 ConstrainedWindowViews::ConstrainedWindowViews(
     content::WebContents* web_contents,
-    views::WidgetDelegate* widget_delegate)
+    views::WidgetDelegate* widget_delegate,
+    bool enable_chrome_style)
     : web_contents_(web_contents),
-      frameless_(CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFramelessConstrainedDialogs)),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
-          NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
+          NativeConstrainedWindow::CreateNativeConstrainedWindow(this))),
+      enable_chrome_style_(enable_chrome_style) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
 
-  if (frameless_) {
+  if (enable_chrome_style_) {
     params.parent_widget = Widget::GetTopLevelWidgetForNativeView(
         web_contents->GetView()->GetNativeView());
   } else {
@@ -611,8 +611,18 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 #endif
   Init(params);
 
-  if (frameless_)
-    PositionFramelessWindow();
+  if (enable_chrome_style_) {
+    // Set the dialog background color.
+    if (widget_delegate && widget_delegate->AsDialogDelegate()) {
+      views::Background* background = views::Background::CreateSolidBackground(
+          ConstrainedWindow::GetBackgroundColor());
+      views::DialogClientView* dialog_client_view =
+          widget_delegate->AsDialogDelegate()->GetDialogClientView();
+      if (dialog_client_view)
+        dialog_client_view->set_background(background);
+    }
+    PositionChromeStyleWindow();
+  }
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
@@ -671,12 +681,12 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 
 void ConstrainedWindowViews::CenterWindow(const gfx::Size& size) {
   Widget::CenterWindow(size);
-  if (frameless_)
-    PositionFramelessWindow();
+  if (enable_chrome_style_)
+    PositionChromeStyleWindow();
 }
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
-  if (frameless_) {
+  if (enable_chrome_style_) {
     return new ConstrainedWindowFrameSimple(this);
   } else {
 #if defined(USE_ASH)
@@ -714,8 +724,8 @@ int ConstrainedWindowViews::GetNonClientComponent(const gfx::Point& point) {
   return HTNOWHERE;
 }
 
-void ConstrainedWindowViews::PositionFramelessWindow() {
-  DCHECK(frameless_);
+void ConstrainedWindowViews::PositionChromeStyleWindow() {
+  DCHECK(enable_chrome_style_);
   gfx::Rect bounds = GetRootView()->bounds();
   ConstrainedWindowTabHelperDelegate* tab_helper_delegate =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_)->delegate();

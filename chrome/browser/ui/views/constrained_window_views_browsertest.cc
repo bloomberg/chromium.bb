@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // Create a constrained dialog.  It will attach itself to tab_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog1(new TestConstrainedDialog);
   ConstrainedWindowViews* window1 =
-      new ConstrainedWindowViews(web_contents, test_dialog1.get());
+      new ConstrainedWindowViews(web_contents, test_dialog1.get(), false);
 
   views::FocusManager* focus_manager = window1->GetFocusManager();
   ASSERT_TRUE(focus_manager);
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // showing.
   scoped_ptr<TestConstrainedDialog> test_dialog2(new TestConstrainedDialog);
   ConstrainedWindowViews* window2 =
-      new ConstrainedWindowViews(web_contents, test_dialog2.get());
+      new ConstrainedWindowViews(web_contents, test_dialog2.get(), false);
   // Should be the same focus_manager.
   ASSERT_EQ(focus_manager, window2->GetFocusManager());
 

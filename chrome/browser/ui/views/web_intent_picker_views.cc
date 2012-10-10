@@ -936,13 +936,16 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       waiting_view_(NULL),
       displaying_web_contents_(false),
       can_close_(true) {
-  use_close_button_ = CommandLine::ForCurrentProcess()->HasSwitch(
+  bool enable_chrome_style = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFramelessConstrainedDialogs);
+  use_close_button_ = enable_chrome_style;
 
   model_->set_observer(this);
   contents_ = new views::View();
   // Show the dialog.
-  window_ = new ConstrainedWindowViews(tab_contents->web_contents(), this);
+  window_ = new ConstrainedWindowViews(tab_contents->web_contents(),
+                                       this,
+                                       enable_chrome_style);
 
   UpdateContents();
 }

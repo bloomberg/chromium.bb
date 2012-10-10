@@ -24,7 +24,8 @@ class TabModalConfirmDialogViews : public TabModalConfirmDialog,
                                    public views::DialogDelegate {
  public:
   TabModalConfirmDialogViews(TabModalConfirmDialogDelegate* delegate,
-                             TabContents* tab_contents);
+                             TabContents* tab_contents,
+                             bool enable_chrome_style);
 
   // views::DialogDelegate:
   virtual string16 GetWindowTitle() const OVERRIDE;

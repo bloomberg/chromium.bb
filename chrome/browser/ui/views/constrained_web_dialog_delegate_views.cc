@@ -183,7 +183,8 @@ ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
       new ConstrainedWebDialogDelegateViewViews(profile, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowViews(container->web_contents(),
-                                 constrained_delegate);
+                                 constrained_delegate,
+                                 false);
   constrained_delegate->set_window(constrained_window);
   return constrained_delegate;
 }
