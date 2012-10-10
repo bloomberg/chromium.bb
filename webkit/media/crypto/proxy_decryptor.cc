@@ -77,20 +77,43 @@ ProxyDecryptor::ProxyDecryptor(
 ProxyDecryptor::~ProxyDecryptor() {
 }
 
+// TODO(xhwang): Support multiple decryptor notification request (e.g. from
+// video and audio decoders).
+void ProxyDecryptor::RequestDecryptorNotification(
+     const DecryptorNotificationCB& decryptor_notification_cb) {
+  base::AutoLock auto_lock(lock_);
+
+  // Cancels the previous decryptor request.
+  if (decryptor_notification_cb.is_null()) {
+    if (!decryptor_notification_cb_.is_null())
+      base::ResetAndReturn(&decryptor_notification_cb_).Run(NULL);
+    return;
+  }
+
+  // Normal decryptor request.
+  DCHECK(decryptor_notification_cb_.is_null());
+  if (decryptor_.get()) {
+    decryptor_notification_cb.Run(decryptor_.get());
+    return;
+  }
+  decryptor_notification_cb_ = decryptor_notification_cb;
+}
+
 bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
                                         const uint8* init_data,
                                         int init_data_length) {
   // We do not support run-time switching of decryptors. GenerateKeyRequest()
   // only creates a new decryptor when |decryptor_| is not initialized.
   DVLOG(1) << "GenerateKeyRequest: key_system = " << key_system;
-  if (!decryptor_.get()) {
-    base::AutoLock auto_lock(lock_);
-    decryptor_ = CreateDecryptor(key_system);
-  }
+
+  base::AutoLock auto_lock(lock_);
 
   if (!decryptor_.get()) {
-    client_->KeyError(key_system, "", media::Decryptor::kUnknownError, 0);
-    return false;
+    decryptor_ = CreateDecryptor(key_system);
+    if (!decryptor_.get()) {
+      client_->KeyError(key_system, "", media::Decryptor::kUnknownError, 0);
+      return false;
+    }
   }
 
   if (!decryptor_->GenerateKeyRequest(key_system,
@@ -98,6 +121,9 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
     decryptor_.reset();
     return false;
   }
+
+  if (!decryptor_notification_cb_.is_null())
+    base::ResetAndReturn(&decryptor_notification_cb_).Run(decryptor_.get());
 
   return true;
 }
@@ -178,28 +204,29 @@ void ProxyDecryptor::CancelDecrypt() {
 
 void ProxyDecryptor::InitializeVideoDecoder(
     const media::VideoDecoderConfig& config,
-    const DecoderInitCB& init_cb) {
-  // TODO(xhwang): Implement this!
-  NOTIMPLEMENTED();
+    const DecoderInitCB& init_cb,
+    const KeyAddedCB& key_added_cb) {
+  // TODO(xhwang): Remove this!
+  NOTREACHED();
   init_cb.Run(false);
 }
 
 void ProxyDecryptor::DecryptAndDecodeVideo(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
-  // TODO(xhwang): Implement this!
-  NOTIMPLEMENTED();
+  // TODO(xhwang): Remove this!
+  NOTREACHED();
   video_decode_cb.Run(kError, NULL);
 }
 
 void ProxyDecryptor::CancelDecryptAndDecodeVideo() {
-  // TODO(xhwang): Implement this!
-  NOTIMPLEMENTED();
+  // TODO(xhwang): Remove this!
+  NOTREACHED();
 }
 
 void ProxyDecryptor::StopVideoDecoder() {
-  // TODO(xhwang): Implement this!
-  NOTIMPLEMENTED();
+  // TODO(xhwang): Remove this!
+  NOTREACHED();
 }
 
 scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(

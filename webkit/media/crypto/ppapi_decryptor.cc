@@ -104,7 +104,8 @@ void PpapiDecryptor::CancelDecrypt() {
 
 void PpapiDecryptor::InitializeVideoDecoder(
     const media::VideoDecoderConfig& config,
-    const DecoderInitCB& init_cb) {
+    const DecoderInitCB& init_cb,
+    const KeyAddedCB& key_added_cb) {
   // TODO(xhwang): Implement this!
   NOTIMPLEMENTED();
   init_cb.Run(false);
