@@ -200,10 +200,17 @@ TEST_F(EventFilterTest, PostHandle) {
   generator.PressKey(ui::VKEY_A, 0);
   generator.PressLeftButton();
 
-  EXPECT_EQ(1, w1_filter->key_event_count());
+#if defined(OS_WIN)
+  // Windows sends two WM_KEYDOWN/WM_CHAR events for one key press.
+  const int kExpectedKeyCount = 2;
+#else
+  const int kExpectedKeyCount = 1;
+#endif
+
+  EXPECT_EQ(kExpectedKeyCount, w1_filter->key_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
   EXPECT_EQ(1, root_window_filter.mouse_event_count());
-  EXPECT_EQ(1, d11.key_event_count());
+  EXPECT_EQ(kExpectedKeyCount, d11.key_event_count());
   EXPECT_EQ(1, d11.mouse_event_count());
 
   root_window_filter.ResetCounts();
@@ -246,12 +253,12 @@ TEST_F(EventFilterTest, PostHandle) {
   generator.PressKey(ui::VKEY_A, 0);
   generator.PressLeftButton();
 
-  EXPECT_EQ(1, d11.key_event_count());
+  EXPECT_EQ(kExpectedKeyCount, d11.key_event_count());
   EXPECT_EQ(1, d11.mouse_event_count());
   // The delegate processed the event. But it should still bubble up to the
   // post-target filters.
-  EXPECT_EQ(1, w1_filter->key_event_count());
-  EXPECT_EQ(1, root_window_filter.key_event_count());
+  EXPECT_EQ(kExpectedKeyCount, w1_filter->key_event_count());
+  EXPECT_EQ(kExpectedKeyCount, root_window_filter.key_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
   EXPECT_EQ(1, root_window_filter.mouse_event_count());
 
@@ -268,7 +275,7 @@ TEST_F(EventFilterTest, PostHandle) {
   generator.PressKey(ui::VKEY_A, 0);
   generator.PressLeftButton();
 
-  EXPECT_EQ(1, d11.key_event_count());
+  EXPECT_EQ(kExpectedKeyCount, d11.key_event_count());
   EXPECT_EQ(1, d11.mouse_event_count());
   // The delegate consumed the event. So it should no longer reach the
   // post-target filters.
@@ -295,7 +302,7 @@ TEST_F(EventFilterTest, PostHandle) {
   generator.PressKey(ui::VKEY_A, 0);
   generator.PressLeftButton();
 
-  EXPECT_EQ(1, w1_filter->key_event_count());
+  EXPECT_EQ(kExpectedKeyCount, w1_filter->key_event_count());
   EXPECT_EQ(0, d11.key_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
   EXPECT_EQ(0, d11.mouse_event_count());

@@ -256,6 +256,7 @@ Shell::~Shell() {
   resize_shadow_controller_.reset();
   shadow_controller_.reset();
   tooltip_controller_.reset();
+  event_client_.reset();
   window_cycle_controller_.reset();
   capture_controller_.reset();
   nested_dispatcher_controller_.reset();
@@ -344,6 +345,12 @@ Shell::RootWindowList Shell::GetAllRootWindows() {
 // static
 aura::Window* Shell::GetContainer(aura::RootWindow* root_window,
                                   int container_id) {
+  return root_window->GetChildById(container_id);
+}
+
+// static
+const aura::Window* Shell::GetContainer(const aura::RootWindow* root_window,
+                                        int container_id) {
   return root_window->GetChildById(container_id);
 }
 
@@ -447,6 +454,8 @@ void Shell::Init() {
   tooltip_controller_.reset(new internal::TooltipController(
       drag_drop_controller_.get()));
   AddEnvEventFilter(tooltip_controller_.get());
+
+  event_client_.reset(new internal::EventClientImpl);
 
   InitRootWindowController(root_window_controller);
 
@@ -731,6 +740,7 @@ void Shell::InitRootWindowController(
                                         screen_position_controller_.get());
   aura::client::SetCursorClient(root_window, &cursor_manager_);
   aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
+  aura::client::SetEventClient(root_window, event_client_.get());
 
   if (nested_dispatcher_controller_.get()) {
     aura::client::SetDispatcherClient(root_window,

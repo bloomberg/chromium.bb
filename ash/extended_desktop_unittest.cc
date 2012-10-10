@@ -4,7 +4,9 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/display/multi_display_manager.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -12,6 +14,7 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "base/string_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
@@ -23,6 +26,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -597,6 +601,72 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
   w1->GetNativeView()->ClearProperty(internal::kStayInSameRootWindowKey);
   w1->SetBounds(gfx::Rect(10, 10, 50, 50));
   EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
+}
+
+TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
+  UpdateDisplay("100x100,200x200");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  // Create normal windows on both displays.
+  views::Widget* widget1 = CreateTestWidget(
+      gfx::Screen::GetPrimaryDisplay().bounds());
+  widget1->Show();
+  EXPECT_EQ(root_windows[0], widget1->GetNativeView()->GetRootWindow());
+  views::Widget* widget2 = CreateTestWidget(
+      ScreenAsh::GetSecondaryDisplay().bounds());
+  widget2->Show();
+  EXPECT_EQ(root_windows[1], widget2->GetNativeView()->GetRootWindow());
+
+  // Create a LockScreen window.
+  views::Widget* lock_widget = CreateTestWidget(
+      gfx::Screen::GetPrimaryDisplay().bounds());
+  views::Textfield* textfield = new views::Textfield;
+  lock_widget->SetContentsView(textfield);
+
+  ash::Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      ash::internal::kShellWindowId_LockScreenContainer)->
+      AddChild(lock_widget->GetNativeView());
+  lock_widget->Show();
+  textfield->RequestFocus();
+
+  aura::FocusManager* focus_manager = root_windows[0]->GetFocusManager();
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+
+  // The lock window should get events on both root windows.
+  aura::test::EventGenerator generator1(root_windows[0]);
+  generator1.PressKey(ui::VKEY_A, 0);
+  generator1.ReleaseKey(ui::VKEY_A, 0);
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ("a", UTF16ToASCII(textfield->text()));
+
+  aura::test::EventGenerator generator2(root_windows[1]);
+  generator2.PressKey(ui::VKEY_B, 0);
+  generator2.ReleaseKey(ui::VKEY_B, 0);
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ("ab", UTF16ToASCII(textfield->text()));
+
+  // Deleting 2nd display. The lock window still should get the events.
+  UpdateDisplay("100x100");
+  generator2.PressKey(ui::VKEY_C, 0);
+  generator2.ReleaseKey(ui::VKEY_C, 0);
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ("abc", UTF16ToASCII(textfield->text()));
+
+  // Creating 2nd display again, and lock window still should get events
+  // on both root windows.
+  UpdateDisplay("100x100,200x200");
+  root_windows = Shell::GetAllRootWindows();
+  generator1.PressKey(ui::VKEY_D, 0);
+  generator1.ReleaseKey(ui::VKEY_D, 0);
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ("abcd", UTF16ToASCII(textfield->text()));
+
+  aura::test::EventGenerator generator22(root_windows[1]);
+  generator22.PressKey(ui::VKEY_E, 0);
+  generator22.ReleaseKey(ui::VKEY_E, 0);
+  EXPECT_EQ(lock_widget->GetNativeView(), focus_manager->GetFocusedWindow());
+  EXPECT_EQ("abcde", UTF16ToASCII(textfield->text()));
 }
 
 }  // namespace internal
