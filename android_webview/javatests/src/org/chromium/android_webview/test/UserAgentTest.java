@@ -9,20 +9,19 @@ import android.test.suitebuilder.annotation.SmallTest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewCore;
 
 public class UserAgentTest extends AndroidWebViewTestBase {
 
     private TestAwContentsClient mContentsClient;
-    private ContentViewCore mContentViewCore;
+    private AwContents mAwContents;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
-        mContentViewCore =
-                createAwTestContainerViewOnMainSync(mContentsClient).getContentViewCore();
+        mAwContents = createAwTestContainerViewOnMainSync(mContentsClient).getAwContents();
     }
 
     /**
@@ -32,16 +31,16 @@ public class UserAgentTest extends AndroidWebViewTestBase {
     @SmallTest
     @Feature({"Android-WebView"})
     public void testNoExtraSpaceBeforeBuildName() throws Throwable {
-        getContentSettingsOnUiThread(mContentViewCore).setJavaScriptEnabled(true);
+        getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
         loadDataSync(
-            mContentViewCore,
+            mAwContents,
             mContentsClient.getOnPageFinishedHelper(),
             // Spaces are replaced with underscores to avoid consecutive spaces compression.
             "<html>" +
             "<body onload='document.title=navigator.userAgent.replace(/ /g, \"_\")'></body>" +
             "</html>",
             "text/html", false);
-        final String ua = getTitleOnUiThread(mContentViewCore);
+        final String ua = getTitleOnUiThread(mAwContents);
         Matcher matcher = Pattern.compile("Android_[^;]+;_[^_]").matcher(ua);
         assertTrue(matcher.find());
     }

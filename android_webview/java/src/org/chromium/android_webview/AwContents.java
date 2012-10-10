@@ -18,6 +18,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.component.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.net.X509Util;
@@ -183,6 +184,17 @@ public class AwContents {
     public Bitmap getFavicon() {
         // To be implemented.
         return null;
+    }
+
+    /**
+     * Load url without fixing up the url string. Consumers of ContentView are responsible for
+     * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
+     * off during user input).
+     *
+     * @param pararms Parameters for this load.
+     */
+    public void loadUrl(LoadUrlParams params) {
+        mContentViewCore.loadUrl(params);
     }
 
     //--------------------------------------------------------------------------------------------

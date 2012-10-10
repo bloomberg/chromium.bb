@@ -11,10 +11,10 @@ import android.util.Pair;
 import android.view.MotionEvent;
 import android.util.Log;
 
+import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -92,15 +92,15 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         }
     }
 
-    private void clickOnLinkUsingJs(final ContentViewCore contentViewCore,
+    private void clickOnLinkUsingJs(final AwContents awContents,
             final TestAwContentsClient contentsClient) throws Throwable {
-        enableJavaScriptOnUiThread(contentViewCore);
+        enableJavaScriptOnUiThread(awContents);
 
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    String linkIsNotNull = executeJavaScriptAndWaitForResult(contentViewCore,
+                    String linkIsNotNull = executeJavaScriptAndWaitForResult(awContents,
                         contentsClient, "document.getElementById('link') != null");
                     return linkIsNotNull.equals("true");
                 } catch (Throwable t) {
@@ -114,7 +114,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                contentViewCore.evaluateJavaScript(
+                awContents.getContentViewCore().evaluateJavaScript(
                     "var evObj = document.createEvent('Events'); " +
                     "evObj.initEvent('click', true, false); " +
                     "document.getElementById('link').dispatchEvent(evObj);" +
@@ -209,12 +209,13 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     @DisabledTest
     public void testShouldIgnoreNavigationNotCalledOnLoadUrl() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
             contentsClient.getShouldIgnoreNavigationHelper();
 
-        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
         assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
@@ -228,17 +229,18 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     @DisabledTest
     public void testShouldIgnoreNavigationCantBlockLoads() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
             contentsClient.getShouldIgnoreNavigationHelper();
 
         setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
 
-        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
-        assertEquals("Title", getTitleOnUiThread(contentViewCore));
+        assertEquals("Title", getTitleOnUiThread(awContents));
     }
 
     /**
@@ -249,19 +251,20 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     @DisabledTest
     public void testShouldIgnoreNavigationCalledBeforeOnPageStarted() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
             contentsClient.getShouldIgnoreNavigationHelper();
         OnPageStartedHelper onPageStartedHelper = contentsClient.getOnPageStartedHelper();
 
-        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
         final int shouldIgnoreNavigationCallCount = shouldIgnoreNavigationHelper.getCallCount();
         final int onPageStartedCallCount = onPageStartedHelper.getCallCount();
         setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
-        clickOnLinkUsingJs(contentViewCore, contentsClient);
+        clickOnLinkUsingJs(awContents, contentsClient);
 
         shouldIgnoreNavigationHelper.waitForCallback(shouldIgnoreNavigationCallCount);
         assertEquals(onPageStartedCallCount, onPageStartedHelper.getCallCount());
@@ -276,21 +279,22 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     @DisabledTest
     public void testShouldIgnoreNavigationDoesNotCauseOnReceivedError() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
             contentsClient.getShouldIgnoreNavigationHelper();
         OnReceivedErrorHelper onReceivedErrorHelper = contentsClient.getOnReceivedErrorHelper();
         final int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
 
-        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
         final int shouldIgnoreNavigationCallCount = shouldIgnoreNavigationHelper.getCallCount();
 
         setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
 
-        clickOnLinkUsingJs(contentViewCore, contentsClient);
+        clickOnLinkUsingJs(awContents, contentsClient);
 
         shouldIgnoreNavigationHelper.waitForCallback(shouldIgnoreNavigationCallCount);
 
@@ -298,7 +302,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
 
         // After we load this URL we're certain that any in-flight callbacks for the previous
         // navigation have been delivered.
-        loadUrlSync(contentViewCore, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
 
         assertEquals(onReceivedErrorCallCount, onReceivedErrorHelper.getCallCount());
     }
@@ -308,18 +312,19 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledWhenLinkClicked() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
         // We can't go to about:blank from here because we'd get a cross-origin error.
-        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
         int callCount = shouldIgnoreNavigationHelper.getCallCount();
 
-        clickOnLinkUsingJs(contentViewCore, contentsClient);
+        clickOnLinkUsingJs(awContents, contentsClient);
 
         shouldIgnoreNavigationHelper.waitForCallback(callCount);
     }
@@ -329,8 +334,9 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledWhenSelfLinkClicked() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
@@ -343,12 +349,12 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
             addPageToTestServer(webServer, httpPath,
                     getHtmlForPageWithSimpleLinkTo(httpPathOnServer));
 
-            loadUrlSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                     httpPathOnServer);
 
             int callCount = shouldIgnoreNavigationHelper.getCallCount();
 
-            clickOnLinkUsingJs(contentViewCore, contentsClient);
+            clickOnLinkUsingJs(awContents, contentsClient);
 
             shouldIgnoreNavigationHelper.waitForCallback(callCount);
             assertEquals(httpPathOnServer,
@@ -363,9 +369,10 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     public void testShouldIgnoreNavigationCalledWhenNavigatingFromJavaScriptUsingAssign()
             throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
-        enableJavaScriptOnUiThread(contentViewCore);
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        enableJavaScriptOnUiThread(awContents);
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
@@ -374,12 +381,12 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
             // Set up the HTML page.
             webServer = new TestWebServer(false);
             final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                     getHtmlForPageWithJsAssignLinkTo(redirectTargetUrl), "text/html", false);
 
             int callCount = shouldIgnoreNavigationHelper.getCallCount();
 
-            clickOnLinkUsingJs(contentViewCore, contentsClient);
+            clickOnLinkUsingJs(awContents, contentsClient);
 
             shouldIgnoreNavigationHelper.waitForCallback(callCount);
         } finally {
@@ -392,9 +399,10 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     public void testShouldIgnoreNavigationCalledWhenNavigatingFromJavaScriptUsingReplace()
             throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
-        enableJavaScriptOnUiThread(contentViewCore);
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        enableJavaScriptOnUiThread(awContents);
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
@@ -403,11 +411,11 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
             // Set up the HTML page.
             webServer = new TestWebServer(false);
             final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                     getHtmlForPageWithJsReplaceLinkTo(redirectTargetUrl), "text/html", false);
 
             int callCount = shouldIgnoreNavigationHelper.getCallCount();
-            clickOnLinkUsingJs(contentViewCore, contentsClient);
+            clickOnLinkUsingJs(awContents, contentsClient);
             shouldIgnoreNavigationHelper.waitForCallback(callCount);
         } finally {
             if (webServer != null) webServer.shutdown();
@@ -418,8 +426,9 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationPassesCorrectUrl() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
@@ -428,11 +437,11 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
             // Set up the HTML page.
             webServer = new TestWebServer(false);
             final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                     getHtmlForPageWithSimpleLinkTo(redirectTargetUrl), "text/html", false);
 
             int callCount = shouldIgnoreNavigationHelper.getCallCount();
-            clickOnLinkUsingJs(contentViewCore, contentsClient);
+            clickOnLinkUsingJs(awContents, contentsClient);
             shouldIgnoreNavigationHelper.waitForCallback(callCount);
             assertEquals(redirectTargetUrl,
                     shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
@@ -445,8 +454,9 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCanOverrideLoading() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
@@ -455,7 +465,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
             // Set up the HTML page.
             webServer = new TestWebServer(false);
             final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                     getHtmlForPageWithSimpleLinkTo(redirectTargetUrl), "text/html", false);
 
             setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
@@ -463,7 +473,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
             OnPageFinishedHelper onPageFinishedHelper = contentsClient.getOnPageFinishedHelper();
             int onPageFinishedCountBeforeClickingOnLink = onPageFinishedHelper.getCallCount();
             int callCount = shouldIgnoreNavigationHelper.getCallCount();
-            clickOnLinkUsingJs(contentViewCore, contentsClient);
+            clickOnLinkUsingJs(awContents, contentsClient);
             // Some time around here true should be returned from the shouldIgnoreNavigation
             // callback causing the navigation caused by calling clickOnLinkUsingJs to be ignored.
             // We validate this by indirectly checking that an onPageFinished callback was not
@@ -473,7 +483,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
             setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, false);
 
             final String synchronizationUrl = ABOUT_BLANK_URL;
-            loadUrlSync(contentViewCore, onPageFinishedHelper, synchronizationUrl);
+            loadUrlSync(awContents, onPageFinishedHelper, synchronizationUrl);
 
             assertEquals(synchronizationUrl, onPageFinishedHelper.getUrl());
             assertEquals(onPageFinishedHelper.getCallCount(),
@@ -491,15 +501,16 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
                 "PGh0bWw+PGhlYWQ+PHRpdGxlPmRhdGFVcmxUZXN0QmFzZTY0PC90aXRsZT48" +
                 "L2hlYWQ+PC9odG1sPg==";
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
-        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(dataUrl), "text/html", false);
 
         int callCount = shouldIgnoreNavigationHelper.getCallCount();
-        clickOnLinkUsingJs(contentViewCore, contentsClient);
+        clickOnLinkUsingJs(awContents, contentsClient);
 
         shouldIgnoreNavigationHelper.waitForCallback(callCount);
         assertTrue("Expected URL that starts with 'data:' but got: <" +
@@ -526,17 +537,18 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     private void doTestShouldIgnoreNavigationCalledOnRedirect(TestWebServer webServer,
             String redirectUrl, String redirectTarget) throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final ContentViewCore contentViewCore =
-            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
         final String pageWithLinkToRedirectUrl = addPageToTestServer(webServer,
                 "/page_with_link_to_redirect.html",
                 getHtmlForPageWithSimpleLinkTo(redirectUrl));
-        enableJavaScriptOnUiThread(contentViewCore);
+        enableJavaScriptOnUiThread(awContents);
 
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
         int directLoadCallCount = shouldIgnoreNavigationHelper.getCallCount();
-        loadUrlSync(contentViewCore, contentsClient.getOnPageFinishedHelper(), redirectUrl);
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), redirectUrl);
 
         shouldIgnoreNavigationHelper.waitForCallback(directLoadCallCount, adjustForBug154558(1));
         assertEquals(redirectTarget,
@@ -550,7 +562,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         //    true.
         // Both of these should yield the same result which is what we're verifying here.
         int indirectLoadCallCount = shouldIgnoreNavigationHelper.getCallCount();
-        loadUrlSync(contentViewCore, contentsClient.getOnPageFinishedHelper(),
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 pageWithLinkToRedirectUrl);
 
         // We waitForCallback here because we call shouldIgnoreNavigation for URLs that were passed
@@ -559,7 +571,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         // assertEquals(indirectLoadCallCount, shouldIgnoreNavigationHelper.getCallCount());
         shouldIgnoreNavigationHelper.waitForCallback(indirectLoadCallCount, 1);
 
-        clickOnLinkUsingJs(contentViewCore, contentsClient);
+        clickOnLinkUsingJs(awContents, contentsClient);
 
         shouldIgnoreNavigationHelper.waitForCallback(indirectLoadCallCount, adjustForBug154558(2));
 
