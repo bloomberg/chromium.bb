@@ -114,6 +114,13 @@ FileSystemURL FileSystemURL::WithPath(const FilePath& path) const {
   return url;
 }
 
+bool FileSystemURL::IsParent(const FileSystemURL& child) const {
+  return origin() == child.origin() &&
+         type() == child.type() &&
+         filesystem_id() == child.filesystem_id() &&
+         path().IsParent(child.path());
+}
+
 bool FileSystemURL::operator==(const FileSystemURL& that) const {
   return origin_ == that.origin_ &&
       type_ == that.type_ &&

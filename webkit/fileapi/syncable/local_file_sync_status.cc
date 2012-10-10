@@ -6,16 +6,6 @@
 
 namespace fileapi {
 
-namespace {
-
-bool IsParent(const FileSystemURL& a, const FileSystemURL& b) {
-  return a.origin() == b.origin() &&
-         a.type() == b.type() &&
-         a.path().IsParent(b.path());
-}
-
-}  // namespace
-
 LocalFileSyncStatus::LocalFileSyncStatus() {}
 
 LocalFileSyncStatus::~LocalFileSyncStatus() {
@@ -71,10 +61,10 @@ bool LocalFileSyncStatus::IsChildOrParentWriting(
   lock_.AssertAcquired();
   URLCountMap::const_iterator upper = writing_.upper_bound(url);
   URLCountMap::const_reverse_iterator rupper(upper);
-  if (upper != writing_.end() && IsParent(url, upper->first))
+  if (upper != writing_.end() && url.IsParent(upper->first))
     return true;
   if (rupper != writing_.rend() &&
-      (rupper->first == url || IsParent(rupper->first, url)))
+      (rupper->first == url || rupper->first.IsParent(url)))
     return true;
   return false;
 }
@@ -84,10 +74,10 @@ bool LocalFileSyncStatus::IsChildOrParentSyncing(
   lock_.AssertAcquired();
   URLSet::const_iterator upper = syncing_.upper_bound(url);
   URLSet::const_reverse_iterator rupper(upper);
-  if (upper != syncing_.end() && IsParent(url, *upper))
+  if (upper != syncing_.end() && url.IsParent(*upper))
     return true;
   if (rupper != syncing_.rend() &&
-      (*rupper == url || IsParent(*rupper, url)))
+      (*rupper == url || rupper->IsParent(url)))
     return true;
   return false;
 }

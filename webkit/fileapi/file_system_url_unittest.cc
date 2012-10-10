@@ -10,14 +10,18 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 #define FPL FILE_PATH_LITERAL
 
 namespace fileapi {
+
 namespace {
-FileSystemURL CreateFileSystemURL(const char* url) {
- return FileSystemURL(GURL(url));
+
+FileSystemURL CreateFileSystemURL(const std::string& url_string) {
+ return FileSystemURL(GURL(url_string));
 }
+
 }  // namespace
 
 TEST(FileSystemURLTest, ParsePersistent) {
@@ -155,6 +159,50 @@ TEST(FileSystemURLTest, WithPathForExternal) {
     EXPECT_EQ(base.mount_type(), url.mount_type());
     EXPECT_EQ(base.filesystem_id(), url.filesystem_id());
   }
+}
+
+TEST(FileSystemURLTest, IsParent) {
+  ScopedExternalFileSystem scoped1("foo", kFileSystemTypeSyncable, FilePath());
+  ScopedExternalFileSystem scoped2("bar", kFileSystemTypeSyncable, FilePath());
+
+  const std::string root1 = GetFileSystemRootURI(
+      GURL("http://example.com"), kFileSystemTypeTemporary).spec();
+  const std::string root2 = GetSyncableFileSystemRootURI(
+      GURL("http://example.com"), "foo").spec();
+  const std::string root3 = GetSyncableFileSystemRootURI(
+      GURL("http://example.com"), "bar").spec();
+  const std::string root4 = GetFileSystemRootURI(
+      GURL("http://chromium.org"), kFileSystemTypeTemporary).spec();
+
+  const std::string parent("dir");
+  const std::string child("dir/child");
+  const std::string other("other");
+
+  // True cases.
+  EXPECT_TRUE(CreateFileSystemURL(root1 + parent).IsParent(
+      CreateFileSystemURL(root1 + child)));
+  EXPECT_TRUE(CreateFileSystemURL(root2 + parent).IsParent(
+      CreateFileSystemURL(root2 + child)));
+
+  // False cases: the path is not a child.
+  EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
+      CreateFileSystemURL(root1 + other)));
+  EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
+      CreateFileSystemURL(root1 + parent)));
+  EXPECT_FALSE(CreateFileSystemURL(root1 + child).IsParent(
+      CreateFileSystemURL(root1 + parent)));
+
+  // False case: different types.
+  EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
+      CreateFileSystemURL(root2 + child)));
+
+  // False case: different filesystem ID.
+  EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
+      CreateFileSystemURL(root3 + child)));
+
+  // False case: different origins.
+  EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
+      CreateFileSystemURL(root4 + child)));
 }
 
 }  // namespace fileapi

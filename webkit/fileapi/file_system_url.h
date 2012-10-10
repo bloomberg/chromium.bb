@@ -93,6 +93,9 @@ class FILEAPI_EXPORT FileSystemURL {
   // original filesystem: URL in the current implementation).
   FileSystemURL WithPath(const FilePath& path) const;
 
+  // Returns true if this URL is a strict parent of the |child|.
+  bool IsParent(const FileSystemURL& child) const;
+
   bool operator==(const FileSystemURL& that) const;
 
   struct FILEAPI_EXPORT Comparator {
