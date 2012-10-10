@@ -360,7 +360,7 @@ TEST_F(RootWindowTest, CanProcessEventsWithinSubtree) {
                                                 client.GetNonLockWindow());
   w2->set_id(2);
   scoped_ptr<Window> w3(
-      test::CreateTestWindowWithDelegate(&d, 3, gfx::Rect(20, 20, 20, 20),
+      test::CreateTestWindowWithDelegate(&d, 3, gfx::Rect(30, 30, 20, 20),
                                          client.GetLockWindow()));
 
   w1->Focus();

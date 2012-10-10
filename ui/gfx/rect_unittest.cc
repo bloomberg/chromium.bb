@@ -307,6 +307,66 @@ TEST(RectTest, SplitVertically) {
   EXPECT_TRUE(right_half.Equals(gfx::Rect(12, 10, 3, 10)));
 }
 
+TEST(RectTest, CenterPoint) {
+  gfx::Point center;
+
+  // When origin is (0, 0).
+  center = gfx::Rect(0, 0, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == gfx::Point(10, 10));
+
+  // When origin is even.
+  center = gfx::Rect(10, 10, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == gfx::Point(20, 20));
+
+  // When origin is odd.
+  center = gfx::Rect(11, 11, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == gfx::Point(21, 21));
+
+  // When 0 width or height.
+  center = gfx::Rect(10, 10, 0, 20).CenterPoint();
+  EXPECT_TRUE(center == gfx::Point(10, 20));
+  center = gfx::Rect(10, 10, 20, 0).CenterPoint();
+  EXPECT_TRUE(center == gfx::Point(20, 10));
+
+  // When an odd size.
+  center = gfx::Rect(10, 10, 21, 21).CenterPoint();
+  EXPECT_TRUE(center == gfx::Point(20, 20));
+
+  // When an odd size and position.
+  center = gfx::Rect(11, 11, 21, 21).CenterPoint();
+  EXPECT_TRUE(center == gfx::Point(21, 21));
+}
+
+TEST(RectTest, CenterPointF) {
+  gfx::PointF center;
+
+  // When origin is (0, 0).
+  center = gfx::RectF(0, 0, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == gfx::PointF(10, 10));
+
+  // When origin is even.
+  center = gfx::RectF(10, 10, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == gfx::PointF(20, 20));
+
+  // When origin is odd.
+  center = gfx::RectF(11, 11, 20, 20).CenterPoint();
+  EXPECT_TRUE(center == gfx::PointF(21, 21));
+
+  // When 0 width or height.
+  center = gfx::RectF(10, 10, 0, 20).CenterPoint();
+  EXPECT_TRUE(center == gfx::PointF(10, 20));
+  center = gfx::RectF(10, 10, 20, 0).CenterPoint();
+  EXPECT_TRUE(center == gfx::PointF(20, 10));
+
+  // When an odd size.
+  center = gfx::RectF(10, 10, 21, 21).CenterPoint();
+  EXPECT_TRUE(center == gfx::PointF(20.5f, 20.5f));
+
+  // When an odd size and position.
+  center = gfx::RectF(11, 11, 21, 21).CenterPoint();
+  EXPECT_TRUE(center == gfx::PointF(21.5f, 21.5f));
+}
+
 TEST(RectTest, SharesEdgeWith) {
   gfx::Rect r(2, 3, 4, 5);
 
