@@ -7,10 +7,12 @@
  -->
 
 <resources>
-
     <string name="url_hint">Type URL Here</string>
-
     <string name="accessibility_content_view">Web View</string>
+
+    <!-- Action Bar -->
+    <string name="action_bar_share">Share</string>
+    <string name="action_bar_search">Search</string>
 
     <!-- Media Player -->
     <string name="media_player_error_title">Cannot play video</string>

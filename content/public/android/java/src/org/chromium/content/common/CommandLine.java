@@ -50,6 +50,9 @@ public abstract class CommandLine {
     // Change the url of the JavaScript that gets injected when accessibility mode is enabled.
     public static final String ACCESSIBILITY_JAVASCRIPT_URL = "accessibility-js-url";
 
+    // Sets the ISO country code that will be used for phone number detection.
+    public static final String NETWORK_COUNTRY_ISO = "network-country-iso";
+
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
     /**

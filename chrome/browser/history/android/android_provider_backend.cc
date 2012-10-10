@@ -624,6 +624,9 @@ bool AndroidProviderBackend::DeleteSearchTerms(
     const std::string& selection,
     const std::vector<string16>& selection_args,
     int * deleted_count) {
+  if (!EnsureInitializedAndUpdated())
+    return false;
+
   SearchTerms rows;
   if (!GetSelectedSearchTerms(selection, selection_args, &rows))
     return false;

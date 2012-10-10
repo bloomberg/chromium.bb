@@ -27,6 +27,7 @@ public class ContentShellActivity extends Activity {
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
     public static final String DEFAULT_SHELL_URL = "http://www.google.com";
+    public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
     private ShellManager mShellManager;
     private ActivityNativeWindow mActivityNativeWindow;
@@ -36,7 +37,13 @@ public class ContentShellActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         // Initializing the command line must occur before loading the library.
-        if (!CommandLine.isInitialized()) CommandLine.initFromFile(COMMAND_LINE_FILE);
+        if (!CommandLine.isInitialized()) {
+            CommandLine.initFromFile(COMMAND_LINE_FILE);
+            String[] commandLineParams = getCommandLineParamsFromIntent(getIntent());
+            if (commandLineParams != null) {
+                CommandLine.getInstance().appendSwitchesAndArguments(commandLineParams);
+            }
+        }
         waitForDebuggerIfNeeded();
 
         LibraryLoader.loadAndInitSync();
@@ -97,6 +104,10 @@ public class ContentShellActivity extends Activity {
 
     @Override
     protected void onNewIntent(Intent intent) {
+        if (getCommandLineParamsFromIntent(intent) != null) {
+            Log.i(TAG, "Ignoring command line params: can only be set when creating the activity.");
+        }
+
         String url = getUrlFromIntent(intent);
         if (!TextUtils.isEmpty(url)) {
             Shell activeView = getActiveShell();
@@ -132,6 +143,10 @@ public class ContentShellActivity extends Activity {
         return intent != null ? intent.getDataString() : null;
     }
 
+    private static String[] getCommandLineParamsFromIntent(Intent intent) {
+        return intent != null ? intent.getStringArrayExtra(COMMAND_LINE_ARGS_KEY) : null;
+    }
+
     /**
      * @return The {@link ShellManager} configured for the activity or null if it has not been
      *         created yet.
@@ -158,7 +173,11 @@ public class ContentShellActivity extends Activity {
 
     private void initializeContentViewResources() {
         AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS = R.dimen.link_preview_overlay_radius;
+        AppResource.DRAWABLE_ICON_ACTION_BAR_SHARE = R.drawable.ic_menu_share_holo_light;
+        AppResource.DRAWABLE_ICON_ACTION_BAR_WEB_SEARCH = R.drawable.ic_menu_search_holo_light;
         AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY = R.drawable.popup_zoomer_overlay;
+        AppResource.STRING_ACTION_BAR_SHARE = R.string.action_bar_share;
+        AppResource.STRING_ACTION_BAR_WEB_SEARCH = R.string.action_bar_search;
         AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION = R.string.accessibility_content_view;
         AppResource.STRING_MEDIA_PLAYER_MESSAGE_PLAYBACK_ERROR =
                 R.string.media_player_error_text_invalid_progressive_playback;

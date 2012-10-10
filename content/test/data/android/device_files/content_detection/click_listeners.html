@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+</head>
+<body>
+Blah blah <a href="empty.html">Excepteur sint 1818 Library Street <span id="linktest">Suite</span> 400, VA 20190 occaecat cupidatat</a><br>
+
+<!-- Click listeners --!>
+<span onclick="javascript:window.location.href='empty.html'">
+blah 1818 <span id="clicktest1">Library</span> Street <br>
+Suite 400, VA 20190 blah <br>
+</span><br>
+
+<span id="clicklistener">
+blah 1818 Library Street <br>
+Suite <span id="clicktest2">400</span>, VA 20190 blah <br>
+</span><br>
+
+<script language=javascript>
+var blah = document.getElementById('clicklistener');
+blah.addEventListener('click', function() { window.location.href = "empty.html"; });
+</script>
+
+</body>
+</html>

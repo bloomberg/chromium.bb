@@ -12,6 +12,8 @@ class ChromeMainDelegateTestShellAndroid : public ChromeMainDelegateAndroid {
   ChromeMainDelegateTestShellAndroid();
   virtual ~ChromeMainDelegateTestShellAndroid();
 
+  virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
+
   virtual bool RegisterApplicationNativeMethods(JNIEnv* env) OVERRIDE;
 
  private:

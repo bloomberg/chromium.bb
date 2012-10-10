@@ -7,6 +7,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "chrome/android/testshell/tab_manager.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+
+static const char kDefaultCountryCode[] = "US";
 
 static base::android::RegistrationMethod kRegistrationMethods[] = {
     { "TabManager", chrome::RegisterTabManager },
@@ -16,6 +19,11 @@ ChromeMainDelegateTestShellAndroid::ChromeMainDelegateTestShellAndroid() {
 }
 
 ChromeMainDelegateTestShellAndroid::~ChromeMainDelegateTestShellAndroid() {
+}
+
+bool ChromeMainDelegateTestShellAndroid::BasicStartupComplete(int* exit_code) {
+  TemplateURLPrepopulateData::InitCountryCode(kDefaultCountryCode);
+  return ChromeMainDelegateAndroid::BasicStartupComplete(exit_code);
 }
 
 bool ChromeMainDelegateTestShellAndroid::RegisterApplicationNativeMethods(

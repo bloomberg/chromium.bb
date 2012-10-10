@@ -10,7 +10,7 @@ import org.chromium.content.browser.ContentView;
 /**
  * This class is used to provide callback hooks for tests and related classes.
  */
-public class TestCallbackHelperContainer{
+public class TestCallbackHelperContainer {
     private TestContentViewClient mTestContentViewClient;
     private TestWebContentsObserver mTestWebContentsObserver;
 
@@ -86,6 +86,18 @@ public class TestCallbackHelperContainer{
         }
     }
 
+    public static class OnStartContentIntentHelper extends CallbackHelper {
+        private String mIntentUrl;
+        public void notifyCalled(String intentUrl) {
+            mIntentUrl = intentUrl;
+            notifyCalled();
+        }
+        public String getIntentUrl() {
+            assert getCallCount() > 0;
+            return mIntentUrl;
+        }
+    }
+
     public OnPageStartedHelper getOnPageStartedHelper() {
         return mTestWebContentsObserver.getOnPageStartedHelper();
     }
@@ -100,5 +112,9 @@ public class TestCallbackHelperContainer{
 
     public OnEvaluateJavaScriptResultHelper getOnEvaluateJavaScriptResultHelper() {
         return mTestContentViewClient.getOnEvaluateJavaScriptResultHelper();
+    }
+
+    public OnStartContentIntentHelper getOnStartContentIntentHelper() {
+        return mTestContentViewClient.getOnStartContentIntentHelper();
     }
 }
