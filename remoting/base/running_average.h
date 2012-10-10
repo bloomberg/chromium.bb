@@ -17,7 +17,6 @@
 
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
-#include "base/time.h"
 
 namespace remoting {
 
@@ -25,7 +24,7 @@ class RunningAverage {
  public:
   // Construct a running average counter for a specific window size. The
   // |windows_size| most recent values are kept and the average is reported.
-  RunningAverage(int window_size);
+  explicit RunningAverage(int window_size);
 
   virtual ~RunningAverage();
 

@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"

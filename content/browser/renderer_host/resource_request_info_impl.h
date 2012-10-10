@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
-#include "base/time.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"

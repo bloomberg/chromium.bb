@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "content/common/child_process.h"

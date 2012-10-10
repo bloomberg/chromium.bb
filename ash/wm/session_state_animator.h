@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "base/timer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
@@ -110,7 +109,7 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
   // Drops back layer after |UNDO_SLOW_CLOSE| animation delay.
   void ScheduleDropBlackLayer();
 
-   // Apply animation |type| to all containers included in |container_mask|.
+  // Apply animation |type| to all containers included in |container_mask|.
   void StartAnimation(int container_mask,
                       AnimationType type);
 

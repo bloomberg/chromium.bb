@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "base/timer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -130,6 +129,6 @@ class GestureEventFilter {
   DISALLOW_COPY_AND_ASSIGN(GestureEventFilter);
 };
 
-} // namespace content
+}  // namespace content
 
-#endif // CONTENT_BROWSER_RENDERER_HOST_GESTURE_EVENT_FILTER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_GESTURE_EVENT_FILTER_H_

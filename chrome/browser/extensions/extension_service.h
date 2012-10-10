@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/time.h"
 #include "base/tuple.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/app_shortcut_manager.h"

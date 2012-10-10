@@ -6,7 +6,6 @@
 #define UI_BASE_GESTURES_GESTURE_TYPES_H_
 
 #include "base/logging.h"
-#include "base/time.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/gfx/rect.h"
 

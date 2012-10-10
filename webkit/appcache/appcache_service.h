@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "webkit/appcache/appcache_export.h"

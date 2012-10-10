@@ -6,7 +6,7 @@
 #define WEBKIT_APPCACHE_WEB_APPLICATION_CACHE_HOST_IMPL_H_
 
 #include <string>
-#include "base/time.h"
+
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebApplicationCacheHostClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
@@ -84,4 +84,3 @@ class APPCACHE_EXPORT WebApplicationCacheHostImpl
 }  // namespace
 
 #endif  // WEBKIT_APPCACHE_WEB_APPLICATION_CACHE_HOST_IMPL_H_
-

@@ -11,7 +11,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time.h"
 #include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/device_data.h"
 #include "content/browser/device_orientation/provider.h"

@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/time.h"
 #include "chrome/browser/automation/automation_resource_tracker.h"
 
 namespace content {

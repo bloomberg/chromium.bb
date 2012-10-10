@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/observer_list.h"
-#include "base/time.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/protocol/client_stub.h"

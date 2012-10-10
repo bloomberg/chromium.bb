@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/time.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/prefs/value_map_pref_store.h"
 

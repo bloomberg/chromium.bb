@@ -13,7 +13,6 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #import "chrome/browser/ui/cocoa/chrome_browser_window.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"

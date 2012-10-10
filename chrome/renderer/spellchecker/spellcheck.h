@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
-#include "base/time.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"

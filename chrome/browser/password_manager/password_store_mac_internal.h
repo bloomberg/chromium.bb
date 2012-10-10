@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/time.h"
 #include "crypto/apple_keychain.h"
 
 using crypto::AppleKeychain;
@@ -170,6 +169,6 @@ std::vector<content::PasswordForm*> GetPasswordsForForms(
     const AppleKeychain& keychain,
     std::vector<content::PasswordForm*>* database_forms);
 
-}  // internal_keychain_helpers
+}  // namespace internal_keychain_helpers
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_MAC_INTERNAL_H_

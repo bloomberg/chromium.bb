@@ -11,7 +11,6 @@
 #include <locationapi.h>
 #include <sensors.h>
 
-#include "base/time.h"
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/content_export.h"
 
