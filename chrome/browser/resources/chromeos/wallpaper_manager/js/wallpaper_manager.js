@@ -288,10 +288,17 @@ function WallpaperManager(dialogDom) {
     var files = $('file-selector').files;
     if (files.length != 1)
       console.error('More than one files are selected or no file selected');
+    var file = files[0];
+    if (!file.type.match('image/jpeg')) {
+      this.butterBar_.showError_(str('invalidFormat'));
+      return;
+    }
     var reader = new FileReader();
     reader.readAsArrayBuffer(files[0]);
     var self = this;
-    // TODO(bshe): Handle file error.
+    reader.addEventListener('error', function(e) {
+      this.butterBar_.showError_(str('accessFileFailure'));
+    });
     reader.addEventListener('load', function(e) {
       self.customWallpaperData_ = e.target.result;
       self.refreshWallpaper_(self.customWallpaperData_);
