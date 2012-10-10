@@ -1055,6 +1055,11 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // in case of errors.
   if (is_chrome) {
     ClearRlzProductState();
+    // Delete the key that delegate_execute might make.
+    if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+      InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER,
+                                     chrome::kMetroRegistryPath);
+    }
 
     auto_launch_util::DisableAllAutoStartFeatures(
         ASCIIToUTF16(chrome::kInitialProfile));
