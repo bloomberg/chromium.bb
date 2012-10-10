@@ -448,6 +448,8 @@ class VectorCanvasTest : public ImageTest {
 ////////////////////////////////////////////////////////////////////////////////
 // Actual tests
 
+#if !defined(USE_AURA)  // http://crbug.com/154358
+
 TEST_F(VectorCanvasTest, BasicDrawing) {
   EXPECT_EQ(Image(*vcanvas_).PercentageDifferent(Image(*pcanvas_)), 0.)
       << L"clean";
@@ -960,5 +962,7 @@ TEST_F(VectorCanvasTest, DISABLED_Matrix) {
     EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("rotate")));
   }
 }
+
+#endif  // !defined(USE_AURA)
 
 }  // namespace skia
