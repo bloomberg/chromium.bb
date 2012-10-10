@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/view.h"
 
 #if defined(OS_WIN)
@@ -36,7 +37,6 @@ namespace internal {
 class MenuRunnerImpl;
 }
 
-struct MenuConfig;
 class MenuController;
 class MenuDelegate;
 class SubmenuView;
@@ -320,6 +320,15 @@ class VIEWS_EXPORT MenuItemView : public View {
     use_right_margin_ = use_right_margin;
   }
 
+  // Sets MenuConfig to be used instead of default one.
+  // Setting |menu_config_| to NULL will make menu to use a default MenuConfig.
+  void set_menu_config(const MenuConfig* menu_config) {
+    menu_config_.reset(menu_config);
+  }
+
+  // Returns a reference to MenuConfig to be used with this menu.
+  const MenuConfig& GetMenuConfig() const;
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -499,6 +508,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   // If set to false, the right margin will be removed for menu lines
   // containing other elements.
   bool use_right_margin_;
+
+  // |menu_config_| to replace default one, could be NULL,
+  // applies to root menu item only.
+  scoped_ptr<const MenuConfig> menu_config_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
 };

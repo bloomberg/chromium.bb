@@ -19,11 +19,8 @@ using ui::NativeThemeWin;
 
 namespace views {
 
-// static
-MenuConfig* MenuConfig::Create() {
-  MenuConfig* config = new MenuConfig();
-
-  config->text_color = NativeThemeWin::instance()->GetThemeColorWithDefault(
+void MenuConfig::Init() {
+  text_color = NativeThemeWin::instance()->GetThemeColorWithDefault(
       NativeThemeWin::MENU, MENU_POPUPITEM, MPI_NORMAL, TMT_TEXTCOLOR,
       COLOR_MENUTEXT);
 
@@ -31,9 +28,9 @@ MenuConfig* MenuConfig::Create() {
   base::win::GetNonClientMetrics(&metrics);
   l10n_util::AdjustUIFont(&(metrics.lfMenuFont));
   {
-    base::win::ScopedHFONT font(CreateFontIndirect(&metrics.lfMenuFont));
-    DLOG_ASSERT(font.Get());
-    config->font = gfx::Font(font);
+    base::win::ScopedHFONT new_font(CreateFontIndirect(&metrics.lfMenuFont));
+    DLOG_ASSERT(new_font.Get());
+    font = gfx::Font(new_font);
   }
   NativeTheme::ExtraParams extra;
   extra.menu_check.is_radio = false;
@@ -41,64 +38,63 @@ MenuConfig* MenuConfig::Create() {
   gfx::Size check_size = NativeTheme::instance()->GetPartSize(
       NativeTheme::kMenuCheck, NativeTheme::kNormal, extra);
   if (!check_size.IsEmpty()) {
-    config->check_width = check_size.width();
-    config->check_height = check_size.height();
+    check_width = check_size.width();
+    check_height = check_size.height();
   } else {
-    config->check_width = GetSystemMetrics(SM_CXMENUCHECK);
-    config->check_height = GetSystemMetrics(SM_CYMENUCHECK);
+    check_width = GetSystemMetrics(SM_CXMENUCHECK);
+    check_height = GetSystemMetrics(SM_CYMENUCHECK);
   }
 
   extra.menu_check.is_radio = true;
   gfx::Size radio_size = NativeTheme::instance()->GetPartSize(
       NativeTheme::kMenuCheck, NativeTheme::kNormal, extra);
   if (!radio_size.IsEmpty()) {
-    config->radio_width = radio_size.width();
-    config->radio_height = radio_size.height();
+    radio_width = radio_size.width();
+    radio_height = radio_size.height();
   } else {
-    config->radio_width = GetSystemMetrics(SM_CXMENUCHECK);
-    config->radio_height = GetSystemMetrics(SM_CYMENUCHECK);
+    radio_width = GetSystemMetrics(SM_CXMENUCHECK);
+    radio_height = GetSystemMetrics(SM_CYMENUCHECK);
   }
 
   gfx::Size arrow_size = NativeTheme::instance()->GetPartSize(
       NativeTheme::kMenuPopupArrow, NativeTheme::kNormal, extra);
   if (!arrow_size.IsEmpty()) {
-    config->arrow_width = arrow_size.width();
-    config->arrow_height = arrow_size.height();
+    arrow_width = arrow_size.width();
+    arrow_height = arrow_size.height();
   } else {
     // Sadly I didn't see a specify metrics for this.
-    config->arrow_width = GetSystemMetrics(SM_CXMENUCHECK);
-    config->arrow_height = GetSystemMetrics(SM_CYMENUCHECK);
+    arrow_width = GetSystemMetrics(SM_CXMENUCHECK);
+    arrow_height = GetSystemMetrics(SM_CYMENUCHECK);
   }
 
   gfx::Size gutter_size = NativeTheme::instance()->GetPartSize(
       NativeTheme::kMenuPopupGutter, NativeTheme::kNormal, extra);
   if (!gutter_size.IsEmpty()) {
-    config->gutter_width = gutter_size.width();
-    config->render_gutter = true;
+    gutter_width = gutter_size.width();
+    render_gutter = true;
   } else {
-    config->gutter_width = 0;
-    config->render_gutter = false;
+    gutter_width = 0;
+    render_gutter = false;
   }
 
   gfx::Size separator_size = NativeTheme::instance()->GetPartSize(
       NativeTheme::kMenuPopupSeparator, NativeTheme::kNormal, extra);
   if (!separator_size.IsEmpty()) {
-    config->separator_height = separator_size.height();
+    separator_height = separator_size.height();
   } else {
     // -1 makes separator centered.
-    config->separator_height = GetSystemMetrics(SM_CYMENU) / 2 - 1;
+    separator_height = GetSystemMetrics(SM_CYMENU) / 2 - 1;
   }
 
   // On Windows, having some menus use wider spacing than others looks wrong.
   // See http://crbug.com/88875
-  config->item_no_icon_bottom_margin = config->item_bottom_margin;
-  config->item_no_icon_top_margin = config->item_top_margin;
+  item_no_icon_bottom_margin = item_bottom_margin;
+  item_no_icon_top_margin = item_top_margin;
 
   BOOL show_cues;
-  config->show_mnemonics =
+  show_mnemonics =
       (SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &show_cues, 0) &&
        show_cues == TRUE);
-  return config;
 }
 
 }  // namespace views
