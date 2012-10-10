@@ -3,14 +3,17 @@
 # found in the LICENSE file.
 
 """
-Purpose of this module is to hold common optparse functionality.
+Purpose of this module is to hold common script/commandline functionality.
 
-Currently not much, but should expand going forward.
+This ranges from optparse, to a basic script wrapper setup (much like
+what is used for chromite.bin.* ).
 """
 
-import os
 import logging
+import os
 import optparse
+import signal
+import sys
 import tempfile
 # TODO(build): sort the buildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
@@ -176,3 +179,86 @@ class OptionParser(optparse.OptionParser):
     opts, remaining = optparse.OptionParser.parse_args(
         self, args=args, values=values)
     return self.DoPostParseSetup(opts, remaining)
+
+
+class _ShutDownException(SystemExit):
+
+  def __init__(self, sig_num, message):
+    self.signal = sig_num
+    # Setup a usage mesage primarily for any code that may intercept it
+    # while this exception is crashing back up the stack to us.
+    SystemExit.__init__(self, message)
+
+
+def _DefaultHandler(signum, _frame):
+  # Don't double process sigterms; just trigger shutdown from the first
+  # exception.
+  signal.signal(signum, signal.SIG_IGN)
+  raise _ShutDownException(
+      signum, "Received signal %i; shutting down" % (signum,))
+
+
+def ScriptWrapperMain(find_target_func, argv=None,
+                      log_level=logging.DEBUG,
+                      log_format=constants.LOGGER_FMT):
+  """Function usable for chromite.script.* style wrapping.
+
+  Note that this function invokes sys.exit on the way out by default.
+
+  Args:
+    find_target_func: a function, which when given the absolute
+      pathway this the script was invoked via (for example,
+      /home/ferringb/cros/trunk/chromite/bin/cros_sdk; note that any
+      trailing .py from the path name will be removed),
+      wille return the main function to invoke (that functor will take
+      a single arg- a list of arguments, and shall return either None,
+      or an integer, to indicate the exit code).
+    argv: sys.argv, or an equivalent tuple for testing.  If nothing is
+      given, sys.argv is defaulted to.
+    log_level: Default logging level to start at.
+    log_format: Default logging format to use.
+  """
+  if argv is None:
+    argv = sys.argv[:]
+  target = os.path.abspath(argv[0])
+  name = os.path.basename(target)
+  if target.endswith('.py'):
+    target = os.path.splitext(target)[0]
+  target = find_target_func(target)
+  if target is None:
+    print >> sys.stderr, ("Internal error detected- no main "
+                          "functor found in module %r." % (name,))
+    sys.exit(100)
+
+  # Set up basic logging information for all modules that use logging.
+  # Note a script target may setup default logging in it's module namespace
+  # which will take precedence over this.
+  logging.basicConfig(
+      level=log_level,
+      format=log_format,
+      datefmt=constants.LOGGER_DATE_FMT)
+
+
+  signal.signal(signal.SIGTERM, _DefaultHandler)
+
+  ret = 1
+  try:
+    ret = target(argv[1:])
+  except _ShutDownException, e:
+    sys.stdout.flush()
+    print >> sys.stderr, ("%s: Signaled to shutdown: caught %i signal." %
+                          (name, e.signal,))
+    sys.stderr.flush()
+  except SystemExit, e:
+    # Right now, let this crash through- longer term, we'll update the scripts
+    # in question to not use sys.exit, and make this into a flagged error.
+    raise
+  except Exception, e:
+    sys.stdout.flush()
+    print >> sys.stderr, ("%s: Unhandled exception:" % (name,))
+    sys.stderr.flush()
+    raise
+
+  if ret is None:
+    ret = 0
+  sys.exit(ret)
