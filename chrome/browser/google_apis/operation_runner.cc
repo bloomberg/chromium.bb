@@ -63,7 +63,7 @@ void OperationRunner::StartOperation(
         operation_registry_.get(),
         base::Bind(&OperationRunner::OnOperationAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
-                   operation));
+                   operation->GetWeakPtr()));
     return;
   }
 
@@ -71,10 +71,14 @@ void OperationRunner::StartOperation(
 }
 
 void OperationRunner::OnOperationAuthRefresh(
-    AuthenticatedOperationInterface* operation,
+    const base::WeakPtr<AuthenticatedOperationInterface>& operation,
     GDataErrorCode code,
     const std::string& auth_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Do nothing if the operation is canceled during authentication.
+  if (!operation)
+    return;
 
   if (code == HTTP_SUCCESS) {
     DCHECK(auth_service_->HasRefreshToken());

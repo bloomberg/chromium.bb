@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -77,6 +78,13 @@ class AuthenticatedOperationInterface {
   // to an authentication failure.
   virtual void SetReAuthenticateCallback(
       const ReAuthenticateCallback& callback) = 0;
+
+  // Gets a weak pointer to this operation object. Since operations may be
+  // deleted when it is canceled by user action, for posting asynchronous tasks
+  // on the authentication operation object, weak pointers have to be used.
+  // TODO(kinaba): crbug.com/134814 use more clean life time management than
+  // using weak pointers, while deprecating OperationRegistry.
+  virtual base::WeakPtr<AuthenticatedOperationInterface> GetWeakPtr() = 0;
 };
 
 //============================ UrlFetchOperationBase ===========================
@@ -97,6 +105,9 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   // Overridden from AuthenticatedOperationInterface.
   virtual void SetReAuthenticateCallback(
       const ReAuthenticateCallback& callback) OVERRIDE;
+
+  // Overridden from AuthenticatedOperationInterface.
+  virtual base::WeakPtr<AuthenticatedOperationInterface> GetWeakPtr() OVERRIDE;
 
  protected:
   explicit UrlFetchOperationBase(OperationRegistry* registry);
@@ -158,6 +169,11 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   FilePath output_file_path_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   bool started_;
+
+  // WeakPtrFactory bound to the UI thread.
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<UrlFetchOperationBase> weak_ptr_factory_;
 };
 
 //============================ EntryActionOperation ============================
