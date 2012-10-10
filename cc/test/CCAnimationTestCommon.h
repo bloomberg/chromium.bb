@@ -10,6 +10,8 @@
 #include "CCLayerAnimationController.h"
 #include "IntSize.h"
 
+#include <wtf/OwnPtr.h>
+
 namespace cc {
 class CCLayerImpl;
 class LayerChromium;
@@ -25,7 +27,7 @@ public:
 
     virtual double duration() const OVERRIDE;
     virtual float getValue(double now) const OVERRIDE;
-    virtual scoped_ptr<cc::CCAnimationCurve> clone() const OVERRIDE;
+    virtual PassOwnPtr<cc::CCAnimationCurve> clone() const OVERRIDE;
 
 private:
     double m_duration;
@@ -39,7 +41,7 @@ public:
     virtual double duration() const OVERRIDE;
     virtual WebKit::WebTransformationMatrix getValue(double time) const OVERRIDE;
 
-    virtual scoped_ptr<cc::CCAnimationCurve> clone() const OVERRIDE;
+    virtual PassOwnPtr<cc::CCAnimationCurve> clone() const OVERRIDE;
 
 private:
     double m_duration;
@@ -53,7 +55,7 @@ public:
     virtual double duration() const OVERRIDE;
     virtual float getValue(double time) const OVERRIDE;
 
-    virtual scoped_ptr<cc::CCAnimationCurve> clone() const OVERRIDE;
+    virtual PassOwnPtr<cc::CCAnimationCurve> clone() const OVERRIDE;
 
 private:
     double m_duration;

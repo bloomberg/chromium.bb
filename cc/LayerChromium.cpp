@@ -656,7 +656,7 @@ void LayerChromium::setBoundsContainPageScale(bool boundsContainPageScale)
 void LayerChromium::createRenderSurface()
 {
     ASSERT(!m_renderSurface);
-    m_renderSurface = make_scoped_ptr(new RenderSurfaceChromium(this));
+    m_renderSurface = adoptPtr(new RenderSurfaceChromium(this));
     setRenderTarget(this);
 }
 
@@ -700,7 +700,7 @@ void LayerChromium::setTransformFromAnimation(const WebTransformationMatrix& tra
     m_transform = transform;
 }
 
-bool LayerChromium::addAnimation(scoped_ptr <CCActiveAnimation> animation)
+bool LayerChromium::addAnimation(PassOwnPtr<CCActiveAnimation> animation)
 {
     // WebCore currently assumes that accelerated animations will start soon
     // after the animation is added. However we cannot guarantee that if we do
@@ -711,7 +711,7 @@ bool LayerChromium::addAnimation(scoped_ptr <CCActiveAnimation> animation)
     if (!CCSettings::acceleratedAnimationEnabled())
         return false;
 
-    m_layerAnimationController->addAnimation(animation.Pass());
+    m_layerAnimationController->addAnimation(animation);
     if (m_layerTreeHost) {
         m_layerTreeHost->didAddAnimation();
         setNeedsCommit();
@@ -743,9 +743,9 @@ void LayerChromium::resumeAnimations(double monotonicTime)
     setNeedsCommit();
 }
 
-void LayerChromium::setLayerAnimationController(scoped_ptr<CCLayerAnimationController> layerAnimationController)
+void LayerChromium::setLayerAnimationController(PassOwnPtr<CCLayerAnimationController> layerAnimationController)
 {
-    m_layerAnimationController = layerAnimationController.Pass();
+    m_layerAnimationController = layerAnimationController;
     if (m_layerAnimationController) {
         m_layerAnimationController->setClient(this);
         m_layerAnimationController->setForceSync();
@@ -753,11 +753,11 @@ void LayerChromium::setLayerAnimationController(scoped_ptr<CCLayerAnimationContr
     setNeedsCommit();
 }
 
-scoped_ptr<CCLayerAnimationController> LayerChromium::releaseLayerAnimationController()
+PassOwnPtr<CCLayerAnimationController> LayerChromium::releaseLayerAnimationController()
 {
-    scoped_ptr<CCLayerAnimationController> toReturn = m_layerAnimationController.Pass();
+    OwnPtr<CCLayerAnimationController> toReturn = m_layerAnimationController.release();
     m_layerAnimationController = CCLayerAnimationController::create(this);
-    return toReturn.Pass();
+    return toReturn.release();
 }
 
 bool LayerChromium::hasActiveAnimation() const
