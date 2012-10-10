@@ -202,8 +202,8 @@ def _install_action(decoder, action, values):
   # added strings are not needed. On the other hand, by having a
   # single routine that generates all action specific names at one
   # spot, it is much easier to change definitions.
-  values['baseline'] = action.baseline
-  values['actual'] = action.actual
+  values['baseline'] = action.baseline()
+  values['actual'] = action.actual()
   values['decoder_base'] = decoder.base_class(values['baseline'])
   values['rule'] = action.rule()
   values['qualifier'] = ''.join([s for s in action.safety()
@@ -275,7 +275,7 @@ def _generate_baseline_and_actual(code, symbol, decoder,
   actual_symbol = _decoder_replace(symbol, 'actual')
   for d in decoder.action_filter(actual_actions).decoders():
     # Note: 'actual-not-baseline' sets actual to None if same as baseline.
-    if d.actual:
+    if d.actual():
       _install_action(decoder, d, values);
       sym_name = (actual_symbol % values)
       if sym_name not in generated_symbols:
@@ -819,7 +819,6 @@ def _filter_test_row(row, with_patterns=False, with_rules=True):
 
 def _install_row_cases(row, values):
   """Installs row case names, based on values entries."""
-
   # First define base testers that add row constraints and safety checks.
   constraint_rows_map = values.get('constraint_rows')
   if constraint_rows_map:
@@ -957,7 +956,7 @@ def _generate_test_patterns(decoder, values, out):
     _install_row_cases(r, values)
     row = _row_filter_interesting_patterns(r)
     action = _install_test_row(row, decoder, values, with_patterns=True)
-    if action.actual == action.baseline:
+    if action.actual() == action.baseline():
       out.write(TEST_FUNCTION_BASELINE % values)
     else:
       out.write(TEST_FUNCTION_ACTUAL_VS_BASELINE % values)

@@ -28,13 +28,15 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterImmedShiftedOpRegsNotPc {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterImmedShiftedOpRegsNotPc {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterImmedShiftedOpTesterCase0
     : public Binary3RegisterImmedShiftedOpTesterRegsNotPc {
  public:
@@ -63,13 +65,15 @@ bool Binary3RegisterImmedShiftedOpTesterCase0
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterImmedShiftedOpRegsNotPcTesterCase1
     : public Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc {
  public:
@@ -98,13 +102,15 @@ bool Unary2RegisterImmedShiftedOpRegsNotPcTesterCase1
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase2
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -132,13 +138,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=xx0
-//    = Binary3RegisterImmedShiftedOpRegsNotPc {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=xx0
-//    = Binary3RegisterImmedShiftedOpRegsNotPc {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterImmedShiftedOpTesterCase3
     : public Binary3RegisterImmedShiftedOpTesterRegsNotPc {
  public:
@@ -165,13 +173,15 @@ bool Binary3RegisterImmedShiftedOpTesterCase3
 
 // Neutral case:
 // inst(22:20)=010 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=010 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterSatImmedShiftedOpTesterCase4
     : public Unary2RegisterSatImmedShiftedOpTesterRegsNotPc {
  public:
@@ -199,13 +209,15 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase4
 
 // Neutral case:
 // inst(22:20)=010 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase5
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -234,13 +246,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
 
 // Neutral case:
 // inst(22:20)=010 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterImmedShiftedOpRegsNotPcTesterCase6
     : public Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc {
  public:
@@ -269,13 +283,15 @@ bool Unary2RegisterImmedShiftedOpRegsNotPcTesterCase6
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=011 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcTesterCase7
     : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
@@ -303,13 +319,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase7
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase8
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -338,13 +356,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcTesterCase9
     : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
@@ -373,13 +393,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase9
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=011 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcTesterCase10
     : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
@@ -407,13 +429,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase10
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase11
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -442,13 +466,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcTesterCase12
     : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
@@ -477,13 +503,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase12
 
 // Neutral case:
 // inst(22:20)=110 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=110 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterSatImmedShiftedOpTesterCase13
     : public Unary2RegisterSatImmedShiftedOpTesterRegsNotPc {
  public:
@@ -511,13 +539,15 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase13
 
 // Neutral case:
 // inst(22:20)=110 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase14
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -546,13 +576,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
 
 // Neutral case:
 // inst(22:20)=110 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcTesterCase15
     : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
@@ -581,13 +613,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase15
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=111 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcTesterCase16
     : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
@@ -615,13 +649,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase16
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase17
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -650,13 +686,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcTesterCase18
     : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
@@ -685,13 +723,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase18
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=111 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcTesterCase19
     : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
@@ -719,13 +759,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase19
 
 // Neutral case:
 // inst(22:20)=01x & inst(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=01x & op2(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterSatImmedShiftedOpTesterCase20
     : public Unary2RegisterSatImmedShiftedOpTesterRegsNotPc {
  public:
@@ -752,13 +794,15 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase20
 
 // Neutral case:
 // inst(22:20)=11x & inst(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=11x & op2(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterSatImmedShiftedOpTesterCase21
     : public Unary2RegisterSatImmedShiftedOpTesterRegsNotPc {
  public:
@@ -790,15 +834,17 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase21
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterImmedShiftedOpRegsNotPc {'constraints': ,
-//     'rule': 'Sxtab16_Rule_221_A1_P436',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       rule: 'Sxtab16_Rule_221_A1_P436',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterImmedShiftedOpRegsNotPc {constraints: ,
-//     rule: Sxtab16_Rule_221_A1_P436,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       rule: Sxtab16_Rule_221_A1_P436,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterImmedShiftedOpRegsNotPcTester_Case0
     : public Binary3RegisterImmedShiftedOpTesterCase0 {
  public:
@@ -810,15 +856,17 @@ class Binary3RegisterImmedShiftedOpRegsNotPcTester_Case0
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc {'constraints': ,
-//     'rule': 'Sxtb16_Rule_224_A1_P442',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       rule: 'Sxtb16_Rule_224_A1_P442',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc {constraints: ,
-//     rule: Sxtb16_Rule_224_A1_P442,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       rule: Sxtb16_Rule_224_A1_P442,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterImmedShiftedOpRegsNotPcTester_Case1
     : public Unary2RegisterImmedShiftedOpRegsNotPcTesterCase1 {
  public:
@@ -830,15 +878,17 @@ class Unary2RegisterImmedShiftedOpRegsNotPcTester_Case1
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Sel_Rule_156_A1_P312',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Sel_Rule_156_A1_P312',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Sel_Rule_156_A1_P312,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Sel_Rule_156_A1_P312,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case2
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase2 {
  public:
@@ -850,15 +900,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case2
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=xx0
-//    = Binary3RegisterImmedShiftedOpRegsNotPc {'constraints': ,
-//     'rule': 'Pkh_Rule_116_A1_P234',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       rule: 'Pkh_Rule_116_A1_P234',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=xx0
-//    = Binary3RegisterImmedShiftedOpRegsNotPc {constraints: ,
-//     rule: Pkh_Rule_116_A1_P234,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       rule: Pkh_Rule_116_A1_P234,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterImmedShiftedOpRegsNotPcTester_Case3
     : public Binary3RegisterImmedShiftedOpTesterCase3 {
  public:
@@ -870,15 +922,17 @@ class Binary3RegisterImmedShiftedOpRegsNotPcTester_Case3
 
 // Neutral case:
 // inst(22:20)=010 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp {'constraints': ,
-//     'rule': 'Ssat16_Rule_184_A1_P364',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Ssat16_Rule_184_A1_P364',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp {constraints: ,
-//     rule: Ssat16_Rule_184_A1_P364,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       rule: Ssat16_Rule_184_A1_P364,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterSatImmedShiftedOpTester_Case4
     : public Unary2RegisterSatImmedShiftedOpTesterCase4 {
  public:
@@ -890,15 +944,17 @@ class Unary2RegisterSatImmedShiftedOpTester_Case4
 
 // Neutral case:
 // inst(22:20)=010 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Sxtab_Rule_220_A1_P434',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Sxtab_Rule_220_A1_P434',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Sxtab_Rule_220_A1_P434,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Sxtab_Rule_220_A1_P434,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case5
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase5 {
  public:
@@ -910,15 +966,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case5
 
 // Neutral case:
 // inst(22:20)=010 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc {'constraints': ,
-//     'rule': 'Sxtb_Rule_223_A1_P440',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       rule: 'Sxtb_Rule_223_A1_P440',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc {constraints: ,
-//     rule: Sxtb_Rule_223_A1_P440,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       rule: Sxtb_Rule_223_A1_P440,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterImmedShiftedOpRegsNotPcTester_Case6
     : public Unary2RegisterImmedShiftedOpRegsNotPcTesterCase6 {
  public:
@@ -930,15 +988,17 @@ class Unary2RegisterImmedShiftedOpRegsNotPcTester_Case6
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'rule': 'Rev_Rule_135_A1_P272',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       rule: 'Rev_Rule_135_A1_P272',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     rule: Rev_Rule_135_A1_P272,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       rule: Rev_Rule_135_A1_P272,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case7
     : public Unary2RegisterOpNotRmIsPcTesterCase7 {
  public:
@@ -950,15 +1010,17 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case7
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Sxtah_Rule_222_A1_P438',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Sxtah_Rule_222_A1_P438',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Sxtah_Rule_222_A1_P438,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Sxtah_Rule_222_A1_P438,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case8
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase8 {
  public:
@@ -970,15 +1032,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case8
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'rule': 'Sxth_Rule_225_A1_P444',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       rule: 'Sxth_Rule_225_A1_P444',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     rule: Sxth_Rule_225_A1_P444,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       rule: Sxth_Rule_225_A1_P444,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case9
     : public Unary2RegisterOpNotRmIsPcTesterCase9 {
  public:
@@ -990,15 +1054,17 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case9
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'rule': 'Rev16_Rule_136_A1_P274',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       rule: 'Rev16_Rule_136_A1_P274',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     rule: Rev16_Rule_136_A1_P274,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       rule: Rev16_Rule_136_A1_P274,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case10
     : public Unary2RegisterOpNotRmIsPcTesterCase10 {
  public:
@@ -1010,15 +1076,17 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case10
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Uxtab16_Rule_262_A1_P516',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Uxtab16_Rule_262_A1_P516',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Uxtab16_Rule_262_A1_P516,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Uxtab16_Rule_262_A1_P516,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case11
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase11 {
  public:
@@ -1030,15 +1098,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case11
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'rule': 'Uxtb16_Rule_264_A1_P522',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       rule: 'Uxtb16_Rule_264_A1_P522',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     rule: Uxtb16_Rule_264_A1_P522,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       rule: Uxtb16_Rule_264_A1_P522,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case12
     : public Unary2RegisterOpNotRmIsPcTesterCase12 {
  public:
@@ -1050,15 +1120,17 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case12
 
 // Neutral case:
 // inst(22:20)=110 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp {'constraints': ,
-//     'rule': 'Usat16_Rule_256_A1_P506',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Usat16_Rule_256_A1_P506',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp {constraints: ,
-//     rule: Usat16_Rule_256_A1_P506,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       rule: Usat16_Rule_256_A1_P506,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterSatImmedShiftedOpTester_Case13
     : public Unary2RegisterSatImmedShiftedOpTesterCase13 {
  public:
@@ -1070,15 +1142,17 @@ class Unary2RegisterSatImmedShiftedOpTester_Case13
 
 // Neutral case:
 // inst(22:20)=110 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Uxtab_Rule_260_A1_P514',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Uxtab_Rule_260_A1_P514',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Uxtab_Rule_260_A1_P514,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Uxtab_Rule_260_A1_P514,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case14
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase14 {
  public:
@@ -1090,15 +1164,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case14
 
 // Neutral case:
 // inst(22:20)=110 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'rule': 'Uxtb_Rule_263_A1_P520',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       rule: 'Uxtb_Rule_263_A1_P520',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     rule: Uxtb_Rule_263_A1_P520,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       rule: Uxtb_Rule_263_A1_P520,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case15
     : public Unary2RegisterOpNotRmIsPcTesterCase15 {
  public:
@@ -1110,15 +1186,17 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case15
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'rule': 'Rbit_Rule_134_A1_P270',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       rule: 'Rbit_Rule_134_A1_P270',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     rule: Rbit_Rule_134_A1_P270,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       rule: Rbit_Rule_134_A1_P270,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case16
     : public Unary2RegisterOpNotRmIsPcTesterCase16 {
  public:
@@ -1130,15 +1208,17 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case16
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Uxtah_Rule_262_A1_P518',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Uxtah_Rule_262_A1_P518',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Uxtah_Rule_262_A1_P518,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Uxtah_Rule_262_A1_P518,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case17
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase17 {
  public:
@@ -1150,15 +1230,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case17
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'rule': 'Uxth_Rule_265_A1_P524',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       rule: 'Uxth_Rule_265_A1_P524',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     rule: Uxth_Rule_265_A1_P524,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       rule: Uxth_Rule_265_A1_P524,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case18
     : public Unary2RegisterOpNotRmIsPcTesterCase18 {
  public:
@@ -1170,15 +1252,17 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case18
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {'constraints': ,
-//     'rule': 'Revsh_Rule_137_A1_P276',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       rule: 'Revsh_Rule_137_A1_P276',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates {constraints: ,
-//     rule: Revsh_Rule_137_A1_P276,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       rule: Revsh_Rule_137_A1_P276,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case19
     : public Unary2RegisterOpNotRmIsPcTesterCase19 {
  public:
@@ -1190,15 +1274,17 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case19
 
 // Neutral case:
 // inst(22:20)=01x & inst(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp {'constraints': ,
-//     'rule': 'Ssat_Rule_183_A1_P362',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Ssat_Rule_183_A1_P362',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=01x & op2(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp {constraints: ,
-//     rule: Ssat_Rule_183_A1_P362,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       rule: Ssat_Rule_183_A1_P362,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterSatImmedShiftedOpTester_Case20
     : public Unary2RegisterSatImmedShiftedOpTesterCase20 {
  public:
@@ -1210,15 +1296,17 @@ class Unary2RegisterSatImmedShiftedOpTester_Case20
 
 // Neutral case:
 // inst(22:20)=11x & inst(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp {'constraints': ,
-//     'rule': 'Usat_Rule_255_A1_P504',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Usat_Rule_255_A1_P504',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=11x & op2(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp {constraints: ,
-//     rule: Usat_Rule_255_A1_P504,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       rule: Usat_Rule_255_A1_P504,
+//       safety: ['RegsNotPc']}
 class Unary2RegisterSatImmedShiftedOpTester_Case21
     : public Unary2RegisterSatImmedShiftedOpTesterCase21 {
  public:
@@ -1239,17 +1327,21 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterImmedShiftedOpRegsNotPc => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01101000nnnnddddrr000111mmmm',
-//     'rule': 'Sxtab16_Rule_221_A1_P436',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       pattern: 'cccc01101000nnnnddddrr000111mmmm',
+//       rule: 'Sxtab16_Rule_221_A1_P436',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterImmedShiftedOpRegsNotPc => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01101000nnnnddddrr000111mmmm,
-//     rule: Sxtab16_Rule_221_A1_P436,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       pattern: cccc01101000nnnnddddrr000111mmmm,
+//       rule: Sxtab16_Rule_221_A1_P436,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpRegsNotPcTester_Case0_TestCase0) {
   Binary3RegisterImmedShiftedOpRegsNotPcTester_Case0 baseline_tester;
@@ -1260,17 +1352,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011010001111ddddrr000111mmmm',
-//     'rule': 'Sxtb16_Rule_224_A1_P442',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       pattern: 'cccc011010001111ddddrr000111mmmm',
+//       rule: 'Sxtb16_Rule_224_A1_P442',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011010001111ddddrr000111mmmm,
-//     rule: Sxtb16_Rule_224_A1_P442,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       pattern: cccc011010001111ddddrr000111mmmm,
+//       rule: Sxtb16_Rule_224_A1_P442,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpRegsNotPcTester_Case1_TestCase1) {
   Unary2RegisterImmedShiftedOpRegsNotPcTester_Case1 baseline_tester;
@@ -1281,17 +1377,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01101000nnnndddd11111011mmmm',
-//     'rule': 'Sel_Rule_156_A1_P312',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01101000nnnndddd11111011mmmm',
+//       rule: 'Sel_Rule_156_A1_P312',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01101000nnnndddd11111011mmmm,
-//     rule: Sel_Rule_156_A1_P312,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01101000nnnndddd11111011mmmm,
+//       rule: Sel_Rule_156_A1_P312,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case2_TestCase2) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case2 baseline_tester;
@@ -1302,17 +1402,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=xx0
-//    = Binary3RegisterImmedShiftedOpRegsNotPc => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01101000nnnnddddiiiiit01mmmm',
-//     'rule': 'Pkh_Rule_116_A1_P234',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       pattern: 'cccc01101000nnnnddddiiiiit01mmmm',
+//       rule: 'Pkh_Rule_116_A1_P234',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=xx0
-//    = Binary3RegisterImmedShiftedOpRegsNotPc => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01101000nnnnddddiiiiit01mmmm,
-//     rule: Pkh_Rule_116_A1_P234,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       pattern: cccc01101000nnnnddddiiiiit01mmmm,
+//       rule: Pkh_Rule_116_A1_P234,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpRegsNotPcTester_Case3_TestCase3) {
   Binary3RegisterImmedShiftedOpRegsNotPcTester_Case3 baseline_tester;
@@ -1323,17 +1427,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=010 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc01101010iiiidddd11110011nnnn',
-//     'rule': 'Ssat16_Rule_184_A1_P364',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc01101010iiiidddd11110011nnnn',
+//       rule: 'Ssat16_Rule_184_A1_P364',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc01101010iiiidddd11110011nnnn,
-//     rule: Ssat16_Rule_184_A1_P364,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       pattern: cccc01101010iiiidddd11110011nnnn,
+//       rule: Ssat16_Rule_184_A1_P364,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterSatImmedShiftedOpTester_Case4_TestCase4) {
   Unary2RegisterSatImmedShiftedOpTester_Case4 baseline_tester;
@@ -1344,17 +1452,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=010 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01101010nnnnddddrr000111mmmm',
-//     'rule': 'Sxtab_Rule_220_A1_P434',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01101010nnnnddddrr000111mmmm',
+//       rule: 'Sxtab_Rule_220_A1_P434',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01101010nnnnddddrr000111mmmm,
-//     rule: Sxtab_Rule_220_A1_P434,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01101010nnnnddddrr000111mmmm,
+//       rule: Sxtab_Rule_220_A1_P434,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case5_TestCase5) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case5 baseline_tester;
@@ -1365,17 +1477,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=010 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011010101111ddddrr000111mmmm',
-//     'rule': 'Sxtb_Rule_223_A1_P440',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
+//       constraints: ,
+//       pattern: 'cccc011010101111ddddrr000111mmmm',
+//       rule: 'Sxtb_Rule_223_A1_P440',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterImmedShiftedOpRegsNotPc => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011010101111ddddrr000111mmmm,
-//     rule: Sxtb_Rule_223_A1_P440,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterImmedShiftedOpRegsNotPc,
+//       constraints: ,
+//       pattern: cccc011010101111ddddrr000111mmmm,
+//       rule: Sxtb_Rule_223_A1_P440,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpRegsNotPcTester_Case6_TestCase6) {
   Unary2RegisterImmedShiftedOpRegsNotPcTester_Case6 baseline_tester;
@@ -1386,17 +1502,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011010111111dddd11110011mmmm',
-//     'rule': 'Rev_Rule_135_A1_P272',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc011010111111dddd11110011mmmm',
+//       rule: 'Rev_Rule_135_A1_P272',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011010111111dddd11110011mmmm,
-//     rule: Rev_Rule_135_A1_P272,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc011010111111dddd11110011mmmm,
+//       rule: Rev_Rule_135_A1_P272,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case7_TestCase7) {
   Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case7 baseline_tester;
@@ -1407,17 +1527,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01101011nnnnddddrr000111mmmm',
-//     'rule': 'Sxtah_Rule_222_A1_P438',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01101011nnnnddddrr000111mmmm',
+//       rule: 'Sxtah_Rule_222_A1_P438',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01101011nnnnddddrr000111mmmm,
-//     rule: Sxtah_Rule_222_A1_P438,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01101011nnnnddddrr000111mmmm,
+//       rule: Sxtah_Rule_222_A1_P438,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case8_TestCase8) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case8 baseline_tester;
@@ -1428,17 +1552,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011010111111ddddrr000111mmmm',
-//     'rule': 'Sxth_Rule_225_A1_P444',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc011010111111ddddrr000111mmmm',
+//       rule: 'Sxth_Rule_225_A1_P444',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011010111111ddddrr000111mmmm,
-//     rule: Sxth_Rule_225_A1_P444,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc011010111111ddddrr000111mmmm,
+//       rule: Sxth_Rule_225_A1_P444,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case9_TestCase9) {
   Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case9 baseline_tester;
@@ -1449,17 +1577,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011010111111dddd11111011mmmm',
-//     'rule': 'Rev16_Rule_136_A1_P274',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc011010111111dddd11111011mmmm',
+//       rule: 'Rev16_Rule_136_A1_P274',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011010111111dddd11111011mmmm,
-//     rule: Rev16_Rule_136_A1_P274,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc011010111111dddd11111011mmmm,
+//       rule: Rev16_Rule_136_A1_P274,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case10_TestCase10) {
   Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case10 baseline_tester;
@@ -1470,17 +1602,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01101100nnnnddddrr000111mmmm',
-//     'rule': 'Uxtab16_Rule_262_A1_P516',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01101100nnnnddddrr000111mmmm',
+//       rule: 'Uxtab16_Rule_262_A1_P516',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01101100nnnnddddrr000111mmmm,
-//     rule: Uxtab16_Rule_262_A1_P516,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01101100nnnnddddrr000111mmmm,
+//       rule: Uxtab16_Rule_262_A1_P516,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case11_TestCase11) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case11 baseline_tester;
@@ -1491,17 +1627,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011011001111ddddrr000111mmmm',
-//     'rule': 'Uxtb16_Rule_264_A1_P522',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc011011001111ddddrr000111mmmm',
+//       rule: 'Uxtb16_Rule_264_A1_P522',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011011001111ddddrr000111mmmm,
-//     rule: Uxtb16_Rule_264_A1_P522,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc011011001111ddddrr000111mmmm,
+//       rule: Uxtb16_Rule_264_A1_P522,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case12_TestCase12) {
   Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case12 baseline_tester;
@@ -1512,17 +1652,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=110 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc01101110iiiidddd11110011nnnn',
-//     'rule': 'Usat16_Rule_256_A1_P506',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc01101110iiiidddd11110011nnnn',
+//       rule: 'Usat16_Rule_256_A1_P506',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Unary2RegisterSatImmedShiftedOp => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc01101110iiiidddd11110011nnnn,
-//     rule: Usat16_Rule_256_A1_P506,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       pattern: cccc01101110iiiidddd11110011nnnn,
+//       rule: Usat16_Rule_256_A1_P506,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterSatImmedShiftedOpTester_Case13_TestCase13) {
   Unary2RegisterSatImmedShiftedOpTester_Case13 baseline_tester;
@@ -1533,17 +1677,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=110 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01101110nnnnddddrr000111mmmm',
-//     'rule': 'Uxtab_Rule_260_A1_P514',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01101110nnnnddddrr000111mmmm',
+//       rule: 'Uxtab_Rule_260_A1_P514',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01101110nnnnddddrr000111mmmm,
-//     rule: Uxtab_Rule_260_A1_P514,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01101110nnnnddddrr000111mmmm,
+//       rule: Uxtab_Rule_260_A1_P514,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case14_TestCase14) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case14 baseline_tester;
@@ -1554,17 +1702,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=110 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011011101111ddddrr000111mmmm',
-//     'rule': 'Uxtb_Rule_263_A1_P520',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc011011101111ddddrr000111mmmm',
+//       rule: 'Uxtb_Rule_263_A1_P520',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011011101111ddddrr000111mmmm,
-//     rule: Uxtb_Rule_263_A1_P520,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc011011101111ddddrr000111mmmm,
+//       rule: Uxtb_Rule_263_A1_P520,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case15_TestCase15) {
   Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case15 baseline_tester;
@@ -1575,17 +1727,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011011111111dddd11110011mmmm',
-//     'rule': 'Rbit_Rule_134_A1_P270',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc011011111111dddd11110011mmmm',
+//       rule: 'Rbit_Rule_134_A1_P270',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011011111111dddd11110011mmmm,
-//     rule: Rbit_Rule_134_A1_P270,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc011011111111dddd11110011mmmm,
+//       rule: Rbit_Rule_134_A1_P270,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case16_TestCase16) {
   Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case16 baseline_tester;
@@ -1596,17 +1752,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01101111nnnnddddrr000111mmmm',
-//     'rule': 'Uxtah_Rule_262_A1_P518',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01101111nnnnddddrr000111mmmm',
+//       rule: 'Uxtah_Rule_262_A1_P518',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01101111nnnnddddrr000111mmmm,
-//     rule: Uxtah_Rule_262_A1_P518,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01101111nnnnddddrr000111mmmm,
+//       rule: Uxtah_Rule_262_A1_P518,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case17_TestCase17) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case17 baseline_tester;
@@ -1617,17 +1777,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011011111111ddddrr000111mmmm',
-//     'rule': 'Uxth_Rule_265_A1_P524',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc011011111111ddddrr000111mmmm',
+//       rule: 'Uxth_Rule_265_A1_P524',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011011111111ddddrr000111mmmm,
-//     rule: Uxth_Rule_265_A1_P524,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc011011111111ddddrr000111mmmm,
+//       rule: Uxth_Rule_265_A1_P524,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case18_TestCase18) {
   Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case18 baseline_tester;
@@ -1638,17 +1802,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=111 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc011011111111dddd11111011mmmm',
-//     'rule': 'Revsh_Rule_137_A1_P276',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc011011111111dddd11111011mmmm',
+//       rule: 'Revsh_Rule_137_A1_P276',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
-//    = Unary2RegisterOpNotRmIsPcNoCondUpdates => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc011011111111dddd11111011mmmm,
-//     rule: Revsh_Rule_137_A1_P276,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterOpNotRmIsPcNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc011011111111dddd11111011mmmm,
+//       rule: Revsh_Rule_137_A1_P276,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case19_TestCase19) {
   Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case19 baseline_tester;
@@ -1659,17 +1827,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=01x & inst(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc0110101iiiiiddddiiiiis01nnnn',
-//     'rule': 'Ssat_Rule_183_A1_P362',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0110101iiiiiddddiiiiis01nnnn',
+//       rule: 'Ssat_Rule_183_A1_P362',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=01x & op2(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc0110101iiiiiddddiiiiis01nnnn,
-//     rule: Ssat_Rule_183_A1_P362,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       pattern: cccc0110101iiiiiddddiiiiis01nnnn,
+//       rule: Ssat_Rule_183_A1_P362,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterSatImmedShiftedOpTester_Case20_TestCase20) {
   Unary2RegisterSatImmedShiftedOpTester_Case20 baseline_tester;
@@ -1680,17 +1852,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=11x & inst(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp => Defs12To15CondsDontCareRdRnNotPc {'constraints': ,
-//     'pattern': 'cccc0110111iiiiiddddiiiiis01nnnn',
-//     'rule': 'Usat_Rule_255_A1_P504',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPc',
+//       baseline: 'Unary2RegisterSatImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0110111iiiiiddddiiiiis01nnnn',
+//       rule: 'Usat_Rule_255_A1_P504',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=11x & op2(7:5)=xx0
-//    = Unary2RegisterSatImmedShiftedOp => Defs12To15CondsDontCareRdRnNotPc {constraints: ,
-//     pattern: cccc0110111iiiiiddddiiiiis01nnnn,
-//     rule: Usat_Rule_255_A1_P504,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPc,
+//       baseline: Unary2RegisterSatImmedShiftedOp,
+//       constraints: ,
+//       pattern: cccc0110111iiiiiddddiiiiis01nnnn,
+//       rule: Usat_Rule_255_A1_P504,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterSatImmedShiftedOpTester_Case21_TestCase21) {
   Unary2RegisterSatImmedShiftedOpTester_Case21 baseline_tester;

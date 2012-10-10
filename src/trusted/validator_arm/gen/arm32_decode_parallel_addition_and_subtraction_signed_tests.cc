@@ -28,13 +28,15 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase0
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -62,13 +64,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase0
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase1
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -96,13 +100,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase1
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase2
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -130,13 +136,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase3
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -164,13 +172,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase3
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase4
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -198,13 +208,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase4
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase5
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -232,13 +244,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase6
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -266,13 +280,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase6
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase7
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -300,13 +316,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase7
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase8
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -334,13 +352,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase9
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -368,13 +388,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase9
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase10
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -402,13 +424,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase10
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase11
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -436,13 +460,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase12
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -470,13 +496,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase12
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase13
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -504,13 +532,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase13
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase14
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -538,13 +568,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase15
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -572,13 +604,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase15
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase16
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -606,13 +640,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase16
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase17
     : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
@@ -645,15 +681,17 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Sadd16_Rule_148_A1_P296',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Sadd16_Rule_148_A1_P296',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Sadd16_Rule_148_A1_P296,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Sadd16_Rule_148_A1_P296,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case0
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase0 {
  public:
@@ -665,15 +703,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case0
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Sasx_Rule_150_A1_P300',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Sasx_Rule_150_A1_P300',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Sasx_Rule_150_A1_P300,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Sasx_Rule_150_A1_P300,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case1
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase1 {
  public:
@@ -685,15 +725,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case1
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Ssax_Rule_185_A1_P366',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Ssax_Rule_185_A1_P366',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Ssax_Rule_185_A1_P366,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Ssax_Rule_185_A1_P366,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case2
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase2 {
  public:
@@ -705,15 +747,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case2
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Ssub16_Rule_186_A1_P368',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Ssub16_Rule_186_A1_P368',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Ssub16_Rule_186_A1_P368,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Ssub16_Rule_186_A1_P368,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case3
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase3 {
  public:
@@ -725,15 +769,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case3
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Sadd8_Rule_149_A1_P298',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Sadd8_Rule_149_A1_P298',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Sadd8_Rule_149_A1_P298,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Sadd8_Rule_149_A1_P298,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case4
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase4 {
  public:
@@ -745,15 +791,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case4
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Ssub8_Rule_187_A1_P370',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Ssub8_Rule_187_A1_P370',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Ssub8_Rule_187_A1_P370,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Ssub8_Rule_187_A1_P370,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case5
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase5 {
  public:
@@ -765,15 +813,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case5
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Qadd16_Rule_125_A1_P252',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Qadd16_Rule_125_A1_P252',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Qadd16_Rule_125_A1_P252,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Qadd16_Rule_125_A1_P252,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case6
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase6 {
  public:
@@ -785,15 +835,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case6
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Qasx_Rule_127_A1_P256',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Qasx_Rule_127_A1_P256',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Qasx_Rule_127_A1_P256,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Qasx_Rule_127_A1_P256,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case7
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase7 {
  public:
@@ -805,15 +857,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case7
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Qsax_Rule_130_A1_P262',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Qsax_Rule_130_A1_P262',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Qsax_Rule_130_A1_P262,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Qsax_Rule_130_A1_P262,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case8
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase8 {
  public:
@@ -825,15 +879,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case8
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Qsub16_Rule_132_A1_P266',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Qsub16_Rule_132_A1_P266',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Qsub16_Rule_132_A1_P266,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Qsub16_Rule_132_A1_P266,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case9
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase9 {
  public:
@@ -845,15 +901,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case9
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Qadd8_Rule_126_A1_P254',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Qadd8_Rule_126_A1_P254',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Qadd8_Rule_126_A1_P254,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Qadd8_Rule_126_A1_P254,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case10
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase10 {
  public:
@@ -865,15 +923,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case10
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Qsub8_Rule_133_A1_P268',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Qsub8_Rule_133_A1_P268',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Qsub8_Rule_133_A1_P268,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Qsub8_Rule_133_A1_P268,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case11
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase11 {
  public:
@@ -885,15 +945,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case11
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Shadd16_Rule_159_A1_P318',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Shadd16_Rule_159_A1_P318',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Shadd16_Rule_159_A1_P318,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Shadd16_Rule_159_A1_P318,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case12
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase12 {
  public:
@@ -905,15 +967,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case12
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Shasx_Rule_161_A1_P322',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Shasx_Rule_161_A1_P322',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Shasx_Rule_161_A1_P322,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Shasx_Rule_161_A1_P322,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case13
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase13 {
  public:
@@ -925,15 +989,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case13
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Shsax_Rule_162_A1_P324',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Shsax_Rule_162_A1_P324',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Shsax_Rule_162_A1_P324,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Shsax_Rule_162_A1_P324,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case14
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase14 {
  public:
@@ -945,15 +1011,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case14
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Shsub16_Rule_163_A1_P326',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Shsub16_Rule_163_A1_P326',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Shsub16_Rule_163_A1_P326,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Shsub16_Rule_163_A1_P326,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case15
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase15 {
  public:
@@ -965,15 +1033,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case15
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Shadd8_Rule_160_A1_P320',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Shadd8_Rule_160_A1_P320',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Shadd8_Rule_160_A1_P320,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Shadd8_Rule_160_A1_P320,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case16
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase16 {
  public:
@@ -985,15 +1055,17 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case16
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {'constraints': ,
-//     'rule': 'Shsub8_Rule_164_A1_P328',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       rule: 'Shsub8_Rule_164_A1_P328',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates {constraints: ,
-//     rule: Shsub8_Rule_164_A1_P328,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       rule: Shsub8_Rule_164_A1_P328,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case17
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase17 {
  public:
@@ -1014,17 +1086,21 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100001nnnndddd11110001mmmm',
-//     'rule': 'Sadd16_Rule_148_A1_P296',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100001nnnndddd11110001mmmm',
+//       rule: 'Sadd16_Rule_148_A1_P296',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100001nnnndddd11110001mmmm,
-//     rule: Sadd16_Rule_148_A1_P296,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100001nnnndddd11110001mmmm,
+//       rule: Sadd16_Rule_148_A1_P296,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case0_TestCase0) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case0 baseline_tester;
@@ -1035,17 +1111,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100001nnnndddd11110011mmmm',
-//     'rule': 'Sasx_Rule_150_A1_P300',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100001nnnndddd11110011mmmm',
+//       rule: 'Sasx_Rule_150_A1_P300',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100001nnnndddd11110011mmmm,
-//     rule: Sasx_Rule_150_A1_P300,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100001nnnndddd11110011mmmm,
+//       rule: Sasx_Rule_150_A1_P300,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case1_TestCase1) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case1 baseline_tester;
@@ -1056,17 +1136,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100001nnnndddd11110101mmmm',
-//     'rule': 'Ssax_Rule_185_A1_P366',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100001nnnndddd11110101mmmm',
+//       rule: 'Ssax_Rule_185_A1_P366',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100001nnnndddd11110101mmmm,
-//     rule: Ssax_Rule_185_A1_P366,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100001nnnndddd11110101mmmm,
+//       rule: Ssax_Rule_185_A1_P366,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case2_TestCase2) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case2 baseline_tester;
@@ -1077,17 +1161,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100001nnnndddd11110111mmmm',
-//     'rule': 'Ssub16_Rule_186_A1_P368',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100001nnnndddd11110111mmmm',
+//       rule: 'Ssub16_Rule_186_A1_P368',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100001nnnndddd11110111mmmm,
-//     rule: Ssub16_Rule_186_A1_P368,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100001nnnndddd11110111mmmm,
+//       rule: Ssub16_Rule_186_A1_P368,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case3_TestCase3) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case3 baseline_tester;
@@ -1098,17 +1186,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100001nnnndddd11111001mmmm',
-//     'rule': 'Sadd8_Rule_149_A1_P298',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100001nnnndddd11111001mmmm',
+//       rule: 'Sadd8_Rule_149_A1_P298',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100001nnnndddd11111001mmmm,
-//     rule: Sadd8_Rule_149_A1_P298,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100001nnnndddd11111001mmmm,
+//       rule: Sadd8_Rule_149_A1_P298,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case4_TestCase4) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case4 baseline_tester;
@@ -1119,17 +1211,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100001nnnndddd11111111mmmm',
-//     'rule': 'Ssub8_Rule_187_A1_P370',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100001nnnndddd11111111mmmm',
+//       rule: 'Ssub8_Rule_187_A1_P370',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100001nnnndddd11111111mmmm,
-//     rule: Ssub8_Rule_187_A1_P370,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100001nnnndddd11111111mmmm,
+//       rule: Ssub8_Rule_187_A1_P370,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case5_TestCase5) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case5 baseline_tester;
@@ -1140,17 +1236,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100010nnnndddd11110001mmmm',
-//     'rule': 'Qadd16_Rule_125_A1_P252',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100010nnnndddd11110001mmmm',
+//       rule: 'Qadd16_Rule_125_A1_P252',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100010nnnndddd11110001mmmm,
-//     rule: Qadd16_Rule_125_A1_P252,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100010nnnndddd11110001mmmm,
+//       rule: Qadd16_Rule_125_A1_P252,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case6_TestCase6) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case6 baseline_tester;
@@ -1161,17 +1261,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100010nnnndddd11110011mmmm',
-//     'rule': 'Qasx_Rule_127_A1_P256',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100010nnnndddd11110011mmmm',
+//       rule: 'Qasx_Rule_127_A1_P256',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100010nnnndddd11110011mmmm,
-//     rule: Qasx_Rule_127_A1_P256,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100010nnnndddd11110011mmmm,
+//       rule: Qasx_Rule_127_A1_P256,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case7_TestCase7) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case7 baseline_tester;
@@ -1182,17 +1286,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100010nnnndddd11110101mmmm',
-//     'rule': 'Qsax_Rule_130_A1_P262',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100010nnnndddd11110101mmmm',
+//       rule: 'Qsax_Rule_130_A1_P262',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100010nnnndddd11110101mmmm,
-//     rule: Qsax_Rule_130_A1_P262,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100010nnnndddd11110101mmmm,
+//       rule: Qsax_Rule_130_A1_P262,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case8_TestCase8) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case8 baseline_tester;
@@ -1203,17 +1311,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100010nnnndddd11110111mmmm',
-//     'rule': 'Qsub16_Rule_132_A1_P266',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100010nnnndddd11110111mmmm',
+//       rule: 'Qsub16_Rule_132_A1_P266',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100010nnnndddd11110111mmmm,
-//     rule: Qsub16_Rule_132_A1_P266,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100010nnnndddd11110111mmmm,
+//       rule: Qsub16_Rule_132_A1_P266,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case9_TestCase9) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case9 baseline_tester;
@@ -1224,17 +1336,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100010nnnndddd11111001mmmm',
-//     'rule': 'Qadd8_Rule_126_A1_P254',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100010nnnndddd11111001mmmm',
+//       rule: 'Qadd8_Rule_126_A1_P254',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100010nnnndddd11111001mmmm,
-//     rule: Qadd8_Rule_126_A1_P254,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100010nnnndddd11111001mmmm,
+//       rule: Qadd8_Rule_126_A1_P254,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case10_TestCase10) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case10 baseline_tester;
@@ -1245,17 +1361,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100010nnnndddd11111111mmmm',
-//     'rule': 'Qsub8_Rule_133_A1_P268',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100010nnnndddd11111111mmmm',
+//       rule: 'Qsub8_Rule_133_A1_P268',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100010nnnndddd11111111mmmm,
-//     rule: Qsub8_Rule_133_A1_P268,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100010nnnndddd11111111mmmm,
+//       rule: Qsub8_Rule_133_A1_P268,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case11_TestCase11) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case11 baseline_tester;
@@ -1266,17 +1386,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100011nnnndddd11110001mmmm',
-//     'rule': 'Shadd16_Rule_159_A1_P318',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100011nnnndddd11110001mmmm',
+//       rule: 'Shadd16_Rule_159_A1_P318',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100011nnnndddd11110001mmmm,
-//     rule: Shadd16_Rule_159_A1_P318,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100011nnnndddd11110001mmmm,
+//       rule: Shadd16_Rule_159_A1_P318,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case12_TestCase12) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case12 baseline_tester;
@@ -1287,17 +1411,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100011nnnndddd11110011mmmm',
-//     'rule': 'Shasx_Rule_161_A1_P322',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100011nnnndddd11110011mmmm',
+//       rule: 'Shasx_Rule_161_A1_P322',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100011nnnndddd11110011mmmm,
-//     rule: Shasx_Rule_161_A1_P322,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100011nnnndddd11110011mmmm,
+//       rule: Shasx_Rule_161_A1_P322,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case13_TestCase13) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case13 baseline_tester;
@@ -1308,17 +1436,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100011nnnndddd11110101mmmm',
-//     'rule': 'Shsax_Rule_162_A1_P324',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100011nnnndddd11110101mmmm',
+//       rule: 'Shsax_Rule_162_A1_P324',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100011nnnndddd11110101mmmm,
-//     rule: Shsax_Rule_162_A1_P324,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100011nnnndddd11110101mmmm,
+//       rule: Shsax_Rule_162_A1_P324,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case14_TestCase14) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case14 baseline_tester;
@@ -1329,17 +1461,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100011nnnndddd11110111mmmm',
-//     'rule': 'Shsub16_Rule_163_A1_P326',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100011nnnndddd11110111mmmm',
+//       rule: 'Shsub16_Rule_163_A1_P326',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100011nnnndddd11110111mmmm,
-//     rule: Shsub16_Rule_163_A1_P326,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100011nnnndddd11110111mmmm,
+//       rule: Shsub16_Rule_163_A1_P326,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case15_TestCase15) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case15 baseline_tester;
@@ -1350,17 +1486,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100011nnnndddd11111001mmmm',
-//     'rule': 'Shadd8_Rule_160_A1_P320',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100011nnnndddd11111001mmmm',
+//       rule: 'Shadd8_Rule_160_A1_P320',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100011nnnndddd11111001mmmm,
-//     rule: Shadd8_Rule_160_A1_P320,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100011nnnndddd11111001mmmm,
+//       rule: Shadd8_Rule_160_A1_P320,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case16_TestCase16) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case16 baseline_tester;
@@ -1371,17 +1511,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {'constraints': ,
-//     'pattern': 'cccc01100011nnnndddd11111111mmmm',
-//     'rule': 'Shsub8_Rule_164_A1_P328',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
+//       constraints: ,
+//       pattern: 'cccc01100011nnnndddd11111111mmmm',
+//       rule: 'Shsub8_Rule_164_A1_P328',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = Binary3RegisterOpAltBNoCondUpdates => Defs12To15CondsDontCareRnRdRmNotPc {constraints: ,
-//     pattern: cccc01100011nnnndddd11111111mmmm,
-//     rule: Shsub8_Rule_164_A1_P328,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
+//       constraints: ,
+//       pattern: cccc01100011nnnndddd11111111mmmm,
+//       rule: Shsub8_Rule_164_A1_P328,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case17_TestCase17) {
   Binary3RegisterOpAltBNoCondUpdatesTester_Case17 baseline_tester;

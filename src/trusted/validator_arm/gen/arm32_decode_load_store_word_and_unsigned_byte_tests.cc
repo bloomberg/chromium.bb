@@ -28,11 +28,13 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x010
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=0x010
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase0
     : public UnsafeCondDecoderTester {
  public:
@@ -59,11 +61,13 @@ bool UnsafeCondDecoderTesterCase0
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x011
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=0x011
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase1
     : public UnsafeCondDecoderTester {
  public:
@@ -90,11 +94,13 @@ bool UnsafeCondDecoderTesterCase1
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x110
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=0x110
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase2
     : public UnsafeCondDecoderTester {
  public:
@@ -121,11 +127,13 @@ bool UnsafeCondDecoderTesterCase2
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x111
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=0x111
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase3
     : public UnsafeCondDecoderTester {
  public:
@@ -152,11 +160,13 @@ bool UnsafeCondDecoderTesterCase3
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=~1111 & inst(24:20)=~0x011
-//    = LdrImmediateOp {'constraints': }
+//    = {baseline: 'LdrImmediateOp',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
-//    = LdrImmediateOp {constraints: }
+//    = {baseline: LdrImmediateOp,
+//       constraints: }
 class LoadStore2RegisterImm12OpTesterCase4
     : public LoadStore2RegisterImm12OpTester {
  public:
@@ -185,11 +195,13 @@ bool LoadStore2RegisterImm12OpTesterCase4
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=1111 & inst(24:20)=~0x011 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op {'constraints': }
+//    = {baseline: 'Load2RegisterImm12Op',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x011 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op {constraints: }
+//    = {baseline: Load2RegisterImm12Op,
+//       constraints: }
 class LoadStore2RegisterImm12OpTesterCase5
     : public LoadStore2RegisterImm12OpTester {
  public:
@@ -219,11 +231,13 @@ bool LoadStore2RegisterImm12OpTesterCase5
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x0 & inst(24:20)=~0x110
-//    = Store2RegisterImm12Op {'constraints': }
+//    = {baseline: 'Store2RegisterImm12Op',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx1x0 & op1_repeated(24:20)=~0x110
-//    = Store2RegisterImm12Op {constraints: }
+//    = {baseline: Store2RegisterImm12Op,
+//       constraints: }
 class LoadStore2RegisterImm12OpTesterCase6
     : public LoadStore2RegisterImm12OpTester {
  public:
@@ -251,13 +265,15 @@ bool LoadStore2RegisterImm12OpTesterCase6
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=~1111 & inst(24:20)=~0x111
-//    = Load2RegisterImm12Op {'constraints': ,
-//     'safety': ["'NotRnIsPc'"]}
+//    = {baseline: 'Load2RegisterImm12Op',
+//       constraints: ,
+//       safety: ["'NotRnIsPc'"]}
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x111
-//    = Load2RegisterImm12Op {constraints: ,
-//     safety: ['NotRnIsPc']}
+//    = {baseline: Load2RegisterImm12Op,
+//       constraints: ,
+//       safety: ['NotRnIsPc']}
 class LoadStore2RegisterImm12OpTesterCase7
     : public LoadStore2RegisterImm12OpTesterNotRnIsPc {
  public:
@@ -286,11 +302,13 @@ bool LoadStore2RegisterImm12OpTesterCase7
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(24:20)=~0x111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op {'constraints': }
+//    = {baseline: 'Load2RegisterImm12Op',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op {constraints: }
+//    = {baseline: Load2RegisterImm12Op,
+//       constraints: }
 class LoadStore2RegisterImm12OpTesterCase8
     : public LoadStore2RegisterImm12OpTester {
  public:
@@ -320,11 +338,13 @@ bool LoadStore2RegisterImm12OpTesterCase8
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x010 & inst(4)=0
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase9
     : public UnsafeCondDecoderTester {
  public:
@@ -352,11 +372,13 @@ bool UnsafeCondDecoderTesterCase9
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x011 & inst(4)=0
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase10
     : public UnsafeCondDecoderTester {
  public:
@@ -384,11 +406,13 @@ bool UnsafeCondDecoderTesterCase10
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x110 & inst(4)=0
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase11
     : public UnsafeCondDecoderTester {
  public:
@@ -416,11 +440,13 @@ bool UnsafeCondDecoderTesterCase11
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x111 & inst(4)=0
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase12
     : public UnsafeCondDecoderTester {
  public:
@@ -448,11 +474,13 @@ bool UnsafeCondDecoderTesterCase12
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x0 & inst(4)=0 & inst(24:20)=~0x010
-//    = Store3RegisterImm5Op {'constraints': }
+//    = {baseline: 'Store3RegisterImm5Op',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=xx0x0 & B(4)=0 & op1_repeated(24:20)=~0x010
-//    = Store3RegisterImm5Op {constraints: }
+//    = {baseline: Store3RegisterImm5Op,
+//       constraints: }
 class LoadStore3RegisterImm5OpTesterCase13
     : public LoadStore3RegisterImm5OpTester {
  public:
@@ -481,11 +509,13 @@ bool LoadStore3RegisterImm5OpTesterCase13
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x1 & inst(4)=0 & inst(24:20)=~0x011
-//    = Load3RegisterImm5Op {'constraints': }
+//    = {baseline: 'Load3RegisterImm5Op',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=xx0x1 & B(4)=0 & op1_repeated(24:20)=~0x011
-//    = Load3RegisterImm5Op {constraints: }
+//    = {baseline: Load3RegisterImm5Op,
+//       constraints: }
 class LoadStore3RegisterImm5OpTesterCase14
     : public LoadStore3RegisterImm5OpTester {
  public:
@@ -514,11 +544,13 @@ bool LoadStore3RegisterImm5OpTesterCase14
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x0 & inst(4)=0 & inst(24:20)=~0x110
-//    = Store3RegisterImm5Op {'constraints': }
+//    = {baseline: 'Store3RegisterImm5Op',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=xx1x0 & B(4)=0 & op1_repeated(24:20)=~0x110
-//    = Store3RegisterImm5Op {constraints: }
+//    = {baseline: Store3RegisterImm5Op,
+//       constraints: }
 class LoadStore3RegisterImm5OpTesterCase15
     : public LoadStore3RegisterImm5OpTester {
  public:
@@ -547,11 +579,13 @@ bool LoadStore3RegisterImm5OpTesterCase15
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x1 & inst(4)=0 & inst(24:20)=~0x111
-//    = Load3RegisterImm5Op {'constraints': }
+//    = {baseline: 'Load3RegisterImm5Op',
+//       constraints: }
 //
 // Representaive case:
 // A(25)=1 & op1(24:20)=xx1x1 & B(4)=0 & op1_repeated(24:20)=~0x111
-//    = Load3RegisterImm5Op {constraints: }
+//    = {baseline: Load3RegisterImm5Op,
+//       constraints: }
 class LoadStore3RegisterImm5OpTesterCase16
     : public LoadStore3RegisterImm5OpTester {
  public:
@@ -585,13 +619,15 @@ bool LoadStore3RegisterImm5OpTesterCase16
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x010
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Strt_Rule_A1'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Strt_Rule_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x010
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Strt_Rule_A1}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Strt_Rule_A1}
 class ForbiddenCondDecoderTester_Case0
     : public UnsafeCondDecoderTesterCase0 {
  public:
@@ -603,13 +639,15 @@ class ForbiddenCondDecoderTester_Case0
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x011
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Ldrt_Rule_A1'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Ldrt_Rule_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x011
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Ldrt_Rule_A1}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Ldrt_Rule_A1}
 class ForbiddenCondDecoderTester_Case1
     : public UnsafeCondDecoderTesterCase1 {
  public:
@@ -621,13 +659,15 @@ class ForbiddenCondDecoderTester_Case1
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x110
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Strtb_Rule_A1'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Strtb_Rule_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x110
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Strtb_Rule_A1}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Strtb_Rule_A1}
 class ForbiddenCondDecoderTester_Case2
     : public UnsafeCondDecoderTesterCase2 {
  public:
@@ -639,13 +679,15 @@ class ForbiddenCondDecoderTester_Case2
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x111
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Ldrtb_Rule_A1'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Ldrtb_Rule_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x111
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Ldrtb_Rule_A1}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Ldrtb_Rule_A1}
 class ForbiddenCondDecoderTester_Case3
     : public UnsafeCondDecoderTesterCase3 {
  public:
@@ -657,13 +699,15 @@ class ForbiddenCondDecoderTester_Case3
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=~1111 & inst(24:20)=~0x011
-//    = LdrImmediateOp {'constraints': ,
-//     'rule': 'Ldr_Rule_58_A1_P120'}
+//    = {baseline: 'LdrImmediateOp',
+//       constraints: ,
+//       rule: 'Ldr_Rule_58_A1_P120'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
-//    = LdrImmediateOp {constraints: ,
-//     rule: Ldr_Rule_58_A1_P120}
+//    = {baseline: LdrImmediateOp,
+//       constraints: ,
+//       rule: Ldr_Rule_58_A1_P120}
 class LdrImmediateOpTester_Case4
     : public LoadStore2RegisterImm12OpTesterCase4 {
  public:
@@ -675,13 +719,15 @@ class LdrImmediateOpTester_Case4
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=1111 & inst(24:20)=~0x011 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op {'constraints': ,
-//     'rule': 'Ldr_Rule_59_A1_P122'}
+//    = {baseline: 'Load2RegisterImm12Op',
+//       constraints: ,
+//       rule: 'Ldr_Rule_59_A1_P122'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x011 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op {constraints: ,
-//     rule: Ldr_Rule_59_A1_P122}
+//    = {baseline: Load2RegisterImm12Op,
+//       constraints: ,
+//       rule: Ldr_Rule_59_A1_P122}
 class Load2RegisterImm12OpTester_Case5
     : public LoadStore2RegisterImm12OpTesterCase5 {
  public:
@@ -693,13 +739,15 @@ class Load2RegisterImm12OpTester_Case5
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x0 & inst(24:20)=~0x110
-//    = Store2RegisterImm12Op {'constraints': ,
-//     'rule': 'Strb_Rule_197_A1_P390'}
+//    = {baseline: 'Store2RegisterImm12Op',
+//       constraints: ,
+//       rule: 'Strb_Rule_197_A1_P390'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx1x0 & op1_repeated(24:20)=~0x110
-//    = Store2RegisterImm12Op {constraints: ,
-//     rule: Strb_Rule_197_A1_P390}
+//    = {baseline: Store2RegisterImm12Op,
+//       constraints: ,
+//       rule: Strb_Rule_197_A1_P390}
 class Store2RegisterImm12OpTester_Case6
     : public LoadStore2RegisterImm12OpTesterCase6 {
  public:
@@ -711,15 +759,17 @@ class Store2RegisterImm12OpTester_Case6
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=~1111 & inst(24:20)=~0x111
-//    = Load2RegisterImm12Op {'constraints': ,
-//     'rule': 'Ldrb_Rule_62_A1_P128',
-//     'safety': ["'NotRnIsPc'"]}
+//    = {baseline: 'Load2RegisterImm12Op',
+//       constraints: ,
+//       rule: 'Ldrb_Rule_62_A1_P128',
+//       safety: ["'NotRnIsPc'"]}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x111
-//    = Load2RegisterImm12Op {constraints: ,
-//     rule: Ldrb_Rule_62_A1_P128,
-//     safety: ['NotRnIsPc']}
+//    = {baseline: Load2RegisterImm12Op,
+//       constraints: ,
+//       rule: Ldrb_Rule_62_A1_P128,
+//       safety: ['NotRnIsPc']}
 class Load2RegisterImm12OpTester_Case7
     : public LoadStore2RegisterImm12OpTesterCase7 {
  public:
@@ -731,13 +781,15 @@ class Load2RegisterImm12OpTester_Case7
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(24:20)=~0x111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op {'constraints': ,
-//     'rule': 'Ldrb_Rule_63_A1_P130'}
+//    = {baseline: 'Load2RegisterImm12Op',
+//       constraints: ,
+//       rule: 'Ldrb_Rule_63_A1_P130'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op {constraints: ,
-//     rule: Ldrb_Rule_63_A1_P130}
+//    = {baseline: Load2RegisterImm12Op,
+//       constraints: ,
+//       rule: Ldrb_Rule_63_A1_P130}
 class Load2RegisterImm12OpTester_Case8
     : public LoadStore2RegisterImm12OpTesterCase8 {
  public:
@@ -749,13 +801,15 @@ class Load2RegisterImm12OpTester_Case8
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x010 & inst(4)=0
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Strt_Rule_A2'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Strt_Rule_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Strt_Rule_A2}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Strt_Rule_A2}
 class ForbiddenCondDecoderTester_Case9
     : public UnsafeCondDecoderTesterCase9 {
  public:
@@ -767,13 +821,15 @@ class ForbiddenCondDecoderTester_Case9
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x011 & inst(4)=0
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Ldrt_Rule_A2'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Ldrt_Rule_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Ldrt_Rule_A2}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Ldrt_Rule_A2}
 class ForbiddenCondDecoderTester_Case10
     : public UnsafeCondDecoderTesterCase10 {
  public:
@@ -785,13 +841,15 @@ class ForbiddenCondDecoderTester_Case10
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x110 & inst(4)=0
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Strtb_Rule_A2'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Strtb_Rule_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Strtb_Rule_A2}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Strtb_Rule_A2}
 class ForbiddenCondDecoderTester_Case11
     : public UnsafeCondDecoderTesterCase11 {
  public:
@@ -803,13 +861,15 @@ class ForbiddenCondDecoderTester_Case11
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x111 & inst(4)=0
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Ldrtb_Rule_A2'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Ldrtb_Rule_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Ldrtb_Rule_A2}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Ldrtb_Rule_A2}
 class ForbiddenCondDecoderTester_Case12
     : public UnsafeCondDecoderTesterCase12 {
  public:
@@ -821,13 +881,15 @@ class ForbiddenCondDecoderTester_Case12
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x0 & inst(4)=0 & inst(24:20)=~0x010
-//    = Store3RegisterImm5Op {'constraints': ,
-//     'rule': 'Str_Rule_195_A1_P386'}
+//    = {baseline: 'Store3RegisterImm5Op',
+//       constraints: ,
+//       rule: 'Str_Rule_195_A1_P386'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx0x0 & B(4)=0 & op1_repeated(24:20)=~0x010
-//    = Store3RegisterImm5Op {constraints: ,
-//     rule: Str_Rule_195_A1_P386}
+//    = {baseline: Store3RegisterImm5Op,
+//       constraints: ,
+//       rule: Str_Rule_195_A1_P386}
 class Store3RegisterImm5OpTester_Case13
     : public LoadStore3RegisterImm5OpTesterCase13 {
  public:
@@ -839,13 +901,15 @@ class Store3RegisterImm5OpTester_Case13
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x1 & inst(4)=0 & inst(24:20)=~0x011
-//    = Load3RegisterImm5Op {'constraints': ,
-//     'rule': 'Ldr_Rule_60_A1_P124'}
+//    = {baseline: 'Load3RegisterImm5Op',
+//       constraints: ,
+//       rule: 'Ldr_Rule_60_A1_P124'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx0x1 & B(4)=0 & op1_repeated(24:20)=~0x011
-//    = Load3RegisterImm5Op {constraints: ,
-//     rule: Ldr_Rule_60_A1_P124}
+//    = {baseline: Load3RegisterImm5Op,
+//       constraints: ,
+//       rule: Ldr_Rule_60_A1_P124}
 class Load3RegisterImm5OpTester_Case14
     : public LoadStore3RegisterImm5OpTesterCase14 {
  public:
@@ -857,13 +921,15 @@ class Load3RegisterImm5OpTester_Case14
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x0 & inst(4)=0 & inst(24:20)=~0x110
-//    = Store3RegisterImm5Op {'constraints': ,
-//     'rule': 'Strb_Rule_198_A1_P392'}
+//    = {baseline: 'Store3RegisterImm5Op',
+//       constraints: ,
+//       rule: 'Strb_Rule_198_A1_P392'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx1x0 & B(4)=0 & op1_repeated(24:20)=~0x110
-//    = Store3RegisterImm5Op {constraints: ,
-//     rule: Strb_Rule_198_A1_P392}
+//    = {baseline: Store3RegisterImm5Op,
+//       constraints: ,
+//       rule: Strb_Rule_198_A1_P392}
 class Store3RegisterImm5OpTester_Case15
     : public LoadStore3RegisterImm5OpTesterCase15 {
  public:
@@ -875,13 +941,15 @@ class Store3RegisterImm5OpTester_Case15
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x1 & inst(4)=0 & inst(24:20)=~0x111
-//    = Load3RegisterImm5Op {'constraints': ,
-//     'rule': 'Ldrb_Rule_64_A1_P132'}
+//    = {baseline: 'Load3RegisterImm5Op',
+//       constraints: ,
+//       rule: 'Ldrb_Rule_64_A1_P132'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx1x1 & B(4)=0 & op1_repeated(24:20)=~0x111
-//    = Load3RegisterImm5Op {constraints: ,
-//     rule: Ldrb_Rule_64_A1_P132}
+//    = {baseline: Load3RegisterImm5Op,
+//       constraints: ,
+//       rule: Ldrb_Rule_64_A1_P132}
 class Load3RegisterImm5OpTester_Case16
     : public LoadStore3RegisterImm5OpTesterCase16 {
  public:
@@ -902,15 +970,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x010
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0100u010nnnnttttiiiiiiiiiiii',
-//     'rule': 'Strt_Rule_A1'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0100u010nnnnttttiiiiiiiiiiii',
+//       rule: 'Strt_Rule_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x010
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
-//     rule: Strt_Rule_A1}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0100u010nnnnttttiiiiiiiiiiii,
+//       rule: Strt_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case0_TestCase0) {
   ForbiddenCondDecoderTester_Case0 baseline_tester;
@@ -921,15 +993,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x011
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0100u011nnnnttttiiiiiiiiiiii',
-//     'rule': 'Ldrt_Rule_A1'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0100u011nnnnttttiiiiiiiiiiii',
+//       rule: 'Ldrt_Rule_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x011
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
-//     rule: Ldrt_Rule_A1}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0100u011nnnnttttiiiiiiiiiiii,
+//       rule: Ldrt_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case1_TestCase1) {
   ForbiddenCondDecoderTester_Case1 baseline_tester;
@@ -940,15 +1016,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x110
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0100u110nnnnttttiiiiiiiiiiii',
-//     'rule': 'Strtb_Rule_A1'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0100u110nnnnttttiiiiiiiiiiii',
+//       rule: 'Strtb_Rule_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x110
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
-//     rule: Strtb_Rule_A1}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0100u110nnnnttttiiiiiiiiiiii,
+//       rule: Strtb_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case2_TestCase2) {
   ForbiddenCondDecoderTester_Case2 baseline_tester;
@@ -959,15 +1039,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0x111
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0100u111nnnnttttiiiiiiiiiiii',
-//     'rule': 'Ldrtb_Rule_A1'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0100u111nnnnttttiiiiiiiiiiii',
+//       rule: 'Ldrtb_Rule_A1'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=0x111
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
-//     rule: Ldrtb_Rule_A1}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0100u111nnnnttttiiiiiiiiiiii,
+//       rule: Ldrtb_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case3_TestCase3) {
   ForbiddenCondDecoderTester_Case3 baseline_tester;
@@ -978,15 +1062,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=~1111 & inst(24:20)=~0x011
-//    = LdrImmediateOp => LdrImmediateOp {'constraints': ,
-//     'pattern': 'cccc010pu0w1nnnnttttiiiiiiiiiiii',
-//     'rule': 'Ldr_Rule_58_A1_P120'}
+//    = {actual: 'LdrImmediateOp',
+//       baseline: 'LdrImmediateOp',
+//       constraints: ,
+//       pattern: 'cccc010pu0w1nnnnttttiiiiiiiiiiii',
+//       rule: 'Ldr_Rule_58_A1_P120'}
 //
 // Representaive case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
-//    = LdrImmediateOp => LdrImmediateOp {constraints: ,
-//     pattern: cccc010pu0w1nnnnttttiiiiiiiiiiii,
-//     rule: Ldr_Rule_58_A1_P120}
+//    = {actual: LdrImmediateOp,
+//       baseline: LdrImmediateOp,
+//       constraints: ,
+//       pattern: cccc010pu0w1nnnnttttiiiiiiiiiiii,
+//       rule: Ldr_Rule_58_A1_P120}
 TEST_F(Arm32DecoderStateTests,
        LdrImmediateOpTester_Case4_TestCase4) {
   LdrImmediateOpTester_Case4 tester;
@@ -995,15 +1083,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx0x1 & inst(19:16)=1111 & inst(24:20)=~0x011 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op => LoadBasedImmedMemory {'constraints': ,
-//     'pattern': 'cccc0101u0011111ttttiiiiiiiiiiii',
-//     'rule': 'Ldr_Rule_59_A1_P122'}
+//    = {actual: 'LoadBasedImmedMemory',
+//       baseline: 'Load2RegisterImm12Op',
+//       constraints: ,
+//       pattern: 'cccc0101u0011111ttttiiiiiiiiiiii',
+//       rule: 'Ldr_Rule_59_A1_P122'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x011 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op => LoadBasedImmedMemory {constraints: ,
-//     pattern: cccc0101u0011111ttttiiiiiiiiiiii,
-//     rule: Ldr_Rule_59_A1_P122}
+//    = {actual: LoadBasedImmedMemory,
+//       baseline: Load2RegisterImm12Op,
+//       constraints: ,
+//       pattern: cccc0101u0011111ttttiiiiiiiiiiii,
+//       rule: Ldr_Rule_59_A1_P122}
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm12OpTester_Case5_TestCase5) {
   Load2RegisterImm12OpTester_Case5 baseline_tester;
@@ -1014,15 +1106,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x0 & inst(24:20)=~0x110
-//    = Store2RegisterImm12Op => StoreBasedImmedMemory {'constraints': ,
-//     'pattern': 'cccc010pu1w0nnnnttttiiiiiiiiiiii',
-//     'rule': 'Strb_Rule_197_A1_P390'}
+//    = {actual: 'StoreBasedImmedMemory',
+//       baseline: 'Store2RegisterImm12Op',
+//       constraints: ,
+//       pattern: 'cccc010pu1w0nnnnttttiiiiiiiiiiii',
+//       rule: 'Strb_Rule_197_A1_P390'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx1x0 & op1_repeated(24:20)=~0x110
-//    = Store2RegisterImm12Op => StoreBasedImmedMemory {constraints: ,
-//     pattern: cccc010pu1w0nnnnttttiiiiiiiiiiii,
-//     rule: Strb_Rule_197_A1_P390}
+//    = {actual: StoreBasedImmedMemory,
+//       baseline: Store2RegisterImm12Op,
+//       constraints: ,
+//       pattern: cccc010pu1w0nnnnttttiiiiiiiiiiii,
+//       rule: Strb_Rule_197_A1_P390}
 TEST_F(Arm32DecoderStateTests,
        Store2RegisterImm12OpTester_Case6_TestCase6) {
   Store2RegisterImm12OpTester_Case6 baseline_tester;
@@ -1033,17 +1129,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=~1111 & inst(24:20)=~0x111
-//    = Load2RegisterImm12Op => LoadBasedImmedMemory {'constraints': ,
-//     'pattern': 'cccc010pu1w1nnnnttttiiiiiiiiiiii',
-//     'rule': 'Ldrb_Rule_62_A1_P128',
-//     'safety': ["'NotRnIsPc'"]}
+//    = {actual: 'LoadBasedImmedMemory',
+//       baseline: 'Load2RegisterImm12Op',
+//       constraints: ,
+//       pattern: 'cccc010pu1w1nnnnttttiiiiiiiiiiii',
+//       rule: 'Ldrb_Rule_62_A1_P128',
+//       safety: ["'NotRnIsPc'"]}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x111
-//    = Load2RegisterImm12Op => LoadBasedImmedMemory {constraints: ,
-//     pattern: cccc010pu1w1nnnnttttiiiiiiiiiiii,
-//     rule: Ldrb_Rule_62_A1_P128,
-//     safety: ['NotRnIsPc']}
+//    = {actual: LoadBasedImmedMemory,
+//       baseline: Load2RegisterImm12Op,
+//       constraints: ,
+//       pattern: cccc010pu1w1nnnnttttiiiiiiiiiiii,
+//       rule: Ldrb_Rule_62_A1_P128,
+//       safety: ['NotRnIsPc']}
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm12OpTester_Case7_TestCase7) {
   Load2RegisterImm12OpTester_Case7 baseline_tester;
@@ -1054,15 +1154,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=xx1x1 & inst(19:16)=1111 & inst(24:20)=~0x111 & inst(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op => LoadBasedImmedMemory {'constraints': ,
-//     'pattern': 'cccc0101u1011111ttttiiiiiiiiiiii',
-//     'rule': 'Ldrb_Rule_63_A1_P130'}
+//    = {actual: 'LoadBasedImmedMemory',
+//       baseline: 'Load2RegisterImm12Op',
+//       constraints: ,
+//       pattern: 'cccc0101u1011111ttttiiiiiiiiiiii',
+//       rule: 'Ldrb_Rule_63_A1_P130'}
 //
 // Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
-//    = Load2RegisterImm12Op => LoadBasedImmedMemory {constraints: ,
-//     pattern: cccc0101u1011111ttttiiiiiiiiiiii,
-//     rule: Ldrb_Rule_63_A1_P130}
+//    = {actual: LoadBasedImmedMemory,
+//       baseline: Load2RegisterImm12Op,
+//       constraints: ,
+//       pattern: cccc0101u1011111ttttiiiiiiiiiiii,
+//       rule: Ldrb_Rule_63_A1_P130}
 TEST_F(Arm32DecoderStateTests,
        Load2RegisterImm12OpTester_Case8_TestCase8) {
   Load2RegisterImm12OpTester_Case8 baseline_tester;
@@ -1073,15 +1177,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x010 & inst(4)=0
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0110u010nnnnttttiiiiitt0mmmm',
-//     'rule': 'Strt_Rule_A2'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0110u010nnnnttttiiiiitt0mmmm',
+//       rule: 'Strt_Rule_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
-//     rule: Strt_Rule_A2}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0110u010nnnnttttiiiiitt0mmmm,
+//       rule: Strt_Rule_A2}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case9_TestCase9) {
   ForbiddenCondDecoderTester_Case9 baseline_tester;
@@ -1092,15 +1200,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x011 & inst(4)=0
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0110u011nnnnttttiiiiitt0mmmm',
-//     'rule': 'Ldrt_Rule_A2'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0110u011nnnnttttiiiiitt0mmmm',
+//       rule: 'Ldrt_Rule_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
-//     rule: Ldrt_Rule_A2}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0110u011nnnnttttiiiiitt0mmmm,
+//       rule: Ldrt_Rule_A2}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case10_TestCase10) {
   ForbiddenCondDecoderTester_Case10 baseline_tester;
@@ -1111,15 +1223,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x110 & inst(4)=0
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0110u110nnnnttttiiiiitt0mmmm',
-//     'rule': 'Strtb_Rule_A2'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0110u110nnnnttttiiiiitt0mmmm',
+//       rule: 'Strtb_Rule_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
-//     rule: Strtb_Rule_A2}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0110u110nnnnttttiiiiitt0mmmm,
+//       rule: Strtb_Rule_A2}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case11_TestCase11) {
   ForbiddenCondDecoderTester_Case11 baseline_tester;
@@ -1130,15 +1246,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=0x111 & inst(4)=0
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0110u111nnnnttttiiiiitt0mmmm',
-//     'rule': 'Ldrtb_Rule_A2'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0110u111nnnnttttiiiiitt0mmmm',
+//       rule: 'Ldrtb_Rule_A2'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
-//     rule: Ldrtb_Rule_A2}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0110u111nnnnttttiiiiitt0mmmm,
+//       rule: Ldrtb_Rule_A2}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case12_TestCase12) {
   ForbiddenCondDecoderTester_Case12 baseline_tester;
@@ -1149,15 +1269,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x0 & inst(4)=0 & inst(24:20)=~0x010
-//    = Store3RegisterImm5Op => StoreBasedOffsetMemory {'constraints': ,
-//     'pattern': 'cccc011pd0w0nnnnttttiiiiitt0mmmm',
-//     'rule': 'Str_Rule_195_A1_P386'}
+//    = {actual: 'StoreBasedOffsetMemory',
+//       baseline: 'Store3RegisterImm5Op',
+//       constraints: ,
+//       pattern: 'cccc011pd0w0nnnnttttiiiiitt0mmmm',
+//       rule: 'Str_Rule_195_A1_P386'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx0x0 & B(4)=0 & op1_repeated(24:20)=~0x010
-//    = Store3RegisterImm5Op => StoreBasedOffsetMemory {constraints: ,
-//     pattern: cccc011pd0w0nnnnttttiiiiitt0mmmm,
-//     rule: Str_Rule_195_A1_P386}
+//    = {actual: StoreBasedOffsetMemory,
+//       baseline: Store3RegisterImm5Op,
+//       constraints: ,
+//       pattern: cccc011pd0w0nnnnttttiiiiitt0mmmm,
+//       rule: Str_Rule_195_A1_P386}
 TEST_F(Arm32DecoderStateTests,
        Store3RegisterImm5OpTester_Case13_TestCase13) {
   Store3RegisterImm5OpTester_Case13 baseline_tester;
@@ -1168,15 +1292,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx0x1 & inst(4)=0 & inst(24:20)=~0x011
-//    = Load3RegisterImm5Op => LoadBasedOffsetMemory {'constraints': ,
-//     'pattern': 'cccc011pu0w1nnnnttttiiiiitt0mmmm',
-//     'rule': 'Ldr_Rule_60_A1_P124'}
+//    = {actual: 'LoadBasedOffsetMemory',
+//       baseline: 'Load3RegisterImm5Op',
+//       constraints: ,
+//       pattern: 'cccc011pu0w1nnnnttttiiiiitt0mmmm',
+//       rule: 'Ldr_Rule_60_A1_P124'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx0x1 & B(4)=0 & op1_repeated(24:20)=~0x011
-//    = Load3RegisterImm5Op => LoadBasedOffsetMemory {constraints: ,
-//     pattern: cccc011pu0w1nnnnttttiiiiitt0mmmm,
-//     rule: Ldr_Rule_60_A1_P124}
+//    = {actual: LoadBasedOffsetMemory,
+//       baseline: Load3RegisterImm5Op,
+//       constraints: ,
+//       pattern: cccc011pu0w1nnnnttttiiiiitt0mmmm,
+//       rule: Ldr_Rule_60_A1_P124}
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterImm5OpTester_Case14_TestCase14) {
   Load3RegisterImm5OpTester_Case14 baseline_tester;
@@ -1187,15 +1315,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x0 & inst(4)=0 & inst(24:20)=~0x110
-//    = Store3RegisterImm5Op => StoreBasedOffsetMemory {'constraints': ,
-//     'pattern': 'cccc011pu1w0nnnnttttiiiiitt0mmmm',
-//     'rule': 'Strb_Rule_198_A1_P392'}
+//    = {actual: 'StoreBasedOffsetMemory',
+//       baseline: 'Store3RegisterImm5Op',
+//       constraints: ,
+//       pattern: 'cccc011pu1w0nnnnttttiiiiitt0mmmm',
+//       rule: 'Strb_Rule_198_A1_P392'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx1x0 & B(4)=0 & op1_repeated(24:20)=~0x110
-//    = Store3RegisterImm5Op => StoreBasedOffsetMemory {constraints: ,
-//     pattern: cccc011pu1w0nnnnttttiiiiitt0mmmm,
-//     rule: Strb_Rule_198_A1_P392}
+//    = {actual: StoreBasedOffsetMemory,
+//       baseline: Store3RegisterImm5Op,
+//       constraints: ,
+//       pattern: cccc011pu1w0nnnnttttiiiiitt0mmmm,
+//       rule: Strb_Rule_198_A1_P392}
 TEST_F(Arm32DecoderStateTests,
        Store3RegisterImm5OpTester_Case15_TestCase15) {
   Store3RegisterImm5OpTester_Case15 baseline_tester;
@@ -1206,15 +1338,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=xx1x1 & inst(4)=0 & inst(24:20)=~0x111
-//    = Load3RegisterImm5Op => LoadBasedOffsetMemory {'constraints': ,
-//     'pattern': 'cccc011pu1w1nnnnttttiiiiitt0mmmm',
-//     'rule': 'Ldrb_Rule_64_A1_P132'}
+//    = {actual: 'LoadBasedOffsetMemory',
+//       baseline: 'Load3RegisterImm5Op',
+//       constraints: ,
+//       pattern: 'cccc011pu1w1nnnnttttiiiiitt0mmmm',
+//       rule: 'Ldrb_Rule_64_A1_P132'}
 //
 // Representative case:
 // A(25)=1 & op1(24:20)=xx1x1 & B(4)=0 & op1_repeated(24:20)=~0x111
-//    = Load3RegisterImm5Op => LoadBasedOffsetMemory {constraints: ,
-//     pattern: cccc011pu1w1nnnnttttiiiiitt0mmmm,
-//     rule: Ldrb_Rule_64_A1_P132}
+//    = {actual: LoadBasedOffsetMemory,
+//       baseline: Load3RegisterImm5Op,
+//       constraints: ,
+//       pattern: cccc011pu1w1nnnnttttiiiiitt0mmmm,
+//       rule: Ldrb_Rule_64_A1_P132}
 TEST_F(Arm32DecoderStateTests,
        Load3RegisterImm5OpTester_Case16_TestCase16) {
   Load3RegisterImm5OpTester_Case16 baseline_tester;

@@ -28,11 +28,13 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(27:20)=11000100
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=11000100
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase0
     : public UnsafeUncondDecoderTester {
  public:
@@ -58,11 +60,13 @@ bool UnsafeUncondDecoderTesterCase0
 
 // Neutral case:
 // inst(27:20)=11000101
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=11000101
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase1
     : public UnsafeUncondDecoderTester {
  public:
@@ -88,11 +92,13 @@ bool UnsafeUncondDecoderTesterCase1
 
 // Neutral case:
 // inst(27:20)=100xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxx0000101000000000
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=100xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000101000000000
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase2
     : public UnsafeUncondDecoderTester {
  public:
@@ -119,11 +125,13 @@ bool UnsafeUncondDecoderTesterCase2
 
 // Neutral case:
 // inst(27:20)=100xx1x0 & inst(31:0)=xxxxxxxxxxxx110100000101000xxxxx
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=100xx1x0 & $pattern(31:0)=xxxxxxxxxxxx110100000101000xxxxx
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase3
     : public UnsafeUncondDecoderTester {
  public:
@@ -150,11 +158,13 @@ bool UnsafeUncondDecoderTesterCase3
 
 // Neutral case:
 // inst(27:20)=1110xxx0 & inst(4)=1
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=1110xxx0 & op(4)=1
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase4
     : public UnsafeUncondDecoderTester {
  public:
@@ -181,11 +191,13 @@ bool UnsafeUncondDecoderTesterCase4
 
 // Neutral case:
 // inst(27:20)=1110xxx1 & inst(4)=1
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=1110xxx1 & op(4)=1
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase5
     : public UnsafeUncondDecoderTester {
  public:
@@ -212,11 +224,13 @@ bool UnsafeUncondDecoderTesterCase5
 
 // Neutral case:
 // inst(27:20)=110xxxx0 & inst(27:20)=~11000x00
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x00
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase6
     : public UnsafeUncondDecoderTester {
  public:
@@ -243,11 +257,13 @@ bool UnsafeUncondDecoderTesterCase6
 
 // Neutral case:
 // inst(27:20)=110xxxx1 & inst(19:16)=~1111 & inst(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=110xxxx1 & Rn(19:16)=~1111 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase7
     : public UnsafeUncondDecoderTester {
  public:
@@ -275,11 +291,13 @@ bool UnsafeUncondDecoderTesterCase7
 
 // Neutral case:
 // inst(27:20)=110xxxx1 & inst(19:16)=1111 & inst(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=110xxxx1 & Rn(19:16)=1111 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase8
     : public UnsafeUncondDecoderTester {
  public:
@@ -307,11 +325,13 @@ bool UnsafeUncondDecoderTesterCase8
 
 // Neutral case:
 // inst(27:20)=1110xxxx & inst(4)=0
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=1110xxxx & op(4)=0
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase9
     : public UnsafeUncondDecoderTester {
  public:
@@ -338,11 +358,13 @@ bool UnsafeUncondDecoderTesterCase9
 
 // Neutral case:
 // inst(27:20)=101xxxxx
-//    = ForbiddenUncondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op1(27:20)=101xxxxx
-//    = ForbiddenUncondDecoder {constraints: }
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: }
 class UnsafeUncondDecoderTesterCase10
     : public UnsafeUncondDecoderTester {
  public:
@@ -373,13 +395,15 @@ bool UnsafeUncondDecoderTesterCase10
 
 // Neutral case:
 // inst(27:20)=11000100
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Mcrr2_Rule_93_A2_P188'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Mcrr2_Rule_93_A2_P188'}
 //
 // Representative case:
 // op1(27:20)=11000100
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Mcrr2_Rule_93_A2_P188}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Mcrr2_Rule_93_A2_P188}
 class ForbiddenUncondDecoderTester_Case0
     : public UnsafeUncondDecoderTesterCase0 {
  public:
@@ -391,13 +415,15 @@ class ForbiddenUncondDecoderTester_Case0
 
 // Neutral case:
 // inst(27:20)=11000101
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Mrrc2_Rule_101_A2_P204'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Mrrc2_Rule_101_A2_P204'}
 //
 // Representative case:
 // op1(27:20)=11000101
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Mrrc2_Rule_101_A2_P204}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Mrrc2_Rule_101_A2_P204}
 class ForbiddenUncondDecoderTester_Case1
     : public UnsafeUncondDecoderTesterCase1 {
  public:
@@ -409,13 +435,15 @@ class ForbiddenUncondDecoderTester_Case1
 
 // Neutral case:
 // inst(27:20)=100xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxx0000101000000000
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Rfe_Rule_B6_1_10_A1_B6_16'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Rfe_Rule_B6_1_10_A1_B6_16'}
 //
 // Representative case:
 // op1(27:20)=100xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000101000000000
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Rfe_Rule_B6_1_10_A1_B6_16}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Rfe_Rule_B6_1_10_A1_B6_16}
 class ForbiddenUncondDecoderTester_Case2
     : public UnsafeUncondDecoderTesterCase2 {
  public:
@@ -427,13 +455,15 @@ class ForbiddenUncondDecoderTester_Case2
 
 // Neutral case:
 // inst(27:20)=100xx1x0 & inst(31:0)=xxxxxxxxxxxx110100000101000xxxxx
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Srs_Rule_B6_1_10_A1_B6_20'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Srs_Rule_B6_1_10_A1_B6_20'}
 //
 // Representative case:
 // op1(27:20)=100xx1x0 & $pattern(31:0)=xxxxxxxxxxxx110100000101000xxxxx
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Srs_Rule_B6_1_10_A1_B6_20}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Srs_Rule_B6_1_10_A1_B6_20}
 class ForbiddenUncondDecoderTester_Case3
     : public UnsafeUncondDecoderTesterCase3 {
  public:
@@ -445,13 +475,15 @@ class ForbiddenUncondDecoderTester_Case3
 
 // Neutral case:
 // inst(27:20)=1110xxx0 & inst(4)=1
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Mcr2_Rule_92_A2_P186'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Mcr2_Rule_92_A2_P186'}
 //
 // Representative case:
 // op1(27:20)=1110xxx0 & op(4)=1
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Mcr2_Rule_92_A2_P186}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Mcr2_Rule_92_A2_P186}
 class ForbiddenUncondDecoderTester_Case4
     : public UnsafeUncondDecoderTesterCase4 {
  public:
@@ -463,13 +495,15 @@ class ForbiddenUncondDecoderTester_Case4
 
 // Neutral case:
 // inst(27:20)=1110xxx1 & inst(4)=1
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Mrc2_Rule_100_A2_P202'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Mrc2_Rule_100_A2_P202'}
 //
 // Representative case:
 // op1(27:20)=1110xxx1 & op(4)=1
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Mrc2_Rule_100_A2_P202}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Mrc2_Rule_100_A2_P202}
 class ForbiddenUncondDecoderTester_Case5
     : public UnsafeUncondDecoderTesterCase5 {
  public:
@@ -481,13 +515,15 @@ class ForbiddenUncondDecoderTester_Case5
 
 // Neutral case:
 // inst(27:20)=110xxxx0 & inst(27:20)=~11000x00
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Stc2_Rule_188_A2_P372'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Stc2_Rule_188_A2_P372'}
 //
 // Representative case:
 // op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x00
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Stc2_Rule_188_A2_P372}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Stc2_Rule_188_A2_P372}
 class ForbiddenUncondDecoderTester_Case6
     : public UnsafeUncondDecoderTesterCase6 {
  public:
@@ -499,13 +535,15 @@ class ForbiddenUncondDecoderTester_Case6
 
 // Neutral case:
 // inst(27:20)=110xxxx1 & inst(19:16)=~1111 & inst(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Ldc2_Rule_51_A2_P106'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Ldc2_Rule_51_A2_P106'}
 //
 // Representative case:
 // op1(27:20)=110xxxx1 & Rn(19:16)=~1111 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Ldc2_Rule_51_A2_P106}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Ldc2_Rule_51_A2_P106}
 class ForbiddenUncondDecoderTester_Case7
     : public UnsafeUncondDecoderTesterCase7 {
  public:
@@ -517,13 +555,15 @@ class ForbiddenUncondDecoderTester_Case7
 
 // Neutral case:
 // inst(27:20)=110xxxx1 & inst(19:16)=1111 & inst(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Ldc2_Rule_52_A2_P108'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Ldc2_Rule_52_A2_P108'}
 //
 // Representative case:
 // op1(27:20)=110xxxx1 & Rn(19:16)=1111 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Ldc2_Rule_52_A2_P108}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Ldc2_Rule_52_A2_P108}
 class ForbiddenUncondDecoderTester_Case8
     : public UnsafeUncondDecoderTesterCase8 {
  public:
@@ -535,13 +575,15 @@ class ForbiddenUncondDecoderTester_Case8
 
 // Neutral case:
 // inst(27:20)=1110xxxx & inst(4)=0
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Cdp2_Rule_28_A2_P68'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Cdp2_Rule_28_A2_P68'}
 //
 // Representative case:
 // op1(27:20)=1110xxxx & op(4)=0
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Cdp2_Rule_28_A2_P68}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Cdp2_Rule_28_A2_P68}
 class ForbiddenUncondDecoderTester_Case9
     : public UnsafeUncondDecoderTesterCase9 {
  public:
@@ -553,13 +595,15 @@ class ForbiddenUncondDecoderTester_Case9
 
 // Neutral case:
 // inst(27:20)=101xxxxx
-//    = ForbiddenUncondDecoder {'constraints': ,
-//     'rule': 'Blx_Rule_23_A2_P58'}
+//    = {baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       rule: 'Blx_Rule_23_A2_P58'}
 //
 // Representative case:
 // op1(27:20)=101xxxxx
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: Blx_Rule_23_A2_P58}
+//    = {baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       rule: Blx_Rule_23_A2_P58}
 class ForbiddenUncondDecoderTester_Case10
     : public UnsafeUncondDecoderTesterCase10 {
  public:
@@ -580,15 +624,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(27:20)=11000100
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '111111000100ssssttttiiiiiiiiiiii',
-//     'rule': 'Mcrr2_Rule_93_A2_P188'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '111111000100ssssttttiiiiiiiiiiii',
+//       rule: 'Mcrr2_Rule_93_A2_P188'}
 //
 // Representative case:
 // op1(27:20)=11000100
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 111111000100ssssttttiiiiiiiiiiii,
-//     rule: Mcrr2_Rule_93_A2_P188}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 111111000100ssssttttiiiiiiiiiiii,
+//       rule: Mcrr2_Rule_93_A2_P188}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case0_TestCase0) {
   ForbiddenUncondDecoderTester_Case0 baseline_tester;
@@ -599,15 +647,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=11000101
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '111111000101ssssttttiiiiiiiiiiii',
-//     'rule': 'Mrrc2_Rule_101_A2_P204'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '111111000101ssssttttiiiiiiiiiiii',
+//       rule: 'Mrrc2_Rule_101_A2_P204'}
 //
 // Representative case:
 // op1(27:20)=11000101
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 111111000101ssssttttiiiiiiiiiiii,
-//     rule: Mrrc2_Rule_101_A2_P204}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 111111000101ssssttttiiiiiiiiiiii,
+//       rule: Mrrc2_Rule_101_A2_P204}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case1_TestCase1) {
   ForbiddenUncondDecoderTester_Case1 baseline_tester;
@@ -618,15 +670,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=100xx0x1 & inst(31:0)=xxxxxxxxxxxxxxxx0000101000000000
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '1111100pu0w1nnnn0000101000000000',
-//     'rule': 'Rfe_Rule_B6_1_10_A1_B6_16'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '1111100pu0w1nnnn0000101000000000',
+//       rule: 'Rfe_Rule_B6_1_10_A1_B6_16'}
 //
 // Representative case:
 // op1(27:20)=100xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000101000000000
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 1111100pu0w1nnnn0000101000000000,
-//     rule: Rfe_Rule_B6_1_10_A1_B6_16}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 1111100pu0w1nnnn0000101000000000,
+//       rule: Rfe_Rule_B6_1_10_A1_B6_16}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case2_TestCase2) {
   ForbiddenUncondDecoderTester_Case2 baseline_tester;
@@ -637,15 +693,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=100xx1x0 & inst(31:0)=xxxxxxxxxxxx110100000101000xxxxx
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '1111100pu1w0110100000101000iiiii',
-//     'rule': 'Srs_Rule_B6_1_10_A1_B6_20'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '1111100pu1w0110100000101000iiiii',
+//       rule: 'Srs_Rule_B6_1_10_A1_B6_20'}
 //
 // Representative case:
 // op1(27:20)=100xx1x0 & $pattern(31:0)=xxxxxxxxxxxx110100000101000xxxxx
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 1111100pu1w0110100000101000iiiii,
-//     rule: Srs_Rule_B6_1_10_A1_B6_20}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 1111100pu1w0110100000101000iiiii,
+//       rule: Srs_Rule_B6_1_10_A1_B6_20}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case3_TestCase3) {
   ForbiddenUncondDecoderTester_Case3 baseline_tester;
@@ -656,15 +716,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=1110xxx0 & inst(4)=1
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '11111110iii0iiiittttiiiiiii1iiii',
-//     'rule': 'Mcr2_Rule_92_A2_P186'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '11111110iii0iiiittttiiiiiii1iiii',
+//       rule: 'Mcr2_Rule_92_A2_P186'}
 //
 // Representative case:
 // op1(27:20)=1110xxx0 & op(4)=1
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 11111110iii0iiiittttiiiiiii1iiii,
-//     rule: Mcr2_Rule_92_A2_P186}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 11111110iii0iiiittttiiiiiii1iiii,
+//       rule: Mcr2_Rule_92_A2_P186}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case4_TestCase4) {
   ForbiddenUncondDecoderTester_Case4 baseline_tester;
@@ -675,15 +739,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=1110xxx1 & inst(4)=1
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '11111110iii1iiiittttiiiiiii1iiii',
-//     'rule': 'Mrc2_Rule_100_A2_P202'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '11111110iii1iiiittttiiiiiii1iiii',
+//       rule: 'Mrc2_Rule_100_A2_P202'}
 //
 // Representative case:
 // op1(27:20)=1110xxx1 & op(4)=1
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 11111110iii1iiiittttiiiiiii1iiii,
-//     rule: Mrc2_Rule_100_A2_P202}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 11111110iii1iiiittttiiiiiii1iiii,
+//       rule: Mrc2_Rule_100_A2_P202}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case5_TestCase5) {
   ForbiddenUncondDecoderTester_Case5 baseline_tester;
@@ -694,15 +762,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=110xxxx0 & inst(27:20)=~11000x00
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '1111110pudw0nnnniiiiiiiiiiiiiiii',
-//     'rule': 'Stc2_Rule_188_A2_P372'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '1111110pudw0nnnniiiiiiiiiiiiiiii',
+//       rule: 'Stc2_Rule_188_A2_P372'}
 //
 // Representative case:
 // op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x00
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 1111110pudw0nnnniiiiiiiiiiiiiiii,
-//     rule: Stc2_Rule_188_A2_P372}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 1111110pudw0nnnniiiiiiiiiiiiiiii,
+//       rule: Stc2_Rule_188_A2_P372}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case6_TestCase6) {
   ForbiddenUncondDecoderTester_Case6 baseline_tester;
@@ -713,15 +785,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=110xxxx1 & inst(19:16)=~1111 & inst(27:20)=~11000x01
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '1111110pudw1nnnniiiiiiiiiiiiiiii',
-//     'rule': 'Ldc2_Rule_51_A2_P106'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '1111110pudw1nnnniiiiiiiiiiiiiiii',
+//       rule: 'Ldc2_Rule_51_A2_P106'}
 //
 // Representative case:
 // op1(27:20)=110xxxx1 & Rn(19:16)=~1111 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 1111110pudw1nnnniiiiiiiiiiiiiiii,
-//     rule: Ldc2_Rule_51_A2_P106}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 1111110pudw1nnnniiiiiiiiiiiiiiii,
+//       rule: Ldc2_Rule_51_A2_P106}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case7_TestCase7) {
   ForbiddenUncondDecoderTester_Case7 baseline_tester;
@@ -732,15 +808,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=110xxxx1 & inst(19:16)=1111 & inst(27:20)=~11000x01
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '1111110pudw11111iiiiiiiiiiiiiiii',
-//     'rule': 'Ldc2_Rule_52_A2_P108'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '1111110pudw11111iiiiiiiiiiiiiiii',
+//       rule: 'Ldc2_Rule_52_A2_P108'}
 //
 // Representative case:
 // op1(27:20)=110xxxx1 & Rn(19:16)=1111 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 1111110pudw11111iiiiiiiiiiiiiiii,
-//     rule: Ldc2_Rule_52_A2_P108}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 1111110pudw11111iiiiiiiiiiiiiiii,
+//       rule: Ldc2_Rule_52_A2_P108}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case8_TestCase8) {
   ForbiddenUncondDecoderTester_Case8 baseline_tester;
@@ -751,15 +831,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=1110xxxx & inst(4)=0
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '11111110iiiiiiiiiiiiiiiiiii0iiii',
-//     'rule': 'Cdp2_Rule_28_A2_P68'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '11111110iiiiiiiiiiiiiiiiiii0iiii',
+//       rule: 'Cdp2_Rule_28_A2_P68'}
 //
 // Representative case:
 // op1(27:20)=1110xxxx & op(4)=0
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 11111110iiiiiiiiiiiiiiiiiii0iiii,
-//     rule: Cdp2_Rule_28_A2_P68}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 11111110iiiiiiiiiiiiiiiiiii0iiii,
+//       rule: Cdp2_Rule_28_A2_P68}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case9_TestCase9) {
   ForbiddenUncondDecoderTester_Case9 baseline_tester;
@@ -770,15 +854,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(27:20)=101xxxxx
-//    = ForbiddenUncondDecoder => Forbidden {'constraints': ,
-//     'pattern': '1111101hiiiiiiiiiiiiiiiiiiiiiiii',
-//     'rule': 'Blx_Rule_23_A2_P58'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenUncondDecoder',
+//       constraints: ,
+//       pattern: '1111101hiiiiiiiiiiiiiiiiiiiiiiii',
+//       rule: 'Blx_Rule_23_A2_P58'}
 //
 // Representative case:
 // op1(27:20)=101xxxxx
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: 1111101hiiiiiiiiiiiiiiiiiiiiiiii,
-//     rule: Blx_Rule_23_A2_P58}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenUncondDecoder,
+//       constraints: ,
+//       pattern: 1111101hiiiiiiiiiiiiiiiiiiiiiiii,
+//       rule: Blx_Rule_23_A2_P58}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenUncondDecoderTester_Case10_TestCase10) {
   ForbiddenUncondDecoderTester_Case10 baseline_tester;

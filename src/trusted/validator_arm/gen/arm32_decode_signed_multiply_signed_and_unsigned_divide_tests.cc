@@ -28,13 +28,15 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=~1111
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=~1111
-//    = Binary4RegisterDualOp {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTesterCase0
     : public Binary4RegisterDualOpTesterRegsNotPc {
  public:
@@ -62,13 +64,15 @@ bool Binary4RegisterDualOpTesterCase0
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=1111
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=1111
-//    = Binary3RegisterOpAltA {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltATesterCase1
     : public Binary3RegisterOpAltATesterRegsNotPc {
  public:
@@ -96,13 +100,15 @@ bool Binary3RegisterOpAltATesterCase1
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=~1111
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=~1111
-//    = Binary4RegisterDualOp {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTesterCase2
     : public Binary4RegisterDualOpTesterRegsNotPc {
  public:
@@ -130,13 +136,15 @@ bool Binary4RegisterDualOpTesterCase2
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=1111
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=1111
-//    = Binary3RegisterOpAltA {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltATesterCase3
     : public Binary3RegisterOpAltATesterRegsNotPc {
  public:
@@ -164,11 +172,13 @@ bool Binary3RegisterOpAltATesterCase3
 
 // Neutral case:
 // inst(22:20)=001 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA {'constraints': }
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: }
 //
 // Representaive case:
 // op1(22:20)=001 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA {constraints: }
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: }
 class Binary3RegisterOpAltATesterCase4
     : public Binary3RegisterOpAltATester {
  public:
@@ -196,11 +206,13 @@ bool Binary3RegisterOpAltATesterCase4
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA {'constraints': }
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: }
 //
 // Representaive case:
 // op1(22:20)=011 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA {constraints: }
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: }
 class Binary3RegisterOpAltATesterCase5
     : public Binary3RegisterOpAltATester {
  public:
@@ -228,13 +240,15 @@ bool Binary3RegisterOpAltATesterCase5
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=00x
-//    = Binary4RegisterDualResult {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualResult',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=100 & op2(7:5)=00x
-//    = Binary4RegisterDualResult {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualResult,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualResultTesterCase6
     : public Binary4RegisterDualResultTesterRegsNotPc {
  public:
@@ -261,13 +275,15 @@ bool Binary4RegisterDualResultTesterCase6
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=01x
-//    = Binary4RegisterDualResult {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualResult',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=100 & op2(7:5)=01x
-//    = Binary4RegisterDualResult {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualResult,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualResultTesterCase7
     : public Binary4RegisterDualResultTesterRegsNotPc {
  public:
@@ -294,13 +310,15 @@ bool Binary4RegisterDualResultTesterCase7
 
 // Neutral case:
 // inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=~1111
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=~1111
-//    = Binary4RegisterDualOp {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTesterCase8
     : public Binary4RegisterDualOpTesterRegsNotPc {
  public:
@@ -328,13 +346,15 @@ bool Binary4RegisterDualOpTesterCase8
 
 // Neutral case:
 // inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=1111
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=1111
-//    = Binary3RegisterOpAltA {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltATesterCase9
     : public Binary3RegisterOpAltATesterRegsNotPc {
  public:
@@ -362,13 +382,15 @@ bool Binary3RegisterOpAltATesterCase9
 
 // Neutral case:
 // inst(22:20)=101 & inst(7:5)=11x
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(22:20)=101 & op2(7:5)=11x
-//    = Binary4RegisterDualOp {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTesterCase10
     : public Binary4RegisterDualOpTesterRegsNotPc {
  public:
@@ -400,15 +422,17 @@ bool Binary4RegisterDualOpTesterCase10
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=~1111
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'rule': 'Smlad_Rule_167_P332',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       rule: 'Smlad_Rule_167_P332',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=~1111
-//    = Binary4RegisterDualOp {constraints: ,
-//     rule: Smlad_Rule_167_P332,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       rule: Smlad_Rule_167_P332,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTester_Case0
     : public Binary4RegisterDualOpTesterCase0 {
  public:
@@ -420,15 +444,17 @@ class Binary4RegisterDualOpTester_Case0
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=1111
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'rule': 'Smuad_Rule_177_P352',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       rule: 'Smuad_Rule_177_P352',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=1111
-//    = Binary3RegisterOpAltA {constraints: ,
-//     rule: Smuad_Rule_177_P352,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       rule: Smuad_Rule_177_P352,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltATester_Case1
     : public Binary3RegisterOpAltATesterCase1 {
  public:
@@ -440,15 +466,17 @@ class Binary3RegisterOpAltATester_Case1
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=~1111
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'rule': 'Smlsd_Rule_172_P342',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       rule: 'Smlsd_Rule_172_P342',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=~1111
-//    = Binary4RegisterDualOp {constraints: ,
-//     rule: Smlsd_Rule_172_P342,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       rule: Smlsd_Rule_172_P342,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTester_Case2
     : public Binary4RegisterDualOpTesterCase2 {
  public:
@@ -460,15 +488,17 @@ class Binary4RegisterDualOpTester_Case2
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=1111
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'rule': 'Smusd_Rule_181_P360',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       rule: 'Smusd_Rule_181_P360',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=1111
-//    = Binary3RegisterOpAltA {constraints: ,
-//     rule: Smusd_Rule_181_P360,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       rule: Smusd_Rule_181_P360,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltATester_Case3
     : public Binary3RegisterOpAltATesterCase3 {
  public:
@@ -480,13 +510,15 @@ class Binary3RegisterOpAltATester_Case3
 
 // Neutral case:
 // inst(22:20)=001 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'rule': 'Sdiv_Rule_A1'}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       rule: 'Sdiv_Rule_A1'}
 //
 // Representative case:
 // op1(22:20)=001 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA {constraints: ,
-//     rule: Sdiv_Rule_A1}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       rule: Sdiv_Rule_A1}
 class Binary3RegisterOpAltATester_Case4
     : public Binary3RegisterOpAltATesterCase4 {
  public:
@@ -498,13 +530,15 @@ class Binary3RegisterOpAltATester_Case4
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'rule': 'Udiv_Rule_A1'}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       rule: 'Udiv_Rule_A1'}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA {constraints: ,
-//     rule: Udiv_Rule_A1}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       rule: Udiv_Rule_A1}
 class Binary3RegisterOpAltATester_Case5
     : public Binary3RegisterOpAltATesterCase5 {
  public:
@@ -516,15 +550,17 @@ class Binary3RegisterOpAltATester_Case5
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=00x
-//    = Binary4RegisterDualResult {'constraints': ,
-//     'rule': 'Smlald_Rule_170_P336',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualResult',
+//       constraints: ,
+//       rule: 'Smlald_Rule_170_P336',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=00x
-//    = Binary4RegisterDualResult {constraints: ,
-//     rule: Smlald_Rule_170_P336,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualResult,
+//       constraints: ,
+//       rule: Smlald_Rule_170_P336,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualResultTester_Case6
     : public Binary4RegisterDualResultTesterCase6 {
  public:
@@ -536,15 +572,17 @@ class Binary4RegisterDualResultTester_Case6
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=01x
-//    = Binary4RegisterDualResult {'constraints': ,
-//     'rule': 'Smlsld_Rule_173_P344',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualResult',
+//       constraints: ,
+//       rule: 'Smlsld_Rule_173_P344',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=01x
-//    = Binary4RegisterDualResult {constraints: ,
-//     rule: Smlsld_Rule_173_P344,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualResult,
+//       constraints: ,
+//       rule: Smlsld_Rule_173_P344,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualResultTester_Case7
     : public Binary4RegisterDualResultTesterCase7 {
  public:
@@ -556,15 +594,17 @@ class Binary4RegisterDualResultTester_Case7
 
 // Neutral case:
 // inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=~1111
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'rule': 'Smmla_Rule_174_P346',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       rule: 'Smmla_Rule_174_P346',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=~1111
-//    = Binary4RegisterDualOp {constraints: ,
-//     rule: Smmla_Rule_174_P346,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       rule: Smmla_Rule_174_P346,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTester_Case8
     : public Binary4RegisterDualOpTesterCase8 {
  public:
@@ -576,15 +616,17 @@ class Binary4RegisterDualOpTester_Case8
 
 // Neutral case:
 // inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=1111
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'rule': 'Smmul_Rule_176_P350',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       rule: 'Smmul_Rule_176_P350',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=1111
-//    = Binary3RegisterOpAltA {constraints: ,
-//     rule: Smmul_Rule_176_P350,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       rule: Smmul_Rule_176_P350,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltATester_Case9
     : public Binary3RegisterOpAltATesterCase9 {
  public:
@@ -596,15 +638,17 @@ class Binary3RegisterOpAltATester_Case9
 
 // Neutral case:
 // inst(22:20)=101 & inst(7:5)=11x
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'rule': 'Smmls_Rule_175_P348',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       rule: 'Smmls_Rule_175_P348',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=101 & op2(7:5)=11x
-//    = Binary4RegisterDualOp {constraints: ,
-//     rule: Smmls_Rule_175_P348,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       rule: Smmls_Rule_175_P348,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTester_Case10
     : public Binary4RegisterDualOpTesterCase10 {
  public:
@@ -625,17 +669,21 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=~1111
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110000ddddaaaammmm00m1nnnn',
-//     'rule': 'Smlad_Rule_167_P332',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs16To19CondsDontCareRdRaRmRnNotPc',
+//       baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       pattern: 'cccc01110000ddddaaaammmm00m1nnnn',
+//       rule: 'Smlad_Rule_167_P332',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=~1111
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {constraints: ,
-//     pattern: cccc01110000ddddaaaammmm00m1nnnn,
-//     rule: Smlad_Rule_167_P332,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs16To19CondsDontCareRdRaRmRnNotPc,
+//       baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       pattern: cccc01110000ddddaaaammmm00m1nnnn,
+//       rule: Smlad_Rule_167_P332,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case0_TestCase0) {
   Binary4RegisterDualOpTester_Case0 baseline_tester;
@@ -646,17 +694,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=00x & inst(15:12)=1111
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110000dddd1111mmmm00m1nnnn',
-//     'rule': 'Smuad_Rule_177_P352',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs16To19CondsDontCareRdRmRnNotPc',
+//       baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       pattern: 'cccc01110000dddd1111mmmm00m1nnnn',
+//       rule: 'Smuad_Rule_177_P352',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=1111
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {constraints: ,
-//     pattern: cccc01110000dddd1111mmmm00m1nnnn,
-//     rule: Smuad_Rule_177_P352,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs16To19CondsDontCareRdRmRnNotPc,
+//       baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       pattern: cccc01110000dddd1111mmmm00m1nnnn,
+//       rule: Smuad_Rule_177_P352,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case1_TestCase1) {
   Binary3RegisterOpAltATester_Case1 baseline_tester;
@@ -667,17 +719,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=~1111
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110000ddddaaaammmm01m1nnnn',
-//     'rule': 'Smlsd_Rule_172_P342',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs16To19CondsDontCareRdRaRmRnNotPc',
+//       baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       pattern: 'cccc01110000ddddaaaammmm01m1nnnn',
+//       rule: 'Smlsd_Rule_172_P342',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=~1111
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {constraints: ,
-//     pattern: cccc01110000ddddaaaammmm01m1nnnn,
-//     rule: Smlsd_Rule_172_P342,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs16To19CondsDontCareRdRaRmRnNotPc,
+//       baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       pattern: cccc01110000ddddaaaammmm01m1nnnn,
+//       rule: Smlsd_Rule_172_P342,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case2_TestCase2) {
   Binary4RegisterDualOpTester_Case2 baseline_tester;
@@ -688,17 +744,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=000 & inst(7:5)=01x & inst(15:12)=1111
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110000dddd1111mmmm01m1nnnn',
-//     'rule': 'Smusd_Rule_181_P360',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs16To19CondsDontCareRdRmRnNotPc',
+//       baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       pattern: 'cccc01110000dddd1111mmmm01m1nnnn',
+//       rule: 'Smusd_Rule_181_P360',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=1111
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {constraints: ,
-//     pattern: cccc01110000dddd1111mmmm01m1nnnn,
-//     rule: Smusd_Rule_181_P360,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs16To19CondsDontCareRdRmRnNotPc,
+//       baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       pattern: cccc01110000dddd1111mmmm01m1nnnn,
+//       rule: Smusd_Rule_181_P360,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case3_TestCase3) {
   Binary3RegisterOpAltATester_Case3 baseline_tester;
@@ -709,15 +769,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=001 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110001dddd1111mmmm0001nnnn',
-//     'rule': 'Sdiv_Rule_A1'}
+//    = {actual: 'Defs16To19CondsDontCareRdRmRnNotPc',
+//       baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       pattern: 'cccc01110001dddd1111mmmm0001nnnn',
+//       rule: 'Sdiv_Rule_A1'}
 //
 // Representative case:
 // op1(22:20)=001 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {constraints: ,
-//     pattern: cccc01110001dddd1111mmmm0001nnnn,
-//     rule: Sdiv_Rule_A1}
+//    = {actual: Defs16To19CondsDontCareRdRmRnNotPc,
+//       baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       pattern: cccc01110001dddd1111mmmm0001nnnn,
+//       rule: Sdiv_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case4_TestCase4) {
   Binary3RegisterOpAltATester_Case4 baseline_tester;
@@ -728,15 +792,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=011 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110011dddd1111mmmm0001nnnn',
-//     'rule': 'Udiv_Rule_A1'}
+//    = {actual: 'Defs16To19CondsDontCareRdRmRnNotPc',
+//       baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       pattern: 'cccc01110011dddd1111mmmm0001nnnn',
+//       rule: 'Udiv_Rule_A1'}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {constraints: ,
-//     pattern: cccc01110011dddd1111mmmm0001nnnn,
-//     rule: Udiv_Rule_A1}
+//    = {actual: Defs16To19CondsDontCareRdRmRnNotPc,
+//       baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       pattern: cccc01110011dddd1111mmmm0001nnnn,
+//       rule: Udiv_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case5_TestCase5) {
   Binary3RegisterOpAltATester_Case5 baseline_tester;
@@ -747,17 +815,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=00x
-//    = Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110100hhhhllllmmmm00m1nnnn',
-//     'rule': 'Smlald_Rule_170_P336',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To19CondsDontCareRdRmRnNotPc',
+//       baseline: 'Binary4RegisterDualResult',
+//       constraints: ,
+//       pattern: 'cccc01110100hhhhllllmmmm00m1nnnn',
+//       rule: 'Smlald_Rule_170_P336',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=00x
-//    = Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc {constraints: ,
-//     pattern: cccc01110100hhhhllllmmmm00m1nnnn,
-//     rule: Smlald_Rule_170_P336,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To19CondsDontCareRdRmRnNotPc,
+//       baseline: Binary4RegisterDualResult,
+//       constraints: ,
+//       pattern: cccc01110100hhhhllllmmmm00m1nnnn,
+//       rule: Smlald_Rule_170_P336,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultTester_Case6_TestCase6) {
   Binary4RegisterDualResultTester_Case6 baseline_tester;
@@ -768,17 +840,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=100 & inst(7:5)=01x
-//    = Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110100hhhhllllmmmm01m1nnnn',
-//     'rule': 'Smlsld_Rule_173_P344',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To19CondsDontCareRdRmRnNotPc',
+//       baseline: 'Binary4RegisterDualResult',
+//       constraints: ,
+//       pattern: 'cccc01110100hhhhllllmmmm01m1nnnn',
+//       rule: 'Smlsld_Rule_173_P344',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=01x
-//    = Binary4RegisterDualResult => Defs12To19CondsDontCareRdRmRnNotPc {constraints: ,
-//     pattern: cccc01110100hhhhllllmmmm01m1nnnn,
-//     rule: Smlsld_Rule_173_P344,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To19CondsDontCareRdRmRnNotPc,
+//       baseline: Binary4RegisterDualResult,
+//       constraints: ,
+//       pattern: cccc01110100hhhhllllmmmm01m1nnnn,
+//       rule: Smlsld_Rule_173_P344,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultTester_Case7_TestCase7) {
   Binary4RegisterDualResultTester_Case7 baseline_tester;
@@ -789,17 +865,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=~1111
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110101ddddaaaammmm00r1nnnn',
-//     'rule': 'Smmla_Rule_174_P346',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs16To19CondsDontCareRdRaRmRnNotPc',
+//       baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       pattern: 'cccc01110101ddddaaaammmm00r1nnnn',
+//       rule: 'Smmla_Rule_174_P346',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=~1111
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {constraints: ,
-//     pattern: cccc01110101ddddaaaammmm00r1nnnn,
-//     rule: Smmla_Rule_174_P346,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs16To19CondsDontCareRdRaRmRnNotPc,
+//       baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       pattern: cccc01110101ddddaaaammmm00r1nnnn,
+//       rule: Smmla_Rule_174_P346,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case8_TestCase8) {
   Binary4RegisterDualOpTester_Case8 baseline_tester;
@@ -810,17 +890,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=101 & inst(7:5)=00x & inst(15:12)=1111
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110101dddd1111mmmm00r1nnnn',
-//     'rule': 'Smmul_Rule_176_P350',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs16To19CondsDontCareRdRmRnNotPc',
+//       baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       pattern: 'cccc01110101dddd1111mmmm00r1nnnn',
+//       rule: 'Smmul_Rule_176_P350',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=1111
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {constraints: ,
-//     pattern: cccc01110101dddd1111mmmm00r1nnnn,
-//     rule: Smmul_Rule_176_P350,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs16To19CondsDontCareRdRmRnNotPc,
+//       baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       pattern: cccc01110101dddd1111mmmm00r1nnnn,
+//       rule: Smmul_Rule_176_P350,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case9_TestCase9) {
   Binary3RegisterOpAltATester_Case9 baseline_tester;
@@ -831,17 +915,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(22:20)=101 & inst(7:5)=11x
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01110101ddddaaaammmm11r1nnnn',
-//     'rule': 'Smmls_Rule_175_P348',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs16To19CondsDontCareRdRaRmRnNotPc',
+//       baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       pattern: 'cccc01110101ddddaaaammmm11r1nnnn',
+//       rule: 'Smmls_Rule_175_P348',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(22:20)=101 & op2(7:5)=11x
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {constraints: ,
-//     pattern: cccc01110101ddddaaaammmm11r1nnnn,
-//     rule: Smmls_Rule_175_P348,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs16To19CondsDontCareRdRaRmRnNotPc,
+//       baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       pattern: cccc01110101ddddaaaammmm11r1nnnn,
+//       rule: Smmls_Rule_175_P348,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case10_TestCase10) {
   Binary4RegisterDualOpTester_Case10 baseline_tester;

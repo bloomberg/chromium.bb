@@ -28,11 +28,13 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(23:20)=1000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {'constraints': }
+//    = {baseline: 'StoreExclusive3RegisterOp',
+//       constraints: }
 //
 // Representaive case:
 // op(23:20)=1000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {constraints: }
+//    = {baseline: StoreExclusive3RegisterOp,
+//       constraints: }
 class StoreExclusive3RegisterOpTesterCase0
     : public StoreExclusive3RegisterOpTester {
  public:
@@ -59,11 +61,13 @@ bool StoreExclusive3RegisterOpTesterCase0
 
 // Neutral case:
 // inst(23:20)=1001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {'constraints': }
+//    = {baseline: 'LoadExclusive2RegisterOp',
+//       constraints: }
 //
 // Representaive case:
 // op(23:20)=1001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {constraints: }
+//    = {baseline: LoadExclusive2RegisterOp,
+//       constraints: }
 class LoadExclusive2RegisterOpTesterCase1
     : public LoadExclusive2RegisterOpTester {
  public:
@@ -90,11 +94,13 @@ bool LoadExclusive2RegisterOpTesterCase1
 
 // Neutral case:
 // inst(23:20)=1010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterDoubleOp {'constraints': }
+//    = {baseline: 'StoreExclusive3RegisterDoubleOp',
+//       constraints: }
 //
 // Representaive case:
 // op(23:20)=1010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterDoubleOp {constraints: }
+//    = {baseline: StoreExclusive3RegisterDoubleOp,
+//       constraints: }
 class StoreExclusive3RegisterDoubleOpTesterCase2
     : public StoreExclusive3RegisterDoubleOpTester {
  public:
@@ -121,11 +127,13 @@ bool StoreExclusive3RegisterDoubleOpTesterCase2
 
 // Neutral case:
 // inst(23:20)=1011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterDoubleOp {'constraints': }
+//    = {baseline: 'LoadExclusive2RegisterDoubleOp',
+//       constraints: }
 //
 // Representaive case:
 // op(23:20)=1011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterDoubleOp {constraints: }
+//    = {baseline: LoadExclusive2RegisterDoubleOp,
+//       constraints: }
 class LoadExclusive2RegisterDoubleOpTesterCase3
     : public LoadExclusive2RegisterDoubleOpTester {
  public:
@@ -152,11 +160,13 @@ bool LoadExclusive2RegisterDoubleOpTesterCase3
 
 // Neutral case:
 // inst(23:20)=1100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {'constraints': }
+//    = {baseline: 'StoreExclusive3RegisterOp',
+//       constraints: }
 //
 // Representaive case:
 // op(23:20)=1100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {constraints: }
+//    = {baseline: StoreExclusive3RegisterOp,
+//       constraints: }
 class StoreExclusive3RegisterOpTesterCase4
     : public StoreExclusive3RegisterOpTester {
  public:
@@ -183,11 +193,13 @@ bool StoreExclusive3RegisterOpTesterCase4
 
 // Neutral case:
 // inst(23:20)=1101 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {'constraints': }
+//    = {baseline: 'LoadExclusive2RegisterOp',
+//       constraints: }
 //
 // Representaive case:
 // op(23:20)=1101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {constraints: }
+//    = {baseline: LoadExclusive2RegisterOp,
+//       constraints: }
 class LoadExclusive2RegisterOpTesterCase5
     : public LoadExclusive2RegisterOpTester {
  public:
@@ -214,11 +226,13 @@ bool LoadExclusive2RegisterOpTesterCase5
 
 // Neutral case:
 // inst(23:20)=1110 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {'constraints': }
+//    = {baseline: 'StoreExclusive3RegisterOp',
+//       constraints: }
 //
 // Representaive case:
 // op(23:20)=1110 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {constraints: }
+//    = {baseline: StoreExclusive3RegisterOp,
+//       constraints: }
 class StoreExclusive3RegisterOpTesterCase6
     : public StoreExclusive3RegisterOpTester {
  public:
@@ -245,11 +259,13 @@ bool StoreExclusive3RegisterOpTesterCase6
 
 // Neutral case:
 // inst(23:20)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {'constraints': }
+//    = {baseline: 'LoadExclusive2RegisterOp',
+//       constraints: }
 //
 // Representaive case:
 // op(23:20)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {constraints: }
+//    = {baseline: LoadExclusive2RegisterOp,
+//       constraints: }
 class LoadExclusive2RegisterOpTesterCase7
     : public LoadExclusive2RegisterOpTester {
  public:
@@ -276,11 +292,13 @@ bool LoadExclusive2RegisterOpTesterCase7
 
 // Neutral case:
 // inst(23:20)=0x00 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = Deprecated {'constraints': }
+//    = {baseline: 'Deprecated',
+//       constraints: }
 //
 // Representaive case:
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = Deprecated {constraints: }
+//    = {baseline: Deprecated,
+//       constraints: }
 class UnsafeCondDecoderTesterCase8
     : public UnsafeCondDecoderTester {
  public:
@@ -312,13 +330,15 @@ bool UnsafeCondDecoderTesterCase8
 
 // Neutral case:
 // inst(23:20)=1000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {'constraints': ,
-//     'rule': 'Strex_Rule_202_A1_P400'}
+//    = {baseline: 'StoreExclusive3RegisterOp',
+//       constraints: ,
+//       rule: 'Strex_Rule_202_A1_P400'}
 //
 // Representative case:
 // op(23:20)=1000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {constraints: ,
-//     rule: Strex_Rule_202_A1_P400}
+//    = {baseline: StoreExclusive3RegisterOp,
+//       constraints: ,
+//       rule: Strex_Rule_202_A1_P400}
 class StoreExclusive3RegisterOpTester_Case0
     : public StoreExclusive3RegisterOpTesterCase0 {
  public:
@@ -330,13 +350,15 @@ class StoreExclusive3RegisterOpTester_Case0
 
 // Neutral case:
 // inst(23:20)=1001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {'constraints': ,
-//     'rule': 'Ldrex_Rule_69_A1_P142'}
+//    = {baseline: 'LoadExclusive2RegisterOp',
+//       constraints: ,
+//       rule: 'Ldrex_Rule_69_A1_P142'}
 //
 // Representative case:
 // op(23:20)=1001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {constraints: ,
-//     rule: Ldrex_Rule_69_A1_P142}
+//    = {baseline: LoadExclusive2RegisterOp,
+//       constraints: ,
+//       rule: Ldrex_Rule_69_A1_P142}
 class LoadExclusive2RegisterOpTester_Case1
     : public LoadExclusive2RegisterOpTesterCase1 {
  public:
@@ -348,13 +370,15 @@ class LoadExclusive2RegisterOpTester_Case1
 
 // Neutral case:
 // inst(23:20)=1010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterDoubleOp {'constraints': ,
-//     'rule': 'Strexd_Rule_204_A1_P404'}
+//    = {baseline: 'StoreExclusive3RegisterDoubleOp',
+//       constraints: ,
+//       rule: 'Strexd_Rule_204_A1_P404'}
 //
 // Representative case:
 // op(23:20)=1010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterDoubleOp {constraints: ,
-//     rule: Strexd_Rule_204_A1_P404}
+//    = {baseline: StoreExclusive3RegisterDoubleOp,
+//       constraints: ,
+//       rule: Strexd_Rule_204_A1_P404}
 class StoreExclusive3RegisterDoubleOpTester_Case2
     : public StoreExclusive3RegisterDoubleOpTesterCase2 {
  public:
@@ -366,13 +390,15 @@ class StoreExclusive3RegisterDoubleOpTester_Case2
 
 // Neutral case:
 // inst(23:20)=1011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterDoubleOp {'constraints': ,
-//     'rule': 'Ldrexd_Rule_71_A1_P146'}
+//    = {baseline: 'LoadExclusive2RegisterDoubleOp',
+//       constraints: ,
+//       rule: 'Ldrexd_Rule_71_A1_P146'}
 //
 // Representative case:
 // op(23:20)=1011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterDoubleOp {constraints: ,
-//     rule: Ldrexd_Rule_71_A1_P146}
+//    = {baseline: LoadExclusive2RegisterDoubleOp,
+//       constraints: ,
+//       rule: Ldrexd_Rule_71_A1_P146}
 class LoadExclusive2RegisterDoubleOpTester_Case3
     : public LoadExclusive2RegisterDoubleOpTesterCase3 {
  public:
@@ -384,13 +410,15 @@ class LoadExclusive2RegisterDoubleOpTester_Case3
 
 // Neutral case:
 // inst(23:20)=1100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {'constraints': ,
-//     'rule': 'Strexb_Rule_203_A1_P402'}
+//    = {baseline: 'StoreExclusive3RegisterOp',
+//       constraints: ,
+//       rule: 'Strexb_Rule_203_A1_P402'}
 //
 // Representative case:
 // op(23:20)=1100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {constraints: ,
-//     rule: Strexb_Rule_203_A1_P402}
+//    = {baseline: StoreExclusive3RegisterOp,
+//       constraints: ,
+//       rule: Strexb_Rule_203_A1_P402}
 class StoreExclusive3RegisterOpTester_Case4
     : public StoreExclusive3RegisterOpTesterCase4 {
  public:
@@ -402,13 +430,15 @@ class StoreExclusive3RegisterOpTester_Case4
 
 // Neutral case:
 // inst(23:20)=1101 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {'constraints': ,
-//     'rule': 'Ldrexb_Rule_70_A1_P144'}
+//    = {baseline: 'LoadExclusive2RegisterOp',
+//       constraints: ,
+//       rule: 'Ldrexb_Rule_70_A1_P144'}
 //
 // Representative case:
 // op(23:20)=1101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {constraints: ,
-//     rule: Ldrexb_Rule_70_A1_P144}
+//    = {baseline: LoadExclusive2RegisterOp,
+//       constraints: ,
+//       rule: Ldrexb_Rule_70_A1_P144}
 class LoadExclusive2RegisterOpTester_Case5
     : public LoadExclusive2RegisterOpTesterCase5 {
  public:
@@ -420,13 +450,15 @@ class LoadExclusive2RegisterOpTester_Case5
 
 // Neutral case:
 // inst(23:20)=1110 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {'constraints': ,
-//     'rule': 'Strexh_Rule_205_A1_P406'}
+//    = {baseline: 'StoreExclusive3RegisterOp',
+//       constraints: ,
+//       rule: 'Strexh_Rule_205_A1_P406'}
 //
 // Representative case:
 // op(23:20)=1110 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp {constraints: ,
-//     rule: Strexh_Rule_205_A1_P406}
+//    = {baseline: StoreExclusive3RegisterOp,
+//       constraints: ,
+//       rule: Strexh_Rule_205_A1_P406}
 class StoreExclusive3RegisterOpTester_Case6
     : public StoreExclusive3RegisterOpTesterCase6 {
  public:
@@ -438,13 +470,15 @@ class StoreExclusive3RegisterOpTester_Case6
 
 // Neutral case:
 // inst(23:20)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {'constraints': ,
-//     'rule': 'Ldrexh_Rule_72_A1_P148'}
+//    = {baseline: 'LoadExclusive2RegisterOp',
+//       constraints: ,
+//       rule: 'Ldrexh_Rule_72_A1_P148'}
 //
 // Representative case:
 // op(23:20)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp {constraints: ,
-//     rule: Ldrexh_Rule_72_A1_P148}
+//    = {baseline: LoadExclusive2RegisterOp,
+//       constraints: ,
+//       rule: Ldrexh_Rule_72_A1_P148}
 class LoadExclusive2RegisterOpTester_Case7
     : public LoadExclusive2RegisterOpTesterCase7 {
  public:
@@ -456,13 +490,15 @@ class LoadExclusive2RegisterOpTester_Case7
 
 // Neutral case:
 // inst(23:20)=0x00 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = Deprecated {'constraints': ,
-//     'rule': 'Swp_Swpb_Rule_A1'}
+//    = {baseline: 'Deprecated',
+//       constraints: ,
+//       rule: 'Swp_Swpb_Rule_A1'}
 //
 // Representative case:
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = Deprecated {constraints: ,
-//     rule: Swp_Swpb_Rule_A1}
+//    = {baseline: Deprecated,
+//       constraints: ,
+//       rule: Swp_Swpb_Rule_A1}
 class DeprecatedTester_Case8
     : public UnsafeCondDecoderTesterCase8 {
  public:
@@ -483,15 +519,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(23:20)=1000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3 {'constraints': ,
-//     'pattern': 'cccc00011000nnnndddd11111001tttt',
-//     'rule': 'Strex_Rule_202_A1_P400'}
+//    = {actual: 'StoreBasedMemoryRtBits0To3',
+//       baseline: 'StoreExclusive3RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc00011000nnnndddd11111001tttt',
+//       rule: 'Strex_Rule_202_A1_P400'}
 //
 // Representative case:
 // op(23:20)=1000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3 {constraints: ,
-//     pattern: cccc00011000nnnndddd11111001tttt,
-//     rule: Strex_Rule_202_A1_P400}
+//    = {actual: StoreBasedMemoryRtBits0To3,
+//       baseline: StoreExclusive3RegisterOp,
+//       constraints: ,
+//       pattern: cccc00011000nnnndddd11111001tttt,
+//       rule: Strex_Rule_202_A1_P400}
 TEST_F(Arm32DecoderStateTests,
        StoreExclusive3RegisterOpTester_Case0_TestCase0) {
   StoreExclusive3RegisterOpTester_Case0 baseline_tester;
@@ -502,15 +542,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(23:20)=1001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp => LoadBasedMemory {'constraints': ,
-//     'pattern': 'cccc00011001nnnntttt111110011111',
-//     'rule': 'Ldrex_Rule_69_A1_P142'}
+//    = {actual: 'LoadBasedMemory',
+//       baseline: 'LoadExclusive2RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc00011001nnnntttt111110011111',
+//       rule: 'Ldrex_Rule_69_A1_P142'}
 //
 // Representative case:
 // op(23:20)=1001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp => LoadBasedMemory {constraints: ,
-//     pattern: cccc00011001nnnntttt111110011111,
-//     rule: Ldrex_Rule_69_A1_P142}
+//    = {actual: LoadBasedMemory,
+//       baseline: LoadExclusive2RegisterOp,
+//       constraints: ,
+//       pattern: cccc00011001nnnntttt111110011111,
+//       rule: Ldrex_Rule_69_A1_P142}
 TEST_F(Arm32DecoderStateTests,
        LoadExclusive2RegisterOpTester_Case1_TestCase1) {
   LoadExclusive2RegisterOpTester_Case1 baseline_tester;
@@ -521,15 +565,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(23:20)=1010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterDoubleOp => StoreBasedMemoryDoubleRtBits0To3 {'constraints': ,
-//     'pattern': 'cccc00011010nnnndddd11111001tttt',
-//     'rule': 'Strexd_Rule_204_A1_P404'}
+//    = {actual: 'StoreBasedMemoryDoubleRtBits0To3',
+//       baseline: 'StoreExclusive3RegisterDoubleOp',
+//       constraints: ,
+//       pattern: 'cccc00011010nnnndddd11111001tttt',
+//       rule: 'Strexd_Rule_204_A1_P404'}
 //
 // Representative case:
 // op(23:20)=1010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterDoubleOp => StoreBasedMemoryDoubleRtBits0To3 {constraints: ,
-//     pattern: cccc00011010nnnndddd11111001tttt,
-//     rule: Strexd_Rule_204_A1_P404}
+//    = {actual: StoreBasedMemoryDoubleRtBits0To3,
+//       baseline: StoreExclusive3RegisterDoubleOp,
+//       constraints: ,
+//       pattern: cccc00011010nnnndddd11111001tttt,
+//       rule: Strexd_Rule_204_A1_P404}
 TEST_F(Arm32DecoderStateTests,
        StoreExclusive3RegisterDoubleOpTester_Case2_TestCase2) {
   StoreExclusive3RegisterDoubleOpTester_Case2 baseline_tester;
@@ -540,15 +588,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(23:20)=1011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterDoubleOp => LoadBasedMemoryDouble {'constraints': ,
-//     'pattern': 'cccc00011011nnnntttt111110011111',
-//     'rule': 'Ldrexd_Rule_71_A1_P146'}
+//    = {actual: 'LoadBasedMemoryDouble',
+//       baseline: 'LoadExclusive2RegisterDoubleOp',
+//       constraints: ,
+//       pattern: 'cccc00011011nnnntttt111110011111',
+//       rule: 'Ldrexd_Rule_71_A1_P146'}
 //
 // Representative case:
 // op(23:20)=1011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterDoubleOp => LoadBasedMemoryDouble {constraints: ,
-//     pattern: cccc00011011nnnntttt111110011111,
-//     rule: Ldrexd_Rule_71_A1_P146}
+//    = {actual: LoadBasedMemoryDouble,
+//       baseline: LoadExclusive2RegisterDoubleOp,
+//       constraints: ,
+//       pattern: cccc00011011nnnntttt111110011111,
+//       rule: Ldrexd_Rule_71_A1_P146}
 TEST_F(Arm32DecoderStateTests,
        LoadExclusive2RegisterDoubleOpTester_Case3_TestCase3) {
   LoadExclusive2RegisterDoubleOpTester_Case3 baseline_tester;
@@ -559,15 +611,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(23:20)=1100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3 {'constraints': ,
-//     'pattern': 'cccc00011100nnnndddd11111001tttt',
-//     'rule': 'Strexb_Rule_203_A1_P402'}
+//    = {actual: 'StoreBasedMemoryRtBits0To3',
+//       baseline: 'StoreExclusive3RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc00011100nnnndddd11111001tttt',
+//       rule: 'Strexb_Rule_203_A1_P402'}
 //
 // Representative case:
 // op(23:20)=1100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3 {constraints: ,
-//     pattern: cccc00011100nnnndddd11111001tttt,
-//     rule: Strexb_Rule_203_A1_P402}
+//    = {actual: StoreBasedMemoryRtBits0To3,
+//       baseline: StoreExclusive3RegisterOp,
+//       constraints: ,
+//       pattern: cccc00011100nnnndddd11111001tttt,
+//       rule: Strexb_Rule_203_A1_P402}
 TEST_F(Arm32DecoderStateTests,
        StoreExclusive3RegisterOpTester_Case4_TestCase4) {
   StoreExclusive3RegisterOpTester_Case4 baseline_tester;
@@ -578,15 +634,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(23:20)=1101 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp => LoadBasedMemory {'constraints': ,
-//     'pattern': 'cccc00011101nnnntttt111110011111',
-//     'rule': 'Ldrexb_Rule_70_A1_P144'}
+//    = {actual: 'LoadBasedMemory',
+//       baseline: 'LoadExclusive2RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc00011101nnnntttt111110011111',
+//       rule: 'Ldrexb_Rule_70_A1_P144'}
 //
 // Representative case:
 // op(23:20)=1101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp => LoadBasedMemory {constraints: ,
-//     pattern: cccc00011101nnnntttt111110011111,
-//     rule: Ldrexb_Rule_70_A1_P144}
+//    = {actual: LoadBasedMemory,
+//       baseline: LoadExclusive2RegisterOp,
+//       constraints: ,
+//       pattern: cccc00011101nnnntttt111110011111,
+//       rule: Ldrexb_Rule_70_A1_P144}
 TEST_F(Arm32DecoderStateTests,
        LoadExclusive2RegisterOpTester_Case5_TestCase5) {
   LoadExclusive2RegisterOpTester_Case5 baseline_tester;
@@ -597,15 +657,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(23:20)=1110 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3 {'constraints': ,
-//     'pattern': 'cccc00011110nnnndddd11111001tttt',
-//     'rule': 'Strexh_Rule_205_A1_P406'}
+//    = {actual: 'StoreBasedMemoryRtBits0To3',
+//       baseline: 'StoreExclusive3RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc00011110nnnndddd11111001tttt',
+//       rule: 'Strexh_Rule_205_A1_P406'}
 //
 // Representative case:
 // op(23:20)=1110 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3 {constraints: ,
-//     pattern: cccc00011110nnnndddd11111001tttt,
-//     rule: Strexh_Rule_205_A1_P406}
+//    = {actual: StoreBasedMemoryRtBits0To3,
+//       baseline: StoreExclusive3RegisterOp,
+//       constraints: ,
+//       pattern: cccc00011110nnnndddd11111001tttt,
+//       rule: Strexh_Rule_205_A1_P406}
 TEST_F(Arm32DecoderStateTests,
        StoreExclusive3RegisterOpTester_Case6_TestCase6) {
   StoreExclusive3RegisterOpTester_Case6 baseline_tester;
@@ -616,15 +680,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(23:20)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp => LoadBasedMemory {'constraints': ,
-//     'pattern': 'cccc00011111nnnntttt111110011111',
-//     'rule': 'Ldrexh_Rule_72_A1_P148'}
+//    = {actual: 'LoadBasedMemory',
+//       baseline: 'LoadExclusive2RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc00011111nnnntttt111110011111',
+//       rule: 'Ldrexh_Rule_72_A1_P148'}
 //
 // Representative case:
 // op(23:20)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
-//    = LoadExclusive2RegisterOp => LoadBasedMemory {constraints: ,
-//     pattern: cccc00011111nnnntttt111110011111,
-//     rule: Ldrexh_Rule_72_A1_P148}
+//    = {actual: LoadBasedMemory,
+//       baseline: LoadExclusive2RegisterOp,
+//       constraints: ,
+//       pattern: cccc00011111nnnntttt111110011111,
+//       rule: Ldrexh_Rule_72_A1_P148}
 TEST_F(Arm32DecoderStateTests,
        LoadExclusive2RegisterOpTester_Case7_TestCase7) {
   LoadExclusive2RegisterOpTester_Case7 baseline_tester;
@@ -635,15 +703,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(23:20)=0x00 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = Deprecated => Deprecated {'constraints': ,
-//     'pattern': 'cccc00010b00nnnntttt00001001tttt',
-//     'rule': 'Swp_Swpb_Rule_A1'}
+//    = {actual: 'Deprecated',
+//       baseline: 'Deprecated',
+//       constraints: ,
+//       pattern: 'cccc00010b00nnnntttt00001001tttt',
+//       rule: 'Swp_Swpb_Rule_A1'}
 //
 // Representaive case:
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
-//    = Deprecated => Deprecated {constraints: ,
-//     pattern: cccc00010b00nnnntttt00001001tttt,
-//     rule: Swp_Swpb_Rule_A1}
+//    = {actual: Deprecated,
+//       baseline: Deprecated,
+//       constraints: ,
+//       pattern: cccc00010b00nnnntttt00001001tttt,
+//       rule: Swp_Swpb_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        DeprecatedTester_Case8_TestCase8) {
   DeprecatedTester_Case8 tester;

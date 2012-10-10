@@ -28,11 +28,13 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(24:21)=1001 & inst(19:16)=1101 & inst(11:0)=000000000100
-//    = Store2RegisterImm12OpRnNotRtOnWriteback {'constraints': }
+//    = {baseline: 'Store2RegisterImm12OpRnNotRtOnWriteback',
+//       constraints: }
 //
 // Representaive case:
 // Flags(24:21)=1001 & Rn(19:16)=1101 & Imm12(11:0)=000000000100
-//    = Store2RegisterImm12OpRnNotRtOnWriteback {constraints: }
+//    = {baseline: Store2RegisterImm12OpRnNotRtOnWriteback,
+//       constraints: }
 class LoadStore2RegisterImm12OpTesterCase0
     : public LoadStore2RegisterImm12OpTester {
  public:
@@ -60,11 +62,13 @@ bool LoadStore2RegisterImm12OpTesterCase0
 
 // Neutral case:
 // 
-//    = Store2RegisterImm12Op {'constraints': & inst(31:0)=~xxxx010100101101xxxx000000000100 }
+//    = {baseline: 'Store2RegisterImm12Op',
+//       constraints: & inst(31:0)=~xxxx010100101101xxxx000000000100 }
 //
 // Representaive case:
 // 
-//    = Store2RegisterImm12Op {constraints: & constraint(31:0)=~xxxx010100101101xxxx000000000100 }
+//    = {baseline: Store2RegisterImm12Op,
+//       constraints: & constraint(31:0)=~xxxx010100101101xxxx000000000100 }
 class LoadStore2RegisterImm12OpTesterCase1
     : public LoadStore2RegisterImm12OpTester {
  public:
@@ -95,13 +99,15 @@ bool LoadStore2RegisterImm12OpTesterCase1
 
 // Neutral case:
 // inst(24:21)=1001 & inst(19:16)=1101 & inst(11:0)=000000000100
-//    = Store2RegisterImm12OpRnNotRtOnWriteback {'constraints': ,
-//     'rule': 'Push_Rule_123_A2_P248'}
+//    = {baseline: 'Store2RegisterImm12OpRnNotRtOnWriteback',
+//       constraints: ,
+//       rule: 'Push_Rule_123_A2_P248'}
 //
 // Representative case:
 // Flags(24:21)=1001 & Rn(19:16)=1101 & Imm12(11:0)=000000000100
-//    = Store2RegisterImm12OpRnNotRtOnWriteback {constraints: ,
-//     rule: Push_Rule_123_A2_P248}
+//    = {baseline: Store2RegisterImm12OpRnNotRtOnWriteback,
+//       constraints: ,
+//       rule: Push_Rule_123_A2_P248}
 class Store2RegisterImm12OpRnNotRtOnWritebackTester_Case0
     : public LoadStore2RegisterImm12OpTesterCase0 {
  public:
@@ -113,13 +119,15 @@ class Store2RegisterImm12OpRnNotRtOnWritebackTester_Case0
 
 // Neutral case:
 // 
-//    = Store2RegisterImm12Op {'constraints': & inst(31:0)=~xxxx010100101101xxxx000000000100 ,
-//     'rule': 'Str_Rule_194_A1_P384'}
+//    = {baseline: 'Store2RegisterImm12Op',
+//       constraints: & inst(31:0)=~xxxx010100101101xxxx000000000100 ,
+//       rule: 'Str_Rule_194_A1_P384'}
 //
 // Representative case:
 // 
-//    = Store2RegisterImm12Op {constraints: & constraint(31:0)=~xxxx010100101101xxxx000000000100 ,
-//     rule: Str_Rule_194_A1_P384}
+//    = {baseline: Store2RegisterImm12Op,
+//       constraints: & constraint(31:0)=~xxxx010100101101xxxx000000000100 ,
+//       rule: Str_Rule_194_A1_P384}
 class Store2RegisterImm12OpTester_Case1
     : public LoadStore2RegisterImm12OpTesterCase1 {
  public:
@@ -140,15 +148,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(24:21)=1001 & inst(19:16)=1101 & inst(11:0)=000000000100
-//    = Store2RegisterImm12OpRnNotRtOnWriteback => Store2RegisterImm12OpRnNotRtOnWriteback {'constraints': ,
-//     'pattern': 'cccc010100101101tttt000000000100',
-//     'rule': 'Push_Rule_123_A2_P248'}
+//    = {actual: 'Store2RegisterImm12OpRnNotRtOnWriteback',
+//       baseline: 'Store2RegisterImm12OpRnNotRtOnWriteback',
+//       constraints: ,
+//       pattern: 'cccc010100101101tttt000000000100',
+//       rule: 'Push_Rule_123_A2_P248'}
 //
 // Representaive case:
 // Flags(24:21)=1001 & Rn(19:16)=1101 & Imm12(11:0)=000000000100
-//    = Store2RegisterImm12OpRnNotRtOnWriteback => Store2RegisterImm12OpRnNotRtOnWriteback {constraints: ,
-//     pattern: cccc010100101101tttt000000000100,
-//     rule: Push_Rule_123_A2_P248}
+//    = {actual: Store2RegisterImm12OpRnNotRtOnWriteback,
+//       baseline: Store2RegisterImm12OpRnNotRtOnWriteback,
+//       constraints: ,
+//       pattern: cccc010100101101tttt000000000100,
+//       rule: Push_Rule_123_A2_P248}
 TEST_F(Arm32DecoderStateTests,
        Store2RegisterImm12OpRnNotRtOnWritebackTester_Case0_TestCase0) {
   Store2RegisterImm12OpRnNotRtOnWritebackTester_Case0 tester;
@@ -157,15 +169,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // 
-//    = Store2RegisterImm12Op => StoreBasedImmedMemory {'constraints': & inst(31:0)=~xxxx010100101101xxxx000000000100 ,
-//     'pattern': 'cccc010pu0w0nnnnttttiiiiiiiiiiii',
-//     'rule': 'Str_Rule_194_A1_P384'}
+//    = {actual: 'StoreBasedImmedMemory',
+//       baseline: 'Store2RegisterImm12Op',
+//       constraints: & inst(31:0)=~xxxx010100101101xxxx000000000100 ,
+//       pattern: 'cccc010pu0w0nnnnttttiiiiiiiiiiii',
+//       rule: 'Str_Rule_194_A1_P384'}
 //
 // Representative case:
 // 
-//    = Store2RegisterImm12Op => StoreBasedImmedMemory {constraints: & constraint(31:0)=~xxxx010100101101xxxx000000000100 ,
-//     pattern: cccc010pu0w0nnnnttttiiiiiiiiiiii,
-//     rule: Str_Rule_194_A1_P384}
+//    = {actual: StoreBasedImmedMemory,
+//       baseline: Store2RegisterImm12Op,
+//       constraints: & constraint(31:0)=~xxxx010100101101xxxx000000000100 ,
+//       pattern: cccc010pu0w0nnnnttttiiiiiiiiiiii,
+//       rule: Str_Rule_194_A1_P384}
 TEST_F(Arm32DecoderStateTests,
        Store2RegisterImm12OpTester_Case1_TestCase1) {
   Store2RegisterImm12OpTester_Case1 baseline_tester;

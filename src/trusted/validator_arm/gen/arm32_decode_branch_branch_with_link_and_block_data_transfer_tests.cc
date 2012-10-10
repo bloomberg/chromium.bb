@@ -28,11 +28,13 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(25:20)=001001
-//    = LoadRegisterList {'constraints': }
+//    = {baseline: 'LoadRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=001001
-//    = LoadRegisterList {constraints: }
+//    = {baseline: LoadRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase0
     : public LoadStoreRegisterListTester {
  public:
@@ -58,11 +60,13 @@ bool LoadStoreRegisterListTesterCase0
 
 // Neutral case:
 // inst(25:20)=001011 & inst(19:16)=~1101
-//    = LoadRegisterList {'constraints': }
+//    = {baseline: 'LoadRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=001011 & Rn(19:16)=~1101
-//    = LoadRegisterList {constraints: }
+//    = {baseline: LoadRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase1
     : public LoadStoreRegisterListTester {
  public:
@@ -89,11 +93,13 @@ bool LoadStoreRegisterListTesterCase1
 
 // Neutral case:
 // inst(25:20)=001011 & inst(19:16)=1101
-//    = LoadRegisterList {'constraints': }
+//    = {baseline: 'LoadRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=001011 & Rn(19:16)=1101
-//    = LoadRegisterList {constraints: }
+//    = {baseline: LoadRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase2
     : public LoadStoreRegisterListTester {
  public:
@@ -120,11 +126,13 @@ bool LoadStoreRegisterListTesterCase2
 
 // Neutral case:
 // inst(25:20)=010000
-//    = StoreRegisterList {'constraints': }
+//    = {baseline: 'StoreRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=010000
-//    = StoreRegisterList {constraints: }
+//    = {baseline: StoreRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase3
     : public LoadStoreRegisterListTester {
  public:
@@ -150,11 +158,13 @@ bool LoadStoreRegisterListTesterCase3
 
 // Neutral case:
 // inst(25:20)=010010 & inst(19:16)=~1101
-//    = StoreRegisterList {'constraints': }
+//    = {baseline: 'StoreRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=010010 & Rn(19:16)=~1101
-//    = StoreRegisterList {constraints: }
+//    = {baseline: StoreRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase4
     : public LoadStoreRegisterListTester {
  public:
@@ -181,11 +191,13 @@ bool LoadStoreRegisterListTesterCase4
 
 // Neutral case:
 // inst(25:20)=010010 & inst(19:16)=1101
-//    = StoreRegisterList {'constraints': }
+//    = {baseline: 'StoreRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=010010 & Rn(19:16)=1101
-//    = StoreRegisterList {constraints: }
+//    = {baseline: StoreRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase5
     : public LoadStoreRegisterListTester {
  public:
@@ -212,11 +224,13 @@ bool LoadStoreRegisterListTesterCase5
 
 // Neutral case:
 // inst(25:20)=0000x0
-//    = StoreRegisterList {'constraints': }
+//    = {baseline: 'StoreRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=0000x0
-//    = StoreRegisterList {constraints: }
+//    = {baseline: StoreRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase6
     : public LoadStoreRegisterListTester {
  public:
@@ -242,11 +256,13 @@ bool LoadStoreRegisterListTesterCase6
 
 // Neutral case:
 // inst(25:20)=0000x1
-//    = LoadRegisterList {'constraints': }
+//    = {baseline: 'LoadRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=0000x1
-//    = LoadRegisterList {constraints: }
+//    = {baseline: LoadRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase7
     : public LoadStoreRegisterListTester {
  public:
@@ -272,11 +288,13 @@ bool LoadStoreRegisterListTesterCase7
 
 // Neutral case:
 // inst(25:20)=0010x0
-//    = StoreRegisterList {'constraints': }
+//    = {baseline: 'StoreRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=0010x0
-//    = StoreRegisterList {constraints: }
+//    = {baseline: StoreRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase8
     : public LoadStoreRegisterListTester {
  public:
@@ -302,11 +320,13 @@ bool LoadStoreRegisterListTesterCase8
 
 // Neutral case:
 // inst(25:20)=0100x1
-//    = LoadRegisterList {'constraints': }
+//    = {baseline: 'LoadRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=0100x1
-//    = LoadRegisterList {constraints: }
+//    = {baseline: LoadRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase9
     : public LoadStoreRegisterListTester {
  public:
@@ -332,11 +352,13 @@ bool LoadStoreRegisterListTesterCase9
 
 // Neutral case:
 // inst(25:20)=0110x0
-//    = StoreRegisterList {'constraints': }
+//    = {baseline: 'StoreRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=0110x0
-//    = StoreRegisterList {constraints: }
+//    = {baseline: StoreRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase10
     : public LoadStoreRegisterListTester {
  public:
@@ -362,11 +384,13 @@ bool LoadStoreRegisterListTesterCase10
 
 // Neutral case:
 // inst(25:20)=0110x1
-//    = LoadRegisterList {'constraints': }
+//    = {baseline: 'LoadRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=0110x1
-//    = LoadRegisterList {constraints: }
+//    = {baseline: LoadRegisterList,
+//       constraints: }
 class LoadStoreRegisterListTesterCase11
     : public LoadStoreRegisterListTester {
  public:
@@ -392,11 +416,13 @@ bool LoadStoreRegisterListTesterCase11
 
 // Neutral case:
 // inst(25:20)=0xx1x0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase12
     : public UnsafeCondDecoderTester {
  public:
@@ -423,11 +449,13 @@ bool UnsafeCondDecoderTesterCase12
 
 // Neutral case:
 // inst(25:20)=0xx1x1 & inst(15)=0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase13
     : public UnsafeCondDecoderTester {
  public:
@@ -455,11 +483,13 @@ bool UnsafeCondDecoderTesterCase13
 
 // Neutral case:
 // inst(25:20)=0xx1x1 & inst(15)=1
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=0xx1x1 & R(15)=1
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase14
     : public UnsafeCondDecoderTester {
  public:
@@ -486,11 +516,13 @@ bool UnsafeCondDecoderTesterCase14
 
 // Neutral case:
 // inst(25:20)=10xxxx
-//    = BranchImmediate24 {'constraints': }
+//    = {baseline: 'BranchImmediate24',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=10xxxx
-//    = BranchImmediate24 {constraints: }
+//    = {baseline: BranchImmediate24,
+//       constraints: }
 class BranchImmediate24TesterCase15
     : public BranchImmediate24Tester {
  public:
@@ -516,11 +548,13 @@ bool BranchImmediate24TesterCase15
 
 // Neutral case:
 // inst(25:20)=11xxxx
-//    = BranchImmediate24 {'constraints': }
+//    = {baseline: 'BranchImmediate24',
+//       constraints: }
 //
 // Representaive case:
 // op(25:20)=11xxxx
-//    = BranchImmediate24 {constraints: }
+//    = {baseline: BranchImmediate24,
+//       constraints: }
 class BranchImmediate24TesterCase16
     : public BranchImmediate24Tester {
  public:
@@ -551,13 +585,15 @@ bool BranchImmediate24TesterCase16
 
 // Neutral case:
 // inst(25:20)=001001
-//    = LoadRegisterList {'constraints': ,
-//     'rule': 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
+//    = {baseline: 'LoadRegisterList',
+//       constraints: ,
+//       rule: 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
 //
 // Representative case:
 // op(25:20)=001001
-//    = LoadRegisterList {constraints: ,
-//     rule: Ldm_Ldmia_Ldmfd_Rule_53_A1_P110}
+//    = {baseline: LoadRegisterList,
+//       constraints: ,
+//       rule: Ldm_Ldmia_Ldmfd_Rule_53_A1_P110}
 class LoadRegisterListTester_Case0
     : public LoadStoreRegisterListTesterCase0 {
  public:
@@ -569,13 +605,15 @@ class LoadRegisterListTester_Case0
 
 // Neutral case:
 // inst(25:20)=001011 & inst(19:16)=~1101
-//    = LoadRegisterList {'constraints': ,
-//     'rule': 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
+//    = {baseline: 'LoadRegisterList',
+//       constraints: ,
+//       rule: 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
 //
 // Representative case:
 // op(25:20)=001011 & Rn(19:16)=~1101
-//    = LoadRegisterList {constraints: ,
-//     rule: Ldm_Ldmia_Ldmfd_Rule_53_A1_P110}
+//    = {baseline: LoadRegisterList,
+//       constraints: ,
+//       rule: Ldm_Ldmia_Ldmfd_Rule_53_A1_P110}
 class LoadRegisterListTester_Case1
     : public LoadStoreRegisterListTesterCase1 {
  public:
@@ -587,13 +625,15 @@ class LoadRegisterListTester_Case1
 
 // Neutral case:
 // inst(25:20)=001011 & inst(19:16)=1101
-//    = LoadRegisterList {'constraints': ,
-//     'rule': 'Pop_Rule_A1'}
+//    = {baseline: 'LoadRegisterList',
+//       constraints: ,
+//       rule: 'Pop_Rule_A1'}
 //
 // Representative case:
 // op(25:20)=001011 & Rn(19:16)=1101
-//    = LoadRegisterList {constraints: ,
-//     rule: Pop_Rule_A1}
+//    = {baseline: LoadRegisterList,
+//       constraints: ,
+//       rule: Pop_Rule_A1}
 class LoadRegisterListTester_Case2
     : public LoadStoreRegisterListTesterCase2 {
  public:
@@ -605,13 +645,15 @@ class LoadRegisterListTester_Case2
 
 // Neutral case:
 // inst(25:20)=010000
-//    = StoreRegisterList {'constraints': ,
-//     'rule': 'Stmdb_Stmfd_Rule_191_A1_P378'}
+//    = {baseline: 'StoreRegisterList',
+//       constraints: ,
+//       rule: 'Stmdb_Stmfd_Rule_191_A1_P378'}
 //
 // Representative case:
 // op(25:20)=010000
-//    = StoreRegisterList {constraints: ,
-//     rule: Stmdb_Stmfd_Rule_191_A1_P378}
+//    = {baseline: StoreRegisterList,
+//       constraints: ,
+//       rule: Stmdb_Stmfd_Rule_191_A1_P378}
 class StoreRegisterListTester_Case3
     : public LoadStoreRegisterListTesterCase3 {
  public:
@@ -623,13 +665,15 @@ class StoreRegisterListTester_Case3
 
 // Neutral case:
 // inst(25:20)=010010 & inst(19:16)=~1101
-//    = StoreRegisterList {'constraints': ,
-//     'rule': 'Stmdb_Stmfd_Rule_191_A1_P378'}
+//    = {baseline: 'StoreRegisterList',
+//       constraints: ,
+//       rule: 'Stmdb_Stmfd_Rule_191_A1_P378'}
 //
 // Representative case:
 // op(25:20)=010010 & Rn(19:16)=~1101
-//    = StoreRegisterList {constraints: ,
-//     rule: Stmdb_Stmfd_Rule_191_A1_P378}
+//    = {baseline: StoreRegisterList,
+//       constraints: ,
+//       rule: Stmdb_Stmfd_Rule_191_A1_P378}
 class StoreRegisterListTester_Case4
     : public LoadStoreRegisterListTesterCase4 {
  public:
@@ -641,13 +685,15 @@ class StoreRegisterListTester_Case4
 
 // Neutral case:
 // inst(25:20)=010010 & inst(19:16)=1101
-//    = StoreRegisterList {'constraints': ,
-//     'rule': 'Push_Rule_A1'}
+//    = {baseline: 'StoreRegisterList',
+//       constraints: ,
+//       rule: 'Push_Rule_A1'}
 //
 // Representative case:
 // op(25:20)=010010 & Rn(19:16)=1101
-//    = StoreRegisterList {constraints: ,
-//     rule: Push_Rule_A1}
+//    = {baseline: StoreRegisterList,
+//       constraints: ,
+//       rule: Push_Rule_A1}
 class StoreRegisterListTester_Case5
     : public LoadStoreRegisterListTesterCase5 {
  public:
@@ -659,13 +705,15 @@ class StoreRegisterListTester_Case5
 
 // Neutral case:
 // inst(25:20)=0000x0
-//    = StoreRegisterList {'constraints': ,
-//     'rule': 'Stmda_Stmed_Rule_190_A1_P376'}
+//    = {baseline: 'StoreRegisterList',
+//       constraints: ,
+//       rule: 'Stmda_Stmed_Rule_190_A1_P376'}
 //
 // Representative case:
 // op(25:20)=0000x0
-//    = StoreRegisterList {constraints: ,
-//     rule: Stmda_Stmed_Rule_190_A1_P376}
+//    = {baseline: StoreRegisterList,
+//       constraints: ,
+//       rule: Stmda_Stmed_Rule_190_A1_P376}
 class StoreRegisterListTester_Case6
     : public LoadStoreRegisterListTesterCase6 {
  public:
@@ -677,13 +725,15 @@ class StoreRegisterListTester_Case6
 
 // Neutral case:
 // inst(25:20)=0000x1
-//    = LoadRegisterList {'constraints': ,
-//     'rule': 'Ldmda_Ldmfa_Rule_54_A1_P112'}
+//    = {baseline: 'LoadRegisterList',
+//       constraints: ,
+//       rule: 'Ldmda_Ldmfa_Rule_54_A1_P112'}
 //
 // Representative case:
 // op(25:20)=0000x1
-//    = LoadRegisterList {constraints: ,
-//     rule: Ldmda_Ldmfa_Rule_54_A1_P112}
+//    = {baseline: LoadRegisterList,
+//       constraints: ,
+//       rule: Ldmda_Ldmfa_Rule_54_A1_P112}
 class LoadRegisterListTester_Case7
     : public LoadStoreRegisterListTesterCase7 {
  public:
@@ -695,13 +745,15 @@ class LoadRegisterListTester_Case7
 
 // Neutral case:
 // inst(25:20)=0010x0
-//    = StoreRegisterList {'constraints': ,
-//     'rule': 'Stm_Stmia_Stmea_Rule_189_A1_P374'}
+//    = {baseline: 'StoreRegisterList',
+//       constraints: ,
+//       rule: 'Stm_Stmia_Stmea_Rule_189_A1_P374'}
 //
 // Representative case:
 // op(25:20)=0010x0
-//    = StoreRegisterList {constraints: ,
-//     rule: Stm_Stmia_Stmea_Rule_189_A1_P374}
+//    = {baseline: StoreRegisterList,
+//       constraints: ,
+//       rule: Stm_Stmia_Stmea_Rule_189_A1_P374}
 class StoreRegisterListTester_Case8
     : public LoadStoreRegisterListTesterCase8 {
  public:
@@ -713,13 +765,15 @@ class StoreRegisterListTester_Case8
 
 // Neutral case:
 // inst(25:20)=0100x1
-//    = LoadRegisterList {'constraints': ,
-//     'rule': 'Ldmdb_Ldmea_Rule_55_A1_P114'}
+//    = {baseline: 'LoadRegisterList',
+//       constraints: ,
+//       rule: 'Ldmdb_Ldmea_Rule_55_A1_P114'}
 //
 // Representative case:
 // op(25:20)=0100x1
-//    = LoadRegisterList {constraints: ,
-//     rule: Ldmdb_Ldmea_Rule_55_A1_P114}
+//    = {baseline: LoadRegisterList,
+//       constraints: ,
+//       rule: Ldmdb_Ldmea_Rule_55_A1_P114}
 class LoadRegisterListTester_Case9
     : public LoadStoreRegisterListTesterCase9 {
  public:
@@ -731,13 +785,15 @@ class LoadRegisterListTester_Case9
 
 // Neutral case:
 // inst(25:20)=0110x0
-//    = StoreRegisterList {'constraints': ,
-//     'rule': 'Stmib_Stmfa_Rule_192_A1_P380'}
+//    = {baseline: 'StoreRegisterList',
+//       constraints: ,
+//       rule: 'Stmib_Stmfa_Rule_192_A1_P380'}
 //
 // Representative case:
 // op(25:20)=0110x0
-//    = StoreRegisterList {constraints: ,
-//     rule: Stmib_Stmfa_Rule_192_A1_P380}
+//    = {baseline: StoreRegisterList,
+//       constraints: ,
+//       rule: Stmib_Stmfa_Rule_192_A1_P380}
 class StoreRegisterListTester_Case10
     : public LoadStoreRegisterListTesterCase10 {
  public:
@@ -749,13 +805,15 @@ class StoreRegisterListTester_Case10
 
 // Neutral case:
 // inst(25:20)=0110x1
-//    = LoadRegisterList {'constraints': ,
-//     'rule': 'Ldmib_Ldmed_Rule_56_A1_P116'}
+//    = {baseline: 'LoadRegisterList',
+//       constraints: ,
+//       rule: 'Ldmib_Ldmed_Rule_56_A1_P116'}
 //
 // Representative case:
 // op(25:20)=0110x1
-//    = LoadRegisterList {constraints: ,
-//     rule: Ldmib_Ldmed_Rule_56_A1_P116}
+//    = {baseline: LoadRegisterList,
+//       constraints: ,
+//       rule: Ldmib_Ldmed_Rule_56_A1_P116}
 class LoadRegisterListTester_Case11
     : public LoadStoreRegisterListTesterCase11 {
  public:
@@ -767,13 +825,15 @@ class LoadRegisterListTester_Case11
 
 // Neutral case:
 // inst(25:20)=0xx1x0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Stm_Rule_11_B6_A1_P22'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Stm_Rule_11_B6_A1_P22'}
 //
 // Representative case:
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Stm_Rule_11_B6_A1_P22}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Stm_Rule_11_B6_A1_P22}
 class ForbiddenCondDecoderTester_Case12
     : public UnsafeCondDecoderTesterCase12 {
  public:
@@ -785,13 +845,15 @@ class ForbiddenCondDecoderTester_Case12
 
 // Neutral case:
 // inst(25:20)=0xx1x1 & inst(15)=0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Ldm_Rule_3_B6_A1_P7'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Ldm_Rule_3_B6_A1_P7'}
 //
 // Representative case:
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Ldm_Rule_3_B6_A1_P7}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Ldm_Rule_3_B6_A1_P7}
 class ForbiddenCondDecoderTester_Case13
     : public UnsafeCondDecoderTesterCase13 {
  public:
@@ -803,13 +865,15 @@ class ForbiddenCondDecoderTester_Case13
 
 // Neutral case:
 // inst(25:20)=0xx1x1 & inst(15)=1
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'Ldm_Rule_2_B6_A1_P5'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'Ldm_Rule_2_B6_A1_P5'}
 //
 // Representative case:
 // op(25:20)=0xx1x1 & R(15)=1
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: Ldm_Rule_2_B6_A1_P5}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: Ldm_Rule_2_B6_A1_P5}
 class ForbiddenCondDecoderTester_Case14
     : public UnsafeCondDecoderTesterCase14 {
  public:
@@ -821,13 +885,15 @@ class ForbiddenCondDecoderTester_Case14
 
 // Neutral case:
 // inst(25:20)=10xxxx
-//    = BranchImmediate24 {'constraints': ,
-//     'rule': 'B_Rule_16_A1_P44'}
+//    = {baseline: 'BranchImmediate24',
+//       constraints: ,
+//       rule: 'B_Rule_16_A1_P44'}
 //
 // Representative case:
 // op(25:20)=10xxxx
-//    = BranchImmediate24 {constraints: ,
-//     rule: B_Rule_16_A1_P44}
+//    = {baseline: BranchImmediate24,
+//       constraints: ,
+//       rule: B_Rule_16_A1_P44}
 class BranchImmediate24Tester_Case15
     : public BranchImmediate24TesterCase15 {
  public:
@@ -839,13 +905,15 @@ class BranchImmediate24Tester_Case15
 
 // Neutral case:
 // inst(25:20)=11xxxx
-//    = BranchImmediate24 {'constraints': ,
-//     'rule': 'Bl_Blx_Rule_23_A1_P58'}
+//    = {baseline: 'BranchImmediate24',
+//       constraints: ,
+//       rule: 'Bl_Blx_Rule_23_A1_P58'}
 //
 // Representative case:
 // op(25:20)=11xxxx
-//    = BranchImmediate24 {constraints: ,
-//     rule: Bl_Blx_Rule_23_A1_P58}
+//    = {baseline: BranchImmediate24,
+//       constraints: ,
+//       rule: Bl_Blx_Rule_23_A1_P58}
 class BranchImmediate24Tester_Case16
     : public BranchImmediate24TesterCase16 {
  public:
@@ -866,15 +934,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(25:20)=001001
-//    = LoadRegisterList => LoadMultiple {'constraints': ,
-//     'pattern': 'cccc10001001nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
+//    = {actual: 'LoadMultiple',
+//       baseline: 'LoadRegisterList',
+//       constraints: ,
+//       pattern: 'cccc10001001nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
 //
 // Representative case:
 // op(25:20)=001001
-//    = LoadRegisterList => LoadMultiple {constraints: ,
-//     pattern: cccc10001001nnnnrrrrrrrrrrrrrrrr,
-//     rule: Ldm_Ldmia_Ldmfd_Rule_53_A1_P110}
+//    = {actual: LoadMultiple,
+//       baseline: LoadRegisterList,
+//       constraints: ,
+//       pattern: cccc10001001nnnnrrrrrrrrrrrrrrrr,
+//       rule: Ldm_Ldmia_Ldmfd_Rule_53_A1_P110}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case0_TestCase0) {
   LoadRegisterListTester_Case0 baseline_tester;
@@ -885,15 +957,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=001011 & inst(19:16)=~1101
-//    = LoadRegisterList => LoadMultiple {'constraints': ,
-//     'pattern': 'cccc10001011nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
+//    = {actual: 'LoadMultiple',
+//       baseline: 'LoadRegisterList',
+//       constraints: ,
+//       pattern: 'cccc10001011nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
 //
 // Representative case:
 // op(25:20)=001011 & Rn(19:16)=~1101
-//    = LoadRegisterList => LoadMultiple {constraints: ,
-//     pattern: cccc10001011nnnnrrrrrrrrrrrrrrrr,
-//     rule: Ldm_Ldmia_Ldmfd_Rule_53_A1_P110}
+//    = {actual: LoadMultiple,
+//       baseline: LoadRegisterList,
+//       constraints: ,
+//       pattern: cccc10001011nnnnrrrrrrrrrrrrrrrr,
+//       rule: Ldm_Ldmia_Ldmfd_Rule_53_A1_P110}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case1_TestCase1) {
   LoadRegisterListTester_Case1 baseline_tester;
@@ -904,15 +980,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=001011 & inst(19:16)=1101
-//    = LoadRegisterList => LoadMultiple {'constraints': ,
-//     'pattern': 'cccc10001011nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Pop_Rule_A1'}
+//    = {actual: 'LoadMultiple',
+//       baseline: 'LoadRegisterList',
+//       constraints: ,
+//       pattern: 'cccc10001011nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Pop_Rule_A1'}
 //
 // Representative case:
 // op(25:20)=001011 & Rn(19:16)=1101
-//    = LoadRegisterList => LoadMultiple {constraints: ,
-//     pattern: cccc10001011nnnnrrrrrrrrrrrrrrrr,
-//     rule: Pop_Rule_A1}
+//    = {actual: LoadMultiple,
+//       baseline: LoadRegisterList,
+//       constraints: ,
+//       pattern: cccc10001011nnnnrrrrrrrrrrrrrrrr,
+//       rule: Pop_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case2_TestCase2) {
   LoadRegisterListTester_Case2 baseline_tester;
@@ -923,15 +1003,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=010000
-//    = StoreRegisterList => StoreRegisterList {'constraints': ,
-//     'pattern': 'cccc10010000nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Stmdb_Stmfd_Rule_191_A1_P378'}
+//    = {actual: 'StoreRegisterList',
+//       baseline: 'StoreRegisterList',
+//       constraints: ,
+//       pattern: 'cccc10010000nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Stmdb_Stmfd_Rule_191_A1_P378'}
 //
 // Representaive case:
 // op(25:20)=010000
-//    = StoreRegisterList => StoreRegisterList {constraints: ,
-//     pattern: cccc10010000nnnnrrrrrrrrrrrrrrrr,
-//     rule: Stmdb_Stmfd_Rule_191_A1_P378}
+//    = {actual: StoreRegisterList,
+//       baseline: StoreRegisterList,
+//       constraints: ,
+//       pattern: cccc10010000nnnnrrrrrrrrrrrrrrrr,
+//       rule: Stmdb_Stmfd_Rule_191_A1_P378}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case3_TestCase3) {
   StoreRegisterListTester_Case3 tester;
@@ -940,15 +1024,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=010010 & inst(19:16)=~1101
-//    = StoreRegisterList => StoreRegisterList {'constraints': ,
-//     'pattern': 'cccc10010010nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Stmdb_Stmfd_Rule_191_A1_P378'}
+//    = {actual: 'StoreRegisterList',
+//       baseline: 'StoreRegisterList',
+//       constraints: ,
+//       pattern: 'cccc10010010nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Stmdb_Stmfd_Rule_191_A1_P378'}
 //
 // Representaive case:
 // op(25:20)=010010 & Rn(19:16)=~1101
-//    = StoreRegisterList => StoreRegisterList {constraints: ,
-//     pattern: cccc10010010nnnnrrrrrrrrrrrrrrrr,
-//     rule: Stmdb_Stmfd_Rule_191_A1_P378}
+//    = {actual: StoreRegisterList,
+//       baseline: StoreRegisterList,
+//       constraints: ,
+//       pattern: cccc10010010nnnnrrrrrrrrrrrrrrrr,
+//       rule: Stmdb_Stmfd_Rule_191_A1_P378}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case4_TestCase4) {
   StoreRegisterListTester_Case4 tester;
@@ -957,15 +1045,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=010010 & inst(19:16)=1101
-//    = StoreRegisterList => StoreRegisterList {'constraints': ,
-//     'pattern': 'cccc10010010nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Push_Rule_A1'}
+//    = {actual: 'StoreRegisterList',
+//       baseline: 'StoreRegisterList',
+//       constraints: ,
+//       pattern: 'cccc10010010nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Push_Rule_A1'}
 //
 // Representaive case:
 // op(25:20)=010010 & Rn(19:16)=1101
-//    = StoreRegisterList => StoreRegisterList {constraints: ,
-//     pattern: cccc10010010nnnnrrrrrrrrrrrrrrrr,
-//     rule: Push_Rule_A1}
+//    = {actual: StoreRegisterList,
+//       baseline: StoreRegisterList,
+//       constraints: ,
+//       pattern: cccc10010010nnnnrrrrrrrrrrrrrrrr,
+//       rule: Push_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case5_TestCase5) {
   StoreRegisterListTester_Case5 tester;
@@ -974,15 +1066,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=0000x0
-//    = StoreRegisterList => StoreRegisterList {'constraints': ,
-//     'pattern': 'cccc100000w0nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Stmda_Stmed_Rule_190_A1_P376'}
+//    = {actual: 'StoreRegisterList',
+//       baseline: 'StoreRegisterList',
+//       constraints: ,
+//       pattern: 'cccc100000w0nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Stmda_Stmed_Rule_190_A1_P376'}
 //
 // Representaive case:
 // op(25:20)=0000x0
-//    = StoreRegisterList => StoreRegisterList {constraints: ,
-//     pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
-//     rule: Stmda_Stmed_Rule_190_A1_P376}
+//    = {actual: StoreRegisterList,
+//       baseline: StoreRegisterList,
+//       constraints: ,
+//       pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
+//       rule: Stmda_Stmed_Rule_190_A1_P376}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case6_TestCase6) {
   StoreRegisterListTester_Case6 tester;
@@ -991,15 +1087,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=0000x1
-//    = LoadRegisterList => LoadMultiple {'constraints': ,
-//     'pattern': 'cccc100000w1nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Ldmda_Ldmfa_Rule_54_A1_P112'}
+//    = {actual: 'LoadMultiple',
+//       baseline: 'LoadRegisterList',
+//       constraints: ,
+//       pattern: 'cccc100000w1nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Ldmda_Ldmfa_Rule_54_A1_P112'}
 //
 // Representative case:
 // op(25:20)=0000x1
-//    = LoadRegisterList => LoadMultiple {constraints: ,
-//     pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
-//     rule: Ldmda_Ldmfa_Rule_54_A1_P112}
+//    = {actual: LoadMultiple,
+//       baseline: LoadRegisterList,
+//       constraints: ,
+//       pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
+//       rule: Ldmda_Ldmfa_Rule_54_A1_P112}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case7_TestCase7) {
   LoadRegisterListTester_Case7 baseline_tester;
@@ -1010,15 +1110,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=0010x0
-//    = StoreRegisterList => StoreRegisterList {'constraints': ,
-//     'pattern': 'cccc100010w0nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Stm_Stmia_Stmea_Rule_189_A1_P374'}
+//    = {actual: 'StoreRegisterList',
+//       baseline: 'StoreRegisterList',
+//       constraints: ,
+//       pattern: 'cccc100010w0nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Stm_Stmia_Stmea_Rule_189_A1_P374'}
 //
 // Representaive case:
 // op(25:20)=0010x0
-//    = StoreRegisterList => StoreRegisterList {constraints: ,
-//     pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
-//     rule: Stm_Stmia_Stmea_Rule_189_A1_P374}
+//    = {actual: StoreRegisterList,
+//       baseline: StoreRegisterList,
+//       constraints: ,
+//       pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
+//       rule: Stm_Stmia_Stmea_Rule_189_A1_P374}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case8_TestCase8) {
   StoreRegisterListTester_Case8 tester;
@@ -1027,15 +1131,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=0100x1
-//    = LoadRegisterList => LoadMultiple {'constraints': ,
-//     'pattern': 'cccc100100w1nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Ldmdb_Ldmea_Rule_55_A1_P114'}
+//    = {actual: 'LoadMultiple',
+//       baseline: 'LoadRegisterList',
+//       constraints: ,
+//       pattern: 'cccc100100w1nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Ldmdb_Ldmea_Rule_55_A1_P114'}
 //
 // Representative case:
 // op(25:20)=0100x1
-//    = LoadRegisterList => LoadMultiple {constraints: ,
-//     pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
-//     rule: Ldmdb_Ldmea_Rule_55_A1_P114}
+//    = {actual: LoadMultiple,
+//       baseline: LoadRegisterList,
+//       constraints: ,
+//       pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
+//       rule: Ldmdb_Ldmea_Rule_55_A1_P114}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case9_TestCase9) {
   LoadRegisterListTester_Case9 baseline_tester;
@@ -1046,15 +1154,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=0110x0
-//    = StoreRegisterList => StoreRegisterList {'constraints': ,
-//     'pattern': 'cccc100110w0nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Stmib_Stmfa_Rule_192_A1_P380'}
+//    = {actual: 'StoreRegisterList',
+//       baseline: 'StoreRegisterList',
+//       constraints: ,
+//       pattern: 'cccc100110w0nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Stmib_Stmfa_Rule_192_A1_P380'}
 //
 // Representaive case:
 // op(25:20)=0110x0
-//    = StoreRegisterList => StoreRegisterList {constraints: ,
-//     pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
-//     rule: Stmib_Stmfa_Rule_192_A1_P380}
+//    = {actual: StoreRegisterList,
+//       baseline: StoreRegisterList,
+//       constraints: ,
+//       pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
+//       rule: Stmib_Stmfa_Rule_192_A1_P380}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case10_TestCase10) {
   StoreRegisterListTester_Case10 tester;
@@ -1063,15 +1175,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=0110x1
-//    = LoadRegisterList => LoadMultiple {'constraints': ,
-//     'pattern': 'cccc100110w1nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Ldmib_Ldmed_Rule_56_A1_P116'}
+//    = {actual: 'LoadMultiple',
+//       baseline: 'LoadRegisterList',
+//       constraints: ,
+//       pattern: 'cccc100110w1nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Ldmib_Ldmed_Rule_56_A1_P116'}
 //
 // Representative case:
 // op(25:20)=0110x1
-//    = LoadRegisterList => LoadMultiple {constraints: ,
-//     pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
-//     rule: Ldmib_Ldmed_Rule_56_A1_P116}
+//    = {actual: LoadMultiple,
+//       baseline: LoadRegisterList,
+//       constraints: ,
+//       pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
+//       rule: Ldmib_Ldmed_Rule_56_A1_P116}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case11_TestCase11) {
   LoadRegisterListTester_Case11 baseline_tester;
@@ -1082,15 +1198,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=0xx1x0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc100pu100nnnnrrrrrrrrrrrrrrrr',
-//     'rule': 'Stm_Rule_11_B6_A1_P22'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc100pu100nnnnrrrrrrrrrrrrrrrr',
+//       rule: 'Stm_Rule_11_B6_A1_P22'}
 //
 // Representative case:
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
-//     rule: Stm_Rule_11_B6_A1_P22}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
+//       rule: Stm_Rule_11_B6_A1_P22}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case12_TestCase12) {
   ForbiddenCondDecoderTester_Case12 baseline_tester;
@@ -1101,15 +1221,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=0xx1x1 & inst(15)=0 & inst(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc100pu101nnnn0rrrrrrrrrrrrrrr',
-//     'rule': 'Ldm_Rule_3_B6_A1_P7'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc100pu101nnnn0rrrrrrrrrrrrrrr',
+//       rule: 'Ldm_Rule_3_B6_A1_P7'}
 //
 // Representative case:
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
-//     rule: Ldm_Rule_3_B6_A1_P7}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
+//       rule: Ldm_Rule_3_B6_A1_P7}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case13_TestCase13) {
   ForbiddenCondDecoderTester_Case13 baseline_tester;
@@ -1120,15 +1244,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=0xx1x1 & inst(15)=1
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc100pu1w1nnnn1rrrrrrrrrrrrrrr',
-//     'rule': 'Ldm_Rule_2_B6_A1_P5'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc100pu1w1nnnn1rrrrrrrrrrrrrrr',
+//       rule: 'Ldm_Rule_2_B6_A1_P5'}
 //
 // Representative case:
 // op(25:20)=0xx1x1 & R(15)=1
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
-//     rule: Ldm_Rule_2_B6_A1_P5}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
+//       rule: Ldm_Rule_2_B6_A1_P5}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case14_TestCase14) {
   ForbiddenCondDecoderTester_Case14 baseline_tester;
@@ -1139,15 +1267,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=10xxxx
-//    = BranchImmediate24 => Branch {'constraints': ,
-//     'pattern': 'cccc1010iiiiiiiiiiiiiiiiiiiiiiii',
-//     'rule': 'B_Rule_16_A1_P44'}
+//    = {actual: 'Branch',
+//       baseline: 'BranchImmediate24',
+//       constraints: ,
+//       pattern: 'cccc1010iiiiiiiiiiiiiiiiiiiiiiii',
+//       rule: 'B_Rule_16_A1_P44'}
 //
 // Representative case:
 // op(25:20)=10xxxx
-//    = BranchImmediate24 => Branch {constraints: ,
-//     pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
-//     rule: B_Rule_16_A1_P44}
+//    = {actual: Branch,
+//       baseline: BranchImmediate24,
+//       constraints: ,
+//       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
+//       rule: B_Rule_16_A1_P44}
 TEST_F(Arm32DecoderStateTests,
        BranchImmediate24Tester_Case15_TestCase15) {
   BranchImmediate24Tester_Case15 baseline_tester;
@@ -1158,15 +1290,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25:20)=11xxxx
-//    = BranchImmediate24 => Branch {'constraints': ,
-//     'pattern': 'cccc1011iiiiiiiiiiiiiiiiiiiiiiii',
-//     'rule': 'Bl_Blx_Rule_23_A1_P58'}
+//    = {actual: 'Branch',
+//       baseline: 'BranchImmediate24',
+//       constraints: ,
+//       pattern: 'cccc1011iiiiiiiiiiiiiiiiiiiiiiii',
+//       rule: 'Bl_Blx_Rule_23_A1_P58'}
 //
 // Representative case:
 // op(25:20)=11xxxx
-//    = BranchImmediate24 => Branch {constraints: ,
-//     pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
-//     rule: Bl_Blx_Rule_23_A1_P58}
+//    = {actual: Branch,
+//       baseline: BranchImmediate24,
+//       constraints: ,
+//       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
+//       rule: Bl_Blx_Rule_23_A1_P58}
 TEST_F(Arm32DecoderStateTests,
        BranchImmediate24Tester_Case16_TestCase16) {
   BranchImmediate24Tester_Case16 baseline_tester;

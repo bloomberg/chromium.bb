@@ -28,11 +28,13 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0xx1x & inst(7:4)=1011
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase0
     : public UnsafeCondDecoderTester {
  public:
@@ -60,11 +62,13 @@ bool UnsafeCondDecoderTesterCase0
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0xx1x & inst(7:4)=11x1
-//    = ForbiddenCondDecoder {'constraints': }
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: }
 //
 // Representaive case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
-//    = ForbiddenCondDecoder {constraints: }
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: }
 class UnsafeCondDecoderTesterCase1
     : public UnsafeCondDecoderTester {
  public:
@@ -92,13 +96,17 @@ bool UnsafeCondDecoderTesterCase1
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10000
-//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
-//     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
+//    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
+//       constraints: ,
+//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10000
-//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
-//     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       constraints: ,
+//       fields: [Rd(15:12)],
+//       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpTesterCase2
     : public Unary1RegisterImmediateOpTester {
  public:
@@ -136,13 +144,17 @@ bool Unary1RegisterImmediateOpTesterCase2
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10100
-//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
-//     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
+//    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
+//       constraints: ,
+//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10100
-//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
-//     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       constraints: ,
+//       fields: [Rd(15:12)],
+//       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpTesterCase3
     : public Unary1RegisterImmediateOpTester {
  public:
@@ -185,13 +197,15 @@ bool Unary1RegisterImmediateOpTesterCase3
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0xx1x & inst(7:4)=1011
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'extra_load_store_instructions_unpriviledged'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'extra_load_store_instructions_unpriviledged'}
 //
 // Representative case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: extra_load_store_instructions_unpriviledged}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: extra_load_store_instructions_unpriviledged}
 class ForbiddenCondDecoderTester_Case0
     : public UnsafeCondDecoderTesterCase0 {
  public:
@@ -203,13 +217,15 @@ class ForbiddenCondDecoderTester_Case0
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0xx1x & inst(7:4)=11x1
-//    = ForbiddenCondDecoder {'constraints': ,
-//     'rule': 'extra_load_store_instructions_unpriviledged'}
+//    = {baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       rule: 'extra_load_store_instructions_unpriviledged'}
 //
 // Representative case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
-//    = ForbiddenCondDecoder {constraints: ,
-//     rule: extra_load_store_instructions_unpriviledged}
+//    = {baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       rule: extra_load_store_instructions_unpriviledged}
 class ForbiddenCondDecoderTester_Case1
     : public UnsafeCondDecoderTesterCase1 {
  public:
@@ -221,15 +237,19 @@ class ForbiddenCondDecoderTester_Case1
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10000
-//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
-//     'rule': 'Movw_Rule_96_A2_P194',
-//     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
+//    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
+//       constraints: ,
+//       rule: 'Movw_Rule_96_A2_P194',
+//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representative case:
 // op(25)=1 & op1(24:20)=10000
-//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
-//     rule: Movw_Rule_96_A2_P194,
-//     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       constraints: ,
+//       fields: [Rd(15:12)],
+//       rule: Movw_Rule_96_A2_P194,
+//       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
     : public Unary1RegisterImmediateOpTesterCase2 {
  public:
@@ -241,15 +261,19 @@ class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10100
-//    = Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
-//     'rule': 'Movt_Rule_99_A1_P200',
-//     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
+//    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
+//       constraints: ,
+//       rule: 'Movt_Rule_99_A1_P200',
+//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representative case:
 // op(25)=1 & op1(24:20)=10100
-//    = Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
-//     rule: Movt_Rule_99_A1_P200,
-//     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       constraints: ,
+//       fields: [Rd(15:12)],
+//       rule: Movt_Rule_99_A1_P200,
+//       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpDynCodeReplaceTester_Case3
     : public Unary1RegisterImmediateOpTesterCase3 {
  public:
@@ -270,15 +294,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0xx1x & inst(7:4)=1011
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0000xx1xxxxxxxxxxxxx1011xxxx',
-//     'rule': 'extra_load_store_instructions_unpriviledged'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0000xx1xxxxxxxxxxxxx1011xxxx',
+//       rule: 'extra_load_store_instructions_unpriviledged'}
 //
 // Representative case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0000xx1xxxxxxxxxxxxx1011xxxx,
-//     rule: extra_load_store_instructions_unpriviledged}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0000xx1xxxxxxxxxxxxx1011xxxx,
+//       rule: extra_load_store_instructions_unpriviledged}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case0_TestCase0) {
   ForbiddenCondDecoderTester_Case0 baseline_tester;
@@ -289,15 +317,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=0 & inst(24:20)=0xx1x & inst(7:4)=11x1
-//    = ForbiddenCondDecoder => Forbidden {'constraints': ,
-//     'pattern': 'cccc0000xx1xxxxxxxxxxxxx11x1xxxx',
-//     'rule': 'extra_load_store_instructions_unpriviledged'}
+//    = {actual: 'Forbidden',
+//       baseline: 'ForbiddenCondDecoder',
+//       constraints: ,
+//       pattern: 'cccc0000xx1xxxxxxxxxxxxx11x1xxxx',
+//       rule: 'extra_load_store_instructions_unpriviledged'}
 //
 // Representative case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
-//    = ForbiddenCondDecoder => Forbidden {constraints: ,
-//     pattern: cccc0000xx1xxxxxxxxxxxxx11x1xxxx,
-//     rule: extra_load_store_instructions_unpriviledged}
+//    = {actual: Forbidden,
+//       baseline: ForbiddenCondDecoder,
+//       constraints: ,
+//       pattern: cccc0000xx1xxxxxxxxxxxxx11x1xxxx,
+//       rule: extra_load_store_instructions_unpriviledged}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenCondDecoderTester_Case1_TestCase1) {
   ForbiddenCondDecoderTester_Case1 baseline_tester;
@@ -308,17 +340,23 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10000
-//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
-//     'pattern': 'cccc00110000iiiiddddiiiiiiiiiiii',
-//     'rule': 'Movw_Rule_96_A2_P194',
-//     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
+//    = {actual: 'Unary1RegisterImmediateOpDynCodeReplace',
+//       baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
+//       constraints: ,
+//       pattern: 'cccc00110000iiiiddddiiiiiiiiiiii',
+//       rule: 'Movw_Rule_96_A2_P194',
+//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10000
-//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
-//     pattern: cccc00110000iiiiddddiiiiiiiiiiii,
-//     rule: Movw_Rule_96_A2_P194,
-//     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       actual: Unary1RegisterImmediateOpDynCodeReplace,
+//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       constraints: ,
+//       fields: [Rd(15:12)],
+//       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
+//       rule: Movw_Rule_96_A2_P194,
+//       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterImmediateOpDynCodeReplaceTester_Case2_TestCase2) {
   Unary1RegisterImmediateOpDynCodeReplaceTester_Case2 tester;
@@ -327,17 +365,23 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(25)=1 & inst(24:20)=10100
-//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {'constraints': ,
-//     'pattern': 'cccc00110100iiiiddddiiiiiiiiiiii',
-//     'rule': 'Movt_Rule_99_A1_P200',
-//     'safety': ['inst(15:12)=1111 => UNPREDICTABLE']}
+//    = {actual: 'Unary1RegisterImmediateOpDynCodeReplace',
+//       baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
+//       constraints: ,
+//       pattern: 'cccc00110100iiiiddddiiiiiiiiiiii',
+//       rule: 'Movt_Rule_99_A1_P200',
+//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10100
-//    = Unary1RegisterImmediateOpDynCodeReplace => Unary1RegisterImmediateOpDynCodeReplace {constraints: ,
-//     pattern: cccc00110100iiiiddddiiiiiiiiiiii,
-//     rule: Movt_Rule_99_A1_P200,
-//     safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       actual: Unary1RegisterImmediateOpDynCodeReplace,
+//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       constraints: ,
+//       fields: [Rd(15:12)],
+//       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
+//       rule: Movt_Rule_99_A1_P200,
+//       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterImmediateOpDynCodeReplaceTester_Case3_TestCase3) {
   Unary1RegisterImmediateOpDynCodeReplaceTester_Case3 tester;

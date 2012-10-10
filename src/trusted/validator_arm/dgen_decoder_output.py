@@ -134,8 +134,8 @@ def generate_h(decoder, decoder_name, filename, out, cl_args):
       values['table_name'] = table.name
       out.write(DECODER_DECLARE_METHOD % values)
     out.write(DECODER_DECLARE_FIELD_COMMENTS)
-    for action in decoder.action_filter('actual').decoders():
-      values['decoder'] = action.actual;
+    for action in decoder.action_filter(['actual']).decoders():
+      values['decoder'] = action.actual();
       out.write(DECODER_DECLARE_FIELD % values)
     out.write(DECODER_DECLARE_FOOTER % values)
     out.write(H_FOOTER % values)
@@ -248,8 +248,8 @@ def generate_cc(decoder, decoder_name, filename, out, cl_args):
 
 def _generate_constructors(decoder, values, out):
   out.write(CONSTRUCTOR_HEADER % values)
-  for decoder in decoder.decoders():
-    values['decoder'] = decoder.actual
+  for decoder in decoder.action_filter(['actual']).decoders():
+    values['decoder'] = decoder.actual()
     out.write(CONSTRUCTOR_FIELD_INIT % values)
   out.write(CONSTRUCTOR_FOOTER % values)
 
@@ -302,7 +302,7 @@ def _generate_methods(decoder, values, out):
       if _cl_args.get('trace') == 'True':
           out.write(METHOD_DISPATCH_TRACE % count)
       if row.action.__class__.__name__ == 'DecoderAction':
-        values['decoder'] = row.action.actual
+        values['decoder'] = row.action.actual()
         out.write(METHOD_DISPATCH_CLASS_DECODER % values)
       elif row.action.__class__.__name__ == 'DecoderMethod':
         values['subtable_name'] = row.action.name

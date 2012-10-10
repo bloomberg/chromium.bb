@@ -28,11 +28,13 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(8)=0 & inst(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp {'constraints': }
+//    = {baseline: 'MoveDoubleVfpRegisterOp',
+//       constraints: }
 //
 // Representaive case:
 // C(8)=0 & op(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp {constraints: }
+//    = {baseline: MoveDoubleVfpRegisterOp,
+//       constraints: }
 class MoveDoubleVfpRegisterOpTesterCase0
     : public MoveDoubleVfpRegisterOpTester {
  public:
@@ -59,11 +61,13 @@ bool MoveDoubleVfpRegisterOpTesterCase0
 
 // Neutral case:
 // inst(8)=1 & inst(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp {'constraints': }
+//    = {baseline: 'MoveDoubleVfpRegisterOp',
+//       constraints: }
 //
 // Representaive case:
 // C(8)=1 & op(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp {constraints: }
+//    = {baseline: MoveDoubleVfpRegisterOp,
+//       constraints: }
 class MoveDoubleVfpRegisterOpTesterCase1
     : public MoveDoubleVfpRegisterOpTester {
  public:
@@ -95,13 +99,15 @@ bool MoveDoubleVfpRegisterOpTesterCase1
 
 // Neutral case:
 // inst(8)=0 & inst(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp {'constraints': ,
-//     'rule': 'Vmov_two_S_Rule_A1'}
+//    = {baseline: 'MoveDoubleVfpRegisterOp',
+//       constraints: ,
+//       rule: 'Vmov_two_S_Rule_A1'}
 //
 // Representative case:
 // C(8)=0 & op(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp {constraints: ,
-//     rule: Vmov_two_S_Rule_A1}
+//    = {baseline: MoveDoubleVfpRegisterOp,
+//       constraints: ,
+//       rule: Vmov_two_S_Rule_A1}
 class MoveDoubleVfpRegisterOpTester_Case0
     : public MoveDoubleVfpRegisterOpTesterCase0 {
  public:
@@ -113,13 +119,15 @@ class MoveDoubleVfpRegisterOpTester_Case0
 
 // Neutral case:
 // inst(8)=1 & inst(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp {'constraints': ,
-//     'rule': 'Vmov_one_D_Rule_A1'}
+//    = {baseline: 'MoveDoubleVfpRegisterOp',
+//       constraints: ,
+//       rule: 'Vmov_one_D_Rule_A1'}
 //
 // Representative case:
 // C(8)=1 & op(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp {constraints: ,
-//     rule: Vmov_one_D_Rule_A1}
+//    = {baseline: MoveDoubleVfpRegisterOp,
+//       constraints: ,
+//       rule: Vmov_one_D_Rule_A1}
 class MoveDoubleVfpRegisterOpTester_Case1
     : public MoveDoubleVfpRegisterOpTesterCase1 {
  public:
@@ -140,15 +148,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(8)=0 & inst(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp => MoveDoubleVfpRegisterOp {'constraints': ,
-//     'pattern': 'cccc1100010otttttttt101000m1mmmm',
-//     'rule': 'Vmov_two_S_Rule_A1'}
+//    = {actual: 'MoveDoubleVfpRegisterOp',
+//       baseline: 'MoveDoubleVfpRegisterOp',
+//       constraints: ,
+//       pattern: 'cccc1100010otttttttt101000m1mmmm',
+//       rule: 'Vmov_two_S_Rule_A1'}
 //
 // Representaive case:
 // C(8)=0 & op(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp => MoveDoubleVfpRegisterOp {constraints: ,
-//     pattern: cccc1100010otttttttt101000m1mmmm,
-//     rule: Vmov_two_S_Rule_A1}
+//    = {actual: MoveDoubleVfpRegisterOp,
+//       baseline: MoveDoubleVfpRegisterOp,
+//       constraints: ,
+//       pattern: cccc1100010otttttttt101000m1mmmm,
+//       rule: Vmov_two_S_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        MoveDoubleVfpRegisterOpTester_Case0_TestCase0) {
   MoveDoubleVfpRegisterOpTester_Case0 tester;
@@ -157,15 +169,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(8)=1 & inst(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp => MoveDoubleVfpRegisterOp {'constraints': ,
-//     'pattern': 'cccc1100010otttttttt101100m1mmmm',
-//     'rule': 'Vmov_one_D_Rule_A1'}
+//    = {actual: 'MoveDoubleVfpRegisterOp',
+//       baseline: 'MoveDoubleVfpRegisterOp',
+//       constraints: ,
+//       pattern: 'cccc1100010otttttttt101100m1mmmm',
+//       rule: 'Vmov_one_D_Rule_A1'}
 //
 // Representaive case:
 // C(8)=1 & op(7:4)=00x1
-//    = MoveDoubleVfpRegisterOp => MoveDoubleVfpRegisterOp {constraints: ,
-//     pattern: cccc1100010otttttttt101100m1mmmm,
-//     rule: Vmov_one_D_Rule_A1}
+//    = {actual: MoveDoubleVfpRegisterOp,
+//       baseline: MoveDoubleVfpRegisterOp,
+//       constraints: ,
+//       pattern: cccc1100010otttttttt101100m1mmmm,
+//       rule: Vmov_one_D_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        MoveDoubleVfpRegisterOpTester_Case1_TestCase1) {
   MoveDoubleVfpRegisterOpTester_Case1 tester;

@@ -28,11 +28,13 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(24:20)=10001 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {'constraints': }
+//    = {baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: }
 //
 // Representaive case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {constraints: }
+//    = {baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: }
 class Binary2RegisterImmedShiftedTestTesterCase0
     : public Binary2RegisterImmedShiftedTestTester {
  public:
@@ -59,11 +61,13 @@ bool Binary2RegisterImmedShiftedTestTesterCase0
 
 // Neutral case:
 // inst(24:20)=10011 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {'constraints': }
+//    = {baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: }
 //
 // Representaive case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {constraints: }
+//    = {baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: }
 class Binary2RegisterImmedShiftedTestTesterCase1
     : public Binary2RegisterImmedShiftedTestTester {
  public:
@@ -90,11 +94,13 @@ bool Binary2RegisterImmedShiftedTestTesterCase1
 
 // Neutral case:
 // inst(24:20)=10101 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {'constraints': }
+//    = {baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: }
 //
 // Representaive case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {constraints: }
+//    = {baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: }
 class Binary2RegisterImmedShiftedTestTesterCase2
     : public Binary2RegisterImmedShiftedTestTester {
  public:
@@ -121,11 +127,13 @@ bool Binary2RegisterImmedShiftedTestTesterCase2
 
 // Neutral case:
 // inst(24:20)=10111 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {'constraints': }
+//    = {baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: }
 //
 // Representaive case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {constraints: }
+//    = {baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: }
 class Binary2RegisterImmedShiftedTestTesterCase3
     : public Binary2RegisterImmedShiftedTestTester {
  public:
@@ -152,13 +160,18 @@ bool Binary2RegisterImmedShiftedTestTesterCase3
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0000x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase4
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -196,13 +209,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase4
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0001x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase5
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -240,13 +258,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase5
 
 // Neutral case:
 // inst(24:20)=0010x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0010x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase6
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -284,13 +307,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase6
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0011x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase7
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -328,13 +356,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase7
 
 // Neutral case:
 // inst(24:20)=0100x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0100x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase8
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -372,13 +405,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase8
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0101x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase9
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -416,13 +454,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase9
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0110x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase10
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -460,13 +503,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase10
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0111x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase11
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -504,13 +552,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase11
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1100x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase12
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -548,13 +601,19 @@ bool Binary3RegisterImmedShiftedOpTesterCase12
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12), imm5(11:7)],
+//       imm5: imm5(11:7),
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase13
     : public Unary2RegisterImmedShiftedOpTester {
  public:
@@ -596,13 +655,19 @@ bool Unary2RegisterImmedShiftedOpTesterCase13
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12), imm5(11:7)],
+//       imm5: imm5(11:7),
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase14
     : public Unary2RegisterImmedShiftedOpTester {
  public:
@@ -644,13 +709,18 @@ bool Unary2RegisterImmedShiftedOpTesterCase14
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTesterCase15
     : public Unary2RegisterOpTester {
  public:
@@ -691,13 +761,18 @@ bool Unary2RegisterOpTesterCase15
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTesterCase16
     : public Unary2RegisterOpTester {
  public:
@@ -738,13 +813,18 @@ bool Unary2RegisterOpTesterCase16
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase17
     : public Unary2RegisterImmedShiftedOpTester {
  public:
@@ -784,13 +864,18 @@ bool Unary2RegisterImmedShiftedOpTesterCase17
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase18
     : public Unary2RegisterImmedShiftedOpTester {
  public:
@@ -830,13 +915,18 @@ bool Unary2RegisterImmedShiftedOpTesterCase18
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1110x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase19
     : public Binary3RegisterImmedShiftedOpTester {
  public:
@@ -874,13 +964,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase19
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase20
     : public Unary2RegisterImmedShiftedOpTester {
  public:
@@ -924,13 +1019,15 @@ bool Unary2RegisterImmedShiftedOpTesterCase20
 
 // Neutral case:
 // inst(24:20)=10001 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {'constraints': ,
-//     'rule': 'Tst_Rule_231_A1_P456'}
+//    = {baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: ,
+//       rule: 'Tst_Rule_231_A1_P456'}
 //
 // Representative case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {constraints: ,
-//     rule: Tst_Rule_231_A1_P456}
+//    = {baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       rule: Tst_Rule_231_A1_P456}
 class Binary2RegisterImmedShiftedTestTester_Case0
     : public Binary2RegisterImmedShiftedTestTesterCase0 {
  public:
@@ -942,13 +1039,15 @@ class Binary2RegisterImmedShiftedTestTester_Case0
 
 // Neutral case:
 // inst(24:20)=10011 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {'constraints': ,
-//     'rule': 'Teq_Rule_228_A1_P450'}
+//    = {baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: ,
+//       rule: 'Teq_Rule_228_A1_P450'}
 //
 // Representative case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {constraints: ,
-//     rule: Teq_Rule_228_A1_P450}
+//    = {baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       rule: Teq_Rule_228_A1_P450}
 class Binary2RegisterImmedShiftedTestTester_Case1
     : public Binary2RegisterImmedShiftedTestTesterCase1 {
  public:
@@ -960,13 +1059,15 @@ class Binary2RegisterImmedShiftedTestTester_Case1
 
 // Neutral case:
 // inst(24:20)=10101 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {'constraints': ,
-//     'rule': 'Cmp_Rule_36_A1_P82'}
+//    = {baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: ,
+//       rule: 'Cmp_Rule_36_A1_P82'}
 //
 // Representative case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {constraints: ,
-//     rule: Cmp_Rule_36_A1_P82}
+//    = {baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       rule: Cmp_Rule_36_A1_P82}
 class Binary2RegisterImmedShiftedTestTester_Case2
     : public Binary2RegisterImmedShiftedTestTesterCase2 {
  public:
@@ -978,13 +1079,15 @@ class Binary2RegisterImmedShiftedTestTester_Case2
 
 // Neutral case:
 // inst(24:20)=10111 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {'constraints': ,
-//     'rule': 'Cmn_Rule_33_A1_P76'}
+//    = {baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: ,
+//       rule: 'Cmn_Rule_33_A1_P76'}
 //
 // Representative case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest {constraints: ,
-//     rule: Cmn_Rule_33_A1_P76}
+//    = {baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       rule: Cmn_Rule_33_A1_P76}
 class Binary2RegisterImmedShiftedTestTester_Case3
     : public Binary2RegisterImmedShiftedTestTesterCase3 {
  public:
@@ -996,15 +1099,20 @@ class Binary2RegisterImmedShiftedTestTester_Case3
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'And_Rule_7_A1_P36',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'And_Rule_7_A1_P36',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0000x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: And_Rule_7_A1_P36,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: And_Rule_7_A1_P36,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case4
     : public Binary3RegisterImmedShiftedOpTesterCase4 {
  public:
@@ -1016,15 +1124,20 @@ class Binary3RegisterImmedShiftedOpTester_Case4
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Eor_Rule_45_A1_P96',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Eor_Rule_45_A1_P96',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0001x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: Eor_Rule_45_A1_P96,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Eor_Rule_45_A1_P96,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case5
     : public Binary3RegisterImmedShiftedOpTesterCase5 {
  public:
@@ -1036,15 +1149,20 @@ class Binary3RegisterImmedShiftedOpTester_Case5
 
 // Neutral case:
 // inst(24:20)=0010x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Sub_Rule_213_A1_P422',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Sub_Rule_213_A1_P422',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0010x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: Sub_Rule_213_A1_P422,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Sub_Rule_213_A1_P422,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case6
     : public Binary3RegisterImmedShiftedOpTesterCase6 {
  public:
@@ -1056,15 +1174,20 @@ class Binary3RegisterImmedShiftedOpTester_Case6
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Rsb_Rule_143_P286',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Rsb_Rule_143_P286',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0011x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: Rsb_Rule_143_P286,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Rsb_Rule_143_P286,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case7
     : public Binary3RegisterImmedShiftedOpTesterCase7 {
  public:
@@ -1076,15 +1199,20 @@ class Binary3RegisterImmedShiftedOpTester_Case7
 
 // Neutral case:
 // inst(24:20)=0100x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Add_Rule_6_A1_P24',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Add_Rule_6_A1_P24',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0100x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: Add_Rule_6_A1_P24,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Add_Rule_6_A1_P24,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case8
     : public Binary3RegisterImmedShiftedOpTesterCase8 {
  public:
@@ -1096,15 +1224,20 @@ class Binary3RegisterImmedShiftedOpTester_Case8
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Adc_Rule_2_A1_P16',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Adc_Rule_2_A1_P16',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0101x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: Adc_Rule_2_A1_P16,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Adc_Rule_2_A1_P16,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case9
     : public Binary3RegisterImmedShiftedOpTesterCase9 {
  public:
@@ -1116,15 +1249,20 @@ class Binary3RegisterImmedShiftedOpTester_Case9
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Sbc_Rule_152_A1_P304',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Sbc_Rule_152_A1_P304',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0110x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: Sbc_Rule_152_A1_P304,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Sbc_Rule_152_A1_P304,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case10
     : public Binary3RegisterImmedShiftedOpTesterCase10 {
  public:
@@ -1136,15 +1274,20 @@ class Binary3RegisterImmedShiftedOpTester_Case10
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Rsc_Rule_146_A1_P292',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Rsc_Rule_146_A1_P292',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0111x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: Rsc_Rule_146_A1_P292,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Rsc_Rule_146_A1_P292,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case11
     : public Binary3RegisterImmedShiftedOpTesterCase11 {
  public:
@@ -1156,15 +1299,20 @@ class Binary3RegisterImmedShiftedOpTester_Case11
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Orr_Rule_114_A1_P230',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Orr_Rule_114_A1_P230',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1100x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: Orr_Rule_114_A1_P230,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Orr_Rule_114_A1_P230,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case12
     : public Binary3RegisterImmedShiftedOpTesterCase12 {
  public:
@@ -1176,15 +1324,21 @@ class Binary3RegisterImmedShiftedOpTester_Case12
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Lsl_Rule_88_A1_P178',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Lsl_Rule_88_A1_P178',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     rule: Lsl_Rule_88_A1_P178,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12), imm5(11:7)],
+//       imm5: imm5(11:7),
+//       rule: Lsl_Rule_88_A1_P178,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case13
     : public Unary2RegisterImmedShiftedOpTesterCase13 {
  public:
@@ -1196,15 +1350,21 @@ class Unary2RegisterImmedShiftedOpTester_Case13
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Ror_Rule_139_A1_P278',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Ror_Rule_139_A1_P278',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     rule: Ror_Rule_139_A1_P278,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12), imm5(11:7)],
+//       imm5: imm5(11:7),
+//       rule: Ror_Rule_139_A1_P278,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case14
     : public Unary2RegisterImmedShiftedOpTesterCase14 {
  public:
@@ -1216,15 +1376,20 @@ class Unary2RegisterImmedShiftedOpTester_Case14
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp {'constraints': ,
-//     'rule': 'Mov_Rule_97_A1_P196',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterOp',
+//       constraints: ,
+//       rule: 'Mov_Rule_97_A1_P196',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp {constraints: ,
-//     rule: Mov_Rule_97_A1_P196,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Mov_Rule_97_A1_P196,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTester_Case15
     : public Unary2RegisterOpTesterCase15 {
  public:
@@ -1236,15 +1401,20 @@ class Unary2RegisterOpTester_Case15
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp {'constraints': ,
-//     'rule': 'Rrx_Rule_141_A1_P282',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterOp',
+//       constraints: ,
+//       rule: 'Rrx_Rule_141_A1_P282',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp {constraints: ,
-//     rule: Rrx_Rule_141_A1_P282,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Rrx_Rule_141_A1_P282,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTester_Case16
     : public Unary2RegisterOpTesterCase16 {
  public:
@@ -1256,15 +1426,20 @@ class Unary2RegisterOpTester_Case16
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Lsr_Rule_90_A1_P182',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Lsr_Rule_90_A1_P182',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     rule: Lsr_Rule_90_A1_P182,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Lsr_Rule_90_A1_P182,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case17
     : public Unary2RegisterImmedShiftedOpTesterCase17 {
  public:
@@ -1276,15 +1451,20 @@ class Unary2RegisterImmedShiftedOpTester_Case17
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Asr_Rule_14_A1_P40',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Asr_Rule_14_A1_P40',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     rule: Asr_Rule_14_A1_P40,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Asr_Rule_14_A1_P40,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case18
     : public Unary2RegisterImmedShiftedOpTesterCase18 {
  public:
@@ -1296,15 +1476,20 @@ class Unary2RegisterImmedShiftedOpTester_Case18
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Bic_Rule_20_A1_P52',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Bic_Rule_20_A1_P52',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1110x
-//    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     rule: Bic_Rule_20_A1_P52,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Bic_Rule_20_A1_P52,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case19
     : public Binary3RegisterImmedShiftedOpTesterCase19 {
  public:
@@ -1316,15 +1501,20 @@ class Binary3RegisterImmedShiftedOpTester_Case19
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'rule': 'Mvn_Rule_107_A1_P216',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       rule: 'Mvn_Rule_107_A1_P216',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     rule: Mvn_Rule_107_A1_P216,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       rule: Mvn_Rule_107_A1_P216,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case20
     : public Unary2RegisterImmedShiftedOpTesterCase20 {
  public:
@@ -1345,15 +1535,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(24:20)=10001 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest => DontCareInst {'constraints': ,
-//     'pattern': 'cccc00010001nnnn0000iiiiitt0mmmm',
-//     'rule': 'Tst_Rule_231_A1_P456'}
+//    = {actual: 'DontCareInst',
+//       baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: ,
+//       pattern: 'cccc00010001nnnn0000iiiiitt0mmmm',
+//       rule: 'Tst_Rule_231_A1_P456'}
 //
 // Representative case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest => DontCareInst {constraints: ,
-//     pattern: cccc00010001nnnn0000iiiiitt0mmmm,
-//     rule: Tst_Rule_231_A1_P456}
+//    = {actual: DontCareInst,
+//       baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       pattern: cccc00010001nnnn0000iiiiitt0mmmm,
+//       rule: Tst_Rule_231_A1_P456}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmedShiftedTestTester_Case0_TestCase0) {
   Binary2RegisterImmedShiftedTestTester_Case0 baseline_tester;
@@ -1364,15 +1558,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=10011 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest => DontCareInst {'constraints': ,
-//     'pattern': 'cccc00010011nnnn0000iiiiitt0mmmm',
-//     'rule': 'Teq_Rule_228_A1_P450'}
+//    = {actual: 'DontCareInst',
+//       baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: ,
+//       pattern: 'cccc00010011nnnn0000iiiiitt0mmmm',
+//       rule: 'Teq_Rule_228_A1_P450'}
 //
 // Representative case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest => DontCareInst {constraints: ,
-//     pattern: cccc00010011nnnn0000iiiiitt0mmmm,
-//     rule: Teq_Rule_228_A1_P450}
+//    = {actual: DontCareInst,
+//       baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       pattern: cccc00010011nnnn0000iiiiitt0mmmm,
+//       rule: Teq_Rule_228_A1_P450}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmedShiftedTestTester_Case1_TestCase1) {
   Binary2RegisterImmedShiftedTestTester_Case1 baseline_tester;
@@ -1383,15 +1581,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=10101 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest => DontCareInst {'constraints': ,
-//     'pattern': 'cccc00010101nnnn0000iiiiitt0mmmm',
-//     'rule': 'Cmp_Rule_36_A1_P82'}
+//    = {actual: 'DontCareInst',
+//       baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: ,
+//       pattern: 'cccc00010101nnnn0000iiiiitt0mmmm',
+//       rule: 'Cmp_Rule_36_A1_P82'}
 //
 // Representative case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest => DontCareInst {constraints: ,
-//     pattern: cccc00010101nnnn0000iiiiitt0mmmm,
-//     rule: Cmp_Rule_36_A1_P82}
+//    = {actual: DontCareInst,
+//       baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       pattern: cccc00010101nnnn0000iiiiitt0mmmm,
+//       rule: Cmp_Rule_36_A1_P82}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmedShiftedTestTester_Case2_TestCase2) {
   Binary2RegisterImmedShiftedTestTester_Case2 baseline_tester;
@@ -1402,15 +1604,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=10111 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest => DontCareInst {'constraints': ,
-//     'pattern': 'cccc00010111nnnn0000iiiiitt0mmmm',
-//     'rule': 'Cmn_Rule_33_A1_P76'}
+//    = {actual: 'DontCareInst',
+//       baseline: 'Binary2RegisterImmedShiftedTest',
+//       constraints: ,
+//       pattern: 'cccc00010111nnnn0000iiiiitt0mmmm',
+//       rule: 'Cmn_Rule_33_A1_P76'}
 //
 // Representative case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary2RegisterImmedShiftedTest => DontCareInst {constraints: ,
-//     pattern: cccc00010111nnnn0000iiiiitt0mmmm,
-//     rule: Cmn_Rule_33_A1_P76}
+//    = {actual: DontCareInst,
+//       baseline: Binary2RegisterImmedShiftedTest,
+//       constraints: ,
+//       pattern: cccc00010111nnnn0000iiiiitt0mmmm,
+//       rule: Cmn_Rule_33_A1_P76}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmedShiftedTestTester_Case3_TestCase3) {
   Binary2RegisterImmedShiftedTestTester_Case3 baseline_tester;
@@ -1421,17 +1627,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0000000unnnnddddiiiiitt0mmmm',
-//     'rule': 'And_Rule_7_A1_P36',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000000unnnnddddiiiiitt0mmmm',
+//       rule: 'And_Rule_7_A1_P36',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0000x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0000000unnnnddddiiiiitt0mmmm,
-//     rule: And_Rule_7_A1_P36,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0000000unnnnddddiiiiitt0mmmm,
+//       rule: And_Rule_7_A1_P36,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case4_TestCase4) {
   Binary3RegisterImmedShiftedOpTester_Case4 baseline_tester;
@@ -1442,17 +1655,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0000001unnnnddddiiiiitt0mmmm',
-//     'rule': 'Eor_Rule_45_A1_P96',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000001unnnnddddiiiiitt0mmmm',
+//       rule: 'Eor_Rule_45_A1_P96',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0001x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0000001unnnnddddiiiiitt0mmmm,
-//     rule: Eor_Rule_45_A1_P96,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0000001unnnnddddiiiiitt0mmmm,
+//       rule: Eor_Rule_45_A1_P96,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case5_TestCase5) {
   Binary3RegisterImmedShiftedOpTester_Case5 baseline_tester;
@@ -1463,17 +1683,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0010x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0000010unnnnddddiiiiitt0mmmm',
-//     'rule': 'Sub_Rule_213_A1_P422',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000010unnnnddddiiiiitt0mmmm',
+//       rule: 'Sub_Rule_213_A1_P422',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0010x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0000010unnnnddddiiiiitt0mmmm,
-//     rule: Sub_Rule_213_A1_P422,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0000010unnnnddddiiiiitt0mmmm,
+//       rule: Sub_Rule_213_A1_P422,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case6_TestCase6) {
   Binary3RegisterImmedShiftedOpTester_Case6 baseline_tester;
@@ -1484,17 +1711,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0000011unnnnddddiiiiitt0mmmm',
-//     'rule': 'Rsb_Rule_143_P286',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000011unnnnddddiiiiitt0mmmm',
+//       rule: 'Rsb_Rule_143_P286',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0011x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0000011unnnnddddiiiiitt0mmmm,
-//     rule: Rsb_Rule_143_P286,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0000011unnnnddddiiiiitt0mmmm,
+//       rule: Rsb_Rule_143_P286,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case7_TestCase7) {
   Binary3RegisterImmedShiftedOpTester_Case7 baseline_tester;
@@ -1505,17 +1739,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0100x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0000100unnnnddddiiiiitt0mmmm',
-//     'rule': 'Add_Rule_6_A1_P24',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000100unnnnddddiiiiitt0mmmm',
+//       rule: 'Add_Rule_6_A1_P24',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0100x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0000100unnnnddddiiiiitt0mmmm,
-//     rule: Add_Rule_6_A1_P24,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0000100unnnnddddiiiiitt0mmmm,
+//       rule: Add_Rule_6_A1_P24,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case8_TestCase8) {
   Binary3RegisterImmedShiftedOpTester_Case8 baseline_tester;
@@ -1526,17 +1767,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0000101unnnnddddiiiiitt0mmmm',
-//     'rule': 'Adc_Rule_2_A1_P16',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000101unnnnddddiiiiitt0mmmm',
+//       rule: 'Adc_Rule_2_A1_P16',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0101x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0000101unnnnddddiiiiitt0mmmm,
-//     rule: Adc_Rule_2_A1_P16,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0000101unnnnddddiiiiitt0mmmm,
+//       rule: Adc_Rule_2_A1_P16,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case9_TestCase9) {
   Binary3RegisterImmedShiftedOpTester_Case9 baseline_tester;
@@ -1547,17 +1795,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0000110unnnnddddiiiiitt0mmmm',
-//     'rule': 'Sbc_Rule_152_A1_P304',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000110unnnnddddiiiiitt0mmmm',
+//       rule: 'Sbc_Rule_152_A1_P304',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0110x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0000110unnnnddddiiiiitt0mmmm,
-//     rule: Sbc_Rule_152_A1_P304,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0000110unnnnddddiiiiitt0mmmm,
+//       rule: Sbc_Rule_152_A1_P304,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case10_TestCase10) {
   Binary3RegisterImmedShiftedOpTester_Case10 baseline_tester;
@@ -1568,17 +1823,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0000111unnnnddddiiiiitt0mmmm',
-//     'rule': 'Rsc_Rule_146_A1_P292',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000111unnnnddddiiiiitt0mmmm',
+//       rule: 'Rsc_Rule_146_A1_P292',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0111x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0000111unnnnddddiiiiitt0mmmm,
-//     rule: Rsc_Rule_146_A1_P292,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0000111unnnnddddiiiiitt0mmmm,
+//       rule: Rsc_Rule_146_A1_P292,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case11_TestCase11) {
   Binary3RegisterImmedShiftedOpTester_Case11 baseline_tester;
@@ -1589,17 +1851,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0001100unnnnddddiiiiitt0mmmm',
-//     'rule': 'Orr_Rule_114_A1_P230',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001100unnnnddddiiiiitt0mmmm',
+//       rule: 'Orr_Rule_114_A1_P230',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1100x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0001100unnnnddddiiiiitt0mmmm,
-//     rule: Orr_Rule_114_A1_P230,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0001100unnnnddddiiiiitt0mmmm,
+//       rule: Orr_Rule_114_A1_P230,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case12_TestCase12) {
   Binary3RegisterImmedShiftedOpTester_Case12 baseline_tester;
@@ -1610,17 +1879,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0001101u0000ddddiiiii000mmmm',
-//     'rule': 'Lsl_Rule_88_A1_P178',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001101u0000ddddiiiii000mmmm',
+//       rule: 'Lsl_Rule_88_A1_P178',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0001101u0000ddddiiiii000mmmm,
-//     rule: Lsl_Rule_88_A1_P178,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12), imm5(11:7)],
+//       imm5: imm5(11:7),
+//       pattern: cccc0001101u0000ddddiiiii000mmmm,
+//       rule: Lsl_Rule_88_A1_P178,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case13_TestCase13) {
   Unary2RegisterImmedShiftedOpTester_Case13 baseline_tester;
@@ -1631,17 +1908,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0001101u0000ddddiiiii110mmmm',
-//     'rule': 'Ror_Rule_139_A1_P278',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001101u0000ddddiiiii110mmmm',
+//       rule: 'Ror_Rule_139_A1_P278',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0001101u0000ddddiiiii110mmmm,
-//     rule: Ror_Rule_139_A1_P278,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12), imm5(11:7)],
+//       imm5: imm5(11:7),
+//       pattern: cccc0001101u0000ddddiiiii110mmmm,
+//       rule: Ror_Rule_139_A1_P278,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case14_TestCase14) {
   Unary2RegisterImmedShiftedOpTester_Case14 baseline_tester;
@@ -1652,17 +1937,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0001101u0000dddd00000000mmmm',
-//     'rule': 'Mov_Rule_97_A1_P196',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Unary2RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc0001101u0000dddd00000000mmmm',
+//       rule: 'Mov_Rule_97_A1_P196',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp => Defs12To15 {constraints: ,
-//     pattern: cccc0001101u0000dddd00000000mmmm,
-//     rule: Mov_Rule_97_A1_P196,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Unary2RegisterOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0001101u0000dddd00000000mmmm,
+//       rule: Mov_Rule_97_A1_P196,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpTester_Case15_TestCase15) {
   Unary2RegisterOpTester_Case15 baseline_tester;
@@ -1673,17 +1965,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0001101u0000dddd00000110mmmm',
-//     'rule': 'Rrx_Rule_141_A1_P282',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Unary2RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc0001101u0000dddd00000110mmmm',
+//       rule: 'Rrx_Rule_141_A1_P282',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterOp => Defs12To15 {constraints: ,
-//     pattern: cccc0001101u0000dddd00000110mmmm,
-//     rule: Rrx_Rule_141_A1_P282,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Unary2RegisterOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0001101u0000dddd00000110mmmm,
+//       rule: Rrx_Rule_141_A1_P282,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpTester_Case16_TestCase16) {
   Unary2RegisterOpTester_Case16 baseline_tester;
@@ -1694,17 +1993,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0001101u0000ddddiiiii010mmmm',
-//     'rule': 'Lsr_Rule_90_A1_P182',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001101u0000ddddiiiii010mmmm',
+//       rule: 'Lsr_Rule_90_A1_P182',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0001101u0000ddddiiiii010mmmm,
-//     rule: Lsr_Rule_90_A1_P182,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0001101u0000ddddiiiii010mmmm,
+//       rule: Lsr_Rule_90_A1_P182,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case17_TestCase17) {
   Unary2RegisterImmedShiftedOpTester_Case17 baseline_tester;
@@ -1715,17 +2021,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0001101u0000ddddiiiii100mmmm',
-//     'rule': 'Asr_Rule_14_A1_P40',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001101u0000ddddiiiii100mmmm',
+//       rule: 'Asr_Rule_14_A1_P40',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0001101u0000ddddiiiii100mmmm,
-//     rule: Asr_Rule_14_A1_P40,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0001101u0000ddddiiiii100mmmm,
+//       rule: Asr_Rule_14_A1_P40,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case18_TestCase18) {
   Unary2RegisterImmedShiftedOpTester_Case18 baseline_tester;
@@ -1736,17 +2049,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0001110unnnnddddiiiiitt0mmmm',
-//     'rule': 'Bic_Rule_20_A1_P52',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Binary3RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001110unnnnddddiiiiitt0mmmm',
+//       rule: 'Bic_Rule_20_A1_P52',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1110x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0001110unnnnddddiiiiitt0mmmm,
-//     rule: Bic_Rule_20_A1_P52,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Binary3RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0001110unnnnddddiiiiitt0mmmm,
+//       rule: Bic_Rule_20_A1_P52,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case19_TestCase19) {
   Binary3RegisterImmedShiftedOpTester_Case19 baseline_tester;
@@ -1757,17 +2077,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
-//     'pattern': 'cccc0001111u0000ddddiiiiitt0mmmm',
-//     'rule': 'Mvn_Rule_107_A1_P216',
-//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
+//    = {actual: 'Defs12To15',
+//       baseline: 'Unary2RegisterImmedShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001111u0000ddddiiiiitt0mmmm',
+//       rule: 'Mvn_Rule_107_A1_P216',
+//       safety: ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
-//     pattern: cccc0001111u0000ddddiiiiitt0mmmm,
-//     rule: Mvn_Rule_107_A1_P216,
-//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
+//    = {Rd: Rd(15:12),
+//       S: S(20),
+//       actual: Defs12To15,
+//       baseline: Unary2RegisterImmedShiftedOp,
+//       constraints: ,
+//       fields: [S(20), Rd(15:12)],
+//       pattern: cccc0001111u0000ddddiiiiitt0mmmm,
+//       rule: Mvn_Rule_107_A1_P216,
+//       safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case20_TestCase20) {
   Unary2RegisterImmedShiftedOpTester_Case20 baseline_tester;

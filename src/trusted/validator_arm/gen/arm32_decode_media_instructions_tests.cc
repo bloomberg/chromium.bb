@@ -28,13 +28,15 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(24:20)=11000 & inst(7:5)=000 & inst(15:12)=~1111
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=~1111
-//    = Binary4RegisterDualOp {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTesterCase0
     : public Binary4RegisterDualOpTesterRegsNotPc {
  public:
@@ -62,13 +64,15 @@ bool Binary4RegisterDualOpTesterCase0
 
 // Neutral case:
 // inst(24:20)=11000 & inst(7:5)=000 & inst(15:12)=1111
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=1111
-//    = Binary3RegisterOpAltA {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltATesterCase1
     : public Binary3RegisterOpAltATesterRegsNotPc {
  public:
@@ -96,11 +100,13 @@ bool Binary3RegisterOpAltATesterCase1
 
 // Neutral case:
 // inst(24:20)=11111 & inst(7:5)=111
-//    = Roadblock {'constraints': }
+//    = {baseline: 'Roadblock',
+//       constraints: }
 //
 // Representaive case:
 // op1(24:20)=11111 & op2(7:5)=111
-//    = Roadblock {constraints: }
+//    = {baseline: Roadblock,
+//       constraints: }
 class RoadblockTesterCase2
     : public RoadblockTester {
  public:
@@ -127,13 +133,15 @@ bool RoadblockTesterCase2
 
 // Neutral case:
 // inst(24:20)=1101x & inst(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary2RegisterBitRangeNotRnIsPcBitfieldExtract',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
     : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc {
  public:
@@ -160,13 +168,15 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
 
 // Neutral case:
 // inst(24:20)=1110x & inst(7:5)=x00 & inst(3:0)=~1111
-//    = Binary2RegisterBitRangeMsbGeLsb {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary2RegisterBitRangeMsbGeLsb',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=~1111
-//    = Binary2RegisterBitRangeMsbGeLsb {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary2RegisterBitRangeMsbGeLsb,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary2RegisterBitRangeMsbGeLsbTesterCase4
     : public Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc {
  public:
@@ -194,13 +204,15 @@ bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
 
 // Neutral case:
 // inst(24:20)=1110x & inst(7:5)=x00 & inst(3:0)=1111
-//    = Unary1RegisterBitRangeMsbGeLsb {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary1RegisterBitRangeMsbGeLsb',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
-//    = Unary1RegisterBitRangeMsbGeLsb {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary1RegisterBitRangeMsbGeLsb,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Unary1RegisterBitRangeMsbGeLsbTesterCase5
     : public Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc {
  public:
@@ -228,13 +240,15 @@ bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
 
 // Neutral case:
 // inst(24:20)=1111x & inst(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract {'constraints': ,
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary2RegisterBitRangeNotRnIsPcBitfieldExtract',
+//       constraints: ,
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(24:20)=1111x & op2(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract {constraints: ,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       constraints: ,
+//       safety: ['RegsNotPc']}
 class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
     : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc {
  public:
@@ -266,15 +280,17 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
 
 // Neutral case:
 // inst(24:20)=11000 & inst(7:5)=000 & inst(15:12)=~1111
-//    = Binary4RegisterDualOp {'constraints': ,
-//     'rule': 'Usada8_Rule_254_A1_P502',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       rule: 'Usada8_Rule_254_A1_P502',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=~1111
-//    = Binary4RegisterDualOp {constraints: ,
-//     rule: Usada8_Rule_254_A1_P502,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       rule: Usada8_Rule_254_A1_P502,
+//       safety: ['RegsNotPc']}
 class Binary4RegisterDualOpTester_Case0
     : public Binary4RegisterDualOpTesterCase0 {
  public:
@@ -286,15 +302,17 @@ class Binary4RegisterDualOpTester_Case0
 
 // Neutral case:
 // inst(24:20)=11000 & inst(7:5)=000 & inst(15:12)=1111
-//    = Binary3RegisterOpAltA {'constraints': ,
-//     'rule': 'Usad8_Rule_253_A1_P500',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       rule: 'Usad8_Rule_253_A1_P500',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=1111
-//    = Binary3RegisterOpAltA {constraints: ,
-//     rule: Usad8_Rule_253_A1_P500,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       rule: Usad8_Rule_253_A1_P500,
+//       safety: ['RegsNotPc']}
 class Binary3RegisterOpAltATester_Case1
     : public Binary3RegisterOpAltATesterCase1 {
  public:
@@ -306,13 +324,15 @@ class Binary3RegisterOpAltATester_Case1
 
 // Neutral case:
 // inst(24:20)=11111 & inst(7:5)=111
-//    = Roadblock {'constraints': ,
-//     'rule': 'Udf_Rule_A1'}
+//    = {baseline: 'Roadblock',
+//       constraints: ,
+//       rule: 'Udf_Rule_A1'}
 //
 // Representative case:
 // op1(24:20)=11111 & op2(7:5)=111
-//    = Roadblock {constraints: ,
-//     rule: Udf_Rule_A1}
+//    = {baseline: Roadblock,
+//       constraints: ,
+//       rule: Udf_Rule_A1}
 class RoadblockTester_Case2
     : public RoadblockTesterCase2 {
  public:
@@ -324,15 +344,17 @@ class RoadblockTester_Case2
 
 // Neutral case:
 // inst(24:20)=1101x & inst(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract {'constraints': ,
-//     'rule': 'Sbfx_Rule_154_A1_P308',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary2RegisterBitRangeNotRnIsPcBitfieldExtract',
+//       constraints: ,
+//       rule: 'Sbfx_Rule_154_A1_P308',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract {constraints: ,
-//     rule: Sbfx_Rule_154_A1_P308,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       constraints: ,
+//       rule: Sbfx_Rule_154_A1_P308,
+//       safety: ['RegsNotPc']}
 class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3
     : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3 {
  public:
@@ -344,15 +366,17 @@ class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3
 
 // Neutral case:
 // inst(24:20)=1110x & inst(7:5)=x00 & inst(3:0)=~1111
-//    = Binary2RegisterBitRangeMsbGeLsb {'constraints': ,
-//     'rule': 'Bfi_Rule_18_A1_P48',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary2RegisterBitRangeMsbGeLsb',
+//       constraints: ,
+//       rule: 'Bfi_Rule_18_A1_P48',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=~1111
-//    = Binary2RegisterBitRangeMsbGeLsb {constraints: ,
-//     rule: Bfi_Rule_18_A1_P48,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary2RegisterBitRangeMsbGeLsb,
+//       constraints: ,
+//       rule: Bfi_Rule_18_A1_P48,
+//       safety: ['RegsNotPc']}
 class Binary2RegisterBitRangeMsbGeLsbTester_Case4
     : public Binary2RegisterBitRangeMsbGeLsbTesterCase4 {
  public:
@@ -364,15 +388,17 @@ class Binary2RegisterBitRangeMsbGeLsbTester_Case4
 
 // Neutral case:
 // inst(24:20)=1110x & inst(7:5)=x00 & inst(3:0)=1111
-//    = Unary1RegisterBitRangeMsbGeLsb {'constraints': ,
-//     'rule': 'Bfc_17_A1_P46',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Unary1RegisterBitRangeMsbGeLsb',
+//       constraints: ,
+//       rule: 'Bfc_17_A1_P46',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
-//    = Unary1RegisterBitRangeMsbGeLsb {constraints: ,
-//     rule: Bfc_17_A1_P46,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Unary1RegisterBitRangeMsbGeLsb,
+//       constraints: ,
+//       rule: Bfc_17_A1_P46,
+//       safety: ['RegsNotPc']}
 class Unary1RegisterBitRangeMsbGeLsbTester_Case5
     : public Unary1RegisterBitRangeMsbGeLsbTesterCase5 {
  public:
@@ -384,15 +410,17 @@ class Unary1RegisterBitRangeMsbGeLsbTester_Case5
 
 // Neutral case:
 // inst(24:20)=1111x & inst(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract {'constraints': ,
-//     'rule': 'Ubfx_Rule_236_A1_P466',
-//     'safety': ["'RegsNotPc'"]}
+//    = {baseline: 'Binary2RegisterBitRangeNotRnIsPcBitfieldExtract',
+//       constraints: ,
+//       rule: 'Ubfx_Rule_236_A1_P466',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=1111x & op2(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract {constraints: ,
-//     rule: Ubfx_Rule_236_A1_P466,
-//     safety: ['RegsNotPc']}
+//    = {baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       constraints: ,
+//       rule: Ubfx_Rule_236_A1_P466,
+//       safety: ['RegsNotPc']}
 class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case6
     : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6 {
  public:
@@ -413,17 +441,21 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(24:20)=11000 & inst(7:5)=000 & inst(15:12)=~1111
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01111000ddddaaaammmm0001nnnn',
-//     'rule': 'Usada8_Rule_254_A1_P502',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs16To19CondsDontCareRdRaRmRnNotPc',
+//       baseline: 'Binary4RegisterDualOp',
+//       constraints: ,
+//       pattern: 'cccc01111000ddddaaaammmm0001nnnn',
+//       rule: 'Usada8_Rule_254_A1_P502',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=~1111
-//    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {constraints: ,
-//     pattern: cccc01111000ddddaaaammmm0001nnnn,
-//     rule: Usada8_Rule_254_A1_P502,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs16To19CondsDontCareRdRaRmRnNotPc,
+//       baseline: Binary4RegisterDualOp,
+//       constraints: ,
+//       pattern: cccc01111000ddddaaaammmm0001nnnn,
+//       rule: Usada8_Rule_254_A1_P502,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case0_TestCase0) {
   Binary4RegisterDualOpTester_Case0 baseline_tester;
@@ -434,17 +466,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=11000 & inst(7:5)=000 & inst(15:12)=1111
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc01111000dddd1111mmmm0001nnnn',
-//     'rule': 'Usad8_Rule_253_A1_P500',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs16To19CondsDontCareRdRmRnNotPc',
+//       baseline: 'Binary3RegisterOpAltA',
+//       constraints: ,
+//       pattern: 'cccc01111000dddd1111mmmm0001nnnn',
+//       rule: 'Usad8_Rule_253_A1_P500',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=1111
-//    = Binary3RegisterOpAltA => Defs16To19CondsDontCareRdRmRnNotPc {constraints: ,
-//     pattern: cccc01111000dddd1111mmmm0001nnnn,
-//     rule: Usad8_Rule_253_A1_P500,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs16To19CondsDontCareRdRmRnNotPc,
+//       baseline: Binary3RegisterOpAltA,
+//       constraints: ,
+//       pattern: cccc01111000dddd1111mmmm0001nnnn,
+//       rule: Usad8_Rule_253_A1_P500,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case1_TestCase1) {
   Binary3RegisterOpAltATester_Case1 baseline_tester;
@@ -455,15 +491,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=11111 & inst(7:5)=111
-//    = Roadblock => Roadblock {'constraints': ,
-//     'pattern': 'cccc01111111iiiiiiiiiiii1111iiii',
-//     'rule': 'Udf_Rule_A1'}
+//    = {actual: 'Roadblock',
+//       baseline: 'Roadblock',
+//       constraints: ,
+//       pattern: 'cccc01111111iiiiiiiiiiii1111iiii',
+//       rule: 'Udf_Rule_A1'}
 //
 // Representaive case:
 // op1(24:20)=11111 & op2(7:5)=111
-//    = Roadblock => Roadblock {constraints: ,
-//     pattern: cccc01111111iiiiiiiiiiii1111iiii,
-//     rule: Udf_Rule_A1}
+//    = {actual: Roadblock,
+//       baseline: Roadblock,
+//       constraints: ,
+//       pattern: cccc01111111iiiiiiiiiiii1111iiii,
+//       rule: Udf_Rule_A1}
 TEST_F(Arm32DecoderStateTests,
        RoadblockTester_Case2_TestCase2) {
   RoadblockTester_Case2 tester;
@@ -472,17 +512,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract => Defs12To15CondsDontCareRdRnNotPcBitfieldExtract {'constraints': ,
-//     'pattern': 'cccc0111101wwwwwddddlllll101nnnn',
-//     'rule': 'Sbfx_Rule_154_A1_P308',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPcBitfieldExtract',
+//       baseline: 'Binary2RegisterBitRangeNotRnIsPcBitfieldExtract',
+//       constraints: ,
+//       pattern: 'cccc0111101wwwwwddddlllll101nnnn',
+//       rule: 'Sbfx_Rule_154_A1_P308',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract => Defs12To15CondsDontCareRdRnNotPcBitfieldExtract {constraints: ,
-//     pattern: cccc0111101wwwwwddddlllll101nnnn,
-//     rule: Sbfx_Rule_154_A1_P308,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPcBitfieldExtract,
+//       baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       constraints: ,
+//       pattern: cccc0111101wwwwwddddlllll101nnnn,
+//       rule: Sbfx_Rule_154_A1_P308,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3_TestCase3) {
   Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3 baseline_tester;
@@ -493,17 +537,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1110x & inst(7:5)=x00 & inst(3:0)=~1111
-//    = Binary2RegisterBitRangeMsbGeLsb => Defs12To15CondsDontCareMsbGeLsb {'constraints': ,
-//     'pattern': 'cccc0111110mmmmmddddlllll001nnnn',
-//     'rule': 'Bfi_Rule_18_A1_P48',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareMsbGeLsb',
+//       baseline: 'Binary2RegisterBitRangeMsbGeLsb',
+//       constraints: ,
+//       pattern: 'cccc0111110mmmmmddddlllll001nnnn',
+//       rule: 'Bfi_Rule_18_A1_P48',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=~1111
-//    = Binary2RegisterBitRangeMsbGeLsb => Defs12To15CondsDontCareMsbGeLsb {constraints: ,
-//     pattern: cccc0111110mmmmmddddlllll001nnnn,
-//     rule: Bfi_Rule_18_A1_P48,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareMsbGeLsb,
+//       baseline: Binary2RegisterBitRangeMsbGeLsb,
+//       constraints: ,
+//       pattern: cccc0111110mmmmmddddlllll001nnnn,
+//       rule: Bfi_Rule_18_A1_P48,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterBitRangeMsbGeLsbTester_Case4_TestCase4) {
   Binary2RegisterBitRangeMsbGeLsbTester_Case4 baseline_tester;
@@ -514,17 +562,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1110x & inst(7:5)=x00 & inst(3:0)=1111
-//    = Unary1RegisterBitRangeMsbGeLsb => Unary1RegisterBitRangeMsbGeLsb {'constraints': ,
-//     'pattern': 'cccc0111110mmmmmddddlllll0011111',
-//     'rule': 'Bfc_17_A1_P46',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Unary1RegisterBitRangeMsbGeLsb',
+//       baseline: 'Unary1RegisterBitRangeMsbGeLsb',
+//       constraints: ,
+//       pattern: 'cccc0111110mmmmmddddlllll0011111',
+//       rule: 'Bfc_17_A1_P46',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representaive case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
-//    = Unary1RegisterBitRangeMsbGeLsb => Unary1RegisterBitRangeMsbGeLsb {constraints: ,
-//     pattern: cccc0111110mmmmmddddlllll0011111,
-//     rule: Bfc_17_A1_P46,
-//     safety: ['RegsNotPc']}
+//    = {actual: Unary1RegisterBitRangeMsbGeLsb,
+//       baseline: Unary1RegisterBitRangeMsbGeLsb,
+//       constraints: ,
+//       pattern: cccc0111110mmmmmddddlllll0011111,
+//       rule: Bfc_17_A1_P46,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterBitRangeMsbGeLsbTester_Case5_TestCase5) {
   Unary1RegisterBitRangeMsbGeLsbTester_Case5 tester;
@@ -533,17 +585,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1111x & inst(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract => Defs12To15CondsDontCareRdRnNotPcBitfieldExtract {'constraints': ,
-//     'pattern': 'cccc0111111mmmmmddddlllll101nnnn',
-//     'rule': 'Ubfx_Rule_236_A1_P466',
-//     'safety': ["'RegsNotPc'"]}
+//    = {actual: 'Defs12To15CondsDontCareRdRnNotPcBitfieldExtract',
+//       baseline: 'Binary2RegisterBitRangeNotRnIsPcBitfieldExtract',
+//       constraints: ,
+//       pattern: 'cccc0111111mmmmmddddlllll101nnnn',
+//       rule: 'Ubfx_Rule_236_A1_P466',
+//       safety: ["'RegsNotPc'"]}
 //
 // Representative case:
 // op1(24:20)=1111x & op2(7:5)=x10
-//    = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract => Defs12To15CondsDontCareRdRnNotPcBitfieldExtract {constraints: ,
-//     pattern: cccc0111111mmmmmddddlllll101nnnn,
-//     rule: Ubfx_Rule_236_A1_P466,
-//     safety: ['RegsNotPc']}
+//    = {actual: Defs12To15CondsDontCareRdRnNotPcBitfieldExtract,
+//       baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       constraints: ,
+//       pattern: cccc0111111mmmmmddddlllll101nnnn,
+//       rule: Ubfx_Rule_236_A1_P466,
+//       safety: ['RegsNotPc']}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case6_TestCase6) {
   Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case6 baseline_tester;

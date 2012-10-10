@@ -28,13 +28,19 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(24:20)=10001 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {constraints: ,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 class Binary3RegisterShiftedTestTesterCase0
     : public Binary3RegisterShiftedTestTester {
  public:
@@ -72,13 +78,19 @@ bool Binary3RegisterShiftedTestTesterCase0
 
 // Neutral case:
 // inst(24:20)=10011 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {constraints: ,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 class Binary3RegisterShiftedTestTesterCase1
     : public Binary3RegisterShiftedTestTester {
  public:
@@ -116,13 +128,19 @@ bool Binary3RegisterShiftedTestTesterCase1
 
 // Neutral case:
 // inst(24:20)=10101 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {constraints: ,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 class Binary3RegisterShiftedTestTesterCase2
     : public Binary3RegisterShiftedTestTester {
  public:
@@ -160,13 +178,19 @@ bool Binary3RegisterShiftedTestTesterCase2
 
 // Neutral case:
 // inst(24:20)=10111 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {constraints: ,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 class Binary3RegisterShiftedTestTesterCase3
     : public Binary3RegisterShiftedTestTester {
  public:
@@ -204,13 +228,20 @@ bool Binary3RegisterShiftedTestTesterCase3
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=0000x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase4
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -247,13 +278,20 @@ bool Binary4RegisterShiftedOpTesterCase4
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=0001x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase5
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -290,13 +328,20 @@ bool Binary4RegisterShiftedOpTesterCase5
 
 // Neutral case:
 // inst(24:20)=0010x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=0010x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase6
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -333,13 +378,20 @@ bool Binary4RegisterShiftedOpTesterCase6
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=0011x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase7
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -376,13 +428,20 @@ bool Binary4RegisterShiftedOpTesterCase7
 
 // Neutral case:
 // inst(24:20)=0100x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=0100x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase8
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -419,13 +478,20 @@ bool Binary4RegisterShiftedOpTesterCase8
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=0101x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase9
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -462,13 +528,20 @@ bool Binary4RegisterShiftedOpTesterCase9
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=0110x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase10
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -505,13 +578,20 @@ bool Binary4RegisterShiftedOpTesterCase10
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=0111x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase11
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -548,13 +628,20 @@ bool Binary4RegisterShiftedOpTesterCase11
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=1100x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase12
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -591,13 +678,19 @@ bool Binary4RegisterShiftedOpTesterCase12
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {'constraints': ,
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {constraints: ,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpTesterCase13
     : public Binary3RegisterOpTester {
  public:
@@ -636,13 +729,19 @@ bool Binary3RegisterOpTesterCase13
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {'constraints': ,
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {constraints: ,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpTesterCase14
     : public Binary3RegisterOpTester {
  public:
@@ -681,13 +780,19 @@ bool Binary3RegisterOpTesterCase14
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {'constraints': ,
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {constraints: ,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpTesterCase15
     : public Binary3RegisterOpTester {
  public:
@@ -726,13 +831,19 @@ bool Binary3RegisterOpTesterCase15
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {'constraints': ,
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {constraints: ,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpTesterCase16
     : public Binary3RegisterOpTester {
  public:
@@ -771,13 +882,20 @@ bool Binary3RegisterOpTesterCase16
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=1110x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTesterCase17
     : public Binary4RegisterShiftedOpTester {
  public:
@@ -814,13 +932,19 @@ bool Binary4RegisterShiftedOpTesterCase17
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary3RegisterShiftedOp {'constraints': ,
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Unary3RegisterShiftedOp',
+//       constraints: ,
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary3RegisterShiftedOp {constraints: ,
-//     safety: [Pc in {Rd,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rs: Rs(11:8),
+//       baseline: Unary3RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rs(11:8), Rm(3:0)],
+//       safety: [Pc in {Rd,Rm,Rs} => UNPREDICTABLE]}
 class Unary3RegisterShiftedOpTesterCase18
     : public Unary3RegisterShiftedOpTester {
  public:
@@ -863,15 +987,21 @@ bool Unary3RegisterShiftedOpTesterCase18
 
 // Neutral case:
 // inst(24:20)=10001 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {'constraints': ,
-//     'rule': 'TST_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       rule: 'TST_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {constraints: ,
-//     rule: TST_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       rule: TST_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 class Binary3RegisterShiftedTestTester_Case0
     : public Binary3RegisterShiftedTestTesterCase0 {
  public:
@@ -883,15 +1013,21 @@ class Binary3RegisterShiftedTestTester_Case0
 
 // Neutral case:
 // inst(24:20)=10011 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {'constraints': ,
-//     'rule': 'TEQ_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       rule: 'TEQ_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {constraints: ,
-//     rule: TEQ_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       rule: TEQ_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 class Binary3RegisterShiftedTestTester_Case1
     : public Binary3RegisterShiftedTestTesterCase1 {
  public:
@@ -903,15 +1039,21 @@ class Binary3RegisterShiftedTestTester_Case1
 
 // Neutral case:
 // inst(24:20)=10101 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {'constraints': ,
-//     'rule': 'CMP_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       rule: 'CMP_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {constraints: ,
-//     rule: CMP_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       rule: CMP_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 class Binary3RegisterShiftedTestTester_Case2
     : public Binary3RegisterShiftedTestTesterCase2 {
  public:
@@ -923,15 +1065,21 @@ class Binary3RegisterShiftedTestTester_Case2
 
 // Neutral case:
 // inst(24:20)=10111 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {'constraints': ,
-//     'rule': 'CMN_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       rule: 'CMN_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest {constraints: ,
-//     rule: CMN_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       rule: CMN_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 class Binary3RegisterShiftedTestTester_Case3
     : public Binary3RegisterShiftedTestTesterCase3 {
  public:
@@ -943,15 +1091,22 @@ class Binary3RegisterShiftedTestTester_Case3
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'AND_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'AND_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0000x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: AND_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: AND_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case4
     : public Binary4RegisterShiftedOpTesterCase4 {
  public:
@@ -963,15 +1118,22 @@ class Binary4RegisterShiftedOpTester_Case4
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'EOR_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'EOR_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0001x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: EOR_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: EOR_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case5
     : public Binary4RegisterShiftedOpTesterCase5 {
  public:
@@ -983,15 +1145,22 @@ class Binary4RegisterShiftedOpTester_Case5
 
 // Neutral case:
 // inst(24:20)=0010x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'SUB_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'SUB_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0010x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: SUB_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: SUB_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case6
     : public Binary4RegisterShiftedOpTesterCase6 {
  public:
@@ -1003,15 +1172,22 @@ class Binary4RegisterShiftedOpTester_Case6
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'RSB_register_shfited_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'RSB_register_shfited_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0011x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: RSB_register_shfited_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: RSB_register_shfited_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case7
     : public Binary4RegisterShiftedOpTesterCase7 {
  public:
@@ -1023,15 +1199,22 @@ class Binary4RegisterShiftedOpTester_Case7
 
 // Neutral case:
 // inst(24:20)=0100x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'ADD_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'ADD_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0100x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: ADD_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: ADD_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case8
     : public Binary4RegisterShiftedOpTesterCase8 {
  public:
@@ -1043,15 +1226,22 @@ class Binary4RegisterShiftedOpTester_Case8
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'ADC_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'ADC_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0101x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: ADC_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: ADC_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case9
     : public Binary4RegisterShiftedOpTesterCase9 {
  public:
@@ -1063,15 +1253,22 @@ class Binary4RegisterShiftedOpTester_Case9
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'SBC_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'SBC_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0110x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: SBC_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: SBC_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case10
     : public Binary4RegisterShiftedOpTesterCase10 {
  public:
@@ -1083,15 +1280,22 @@ class Binary4RegisterShiftedOpTester_Case10
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'RSC_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'RSC_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0111x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: RSC_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: RSC_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case11
     : public Binary4RegisterShiftedOpTesterCase11 {
  public:
@@ -1103,15 +1307,22 @@ class Binary4RegisterShiftedOpTester_Case11
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'ORR_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'ORR_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1100x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: ORR_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: ORR_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case12
     : public Binary4RegisterShiftedOpTesterCase12 {
  public:
@@ -1123,15 +1334,21 @@ class Binary4RegisterShiftedOpTester_Case12
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {'constraints': ,
-//     'rule': 'LSL_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       rule: 'LSL_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {constraints: ,
-//     rule: LSL_register_A1,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       rule: LSL_register_A1,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpTester_Case13
     : public Binary3RegisterOpTesterCase13 {
  public:
@@ -1143,15 +1360,21 @@ class Binary3RegisterOpTester_Case13
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {'constraints': ,
-//     'rule': 'LSR_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       rule: 'LSR_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {constraints: ,
-//     rule: LSR_register_A1,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       rule: LSR_register_A1,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpTester_Case14
     : public Binary3RegisterOpTesterCase14 {
  public:
@@ -1163,15 +1386,21 @@ class Binary3RegisterOpTester_Case14
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {'constraints': ,
-//     'rule': 'ASR_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       rule: 'ASR_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {constraints: ,
-//     rule: ASR_register_A1,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       rule: ASR_register_A1,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpTester_Case15
     : public Binary3RegisterOpTesterCase15 {
  public:
@@ -1183,15 +1412,21 @@ class Binary3RegisterOpTester_Case15
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {'constraints': ,
-//     'rule': 'ROR_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       rule: 'ROR_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp {constraints: ,
-//     rule: ROR_register_A1,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       rule: ROR_register_A1,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpTester_Case16
     : public Binary3RegisterOpTesterCase16 {
  public:
@@ -1203,15 +1438,22 @@ class Binary3RegisterOpTester_Case16
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = Binary4RegisterShiftedOp {'constraints': ,
-//     'rule': 'BIC_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'BIC_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1110x
-//    = Binary4RegisterShiftedOp {constraints: ,
-//     rule: BIC_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: BIC_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 class Binary4RegisterShiftedOpTester_Case17
     : public Binary4RegisterShiftedOpTesterCase17 {
  public:
@@ -1223,15 +1465,21 @@ class Binary4RegisterShiftedOpTester_Case17
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary3RegisterShiftedOp {'constraints': ,
-//     'rule': 'MVN_register_shifted_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {baseline: 'Unary3RegisterShiftedOp',
+//       constraints: ,
+//       rule: 'MVN_register_shifted_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary3RegisterShiftedOp {constraints: ,
-//     rule: MVN_register_shifted_register_A1,
-//     safety: [Pc in {Rd,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rs: Rs(11:8),
+//       baseline: Unary3RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rs(11:8), Rm(3:0)],
+//       rule: MVN_register_shifted_register_A1,
+//       safety: [Pc in {Rd,Rm,Rs} => UNPREDICTABLE]}
 class Unary3RegisterShiftedOpTester_Case18
     : public Unary3RegisterShiftedOpTesterCase18 {
  public:
@@ -1252,17 +1500,25 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(24:20)=10001 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest => DontCareInstRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc00010001nnnn0000ssss0tt1mmmm',
-//     'rule': 'TST_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {actual: 'DontCareInstRnRsRmNotPc',
+//       baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       pattern: 'cccc00010001nnnn0000ssss0tt1mmmm',
+//       rule: 'TST_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest => DontCareInstRnRsRmNotPc {constraints: ,
-//     pattern: cccc00010001nnnn0000ssss0tt1mmmm,
-//     rule: TST_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: DontCareInstRnRsRmNotPc,
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       pattern: cccc00010001nnnn0000ssss0tt1mmmm,
+//       rule: TST_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterShiftedTestTester_Case0_TestCase0) {
   Binary3RegisterShiftedTestTester_Case0 baseline_tester;
@@ -1273,17 +1529,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=10011 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest => DontCareInstRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc00010011nnnn0000ssss0tt1mmmm',
-//     'rule': 'TEQ_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {actual: 'DontCareInstRnRsRmNotPc',
+//       baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       pattern: 'cccc00010011nnnn0000ssss0tt1mmmm',
+//       rule: 'TEQ_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest => DontCareInstRnRsRmNotPc {constraints: ,
-//     pattern: cccc00010011nnnn0000ssss0tt1mmmm,
-//     rule: TEQ_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: DontCareInstRnRsRmNotPc,
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       pattern: cccc00010011nnnn0000ssss0tt1mmmm,
+//       rule: TEQ_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterShiftedTestTester_Case1_TestCase1) {
   Binary3RegisterShiftedTestTester_Case1 baseline_tester;
@@ -1294,17 +1558,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=10101 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest => DontCareInstRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc00010101nnnn0000ssss0tt1mmmm',
-//     'rule': 'CMP_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {actual: 'DontCareInstRnRsRmNotPc',
+//       baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       pattern: 'cccc00010101nnnn0000ssss0tt1mmmm',
+//       rule: 'CMP_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest => DontCareInstRnRsRmNotPc {constraints: ,
-//     pattern: cccc00010101nnnn0000ssss0tt1mmmm,
-//     rule: CMP_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: DontCareInstRnRsRmNotPc,
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       pattern: cccc00010101nnnn0000ssss0tt1mmmm,
+//       rule: CMP_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterShiftedTestTester_Case2_TestCase2) {
   Binary3RegisterShiftedTestTester_Case2 baseline_tester;
@@ -1315,17 +1587,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=10111 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest => DontCareInstRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc00010111nnnn0000ssss0tt1mmmm',
-//     'rule': 'CMN_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {actual: 'DontCareInstRnRsRmNotPc',
+//       baseline: 'Binary3RegisterShiftedTest',
+//       constraints: ,
+//       pattern: 'cccc00010111nnnn0000ssss0tt1mmmm',
+//       rule: 'CMN_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = Binary3RegisterShiftedTest => DontCareInstRnRsRmNotPc {constraints: ,
-//     pattern: cccc00010111nnnn0000ssss0tt1mmmm,
-//     rule: CMN_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: DontCareInstRnRsRmNotPc,
+//       baseline: Binary3RegisterShiftedTest,
+//       constraints: ,
+//       fields: [Rn(19:16), Rs(11:8), Rm(3:0)],
+//       pattern: cccc00010111nnnn0000ssss0tt1mmmm,
+//       rule: CMN_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rm,Rs} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterShiftedTestTester_Case3_TestCase3) {
   Binary3RegisterShiftedTestTester_Case3 baseline_tester;
@@ -1336,17 +1616,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0000000snnnnddddssss0tt1mmmm',
-//     'rule': 'AND_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000000snnnnddddssss0tt1mmmm',
+//       rule: 'AND_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0000x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0000000snnnnddddssss0tt1mmmm,
-//     rule: AND_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0000000snnnnddddssss0tt1mmmm,
+//       rule: AND_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case4_TestCase4) {
   Binary4RegisterShiftedOpTester_Case4 baseline_tester;
@@ -1357,17 +1646,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0000001snnnnddddssss0tt1mmmm',
-//     'rule': 'EOR_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000001snnnnddddssss0tt1mmmm',
+//       rule: 'EOR_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0001x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0000001snnnnddddssss0tt1mmmm,
-//     rule: EOR_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0000001snnnnddddssss0tt1mmmm,
+//       rule: EOR_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case5_TestCase5) {
   Binary4RegisterShiftedOpTester_Case5 baseline_tester;
@@ -1378,17 +1676,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0010x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0000010snnnnddddssss0tt1mmmm',
-//     'rule': 'SUB_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000010snnnnddddssss0tt1mmmm',
+//       rule: 'SUB_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0010x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0000010snnnnddddssss0tt1mmmm,
-//     rule: SUB_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0000010snnnnddddssss0tt1mmmm,
+//       rule: SUB_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case6_TestCase6) {
   Binary4RegisterShiftedOpTester_Case6 baseline_tester;
@@ -1399,17 +1706,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0000011snnnnddddssss0tt1mmmm',
-//     'rule': 'RSB_register_shfited_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000011snnnnddddssss0tt1mmmm',
+//       rule: 'RSB_register_shfited_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0011x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0000011snnnnddddssss0tt1mmmm,
-//     rule: RSB_register_shfited_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0000011snnnnddddssss0tt1mmmm,
+//       rule: RSB_register_shfited_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case7_TestCase7) {
   Binary4RegisterShiftedOpTester_Case7 baseline_tester;
@@ -1420,17 +1736,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0100x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0000100snnnnddddssss0tt1mmmm',
-//     'rule': 'ADD_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000100snnnnddddssss0tt1mmmm',
+//       rule: 'ADD_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0100x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0000100snnnnddddssss0tt1mmmm,
-//     rule: ADD_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0000100snnnnddddssss0tt1mmmm,
+//       rule: ADD_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case8_TestCase8) {
   Binary4RegisterShiftedOpTester_Case8 baseline_tester;
@@ -1441,17 +1766,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0000101snnnnddddssss0tt1mmmm',
-//     'rule': 'ADC_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000101snnnnddddssss0tt1mmmm',
+//       rule: 'ADC_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0101x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0000101snnnnddddssss0tt1mmmm,
-//     rule: ADC_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0000101snnnnddddssss0tt1mmmm,
+//       rule: ADC_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case9_TestCase9) {
   Binary4RegisterShiftedOpTester_Case9 baseline_tester;
@@ -1462,17 +1796,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0000110snnnnddddssss0tt1mmmm',
-//     'rule': 'SBC_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000110snnnnddddssss0tt1mmmm',
+//       rule: 'SBC_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0110x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0000110snnnnddddssss0tt1mmmm,
-//     rule: SBC_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0000110snnnnddddssss0tt1mmmm,
+//       rule: SBC_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case10_TestCase10) {
   Binary4RegisterShiftedOpTester_Case10 baseline_tester;
@@ -1483,17 +1826,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0000111snnnnddddssss0tt1mmmm',
-//     'rule': 'RSC_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0000111snnnnddddssss0tt1mmmm',
+//       rule: 'RSC_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=0111x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0000111snnnnddddssss0tt1mmmm,
-//     rule: RSC_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0000111snnnnddddssss0tt1mmmm,
+//       rule: RSC_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case11_TestCase11) {
   Binary4RegisterShiftedOpTester_Case11 baseline_tester;
@@ -1504,17 +1856,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0001100snnnnddddssss0tt1mmmm',
-//     'rule': 'ORR_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001100snnnnddddssss0tt1mmmm',
+//       rule: 'ORR_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1100x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0001100snnnnddddssss0tt1mmmm,
-//     rule: ORR_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0001100snnnnddddssss0tt1mmmm,
+//       rule: ORR_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case12_TestCase12) {
   Binary4RegisterShiftedOpTester_Case12 baseline_tester;
@@ -1525,17 +1886,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp => Defs12To15RdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc0001101s0000ddddmmmm0001nnnn',
-//     'rule': 'LSL_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRmRnNotPc',
+//       baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc0001101s0000ddddmmmm0001nnnn',
+//       rule: 'LSL_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp => Defs12To15RdRmRnNotPc {constraints: ,
-//     pattern: cccc0001101s0000ddddmmmm0001nnnn,
-//     rule: LSL_register_A1,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       actual: Defs12To15RdRmRnNotPc,
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       pattern: cccc0001101s0000ddddmmmm0001nnnn,
+//       rule: LSL_register_A1,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpTester_Case13_TestCase13) {
   Binary3RegisterOpTester_Case13 baseline_tester;
@@ -1546,17 +1915,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp => Defs12To15RdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc0001101s0000ddddmmmm0011nnnn',
-//     'rule': 'LSR_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRmRnNotPc',
+//       baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc0001101s0000ddddmmmm0011nnnn',
+//       rule: 'LSR_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp => Defs12To15RdRmRnNotPc {constraints: ,
-//     pattern: cccc0001101s0000ddddmmmm0011nnnn,
-//     rule: LSR_register_A1,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       actual: Defs12To15RdRmRnNotPc,
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       pattern: cccc0001101s0000ddddmmmm0011nnnn,
+//       rule: LSR_register_A1,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpTester_Case14_TestCase14) {
   Binary3RegisterOpTester_Case14 baseline_tester;
@@ -1567,17 +1944,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp => Defs12To15RdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc0001101s0000ddddmmmm0101nnnn',
-//     'rule': 'ASR_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRmRnNotPc',
+//       baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc0001101s0000ddddmmmm0101nnnn',
+//       rule: 'ASR_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp => Defs12To15RdRmRnNotPc {constraints: ,
-//     pattern: cccc0001101s0000ddddmmmm0101nnnn,
-//     rule: ASR_register_A1,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       actual: Defs12To15RdRmRnNotPc,
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       pattern: cccc0001101s0000ddddmmmm0101nnnn,
+//       rule: ASR_register_A1,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpTester_Case15_TestCase15) {
   Binary3RegisterOpTester_Case15 baseline_tester;
@@ -1588,17 +1973,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp => Defs12To15RdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc0001101s0000ddddmmmm0111nnnn',
-//     'rule': 'ROR_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRmRnNotPc',
+//       baseline: 'Binary3RegisterOp',
+//       constraints: ,
+//       pattern: 'cccc0001101s0000ddddmmmm0111nnnn',
+//       rule: 'ROR_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Binary3RegisterOp => Defs12To15RdRmRnNotPc {constraints: ,
-//     pattern: cccc0001101s0000ddddmmmm0111nnnn,
-//     rule: ROR_register_A1,
-//     safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(11:8),
+//       Rn: Rn(3:0),
+//       actual: Defs12To15RdRmRnNotPc,
+//       baseline: Binary3RegisterOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rm(11:8), Rn(3:0)],
+//       pattern: cccc0001101s0000ddddmmmm0111nnnn,
+//       rule: ROR_register_A1,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpTester_Case16_TestCase16) {
   Binary3RegisterOpTester_Case16 baseline_tester;
@@ -1609,17 +2002,26 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {'constraints': ,
-//     'pattern': 'cccc0001110snnnnddddssss0tt1mmmm',
-//     'rule': 'BIC_register_shifted_register_A1',
-//     'safety': ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRnRsRmNotPc',
+//       baseline: 'Binary4RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001110snnnnddddssss0tt1mmmm',
+//       rule: 'BIC_register_shifted_register_A1',
+//       safety: ['15 == inst(19:16) || 15 == inst(15:12) || 15 == inst(11:8) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1110x
-//    = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc {constraints: ,
-//     pattern: cccc0001110snnnnddddssss0tt1mmmm,
-//     rule: BIC_register_shifted_register_A1,
-//     safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRnRsRmNotPc,
+//       baseline: Binary4RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rn(19:16), Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0001110snnnnddddssss0tt1mmmm,
+//       rule: BIC_register_shifted_register_A1,
+//       safety: [Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterShiftedOpTester_Case17_TestCase17) {
   Binary4RegisterShiftedOpTester_Case17 baseline_tester;
@@ -1630,17 +2032,25 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary3RegisterShiftedOp => Defs12To15RdRmRnNotPc {'constraints': ,
-//     'pattern': 'cccc0001111s0000ddddssss0tt1mmmm',
-//     'rule': 'MVN_register_shifted_register_A1',
-//     'safety': ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//    = {actual: 'Defs12To15RdRmRnNotPc',
+//       baseline: 'Unary3RegisterShiftedOp',
+//       constraints: ,
+//       pattern: 'cccc0001111s0000ddddssss0tt1mmmm',
+//       rule: 'MVN_register_shifted_register_A1',
+//       safety: ['15 == inst(15:12) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = Unary3RegisterShiftedOp => Defs12To15RdRmRnNotPc {constraints: ,
-//     pattern: cccc0001111s0000ddddssss0tt1mmmm,
-//     rule: MVN_register_shifted_register_A1,
-//     safety: [Pc in {Rd,Rm,Rs} => UNPREDICTABLE]}
+//    = {Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rs: Rs(11:8),
+//       actual: Defs12To15RdRmRnNotPc,
+//       baseline: Unary3RegisterShiftedOp,
+//       constraints: ,
+//       fields: [Rd(15:12), Rs(11:8), Rm(3:0)],
+//       pattern: cccc0001111s0000ddddssss0tt1mmmm,
+//       rule: MVN_register_shifted_register_A1,
+//       safety: [Pc in {Rd,Rm,Rs} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Unary3RegisterShiftedOpTester_Case18_TestCase18) {
   Unary3RegisterShiftedOpTester_Case18 baseline_tester;

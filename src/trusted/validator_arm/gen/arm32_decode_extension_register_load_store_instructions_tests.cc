@@ -28,11 +28,13 @@ namespace nacl_arm_test {
 
 // Neutral case:
 // inst(24:20)=01x00
-//    = StoreVectorRegisterList {'constraints': }
+//    = {baseline: 'StoreVectorRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // opcode(24:20)=01x00
-//    = StoreVectorRegisterList {constraints: }
+//    = {baseline: StoreVectorRegisterList,
+//       constraints: }
 class StoreVectorRegisterListTesterCase0
     : public StoreVectorRegisterListTester {
  public:
@@ -58,11 +60,13 @@ bool StoreVectorRegisterListTesterCase0
 
 // Neutral case:
 // inst(24:20)=01x01
-//    = LoadVectorRegisterList {'constraints': }
+//    = {baseline: 'LoadVectorRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // opcode(24:20)=01x01
-//    = LoadVectorRegisterList {constraints: }
+//    = {baseline: LoadVectorRegisterList,
+//       constraints: }
 class LoadStoreVectorRegisterListTesterCase1
     : public LoadStoreVectorRegisterListTester {
  public:
@@ -88,11 +92,13 @@ bool LoadStoreVectorRegisterListTesterCase1
 
 // Neutral case:
 // inst(24:20)=01x10
-//    = StoreVectorRegisterList {'constraints': }
+//    = {baseline: 'StoreVectorRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // opcode(24:20)=01x10
-//    = StoreVectorRegisterList {constraints: }
+//    = {baseline: StoreVectorRegisterList,
+//       constraints: }
 class StoreVectorRegisterListTesterCase2
     : public StoreVectorRegisterListTester {
  public:
@@ -118,13 +124,15 @@ bool StoreVectorRegisterListTesterCase2
 
 // Neutral case:
 // inst(24:20)=01x11 & inst(19:16)=~1101
-//    = LoadVectorRegisterList {'constraints': ,
-//     'safety': ["'NotRnIsSp'"]}
+//    = {baseline: 'LoadVectorRegisterList',
+//       constraints: ,
+//       safety: ["'NotRnIsSp'"]}
 //
 // Representaive case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101
-//    = LoadVectorRegisterList {constraints: ,
-//     safety: ['NotRnIsSp']}
+//    = {baseline: LoadVectorRegisterList,
+//       constraints: ,
+//       safety: ['NotRnIsSp']}
 class LoadStoreVectorRegisterListTesterCase3
     : public LoadStoreVectorRegisterListTesterNotRnIsSp {
  public:
@@ -151,11 +159,13 @@ bool LoadStoreVectorRegisterListTesterCase3
 
 // Neutral case:
 // inst(24:20)=01x11 & inst(19:16)=1101
-//    = LoadVectorRegisterList {'constraints': }
+//    = {baseline: 'LoadVectorRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101
-//    = LoadVectorRegisterList {constraints: }
+//    = {baseline: LoadVectorRegisterList,
+//       constraints: }
 class LoadStoreVectorRegisterListTesterCase4
     : public LoadStoreVectorRegisterListTester {
  public:
@@ -182,13 +192,15 @@ bool LoadStoreVectorRegisterListTesterCase4
 
 // Neutral case:
 // inst(24:20)=10x10 & inst(19:16)=~1101
-//    = StoreVectorRegisterList {'constraints': ,
-//     'safety': ["'NotRnIsSp'"]}
+//    = {baseline: 'StoreVectorRegisterList',
+//       constraints: ,
+//       safety: ["'NotRnIsSp'"]}
 //
 // Representaive case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101
-//    = StoreVectorRegisterList {constraints: ,
-//     safety: ['NotRnIsSp']}
+//    = {baseline: StoreVectorRegisterList,
+//       constraints: ,
+//       safety: ['NotRnIsSp']}
 class StoreVectorRegisterListTesterCase5
     : public StoreVectorRegisterListTesterNotRnIsSp {
  public:
@@ -215,11 +227,13 @@ bool StoreVectorRegisterListTesterCase5
 
 // Neutral case:
 // inst(24:20)=10x10 & inst(19:16)=1101
-//    = StoreVectorRegisterList {'constraints': }
+//    = {baseline: 'StoreVectorRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101
-//    = StoreVectorRegisterList {constraints: }
+//    = {baseline: StoreVectorRegisterList,
+//       constraints: }
 class StoreVectorRegisterListTesterCase6
     : public StoreVectorRegisterListTester {
  public:
@@ -246,11 +260,13 @@ bool StoreVectorRegisterListTesterCase6
 
 // Neutral case:
 // inst(24:20)=10x11
-//    = LoadVectorRegisterList {'constraints': }
+//    = {baseline: 'LoadVectorRegisterList',
+//       constraints: }
 //
 // Representaive case:
 // opcode(24:20)=10x11
-//    = LoadVectorRegisterList {constraints: }
+//    = {baseline: LoadVectorRegisterList,
+//       constraints: }
 class LoadStoreVectorRegisterListTesterCase7
     : public LoadStoreVectorRegisterListTester {
  public:
@@ -276,11 +292,13 @@ bool LoadStoreVectorRegisterListTesterCase7
 
 // Neutral case:
 // inst(24:20)=1xx00
-//    = StoreVectorRegister {'constraints': }
+//    = {baseline: 'StoreVectorRegister',
+//       constraints: }
 //
 // Representaive case:
 // opcode(24:20)=1xx00
-//    = StoreVectorRegister {constraints: }
+//    = {baseline: StoreVectorRegister,
+//       constraints: }
 class StoreVectorRegisterTesterCase8
     : public StoreVectorRegisterTester {
  public:
@@ -306,11 +324,13 @@ bool StoreVectorRegisterTesterCase8
 
 // Neutral case:
 // inst(24:20)=1xx01
-//    = LoadVectorRegister {'constraints': }
+//    = {baseline: 'LoadVectorRegister',
+//       constraints: }
 //
 // Representaive case:
 // opcode(24:20)=1xx01
-//    = LoadVectorRegister {constraints: }
+//    = {baseline: LoadVectorRegister,
+//       constraints: }
 class LoadStoreVectorOpTesterCase9
     : public LoadStoreVectorOpTester {
  public:
@@ -341,13 +361,15 @@ bool LoadStoreVectorOpTesterCase9
 
 // Neutral case:
 // inst(24:20)=01x00
-//    = StoreVectorRegisterList {'constraints': ,
-//     'rule': 'Vstm_Rule_399_A1_A2_P784'}
+//    = {baseline: 'StoreVectorRegisterList',
+//       constraints: ,
+//       rule: 'Vstm_Rule_399_A1_A2_P784'}
 //
 // Representative case:
 // opcode(24:20)=01x00
-//    = StoreVectorRegisterList {constraints: ,
-//     rule: Vstm_Rule_399_A1_A2_P784}
+//    = {baseline: StoreVectorRegisterList,
+//       constraints: ,
+//       rule: Vstm_Rule_399_A1_A2_P784}
 class StoreVectorRegisterListTester_Case0
     : public StoreVectorRegisterListTesterCase0 {
  public:
@@ -359,13 +381,15 @@ class StoreVectorRegisterListTester_Case0
 
 // Neutral case:
 // inst(24:20)=01x01
-//    = LoadVectorRegisterList {'constraints': ,
-//     'rule': 'Vldm_Rule_319_A1_A2_P626'}
+//    = {baseline: 'LoadVectorRegisterList',
+//       constraints: ,
+//       rule: 'Vldm_Rule_319_A1_A2_P626'}
 //
 // Representative case:
 // opcode(24:20)=01x01
-//    = LoadVectorRegisterList {constraints: ,
-//     rule: Vldm_Rule_319_A1_A2_P626}
+//    = {baseline: LoadVectorRegisterList,
+//       constraints: ,
+//       rule: Vldm_Rule_319_A1_A2_P626}
 class LoadVectorRegisterListTester_Case1
     : public LoadStoreVectorRegisterListTesterCase1 {
  public:
@@ -377,13 +401,15 @@ class LoadVectorRegisterListTester_Case1
 
 // Neutral case:
 // inst(24:20)=01x10
-//    = StoreVectorRegisterList {'constraints': ,
-//     'rule': 'Vstm_Rule_399_A1_A2_P784'}
+//    = {baseline: 'StoreVectorRegisterList',
+//       constraints: ,
+//       rule: 'Vstm_Rule_399_A1_A2_P784'}
 //
 // Representative case:
 // opcode(24:20)=01x10
-//    = StoreVectorRegisterList {constraints: ,
-//     rule: Vstm_Rule_399_A1_A2_P784}
+//    = {baseline: StoreVectorRegisterList,
+//       constraints: ,
+//       rule: Vstm_Rule_399_A1_A2_P784}
 class StoreVectorRegisterListTester_Case2
     : public StoreVectorRegisterListTesterCase2 {
  public:
@@ -395,15 +421,17 @@ class StoreVectorRegisterListTester_Case2
 
 // Neutral case:
 // inst(24:20)=01x11 & inst(19:16)=~1101
-//    = LoadVectorRegisterList {'constraints': ,
-//     'rule': 'Vldm_Rule_319_A1_A2_P626',
-//     'safety': ["'NotRnIsSp'"]}
+//    = {baseline: 'LoadVectorRegisterList',
+//       constraints: ,
+//       rule: 'Vldm_Rule_319_A1_A2_P626',
+//       safety: ["'NotRnIsSp'"]}
 //
 // Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101
-//    = LoadVectorRegisterList {constraints: ,
-//     rule: Vldm_Rule_319_A1_A2_P626,
-//     safety: ['NotRnIsSp']}
+//    = {baseline: LoadVectorRegisterList,
+//       constraints: ,
+//       rule: Vldm_Rule_319_A1_A2_P626,
+//       safety: ['NotRnIsSp']}
 class LoadVectorRegisterListTester_Case3
     : public LoadStoreVectorRegisterListTesterCase3 {
  public:
@@ -415,13 +443,15 @@ class LoadVectorRegisterListTester_Case3
 
 // Neutral case:
 // inst(24:20)=01x11 & inst(19:16)=1101
-//    = LoadVectorRegisterList {'constraints': ,
-//     'rule': 'Vpop_Rule_354_A1_A2_P694'}
+//    = {baseline: 'LoadVectorRegisterList',
+//       constraints: ,
+//       rule: 'Vpop_Rule_354_A1_A2_P694'}
 //
 // Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101
-//    = LoadVectorRegisterList {constraints: ,
-//     rule: Vpop_Rule_354_A1_A2_P694}
+//    = {baseline: LoadVectorRegisterList,
+//       constraints: ,
+//       rule: Vpop_Rule_354_A1_A2_P694}
 class LoadVectorRegisterListTester_Case4
     : public LoadStoreVectorRegisterListTesterCase4 {
  public:
@@ -433,15 +463,17 @@ class LoadVectorRegisterListTester_Case4
 
 // Neutral case:
 // inst(24:20)=10x10 & inst(19:16)=~1101
-//    = StoreVectorRegisterList {'constraints': ,
-//     'rule': 'Vstm_Rule_399_A1_A2_P784',
-//     'safety': ["'NotRnIsSp'"]}
+//    = {baseline: 'StoreVectorRegisterList',
+//       constraints: ,
+//       rule: 'Vstm_Rule_399_A1_A2_P784',
+//       safety: ["'NotRnIsSp'"]}
 //
 // Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101
-//    = StoreVectorRegisterList {constraints: ,
-//     rule: Vstm_Rule_399_A1_A2_P784,
-//     safety: ['NotRnIsSp']}
+//    = {baseline: StoreVectorRegisterList,
+//       constraints: ,
+//       rule: Vstm_Rule_399_A1_A2_P784,
+//       safety: ['NotRnIsSp']}
 class StoreVectorRegisterListTester_Case5
     : public StoreVectorRegisterListTesterCase5 {
  public:
@@ -453,13 +485,15 @@ class StoreVectorRegisterListTester_Case5
 
 // Neutral case:
 // inst(24:20)=10x10 & inst(19:16)=1101
-//    = StoreVectorRegisterList {'constraints': ,
-//     'rule': 'Vpush_355_A1_A2_P696'}
+//    = {baseline: 'StoreVectorRegisterList',
+//       constraints: ,
+//       rule: 'Vpush_355_A1_A2_P696'}
 //
 // Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101
-//    = StoreVectorRegisterList {constraints: ,
-//     rule: Vpush_355_A1_A2_P696}
+//    = {baseline: StoreVectorRegisterList,
+//       constraints: ,
+//       rule: Vpush_355_A1_A2_P696}
 class StoreVectorRegisterListTester_Case6
     : public StoreVectorRegisterListTesterCase6 {
  public:
@@ -471,13 +505,15 @@ class StoreVectorRegisterListTester_Case6
 
 // Neutral case:
 // inst(24:20)=10x11
-//    = LoadVectorRegisterList {'constraints': ,
-//     'rule': 'Vldm_Rule_318_A1_A2_P626'}
+//    = {baseline: 'LoadVectorRegisterList',
+//       constraints: ,
+//       rule: 'Vldm_Rule_318_A1_A2_P626'}
 //
 // Representative case:
 // opcode(24:20)=10x11
-//    = LoadVectorRegisterList {constraints: ,
-//     rule: Vldm_Rule_318_A1_A2_P626}
+//    = {baseline: LoadVectorRegisterList,
+//       constraints: ,
+//       rule: Vldm_Rule_318_A1_A2_P626}
 class LoadVectorRegisterListTester_Case7
     : public LoadStoreVectorRegisterListTesterCase7 {
  public:
@@ -489,13 +525,15 @@ class LoadVectorRegisterListTester_Case7
 
 // Neutral case:
 // inst(24:20)=1xx00
-//    = StoreVectorRegister {'constraints': ,
-//     'rule': 'Vstr_Rule_400_A1_A2_P786'}
+//    = {baseline: 'StoreVectorRegister',
+//       constraints: ,
+//       rule: 'Vstr_Rule_400_A1_A2_P786'}
 //
 // Representative case:
 // opcode(24:20)=1xx00
-//    = StoreVectorRegister {constraints: ,
-//     rule: Vstr_Rule_400_A1_A2_P786}
+//    = {baseline: StoreVectorRegister,
+//       constraints: ,
+//       rule: Vstr_Rule_400_A1_A2_P786}
 class StoreVectorRegisterTester_Case8
     : public StoreVectorRegisterTesterCase8 {
  public:
@@ -507,13 +545,15 @@ class StoreVectorRegisterTester_Case8
 
 // Neutral case:
 // inst(24:20)=1xx01
-//    = LoadVectorRegister {'constraints': ,
-//     'rule': 'Vldr_Rule_320_A1_A2_P628'}
+//    = {baseline: 'LoadVectorRegister',
+//       constraints: ,
+//       rule: 'Vldr_Rule_320_A1_A2_P628'}
 //
 // Representative case:
 // opcode(24:20)=1xx01
-//    = LoadVectorRegister {constraints: ,
-//     rule: Vldr_Rule_320_A1_A2_P628}
+//    = {baseline: LoadVectorRegister,
+//       constraints: ,
+//       rule: Vldr_Rule_320_A1_A2_P628}
 class LoadVectorRegisterTester_Case9
     : public LoadStoreVectorOpTesterCase9 {
  public:
@@ -534,15 +574,19 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(24:20)=01x00
-//    = StoreVectorRegisterList => StoreVectorRegisterList {'constraints': ,
-//     'pattern': 'cccc11001d00nnnndddd101xiiiiiiii',
-//     'rule': 'Vstm_Rule_399_A1_A2_P784'}
+//    = {actual: 'StoreVectorRegisterList',
+//       baseline: 'StoreVectorRegisterList',
+//       constraints: ,
+//       pattern: 'cccc11001d00nnnndddd101xiiiiiiii',
+//       rule: 'Vstm_Rule_399_A1_A2_P784'}
 //
 // Representaive case:
 // opcode(24:20)=01x00
-//    = StoreVectorRegisterList => StoreVectorRegisterList {constraints: ,
-//     pattern: cccc11001d00nnnndddd101xiiiiiiii,
-//     rule: Vstm_Rule_399_A1_A2_P784}
+//    = {actual: StoreVectorRegisterList,
+//       baseline: StoreVectorRegisterList,
+//       constraints: ,
+//       pattern: cccc11001d00nnnndddd101xiiiiiiii,
+//       rule: Vstm_Rule_399_A1_A2_P784}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case0_TestCase0) {
   StoreVectorRegisterListTester_Case0 tester;
@@ -551,15 +595,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=01x01
-//    = LoadVectorRegisterList => LoadVectorRegisterList {'constraints': ,
-//     'pattern': 'cccc11001d01nnnndddd101xiiiiiiii',
-//     'rule': 'Vldm_Rule_319_A1_A2_P626'}
+//    = {actual: 'LoadVectorRegisterList',
+//       baseline: 'LoadVectorRegisterList',
+//       constraints: ,
+//       pattern: 'cccc11001d01nnnndddd101xiiiiiiii',
+//       rule: 'Vldm_Rule_319_A1_A2_P626'}
 //
 // Representaive case:
 // opcode(24:20)=01x01
-//    = LoadVectorRegisterList => LoadVectorRegisterList {constraints: ,
-//     pattern: cccc11001d01nnnndddd101xiiiiiiii,
-//     rule: Vldm_Rule_319_A1_A2_P626}
+//    = {actual: LoadVectorRegisterList,
+//       baseline: LoadVectorRegisterList,
+//       constraints: ,
+//       pattern: cccc11001d01nnnndddd101xiiiiiiii,
+//       rule: Vldm_Rule_319_A1_A2_P626}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case1_TestCase1) {
   LoadVectorRegisterListTester_Case1 tester;
@@ -568,15 +616,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=01x10
-//    = StoreVectorRegisterList => StoreVectorRegisterList {'constraints': ,
-//     'pattern': 'cccc11001d10nnnndddd101xiiiiiiii',
-//     'rule': 'Vstm_Rule_399_A1_A2_P784'}
+//    = {actual: 'StoreVectorRegisterList',
+//       baseline: 'StoreVectorRegisterList',
+//       constraints: ,
+//       pattern: 'cccc11001d10nnnndddd101xiiiiiiii',
+//       rule: 'Vstm_Rule_399_A1_A2_P784'}
 //
 // Representaive case:
 // opcode(24:20)=01x10
-//    = StoreVectorRegisterList => StoreVectorRegisterList {constraints: ,
-//     pattern: cccc11001d10nnnndddd101xiiiiiiii,
-//     rule: Vstm_Rule_399_A1_A2_P784}
+//    = {actual: StoreVectorRegisterList,
+//       baseline: StoreVectorRegisterList,
+//       constraints: ,
+//       pattern: cccc11001d10nnnndddd101xiiiiiiii,
+//       rule: Vstm_Rule_399_A1_A2_P784}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case2_TestCase2) {
   StoreVectorRegisterListTester_Case2 tester;
@@ -585,17 +637,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=01x11 & inst(19:16)=~1101
-//    = LoadVectorRegisterList => LoadVectorRegisterList {'constraints': ,
-//     'pattern': 'cccc11001d11nnnndddd101xiiiiiiii',
-//     'rule': 'Vldm_Rule_319_A1_A2_P626',
-//     'safety': ["'NotRnIsSp'"]}
+//    = {actual: 'LoadVectorRegisterList',
+//       baseline: 'LoadVectorRegisterList',
+//       constraints: ,
+//       pattern: 'cccc11001d11nnnndddd101xiiiiiiii',
+//       rule: 'Vldm_Rule_319_A1_A2_P626',
+//       safety: ["'NotRnIsSp'"]}
 //
 // Representaive case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101
-//    = LoadVectorRegisterList => LoadVectorRegisterList {constraints: ,
-//     pattern: cccc11001d11nnnndddd101xiiiiiiii,
-//     rule: Vldm_Rule_319_A1_A2_P626,
-//     safety: ['NotRnIsSp']}
+//    = {actual: LoadVectorRegisterList,
+//       baseline: LoadVectorRegisterList,
+//       constraints: ,
+//       pattern: cccc11001d11nnnndddd101xiiiiiiii,
+//       rule: Vldm_Rule_319_A1_A2_P626,
+//       safety: ['NotRnIsSp']}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case3_TestCase3) {
   LoadVectorRegisterListTester_Case3 tester;
@@ -604,15 +660,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=01x11 & inst(19:16)=1101
-//    = LoadVectorRegisterList => LoadVectorRegisterList {'constraints': ,
-//     'pattern': 'cccc11001d111101dddd101xiiiiiiii',
-//     'rule': 'Vpop_Rule_354_A1_A2_P694'}
+//    = {actual: 'LoadVectorRegisterList',
+//       baseline: 'LoadVectorRegisterList',
+//       constraints: ,
+//       pattern: 'cccc11001d111101dddd101xiiiiiiii',
+//       rule: 'Vpop_Rule_354_A1_A2_P694'}
 //
 // Representaive case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101
-//    = LoadVectorRegisterList => LoadVectorRegisterList {constraints: ,
-//     pattern: cccc11001d111101dddd101xiiiiiiii,
-//     rule: Vpop_Rule_354_A1_A2_P694}
+//    = {actual: LoadVectorRegisterList,
+//       baseline: LoadVectorRegisterList,
+//       constraints: ,
+//       pattern: cccc11001d111101dddd101xiiiiiiii,
+//       rule: Vpop_Rule_354_A1_A2_P694}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case4_TestCase4) {
   LoadVectorRegisterListTester_Case4 tester;
@@ -621,17 +681,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=10x10 & inst(19:16)=~1101
-//    = StoreVectorRegisterList => StoreVectorRegisterList {'constraints': ,
-//     'pattern': 'cccc11010d10nnnndddd101xiiiiiiii',
-//     'rule': 'Vstm_Rule_399_A1_A2_P784',
-//     'safety': ["'NotRnIsSp'"]}
+//    = {actual: 'StoreVectorRegisterList',
+//       baseline: 'StoreVectorRegisterList',
+//       constraints: ,
+//       pattern: 'cccc11010d10nnnndddd101xiiiiiiii',
+//       rule: 'Vstm_Rule_399_A1_A2_P784',
+//       safety: ["'NotRnIsSp'"]}
 //
 // Representaive case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101
-//    = StoreVectorRegisterList => StoreVectorRegisterList {constraints: ,
-//     pattern: cccc11010d10nnnndddd101xiiiiiiii,
-//     rule: Vstm_Rule_399_A1_A2_P784,
-//     safety: ['NotRnIsSp']}
+//    = {actual: StoreVectorRegisterList,
+//       baseline: StoreVectorRegisterList,
+//       constraints: ,
+//       pattern: cccc11010d10nnnndddd101xiiiiiiii,
+//       rule: Vstm_Rule_399_A1_A2_P784,
+//       safety: ['NotRnIsSp']}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case5_TestCase5) {
   StoreVectorRegisterListTester_Case5 tester;
@@ -640,15 +704,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=10x10 & inst(19:16)=1101
-//    = StoreVectorRegisterList => StoreVectorRegisterList {'constraints': ,
-//     'pattern': 'cccc11010d101101dddd101xiiiiiiii',
-//     'rule': 'Vpush_355_A1_A2_P696'}
+//    = {actual: 'StoreVectorRegisterList',
+//       baseline: 'StoreVectorRegisterList',
+//       constraints: ,
+//       pattern: 'cccc11010d101101dddd101xiiiiiiii',
+//       rule: 'Vpush_355_A1_A2_P696'}
 //
 // Representaive case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101
-//    = StoreVectorRegisterList => StoreVectorRegisterList {constraints: ,
-//     pattern: cccc11010d101101dddd101xiiiiiiii,
-//     rule: Vpush_355_A1_A2_P696}
+//    = {actual: StoreVectorRegisterList,
+//       baseline: StoreVectorRegisterList,
+//       constraints: ,
+//       pattern: cccc11010d101101dddd101xiiiiiiii,
+//       rule: Vpush_355_A1_A2_P696}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case6_TestCase6) {
   StoreVectorRegisterListTester_Case6 tester;
@@ -657,15 +725,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=10x11
-//    = LoadVectorRegisterList => LoadVectorRegisterList {'constraints': ,
-//     'pattern': 'cccc11010d11nnnndddd101xiiiiiiii',
-//     'rule': 'Vldm_Rule_318_A1_A2_P626'}
+//    = {actual: 'LoadVectorRegisterList',
+//       baseline: 'LoadVectorRegisterList',
+//       constraints: ,
+//       pattern: 'cccc11010d11nnnndddd101xiiiiiiii',
+//       rule: 'Vldm_Rule_318_A1_A2_P626'}
 //
 // Representaive case:
 // opcode(24:20)=10x11
-//    = LoadVectorRegisterList => LoadVectorRegisterList {constraints: ,
-//     pattern: cccc11010d11nnnndddd101xiiiiiiii,
-//     rule: Vldm_Rule_318_A1_A2_P626}
+//    = {actual: LoadVectorRegisterList,
+//       baseline: LoadVectorRegisterList,
+//       constraints: ,
+//       pattern: cccc11010d11nnnndddd101xiiiiiiii,
+//       rule: Vldm_Rule_318_A1_A2_P626}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case7_TestCase7) {
   LoadVectorRegisterListTester_Case7 tester;
@@ -674,15 +746,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1xx00
-//    = StoreVectorRegister => StoreVectorRegister {'constraints': ,
-//     'pattern': 'cccc1101ud00nnnndddd101xiiiiiiii',
-//     'rule': 'Vstr_Rule_400_A1_A2_P786'}
+//    = {actual: 'StoreVectorRegister',
+//       baseline: 'StoreVectorRegister',
+//       constraints: ,
+//       pattern: 'cccc1101ud00nnnndddd101xiiiiiiii',
+//       rule: 'Vstr_Rule_400_A1_A2_P786'}
 //
 // Representaive case:
 // opcode(24:20)=1xx00
-//    = StoreVectorRegister => StoreVectorRegister {constraints: ,
-//     pattern: cccc1101ud00nnnndddd101xiiiiiiii,
-//     rule: Vstr_Rule_400_A1_A2_P786}
+//    = {actual: StoreVectorRegister,
+//       baseline: StoreVectorRegister,
+//       constraints: ,
+//       pattern: cccc1101ud00nnnndddd101xiiiiiiii,
+//       rule: Vstr_Rule_400_A1_A2_P786}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterTester_Case8_TestCase8) {
   StoreVectorRegisterTester_Case8 tester;
@@ -691,15 +767,19 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=1xx01
-//    = LoadVectorRegister => LoadVectorRegister {'constraints': ,
-//     'pattern': 'cccc1101ud01nnnndddd101xiiiiiiii',
-//     'rule': 'Vldr_Rule_320_A1_A2_P628'}
+//    = {actual: 'LoadVectorRegister',
+//       baseline: 'LoadVectorRegister',
+//       constraints: ,
+//       pattern: 'cccc1101ud01nnnndddd101xiiiiiiii',
+//       rule: 'Vldr_Rule_320_A1_A2_P628'}
 //
 // Representaive case:
 // opcode(24:20)=1xx01
-//    = LoadVectorRegister => LoadVectorRegister {constraints: ,
-//     pattern: cccc1101ud01nnnndddd101xiiiiiiii,
-//     rule: Vldr_Rule_320_A1_A2_P628}
+//    = {actual: LoadVectorRegister,
+//       baseline: LoadVectorRegister,
+//       constraints: ,
+//       pattern: cccc1101ud01nnnndddd101xiiiiiiii,
+//       rule: Vldr_Rule_320_A1_A2_P628}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterTester_Case9_TestCase9) {
   LoadVectorRegisterTester_Case9 tester;
