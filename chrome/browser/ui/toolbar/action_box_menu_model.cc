@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -31,7 +32,11 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
     : ui::SimpleMenuModel(delegate),
       browser_(browser) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  content::WebContents* current_web_contents =
+      chrome::GetActiveWebContents(browser_);
   if (!browser_->profile()->IsOffTheRecord() &&
+      !current_web_contents->GetURL().SchemeIs(chrome::kChromeUIScheme) &&
+      !current_web_contents->GetURL().SchemeIs(chrome::kFileScheme) &&
       ChromeToMobileServiceFactory::GetForProfile(browser_->profile())->
       HasMobiles()) {
     AddItemWithStringId(IDC_CHROME_TO_MOBILE_PAGE,
@@ -40,8 +45,6 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
             rb.GetNativeImageNamed(IDR_MOBILE));
   }
 
-  content::WebContents* current_web_contents =
-      chrome::GetActiveWebContents(browser_);
   BookmarkTabHelper* bookmark_tab_helper =
       BookmarkTabHelper::FromWebContents(current_web_contents);
   bool starred = bookmark_tab_helper->is_starred();

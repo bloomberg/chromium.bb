@@ -1904,6 +1904,7 @@
         'browser/ui/tabs/test_tab_strip_model_delegate.h',
         'browser/ui/tests/ui_gfx_image_unittest.cc',
         'browser/ui/tests/ui_gfx_image_unittest.mm',
+        'browser/ui/toolbar/action_box_menu_model_unittest.cc',
         'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
         'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
         'browser/ui/toolbar/toolbar_model_unittest.cc',
