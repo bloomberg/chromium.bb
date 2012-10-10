@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/content_export.h"
 #include "webkit/quota/quota_client.h"
@@ -44,16 +45,9 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
                                 const DeletionCallback& callback) OVERRIDE;
  private:
   class HelperTask;
-  class GetOriginUsageTask;
   class GetOriginsTaskBase;
-  class GetAllOriginsTask;
   class GetOriginsForHostTask;
 
-  typedef quota::CallbackQueue2
-      <GetOriginsCallback,
-       const std::set<GURL>&,
-       quota::StorageType
-      > OriginsForTypeCallbackQueue;
   typedef quota::CallbackQueueMap2
       <GetOriginsCallback,
        std::string,  // host
@@ -61,14 +55,12 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
        quota::StorageType
       > OriginsForHostCallbackMap;
 
-  void DidGetAllOrigins(const std::set<GURL>& origins, quota::StorageType type);
   void DidGetOriginsForHost(
       const std::string& host, const std::set<GURL>& origins,
           quota::StorageType type);
 
   scoped_refptr<base::MessageLoopProxy> webkit_thread_message_loop_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
-  OriginsForTypeCallbackQueue origins_for_type_callbacks_;
   OriginsForHostCallbackMap origins_for_host_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClient);

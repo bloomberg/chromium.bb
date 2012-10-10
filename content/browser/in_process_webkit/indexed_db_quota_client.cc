@@ -34,6 +34,22 @@ int64 GetOriginUsageOnWebKitThread(
   return context->GetOriginDiskUsage(origin);
 }
 
+void GetAllOriginsOnWebKitThread(
+    IndexedDBContextImpl* context,
+    std::set<GURL>* origins_to_return) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  std::vector<GURL> all_origins = context->GetAllOrigins();
+  origins_to_return->insert(all_origins.begin(), all_origins.end());
+}
+
+void DidGetAllOrigins(
+    const IndexedDBQuotaClient::GetOriginsCallback& callback,
+    const std::set<GURL>* origins,
+    quota::StorageType storage_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  callback.Run(*origins, storage_type);
+}
+
 }  // namespace
 
 // Helper tasks ---------------------------------------------------------------
@@ -77,31 +93,6 @@ class IndexedDBQuotaClient::GetOriginsTaskBase : public HelperTask {
 
  protected:
   virtual ~GetOriginsTaskBase() {}
-};
-
-class IndexedDBQuotaClient::GetAllOriginsTask : public GetOriginsTaskBase {
- public:
-  GetAllOriginsTask(
-      IndexedDBQuotaClient* client,
-      base::MessageLoopProxy* webkit_thread_message_loop,
-      quota::StorageType type)
-      : GetOriginsTaskBase(client, webkit_thread_message_loop),
-        type_(type) {
-  }
-
- protected:
-  virtual ~GetAllOriginsTask() {}
-
-  virtual bool ShouldAddOrigin(const GURL& origin) OVERRIDE {
-    return true;
-  }
-
-  virtual void Completed() OVERRIDE {
-    client_->DidGetAllOrigins(origins_, type_);
-  }
-
- private:
-  quota::StorageType type_;
 };
 
 class IndexedDBQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
@@ -185,11 +176,16 @@ void IndexedDBQuotaClient::GetOriginsForType(
     return;
   }
 
-  if (origins_for_type_callbacks_.Add(callback)) {
-    scoped_refptr<GetAllOriginsTask> task(
-        new GetAllOriginsTask(this, webkit_thread_message_loop_, type));
-    task->Start();
-  }
+  std::set<GURL>* origins_to_return = new std::set<GURL>();
+  webkit_thread_message_loop_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GetAllOriginsOnWebKitThread,
+                 indexed_db_context_,
+                 base::Unretained(origins_to_return)),
+      base::Bind(&DidGetAllOrigins,
+                 callback,
+                 base::Owned(origins_to_return),
+                 type));
 }
 
 void IndexedDBQuotaClient::GetOriginsForHost(
@@ -229,12 +225,6 @@ void IndexedDBQuotaClient::DeleteOriginData(
                  indexed_db_context_,
                  origin),
       callback);
-}
-
-void IndexedDBQuotaClient::DidGetAllOrigins(const std::set<GURL>& origins,
-                                            quota::StorageType type) {
-  DCHECK(origins_for_type_callbacks_.HasCallbacks());
-  origins_for_type_callbacks_.Run(origins, type);
 }
 
 void IndexedDBQuotaClient::DidGetOriginsForHost(
