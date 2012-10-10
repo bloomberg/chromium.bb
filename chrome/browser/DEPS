@@ -68,7 +68,6 @@ include_rules = [
   # TODO(tfarina): Remove all these. crbug.com/125846.
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "!chrome/browser/ui/views/extensions/extension_view_views.h",
-  "!chrome/browser/ui/views/frame/browser_view.h",
   "!chrome/browser/ui/views/location_bar/location_bar_view.h",
   "!chrome/browser/ui/views/location_bar/location_icon_view.h",
   "!chrome/browser/ui/views/notifications/balloon_view.h",
