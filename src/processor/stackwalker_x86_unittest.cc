@@ -48,6 +48,7 @@
 
 using google_breakpad::BasicSourceLineResolver;
 using google_breakpad::CallStack;
+using google_breakpad::StackFrameSymbolizer;
 using google_breakpad::StackFrame;
 using google_breakpad::StackFrameX86;
 using google_breakpad::StackwalkerX86;
@@ -148,8 +149,9 @@ TEST_F(SanityCheck, NoResolver) {
   raw_context.eip = 0x40000200;
   raw_context.ebp = 0x80000000;
 
+  StackFrameSymbolizer frame_symbolizer(NULL, NULL);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        NULL, NULL);
+                        &frame_symbolizer);
   // This should succeed, even without a resolver or supplier.
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
@@ -168,8 +170,9 @@ TEST_F(GetContextFrame, Simple) {
   raw_context.eip = 0x40000200;
   raw_context.ebp = 0x80000000;
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   StackFrameX86 *frame = static_cast<StackFrameX86 *>(frames->at(0));
@@ -200,8 +203,9 @@ TEST_F(GetCallerFrame, Traditional) {
   raw_context.esp = stack_section.start().Value();
   raw_context.ebp = frame0_ebp.Value();
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(2U, frames->size());
@@ -255,8 +259,9 @@ TEST_F(GetCallerFrame, TraditionalScan) {
   // for something that looks like a return address.
   raw_context.ebp = 0xd43eed6e;
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(2U, frames->size());
@@ -316,8 +321,9 @@ TEST_F(GetCallerFrame, TraditionalScanLongWay) {
   // for something that looks like a return address.
   raw_context.ebp = 0xd43eed6e;
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(2U, frames->size());
@@ -387,8 +393,9 @@ TEST_F(GetCallerFrame, WindowsFrameData) {
   raw_context.esp = stack_section.start().Value();
   raw_context.ebp = 0xf052c1de;         // should not be needed to walk frame
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(2U, frames->size());
@@ -458,8 +465,9 @@ TEST_F(GetCallerFrame, WindowsFrameDataAligned) {
   raw_context.esp = stack_section.start().Value();
   raw_context.ebp = 0xf052c1de;         // should not be needed to walk frame
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(2U, frames->size());
@@ -540,8 +548,9 @@ TEST_F(GetCallerFrame, WindowsFrameDataParameterSize) {
   raw_context.esp = stack_section.start().Value();
   raw_context.ebp = frame0_ebp.Value();
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(3U, frames->size());
@@ -634,8 +643,9 @@ TEST_F(GetCallerFrame, WindowsFrameDataScan) {
   raw_context.esp = stack_section.start().Value();
   raw_context.ebp = 0x2ae314cd;         // should not be needed to walk frame
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(2U, frames->size());
@@ -717,8 +727,9 @@ TEST_F(GetCallerFrame, WindowsFrameDataBadEIPScan) {
   raw_context.esp = stack_section.start().Value();
   raw_context.ebp = frame0_ebp.Value();
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(2U, frames->size());
@@ -784,8 +795,9 @@ TEST_F(GetCallerFrame, WindowsFPOUnchangedEBP) {
   // Frame pointer unchanged from caller.
   raw_context.ebp = frame1_ebp.Value();
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(2U, frames->size());
@@ -860,8 +872,9 @@ TEST_F(GetCallerFrame, WindowsFPOUsedEBP) {
   // RaisedByTheAliens uses %ebp for its own mysterious purposes.
   raw_context.ebp = 0xecbdd1a5;
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
   ASSERT_EQ(2U, frames->size());
@@ -997,8 +1010,9 @@ TEST_F(GetCallerFrame, WindowsFPOSystemCall) {
   ASSERT_TRUE(raw_context.esp == frame0_esp.Value());
   raw_context.ebp = frame1_ebp.Value();
 
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                        &supplier, &resolver);
+                        &frame_symbolizer);
   ASSERT_TRUE(walker.Walk(&call_stack));
   frames = call_stack.frames();
 
@@ -1097,8 +1111,9 @@ struct CFIFixture: public StackwalkerX86Fixture {
     RegionFromSection();
     raw_context.esp = stack_section.start().Value();
 
+    StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
     StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
-                          &supplier, &resolver);
+                          &frame_symbolizer);
     ASSERT_TRUE(walker.Walk(&call_stack));
     frames = call_stack.frames();
     ASSERT_EQ(2U, frames->size());

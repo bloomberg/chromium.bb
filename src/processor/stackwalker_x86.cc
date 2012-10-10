@@ -33,8 +33,7 @@
 //
 // Author: Mark Mentovai
 
-
-#include "processor/postfix_evaluator-inl.h"
+#include <string>
 
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/code_modules.h"
@@ -42,6 +41,7 @@
 #include "google_breakpad/processor/source_line_resolver_interface.h"
 #include "google_breakpad/processor/stack_frame_cpu.h"
 #include "processor/logging.h"
+#include "processor/postfix_evaluator-inl.h"
 #include "processor/scoped_ptr.h"
 #include "processor/stackwalker_x86.h"
 #include "processor/windows_frame_info.h"
@@ -77,13 +77,12 @@ StackwalkerX86::cfi_register_map_[] = {
     StackFrameX86::CONTEXT_VALID_EDI, &MDRawContextX86::edi },
 };
 
-StackwalkerX86::StackwalkerX86(const SystemInfo *system_info,
-                               const MDRawContextX86 *context,
-                               MemoryRegion *memory,
-                               const CodeModules *modules,
-                               SymbolSupplier *supplier,
-                               SourceLineResolverInterface *resolver)
-    : Stackwalker(system_info, memory, modules, supplier, resolver),
+StackwalkerX86::StackwalkerX86(const SystemInfo* system_info,
+                               const MDRawContextX86* context,
+                               MemoryRegion* memory,
+                               const CodeModules* modules,
+                               StackFrameSymbolizer* resolver_helper)
+    : Stackwalker(system_info, memory, modules, resolver_helper),
       context_(context),
       cfi_walker_(cfi_register_map_,
                   (sizeof(cfi_register_map_) / sizeof(cfi_register_map_[0]))) {
@@ -106,13 +105,13 @@ StackFrameX86::~StackFrameX86() {
   cfi_frame_info = NULL;
 }
 
-StackFrame *StackwalkerX86::GetContextFrame() {
+StackFrame* StackwalkerX86::GetContextFrame() {
   if (!context_ || !memory_) {
     BPLOG(ERROR) << "Can't get context frame without context or memory";
     return NULL;
   }
 
-  StackFrameX86 *frame = new StackFrameX86();
+  StackFrameX86* frame = new StackFrameX86();
 
   // The instruction pointer is stored directly in a register, so pull it
   // straight out of the CPU context structure.
@@ -124,12 +123,12 @@ StackFrame *StackwalkerX86::GetContextFrame() {
   return frame;
 }
 
-StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
-    const vector<StackFrame *> &frames,
-    WindowsFrameInfo *last_frame_info) {
+StackFrameX86* StackwalkerX86::GetCallerByWindowsFrameInfo(
+    const vector<StackFrame*> &frames,
+    WindowsFrameInfo* last_frame_info) {
   StackFrame::FrameTrust trust = StackFrame::FRAME_TRUST_NONE;
 
-  StackFrameX86 *last_frame = static_cast<StackFrameX86 *>(frames.back());
+  StackFrameX86* last_frame = static_cast<StackFrameX86*>(frames.back());
 
   // Save the stack walking info we found, in case we need it later to
   // find the callee of the frame we're constructing now.
@@ -176,9 +175,9 @@ StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
   u_int32_t last_frame_callee_parameter_size = 0;
   int frames_already_walked = frames.size();
   if (frames_already_walked >= 2) {
-    const StackFrameX86 *last_frame_callee
-        = static_cast<StackFrameX86 *>(frames[frames_already_walked - 2]);
-    WindowsFrameInfo *last_frame_callee_info
+    const StackFrameX86* last_frame_callee
+        = static_cast<StackFrameX86*>(frames[frames_already_walked - 2]);
+    WindowsFrameInfo* last_frame_callee_info
         = last_frame_callee->windows_frame_info;
     if (last_frame_callee_info &&
         (last_frame_callee_info->valid
@@ -210,7 +209,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
                             last_frame_info->saved_register_size;
 
   u_int32_t raSearchStartOld = raSearchStart;
-  u_int32_t found = 0; // dummy value
+  u_int32_t found = 0;  // dummy value
   // Scan up to three words above the calculated search value, in case
   // the stack was aligned to a quadword boundary.
   if (ScanForReturnAddress(raSearchStart, &raSearchStart, &found, 3) &&
@@ -419,7 +418,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
 
   // Create a new stack frame (ownership will be transferred to the caller)
   // and fill it in.
-  StackFrameX86 *frame = new StackFrameX86();
+  StackFrameX86* frame = new StackFrameX86();
 
   frame->trust = trust;
   frame->context = last_frame->context;
@@ -448,10 +447,10 @@ StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
   return frame;
 }
 
-StackFrameX86 *StackwalkerX86::GetCallerByCFIFrameInfo(
+StackFrameX86* StackwalkerX86::GetCallerByCFIFrameInfo(
     const vector<StackFrame*> &frames,
-    CFIFrameInfo *cfi_frame_info) {
-  StackFrameX86 *last_frame = static_cast<StackFrameX86*>(frames.back());
+    CFIFrameInfo* cfi_frame_info) {
+  StackFrameX86* last_frame = static_cast<StackFrameX86*>(frames.back());
   last_frame->cfi_frame_info = cfi_frame_info;
 
   scoped_ptr<StackFrameX86> frame(new StackFrameX86());
@@ -460,7 +459,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByCFIFrameInfo(
                            last_frame->context, last_frame->context_validity,
                            &frame->context, &frame->context_validity))
     return NULL;
-  
+
   // Make sure we recovered all the essentials.
   static const int essentials = (StackFrameX86::CONTEXT_VALID_EIP
                                  | StackFrameX86::CONTEXT_VALID_ESP
@@ -473,10 +472,10 @@ StackFrameX86 *StackwalkerX86::GetCallerByCFIFrameInfo(
   return frame.release();
 }
 
-StackFrameX86 *StackwalkerX86::GetCallerByEBPAtBase(
-    const vector<StackFrame *> &frames) {
+StackFrameX86* StackwalkerX86::GetCallerByEBPAtBase(
+    const vector<StackFrame*> &frames) {
   StackFrame::FrameTrust trust;
-  StackFrameX86 *last_frame = static_cast<StackFrameX86 *>(frames.back());
+  StackFrameX86* last_frame = static_cast<StackFrameX86*>(frames.back());
   u_int32_t last_esp = last_frame->context.esp;
   u_int32_t last_ebp = last_frame->context.ebp;
 
@@ -532,7 +531,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByEBPAtBase(
 
   // Create a new stack frame (ownership will be transferred to the caller)
   // and fill it in.
-  StackFrameX86 *frame = new StackFrameX86();
+  StackFrameX86* frame = new StackFrameX86();
 
   frame->trust = trust;
   frame->context = last_frame->context;
@@ -546,26 +545,26 @@ StackFrameX86 *StackwalkerX86::GetCallerByEBPAtBase(
   return frame;
 }
 
-StackFrame *StackwalkerX86::GetCallerFrame(const CallStack *stack) {
+StackFrame* StackwalkerX86::GetCallerFrame(const CallStack* stack) {
   if (!memory_ || !stack) {
     BPLOG(ERROR) << "Can't get caller frame without memory or stack";
     return NULL;
   }
 
-  const vector<StackFrame *> &frames = *stack->frames();
-  StackFrameX86 *last_frame = static_cast<StackFrameX86 *>(frames.back());
+  const vector<StackFrame*> &frames = *stack->frames();
+  StackFrameX86* last_frame = static_cast<StackFrameX86*>(frames.back());
   scoped_ptr<StackFrameX86> new_frame;
 
   // If the resolver has Windows stack walking information, use that.
-  WindowsFrameInfo *windows_frame_info
-      = resolver_ ? resolver_->FindWindowsFrameInfo(last_frame) : NULL;
+  WindowsFrameInfo* windows_frame_info
+      = frame_symbolizer_->FindWindowsFrameInfo(last_frame);
   if (windows_frame_info)
     new_frame.reset(GetCallerByWindowsFrameInfo(frames, windows_frame_info));
 
   // If the resolver has DWARF CFI information, use that.
   if (!new_frame.get()) {
-    CFIFrameInfo *cfi_frame_info = 
-        resolver_ ? resolver_->FindCFIFrameInfo(last_frame) : NULL;
+    CFIFrameInfo* cfi_frame_info =
+        frame_symbolizer_->FindCFIFrameInfo(last_frame);
     if (cfi_frame_info)
       new_frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info));
   }
@@ -577,7 +576,7 @@ StackFrame *StackwalkerX86::GetCallerFrame(const CallStack *stack) {
   // If nothing worked, tell the caller.
   if (!new_frame.get())
     return NULL;
-  
+
   // Treat an instruction address of 0 as end-of-stack.
   if (new_frame->context.eip == 0)
     return NULL;

@@ -89,13 +89,12 @@ StackwalkerAMD64::cfi_register_map_[] = {
     StackFrameAMD64::CONTEXT_VALID_RIP, &MDRawContextAMD64::rip },
 };
 
-StackwalkerAMD64::StackwalkerAMD64(const SystemInfo *system_info,
-                                   const MDRawContextAMD64 *context,
-                                   MemoryRegion *memory,
-                                   const CodeModules *modules,
-                                   SymbolSupplier *supplier,
-                                   SourceLineResolverInterface *resolver)
-    : Stackwalker(system_info, memory, modules, supplier, resolver),
+StackwalkerAMD64::StackwalkerAMD64(const SystemInfo* system_info,
+                                   const MDRawContextAMD64* context,
+                                   MemoryRegion* memory,
+                                   const CodeModules* modules,
+                                   StackFrameSymbolizer* resolver_helper)
+    : Stackwalker(system_info, memory, modules, resolver_helper),
       context_(context),
       cfi_walker_(cfi_register_map_,
                   (sizeof(cfi_register_map_) / sizeof(cfi_register_map_[0]))) {
@@ -108,7 +107,7 @@ StackFrame* StackwalkerAMD64::GetContextFrame() {
     return NULL;
   }
 
-  StackFrameAMD64 *frame = new StackFrameAMD64();
+  StackFrameAMD64* frame = new StackFrameAMD64();
 
   // The instruction pointer is stored directly in a register, so pull it
   // straight out of the CPU context structure.
@@ -120,10 +119,10 @@ StackFrame* StackwalkerAMD64::GetContextFrame() {
   return frame;
 }
 
-StackFrameAMD64 *StackwalkerAMD64::GetCallerByCFIFrameInfo(
-    const vector<StackFrame *> &frames,
-    CFIFrameInfo *cfi_frame_info) {
-  StackFrameAMD64 *last_frame = static_cast<StackFrameAMD64*>(frames.back());
+StackFrameAMD64* StackwalkerAMD64::GetCallerByCFIFrameInfo(
+    const vector<StackFrame*> &frames,
+    CFIFrameInfo* cfi_frame_info) {
+  StackFrameAMD64* last_frame = static_cast<StackFrameAMD64*>(frames.back());
 
   scoped_ptr<StackFrameAMD64> frame(new StackFrameAMD64());
   if (!cfi_walker_
@@ -142,9 +141,9 @@ StackFrameAMD64 *StackwalkerAMD64::GetCallerByCFIFrameInfo(
   return frame.release();
 }
 
-StackFrameAMD64 *StackwalkerAMD64::GetCallerByStackScan(
-    const vector<StackFrame *> &frames) {
-  StackFrameAMD64 *last_frame = static_cast<StackFrameAMD64 *>(frames.back());
+StackFrameAMD64* StackwalkerAMD64::GetCallerByStackScan(
+    const vector<StackFrame*> &frames) {
+  StackFrameAMD64* last_frame = static_cast<StackFrameAMD64*>(frames.back());
   u_int64_t last_rsp = last_frame->context.rsp;
   u_int64_t caller_rip_address, caller_rip;
 
@@ -155,7 +154,7 @@ StackFrameAMD64 *StackwalkerAMD64::GetCallerByStackScan(
 
   // Create a new stack frame (ownership will be transferred to the caller)
   // and fill it in.
-  StackFrameAMD64 *frame = new StackFrameAMD64();
+  StackFrameAMD64* frame = new StackFrameAMD64();
 
   frame->trust = StackFrame::FRAME_TRUST_SCAN;
   frame->context = last_frame->context;
@@ -191,19 +190,19 @@ StackFrameAMD64 *StackwalkerAMD64::GetCallerByStackScan(
   return frame;
 }
 
-StackFrame* StackwalkerAMD64::GetCallerFrame(const CallStack *stack) {
+StackFrame* StackwalkerAMD64::GetCallerFrame(const CallStack* stack) {
   if (!memory_ || !stack) {
     BPLOG(ERROR) << "Can't get caller frame without memory or stack";
     return NULL;
   }
 
-  const vector<StackFrame *> &frames = *stack->frames();
-  StackFrameAMD64 *last_frame = static_cast<StackFrameAMD64 *>(frames.back());
+  const vector<StackFrame*> &frames = *stack->frames();
+  StackFrameAMD64* last_frame = static_cast<StackFrameAMD64*>(frames.back());
   scoped_ptr<StackFrameAMD64> new_frame;
 
   // If we have DWARF CFI information, use it.
   scoped_ptr<CFIFrameInfo> cfi_frame_info(
-      resolver_ ? resolver_->FindCFIFrameInfo(last_frame) : NULL);
+      frame_symbolizer_->FindCFIFrameInfo(last_frame));
   if (cfi_frame_info.get())
     new_frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info.get()));
 

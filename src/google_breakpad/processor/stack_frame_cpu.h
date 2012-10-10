@@ -70,7 +70,7 @@ struct StackFrameX86 : public StackFrame {
     CONTEXT_VALID_ALL  = -1
   };
 
- StackFrameX86()
+  StackFrameX86()
      : context(),
        context_validity(CONTEXT_VALID_NONE),
        windows_frame_info(NULL),
@@ -220,7 +220,7 @@ struct StackFrameARM : public StackFrame {
   // Return the ContextValidity flag for register rN.
   static ContextValidity RegisterValidFlag(int n) {
     return ContextValidity(1 << n);
-  } 
+  }
 
   // Register state.  This is only fully valid for the topmost frame in a
   // stack.  In other frames, the values of nonvolatile registers may be
