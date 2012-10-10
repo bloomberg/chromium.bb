@@ -203,6 +203,13 @@ bool WasAutoOpened(DownloadItem* item) {
   return item->GetAutoOpened();
 }
 
+// Called when a download starts. Marks the download as hidden.
+void SetHiddenDownloadCallback(scoped_refptr<DownloadManager> download_manager,
+                               DownloadItem* item,
+                               net::Error error) {
+  download_util::SetShouldShowInShelf(item, false);
+}
+
 }  // namespace
 
 // While an object of this class exists, it will mock out download
@@ -2243,4 +2250,31 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
   FilePath file(download_items[0]->GetFullPath());
   std::string expected_contents = test_server()->GetURL("").spec();
   ASSERT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+
+  scoped_refptr<DownloadManager> download_manager =
+      DownloadManagerForBrowser(browser());
+  scoped_ptr<content::DownloadTestObserver> observer(
+      new content::DownloadTestObserverTerminal(
+          download_manager,
+          1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+  content::DownloadSaveInfo save_info;
+  save_info.prompt_for_save_location = false;
+
+  // Download and set IsHiddenDownload to true.
+  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  scoped_ptr<DownloadUrlParameters> params(
+      DownloadUrlParameters::FromWebContents(web_contents, url, save_info));
+  params->set_callback(
+      base::Bind(&SetHiddenDownloadCallback, download_manager));
+  download_manager->DownloadUrl(params.Pass());
+  observer->WaitForFinished();
+
+  // Verify that download shelf is not shown.
+  EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
