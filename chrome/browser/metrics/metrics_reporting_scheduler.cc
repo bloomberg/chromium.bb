@@ -12,14 +12,30 @@ using base::TimeDelta;
 namespace {
 
 // The delay, in seconds, after startup before sending the first log message.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+// Sessions are more likely to be short on a mobile device, so handle the
+// initial log quickly.
+const int kInitialUploadIntervalSeconds = 15;
+#else
 const int kInitialUploadIntervalSeconds = 60;
+#endif
 
 // The delay, in seconds, between uploading when there are queued logs from
 // previous sessions to send.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+// Sending in a burst is better on a mobile device, since keeping the radio on
+// is very expensive.
+const int kUnsentLogsIntervalSeconds = 3;
+#else
 const int kUnsentLogsIntervalSeconds = 15;
+#endif
 
 // Standard interval between log uploads, in seconds.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+const int kStandardUploadIntervalSeconds = 5 * 60;  // Five minutes.
+#else
 const int kStandardUploadIntervalSeconds = 30 * 60;  // Thirty minutes.
+#endif
 
 // When uploading metrics to the server fails, we progressively wait longer and
 // longer before sending the next log. This backoff process helps reduce load
