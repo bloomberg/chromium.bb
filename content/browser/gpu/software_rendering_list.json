@@ -74,7 +74,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "3.7",
+  "version": "3.8",
   "entries": [
     {
       "id": 1,
@@ -835,6 +835,25 @@
       ],
       "blacklist": [
         "all"
+      ]
+    },
+    {
+      "id": 56,
+      "description": "NVIDIA linux drivers are unstable when using multiple Open GL contexts and with low memory.",
+      "cr_bugs": [145600],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "driver_vendor": {
+        "op": "=",
+        "value": "NVIDIA"
+      },
+      "blacklist": [
+        "accelerated_video",
+        "accelerated_video_decode",
+        "flash_3d",
+        "flash_stage3d"
       ]
     }
   ]
