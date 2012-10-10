@@ -11,17 +11,25 @@
     'remoting_host_linux_clipboard%': 1,
     'remoting_multi_process%': 0,
 
-    # The version is composed from major & minor versions specific to remoting
-    # and build & patch versions inherited from Chrome.
+    # The |major|, |build| and |patch| versions are inherited from Chrome.
+    # Since Chrome's |minor| version is always '0', we replace it with a
+    # Chromoting-specific patch version.
+    # Note that we check both the |chrome_version_path| file and the
+    # |remoting_version_path| so that we can override the Chrome version
+    # numbers if needed.
     'version_py_path': '../chrome/tools/build/version.py',
-    'version_path': '../remoting/VERSION',
+    'remoting_version_path': '../remoting/VERSION',
     'chrome_version_path': '../chrome/VERSION',
-    'version_full':
-      '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@").'
-      '<!(python <(version_py_path) -f <(chrome_version_path) -t "@BUILD@.@PATCH@")',
+    'version_major':
+      '<!(python <(version_py_path) -f <(chrome_version_path) -f <(remoting_version_path) -t "@MAJOR@")',
+    'version_minor':
+      '<!(python <(version_py_path) -f <(remoting_version_path) -t "@REMOTING_PATCH@")',
     'version_short':
-      '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@").'
-      '<!(python <(version_py_path) -f <(chrome_version_path) -t "@BUILD@")',
+      '<(version_major).<(version_minor).'
+      '<!(python <(version_py_path) -f <(chrome_version_path) -f <(remoting_version_path) -t "@BUILD@")',
+    'version_full':
+      '<(version_short).'
+      '<!(python <(version_py_path) -f <(chrome_version_path) -f <(remoting_version_path) -t "@PATCH@")',
 
     'branding_path': '../remoting/branding_<(branding)',
     'copyright_info': '<!(python <(version_py_path) -f <(branding_path) -t "@COPYRIGHT@")',
@@ -340,8 +348,8 @@
               'defs': [
                 'VERSION=<(version_full)',
                 'VERSION_SHORT=<(version_short)',
-                'VERSION_MAJOR=<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@")',
-                'VERSION_MINOR=<!(python <(version_py_path) -f <(version_path) -t "@MINOR@")',
+                'VERSION_MAJOR=<(version_major)',
+                'VERSION_MINOR=<(version_minor)',
                 'COPYRIGHT_INFO=<(copyright_info)',
                 'HOST_NAME=<(host_name)',
                 'HOST_SERVICE_NAME=<(host_service_name)',
@@ -635,8 +643,9 @@
         # placed in the "<(SHARED_INTERMEDIATE_DIR)/remoting" folder.
         # The substitution strings are taken from:
         #   - build/util/LASTCHANGE - the last source code revision.
-        #   - chrome/VERSION - the build & patch versions.
-        #   - remoting/VERSION - the major & minor versions.
+        #   - chrome/VERSION - the major, build & patch versions.
+        #   - remoting/VERSION - the chromoting patch version (and overrides
+        #       for chrome/VERSION).
         #   - (branding_path) - UI/localizable strings.
         #   - xxx.ver - per-binary non-localizable strings such as the binary
         #     name.
@@ -647,7 +656,7 @@
             '<(branding_path)',
             'version.rc.version',
             '<(DEPTH)/build/util/LASTCHANGE',
-            '<(version_path)',
+            '<(remoting_version_path)',
             '<(chrome_version_path)',
           ],
           'direct_dependent_settings': {
@@ -671,11 +680,11 @@
                 'template_input_path': 'version.rc.version',
               },
               'inputs': [
-                '<(template_input_path)',
-                '<(version_path)',
-                '<(chrome_version_path)',
                 '<(branding_path)',
+                '<(chrome_version_path)',
                 '<(lastchange_path)',
+                '<(remoting_version_path)',
+                '<(template_input_path)',
               ],
               'outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/<(RULE_INPUT_ROOT)_version.rc',
@@ -685,7 +694,9 @@
                 '<(version_py_path)',
                 '-f', '<(RULE_INPUT_PATH)',
                 '-f', '<(chrome_version_path)',
-                '-f', '<(version_path)',
+                # |remoting_version_path| must be after |chrome_version_path|
+                # because it can contain overrides for the version numbers.
+                '-f', '<(remoting_version_path)',
                 '-f', '<(branding_path)',
                 '-f', '<(lastchange_path)',
                 '<(template_input_path)',
@@ -1134,7 +1145,7 @@
       'sources': [
         'webapp/build-webapp.py',
         'webapp/verify-webapp.py',
-        '<(version_path)',
+        '<(remoting_version_path)',
         '<(chrome_version_path)',
         '<@(remoting_webapp_files)',
         '<@(remoting_webapp_locale_files)',
@@ -1186,7 +1197,7 @@
           'inputs': [
             'webapp/build-webapp.py',
             '<(_plugin_path)',
-            '<(version_path)',
+            '<(remoting_version_path)',
             '<(chrome_version_path)',
             '<@(remoting_webapp_files)',
             '<@(remoting_webapp_locale_files)',
