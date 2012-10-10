@@ -612,6 +612,7 @@ ACCEPTABLE_TEST_SUITES = set([
   'dynamic_load_tests',
   'exception_tests',
   'exit_status_tests',
+  'gdb_tests',
   'mmap_race_tests',
   'nonpexe_tests',
   'performance_tests',
@@ -811,6 +812,17 @@ def AddNodeToTestSuite(env, node, suite_name, node_name, is_broken=False,
   SetTestName(node, test_name)
 
 pre_base_env.AddMethod(AddNodeToTestSuite)
+
+
+def TestBindsFixedTcpPort(env, node):
+  # This tells Scons that tests that bind a fixed TCP port should not
+  # run concurrently, because they would interfere with each other.
+  # These tests are typically tests for NaCl's GDB debug stub.  The
+  # dummy filename used below is an arbitrary token that just has to
+  # match across the tests.
+  SideEffect(env.File('${SCONSTRUCT_DIR}/test_binds_fixed_tcp_port'), node)
+
+pre_base_env.AddMethod(TestBindsFixedTcpPort)
 
 
 # Convenient testing aliases
@@ -2767,7 +2779,6 @@ irt_variant_tests = [
     'tests/common/nacl.scons',
     'tests/computed_gotos/nacl.scons',
     'tests/data_not_executable/nacl.scons',
-    'tests/debug_stub/nacl.scons',
     'tests/dup/nacl.scons',
     'tests/dynamic_code_loading/nacl.scons',
     'tests/dynamic_linking/nacl.scons',
@@ -2849,6 +2860,7 @@ nonvariant_tests = [
     'tests/barebones/nacl.scons',
     'tests/chrome_extension/nacl.scons',
     'tests/custom_desc/nacl.scons',
+    'tests/debug_stub/nacl.scons',
     'tests/faulted_thread_queue/nacl.scons',
     'tests/imc_sockets/nacl.scons',
     'tests/minnacl/nacl.scons',

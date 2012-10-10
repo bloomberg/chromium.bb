@@ -30,6 +30,9 @@ if not env.Bit('nacl_static_link'):
   env_vars += ['NACL_LD_SO=%s' % env.subst('${NACL_SDK_LIB}/runnable-ld.so'),
                'NACL_LIBS=%s' % env['NACL_SDK_LIB']]
 
+test_suites = ['large_tests', 'gdb_tests']
+
+
 gdb_test_guest = env.ComponentProgram(
     'gdb_test_guest', 'gdb_test_guest.c',
     EXTRA_LIBS=['${NONIRT_LIBS}'])
@@ -40,8 +43,8 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest])
 
-env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_stepi_after_break_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_stepi_after_break_test')
+env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
     'gdb_print_symbol.out',
@@ -49,7 +52,8 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest])
 
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_print_symbol_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_print_symbol_test')
+env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
     'gdb_stack_trace.out',
@@ -57,7 +61,8 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest])
 
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_stack_trace_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_stack_trace_test')
+env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
     'gdb_step_from_func_start.out',
@@ -65,8 +70,8 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest])
 
-env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_step_from_func_start_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_step_from_func_start_test')
+env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
     'gdb_call_from_gdb.out',
@@ -74,8 +79,8 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest])
 
-env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_call_from_gdb_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_call_from_gdb_test')
+env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
     'gdb_change_variable.out',
@@ -83,8 +88,8 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps = [sel_ldr, irt, gdb_test_guest])
 
-env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_change_variable_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test')
+env.TestBindsFixedTcpPort(node)
 
 # GDB treats multithreaded programs specially. Provide distinct nexe for
 # multithreaded tests to isolate multiple threads-specific issues.
@@ -98,8 +103,8 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest_thread.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest_thread])
 
-env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_break_continue_thread_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_break_continue_thread_test')
+env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
     'gdb_syscall_thread.out',
@@ -107,5 +112,5 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest_thread.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest_thread])
 
-env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_syscall_thread_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_syscall_thread_test')
+env.TestBindsFixedTcpPort(node)

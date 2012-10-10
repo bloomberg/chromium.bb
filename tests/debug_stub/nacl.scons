@@ -30,12 +30,6 @@ node = env.CommandTest(
     'debug_stub_test.out',
     command=(['${PYTHON}', env.File('debug_stub_test.py'), '-v']
              + ['--', env.get('TARGET_FULLARCH'), nm_tool] + sel_ldr_command))
-# This test is in "large_tests" because it binds a fixed TCP port and
-# so will not coexist gracefully with other instances of the same test
-# or other processes that dynamically allocate TCP ports.
-# TODO(mseaborn): Eliminate the TCP port binding by using a socketpair
-# instead and move this into small_tests + pexe_tests.  Adding this to
-# nonpexe_tests (which uses -j currently) will enable this test for
-# ARM.
-env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['medium_tests', 'nonpexe_tests'],
+                       'run_debug_stub_test', is_broken=is_broken)
+env.TestBindsFixedTcpPort(node)
