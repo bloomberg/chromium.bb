@@ -474,6 +474,9 @@ struct weston_surface {
 		struct wl_listener buffer_destroy_listener;
 		int32_t sx;
 		int32_t sy;
+
+		/* wl_surface.damage */
+		pixman_region32_t damage;
 	} pending;
 
 	/*

@@ -274,6 +274,7 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->pending.buffer_destroy_listener.notify =
 		surface_handle_pending_buffer_destroy;
+	pixman_region32_init(&surface->pending.damage);
 
 	return surface;
 }
@@ -780,6 +781,8 @@ destroy_surface(struct wl_resource *resource)
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
 
+	pixman_region32_fini(&surface->pending.damage);
+
 	if (surface->pending.buffer)
 		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
 
@@ -1166,11 +1169,11 @@ surface_damage(struct wl_client *client,
 	       struct wl_resource *resource,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct weston_surface *es = resource->data;
+	struct weston_surface *surface = resource->data;
 
-	pixman_region32_union_rect(&es->damage, &es->damage,
+	pixman_region32_union_rect(&surface->pending.damage,
+				   &surface->pending.damage,
 				   x, y, width, height);
-	weston_surface_schedule_repaint(es);
 }
 
 static void
@@ -1265,6 +1268,12 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	if (surface->buffer && surface->configure)
 		surface->configure(surface, surface->pending.sx,
 				   surface->pending.sy);
+
+	/* wl_surface.damage */
+	pixman_region32_union(&surface->damage, &surface->damage,
+			      &surface->pending.damage);
+	empty_region(&surface->pending.damage);
+	weston_surface_schedule_repaint(surface);
 }
 
 static const struct wl_surface_interface surface_interface = {

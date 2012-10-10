@@ -223,6 +223,7 @@ redraw_handler(struct widget *widget, void *data)
 
 	callback = wl_surface_frame(window_get_wl_surface(smoke->window));
 	wl_callback_add_listener(callback, &listener, smoke);
+	wl_surface_commit(window_get_wl_surface(smoke->window));
 }
 
 static int

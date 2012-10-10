@@ -142,6 +142,10 @@ touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 	p[2] = c;
 
 	wl_surface_damage(touch->surface, x - 2, y - 2, 5, 5);
+	/* todo: We could queue up more damage before committing, if there
+	 * are more input events to handle.
+	 */
+	wl_surface_commit(touch->surface);
 }
 
 static void
