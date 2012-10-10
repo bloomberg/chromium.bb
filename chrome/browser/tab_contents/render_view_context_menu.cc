@@ -506,7 +506,7 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
 
   bool has_selection = !params_.selection_text.empty();
 
-  // Add undo/redo, cut/copy/paste etc for text fields
+  // Add undo/redo, cut/copy/paste etc for text fields.
   if (params_.is_editable)
     AppendEditableItems();
   else if (has_selection)
@@ -520,6 +520,12 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
   if (platform_app->location() == Extension::LOAD ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDebugPackedApps)) {
+    // Add a separator if there are any items already in the menu.
+    if (menu_model_.GetItemCount() &&
+        menu_model_.GetTypeAt(menu_model_.GetItemCount() - 1) !=
+            ui::MenuModel::TYPE_SEPARATOR)
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+
     menu_model_.AddItemWithStringId(IDC_RELOAD,
                                     IDS_CONTENT_CONTEXT_RELOAD_PAGE);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP,
