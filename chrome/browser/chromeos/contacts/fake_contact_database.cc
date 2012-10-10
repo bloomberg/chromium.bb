@@ -28,7 +28,7 @@ void FakeContactDatabase::Init(const FilePath& database_dir,
 void FakeContactDatabase::SetContacts(const ContactPointers& contacts,
                                       const UpdateMetadata& metadata) {
   contacts_.Clear();
-  MergeContacts(contacts);
+  MergeContacts(contacts, ContactIds());
   metadata_ = metadata;
 }
 
@@ -37,16 +37,18 @@ void FakeContactDatabase::DestroyOnUIThread() {
   delete this;
 }
 
-void FakeContactDatabase::SaveContacts(scoped_ptr<ContactPointers> contacts,
-                                       scoped_ptr<UpdateMetadata> metadata,
-                                       bool is_full_update,
-                                       SaveCallback callback) {
+void FakeContactDatabase::SaveContacts(
+    scoped_ptr<ContactPointers> contacts_to_save,
+    scoped_ptr<ContactIds> contact_ids_to_delete,
+    scoped_ptr<UpdateMetadata> metadata,
+    bool is_full_update,
+    SaveCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (save_success_) {
-    num_saved_contacts_ += contacts->size();
+    num_saved_contacts_ += contacts_to_save->size();
     if (is_full_update)
       contacts_.Clear();
-    MergeContacts(*contacts);
+    MergeContacts(*contacts_to_save, *contact_ids_to_delete);
     metadata_ = *metadata;
   }
   callback.Run(save_success_);
@@ -70,11 +72,16 @@ FakeContactDatabase::~FakeContactDatabase() {
 }
 
 void FakeContactDatabase::MergeContacts(
-    const ContactPointers& updated_contacts) {
+    const ContactPointers& updated_contacts,
+    const ContactIds& contact_ids_to_delete) {
   scoped_ptr<ScopedVector<Contact> > copied_contacts(new ScopedVector<Contact>);
   for (size_t i = 0; i < updated_contacts.size(); ++i)
     copied_contacts->push_back(new Contact(*updated_contacts[i]));
   contacts_.Merge(copied_contacts.Pass(), ContactMap::KEEP_DELETED_CONTACTS);
+  for (ContactIds::const_iterator it = contact_ids_to_delete.begin();
+       it != contact_ids_to_delete.end(); ++it) {
+    contacts_.Erase(*it);
+  }
 }
 
 }  // namespace contacts

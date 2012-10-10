@@ -104,9 +104,13 @@ message Contact {
 
 // Singleton message used by ContactDatabase to store update-related metadata.
 message UpdateMetadata {
-  // Next ID to use: 2
+  // Next ID to use: 3
 
   // Time at which the last successful update was started, as given by
   // base::Time::ToInternalValue().
   optional int64 last_update_start_time = 1;
+
+  // Latest time that we've seen in a contact's |update_time| field.  Note that
+  // the time may have come from a deleted contact that has been discarded.
+  optional int64 last_contact_update_time = 2;
 }

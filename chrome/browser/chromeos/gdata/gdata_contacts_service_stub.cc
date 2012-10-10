@@ -17,6 +17,7 @@ namespace gdata {
 
 GDataContactsServiceStub::GDataContactsServiceStub()
     : num_download_requests_(0),
+      num_download_requests_with_wrong_timestamps_(0),
       download_should_succeed_(true) {
 }
 
@@ -51,6 +52,7 @@ void GDataContactsServiceStub::DownloadContacts(
                << "differed from expected ("
                << util::FormatTimeAsString(expected_min_update_time_)
                << "); not returning any contacts";
+    num_download_requests_with_wrong_timestamps_++;
     failure_callback.Run();
     return;
   }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CONTACTS_CONTACT_DATABASE_H_
 #define CHROME_BROWSER_CHROMEOS_CONTACTS_CONTACT_DATABASE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -33,6 +34,7 @@ typedef std::vector<const Contact*> ContactPointers;
 // Interface for classes providing persistent storage of Contact objects.
 class ContactDatabaseInterface {
  public:
+  typedef std::vector<std::string> ContactIds;
   typedef base::Callback<void(bool success)> InitCallback;
   typedef base::Callback<void(bool success)> SaveCallback;
   typedef base::Callback<void(bool success,
@@ -50,12 +52,14 @@ class ContactDatabaseInterface {
   // UI thread when complete.
   virtual void Init(const FilePath& database_dir, InitCallback callback) = 0;
 
-  // Asynchronously saves |contacts| and |metadata| to the database.  If
+  // Asynchronously saves |contacts_to_save| and |metadata| to the database and
+  // removes contacts with IDs contained in |contact_ids_to_delete|.  If
   // |is_full_update| is true, all existing contacts in the database not present
-  // in |contacts| will be removed.  |callback| will be invoked on the UI thread
-  // when complete.  The caller must not make changes to the underlying
-  // passed-in Contact objects until the callback has been invoked.
-  virtual void SaveContacts(scoped_ptr<ContactPointers> contacts,
+  // in |contacts_to_save| will be removed.  |callback| will be invoked on the
+  // UI thread when complete.  The caller must not make changes to the
+  // underlying passed-in Contact objects until the callback has been invoked.
+  virtual void SaveContacts(scoped_ptr<ContactPointers> contacts_to_save,
+                            scoped_ptr<ContactIds> contact_ids_to_delete,
                             scoped_ptr<UpdateMetadata> metadata,
                             bool is_full_update,
                             SaveCallback callback) = 0;
@@ -79,7 +83,8 @@ class ContactDatabase : public ContactDatabaseInterface {
   virtual void DestroyOnUIThread() OVERRIDE;
   virtual void Init(const FilePath& database_dir,
                     InitCallback callback) OVERRIDE;
-  virtual void SaveContacts(scoped_ptr<ContactPointers> contacts,
+  virtual void SaveContacts(scoped_ptr<ContactPointers> contacts_to_save,
+                            scoped_ptr<ContactIds> contact_ids_to_delete,
                             scoped_ptr<UpdateMetadata> metadata,
                             bool is_full_update,
                             SaveCallback callback) OVERRIDE;
@@ -109,8 +114,9 @@ class ContactDatabase : public ContactDatabaseInterface {
   // Initializes the database in |database_dir| and updates |success|.
   void InitFromTaskRunner(const FilePath& database_dir, bool* success);
 
-  // Saves |contacts| to disk and updates |success|.
-  void SaveContactsFromTaskRunner(scoped_ptr<ContactPointers> contacts,
+  // Saves data to disk and updates |success|.
+  void SaveContactsFromTaskRunner(scoped_ptr<ContactPointers> contacts_to_save,
+                                  scoped_ptr<ContactIds> contact_ids_to_delete,
                                   scoped_ptr<UpdateMetadata> metadata,
                                   bool is_full_update,
                                   bool* success);

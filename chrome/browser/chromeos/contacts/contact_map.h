@@ -47,16 +47,15 @@ class ContactMap {
   // isn't present.
   const Contact* Find(const std::string& contact_id) const;
 
+  // Deletes the contact with ID |contact_id|.
+  void Erase(const std::string& contact_id);
+
   // Deletes all contacts.
   void Clear();
 
   // Merges |updated_contacts| into |contacts_|.
   void Merge(scoped_ptr<ScopedVector<Contact> > updated_contacts,
              DeletedContactPolicy policy);
-
-  // Returns the maximum |update_time| value stored within a contact in
-  // |contacts_|.
-  base::Time GetMaxUpdateTime() const;
 
  private:
   Map contacts_;

@@ -25,7 +25,13 @@ class GDataContactsServiceStub : public GDataContactsServiceInterface {
   virtual ~GDataContactsServiceStub();
 
   int num_download_requests() const { return num_download_requests_; }
-  void reset_stats() { num_download_requests_ = 0; }
+  int num_download_requests_with_wrong_timestamps() const {
+    return num_download_requests_with_wrong_timestamps_;
+  }
+  void reset_stats() {
+    num_download_requests_ = 0;
+    num_download_requests_with_wrong_timestamps_ = 0;
+  }
   void set_download_should_succeed(bool succeed) {
     download_should_succeed_ = succeed;
   }
@@ -44,6 +50,10 @@ class GDataContactsServiceStub : public GDataContactsServiceInterface {
  private:
   // How many times has DownloadContacts() been called?
   int num_download_requests_;
+
+  // How many times has DownloadContacts() been called with a |min_update_time|
+  // parameter that doesn't match |expected_min_update_time_|?
+  int num_download_requests_with_wrong_timestamps_;
 
   // Should calls to DownloadContacts() succeed?
   bool download_should_succeed_;

@@ -86,7 +86,8 @@ void ContactDatabase::Init(const FilePath& database_dir,
                  base::Owned(success)));
 }
 
-void ContactDatabase::SaveContacts(scoped_ptr<ContactPointers> contacts,
+void ContactDatabase::SaveContacts(scoped_ptr<ContactPointers> contacts_to_save,
+                                   scoped_ptr<ContactIds> contact_ids_to_delete,
                                    scoped_ptr<UpdateMetadata> metadata,
                                    bool is_full_update,
                                    SaveCallback callback) {
@@ -96,7 +97,8 @@ void ContactDatabase::SaveContacts(scoped_ptr<ContactPointers> contacts,
       FROM_HERE,
       base::Bind(&ContactDatabase::SaveContactsFromTaskRunner,
                  base::Unretained(this),
-                 base::Passed(contacts.Pass()),
+                 base::Passed(contacts_to_save.Pass()),
+                 base::Passed(contact_ids_to_delete.Pass()),
                  base::Passed(metadata.Pass()),
                  is_full_update,
                  success),
@@ -213,13 +215,15 @@ void ContactDatabase::InitFromTaskRunner(const FilePath& database_dir,
 }
 
 void ContactDatabase::SaveContactsFromTaskRunner(
-    scoped_ptr<ContactPointers> contacts,
+    scoped_ptr<ContactPointers> contacts_to_save,
+    scoped_ptr<ContactIds> contact_ids_to_delete,
     scoped_ptr<UpdateMetadata> metadata,
     bool is_full_update,
     bool* success) {
   DCHECK(IsRunByTaskRunner());
   DCHECK(success);
-  VLOG(1) << "Saving " << contacts->size() << " contact(s) to database as "
+  VLOG(1) << "Saving " << contacts_to_save->size() << " contact(s) to database "
+          << "and deleting " << contact_ids_to_delete->size() << " as "
           << (is_full_update ? "full" : "incremental") << " update";
 
   *success = false;
@@ -237,6 +241,11 @@ void ContactDatabase::SaveContactsFromTaskRunner(
         keys_to_delete.insert(key);
       db_iterator->Next();
     }
+  } else {
+    for (ContactIds::const_iterator it = contact_ids_to_delete->begin();
+         it != contact_ids_to_delete->end(); ++it) {
+      keys_to_delete.insert(*it);
+    }
   }
 
   // TODO(derat): Serializing all of the contacts and so we can write them in a
@@ -245,8 +254,8 @@ void ContactDatabase::SaveContactsFromTaskRunner(
   // crash, maybe add a dummy "write completed" contact that's removed in the
   // first batch and added in the last.)
   leveldb::WriteBatch updates;
-  for (ContactPointers::const_iterator it = contacts->begin();
-       it != contacts->end(); ++it) {
+  for (ContactPointers::const_iterator it = contacts_to_save->begin();
+       it != contacts_to_save->end(); ++it) {
     const contacts::Contact& contact = **it;
     if (contact.contact_id() == kUpdateMetadataKey) {
       LOG(WARNING) << "Skipping contact with reserved ID "

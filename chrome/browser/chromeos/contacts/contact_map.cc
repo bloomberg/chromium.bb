@@ -17,6 +17,15 @@ const Contact* ContactMap::Find(const std::string& contact_id) const {
   return (it != contacts_.end()) ? it->second : NULL;
 }
 
+void ContactMap::Erase(const std::string& contact_id) {
+  Map::iterator it = contacts_.find(contact_id);
+  if (it == contacts_.end())
+    return;
+
+  delete it->second;
+  contacts_.erase(it);
+}
+
 void ContactMap::Clear() {
   STLDeleteValues(&contacts_);
 }
@@ -48,20 +57,6 @@ void ContactMap::Merge(scoped_ptr<ScopedVector<Contact> > updated_contacts,
   // Make sure that the Contact objects that we just saved to the map won't be
   // destroyed when |updated_contacts| is destroyed.
   updated_contacts->weak_clear();
-}
-
-base::Time ContactMap::GetMaxUpdateTime() const {
-  base::Time max_update_time;
-  for (const_iterator it = begin(); it != end(); ++it) {
-    const Contact* contact = it->second;
-    const base::Time update_time =
-        base::Time::FromInternalValue(contact->update_time());
-    if (!update_time.is_null() &&
-        (max_update_time.is_null() || max_update_time < update_time)) {
-      max_update_time = update_time;
-    }
-  }
-  return max_update_time;
 }
 
 }  // namespace contacts

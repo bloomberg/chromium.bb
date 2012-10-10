@@ -45,7 +45,9 @@ class GoogleContactStore
     ~TestAPI();
 
     bool update_scheduled() { return store_->update_timer_.IsRunning(); }
-
+    base::Time last_contact_update_time() const {
+      return store_->last_contact_update_time_;
+    }
     void set_current_time(const base::Time& time) {
       store_->current_time_for_testing_ = time;
     }
@@ -62,6 +64,10 @@ class GoogleContactStore
 
     // Notifies the store that the system has gone online or offline.
     void NotifyAboutNetworkStateChange(bool online);
+
+    // Returns pointers to all of the contacts in the store's |contacts_|
+    // member.
+    scoped_ptr<ContactPointers> GetLoadedContacts();
 
    private:
     GoogleContactStore* store_;  // not owned
