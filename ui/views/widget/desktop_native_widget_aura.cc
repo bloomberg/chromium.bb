@@ -53,7 +53,8 @@ class DesktopNativeWidgetAuraStackingClient :
 
 DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+    : ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
+      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       can_activate_(true),
       desktop_root_window_host_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
@@ -61,6 +62,10 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
 }
 
 DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete native_widget_delegate_;
+  else
+    CloseNow();
 }
 
 void DesktopNativeWidgetAura::OnHostClosed() {
@@ -74,6 +79,8 @@ void DesktopNativeWidgetAura::OnHostClosed() {
 
 void DesktopNativeWidgetAura::InitNativeWidget(
     const Widget::InitParams& params) {
+  ownership_ = params.ownership;
+
   window_->set_user_data(this);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetTransparent(true);
@@ -452,6 +459,8 @@ void DesktopNativeWidgetAura::OnWindowDestroying() {
 void DesktopNativeWidgetAura::OnWindowDestroyed() {
   window_ = NULL;
   native_widget_delegate_->OnNativeWidgetDestroyed();
+  // TODO(beng): I think we should only do this if widget owns native widget.
+  //             Verify and if untrue remove this comment.
   delete this;
 }
 

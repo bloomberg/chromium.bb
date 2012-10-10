@@ -155,6 +155,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   virtual void OnLostActive() OVERRIDE;
 
  private:
+  // See class documentation for Widget in widget.h for a note about ownership.
+  Widget::InitParams::Ownership ownership_;
+
   // The NativeWidget owns the RootWindow. Required because the RootWindow owns
   // its RootWindowHost, so DesktopRootWindowHost can't own it.
   scoped_ptr<aura::RootWindow> root_window_;

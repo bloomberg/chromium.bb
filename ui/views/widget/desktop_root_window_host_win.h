@@ -19,6 +19,7 @@ namespace client {
 class ScreenPositionClient;
 }
 namespace shared {
+class CompoundEventFilter;
 class InputMethodEventFilter;
 }
 }
@@ -222,6 +223,9 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
 
   // A simple cursor client which just forwards events to the RootWindow.
   scoped_ptr<aura::DesktopCursorClient> cursor_client_;
+
+  // The RootWindow's CompoundEventFilter.
+  aura::shared::CompoundEventFilter* root_window_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };
