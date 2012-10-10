@@ -6,6 +6,7 @@
 """This script fetches and prepares an SDK chroot.
 """
 
+import errno
 import os
 import urlparse
 
@@ -62,15 +63,19 @@ def CheckPrerequisites(needed_tools):
 def GetSdkConfig():
   """Extracts latest version from chromiumos-overlay."""
   d = {}
-  with open(SDK_VERSION_FILE) as f:
-    for raw_line in f:
-      line = raw_line.split('#')[0].strip()
-      if not line:
-        continue
-      chunks = line.split('=', 1)
-      if len(chunks) != 2:
-        raise Exception('Malformed version file; line %r' % raw_line)
-      d[chunks[0]] = chunks[1].strip().strip('"')
+  try:
+    with open(SDK_VERSION_FILE) as f:
+      for raw_line in f:
+        line = raw_line.split('#')[0].strip()
+        if not line:
+          continue
+        chunks = line.split('=', 1)
+        if len(chunks) != 2:
+          raise Exception('Malformed version file; line %r' % raw_line)
+        d[chunks[0]] = chunks[1].strip().strip('"')
+  except EnvironmentError, e:
+    if e.errnor != errno.ENOENT:
+      raise
   return d
 
 
@@ -214,61 +219,58 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
 
 
 def main(argv):
-  # TODO(ferringb): make argv required once depot_tools is fixed.
-  usage = """usage: %prog [options] [VAR1=val1 .. VARn=valn -- <args>]
+  usage = """usage: %prog [options] [VAR1=val1 .. VARn=valn -- args]
 
-This script manages a local CrOS SDK chroot. Depending on the flags,
-it can download, build or enter a chroot.
+This script is used for manipulating local chroot environments; creating,
+deleting, downloading, etc.  If given --enter (or no args), it defaults
+to an interactive bash shell within the chroot.
 
-Action taken is the following:
---enter  (default)  .. Installs and enters a chroot
---download          .. Just download a chroot (enter if combined with --enter)
---delete            .. Removes a chroot
-"""
+If given args those are passed to the chroot environment, and executed."""
   conf = GetSdkConfig()
   sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
   bootstrap_latest_version = conf.get('BOOTSTRAP_LATEST_VERSION', '<unknown>')
 
-  parser = commandline.OptionParser(usage, caching=True)
-  # Actions:
-  parser.add_option('--bootstrap',
-                    action='store_true', dest='bootstrap', default=False,
-                    help=('Build everything from scratch, including the sdk.  '
-                          'Use this only if you need to validate a change '
-                          'that affects SDK creation itself (toolchain and '
-                          'build are typically the only folk who need this).  '
-                          'Note this will quite heavily slow down the build.  '
-                          'Finally, this option implies --enter.'))
-  parser.add_option('--delete',
-                    action='store_true', dest='delete', default=False,
-                    help=('Delete the current SDK chroot'))
-  parser.add_option('--download',
-                    action='store_true', dest='download', default=False,
-                    help=('Download and install a prebuilt SDK'))
-  parser.add_option('--enter',
-                    action='store_true', dest='enter', default=False,
-                    help=('Enter the SDK chroot, possibly (re)create first'))
+  parser = commandline.OptionParser(usage=usage, caching=True)
+
+  commands = parser.add_option_group("Commands")
+  commands.add_option(
+      '--enter', action='store_true', default=False,
+      help='Enter the SDK chroot.  Implies --create.')
+  commands.add_option(
+      '--create', action='store_true',default=False,
+      help='Create the chroot only if it does not already exist.  '
+      'Implies --download.')
+  commands.add_option(
+      '--bootstrap', action='store_true', default=False,
+      help='Build everything from scratch, including the sdk.  '
+      'Use this only if you need to validate a change '
+      'that affects SDK creation itself (toolchain and '
+      'build are typically the only folk who need this).  '
+      'Note this will quite heavily slow down the build.  '
+      'This option implies --create --nousepkg.')
+  commands.add_option(
+      '-r', '--replace', action='store_true', default=False,
+      help='Replace an existing SDK chroot.  Basically an alias '
+      'for --delete --create.')
+  commands.add_option(
+      '--delete', action='store_true', default=False,
+      help='Delete the current SDK chroot if it exists.')
+  commands.add_option(
+      '--download', action='store_true', default=False,
+      help='Download the sdk.')
 
   # Global options:
   default_chroot = os.path.join(SRC_ROOT, constants.DEFAULT_CHROOT_DIR)
-  parser.add_option('--chroot', dest='chroot', default=default_chroot,
-                    type='path',
-                    help=('SDK chroot dir name [%s]' %
-                          constants.DEFAULT_CHROOT_DIR))
+  parser.add_option(
+      '--chroot', dest='chroot', default=default_chroot, type='path',
+      help=('SDK chroot dir name [%s]' % constants.DEFAULT_CHROOT_DIR))
 
-  # Additional options:
-  parser.add_option('--chrome_root',
-                    dest='chrome_root', default=None, type='path',
-                    help=('Mount this chrome root into the SDK chroot'))
-  parser.add_option('--chrome_root_mount',
-                    dest='chrome_root_mount', default=None, type='path',
-                    help=('Mount chrome into this path inside SDK chroot'))
-  parser.add_option('-r', '--replace',
-                    action='store_true', dest='replace', default=False,
-                    help=('Replace an existing SDK chroot'))
-  parser.add_option('--nousepkg',
-                    action='store_true', dest='nousepkg', default=False,
-                    help=('Do not use binary packages when creating a chroot'))
+  parser.add_option('--chrome_root', default=None, type='path',
+                    help='Mount this chrome root into the SDK chroot')
+  parser.add_option('--chrome_root_mount', default=None, type='path',
+                    help='Mount chrome into this path inside SDK chroot')
+  parser.add_option('--nousepkg', action='store_true', default=False,
+                    help='Do not use binary packages when creating a chroot.')
   parser.add_option('-u', '--url',
                     dest='sdk_url', default=None,
                     help=('''Use sdk tarball located at this url.
@@ -277,7 +279,7 @@ Action taken is the following:
                     help='Use this sdk version.  For prebuilt, current is %r'
                          ', for bootstrapping its %r.'
                           % (sdk_latest_version, bootstrap_latest_version))
-  (options, remaining_arguments) = parser.parse_args(argv)
+  options, chroot_command = parser.parse_args(argv)
 
   # Some sanity checks first, before we ask for sudo credentials.
   if cros_build_lib.IsInsideChroot():
@@ -299,22 +301,34 @@ Action taken is the following:
         '  sudo apt-get install <packagename>'
         % (', '.join(missing))))
 
-  # Default action is --enter, if no other is selected.
-  if not (options.bootstrap or options.download or options.delete):
-    options.enter = True
+  # Expand out the aliases...
+  if options.replace:
+    options.delete = options.create = True
 
-  # Only --enter can process additional args as passthrough commands.
-  # Warn and exit for least surprise.
-  if len(remaining_arguments) > 0 and not options.enter:
-    parser.error("Additional arguments are not permitted, unless running "
-                 "with --enter")
+  if options.bootstrap:
+    options.create = True
 
-  # Some actions can be combined, as they merely modify how is the chroot
-  # going to be made. The only option that hates all others is --delete.
-  if options.delete and \
-    (options.enter or options.download or options.bootstrap):
-    parser.error("--delete cannot be combined with --enter, "
-                 "--download or --bootstrap")
+  # If a command is not given, default to enter.
+  options.enter |= not any(getattr(options, x.dest)
+                           for x in commands.option_list)
+  options.enter |= bool(chroot_command)
+
+  if options.enter and options.delete and not options.create:
+    parser.error("Trying to enter the chroot when --delete "
+                 "was specified makes no sense.")
+
+  # Finally, discern if we need to create the chroot.
+  chroot_exists = os.path.exists(options.chroot)
+  if options.create or options.enter:
+    # Only create if it's being wiped, or if it doesn't exist.
+    if not options.delete and chroot_exists:
+      options.create = False
+    else:
+      options.download = True
+
+  # Finally, flip create if necessary.
+  if options.enter:
+    options.create |= not chroot_exists
 
   if not options.sdk_version:
     sdk_version = (bootstrap_latest_version if options.bootstrap
@@ -330,10 +344,6 @@ Action taken is the following:
   else:
     urls = GetArchStageTarballs(sdk_version)
 
-  if options.delete and not os.path.exists(options.chroot):
-    print "Not doing anything. The chroot you want to remove doesn't exist."
-    return 0
-
   lock_path = os.path.dirname(options.chroot)
   lock_path = os.path.join(lock_path,
                            '.%s_lock' % os.path.basename(options.chroot))
@@ -342,16 +352,9 @@ Action taken is the following:
       _CreateLockFile(lock_path)
       with locking.FileLock(lock_path, 'chroot lock') as lock:
 
-        if os.path.exists(options.chroot):
-          if options.delete or options.replace:
-            lock.write_lock()
-            DeleteChroot(options.chroot)
-            if options.delete:
-              return 0
-          elif not options.enter and not options.download:
-            print "Chroot already exists. Run with --replace to re-create."
-        elif options.delete:
-          return 0
+        if options.delete and os.path.exists(options.chroot):
+          lock.write_lock()
+          DeleteChroot(options.chroot)
 
         sdk_cache = os.path.join(options.cache_dir, 'sdks')
         distfiles_cache = os.path.join(options.cache_dir, 'distfiles')
@@ -383,16 +386,16 @@ Action taken is the following:
             # Wipe and continue.
             osutils.RmDir(src, sudo=True)
 
-        if not os.path.exists(options.chroot) or options.download:
+        if options.download:
           lock.write_lock()
           sdk_tarball = FetchRemoteTarballs(sdk_cache, urls)
-          if options.download:
-            # Nothing further to do.
-            return 0
+
+        if options.create:
+          lock.write_lock()
           CreateChroot(options.chroot, sdk_tarball, options.cache_dir,
                        nousepkg=(options.bootstrap or options.nousepkg))
 
         if options.enter:
           lock.read_lock()
           EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
-                      options.chrome_root_mount, remaining_arguments)
+                      options.chrome_root_mount, chroot_command)
