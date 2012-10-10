@@ -144,9 +144,9 @@ void GetWindowBounds(const gfx::Rect& monitor1_bounds,
                      const gfx::Rect& bounds,
                      const gfx::Rect& work_area,
                      Source source,
-                     gfx::Rect* out_bounds,
                      const Browser* browser,
-                     const gfx::Rect& passed_in);
+                     const gfx::Rect& passed_in,
+                     gfx::Rect* out_bounds);
 
 // Set up the various show states and get the resulting show state from
 // the WindowSizer.
