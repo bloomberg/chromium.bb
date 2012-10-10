@@ -136,6 +136,17 @@ def CommandGypBuild(context):
     raise Exception('Unknown platform')
 
 
+def CommandGypGenerate(context):
+  Command(
+          context,
+          cmd=[
+              sys.executable,
+              'native_client/build/gyp_nacl',
+              'native_client/build/all.gyp',
+              ],
+          cwd='..')
+
+
 def CommandGclientRunhooks(context):
   if context.Windows():
     gclient = 'gclient.bat'
@@ -209,14 +220,7 @@ def BuildScript(status, context):
   # download_toolchains would overwrite the toolchain build.
   if inside_toolchain:
     with Step('gyp_generate_only', status):
-      Command(
-          context,
-          cmd=[
-              sys.executable,
-              'native_client/build/gyp_nacl',
-              'native_client/build/all.gyp',
-              ],
-          cwd='..')
+      CommandGypGenerate(context)
   else:
     with Step('gclient_runhooks', status):
       CommandGclientRunhooks(context)
@@ -348,7 +352,7 @@ def BuildScript(status, context):
       # definitions.  It is done because some build systems (such as GNU Make,
       # MSBuild etc.) do not consider compiler arguments as a dependency.
       RemoveGypBuildDirectories()
-      CommandGclientRunhooks(context)
+      CommandGypGenerate(context)
       CommandGypBuild(context)
     context.SetEnv('GYP_DEFINES', gyp_defines_save)
 
