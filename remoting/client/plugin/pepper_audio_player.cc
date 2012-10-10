@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 
 // The frame size we will request from the browser.

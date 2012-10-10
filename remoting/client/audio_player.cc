@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 
 // The number of channels in the audio stream (only supporting stereo audio

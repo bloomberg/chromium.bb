@@ -7,13 +7,9 @@
 
 #include <list>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "remoting/proto/audio.pb.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 
