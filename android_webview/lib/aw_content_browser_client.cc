@@ -21,6 +21,7 @@ AwContentBrowserClient::~AwContentBrowserClient() {
 
 void AwContentBrowserClient::RenderProcessHostCreated(
     content::RenderProcessHost* host) {
+  ChromeContentBrowserClient::RenderProcessHostCreated(host);
   // Grant content: scheme to the whole process, since we impose per-view
   // access checks.
   content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
