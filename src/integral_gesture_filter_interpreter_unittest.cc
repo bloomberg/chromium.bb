@@ -60,14 +60,6 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
 
   // causing finger, dx, dy, fingers, buttons down, buttons mask, hwstate:
   base_interpreter->return_values_.push_back(
-      Gesture(kGestureMove, 0, 0, 3.2, 1.5));
-  base_interpreter->return_values_.push_back(
-      Gesture(kGestureMove, 0, 0, .2, -1.5));
-  base_interpreter->return_values_.push_back(
-      Gesture(kGestureMove, 0, 0, .5, 0));
-  base_interpreter->return_values_.push_back(
-      Gesture(kGestureMove, 0, 0, .2, .9));
-  base_interpreter->return_values_.push_back(
       Gesture(kGestureScroll, 0, 0, -20.9, 4.2));
   base_interpreter->return_values_.push_back(
       Gesture(kGestureScroll, 0, 0, .8, 1.7));
@@ -85,10 +77,6 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
   HardwareState hs = { 10000, 0, 1, 1, &fs };
 
   GestureType expected_types[] = {
-    kGestureTypeMove,
-    kGestureTypeMove,
-    kGestureTypeMove,
-    kGestureTypeMove,
     kGestureTypeScroll,
     kGestureTypeScroll,
     kGestureTypeScroll,
@@ -96,10 +84,10 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
     kGestureTypeFling
   };
   float expected_x[] = {
-    3, 0, 0, 1, -20, 0, 0, -1, 0
+    -20, 0, 0, -1, 0
   };
   float expected_y[] = {
-    1, -1, 0, 0, 4, 1, 3, 0, 0
+    4, 1, 3, 0, 0
   };
 
   ASSERT_EQ(arraysize(expected_types), arraysize(expected_x));
@@ -112,9 +100,6 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
     if (out == NULL) {
       EXPECT_FLOAT_EQ(expected_x[i], 0.0) << "i = " << i;
       EXPECT_FLOAT_EQ(expected_y[i], 0.0) << "i = " << i;
-    } else if (out->type == kGestureTypeMove) {
-      EXPECT_FLOAT_EQ(expected_x[i], out->details.move.dx) << "i = " << i;
-      EXPECT_FLOAT_EQ(expected_y[i], out->details.move.dy) << "i = " << i;
     } else if (out->type == kGestureTypeFling) {
       EXPECT_FLOAT_EQ(GESTURES_FLING_TAP_DOWN, out->details.fling.fling_state)
           << "i = " << i;
@@ -125,10 +110,10 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
   }
 }
 
-// This test moves the cursor 3.9 pixels, which causes an output of 3px w/ a
+// This test scrolls by 3.9 pixels, which causes an output of 3px w/ a
 // stored remainder of 0.9 px. Then, all fingers are removed, which should
-// reset the remainders. Then the curor is moved 0.2 pixels, which would
-// result in a 1px move if the remainders weren't cleared.
+// reset the remainders. Then scroll again by 0.2 pixels, which would
+// result in a 1px scroll if the remainders weren't cleared.
 TEST(IntegralGestureFilterInterpreterTest, ResetTest) {
   IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
       new IntegralGestureFilterInterpreterTestInterpreter;
@@ -136,11 +121,11 @@ TEST(IntegralGestureFilterInterpreterTest, ResetTest) {
 
   // causing finger, dx, dy, fingers, buttons down, buttons mask, hwstate:
   base_interpreter->return_values_.push_back(
-      Gesture(kGestureMove, 0, 0, 3.9, 0.0));
+      Gesture(kGestureScroll, 0, 0, 3.9, 0.0));
   base_interpreter->return_values_.push_back(
       Gesture());
   base_interpreter->return_values_.push_back(
-      Gesture(kGestureMove, 0, 0, .2, 0.0));
+      Gesture(kGestureScroll, 0, 0, .2, 0.0));
 
   FingerState fs = { 0, 0, 0, 0, 1, 0, 0, 0, 1, 0 };
   HardwareState hs[] = {
@@ -152,8 +137,33 @@ TEST(IntegralGestureFilterInterpreterTest, ResetTest) {
   size_t iter = 0;
   Gesture* out = interpreter.SyncInterpret(&hs[iter++], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
-  EXPECT_EQ(kGestureTypeMove, out->type);
+  EXPECT_EQ(kGestureTypeScroll, out->type);
   out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+  out = interpreter.SyncInterpret(&hs[iter++], NULL);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+}
+
+// This test requests (0.0, 0.0) move and scroll.
+// Both should result in a null gestures.
+TEST(IntegralGestureFilterInterpreterTest, ZeroGestureTest) {
+  IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
+      new IntegralGestureFilterInterpreterTestInterpreter;
+  IntegralGestureFilterInterpreter interpreter(base_interpreter, NULL);
+
+  // causing finger, dx, dy, fingers, buttons down, buttons mask, hwstate:
+  base_interpreter->return_values_.push_back(
+      Gesture(kGestureMove, 0, 0, 0.0, 0.0));
+  base_interpreter->return_values_.push_back(
+      Gesture(kGestureScroll, 0, 0, 0.0, 0.0));
+
+  HardwareState hs[] = {
+    { 10000.00, 0, 0, 0, NULL },
+    { 10000.01, 0, 0, 0, NULL },
+  };
+
+  size_t iter = 0;
+  Gesture* out = interpreter.SyncInterpret(&hs[iter++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
   out = interpreter.SyncInterpret(&hs[iter++], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);

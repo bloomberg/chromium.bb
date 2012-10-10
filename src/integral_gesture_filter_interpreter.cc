@@ -16,8 +16,6 @@ namespace gestures {
 IntegralGestureFilterInterpreter::IntegralGestureFilterInterpreter(
     Interpreter* next, Tracer* tracer)
     : FilterInterpreter(next, tracer),
-      x_move_remainder_(0.0),
-      y_move_remainder_(0.0),
       hscroll_remainder_(0.0),
       vscroll_remainder_(0.0) {
   InitName();
@@ -26,8 +24,7 @@ IntegralGestureFilterInterpreter::IntegralGestureFilterInterpreter(
 Gesture* IntegralGestureFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {
   if (hwstate->finger_cnt == 0 && hwstate->touch_cnt == 0)
-    x_move_remainder_ = y_move_remainder_ = hscroll_remainder_ =
-        vscroll_remainder_ = 0.0;
+    hscroll_remainder_ = vscroll_remainder_ = 0.0;
   Gesture* fg = next_->SyncInterpret(hwstate, timeout);
   Gesture** ret = &fg;
   HandleGesture(ret);
@@ -60,10 +57,6 @@ void IntegralGestureFilterInterpreter::HandleGesture(Gesture** ret) {
   Gesture* gs = *ret;
   switch (gs->type) {
     case kGestureTypeMove:
-      gs->details.move.dx = Truncate(gs->details.move.dx,
-                                     &x_move_remainder_);
-      gs->details.move.dy = Truncate(gs->details.move.dy,
-                                     &y_move_remainder_);
       if (gs->details.move.dx == 0.0 && gs->details.move.dy == 0.0)
         *ret = NULL;
       break;

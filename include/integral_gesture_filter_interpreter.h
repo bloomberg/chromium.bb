@@ -34,7 +34,6 @@ class IntegralGestureFilterInterpreter : public FilterInterpreter {
  private:
   void HandleGesture(Gesture** gs);
 
-  float x_move_remainder_, y_move_remainder_;
   float hscroll_remainder_, vscroll_remainder_;
 };
 
