@@ -261,6 +261,9 @@ class HostProcess
   void CreateAuthenticatorFactory() {
     DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
+    if (!host_ || shutting_down_)
+      return;
+
     std::string local_certificate = key_pair_.GenerateCertificate();
     if (local_certificate.empty()) {
       LOG(ERROR) << "Failed to generate host certificate.";
