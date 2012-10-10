@@ -45,22 +45,26 @@ class QuotaClient {
   // Called by the QuotaManager.
   // Gets the amount of data stored in the storage specified by
   // |origin_url| and |type|.
+  // Note it is safe to fire the callback after the QuotaClient is destructed.
   virtual void GetOriginUsage(const GURL& origin_url,
                               StorageType type,
                               const GetUsageCallback& callback) = 0;
 
   // Called by the QuotaManager.
   // Returns a list of origins that has data in the |type| storage.
+  // Note it is safe to fire the callback after the QuotaClient is destructed.
   virtual void GetOriginsForType(StorageType type,
                                  const GetOriginsCallback& callback) = 0;
 
   // Called by the QuotaManager.
   // Returns a list of origins that match the |host|.
+  // Note it is safe to fire the callback after the QuotaClient is destructed.
   virtual void GetOriginsForHost(StorageType type,
                                  const std::string& host,
                                  const GetOriginsCallback& callback) = 0;
 
   // Called by the QuotaManager.
+  // Note it is safe to fire the callback after the QuotaClient is destructed.
   virtual void DeleteOriginData(const GURL& origin,
                                 StorageType type,
                                 const DeletionCallback& callback) = 0;
