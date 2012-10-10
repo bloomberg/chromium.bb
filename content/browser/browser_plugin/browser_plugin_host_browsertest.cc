@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
@@ -217,6 +219,11 @@ class BrowserPluginHostTest : public ContentBrowserTest {
     ContentBrowserTest::TearDown();
   }
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Enable browser plugin in content_shell for running test.
+    command_line->AppendSwitch(switches::kEnableBrowserPluginForAllViewTypes);
+  }
+
   static void SimulateTabKeyPress(WebContents* web_contents) {
     SimulateKeyPress(web_contents,
                      ui::VKEY_TAB,
@@ -285,9 +292,9 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   TestBrowserPluginGuest* test_guest() const { return test_guest_; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginHostTest);
   TestBrowserPluginEmbedder* test_embedder_;
   TestBrowserPluginGuest* test_guest_;
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginHostTest);
 };
 
 // This test loads a guest that has infinite loop, therefore it hangs the guest

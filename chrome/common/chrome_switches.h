@@ -135,7 +135,6 @@ extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutofillFeedback[];
 extern const char kEnableAutologin[];
 extern const char kEnableBenchmarking[];
-extern const char kEnableBrowserPluginForAllViewTypes[];
 extern const char kEnableBundledPpapiFlash[];
 extern const char kEnableCloudPolicyService[];
 extern const char kEnableCloudPrintProxy[];

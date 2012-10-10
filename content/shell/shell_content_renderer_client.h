@@ -9,8 +9,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/content_renderer_client.h"
 
+namespace WebKit {
+class WebFrame;
+class WebPlugin;
+struct WebPluginParams;
+}
+
 namespace content {
 
+class RenderView;
 class ShellRenderProcessObserver;
 
 class ShellContentRendererClient : public ContentRendererClient {
@@ -19,6 +26,11 @@ class ShellContentRendererClient : public ContentRendererClient {
   virtual ~ShellContentRendererClient();
   virtual void RenderThreadStarted() OVERRIDE;
   virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
+  virtual bool OverrideCreatePlugin(
+      RenderView* render_view,
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params,
+      WebKit::WebPlugin** plugin) OVERRIDE;
 
  private:
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
