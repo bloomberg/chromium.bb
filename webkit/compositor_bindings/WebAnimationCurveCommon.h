@@ -5,6 +5,7 @@
 #ifndef WebAnimationCurveCommon_h
 #define WebAnimationCurveCommon_h
 
+#include "base/memory/scoped_ptr.h"
 #include <public/WebAnimationCurve.h>
 #include <wtf/Forward.h>
 
@@ -13,7 +14,7 @@ class CCTimingFunction;
 }
 
 namespace WebKit {
-PassOwnPtr<cc::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType);
+scoped_ptr<cc::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType);
 }
 
 #endif // WebAnimationCurveCommon_h

@@ -5,8 +5,8 @@
 #ifndef CCAnimationCurve_h
 #define CCAnimationCurve_h
 
+#include "base/memory/scoped_ptr.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -25,7 +25,7 @@ public:
 
     virtual double duration() const = 0;
     virtual Type type() const = 0;
-    virtual PassOwnPtr<CCAnimationCurve> clone() const = 0;
+    virtual scoped_ptr<CCAnimationCurve> clone() const = 0;
 
     const CCFloatAnimationCurve* toFloatAnimationCurve() const;
     const CCTransformAnimationCurve* toTransformAnimationCurve() const;

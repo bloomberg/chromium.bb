@@ -5,6 +5,7 @@
 #ifndef WebAnimationImpl_h
 #define WebAnimationImpl_h
 
+#include "base/memory/scoped_ptr.h"
 #include <public/WebAnimation.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -32,9 +33,10 @@ public:
     virtual bool alternatesDirection() const OVERRIDE;
     virtual void setAlternatesDirection(bool) OVERRIDE;
 
-    PassOwnPtr<cc::CCActiveAnimation> cloneToCCAnimation();
+    scoped_ptr<cc::CCActiveAnimation> cloneToCCAnimation();
+
 private:
-    OwnPtr<cc::CCActiveAnimation> m_animation;
+    scoped_ptr<cc::CCActiveAnimation> m_animation;
 };
 
 }

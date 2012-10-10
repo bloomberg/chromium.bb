@@ -2188,9 +2188,9 @@ public:
         layer->setLayerAnimationDelegate(this);
 
         // Any valid CCAnimationCurve will do here.
-        OwnPtr<CCAnimationCurve> curve(CCEaseTimingFunction::create());
-        OwnPtr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.release(), 1, 1, CCActiveAnimation::Opacity));
-        layer->layerAnimationController()->addAnimation(animation.release());
+        scoped_ptr<CCAnimationCurve> curve(CCEaseTimingFunction::create());
+        scoped_ptr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.Pass(), 1, 1, CCActiveAnimation::Opacity));
+        layer->layerAnimationController()->addAnimation(animation.Pass());
 
         // We add the animation *before* attaching the layer to the tree.
         m_layerTreeHost->rootLayer()->addChild(layer);
