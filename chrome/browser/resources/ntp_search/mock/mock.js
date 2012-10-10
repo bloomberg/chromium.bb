@@ -295,7 +295,7 @@ var recordMockData = false;
     if (debugArgs.debug)
       document.body.classList.add('debug');
 
-    var slownessFactor = parseInt(debugArgs.slownessFactor);
+    var slownessFactor = debugArgs.slownessFactor;
     if (slownessFactor)
       adjustAnimationSpeed(slownessFactor);
   });
