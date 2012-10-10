@@ -1932,6 +1932,7 @@
         'host/host_mock_objects.cc',
         'host/host_mock_objects.h',
         'host/json_host_config_unittest.cc',
+        'host/linux/x_server_clipboard_unittest.cc',
         'host/log_to_server_unittest.cc',
         'host/pin_hash_unittest.cc',
         'host/policy_hack/fake_policy_watcher.cc',
