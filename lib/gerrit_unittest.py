@@ -6,12 +6,12 @@
 
 """Unittests for GerritHelper.  Needs to have mox installed."""
 
+import mox
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
-import mox
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib

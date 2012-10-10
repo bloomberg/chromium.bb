@@ -6,18 +6,16 @@
 
 """Unittests for commands.  Needs to be run inside of chroot for mox."""
 
-import os
-import sys
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
-
+import copy
 import itertools
 import mox
-import sys
-import copy
+import os
 import shutil
+import sys
 import time
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))))
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
@@ -32,7 +30,7 @@ FAKE_PATCH_JSON = {
   "project":"tacos/chromite", "branch":"master",
   "id":"Iee5c89d929f1850d7d4e1a4ff5f21adda800025f",
   "currentPatchSet": {
-    "number":"2", "ref":"refs/changes/72/5172/1",
+    "number":"2", "ref":gerrit.GetChangeRef(1112, 2),
     "revision":"ff10979dd360e75ff21f5cf53b7f8647578785ef",
   },
   "number":"1112",
@@ -552,8 +550,7 @@ class TestGerritPatch(TestGitRepoPatch):
     change_num, patch_num = _GetNumber(), _GetNumber()
     # Note we intentionally use a gerrit like refspec here; we want to
     # ensure that none of our common code pathways puke on a non head/tag.
-    refspec = 'refs/changes/%i/%i/%i' % (
-        change_num % 100, change_num + 1000, patch_num)
+    refspec = gerrit.GetChangeRef(change_num + 1000, patch_num)
     json['currentPatchSet'].update(
         dict(number=patch_num, ref=refspec, revision=sha1))
     json['branch'] = os.path.basename(ref)

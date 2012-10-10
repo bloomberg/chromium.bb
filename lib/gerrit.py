@@ -31,7 +31,7 @@ class FailedToReachGerrit(GerritException):
   """Exception thrown if we failed to contact the Gerrit server."""
 
 
-class GerritHelper():
+class GerritHelper(object):
   """Helper class to manage interaction with Gerrit server."""
 
   _GERRIT_MAX_QUERY_RETURN = 500
@@ -50,6 +50,16 @@ class GerritHelper():
     self.ssh_url = constants.CROS_REMOTES[remote]
     self.remote = remote
     self._version = None
+
+  @classmethod
+  def GetCrosInternal(cls):
+    """Convenience method for accessing private ChromeOS gerrit."""
+    return cls(constants.INTERNAL_REMOTE)
+
+  @classmethod
+  def GetCrosExternal(cls):
+    """Convenience method for accessing public ChromiumOS gerrit."""
+    return cls(constants.EXTERNAL_REMOTE)
 
   @property
   def ssh_prefix(self):
@@ -448,3 +458,21 @@ def GetGerritHelperForChange(change):
   function.
   """
   return GerritHelper(change.remote)
+
+
+def GetChangeRef(change_number, patchset=None):
+  """Given a change number, return the refs/changes/* space for it.
+
+  Args:
+    change_number: The gerrit change number you want a refspec for.
+    patchset: If given it must either be an integer or '*'.  When given,
+      the returned refspec is for that exact patchset.  If '*' is given, it's
+      used for pulling down all patchsets for that change.
+  Returns:
+    A git refspec.
+  """
+  change_number = int(change_number)
+  s = 'refs/changes/%02i/%i' % (change_number % 100, change_number)
+  if patchset is not None:
+    s += '/%s' % ('*' if patchset == '*' else int(patchset))
+  return s
