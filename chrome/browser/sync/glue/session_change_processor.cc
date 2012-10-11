@@ -14,7 +14,6 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -131,14 +130,14 @@ void SessionChangeProcessor::Observe(
       break;
     }
 
-    case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
-      SyncedTabDelegate* tab = TabContentsSyncedTabDelegate::FromWebContents(
-          tab_contents->web_contents());
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+      WebContents* web_contents = content::Source<WebContents>(source).ptr();
+      SyncedTabDelegate* tab =
+          TabContentsSyncedTabDelegate::FromWebContents(web_contents);
       if (!tab || tab->profile() != profile_)
         return;
       modified_tabs.push_back(tab);
-      DVLOG(1) << "Received NOTIFICATION_TAB_CONTENTS_DESTROYED for profile "
+      DVLOG(1) << "Received NOTIFICATION_WEB_CONTENTS_DESTROYED for profile "
                << profile_;
       break;
     }
@@ -333,7 +332,8 @@ void SessionChangeProcessor::StartObserving() {
     return;
   notification_registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
       content::NotificationService::AllSources());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+  notification_registrar_.Add(this,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
       content::NotificationService::AllSources());

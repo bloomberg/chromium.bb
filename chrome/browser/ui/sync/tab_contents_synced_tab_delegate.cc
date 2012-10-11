@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -33,11 +32,7 @@ SessionID::id_type TabContentsSyncedTabDelegate::GetSessionId() const {
 }
 
 bool TabContentsSyncedTabDelegate::IsBeingDestroyed() const {
-  // TODO(avi): Switch to just the web contents call when the
-  // SessionChangeProcessor is switched to NOTIFICATION_WEB_CONTENTS_DESTROYED
-  // from NOTIFICATION_TAB_CONTENTS_DESTROYED.
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-  return tab_contents->in_destructor() || web_contents_->IsBeingDestroyed();
+  return web_contents_->IsBeingDestroyed();
 }
 
 Profile* TabContentsSyncedTabDelegate::profile() const {
