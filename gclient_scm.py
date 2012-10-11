@@ -589,7 +589,14 @@ class GitWrapper(SCMWrapper):
           if options.verbose:
             print('Running git svn fetch. This might take a while.\n')
           scm.GIT.Capture(['svn', 'fetch'], cwd=self.checkout_path)
-        sha1 = scm.GIT.GetSha1ForSvnRev(cwd=self.checkout_path, rev=rev)
+        try:
+          sha1 = scm.GIT.GetSha1ForSvnRev(cwd=self.checkout_path, rev=rev)
+        except gclient_utils.Error, e:
+          sha1 = e.message
+          print('\nWarning: Could not find a git revision with accurate\n'
+                 '.DEPS.git that maps to SVN revision %s.  Sync-ing to\n'
+                 'the closest sane git revision, which is:\n'
+                 '  %s\n' % (rev, e.message))
         if not sha1:
           raise gclient_utils.Error(
               ( 'It appears that either your git-svn remote is incorrectly\n'

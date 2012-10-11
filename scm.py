@@ -402,8 +402,23 @@ class GIT(object):
     if not GIT.IsGitSvn(cwd=cwd):
       return None
     try:
-      output = GIT.Capture(['svn', 'find-rev', 'r' + str(rev)], cwd=cwd)
-      return GIT.ParseGitSvnSha1(output)
+      git_svn_rev = GIT.Capture(
+          ['svn', 'find-rev', 'r' + str(rev)], cwd=cwd).rstrip()
+      if not git_svn_rev:
+        return None
+      output = GIT.Capture(
+          ['rev-list', '--ancestry-path', '--reverse',
+          '--grep', 'SVN changes up to revision [0-9]*',
+          '%s..refs/remotes/origin/master' % git_svn_rev], cwd=cwd)
+      if not output:
+        return None
+      sha1 = output.splitlines()[0]
+      if not sha1:
+        return None
+      output = GIT.Capture(['rev-list', '-n', '1', '%s^1' % sha1], cwd=cwd)
+      if git_svn_rev != output.rstrip():
+        raise gclient_utils.Error(sha1)
+      return sha1
     except subprocess2.CalledProcessError:
       return None
 
