@@ -190,6 +190,7 @@ void
 wl_connection_destroy(struct wl_connection *connection)
 {
 	close_fds(&connection->fds_out, -1);
+	close_fds(&connection->fds_in, -1);
 	close(connection->fd);
 	free(connection);
 }
