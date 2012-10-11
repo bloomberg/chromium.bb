@@ -74,6 +74,12 @@ namespace app.window {
     // Resize the window to |width|x|height| pixels in size.
     static void resizeTo(long width, long height);
 
+    // Draw attention to the window.
+    static void drawAttention();
+
+    // Clear attention to the window.
+    static void clearAttention();
+
     // The JavaScript 'window' object for the created child.
     [instanceOf=global] object contentWindow;
   };

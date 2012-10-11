@@ -15,5 +15,11 @@
 
     // Restore the window.
     static void restore();
+
+    // Draw attention to the window.
+    static void drawAttention();
+
+    // Clear attention to the window.
+    static void clearAttention();
   };
 };
