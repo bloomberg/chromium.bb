@@ -17,15 +17,12 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
+#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif  // OS_CHROMEOS
 
 using content::BrowserThread;
 
@@ -68,19 +65,13 @@ std::map<Profile*, bool>* g_drive_disabled_map = NULL;
 
 }  // namespace
 
-bool IsGDataAvailable(Profile* profile) {
+bool IsDriveEnabled(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (!AuthService::CanAuthenticate(profile))
+    return false;
+
 #if defined(OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->IsUserLoggedIn() ||
-      chromeos::UserManager::Get()->IsLoggedInAsGuest() ||
-      chromeos::UserManager::Get()->IsLoggedInAsDemoUser())
-    return false;
-
-  // Do not allow GData for incognito windows / guest mode.
-  if (profile->IsOffTheRecord())
-    return false;
-
   // Disable gdata if preference is set.  This can happen with commandline flag
   // --disable-gdata or enterprise policy, or probably with user settings too
   // in the future.

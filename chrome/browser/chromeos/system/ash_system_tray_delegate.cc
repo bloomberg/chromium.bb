@@ -1144,7 +1144,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   DriveSystemService* FindDriveSystemService() {
     Profile* profile = ProfileManager::GetDefaultProfile();
-    if (!gdata::util::IsGDataAvailable(profile))
+    if (!gdata::util::IsDriveEnabled(profile))
       return NULL;
     return DriveSystemServiceFactory::FindForProfile(profile);
   }

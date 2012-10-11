@@ -130,7 +130,7 @@ void DriveSystemService::AddBackDriveMountPoint(
 }
 
 void DriveSystemService::AddDriveMountPoint() {
-  if (!gdata::util::IsGDataAvailable(profile_))
+  if (!gdata::util::IsDriveEnabled(profile_))
     return;
 
   const FilePath mount_point = gdata::util::GetDriveMountPointPath();

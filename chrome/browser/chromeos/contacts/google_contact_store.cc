@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/contacts/contact_database.h"
 #include "chrome/browser/chromeos/contacts/contact_store_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_contacts_service.h"
+#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -399,7 +400,7 @@ bool GoogleContactStoreFactory::CanCreateContactStoreForProfile(
     Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
-  return gdata::util::IsGDataAvailable(profile);
+  return gdata::AuthService::CanAuthenticate(profile);
 }
 
 ContactStore* GoogleContactStoreFactory::CreateContactStore(Profile* profile) {

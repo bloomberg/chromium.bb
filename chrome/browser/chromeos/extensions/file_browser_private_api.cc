@@ -521,7 +521,7 @@ void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
   // Add drive mount point immediately when we kick of first instance of file
   // manager. The actual mount event will be sent to UI only when we perform
   // proper authentication.
-  if (gdata::util::IsGDataAvailable(profile_))
+  if (gdata::util::IsDriveEnabled(profile_))
     AddDriveMountPoint(profile_, extension_id(), render_view_host());
   DictionaryValue* dict = new DictionaryValue();
   SetResult(dict);
@@ -2023,7 +2023,7 @@ bool FileDialogStringsFunction::RunImpl() {
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
 
-  dict->SetBoolean("ENABLE_GDATA", gdata::util::IsGDataAvailable(profile()));
+  dict->SetBoolean("ENABLE_GDATA", gdata::util::IsDriveEnabled(profile()));
 
 #if defined(USE_ASH)
   dict->SetBoolean("ASH", true);
@@ -2595,12 +2595,12 @@ bool GetDrivePreferencesFunction::RunImpl() {
 
   const PrefService* service = profile_->GetPrefs();
 
-  bool driveEnabled = gdata::util::IsGDataAvailable(profile_);
+  bool drive_enabled = gdata::util::IsDriveEnabled(profile_);
 
-  if (driveEnabled)
+  if (drive_enabled)
     AddDriveMountPoint(profile_, extension_id(), render_view_host());
 
-  value->SetBoolean("driveEnabled", driveEnabled);
+  value->SetBoolean("driveEnabled", drive_enabled);
 
   value->SetBoolean("cellularDisabled",
                     service->GetBoolean(prefs::kDisableGDataOverCellular));

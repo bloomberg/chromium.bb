@@ -12,6 +12,7 @@
 #include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/operations_base.h"
 #include "chrome/browser/google_apis/task_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -20,6 +21,10 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "google_apis/gaia/gaia_constants.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif  // OS_CHROMEOS
 
 using content::BrowserThread;
 
@@ -128,6 +133,22 @@ void AuthService::Observe(int type,
   FOR_EACH_OBSERVER(AuthServiceObserver,
                     observers_,
                     OnOAuth2RefreshTokenChanged());
+}
+
+// static
+bool AuthService::CanAuthenticate(Profile* profile) {
+#if defined(OS_CHROMEOS)
+  if (!chromeos::UserManager::Get()->IsUserLoggedIn() ||
+      chromeos::UserManager::Get()->IsLoggedInAsGuest() ||
+      chromeos::UserManager::Get()->IsLoggedInAsDemoUser())
+    return false;
+#endif  // OS_CHROMEOS
+
+  // Authentication cannot be done with the incognito mode profile.
+  if (profile->IsOffTheRecord())
+    return false;
+
+  return true;
 }
 
 }  // namespace gdata

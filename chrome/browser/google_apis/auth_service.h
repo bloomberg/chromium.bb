@@ -69,6 +69,11 @@ class AuthService : public content::NotificationObserver {
     access_token_ = token;
   }
 
+  // Returns true if authentication can be done using the class for the given
+  // profile. For instance, this function returns false if the profile is
+  // used for the incognito mode.
+  static bool CanAuthenticate(Profile* profile);
+
  private:
   // Helper function for StartAuthentication() call.
   void StartAuthenticationOnUIThread(OperationRegistry* registry,
