@@ -656,7 +656,6 @@
           'test/data/zip/',
         ],
         'isolate_dependency_touched': [
-          '../tools/swarm_client/menus/applications-merged',
           'test/data/autofill/merge/output/ambiguous.out',
           'test/data/autofill/merge/output/email.out',
           'test/data/extensions/bad/Extensions/dddddddddddddddddddddddddddddddd/1.0/git_hates_empty_dirs',
