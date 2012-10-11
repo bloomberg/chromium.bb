@@ -81,11 +81,6 @@ class WebIntentPickerModel {
     default_service_url_ = default_url;
   }
 
-  int64 default_service_hash() const { return default_service_hash_; }
-  void set_default_service_hash(int64 default_service_hash) {
-    default_service_hash_ = default_service_hash;
-  }
-
   // Add a new installed service with |title|, |url| and |disposition| to the
   // picker.
   void AddInstalledService(
@@ -214,9 +209,6 @@ class WebIntentPickerModel {
 
   // Indicates that there are still open requests to CWS.
   bool waiting_for_suggestions_;
-
-  // The hash context for the default service, if there is one.
-  int64 default_service_hash_;
 
   // Information about the pending extension install.
   std::string pending_extension_install_id_;

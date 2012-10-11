@@ -426,49 +426,15 @@ WebIntentPickerController::CreateWebContentsForInlineDisposition(
   return web_contents;
 }
 
-// Take the MD5 digest of the origins of picker options
-// and record it as the default context string.
-int64 WebIntentPickerController::DigestServices() {
-  // The context in which the default is registered is all
-  // the installed services represented in the picker (represented
-  // by their site origins).
-  std::vector<std::string> context_urls;
-  for (size_t i = 0; i < picker_model_->GetInstalledServiceCount(); ++i) {
-    const GURL& url = picker_model_->GetInstalledServiceAt(i).url;
-    if (url.SchemeIs(chrome::kExtensionScheme))
-      context_urls.push_back(url.host());  // this is the extension ID
-    else
-      context_urls.push_back(url.GetOrigin().spec());
-  }
-  std::sort(context_urls.begin(), context_urls.end());
-
-  base::MD5Context md5_context;
-  base::MD5Init(&md5_context);
-  for (size_t i = 0; i < context_urls.size(); ++i)
-    base::MD5Update(&md5_context, context_urls[i]);
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &md5_context);
-  int64 hash = 0;
-  COMPILE_ASSERT(sizeof(base::MD5Digest) > sizeof(int64),
-                 int64_size_greater_than_md5_buffer);
-  memcpy(&hash, &digest, sizeof(int64));
-
-  return hash;
-}
-
 void WebIntentPickerController::SetDefaultServiceForSelection(const GURL& url) {
-  int64 service_hash = DigestServices();
   DCHECK(picker_model_.get());
-  if (url == picker_model_->default_service_url() &&
-      service_hash == picker_model_->default_service_hash()) {
+  if (url == picker_model_->default_service_url())
     return;
-  }
 
   DefaultWebIntentService record;
   record.action = picker_model_->action();
   record.type = picker_model_->type();
   record.service_url = url.spec();
-  record.suppression = service_hash;
   record.user_date = static_cast<int>(floor(base::Time::Now().ToDoubleT()));
   GetWebIntentsRegistry(profile_)->RegisterDefaultIntentService(record);
 }
@@ -706,8 +672,9 @@ void WebIntentPickerController::OnWebIntentServicesAvailableForExplicitIntent(
 void WebIntentPickerController::OnWebIntentDefaultsAvailable(
     const DefaultWebIntentService& default_service) {
   if (!default_service.service_url.empty()) {
+    // TODO(gbillock): this doesn't belong in the model, but keep it there
+    // for now.
     picker_model_->set_default_service_url(GURL(default_service.service_url));
-    picker_model_->set_default_service_hash(default_service.suppression);
   }
 
   RegistryCallsCompleted();
@@ -718,19 +685,7 @@ void WebIntentPickerController::RegistryCallsCompleted() {
   pending_registry_calls_count_--;
   if (pending_registry_calls_count_ != 0) return;
 
-  // TODO(groby): Temporary workaround for http://crbug.com/152590
-  // (Also related to http://crbug.com/134197.)
-  // If QuickOffice viewer is a pre-registered default (no digest available) and
-  // no other service is found, use built-in QuickOffice Viewer as default.
-  // Remove once defaults support pre-registration.
-  const GURL kQuickOfficeURL(web_intents::kQuickOfficeViewerServiceURL);
-  bool shouldFireQuickoffice =
-      (picker_model_->default_service_url() == kQuickOfficeURL) &&
-      (picker_model_->GetInstalledServiceCount() == 1);
-
-  if (picker_model_->default_service_url().is_valid() &&
-      (picker_model_->default_service_hash() == DigestServices() ||
-       shouldFireQuickoffice)) {
+  if (picker_model_->default_service_url().is_valid()) {
     // If there's a default service, dispatch to it immediately
     // without showing the picker.
     const WebIntentPickerModel::InstalledService* default_service =
