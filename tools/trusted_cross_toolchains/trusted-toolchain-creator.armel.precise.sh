@@ -45,7 +45,7 @@ readonly SCRIPT_DIR=$(dirname $0)
 # this where we create the ARMEL "jail"
 readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-trusted
 
-readonly TMP=/tmp/arm-crosstool-natty
+readonly TMP=/tmp/arm-crosstool-precise
 
 readonly REQUIRED_TOOLS="wget"
 
@@ -106,6 +106,7 @@ readonly ARMEL_BASE_PACKAGES="\
 readonly ARMEL_BASE_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.precise.armel.base)"
 
 readonly ARMEL_EXTRA_PACKAGES="\
+  comerr-dev \
   krb5-multidev \
   libasound2 \
   libasound2-dev \
@@ -115,6 +116,7 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libbz2-dev \
   libcairo2 \
   libcairo2-dev \
+  libcomerr2 \
   libcups2 \
   libcups2-dev \
   libdbus-1-3 \
@@ -125,16 +127,26 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libfontconfig1-dev \
   libfreetype6 \
   libfreetype6-dev \
+  libgconf-2-4 \
   libgconf2-4 \
   libgconf2-dev \
+  libgpg-error0 \
+  libgpg-error-dev \
+  libgcrypt11 \
+  libgcrypt11-dev \
   libgdk-pixbuf2.0-0 \
   libgdk-pixbuf2.0-dev \
+  libgnutls26 \
+  libgnutls-dev \
+  libgssapi-krb5-2 \
   libgtk2.0-0 \
   libgtk2.0-dev \
   libglib2.0-0 \
   libglib2.0-dev \
   libgnome-keyring-dev \
+  libkrb5-3 \
   libkrb5-dev \
+  libk5crypto3 \
   libnspr4 \
   libnspr4-dev \
   libnss3 \
@@ -188,6 +200,7 @@ readonly ARMEL_EXTRA_PACKAGES="\
   x11proto-damage-dev \
   x11proto-fixes-dev \
   x11proto-input-dev \
+  x11proto-randr-dev \
   x11proto-record-dev \
   x11proto-render-dev \
   x11proto-scrnsaver-dev \
@@ -441,7 +454,7 @@ BuildAndInstallQemu() {
   SubBanner "Install ${INSTALL_ROOT}"
   cp arm-linux-user/qemu-arm ${INSTALL_ROOT}
   cd ${saved_dir}
-  cp tools/llvm/qemu_tool_arm.sh ${INSTALL_ROOT}
+  cp tools/trusted_cross_toolchains/qemu_tool_arm.sh ${INSTALL_ROOT}
   ln -sf qemu_tool_arm.sh ${INSTALL_ROOT}/run_under_qemu_arm
 }
 
@@ -458,6 +471,7 @@ BuildJail() {
   InstallTrustedLinkerScript
   HacksAndPatches
   AddChromeWrapperScripts
+  exit
   BuildAndInstallQemu
   CreateTarBall $1
 }
@@ -469,11 +483,11 @@ BuildJail() {
 AddChromeWrapperScripts() {
    SubBanner "Installing Chrome Wrapper"
 
-   cp -a tools/llvm/chrome.cc.arm.sh ${INSTALL_ROOT}/chrome.cc.arm.sh
-   cp -a tools/llvm/chrome.cc.arm.sh ${INSTALL_ROOT}/chrome.c++.arm.sh
+   cp -a tools/trusted_cross_toolchains/chrome.cc.arm.sh ${INSTALL_ROOT}/chrome.cc.arm.sh
+   cp -a tools/trusted_cross_toolchains/chrome.cc.arm.sh ${INSTALL_ROOT}/chrome.c++.arm.sh
 
-   cp -a tools/llvm/chrome.cc.host.sh ${INSTALL_ROOT}/chrome.cc.host.sh
-   cp -a tools/llvm/chrome.cc.host.sh ${INSTALL_ROOT}/chrome.c++.host.sh
+   cp -a tools/trusted_cross_toolchains/chrome.cc.host.sh ${INSTALL_ROOT}/chrome.cc.host.sh
+   cp -a tools/trusted_cross_toolchains/chrome.cc.host.sh ${INSTALL_ROOT}/chrome.c++.host.sh
 
    chmod a+rx ${INSTALL_ROOT}/chrome.c*.sh
 }
@@ -491,6 +505,7 @@ GeneratePackageList() {
   echo  ${ARMEL_EXTRA_PACKAGES}
   echo "# BEGIN:"
   for pkg in $@ ; do
+    echo $pkg
     grep  -A 1 "${pkg}\$" ${TMP}/Packages | egrep -o "pool/.*"
   done
   echo "# END:"
