@@ -2,20 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import sys
-
-# Older versions of Python might be missing argparse.
-try:
-  import argparse
-except ImportError:
-  from chromite.third_party import argparse
-
 from chromite.cros import commands
+from chromite.lib import commandline
 
 
 def GetOptions(my_commands):
   """Returns the argparse to use for Cros."""
-  parser = argparse.ArgumentParser()
+  parser = commandline.ArgumentParser()
   if not commands:
     return parser
 

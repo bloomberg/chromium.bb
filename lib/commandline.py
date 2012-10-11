@@ -15,6 +15,12 @@ import optparse
 import signal
 import sys
 import tempfile
+
+try:
+  import argparse
+except ImportError:
+  from chromite.third_party import argparse
+
 # TODO(build): sort the buildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
 from chromite.buildbot import constants
@@ -61,26 +67,15 @@ class Option(optparse.Option):
   TYPE_CHECKER["log_level"] = ValidateLogLevel
 
 
-class OptionParser(optparse.OptionParser):
-
-  """Custom parser adding our custom option class in.
-
-  Aside from adding a couple of types (path for absolute paths,
-  gs_path for google storage urls, and log_level for logging level control),
-  this additionally exposes logging control by default; if undesired,
-  either derive from this class setting ALLOW_LOGGING to False, or
-  pass in logging=False to the constructor.
-  """
-
-  DEFAULT_OPTION_CLASS = Option
+class BaseParser(object):
+  """Base parser class that includes the logic to add logging controls."""
   DEFAULT_LOG_LEVELS = ("critical", "debug", "error", "fatal", "info",
                         "warning")
   DEFAULT_LOG_LEVEL = "info"
   ALLOW_LOGGING = True
   SUPPORTS_CACHING = False
 
-
-  def __init__(self, usage=None, **kwargs):
+  def __init__(self, **kwargs):
     """Initialize this parser instance.
 
     kwargs:
@@ -88,7 +83,7 @@ class OptionParser(optparse.OptionParser):
         add --log-level.
       default_log_level: If logging is enabled, override the default logging
         level.  Defaults to the class's DEFAULT_LOG_LEVEL value.
-      log_evels: If logging is enabled, this overrides the enumeration of
+      log_levels: If logging is enabled, this overrides the enumeration of
         allowed logging levels.  If not given, defaults to the classes
         DEFAULT_LOG_LEVELS value.
       manual_debug: If logging is enabled and this is True, suppress addition
@@ -108,33 +103,45 @@ class OptionParser(optparse.OptionParser):
         is False, then no --cache-dir option will be added.
     """
     self.debug_enabled = False
-    self.caching_group = self.debug_group = None
-    self.logging_enabled = kwargs.pop("logging", self.ALLOW_LOGGING)
-    if self.logging_enabled:
-      log_levels = tuple(x.lower() for x in kwargs.pop(
-          "log_levels", self.DEFAULT_LOG_LEVELS))
-      default_level = kwargs.pop("default_log_level", self.DEFAULT_LOG_LEVEL)
-      self.debug_enabled = (not kwargs.pop("manual_debug", False)
-                            and "debug" in log_levels)
+    self.caching_group = None
+    self.debug_group = None
+    self.default_log_level = None
+    self.log_levels = None
+    self.logging_enabled = kwargs.get('logging', self.ALLOW_LOGGING)
+    self.default_log_level = kwargs.get('default_log_level',
+                                        self.DEFAULT_LOG_LEVEL)
+    self.log_levels = tuple(x.lower() for x in
+                            kwargs.get('log_levels', self.DEFAULT_LOG_LEVELS))
+    self.debug_enabled = (not kwargs.get('manual_debug', False)
+                          and 'debug' in self.log_levels)
+    self.caching = kwargs.get('caching', self.SUPPORTS_CACHING)
 
-    self.caching = kwargs.pop("caching", self.SUPPORTS_CACHING)
-    # Allow usage to be passed positionally, since that's semi common.
-    kwargs.setdefault("option_class", self.DEFAULT_OPTION_CLASS)
-    optparse.OptionParser.__init__(self, usage=usage, **kwargs)
+  @staticmethod
+  def PopUsedArgs(kwarg_dict):
+    """Removes keys used by the base parser from the kwarg namespace."""
+    parser_keys = ['logging', 'default_log_level', 'log_levels', 'manual_debug',
+                   'caching']
+    for key in parser_keys:
+      kwarg_dict.pop(key, None)
 
+  def SetupOptions(self):
+    """Sets up special chromite options for an OptionParser."""
     if self.logging_enabled:
-      self.debug_group = group = self.add_option_group("Debug options")
-      group.add_option("--log-level", choices=log_levels, default=default_level,
-                      help="Set logging level to report at.")
+      self.debug_group = self.add_option_group("Debug options")
+      self.add_option_to_group(
+          self.debug_group, "--log-level", choices=self.log_levels,
+          default=self.default_log_level,
+          help="Set logging level to report at.")
       if self.debug_enabled:
-        group.add_option("--debug", action="store_const", const="debug",
-                        dest="log_level",
-                        help="Alias for `--log-level=debug`.  Useful for "
-                        "debugging bugs/failures.")
+        self.add_option_to_group(
+          self.debug_group, "--debug", action="store_const", const="debug",
+          dest="log_level", help="Alias for `--log-level=debug`. "
+          "Useful for debugging bugs/failures.")
+
     if self.caching:
       self.caching_group = self.add_option_group("Caching Options")
-      self.caching_group.add_option(
-          "--cache-dir", default=None, type='path',
+      self.add_option_to_group(
+          self.caching_group, "--cache-dir", default=None, type='path',
           help="Override the calculated chromeos cache directory; "
           "typically defaults to '$REPO/.cache' .")
 
@@ -163,7 +170,8 @@ class OptionParser(optparse.OptionParser):
 
     return opts, args
 
-  def ConfigureCacheDir(self, cache_dir):
+  @staticmethod
+  def ConfigureCacheDir(cache_dir):
     os.environ[constants.SHARED_CACHE_ENVVAR] = cache_dir
     logging.debug("Configured cache_dir to %r", cache_dir)
 
@@ -177,10 +185,72 @@ class OptionParser(optparse.OptionParser):
       path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
     return path
 
+  def add_option_group(self, *args, **kwargs):
+    """Returns a new option group see optparse.OptionParser.add_option_group."""
+    raise NotImplementedError('Subclass must override this method')
+
+  @staticmethod
+  def add_option_to_group(group, *args, **kwargs):
+    """Adds the given option defined by args and kwargs to group."""
+    group.add_option(*args, **kwargs)
+
+
+class OptionParser(optparse.OptionParser, BaseParser):
+  """Custom parser adding our custom option class in.
+
+  Aside from adding a couple of types (path for absolute paths,
+  gs_path for google storage urls, and log_level for logging level control),
+  this additionally exposes logging control by default; if undesired,
+  either derive from this class setting ALLOW_LOGGING to False, or
+  pass in logging=False to the constructor.
+  """
+
+  DEFAULT_OPTION_CLASS = Option
+
+  def __init__(self, usage=None, **kwargs):
+    BaseParser.__init__(self, **kwargs)
+    self.PopUsedArgs(kwargs)
+    kwargs.setdefault("option_class", self.DEFAULT_OPTION_CLASS)
+    optparse.OptionParser.__init__(self, usage=usage, **kwargs)
+    self.SetupOptions()
+
   def parse_args(self, args=None, values=None):
     opts, remaining = optparse.OptionParser.parse_args(
         self, args=args, values=values)
     return self.DoPostParseSetup(opts, remaining)
+
+
+# pylint: disable=R0901
+class ArgumentParser(argparse.ArgumentParser, BaseParser):
+  """Custom argument parser for use by chromite.
+
+  This class additionally exposes logging control by default; if undesired,
+  either derive from this class setting ALLOW_LOGGING to False, or
+  pass in logging=False to the constructor.
+  """
+  # pylint: disable=W0231
+  def __init__(self, usage=None, **kwargs):
+    BaseParser.__init__(self, **kwargs)
+    self.PopUsedArgs(kwargs)
+    argparse.ArgumentParser.__init__(self, usage=usage, **kwargs)
+    self.SetupOptions()
+
+  def add_option_group(self, *args, **kwargs):
+    """Return an argument group rather than an option group."""
+    return self.add_argument_group(*args, **kwargs)
+
+  @staticmethod
+  def add_option_to_group(group, *args, **kwargs):
+    """Adds an argument rather than an option to the given group."""
+    return group.add_argument(*args, **kwargs)
+
+  def parse_args(self, args=None, namespace=None):
+    """Translates OptionParser call to equivalent ArgumentParser call."""
+    # Unlike OptionParser, ArgParser works only with a single namespace and no
+    # args. Re-use BaseParser DoPostParseSetup but only take the namespace.
+    namespace = argparse.ArgumentParser.parse_args(
+        self, args=args, namespace=namespace)
+    return self.DoPostParseSetup(namespace, None)[0]
 
 
 class _ShutDownException(SystemExit):
