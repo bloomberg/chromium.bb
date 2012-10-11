@@ -491,7 +491,7 @@ queue_event(struct wl_display *display, int len)
 	if (proxy == WL_ZOMBIE_OBJECT) {
 		wl_connection_consume(display->connection, size);
 		return size;
-	} else if (proxy == NULL || proxy->object.implementation == NULL) {
+	} else if (proxy == NULL) {
 		wl_connection_consume(display->connection, size);
 		return size;
 	}
@@ -536,7 +536,8 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 
 	pthread_mutex_unlock(&display->mutex);
 
-	if (proxy != WL_ZOMBIE_OBJECT && ret == 0) {
+	if (proxy != WL_ZOMBIE_OBJECT &&
+	    proxy->object.implementation && ret == 0) {
 		if (wl_debug)
 			wl_closure_print(closure, &proxy->object, false);
 
