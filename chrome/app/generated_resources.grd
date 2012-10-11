@@ -5194,6 +5194,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_TYPE_SHORTCUT" desc="The text shown in a text box to instruct the user to start typing (to capture which shortcut to use for the extension command).">
         Type a shortcut
       </message>
+      <message name="IDS_EXTENSION_DELETE_SHORTCUT" desc="The text shown when you hover over the X inside the input text field.">
+        Delete shortcut
+      </message>
       <message name="IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE" desc="The generic 'activate extension' text used as description for some commands">
         Activate the extension
       </message>

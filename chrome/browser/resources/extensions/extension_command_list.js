@@ -113,26 +113,34 @@ cr.define('options', function() {
       var template = $('template-collection-extension-commands').querySelector(
           '.extension-command-list-command-item-wrapper');
       var node = template.cloneNode(true);
-      node.id = 'command-' + command.extension_id + '-' + command.command_name;
+      node.id = this.createElementId_(
+          'command', command.extension_id, command.command_name);
 
       var description = node.querySelector('.command-description');
       description.textContent = command.description;
 
-      var command_shortcut = node.querySelector('.command-shortcut');
-      command_shortcut.addEventListener('mouseup',
-                                        this.startCapture_.bind(this));
-      command_shortcut.addEventListener('blur', this.endCapture_.bind(this));
-      command_shortcut.addEventListener('keydown',
-                                        this.handleKeyDown_.bind(this));
-      command_shortcut.addEventListener('keyup', this.handleKeyUp_.bind(this));
-
+      var shortcutNode = node.querySelector('.command-shortcut-text');
+      shortcutNode.addEventListener('mouseup',
+                                    this.startCapture_.bind(this));
+      shortcutNode.addEventListener('blur', this.endCapture_.bind(this));
+      shortcutNode.addEventListener('keydown',
+                                    this.handleKeyDown_.bind(this));
+      shortcutNode.addEventListener('keyup', this.handleKeyUp_.bind(this));
       if (!command.active) {
-        command_shortcut.textContent =
+        shortcutNode.textContent =
             loadTimeData.getString('extensionCommandsInactive');
-        command_shortcut.classList.add('inactive-keybinding');
+
+        var commandShortcut = node.querySelector('.command-shortcut');
+        commandShortcut.classList.add('inactive-keybinding');
       } else {
-        command_shortcut.textContent = command.keybinding;
+        shortcutNode.textContent = command.keybinding;
       }
+
+      var commandClear = node.querySelector('.command-clear');
+      commandClear.id = this.createElementId_(
+          'clear', command.extension_id, command.command_name);
+      commandClear.title = loadTimeData.getString('extensionCommandsDelete');
+      commandClear.addEventListener('click', this.handleClear_.bind(this));
 
       this.appendChild(node);
     },
@@ -149,10 +157,15 @@ cr.define('options', function() {
 
       chrome.send('setShortcutHandlingSuspended', [true]);
 
-      this.oldValue_ = event.target.textContent;
-      event.target.textContent =
+      var shortcutNode = event.target;
+      this.oldValue_ = shortcutNode.textContent;
+      shortcutNode.textContent =
           loadTimeData.getString('extensionCommandsStartTyping');
-      event.target.classList.add('capturing');
+      shortcutNode.parentElement.classList.add('capturing');
+
+      var commandClear =
+          shortcutNode.parentElement.querySelector('.command-clear');
+      commandClear.hidden = true;
 
       this.capturingElement_ = event.target;
     },
@@ -169,15 +182,28 @@ cr.define('options', function() {
 
       chrome.send('setShortcutHandlingSuspended', [false]);
 
-      this.capturingElement_.classList.remove('capturing');
-      this.capturingElement_.classList.remove('contains-chars');
-      if (!this.currentKeyEvent_ || !validChar(this.currentKeyEvent_.keyCode))
-        this.capturingElement_.textContent = this.oldValue_;
+      var shortcutNode = this.capturingElement_;
+      var commandShortcut = shortcutNode.parentElement;
 
-      if (this.oldValue_ == '')
-        this.capturingElement_.classList.remove('clearable');
-      else
-        this.capturingElement_.classList.add('clearable');
+      commandShortcut.classList.remove('capturing');
+      commandShortcut.classList.remove('contains-chars');
+
+      // When the capture ends, the user may have not given a complete and valid
+      // input (or even no input at all). Only a valid key event followed by a
+      // valid key combination will cause a shortcut selection to be activated.
+      // If no valid selection was made, howver, revert back to what the textbox
+      // had before to indicate that the shortcut registration was cancelled.
+      if (!this.currentKeyEvent_ || !validChar(this.currentKeyEvent_.keyCode))
+        shortcutNode.textContent = this.oldValue_;
+
+      var commandClear = commandShortcut.querySelector('.command-clear');
+      if (this.oldValue_ == '') {
+        commandShortcut.classList.remove('clearable');
+        commandClear.hidden = true;
+      } else {
+        commandShortcut.classList.add('clearable');
+        commandClear.hidden = false;
+      }
 
       this.oldValue_ = '';
       this.capturingElement_ = null;
@@ -237,26 +263,65 @@ cr.define('options', function() {
       if (!event.ctrlKey && !event.altKey && (!cr.isMac || !event.metaKey))
         return;  // Ctrl or Alt is a must (or Cmd on Mac).
 
+      var shortcutNode = this.capturingElement_;
       var keystroke = keystrokeToString(event);
-      event.target.textContent = keystroke;
+      shortcutNode.textContent = keystroke;
       event.target.classList.add('contains-chars');
 
       if (validChar(event.keyCode)) {
         var node = event.target;
         while (node && !node.id)
           node = node.parentElement;
-        // The id is set to namespacePrefix-extensionId-commandName. We don't
-        // care about the namespacePrefix (but we care about the other two).
-        var id = node.id.substring(8, 40);
-        var command_name = node.id.substring(41);
 
         this.oldValue_ = keystroke;  // Forget what the old value was.
+        var parsed = this.parseElementId_('command', node.id);
         chrome.send('setExtensionCommandShortcut',
-                    [id, command_name, keystroke]);
+                    [parsed.extensionId, parsed.commandName, keystroke]);
         this.endCapture_(event);
       }
 
       this.currentKeyEvent_ = event;
+    },
+
+    /**
+     * A handler for the delete command button.
+     * @param {Event} event The mouse event to consider.
+     * @private
+     */
+    handleClear_: function(event) {
+      var parsed = this.parseElementId_('clear', event.target.id);
+      chrome.send('setExtensionCommandShortcut',
+          [parsed.extensionId, parsed.commandName, '']);
+    },
+
+    /**
+     * A utility function to create a unique element id based on a namespace,
+     * extension id and a command name.
+     * @param {string} namespace   The namespace to prepend the id with.
+     * @param {string} extensionId The extension ID to use in the id.
+     * @param {string} commandName The command name to append the id with.
+     * @private
+     */
+    createElementId_: function(namespace, extensionId, commandName) {
+      return namespace + '-' + extensionId + '-' + commandName;
+    },
+
+    /**
+     * A utility function to parse a unique element id based on a namespace,
+     * extension id and a command name.
+     * @param {string} namespace   The namespace to prepend the id with.
+     * @param {string} id          The id to parse.
+     * @return {object} The parsed id, as an object with two members:
+     *                  extensionID and commandName.
+     * @private
+     */
+    parseElementId_: function(namespace, id) {
+      var kExtensionIdLength = 32;
+      return {
+        extensionId: id.substring(namespace.length + 1,
+                                  namespace.length + 1 + kExtensionIdLength),
+        commandName: id.substring(namespace.length + 1 + kExtensionIdLength + 1)
+      };
     },
   };
 

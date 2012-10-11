@@ -37,6 +37,8 @@ void CommandHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_INACTIVE));
   localized_strings->SetString("extensionCommandsStartTyping",
       l10n_util::GetStringUTF16(IDS_EXTENSION_TYPE_SHORTCUT));
+  localized_strings->SetString("extensionCommandsDelete",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_DELETE_SHORTCUT));
   localized_strings->SetString("ok", l10n_util::GetStringUTF16(IDS_OK));
 }
 

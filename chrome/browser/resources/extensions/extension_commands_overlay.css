@@ -37,13 +37,23 @@
   display: inline-block;
   height: 1.4em;
   min-width: 12.5em;
-  outline: none;
   padding: 3px 0 1px 4px;
 }
 
+.command-shortcut-text {
+  display: inline-block;
+  height: 1.4em;
+  min-width: 11em;
+  outline: none;
+}
+
 .clearable {
-  background: white url('chrome://theme/IDR_EXTENSION_COMMAND_CLOSE')
-              no-repeat right;
+  background: white;
+}
+
+.command-clear {
+  float: right;
+  margin-top: 1px;
 }
 
 .capturing {
