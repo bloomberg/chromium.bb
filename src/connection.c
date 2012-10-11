@@ -229,20 +229,37 @@ build_cmsg(struct wl_buffer *buffer, char *data, int *clen)
 	}
 }
 
-static void
+static int
 decode_cmsg(struct wl_buffer *buffer, struct msghdr *msg)
 {
 	struct cmsghdr *cmsg;
-	size_t size;
+	size_t size, max, i;
+	int overflow = 0;
 
 	for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL;
 	     cmsg = CMSG_NXTHDR(msg, cmsg)) {
-		if (cmsg->cmsg_level == SOL_SOCKET &&
-		    cmsg->cmsg_type == SCM_RIGHTS) {
-			size = cmsg->cmsg_len - CMSG_LEN(0);
+		if (cmsg->cmsg_level != SOL_SOCKET ||
+		    cmsg->cmsg_type != SCM_RIGHTS)
+			continue;
+
+		size = cmsg->cmsg_len - CMSG_LEN(0);
+		max = sizeof(buffer->data) - wl_buffer_size(buffer);
+		if (size > max || overflow) {
+			overflow = 1;
+			size /= sizeof(int32_t);
+			for (i = 0; i < size; ++i)
+				close(((int*)CMSG_DATA(cmsg))[i]);
+		} else {
 			wl_buffer_put(buffer, CMSG_DATA(cmsg), size);
 		}
 	}
+
+	if (overflow) {
+		errno = EOVERFLOW;
+		return -1;
+	}
+
+	return 0;
 }
 
 int
@@ -295,7 +312,7 @@ wl_connection_read(struct wl_connection *connection)
 	struct iovec iov[2];
 	struct msghdr msg;
 	char cmsg[CLEN];
-	int len, count;
+	int len, count, ret;
 
 	wl_buffer_put_iov(&connection->in, iov, &count);
 
@@ -314,7 +331,9 @@ wl_connection_read(struct wl_connection *connection)
 	if (len <= 0)
 		return len;
 
-	decode_cmsg(&connection->fds_in, &msg);
+	ret = decode_cmsg(&connection->fds_in, &msg);
+	if (ret)
+		return -1;
 
 	connection->in.head += len;
 
