@@ -110,7 +110,6 @@ class GDataWapiService : public DriveServiceInterface,
       const OperationProgressStatusList& list) OVERRIDE;
   virtual void OnAuthenticationFailed(GDataErrorCode error) OVERRIDE;
 
-  Profile* profile_;
   scoped_ptr<OperationRunner> runner_;
   ObserverList<DriveServiceObserver> observers_;
 

@@ -14,7 +14,6 @@
 #include "chrome/browser/google_apis/gdata_operations.h"
 #include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/google_apis/operation_runner.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -68,8 +67,7 @@ const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 }  // namespace
 
 GDataWapiService::GDataWapiService()
-    : profile_(NULL),
-      runner_(NULL) {
+    : runner_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -87,7 +85,6 @@ AuthService* GDataWapiService::auth_service_for_testing() {
 
 void GDataWapiService::Initialize(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_ = profile;
 
   std::vector<std::string> scopes;
   scopes.push_back(kDocsListScope);
