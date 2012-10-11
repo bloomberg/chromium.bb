@@ -75,12 +75,6 @@ class UI_EXPORT RectBase {
   // Returns true if the area of the rectangle is zero.
   bool IsEmpty() const { return size_.IsEmpty(); }
 
-  bool operator==(const Class& other) const;
-
-  bool operator!=(const Class& other) const {
-    return !(*this == other);
-  }
-
   // A rect is less than another rect if its origin is less than
   // the other rect's origin. If the origins are equal, then the
   // shortest rect is less than the other. If the origin and the
@@ -117,11 +111,6 @@ class UI_EXPORT RectBase {
   // |*this| is returned.  If |rect| contains |this|, then an empty Rect is
   // returned.
   Class Subtract(const Class& rect) const WARN_UNUSED_RESULT;
-
-  // Returns true if this rectangle equals that of the supplied rectangle.
-  bool Equals(const Class& rect) const {
-    return *this == rect;
-  }
 
   // Fits as much of the receiving rectangle into the supplied rectangle as
   // possible, returning the result. For example, if the receiver had

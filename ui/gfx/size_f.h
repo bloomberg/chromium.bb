@@ -30,6 +30,14 @@ class UI_EXPORT SizeF : public SizeBase<SizeF, float> {
   std::string ToString() const;
 };
 
+inline bool operator==(const SizeF& lhs, const SizeF& rhs) {
+  return lhs.width() == rhs.width() && lhs.height() == rhs.height();
+}
+
+inline bool operator!=(const SizeF& lhs, const SizeF& rhs) {
+  return !(lhs == rhs);
+}
+
 #if !defined(COMPILER_MSVC)
 extern template class SizeBase<SizeF, float>;
 #endif

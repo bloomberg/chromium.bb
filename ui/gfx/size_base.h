@@ -35,14 +35,6 @@ class UI_EXPORT SizeBase {
   void set_width(Type width) { width_ = width; }
   void set_height(Type height) { height_ = height; }
 
-  bool operator==(const Class& s) const {
-    return width_ == s.width_ && height_ == s.height_;
-  }
-
-  bool operator!=(const Class& s) const {
-    return !(*this == s);
-  }
-
   bool IsEmpty() const {
     return (width_ <= 0) || (height_ <= 0);
   }

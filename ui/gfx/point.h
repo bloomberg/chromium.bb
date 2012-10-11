@@ -44,7 +44,7 @@ class UI_EXPORT Point : public PointBase<Point, int> {
   CGPoint ToCGPoint() const;
 #endif
 
-  PointF ToPointF() const {
+  operator PointF() const {
     return PointF(x(), y());
   }
 
@@ -59,6 +59,14 @@ class UI_EXPORT Point : public PointBase<Point, int> {
   // Returns a string representation of point.
   std::string ToString() const;
 };
+
+inline bool operator==(const Point& lhs, const Point& rhs) {
+  return lhs.x() == rhs.x() && lhs.y() == rhs.y();
+}
+
+inline bool operator!=(const Point& lhs, const Point& rhs) {
+  return !(lhs == rhs);
+}
 
 inline Point operator+(Point lhs, Point rhs) {
   return lhs.Add(rhs);

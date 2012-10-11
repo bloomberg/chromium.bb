@@ -165,12 +165,12 @@ TEST(RectTest, Union) {
 }
 
 TEST(RectTest, Equals) {
-  ASSERT_TRUE(gfx::Rect(0, 0, 0, 0).Equals(gfx::Rect(0, 0, 0, 0)));
-  ASSERT_TRUE(gfx::Rect(1, 2, 3, 4).Equals(gfx::Rect(1, 2, 3, 4)));
-  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0).Equals(gfx::Rect(0, 0, 0, 1)));
-  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0).Equals(gfx::Rect(0, 0, 1, 0)));
-  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0).Equals(gfx::Rect(0, 1, 0, 0)));
-  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0).Equals(gfx::Rect(1, 0, 0, 0)));
+  ASSERT_TRUE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(0, 0, 0, 0));
+  ASSERT_TRUE(gfx::Rect(1, 2, 3, 4) == gfx::Rect(1, 2, 3, 4));
+  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(0, 0, 0, 1));
+  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(0, 0, 1, 0));
+  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(0, 1, 0, 0));
+  ASSERT_FALSE(gfx::Rect(0, 0, 0, 0) == gfx::Rect(1, 0, 0, 0));
 }
 
 TEST(RectTest, AdjustToFit) {
@@ -220,56 +220,56 @@ TEST(RectTest, Subtract) {
   // Matching
   EXPECT_TRUE(
       gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(10, 10, 20, 20)).Equals(
-      gfx::Rect(0, 0, 0, 0)));
+      gfx::Rect(10, 10, 20, 20)) ==
+      gfx::Rect(0, 0, 0, 0));
 
   // Contains
   EXPECT_TRUE(
       gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(5, 5, 30, 30)).Equals(
-      gfx::Rect(0, 0, 0, 0)));
+      gfx::Rect(5, 5, 30, 30)) ==
+      gfx::Rect(0, 0, 0, 0));
 
   // No intersection
   EXPECT_TRUE(
       gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(30, 30, 20, 20)).Equals(
-      gfx::Rect(10, 10, 20, 20)));
+      gfx::Rect(30, 30, 20, 20)) ==
+      gfx::Rect(10, 10, 20, 20));
 
   // Not a complete intersection in either direction
   EXPECT_TRUE(
       gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(15, 15, 20, 20)).Equals(
-      gfx::Rect(10, 10, 20, 20)));
+      gfx::Rect(15, 15, 20, 20)) ==
+      gfx::Rect(10, 10, 20, 20));
 
   // Complete intersection in the x-direction
   EXPECT_TRUE(
       gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(10, 15, 20, 20)).Equals(
-      gfx::Rect(10, 10, 20, 5)));
+      gfx::Rect(10, 15, 20, 20)) ==
+      gfx::Rect(10, 10, 20, 5));
 
   // Complete intersection in the x-direction
   EXPECT_TRUE(
       gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(5, 15, 30, 20)).Equals(
-      gfx::Rect(10, 10, 20, 5)));
+      gfx::Rect(5, 15, 30, 20)) ==
+      gfx::Rect(10, 10, 20, 5));
 
   // Complete intersection in the x-direction
   EXPECT_TRUE(
       gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(5, 5, 30, 20)).Equals(
-      gfx::Rect(10, 25, 20, 5)));
+      gfx::Rect(5, 5, 30, 20)) ==
+      gfx::Rect(10, 25, 20, 5));
 
   // Complete intersection in the y-direction
   EXPECT_TRUE(
       gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(10, 10, 10, 30)).Equals(
-      gfx::Rect(20, 10, 10, 20)));
+      gfx::Rect(10, 10, 10, 30)) ==
+      gfx::Rect(20, 10, 10, 20));
 
   // Complete intersection in the y-direction
   EXPECT_TRUE(
       gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(5, 5, 20, 30)).Equals(
-      gfx::Rect(25, 10, 5, 20)));
+      gfx::Rect(5, 5, 20, 30)) ==
+      gfx::Rect(25, 10, 5, 20));
 }
 
 TEST(RectTest, IsEmpty) {
@@ -288,23 +288,23 @@ TEST(RectTest, SplitVertically) {
 
   // Splitting when origin is (0, 0).
   gfx::Rect(0, 0, 20, 20).SplitVertically(&left_half, &right_half);
-  EXPECT_TRUE(left_half.Equals(gfx::Rect(0, 0, 10, 20)));
-  EXPECT_TRUE(right_half.Equals(gfx::Rect(10, 0, 10, 20)));
+  EXPECT_TRUE(left_half == gfx::Rect(0, 0, 10, 20));
+  EXPECT_TRUE(right_half == gfx::Rect(10, 0, 10, 20));
 
   // Splitting when origin is arbitrary.
   gfx::Rect(10, 10, 20, 10).SplitVertically(&left_half, &right_half);
-  EXPECT_TRUE(left_half.Equals(gfx::Rect(10, 10, 10, 10)));
-  EXPECT_TRUE(right_half.Equals(gfx::Rect(20, 10, 10, 10)));
+  EXPECT_TRUE(left_half == gfx::Rect(10, 10, 10, 10));
+  EXPECT_TRUE(right_half == gfx::Rect(20, 10, 10, 10));
 
   // Splitting a rectangle of zero width.
   gfx::Rect(10, 10, 0, 10).SplitVertically(&left_half, &right_half);
-  EXPECT_TRUE(left_half.Equals(gfx::Rect(10, 10, 0, 10)));
-  EXPECT_TRUE(right_half.Equals(gfx::Rect(10, 10, 0, 10)));
+  EXPECT_TRUE(left_half == gfx::Rect(10, 10, 0, 10));
+  EXPECT_TRUE(right_half == gfx::Rect(10, 10, 0, 10));
 
   // Splitting a rectangle of odd width.
   gfx::Rect(10, 10, 5, 10).SplitVertically(&left_half, &right_half);
-  EXPECT_TRUE(left_half.Equals(gfx::Rect(10, 10, 2, 10)));
-  EXPECT_TRUE(right_half.Equals(gfx::Rect(12, 10, 3, 10)));
+  EXPECT_TRUE(left_half == gfx::Rect(10, 10, 2, 10));
+  EXPECT_TRUE(right_half == gfx::Rect(12, 10, 3, 10));
 }
 
 TEST(RectTest, CenterPoint) {
@@ -566,5 +566,20 @@ TEST(RectTest, ConstructAndAssign) {
   gfx::Rect test2(rect_2);
 }
 #endif
+
+TEST(RectTest, ToRectF) {
+  // Check that implicit conversion from integer to float compiles.
+  gfx::Rect a(10, 20, 30, 40);
+  gfx::RectF b(10, 20, 30, 40);
+
+  gfx::RectF intersect = b.Intersect(a);
+  EXPECT_EQ(b.ToString(), intersect.ToString());
+
+  bool equals = a == b;
+  EXPECT_EQ(true, equals);
+
+  equals = b == a;
+  EXPECT_EQ(true, equals);
+}
 
 }  // namespace ui

@@ -31,6 +31,14 @@ class UI_EXPORT PointF : public PointBase<PointF, float> {
   std::string ToString() const;
 };
 
+inline bool operator==(const PointF& lhs, const PointF& rhs) {
+  return lhs.x() == rhs.x() && lhs.y() == rhs.y();
+}
+
+inline bool operator!=(const PointF& lhs, const PointF& rhs) {
+  return !(lhs == rhs);
+}
+
 inline PointF operator+(PointF lhs, PointF rhs) {
   return lhs.Add(rhs);
 }

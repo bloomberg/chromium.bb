@@ -114,16 +114,6 @@ template<typename Class,
          typename SizeClass,
          typename InsetsClass,
          typename Type>
-bool RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::operator==(
-    const Class& other) const {
-  return origin_ == other.origin_ && size_ == other.size_;
-}
-
-template<typename Class,
-         typename PointClass,
-         typename SizeClass,
-         typename InsetsClass,
-         typename Type>
 bool RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::operator<(
     const Class& other) const {
   if (origin_ == other.origin_) {

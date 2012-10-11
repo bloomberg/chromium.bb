@@ -66,7 +66,7 @@ TEST(PpapiGraphics2DImplTest, ConvertToLogicalPixels) {
     gfx::Point delta(tests[i].dx1, tests[i].dy1);
     bool res = webkit::ppapi::PPB_Graphics2D_Impl::ConvertToLogicalPixels(
         tests[i].scale, &r1, &delta);
-    EXPECT_TRUE(r1.Equals(r2));
+    EXPECT_EQ(r2.ToString(), r1.ToString());
     EXPECT_EQ(res, tests[i].result);
     if (res) {
       EXPECT_EQ(delta, gfx::Point(tests[i].dx2, tests[i].dy2));

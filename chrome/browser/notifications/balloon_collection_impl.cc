@@ -466,7 +466,7 @@ bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {
 #else
   gfx::Rect new_work_area = gfx::Screen::GetPrimaryDisplay().work_area();
 #endif
-  if (!work_area_.Equals(new_work_area)) {
+  if (work_area_ != new_work_area) {
     work_area_.SetRect(new_work_area.x(), new_work_area.y(),
                        new_work_area.width(), new_work_area.height());
     changed = true;

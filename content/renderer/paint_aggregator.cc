@@ -164,8 +164,7 @@ void PaintAggregator::ScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
   }
 
   // We can only scroll one rect at a time.
-  if (!update_.scroll_rect.IsEmpty() &&
-      !update_.scroll_rect.Equals(clip_rect)) {
+  if (!update_.scroll_rect.IsEmpty() && update_.scroll_rect != clip_rect) {
     InvalidateRect(clip_rect);
     return;
   }
