@@ -197,21 +197,13 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private SelectionHandleController mSelectionHandleController;
     private InsertionHandleController mInsertionHandleController;
-    // These offsets in document space with page scale normalized to 1.0.
-    private final PointF mStartHandleNormalizedPoint = new PointF();
-    private final PointF mEndHandleNormalizedPoint = new PointF();
-    private final PointF mInsertionHandleNormalizedPoint = new PointF();
 
     // Tracks whether a selection is currently active.  When applied to selected text, indicates
     // whether the last selected text is still highlighted.
     private boolean mHasSelection;
     private String mLastSelectedText;
     private boolean mSelectionEditable;
-    // TODO(http://code.google.com/p/chromium/issues/detail?id=136704): Register
-    // the necessary resources in ContentViewActivity so we can create an action
-    // bar for text editing.
-    // private ActionMode mActionMode;
-    private boolean mActionBarVisible; // Remove this when mActionMode is upstreamed.
+    private ActionMode mActionMode;
 
     // The legacy webview DownloadListener.
     private DownloadListener mDownloadListener;
@@ -990,10 +982,8 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     void hideSelectActionBar() {
-        if (mActionBarVisible) {
-            mActionBarVisible = false;
-            mImeAdapter.unselect();
-            getContentViewClient().onContextualActionBarHidden();
+        if (mActionMode != null) {
+            mActionMode.finish();
         }
     }
 
@@ -1345,8 +1335,6 @@ public class ContentViewCore implements MotionEventDelegate {
         if (!mPopupZoomer.isShowing()) mPopupZoomer.setLastTouch(x, y);
 
         if (isLongPress) {
-            getInsertionHandleController().allowAutomaticShowing();
-            getSelectionHandleController().allowAutomaticShowing();
             if (mNativeContentViewCore != 0) {
                 nativeLongPress(mNativeContentViewCore, timeMs, x, y, false);
             }
@@ -1437,28 +1425,8 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private SelectionHandleController getSelectionHandleController() {
         if (mSelectionHandleController == null) {
-            mSelectionHandleController = new SelectionHandleController(getContainerView()) {
-                @Override
-                public void selectBetweenCoordinates(int x1, int y1, int x2, int y2) {
-                    if (mNativeContentViewCore != 0 && !(x1 == x2 && y1 == y2)) {
-                        nativeSelectBetweenCoordinates(mNativeContentViewCore, x1, y1, x2, y2);
-                    }
-                }
-
-                @Override
-                public void showHandlesAt(int x1, int y1, int dir1, int x2, int y2, int dir2) {
-                    super.showHandlesAt(x1, y1, dir1, x2, y2, dir2);
-                    mStartHandleNormalizedPoint.set(
-                        (x1 + mNativeScrollX) / mNativePageScaleFactor,
-                        (y1 + mNativeScrollY) / mNativePageScaleFactor);
-                    mEndHandleNormalizedPoint.set(
-                        (x2 + mNativeScrollX) / mNativePageScaleFactor,
-                        (y2 + mNativeScrollY) / mNativePageScaleFactor);
-
-                    showSelectActionBar();
-                }
-
-            };
+            mSelectionHandleController = new SelectionHandleController(getContainerView());
+            // TODO(olilan): add specific method implementations.
 
             mSelectionHandleController.hideAndDisallowAutomaticShowing();
         }
@@ -1468,35 +1436,8 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private InsertionHandleController getInsertionHandleController() {
         if (mInsertionHandleController == null) {
-            mInsertionHandleController = new InsertionHandleController(getContainerView()) {
-                private static final int AVERAGE_LINE_HEIGHT = 14;
-
-                @Override
-                public void setCursorPosition(int x, int y) {
-                    if (mNativeContentViewCore != 0) {
-                        nativeSelectBetweenCoordinates(mNativeContentViewCore, x, y, x, y);
-                    }
-                }
-
-                @Override
-                public void paste() {
-                    mImeAdapter.paste();
-                    hideHandles();
-                }
-
-                @Override
-                public int getLineHeight() {
-                    return (int) (mNativePageScaleFactor * AVERAGE_LINE_HEIGHT);
-                }
-
-                @Override
-                public void showHandleAt(int x, int y) {
-                    super.showHandleAt(x, y);
-                    mInsertionHandleNormalizedPoint.set(
-                        (x + mNativeScrollX) / mNativePageScaleFactor,
-                        (y + mNativeScrollY) / mNativePageScaleFactor);
-                }
-            };
+            mInsertionHandleController = new InsertionHandleController(getContainerView());
+            // TODO(olilan): add specific method implementations.
 
             mInsertionHandleController.hideAndDisallowAutomaticShowing();
         }
@@ -1504,42 +1445,7 @@ public class ContentViewCore implements MotionEventDelegate {
         return mInsertionHandleController;
     }
 
-    private void updateHandleScreenPositions() {
-        if (mSelectionHandleController != null && mSelectionHandleController.isShowing()) {
-            float startX = mStartHandleNormalizedPoint.x * mNativePageScaleFactor - mNativeScrollX;
-            float startY = mStartHandleNormalizedPoint.y * mNativePageScaleFactor - mNativeScrollY;
-            mSelectionHandleController.setStartHandlePosition((int) startX, (int) startY);
-
-            float endX = mEndHandleNormalizedPoint.x * mNativePageScaleFactor - mNativeScrollX;
-            float endY = mEndHandleNormalizedPoint.y * mNativePageScaleFactor - mNativeScrollY;
-            mSelectionHandleController.setEndHandlePosition((int) endX, (int) endY);
-        }
-
-        if (mInsertionHandleController != null && mInsertionHandleController.isShowing()) {
-            float x = mInsertionHandleNormalizedPoint.x * mNativePageScaleFactor - mNativeScrollX;
-            float y = mInsertionHandleNormalizedPoint.y * mNativePageScaleFactor - mNativeScrollY;
-            mInsertionHandleController.setHandlePosition((int) x, (int) y);
-        }
-    }
-
-    private void hideHandles() {
-        if (mSelectionHandleController != null) {
-            mSelectionHandleController.hideAndDisallowAutomaticShowing();
-        }
-        if (mInsertionHandleController != null) {
-            mInsertionHandleController.hideAndDisallowAutomaticShowing();
-        }
-    }
-
     private void showSelectActionBar() {
-        if (!mActionBarVisible) {
-            mActionBarVisible = true;
-            getContentViewClient().onContextualActionBarShown();
-        }
-
-// TODO(http://code.google.com/p/chromium/issues/detail?id=136704): Uncomment
-// this code when we have the resources needed to create the action bar.
-/*
         if (mActionMode != null) {
             mActionMode.invalidate();
             return;
@@ -1594,7 +1500,6 @@ public class ContentViewCore implements MotionEventDelegate {
         } else {
             getContentViewClient().onContextualActionBarShown();
         }
-*/
     }
 
     public boolean getUseDesktopUserAgent() {
@@ -1707,56 +1612,6 @@ public class ContentViewCore implements MotionEventDelegate {
     private void showSelectPopup(String[] items, int[] enabled, boolean multiple,
             int[] selectedIndices) {
         SelectPopupDialog.show(this, items, enabled, multiple, selectedIndices);
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onSelectionChanged(String text) {
-        mLastSelectedText = text;
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onSelectionBoundsChanged(Rect startRect, int dir1, Rect endRect, int dir2) {
-        int x1 = startRect.left;
-        int y1 = startRect.bottom;
-        int x2 = endRect.left;
-        int y2 = endRect.bottom;
-        if (x1 != x2 || y1 != y2) {
-            if (mInsertionHandleController != null) {
-                mInsertionHandleController.hide();
-            }
-            getSelectionHandleController().onSelectionChanged(x1, y1, dir1, x2, y2, dir2);
-            mHasSelection = true;
-        } else {
-            hideSelectActionBar();
-            if (x1 != 0 && y1 != 0
-                    && (mSelectionHandleController == null
-                            || !mSelectionHandleController.isDragging())
-                    && mSelectionEditable) {
-                // Selection is a caret, and a text field is focused.
-                if (mSelectionHandleController != null) {
-                    mSelectionHandleController.hide();
-                }
-                getInsertionHandleController().onCursorPositionChanged(x1, y1);
-                InputMethodManager manager = (InputMethodManager)
-                        getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (manager.isWatchingCursor(mContainerView)) {
-                    manager.updateCursor(mContainerView, startRect.left, startRect.top,
-                            startRect.right, startRect.bottom);
-                }
-            } else {
-                // Deselection
-                if (mSelectionHandleController != null
-                        && !mSelectionHandleController.isDragging()) {
-                    mSelectionHandleController.hideAndDisallowAutomaticShowing();
-                }
-                if (mInsertionHandleController != null) {
-                    mInsertionHandleController.hideAndDisallowAutomaticShowing();
-                }
-            }
-            mHasSelection = false;
-        }
     }
 
     @SuppressWarnings("unused")

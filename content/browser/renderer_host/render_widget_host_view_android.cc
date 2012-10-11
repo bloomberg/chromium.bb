@@ -21,6 +21,22 @@
 
 namespace content {
 
+namespace {
+
+// TODO(pliard): http://crbug.com/142585. Remove this helper function and update
+// the clients to deal directly with WebKit::WebTextDirection.
+base::i18n::TextDirection ConvertTextDirection(WebKit::WebTextDirection dir) {
+  switch (dir) {
+    case WebKit::WebTextDirectionDefault: return base::i18n::UNKNOWN_DIRECTION;
+    case WebKit::WebTextDirectionLeftToRight: return base::i18n::LEFT_TO_RIGHT;
+    case WebKit::WebTextDirectionRightToLeft: return base::i18n::RIGHT_TO_LEFT;
+  }
+  NOTREACHED() << "Unsupported text direction " << dir;
+  return base::i18n::UNKNOWN_DIRECTION;
+}
+
+}  // namespace
+
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
     ContentViewCoreImpl* content_view_core)
@@ -249,6 +265,20 @@ void RenderWidgetHostViewAndroid::SelectionChanged(const string16& text,
   std::string utf8_selection = UTF16ToUTF8(text.substr(pos, n));
 
   content_view_core_->OnSelectionChanged(utf8_selection);
+}
+
+void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
+    const gfx::Rect& start_rect,
+    WebKit::WebTextDirection start_direction,
+    const gfx::Rect& end_rect,
+    WebKit::WebTextDirection end_direction) {
+  if (content_view_core_) {
+    content_view_core_->OnSelectionBoundsChanged(
+        start_rect,
+        ConvertTextDirection(start_direction),
+        end_rect,
+        ConvertTextDirection(end_direction));
+  }
 }
 
 BackingStore* RenderWidgetHostViewAndroid::AllocBackingStore(

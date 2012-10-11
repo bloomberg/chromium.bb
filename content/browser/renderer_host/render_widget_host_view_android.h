@@ -80,6 +80,11 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
                                 const ui::Range& range) OVERRIDE;
+  virtual void SelectionBoundsChanged(
+      const gfx::Rect& start_rect,
+      WebKit::WebTextDirection start_direction,
+      const gfx::Rect& end_rect,
+      WebKit::WebTextDirection end_direction) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,

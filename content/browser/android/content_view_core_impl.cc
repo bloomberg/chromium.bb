@@ -72,7 +72,8 @@ jfieldID g_native_content_view;
 namespace content {
 
 struct ContentViewCoreImpl::JavaObject {
-
+  ScopedJavaGlobalRef<jclass> rect_clazz;
+  jmethodID rect_constructor;
 };
 
 ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
@@ -173,6 +174,9 @@ void ContentViewCoreImpl::Observe(int type,
 
 void ContentViewCoreImpl::InitJNI(JNIEnv* env, jobject obj) {
   java_object_ = new JavaObject;
+  java_object_->rect_clazz.Reset(GetClass(env, "android/graphics/Rect"));
+  java_object_->rect_constructor =
+      GetMethodID(env, java_object_->rect_clazz, "<init>", "(IIII)V");
 }
 
 RenderWidgetHostViewAndroid*
@@ -339,7 +343,40 @@ bool ContentViewCoreImpl::HasFocus() {
 }
 
 void ContentViewCoreImpl::OnSelectionChanged(const std::string& text) {
-  NOTIMPLEMENTED() << "not upstreamed yet";
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  ScopedJavaLocalRef<jstring> jtext = ConvertUTF8ToJavaString(env, text);
+  Java_ContentViewCore_onSelectionChanged(env, obj.obj(), jtext.obj());
+}
+
+void ContentViewCoreImpl::OnSelectionBoundsChanged(
+    const gfx::Rect& start_rect, base::i18n::TextDirection start_dir,
+    const gfx::Rect& end_rect, base::i18n::TextDirection end_dir) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  ScopedJavaLocalRef<jobject> start_rect_object(env,
+      env->NewObject(java_object_->rect_clazz.obj(),
+                     java_object_->rect_constructor,
+                     start_rect.x(),
+                     start_rect.y(),
+                     start_rect.right(),
+                     start_rect.bottom()));
+  ScopedJavaLocalRef<jobject> end_rect_object(env,
+      env->NewObject(java_object_->rect_clazz.obj(),
+                     java_object_->rect_constructor,
+                     end_rect.x(),
+                     end_rect.y(),
+                     end_rect.right(),
+                     end_rect.bottom()));
+  Java_ContentViewCore_onSelectionBoundsChanged(env, obj.obj(),
+                                                start_rect_object.obj(),
+                                                start_dir,
+                                                end_rect_object.obj(),
+                                                end_dir);
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
