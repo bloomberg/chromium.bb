@@ -41,6 +41,24 @@ namespace {
 DriveServiceInterface* g_test_drive_service = NULL;
 const std::string* g_test_cache_root = NULL;
 
+// Map to collect profiles with Drive disabled.
+std::map<Profile*, bool>* g_drive_disabled_map = NULL;
+
+// Disables Drive for the specified profile. Used to disable Drive when
+// needed (ex. initialization of the Drive cache failed).
+// Must be called on UI thread.
+void DisableDrive(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // We don't change kDisableGData preference here. If we do, we'll end up
+  // disabling Drive on other devices, as kDisableGData is a syncable
+  // preference. Hence the map is used here.
+  if (!g_drive_disabled_map)
+    g_drive_disabled_map = new std::map<Profile*, bool>;
+
+  g_drive_disabled_map->insert(std::make_pair(profile, true));
+}
+
 }  // namespace
 
 DriveSystemService::DriveSystemService(Profile* profile)
@@ -104,6 +122,25 @@ void DriveSystemService::Shutdown() {
   drive_service_.reset();
 }
 
+// static
+bool DriveSystemService::IsDriveEnabled(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!AuthService::CanAuthenticate(profile))
+    return false;
+
+  // Disable gdata if preference is set.  This can happen with commandline flag
+  // --disable-gdata or enterprise policy, or probably with user settings too
+  // in the future.
+  if (profile->GetPrefs()->GetBoolean(prefs::kDisableGData))
+    return false;
+
+  if (g_drive_disabled_map && g_drive_disabled_map->count(profile) > 0)
+    return false;
+
+  return true;
+}
+
 void DriveSystemService::ClearCacheAndRemountFileSystem(
     const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -130,7 +167,7 @@ void DriveSystemService::AddBackDriveMountPoint(
 }
 
 void DriveSystemService::AddDriveMountPoint() {
-  if (!gdata::util::IsDriveEnabled(profile_))
+  if (!IsDriveEnabled(profile_))
     return;
 
   const FilePath mount_point = gdata::util::GetDriveMountPointPath();
@@ -163,7 +200,7 @@ void DriveSystemService::OnCacheInitialized(bool success) {
 
   if (!success) {
     LOG(WARNING) << "Failed to initialize the cache. Disabling Drive";
-    gdata::util::DisableDrive(profile_);
+    DisableDrive(profile_);
     // Change the download directory to the default value if the download
     // destination is set to under Drive mount point.
     //

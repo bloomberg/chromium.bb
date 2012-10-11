@@ -60,46 +60,7 @@ bool ParseTimezone(const base::StringPiece& timezone,
   return true;
 }
 
-// Map to collect profiles with Drive disabled.
-std::map<Profile*, bool>* g_drive_disabled_map = NULL;
-
 }  // namespace
-
-bool IsDriveEnabled(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!AuthService::CanAuthenticate(profile))
-    return false;
-
-#if defined(OS_CHROMEOS)
-  // Disable gdata if preference is set.  This can happen with commandline flag
-  // --disable-gdata or enterprise policy, or probably with user settings too
-  // in the future.
-  if (profile->GetPrefs()->GetBoolean(prefs::kDisableGData))
-    return false;
-
-  if (g_drive_disabled_map && g_drive_disabled_map->count(profile) > 0)
-    return false;
-
-  return true;
-#else
-  // TODO(nhiroki): Check if GData is available or not in a platform
-  // independent way (http://crbug.com/147529).
-  return false;
-#endif  // OS_CHROMEOS
-}
-
-void DisableDrive(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // We don't change kDisableGData preference here. If we do, we'll end up
-  // disabling Drive on other devices, as kDisableGData is a syncable
-  // preference. Hence the map is used here.
-  if (!g_drive_disabled_map)
-    g_drive_disabled_map = new std::map<Profile*, bool>;
-
-  g_drive_disabled_map->insert(std::make_pair(profile, true));
-}
 
 bool IsDriveV2ApiEnabled() {
   // TODO(kochi): Re-enable this. crbug.com/152230

@@ -52,6 +52,10 @@ class DriveSystemService : public ProfileKeyedService  {
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
+  // Returns true if Drive is enabled for the specified profile.
+  // Must be called on UI thread.
+  static bool IsDriveEnabled(Profile* profile);
+
  private:
   explicit DriveSystemService(Profile* profile);
   virtual ~DriveSystemService();

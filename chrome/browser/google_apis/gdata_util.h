@@ -26,19 +26,6 @@ class Location;
 namespace gdata {
 namespace util {
 
-// Returns true if Drive is enabled for the specified profile.
-// Must be called on UI thread.
-// TODO(satorux): Move this function to DriveSystemService.
-// crbug.com/153962
-bool IsDriveEnabled(Profile* profile);
-
-// Disables Drive for the specified profile. Used to disable Drive when
-// needed (ex. initialization of the Drive cache failed).
-// Must be called on UI thread.
-// TODO(satorux): Move this function to DriveSystemService.
-// crbug.com/153962
-void DisableDrive(Profile* profile);
-
 // Returns true if Drive v2 API is enabled via commandline switch.
 bool IsDriveV2ApiEnabled();
 

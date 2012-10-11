@@ -53,7 +53,6 @@
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
-#include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1144,7 +1143,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   DriveSystemService* FindDriveSystemService() {
     Profile* profile = ProfileManager::GetDefaultProfile();
-    if (!gdata::util::IsDriveEnabled(profile))
+    if (!gdata::DriveSystemService::IsDriveEnabled(profile))
       return NULL;
     return DriveSystemServiceFactory::FindForProfile(profile);
   }
