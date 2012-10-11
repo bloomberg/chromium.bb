@@ -574,11 +574,12 @@ void CdmWrapper::SetTimer(int64 delay_ms) {
 void CdmWrapper::TimerExpired(int32 result) {
   PP_DCHECK(result == PP_OK);
   bool populated;
-  KeyMessageImpl key_message;
-  cdm_->TimerExpired(&key_message, &populated);
+  LinkedKeyMessage key_message(new KeyMessageImpl());
+  cdm_->TimerExpired(key_message.get(), &populated);
   if (!populated)
     return;
-  // TODO(xhwang): do something with this?
+  CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyMessage,
+                                           key_message));
 }
 
 double CdmWrapper::GetCurrentWallTimeMs() {
