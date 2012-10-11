@@ -214,6 +214,9 @@ build_cmsg(struct wl_buffer *buffer, char *data, int *clen)
 	size_t size;
 
 	size = buffer->head - buffer->tail;
+	if (size > MAX_FDS_OUT * sizeof(int32_t))
+		size = MAX_FDS_OUT * sizeof(int32_t);
+
 	if (size > 0) {
 		cmsg = (struct cmsghdr *) data;
 		cmsg->cmsg_level = SOL_SOCKET;
