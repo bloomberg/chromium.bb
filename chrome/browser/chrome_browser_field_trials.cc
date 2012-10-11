@@ -571,7 +571,7 @@ void ChromeBrowserFieldTrials::SetUpCacheSensitivityAnalysisFieldTrial() {
 #if (defined(OS_ANDROID) || defined(OS_IOS))
   base::FieldTrial::Probability sensitivity_analysis_probability = 0;
 #else
-  base::FieldTrial::Probability sensitivity_analysis_probability = 8;
+  base::FieldTrial::Probability sensitivity_analysis_probability = 0;
 #endif
 
   scoped_refptr<base::FieldTrial> trial(
