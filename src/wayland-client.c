@@ -61,7 +61,9 @@ struct wl_global {
 };
 
 struct wl_event_queue {
+	struct wl_list link;
 	struct wl_list event_list;
+	struct wl_display *display;
 	pthread_cond_t cond;
 };
 
@@ -74,6 +76,7 @@ struct wl_display {
 	pthread_t display_thread;
 	struct wl_map objects;
 	struct wl_event_queue queue;
+	struct wl_list event_queue_list;
 	pthread_mutex_t mutex;
 };
 
@@ -82,10 +85,11 @@ struct wl_display {
 static int wl_debug = 0;
 
 static void
-wl_event_queue_init(struct wl_event_queue *queue)
+wl_event_queue_init(struct wl_event_queue *queue, struct wl_display *display)
 {
 	wl_list_init(&queue->event_list);
 	pthread_cond_init(&queue->cond, NULL);
+	queue->display = display;
 }
 
 static void
@@ -114,8 +118,13 @@ wl_event_queue_release(struct wl_event_queue *queue)
 WL_EXPORT void
 wl_event_queue_destroy(struct wl_event_queue *queue)
 {
+	struct wl_display *display = queue->display;
+
+	pthread_mutex_lock(&display->mutex);
+	wl_list_remove(&queue->link);
 	wl_event_queue_release(queue);
 	free(queue);
+	pthread_mutex_unlock(&display->mutex);
 }
 
 /** Create a new event queue for this display
@@ -135,7 +144,11 @@ wl_display_create_queue(struct wl_display *display)
 	if (queue == NULL)
 		return NULL;
 
-	wl_event_queue_init(queue);
+	wl_event_queue_init(queue, display);
+
+	pthread_mutex_lock(&display->mutex);
+	wl_list_insert(&display->event_queue_list, &queue->link);
+	pthread_mutex_unlock(&display->mutex);
 
 	return queue;
 }
@@ -453,7 +466,8 @@ wl_display_connect_to_fd(int fd)
 
 	display->fd = fd;
 	wl_map_init(&display->objects);
-	wl_event_queue_init(&display->queue);
+	wl_event_queue_init(&display->queue, display);
+	wl_list_init(&display->event_queue_list);
 	pthread_mutex_init(&display->mutex, NULL);
 
 	wl_map_insert_new(&display->objects, WL_MAP_CLIENT_SIDE, NULL);
