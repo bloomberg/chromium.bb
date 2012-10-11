@@ -150,7 +150,12 @@ void RenderViewTest::SetUp() {
   // since we are using a MockRenderThread.
   RenderThreadImpl::RegisterSchemes();
 
-  //ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+  // This check is needed because when run under content_browsertests,
+  // ResourceBundle isn't initialized (since we have to use a diferent test
+  // suite implementation than for content_unittests). For browser_tests, this
+  // is already initialized.
+  if (!ResourceBundle::HasSharedInstance())
+    ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   mock_process_.reset(new MockRenderProcess);
 
