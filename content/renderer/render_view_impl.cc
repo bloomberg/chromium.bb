@@ -2334,6 +2334,14 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& node) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
 }
 
+void RenderViewImpl::numberOfWheelEventHandlersChanged(unsigned num_handlers) {
+  Send(new ViewHostMsg_DidChangeNumWheelEvents(routing_id_, num_handlers));
+}
+
+void RenderViewImpl::hasTouchEventHandlers(bool has_handlers) {
+  Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
+}
+
 void RenderViewImpl::didUpdateLayout() {
   // We don't always want to set up a timer, only if we've been put in that
   // mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
@@ -2516,17 +2524,6 @@ WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
   WebPluginParams params_to_use = params;
   params_to_use.mimeType = WebString::fromUTF8(mime_type);
   return CreatePlugin(frame, info, params_to_use);
-}
-
-WebPlugin* RenderViewImpl::createPluginReplacement(
-    WebFrame* frame,
-    const WebPluginParams& params) {
-  webkit::WebPluginInfo info;
-  std::string mime_type;
-  GetPluginInfo(params.url, frame->top()->document().url(),
-                params.mimeType.utf8(), &info, &mime_type);
-  return content::GetContentClient()->renderer()->CreatePluginReplacement(
-      this, info.path);
 }
 
 WebSharedWorker* RenderViewImpl::createSharedWorker(
@@ -3796,13 +3793,6 @@ void RenderViewImpl::didCreateScriptContext(WebFrame* frame,
       frame, context, extension_group, world_id);
 }
 
-void RenderViewImpl::didCreateScriptContext(WebFrame* frame,
-                                            v8::Handle<v8::Context> context,
-                                            int world_id) {
-  content::GetContentClient()->renderer()->DidCreateScriptContext(
-      frame, context, -1, world_id);
-}
-
 void RenderViewImpl::willReleaseScriptContext(WebFrame* frame,
                                               v8::Handle<v8::Context> context,
                                               int world_id) {
@@ -4007,14 +3997,6 @@ void RenderViewImpl::didChangeScrollOffset(WebFrame* frame) {
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidChangeScrollOffset(frame));
-}
-
-void RenderViewImpl::numberOfWheelEventHandlersChanged(unsigned num_handlers) {
-  Send(new ViewHostMsg_DidChangeNumWheelEvents(routing_id_, num_handlers));
-}
-
-void RenderViewImpl::hasTouchEventHandlers(bool has_handlers) {
-  Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 
 void RenderViewImpl::SendFindReply(int request_id,

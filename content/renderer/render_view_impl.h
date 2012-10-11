@@ -492,6 +492,8 @@ class RenderViewImpl : public RenderWidget,
   virtual void focusNext();
   virtual void focusPrevious();
   virtual void focusedNodeChanged(const WebKit::WebNode& node);
+  virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
+  virtual void hasTouchEventHandlers(bool has_handlers);
   virtual void didUpdateLayout();
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
@@ -526,9 +528,6 @@ class RenderViewImpl : public RenderWidget,
   // WebKit::WebFrameClient implementation -------------------------------------
 
   virtual WebKit::WebPlugin* createPlugin(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
-  virtual WebKit::WebPlugin* createPluginReplacement(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
   virtual WebKit::WebSharedWorker* createSharedWorker(
@@ -639,16 +638,10 @@ class RenderViewImpl : public RenderWidget,
                                       v8::Handle<v8::Context>,
                                       int extension_group,
                                       int world_id);
-  // TODO(koz): Remove once WebKit no longer calls this.
-  virtual void didCreateScriptContext(WebKit::WebFrame* frame,
-                                      v8::Handle<v8::Context>,
-                                      int world_id);
   virtual void willReleaseScriptContext(WebKit::WebFrame* frame,
                                         v8::Handle<v8::Context>,
                                         int world_id);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
-  virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
-  virtual void hasTouchEventHandlers(bool has_handlers);
   virtual void didChangeContentsSize(WebKit::WebFrame* frame,
                                      const WebKit::WebSize& size);
   virtual void reportFindInPageMatchCount(int request_id,
