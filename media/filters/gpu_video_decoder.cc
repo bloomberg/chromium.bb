@@ -151,8 +151,9 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
   }
 
   // Only non-Windows, Ivy Bridge+ platforms can support more than 1920x1080.
+  // We test against 1088 to account for 16x16 macroblocks.
   if (config.coded_size().width() > 1920 ||
-      config.coded_size().height() > 1080) {
+      config.coded_size().height() > 1088) {
     base::CPU cpu;
     bool hw_large_video_support =
         cpu.vendor_name() == "GenuineIntel" && cpu.model() >= 58;
