@@ -1060,7 +1060,7 @@
           ],
         }],
       ],
-    },  # end of target 'remoting_breakpad'
+    },  # end of target 'remoting_host_setup_base'
 
     {
       'target_name': 'remoting_host_plugin',
@@ -1228,6 +1228,84 @@
     }, # end of target 'remoting_webapp'
 
     {
+      'target_name': 'remoting_resources',
+      'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)',
+        'base_strings_grd_file': 'resources/string_resources.grd',
+        'base_resource_ids_file': 'resources/resource_ids',
+      },
+      'conditions': [
+        [ 'branding=="Chrome"', {
+          'variables': {
+            'strings_grd_file': '<(base_strings_grd_file)',
+            'resource_ids_file': '<(base_resource_ids_file)',
+          },
+        }, {  # else branding!="Chrome"
+          # For non-official builds change branding in string resources
+          # to "Chromoting".
+          'variables': {
+            'strings_grd_file':
+                '<(grit_out_dir)/remoting/resources/string_resources.grd',
+            'resource_ids_file':
+                '<(grit_out_dir)/remoting/resources/resource_ids',
+          },
+          'copies': [
+            {
+              'destination': '<(grit_out_dir)/remoting/resources',
+              'files': [ '<(base_resource_ids_file)', ]
+            },
+          ],
+          'actions': [
+            {
+              'action_name': 'update_branding',
+              'inputs': [
+                '<(base_strings_grd_file)',
+              ],
+              'outputs': [
+                '<(strings_grd_file)',
+              ],
+              'action': ['python', 'tools/remove_official_branding.py',
+                         '<(base_strings_grd_file)', '<(strings_grd_file)' ],
+            },
+          ],
+        }],
+      ],
+      'actions': [
+        {
+          'action_name': 'generate_resources',
+          'variables': {
+            'grit_cmd': ['python', '<(DEPTH)/tools/grit/grit.py'],
+          },
+          'inputs': [
+            '<(strings_grd_file)',
+            '<(resource_ids_file)',
+          ],
+          'outputs': [
+            '<!@pymod_do_main(grit_info <@(grit_defines) '
+            '--outputs \'<(grit_out_dir)\' <(base_strings_grd_file))',
+          ],
+          'action': ['<@(grit_cmd)',
+                     '-i', '<(strings_grd_file)', 'build',
+                     '-fresource_ids',
+                     '-o', '<(grit_out_dir)',
+                     '<@(grit_defines)' ],
+          'msvs_cygwin_shell': 0,
+          'message': 'Generating resources from <(strings_grd_file)',
+        },
+      ],
+      'copies': [
+        {  # Copy results to the product directory.
+          'destination': '<(PRODUCT_DIR)/remoting_locales',
+          'files': [
+            '<(grit_out_dir)/remoting/resources/en-US.pak',
+          ]
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
+    },  # end of target 'remoting_resources'
+
+    {
       'target_name': 'remoting_base',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -1243,6 +1321,7 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../media/media.gyp:yuv_convert',
         'remoting_jingle_glue',
+        'remoting_resources',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
       ],
       'export_dependent_settings': [
@@ -1282,6 +1361,8 @@
         'base/plugin_thread_task_runner.h',
         'base/rate_counter.cc',
         'base/rate_counter.h',
+        'base/resources.cc',
+        'base/resources.h',
         'base/running_average.cc',
         'base/running_average.h',
         'base/stoppable.cc',
@@ -1880,6 +1961,7 @@
       'type': 'executable',
       'dependencies': [
         'remoting_base',
+        'remoting_resources',
         'remoting_breakpad',
         'remoting_client',
         'remoting_client_plugin',
@@ -1911,6 +1993,7 @@
         'base/compound_buffer_unittest.cc',
         'base/compressor_zlib_unittest.cc',
         'base/decompressor_zlib_unittest.cc',
+        'base/resources_unittest.cc',
         'base/util_unittest.cc',
         'client/audio_player_unittest.cc',
         'client/key_event_mapper_unittest.cc',

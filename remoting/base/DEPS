@@ -3,4 +3,5 @@ include_rules = [
   "+google/protobuf",
   "+net",
   "+third_party/zlib",
+  "+ui/base",
 ]
