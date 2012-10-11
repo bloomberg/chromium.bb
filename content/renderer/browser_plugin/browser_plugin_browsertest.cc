@@ -14,6 +14,7 @@
 #include "content/renderer/browser_plugin/mock_browser_plugin_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/shell/shell_main_delegate.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -52,6 +53,7 @@ void BrowserPluginTest::SetUp() {
   GetContentClient()->set_renderer_for_testing(&content_renderer_client_);
   content::RenderViewTest::SetUp();
   browser_plugin_manager_.reset(new MockBrowserPluginManager());
+  content::ShellMainDelegate::InitializeResourceBundle();
 }
 
 void BrowserPluginTest::TearDown() {
