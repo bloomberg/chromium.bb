@@ -51,6 +51,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_NEW_WINDOW,
     MENU_NEW_INCOGNITO_WINDOW,
     MENU_ALIGNMENT_MENU,
+    MENU_CHANGE_WALLPAPER,
   };
 
   // Does |item_| represent a valid item? See description of constructor for

@@ -97,7 +97,6 @@ class RootWindowLayoutManager;
 class ScreenPositionController;
 class ShadowController;
 class ShelfLayoutManager;
-class ShellContextMenu;
 class SlowAnimationEventFilter;
 class StackingController;
 class StatusAreaWidget;
@@ -192,8 +191,9 @@ class ASH_EXPORT Shell : CursorDelegate,
   void AddEnvEventFilter(aura::EventFilter* filter);
   void RemoveEnvEventFilter(aura::EventFilter* filter);
 
-  // Shows the background menu over |widget|.
-  void ShowBackgroundMenu(views::Widget* widget, const gfx::Point& location);
+  // Shows the context menu for the background and launcher at
+  // |location| (in screen coordinates).
+  void ShowContextMenu(const gfx::Point& location);
 
   // Toggles app list.
   void ToggleAppList();
@@ -436,7 +436,6 @@ class ASH_EXPORT Shell : CursorDelegate,
 
   scoped_ptr<internal::AppListController> app_list_controller_;
 
-  scoped_ptr<internal::ShellContextMenu> shell_context_menu_;
   scoped_ptr<internal::StackingController> stacking_controller_;
   scoped_ptr<internal::ActivationController> activation_controller_;
   scoped_ptr<internal::CaptureController> capture_controller_;

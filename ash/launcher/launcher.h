@@ -85,6 +85,9 @@ class ASH_EXPORT Launcher  {
   // Returns true if the Launcher is showing a context menu.
   bool IsShowingMenu() const;
 
+  // Show the context menu for the Launcher.
+  void ShowContextMenu(const gfx::Point& location);
+
   bool IsShowingOverflowBubble() const;
 
   void SetVisible(bool visible) const;

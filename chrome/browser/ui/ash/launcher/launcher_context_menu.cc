@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/launcher/launcher_context_menu.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -99,6 +100,8 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                            IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION,
                            &alignment_menu_);
   }
+  AddItem(MENU_CHANGE_WALLPAPER,
+       l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
 }
 
 LauncherContextMenu::~LauncherContextMenu() {
@@ -130,6 +133,9 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
     case MENU_PIN:
       return item_.type == ash::TYPE_PLATFORM_APP ||
           controller_->IsPinnable(item_.id);
+    case MENU_CHANGE_WALLPAPER:
+      return ash::Shell::GetInstance()->user_wallpaper_delegate()->
+          CanOpenSetWallpaperPage();
     default:
       return extension_items_->IsCommandIdEnabled(command_id);
   }
@@ -180,6 +186,10 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
       break;
     case MENU_ALIGNMENT_MENU:
       break;
+    case MENU_CHANGE_WALLPAPER:
+       ash::Shell::GetInstance()->user_wallpaper_delegate()->
+           OpenSetWallpaperPage();
+       break;
     default:
       extension_items_->ExecuteCommand(command_id, NULL,
                                        content::ContextMenuParams());

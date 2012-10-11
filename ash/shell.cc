@@ -25,7 +25,6 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
-#include "ash/shell_context_menu.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -390,7 +389,6 @@ void Shell::Init() {
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
   accelerator_controller_.reset(new AcceleratorController);
 #endif
-  shell_context_menu_.reset(new internal::ShellContextMenu);
 
   // The order in which event filters are added is significant.
   user_activity_detector_.reset(new UserActivityDetector);
@@ -523,16 +521,15 @@ void Shell::RemoveEnvEventFilter(aura::EventFilter* filter) {
   aura::Env::GetInstance()->RemovePreTargetHandler(filter);
 }
 
-void Shell::ShowBackgroundMenu(views::Widget* widget,
-                               const gfx::Point& location) {
+void Shell::ShowContextMenu(const gfx::Point& location) {
   // No context menus if user have not logged in.
   if (!delegate_.get() || !delegate_->IsUserLoggedIn())
     return;
   // No context menus when screen is locked.
   if (IsScreenLocked())
     return;
-  if (shell_context_menu_.get())
-    shell_context_menu_->ShowMenu(widget, location);
+  if (launcher())
+    launcher()->ShowContextMenu(location);
 }
 
 void Shell::ToggleAppList() {
