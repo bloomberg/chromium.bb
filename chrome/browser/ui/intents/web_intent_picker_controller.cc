@@ -441,7 +441,12 @@ void WebIntentPickerController::SetDefaultServiceForSelection(const GURL& url) {
 
 void WebIntentPickerController::OnExtensionInstallRequested(
     const std::string& id) {
-  picker_model_->SetPendingExtensionInstallId(id);
+  // Create a local copy of |id| since it is a reference to a member on a UI
+  // object, and SetPendingExtensionInstallId triggers an OnModelChanged and
+  // a subsequent rebuild of UI objects.
+  std::string extension_id(id);
+
+  picker_model_->SetPendingExtensionInstallId(extension_id);
 
   scoped_ptr<WebstoreInstaller::Approval> approval(
       WebstoreInstaller::Approval::CreateWithInstallPrompt(profile_));
@@ -451,7 +456,7 @@ void WebIntentPickerController::OnExtensionInstallRequested(
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile_, this,
-      &web_contents_->GetController(), id,
+      &web_contents_->GetController(), extension_id,
       approval.Pass(), WebstoreInstaller::FLAG_INLINE_INSTALL);
 
   pending_async_count_++;
