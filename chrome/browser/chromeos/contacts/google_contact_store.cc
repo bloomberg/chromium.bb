@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_database.h"
 #include "chrome/browser/chromeos/contacts/contact_store_observer.h"
-#include "chrome/browser/chromeos/gdata/gdata_contacts_service.h"
+#include "chrome/browser/chromeos/contacts/gdata_contacts_service.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"

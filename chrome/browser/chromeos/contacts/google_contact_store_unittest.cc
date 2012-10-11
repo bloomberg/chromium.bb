@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/contacts/contact_store_observer.h"
 #include "chrome/browser/chromeos/contacts/contact_test_util.h"
 #include "chrome/browser/chromeos/contacts/fake_contact_database.h"
-#include "chrome/browser/chromeos/gdata/gdata_contacts_service_stub.h"
+#include "chrome/browser/chromeos/contacts/gdata_contacts_service_stub.h"
 #include "chrome/browser/google_apis/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"

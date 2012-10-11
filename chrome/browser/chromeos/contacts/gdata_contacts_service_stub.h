@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CONTACTS_SERVICE_STUB_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CONTACTS_SERVICE_STUB_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CONTACTS_GDATA_CONTACTS_SERVICE_STUB_H_
+#define CHROME_BROWSER_CHROMEOS_CONTACTS_GDATA_CONTACTS_SERVICE_STUB_H_
 
-#include "chrome/browser/chromeos/gdata/gdata_contacts_service.h"
+#include "chrome/browser/chromeos/contacts/gdata_contacts_service.h"
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -70,4 +70,4 @@ class GDataContactsServiceStub : public GDataContactsServiceInterface {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CONTACTS_SERVICE_STUB_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CONTACTS_GDATA_CONTACTS_SERVICE_STUB_H_
