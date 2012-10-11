@@ -13,7 +13,8 @@ label Chrome {
   M20_0 = 12.2,
   M20_1 = 12.3,
   M21 = 12.4,
-  M22 = 12.5
+  M22 = 12.5,
+  M24 = 12.6
 };
 
 [assert_size(4)]
@@ -22,12 +23,12 @@ enum PP_FlashLSORestrictions {
    * No restrictions on Flash LSOs.
    */
   PP_FLASHLSORESTRICTIONS_NONE = 1,
-  
+
   /**
    * Don't allow access to Flash LSOs.
    */
   PP_FLASHLSORESTRICTIONS_BLOCK = 2,
-  
+
   /**
    * Store Flash LSOs in memory only.
    */
@@ -81,7 +82,7 @@ enum PP_FlashSetting {
    * Specifies the number of CPU cores that are present on the system.
    */
   PP_FLASHSETTING_NUMCORES = 5,
-  
+
   /**
    * Specifies restrictions on how flash should handle LSOs. The result is an
    * int from <code>PP_FlashLSORestrictions</code>.
@@ -247,4 +248,23 @@ interface PPB_Flash {
   PP_Bool SetCrashData([in] PP_Instance instance,
                        [in] PP_FlashCrashKey key,
                        [in] PP_Var value);
+
+  /**
+   * Enumerates video capture devices. |video_capture| is a valid
+   * PPB_VideoCapture_Dev resource. Once the operation has completed
+   * successfully, |devices| will be set up with an array of
+   * PPB_DeviceRef_Dev resources.
+   *
+   * PP_OK is returned on success and different pepper error code on failure.
+   * The ref count of the returned |devices| has already been increased by 1 for
+   * the caller.
+   *
+   * NOTE: This method is a synchronous version of |EnumerateDevices| in
+   * PPB_VideoCapture_Dev.
+   */
+  [version=12.6]
+  int32_t EnumerateVideoCaptureDevices(
+      [in] PP_Instance instance,
+      [in] PP_Resource video_capture,
+      [in] PP_ArrayOutput devices);
 };

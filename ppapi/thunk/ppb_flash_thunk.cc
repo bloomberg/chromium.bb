@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
@@ -9,6 +10,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_flash_api.h"
+#include "ppapi/thunk/ppb_flash_functions_api.h"
 #include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/thunk.h"
 
@@ -153,6 +155,23 @@ PP_Bool SetCrashData(PP_Instance instance,
   return enter.functions()->GetFlashAPI()->SetCrashData(instance, key, value);
 }
 
+int32_t EnumerateVideoCaptureDevices(PP_Instance instance,
+                                     PP_Resource video_capture,
+                                     PP_ArrayOutput devices) {
+  EnterInstance enter(instance);
+  if (enter.succeeded()) {
+    PPB_Flash_Functions_API* api =
+        enter.functions()->GetFlashFunctionsAPI(instance);
+    if (api) {
+      return api->EnumerateVideoCaptureDevices(instance, video_capture,
+                                               devices);
+    } else {
+      return PP_ERROR_NOINTERFACE;
+    }
+  }
+  return PP_ERROR_BADRESOURCE;
+}
+
 const PPB_Flash_12_0 g_ppb_flash_12_0_thunk = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
@@ -250,6 +269,26 @@ const PPB_Flash_12_5 g_ppb_flash_12_5_thunk = {
   &SetCrashData
 };
 
+const PPB_Flash_12_6 g_ppb_flash_12_6_thunk = {
+  &SetInstanceAlwaysOnTop,
+  &DrawGlyphs,
+  &GetProxyForURL,
+  &Navigate,
+  &RunMessageLoop,
+  &QuitMessageLoop,
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs,
+  &PreLoadFontWin,
+  &IsRectTopmost,
+  &InvokePrinting,
+  &UpdateActivity,
+  &GetDeviceID,
+  &GetSettingInt,
+  &GetSetting,
+  &SetCrashData,
+  &EnumerateVideoCaptureDevices
+};
+
 }  // namespace
 
 const PPB_Flash_12_0* GetPPB_Flash_12_0_Thunk() {
@@ -274,6 +313,10 @@ const PPB_Flash_12_4* GetPPB_Flash_12_4_Thunk() {
 
 const PPB_Flash_12_5* GetPPB_Flash_12_5_Thunk() {
   return &g_ppb_flash_12_5_thunk;
+}
+
+const PPB_Flash_12_6* GetPPB_Flash_12_6_Thunk() {
+  return &g_ppb_flash_12_6_thunk;
 }
 
 }  // namespace thunk

@@ -70,6 +70,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Bool GetScreenSize(PP_Instance instance,
                                 PP_Size* size) OVERRIDE;
   virtual thunk::PPB_Flash_API* GetFlashAPI() OVERRIDE;
+  virtual thunk::PPB_Flash_Functions_API* GetFlashFunctionsAPI(
+      PP_Instance instance) OVERRIDE;
   virtual thunk::PPB_Gamepad_API* GetGamepadAPI(PP_Instance instance) OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
                                      uint32_t event_classes) OVERRIDE;

@@ -32,6 +32,11 @@ struct PPBFlash_DrawGlyphs_Params;
 struct SerializedDirEntry;
 class SerializedVarReturnValue;
 
+/////////////////////////// WARNING:DEPRECTATED ////////////////////////////////
+// Please do not add any new functions to this proxy. They should be
+// implemented in the new-style resource proxy (see flash_resource.h).
+// TODO(raymes): All of these functions should be moved to the new-style proxy.
+////////////////////////////////////////////////////////////////////////////////
 class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
  public:
   explicit PPB_Flash_Proxy(Dispatcher* dispatcher);

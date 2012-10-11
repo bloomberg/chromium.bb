@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/ppb_instance_proxy.h"
 
+#include "build/build_config.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
@@ -14,6 +15,7 @@
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
+#include "ppapi/proxy/flash_resource.h"
 #include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -311,6 +313,28 @@ PP_Bool PPB_Instance_Proxy::GetScreenSize(PP_Instance instance,
 thunk::PPB_Flash_API* PPB_Instance_Proxy::GetFlashAPI() {
   InterfaceProxy* ip = dispatcher()->GetInterfaceProxy(API_ID_PPB_FLASH);
   return static_cast<PPB_Flash_Proxy*>(ip);
+}
+
+thunk::PPB_Flash_Functions_API* PPB_Instance_Proxy::GetFlashFunctionsAPI(
+    PP_Instance instance) {
+#if !defined(OS_NACL) && !defined(NACL_WIN64)
+  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
+      GetInstanceData(instance);
+  if (!data)
+    return NULL;
+
+  if (!data->flash_resource.get()) {
+    Connection connection(
+        PluginGlobals::Get()->plugin_proxy_delegate()->GetBrowserSender(),
+        dispatcher());
+    data->flash_resource = new FlashResource(connection, instance);
+  }
+  return data->flash_resource.get();
+#else
+  // Flash functions aren't implemented for nacl.
+  NOTIMPLEMENTED();
+  return NULL;
+#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 }
 
 thunk::PPB_Gamepad_API* PPB_Instance_Proxy::GetGamepadAPI(

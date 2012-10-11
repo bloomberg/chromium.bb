@@ -34,6 +34,7 @@ class ResourceCreationAPI;
 
 namespace proxy {
 
+class FlashResource;
 class GamepadResource;
 class ResourceMessageReplyParams;
 
@@ -49,8 +50,10 @@ struct InstanceData {
   // When non-NULL, indicates the callback to execute when mouse lock is lost.
   scoped_refptr<TrackedCallback> mouse_lock_callback;
 
-  // Lazily created the first time the plugin requests gamepad data.
+  // The following are lazily created the first time the plugin requests them.
+  // (These are singleton-style resources).
   scoped_refptr<GamepadResource> gamepad_resource;
+  scoped_refptr<FlashResource> flash_resource;
 
   // Calls to |RequestSurroundingText()| are done by posted tasks. Track whether
   // a) a task is pending, to avoid redundant calls, and b) whether we should

@@ -42,6 +42,7 @@
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/thunk/ppb_flash_functions_api.h"
 #include "ppapi/thunk/ppb_gamepad_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -387,6 +388,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size)
       OVERRIDE;
   virtual ::ppapi::thunk::PPB_Flash_API* GetFlashAPI() OVERRIDE;
+  virtual ::ppapi::thunk::PPB_Flash_Functions_API* GetFlashFunctionsAPI(
+      PP_Instance instance) OVERRIDE;
   virtual ::ppapi::thunk::PPB_Gamepad_API* GetGamepadAPI(PP_Instance instance)
       OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,

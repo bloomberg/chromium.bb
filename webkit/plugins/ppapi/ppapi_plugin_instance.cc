@@ -2363,6 +2363,12 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
   return &flash_impl_;
 }
 
+::ppapi::thunk::PPB_Flash_Functions_API*
+PluginInstance::GetFlashFunctionsAPI(PP_Instance /*instance*/) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 ::ppapi::thunk::PPB_Gamepad_API* PluginInstance::GetGamepadAPI(
     PP_Instance /* instance */) {
   return &gamepad_impl_;

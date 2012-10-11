@@ -16,6 +16,13 @@ struct URLRequestInfoData;
 
 namespace thunk {
 
+/////////////////////////// WARNING:DEPRECTATED ////////////////////////////////
+// Please do not add any new functions to this API. They should be implemented
+// in the new-style resource proxy (see flash_functions_api.h and
+// flash_resource.h).
+// TODO(raymes): All of these functions should be moved to
+// flash_functions_api.h.
+////////////////////////////////////////////////////////////////////////////////
 // This class collects all of the Flash interface-related APIs into one place.
 class PPAPI_THUNK_EXPORT PPB_Flash_API {
  public:

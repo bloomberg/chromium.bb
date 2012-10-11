@@ -37,6 +37,7 @@ struct ViewData;
 namespace thunk {
 
 class PPB_Flash_API;
+class PPB_Flash_Functions_API;
 class PPB_Gamepad_API;
 
 class PPB_Instance_API {
@@ -87,8 +88,11 @@ class PPB_Instance_API {
                                 PP_Bool fullscreen) = 0;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) = 0;
 
-  // Flash.
+  // Flash (Deprecated for Flash_Functions).
   virtual PPB_Flash_API* GetFlashAPI() = 0;
+  // Flash_Functions
+  virtual PPB_Flash_Functions_API* GetFlashFunctionsAPI(
+      PP_Instance instance) = 0;
 
   // Gamepad.
   virtual PPB_Gamepad_API* GetGamepadAPI(PP_Instance instance) = 0;

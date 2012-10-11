@@ -1675,4 +1675,11 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_FlashFontFile_GetFontTable,
                      uint32_t /* table */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashFontFile_GetFontTableReply,
                      std::string /* output */)
+
+// Flash functions.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Flash_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Flash_EnumerateVideoCaptureDevices,
+                     ppapi::HostResource /* video_capture */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Flash_EnumerateVideoCaptureDevicesReply,
+                     std::vector<ppapi::DeviceRefData> /* devices */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
