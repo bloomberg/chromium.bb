@@ -65,6 +65,56 @@ SBOX_TESTS_COMMAND int IntegrationTestsTest_args(int argc, wchar_t **argv) {
   return argc;
 }
 
+// Creates a job and tries to run a process inside it. The function can be
+// called with up to two parameters. The first one if set to "none" means that
+// the child process should be run with the JOB_NONE JobLevel else it is run
+// with JOB_LOCKDOWN level. The second if present specifies that the
+// JOB_OBJECT_LIMIT_BREAKAWAY_OK flag should be set on the job object created
+// in this function. The return value is either SBOX_TEST_SUCCEEDED if the test
+// has passed or a value between 0 and 4 indicating which part of the test has
+// failed.
+SBOX_TESTS_COMMAND int IntegrationTestsTest_job(int argc, wchar_t **argv) {
+  HANDLE job = ::CreateJobObject(NULL, NULL);
+  if (!job)
+    return 0;
+
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_limits;
+  if (!::QueryInformationJobObject(job, JobObjectExtendedLimitInformation,
+                                   &job_limits, sizeof(job_limits), NULL)) {
+    return 1;
+  }
+  // We cheat here and assume no 2-nd parameter means no breakaway flag and any
+  // value for the second param means with breakaway flag.
+  if (argc > 1) {
+    job_limits.BasicLimitInformation.LimitFlags |=
+        JOB_OBJECT_LIMIT_BREAKAWAY_OK;
+  } else {
+    job_limits.BasicLimitInformation.LimitFlags &=
+        ~JOB_OBJECT_LIMIT_BREAKAWAY_OK;
+  }
+  if (!::SetInformationJobObject(job, JobObjectExtendedLimitInformation,
+                                &job_limits, sizeof(job_limits))) {
+    return 2;
+  }
+  if (!::AssignProcessToJobObject(job, ::GetCurrentProcess()))
+    return 3;
+
+  JobLevel job_level = JOB_LOCKDOWN;
+  if (argc > 0 && wcscmp(argv[0], L"none") == 0)
+    job_level = JOB_NONE;
+
+  TestRunner runner(job_level, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  runner.SetTimeout(2000);
+
+  if (1 != runner.RunTest(L"IntegrationTestsTest_args 1"))
+    return 4;
+
+  // Terminate the job now.
+  ::TerminateJobObject(job, SBOX_TEST_SUCCEEDED);
+  // We should not make it to here but it doesn't mean our test failed.
+  return SBOX_TEST_SUCCEEDED;
+}
+
 TEST(IntegrationTestsTest, CallsBeforeInit) {
   TestRunner runner;
   runner.SetTimeout(2000);
@@ -102,7 +152,7 @@ TEST(IntegrationTestsTest, ForwardsArguments) {
                               L"fourth"));
 }
 
-TEST(IntegrationTestsTest, DISABLED_StuckChild) {
+TEST(IntegrationTestsTest, WaitForStuckChild) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
@@ -110,13 +160,9 @@ TEST(IntegrationTestsTest, DISABLED_StuckChild) {
   ASSERT_EQ(SBOX_TEST_SUCCEEDED,
             runner.RunTest(L"IntegrationTestsTest_stuck 100"));
   ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
-  // In this case the process must have finished.
-  DWORD exit_code;
-  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
-  ASSERT_EQ(1, exit_code);
 }
 
-TEST(IntegrationTestsTest, DISABLED_StuckChildNoJob) {
+TEST(IntegrationTestsTest, NoWaitForStuckChildNoJob) {
   TestRunner runner(JOB_NONE, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
@@ -133,7 +179,7 @@ TEST(IntegrationTestsTest, DISABLED_StuckChildNoJob) {
   ::TerminateProcess(runner.process(), 0);
 }
 
-TEST(IntegrationTestsTest, DISABLED_TwoStuckChildrenSecondOneHasNoJob) {
+TEST(IntegrationTestsTest, TwoStuckChildrenSecondOneHasNoJob) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
@@ -151,15 +197,15 @@ TEST(IntegrationTestsTest, DISABLED_TwoStuckChildrenSecondOneHasNoJob) {
   // In this case the processes are not tracked by the broker and should be
   // still active.
   DWORD exit_code;
-  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
-  ASSERT_EQ(1, exit_code);
+  // Checking the exit code for |runner| is flaky on the slow bots but at
+  // least we know that the wait above has succeeded if we are here.
   ASSERT_TRUE(::GetExitCodeProcess(runner2.process(), &exit_code));
   ASSERT_EQ(STILL_ACTIVE, exit_code);
   // Terminate the test process now.
   ::TerminateProcess(runner2.process(), 0);
 }
 
-TEST(IntegrationTestsTest, DISABLED_TwoStuckChildrenFirstOneHasNoJob) {
+TEST(IntegrationTestsTest, TwoStuckChildrenFirstOneHasNoJob) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
@@ -177,15 +223,15 @@ TEST(IntegrationTestsTest, DISABLED_TwoStuckChildrenFirstOneHasNoJob) {
   // In this case the processes are not tracked by the broker and should be
   // still active.
   DWORD exit_code;
-  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
-  ASSERT_EQ(1, exit_code);
+  // Checking the exit code for |runner| is flaky on the slow bots but at
+  // least we know that the wait above has succeeded if we are here.
   ASSERT_TRUE(::GetExitCodeProcess(runner2.process(), &exit_code));
   ASSERT_EQ(STILL_ACTIVE, exit_code);
   // Terminate the test process now.
   ::TerminateProcess(runner2.process(), 0);
 }
 
-TEST(IntegrationTestsTest, DISABLED_MultipleStuckChildrenSequential) {
+TEST(IntegrationTestsTest, MultipleStuckChildrenSequential) {
   TestRunner runner;
   runner.SetTimeout(2000);
   runner.SetAsynchronous(true);
@@ -205,8 +251,8 @@ TEST(IntegrationTestsTest, DISABLED_MultipleStuckChildrenSequential) {
   ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
 
   DWORD exit_code;
-  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
-  ASSERT_EQ(1, exit_code);
+  // Checking the exit code for |runner| is flaky on the slow bots but at
+  // least we know that the wait above has succeeded if we are here.
   ASSERT_TRUE(::GetExitCodeProcess(runner2.process(), &exit_code));
   ASSERT_EQ(STILL_ACTIVE, exit_code);
   // Terminate the test process now.
@@ -216,8 +262,45 @@ TEST(IntegrationTestsTest, DISABLED_MultipleStuckChildrenSequential) {
             runner.RunTest(L"IntegrationTestsTest_stuck 100"));
   // Actually both runners share the same singleton broker.
   ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
-  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
-  ASSERT_EQ(1, exit_code);
+}
+
+// Running from inside job that allows us to escape from it should be ok.
+TEST(IntegrationTestsTest, RunChildFromInsideJob) {
+  TestRunner runner;
+  runner.SetUnsandboxed(true);
+  runner.SetTimeout(2000);
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"IntegrationTestsTest_job with_job escape_flag"));
+}
+
+// Running from inside job that doesn't allow us to escape from it should fail
+// on any windows prior to 8.
+TEST(IntegrationTestsTest, RunChildFromInsideJobNoEscape) {
+  int expect_result = 4;  // Means the runner has failed to execute the child.
+  // Check if we are on Win8 or newer and expect a success as newer windows
+  // versions support nested jobs.
+  OSVERSIONINFOEX version_info = { sizeof version_info };
+  ::GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&version_info));
+  if (version_info.dwMajorVersion > 6 ||
+      (version_info.dwMajorVersion == 6 && version_info.dwMinorVersion >= 2)) {
+    expect_result = SBOX_TEST_SUCCEEDED;
+  }
+
+  TestRunner runner;
+  runner.SetUnsandboxed(true);
+  runner.SetTimeout(2000);
+  ASSERT_EQ(expect_result,
+            runner.RunTest(L"IntegrationTestsTest_job with_job"));
+}
+
+// Running without a job object should be ok regardless of the fact that we are
+// running inside an outter job.
+TEST(IntegrationTestsTest, RunJoblessChildFromInsideJob) {
+  TestRunner runner;
+  runner.SetUnsandboxed(true);
+  runner.SetTimeout(2000);
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"IntegrationTestsTest_job none"));
 }
 
 }  // namespace sandbox
