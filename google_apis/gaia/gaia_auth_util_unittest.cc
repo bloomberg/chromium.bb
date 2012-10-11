@@ -4,6 +4,7 @@
 
 #include "google_apis/gaia/gaia_auth_util.h"
 
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gaia {
@@ -82,6 +83,21 @@ TEST(GaiaAuthUtilTest, SanitizeMissingDomain) {
 TEST(GaiaAuthUtilTest, SanitizeExistingDomain) {
   const char existing[] = "test@example.com";
   EXPECT_EQ(existing, SanitizeEmail(existing));
+}
+
+TEST(GaiaAuthUtilTest, IsGaiaSignonRealm) {
+  // Only https versions of Gaia URLs should be considered valid.
+  EXPECT_TRUE(IsGaiaSignonRealm(GURL("https://accounts.google.com/")));
+  EXPECT_TRUE(IsGaiaSignonRealm(GURL("https://www.google.com/")));
+  EXPECT_FALSE(IsGaiaSignonRealm(GURL("http://accounts.google.com/")));
+  EXPECT_FALSE(IsGaiaSignonRealm(GURL("http://www.google.com/")));
+
+  // Other Google URLs are not valid.
+  EXPECT_FALSE(IsGaiaSignonRealm(GURL("https://google.com/")));
+  EXPECT_FALSE(IsGaiaSignonRealm(GURL("https://mail.google.com/")));
+
+  // Other https URLs are not valid.
+  EXPECT_FALSE(IsGaiaSignonRealm(GURL("https://www.example.com/")));
 }
 
 }  // namespace gaia

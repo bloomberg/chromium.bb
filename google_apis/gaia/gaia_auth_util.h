@@ -7,6 +7,8 @@
 
 #include <string>
 
+class GURL;
+
 namespace gaia {
 
 // Perform basic canonicalization of |email_address|, taking into account that
@@ -25,6 +27,8 @@ std::string SanitizeEmail(const std::string& email_address);
 
 // Extract the domain part from the canonical form of the given email.
 std::string ExtractDomainName(const std::string& email);
+
+bool IsGaiaSignonRealm(const GURL& url);
 
 }  // namespace gaia
 
