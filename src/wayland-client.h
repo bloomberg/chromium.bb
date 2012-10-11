@@ -39,9 +39,6 @@ void wl_event_queue_destroy(struct wl_event_queue *queue);
 void wl_proxy_marshal(struct wl_proxy *p, uint32_t opcode, ...);
 struct wl_proxy *wl_proxy_create(struct wl_proxy *factory,
 				 const struct wl_interface *interface);
-struct wl_proxy *wl_proxy_create_for_id(struct wl_proxy *factory,
-					uint32_t id,
-					const struct wl_interface *interface);
 
 void wl_proxy_destroy(struct wl_proxy *proxy);
 int wl_proxy_add_listener(struct wl_proxy *proxy,

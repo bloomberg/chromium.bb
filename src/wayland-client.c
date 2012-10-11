@@ -141,7 +141,8 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 	return proxy;
 }
 
-WL_EXPORT struct wl_proxy *
+/* The caller should hold the display lock */
+static struct wl_proxy *
 wl_proxy_create_for_id(struct wl_proxy *factory,
 		       uint32_t id, const struct wl_interface *interface)
 {
@@ -159,9 +160,7 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	proxy->queue = factory->queue;
 	proxy->id_deleted = 0;
 
-	pthread_mutex_lock(&display->mutex);
 	wl_map_insert_at(&display->objects, id, proxy);
-	pthread_mutex_unlock(&display->mutex);
 
 	return proxy;
 }
