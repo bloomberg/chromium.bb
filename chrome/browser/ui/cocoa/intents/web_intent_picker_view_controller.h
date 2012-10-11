@@ -11,6 +11,7 @@
 #include "ui/gfx/size.h"
 
 class WebIntentPickerCocoa2;
+@class WebIntentChooseServiceViewController;
 @class WebIntentMessageViewController;
 @class WebIntentProgressViewController;
 
@@ -18,6 +19,7 @@ class WebIntentPickerCocoa2;
 enum WebIntentPickerState {
   PICKER_STATE_WAITING,
   PICKER_STATE_NO_SERVICE,
+  PICKER_STATE_CHOOSE_SERVICE,
   PICKER_STATE_INSTALLING_EXTENSION,
 };
 
@@ -28,6 +30,8 @@ enum WebIntentPickerState {
   WebIntentPickerCocoa2* picker_;  // weak
   WebIntentPickerState state_;
   scoped_nsobject<NSButton> closeButton_;
+  scoped_nsobject<WebIntentChooseServiceViewController>
+     chooseServiceViewController_;
   scoped_nsobject<WebIntentMessageViewController>
       messageViewController_;
   scoped_nsobject<WebIntentProgressViewController>
@@ -41,6 +45,7 @@ enum WebIntentPickerState {
 // Get the current state.
 - (WebIntentPickerState)state;
 
+- (WebIntentChooseServiceViewController*)chooseServiceViewController;
 - (WebIntentMessageViewController*)messageViewController;
 - (WebIntentProgressViewController*)progressViewController;
 

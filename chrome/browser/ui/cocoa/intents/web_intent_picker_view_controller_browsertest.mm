@@ -5,10 +5,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_choose_service_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_progress_view_controller.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_service_row_view_controller.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/spinner_progress_indicator.h"
@@ -88,6 +90,54 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, NoServices) {
   WebIntentMessageViewController* message_controller =
       [controller_ messageViewController];
   EXPECT_NSEQ([controller_ view], [[message_controller view] superview]);
+}
+
+// Test the "choose a service" state.
+IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, ChooseService) {
+  testing::InSequence dummy;
+  model_.SetWaitingForSuggestions(false);
+
+  // Add a installed service.
+  GURL url("http://example.com");
+  webkit_glue::WebIntentServiceData::Disposition disposition =
+      webkit_glue::WebIntentServiceData::DISPOSITION_INLINE;
+  model_.AddInstalledService(ASCIIToUTF16("Title"), url, disposition);
+
+  // Add a suggested service.
+  std::vector<WebIntentPickerModel::SuggestedExtension> suggestions;
+  WebIntentPickerModel::SuggestedExtension suggestion(
+      ASCIIToUTF16("Title"), "1234", 2);
+  suggestions.push_back(suggestion);
+  model_.AddSuggestedExtensions(suggestions);
+
+  EXPECT_EQ(PICKER_STATE_CHOOSE_SERVICE, [controller_ state]);
+  WebIntentChooseServiceViewController* choose_controller =
+      [controller_ chooseServiceViewController];
+  EXPECT_NSEQ([controller_ view], [[choose_controller view] superview]);
+  NSArray* rows = [choose_controller rows];
+  EXPECT_EQ(2u, [rows count]);
+
+  // Test clicking "show more services in web store" button.
+  EXPECT_CALL(delegate_, OnSuggestionsLinkClicked(CURRENT_TAB));
+  [[choose_controller showMoreServicesButton] performClick:nil];
+
+  // Test click "select" in the installed service row.
+  EXPECT_CALL(delegate_, OnServiceChosen(url, disposition));
+  [[[rows objectAtIndex:0] selectButton] performClick:nil];
+
+  // Test click "select" in the suggested service row.
+  EXPECT_CALL(delegate_, OnExtensionInstallRequested(suggestion.id));
+  [[[rows objectAtIndex:1] selectButton] performClick:nil];
+
+  // Test click suggested service web store link.
+  EXPECT_CALL(delegate_, OnExtensionLinkClicked(suggestion.id, CURRENT_TAB));
+  [[[rows objectAtIndex:1] titleLinkButton] performClick:nil];
+
+  // Remove everything but suggested extensions.
+  model_.Clear();
+  EXPECT_EQ(PICKER_STATE_CHOOSE_SERVICE, [controller_ state]);
+  rows = [choose_controller rows];
+  EXPECT_EQ(1u, [rows count]);
 }
 
 // Test the "installing a service" state.

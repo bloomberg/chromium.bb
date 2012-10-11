@@ -4,13 +4,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-namespace {
 
 class HyperlinkButtonCellTest : public CocoaTest {
  public:
@@ -30,6 +29,13 @@ class HyperlinkButtonCellTest : public CocoaTest {
     EXPECT_EQ(NSNoCellMask, [cell_ highlightsBy]);
     EXPECT_TRUE([cell showsBorderOnlyWhileMouseInside]);
     EXPECT_TRUE([cell textColor]);
+  }
+
+ protected:
+  bool HasUnderlineAttribute(NSDictionary* attributes) {
+    NSNumber* number = base::mac::ObjCCastStrict<NSNumber>(
+        [attributes objectForKey:NSUnderlineStyleAttributeName]);
+    return [number unsignedIntegerValue] != 0;
   }
 
   NSButton* view_;
@@ -86,4 +92,18 @@ TEST_F(HyperlinkButtonCellTest, MouseHoverWhenDisabled) {
   [NSCursor pop];
 }
 
-}  // namespace
+// Test underline on hover.
+TEST_F(HyperlinkButtonCellTest, UnderlineOnHover) {
+  EXPECT_TRUE(HasUnderlineAttribute([cell_ linkAttributes]));
+  [cell_ mouseEntered:nil];
+  EXPECT_TRUE(HasUnderlineAttribute([cell_ linkAttributes]));
+  [cell_ mouseExited:nil];
+  EXPECT_TRUE(HasUnderlineAttribute([cell_ linkAttributes]));
+
+  [cell_ setUnderlineOnHover:YES];
+  EXPECT_FALSE(HasUnderlineAttribute([cell_ linkAttributes]));
+  [cell_ mouseEntered:nil];
+  EXPECT_TRUE(HasUnderlineAttribute([cell_ linkAttributes]));
+  [cell_ mouseExited:nil];
+  EXPECT_FALSE(HasUnderlineAttribute([cell_ linkAttributes]));
+}

@@ -14195,6 +14195,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_INTENT_PICKER_CHOOSE_SERVICE" desc="Prompt to the user to select one of the given services to complete a Web Intents action.">
       Which app do you want to use?
     </message>
+    <message name="IDS_INTENT_PICKER_CHOOSE_SERVICES_NONE_INSTALLED_TITLE" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store. Displayed only if there are no installed services.">
+      You have no apps installed.
+    </message>
+    <message name="IDS_INTENT_PICKER_CHOOSE_SERVICES_NONE_INSTALLED_MESSAGE" desc="Message body in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store. Displayed only if there are no installed services.">
+      Here are some suggestions from the Chrome Web Store:
+    </message>
     <message name="IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store. Displayed only if there are no installed services.">
       You have no apps installed. Here are some app suggestions from the Chrome Web Store:
     </message>

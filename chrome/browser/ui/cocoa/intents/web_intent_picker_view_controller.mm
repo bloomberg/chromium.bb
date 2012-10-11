@@ -5,11 +5,14 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_choose_service_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_progress_view_controller.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_service_row_view_controller.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
@@ -30,10 +33,20 @@
 // Update the various views to match changes to the picker model.
 - (void)updateWaiting;
 - (void)updateNoService;
+- (void)updateChooseService;
 - (void)updateInstallingExtension;
+
+// Creates a installed service row using the item at the given index.
+- (WebIntentServiceRowViewController*)createInstalledServiceAtIndex:(int)index;
+// Creates a suggested service row using the item at the given index.
+- (WebIntentServiceRowViewController*)createSuggestedServiceAtIndex:(int)index;
 
 - (void)onCloseButton:(id)sender;
 - (void)cancelOperation:(id)sender;
+- (void)onSelectInstalledService:(id)sender;
+- (void)onSelectSuggestedService:(id)sender;
+- (void)onShowSuggestedService:(id)sender;
+- (void)onShowMoreServices:(id)sender;
 
 @end
 
@@ -53,6 +66,12 @@
     [[closeButton_ cell] setKeyEquivalent:kKeyEquivalentEscape];
     [[self view] addSubview:closeButton_];
 
+    chooseServiceViewController_.reset(
+        [[WebIntentChooseServiceViewController alloc] init]);
+    [[chooseServiceViewController_ showMoreServicesButton] setTarget:self];
+    [[chooseServiceViewController_ showMoreServicesButton]
+        setAction:@selector(onShowMoreServices:)];
+
     messageViewController_.reset(
         [[WebIntentMessageViewController alloc] init]);
     progressViewController_.reset(
@@ -67,6 +86,10 @@
 
 - (WebIntentPickerState)state {
   return state_;
+}
+
+- (WebIntentChooseServiceViewController*)chooseServiceViewController {
+  return chooseServiceViewController_;
 }
 
 - (WebIntentMessageViewController*)messageViewController {
@@ -97,6 +120,9 @@
       break;
     case PICKER_STATE_NO_SERVICE:
       [self updateNoService];
+      break;
+    case PICKER_STATE_CHOOSE_SERVICE:
+      [self updateChooseService];
       break;
     case PICKER_STATE_INSTALLING_EXTENSION:
       [self updateInstallingExtension];
@@ -149,6 +175,8 @@
       return progressViewController_;
     case PICKER_STATE_NO_SERVICE:
       return messageViewController_;
+    case PICKER_STATE_CHOOSE_SERVICE:
+      return chooseServiceViewController_;
     case PICKER_STATE_INSTALLING_EXTENSION:
       return progressViewController_;
   }
@@ -159,6 +187,8 @@
   WebIntentPickerModel* model = picker_->model();
   if (!model->pending_extension_install_id().empty())
     return PICKER_STATE_INSTALLING_EXTENSION;
+  if (model->GetSuggestedExtensionCount() || model->GetInstalledServiceCount())
+    return PICKER_STATE_CHOOSE_SERVICE;
   if (model->IsWaitingForSuggestions())
     return PICKER_STATE_WAITING;
   return PICKER_STATE_NO_SERVICE;
@@ -178,6 +208,31 @@
       IDS_INTENT_PICKER_NO_SERVICES)];
 }
 
+- (void)updateChooseService {
+  WebIntentPickerModel* model = picker_->model();
+
+  if (model->GetInstalledServiceCount()) {
+    [chooseServiceViewController_ setTitle:base::SysUTF16ToNSString(
+        WebIntentPicker::GetDisplayStringForIntentAction(model->action()))];
+    [chooseServiceViewController_ setMessage:nil];
+  } else {
+    [chooseServiceViewController_ setTitle:l10n_util::GetNSStringWithFixup(
+        IDS_INTENT_PICKER_CHOOSE_SERVICES_NONE_INSTALLED_TITLE)];
+    [chooseServiceViewController_ setMessage:l10n_util::GetNSStringWithFixup(
+        IDS_INTENT_PICKER_CHOOSE_SERVICES_NONE_INSTALLED_MESSAGE)];
+  }
+
+  scoped_nsobject<NSMutableArray> rows([[NSMutableArray alloc] init]);
+  for (size_t i = 0; i < model->GetInstalledServiceCount(); ++i)
+    [rows addObject:[self createInstalledServiceAtIndex:i]];
+  for (size_t i = 0; i < model->GetSuggestedExtensionCount(); ++i) {
+    if ([rows count] >= WebIntentPicker::kMaxServicesToShow)
+      break;
+    [rows addObject:[self createSuggestedServiceAtIndex:i]];
+  }
+  [chooseServiceViewController_ setRows:rows];
+}
+
 - (void)updateInstallingExtension {
   WebIntentPickerModel* model = picker_->model();
   const WebIntentPickerModel::SuggestedExtension* extension =
@@ -193,6 +248,44 @@
       model->pending_extension_install_download_progress()];
 }
 
+- (WebIntentServiceRowViewController*)createInstalledServiceAtIndex:(int)index {
+  const WebIntentPickerModel::InstalledService& service =
+      picker_->model()->GetInstalledServiceAt(index);
+  NSString* title = base::SysUTF16ToNSString(service.title);
+  NSImage* icon = nil;
+  if (!service.favicon.IsEmpty())
+    icon = service.favicon.ToNSImage();
+  WebIntentServiceRowViewController* row =
+      [[[WebIntentServiceRowViewController alloc]
+          initInstalledServiceRowWithTitle:title
+                                      icon:icon] autorelease];
+  [[row selectButton] setTag:index];
+  [[row selectButton] setTarget:self];
+  [[row selectButton] setAction:@selector(onSelectInstalledService:)];
+  return row;
+}
+
+- (WebIntentServiceRowViewController*)createSuggestedServiceAtIndex:(int)index {
+  const WebIntentPickerModel::SuggestedExtension& service =
+      picker_->model()->GetSuggestedExtensionAt(index);
+  NSString* title = base::SysUTF16ToNSString(service.title);
+  NSImage* icon = nil;
+  if (!service.icon.IsEmpty())
+    icon = service.icon.ToNSImage();
+  WebIntentServiceRowViewController* row =
+      [[[WebIntentServiceRowViewController alloc]
+          initSuggestedServiceRowWithTitle:title
+                                      icon:icon
+                                    rating:service.average_rating] autorelease];
+  [[row selectButton] setTag:index];
+  [[row selectButton] setTarget:self];
+  [[row selectButton] setAction:@selector(onSelectSuggestedService:)];
+  [[row titleLinkButton] setTag:index];
+  [[row titleLinkButton] setTarget:self];
+  [[row titleLinkButton] setAction:@selector(onShowSuggestedService:)];
+  return row;
+}
+
 - (void)onCloseButton:(id)sender {
   picker_->delegate()->OnUserCancelledPickerDialog();
 }
@@ -200,6 +293,32 @@
 // Handle default OSX dialog cancel mechanisms. (Cmd-.)
 - (void)cancelOperation:(id)sender {
   [self onCloseButton:sender];
+}
+
+- (void)onSelectInstalledService:(id)sender {
+  const WebIntentPickerModel::InstalledService& service =
+      picker_->model()->GetInstalledServiceAt([sender tag]);
+  picker_->delegate()->OnServiceChosen(service.url, service.disposition);
+}
+
+- (void)onSelectSuggestedService:(id)sender {
+  const WebIntentPickerModel::SuggestedExtension& service =
+      picker_->model()->GetSuggestedExtensionAt([sender tag]);
+  picker_->delegate()->OnExtensionInstallRequested(service.id);
+}
+
+- (void)onShowSuggestedService:(id)sender {
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+  const WebIntentPickerModel::SuggestedExtension& service =
+      picker_->model()->GetSuggestedExtensionAt([sender tag]);
+  picker_->delegate()->OnExtensionLinkClicked(service.id, disposition);
+}
+
+- (void)onShowMoreServices:(id)sender {
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+  picker_->delegate()->OnSuggestionsLinkClicked(disposition);
 }
 
 @end
