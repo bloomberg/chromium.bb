@@ -37,9 +37,7 @@ class Printing_Dev : public Resource {
   static bool IsAvailable();
 
   // Get the default print settings and store them in the output of |callback|.
-  // This method always runs asynchronously and the callback will always be
-  // triggered.
-  void GetDefaultPrintSettings(
+  int32_t GetDefaultPrintSettings(
       const CompletionCallbackWithOutput<PP_PrintSettings_Dev>& callback) const;
 
  private:

@@ -102,18 +102,18 @@ bool Printing_Dev::IsAvailable() {
 
 }
 
-void Printing_Dev::GetDefaultPrintSettings(
+int32_t Printing_Dev::GetDefaultPrintSettings(
     const CompletionCallbackWithOutput<PP_PrintSettings_Dev>& callback) const {
   if (has_interface<PPB_Printing_Dev_0_7>()) {
-    get_interface<PPB_Printing_Dev_0_7>()->GetDefaultPrintSettings(
+    return get_interface<PPB_Printing_Dev_0_7>()->GetDefaultPrintSettings(
         pp_resource(), callback.output(), callback.pp_completion_callback());
   } else if (has_interface<PPB_Printing_Dev_0_6>()) {
     bool success = PP_ToBool(get_interface<PPB_Printing_Dev_0_6>()->
         GetDefaultPrintSettings(associated_instance_.pp_instance(),
                                 callback.output()));
-    Module::Get()->core()->CallOnMainThread(0, callback,
-                                            success ? PP_OK : PP_ERROR_FAILED);
+    return callback.MayForce(success ? PP_OK : PP_ERROR_FAILED);
   }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
 }  // namespace pp
