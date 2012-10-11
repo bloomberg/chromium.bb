@@ -32,7 +32,7 @@
       'conditions': [
         [ 'order_profiling!=0', {
           'conditions': [
-            [ 'OS="android"', {
+            [ 'OS=="android"', {
               'dependencies': [ '../tools/cygprofile/cygprofile.gyp:cygprofile', ],
             }],
           ],
