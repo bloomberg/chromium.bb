@@ -4,51 +4,16 @@
 
 #include "android_webview/lib/main/aw_main_delegate.h"
 
-#include "android_webview/common/url_constants.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/lib/aw_content_browser_client.h"
-#include "android_webview/renderer/aw_render_process_observer.h"
-#include "android_webview/renderer/aw_render_view_ext.h"
+#include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
-#include "content/public/renderer/render_thread.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/public/browser/browser_main_runner.h"
-#include "content/public/common/content_client.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 
 namespace android_webview {
-
-namespace {
-
-// TODO(joth): Remove chrome/ dependency; move into android_webview/renderer
-class AwContentRendererClient : public chrome::ChromeContentRendererClient {
- public:
-  virtual void RenderViewCreated(content::RenderView* render_view) OVERRIDE {
-    chrome::ChromeContentRendererClient::RenderViewCreated(render_view);
-    AwRenderViewExt::RenderViewCreated(render_view);
-  }
-
-  virtual void RenderThreadStarted() OVERRIDE {
-    chrome::ChromeContentRendererClient::RenderThreadStarted();
-    WebKit::WebString content_scheme(
-        ASCIIToUTF16(android_webview::kContentScheme));
-    WebKit::WebSecurityPolicy::registerURLSchemeAsLocal(content_scheme);
-
-    aw_render_process_observer_.reset(new AwRenderProcessObserver);
-    content::RenderThread::Get()->AddObserver(
-        aw_render_process_observer_.get());
-  }
-
- private:
-  scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;
-};
-
-}
 
 base::LazyInstance<AwContentBrowserClient>
     g_webview_content_browser_client = LAZY_INSTANCE_INITIALIZER;

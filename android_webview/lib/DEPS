@@ -5,10 +5,6 @@
 include_rules = [
   # Temporary until we implement our own versions of the *Client classes.
   "!chrome/browser/chrome_content_browser_client.h",
-  "!chrome/renderer/chrome_content_renderer_client.h",
-  # Needed for content: scheme registation, will be moved away together with *Client classes.
-  "!third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h",
-  "!third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h",
 
   # Temporary until services we use no longer depend on Chrome's path service.
   "!chrome/common/chrome_paths.h",

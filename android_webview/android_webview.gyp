@@ -58,6 +58,8 @@
         'lib/main/aw_main_delegate.h',
         'lib/main/webview_entry_point.cc',
         'lib/main/webview_stubs.cc',
+        'renderer/aw_content_renderer_client.cc',
+        'renderer/aw_content_renderer_client.h',
         'renderer/aw_render_process_observer.cc',
         'renderer/aw_render_process_observer.h',
         'renderer/aw_render_view_ext.cc',
