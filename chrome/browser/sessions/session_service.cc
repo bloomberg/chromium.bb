@@ -1635,7 +1635,7 @@ void SessionService::RecordSessionUpdateHistogramData(int type,
         RecordUpdatedSaveTime(delta, use_long_period);
         RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
         break;
-      case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED:
+      case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
         RecordUpdatedTabClosed(delta, use_long_period);
         RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
         break;
@@ -1790,6 +1790,6 @@ void SessionService::TabClosing(WebContents* contents) {
   TabClosed(session_tab_helper->window_id(),
             session_tab_helper->session_id(),
             contents->GetClosedByUserGesture());
-  RecordSessionUpdateHistogramData(chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+  RecordSessionUpdateHistogramData(content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                                    &last_updated_tab_closed_time_);
 }
