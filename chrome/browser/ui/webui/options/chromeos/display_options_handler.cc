@@ -209,8 +209,7 @@ void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
     return;
   }
 
-  SetPrimaryDisplayIDPref(
-      Profile::FromWebUI(web_ui())->GetPrefs(), display_id);
+  SetPrimaryDisplayIDPref(display_id);
   SendDisplayInfo();
 }
 

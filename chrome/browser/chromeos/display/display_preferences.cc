@@ -10,6 +10,8 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/pref_names.h"
@@ -83,11 +85,13 @@ void RegisterDisplayPrefs(PrefService* pref_service) {
   // Per-display preference.
   pref_service->RegisterDictionaryPref(prefs::kSecondaryDisplays,
                                        PrefService::UNSYNCABLE_PREF);
+}
 
+void RegisterDisplayLocalStatePrefs(PrefService* local_state) {
   // Primary output name.
-  pref_service->RegisterInt64Pref(prefs::kPrimaryDisplayID,
-                                  gfx::Display::kInvalidDisplayID,
-                                  PrefService::UNSYNCABLE_PREF);
+  local_state->RegisterInt64Pref(prefs::kPrimaryDisplayID,
+                                 gfx::Display::kInvalidDisplayID,
+                                 PrefService::UNSYNCABLE_PREF);
 }
 
 void SetDisplayLayoutPref(PrefService* pref_service,
@@ -123,27 +127,39 @@ void SetDisplayLayoutPref(PrefService* pref_service,
   NotifyDisplayLayoutChanged(pref_service);
 }
 
-void StorePrimaryDisplayIDPref(PrefService* pref_service, int64 display_id) {
+void StorePrimaryDisplayIDPref(int64 display_id) {
+  // The primary display settings is only written by valid users.
+  UserManager* user_manager = UserManager::Get();
+  if (!user_manager->IsUserLoggedIn() || user_manager->IsLoggedInAsDemoUser() ||
+      user_manager->IsLoggedInAsGuest() || user_manager->IsLoggedInAsStub()) {
+    return;
+  }
+
   const ash::internal::MultiDisplayManager* display_manager =
       static_cast<ash::internal::MultiDisplayManager*>(
           aura::Env::GetInstance()->display_manager());
 
+  PrefService* local_state = g_browser_process->local_state();
   if (display_manager->IsInternalDisplayId(display_id))
-    pref_service->ClearPref(prefs::kPrimaryDisplayID);
+    local_state->ClearPref(prefs::kPrimaryDisplayID);
   else
-    pref_service->SetInt64(prefs::kPrimaryDisplayID, display_id);
+    local_state->SetInt64(prefs::kPrimaryDisplayID, display_id);
 }
 
-void SetPrimaryDisplayIDPref(PrefService* pref_service, int64 display_id) {
-  StorePrimaryDisplayIDPref(pref_service, display_id);
+void SetPrimaryDisplayIDPref(int64 display_id) {
+  StorePrimaryDisplayIDPref(display_id);
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
       display_id);
 }
 
 void NotifyDisplayPrefChanged(PrefService* pref_service) {
   NotifyDisplayLayoutChanged(pref_service);
-  int64 id = pref_service->GetInt64(prefs::kPrimaryDisplayID);
-  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(id);
+}
+
+void NotifyDisplayLocalStatePrefChanged() {
+  PrefService* local_state = g_browser_process->local_state();
+  ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
+      local_state->GetInt64(prefs::kPrimaryDisplayID));
 }
 
 }  // namespace chromeos

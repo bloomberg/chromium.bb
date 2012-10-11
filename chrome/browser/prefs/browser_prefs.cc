@@ -96,6 +96,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -191,12 +192,13 @@ void RegisterLocalState(PrefService* local_state) {
 
 #if defined(OS_CHROMEOS)
   chromeos::AudioHandler::RegisterPrefs(local_state);
-  chromeos::language_prefs::RegisterPrefs(local_state);
   chromeos::DataPromoNotification::RegisterPrefs(local_state);
-  chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
-  chromeos::UserManager::RegisterPrefs(local_state);
-  chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);
   chromeos::device_settings_cache::RegisterPrefs(local_state);
+  chromeos::language_prefs::RegisterPrefs(local_state);
+  chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
+  chromeos::RegisterDisplayLocalStatePrefs(local_state);
+  chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);
+  chromeos::UserManager::RegisterPrefs(local_state);
   chromeos::WallpaperManager::RegisterPrefs(local_state);
   chromeos::WizardController::RegisterPrefs(local_state);
   policy::AutoEnrollmentClient::RegisterPrefs(local_state);

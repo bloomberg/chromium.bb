@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/display/primary_display_switch_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
@@ -469,6 +470,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   removable_device_notifications_ =
       new chromeos::RemovableDeviceNotificationsCros();
+
+  chromeos::NotifyDisplayLocalStatePrefChanged();
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
