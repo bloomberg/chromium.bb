@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/system_background_controller.h"
+#include "ash/wm/workspace/colored_window_controller.h"
 
 #include "ash/shell_window_ids.h"
 #include "ui/aura/client/aura_constants.h"
@@ -15,9 +15,9 @@ namespace ash {
 namespace internal {
 
 // View implementation responsible for rendering the background.
-class SystemBackgroundController::View : public views::WidgetDelegateView {
+class ColoredWindowController::View : public views::WidgetDelegateView {
  public:
-  explicit View(SystemBackgroundController* controller);
+  explicit View(ColoredWindowController* controller);
   virtual ~View();
 
   // Closes the hosting widget.
@@ -27,59 +27,59 @@ class SystemBackgroundController::View : public views::WidgetDelegateView {
   virtual views::View* GetContentsView() OVERRIDE;
 
  private:
-  SystemBackgroundController* controller_;
+  ColoredWindowController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };
 
-SystemBackgroundController::View::View(SystemBackgroundController* controller)
+ColoredWindowController::View::View(ColoredWindowController* controller)
     : controller_(controller) {
 }
 
-SystemBackgroundController::View::~View() {
+ColoredWindowController::View::~View() {
   if (controller_)
     controller_->view_ = NULL;
 }
 
-void SystemBackgroundController::View::Close() {
+void ColoredWindowController::View::Close() {
   controller_ = NULL;
   GetWidget()->Close();
 }
 
-views::View* SystemBackgroundController::View::GetContentsView() {
+views::View* ColoredWindowController::View::GetContentsView() {
   return this;
 }
 
-SystemBackgroundController::SystemBackgroundController(aura::RootWindow* root,
-                                                       SkColor color)
+ColoredWindowController::ColoredWindowController(aura::Window* parent,
+                                                 const std::string& window_name)
     : ALLOW_THIS_IN_INITIALIZER_LIST(view_(new View(this))) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = view_;
-  params.parent = root->GetChildById(kShellWindowId_SystemBackgroundContainer);
+  params.parent = parent;
   params.can_activate = false;
   params.accept_events = false;
-  // WARNING: because of a bug using anything but a solid color here causes
-  // flicker.
   params.layer_type = ui::LAYER_SOLID_COLOR;
   widget->Init(params);
   widget->GetNativeView()->SetProperty(aura::client::kAnimationsDisabledKey,
                                        true);
-  widget->GetNativeView()->layer()->SetColor(color);
-  widget->SetBounds(params.parent->bounds());
-  widget->Show();
-  widget->GetNativeView()->SetName("SystemBackground");
+  widget->GetNativeView()->SetName(window_name);
+  widget->SetBounds(parent->bounds());
 }
 
-SystemBackgroundController::~SystemBackgroundController() {
+ColoredWindowController::~ColoredWindowController() {
   if (view_)
     view_->Close();
 }
 
-void SystemBackgroundController::SetColor(SkColor color) {
+void ColoredWindowController::SetColor(SkColor color) {
   if (view_)
     view_->GetWidget()->GetNativeView()->layer()->SetColor(color);
+}
+
+views::Widget* ColoredWindowController::GetWidget() {
+  return view_ ? view_->GetWidget() : NULL;
 }
 
 }  // namespace internal

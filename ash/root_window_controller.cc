@@ -20,7 +20,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/visibility_controller.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm/workspace/system_background_controller.h"
+#include "ash/wm/workspace/colored_window_controller.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
@@ -207,7 +207,11 @@ void RootWindowController::CreateSystemBackground(
   if (is_first_run_after_boot)
     color = kBootSystemBackgroundColor;
 #endif
-  background_.reset(new SystemBackgroundController(root_window_.get(), color));
+  background_.reset(new ColoredWindowController(
+      root_window_->GetChildById(kShellWindowId_SystemBackgroundContainer),
+      "SystemBackground"));
+  background_->SetColor(color);
+  background_->GetWidget()->Show();
 }
 
 void RootWindowController::HandleDesktopBackgroundVisible() {

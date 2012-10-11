@@ -25,9 +25,9 @@ namespace ash {
 class ToplevelWindowEventHandler;
 namespace internal {
 
+class ColoredWindowController;
 class RootWindowLayoutManager;
 class ScreenDimmer;
-class SystemBackgroundController;
 class SystemModalContainerLayoutManager;
 class WorkspaceController;
 
@@ -98,7 +98,7 @@ class ASH_EXPORT RootWindowController {
   // this, portions of the root window that aren't covered by layers will be
   // painted white; this can show up if e.g. it takes a long time to decode the
   // desktop background image when displaying the login screen.
-  scoped_ptr<SystemBackgroundController> background_;
+  scoped_ptr<ColoredWindowController> background_;
 
   scoped_ptr<ScreenDimmer> screen_dimmer_;
   scoped_ptr<WorkspaceController> workspace_controller_;
