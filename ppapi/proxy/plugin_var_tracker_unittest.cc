@@ -157,7 +157,7 @@ TEST_F(PluginVarTrackerTest, FreeTrackedAndReferencedObject) {
   EXPECT_EQ(host_object.value.as_id, GetObjectIDForUniqueReleaseObject());
 }
 
-TEST_F(PluginVarTrackerTest, RecursiveTrackWithNoRef) {
+TEST_F(PluginVarTrackerTest, DISABLED_RecursiveTrackWithNoRef) {
   PP_Var host_object = MakeObject(12345);
 
   // Receive a tracked object twice.
