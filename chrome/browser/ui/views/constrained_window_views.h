@@ -95,7 +95,8 @@ class ConstrainedWindowViews : public views::Widget,
   void PositionChromeStyleWindow();
 
   // Overridden from content::WebContentsObserver:
-  virtual void WebContentsDestroyed(content::WebContents* web_contents);
+  virtual void WebContentsDestroyed(content::WebContents* web_contents)
+      OVERRIDE;
 
   content::WebContents* web_contents_;
 
