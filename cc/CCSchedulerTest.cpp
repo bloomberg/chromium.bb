@@ -73,7 +73,7 @@ TEST(CCSchedulerTest, RequestCommit)
 {
     FakeCCSchedulerClient client;
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
     scheduler->setCanDraw(true);
@@ -107,7 +107,7 @@ TEST(CCSchedulerTest, RequestCommitAfterBeginFrame)
 {
     FakeCCSchedulerClient client;
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
     scheduler->setCanDraw(true);
@@ -141,7 +141,7 @@ TEST(CCSchedulerTest, TextureAcquisitionCollision)
 {
     FakeCCSchedulerClient client;
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
     scheduler->setCanDraw(true);
@@ -180,7 +180,7 @@ TEST(CCSchedulerTest, VisibilitySwitchWithTextureAcquisition)
 {
     FakeCCSchedulerClient client;
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
     scheduler->setCanDraw(true);
@@ -243,7 +243,7 @@ TEST(CCSchedulerTest, RequestRedrawInsideDraw)
 {
     SchedulerClientThatSetNeedsDrawInsideDraw client;
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -270,7 +270,7 @@ TEST(CCSchedulerTest, RequestRedrawInsideFailedDraw)
 {
     SchedulerClientThatSetNeedsDrawInsideDraw client;
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -343,7 +343,7 @@ TEST(CCSchedulerTest, RequestCommitInsideDraw)
 {
     SchedulerClientThatSetNeedsCommitInsideDraw client;
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -371,7 +371,7 @@ TEST(CCSchedulerTest, RequestCommitInsideFailedDraw)
 {
     SchedulerClientThatSetNeedsDrawInsideDraw client;
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -412,9 +412,9 @@ TEST(CCSchedulerTest, NoBeginFrameWhenDrawFails)
 {
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
     SchedulerClientThatSetNeedsCommitInsideDraw client;
-    OwnPtr<FakeCCFrameRateController> controller = adoptPtr(new FakeCCFrameRateController(timeSource));
+    scoped_ptr<FakeCCFrameRateController> controller(new FakeCCFrameRateController(timeSource));
     FakeCCFrameRateController* controllerPtr = controller.get();
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, controller.release());
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, controller.PassAs<CCFrameRateController>());
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -449,9 +449,9 @@ TEST(CCSchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit)
 {
     RefPtr<FakeCCTimeSource> timeSource = adoptRef(new FakeCCTimeSource());
     FakeCCSchedulerClient client;
-    OwnPtr<FakeCCFrameRateController> controller = adoptPtr(new FakeCCFrameRateController(timeSource));
+    scoped_ptr<FakeCCFrameRateController> controller(new FakeCCFrameRateController(timeSource));
     FakeCCFrameRateController* controllerPtr = controller.get();
-    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, controller.release());
+    OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, controller.PassAs<CCFrameRateController>());
 
     EXPECT_EQ(0, controllerPtr->numFramesPending());
 

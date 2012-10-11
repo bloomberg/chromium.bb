@@ -20,14 +20,14 @@
 #include <wtf/CurrentTime.h>
 
 using namespace WTF;
-
 using WebKit::WebSharedGraphicsContext3D;
+
 namespace {
 
 // Measured in seconds.
-static const double contextRecreationTickRate = 0.03;
+const double contextRecreationTickRate = 0.03;
 
-} // anonymous namespace
+}  // namespace
 
 namespace cc {
 
@@ -866,12 +866,12 @@ void CCThreadProxy::initializeImplOnImplThread(CCCompletionEvent* completion, CC
     ASSERT(isImplThread());
     m_layerTreeHostImpl = m_layerTreeHost->createLayerTreeHostImpl(this);
     const base::TimeDelta displayRefreshInterval = base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
-    OwnPtr<CCFrameRateController> frameRateController;
+    scoped_ptr<CCFrameRateController> frameRateController;
     if (m_renderVSyncEnabled)
-        frameRateController = adoptPtr(new CCFrameRateController(CCDelayBasedTimeSource::create(displayRefreshInterval, CCProxy::implThread())));
+        frameRateController.reset(new CCFrameRateController(CCDelayBasedTimeSource::create(displayRefreshInterval, CCProxy::implThread())));
     else
-        frameRateController = adoptPtr(new CCFrameRateController(CCProxy::implThread()));
-    m_schedulerOnImplThread = CCScheduler::create(this, frameRateController.release());
+        frameRateController.reset(new CCFrameRateController(CCProxy::implThread()));
+    m_schedulerOnImplThread = CCScheduler::create(this, frameRateController.Pass());
     m_schedulerOnImplThread->setVisible(m_layerTreeHostImpl->visible());
 
     m_inputHandlerOnImplThread = scoped_ptr<CCInputHandler>(handler);
@@ -954,4 +954,4 @@ CCThreadProxy::BeginFrameAndCommitState::~BeginFrameAndCommitState()
 {
 }
 
-} // namespace cc
+}  // namespace cc

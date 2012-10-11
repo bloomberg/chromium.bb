@@ -5,11 +5,11 @@
 #ifndef CCFrameRateController_h
 #define CCFrameRateController_h
 
-#include "CCTimer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include <wtf/Deque.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "CCTimer.h"
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefPtr.h>
 
 namespace cc {
 
@@ -22,7 +22,7 @@ public:
     virtual void vsyncTick(bool throttled) = 0;
 
 protected:
-    virtual ~CCFrameRateControllerClient() { }
+    virtual ~CCFrameRateControllerClient() {}
 };
 
 class CCFrameRateControllerTimeSourceAdapter;
@@ -68,14 +68,15 @@ protected:
     int m_numFramesPending;
     int m_maxFramesPending;
     RefPtr<CCTimeSource> m_timeSource;
-    OwnPtr<CCFrameRateControllerTimeSourceAdapter> m_timeSourceClientAdapter;
+    scoped_ptr<CCFrameRateControllerTimeSourceAdapter> m_timeSourceClientAdapter;
     bool m_active;
     bool m_swapBuffersCompleteSupported;
 
     // Members for unthrottled frame-rate.
     bool m_isTimeSourceThrottling;
-    OwnPtr<CCTimer> m_manualTicker;
+    scoped_ptr<CCTimer> m_manualTicker;
 };
 
-}
+}  // namespace cc
+
 #endif // CCFrameRateController_h

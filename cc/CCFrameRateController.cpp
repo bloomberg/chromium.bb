@@ -17,22 +17,24 @@ namespace {
 // CCFrameRateController::setMaxFramesPending is called.
 const int defaultMaxFramesPending = 2;
 
-}
+}  // namespace
 
 namespace cc {
 
 class CCFrameRateControllerTimeSourceAdapter : public CCTimeSourceClient {
 public:
-    static PassOwnPtr<CCFrameRateControllerTimeSourceAdapter> create(CCFrameRateController* frameRateController)
-    {
-        return adoptPtr(new CCFrameRateControllerTimeSourceAdapter(frameRateController));
+    static scoped_ptr<CCFrameRateControllerTimeSourceAdapter> create(CCFrameRateController* frameRateController) {
+        return make_scoped_ptr(new CCFrameRateControllerTimeSourceAdapter(frameRateController));
     }
-    virtual ~CCFrameRateControllerTimeSourceAdapter() { }
+    virtual ~CCFrameRateControllerTimeSourceAdapter() {}
 
-    virtual void onTimerTick() OVERRIDE { m_frameRateController->onTimerTick(); }
+    virtual void onTimerTick() OVERRIDE {
+      m_frameRateController->onTimerTick();
+    }
+
 private:
     explicit CCFrameRateControllerTimeSourceAdapter(CCFrameRateController* frameRateController)
-            : m_frameRateController(frameRateController) { }
+        : m_frameRateController(frameRateController) {}
 
     CCFrameRateController* m_frameRateController;
 };
@@ -57,8 +59,8 @@ CCFrameRateController::CCFrameRateController(CCThread* thread)
     , m_active(false)
     , m_swapBuffersCompleteSupported(true)
     , m_isTimeSourceThrottling(false)
+    , m_manualTicker(new CCTimer(thread, this))
 {
-    m_manualTicker = adoptPtr(new CCTimer(thread, this));
 }
 
 CCFrameRateController::~CCFrameRateController()

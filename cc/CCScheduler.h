@@ -6,6 +6,7 @@
 #define CCScheduler_h
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "CCFrameRateController.h"
 #include "CCSchedulerStateMachine.h"
@@ -46,9 +47,9 @@ protected:
 
 class CCScheduler : CCFrameRateControllerClient {
 public:
-    static PassOwnPtr<CCScheduler> create(CCSchedulerClient* client, PassOwnPtr<CCFrameRateController> frameRateController)
+    static PassOwnPtr<CCScheduler> create(CCSchedulerClient* client, scoped_ptr<CCFrameRateController> frameRateController)
     {
-        return adoptPtr(new CCScheduler(client, frameRateController));
+        return adoptPtr(new CCScheduler(client, frameRateController.Pass()));
     }
 
     virtual ~CCScheduler();
@@ -91,18 +92,18 @@ public:
     virtual void vsyncTick(bool throttled) OVERRIDE;
 
 private:
-    CCScheduler(CCSchedulerClient*, PassOwnPtr<CCFrameRateController>);
+    CCScheduler(CCSchedulerClient*, scoped_ptr<CCFrameRateController>);
 
     void processScheduledActions();
 
     CCSchedulerClient* m_client;
-    OwnPtr<CCFrameRateController> m_frameRateController;
+    scoped_ptr<CCFrameRateController> m_frameRateController;
     CCSchedulerStateMachine m_stateMachine;
     bool m_insideProcessScheduledActions;
 
     DISALLOW_COPY_AND_ASSIGN(CCScheduler);
 };
 
-}
+}  // namespace cc
 
 #endif // CCScheduler_h

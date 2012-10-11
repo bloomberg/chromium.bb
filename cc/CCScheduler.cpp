@@ -11,9 +11,9 @@
 
 namespace cc {
 
-CCScheduler::CCScheduler(CCSchedulerClient* client, PassOwnPtr<CCFrameRateController> frameRateController)
+CCScheduler::CCScheduler(CCSchedulerClient* client, scoped_ptr<CCFrameRateController> frameRateController)
     : m_client(client)
-    , m_frameRateController(frameRateController)
+    , m_frameRateController(frameRateController.Pass())
     , m_insideProcessScheduledActions(false)
 {
     ASSERT(m_client);
@@ -189,4 +189,4 @@ void CCScheduler::processScheduledActions()
     m_client->didAnticipatedDrawTimeChange(m_frameRateController->nextTickTime());
 }
 
-}
+}  // namespace cc
