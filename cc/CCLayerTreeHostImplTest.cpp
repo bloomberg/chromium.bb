@@ -32,6 +32,7 @@
 #include "FakeWebCompositorOutputSurface.h"
 #include "FakeWebGraphicsContext3D.h"
 #include "FakeWebScrollbarThemeGeometry.h"
+#include "base/hash_tables.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebVideoFrame.h>
@@ -2463,14 +2464,14 @@ public:
     virtual WebGLId createTexture()
     {
         unsigned textureId = FakeWebGraphicsContext3D::createTexture();
-        m_allocatedTextureIds.add(textureId);
+        m_allocatedTextureIds.insert(textureId);
         return textureId;
     }
     virtual void deleteTexture(WebGLId id)
     {
-        if (!m_allocatedTextureIds.contains(id))
+        if (!ContainsKey(m_allocatedTextureIds, id))
             ADD_FAILURE() << "Trying to delete texture id " << id;
-        m_allocatedTextureIds.remove(id);
+        m_allocatedTextureIds.erase(id);
     }
 
     virtual void bindBuffer(WGC3Denum, WebGLId id)
@@ -2505,12 +2506,12 @@ public:
 
     virtual void bindTexture(WGC3Denum, WebGLId id)
     {
-        if (id && !m_allocatedTextureIds.contains(id))
+        if (id && !ContainsKey(m_allocatedTextureIds, id))
             ADD_FAILURE() << "Trying to bind texture id " << id;
     }
 
 private:
-    HashSet<unsigned> m_allocatedTextureIds;
+    base::hash_set<unsigned> m_allocatedTextureIds;
 };
 
 // Fake video frame that represents a 4x4 YUV video frame.

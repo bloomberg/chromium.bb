@@ -23,6 +23,7 @@
 #include "FakeWebCompositorOutputSurface.h"
 #include "FakeWebGraphicsContext3D.h"
 #include "LayerChromium.h"
+#include "base/stl_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
@@ -60,7 +61,7 @@ void CompositorFakeWebGraphicsContext3DWithTextureTracking::deleteTexture(WebGLI
 
 void CompositorFakeWebGraphicsContext3DWithTextureTracking::bindTexture(WGC3Denum /* target */, WebGLId texture)
 {
-    m_usedTextures.add(texture);
+    m_usedTextures.insert(texture);
 }
 
 int CompositorFakeWebGraphicsContext3DWithTextureTracking::numTextures() const { return static_cast<int>(m_textures.size()); }
@@ -68,7 +69,11 @@ int CompositorFakeWebGraphicsContext3DWithTextureTracking::texture(int i) const 
 void CompositorFakeWebGraphicsContext3DWithTextureTracking::resetTextures() { m_textures.clear(); }
 
 int CompositorFakeWebGraphicsContext3DWithTextureTracking::numUsedTextures() const { return static_cast<int>(m_usedTextures.size()); }
-bool CompositorFakeWebGraphicsContext3DWithTextureTracking::usedTexture(int texture) const { return m_usedTextures.find(texture) != m_usedTextures.end(); }
+bool CompositorFakeWebGraphicsContext3DWithTextureTracking::usedTexture(int texture) const
+{
+  return ContainsKey(m_usedTextures, texture);
+}
+
 void CompositorFakeWebGraphicsContext3DWithTextureTracking::resetUsedTextures() { m_usedTextures.clear(); }
 
 CompositorFakeWebGraphicsContext3DWithTextureTracking::CompositorFakeWebGraphicsContext3DWithTextureTracking(Attributes attrs) : CompositorFakeWebGraphicsContext3D(attrs)

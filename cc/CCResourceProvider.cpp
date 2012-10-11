@@ -12,6 +12,8 @@
 #include <limits.h>
 
 #include "base/debug/alias.h"
+#include "base/hash_tables.h"
+#include "base/stl_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "CCProxy.h"
@@ -22,7 +24,6 @@
 #include "ThrottledTextureUploader.h"
 #include "UnthrottledTextureUploader.h"
 #include <public/WebGraphicsContext3D.h>
-#include <wtf/HashSet.h>
 
 using WebKit::WebGraphicsContext3D;
 
@@ -684,18 +685,18 @@ void CCResourceProvider::trimMailboxDeque()
                 ++maxMailboxCount;
         }
     } else {
-        HashSet<int> childPoolSet;
+        base::hash_set<int> childPoolSet;
         for (ChildMap::iterator it = m_children.begin(); it != m_children.end(); ++it)
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-            childPoolSet.add(it->value.pool);
+            childPoolSet.insert(it->value.pool);
 #else
-            childPoolSet.add(it->second.pool);
+            childPoolSet.insert(it->second.pool);
 #endif
         for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-            if (childPoolSet.contains(it->value.pool))
+            if (ContainsKey(childPoolSet, it->value.pool))
 #else
-            if (childPoolSet.contains(it->second.pool))
+            if (ContainsKey(childPoolSet, it->second.pool))
 #endif
                 ++maxMailboxCount;
         }

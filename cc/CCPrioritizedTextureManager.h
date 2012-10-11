@@ -6,6 +6,7 @@
 #define CCPrioritizedTextureManager_h
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "CCPrioritizedTexture.h"
 #include "CCPriorityCalculator.h"
@@ -13,13 +14,22 @@
 #include "GraphicsContext3D.h"
 #include "IntRect.h"
 #include "IntSize.h"
-#include <wtf/HashSet.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/Vector.h>
 
+#if defined(COMPILER_GCC)
+namespace BASE_HASH_NAMESPACE {
+template<>
+struct hash<cc::CCPrioritizedTexture*> {
+  size_t operator()(cc::CCPrioritizedTexture* ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+} // namespace BASE_HASH_NAMESPACE
+#endif // COMPILER
+
 namespace cc {
 
-class CCPrioritizedTexture;
 class CCPriorityCalculator;
 
 class CCPrioritizedTextureManager {
@@ -126,7 +136,7 @@ private:
     size_t m_memoryAvailableBytes;
     int m_pool;
 
-    typedef HashSet<CCPrioritizedTexture*> TextureSet;
+    typedef base::hash_set<CCPrioritizedTexture*> TextureSet;
     typedef ListHashSet<CCPrioritizedTexture::Backing*> BackingSet;
     typedef Vector<CCPrioritizedTexture*> TextureVector;
 

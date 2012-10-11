@@ -8,8 +8,8 @@
 #include "CCAnimationEvents.h"
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "cc/own_ptr_vector.h"
-#include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -83,7 +83,7 @@ protected:
     explicit CCLayerAnimationController(CCLayerAnimationControllerClient*);
 
 private:
-    typedef HashSet<int, DefaultHash<int>::Hash, WTF::UnsignedWithZeroKeyHashTraits<int> > TargetProperties;
+    typedef base::hash_set<int> TargetProperties;
 
     void pushNewAnimationsToImplThread(CCLayerAnimationController*) const;
     void removeAnimationsCompletedOnMainThread(CCLayerAnimationController*) const;

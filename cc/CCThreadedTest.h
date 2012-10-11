@@ -9,6 +9,7 @@
 #include "CCLayerTreeHostImpl.h"
 #include "CCScopedThreadProxy.h"
 #include "CompositorFakeWebGraphicsContext3D.h"
+#include "base/hash_tables.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebAnimationDelegate.h>
 #include <public/WebThread.h>
@@ -189,7 +190,7 @@ private:
     explicit CompositorFakeWebGraphicsContext3DWithTextureTracking(Attributes attrs);
 
     Vector<WebKit::WebGLId> m_textures;
-    HashSet<WebKit::WebGLId, DefaultHash<WebKit::WebGLId>::Hash, WTF::UnsignedWithZeroKeyHashTraits<WebKit::WebGLId> > m_usedTextures;
+    base::hash_set<WebKit::WebGLId> m_usedTextures;
 };
 
 } // namespace WebKitTests

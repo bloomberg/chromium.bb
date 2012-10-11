@@ -242,17 +242,17 @@ void CCLayerAnimationController::startAnimationsWaitingForTargetAvailability(dou
     TargetProperties blockedProperties;
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
         if (m_activeAnimations[i]->runState() == CCActiveAnimation::Running || m_activeAnimations[i]->runState() == CCActiveAnimation::Finished)
-            blockedProperties.add(m_activeAnimations[i]->targetProperty());
+            blockedProperties.insert(m_activeAnimations[i]->targetProperty());
     }
 
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
         if (m_activeAnimations[i]->runState() == CCActiveAnimation::WaitingForTargetAvailability) {
             // Collect all properties for animations with the same group id (they should all also be in the list of animations).
             TargetProperties enqueuedProperties;
-            enqueuedProperties.add(m_activeAnimations[i]->targetProperty());
+            enqueuedProperties.insert(m_activeAnimations[i]->targetProperty());
             for (size_t j = i + 1; j < m_activeAnimations.size(); ++j) {
                 if (m_activeAnimations[i]->group() == m_activeAnimations[j]->group())
-                    enqueuedProperties.add(m_activeAnimations[j]->targetProperty());
+                    enqueuedProperties.insert(m_activeAnimations[j]->targetProperty());
             }
 
             // Check to see if intersection of the list of properties affected by the group and the list of currently
@@ -260,7 +260,7 @@ void CCLayerAnimationController::startAnimationsWaitingForTargetAvailability(dou
             // of blocked properties.
             bool nullIntersection = true;
             for (TargetProperties::iterator pIter = enqueuedProperties.begin(); pIter != enqueuedProperties.end(); ++pIter) {
-                if (!blockedProperties.add(*pIter).isNewEntry)
+                if (!blockedProperties.insert(*pIter).second)
                     nullIntersection = false;
             }
 

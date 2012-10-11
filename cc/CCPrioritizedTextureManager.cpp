@@ -6,6 +6,7 @@
 
 #include "CCPrioritizedTextureManager.h"
 
+#include "base/stl_util.h"
 #include "CCPrioritizedTexture.h"
 #include "CCPriorityCalculator.h"
 #include "CCProxy.h"
@@ -305,10 +306,10 @@ void CCPrioritizedTextureManager::registerTexture(CCPrioritizedTexture* texture)
     ASSERT(texture);
     ASSERT(!texture->textureManager());
     ASSERT(!texture->backing());
-    ASSERT(m_textures.find(texture) == m_textures.end());
+    ASSERT(!ContainsKey(m_textures, texture));
 
     texture->setManagerInternal(this);
-    m_textures.add(texture);
+    m_textures.insert(texture);
 
 }
 
@@ -316,11 +317,11 @@ void CCPrioritizedTextureManager::unregisterTexture(CCPrioritizedTexture* textur
 {
     ASSERT(CCProxy::isMainThread() || (CCProxy::isImplThread() && CCProxy::isMainThreadBlocked()));
     ASSERT(texture);
-    ASSERT(m_textures.find(texture) != m_textures.end());
+    ASSERT(ContainsKey(m_textures, texture));
 
     returnBackingTexture(texture);
     texture->setManagerInternal(0);
-    m_textures.remove(texture);
+    m_textures.erase(texture);
     texture->setAbovePriorityCutoff(false);
 }
 
@@ -374,7 +375,7 @@ void CCPrioritizedTextureManager::assertInvariants()
     // Backings/textures must be doubly-linked and only to other backings/textures in this manager.
     for (BackingSet::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
         if ((*it)->owner()) {
-            ASSERT(m_textures.find((*it)->owner()) != m_textures.end());
+            ASSERT(ContainsKey(m_textures, (*it)->owner()));
             ASSERT((*it)->owner()->backing() == (*it));
         }
     }
