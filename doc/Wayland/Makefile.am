@@ -38,8 +38,13 @@ $(builddir)/en-US/%: $(srcdir)/en_US/% en-US/ProtocolSpec.xml en-US/ProtocolInte
 	$(AM_V_GEN)cp -f $< $@
 
 # Run publican for the builddir on the generated (or copied) source
-# The output formats are generated in the Wayland sub directory
+# The output formats are generated in the Wayland sub directory. Also, we need
+# to use a tmp publican.cfg cause 'publican rename' modifies the original.
 Wayland: $(publican_targets)
+	$(AM_V_GEN)cp -f $(srcdir)/publican.cfg $(srcdir)/publican.cfg.tmp
+	$(AM_V_GEN)$(PUBLICAN) rename --name Wayland \
+		--version "$(WAYLAND_VERSION_MAJOR).$(WAYLAND_VERSION_MINOR)"
+	$(AM_V_GEN)mv -f $(srcdir)/publican.cfg.tmp $(srcdir)/publican.cfg
 	$(AM_V_GEN)$(PUBLICAN) build --lang en-US --format html,pdf \
 		--config $(srcdir)/publican.cfg
 	@touch Wayland
