@@ -27,6 +27,8 @@
 
     <script src="js/util.js"></script>
     <script src="js/file_type.js"></script>
+    <script src="js/path_util.js"></script>
+    <script src="js/volume_manager.js"></script>
     <script src="js/metadata/metadata_cache.js"></script>
     <script src="js/metrics.js"></script>
     <script src="js/image_editor/image_util.js"></script>
@@ -39,33 +41,39 @@
 
 <body>
   <div class="action-choice">
-    <div class="title-bar"></div>
-    <div class="previews">
-      <div class="spinner"></div>
+    <div class="content">
+      <div class="previews"></div>
+      <div class="counter"></div>
+
+      <div class="choices">
+        <div>
+          <input id="view-files" type="radio" name="action" checked>
+          <label for="view-files"
+                 i18n-content="ACTION_CHOICE_VIEW_FILES"></label>
+        </div>
+
+        <div>
+          <input id="import-photos-to-drive" type="radio" name="action">
+          <label for="import-photos-to-drive"
+                 i18n-content="ACTION_CHOICE_PHOTOS_DRIVE"></label>
+        </div>
+
+        <div>
+          <input id="watch-single-video" type="radio" name="action">
+          <label for="watch-single-video"></label>
+        </div>
+      </div>
+
+      <div class="footer">
+        <button class="ok" i18n-content="ACTION_CHOICE_OK"></button>
+      </div>
     </div>
-    <div class="counter"></div>
 
-    <div class="choices">
-      <div>
-        <input id="view-files" type="radio" name="action" checked>
-        <label for="view-files"
-               i18n-content="ACTION_CHOICE_VIEW_FILES"></label>
+    <div class="loading">
+      <div class="device-type">
+        <div class="spinner"></div>
       </div>
-
-      <div>
-        <input id="import-photos-to-drive" type="radio" name="action">
-        <label for="import-photos-to-drive"
-               i18n-content="ACTION_CHOICE_PHOTOS_DRIVE"></label>
-      </div>
-
-      <div>
-        <input id="watch-single-video" type="radio" name="action">
-        <label for="watch-single-video"></label>
-      </div>
-    </div>
-
-    <div class="footer">
-      <button class="ok" i18n-content="ACTION_CHOICE_OK"></button>
+      <div class="loading-text"></div>
     </div>
   </div>
 </body>

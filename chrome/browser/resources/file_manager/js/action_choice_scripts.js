@@ -20,6 +20,8 @@
 
 //<include src="util.js"/>
 //<include src="file_type.js"/>
+//<include src="path_util.js"/>
+//<include src="volume_manager.js"/>
 //<include src="metadata/metadata_cache.js"/>
 //<include src="metrics.js"/>
 //<include src="image_editor/image_util.js"/>

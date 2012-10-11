@@ -507,10 +507,10 @@ void ViewRemovableDrive(const FilePath& path) {
 }
 
 void OpenActionChoiceDialog(const FilePath& path) {
-  const int kDialogWidth = 410;
+  const int kDialogWidth = 394;
   // TODO(dgozman): remove 50, which is a title height once popup window
   // will have no title.
-  const int kDialogHeight = 332 + 50;
+  const int kDialogHeight = 316 + 50;
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 

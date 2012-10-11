@@ -76,12 +76,14 @@ ThumbnailLoader.canUseImageUrl_ = function(metadata) {
  * @param {function(HTMLImageElement, object} opt_onSuccess Success callback,
  *   accepts the image and the transform.
  * @param {function} opt_onError Error callback.
+ * @param {function} opt_onGeneric Callback for generic image used.
  */
 ThumbnailLoader.prototype.load = function(
-    box, fill, opt_onSuccess, opt_onError) {
+    box, fill, opt_onSuccess, opt_onError, opt_onGeneric) {
   if (!this.thumbnailUrl_) {
     // Relevant CSS rules are in file_types.css.
     box.setAttribute('generic-thumbnail', this.mediaType_);
+    if (opt_onGeneric) opt_onGeneric();
     return;
   }
 

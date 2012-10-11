@@ -18,6 +18,7 @@ function ActionChoice(dom, filesystem, params) {
   this.dom_ = dom;
   this.document_ = this.dom_.ownerDocument;
   this.metadataCache_ = params.metadataCache;
+  this.volumeManager_ = new VolumeManager();
   this.closeBound_ = this.close_.bind(this);
 
   this.initDom_();
@@ -77,7 +78,6 @@ ActionChoice.load = function(opt_filesystem, opt_params) {
  * @private
  */
 ActionChoice.prototype.initDom_ = function() {
-  this.title_ = this.document_.querySelector('.title-bar');
   this.previews_ = this.document_.querySelector('.previews');
   this.counter_ = this.document_.querySelector('.counter');
 
@@ -91,7 +91,7 @@ ActionChoice.prototype.initDom_ = function() {
 
   this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
-  this.previews_.setAttribute('loading', '');
+  this.dom_.setAttribute('loading', '');
 
   this.document_.querySelectorAll('.choices input')[0].focus();
 };
@@ -106,14 +106,8 @@ ActionChoice.prototype.loadSource_ = function(source) {
     var videos = results.filter(FileType.isVideo);
     var videoLabel = this.dom_.querySelector('label[for=watch-single-video]');
     if (videos.length == 1) {
-      var name = videos[0].name;
-      var extPos = name.lastIndexOf('.');
-      // TODO(dgozman): use GetFileNameFromFullName once it is moved to
-      // appropriate place.
-      if (extPos != -1)
-        name = name.substring(0, extPos);
       videoLabel.textContent = loadTimeData.getStringF(
-          'ACTION_CHOICE_WATCH_SINGLE_VIDEO', name);
+          'ACTION_CHOICE_WATCH_SINGLE_VIDEO', videos[0].name);
       this.singleVideo_ = videos[0];
     } else {
       videoLabel.parentNode.style.display = 'none';
@@ -125,27 +119,29 @@ ActionChoice.prototype.loadSource_ = function(source) {
           style.display = 'none';
     }
 
-    var previews = results;
     if (mediaFiles.length < ActionChoice.PREVIEW_COUNT) {
       this.counter_.textContent = loadTimeData.getStringF(
           'ACTION_CHOICE_COUNTER_NO_MEDIA', results.length);
     } else {
       this.counter_.textContent = loadTimeData.getStringF(
-          'ACTION_CHOICE_COUNTER', results.length, mediaFiles.length);
-      previews = mediaFiles;
+          'ACTION_CHOICE_COUNTER', mediaFiles.length);
     }
-    this.previews_.removeAttribute('loading');
-    var count = Math.min(previews.length, ActionChoice.PREVIEW_COUNT);
-    for (var index = 0; index < count; index++) {
-      this.renderPreview_(previews[index]);
-    }
+    var previews = mediaFiles.length ? mediaFiles : results;
+    this.renderPreview_(previews, ActionChoice.PREVIEW_COUNT);
   }.bind(this);
 
   var onEntry = function(entry) {
     this.sourceEntry_ = entry;
-    // TODO(dgozman): add icon.
-    this.title_.textContent = entry.name;
     this.document_.querySelector('title').textContent = entry.name;
+
+    var deviceType = this.volumeManager_.getDeviceType(entry.fullPath);
+    if (deviceType != 'sd') deviceType = 'usb';
+    this.dom_.querySelector('.device-type').setAttribute('device-type',
+        deviceType);
+    this.dom_.querySelector('.loading-text').textContent =
+        loadTimeData.getString('ACTION_CHOICE_LOADING_' +
+                               deviceType.toUpperCase());
+
     util.traverseTree(entry, onTraversed, 0 /* infinite depth */);
   }.bind(this);
 
@@ -155,18 +151,39 @@ ActionChoice.prototype.loadSource_ = function(source) {
 
 /**
  * Renders a preview for a media entry.
- * @param {FileEntry} entry The entry.
+ * @param {Array.<FileEntry>} entries The entries.
+ * @param {number} count Remaining count.
  * @private
  */
-ActionChoice.prototype.renderPreview_ = function(entry) {
+ActionChoice.prototype.renderPreview_ = function(entries, count) {
+  var entry = entries.shift();
   var box = this.document_.createElement('div');
   box.className = 'img-container';
+
+  var onSuccess = function() {
+    this.previews_.appendChild(box);
+    if (--count == 0) {
+      this.dom_.removeAttribute('loading');
+    } else {
+      this.renderPreview_(entries, count);
+    }
+  }.bind(this);
+
+  var onError = function() {
+    if (entries.length == 0) {
+      // Append one image with generic thumbnail.
+      this.previews_.appendChild(box);
+      this.dom_.removeAttribute('loading');
+    } else {
+      this.renderPreview_(entries, count);
+    }
+  }.bind(this);
+
   this.metadataCache_.get(entry, 'thumbnail|filesystem',
       function(metadata) {
         new ThumbnailLoader(entry.toURL(), metadata).
-            load(box, true /* fill, not fit */);
+            load(box, true /* fill, not fit */, onSuccess, onError, onError);
       });
-  this.previews_.appendChild(box);
 };
 
 /**
