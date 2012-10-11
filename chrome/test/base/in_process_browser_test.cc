@@ -79,7 +79,7 @@ InProcessBrowserTest::InProcessBrowserTest()
   chrome_path = chrome_path.Append(chrome::kBrowserProcessExecutablePath);
   CHECK(PathService::Override(base::FILE_EXE, chrome_path));
 #endif  // defined(OS_MACOSX)
-  CreateTestServer("chrome/test/data");
+  CreateTestServer(FilePath(FILE_PATH_LITERAL("chrome/test/data")));
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() {

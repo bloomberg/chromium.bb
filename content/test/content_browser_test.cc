@@ -41,7 +41,7 @@ ContentBrowserTest::ContentBrowserTest() {
       FILE_PATH_LITERAL("Content Shell.app/Contents/MacOS/Content Shell"));
   CHECK(PathService::Override(base::FILE_EXE, content_shell_path));
 #endif
-  CreateTestServer("content/test/data");
+  CreateTestServer(FilePath(FILE_PATH_LITERAL("content/test/data")));
 }
 
 ContentBrowserTest::~ContentBrowserTest() {

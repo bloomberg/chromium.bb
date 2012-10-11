@@ -84,12 +84,12 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   RunTestOnMainThreadLoop();
 }
 
-void BrowserTestBase::CreateTestServer(const char* test_server_base) {
+void BrowserTestBase::CreateTestServer(const FilePath& test_server_base) {
   CHECK(!test_server_.get());
   test_server_.reset(new net::TestServer(
       net::TestServer::TYPE_HTTP,
       net::TestServer::kLocalhost,
-      FilePath().AppendASCII(test_server_base)));
+      test_server_base));
 }
 
 }  // namespace content
