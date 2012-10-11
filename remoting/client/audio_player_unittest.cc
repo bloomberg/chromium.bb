@@ -26,15 +26,16 @@ namespace remoting {
 
 class FakeAudioPlayer : public AudioPlayer {
  public:
-  FakeAudioPlayer() {}
+  FakeAudioPlayer() {
+  }
 
   bool ResetAudioPlayer(AudioPacket::SamplingRate) OVERRIDE {
     return true;
-  };
+  }
 
   uint32 GetSamplesPerFrame() OVERRIDE {
     return kAudioSamplesPerFrame;
-  };
+  }
 };
 
 class AudioPlayerTest : public ::testing::Test {
@@ -45,10 +46,6 @@ class AudioPlayerTest : public ::testing::Test {
   }
 
   virtual void TearDown() {
-    // Drain the samples from |audio_|.
-    while (GetNumQueuedPackets() > 0) {
-      ConsumeAudioFrame();
-    }
   }
 
   void ConsumeAudioFrame() {

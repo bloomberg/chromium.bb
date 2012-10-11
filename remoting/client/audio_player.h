@@ -39,6 +39,7 @@ class AudioPlayer {
 
   typedef std::list<AudioPacket*> AudioPacketQueue;
 
+  void ResetQueue();
   void FillWithSamples(void* samples, uint32 buffer_size);
 
   AudioPacket::SamplingRate sampling_rate_;

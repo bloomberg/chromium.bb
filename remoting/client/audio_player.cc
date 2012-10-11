@@ -26,7 +26,10 @@ AudioPlayer::AudioPlayer()
       bytes_consumed_(0) {
 }
 
-AudioPlayer::~AudioPlayer() {}
+AudioPlayer::~AudioPlayer() {
+  base::AutoLock auto_lock(lock_);
+  ResetQueue();
+}
 
 void AudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
   CHECK_EQ(1, packet->data_size());
@@ -47,9 +50,7 @@ void AudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
     // wrong rate.
     {
       base::AutoLock auto_lock(lock_);
-      STLDeleteElements(&queued_packets_);
-      queued_samples_ = 0;
-      bytes_consumed_ = 0;
+      ResetQueue();
     }
 
     sampling_rate_ = packet->sampling_rate();
@@ -64,9 +65,7 @@ void AudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
 
   if (queued_samples_ > kMaxQueueLatencyMs * sampling_rate_ /
       base::Time::kMillisecondsPerSecond) {
-    STLDeleteElements(&queued_packets_);
-    queued_samples_ = 0;
-    bytes_consumed_ = 0;
+    ResetQueue();
   }
 
   queued_samples_ += packet->data(0).size() / (kChannels * kSampleSizeBytes);
@@ -79,6 +78,13 @@ void AudioPlayer::AudioPlayerCallback(void* samples,
                                       void* data) {
   AudioPlayer* audio_player = static_cast<AudioPlayer*>(data);
   audio_player->FillWithSamples(samples, buffer_size);
+}
+
+void AudioPlayer::ResetQueue() {
+  lock_.AssertAcquired();
+  STLDeleteElements(&queued_packets_);
+  queued_samples_ = 0;
+  bytes_consumed_ = 0;
 }
 
 void AudioPlayer::FillWithSamples(void* samples, uint32 buffer_size) {
