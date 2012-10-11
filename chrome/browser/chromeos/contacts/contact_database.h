@@ -42,8 +42,6 @@ class ContactDatabaseInterface {
                               scoped_ptr<UpdateMetadata>)>
       LoadCallback;
 
-  ContactDatabaseInterface() {}
-
   // Asynchronously destroys the object after all in-progress file operations
   // have completed.
   virtual void DestroyOnUIThread() {}
@@ -70,9 +68,6 @@ class ContactDatabaseInterface {
 
  protected:
   virtual ~ContactDatabaseInterface() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContactDatabaseInterface);
 };
 
 class ContactDatabase : public ContactDatabaseInterface {

@@ -5,8 +5,6 @@
 #ifndef CHROMEOS_DBUS_DBUS_THREAD_MANAGER_OBSERVER_H_
 #define CHROMEOS_DBUS_DBUS_THREAD_MANAGER_OBSERVER_H_
 
-#include "base/basictypes.h"
-
 namespace chromeos {
 
 class DBusThreadManager;
@@ -15,15 +13,12 @@ class DBusThreadManager;
 // DBusThreadManager.
 class DBusThreadManagerObserver {
  public:
-  DBusThreadManagerObserver() {}
-  virtual ~DBusThreadManagerObserver() {}
-
   // Called when |manager| is about to be destroyed.  |manager| is still usable
   // at this point.
   virtual void OnDBusThreadManagerDestroying(DBusThreadManager* manager) = 0;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DBusThreadManagerObserver);
+ protected:
+  virtual ~DBusThreadManagerObserver() {}
 };
 
 }  // namespace chromeos
