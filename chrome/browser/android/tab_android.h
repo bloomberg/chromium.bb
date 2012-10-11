@@ -71,9 +71,6 @@ class TabAndroid {
   virtual ~TabAndroid();
 
   int tab_id_;
-
- private:
-  static void InitTabHelpers(content::WebContents* web_contents);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_TAB_ANDROID_H_

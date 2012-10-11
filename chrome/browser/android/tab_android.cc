@@ -3,23 +3,16 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 
+
 TabContents* TabAndroid::GetOrCreateTabContents(
     content::WebContents* web_contents) {
   TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents) {
-    tab_contents = TabContents::Factory::CreateTabContents(web_contents);
-    InitTabHelpers(web_contents);
-  }
-  return tab_contents;
-}
-
-void TabAndroid::InitTabHelpers(content::WebContents* web_contents) {
-  WindowAndroidHelper::CreateForWebContents(web_contents);
+  return tab_contents ? tab_contents : TabContents::Factory::CreateTabContents(
+      web_contents);
 }
 
 TabContents* TabAndroid::InitTabContentsFromView(JNIEnv* env,

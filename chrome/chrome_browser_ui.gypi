@@ -126,8 +126,6 @@
         'browser/ui/android/tab_model/tab_model_list.cc',
         'browser/ui/android/tab_model/tab_model_list.h',
         'browser/ui/android/tab_restore_service_delegate_android.cc',
-        'browser/ui/android/window_android_helper.h',
-        'browser/ui/android/window_android_helper.cc',
         'browser/ui/app_list/app_list_controller.h',
         'browser/ui/app_list/app_list_controller.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',

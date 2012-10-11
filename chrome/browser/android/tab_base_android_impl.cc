@@ -8,20 +8,17 @@
 #include "base/logging.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/ui/android/window_android_helper.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "jni/TabBase_jni.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
-#include "ui/gfx/android/window_android.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 using chrome::android::ChromeWebContentsDelegateAndroid;
 using content::WebContents;
-using ui::WindowAndroid;
 
 namespace {
 class ChromeWebContentsDelegateRenderAndroid
@@ -56,12 +53,9 @@ class ChromeWebContentsDelegateRenderAndroid
 
 TabBaseAndroidImpl::TabBaseAndroidImpl(JNIEnv* env,
                                        jobject obj,
-                                       WebContents* web_contents,
-                                       WindowAndroid* window_android)
+                                       WebContents* web_contents)
     : web_contents_(web_contents),
       tab_layer_(WebKit::WebLayer::create()) {
-  WindowAndroidHelper::FromWebContents(web_contents)->
-      SetWindowAndroid(window_android);
 }
 
 TabBaseAndroidImpl::~TabBaseAndroidImpl() {
@@ -129,12 +123,10 @@ ScopedJavaLocalRef<jstring> TabBaseAndroidImpl::FixupUrl(JNIEnv* env,
 
 static jint Init(JNIEnv* env,
                  jobject obj,
-                 jint web_contents_ptr,
-                 jint window_android_ptr) {
+                 jint web_contents_ptr) {
   TabBaseAndroidImpl* tab = new TabBaseAndroidImpl(
       env,
       obj,
-      reinterpret_cast<WebContents*>(web_contents_ptr),
-      reinterpret_cast<WindowAndroid*>(window_android_ptr));
+      reinterpret_cast<WebContents*>(web_contents_ptr));
   return reinterpret_cast<jint>(tab);
 }

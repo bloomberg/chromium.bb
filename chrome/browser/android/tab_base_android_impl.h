@@ -25,10 +25,6 @@ namespace content {
 class WebContents;
 }
 
-namespace ui {
-class WindowAndroid;
-}
-
 namespace WebKit {
 class WebLayer;
 }
@@ -37,8 +33,7 @@ class TabBaseAndroidImpl : public TabAndroid {
  public:
   TabBaseAndroidImpl(JNIEnv* env,
                      jobject obj,
-                     content::WebContents* web_contents,
-                     ui::WindowAndroid* window_android);
+                     content::WebContents* web_contents);
   void Destroy(JNIEnv* env, jobject obj);
 
   WebKit::WebLayer* tab_layer() const { return tab_layer_.get(); }
