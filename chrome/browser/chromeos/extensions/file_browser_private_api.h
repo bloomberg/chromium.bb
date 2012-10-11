@@ -6,15 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_
 
 #include <map>
-#include <string>
 #include <queue>
+#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
-#include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/prefs/pref_service.h"

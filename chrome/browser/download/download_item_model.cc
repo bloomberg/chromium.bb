@@ -22,7 +22,7 @@
 #include "ui/base/text/text_elider.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/gdata/drive_download_observer.h"
+#include "chrome/browser/chromeos/drive/drive_download_observer.h"
 #endif
 
 using base::TimeDelta;

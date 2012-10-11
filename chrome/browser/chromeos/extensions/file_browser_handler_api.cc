@@ -40,9 +40,9 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
-#include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -56,9 +56,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
