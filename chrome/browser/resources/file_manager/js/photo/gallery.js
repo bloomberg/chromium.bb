@@ -368,7 +368,9 @@ Gallery.prototype.checkActivity_ = function() {
 */
 Gallery.prototype.onUserAction_ = function() {
   this.closeShareMenu_();
+  // Show the toolbar and hide it after the default timeout.
   this.inactivityWatcher_.startActivity();
+  this.inactivityWatcher_.stopActivity();
 };
 
 /**
@@ -588,8 +590,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
 
 
     case 'U+0056':  // 'v'
-      this.slideMode_.toggleSlideshow(
-          SlideMode.SLIDESHOW_INTERVAL_FIRST, event);
+      this.slideMode_.startSlideshow(SlideMode.SLIDESHOW_INTERVAL_FIRST, event);
       return;
 
     case 'U+007F':  // Delete

@@ -145,7 +145,7 @@ SlideMode.prototype.initDom_ = function() {
   this.arrowLeft_ =
       util.createChild(this.arrowBox_, 'arrow left tool dimmable');
   this.arrowLeft_.addEventListener('click',
-      this.selectNext.bind(this, -1, null));
+      this.advanceManually.bind(this, -1));
   util.createChild(this.arrowLeft_);
 
   util.createChild(this.arrowBox_, 'arrow-spacer');
@@ -153,7 +153,7 @@ SlideMode.prototype.initDom_ = function() {
   this.arrowRight_ =
       util.createChild(this.arrowBox_, 'arrow right tool dimmable');
   this.arrowRight_.addEventListener('click',
-      this.selectNext.bind(this, 1, null));
+      this.advanceManually.bind(this, 1));
   util.createChild(this.arrowRight_);
 
   this.ribbonSpacer_ = util.createChild(this.toolbar_, 'ribbon-spacer');
@@ -169,10 +169,17 @@ SlideMode.prototype.initDom_ = function() {
 
   util.createChild(this.container_, 'spinner');
 
-  this.slideShowButton_ = util.createChild(this.toolbar_, 'button slideshow');
-  this.slideShowButton_.title = this.displayStringFunction_('slideshow');
-  this.slideShowButton_.addEventListener('click',
-      this.toggleSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
+  var slideShowButton = util.createChild(this.toolbar_, 'button slideshow');
+  slideShowButton.title = this.displayStringFunction_('slideshow');
+  slideShowButton.addEventListener('click',
+      this.toggleSlideshow_.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
+
+  var slideShowToolbar =
+      util.createChild(this.container_, 'tool slideshow-toolbar');
+  util.createChild(slideShowToolbar, 'slideshow-play').
+      addEventListener('click', this.toggleSlideshowPause_.bind(this));
+  util.createChild(slideShowToolbar, 'slideshow-end').
+      addEventListener('click', this.stopSlideshow_.bind(this));
 
   // Editor.
 
@@ -210,7 +217,7 @@ SlideMode.prototype.initDom_ = function() {
       this.displayStringFunction_);
 
   this.editor_.getBuffer().addOverlay(
-      new SwipeOverlay(this.selectNext.bind(this)));
+      new SwipeOverlay(this.advanceManually.bind(this)));
 };
 
 /**
@@ -550,6 +557,27 @@ SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
 };
 
 /**
+ * Advance the selection based on the pressed key ID.
+ * @param {string} keyID Key identifier.
+ */
+SlideMode.prototype.advanceWithKeyboard = function(keyID) {
+  this.advanceManually(keyID == 'Up' || keyID == 'Left' ? -1 : 1);
+};
+
+/**
+ * Advance the selection as a result of a user action (as opposed to an
+ * automatic change in the slideshow mode).
+ * @param {number} direction -1 for left, 1 for right.
+ */
+SlideMode.prototype.advanceManually = function(direction) {
+  if (this.isSlideshowPlaying_()) {
+    this.pauseSlideshow_();
+    cr.dispatchSimpleEvent(this, 'useraction');
+  }
+  this.selectNext(direction);
+};
+
+/**
  * Select the next item.
  * @param {number} direction -1 for left, 1 for right.
  */
@@ -733,22 +761,19 @@ SlideMode.prototype.onKeyDown = function(event) {
   if (this.isSlideshowOn_()) {
     switch (keyID) {
       case 'U+001B':  // Escape exits the slideshow.
-        this.toggleSlideshow(0 /* interval ignored */, event);
+        this.stopSlideshow_(event);
+        break;
+
+      case 'U+0020':  // Space pauses/resumes the slideshow.
+        this.toggleSlideshowPause_();
         break;
 
       case 'Up':
       case 'Down':
       case 'Left':
       case 'Right':
-        if (this.slideShowPaused_) {
-          this.selectNext(keyID == 'Up' || keyID == 'Left' ? -1 : 1);
-        } else {
-          this.toggleSlideshowPause_();
-        }
+        this.advanceWithKeyboard(keyID);
         break;
-
-      default:  // Any other key pauses/resumes the slideshow.
-        this.toggleSlideshowPause_();
     }
     return true;  // Consume all keystrokes in the slideshow mode.
   }
@@ -779,11 +804,11 @@ SlideMode.prototype.onKeyDown = function(event) {
     case 'End':
       this.selectLast();
       break;
+    case 'Up':
+    case 'Down':
     case 'Left':
-      this.selectNext(-1);
-      break;
     case 'Right':
-      this.selectNext(1);
+      this.advanceWithKeyboard(keyID);
       break;
 
     default: return false;
@@ -959,75 +984,98 @@ SlideMode.prototype.isSlideshowOn_ = function() {
 };
 
 /**
- * Stop the slideshow if it is on.
- * @private
- */
-SlideMode.prototype.stopSlideshow_ = function() {
-  if (this.isSlideshowOn_())
-    this.toggleSlideshow();
-};
-
-/**
  * Start/stop the slideshow.
  *
  * @param {number} opt_interval First interval in ms.
  * @param {Event} opt_event Event.
+ * @private
  */
-SlideMode.prototype.toggleSlideshow = function(opt_interval, opt_event) {
-  if (opt_event)  // Caused by user action, notify the Gallery.
-    cr.dispatchSimpleEvent(this, 'useraction');
+SlideMode.prototype.toggleSlideshow_ = function(opt_interval, opt_event) {
+  if (this.isSlideshowOn_()) {
+    this.stopSlideshow_(opt_event);
+  } else {
+    this.startSlideshow(opt_interval);
+  }
+};
 
-  if (!this.active_) {
+/**
+ * Start the slideshow.
+ * @param {number} opt_interval First interval in ms.
+ * @param {Event} opt_event Event.
+ */
+SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
+  // Set the attribute early to prevent the toolbar from flashing when
+  // the slideshow is being started from the mosaic view.
+  this.container_.setAttribute('slideshow', 'playing');
+
+  if (this.active_) {
+    this.stopEditing_();
+  } else {
     // We are in the Mosaic mode. Toggle the mode but remember to return.
-    this.toggleMode_(function() {
-      this.leaveAfterSlideshow_ = true;
-      if (this.isSlideshowOn_())
-        console.error('Invalid slideshow state');
-      this.toggleSlideshow(SlideMode.SLIDESHOW_INTERVAL);
-    }.bind(this));
+    this.leaveAfterSlideshow_ = true;
+    this.toggleMode_(this.startSlideshow.bind(
+        this, SlideMode.SLIDESHOW_INTERVAL, opt_event));
     return;
   }
 
-  this.stopEditing_();
-  ImageUtil.setAttribute(this.container_, 'slideshow', !this.isSlideshowOn_());
-  ImageUtil.setAttribute(
-      this.slideShowButton_, 'pressed', this.isSlideshowOn_());
+  if (opt_event)  // Caused by user action, notify the Gallery.
+    cr.dispatchSimpleEvent(this, 'useraction');
 
-  if (this.isSlideshowOn_()) {
-    this.fullscreenBeforeSlideshow_ = false;
-    chrome.windows.getCurrent(function(info) {
-      if (info.state == 'maximized') {
+  this.fullscreenBeforeSlideshow_ = false;
+  chrome.windows.getCurrent(function(info) {
+    if (info.state == 'maximized') {
+      this.resumeSlideshow_(opt_interval);
+      return;  // Do not go fullscreen if already maximized.
+    }
+    // Wait until the zoom animation from the mosaic mode is done.
+    setTimeout(function() {
+      Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
+        this.fullscreenBeforeSlideshow_ = fullscreen;
+        if (!fullscreen) {
+          Gallery.toggleFullscreen();
+          opt_interval = (opt_interval || SlideMode.SLIDESHOW_INTERVAL) +
+              SlideMode.FULLSCREEN_TOGGLE_DELAY;
+        }
         this.resumeSlideshow_(opt_interval);
-        return;  // Do not go fullscreen if already maximized.
-      }
-      // Wait until the zoom animation from the mosaic mode is done.
-      setTimeout(function() {
-        Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
-          this.fullscreenBeforeSlideshow_ = fullscreen;
-          if (!fullscreen) {
-            Gallery.toggleFullscreen();
-            opt_interval = (opt_interval || SlideMode.SLIDESHOW_INTERVAL) +
-                SlideMode.FULLSCREEN_TOGGLE_DELAY;
-          }
-          this.resumeSlideshow_(opt_interval);
-        }.bind(this));
-      }.bind(this), ImageView.ZOOM_ANIMATION_DURATION);
-    }.bind(this));
-  } else {
-    this.pauseSlideshow_();
-    Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
-      // Do not restore fullscreen if we exited fullscreen while in slideshow.
-      var toggleModeDelay = 0;
-      if (!this.fullscreenBeforeSlideshow_ && fullscreen) {
-        Gallery.toggleFullscreen();
-        toggleModeDelay = SlideMode.FULLSCREEN_TOGGLE_DELAY;
-      }
-      if (this.leaveAfterSlideshow_) {
-        this.leaveAfterSlideshow_ = false;
-        setTimeout(this.toggleMode_.bind(this), toggleModeDelay);
-      }
-    }.bind(this));
-  }
+      }.bind(this));
+    }.bind(this), ImageView.ZOOM_ANIMATION_DURATION);
+  }.bind(this));
+};
+
+/**
+ * Stop the slideshow.
+ * @param {Event} opt_event Event.
+ * @private
+   */
+SlideMode.prototype.stopSlideshow_ = function(opt_event) {
+  if (!this.isSlideshowOn_())
+    return;
+
+  if (opt_event)  // Caused by user action, notify the Gallery.
+    cr.dispatchSimpleEvent(this, 'useraction');
+
+  this.pauseSlideshow_();
+  this.container_.removeAttribute('slideshow');
+  Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
+    // Do not restore fullscreen if we exited fullscreen while in slideshow.
+    var toggleModeDelay = 0;
+    if (!this.fullscreenBeforeSlideshow_ && fullscreen) {
+      Gallery.toggleFullscreen();
+      toggleModeDelay = SlideMode.FULLSCREEN_TOGGLE_DELAY;
+    }
+    if (this.leaveAfterSlideshow_) {
+      this.leaveAfterSlideshow_ = false;
+      setTimeout(this.toggleMode_.bind(this), toggleModeDelay);
+    }
+  }.bind(this));
+};
+
+/**
+ * @return {boolean} True if the slideshow is playing (not paused).
+ * @private
+ */
+SlideMode.prototype.isSlideshowPlaying_ = function() {
+  return this.container_.getAttribute('slideshow') == 'playing';
 };
 
 /**
@@ -1035,12 +1083,11 @@ SlideMode.prototype.toggleSlideshow = function(opt_interval, opt_event) {
  * @private
  */
 SlideMode.prototype.toggleSlideshowPause_ = function() {
-  if (this.slideShowPaused_) {
-    this.resumeSlideshow_(SlideMode.SLIDESHOW_INTERVAL_FIRST);
-    this.prompt_.hide();
-  } else {
+  cr.dispatchSimpleEvent(this, 'useraction');  // Show the tools.
+  if (this.isSlideshowPlaying_()) {
     this.pauseSlideshow_();
-    this.prompt_.show('slideshow_paused', 3000);
+  } else {
+    this.resumeSlideshow_(SlideMode.SLIDESHOW_INTERVAL_FIRST);
   }
 };
 
@@ -1049,7 +1096,7 @@ SlideMode.prototype.toggleSlideshowPause_ = function() {
  * @private
  */
 SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
-  if (this.slideShowPaused_)
+  if (!this.isSlideshowPlaying_())
     return;
 
   if (this.slideShowTimeout_)
@@ -1068,7 +1115,7 @@ SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
  * @private
  */
 SlideMode.prototype.resumeSlideshow_ = function(opt_interval) {
-  this.slideShowPaused_ = false;
+  this.container_.setAttribute('slideshow', 'playing');
   this.scheduleNextSlide_(opt_interval);
 };
 
@@ -1077,7 +1124,7 @@ SlideMode.prototype.resumeSlideshow_ = function(opt_interval) {
  * @private
  */
 SlideMode.prototype.pauseSlideshow_ = function() {
-  this.slideShowPaused_ = true;
+  this.container_.setAttribute('slideshow', 'paused');
   if (this.slideShowTimeout_) {
     clearTimeout(this.slideShowTimeout_);
     this.slideShowTimeout_ = null;

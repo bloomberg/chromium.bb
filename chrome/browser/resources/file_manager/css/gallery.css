@@ -160,10 +160,7 @@ body {
   -webkit-box-align: stretch;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-  -webkit-transform: translate(0, 0);
-  -webkit-transition-duration: 300ms;
-  -webkit-transition-property: webkit-transform, opacity;
-  -webkit-transition-timing-function: ease;
+  -webkit-transition: opacity 300ms ease;
   background-color: rgba(18, 18, 18, 0.875);
   border-top: 1px solid rgba(31, 31, 31, 0.875);
   bottom: 0;
@@ -176,9 +173,13 @@ body {
 }
 
 .gallery[tools]:not([slideshow]) > .toolbar {
-  -webkit-transform: translate(0, 0);
   opacity: 1;
   pointer-events: auto;
+}
+
+/* Hide immediately when entering the slideshow. */
+.gallery[tools][slideshow] > .toolbar {
+  -webkit-transition-duration: 0;
 }
 
 .gallery[tools][locked] > .toolbar {
@@ -207,7 +208,7 @@ body {
   pointer-events: none;
 }
 
-.gallery[tools]:not([slideshow]) .arrow-box[active] .arrow {
+.gallery[tools] .arrow-box[active] .arrow {
   cursor: pointer;
   opacity: 1;
   pointer-events: auto;
@@ -1202,4 +1203,56 @@ body {
   when Undo delete is implemented. */
 .cr-dialog-shield {
   background-color: black;
+}
+
+/* Slideshow controls */
+
+.slideshow-toolbar {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  bottom: 0;
+  display: none;
+  left: 0;
+  padding-bottom: 6px;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.gallery[tools][slideshow] .slideshow-toolbar {
+  display: -webkit-box;
+}
+
+.slideshow-toolbar > div {
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 68px;
+  opacity: 0.5;
+  pointer-events: auto;
+  width: 68px;
+}
+
+.slideshow-toolbar > div:hover {
+  opacity: 1;
+}
+
+.slideshow-toolbar > .slideshow-play {
+  background-image: -webkit-image-set(
+    url('../images/gallery/slideshow-play.png') 1x,
+    url('../images/gallery/2x/slideshow-play.png') 2x);
+  margin-right: -2px;
+}
+
+.gallery[slideshow='playing'] .slideshow-toolbar > .slideshow-play {
+  background-image: -webkit-image-set(
+    url('../images/gallery/slideshow-pause.png') 1x,
+    url('../images/gallery/2x/slideshow-pause.png') 2x);
+}
+
+.slideshow-toolbar > .slideshow-end {
+  background-image: -webkit-image-set(
+    url('../images/gallery/slideshow-end.png') 1x,
+    url('../images/gallery/2x/slideshow-end.png') 2x);
+  margin-left: -2px;
 }
