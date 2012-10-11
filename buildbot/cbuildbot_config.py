@@ -1023,6 +1023,7 @@ _firmware_release = _release.derive(
   vm_tests=None,
   prebuilts=False,
   upload_hw_test_artifacts=False,
+  signer_tests=False,
   trybot_list=False,
   description='Firmware Builds',
 )
