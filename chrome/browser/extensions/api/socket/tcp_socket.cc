@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 
 #include "chrome/browser/extensions/api/api_resource.h"
-#include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -18,17 +17,15 @@ const char kTCPSocketTypeInvalidError[] =
     "Cannot call both connect and listen on the same socket.";
 const char kSocketListenError[] = "Could not listen on the specified port.";
 
-TCPSocket::TCPSocket(const std::string& owner_extension_id,
-                     ApiResourceEventNotifier* event_notifier)
-    : Socket(owner_extension_id, event_notifier),
+TCPSocket::TCPSocket(const std::string& owner_extension_id)
+    : Socket(owner_extension_id),
       socket_mode_(UNKNOWN) {
 }
 
 TCPSocket::TCPSocket(net::TCPClientSocket* tcp_client_socket,
                      const std::string& owner_extension_id,
-                     ApiResourceEventNotifier* event_notifier,
                      bool is_connected)
-    : Socket(owner_extension_id, event_notifier),
+    : Socket(owner_extension_id),
       socket_(tcp_client_socket),
       socket_mode_(CLIENT) {
   this->is_connected_ = is_connected;
@@ -36,7 +33,7 @@ TCPSocket::TCPSocket(net::TCPClientSocket* tcp_client_socket,
 
 TCPSocket::TCPSocket(net::TCPServerSocket* tcp_server_socket,
                      const std::string& owner_extension_id)
-    : Socket(owner_extension_id, NULL),
+    : Socket(owner_extension_id),
       server_socket_(tcp_server_socket),
       socket_mode_(SERVER) {
 }
@@ -44,9 +41,8 @@ TCPSocket::TCPSocket(net::TCPServerSocket* tcp_server_socket,
 // static
 TCPSocket* TCPSocket::CreateSocketForTesting(
     net::TCPClientSocket* tcp_client_socket,
-    const std::string& owner_extension_id,
-    ApiResourceEventNotifier* event_notifier) {
-  return new TCPSocket(tcp_client_socket, owner_extension_id, event_notifier);
+    const std::string& owner_extension_id) {
+  return new TCPSocket(tcp_client_socket, owner_extension_id);
 }
 
 // static

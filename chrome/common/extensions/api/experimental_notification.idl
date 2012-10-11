@@ -5,6 +5,9 @@
 [nodoc] namespace experimental.notification {
   dictionary ShowOptions {
     DOMString text;
+
+    // Used for internal event routing. Do not set or rely on its value.
+    [nodoc] long? srcId;
   };
 
   dictionary ShowInfo {

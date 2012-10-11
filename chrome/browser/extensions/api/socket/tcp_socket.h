@@ -20,15 +20,11 @@ class Socket;
 
 namespace extensions {
 
-class ApiResourceEventNotifier;
-
 class TCPSocket : public Socket {
  public:
-  TCPSocket(const std::string& owner_extension_id,
-            ApiResourceEventNotifier* event_notifier);
+  explicit TCPSocket(const std::string& owner_extension_id);
   TCPSocket(net::TCPClientSocket* tcp_client_socket,
             const std::string& owner_extension_id,
-            ApiResourceEventNotifier* event_notifier,
             bool is_connected = false);
 
   virtual ~TCPSocket();
@@ -59,8 +55,7 @@ class TCPSocket : public Socket {
 
   static TCPSocket* CreateSocketForTesting(
       net::TCPClientSocket* tcp_client_socket,
-      const std::string& owner_extension_id,
-      ApiResourceEventNotifier* event_notifier);
+      const std::string& owner_extension_id);
   static TCPSocket* CreateServerSocketForTesting(
       net::TCPServerSocket* tcp_server_socket,
       const std::string& owner_extension_id);

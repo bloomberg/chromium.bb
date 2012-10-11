@@ -109,6 +109,9 @@ namespace experimental.usb {
     // Invoked by the extension API whenever an event occurs for the device(s)
     // that this DeviceOptions is associated with.
     OnEventCallback? onEvent;
+
+    // Used for internal event routing. Do not set or rely on its value.
+    [nodoc] long? srcId;
   };
 
   callback VoidCallback = void ();

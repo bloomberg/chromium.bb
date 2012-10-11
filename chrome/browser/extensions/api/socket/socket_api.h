@@ -24,7 +24,6 @@ class IOBuffer;
 
 namespace extensions {
 
-class ApiResourceEventNotifier;
 class Socket;
 
 class SocketAsyncApiFunction : public AsyncApiFunction {
@@ -88,8 +87,6 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
 
   scoped_ptr<api::socket::Create::Params> params_;
   SocketType socket_type_;
-  int src_id_;
-  ApiResourceEventNotifier* event_notifier_;
 };
 
 class SocketDestroyFunction : public SocketAsyncApiFunction {

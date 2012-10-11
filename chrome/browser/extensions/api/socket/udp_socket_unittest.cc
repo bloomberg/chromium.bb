@@ -32,7 +32,7 @@ static void OnCompleted(int bytes_read,
 
 TEST(UDPSocketUnitTest, TestUDPSocketRecvFrom) {
   MessageLoopForIO io_loop;  // for RecvFrom to do its threaded work.
-  UDPSocket socket("abcdefghijklmnopqrst", NULL);
+  UDPSocket socket("abcdefghijklmnopqrst");
 
   // Confirm that we can call two RecvFroms in quick succession without
   // triggering crbug.com/146606.

@@ -12,12 +12,9 @@
 
 namespace extensions {
 
-class ApiResourceEventNotifier;
-
 class UDPSocket : public Socket {
  public:
-  UDPSocket(const std::string& owner_extension_id,
-            ApiResourceEventNotifier* event_notifier);
+  explicit UDPSocket(const std::string& owner_extension_id);
   virtual ~UDPSocket();
 
   virtual void Connect(const std::string& address,

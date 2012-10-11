@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 
 #include "chrome/browser/extensions/api/api_resource.h"
-#include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/udp/datagram_socket.h"
@@ -13,9 +12,8 @@
 
 namespace extensions {
 
-UDPSocket::UDPSocket(const std::string& owner_extension_id,
-                     ApiResourceEventNotifier* event_notifier)
-    : Socket(owner_extension_id, event_notifier),
+UDPSocket::UDPSocket(const std::string& owner_extension_id)
+    : Socket(owner_extension_id),
       socket_(net::DatagramSocket::DEFAULT_BIND,
               net::RandIntCallback(),
               NULL,

@@ -17,7 +17,7 @@ class ApiResourceEventNotifier;
 class AsyncApiFunction : public AsyncExtensionFunction {
  protected:
   AsyncApiFunction();
-  virtual ~AsyncApiFunction() {}
+  virtual ~AsyncApiFunction();
 
   // Like Prepare(). A useful place to put common work in an ApiFunction
   // superclass that multiple API functions want to share.
@@ -43,12 +43,6 @@ class AsyncApiFunction : public AsyncExtensionFunction {
   // Looks for a kSrcId key that might have been added to a create method's
   // options object.
   int ExtractSrcId(const DictionaryValue* options);
-
-  // Deprecated. If you're still using this method, you should be converting
-  // your calling code to the new-style argument-parsing code, which won't work
-  // with this method. See the version that takes an options dictionary
-  // instead (above).
-  int DeprecatedExtractSrcId(size_t argument_position);
 
   // Utility.
   ApiResourceEventNotifier* CreateEventNotifier(int src_id);

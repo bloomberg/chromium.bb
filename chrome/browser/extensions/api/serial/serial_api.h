@@ -15,7 +15,6 @@
 
 namespace extensions {
 
-class ApiResourceEventNotifier;
 class SerialConnection;
 
 extern const char kConnectionIdKey[];
@@ -70,17 +69,12 @@ class SerialOpenFunction : public SerialAsyncApiFunction {
   virtual SerialConnection* CreateSerialConnection(
       const std::string& port,
       int bitrate,
-      const std::string& owner_extension_id,
-      ApiResourceEventNotifier* event_notifier);
+      const std::string& owner_extension_id);
   virtual bool DoesPortExist(const std::string& port);
 
  private:
   scoped_ptr<api::serial::Open::Params> params_;
-  int src_id_;
   int bitrate_;
-
-  // SerialConnection will take ownership.
-  ApiResourceEventNotifier* event_notifier_;
 };
 
 class SerialCloseFunction : public SerialAsyncApiFunction {

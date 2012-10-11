@@ -87,9 +87,7 @@ bool SerialGetPortsFunction::Respond() {
 // But we'd like to pick something that has a chance of working, and 9600 is a
 // good balance between popularity and speed. So 9600 it is.
 SerialOpenFunction::SerialOpenFunction()
-    : src_id_(-1),
-      bitrate_(9600),
-      event_notifier_(NULL) {
+    : bitrate_(9600) {
 }
 
 SerialOpenFunction::~SerialOpenFunction() {
@@ -105,9 +103,6 @@ bool SerialOpenFunction::Prepare() {
     scoped_ptr<DictionaryValue> options = params_->options->ToValue();
     if (options->HasKey(kBitrateKey))
       EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kBitrateKey, &bitrate_));
-
-    src_id_ = ExtractSrcId(options.get());
-    event_notifier_ = CreateEventNotifier(src_id_);
   }
 
   return true;
@@ -125,8 +120,7 @@ void SerialOpenFunction::Work() {
     SerialConnection* serial_connection = CreateSerialConnection(
       params_->port,
       bitrate_,
-      extension_->id(),
-      event_notifier_);
+      extension_->id());
     CHECK(serial_connection);
     int id = manager_->Add(serial_connection);
     CHECK(id);
@@ -153,10 +147,8 @@ void SerialOpenFunction::Work() {
 SerialConnection* SerialOpenFunction::CreateSerialConnection(
     const std::string& port,
     int bitrate,
-    const std::string& owner_extension_id,
-    ApiResourceEventNotifier* event_notifier) {
-  return new SerialConnection(port, bitrate, owner_extension_id,
-                              event_notifier);
+    const std::string& owner_extension_id) {
+  return new SerialConnection(port, bitrate, owner_extension_id);
 }
 
 bool SerialOpenFunction::DoesPortExist(const std::string& port) {

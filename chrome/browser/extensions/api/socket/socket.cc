@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/socket/socket.h"
 
 #include "base/bind.h"
-#include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -16,9 +15,8 @@ namespace extensions {
 
 const char kSocketTypeNotSupported[] = "Socket type does not support this API";
 
-Socket::Socket(const std::string& owner_extension_id,
-               ApiResourceEventNotifier* event_notifier)
-    : ApiResource(owner_extension_id, event_notifier),
+Socket::Socket(const std::string& owner_extension_id)
+    : ApiResource(owner_extension_id, NULL),
       port_(0),
       is_connected_(false) {
 }

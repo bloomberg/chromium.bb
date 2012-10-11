@@ -111,9 +111,7 @@ void SocketExtensionWithDnsLookupFunction::OnDnsLookup(int resolve_result) {
 }
 
 SocketCreateFunction::SocketCreateFunction()
-    : socket_type_(kSocketTypeInvalid),
-      src_id_(-1),
-      event_notifier_(NULL) {
+    : socket_type_(kSocketTypeInvalid) {
 }
 
 SocketCreateFunction::~SocketCreateFunction() {}
@@ -134,21 +132,15 @@ bool SocketCreateFunction::Prepare() {
       break;
   }
 
-  if (params_->options.get()) {
-    scoped_ptr<DictionaryValue> options = params_->options->ToValue();
-    src_id_ = ExtractSrcId(options.get());
-    event_notifier_ = CreateEventNotifier(src_id_);
-  }
-
   return true;
 }
 
 void SocketCreateFunction::Work() {
   Socket* socket = NULL;
   if (socket_type_ == kSocketTypeTCP) {
-    socket = new TCPSocket(extension_->id(), event_notifier_);
+    socket = new TCPSocket(extension_->id());
   } else if (socket_type_== kSocketTypeUDP) {
-    socket = new UDPSocket(extension_->id(), event_notifier_);
+    socket = new UDPSocket(extension_->id());
   }
   DCHECK(socket);
 
@@ -360,9 +352,7 @@ void SocketAcceptFunction::OnAccept(int result_code,
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kResultCodeKey, result_code);
   if (socket) {
-    // TODO(justinlin): This socket won't have an event notifier, but it's not
-    // used for anything right now.
-    Socket *client_socket = new TCPSocket(socket, extension_id(), NULL, true);
+    Socket *client_socket = new TCPSocket(socket, extension_id(), true);
     result->SetInteger(kSocketIdKey, manager_->Add(client_socket));
   }
   SetResult(result);

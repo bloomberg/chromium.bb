@@ -80,7 +80,10 @@ void UsbFindDeviceFunction::SetDeviceForTest(UsbDevice* device) {
 bool UsbFindDeviceFunction::Prepare() {
   parameters_ = FindDevice::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
-  event_notifier_ = CreateEventNotifier(DeprecatedExtractSrcId(2));
+
+  scoped_ptr<DictionaryValue> options = parameters_->options.ToValue();
+  event_notifier_ = CreateEventNotifier(ExtractSrcId(options.get()));
+
   return true;
 }
 

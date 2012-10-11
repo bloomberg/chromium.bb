@@ -21,16 +21,13 @@ namespace extensions {
 
 extern const char kSerialConnectionNotFoundError[];
 
-class ApiResourceEventNotifier;
-
 // Encapsulates an open serial port. Platform-specific implementations are in
 // _win and _posix versions of the the .cc file.
 class SerialConnection : public ApiResource {
  public:
   SerialConnection(const std::string& port,
                    int bitrate,
-                   const std::string& owner_extension_id,
-                   ApiResourceEventNotifier* event_notifier);
+                   const std::string& owner_extension_id);
   virtual ~SerialConnection();
 
   virtual bool Open();

@@ -16,6 +16,9 @@ AsyncApiFunction::AsyncApiFunction()
     : work_thread_id_(BrowserThread::IO) {
 }
 
+AsyncApiFunction::~AsyncApiFunction() {
+}
+
 bool AsyncApiFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -64,24 +67,6 @@ void AsyncApiFunction::WorkOnWorkThread() {
 void AsyncApiFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SendResponse(Respond());
-}
-
-int AsyncApiFunction::DeprecatedExtractSrcId(size_t argument_position) {
-  scoped_ptr<DictionaryValue> options(new DictionaryValue());
-  if (args_->GetSize() > argument_position) {
-    DictionaryValue* temp_options = NULL;
-    if (args_->GetDictionary(argument_position, &temp_options))
-      options.reset(temp_options->DeepCopy());
-  }
-
-  // If we tacked on a srcId to the options object, pull it out here to provide
-  // to the caller.
-  int src_id = -1;
-  if (options->HasKey(kSrcIdKey)) {
-    EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSrcIdKey, &src_id));
-  }
-
-  return src_id;
 }
 
 int AsyncApiFunction::ExtractSrcId(const DictionaryValue* options) {
