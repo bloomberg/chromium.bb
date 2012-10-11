@@ -56,7 +56,7 @@ public class TabBase {
         }
         mContentView = ContentView.newInstance(context, nativeWebContentsPtr, mWindow,
                 ContentView.PERSONALITY_CHROME);
-        mNativeTabBaseAndroidImpl = nativeInit(nativeWebContentsPtr);
+        mNativeTabBaseAndroidImpl = nativeInit(nativeWebContentsPtr, window.getNativePointer());
 
         // Build the WebContentsDelegate
         mWebContentsDelegate = delegate == null ? new ChromeWebContentsDelegateAndroid() : delegate;
@@ -131,7 +131,7 @@ public class TabBase {
         }
     }
 
-    private native int nativeInit(int webContentsPtr);
+    private native int nativeInit(int webContentsPtr, int windowAndroidPtr);
     private static native void nativeDestroy(int nativeTabBaseAndroidImpl);
     private native void nativeInitWebContentsDelegate(int nativeTabBaseAndroidImpl,
             ChromeWebContentsDelegateAndroid chromeWebContentsDelegateAndroid);
