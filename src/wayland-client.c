@@ -68,6 +68,7 @@ struct wl_event_queue {
 struct wl_display {
 	struct wl_proxy proxy;
 	struct wl_connection *connection;
+	int last_error;
 	int fd;
 	int close_fd;
 	pthread_t display_thread;
@@ -327,9 +328,27 @@ display_handle_error(void *data,
 		     struct wl_display *display, struct wl_object *object,
 		     uint32_t code, const char *message)
 {
-	fprintf(stderr, "%s@%u: error %d: %s\n",
-		object->interface->name, object->id, code, message);
-	abort();
+	int err;
+
+	wl_log("%s@%u: error %d: %s\n",
+	       object->interface->name, object->id, code, message);
+
+	switch (code) {
+	case WL_DISPLAY_ERROR_INVALID_OBJECT:
+	case WL_DISPLAY_ERROR_INVALID_METHOD:
+		err = -EINVAL;
+		break;
+	case WL_DISPLAY_ERROR_NO_MEMORY:
+		err = -ENOMEM;
+		break;
+	default:
+		err = -EFAULT;
+		break;
+	}
+
+	pthread_mutex_lock(&display->mutex);
+	display->last_error = err;
+	pthread_mutex_unlock(&display->mutex);
 }
 
 static void
@@ -782,6 +801,20 @@ wl_display_dispatch_pending(struct wl_display *display)
  *
  * \memberof wl_display
  */
+WL_EXPORT int
+wl_display_get_error(struct wl_display *display)
+{
+	int ret;
+
+	pthread_mutex_lock(&display->mutex);
+
+	ret = display->last_error;
+
+	pthread_mutex_unlock(&display->mutex);
+
+	return ret;
+}
+
 WL_EXPORT int
 wl_display_flush(struct wl_display *display)
 {
