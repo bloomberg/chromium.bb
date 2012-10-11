@@ -189,3 +189,8 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketExperimentalPermissionTest) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPServerUnbindOnUnload) {
+  ASSERT_TRUE(RunExtensionTest("socket/unload")) << message_;
+  ASSERT_TRUE(RunExtensionTest("socket/unload")) << message_;
+}
