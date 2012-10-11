@@ -873,6 +873,7 @@
         ['include', '^public/browser/notification_registrar\\.cc$'],
         ['include', '^public/browser/speech_recognition_'],
         ['include', '^browser/browser_context\\.cc$'],
+        ['include', '^browser/browser_main_loop\\.cc$'],
         ['include', '^browser/browser_process_sub_thread\\.cc$'],
         ['include', '^browser/notification_service_impl\\.cc$'],
       ],
