@@ -90,6 +90,9 @@ special_tests=(
   ['scripts/check_gdata_token_unittest.py']=skip
   ['scripts/merge_package_status_unittest.py']=skip
   ['scripts/upload_package_status_unittest.py']=skip
+
+  # Tests that take >2 minutes to run.
+  ['scripts/cros_portage_upgrade_unittest.py']=skip
 )
 
 if [ $# -eq 0 ]; then
