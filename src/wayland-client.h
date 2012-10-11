@@ -121,7 +121,7 @@ int wl_display_dispatch_pending(struct wl_display *display);
 int wl_display_get_error(struct wl_display *display);
 
 int wl_display_flush(struct wl_display *display);
-void wl_display_roundtrip(struct wl_display *display);
+int wl_display_roundtrip(struct wl_display *display);
 struct wl_event_queue *wl_display_create_queue(struct wl_display *display);
 
 void wl_log_set_handler_client(wl_log_func_t handler);

@@ -84,6 +84,33 @@ struct wl_display {
 static int wl_debug = 0;
 
 static void
+display_fatal_error(struct wl_display *display, int error)
+{
+	struct wl_event_queue *iter;
+
+	if (display->last_error)
+		return;
+
+	if (!error)
+		error = 1;
+
+	display->last_error = error;
+	close(display->fd);
+	display->fd = -1;
+
+	wl_list_for_each(iter, &display->event_queue_list, link)
+		pthread_cond_broadcast(&iter->cond);
+}
+
+static void
+wl_display_fatal_error(struct wl_display *display, int error)
+{
+	pthread_mutex_lock(&display->mutex);
+	display_fatal_error(display, error);
+	pthread_mutex_unlock(&display->mutex);
+}
+
+static void
 wl_event_queue_init(struct wl_event_queue *queue, struct wl_display *display)
 {
 	wl_list_init(&queue->event_list);
@@ -358,9 +385,7 @@ display_handle_error(void *data,
 		break;
 	}
 
-	pthread_mutex_lock(&display->mutex);
-	display->last_error = err;
-	pthread_mutex_unlock(&display->mutex);
+	wl_display_fatal_error(display, err);
 }
 
 static void
@@ -549,7 +574,8 @@ wl_display_disconnect(struct wl_display *display)
 	wl_map_release(&display->objects);
 	wl_event_queue_release(&display->queue);
 	pthread_mutex_destroy(&display->mutex);
-	close(display->fd);
+	if (display->fd > 0)
+		close(display->fd);
 
 	free(display);
 }
@@ -592,17 +618,19 @@ static const struct wl_callback_listener sync_listener = {
  *
  * \memberof wl_display
  */
-WL_EXPORT void
+WL_EXPORT int
 wl_display_roundtrip(struct wl_display *display)
 {
 	struct wl_callback *callback;
-	int done;
+	int done, ret = 0;
 
 	done = 0;
 	callback = wl_display_sync(display);
 	wl_callback_add_listener(callback, &sync_listener, &done);
-	while (!done)
-		wl_display_dispatch(display);
+	while (!done && !ret)
+		ret = wl_display_dispatch(display);
+
+	return ret;
 }
 
 static int
@@ -668,10 +696,12 @@ queue_event(struct wl_display *display, int len)
 	message = &proxy->object.interface->events[opcode];
 	closure = wl_connection_demarshal(display->connection, size,
 					  &display->objects, message);
+	if (!closure)
+		return -1;
 
-	if (closure == NULL || create_proxies(proxy, closure) < 0) {
-		fprintf(stderr, "Error demarshalling event\n");
-		abort();
+	if (create_proxies(proxy, closure) < 0) {
+		wl_closure_destroy(closure);
+		return -1;
 	}
 
 	if (wl_list_empty(&proxy->queue->event_list))
@@ -724,36 +754,60 @@ static int
 dispatch_queue(struct wl_display *display,
 	       struct wl_event_queue *queue, int block)
 {
-	int len, size, count;
+	int len, size, count, ret;
 
 	pthread_mutex_lock(&display->mutex);
 
-	/* FIXME: Handle flush errors, EAGAIN... */
-	wl_connection_flush(display->connection);
+	if (display->last_error)
+		goto err_unlock;
+
+	ret = wl_connection_flush(display->connection);
+	if (ret < 0 && errno != EAGAIN) {
+		display_fatal_error(display, errno);
+		goto err_unlock;
+	}
 
 	if (block && wl_list_empty(&queue->event_list) &&
 	    pthread_equal(display->display_thread, pthread_self())) {
 		len = wl_connection_read(display->connection);
 		if (len == -1) {
-			pthread_mutex_unlock(&display->mutex);
-			return -1;
+			display_fatal_error(display, errno);
+			goto err_unlock;
+		} else if (len == 0) {
+			display_fatal_error(display, EPIPE);
+			goto err_unlock;
 		}
 		while (len >= 8) {
 			size = queue_event(display, len);
-			if (size == 0)
+			if (size == -1) {
+				display_fatal_error(display, errno);
+				goto err_unlock;
+			} else if (size == 0) {
 				break;
+			}
 			len -= size;
 		}
 	} else if (block && wl_list_empty(&queue->event_list)) {
 		pthread_cond_wait(&queue->cond, &display->mutex);
+		if (display->last_error)
+			goto err_unlock;
 	}
 
-	for (count = 0; !wl_list_empty(&queue->event_list); count++)
+	for (count = 0; !wl_list_empty(&queue->event_list); count++) {
 		dispatch_event(display, queue);
+		if (display->last_error)
+			goto err_unlock;
+	}
 
 	pthread_mutex_unlock(&display->mutex);
 
 	return count;
+
+err_unlock:
+	errno = display->last_error;
+	pthread_mutex_unlock(&display->mutex);
+
+	return -1;
 }
 
 /** Dispatch events in an event queue
@@ -834,7 +888,14 @@ wl_display_flush(struct wl_display *display)
 
 	pthread_mutex_lock(&display->mutex);
 
-	ret = wl_connection_flush(display->connection);
+	if (display->last_error) {
+		errno = display->last_error;
+		ret = -1;
+	} else {
+		ret = wl_connection_flush(display->connection);
+		if (ret < 0 && errno != EAGAIN)
+			display_fatal_error(display, errno);
+	}
 
 	pthread_mutex_unlock(&display->mutex);
 
