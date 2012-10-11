@@ -137,7 +137,7 @@ class TranslateManagerTest : public TabContentsTestHarness,
   }
 
   InfoBarTabHelper* infobar_tab_helper() {
-    return tab_contents()->infobar_tab_helper();
+    return InfoBarTabHelper::FromWebContents(web_contents());
   }
 
   // Returns the translate infobar if there is 1 infobar and it is a translate
@@ -234,8 +234,7 @@ class TranslateManagerTest : public TabContentsTestHarness,
 
     notification_registrar_.Add(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-        content::Source<InfoBarTabHelper>(
-            tab_contents()->infobar_tab_helper()));
+        content::Source<InfoBarTabHelper>(infobar_tab_helper()));
   }
 
   virtual void TearDown() {
@@ -243,8 +242,7 @@ class TranslateManagerTest : public TabContentsTestHarness,
 
     notification_registrar_.Remove(this,
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-        content::Source<InfoBarTabHelper>(
-            tab_contents()->infobar_tab_helper()));
+        content::Source<InfoBarTabHelper>(infobar_tab_helper()));
 
     TabContentsTestHarness::TearDown();
     WebKit::shutdown();

@@ -850,11 +850,11 @@ bool Browser::RunUnloadEventsHelper(WebContents* contents) {
 
 // static
 void Browser::JSOutOfMemoryHelper(WebContents* web_contents) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents)
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
+  if (!infobar_helper)
     return;
 
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
       infobar_helper,
       NULL,
@@ -901,7 +901,8 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
 
   content::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
 
   RegisterProtocolHandlerInfoBarDelegate* rph_delegate =
       new RegisterProtocolHandlerInfoBarDelegate(infobar_helper,
@@ -953,7 +954,8 @@ void Browser::RequestMediaAccessPermissionHelper(
                                                   request,
                                                   callback));
   if (!controller->DismissInfoBarAndTakeActionOnSettings()) {
-    InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
     InfoBarDelegate* old_infobar = NULL;
     for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
       old_infobar = infobar_helper->GetInfoBarDelegateAt(i)->
@@ -1559,8 +1561,8 @@ void Browser::RendererResponsive(WebContents* source) {
 }
 
 void Browser::WorkerCrashed(WebContents* source) {
-  TabContents* tab_contents = TabContents::FromWebContents(source);
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(source);
   infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
       infobar_helper,
       NULL,

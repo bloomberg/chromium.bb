@@ -136,9 +136,10 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
     return;
   }
 
-  InfoBarTabHelper* helper = tab_contents_->infobar_tab_helper();
-  helper->AddInfoBar(new AppNotifyChannelUIImpl::InfoBar(
-      this, helper, app_name_));
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+  infobar_tab_helper->AddInfoBar(new AppNotifyChannelUIImpl::InfoBar(
+      this, infobar_tab_helper, app_name_));
 }
 
 void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {

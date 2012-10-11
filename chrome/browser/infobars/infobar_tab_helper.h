@@ -10,16 +10,19 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 class InfoBarDelegate;
 
 // Per-tab info bar manager.
 class InfoBarTabHelper : public InfoBarService,
                          public content::WebContentsObserver,
-                         public content::NotificationObserver {
+                         public content::NotificationObserver,
+                         public content::WebContentsUserData<InfoBarTabHelper> {
  public:
-  explicit InfoBarTabHelper(content::WebContents* web_contents);
   virtual ~InfoBarTabHelper();
+
+  using content::WebContentsUserData<InfoBarTabHelper>::FromWebContents;
 
   // InfoBarService implementation.
   virtual bool AddInfoBar(InfoBarDelegate* delegate) OVERRIDE;
@@ -43,7 +46,11 @@ class InfoBarTabHelper : public InfoBarService,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  friend class content::WebContentsUserData<InfoBarTabHelper>;
+
   typedef std::vector<InfoBarDelegate*> InfoBars;
+
+  explicit InfoBarTabHelper(content::WebContents* web_contents);
 
   void RemoveInfoBarInternal(InfoBarDelegate* delegate, bool animate);
   void RemoveAllInfoBars(bool animate);

@@ -651,9 +651,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   new_browser = FindOneOtherBrowserForProfile(profile_home, NULL);
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
+  content::WebContents* web_contents = chrome::GetWebContentsAt(new_browser, 0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            chrome::GetWebContentsAt(new_browser, 0)->GetURL());
-  EXPECT_EQ(1U, chrome::GetTabContentsAt(new_browser, 0)->infobar_tab_helper()->
+            web_contents->GetURL());
+  EXPECT_EQ(1U, InfoBarTabHelper::FromWebContents(web_contents)->
             GetInfoBarCount());
 
   // The profile which normally opens last open pages displays the new tab page.
@@ -661,9 +662,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   new_browser = FindOneOtherBrowserForProfile(profile_last, NULL);
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
+  web_contents = chrome::GetWebContentsAt(new_browser, 0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            chrome::GetWebContentsAt(new_browser, 0)->GetURL());
-  EXPECT_EQ(1U, chrome::GetTabContentsAt(new_browser, 0)->infobar_tab_helper()->
+            web_contents->GetURL());
+  EXPECT_EQ(1U, InfoBarTabHelper::FromWebContents(web_contents)->
             GetInfoBarCount());
 
   // The profile which normally opens URLs displays the new tab page.
@@ -671,9 +673,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   new_browser = FindOneOtherBrowserForProfile(profile_urls, NULL);
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
+  web_contents = chrome::GetWebContentsAt(new_browser, 0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            chrome::GetWebContentsAt(new_browser, 0)->GetURL());
-  EXPECT_EQ(1U, chrome::GetTabContentsAt(new_browser, 0)->infobar_tab_helper()->
+            web_contents->GetURL());
+  EXPECT_EQ(1U, InfoBarTabHelper::FromWebContents(web_contents)->
             GetInfoBarCount());
 }
 #endif  // !OS_CHROMEOS

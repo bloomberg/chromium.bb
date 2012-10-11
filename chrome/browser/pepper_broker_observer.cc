@@ -12,7 +12,6 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/plugin_service.h"
@@ -180,13 +179,8 @@ bool PepperBrokerObserver::RequestPpapiBrokerPermission(
     const GURL& url,
     const FilePath& plugin_path,
     const base::Callback<void(bool)>& callback) {
-  TabContents* tab = TabContents::FromWebContents(web_contents);
-  if (!tab) {
-    callback.Run(false);
-    return true;
-  }
-
-  Profile* profile = tab->profile();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   // TODO(wad): Add ephemeral device ID support for broker in guest mode.
   if (Profile::IsGuestSession()) {
     callback.Run(false);
@@ -216,7 +210,8 @@ bool PepperBrokerObserver::RequestPpapiBrokerPermission(
       content::RecordAction(
           content::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
 
-      InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+      InfoBarTabHelper* infobar_helper =
+          InfoBarTabHelper::FromWebContents(web_contents);
       std::string languages =
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
       infobar_helper->AddInfoBar(

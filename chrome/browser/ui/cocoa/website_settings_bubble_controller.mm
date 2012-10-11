@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
@@ -1149,7 +1150,7 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
         profile,
         TabSpecificContentSettings::FromWebContents(
             tab_contents->web_contents()),
-        tab_contents->infobar_tab_helper(),
+        InfoBarTabHelper::FromWebContents(tab_contents->web_contents()),
         url,
         ssl,
         content::CertStore::GetInstance());

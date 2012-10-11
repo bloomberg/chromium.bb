@@ -68,8 +68,10 @@ bool ShowInfoBarFunction::RunImpl() {
     return false;
   }
 
-  tab_contents->infobar_tab_helper()->AddInfoBar(
-      new ExtensionInfoBarDelegate(browser, tab_contents->infobar_tab_helper(),
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(tab_contents->web_contents());
+  infobar_tab_helper->AddInfoBar(
+      new ExtensionInfoBarDelegate(browser, infobar_tab_helper,
                                    GetExtension(), url, height));
 
   // TODO(finnur): Return the actual DOMWindow object. Bug 26463.

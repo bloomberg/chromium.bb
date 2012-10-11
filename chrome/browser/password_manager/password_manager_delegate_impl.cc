@@ -163,10 +163,10 @@ void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
   }
 #endif
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-  tab_contents->infobar_tab_helper()->AddInfoBar(
-      new SavePasswordInfoBarDelegate(
-          tab_contents->infobar_tab_helper(), form_to_save));
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(web_contents_);
+  infobar_tab_helper->AddInfoBar(
+      new SavePasswordInfoBarDelegate(infobar_tab_helper, form_to_save));
 }
 
 Profile* PasswordManagerDelegateImpl::GetProfile() {

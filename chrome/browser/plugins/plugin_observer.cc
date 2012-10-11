@@ -190,8 +190,8 @@ void PluginObserver::PluginCrashed(const FilePath& plugin_path) {
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
   infobar_helper->AddInfoBar(
       new SimpleAlertInfoBarDelegate(
           infobar_helper,
@@ -226,12 +226,13 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 void PluginObserver::OnBlockedUnauthorizedPlugin(
     const string16& name,
     const std::string& identifier) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
   infobar_helper->AddInfoBar(
       new UnauthorizedPluginInfoBarDelegate(
           infobar_helper,
-          tab_contents->profile()->GetHostContentSettingsMap(),
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
+              GetHostContentSettingsMap(),
           name, identifier));
 }
 
@@ -250,8 +251,8 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id,
                                 plugin->name(), installer);
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
   infobar_helper->AddInfoBar(
       OutdatedPluginInfoBarDelegate::Create(web_contents(),
                                             installer, plugin.Pass()));
@@ -281,12 +282,12 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
       new PluginPlaceholderHost(this, placeholder_id,
                                 plugin_metadata->name(),
                                 installer);
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   base::Closure callback =  base::Bind(&PluginObserver::InstallMissingPlugin,
                                        weak_ptr_factory_.GetWeakPtr(),
                                        installer,
                                        base::Passed(plugin_metadata->Clone()));
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
   InfoBarDelegate* delegate;
 #if !defined(OS_WIN)
   delegate = PluginInstallerInfoBarDelegate::Create(
@@ -342,8 +343,8 @@ void PluginObserver::OnCouldNotLoadPlugin(const FilePath& plugin_path) {
   g_browser_process->metrics_service()->LogPluginLoadingError(plugin_path);
   string16 plugin_name =
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
   infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
       infobar_helper,
       &ResourceBundle::GetSharedInstance().GetNativeImageNamed(

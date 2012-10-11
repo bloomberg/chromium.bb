@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/auto_login_info_bar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -176,10 +175,10 @@ void AutoLoginPrompter::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP) {
-    TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-    // |tab_contents| is NULL for WebContents hosted in WebDialog.
-    if (tab_contents) {
-      InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents_);
+    // |infobar_helper| is NULL for WebContents hosted in WebDialog.
+    if (infobar_helper) {
       infobar_helper->AddInfoBar(
           new AutoLoginInfoBarDelegate(infobar_helper, params_));
     }

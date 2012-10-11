@@ -75,8 +75,8 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   infobar_added_2.Wait();
   infobar_removed_1.Wait();
   EXPECT_EQ(0u,
-            chrome::GetTabContentsAt(browser(), 0)->infobar_tab_helper()->
-                GetInfoBarCount());
+            InfoBarTabHelper::FromWebContents(
+                chrome::GetWebContentsAt(browser(), 0))->GetInfoBarCount());
 
   content::WindowedNotificationObserver infobar_removed_2(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -84,6 +84,6 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   ThemeServiceFactory::GetForProfile(browser()->profile())->UseDefaultTheme();
   infobar_removed_2.Wait();
   EXPECT_EQ(0u,
-            chrome::GetActiveTabContents(browser())->infobar_tab_helper()->
-                GetInfoBarCount());
+            InfoBarTabHelper::FromWebContents(
+                chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
 }

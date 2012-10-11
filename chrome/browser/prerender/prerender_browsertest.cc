@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -1790,8 +1791,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderWindowSize) {
 #else
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
 #endif
-  ui_test_utils::CloseAllInfoBars(chrome::GetActiveTabContents(browser()));
-
   PrerenderTestURL("files/prerender/prerender_size.html",
                    FINAL_STATUS_USED,
                    1);

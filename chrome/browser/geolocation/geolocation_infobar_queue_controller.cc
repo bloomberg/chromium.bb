@@ -12,7 +12,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
@@ -454,12 +453,7 @@ InfoBarTabHelper* GeolocationInfoBarQueueController::GetInfoBarHelper(
     int render_view_id) {
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
-  if (!web_contents)
-    return NULL;
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents)
-    return NULL;
-  return tab_contents->infobar_tab_helper();
+  return web_contents ? InfoBarTabHelper::FromWebContents(web_contents) : NULL;
 }
 
 bool GeolocationInfoBarQueueController::AlreadyShowingInfoBar(

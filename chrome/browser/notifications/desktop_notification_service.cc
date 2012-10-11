@@ -401,16 +401,16 @@ void DesktopNotificationService::RequestPermission(
   ContentSetting setting = GetContentSetting(origin);
   if (setting == CONTENT_SETTING_ASK) {
     // Show an info bar requesting permission.
-    TabContents* tab_contents = TabContents::FromWebContents(contents);
-    // |tab_contents| may be NULL, e.g., if this request originated in a
+    InfoBarTabHelper* infobar_tab_helper =
+        InfoBarTabHelper::FromWebContents(contents);
+    // |infobar_tab_helper| may be NULL, e.g., if this request originated in a
     // browser action popup, extension background page, or any HTML that runs
     // outside of a tab.
-    if (tab_contents) {
-      InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
-      infobar_helper->AddInfoBar(new NotificationPermissionInfoBarDelegate(
-          infobar_helper,
+    if (infobar_tab_helper) {
+      infobar_tab_helper->AddInfoBar(new NotificationPermissionInfoBarDelegate(
+          infobar_tab_helper,
           DesktopNotificationServiceFactory::GetForProfile(
-              tab_contents->profile()),
+              Profile::FromBrowserContext(contents->GetBrowserContext())),
           origin,
           DisplayNameForOrigin(origin),
           process_id,

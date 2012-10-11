@@ -381,7 +381,8 @@ ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
 
 ContentSettingCookiesBubbleModel::~ContentSettingCookiesBubbleModel() {
   if (settings_changed()) {
-    InfoBarTabHelper* infobar_helper = tab_contents()->infobar_tab_helper();
+    InfoBarTabHelper* infobar_helper =
+        InfoBarTabHelper::FromWebContents(tab_contents()->web_contents());
     infobar_helper->AddInfoBar(
         new CollectedCookiesInfoBarDelegate(infobar_helper));
   }

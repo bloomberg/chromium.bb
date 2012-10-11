@@ -240,9 +240,10 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 - (void)windowWillClose:(NSNotification*)notif {
   if (contentSettingsChanged_) {
-    InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
-    infobar_helper->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(infobar_helper));
+    InfoBarTabHelper* infobarTabHelper =
+        InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+    infobarTabHelper->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(infobarTabHelper));
   }
   [allowedOutlineView_ setDelegate:nil];
   [blockedOutlineView_ setDelegate:nil];

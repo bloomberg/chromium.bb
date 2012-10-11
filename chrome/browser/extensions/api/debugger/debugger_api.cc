@@ -208,7 +208,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent, this);
 
   InfoBarTabHelper* infobar_helper =
-      TabContents::FromWebContents(web_contents_)->infobar_tab_helper();
+      InfoBarTabHelper::FromWebContents(web_contents_);
   infobar_delegate_ = new ExtensionDevToolsInfoBarDelegate(infobar_helper,
                                                            extension_name,
                                                            this);
@@ -227,10 +227,10 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
 
   if (infobar_delegate_) {
     infobar_delegate_->DiscardClientHost();
-    TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-    InfoBarTabHelper* helper = tab_contents->infobar_tab_helper();
-    if (helper)
-      helper->RemoveInfoBar(infobar_delegate_);
+    InfoBarTabHelper* infobar_tab_helper =
+        InfoBarTabHelper::FromWebContents(web_contents_);
+    if (infobar_tab_helper)
+      infobar_tab_helper->RemoveInfoBar(infobar_delegate_);
   }
   AttachedClientHosts::GetInstance()->Remove(this);
 }

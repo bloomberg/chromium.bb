@@ -5,7 +5,6 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -37,8 +36,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
       &result));
   EXPECT_TRUE(result);
 
-  EXPECT_EQ(1U, chrome::GetTabContentsAt(browser(), 0)->infobar_tab_helper()->
-            GetInfoBarCount());
+  EXPECT_EQ(1U, InfoBarTabHelper::FromWebContents(
+      chrome::GetWebContentsAt(browser(), 0))->GetInfoBarCount());
 }
 
 // If this flakes, use http://crbug.com/62311.
@@ -52,6 +51,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsPermissionTest, TestNoUserGestureInfobar) {
       test_server()->GetURL(
           "files/notifications/notifications_request_inline.html"));
 
-  EXPECT_EQ(0U, chrome::GetTabContentsAt(browser(), 0)->infobar_tab_helper()->
-            GetInfoBarCount());
+  EXPECT_EQ(0U, InfoBarTabHelper::FromWebContents(
+      chrome::GetWebContentsAt(browser(), 0))->GetInfoBarCount());
 }

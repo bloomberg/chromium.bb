@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,13 +30,14 @@ void ShowObsoleteOSPrompt(Browser* browser) {
     // Link to an article in the help center on minimum system requirements.
     const char* kLearnMoreURL =
         "http://www.google.com/support/chrome/bin/answer.py?answer=95411";
-    TabContents* tab = chrome::GetActiveTabContents(browser);
-    if (!tab)
+    content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+    if (!web_contents)
       return;
-    tab->infobar_tab_helper()->AddInfoBar(
-        new ObsoleteOSInfoBar(tab->infobar_tab_helper(),
-                              message,
-                              GURL(kLearnMoreURL)));
+    InfoBarTabHelper* infobar_tab_helper =
+        InfoBarTabHelper::FromWebContents(web_contents);
+    infobar_tab_helper->AddInfoBar(new ObsoleteOSInfoBar(infobar_tab_helper,
+                                   message,
+                                   GURL(kLearnMoreURL)));
   }
 }
 

@@ -217,14 +217,16 @@ void GoogleURLTracker::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
-      // Because we're listening to all sources, there may be no TabContents for
-      // some notifications, e.g. navigations in bubbles/balloons etc.  See
-      // comments in tab_contents.h.
+      // Because we're listening to all sources, there may be no
+      // InfoBarTabHelper for some notifications, e.g. navigations in
+      // bubbles/balloons etc.
       TabContents* tab_contents =
           TabContents::FromWebContents(controller->GetWebContents());
       if (tab_contents) {
+        InfoBarTabHelper* infobar_tab_helper =
+            InfoBarTabHelper::FromWebContents(tab_contents->web_contents());
         OnNavigationPending(source, content::Source<TabContents>(tab_contents),
-                            tab_contents->infobar_tab_helper(),
+                            infobar_tab_helper,
                             controller->GetPendingEntry()->GetUniqueID());
       }
       break;
@@ -234,28 +236,30 @@ void GoogleURLTracker::Observe(int type,
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
       // Here we're only listening to notifications where we already know
-      // there's an associated TabContents.
-      TabContents* tab_contents =
-          TabContents::FromWebContents(controller->GetWebContents());
-      DCHECK(tab_contents);
-      OnNavigationCommittedOrTabClosed(tab_contents->infobar_tab_helper(),
+      // there's an associated InfoBarTabHelper.
+      InfoBarTabHelper* infobar_tab_helper =
+          InfoBarTabHelper::FromWebContents(controller->GetWebContents());
+      DCHECK(infobar_tab_helper);
+      OnNavigationCommittedOrTabClosed(infobar_tab_helper,
                                        controller->GetActiveEntry()->GetURL());
       break;
     }
 
     case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      OnNavigationCommittedOrTabClosed(
-          content::Source<TabContents>(source)->infobar_tab_helper(), GURL());
+      InfoBarTabHelper* infobar_tab_helper = InfoBarTabHelper::FromWebContents(
+          content::Source<TabContents>(source)->web_contents());
+      OnNavigationCommittedOrTabClosed(infobar_tab_helper, GURL());
       break;
     }
 
     case chrome::NOTIFICATION_INSTANT_COMMITTED: {
       TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       content::WebContents* web_contents = tab_contents->web_contents();
-      OnInstantCommitted(
-          content::Source<content::NavigationController>(
-              &web_contents->GetController()),
-          source, tab_contents->infobar_tab_helper(), web_contents->GetURL());
+      OnInstantCommitted(content::Source<content::NavigationController>(
+                             &web_contents->GetController()),
+                         source,
+                         InfoBarTabHelper::FromWebContents(web_contents),
+                         web_contents->GetURL());
       break;
     }
 

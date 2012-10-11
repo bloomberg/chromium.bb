@@ -87,15 +87,17 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     TranslateErrors::Type error = TranslateErrors::NONE;
     if (type == TranslateInfoBarDelegate::TRANSLATION_ERROR)
       error = TranslateErrors::NETWORK;
+    InfoBarTabHelper* infobar_tab_helper =
+        InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
     infobar_delegate_.reset(new MockTranslateInfoBarDelegate(
         type,
         error,
-        tab_contents_->infobar_tab_helper(),
+        infobar_tab_helper,
         tab_contents_->profile()->GetPrefs()));
     [[infobar_controller_ view] removeFromSuperview];
     scoped_ptr<InfoBar> infobar(
         static_cast<InfoBarDelegate*>(infobar_delegate_.get())->
-            CreateInfoBar(tab_contents_->infobar_tab_helper()));
+            CreateInfoBar(infobar_tab_helper));
     infobar_controller_.reset(
         reinterpret_cast<TranslateInfoBarControllerBase*>(
             infobar->controller()));

@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_details.h"
@@ -192,17 +191,19 @@ bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
       [[KeystoneGlue defaultKeystoneGlue] needsPromotion]) {
     Browser* browser = browser::GetLastActiveBrowser();
     if (browser) {
-      TabContents* tabContents = chrome::GetActiveTabContents(browser);
+      content::WebContents* webContents = chrome::GetActiveWebContents(browser);
 
       // Only show if no other info bars are showing, because that's how the
       // default browser info bar works.
-      if (tabContents) {
-        InfoBarTabHelper* infobar_helper = tabContents->infobar_tab_helper();
-        if (infobar_helper->GetInfoBarCount() == 0) {
-          infobar_helper->AddInfoBar(
+      if (webContents) {
+        InfoBarTabHelper* infobarTabHelper =
+            InfoBarTabHelper::FromWebContents(webContents);
+        if (infobarTabHelper->GetInfoBarCount() == 0) {
+          infobarTabHelper->AddInfoBar(
               new KeystonePromotionInfoBarDelegate(
-                  infobar_helper,
-                  tabContents->profile()->GetPrefs()));
+                  infobarTabHelper,
+                  Profile::FromBrowserContext(
+                      webContents->GetBrowserContext())->GetPrefs()));
         }
       }
     }

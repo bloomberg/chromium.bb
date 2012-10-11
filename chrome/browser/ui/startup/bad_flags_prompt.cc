@@ -10,7 +10,6 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,12 +40,14 @@ void ShowBadFlagsPrompt(Browser* browser) {
   }
 
   if (bad_flag) {
-    TabContents* tab = chrome::GetActiveTabContents(browser);
-    if (!tab)
+    content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+    if (!web_contents)
       return;
-    tab->infobar_tab_helper()->AddInfoBar(
+    InfoBarTabHelper* infobar_tab_helper =
+        InfoBarTabHelper::FromWebContents(web_contents);
+    infobar_tab_helper->AddInfoBar(
         new SimpleAlertInfoBarDelegate(
-            tab->infobar_tab_helper(), NULL,
+            infobar_tab_helper, NULL,
             l10n_util::GetStringFUTF16(
             IDS_BAD_FLAGS_WARNING_MESSAGE,
             UTF8ToUTF16(std::string("--") + bad_flag)),

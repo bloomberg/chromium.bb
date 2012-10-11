@@ -471,8 +471,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // Reload the extension using the "crashed extension" infobar while the task
   // manager is still visible. Make sure we don't crash and the extension
   // gets reloaded and noticed in the task manager.
-  InfoBarTabHelper* infobar_helper =
-      chrome::GetActiveTabContents(browser())->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(
+      chrome::GetActiveWebContents(browser()));
   ASSERT_EQ(1U, infobar_helper->GetInfoBarCount());
   ConfirmInfoBarDelegate* delegate = infobar_helper->
       GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();

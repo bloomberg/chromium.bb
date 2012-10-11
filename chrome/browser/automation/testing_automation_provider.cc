@@ -2129,8 +2129,7 @@ void TestingAutomationProvider::SetWindowDimensions(
 ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
   // Each infobar may have different properties depending on the type.
   ListValue* infobars = new ListValue;
-  InfoBarTabHelper* infobar_helper =
-      TabContents::FromWebContents(wc)->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper = InfoBarTabHelper::FromWebContents(wc);
   for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
     InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
@@ -2206,12 +2205,13 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     return;
   }
 
-  TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
-  if (!tab_contents) {
+  WebContents* web_contents = chrome::GetWebContentsAt(browser, tab_index);
+  if (!web_contents) {
     reply.SendError(StringPrintf("No such tab at index %d", tab_index));
     return;
   }
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
 
   InfoBarDelegate* infobar = NULL;
   size_t infobar_index = static_cast<size_t>(infobar_index_int);

@@ -44,7 +44,7 @@ Profile* TabAutofillManagerDelegate::GetOriginalProfile() const {
 }
 
 InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
-  return TabContents::FromWebContents(web_contents_)->infobar_tab_helper();
+  return InfoBarTabHelper::FromWebContents(web_contents_);
 }
 
 PrefServiceBase* TabAutofillManagerDelegate::GetPrefs() {

@@ -178,8 +178,7 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     scoped_ptr<PluginMetadata> plugin_metadata,
     const string16& message)
     : PluginInfoBarDelegate(
-          InfoBarService::FromTabContents(
-              TabContents::FromWebContents(web_contents)),
+          InfoBarService::FromWebContents(web_contents),
           plugin_metadata->name(),
           plugin_metadata->identifier()),
       WeakPluginInstallerObserver(installer),

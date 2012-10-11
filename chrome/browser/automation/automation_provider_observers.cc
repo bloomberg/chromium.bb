@@ -1259,7 +1259,8 @@ InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
       reply_message_(reply_message),
       tab_contents_(tab_contents),
       target_count_(target_count) {
-  content::Source<InfoBarTabHelper> source(tab_contents->infobar_tab_helper());
+  content::Source<InfoBarTabHelper> source(
+      InfoBarTabHelper::FromWebContents(tab_contents->web_contents()));
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
                  source);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -1279,7 +1280,9 @@ void InfoBarCountObserver::Observe(
 }
 
 void InfoBarCountObserver::CheckCount() {
-  if (tab_contents_->infobar_tab_helper()->GetInfoBarCount() != target_count_)
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+  if (infobar_tab_helper->GetInfoBarCount() != target_count_)
     return;
 
   if (automation_) {

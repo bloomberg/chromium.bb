@@ -818,7 +818,9 @@ void ToolbarView::OnPaint(gfx::Canvas* canvas) {
 
   TabContents* tab_contents = GetTabContents();
   if (tab_contents) {
-    int num_infobars = tab_contents->infobar_tab_helper()->GetInfoBarCount();
+    InfoBarTabHelper* infobar_tab_helper =
+        InfoBarTabHelper::FromWebContents(tab_contents->web_contents());
+    int num_infobars = infobar_tab_helper->GetInfoBarCount();
     const chrome::search::Mode& mode(browser_->search_model()->mode());
     if ((mode.is_ntp() || mode.is_search_results()) && num_infobars > 0) {
       canvas->FillRect(gfx::Rect(0, height() - 1, width(), 1),

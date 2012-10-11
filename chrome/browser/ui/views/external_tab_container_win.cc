@@ -199,8 +199,11 @@ bool ExternalTabContainerWin::Init(Profile* profile,
     tab_contents_.reset(TabContents::Factory::CreateTabContents(new_contents));
   }
 
-  if (!infobars_enabled)
-    tab_contents_->infobar_tab_helper()->set_infobars_enabled(false);
+  if (!infobars_enabled) {
+    InfoBarTabHelper* infobar_tab_helper =
+        InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+    infobar_tab_helper->set_infobars_enabled(false);
+  }
 
   tab_contents_->web_contents()->SetDelegate(this);
 
@@ -1198,7 +1201,9 @@ void ExternalTabContainerWin::SetupExternalTabView() {
   external_tab_view_ = new views::View();
 
   InfoBarContainerView* info_bar_container = new InfoBarContainerView(this);
-  info_bar_container->ChangeTabContents(tab_contents_->infobar_tab_helper());
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+  info_bar_container->ChangeTabContents(infobar_tab_helper);
 
   views::GridLayout* layout = new views::GridLayout(external_tab_view_);
   // Give this column an identifier of 0.

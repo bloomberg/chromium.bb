@@ -145,10 +145,6 @@ int FindInPage(TabContents* tab,
                int* ordinal,
                gfx::Rect* selection_rect);
 
-// Closes all infobars |tab| has open, if any.  Tests that depend on there being
-// no InfoBar open when the test starts may need to use this.
-void CloseAllInfoBars(TabContents* tab);
-
 // Returns true if the View is focused.
 bool IsViewFocused(const Browser* browser, ViewID vid);
 

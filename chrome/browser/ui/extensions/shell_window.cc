@@ -160,8 +160,8 @@ void ShellWindow::Init(const GURL& url,
                  content::NotificationService::AllSources());
 
   // Automatically dismiss all infobars.
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents_);
   infobar_helper->set_infobars_enabled(false);
 
   // Prevent the browser process from shutting down while this window is open.

@@ -462,7 +462,8 @@ void CollectedCookiesGtk::Observe(int type,
 
 void CollectedCookiesGtk::OnClose(GtkWidget* close_button) {
   if (status_changed_) {
-    InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+    InfoBarTabHelper* infobar_helper =
+        InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
     infobar_helper->AddInfoBar(
         new CollectedCookiesInfoBarDelegate(infobar_helper));
   }

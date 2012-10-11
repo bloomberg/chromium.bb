@@ -2512,11 +2512,13 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   // reparent the |contents_container_|.
   if (change_tab_contents)
     contents_container_->SetWebContents(NULL);
+  InfoBarTabHelper* new_infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(new_contents->web_contents());
   // Hide infobars when showing Instant Extended suggestions.
   infobar_container_->ChangeTabContents(
       (chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()) &&
           browser()->search_model()->mode().is_search_suggestions()) ?
-          NULL : new_contents->infobar_tab_helper());
+          NULL : new_infobar_tab_helper);
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
@@ -2568,7 +2570,8 @@ void BrowserView::ModeChanged(const chrome::search::Mode& old_mode,
   bool hide_infobars = new_mode.is_search_suggestions() ||
       (old_mode.is_search_suggestions() && new_mode.is_default());
   infobar_container_->ChangeTabContents(
-      hide_infobars ? NULL : GetActiveTabContents()->infobar_tab_helper());
+      hide_infobars
+          ? NULL : InfoBarTabHelper::FromWebContents(GetActiveWebContents()));
 }
 
 void BrowserView::CreateLauncherIcon() {

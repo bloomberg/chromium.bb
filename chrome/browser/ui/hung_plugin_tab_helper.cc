@@ -217,7 +217,8 @@ void HungPluginTabHelper::PluginCrashed(const FilePath& plugin_path) {
   // TODO(brettw) ideally this would take the child process ID. When we do this
   // for NaCl plugins, we'll want to know exactly which process it was since
   // the path won't be useful.
-  InfoBarTabHelper* infobar_helper = GetInfoBarHelper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
   if (!infobar_helper)
     return;
 
@@ -237,7 +238,8 @@ void HungPluginTabHelper::PluginCrashed(const FilePath& plugin_path) {
 void HungPluginTabHelper::PluginHungStatusChanged(int plugin_child_id,
                                                   const FilePath& plugin_path,
                                                   bool is_hung) {
-  InfoBarTabHelper* infobar_helper = GetInfoBarHelper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
   if (!infobar_helper)
     return;
 
@@ -356,7 +358,8 @@ void HungPluginTabHelper::OnReshowTimer(int child_id) {
 }
 
 void HungPluginTabHelper::ShowBar(int child_id, PluginState* state) {
-  InfoBarTabHelper* infobar_helper = GetInfoBarHelper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
   if (!infobar_helper)
     return;
 
@@ -367,7 +370,8 @@ void HungPluginTabHelper::ShowBar(int child_id, PluginState* state) {
 }
 
 void HungPluginTabHelper::CloseBar(PluginState* state) {
-  InfoBarTabHelper* infobar_helper = GetInfoBarHelper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
   if (!infobar_helper)
     return;
 
@@ -375,11 +379,4 @@ void HungPluginTabHelper::CloseBar(PluginState* state) {
     infobar_helper->RemoveInfoBar(state->info_bar);
     state->info_bar = NULL;
   }
-}
-
-InfoBarTabHelper* HungPluginTabHelper::GetInfoBarHelper() {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  if (!tab_contents)
-    return NULL;
-  return tab_contents->infobar_tab_helper();
 }

@@ -144,11 +144,13 @@ void ShowSessionCrashedPrompt(Browser* browser) {
     return;
 
   // Don't show the info-bar if there are already info-bars showing.
-  if (tab->infobar_tab_helper()->GetInfoBarCount() > 0)
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(tab->web_contents());
+  if (infobar_tab_helper->GetInfoBarCount() > 0)
     return;
 
-  tab->infobar_tab_helper()->AddInfoBar(
-      new SessionCrashedInfoBarDelegate(tab->infobar_tab_helper()));
+  infobar_tab_helper->AddInfoBar(
+      new SessionCrashedInfoBarDelegate(infobar_tab_helper));
 }
 
 }  // namespace chrome

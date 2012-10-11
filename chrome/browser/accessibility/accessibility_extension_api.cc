@@ -209,7 +209,8 @@ bool GetAlertsForTabFunction::RunImpl() {
 
   ListValue* alerts_value = new ListValue;
 
-  InfoBarTabHelper* infobar_helper = contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(contents->web_contents());
   for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
     // TODO(hashimoto): Make other kind of alerts available.  crosbug.com/24281
     InfoBarDelegate* infobar_delegate = infobar_helper->GetInfoBarDelegateAt(i);

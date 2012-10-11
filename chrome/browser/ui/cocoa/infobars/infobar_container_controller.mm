@@ -142,15 +142,15 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
 
   currentTabContents_ = contents;
   if (currentTabContents_) {
-    InfoBarTabHelper* infobar_helper =
-        currentTabContents_->infobar_tab_helper();
-    for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
-      InfoBar* infobar = infobar_helper->
-          GetInfoBarDelegateAt(i)->CreateInfoBar(infobar_helper);
+    InfoBarTabHelper* infobarTabHelper =
+        InfoBarTabHelper::FromWebContents(currentTabContents_->web_contents());
+    for (size_t i = 0; i < infobarTabHelper->GetInfoBarCount(); ++i) {
+      InfoBar* infobar = infobarTabHelper->
+          GetInfoBarDelegateAt(i)->CreateInfoBar(infobarTabHelper);
       [self addInfoBar:infobar animate:NO];
     }
 
-    content::Source<InfoBarTabHelper> source(infobar_helper);
+    content::Source<InfoBarTabHelper> source(infobarTabHelper);
     registrar_.Add(infoBarObserver_.get(),
                    chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, source);
     registrar_.Add(infoBarObserver_.get(),

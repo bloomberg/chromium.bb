@@ -13,7 +13,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -137,9 +136,8 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     return;
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   InfoBarTabHelper* infobar_helper =
-      tab_contents ? tab_contents->infobar_tab_helper() : NULL;
+      InfoBarTabHelper::FromWebContents(web_contents);
   if (!infobar_helper) {
     // The tab has no infobar helper.
     LOG(WARNING) << "Attempt to request quota from a background page: "
@@ -147,9 +145,11 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     DispatchCallbackOnIOThread(callback, QUOTA_PERMISSION_RESPONSE_CANCELLED);
     return;
   }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   infobar_helper->AddInfoBar(new RequestQuotaInfoBarDelegate(
       infobar_helper, this, origin_url, requested_quota,
-      tab_contents->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
       callback));
 }
 

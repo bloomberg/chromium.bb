@@ -6,6 +6,7 @@
 
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/intents/web_intents_util.h"
@@ -19,10 +20,10 @@ using content::WebContents;
 
 // static
 void Browser::RegisterIntentHandlerHelper(
-    WebContents* tab,
+    WebContents* web_contents,
     const webkit_glue::WebIntentServiceData& data,
     bool user_gesture) {
-  TabContents* tab_contents = TabContents::FromWebContents(tab);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   if (!tab_contents || tab_contents->profile()->IsOffTheRecord())
     return;
 
@@ -33,9 +34,9 @@ void Browser::RegisterIntentHandlerHelper(
       tab_contents->profile(), Profile::EXPLICIT_ACCESS);
 
   RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
-      tab_contents->infobar_tab_helper(),
+      InfoBarTabHelper::FromWebContents(web_contents),
       WebIntentsRegistryFactory::GetForProfile(tab_contents->profile()),
       data,
       favicon_service,
-      tab->GetURL());
+      web_contents->GetURL());
 }

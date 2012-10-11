@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -473,14 +472,16 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
       }
 
       if (error) {
-        TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-        InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+        Profile* profile =
+            Profile::FromBrowserContext(web_contents->GetBrowserContext());
+        InfoBarTabHelper* infobar_helper =
+            InfoBarTabHelper::FromWebContents(web_contents);
         ShowInfoBar(
             web_contents,
             TranslateInfoBarDelegate::CreateErrorDelegate(
                 TranslateErrors::NETWORK,
                 infobar_helper,
-                tab_contents->profile()->GetPrefs(),
+                profile->GetPrefs(),
                 request.source_lang,
                 request.target_lang));
       } else {
@@ -600,13 +601,13 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     return;
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
   // Prompts the user if he/she wants the page translated.
   infobar_helper->AddInfoBar(
       TranslateInfoBarDelegate::CreateDelegate(
           TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar_helper,
-          tab_contents->profile()->GetPrefs(), language_code, target_lang));
+          profile->GetPrefs(), language_code, target_lang));
 }
 
 void TranslateManager::InitiateTranslationPosted(
@@ -634,11 +635,13 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
     return;
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
   ShowInfoBar(web_contents, TranslateInfoBarDelegate::CreateDelegate(
       TranslateInfoBarDelegate::TRANSLATING, infobar_helper,
-      tab_contents->profile()->GetPrefs(), source_lang, target_lang));
+      profile->GetPrefs(), source_lang, target_lang));
 
   if (!translate_script_.empty()) {
     DoTranslatePage(web_contents, translate_script_, source_lang, target_lang);
@@ -727,9 +730,11 @@ void TranslateManager::DoTranslatePage(WebContents* web_contents,
 
 void TranslateManager::PageTranslated(WebContents* web_contents,
                                       PageTranslatedDetails* details) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
-  PrefService* prefs = tab_contents->profile()->GetPrefs();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PrefService* prefs = profile->GetPrefs();
 
   // Create the new infobar to display.
   TranslateInfoBarDelegate* infobar;
@@ -873,10 +878,10 @@ void TranslateManager::ShowInfoBar(content::WebContents* web_contents,
   TranslateInfoBarDelegate* old_infobar =
       GetTranslateInfoBarDelegate(web_contents);
   infobar->UpdateBackgroundAnimation(old_infobar);
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents)
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
+  if (!infobar_helper)
     return;
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   if (old_infobar) {
     // There already is a translate infobar, simply replace it.
     infobar_helper->ReplaceInfoBar(old_infobar, infobar);
@@ -913,14 +918,15 @@ std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
 // static
 TranslateInfoBarDelegate* TranslateManager::GetTranslateInfoBarDelegate(
     WebContents* web_contents) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents)
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
+  if (!infobar_helper)
     return NULL;
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
 
   for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
     TranslateInfoBarDelegate* delegate =
-        infobar_helper->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
+        infobar_helper->GetInfoBarDelegateAt(i)->
+            AsTranslateInfoBarDelegate();
     if (delegate)
       return delegate;
   }

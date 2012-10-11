@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -216,20 +215,23 @@ void NotifyNotDefaultBrowserCallback() {
 
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
-  TabContents* tab = chrome::GetActiveTabContents(browser);
-  if (!tab)
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+  if (!web_contents)
     return;
 
   // Don't show the info-bar if there are already info-bars showing.
-  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
   if (infobar_helper->GetInfoBarCount() > 0)
     return;
 
   bool interactive_flow = ShellIntegration::CanSetAsDefaultBrowser() ==
       ShellIntegration::SET_DEFAULT_INTERACTIVE;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   infobar_helper->AddInfoBar(
       new DefaultBrowserInfoBarDelegate(infobar_helper,
-                                        tab->profile()->GetPrefs(),
+                                        profile->GetPrefs(),
                                         interactive_flow));
 }
 

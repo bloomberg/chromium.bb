@@ -973,9 +973,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
 
   content::WebContents* contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(contents);
-  TabContents* tab_contents = TabContents::FromWebContents(contents);
-  ASSERT_TRUE(tab_contents);
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(contents);
   ASSERT_TRUE(infobar_helper);
   EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
 
@@ -984,7 +983,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   ui_test_utils::NavigateToURL(browser(), url);
   // This should have triggered the dangerous plugin infobar.
   ASSERT_EQ(1u, infobar_helper->GetInfoBarCount());
-  InfoBarDelegate* infobar_delegate = infobar_helper->GetInfoBarDelegateAt(0);
+  InfoBarDelegate* infobar_delegate =
+      infobar_helper->GetInfoBarDelegateAt(0);
   EXPECT_TRUE(infobar_delegate->AsConfirmInfoBarDelegate());
   // And the plugin isn't running.
   EXPECT_EQ(0, CountPlugins());
@@ -1270,9 +1270,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   // Get the |infobar_helper|, and verify that there are no infobars on startup.
   content::WebContents* contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(contents);
-  TabContents* tab_contents = TabContents::FromWebContents(contents);
-  ASSERT_TRUE(tab_contents);
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(contents);
   ASSERT_TRUE(infobar_helper);
   EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
 
@@ -1295,7 +1294,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   language_observer1.Wait();
   // Verify that the translate infobar showed up.
   ASSERT_EQ(1u, infobar_helper->GetInfoBarCount());
-  InfoBarDelegate* infobar_delegate = infobar_helper->GetInfoBarDelegateAt(0);
+  InfoBarDelegate* infobar_delegate =
+      infobar_helper->GetInfoBarDelegateAt(0);
   TranslateInfoBarDelegate* delegate =
       infobar_delegate->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
@@ -1303,7 +1303,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   EXPECT_EQ("fr", delegate->original_language_code());
 
   // Now force disable translate.
-  ui_test_utils::CloseAllInfoBars(tab_contents);
+  infobar_helper->RemoveInfoBar(infobar_delegate);
   EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
   policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));

@@ -216,7 +216,7 @@ void OmniboxSearchHint::Observe(int type,
 
 void OmniboxSearchHint::ShowInfoBar() {
   InfoBarTabHelper* infobar_tab_helper =
-      TabContents::FromWebContents(web_contents_)->infobar_tab_helper();
+      InfoBarTabHelper::FromWebContents(web_contents_);
   infobar_tab_helper->AddInfoBar(new HintInfoBar(this, infobar_tab_helper));
 }
 

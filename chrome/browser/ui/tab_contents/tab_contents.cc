@@ -138,7 +138,7 @@ TabContents::TabContents(WebContents* contents)
   FindTabHelper::CreateForWebContents(contents);
   HistoryTabHelper::CreateForWebContents(contents);
   HungPluginTabHelper::CreateForWebContents(contents);
-  infobar_tab_helper_.reset(new InfoBarTabHelper(contents));
+  InfoBarTabHelper::CreateForWebContents(contents);
   MetroPinTabHelper::CreateForWebContents(contents);
   NavigationMetricsRecorder::CreateForWebContents(contents);
   PasswordManagerDelegateImpl::CreateForWebContents(contents);
@@ -198,10 +198,6 @@ TabContents::~TabContents() {
       chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
       content::Source<TabContents>(this),
       content::NotificationService::NoDetails());
-
-  // Need to tear down infobars before the WebContents goes away.
-  // TODO(avi): Can we get this handled by the tab helper itself?
-  infobar_tab_helper_.reset();
 }
 
 TabContents* TabContents::Clone() {

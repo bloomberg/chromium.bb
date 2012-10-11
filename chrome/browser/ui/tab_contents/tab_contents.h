@@ -20,9 +20,7 @@ class ChromeWebContentsHandler;
 class ConstrainedWebDialogDelegateBase;
 class ExtensionTabUtil;
 class ExternalTabContainerWin;
-class GeolocationPermissionContextTests;
 class InfoBarControllerContentsCreator;
-class InfoBarTabHelper;
 class InstantLoader;
 class OffscreenTabContentsCreator;
 class PanelHost;
@@ -87,7 +85,6 @@ class TabContents : public content::WebContentsObserver {
     friend class extensions::WebAuthFlow;
     friend class ExtensionTabUtil;
     friend class ExternalTabContainerWin;
-    friend class GeolocationPermissionContextTests;
     friend class InfoBarControllerContentsCreator;
     friend class InstantLoader;
     friend class OffscreenTabContentsCreator;
@@ -133,10 +130,6 @@ class TabContents : public content::WebContentsObserver {
   // True if this TabContents is being torn down.
   bool in_destructor() const { return in_destructor_; }
 
-  // Tab Helpers ---------------------------------------------------------------
-
-  InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
-
   // Overrides -----------------------------------------------------------------
 
   // content::WebContentsObserver overrides:
@@ -152,12 +145,6 @@ class TabContents : public content::WebContentsObserver {
   // Create a TabContents with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.
   TabContents* Clone();
-
-  // Tab Helpers ---------------------------------------------------------------
-  // (These provide API for callers and have a getter function listed in the
-  // "Tab Helpers" section in the member functions area, above.)
-
-  scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
 
   // WebContents (MUST BE LAST) ------------------------------------------------
 

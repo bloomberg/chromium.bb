@@ -30,6 +30,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1249,7 +1250,9 @@ void BrowserWindowGtk::ActiveTabChanged(TabContents* old_contents,
   // Update various elements that are interested in knowing the current
   // WebContents.
   UpdateDevToolsForContents(new_contents->web_contents());
-  infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
+  InfoBarTabHelper* new_infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(new_contents->web_contents());
+  infobar_container_->ChangeTabContents(new_infobar_tab_helper);
   contents_container_->SetTab(new_contents);
 
   // TODO(estade): after we manage browser activation, add a check to make sure

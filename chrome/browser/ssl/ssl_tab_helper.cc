@@ -139,8 +139,7 @@ class SSLTabHelper::SSLAddCertData
 };
 
 SSLTabHelper::SSLAddCertData::SSLAddCertData(content::WebContents* contents)
-    : infobar_helper_(
-          TabContents::FromWebContents(contents)->infobar_tab_helper()),
+    : infobar_helper_(InfoBarTabHelper::FromWebContents(contents)),
       infobar_delegate_(NULL) {
   content::Source<InfoBarTabHelper> source(infobar_helper_);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -218,9 +217,10 @@ void SSLTabHelper::OnAddClientCertificateSuccess(
     scoped_refptr<SSLAddCertHandler> handler) {
   SSLAddCertData* add_cert_data = GetAddCertData(handler);
   // Display an infobar to inform the user.
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(web_contents_);
   add_cert_data->ShowInfoBar(new SSLCertAddedInfoBarDelegate(
-      tab_contents->infobar_tab_helper(), handler->cert()));
+      infobar_tab_helper, handler->cert()));
 }
 
 void SSLTabHelper::OnAddClientCertificateError(

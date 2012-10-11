@@ -100,9 +100,6 @@ class HungPluginTabHelper
   // be called even if the bar is not opened, in which case it will do nothing.
   void CloseBar(PluginState* state);
 
-  // Possibly returns null.
-  InfoBarTabHelper* GetInfoBarHelper();
-
   content::NotificationRegistrar registrar_;
 
   // All currently hung plugins.

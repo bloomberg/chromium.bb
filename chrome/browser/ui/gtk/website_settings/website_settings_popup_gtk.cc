@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
@@ -258,9 +259,11 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(tab_contents->web_contents());
   presenter_.reset(new WebsiteSettings(this, profile,
                                        content_settings,
-                                       tab_contents->infobar_tab_helper(),
+                                       infobar_tab_helper,
                                        url, ssl,
                                        content::CertStore::GetInstance()));
 }

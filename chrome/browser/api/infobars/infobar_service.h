@@ -10,14 +10,13 @@ class WebContents;
 }
 
 class InfoBarDelegate;
-class TabContents;
 
 // Provides access to creating, removing and enumerating info bars
 // attached to a tab.
 class InfoBarService {
  public:
-  // Retrieves the InfoBarService for a given tab.
-  static InfoBarService* FromTabContents(TabContents* tab_contents);
+  // Retrieves the InfoBarService for a given WebContents.
+  static InfoBarService* FromWebContents(content::WebContents* web_contents);
 
   virtual ~InfoBarService() {}
 

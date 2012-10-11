@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -340,9 +341,11 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(tab_contents->web_contents());
   presenter_.reset(new WebsiteSettings(this, profile,
                                        content_settings,
-                                       tab_contents->infobar_tab_helper(),
+                                       infobar_tab_helper,
                                        url,
                                        ssl,
                                        content::CertStore::GetInstance()));
@@ -372,7 +375,7 @@ void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
     // Count how often the Collected Cookies dialog is opened.
     content::RecordAction(
         content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
-    new CollectedCookiesViews(tab_contents_);
+    new CollectedCookiesViews(tab_contents_->web_contents());
   } else if (source == certificate_dialog_link_) {
     gfx::NativeWindow parent =
         anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;

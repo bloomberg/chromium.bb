@@ -75,7 +75,6 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
         mock_ui_(NULL),
         cert_id_(0),
         browser_thread_(content::BrowserThread::UI, &message_loop_),
-        infobar_tab_helper_(NULL),
         url_("http://www.example.com") {
   }
 
@@ -98,7 +97,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
                                      expiration_date);
 
     TabSpecificContentSettings::CreateForWebContents(contents());
-    infobar_tab_helper_.reset(new InfoBarTabHelper(contents()));
+    InfoBarTabHelper::CreateForWebContents(contents());
 
     // Setup the mock cert store.
     EXPECT_CALL(cert_store_, RetrieveCert(cert_id_, _) )
@@ -132,13 +131,15 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   TabSpecificContentSettings* tab_specific_content_settings() {
     return TabSpecificContentSettings::FromWebContents(contents());
   }
-  InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
+  InfoBarTabHelper* infobar_tab_helper() {
+    return InfoBarTabHelper::FromWebContents(contents());
+  }
 
   WebsiteSettings* website_settings() {
     if (!website_settings_.get()) {
       website_settings_.reset(new WebsiteSettings(
           mock_ui(), profile(), tab_specific_content_settings(),
-          infobar_tab_helper_.get(), url(), ssl(), cert_store()));
+          infobar_tab_helper(), url(), ssl(), cert_store()));
     }
     return website_settings_.get();
   }
@@ -151,7 +152,6 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   int cert_id_;
   scoped_refptr<net::X509Certificate> cert_;
   content::TestBrowserThread browser_thread_;
-  scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
   MockCertStore cert_store_;
   GURL url_;
 };

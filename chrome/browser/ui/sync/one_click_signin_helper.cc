@@ -416,10 +416,11 @@ void OneClickSigninHelper::DidStopLoading(
   if (email_.empty() || password_.empty())
     return;
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  InfoBarTabHelper* infobar_tab_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
 
-  tab_contents->infobar_tab_helper()->AddInfoBar(
-      new OneClickInfoBarDelegateImpl(tab_contents->infobar_tab_helper(),
+  infobar_tab_helper->AddInfoBar(
+      new OneClickInfoBarDelegateImpl(infobar_tab_helper,
                                       session_index_, email_, password_));
 
   email_.clear();

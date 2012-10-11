@@ -91,11 +91,13 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     NotifyCallbacks(DownloadRequestLimiter::delegate_->ShouldAllowDownload());
     return;
   }
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  if (!tab_contents) {
-    // If |web_contents| doesn't have a TabContents, then it isn't what a user
-    // thinks of as a tab, it's actually a "raw" WebContents like those used
-    // for extension popups/bubbles and hosted apps etc.
+
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
+  if (!infobar_helper) {
+    // |web_contents| may not have a InfoBarTabHelper if it's actually a
+    // WebContents like those used for extension popups/bubbles and hosted apps
+    // etc.
     // TODO(benjhayden): If this is an automatic download from an extension,
     // it would be convenient for the extension author if we send a message to
     // the extension's DevTools console (as we do for CSP) about how
@@ -104,7 +106,6 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     Cancel();
     return;
   }
-  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   infobar_ = new DownloadRequestInfoBarDelegate(infobar_helper, this);
   infobar_helper->AddInfoBar(infobar_);
 }

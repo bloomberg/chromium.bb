@@ -56,7 +56,7 @@ namespace chrome {
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowCollectedCookiesDialog(TabContents* tab_contents) {
   // Deletes itself on close.
-  new CollectedCookiesViews(tab_contents);
+  new CollectedCookiesViews(tab_contents->web_contents());
 }
 
 }  // namespace chrome
@@ -183,8 +183,8 @@ class InfobarView : public views::View {
 ///////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, public:
 
-CollectedCookiesViews::CollectedCookiesViews(TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
+    : web_contents_(web_contents),
       allowed_label_(NULL),
       blocked_label_(NULL),
       allowed_cookies_tree_(NULL),
@@ -196,12 +196,10 @@ CollectedCookiesViews::CollectedCookiesViews(TabContents* tab_contents)
       infobar_(NULL),
       status_changed_(false) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents);
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  content::Source<TabSpecificContentSettings>(content_settings));
-  window_ = new ConstrainedWindowViews(tab_contents->web_contents(),
-                                       this,
-                                       false);
+  window_ = new ConstrainedWindowViews(web_contents, this, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -226,7 +224,8 @@ void CollectedCookiesViews::DeleteDelegate() {
 
 bool CollectedCookiesViews::Cancel() {
   if (status_changed_) {
-    InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+    InfoBarTabHelper* infobar_helper =
+        InfoBarTabHelper::FromWebContents(web_contents_);
     infobar_helper->AddInfoBar(
         new CollectedCookiesInfoBarDelegate(infobar_helper));
   }
@@ -338,8 +337,7 @@ void CollectedCookiesViews::Init() {
 
 views::View* CollectedCookiesViews::CreateAllowedPane() {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(
-          tab_contents_->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents_);
 
   // Create the controls that go into the pane.
   allowed_label_ = new views::Label(l10n_util::GetStringUTF16(
@@ -391,10 +389,11 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
 
 views::View* CollectedCookiesViews::CreateBlockedPane() {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(
-          tab_contents_->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents_);
 
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  PrefService* prefs = profile->GetPrefs();
 
   // Create the controls that go into the pane.
   blocked_label_ = new views::Label(
@@ -510,7 +509,8 @@ void CollectedCookiesViews::AddContentException(views::TreeView* tree_view,
                                                 ContentSetting setting) {
   CookieTreeHostNode* host_node =
       static_cast<CookieTreeHostNode*>(tree_view->GetSelectedNode());
-  Profile* profile = tab_contents_->profile();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   host_node->CreateContentException(
       CookieSettings::Factory::GetForProfile(profile), setting);
   infobar_->UpdateVisibility(true, setting, host_node->GetTitle());
