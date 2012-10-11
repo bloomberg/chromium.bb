@@ -314,6 +314,59 @@ class GrayscaleTransition : public LayerAnimationElement {
   DISALLOW_COPY_AND_ASSIGN(GrayscaleTransition);
 };
 
+// ColorTransition -------------------------------------------------------------
+
+class ColorTransition : public LayerAnimationElement {
+ public:
+  ColorTransition(SkColor target, base::TimeDelta duration)
+      : LayerAnimationElement(GetProperties(), duration),
+        start_(SK_ColorBLACK),
+        target_(target) {
+  }
+  virtual ~ColorTransition() {}
+
+ protected:
+  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+    start_ = delegate->GetColorForAnimation();
+  }
+
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+    delegate->SetColorFromAnimation(
+        SkColorSetARGB(
+            Tween::ValueBetween(t,
+                                static_cast<int>(SkColorGetA(start_)),
+                                static_cast<int>(SkColorGetA(target_))),
+            Tween::ValueBetween(t,
+                                static_cast<int>(SkColorGetR(start_)),
+                                static_cast<int>(SkColorGetR(target_))),
+            Tween::ValueBetween(t,
+                                static_cast<int>(SkColorGetG(start_)),
+                                static_cast<int>(SkColorGetG(target_))),
+            Tween::ValueBetween(t,
+                                static_cast<int>(SkColorGetB(start_)),
+                                static_cast<int>(SkColorGetB(target_)))));
+    return true;
+  }
+
+  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+    target->color = target_;
+  }
+
+  virtual void OnAbort() OVERRIDE {}
+
+ private:
+  static AnimatableProperties GetProperties() {
+    AnimatableProperties properties;
+    properties.insert(LayerAnimationElement::COLOR);
+    return properties;
+  }
+
+  SkColor start_;
+  const SkColor target_;
+
+  DISALLOW_COPY_AND_ASSIGN(ColorTransition);
+};
+
 }  // namespace
 
 // LayerAnimationElement::TargetValue ------------------------------------------
@@ -322,7 +375,8 @@ LayerAnimationElement::TargetValue::TargetValue()
     : opacity(0.0f),
       visibility(false),
       brightness(0.0f),
-      grayscale(0.0f) {
+      grayscale(0.0f),
+      color(SK_ColorBLACK) {
 }
 
 LayerAnimationElement::TargetValue::TargetValue(
@@ -332,7 +386,8 @@ LayerAnimationElement::TargetValue::TargetValue(
       opacity(delegate ? delegate->GetOpacityForAnimation() : 0.0f),
       visibility(delegate ? delegate->GetVisibilityForAnimation() : false),
       brightness(delegate ? delegate->GetBrightnessForAnimation() : 0.0f),
-      grayscale(delegate ? delegate->GetGrayscaleForAnimation() : 0.0f) {
+      grayscale(delegate ? delegate->GetGrayscaleForAnimation() : 0.0f),
+      color(delegate ? delegate->GetColorForAnimation() : 0.0f) {
 }
 
 // LayerAnimationElement -------------------------------------------------------
@@ -381,51 +436,66 @@ base::TimeDelta LayerAnimationElement::GetEffectiveDuration(
 
 // static
 LayerAnimationElement* LayerAnimationElement::CreateTransformElement(
-    const Transform& transform, base::TimeDelta duration) {
+    const Transform& transform,
+    base::TimeDelta duration) {
   return new TransformTransition(transform, duration);
 }
 
 // static
 LayerAnimationElement*
 LayerAnimationElement::CreateInterpolatedTransformElement(
-    InterpolatedTransform* interpolated_transform, base::TimeDelta duration) {
+    InterpolatedTransform* interpolated_transform,
+    base::TimeDelta duration) {
   return new InterpolatedTransformTransition(interpolated_transform, duration);
 }
 
 // static
 LayerAnimationElement* LayerAnimationElement::CreateBoundsElement(
-    const gfx::Rect& bounds, base::TimeDelta duration) {
+    const gfx::Rect& bounds,
+    base::TimeDelta duration) {
   return new BoundsTransition(bounds, duration);
 }
 
 // static
 LayerAnimationElement* LayerAnimationElement::CreateOpacityElement(
-    float opacity, base::TimeDelta duration) {
+    float opacity,
+    base::TimeDelta duration) {
   return new OpacityTransition(opacity, duration);
 }
 
 // static
 LayerAnimationElement* LayerAnimationElement::CreateVisibilityElement(
-    bool visibility, base::TimeDelta duration) {
+    bool visibility,
+    base::TimeDelta duration) {
   return new VisibilityTransition(visibility, duration);
 }
 
 // static
 LayerAnimationElement* LayerAnimationElement::CreateBrightnessElement(
-    float brightness, base::TimeDelta duration) {
+    float brightness,
+    base::TimeDelta duration) {
   return new BrightnessTransition(brightness, duration);
 }
 
 // static
 LayerAnimationElement* LayerAnimationElement::CreateGrayscaleElement(
-    float grayscale, base::TimeDelta duration) {
+    float grayscale,
+    base::TimeDelta duration) {
   return new GrayscaleTransition(grayscale, duration);
 }
 
 // static
 LayerAnimationElement* LayerAnimationElement::CreatePauseElement(
-    const AnimatableProperties& properties, base::TimeDelta duration) {
+    const AnimatableProperties& properties,
+    base::TimeDelta duration) {
   return new Pause(properties, duration);
+}
+
+// static
+LayerAnimationElement* LayerAnimationElement::CreateColorElement(
+    SkColor color,
+    base::TimeDelta duration) {
+  return new ColorTransition(color, duration);
 }
 
 }  // namespace ui

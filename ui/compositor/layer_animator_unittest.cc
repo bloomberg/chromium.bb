@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -22,6 +23,14 @@
 namespace ui {
 
 namespace {
+
+// Converts |color| to a string. Each component of the color is separated by a
+// space and the order if A R G B.
+std::string ColorToString(SkColor color) {
+  return base::StringPrintf("%d %d %d %d", SkColorGetA(color),
+                            SkColorGetR(color), SkColorGetG(color),
+                            SkColorGetB(color));
+}
 
 class TestImplicitAnimationObserver : public ImplicitAnimationObserver {
  public:
@@ -1162,6 +1171,45 @@ TEST(LayerAnimatorTest, GetTargetGrayscale) {
     animator->SetGrayscale(1.0);
     EXPECT_EQ(1.0, animator->GetTargetGrayscale());
   }
+}
+
+// Verifies color property is modified appropriately.
+TEST(LayerAnimatorTest, Color) {
+  scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  AnimationContainerElement* element = animator.get();
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  SkColor start_color  = SkColorSetARGB(  0, 20, 40,  60);
+  SkColor middle_color = SkColorSetARGB(127, 30, 60, 100);
+  SkColor target_color = SkColorSetARGB(254, 40, 80, 140);
+
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+
+  delegate.SetColorFromAnimation(start_color);
+
+  animator->ScheduleAnimation(
+      new LayerAnimationSequence(
+          LayerAnimationElement::CreateColorElement(target_color, delta)));
+
+  EXPECT_TRUE(animator->is_animating());
+  EXPECT_EQ(ColorToString(start_color),
+            ColorToString(delegate.GetColorForAnimation()));
+
+  base::TimeTicks start_time = animator->last_step_time();
+
+  element->Step(start_time + base::TimeDelta::FromMilliseconds(500));
+
+  EXPECT_TRUE(animator->is_animating());
+  EXPECT_EQ(ColorToString(middle_color),
+            ColorToString(delegate.GetColorForAnimation()));
+
+  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
+
+  EXPECT_FALSE(animator->is_animating());
+  EXPECT_EQ(ColorToString(target_color),
+            ColorToString(delegate.GetColorForAnimation()));
 }
 
 // Verifies SchedulePauseForProperties().

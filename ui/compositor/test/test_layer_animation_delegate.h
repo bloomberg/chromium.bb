@@ -25,6 +25,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   virtual void SetVisibilityFromAnimation(bool visibility) OVERRIDE;
   virtual void SetBrightnessFromAnimation(float brightness) OVERRIDE;
   virtual void SetGrayscaleFromAnimation(float grayscale) OVERRIDE;
+  virtual void SetColorFromAnimation(SkColor color) OVERRIDE;
   virtual void ScheduleDrawForAnimation() OVERRIDE;
   virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
   virtual const Transform& GetTransformForAnimation() const OVERRIDE;
@@ -32,6 +33,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   virtual bool GetVisibilityForAnimation() const OVERRIDE;
   virtual float GetBrightnessForAnimation() const OVERRIDE;
   virtual float GetGrayscaleForAnimation() const OVERRIDE;
+  virtual SkColor GetColorForAnimation() const OVERRIDE;
 
  private:
   gfx::Rect bounds_;
@@ -40,6 +42,7 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   bool visibility_;
   float brightness_;
   float grayscale_;
+  SkColor color_;
 
   // Allow copy and assign.
 };

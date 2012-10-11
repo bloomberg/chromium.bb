@@ -158,6 +158,20 @@ float LayerAnimator::GetTargetGrayscale() const {
   return target.grayscale;
 }
 
+void LayerAnimator::SetColor(SkColor color) {
+  base::TimeDelta duration = GetTransitionDuration();
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateColorElement(color, duration));
+  element->set_tween_type(tween_type_);
+  StartAnimation(new LayerAnimationSequence(element.release()));
+}
+
+SkColor LayerAnimator::GetTargetColor() const {
+  LayerAnimationElement::TargetValue target(delegate());
+  GetTargetValue(&target);
+  return target.color;
+}
+
 void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
   delegate_ = delegate;
 }

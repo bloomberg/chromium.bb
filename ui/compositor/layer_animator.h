@@ -83,6 +83,10 @@ class COMPOSITOR_EXPORT LayerAnimator
   virtual void SetGrayscale(float grayscale);
   float GetTargetGrayscale() const;
 
+  // Sets the color on the delegate. May cause an implicit animation.
+  virtual void SetColor(SkColor color);
+  SkColor GetTargetColor() const;
+
   // Sets the layer animation delegate the animator is associated with. The
   // animator does not own the delegate. The layer animator expects a non-NULL
   // delegate for most of its operations, so do not call any methods without

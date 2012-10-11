@@ -425,10 +425,7 @@ void Layer::SetExternalTexture(Texture* texture) {
 }
 
 void Layer::SetColor(SkColor color) {
-  DCHECK_EQ(type_, LAYER_SOLID_COLOR);
-  // WebColor is equivalent to SkColor, per WebColor.h.
-  solid_color_layer_->setBackgroundColor(static_cast<WebKit::WebColor>(color));
-  SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
+  GetAnimator()->SetColor(color);
 }
 
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
@@ -655,6 +652,13 @@ void Layer::SetGrayscaleImmediately(float grayscale) {
   SetLayerFilters();
 }
 
+void Layer::SetColorImmediately(SkColor color) {
+  DCHECK_EQ(type_, LAYER_SOLID_COLOR);
+  // WebColor is equivalent to SkColor, per WebColor.h.
+  solid_color_layer_->setBackgroundColor(static_cast<WebKit::WebColor>(color));
+  SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
+}
+
 void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
   SetBoundsImmediately(bounds);
 }
@@ -674,8 +678,13 @@ void Layer::SetVisibilityFromAnimation(bool visibility) {
 void Layer::SetBrightnessFromAnimation(float brightness) {
   SetBrightnessImmediately(brightness);
 }
+
 void Layer::SetGrayscaleFromAnimation(float grayscale) {
   SetGrayscaleImmediately(grayscale);
+}
+
+void Layer::SetColorFromAnimation(SkColor color) {
+  SetColorImmediately(color);
 }
 
 void Layer::ScheduleDrawForAnimation() {
@@ -704,6 +713,14 @@ float Layer::GetBrightnessForAnimation() const {
 
 float Layer::GetGrayscaleForAnimation() const {
   return layer_grayscale();
+}
+
+SkColor Layer::GetColorForAnimation() const {
+  // WebColor is equivalent to SkColor, per WebColor.h.
+  // The NULL check is here since this is invoked regardless of whether we have
+  // been configured as LAYER_SOLID_COLOR.
+  return solid_color_layer_.get() ?
+      solid_color_layer_->layer()->backgroundColor() : SK_ColorBLACK;
 }
 
 void Layer::CreateWebLayer() {

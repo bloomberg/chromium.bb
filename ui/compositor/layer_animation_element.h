@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/time.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/tween.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/rect.h"
@@ -30,7 +31,8 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     OPACITY,
     VISIBILITY,
     BRIGHTNESS,
-    GRAYSCALE
+    GRAYSCALE,
+    COLOR,
   };
 
   struct COMPOSITOR_EXPORT TargetValue {
@@ -44,6 +46,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     bool visibility;
     float brightness;
     float grayscale;
+    SkColor color;
   };
 
   typedef std::set<AnimatableProperty> AnimatableProperties;
@@ -103,6 +106,12 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // return value.
   static LayerAnimationElement* CreatePauseElement(
       const AnimatableProperties& properties,
+      base::TimeDelta duration);
+
+  // Creates an element that transitions to the given color. The caller owns the
+  // return value.
+  static LayerAnimationElement* CreateColorElement(
+      SkColor color,
       base::TimeDelta duration);
 
   // Updates the delegate to the appropriate value for |t|, which is in the

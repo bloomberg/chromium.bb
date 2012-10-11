@@ -302,6 +302,7 @@ class COMPOSITOR_EXPORT Layer
   void SetVisibilityImmediately(bool visibility);
   void SetBrightnessImmediately(float brightness);
   void SetGrayscaleImmediately(float grayscale);
+  void SetColorImmediately(SkColor color);
 
   // Implementation of LayerAnimatorDelegate
   virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) OVERRIDE;
@@ -310,6 +311,7 @@ class COMPOSITOR_EXPORT Layer
   virtual void SetVisibilityFromAnimation(bool visibility) OVERRIDE;
   virtual void SetBrightnessFromAnimation(float brightness) OVERRIDE;
   virtual void SetGrayscaleFromAnimation(float grayscale) OVERRIDE;
+  virtual void SetColorFromAnimation(SkColor color) OVERRIDE;
   virtual void ScheduleDrawForAnimation() OVERRIDE;
   virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
   virtual const Transform& GetTransformForAnimation() const OVERRIDE;
@@ -317,6 +319,7 @@ class COMPOSITOR_EXPORT Layer
   virtual bool GetVisibilityForAnimation() const OVERRIDE;
   virtual float GetBrightnessForAnimation() const OVERRIDE;
   virtual float GetGrayscaleForAnimation() const OVERRIDE;
+  virtual SkColor GetColorForAnimation() const OVERRIDE;
 
   void CreateWebLayer();
   void RecomputeTransform();
