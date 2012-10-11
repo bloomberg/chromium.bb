@@ -521,9 +521,9 @@ PageActionImageView* ToolbarView::CreatePageActionImageView(
 
 void ToolbarView::OnInputInProgress(bool in_progress) {
   // The edit should make sure we're only notified when something changes.
-  DCHECK(model_->input_in_progress() != in_progress);
+  DCHECK(model_->GetInputInProgress() != in_progress);
 
-  model_->set_input_in_progress(in_progress);
+  model_->SetInputInProgress(in_progress);
   location_bar_->Update(NULL);
 }
 

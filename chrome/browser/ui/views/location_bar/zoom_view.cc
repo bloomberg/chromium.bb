@@ -30,7 +30,7 @@ ZoomView::~ZoomView() {
 
 void ZoomView::Update(ZoomController* zoom_controller) {
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
-      toolbar_model_->input_in_progress()) {
+      toolbar_model_->GetInputInProgress()) {
     SetVisible(false);
     ZoomBubbleView::CloseBubble();
     return;

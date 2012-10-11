@@ -54,7 +54,7 @@ bool ToolbarSearchAnimator::IsToolbarSeparatorVisible() const {
   // 2) when mode is |DEFAULT| and the omnibox popup has finished retracting.
   return !is_omnibox_popup_open_ &&
       ((search_model_->mode().mode == Mode::MODE_SEARCH_SUGGESTIONS &&
-        !toolbar_model_->input_in_progress()) ||
+        !toolbar_model_->GetInputInProgress()) ||
        search_model_->mode().is_default());
 }
 

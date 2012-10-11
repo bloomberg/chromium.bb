@@ -23,7 +23,7 @@ ZoomDecoration::~ZoomDecoration() {
 
 void ZoomDecoration::Update(ZoomController* zoom_controller) {
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
-      toolbar_model_->input_in_progress()) {
+      toolbar_model_->GetInputInProgress()) {
     // TODO(dbeam): hide zoom bubble when it exists.
     SetVisible(false);
     return;

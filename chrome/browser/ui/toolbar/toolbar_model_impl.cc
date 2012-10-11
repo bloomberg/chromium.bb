@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
@@ -28,6 +28,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/net_util.h"
+#include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::NavigationController;
@@ -35,16 +36,17 @@ using content::NavigationEntry;
 using content::SSLStatus;
 using content::WebContents;
 
-ToolbarModel::ToolbarModel(ToolbarModelDelegate* delegate)
+ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate)
     : delegate_(delegate),
       input_in_progress_(false) {
 }
 
-ToolbarModel::~ToolbarModel() {
+ToolbarModelImpl::~ToolbarModelImpl() {
 }
 
-// ToolbarModel Implementation.
-string16 ToolbarModel::GetText(bool display_search_urls_as_search_terms) const {
+// ToolbarModelImpl Implementation.
+string16 ToolbarModelImpl::GetText(
+    bool display_search_urls_as_search_terms) const {
   GURL url(GetURL());
 
   if (display_search_urls_as_search_terms) {
@@ -67,7 +69,7 @@ string16 ToolbarModel::GetText(bool display_search_urls_as_search_terms) const {
                           net::UnescapeRule::NORMAL, NULL, NULL, NULL));
 }
 
-GURL ToolbarModel::GetURL() const {
+GURL ToolbarModelImpl::GetURL() const {
   const NavigationController* navigation_controller = GetNavigationController();
   if (navigation_controller) {
     const NavigationEntry* entry = navigation_controller->GetVisibleEntry();
@@ -78,11 +80,11 @@ GURL ToolbarModel::GetURL() const {
   return GURL(chrome::kAboutBlankURL);
 }
 
-bool ToolbarModel::WouldReplaceSearchURLWithSearchTerms() const {
+bool ToolbarModelImpl::WouldReplaceSearchURLWithSearchTerms() const {
   return !TryToExtractSearchTermsFromURL(GetURL()).empty();
 }
 
-bool ToolbarModel::ShouldDisplayURL() const {
+bool ToolbarModelImpl::ShouldDisplayURL() const {
   // Note: The order here is important.
   // - The WebUI test must come before the extension scheme test because there
   //   can be WebUIs that have extension schemes (e.g. the bookmark manager). In
@@ -114,7 +116,7 @@ bool ToolbarModel::ShouldDisplayURL() const {
   return true;
 }
 
-ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
+ToolbarModelImpl::SecurityLevel ToolbarModelImpl::GetSecurityLevel() const {
   if (input_in_progress_)  // When editing, assume no security style.
     return NONE;
 
@@ -153,7 +155,7 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
   }
 }
 
-int ToolbarModel::GetIcon() const {
+int ToolbarModelImpl::GetIcon() const {
   static int icon_ids[NUM_SECURITY_LEVELS] = {
     IDR_LOCATION_BAR_HTTP,
     IDR_OMNIBOX_HTTPS_VALID,
@@ -165,7 +167,7 @@ int ToolbarModel::GetIcon() const {
   return icon_ids[GetSecurityLevel()];
 }
 
-string16 ToolbarModel::GetEVCertName() const {
+string16 ToolbarModelImpl::GetEVCertName() const {
   DCHECK_EQ(GetSecurityLevel(), EV_SECURE);
   scoped_refptr<net::X509Certificate> cert;
   // Note: Navigation controller and active entry are guaranteed non-NULL or
@@ -176,7 +178,7 @@ string16 ToolbarModel::GetEVCertName() const {
 }
 
 // static
-string16 ToolbarModel::GetEVCertName(const net::X509Certificate& cert) {
+string16 ToolbarModelImpl::GetEVCertName(const net::X509Certificate& cert) {
   // EV are required to have an organization name and country.
   if (cert.subject().organization_names.empty() ||
       cert.subject().country_name.empty()) {
@@ -190,7 +192,15 @@ string16 ToolbarModel::GetEVCertName(const net::X509Certificate& cert) {
       UTF8ToUTF16(cert.subject().country_name));
 }
 
-NavigationController* ToolbarModel::GetNavigationController() const {
+void ToolbarModelImpl::SetInputInProgress(bool value) {
+  input_in_progress_ = value;
+}
+
+bool ToolbarModelImpl::GetInputInProgress() const {
+  return input_in_progress_;
+}
+
+NavigationController* ToolbarModelImpl::GetNavigationController() const {
   // This |current_tab| can be NULL during the initialization of the
   // toolbar during window creation (i.e. before any tabs have been added
   // to the window).
@@ -198,7 +208,8 @@ NavigationController* ToolbarModel::GetNavigationController() const {
   return current_tab ? &current_tab->GetController() : NULL;
 }
 
-string16 ToolbarModel::TryToExtractSearchTermsFromURL(const GURL& url) const {
+string16 ToolbarModelImpl::TryToExtractSearchTermsFromURL(
+    const GURL& url) const {
   Profile* profile = GetProfile();
 
   // Ensure instant extended API is enabled.
@@ -217,7 +228,7 @@ string16 ToolbarModel::TryToExtractSearchTermsFromURL(const GURL& url) const {
   return result;
 }
 
-Profile* ToolbarModel::GetProfile() const {
+Profile* ToolbarModelImpl::GetProfile() const {
   NavigationController* navigation_controller = GetNavigationController();
   return navigation_controller ?
       Profile::FromBrowserContext(navigation_controller->GetBrowserContext()) :

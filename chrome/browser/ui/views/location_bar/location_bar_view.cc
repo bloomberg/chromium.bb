@@ -458,9 +458,9 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   RefreshPageActionViews();
   web_intents_button_view_->Update(GetTabContents());
   open_pdf_in_reader_view_->Update(
-      model_->input_in_progress() ? NULL : GetTabContents());
+      model_->GetInputInProgress() ? NULL : GetTabContents());
 
-  bool star_enabled = star_view_ && !model_->input_in_progress() &&
+  bool star_enabled = star_view_ && !model_->GetInputInProgress() &&
                       edit_bookmarks_enabled_.GetValue();
 
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
@@ -470,7 +470,7 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   ChromeToMobileService* chrome_to_mobile_service =
       ChromeToMobileServiceFactory::GetForProfile(profile_);
   command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
-      !model_->input_in_progress() && chrome_to_mobile_service &&
+      !model_->GetInputInProgress() && chrome_to_mobile_service &&
           chrome_to_mobile_service->HasMobiles());
 
   // Don't Update in app launcher mode so that the location entry does not show
@@ -521,7 +521,7 @@ void LocationBarView::UpdateWebIntentsButton() {
 
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {
   open_pdf_in_reader_view_->Update(
-      model_->input_in_progress() ? NULL : GetTabContents());
+      model_->GetInputInProgress() ? NULL : GetTabContents());
   Layout();
   SchedulePaint();
 }
@@ -1224,7 +1224,7 @@ void LocationBarView::LayoutView(views::View* view,
 void LocationBarView::RefreshContentSettingViews() {
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->Update(model_->input_in_progress() ? NULL : GetTabContents());
+    (*i)->Update(model_->GetInputInProgress() ? NULL : GetTabContents());
   }
 }
 
@@ -1288,7 +1288,7 @@ void LocationBarView::RefreshPageActionViews() {
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {
-      (*i)->UpdateVisibility(model_->input_in_progress() ? NULL : contents,
+      (*i)->UpdateVisibility(model_->GetInputInProgress() ? NULL : contents,
                              url);
 
       // Check if the visibility of the action changed and notify if it did.

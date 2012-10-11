@@ -316,7 +316,7 @@ void LocationBarViewMac::OnSelectionBoundsChanged() {
 }
 
 void LocationBarViewMac::OnInputInProgress(bool in_progress) {
-  toolbar_model_->set_input_in_progress(in_progress);
+  toolbar_model_->SetInputInProgress(in_progress);
   Update(NULL, false);
 }
 
@@ -616,7 +616,7 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 }
 
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {
-  const bool input_in_progress = toolbar_model_->input_in_progress();
+  const bool input_in_progress = toolbar_model_->GetInputInProgress();
   WebContents* web_contents =
       input_in_progress ? NULL : chrome::GetActiveWebContents(browser_);
   bool icons_updated = false;
@@ -664,7 +664,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
   GURL url = toolbar_model_->GetURL();
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     page_action_decorations_[i]->UpdateVisibility(
-        toolbar_model_->input_in_progress() ?
+        toolbar_model_->GetInputInProgress() ?
             NULL : tab_contents->web_contents(),
         url);
   }
@@ -764,7 +764,7 @@ void LocationBarViewMac::RedrawDecoration(LocationBarDecoration* decoration) {
 bool LocationBarViewMac::IsStarEnabled() {
   return [field_ isEditable] &&
          browser_defaults::bookmarks_enabled &&
-         !toolbar_model_->input_in_progress() &&
+         !toolbar_model_->GetInputInProgress() &&
          edit_bookmarks_enabled_.GetValue();
 }
 
@@ -772,7 +772,7 @@ void LocationBarViewMac::UpdateChromeToMobileEnabled() {
   ChromeToMobileService* chrome_to_mobile_service =
       ChromeToMobileServiceFactory::GetForProfile(profile_);
   command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
-      [field_ isEditable] && !toolbar_model_->input_in_progress() &&
+      [field_ isEditable] && !toolbar_model_->GetInputInProgress() &&
       chrome_to_mobile_service && chrome_to_mobile_service->HasMobiles());
 }
 
@@ -798,6 +798,6 @@ void LocationBarViewMac::UpdateStarDecorationVisibility() {
 void LocationBarViewMac::UpdatePlusDecorationVisibility() {
   if (extensions::switch_utils::IsActionBoxEnabled()) {
     // If the action box is enabled, hide it when input is in progress.
-    plus_decoration_->SetVisible(!toolbar_model_->input_in_progress());
+    plus_decoration_->SetVisible(!toolbar_model_->GetInputInProgress());
   }
 }
