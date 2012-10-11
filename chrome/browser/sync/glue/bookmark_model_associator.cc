@@ -472,12 +472,9 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
       child_node = node_finder.FindBookmarkNode(sync_child_node);
       if (child_node) {
         bookmark_model_->Move(child_node, parent_node, index);
-        // Set the favicon for bookmark node from sync node or vice versa.
-        if (BookmarkChangeProcessor::SetBookmarkFavicon(
-            &sync_child_node, child_node, bookmark_model_)) {
-          BookmarkChangeProcessor::SetSyncNodeFavicon(
-              child_node, bookmark_model_, &sync_child_node);
-        }
+        // Set the favicon for bookmark node from the sync node.
+        BookmarkChangeProcessor::SetBookmarkFavicon(
+            &sync_child_node, child_node, bookmark_model_);
       } else {
         // Create a new bookmark node for the sync node.
         child_node = BookmarkChangeProcessor::CreateBookmarkNode(
