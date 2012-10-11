@@ -178,6 +178,7 @@ var MainView = (function() {
         // bar to indicate we're no longer capturing events.  Also disable
         // hiding cookies, so if the log dump has them, they'll be displayed.
         this.statusView_.switchToSubView('loaded').setFileName(opt_fileName);
+        $(ExportView.PRIVACY_STRIPPING_CHECKBOX_ID).checked = false;
         SourceTracker.getInstance().setPrivacyStripping(false);
       } else {
         // Otherwise, the "Stop Capturing" button was presumably pressed.

@@ -17,21 +17,21 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
   // before and after applying the filter.  If the second entry is null, the
   // element should be unmodified.
   var expectations = [
-    ['set-cookie: blah', 'set-cookie: [value was stripped]'],
-    ['set-cookie2: blah', 'set-cookie2: [value was stripped]'],
-    ['cookie: blah', 'cookie: [value was stripped]'],
-    ['authorization: NTLM blah', 'authorization: NTLM [value was stripped]'],
+    ['set-cookie: blah', 'set-cookie: [4 bytes were stripped]'],
+    ['set-cookie2: blah', 'set-cookie2: [4 bytes were stripped]'],
+    ['cookie: blah', 'cookie: [4 bytes were stripped]'],
+    ['authorization: NTLM blah', 'authorization: NTLM [4 bytes were stripped]'],
 
     ['proxy-authorization: Basic blah',
-     'proxy-authorization: Basic [value was stripped]'],
+     'proxy-authorization: Basic [4 bytes were stripped]'],
 
     ['WWW-Authenticate: Basic realm="Something, or another"', null],
 
     ['WWW-Authenticate: Negotiate blah-token-blah',
-     'WWW-Authenticate: Negotiate [value was stripped]'],
+     'WWW-Authenticate: Negotiate [15 bytes were stripped]'],
 
     ['WWW-Authenticate: NTLM asdllk2j3l423lk4j23l4kj',
-     'WWW-Authenticate: NTLM [value was stripped]'],
+     'WWW-Authenticate: NTLM [23 bytes were stripped]'],
 
     ['WWW-Authenticate: Kerberos , Negotiate asdfasdfasdfasfa', null],
     ['WWW-Authenticate: Kerberos, Negotiate asdfasdfasdfasfa', null],
@@ -43,10 +43,10 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
     ['Proxy-Authenticate: Basic realm="Something, or another"', null],
 
     ['Proxy-Authenticate: Negotiate blah-token-blah',
-     'Proxy-Authenticate: Negotiate [value was stripped]'],
+     'Proxy-Authenticate: Negotiate [15 bytes were stripped]'],
 
     ['Proxy-Authenticate: NTLM asdllk2j3l423lk4j23l4kj',
-     'Proxy-Authenticate: NTLM [value was stripped]'],
+     'Proxy-Authenticate: NTLM [23 bytes were stripped]'],
 
     ['Proxy-Authenticate: Kerberos , Negotiate asdfasdfa', null],
     ['Proxy-Authenticate: Kerberos, Negotiate asdfasdfa', null],
@@ -54,7 +54,15 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
     ['Proxy-Authenticate: Digest realm="Foo realm", Negotiate asdfasdfa', null],
     ['Proxy-Authenticate: Kerberos,Digest,Basic', null],
     ['Proxy-Authenticate: Digest realm="asdfasdf", nonce=5, qop="auth"', null],
-    ['Proxy-Authenticate: Basic realm=foo,foo=bar , Digest ', null]
+    ['Proxy-Authenticate: Basic realm=foo,foo=bar , Digest ', null],
+
+    ['cookie: Stuff [4 bytes were stripped]',
+     'cookie: [29 bytes were stripped]'],
+    ['cookie: [4 bytes were stripped] Stuff',
+     'cookie: [29 bytes were stripped]'],
+    ['set-cookie: [4 bytes were stripped]', null],
+    ['Proxy-Authenticate: NTLM [23 bytes were stripped]', null],
+    ['cookie: [value was stripped]', null],
   ];
 
   for (var i = 0; i < expectations.length; ++i) {
@@ -107,7 +115,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
   };
   var strippedSpdyRequestHeadersEntry =
       stripCookiesAndLoginInfo(spdyRequestHeadersEntry);
-  expectEquals('cookie: [value was stripped]',
+  expectEquals('cookie: [4 bytes were stripped]',
                strippedSpdyRequestHeadersEntry.params.headers[3]);
 
   testDone();
@@ -1399,7 +1407,7 @@ function painterTestStripCookiesURLRequest() {
   var testCase = painterTestDontStripCookiesURLRequest();
   testCase.privacyStripping = true;
   testCase.expectedText =
-      testCase.expectedText.replace(/MyMagicPony/g, '[value was stripped]');
+      testCase.expectedText.replace(/MyMagicPony/g, '[11 bytes were stripped]');
   return testCase;
 }
 
@@ -1426,7 +1434,7 @@ function painterTestDontStripCookiesSPDYSession() {
           'accept-charset: ISO-8859-1',
           'accept-encoding: gzip,deflate,sdch',
           'accept-language: en-US,en;q=0.8',
-          'cookie: MyLittlePony',
+          'cookie: MyMagicPony',
           'user-agent: Mozilla/5.0'
         ],
         'stream_id': 1
@@ -1447,7 +1455,7 @@ function painterTestDontStripCookiesSPDYSession() {
           ':version: HTTP/1.1',
           'date: Tue, 05 Jun 2012 19:21:30 GMT',
           'server: GSE',
-          'set-cookie: MyLittlePony',
+          'set-cookie: MyMagicPony',
           'x-random-header: sup'
         ],
         'stream_id': 5
@@ -1474,7 +1482,7 @@ function painterTestDontStripCookiesSPDYSession() {
     '                               accept-charset: ISO-8859-1\n' +
     '                               accept-encoding: gzip,deflate,sdch\n' +
     '                               accept-language: en-US,en;q=0.8\n' +
-    '                               cookie: MyLittlePony\n' +
+    '                               cookie: MyMagicPony\n' +
     '                               user-agent: Mozilla/5.0\n' +
     '                           --> stream_id = 1\n' +
     't=1338924090049 [st=7628]  SPDY_SESSION_SYN_REPLY\n' +
@@ -1483,7 +1491,7 @@ function painterTestDontStripCookiesSPDYSession() {
     '                               :version: HTTP/1.1\n' +
     '                               date: Tue, 05 Jun 2012 19:21:30 GMT\n' +
     '                               server: GSE\n' +
-    '                               set-cookie: MyLittlePony\n' +
+    '                               set-cookie: MyMagicPony\n' +
     '                               x-random-header: sup\n' +
     '                           --> stream_id = 5';
 
@@ -1497,7 +1505,7 @@ function painterTestStripCookiesSPDYSession() {
   var testCase = painterTestDontStripCookiesSPDYSession();
   testCase.privacyStripping = true;
   testCase.expectedText =
-      testCase.expectedText.replace(/MyLittlePony/g, '[value was stripped]');
+      testCase.expectedText.replace(/MyMagicPony/g, '[11 bytes were stripped]');
   return testCase;
 }
 
@@ -1547,7 +1555,7 @@ function painterTestSpdyURLRequestStripCookies() {
   var testCase = painterTestSpdyURLRequestDontStripCookies();
   testCase.privacyStripping = true;
   testCase.expectedText =
-      testCase.expectedText.replace(/MyMagicPony/g, '[value was stripped]');
+      testCase.expectedText.replace(/MyMagicPony/g, '[11 bytes were stripped]');
   return testCase;
 }
 
