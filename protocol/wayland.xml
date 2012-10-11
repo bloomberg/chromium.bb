@@ -678,7 +678,9 @@
 	time after the wl_surface.commit request. When the compositor will
 	not access the pixels anymore, it will send the wl_buffer.release
 	event. Only after receiving wl_buffer.release, the client may re-use
-	the wl_buffer.
+	the wl_buffer. A wl_buffer, that has been attached and then replaced
+	by another attach instead of committed, will not receive a release
+	event, and is not used by the compositor.
 
 	Destroying the wl_buffer after wl_buffer.release does not change the
 	surface contents, even if the wl_buffer is still pending for the
