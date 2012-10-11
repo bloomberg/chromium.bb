@@ -168,9 +168,9 @@ wl_connection_create(int fd)
 }
 
 static void
-close_fds(struct wl_buffer *buffer)
+close_fds(struct wl_buffer *buffer, int max)
 {
-	int fds[MAX_FDS_OUT], i, count;
+	int32_t fds[sizeof(buffer->data) / sizeof(int32_t)], i, count;
 	size_t size;
 
 	size = buffer->head - buffer->tail;
@@ -179,6 +179,8 @@ close_fds(struct wl_buffer *buffer)
 
 	wl_buffer_copy(buffer, fds, size);
 	count = size / sizeof fds[0];
+	if (max > 0 && max < count)
+		count = max;
 	for (i = 0; i < count; i++)
 		close(fds[i]);
 	buffer->tail += size;
@@ -187,7 +189,7 @@ close_fds(struct wl_buffer *buffer)
 void
 wl_connection_destroy(struct wl_connection *connection)
 {
-	close_fds(&connection->fds_out);
+	close_fds(&connection->fds_out, -1);
 	close(connection->fd);
 	free(connection);
 }
@@ -273,7 +275,7 @@ wl_connection_flush(struct wl_connection *connection)
 		if (len == -1)
 			return -1;
 
-		close_fds(&connection->fds_out);
+		close_fds(&connection->fds_out, MAX_FDS_OUT);
 
 		connection->out.tail += len;
 	}
