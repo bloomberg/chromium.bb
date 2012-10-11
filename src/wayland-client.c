@@ -336,6 +336,7 @@ wl_display_connect_to_fd(int fd)
 	display->fd = fd;
 	wl_map_init(&display->objects);
 	wl_event_queue_init(&display->queue);
+	pthread_mutex_init(&display->mutex, NULL);
 
 	wl_map_insert_new(&display->objects, WL_MAP_CLIENT_SIDE, NULL);
 
@@ -395,6 +396,7 @@ wl_display_disconnect(struct wl_display *display)
 	wl_connection_destroy(display->connection);
 	wl_map_release(&display->objects);
 	wl_event_queue_release(&display->queue);
+	pthread_mutex_destroy(&display->mutex);
 
 	if (display->close_fd)
 		close(display->fd);
