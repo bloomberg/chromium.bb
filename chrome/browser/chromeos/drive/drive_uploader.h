@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"

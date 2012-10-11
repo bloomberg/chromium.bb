@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
 
 class Profile;
 

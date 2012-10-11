@@ -14,9 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "googleurl/src/url_util.h"
 

@@ -69,7 +69,7 @@ void OnGetFileByPathForOpen(
     const std::string& unused_mime_type,
     DriveFileType file_type) {
   base::PlatformFileError error =
-      util::DriveFileErrorToPlatformError(file_error);
+      DriveFileErrorToPlatformError(file_error);
   if (error != base::PLATFORM_FILE_OK) {
     callback.Run(error, base::kInvalidPlatformFileValue, peer_handle);
     return;
@@ -103,7 +103,7 @@ void CallSnapshotFileCallback(
     DriveFileType file_type) {
   scoped_refptr<ShareableFileReference> file_ref;
   base::PlatformFileError error =
-      util::DriveFileErrorToPlatformError(file_error);
+      DriveFileErrorToPlatformError(file_error);
 
   // If the file is a hosted document, a temporary JSON file is created to
   // represent the document. The JSON file is not cached and its lifetime
@@ -157,7 +157,7 @@ void DidCloseFileForTruncate(
     DriveFileError close_result) {
   // Reports the first error.
   callback.Run(truncate_result == base::PLATFORM_FILE_OK ?
-               util::DriveFileErrorToPlatformError(close_result) :
+               DriveFileErrorToPlatformError(close_result) :
                truncate_result);
 }
 
@@ -363,7 +363,7 @@ void DriveFileSystemProxy::OnOpenFileForWriting(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   base::PlatformFileError error =
-      util::DriveFileErrorToPlatformError(file_error);
+      DriveFileErrorToPlatformError(file_error);
 
   if (error != base::PLATFORM_FILE_OK) {
     callback.Run(error, base::kInvalidPlatformFileValue, peer_handle);
@@ -398,7 +398,7 @@ void DriveFileSystemProxy::OnCreateFileForOpen(
     DriveFileError file_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError create_result =
-      util::DriveFileErrorToPlatformError(file_error);
+      DriveFileErrorToPlatformError(file_error);
 
   if ((create_result == base::PLATFORM_FILE_OK) ||
       ((create_result == base::PLATFORM_FILE_ERROR_EXISTS) &&
@@ -432,7 +432,7 @@ void DriveFileSystemProxy::OnFileOpenedForTruncate(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (open_result != DRIVE_FILE_OK) {
-    callback.Run(util::DriveFileErrorToPlatformError(open_result));
+    callback.Run(DriveFileErrorToPlatformError(open_result));
     return;
   }
 
@@ -662,7 +662,7 @@ bool DriveFileSystemProxy::ValidateUrl(
 void DriveFileSystemProxy::OnStatusCallback(
     const fileapi::FileSystemOperation::StatusCallback& callback,
     DriveFileError error) {
-  callback.Run(util::DriveFileErrorToPlatformError(error));
+  callback.Run(DriveFileErrorToPlatformError(error));
 }
 
 void DriveFileSystemProxy::OnGetMetadata(
@@ -673,7 +673,7 @@ void DriveFileSystemProxy::OnGetMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != DRIVE_FILE_OK) {
-    callback.Run(util::DriveFileErrorToPlatformError(error),
+    callback.Run(DriveFileErrorToPlatformError(error),
                  base::PlatformFileInfo(),
                  FilePath());
     return;
@@ -697,7 +697,7 @@ void DriveFileSystemProxy::OnReadDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != DRIVE_FILE_OK) {
-    callback.Run(util::DriveFileErrorToPlatformError(error),
+    callback.Run(DriveFileErrorToPlatformError(error),
                  std::vector<base::FileUtilProxy::Entry>(),
                  false);
     return;
@@ -739,8 +739,7 @@ void DriveFileSystemProxy::OnCreateWritableSnapshotFile(
                    virtual_path));
   }
 
-  callback.Run(
-      util::DriveFileErrorToPlatformError(result), local_path, file_ref);
+  callback.Run(DriveFileErrorToPlatformError(result), local_path, file_ref);
 }
 
 void DriveFileSystemProxy::CloseWritableSnapshotFile(

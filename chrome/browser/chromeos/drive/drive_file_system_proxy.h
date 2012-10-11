@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_PROXY_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_PROXY_H_
 
-#include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 
 namespace fileapi {

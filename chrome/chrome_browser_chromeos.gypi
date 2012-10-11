@@ -224,6 +224,8 @@
         'browser/chromeos/drive/drive_cache_observer.h',
         'browser/chromeos/drive/drive_download_observer.cc',
         'browser/chromeos/drive/drive_download_observer.h',
+        'browser/chromeos/drive/drive_file_error.cc',
+        'browser/chromeos/drive/drive_file_error.h',
         'browser/chromeos/drive/drive_file_system.cc',
         'browser/chromeos/drive/drive_file_system.h',
         'browser/chromeos/drive/drive_file_system_interface.h',

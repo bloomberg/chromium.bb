@@ -2585,7 +2585,7 @@ void TransferFileFunction::OnTransferCompleted(gdata::DriveFileError error) {
   } else {
     error_ = base::StringPrintf("%d", static_cast<int>(
         fileapi::PlatformFileErrorToWebFileError(
-            gdata::util::DriveFileErrorToPlatformError(error))));
+            gdata::DriveFileErrorToPlatformError(error))));
     SendResponse(false);
   }
 }

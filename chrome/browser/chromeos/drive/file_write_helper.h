@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_WRITE_HELPER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class FilePath;
 

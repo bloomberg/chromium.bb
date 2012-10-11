@@ -29,9 +29,6 @@ namespace util {
 // Returns true if Drive v2 API is enabled via commandline switch.
 bool IsDriveV2ApiEnabled();
 
-// Returns a PlatformFileError that corresponds to the DriveFileError provided.
-base::PlatformFileError DriveFileErrorToPlatformError(DriveFileError error);
-
 // Parses an RFC 3339 date/time into a base::Time, returning true on success.
 // The time string must be in the format "yyyy-mm-ddThh:mm:ss.dddTZ" (TZ is
 // either '+hh:mm', '-hh:mm', 'Z' (representing UTC), or an empty string).

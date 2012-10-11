@@ -67,65 +67,6 @@ bool IsDriveV2ApiEnabled() {
   return false;
 }
 
-base::PlatformFileError DriveFileErrorToPlatformError(
-    gdata::DriveFileError error) {
-  switch (error) {
-    case gdata::DRIVE_FILE_OK:
-      return base::PLATFORM_FILE_OK;
-
-    case gdata::DRIVE_FILE_ERROR_FAILED:
-      return base::PLATFORM_FILE_ERROR_FAILED;
-
-    case gdata::DRIVE_FILE_ERROR_IN_USE:
-      return base::PLATFORM_FILE_ERROR_IN_USE;
-
-    case gdata::DRIVE_FILE_ERROR_EXISTS:
-      return base::PLATFORM_FILE_ERROR_EXISTS;
-
-    case gdata::DRIVE_FILE_ERROR_NOT_FOUND:
-      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-
-    case gdata::DRIVE_FILE_ERROR_ACCESS_DENIED:
-      return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
-
-    case gdata::DRIVE_FILE_ERROR_TOO_MANY_OPENED:
-      return base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED;
-
-    case gdata::DRIVE_FILE_ERROR_NO_MEMORY:
-      return base::PLATFORM_FILE_ERROR_NO_MEMORY;
-
-    case gdata::DRIVE_FILE_ERROR_NO_SPACE:
-      return base::PLATFORM_FILE_ERROR_NO_SPACE;
-
-    case gdata::DRIVE_FILE_ERROR_NOT_A_DIRECTORY:
-      return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
-
-    case gdata::DRIVE_FILE_ERROR_INVALID_OPERATION:
-      return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-
-    case gdata::DRIVE_FILE_ERROR_SECURITY:
-      return base::PLATFORM_FILE_ERROR_SECURITY;
-
-    case gdata::DRIVE_FILE_ERROR_ABORT:
-      return base::PLATFORM_FILE_ERROR_ABORT;
-
-    case gdata::DRIVE_FILE_ERROR_NOT_A_FILE:
-      return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-
-    case gdata::DRIVE_FILE_ERROR_NOT_EMPTY:
-      return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
-
-    case gdata::DRIVE_FILE_ERROR_INVALID_URL:
-      return base::PLATFORM_FILE_ERROR_INVALID_URL;
-
-    case gdata::DRIVE_FILE_ERROR_NO_CONNECTION:
-      return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-
-  NOTREACHED();
-  return base::PLATFORM_FILE_ERROR_FAILED;
-}
-
 bool GetTimeFromString(const base::StringPiece& raw_value,
                        base::Time* parsed_time) {
   base::StringPiece date;
