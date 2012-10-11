@@ -185,6 +185,8 @@ wl_map_insert_new(struct wl_map *map, uint32_t side, void *data)
 		map->free_list = entry->next;
 	} else {
 		entry = wl_array_add(entries, sizeof *entry);
+		if (!entry)
+			return 0;
 		start = entries->data;
 	}
 
