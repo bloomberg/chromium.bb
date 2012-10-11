@@ -30,6 +30,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <math.h>
 #include <assert.h>
 #include <time.h>
@@ -69,8 +70,16 @@
 
 struct shm_pool;
 
+struct global {
+	uint32_t name;
+	char *interface;
+	uint32_t version;
+	struct wl_list link;
+};
+
 struct display {
 	struct wl_display *display;
+	struct wl_registry *registry;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_shm *shm;
@@ -85,7 +94,6 @@ struct display {
 
 	int display_fd;
 	uint32_t display_fd_events;
-	uint32_t mask;
 	struct task display_task;
 
 	int epoll_fd;
@@ -93,6 +101,7 @@ struct display {
 
 	int running;
 
+	struct wl_list global_list;
 	struct wl_list window_list;
 	struct wl_list input_list;
 	struct wl_list output_list;
@@ -107,6 +116,7 @@ struct display {
 	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
 
 	display_output_handler_t output_configure_handler;
+	display_global_handler_t global_handler;
 
 	void *user_data;
 
@@ -3495,7 +3505,7 @@ display_add_output(struct display *d, uint32_t id)
 	memset(output, 0, sizeof *output);
 	output->display = d;
 	output->output =
-		wl_display_bind(d->display, id, &wl_output_interface);
+		wl_registry_bind(d->registry, id, &wl_output_interface, 1);
 	wl_list_insert(d->output_list.prev, &output->link);
 
 	wl_output_add_listener(output->output, &output_listener, output);
@@ -3510,6 +3520,22 @@ output_destroy(struct output *output)
 	wl_output_destroy(output->output);
 	wl_list_remove(&output->link);
 	free(output);
+}
+
+void
+display_set_global_handler(struct display *display,
+			   display_global_handler_t handler)
+{
+	struct global *global;
+
+	display->global_handler = handler;
+	if (!handler)
+		return;
+
+	wl_list_for_each(global, &display->global_list, link)
+		display->global_handler(display,
+					global->name, global->interface,
+					global->version, display->user_data);
 }
 
 void
@@ -3590,7 +3616,7 @@ display_add_input(struct display *d, uint32_t id)
 
 	memset(input, 0, sizeof *input);
 	input->display = d;
-	input->seat = wl_display_bind(d->display, id, &wl_seat_interface);
+	input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
 	wl_list_insert(d->input_list.prev, &input->link);
@@ -3640,7 +3666,8 @@ static void
 init_workspace_manager(struct display *d, uint32_t id)
 {
 	d->workspace_manager =
-		wl_display_bind(d->display, id, &workspace_manager_interface);
+		wl_registry_bind(d->registry, id,
+				 &workspace_manager_interface, 1);
 	if (d->workspace_manager != NULL)
 		workspace_manager_add_listener(d->workspace_manager,
 					       &workspace_manager_listener,
@@ -3648,34 +3675,56 @@ init_workspace_manager(struct display *d, uint32_t id)
 }
 
 static void
-display_handle_global(struct wl_display *display, uint32_t id,
-		      const char *interface, uint32_t version, void *data)
+registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
+		       const char *interface, uint32_t version)
 {
 	struct display *d = data;
+	struct global *global;
+
+	global = malloc(sizeof *global);
+	global->name = id;
+	global->interface = strdup(interface);
+	global->version = version;
+	wl_list_insert(d->global_list.prev, &global->link);
 
 	if (strcmp(interface, "wl_compositor") == 0) {
-		d->compositor =
-			wl_display_bind(display, id, &wl_compositor_interface);
+		d->compositor = wl_registry_bind(registry, id,
+						 &wl_compositor_interface, 1);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		display_add_output(d, id);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		display_add_input(d, id);
 	} else if (strcmp(interface, "wl_shell") == 0) {
-		d->shell = wl_display_bind(display, id, &wl_shell_interface);
+		d->shell = wl_registry_bind(registry,
+					    id, &wl_shell_interface, 1);
 	} else if (strcmp(interface, "wl_shm") == 0) {
-		d->shm = wl_display_bind(display, id, &wl_shm_interface);
+		d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
 	} else if (strcmp(interface, "wl_data_device_manager") == 0) {
 		d->data_device_manager =
-			wl_display_bind(display, id,
-					&wl_data_device_manager_interface);
+			wl_registry_bind(registry, id,
+					 &wl_data_device_manager_interface, 1);
 	} else if (strcmp(interface, "text_cursor_position") == 0) {
 		d->text_cursor_position =
-			wl_display_bind(display, id,
-					&text_cursor_position_interface);
+			wl_registry_bind(registry, id,
+					 &text_cursor_position_interface, 1);
 	} else if (strcmp(interface, "workspace_manager") == 0) {
 		init_workspace_manager(d, id);
 	}
+
+	if (d->global_handler)
+		d->global_handler(d, id, interface, version, d->user_data);
 }
+
+void *
+display_bind(struct display *display, uint32_t name,
+	     const struct wl_interface *interface, uint32_t version)
+{
+	return wl_registry_bind(display->registry, name, interface, version);
+}
+
+static const struct wl_registry_listener registry_listener = {
+	registry_handle_global
+};
 
 #ifdef HAVE_CAIRO_EGL
 static int
@@ -3767,21 +3816,13 @@ fini_egl(struct display *display)
 }
 #endif
 
-static int
-event_mask_update(uint32_t mask, void *data)
-{
-	struct display *d = data;
-
-	d->mask = mask;
-
-	return 0;
-}
-
 static void
 handle_display_data(struct task *task, uint32_t events)
 {
 	struct display *display =
 		container_of(task, struct display, display_task);
+	struct epoll_event ep;
+	int ret;
 
 	display->display_fd_events = events;
 
@@ -3790,7 +3831,21 @@ handle_display_data(struct task *task, uint32_t events)
 		return;
 	}
 
-	wl_display_iterate(display->display, display->mask);
+	if (events & EPOLLIN)
+		wl_display_dispatch(display->display);
+
+	if (events & EPOLLOUT) {
+		ret = wl_display_flush(display->display);
+		if (ret == 0) {
+			ep.events = EPOLLIN | EPOLLERR | EPOLLHUP;
+			ep.data.ptr = &display->display_task;
+			epoll_ctl(display->epoll_fd, EPOLL_CTL_MOD,
+				  display->display_fd, &ep);
+		} else if (ret == -1 && errno != EAGAIN) {
+			display_exit(display);
+			return;
+		}
+	}
 }
 
 struct display *
@@ -3811,7 +3866,7 @@ display_create(int argc, char *argv[])
 	}
 
 	d->epoll_fd = os_epoll_create_cloexec();
-	d->display_fd = wl_display_get_fd(d->display, event_mask_update, d);
+	d->display_fd = wl_display_get_fd(d->display);
 	d->display_task.run = handle_display_data;
 	display_watch_fd(d, d->display_fd, EPOLLIN | EPOLLERR | EPOLLHUP,
 			 &d->display_task);
@@ -3819,6 +3874,7 @@ display_create(int argc, char *argv[])
 	wl_list_init(&d->deferred_list);
 	wl_list_init(&d->input_list);
 	wl_list_init(&d->output_list);
+	wl_list_init(&d->global_list);
 
 	d->xkb_context = xkb_context_new(0);
 	if (d->xkb_context == NULL) {
@@ -3829,12 +3885,9 @@ display_create(int argc, char *argv[])
 	d->workspace = 0;
 	d->workspace_count = 1;
 
-	/* Set up listener so we'll catch all events. */
-	wl_display_add_global_listener(d->display,
-				       display_handle_global, d);
-
-	/* Process connection events. */
-	wl_display_iterate(d->display, WL_DISPLAY_READABLE);
+	d->registry = wl_display_get_registry(d->display);
+	wl_registry_add_listener(d->registry, &registry_listener, d);
+	wl_display_dispatch(d->display);
 #ifdef HAVE_CAIRO_EGL
 	if (init_egl(d) < 0)
 		return NULL;
@@ -4052,12 +4105,10 @@ display_run(struct display *display)
 {
 	struct task *task;
 	struct epoll_event ep[16];
-	int i, count;
+	int i, count, ret;
 
 	display->running = 1;
 	while (1) {
-		wl_display_flush(display->display);
-
 		while (!wl_list_empty(&display->deferred_list)) {
 			task = container_of(display->deferred_list.prev,
 					    struct task, link);
@@ -4068,7 +4119,17 @@ display_run(struct display *display)
 		if (!display->running)
 			break;
 
-		wl_display_flush(display->display);
+		ret = wl_display_flush(display->display);
+		if (ret < 0 && errno == EAGAIN) {
+			ep[0].events =
+				EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP;
+			ep[0].data.ptr = &display->display_task;
+
+			epoll_ctl(display->epoll_fd, EPOLL_CTL_MOD,
+				  display->display_fd, &ep[0]);
+		} else if (ret < 0) {
+			break;
+		}
 
 		count = epoll_wait(display->epoll_fd,
 				   ep, ARRAY_LENGTH(ep), -1);

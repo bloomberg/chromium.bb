@@ -288,14 +288,14 @@ init_wscreensaver(struct wscreensaver *wscr, struct display *display)
 }
 
 static void
-global_handler(struct wl_display *display, uint32_t id,
+global_handler(struct display *display, uint32_t name,
 	       const char *interface, uint32_t version, void *data)
 {
 	struct wscreensaver *screensaver = data;
 
 	if (!strcmp(interface, "screensaver")) {
 		screensaver->interface =
-			wl_display_bind(display, id, &screensaver_interface);
+			display_bind(display, name, &screensaver_interface, 1);
 	}
 }
 
@@ -321,8 +321,8 @@ int main(int argc, char *argv[])
 
 	if (!demo_mode) {
 		/* iterates already known globals immediately */
-		wl_display_add_global_listener(display_get_display(d),
-					       global_handler, &screensaver);
+		display_set_user_data(d, &screensaver);
+		display_set_global_handler(d, global_handler);
 		if (!screensaver.interface) {
 			fprintf(stderr,
 				"Server did not offer screensaver interface,"

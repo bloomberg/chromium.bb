@@ -48,6 +48,7 @@ struct wayland_compositor {
 
 	struct {
 		struct wl_display *wl_display;
+		struct wl_registry *registry;
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
 		struct wl_output *output;
@@ -730,8 +731,8 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 
 	weston_seat_init(&input->base, &c->base);
 	input->compositor = c;
-	input->seat = wl_display_bind(c->parent.wl_display, id,
-				      &wl_seat_interface);
+	input->seat = wl_registry_bind(c->parent.registry, id,
+				       &wl_seat_interface, 1);
 	wl_list_insert(c->input_list.prev, &input->link);
 
 	wl_seat_add_listener(input->seat, &seat_listener, input);
@@ -739,37 +740,32 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 }
 
 static void
-display_handle_global(struct wl_display *display, uint32_t id,
-		      const char *interface, uint32_t version, void *data)
+registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
+		       const char *interface, uint32_t version)
 {
 	struct wayland_compositor *c = data;
 
 	if (strcmp(interface, "wl_compositor") == 0) {
 		c->parent.compositor =
-			wl_display_bind(display, id, &wl_compositor_interface);
+			wl_registry_bind(registry, name,
+					 &wl_compositor_interface, 1);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		c->parent.output =
-			wl_display_bind(display, id, &wl_output_interface);
+			wl_registry_bind(registry, name,
+					 &wl_output_interface, 1);
 		wl_output_add_listener(c->parent.output, &output_listener, c);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		c->parent.shell =
-			wl_display_bind(display, id, &wl_shell_interface);
+			wl_registry_bind(registry, name,
+					 &wl_shell_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		display_add_seat(c, id);
+		display_add_seat(c, name);
 	}
 }
 
-static int
-update_event_mask(uint32_t mask, void *data)
-{
-	struct wayland_compositor *c = data;
-
-	c->parent.event_mask = mask;
-	if (c->parent.wl_source)
-		wl_event_source_fd_update(c->parent.wl_source, mask);
-
-	return 0;
-}
+static const struct wl_registry_listener registry_listener = {
+	registry_handle_global
+};
 
 static int
 wayland_compositor_handle_event(int fd, uint32_t mask, void *data)
@@ -777,9 +773,9 @@ wayland_compositor_handle_event(int fd, uint32_t mask, void *data)
 	struct wayland_compositor *c = data;
 
 	if (mask & WL_EVENT_READABLE)
-		wl_display_iterate(c->parent.wl_display, WL_DISPLAY_READABLE);
+		wl_display_dispatch(c->parent.wl_display);
 	if (mask & WL_EVENT_WRITABLE)
-		wl_display_iterate(c->parent.wl_display, WL_DISPLAY_WRITABLE);
+		wl_display_flush(c->parent.wl_display);
 
 	return 1;
 }
@@ -826,10 +822,9 @@ wayland_compositor_create(struct wl_display *display,
 	}
 
 	wl_list_init(&c->input_list);
-	wl_display_add_global_listener(c->parent.wl_display,
-				display_handle_global, c);
-
-	wl_display_iterate(c->parent.wl_display, WL_DISPLAY_READABLE);
+	c->parent.registry = wl_display_get_registry(c->parent.wl_display);
+	wl_registry_add_listener(c->parent.registry, &registry_listener, c);
+	wl_display_dispatch(c->parent.wl_display);
 
 	c->base.wl_display = display;
 	if (wayland_compositor_init_egl(c) < 0)
@@ -856,9 +851,9 @@ wayland_compositor_create(struct wl_display *display,
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
 
-	fd = wl_display_get_fd(c->parent.wl_display, update_event_mask, c);
+	fd = wl_display_get_fd(c->parent.wl_display);
 	c->parent.wl_source =
-		wl_event_loop_add_fd(loop, fd, c->parent.event_mask,
+		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
 				     wayland_compositor_handle_event, c);
 	if (c->parent.wl_source == NULL)
 		goto err_display;

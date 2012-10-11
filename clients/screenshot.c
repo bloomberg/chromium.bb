@@ -109,22 +109,28 @@ static const struct screenshooter_listener screenshooter_listener = {
 };
 
 static void
-handle_global(struct wl_display *display, uint32_t id,
-	      const char *interface, uint32_t version, void *data)
+handle_global(void *data, struct wl_registry *registry,
+	      uint32_t name, const char *interface, uint32_t version)
 {
 	static struct screenshooter_output *output;
 
 	if (strcmp(interface, "wl_output") == 0) {
 		output = malloc(sizeof *output);
-		output->output = wl_display_bind(display, id, &wl_output_interface);
+		output->output = wl_registry_bind(registry, name,
+						  &wl_output_interface, 1);
 		wl_list_insert(&output_list, &output->link);
 		wl_output_add_listener(output->output, &output_listener, output);
 	} else if (strcmp(interface, "wl_shm") == 0) {
-		shm = wl_display_bind(display, id, &wl_shm_interface);
+		shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
 	} else if (strcmp(interface, "screenshooter") == 0) {
-		screenshooter = wl_display_bind(display, id, &screenshooter_interface);
+		screenshooter = wl_registry_bind(registry, name,
+						 &screenshooter_interface, 1);
 	}
 }
+
+static const struct wl_registry_listener registry_listener = {
+	handle_global
+};
 
 static struct wl_buffer *
 create_shm_buffer(int width, int height, void **data_out)
@@ -231,6 +237,7 @@ set_buffer_size(int *width, int *height)
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
+	struct wl_registry *registry;
 	struct screenshooter_output *output;
 	int width, height;
 
@@ -241,8 +248,9 @@ int main(int argc, char *argv[])
 	}
 
 	wl_list_init(&output_list);
-	wl_display_add_global_listener(display, handle_global, &screenshooter);
-	wl_display_iterate(display, WL_DISPLAY_READABLE);
+	registry = wl_display_get_registry(display);
+	wl_registry_add_listener(registry, &registry_listener, NULL);
+	wl_display_dispatch(display);
 	wl_display_roundtrip(display);
 	if (screenshooter == NULL) {
 		fprintf(stderr, "display doesn't support screenshooter\n");

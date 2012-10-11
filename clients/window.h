@@ -73,6 +73,18 @@ display_get_output(struct display *display);
 uint32_t
 display_get_serial(struct display *display);
 
+typedef void (*display_global_handler_t)(struct display *display,
+					 uint32_t name,
+					 const char *interface,
+					 uint32_t version, void *data);
+
+void
+display_set_global_handler(struct display *display,
+			   display_global_handler_t handler);
+void *
+display_bind(struct display *display, uint32_t name,
+	     const struct wl_interface *interface, uint32_t version);
+
 typedef void (*display_output_handler_t)(struct output *output, void *data);
 
 /*

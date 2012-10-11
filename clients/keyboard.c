@@ -395,15 +395,18 @@ static const struct input_method_listener input_method_listener = {
 };
 
 static void
-global_handler(struct wl_display *display, uint32_t id,
+global_handler(struct display *display, uint32_t name,
 	       const char *interface, uint32_t version, void *data)
 {
 	struct virtual_keyboard *keyboard = data;
 
 	if (!strcmp(interface, "input_panel")) {
-		keyboard->input_panel = wl_display_bind(display, id, &input_panel_interface);
+		keyboard->input_panel =
+			display_bind(display, name, &input_panel_interface, 1);
 	} else if (!strcmp(interface, "input_method")) {
-		keyboard->input_method = wl_display_bind(display, id, &input_method_interface);
+		keyboard->input_method =
+			display_bind(display, name,
+				     &input_method_interface, 1);
 		input_method_add_listener(keyboard->input_method, &input_method_listener, keyboard);
 	}
 }
@@ -464,10 +467,8 @@ main(int argc, char *argv[])
 	virtual_keyboard.context = NULL;
 	virtual_keyboard.preedit_string = NULL;
 
-	wl_display_add_global_listener(display_get_display(virtual_keyboard.display),
-				       global_handler, &virtual_keyboard);
-
 	display_set_user_data(virtual_keyboard.display, &virtual_keyboard);
+	display_set_global_handler(virtual_keyboard.display, global_handler);
 	display_set_output_configure_handler(virtual_keyboard.display, handle_output_configure);
 
 	display_run(virtual_keyboard.display);

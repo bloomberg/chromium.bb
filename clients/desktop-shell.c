@@ -1021,21 +1021,21 @@ create_output(struct desktop *desktop, uint32_t id)
 	if (!output)
 		return;
 
-	output->output = wl_display_bind(display_get_display(desktop->display),
-					 id, &wl_output_interface);
+	output->output =
+		display_bind(desktop->display, id, &wl_output_interface, 1);
 
 	wl_list_insert(&desktop->outputs, &output->link);
 }
 
 static void
-global_handler(struct wl_display *display, uint32_t id,
+global_handler(struct display *display, uint32_t id,
 	       const char *interface, uint32_t version, void *data)
 {
 	struct desktop *desktop = data;
 
 	if (!strcmp(interface, "desktop_shell")) {
-		desktop->shell =
-			wl_display_bind(display, id, &desktop_shell_interface);
+		desktop->shell = display_bind(desktop->display,
+					      id, &desktop_shell_interface, 1);
 		desktop_shell_add_listener(desktop->shell, &listener, desktop);
 	} else if (!strcmp(interface, "wl_output")) {
 		create_output(desktop, id);
@@ -1092,8 +1092,7 @@ int main(int argc, char *argv[])
 	}
 
 	display_set_user_data(desktop.display, &desktop);
-	wl_display_add_global_listener(display_get_display(desktop.display),
-				       global_handler, &desktop);
+	display_set_global_handler(desktop.display, global_handler);
 
 	wl_list_for_each(output, &desktop.outputs, link) {
 		struct wl_surface *surface;

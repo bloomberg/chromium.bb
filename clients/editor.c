@@ -835,14 +835,15 @@ editor_button_handler(struct widget *widget,
 }
 
 static void
-global_handler(struct wl_display *display, uint32_t id,
+global_handler(struct display *display, uint32_t name,
 	       const char *interface, uint32_t version, void *data)
 {
 	struct editor *editor = data;
 
 	if (!strcmp(interface, "text_model_factory")) {
-		editor->text_model_factory = wl_display_bind(display, id,
-							     &text_model_factory_interface);
+		editor->text_model_factory =
+			display_bind(display, name,
+				     &text_model_factory_interface, 1);
 	}
 }
 
@@ -856,9 +857,9 @@ main(int argc, char *argv[])
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-	wl_display_add_global_listener(display_get_display(editor.display),
-				       global_handler, &editor);
 
+	display_set_user_data(editor.display, &editor);
+	display_set_global_handler(editor.display, global_handler);
 
 	editor.window = window_create(editor.display);
 	editor.widget = frame_create(editor.window, &editor);

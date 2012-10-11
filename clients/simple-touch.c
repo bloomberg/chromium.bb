@@ -36,6 +36,7 @@
 
 struct touch {
 	struct wl_display *display;
+	struct wl_registry *registry;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_shm *shm;
@@ -47,7 +48,6 @@ struct touch {
 	struct wl_shell_surface *shell_surface;
 	struct wl_buffer *buffer;
 	int has_argb;
-	uint32_t mask;
 	int width, height;
 	void *data;
 };
@@ -236,35 +236,33 @@ static const struct wl_shell_surface_listener shell_surface_listener = {
 };
 
 static void
-handle_global(struct wl_display *display, uint32_t id,
-	      const char *interface, uint32_t version, void *data)
+handle_global(void *data, struct wl_registry *registry,
+	      uint32_t name, const char *interface, uint32_t version)
 {
 	struct touch *touch = data;
 
 	if (strcmp(interface, "wl_compositor") == 0) {
 		touch->compositor =
-			wl_display_bind(display, id, &wl_compositor_interface);
+			wl_registry_bind(registry, name,
+					 &wl_compositor_interface, 1);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		touch->shell =
-			wl_display_bind(display, id, &wl_shell_interface);
+			wl_registry_bind(registry, name,
+					 &wl_shell_interface, 1);
 	} else if (strcmp(interface, "wl_shm") == 0) {
-		touch->shm = wl_display_bind(display, id, &wl_shm_interface);
+		touch->shm = wl_registry_bind(registry, name,
+					      &wl_shm_interface, 1);
 		wl_shm_add_listener(touch->shm, &shm_listenter, touch);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		touch->seat = wl_display_bind(display, id, &wl_seat_interface);
+		touch->seat = wl_registry_bind(registry, name,
+					       &wl_seat_interface, 1);
 		wl_seat_add_listener(touch->seat, &seat_listener, touch);
 	}
 }
 
-static int
-event_mask_update(uint32_t mask, void *data)
-{
-	struct touch *touch = data;
-
-	touch->mask = mask;
-
-	return 0;
-}
+static const struct wl_registry_listener registry_listener = {
+	handle_global
+};
 
 static struct touch *
 touch_create(int width, int height)
@@ -276,8 +274,9 @@ touch_create(int width, int height)
 	assert(touch->display);
 
 	touch->has_argb = 0;
-	wl_display_add_global_listener(touch->display, handle_global, touch);
-	wl_display_iterate(touch->display, WL_DISPLAY_READABLE);
+	touch->registry = wl_display_get_registry(touch->display);
+	wl_registry_add_listener(touch->registry, &registry_listener, touch);
+	wl_display_dispatch(touch->display);
 	wl_display_roundtrip(touch->display);
 
 	if (!touch->has_argb) {
@@ -285,7 +284,7 @@ touch_create(int width, int height)
 		exit(1);
 	}
 
-	wl_display_get_fd(touch->display, event_mask_update, touch);
+	wl_display_get_fd(touch->display);
 	
 	touch->width = width;
 	touch->height = height;
@@ -318,7 +317,7 @@ main(int argc, char **argv)
 	touch = touch_create(600, 500);
 
 	while (true)
-		wl_display_iterate(touch->display, touch->mask);
+		wl_display_dispatch(touch->display);
 
 	return 0;
 }

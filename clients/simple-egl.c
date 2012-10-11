@@ -41,6 +41,7 @@ struct seat;
 
 struct display {
 	struct wl_display *display;
+	struct wl_registry *registry;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_seat *seat;
@@ -51,7 +52,6 @@ struct display {
 		EGLContext ctx;
 		EGLConfig conf;
 	} egl;
-	uint32_t mask;
 	struct window *window;
 };
 
@@ -545,31 +545,28 @@ static const struct wl_seat_listener seat_listener = {
 };
 
 static void
-display_handle_global(struct wl_display *display, uint32_t id,
-		      const char *interface, uint32_t version, void *data)
+registry_handle_global(void *data, struct wl_registry *registry,
+		       uint32_t name, const char *interface, uint32_t version)
 {
 	struct display *d = data;
 
 	if (strcmp(interface, "wl_compositor") == 0) {
 		d->compositor =
-			wl_display_bind(display, id, &wl_compositor_interface);
+			wl_registry_bind(registry, name,
+					 &wl_compositor_interface, 1);
 	} else if (strcmp(interface, "wl_shell") == 0) {
-		d->shell = wl_display_bind(display, id, &wl_shell_interface);
+		d->shell = wl_registry_bind(registry, name,
+					    &wl_shell_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		d->seat = wl_display_bind(d->display, id, &wl_seat_interface);
+		d->seat = wl_registry_bind(registry, name,
+					   &wl_seat_interface, 1);
 		wl_seat_add_listener(d->seat, &seat_listener, d);
 	}
 }
 
-static int
-event_mask_update(uint32_t mask, void *data)
-{
-	struct display *d = data;
-
-	d->mask = mask;
-
-	return 0;
-}
+static const struct wl_registry_listener registry_listener = {
+	registry_handle_global
+};
 
 static void
 signal_int(int signum)
@@ -615,11 +612,11 @@ main(int argc, char **argv)
 	display.display = wl_display_connect(NULL);
 	assert(display.display);
 
-	wl_display_add_global_listener(display.display,
-				       display_handle_global, &display);
+	display.registry = wl_display_get_registry(display.display);
+	wl_registry_add_listener(display.registry,
+				 &registry_listener, &display);
 
-	wl_display_get_fd(display.display, event_mask_update, &display);
-	wl_display_iterate(display.display, WL_DISPLAY_READABLE);
+	wl_display_dispatch(display.display);
 
 	init_egl(&display, window.opaque);
 	create_surface(&window);
@@ -631,7 +628,7 @@ main(int argc, char **argv)
 	sigaction(SIGINT, &sigint, NULL);
 
 	while (running)
-		wl_display_iterate(display.display, display.mask);
+		wl_display_dispatch(display.display);
 
 	fprintf(stderr, "simple-egl exiting\n");
 

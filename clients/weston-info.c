@@ -88,6 +88,7 @@ struct seat_info {
 
 struct weston_info {
 	struct wl_display *display;
+	struct wl_registry *registry;
 
 	struct wl_list infos;
 	bool roundtrip_needed;
@@ -264,7 +265,8 @@ add_seat_info(struct weston_info *info, uint32_t id, uint32_t version)
 	init_global_info(info, &seat->global, id, "wl_seat", version);
 	seat->global.print = print_seat_info;
 
-	seat->seat = wl_display_bind(info->display, id, &wl_seat_interface);
+	seat->seat = wl_registry_bind(info->registry,
+				      id, &wl_seat_interface, 1);
 	wl_seat_add_listener(seat->seat, &seat_listener, seat);
 
 	info->roundtrip_needed = true;
@@ -293,7 +295,8 @@ add_shm_info(struct weston_info *info, uint32_t id, uint32_t version)
 	shm->global.print = print_shm_info;
 	wl_list_init(&shm->formats);
 
-	shm->shm = wl_display_bind(info->display, id, &wl_shm_interface);
+	shm->shm = wl_registry_bind(info->registry,
+				    id, &wl_shm_interface, 1);
 	wl_shm_add_listener(shm->shm, &shm_listener, shm);
 
 	info->roundtrip_needed = true;
@@ -350,8 +353,8 @@ add_output_info(struct weston_info *info, uint32_t id, uint32_t version)
 
 	wl_list_init(&output->modes);
 
-	output->output = wl_display_bind(info->display, id,
-					 &wl_output_interface);
+	output->output = wl_registry_bind(info->registry, id,
+					  &wl_output_interface, 1);
 	wl_output_add_listener(output->output, &output_listener,
 			       output);
 
@@ -369,8 +372,8 @@ add_global_info(struct weston_info *info, uint32_t id,
 }
 
 static void
-global_handler(struct wl_display *display, uint32_t id,
-	       const char *interface, uint32_t version, void *data)
+global_handler(void *data, struct wl_registry *registry, uint32_t id,
+	       const char *interface, uint32_t version)
 {
 	struct weston_info *info = data;
 
@@ -383,6 +386,10 @@ global_handler(struct wl_display *display, uint32_t id,
 	else
 		add_global_info(info, id, interface, version);
 }
+
+static const struct wl_registry_listener registry_listener = {
+	global_handler
+};
 
 static void
 print_infos(struct wl_list *infos)
@@ -406,9 +413,8 @@ main(int argc, char **argv)
 
 	wl_list_init(&info.infos);
 
-	wl_display_add_global_listener(info.display,
-				       global_handler,
-				       &info);
+	info.registry = wl_display_get_registry(info.display);
+	wl_registry_add_listener(info.registry, &registry_listener, &info);
 
 	do {
 		info.roundtrip_needed = false;

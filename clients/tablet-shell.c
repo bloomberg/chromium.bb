@@ -438,14 +438,15 @@ launcher_section_done(void *data)
 }
 
 static void
-global_handler(struct wl_display *display, uint32_t id,
+global_handler(struct display *display, uint32_t name,
 		const char *interface, uint32_t version, void *data)
 {
 	struct tablet *tablet = data;
 
 	if (!strcmp(interface, "tablet_shell")) {
 		tablet->tablet_shell =
-			wl_display_bind(display, id, &tablet_shell_interface);
+			display_bind(display, name,
+				     &tablet_shell_interface, 1);
 		tablet_shell_add_listener(tablet->tablet_shell,
 				&tablet_shell_listener, tablet);
 	}
@@ -466,8 +467,8 @@ int main(int argc, char *argv[])
 
 	tablet.display = display;
 
-	wl_display_add_global_listener(display_get_display(tablet.display),
-			global_handler, &tablet);
+	display_set_user_data(tablet.display, &tablet);
+	display_set_global_handler(tablet.display, global_handler);
 
 	tablet.homescreen = homescreen_create(&tablet);
 	tablet_shell_set_homescreen(tablet.tablet_shell,
