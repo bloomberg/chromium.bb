@@ -658,6 +658,8 @@ RenderViewImpl::RenderViewImpl(
 #if defined(OS_ANDROID)
   scoped_ptr<content::DeviceInfo> device_info(new content::DeviceInfo());
 
+  webview()->setDeviceScaleFactor(device_info->GetDPIScale());
+
   const std::string region_code =
       command_line.HasSwitch(switches::kNetworkCountryIso)
           ? command_line.GetSwitchValueASCII(switches::kNetworkCountryIso)
