@@ -92,6 +92,20 @@ Event_Get_Res_X(EvdevPtr device)
 }
 
 int
+Event_Get_Orientation_Minimum(EvdevPtr device)
+{
+    struct input_absinfo* absinfo = &device->info.absinfo[ABS_MT_ORIENTATION];
+    return absinfo->minimum;
+}
+
+int
+Event_Get_Orientation_Maximum(EvdevPtr device)
+{
+    struct input_absinfo* absinfo = &device->info.absinfo[ABS_MT_ORIENTATION];
+    return absinfo->maximum;
+}
+
+int
 Event_Get_Button_Pad(EvdevPtr device)
 {
     return TestBit(INPUT_PROP_BUTTONPAD, device->info.prop_bitmask);

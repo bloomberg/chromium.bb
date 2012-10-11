@@ -41,6 +41,8 @@ int Event_Get_Top(EvdevPtr);
 int Event_Get_Bottom(EvdevPtr);
 int Event_Get_Res_Y(EvdevPtr);
 int Event_Get_Res_X(EvdevPtr);
+int Event_Get_Orientation_Minimum(EvdevPtr);
+int Event_Get_Orientation_Maximum(EvdevPtr);
 int Event_Get_Button_Pad(EvdevPtr);
 int Event_Get_Semi_MT(EvdevPtr);
 int Event_Get_T5R2(EvdevPtr);
