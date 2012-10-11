@@ -141,8 +141,7 @@ void AlternateNavURLFetcher::Observe(
     case chrome::NOTIFICATION_INSTANT_COMMITTED: {
       // See above.
       NavigationController* controller =
-          &content::Source<TabContents>(source)->
-              web_contents()->GetController();
+          &content::Source<content::WebContents>(source)->GetController();
       if (controller_ == controller) {
         delete this;
       } else if (!controller_) {

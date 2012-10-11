@@ -1135,7 +1135,7 @@ enum NotificationType {
   // Sent each time the InstantController hides the InstantLoader.
   NOTIFICATION_INSTANT_CONTROLLER_HIDDEN,
 
-  // Sent when an Instant preview is committed. The Source is the TabContents
+  // Sent when an Instant preview is committed. The Source is the WebContents
   // containing the committed preview.
   NOTIFICATION_INSTANT_COMMITTED,
 

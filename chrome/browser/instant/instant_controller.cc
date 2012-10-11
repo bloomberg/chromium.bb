@@ -389,7 +389,7 @@ void InstantController::CommitCurrentPreview(InstantCommitType type) {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_COMMITTED,
-      content::Source<TabContents>(preview),
+      content::Source<content::WebContents>(preview->web_contents()),
       content::NotificationService::NoDetails());
 
   // Try to create another loader immediately so that it is ready for the next

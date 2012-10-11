@@ -503,12 +503,8 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   TabContents* tab_contents;
-  if (type == chrome::NOTIFICATION_INSTANT_COMMITTED) {
-    tab_contents = content::Source<TabContents>(source).ptr();
-  } else {
-    tab_contents = TabContents::FromWebContents(
-        content::Source<WebContents>(source).ptr());
-  }
+  tab_contents = TabContents::FromWebContents(
+      content::Source<WebContents>(source).ptr());
   // A background page does not have a TabContents.
   if (!tab_contents)
     return;

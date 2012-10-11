@@ -253,8 +253,8 @@ void GoogleURLTracker::Observe(int type,
     }
 
     case chrome::NOTIFICATION_INSTANT_COMMITTED: {
-      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
-      content::WebContents* web_contents = tab_contents->web_contents();
+      content::WebContents* web_contents =
+          content::Source<content::WebContents>(source).ptr();
       OnInstantCommitted(content::Source<content::NavigationController>(
                              &web_contents->GetController()),
                          source,
