@@ -159,20 +159,16 @@ void WebIntentPickerCocoa::OnExtensionIconChanged(
 
 void WebIntentPickerCocoa::OnInlineDisposition(const string16& title,
                                                const GURL& url) {
-  content::WebContents* web_contents = content::WebContents::Create(
-      tab_contents_->profile(),
-      tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
-      MSG_ROUTING_NONE, NULL);
+
+  content::WebContents* web_contents =
+      delegate_->CreateWebContentsForInlineDisposition(
+          tab_contents_->profile(), url);
   inline_disposition_tab_contents_.reset(
       TabContents::Factory::CreateTabContents(web_contents));
   Browser* browser = browser::FindBrowserWithWebContents(
       tab_contents_->web_contents());
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this, web_contents, browser));
-
-  // Must call this immediately after WebContents creation to avoid race
-  // with load.
-  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 
   inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
       url,

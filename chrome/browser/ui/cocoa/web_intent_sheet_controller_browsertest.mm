@@ -9,30 +9,10 @@
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
 #import "chrome/browser/ui/cocoa/web_intent_sheet_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
+#include "chrome/browser/ui/intents/web_intent_picker_delegate_mock.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/glue/web_intent_service_data.h"
-
-class MockIntentPickerDelegate : public WebIntentPickerDelegate {
- public:
-  MockIntentPickerDelegate() {}
-  virtual ~MockIntentPickerDelegate() {}
-
-  MOCK_METHOD2(OnServiceChosen, void(
-      const GURL& url,
-      webkit_glue::WebIntentServiceData::Disposition disposition));
-  MOCK_METHOD2(OnExtensionLinkClicked, void(
-      const std::string& id,
-      WindowOpenDisposition disposition));
-  MOCK_METHOD1(OnInlineDispositionWebContentsCreated,
-      void(content::WebContents* web_contents));
-  MOCK_METHOD1(OnExtensionInstallRequested, void(const std::string& id));
-  MOCK_METHOD1(OnSuggestionsLinkClicked,
-      void(WindowOpenDisposition disposition));
-  MOCK_METHOD0(OnUserCancelledPickerDialog, void());
-  MOCK_METHOD0(OnChooseAnotherService, void());
-  MOCK_METHOD0(OnClosing, void());
-};
 
 class WebIntentSheetControllerBrowserTest : public InProcessBrowserTest {
  public:
@@ -42,7 +22,7 @@ class WebIntentSheetControllerBrowserTest : public InProcessBrowserTest {
   WebIntentPickerSheetController* controller_;  // Weak, owns self.
   NSWindow* window_;  // Weak, owned by controller.
   scoped_ptr<WebIntentPickerCocoa> picker_;
-  MockIntentPickerDelegate delegate_;
+  WebIntentPickerDelegateMock delegate_;
   WebIntentPickerModel model_;  // The model used by the picker
 };
 

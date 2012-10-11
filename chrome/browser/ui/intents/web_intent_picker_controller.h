@@ -116,8 +116,8 @@ class WebIntentPickerController
   virtual void OnServiceChosen(
       const GURL& url,
       webkit_glue::WebIntentServiceData::Disposition disposition) OVERRIDE;
-  virtual void OnInlineDispositionWebContentsCreated(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual content::WebContents* CreateWebContentsForInlineDisposition(
+      Profile* profile, const GURL& url) OVERRIDE;
   virtual void OnExtensionInstallRequested(const std::string& id) OVERRIDE;
   virtual void OnExtensionLinkClicked(
       const std::string& id,

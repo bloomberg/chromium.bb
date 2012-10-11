@@ -1178,10 +1178,8 @@ void WebIntentPickerViews::OnInlineDisposition(
   if (!webview_)
     webview_ = new views::WebView(tab_contents_->profile());
 
-  inline_web_contents_.reset(WebContents::Create(
-      tab_contents_->profile(),
-      tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
-      MSG_ROUTING_NONE, NULL));
+  inline_web_contents_.reset(delegate_->CreateWebContentsForInlineDisposition(
+      tab_contents_->profile(), url));
   // Does not take ownership, so we keep a scoped_ptr
   // for the WebContents locally.
   webview_->SetWebContents(inline_web_contents_.get());
@@ -1190,12 +1188,8 @@ void WebIntentPickerViews::OnInlineDisposition(
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this, inline_web_contents_.get(),
                                              browser));
-  content::WebContents* web_contents = webview_->GetWebContents();
 
-  // Must call this immediately after WebContents creation to avoid race
-  // with load.
-  delegate_->OnInlineDispositionWebContentsCreated(web_contents);
-  web_contents->GetController().LoadURL(
+  inline_web_contents_->GetController().LoadURL(
       url,
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,

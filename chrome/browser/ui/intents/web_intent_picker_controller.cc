@@ -415,6 +415,17 @@ void WebIntentPickerController::OnServiceChosen(
   }
 }
 
+content::WebContents*
+WebIntentPickerController::CreateWebContentsForInlineDisposition(
+    Profile* profile, const GURL& url) {
+  content::WebContents* web_contents = content::WebContents::Create(
+      profile,
+      tab_util::GetSiteInstanceForNewTab(profile, url),
+      MSG_ROUTING_NONE, NULL);
+  intents_dispatcher_->DispatchIntent(web_contents);
+  return web_contents;
+}
+
 // Take the MD5 digest of the origins of picker options
 // and record it as the default context string.
 int64 WebIntentPickerController::DigestServices() {
@@ -460,12 +471,6 @@ void WebIntentPickerController::SetDefaultServiceForSelection(const GURL& url) {
   record.suppression = service_hash;
   record.user_date = static_cast<int>(floor(base::Time::Now().ToDoubleT()));
   GetWebIntentsRegistry(profile_)->RegisterDefaultIntentService(record);
-}
-
-void WebIntentPickerController::OnInlineDispositionWebContentsCreated(
-    content::WebContents* web_contents) {
-  if (web_contents)
-    intents_dispatcher_->DispatchIntent(web_contents);
 }
 
 void WebIntentPickerController::OnExtensionInstallRequested(
