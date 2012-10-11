@@ -84,11 +84,16 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
     // Test a very simple sandbox policy to verify that we can
     // successfully turn on sandboxing.
     Die::EnableSimpleExit();
+    errno = 0;
     if (HANDLE_EINTR(close(fds[0])) ||
-        dup2(fds[1], 2) != 2 ||
+        HANDLE_EINTR(dup2(fds[1], 2)) != 2 ||
         HANDLE_EINTR(close(fds[1]))) {
-      static const char msg[] = "Failed to set up stderr\n";
-      if (HANDLE_EINTR(write(fds[1], msg, sizeof(msg)-1))) { }
+      const char* error_string = strerror(errno);
+      static const char msg[] = "Failed to set up stderr: ";
+      if (HANDLE_EINTR(write(fds[1], msg, sizeof(msg)-1)) > 0 && error_string &&
+          HANDLE_EINTR(write(fds[1], error_string, strlen(error_string))) > 0 &&
+          HANDLE_EINTR(write(fds[1], "\n", 1))) {
+      }
     } else {
       evaluators_.clear();
       setSandboxPolicy(syscallEvaluator, NULL);
