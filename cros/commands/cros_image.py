@@ -6,14 +6,14 @@
 
 from chromite.lib import cros_build_lib
 
-from chromite.cros.commands import command
+from chromite import cros
 
 
-@command.CommandDecorator('image')
-class ImageCommand(command.CrosCommand):
+@cros.CommandDecorator('image')
+class ImageCommand(cros.CrosCommand):
   """Currently an example command.
 
-  For more information see command.CrosCommand.
+  For more information see cros.CrosCommand.
   """
   @classmethod
   def AddParser(cls, parser):

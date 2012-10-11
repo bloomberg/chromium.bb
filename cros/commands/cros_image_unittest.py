@@ -9,14 +9,13 @@
 import argparse
 import os
 import sys
-import unittest
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cros.commands import cros_image
 from chromite.lib import cros_test_lib
 
 
-class ImageCommandTest(unittest.TestCase):
+class ImageCommandTest(cros_test_lib.TestCase):
   """Test class for our ImageCommand class."""
 
   def testParser(self):

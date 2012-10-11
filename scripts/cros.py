@@ -14,14 +14,14 @@ except ImportError:
 from chromite.cros import commands
 
 
-def GetOptions(commands):
+def GetOptions(my_commands):
   """Returns the argparse to use for Cros."""
   parser = argparse.ArgumentParser()
   if not commands:
     return parser
 
   subparsers = parser.add_subparsers(title='cros commands')
-  for cmd_name, class_def in commands.iteritems():
+  for cmd_name, class_def in my_commands.iteritems():
     sub_parser = subparsers.add_parser(cmd_name, help=class_def.__doc__)
     class_def.AddParser(sub_parser)
 
@@ -29,7 +29,7 @@ def GetOptions(commands):
 
 
 def main(args):
-  parser = GetOptions(commands.commands)
+  parser = GetOptions(commands.ListCommands())
   # Cros currently does nothing without a subcmd. Print help if no args are
   # specified.
   if not args:

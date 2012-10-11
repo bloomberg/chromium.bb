@@ -13,12 +13,7 @@ import glob
 import imp
 import os
 
-# Cyclic imports get resolved by just breaking/ignoring the backwards edge of
-# the cycle. So when we're trying to |import command| from within a file we're
-# importing, that file will only be able to see the modules we've imported thus
-# far within __init__.py. Therefore, we need to |import command| first because
-# then every command we're about to import can successfully do |import command|.
-import command
+from chromite import cros
 
 
 def _FindModules(subdir_path):
@@ -37,8 +32,7 @@ def _ImportCommands():
 
   This method imports the cros_[!unittest] modules which may contain
   commands. When these modules are loaded, declared commands (those that use
-  the command.CommandDecorator) will automatically get added to
-  command._commands.
+  the cros.CommandDecorator) will automatically get added to cros._commands.
   """
   subdir_path = os.path.dirname(__file__)
   for file_path in _FindModules(subdir_path):
@@ -47,9 +41,11 @@ def _ImportCommands():
     imp.load_module(mod_name, *imp.find_module(mod_name, [subdir_path]))
 
 
+def ListCommands():
+  """Return a dictionary mapping command names to classes."""
+  # pylint: disable=W0212
+  return cros._commands.copy()
+
+
 _ImportCommands()
 
-commands = command._commands
-
-# Clear the namespace.
-del command, glob, imp, os

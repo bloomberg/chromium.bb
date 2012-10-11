@@ -17,12 +17,8 @@ sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.lib import cros_test_lib
 from chromite.cros import commands
 
-# Restore namespace for unittesting.
-commands.glob = glob
-commands.imp = imp
-commands.os = os
 
-
+# pylint: disable=W0212
 class CommandTest(mox.MoxTestBase):
   """This test class tests that we can load modules correctly."""
 
