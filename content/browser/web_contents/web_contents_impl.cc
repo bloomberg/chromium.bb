@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/string16.h"
@@ -2343,22 +2342,6 @@ void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
 void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
                                          const FilePath& path,
                                          bool is_hung) {
-  UMA_HISTOGRAM_COUNTS("Pepper.PluginHung", 1);
-
-  // Determine how often hangs happen when using worker pool versus
-  // FILE thread.  kFieldTrialName needs to match the value in
-  // pepper_file_message_filter.cc, but plumbing that through would be
-  // disruptive for temporary code.
-  // TODO(shess): Remove once the workpool is proven superior.
-  // http://crbug.com/153383
-  static const char* const kFieldTrialName = "FlapperIOThread";
-  static const bool hung_trial_exists =
-      base::FieldTrialList::TrialExists(kFieldTrialName);
-  if (hung_trial_exists) {
-    UMA_HISTOGRAM_COUNTS(base::FieldTrial::MakeName("Pepper.PluginHung",
-                                                    kFieldTrialName), 1);
-  }
-
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     PluginHungStatusChanged(plugin_child_id, path, is_hung));
 }
