@@ -89,7 +89,6 @@
              '-Wl,-Ttext=<(NACL_IRT_TEXT_START)',
              '--pnacl-allow-native',
              '-arch', 'arm',
-             '-Wt,-mtls-use-call',
              # TODO(olonho): rethink
              '-L<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
            ],

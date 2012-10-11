@@ -171,7 +171,7 @@
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_newlib64) ',
-                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
@@ -212,7 +212,7 @@
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_newlib64) ',
-                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib64) ^(_sources) ^(sources))',
@@ -253,7 +253,7 @@
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_newlib32)',
-                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
@@ -294,7 +294,7 @@
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=<(inst_dir)/include ^(include_dirs) >(_include_dirs)',
                    '--lib-dirs=>(lib_dirs_newlib32)',
-                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(newlib_tls_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32 ^(link_flags) >(_link_flags)',
                    '--source-list=^|(<(source_list_newlib32) ^(_sources) ^(sources))',
@@ -342,7 +342,7 @@
                   '--lib-dirs=>(lib_dirs_newlib_arm) ',
                   '--compile_flags=^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
-                  '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
+                  '--link_flags=-Wt,^(newlib_tls_flags) -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
                   '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
                  ],
               },
@@ -665,6 +665,8 @@
         # These are only required for the IRT but are here for all
         # nacl-gcc-compiled binaries because the IRT depends on other libs
         '-fasynchronous-unwind-tables',
+      ],
+      'newlib_tls_flags': [
         '-mtls-use-call',
       ],
       'pnacl_compile_flags': [
