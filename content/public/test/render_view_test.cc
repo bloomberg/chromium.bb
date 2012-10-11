@@ -150,7 +150,7 @@ void RenderViewTest::SetUp() {
   // since we are using a MockRenderThread.
   RenderThreadImpl::RegisterSchemes();
 
-  //ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+  ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   mock_process_.reset(new MockRenderProcess);
 

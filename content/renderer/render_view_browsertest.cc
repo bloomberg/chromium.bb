@@ -17,7 +17,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_client.h"
-#include "content/shell/shell_main_delegate.h"
 #include "content/test/mock_keyboard.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,11 +139,6 @@ class RenderViewImplTest : public content::RenderViewTest {
   RenderViewImplTest() {
     // Attach a pseudo keyboard device to this object.
     mock_keyboard_.reset(new MockKeyboard());
-  }
-
-  virtual void SetUp() OVERRIDE {
-    content::RenderViewTest::SetUp();
-    content::ShellMainDelegate::InitializeResourceBundle();
   }
 
   RenderViewImpl* view() {
