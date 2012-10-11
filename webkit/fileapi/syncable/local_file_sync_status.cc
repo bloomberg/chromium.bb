@@ -4,18 +4,16 @@
 
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
 
+#include "base/logging.h"
+
 namespace fileapi {
 
 LocalFileSyncStatus::LocalFileSyncStatus() {}
 
-LocalFileSyncStatus::~LocalFileSyncStatus() {
-  base::AutoLock lock(lock_);
-  syncing_.clear();
-  writing_.clear();
-}
+LocalFileSyncStatus::~LocalFileSyncStatus() {}
 
 bool LocalFileSyncStatus::TryIncrementWriting(const FileSystemURL& url) {
-  base::AutoLock lock(lock_);
+  DCHECK(CalledOnValidThread());
   if (IsChildOrParentSyncing(url))
     return false;
   writing_[url]++;
@@ -23,7 +21,7 @@ bool LocalFileSyncStatus::TryIncrementWriting(const FileSystemURL& url) {
 }
 
 void LocalFileSyncStatus::DecrementWriting(const FileSystemURL& url) {
-  base::AutoLock lock(lock_);
+  DCHECK(CalledOnValidThread());
   int count = --writing_[url];
   if (count == 0) {
     writing_.erase(url);
@@ -32,7 +30,7 @@ void LocalFileSyncStatus::DecrementWriting(const FileSystemURL& url) {
 }
 
 bool LocalFileSyncStatus::TryDisableWriting(const FileSystemURL& url) {
-  base::AutoLock lock(lock_);
+  DCHECK(CalledOnValidThread());
   if (IsChildOrParentWriting(url))
     return false;
   syncing_.insert(url);
@@ -40,25 +38,23 @@ bool LocalFileSyncStatus::TryDisableWriting(const FileSystemURL& url) {
 }
 
 void LocalFileSyncStatus::EnableWriting(const FileSystemURL& url) {
-  base::AutoLock lock(lock_);
+  DCHECK(CalledOnValidThread());
   syncing_.erase(url);
-  // TODO(kinuko): fire WriteEnabled notification.
 }
 
-
 bool LocalFileSyncStatus::IsWriting(const FileSystemURL& url) const {
-  base::AutoLock lock(lock_);
+  DCHECK(CalledOnValidThread());
   return IsChildOrParentWriting(url);
 }
 
 bool LocalFileSyncStatus::IsWritable(const FileSystemURL& url) const {
-  base::AutoLock lock(lock_);
+  DCHECK(CalledOnValidThread());
   return !IsChildOrParentSyncing(url);
 }
 
 bool LocalFileSyncStatus::IsChildOrParentWriting(
     const FileSystemURL& url) const {
-  lock_.AssertAcquired();
+  DCHECK(CalledOnValidThread());
   URLCountMap::const_iterator upper = writing_.upper_bound(url);
   URLCountMap::const_reverse_iterator rupper(upper);
   if (upper != writing_.end() && url.IsParent(upper->first))
@@ -71,7 +67,7 @@ bool LocalFileSyncStatus::IsChildOrParentWriting(
 
 bool LocalFileSyncStatus::IsChildOrParentSyncing(
     const FileSystemURL& url) const {
-  lock_.AssertAcquired();
+  DCHECK(CalledOnValidThread());
   URLSet::const_iterator upper = syncing_.upper_bound(url);
   URLSet::const_reverse_iterator rupper(upper);
   if (upper != syncing_.end() && url.IsParent(*upper))

@@ -10,14 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/threading/thread.h"
+#include "base/threading/non_thread_safe.h"
 #include "webkit/fileapi/file_system_url.h"
 
 namespace fileapi {
 
 // Represents local file sync status.
-// This class is thread-safe and fields of this class are protected by a lock.
-// TODO(kinuko): Limit access to this class only on IO thread.
+// This class is supposed to run only on IO thread.
 //
 // This class manages two important synchronization flags: writing (counter)
 // and syncing (flag).  Writing counter keeps track of which URL is in
@@ -26,7 +25,7 @@ namespace fileapi {
 // An invariant of this class is: no FileSystem objects should be both
 // in syncing_ and writing_ status, i.e. trying to increment writing
 // while the target url is in syncing must fail and vice versa.
-class FILEAPI_EXPORT LocalFileSyncStatus {
+class FILEAPI_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
  public:
   LocalFileSyncStatus();
   ~LocalFileSyncStatus();
@@ -58,8 +57,6 @@ class FILEAPI_EXPORT LocalFileSyncStatus {
   // These private methods must be called with the lock_ held.
   bool IsChildOrParentWriting(const FileSystemURL& url) const;
   bool IsChildOrParentSyncing(const FileSystemURL& url) const;
-
-  mutable base::Lock lock_;
 
   // If this count is non-zero positive there're ongoing write operations.
   URLCountMap writing_;
