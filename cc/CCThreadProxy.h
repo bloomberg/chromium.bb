@@ -86,7 +86,7 @@ private:
         ~BeginFrameAndCommitState();
 
         double monotonicFrameBeginTime;
-        OwnPtr<CCScrollAndScaleSet> scrollInfo;
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo;
         WebKit::WebTransformationMatrix implTransform;
         CCPrioritizedTextureManager::BackingVector evictedContentsTexturesBackings;
         size_t memoryAllocationLimitBytes;

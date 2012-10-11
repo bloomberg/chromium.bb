@@ -1298,9 +1298,9 @@ static void collectScrollDeltas(CCScrollAndScaleSet* scrollInfo, CCLayerImpl* la
         collectScrollDeltas(scrollInfo, layerImpl->children()[i]);
 }
 
-PassOwnPtr<CCScrollAndScaleSet> CCLayerTreeHostImpl::processScrollDeltas()
+scoped_ptr<CCScrollAndScaleSet> CCLayerTreeHostImpl::processScrollDeltas()
 {
-    OwnPtr<CCScrollAndScaleSet> scrollInfo = adoptPtr(new CCScrollAndScaleSet());
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo(new CCScrollAndScaleSet());
 
     if (m_pinchGestureActive || m_pageScaleAnimation) {
         scrollInfo->pageScaleDelta = 1;
@@ -1313,14 +1313,14 @@ PassOwnPtr<CCScrollAndScaleSet> CCLayerTreeHostImpl::processScrollDeltas()
             else if (m_pageScaleAnimation.get())
                 computeDoubleTapZoomDeltas(scrollInfo.get());
         }
-        return scrollInfo.release();
+        return scrollInfo.Pass();
     }
 
     collectScrollDeltas(scrollInfo.get(), m_rootLayerImpl.get());
     scrollInfo->pageScaleDelta = m_pinchZoomViewport.pageScaleDelta();
     m_pinchZoomViewport.setSentPageScaleDelta(scrollInfo->pageScaleDelta);
 
-    return scrollInfo.release();
+    return scrollInfo.Pass();
 }
 
 WebTransformationMatrix CCLayerTreeHostImpl::implTransform() const

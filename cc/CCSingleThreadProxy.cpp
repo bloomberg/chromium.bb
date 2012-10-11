@@ -207,7 +207,7 @@ void CCSingleThreadProxy::doCommit(PassOwnPtr<CCTextureUpdateQueue> queue)
 #if !ASSERT_DISABLED
         // In the single-threaded case, the scroll deltas should never be
         // touched on the impl layer tree.
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_layerTreeHostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_layerTreeHostImpl->processScrollDeltas();
         ASSERT(!scrollInfo->scrolls.size());
 #endif
 

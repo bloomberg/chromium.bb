@@ -206,7 +206,7 @@ public:
     float pageScaleFactor() const;
     void setPageScaleFactorAndLimits(float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor);
 
-    PassOwnPtr<CCScrollAndScaleSet> processScrollDeltas();
+    scoped_ptr<CCScrollAndScaleSet> processScrollDeltas();
     WebKit::WebTransformationMatrix implTransform() const;
 
     void startPageScaleAnimation(const IntSize& tragetPosition, bool useAnchor, float scale, double durationSec);

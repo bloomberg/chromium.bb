@@ -247,7 +247,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollDeltaNoLayers)
 {
     ASSERT_FALSE(m_hostImpl->rootLayer());
 
-    OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     ASSERT_EQ(scrollInfo->scrolls.size(), 0u);
 }
 
@@ -266,7 +266,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollDeltaTreeButNoChanges)
 
     expectClearedScrollDeltasRecursive(root);
 
-    OwnPtr<CCScrollAndScaleSet> scrollInfo;
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo;
 
     scrollInfo = m_hostImpl->processScrollDeltas();
     ASSERT_EQ(scrollInfo->scrolls.size(), 0u);
@@ -291,7 +291,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollDeltaRepeatedScrolls)
     }
     CCLayerImpl* root = m_hostImpl->rootLayer();
 
-    OwnPtr<CCScrollAndScaleSet> scrollInfo;
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo;
 
     scrollInfo = m_hostImpl->processScrollDeltas();
     ASSERT_EQ(scrollInfo->scrolls.size(), 1u);
@@ -362,7 +362,7 @@ TEST_P(CCLayerTreeHostImplTest, replaceTreeWhileScrolling)
     IntSize scrollDelta(0, 10);
     m_hostImpl->scrollBy(IntPoint(), scrollDelta);
     m_hostImpl->scrollEnd();
-    OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo, scrollLayerId, scrollDelta);
 }
 
@@ -495,7 +495,7 @@ TEST_P(CCLayerTreeHostImplTest, implPinchZoom)
         EXPECT_TRUE(m_didRequestRedraw);
         EXPECT_TRUE(m_didRequestCommit);
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
 
         EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollPosition(), IntSize(50, 50));
@@ -518,7 +518,7 @@ TEST_P(CCLayerTreeHostImplTest, implPinchZoom)
         m_hostImpl->scrollBy(IntPoint(), scrollDelta);
         m_hostImpl->scrollEnd();
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), scrollDelta);
     }
 }
@@ -549,7 +549,7 @@ TEST_P(CCLayerTreeHostImplTest, pinchGesture)
         EXPECT_TRUE(m_didRequestRedraw);
         EXPECT_TRUE(m_didRequestCommit);
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
     }
 
@@ -564,7 +564,7 @@ TEST_P(CCLayerTreeHostImplTest, pinchGesture)
         m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(50, 50));
         m_hostImpl->pinchGestureEnd();
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, maxPageScale);
     }
 
@@ -580,7 +580,7 @@ TEST_P(CCLayerTreeHostImplTest, pinchGesture)
         m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(0, 0));
         m_hostImpl->pinchGestureEnd();
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
 
         if (!CCSettings::pageScalePinchZoomEnabled()) {
@@ -604,7 +604,7 @@ TEST_P(CCLayerTreeHostImplTest, pinchGesture)
         m_hostImpl->pinchGestureUpdate(pageScaleDelta, IntPoint(20, 20));
         m_hostImpl->pinchGestureEnd();
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
         expectContains(*scrollInfo, scrollLayer->id(), IntSize(-10, -10));
     }
@@ -639,7 +639,7 @@ TEST_P(CCLayerTreeHostImplTest, pageScaleAnimation)
         m_hostImpl->animate(endTime, endTime);
         EXPECT_TRUE(m_didRequestCommit);
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, 2);
         expectContains(*scrollInfo, scrollLayer->id(), IntSize(-50, -50));
     }
@@ -655,7 +655,7 @@ TEST_P(CCLayerTreeHostImplTest, pageScaleAnimation)
         EXPECT_TRUE(m_didRequestRedraw);
         EXPECT_TRUE(m_didRequestCommit);
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
         // Pushed to (0,0) via clamping against contents layer size.
         expectContains(*scrollInfo, scrollLayer->id(), IntSize(-50, -50));
@@ -684,7 +684,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
 
         // Because we are pinch zooming in, we shouldn't get any scroll or page
         // scale deltas.
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, 1);
         EXPECT_EQ(scrollInfo->scrolls.size(), 0u);
 
@@ -709,7 +709,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
 
         // Since we are pinch zooming out, we should get an update to zoom all
         // the way out to the minimum page scale.
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         if (!CCSettings::pageScalePinchZoomEnabled()) {
             EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
             expectContains(*scrollInfo, scrollLayer->id(), IntSize(0, 0));
@@ -755,7 +755,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPa
     // We should immediately get the final zoom and scroll values for the
     // animation.
     m_hostImpl->animate(halfwayThroughAnimation, halfwayThroughAnimation);
-    OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
 
     if (!CCSettings::pageScalePinchZoomEnabled()) {
         EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
@@ -1142,7 +1142,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
         // The scale should apply to the scroll delta.
         expectedScrollDelta.scale(pageScale);
     }
-    OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), expectedScrollDelta);
 
     // The scroll range should also have been updated.
@@ -1176,7 +1176,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnImplThread)
     m_hostImpl->updateRootScrollLayerImplTransform();
 
     // The scroll delta is not scaled because the main thread did not scale.
-    OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), expectedScrollDelta);
 
     // The scroll range should also have been updated.
@@ -1265,7 +1265,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
         // The scale should apply to the scroll delta.
         expectedScrollDelta.scale(pageScale);
     }
-    OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), scrollLayerId, expectedScrollDelta);
 
     // The scroll range should not have changed.
@@ -1301,7 +1301,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollChildBeyondLimit)
         m_hostImpl->scrollBy(IntPoint(), scrollDelta);
         m_hostImpl->scrollEnd();
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
 
         // The grand child should have scrolled up to its limit.
         CCLayerImpl* child = m_hostImpl->rootLayer()->children()[0];
@@ -1333,7 +1333,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollEventBubbling)
         m_hostImpl->scrollBy(IntPoint(), scrollDelta);
         m_hostImpl->scrollEnd();
 
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
 
         // Only the root should have scrolled.
         ASSERT_EQ(scrollInfo->scrolls.size(), 1u);
@@ -1376,7 +1376,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollAxisAlignedRotatedLayer)
     m_hostImpl->scrollEnd();
 
     // The layer should have scrolled down in its local coordinates.
-    OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), IntSize(0, gestureScrollDelta.width()));
 
     // Reset and scroll down with the wheel.
@@ -1423,7 +1423,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
         // The child layer should have scrolled down in its local coordinates an amount proportional to
         // the angle between it and the input scroll delta.
         IntSize expectedScrollDelta(0, gestureScrollDelta.height() * cosf(deg2rad(childLayerAngle)));
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         expectContains(*scrollInfo.get(), childLayerId, expectedScrollDelta);
 
         // The root layer should not have scrolled, because the input delta was close to the layer's
@@ -1442,7 +1442,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollNonAxisAlignedRotatedLayer)
         // The child layer should have scrolled down in its local coordinates an amount proportional to
         // the angle between it and the input scroll delta.
         IntSize expectedScrollDelta(0, -gestureScrollDelta.width() * sinf(deg2rad(childLayerAngle)));
-        OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+        scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         expectContains(*scrollInfo.get(), childLayerId, expectedScrollDelta);
 
         // The root layer should have scrolled more, since the input scroll delta was mostly
@@ -1473,7 +1473,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollScaledLayer)
     m_hostImpl->scrollEnd();
 
     // The layer should have scrolled down in its local coordinates, but half he amount.
-    OwnPtr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
+    scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), IntSize(0, scrollDelta.height() / scale));
 
     // Reset and scroll down with the wheel.
