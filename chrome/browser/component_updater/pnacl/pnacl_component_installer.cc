@@ -61,6 +61,8 @@ const char* PnaclArch() {
   // That may need to be based on the actual nexe rather than a static
   // choice, which would require substantial refactoring.
   return "arm";
+#elif defined(ARCH_CPU_MIPSEL)
+  return "mips32";
 #else
 #error "Add support for your architecture to Pnacl Component Installer."
 #endif
