@@ -64,12 +64,12 @@ void BrowserPluginManagerImpl::OnGuestCrashed(int instance_id) {
     plugin->GuestCrashed();
 }
 
-void BrowserPluginManagerImpl::OnDidNavigate(int instance_id,
-                                             const GURL& url,
-                                             int process_id) {
+void BrowserPluginManagerImpl::OnDidNavigate(
+    int instance_id,
+    const BrowserPluginMsg_DidNavigate_Params& params) {
   BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
   if (plugin)
-    plugin->DidNavigate(url, process_id);
+    plugin->DidNavigate(params);
 }
 
 void BrowserPluginManagerImpl::OnAdvanceFocus(int instance_id, bool reverse) {

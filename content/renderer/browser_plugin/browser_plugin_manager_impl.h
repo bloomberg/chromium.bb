@@ -8,6 +8,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "googleurl/src/gurl.h"
 
+struct BrowserPluginMsg_DidNavigate_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
 
 namespace content {
@@ -33,7 +34,8 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                     int message_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);
   void OnGuestCrashed(int instance_id);
-  void OnDidNavigate(int instance_id, const GURL& url, int process_id);
+  void OnDidNavigate(int instance_id,
+                     const BrowserPluginMsg_DidNavigate_Params& params);
   void OnAdvanceFocus(int instance_id, bool reverse);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
   void OnLoadStart(int instance_id,

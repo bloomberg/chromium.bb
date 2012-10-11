@@ -550,6 +550,19 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
+
+    base::Value* value =
+        rvh->ExecuteJavascriptAndGetValue(string16(),
+                                          ASCIIToUTF16("CanGoBack()"));
+    bool result = false;
+    ASSERT_TRUE(value->GetAsBoolean(&result));
+    EXPECT_TRUE(result);
+
+    value = rvh->ExecuteJavascriptAndGetValue(string16(),
+                                              ASCIIToUTF16("CanGoForward()"));
+    result = false;
+    ASSERT_TRUE(value->GetAsBoolean(&result));
+    EXPECT_TRUE(result);
   }
 
   // Go forward and verify that we're back at P3.
@@ -562,6 +575,13 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
+
+    base::Value* value =
+        rvh->ExecuteJavascriptAndGetValue(string16(),
+                                          ASCIIToUTF16("CanGoForward()"));
+    bool result = true;
+    ASSERT_TRUE(value->GetAsBoolean(&result));
+    EXPECT_FALSE(result);
   }
 
   // Go back two entries and verify that we're back at P1.
@@ -574,6 +594,13 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, Renavigate) {
 
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
+
+    base::Value* value =
+        rvh->ExecuteJavascriptAndGetValue(string16(),
+                                          ASCIIToUTF16("CanGoBack()"));
+    bool result = true;
+    ASSERT_TRUE(value->GetAsBoolean(&result));
+    EXPECT_FALSE(result);
   }
 }
 

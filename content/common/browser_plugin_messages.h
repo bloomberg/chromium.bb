@@ -160,12 +160,26 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_LoadRedirect,
                      GURL /* new_url */,
                      bool /* is_top_level */)
 
+IPC_STRUCT_BEGIN(BrowserPluginMsg_DidNavigate_Params)
+  // The current URL of the guest.
+  IPC_STRUCT_MEMBER(GURL, url)
+  // Indicates whether the navigation was on the top-level frame.
+  IPC_STRUCT_MEMBER(bool, is_top_level)
+  // Chrome's process ID for the guest.
+  IPC_STRUCT_MEMBER(int, process_id)
+  // The index of the current navigation entry after this navigation was
+  // committed.
+  IPC_STRUCT_MEMBER(int, current_entry_index)
+  // The number of navigation entries after this navigation was committed.
+  IPC_STRUCT_MEMBER(int, entry_count)
+IPC_STRUCT_END()
+
 // When the guest navigates, the browser process informs the embedder through
-// the BrowserPluginMsg_DidNavigate message.
-IPC_MESSAGE_CONTROL3(BrowserPluginMsg_DidNavigate,
+// the BrowserPluginMsg_DidNavigate message along with information about the
+// guest's current navigation state.
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_DidNavigate,
                      int /* instance_id */,
-                     GURL /* url */,
-                     int /* process_id */)
+                     BrowserPluginMsg_DidNavigate_Params)
 
 // When the guest crashes, the browser process informs the embedder through this
 // message.

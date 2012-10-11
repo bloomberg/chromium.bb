@@ -39,6 +39,8 @@ namespace {
 
 const char kAddEventListener[] = "addEventListener";
 const char kBackMethod[] = "back";
+const char kCanGoBack[] = "canGoBack";
+const char kCanGoForward[] = "canGoForward";
 const char kForwardMethod[] = "forward";
 const char kGetProcessId[] = "getProcessId";
 const char kGoMethod[] = "go";
@@ -60,6 +62,14 @@ bool IdentifierIsAddEventListener(NPIdentifier identifier) {
 
 bool IdentifierIsBackMethod(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kBackMethod) == identifier;
+}
+
+bool IdentifierIsCanGoBack(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kCanGoBack) == identifier;
+}
+
+bool IdentifierIsCanGoForward(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kCanGoForward) == identifier;
 }
 
 bool IdentifierIsForwardMethod(NPIdentifier identifier) {
@@ -151,6 +161,12 @@ bool BrowserPluginBindingsHasMethod(NPObject* np_obj, NPIdentifier name) {
   if (IdentifierIsBackMethod(name))
     return true;
 
+  if (IdentifierIsCanGoBack(name))
+    return true;
+
+  if (IdentifierIsCanGoForward(name))
+    return true;
+
   if (IdentifierIsForwardMethod(name))
     return true;
 
@@ -204,6 +220,18 @@ bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
 
   if (IdentifierIsBackMethod(name) && !arg_count) {
     bindings->instance()->Back();
+    return true;
+  }
+
+  if (IdentifierIsCanGoBack(name) && !arg_count) {
+    result->type = NPVariantType_Bool;
+    result->value.boolValue = bindings->instance()->CanGoBack();
+    return true;
+  }
+
+  if (IdentifierIsCanGoForward(name) && !arg_count) {
+    result->type = NPVariantType_Bool;
+    result->value.boolValue = bindings->instance()->CanGoForward();
     return true;
   }
 

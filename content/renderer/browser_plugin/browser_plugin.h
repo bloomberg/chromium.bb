@@ -17,6 +17,7 @@
 #include "content/renderer/render_view_impl.h"
 
 struct BrowserPluginHostMsg_ResizeGuest_Params;
+struct BrowserPluginMsg_DidNavigate_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
 
 namespace content {
@@ -40,6 +41,10 @@ class CONTENT_EXPORT BrowserPlugin :
   int process_id() const { return process_id_; }
   // The partition identifier string is stored as UTF-8.
   std::string GetPartitionAttribute() const;
+  // Query whether the guest can navigate back to the previous entry.
+  bool CanGoBack() const;
+  // Query whether the guest can navigation forward to the next entry.
+  bool CanGoForward() const;
   // This method can be successfully called only before the first navigation for
   // this instance of BrowserPlugin. If an error occurs, the |error_message| is
   // set appropriately to indicate the failure reason.
@@ -53,7 +58,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Inform the BrowserPlugin that its guest has crashed.
   void GuestCrashed();
   // Informs the BrowserPlugin that the guest has navigated to a new URL.
-  void DidNavigate(const GURL& url, int process_id);
+  void DidNavigate(const BrowserPluginMsg_DidNavigate_Params& params);
   // Inform the BrowserPlugin that the guest has started loading a new page.
   void LoadStart(const GURL& url, bool is_top_level);
   // Inform the BrowserPlugin that the guest has aborted loading a new page.
@@ -200,6 +205,18 @@ class CONTENT_EXPORT BrowserPlugin :
 #if defined(OS_WIN)
   base::SharedMemory shared_memory_;
 #endif
+  // Important: Do not add more history state here.
+  // We strongly discourage storing additional history state (such as page IDs)
+  // in the embedder process, at the risk of having incorrect information that
+  // can lead to broken back/forward logic in apps.
+  // It's also important that this state does not get modified by any logic in
+  // the embedder process. It should only be updated in response to navigation
+  // events in the guest.  No assumptions should be made about how the index
+  // will change after a navigation (e.g., for back, forward, or go), because
+  // the changes are not always obvious.  For example, there is a maximum
+  // number of entries and earlier ones will automatically be pruned.
+  int current_nav_entry_index_;
+  int nav_entry_count_;
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };
 

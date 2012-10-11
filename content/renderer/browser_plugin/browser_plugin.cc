@@ -72,7 +72,9 @@ BrowserPlugin::BrowserPlugin(
       navigate_src_sent_(false),
       process_id_(-1),
       persist_storage_(false),
-      visible_(true) {
+      visible_(true),
+      current_nav_entry_index_(0),
+      nav_entry_count_(0) {
   BrowserPluginManager::Get()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
 
@@ -147,6 +149,15 @@ std::string BrowserPlugin::GetPartitionAttribute() const {
 
   value.append(storage_partition_id_);
   return value;
+}
+
+bool BrowserPlugin::CanGoBack() const {
+  return nav_entry_count_ > 1 && current_nav_entry_index_ > 0;
+}
+
+bool BrowserPlugin::CanGoForward() const {
+  return current_nav_entry_index_ >= 0 &&
+      current_nav_entry_index_ < (nav_entry_count_ - 1);
 }
 
 bool BrowserPlugin::SetPartitionAttribute(const std::string& partition_id,
@@ -344,9 +355,13 @@ void BrowserPlugin::GuestCrashed() {
   }
 }
 
-void BrowserPlugin::DidNavigate(const GURL& url, int process_id) {
-  src_ = url.spec();
-  process_id_ = process_id;
+void BrowserPlugin::DidNavigate(
+    const BrowserPluginMsg_DidNavigate_Params& params) {
+  src_ = params.url.spec();
+  process_id_ = params.process_id;
+  current_nav_entry_index_ = params.current_entry_index;
+  nav_entry_count_ = params.entry_count;
+
   if (!HasListeners(kNavigationEventName))
     return;
 
@@ -355,7 +370,13 @@ void BrowserPlugin::DidNavigate(const GURL& url, int process_id) {
   v8::Context::Scope context_scope(
       plugin.document().frame()->mainWorldScriptContext());
 
-  v8::Local<v8::Value> param = v8::String::New(src_.data(), src_.size());
+  // Construct the navigation event object.
+  v8::Local<v8::Object> event = v8::Object::New();
+  event->Set(v8::String::New(kURL, sizeof(kURL) - 1),
+             v8::String::New(src_.data(), src_.size()));
+  event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
+             v8::Boolean::New(params.is_top_level));
+  v8::Local<v8::Value> val = event;
 
   // TODO(fsamuel): Copying the event listeners is insufficent because
   // new persistent handles are not created when the copy constructor is
@@ -366,7 +387,7 @@ void BrowserPlugin::DidNavigate(const GURL& url, int process_id) {
     WebKit::WebFrame* frame = plugin.document().frame();
     if (frame) {
       frame->callFunctionEvenIfScriptDisabled(
-          *it, v8::Object::New(), 1, &param);
+          *it, v8::Object::New(), 1, &val);
     }
   }
 }

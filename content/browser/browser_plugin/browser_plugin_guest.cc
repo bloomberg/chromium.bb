@@ -383,14 +383,17 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
     PageTransition transition_type,
     RenderViewHost* render_view_host) {
   // Inform its embedder of the updated URL.
-  if (is_main_frame) {
-    SendMessageToEmbedder(
-        new BrowserPluginMsg_DidNavigate(
-            instance_id(),
-            url,
-            render_view_host->GetProcess()->GetID()));
-    RecordAction(UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
-  }
+  BrowserPluginMsg_DidNavigate_Params params;
+  params.url = url;
+  params.is_top_level = is_main_frame;
+  params.process_id = render_view_host->GetProcess()->GetID();
+  params.current_entry_index =
+      web_contents()->GetController().GetCurrentEntryIndex();
+  params.entry_count =
+      web_contents()->GetController().GetEntryCount();
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_DidNavigate(instance_id(), params));
+  RecordAction(UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
 }
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {

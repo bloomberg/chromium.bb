@@ -27,6 +27,14 @@ function Back() {
   var plugin = document.getElementById('plugin');
   plugin.back();
 }
+function CanGoBack() {
+  var plugin = document.getElementById('plugin');
+  return plugin.canGoBack();
+}
+function CanGoForward() {
+  var plugin = document.getElementById('plugin');
+  return plugin.canGoForward();
+}
 function Forward() {
   var plugin = document.getElementById('plugin');
   plugin.forward();

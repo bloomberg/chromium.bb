@@ -312,8 +312,8 @@ TEST_F(BrowserPluginTest, RemovePlugin) {
 TEST_F(BrowserPluginTest, CustomEvents) {
   const char* kAddEventListener =
     "var url;"
-    "function nav(u) {"
-    "  url = u;"
+    "function nav(e) {"
+    "  url = e.url;"
     "}"
     "document.getElementById('browserplugin')."
     "    addEventListener('navigation', nav);";
@@ -342,16 +342,25 @@ TEST_F(BrowserPluginTest, CustomEvents) {
           browser_plugin_manager()->GetBrowserPlugin(instance_id));
   ASSERT_TRUE(browser_plugin);
 
-  browser_plugin->DidNavigate(GURL(kGoogleURL), 1337);
-  EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
-  EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
-
+  {
+    BrowserPluginMsg_DidNavigate_Params navigate_params;
+    navigate_params.url = GURL(kGoogleURL);
+    navigate_params.process_id = 1337;
+    browser_plugin->DidNavigate(navigate_params);
+    EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
+    EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
+  }
   ExecuteJavaScript(kRemoveEventListener);
-  browser_plugin->DidNavigate(GURL(kGoogleNewsURL), 42);
-  // The URL variable should not change because we've removed the event
-  // listener.
-  EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
-  EXPECT_EQ(42, ExecuteScriptAndReturnInt(kGetProcessID));
+  {
+    BrowserPluginMsg_DidNavigate_Params navigate_params;
+    navigate_params.url = GURL(kGoogleNewsURL);
+    navigate_params.process_id = 42;
+    browser_plugin->DidNavigate(navigate_params);
+    // The URL variable should not change because we've removed the event
+    // listener.
+    EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
+    EXPECT_EQ(42, ExecuteScriptAndReturnInt(kGetProcessID));
+  }
 }
 
 TEST_F(BrowserPluginTest, StopMethod) {
