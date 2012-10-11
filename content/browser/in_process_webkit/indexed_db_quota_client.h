@@ -44,24 +44,8 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
                                 quota::StorageType type,
                                 const DeletionCallback& callback) OVERRIDE;
  private:
-  class HelperTask;
-  class GetOriginsTaskBase;
-  class GetOriginsForHostTask;
-
-  typedef quota::CallbackQueueMap2
-      <GetOriginsCallback,
-       std::string,  // host
-       const std::set<GURL>&,
-       quota::StorageType
-      > OriginsForHostCallbackMap;
-
-  void DidGetOriginsForHost(
-      const std::string& host, const std::set<GURL>& origins,
-          quota::StorageType type);
-
   scoped_refptr<base::MessageLoopProxy> webkit_thread_message_loop_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
-  OriginsForHostCallbackMap origins_for_host_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClient);
 };

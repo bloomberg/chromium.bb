@@ -56,40 +56,6 @@ void QuotaTask::DeleteSoon() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-// QuotaThreadTask ---------------------------------------------------------
-
-QuotaThreadTask::QuotaThreadTask(
-    QuotaTaskObserver* observer,
-    TaskRunner* target_task_runner)
-    : QuotaTask(observer),
-      target_task_runner_(target_task_runner) {
-}
-
-QuotaThreadTask::~QuotaThreadTask() {
-}
-
-void QuotaThreadTask::Run() {
-  target_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&QuotaThreadTask::CallRunOnTargetThread, this));
-}
-
-void QuotaThreadTask::CallRunOnTargetThread() {
-  DCHECK(target_task_runner_->RunsTasksOnCurrentThread());
-  if (RunOnTargetThreadAsync())
-    original_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&QuotaThreadTask::CallCompleted, this));
-}
-
-bool QuotaThreadTask::RunOnTargetThreadAsync() {
-  RunOnTargetThread();
-  return true;
-}
-
-void QuotaThreadTask::RunOnTargetThread() {
-}
-
 // QuotaTaskObserver -------------------------------------------------------
 
 QuotaTaskObserver::~QuotaTaskObserver() {

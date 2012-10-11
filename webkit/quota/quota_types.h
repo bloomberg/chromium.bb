@@ -170,29 +170,6 @@ class CallbackQueueMap1
   }
 };
 
-template <typename CallbackType2, typename KEY, typename ARG1, typename ARG2>
-class CallbackQueueMap2
-    : public CallbackQueueMapBase<CallbackType2,
-                                  CallbackQueue2<CallbackType2, ARG1, ARG2>,
-                                  KEY> {
- public:
-  typedef typename CallbackQueueMapBase<
-      CallbackType2,
-      CallbackQueue2<CallbackType2, ARG1, ARG2>,
-      KEY>::iterator iterator;
-  typedef CallbackQueue2<CallbackType2, ARG1, ARG2> Queue;
-
-  // Runs the callbacks added for the given |key| and clears the key
-  // from the map.
-  void Run(const KEY& key, ARG1 arg1, ARG2 arg2) {
-    if (!this->HasCallbacks(key))
-      return;
-    Queue& queue = this->callback_map_[key];
-    queue.Run(arg1, arg2);
-    this->callback_map_.erase(key);
-  }
-};
-
 typedef CallbackQueueMap1<UsageCallback, std::string, int64>
     HostUsageCallbackMap;
 
