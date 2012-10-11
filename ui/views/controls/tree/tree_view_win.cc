@@ -96,7 +96,10 @@ void TreeView::SetEditable(bool editable) {
   if (!tree_view_)
     return;
   LONG_PTR style = GetWindowLongPtr(tree_view_, GWL_STYLE);
-  style &= ~TVS_EDITLABELS;
+  if (editable_)
+    style |= TVS_EDITLABELS;
+  else
+    style &= ~TVS_EDITLABELS;
   SetWindowLongPtr(tree_view_, GWL_STYLE, style);
 }
 
