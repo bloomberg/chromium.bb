@@ -41,6 +41,7 @@ class SearchBox : public content::RenderViewObserver,
   size_t selection_end() const { return selection_end_; }
   int results_base() const { return results_base_; }
   bool active_tab_is_ntp() const { return active_tab_is_ntp_; }
+  bool enable_extended() const { return enable_extended_; }
 
   gfx::Rect GetRect();
   const std::vector<InstantAutocompleteResult>& GetAutocompleteResults();
@@ -66,6 +67,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnFocus();
   void OnBlur();
   void OnActiveTabModeChanged(bool active_tab_is_ntp);
+  void OnEnableExtended();
 
   // Sets the searchbox values to their initial value.
   void Reset();
@@ -81,6 +83,7 @@ class SearchBox : public content::RenderViewObserver,
   std::vector<InstantAutocompleteResult> last_autocomplete_results_;
   bool is_focused_;
   bool active_tab_is_ntp_;
+  bool enable_extended_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBox);
 };

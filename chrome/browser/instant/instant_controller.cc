@@ -631,7 +631,7 @@ void InstantController::ResetLoader(const std::string& instant_url,
 
   if (!GetPreviewContents()) {
     loader_.reset(new InstantLoader(this, instant_url, active_tab));
-    loader_->Init();
+    loader_->Init(mode_ == EXTENDED);
     // Ensure the searchbox API has the correct focus state and context.
     if (is_omnibox_focused_)
       loader_->OnAutocompleteGotFocus();

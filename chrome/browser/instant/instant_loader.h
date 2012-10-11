@@ -52,7 +52,7 @@ class InstantLoader : public content::NotificationObserver {
   virtual ~InstantLoader();
 
   // Initializes |preview_contents_| and loads |instant_url_|.
-  void Init();
+  void Init(bool is_extended_api_enabled);
 
   // Tells the preview page that the user typed |user_text| into the omnibox.
   // If |verbatim| is false, the page predicts the query the user means to type

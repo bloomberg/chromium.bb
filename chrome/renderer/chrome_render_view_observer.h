@@ -20,6 +20,7 @@
 class ChromeRenderProcessObserver;
 class ContentSettingsObserver;
 class ExternalHostBindings;
+class SearchBox;
 class SkBitmap;
 class TranslateHelper;
 class WebViewColorOverlay;
@@ -53,7 +54,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
       ContentSettingsObserver* content_settings,
       ChromeRenderProcessObserver* chrome_render_process_observer,
       extensions::Dispatcher* extension_dispatcher,
-      TranslateHelper* translate_helper);
+      TranslateHelper* translate_helper,
+      SearchBox* search_box);
   virtual ~ChromeRenderViewObserver();
 
  private:
@@ -200,6 +202,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Have the same lifetime as us.
   ContentSettingsObserver* content_settings_;
   TranslateHelper* translate_helper_;
+  SearchBox* search_box_;
   safe_browsing::PhishingClassifierDelegate* phishing_classifier_;
 
   // Page_id from the last page we indexed. This prevents us from indexing the

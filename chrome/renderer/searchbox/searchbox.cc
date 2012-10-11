@@ -18,7 +18,8 @@ SearchBox::SearchBox(content::RenderView* render_view)
       results_base_(0),
       last_results_base_(0),
       is_focused_(false),
-      active_tab_is_ntp_(false) {
+      active_tab_is_ntp_(false),
+      enable_extended_(false) {
 }
 
 SearchBox::~SearchBox() {
@@ -94,6 +95,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxBlur, OnBlur)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxActiveTabModeChanged,
                         OnActiveTabModeChanged)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxEnableExtended,
+                        OnEnableExtended)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -191,6 +194,10 @@ void SearchBox::OnActiveTabModeChanged(bool active_tab_is_ntp) {
     extensions_v8::SearchBoxExtension::DispatchContextChange(
         render_view()->GetWebView()->mainFrame());
   }
+}
+
+void SearchBox::OnEnableExtended() {
+  enable_extended_ = true;
 }
 
 void SearchBox::Reset() {
