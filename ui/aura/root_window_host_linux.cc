@@ -74,57 +74,6 @@ const char* kAtomsToCache[] = {
   return target;
 }
 
-// The events reported for slave devices can have incorrect information for some
-// fields. This utility function is used to check for such inconsistencies.
-void CheckXEventForConsistency(XEvent* xevent) {
-#if defined(USE_XI2_MT) && !defined(NDEBUG)
-  static bool expect_master_event = false;
-  static XIDeviceEvent slave_event;
-  static gfx::Point slave_location;
-  static int slave_button;
-
-  // Note: If an event comes from a slave pointer device, then it will be
-  // followed by the same event, but reported from its master pointer device.
-  // However, if the event comes from a floating slave device (e.g. a
-  // touchscreen), then it will not be followed by a duplicate event, since the
-  // floating slave isn't attached to a master.
-
-  bool was_expecting_master_event = expect_master_event;
-  expect_master_event = false;
-
-  if (!xevent || xevent->type != GenericEvent)
-    return;
-
-  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xevent->xcookie.data);
-  if (xievent->evtype != XI_Motion &&
-      xievent->evtype != XI_ButtonPress &&
-      xievent->evtype != XI_ButtonRelease) {
-    return;
-  }
-
-  if (xievent->sourceid == xievent->deviceid) {
-    slave_event = *xievent;
-    slave_location = ui::EventLocationFromNative(xevent);
-    slave_button = ui::EventButtonFromNative(xevent);
-    expect_master_event = true;
-  } else if (was_expecting_master_event) {
-    CHECK_EQ(slave_location.x(), ui::EventLocationFromNative(xevent).x());
-    CHECK_EQ(slave_location.y(), ui::EventLocationFromNative(xevent).y());
-
-    CHECK_EQ(slave_event.type, xievent->type);
-    CHECK_EQ(slave_event.evtype, xievent->evtype);
-    CHECK_EQ(slave_button, ui::EventButtonFromNative(xevent));
-    CHECK_EQ(slave_event.flags, xievent->flags);
-    CHECK_EQ(slave_event.buttons.mask_len, xievent->buttons.mask_len);
-    CHECK_EQ(slave_event.valuators.mask_len, xievent->valuators.mask_len);
-    CHECK_EQ(slave_event.mods.base, xievent->mods.base);
-    CHECK_EQ(slave_event.mods.latched, xievent->mods.latched);
-    CHECK_EQ(slave_event.mods.locked, xievent->mods.locked);
-    CHECK_EQ(slave_event.mods.effective, xievent->mods.effective);
-  }
-#endif  // defined(USE_XI2_MT) && !defined(NDEBUG)
-}
-
 // Coalesce all pending motion events (touch or mouse) that are at the top of
 // the queue, and return the number eliminated, storing the last one in
 // |last_event|.
@@ -156,7 +105,6 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
     // with one from the master and one from the slave so there will
     // always be at least one pending.
     if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(&next_event)) {
-      CheckXEventForConsistency(&next_event);
       XFreeEventData(display, &next_event.xcookie);
       XNextEvent(display, &next_event);
       continue;
@@ -199,7 +147,6 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
         // Get the event and its cookie data.
         XNextEvent(display, last_event);
         XGetEventData(display, &last_event->xcookie);
-        CheckXEventForConsistency(last_event);
         ++num_coalesed;
         continue;
       } else {
@@ -420,8 +367,6 @@ RootWindowHostLinux::~RootWindowHostLinux() {
 
 bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
-
-  CheckXEventForConsistency(xev);
 
   if (FindEventTarget(event) == x_root_window_)
     return DispatchEventForRootWindow(event);

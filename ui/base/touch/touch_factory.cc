@@ -160,7 +160,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   XIDeviceInfo* devices = XIQueryDevice(display, XIAllDevices, &count);
   for (int i = 0; i < count; i++) {
     XIDeviceInfo* devinfo = devices + i;
-    if (devinfo->use == XIFloatingSlave || devinfo->use == XISlavePointer) {
+    if (devinfo->use == XIFloatingSlave || devinfo->use == XIMasterPointer) {
 #if defined(USE_XI2_MT)
       for (int k = 0; k < devinfo->num_classes; ++k) {
         XIAnyClassInfo* xiclassinfo = devinfo->classes[k];
