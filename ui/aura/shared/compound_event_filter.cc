@@ -4,6 +4,7 @@
 
 #include "ui/aura/shared/compound_event_filter.h"
 
+#include "base/hash_tables.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -30,6 +31,50 @@ Window* GetActiveWindow(Window* window) {
   DCHECK(window->GetRootWindow());
   return client::GetActivationClient(window->GetRootWindow())->
       GetActiveWindow();
+}
+
+bool ShouldHideCursorOnKeyEvent(const ui::KeyEvent& event) {
+  // All alt and control key commands are ignored.
+  if (event.IsAltDown() || event.IsControlDown())
+    return false;
+
+  static bool inited = false;
+  static base::hash_set<int32> ignored_keys;
+  if (!inited) {
+    // Modifiers.
+    ignored_keys.insert(ui::VKEY_SHIFT);
+    ignored_keys.insert(ui::VKEY_CONTROL);
+    ignored_keys.insert(ui::VKEY_MENU);
+
+    // Search key == VKEY_LWIN.
+    ignored_keys.insert(ui::VKEY_LWIN);
+
+    // Function keys.
+    for (int key = ui::VKEY_F1; key <= ui::VKEY_F24; ++key)
+      ignored_keys.insert(key);
+
+    // Media keys.
+    for (int key = ui::VKEY_BROWSER_BACK; key <= ui::VKEY_MEDIA_LAUNCH_APP2;
+         ++key) {
+      ignored_keys.insert(key);
+    }
+
+#if defined(OS_POSIX)
+    ignored_keys.insert(ui::VKEY_WLAN);
+    ignored_keys.insert(ui::VKEY_POWER);
+    ignored_keys.insert(ui::VKEY_BRIGHTNESS_DOWN);
+    ignored_keys.insert(ui::VKEY_BRIGHTNESS_UP);
+    ignored_keys.insert(ui::VKEY_KBD_BRIGHTNESS_DOWN);
+    ignored_keys.insert(ui::VKEY_KBD_BRIGHTNESS_UP);
+#endif
+
+    inited = true;
+  }
+
+  if (ignored_keys.count(event.key_code()) > 0)
+    return false;
+
+  return true;
 }
 
 }  // namespace
@@ -164,8 +209,11 @@ void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
 // CompoundEventFilter, ui::EventHandler implementation:
 
 ui::EventResult CompoundEventFilter::OnKeyEvent(ui::KeyEvent* event) {
-  SetCursorVisibilityOnEvent(
-      static_cast<Window*>(event->target()), event, false);
+  if (ShouldHideCursorOnKeyEvent(*event)) {
+    SetCursorVisibilityOnEvent(
+        static_cast<Window*>(event->target()), event, false);
+  }
+
   return FilterKeyEvent(event);
 }
 
