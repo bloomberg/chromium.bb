@@ -135,8 +135,6 @@ double ThrottledTextureUploader::estimatedTexturesPerSecond()
 
 void ThrottledTextureUploader::beginQuery()
 {
-    processQueries();
-
     if (m_availableQueries.isEmpty())
       m_availableQueries.append(Query::create(m_context));
 
