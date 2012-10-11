@@ -171,6 +171,61 @@ gfx::ImageSkia* g_background_16 = NULL;
 gfx::ImageSkia* g_foreground_32 = NULL;
 gfx::ImageSkia* g_background_32 = NULL;
 
+void PaintCustomDownloadProgress(gfx::Canvas* canvas,
+                                 const gfx::ImageSkia& background_image,
+                                 const gfx::ImageSkia& foreground_image,
+                                 int image_size,
+                                 const gfx::Rect& bounds,
+                                 int start_angle,
+                                 int percent_done) {
+  // Draw the background progress image.
+  canvas->DrawImageInt(background_image,
+                       bounds.x(),
+                       bounds.y());
+
+  // Layer the foreground progress image in an arc proportional to the download
+  // progress. The arc grows clockwise, starting in the midnight position, as
+  // the download progresses. However, if the download does not have known total
+  // size (the server didn't give us one), then we just spin an arc around until
+  // we're done.
+  float sweep_angle = 0.0;
+  float start_pos = static_cast<float>(kStartAngleDegrees);
+  if (percent_done < 0) {
+    sweep_angle = kUnknownAngleDegrees;
+    start_pos = static_cast<float>(start_angle);
+  } else if (percent_done > 0) {
+    sweep_angle = static_cast<float>(kMaxDegrees / 100.0 * percent_done);
+  }
+
+  // Set up an arc clipping region for the foreground image. Don't bother using
+  // a clipping region if it would round to 360 (really 0) degrees, since that
+  // would eliminate the foreground completely and be quite confusing (it would
+  // look like 0% complete when it should be almost 100%).
+  canvas->Save();
+  if (sweep_angle < static_cast<float>(kMaxDegrees - 1)) {
+    SkRect oval;
+    oval.set(SkIntToScalar(bounds.x()),
+             SkIntToScalar(bounds.y()),
+             SkIntToScalar(bounds.x() + image_size),
+             SkIntToScalar(bounds.y() + image_size));
+    SkPath path;
+    path.arcTo(oval,
+               SkFloatToScalar(start_pos),
+               SkFloatToScalar(sweep_angle), false);
+    path.lineTo(SkIntToScalar(bounds.x() + image_size / 2),
+                SkIntToScalar(bounds.y() + image_size / 2));
+
+    // gfx::Canvas::ClipPath does not provide for anti-aliasing.
+    canvas->sk_canvas()->clipPath(path, SkRegion::kIntersect_Op, true);
+  }
+
+  canvas->DrawImageInt(foreground_image,
+                       bounds.x(),
+                       bounds.y());
+  canvas->Restore();
+}
+
+
 void PaintDownloadProgress(gfx::Canvas* canvas,
 #if defined(TOOLKIT_VIEWS)
                            views::View* containing_view,
@@ -217,46 +272,9 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
                        bounds.x(),
                        bounds.y());
 
-  // Layer the foreground progress image in an arc proportional to the download
-  // progress. The arc grows clockwise, starting in the midnight position, as
-  // the download progresses. However, if the download does not have known total
-  // size (the server didn't give us one), then we just spin an arc around until
-  // we're done.
-  float sweep_angle = 0.0;
-  float start_pos = static_cast<float>(kStartAngleDegrees);
-  if (percent_done < 0) {
-    sweep_angle = kUnknownAngleDegrees;
-    start_pos = static_cast<float>(start_angle);
-  } else if (percent_done > 0) {
-    sweep_angle = static_cast<float>(kMaxDegrees / 100.0 * percent_done);
-  }
-
-  // Set up an arc clipping region for the foreground image. Don't bother using
-  // a clipping region if it would round to 360 (really 0) degrees, since that
-  // would eliminate the foreground completely and be quite confusing (it would
-  // look like 0% complete when it should be almost 100%).
-  canvas->Save();
-  if (sweep_angle < static_cast<float>(kMaxDegrees - 1)) {
-    SkRect oval;
-    oval.set(SkIntToScalar(bounds.x()),
-             SkIntToScalar(bounds.y()),
-             SkIntToScalar(bounds.x() + kProgressIconSize),
-             SkIntToScalar(bounds.y() + kProgressIconSize));
-    SkPath path;
-    path.arcTo(oval,
-               SkFloatToScalar(start_pos),
-               SkFloatToScalar(sweep_angle), false);
-    path.lineTo(SkIntToScalar(bounds.x() + kProgressIconSize / 2),
-                SkIntToScalar(bounds.y() + kProgressIconSize / 2));
-
-    // gfx::Canvas::ClipPath does not provide for anti-aliasing.
-    canvas->sk_canvas()->clipPath(path, SkRegion::kIntersect_Op, true);
-  }
-
-  canvas->DrawImageInt(*foreground,
-                       bounds.x(),
-                       bounds.y());
-  canvas->Restore();
+  PaintCustomDownloadProgress(canvas, *background, *foreground,
+                              kProgressIconSize, bounds, start_angle,
+                              percent_done);
 }
 
 void PaintDownloadComplete(gfx::Canvas* canvas,

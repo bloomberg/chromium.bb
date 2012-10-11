@@ -8,8 +8,10 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_progress_view_controller.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#import "chrome/browser/ui/cocoa/spinner_progress_indicator.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate_mock.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -69,6 +71,16 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, CloseButton) {
   [[controller_ closeButton] performClick:nil];
 }
 
+// Test the "waiting for chrome web store" state.
+IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, Waiting) {
+  model_.SetWaitingForSuggestions(true);
+  EXPECT_EQ(PICKER_STATE_WAITING, [controller_ state]);
+  WebIntentProgressViewController* progress_controller =
+      [controller_ progressViewController];
+  EXPECT_NSEQ([controller_ view], [[progress_controller view] superview]);
+  EXPECT_TRUE([[progress_controller progressIndicator] isIndeterminate]);
+}
+
 // Test the "no matching services" state.
 IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, NoServices) {
   model_.SetWaitingForSuggestions(false);
@@ -76,4 +88,30 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, NoServices) {
   WebIntentMessageViewController* message_controller =
       [controller_ messageViewController];
   EXPECT_NSEQ([controller_ view], [[message_controller view] superview]);
+}
+
+// Test the "installing a service" state.
+IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, Installing) {
+  // Add a suggested service.
+  std::vector<WebIntentPickerModel::SuggestedExtension> suggestions;
+  WebIntentPickerModel::SuggestedExtension suggestion(
+      ASCIIToUTF16("Title"), "1234", 2);
+  suggestions.push_back(suggestion);
+  model_.AddSuggestedExtensions(suggestions);
+
+  // Set a pending extension download.
+  model_.SetWaitingForSuggestions(false);
+  model_.SetPendingExtensionInstallId(suggestion.id);
+  EXPECT_EQ(PICKER_STATE_INSTALLING_EXTENSION, [controller_ state]);
+
+  WebIntentProgressViewController* progress_controller =
+      [controller_ progressViewController];
+  EXPECT_NSEQ([controller_ view], [[progress_controller view] superview]);
+  SpinnerProgressIndicator* progress_indicator =
+      [progress_controller progressIndicator];
+  EXPECT_FALSE([progress_indicator isIndeterminate]);
+
+  int percent_done = 50;
+  model_.SetPendingExtensionInstallDownloadProgress(percent_done);
+  EXPECT_EQ(percent_done, [progress_indicator percentDone]);
 }

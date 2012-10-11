@@ -4,10 +4,12 @@
 
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 
+#include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_progress_view_controller.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
@@ -26,7 +28,9 @@
 - (WebIntentPickerState)newPickerState;
 
 // Update the various views to match changes to the picker model.
+- (void)updateWaiting;
 - (void)updateNoService;
+- (void)updateInstallingExtension;
 
 - (void)onCloseButton:(id)sender;
 - (void)cancelOperation:(id)sender;
@@ -51,7 +55,8 @@
 
     messageViewController_.reset(
         [[WebIntentMessageViewController alloc] init]);
-
+    progressViewController_.reset(
+        [[WebIntentProgressViewController alloc] init]);
   }
   return self;
 }
@@ -66,6 +71,10 @@
 
 - (WebIntentMessageViewController*)messageViewController {
   return messageViewController_;
+}
+
+- (WebIntentProgressViewController*)progressViewController {
+  return progressViewController_;
 }
 
 - (void)update {
@@ -83,8 +92,14 @@
   }
 
   switch (state_) {
+    case PICKER_STATE_WAITING:
+      [self updateWaiting];
+      break;
     case PICKER_STATE_NO_SERVICE:
       [self updateNoService];
+      break;
+    case PICKER_STATE_INSTALLING_EXTENSION:
+      [self updateInstallingExtension];
       break;
   }
 
@@ -130,14 +145,30 @@
 
 - (NSViewController<WebIntentViewController>*)currentViewController {
   switch (state_) {
+    case PICKER_STATE_WAITING:
+      return progressViewController_;
     case PICKER_STATE_NO_SERVICE:
       return messageViewController_;
+    case PICKER_STATE_INSTALLING_EXTENSION:
+      return progressViewController_;
   }
   return nil;
 }
 
 - (WebIntentPickerState)newPickerState {
+  WebIntentPickerModel* model = picker_->model();
+  if (!model->pending_extension_install_id().empty())
+    return PICKER_STATE_INSTALLING_EXTENSION;
+  if (model->IsWaitingForSuggestions())
+    return PICKER_STATE_WAITING;
   return PICKER_STATE_NO_SERVICE;
+}
+
+- (void)updateWaiting {
+  NSString* message = l10n_util::GetNSStringWithFixup(
+      IDS_INTENT_PICKER_WAIT_FOR_CWS);
+  [progressViewController_ setMessage:message];
+  [progressViewController_ setPercentDone:-1];
 }
 
 - (void)updateNoService {
@@ -145,6 +176,21 @@
       IDS_INTENT_PICKER_NO_SERVICES_TITLE)];
   [messageViewController_ setMessage:l10n_util::GetNSStringWithFixup(
       IDS_INTENT_PICKER_NO_SERVICES)];
+}
+
+- (void)updateInstallingExtension {
+  WebIntentPickerModel* model = picker_->model();
+  const WebIntentPickerModel::SuggestedExtension* extension =
+      model->GetSuggestedExtensionWithId(
+          model->pending_extension_install_id());
+  if (!extension)
+    return;
+  [progressViewController_ setTitle:
+      base::SysUTF16ToNSString(extension->title)];
+  [progressViewController_ setMessage:base::SysUTF16ToNSString(
+      model->pending_extension_install_status_string())];
+  [progressViewController_ setPercentDone:
+      model->pending_extension_install_download_progress()];
 }
 
 - (void)onCloseButton:(id)sender {
