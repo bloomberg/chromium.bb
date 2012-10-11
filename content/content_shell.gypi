@@ -601,9 +601,10 @@
           # content_shell_java.
           'target_name': 'content_shell_java',
           'type': 'none',
-          'outputs': [
-            '<(PRODUCT_DIR)/lib.java/chromium_content_shell.jar',
-          ],
+          'variables': {
+            'output_jar': '<(PRODUCT_DIR)/lib.java/chromium_apk_content_shell.jar'
+          },
+          'outputs': ['<(output_jar)'],
           'dependencies': [
             'content_java',
             'content_shell_apk',
@@ -617,7 +618,7 @@
           # targets.
           'all_dependent_settings': {
             'variables': {
-              'input_jars_paths': ['<(PRODUCT_DIR)/lib.java/chromium_content_shell.jar'],
+              'input_jars_paths': ['<(output_jar)'],
             },
           },
           # Add an action with the appropriate output. This allows the generated
@@ -626,7 +627,7 @@
             {
               'action_name': 'fake_generate_jar',
               'inputs': [],
-              'outputs': ['<(PRODUCT_DIR)/lib.java/chromium_content_shell.jar'],
+              'outputs': ['<(output_jar)'],
               'action': [],
             },
           ],
