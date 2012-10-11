@@ -128,9 +128,10 @@
       'variables': {
         'package_name': 'android_webview',
         'apk_name': 'AndroidWebView',
+        'manifest_package_name': 'org.chromium.android_webview',
         'java_in_dir': '../android_webview/java',
         'resource_dir': '../res',
-        'native_libs_paths': ['<(PRODUCT_DIR)/android_webview/libs/<(android_app_abi)/libwebview.so'],
+        'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebview.so'],
         'input_pak_files': [
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
@@ -145,20 +146,6 @@
         ],
         'additional_input_paths': [ '<@(copied_pak_files)' ],
       },
-      'actions': [
-        {
-          'action_name': 'copy_and_strip_so',
-          'inputs': ['<(SHARED_LIB_DIR)/libwebview.so'],
-          'outputs': ['<(PRODUCT_DIR)/android_webview/libs/<(android_app_abi)/libwebview.so'],
-          'action': [
-            '<(android_strip)',
-            '--strip-unneeded',  # All symbols not needed for relocation.
-            '<@(_inputs)',
-            '-o',
-            '<@(_outputs)',
-          ],
-        },
-      ],
       'copies': [
         {
           'destination': '<(PRODUCT_DIR)/android_webview/assets',

@@ -650,27 +650,14 @@
           'variables': {
             'package_name': 'content_shell',
             'apk_name': 'ContentShell',
+            'manifest_package_name': 'org.chromium.content_shell',
             'java_in_dir': 'shell/android/java',
             # TODO(cjhopman): The resource directory of all apks should be in
             # <java_in_dir>/res.
             'resource_dir': '../res',
-            'native_libs_paths': ['<(PRODUCT_DIR)/content_shell/libs/<(android_app_abi)/libcontent_shell_content_view.so'],
+            'native_libs_paths': ['<(SHARED_LIB_DIR)/libcontent_shell_content_view.so'],
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
           },
-          'actions': [
-            {
-              'action_name': 'copy_and_strip_so',
-              'inputs': ['<(SHARED_LIB_DIR)/libcontent_shell_content_view.so'],
-              'outputs': ['<(PRODUCT_DIR)/content_shell/libs/<(android_app_abi)/libcontent_shell_content_view.so'],
-              'action': [
-                '<(android_strip)',
-                '--strip-unneeded',  # All symbols not needed for relocation.
-                '<@(_inputs)',
-                '-o',
-                '<@(_outputs)',
-              ],
-            },
-          ],
           'includes': [ '../build/java_apk.gypi' ],
         },
       ],

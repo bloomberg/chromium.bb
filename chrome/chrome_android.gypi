@@ -51,26 +51,13 @@
       'variables': {
         'package_name': 'chromium_testshell',
         'apk_name': 'ChromiumTestShell',
+        'manifest_package_name': 'org.chromium.chrome.testshell',
         'java_in_dir': 'android/testshell/java',
         'resource_dir': '../res',
         'asset_location': '<(ant_build_out)/../assets/chrome',
-        'native_libs_paths': [ '<(PRODUCT_DIR)/chromium_testshell/libs/<(android_app_abi)/libchromiumtestshell.so', ],
+        'native_libs_paths': [ '<(SHARED_LIB_DIR)/libchromiumtestshell.so', ],
         'additional_input_paths': [ '<@(chrome_android_pak_output_resources)', ],
       },
-      'actions': [
-        {
-          'action_name': 'copy_and_strip_so',
-          'inputs': ['<(SHARED_LIB_DIR)/libchromiumtestshell.so'],
-          'outputs': ['<(PRODUCT_DIR)/chromium_testshell/libs/<(android_app_abi)/libchromiumtestshell.so'],
-          'action': [
-            '<(android_strip)',
-            '--strip-unneeded',
-            '<@(_inputs)',
-            '-o',
-            '<@(_outputs)',
-          ],
-        },
-      ],
       'includes': [ '../build/java_apk.gypi', ],
     },
     {
