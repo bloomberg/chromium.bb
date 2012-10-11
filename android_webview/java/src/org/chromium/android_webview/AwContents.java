@@ -194,6 +194,13 @@ public class AwContents {
      * @param pararms Parameters for this load.
      */
     public void loadUrl(LoadUrlParams params) {
+        if (params.getLoadUrlType() == LoadUrlParams.LOAD_TYPE_DATA &&
+            !params.isBaseUrlDataScheme()) {
+            // This allows data URLs with a non-data base URL access to file:///android_asset/ and
+            // file:///android_res/ URLs. If AwSettings.getAllowFileAccess permits, it will also
+            // allow access to file:// URLs (subject to OS level permission checks).
+            params.setCanLoadLocalResources(true);
+        }
         mContentViewCore.loadUrl(params);
     }
 

@@ -6,12 +6,15 @@
 
 #include "android_webview/common/render_view_messages.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 namespace android_webview {
@@ -64,6 +67,16 @@ bool AwRenderViewExt::allowImage(WebKit::WebFrame* frame,
   return !(url.SchemeIs(chrome::kHttpScheme) ||
            url.SchemeIs(chrome::kHttpsScheme) ||
            url.SchemeIs(chrome::kFtpScheme));
+}
+
+void AwRenderViewExt::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+                                               bool is_new_navigation) {
+  content::DocumentState* document_state =
+      content::DocumentState::FromDataSource(frame->dataSource());
+  if (document_state->can_load_local_resources()) {
+    WebKit::WebSecurityOrigin origin = frame->document().securityOrigin();
+    origin.grantLoadLocalResources();
+  }
 }
 
 }  // namespace android_webview

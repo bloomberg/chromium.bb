@@ -177,6 +177,11 @@ class NavigationEntry {
   //   - or this navigation was copied from a foreign session.
   virtual void SetTimestamp(base::Time timestamp) = 0;
   virtual base::Time GetTimestamp() const = 0;
+
+  // Used to specify if this entry should be able to access local file://
+  // resources.
+  virtual void SetCanLoadLocalResources(bool allow) = 0;
+  virtual bool GetCanLoadLocalResources() const = 0;
 };
 
 }  // namespace content

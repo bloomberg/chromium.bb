@@ -738,6 +738,10 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   // If is_post is true, holds the post_data information from browser. Empty
   // otherwise.
   IPC_STRUCT_MEMBER(std::vector<unsigned char>, browser_initiated_post_data)
+
+  // Whether or not this url should be allowed to access local file://
+  // resources.
+  IPC_STRUCT_MEMBER(bool, can_load_local_resources)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)

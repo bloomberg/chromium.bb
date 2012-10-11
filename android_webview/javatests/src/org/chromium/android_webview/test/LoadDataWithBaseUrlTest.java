@@ -4,19 +4,25 @@
 
 package org.chromium.android_webview.test;
 
+import android.graphics.Bitmap;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.concurrent.TimeUnit;
 
 public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
@@ -212,28 +218,6 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
 
     @SmallTest
     @Feature({"Android-WebView"})
-    public void testAccessToLocalFile() throws Throwable {
-        getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
-        final String baseUrl = UrlUtils.getTestFileUrl("webview/");
-        final String scriptFile = baseUrl + "script.js";
-        final String pageHtml = getScriptFileTestPageHtml(scriptFile);
-        loadDataWithBaseUrlSync(pageHtml, "text/html", false, baseUrl, null);
-        assertEquals(SCRIPT_LOADED, getTitleOnUiThread(mAwContents));
-    }
-
-    @SmallTest
-    @Feature({"Android-WebView"})
-    public void testFailedAccessToLocalFile() throws Throwable {
-        getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
-        final String scriptFile = UrlUtils.getTestFileUrl("webview/script.js");
-        final String pageHtml = getScriptFileTestPageHtml(scriptFile);
-        final String baseUrl = "http://example.com";
-        loadDataWithBaseUrlSync(pageHtml, "text/html", false, baseUrl, null);
-        assertEquals(SCRIPT_NOT_LOADED, getTitleOnUiThread(mAwContents));
-    }
-
-    @SmallTest
-    @Feature({"Android-WebView"})
     public void testHistoryUrlNavigation() throws Throwable {
         TestWebServer webServer = null;
         try {
@@ -263,6 +247,99 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
 
         } finally {
             if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    /**
+     * @return true if |fileUrl| was accessible from a data url with |baseUrl| as it's
+     * base URL.
+     */
+    private boolean canAccessFileFromData(String baseUrl, String fileUrl) throws Throwable {
+        final String IMAGE_LOADED = "LOADED";
+        final String IMAGE_NOT_LOADED = "NOT_LOADED";
+        String data = "<html><body>" +
+                "<img src=\"" + fileUrl + "\" " +
+                "onload=\"document.title=\'" + IMAGE_LOADED + "\';\" " +
+                "onerror=\"document.title=\'" + IMAGE_NOT_LOADED + "\';\" />" +
+                "</body></html>";
+
+        loadDataWithBaseUrlSync(data, "text/html", false, baseUrl, null);
+
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    String title = getTitleOnUiThread(mAwContents);
+                    return IMAGE_LOADED.equals(title) || IMAGE_NOT_LOADED.equals(title);
+                } catch (Throwable t) {
+                    return false;
+                }
+            }
+        });
+
+        return IMAGE_LOADED.equals(getTitleOnUiThread(mAwContents));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView"})
+    public void testLoadDataWithBaseUrlAccessingFile() throws Throwable {
+        // Create a temporary file on the filesystem we can try to read.
+        File cacheDir = getActivity().getCacheDir();
+        File tempImage = File.createTempFile("test_image", ".png", cacheDir);
+        Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565);
+        FileOutputStream fos = new FileOutputStream(tempImage);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        String imagePath = tempImage.getAbsolutePath();
+
+        ContentSettings contentSettings = getContentSettingsOnUiThread(mAwContents);
+        contentSettings.setImagesEnabled(true);
+        contentSettings.setJavaScriptEnabled(true);
+
+        try {
+            final String DATA_BASE_URL = "data:";
+            final String NON_DATA_BASE_URL = "http://example.com";
+
+            AndroidProtocolHandler.setResourceContextForTesting(getInstrumentation().getContext());
+            mAwContents.getSettings().setAllowFileAccess(false);
+            String token = "" + System.currentTimeMillis();
+            // All access to file://, including android_asset and android_res is blocked
+            // with a data: base URL, regardless of AwSettings.getAllowFileAccess().
+            assertFalse(canAccessFileFromData(DATA_BASE_URL,
+                  "file:///android_asset/asset_icon.png?" + token));
+            assertFalse(canAccessFileFromData(DATA_BASE_URL,
+                  "file:///android_res/raw/resource_icon.png?" + token));
+            assertFalse(canAccessFileFromData(DATA_BASE_URL, "file://" + imagePath + "?" + token));
+
+            // WebView always has access to android_asset and android_res for non-data
+            // base URLs and can access other file:// URLs based on the value of
+            // AwSettings.getAllowFileAccess().
+            assertTrue(canAccessFileFromData(NON_DATA_BASE_URL,
+                  "file:///android_asset/asset_icon.png?" + token));
+            assertTrue(canAccessFileFromData(NON_DATA_BASE_URL,
+                  "file:///android_res/raw/resource_icon.png?" + token));
+            assertFalse(canAccessFileFromData(NON_DATA_BASE_URL,
+                  "file://" + imagePath + "?" + token));
+
+            token += "a";
+            mAwContents.getSettings().setAllowFileAccess(true);
+            // We should still be unable to access any file:// with when loading with a
+            // data: base URL, but we should now be able to access the wider file system
+            // (still restricted by OS-level permission checks) with a non-data base URL.
+            assertFalse(canAccessFileFromData(DATA_BASE_URL,
+                  "file:///android_asset/asset_icon.png?" + token));
+            assertFalse(canAccessFileFromData(DATA_BASE_URL,
+                  "file:///android_res/raw/resource_icon.png?" + token));
+            assertFalse(canAccessFileFromData(DATA_BASE_URL, "file://" + imagePath + "?" + token));
+
+            assertTrue(canAccessFileFromData(NON_DATA_BASE_URL,
+                  "file:///android_asset/asset_icon.png?" + token));
+            assertTrue(canAccessFileFromData(NON_DATA_BASE_URL,
+                  "file:///android_res/raw/resource_icon.png?" + token));
+            assertTrue(canAccessFileFromData(NON_DATA_BASE_URL,
+                  "file://" + imagePath + "?" + token));
+        } finally {
+          tempImage.delete();
+          AndroidProtocolHandler.setResourceContextForTesting(null);
         }
     }
 }

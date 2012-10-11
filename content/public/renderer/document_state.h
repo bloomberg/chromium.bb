@@ -258,6 +258,11 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
   NavigationState* navigation_state() { return navigation_state_.get(); }
   void set_navigation_state(NavigationState* navigation_state);
 
+  bool can_load_local_resources() const { return can_load_local_resources_; }
+  void set_can_load_local_resources(bool can_load) {
+    can_load_local_resources_ = can_load;
+  }
+
  private:
   base::Time request_time_;
   base::Time start_load_time_;
@@ -300,6 +305,8 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
   scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
 
   scoped_ptr<NavigationState> navigation_state_;
+
+  bool can_load_local_resources_;
 };
 
 #endif  // CONTENT_PUBLIC_RENDERER_DOCUMENT_STATE_H_

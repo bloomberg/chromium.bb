@@ -690,6 +690,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     case LOAD_TYPE_DATA:
       entry->SetBaseURLForDataURL(params.base_url_for_data_url);
       entry->SetVirtualURL(params.virtual_url_for_data_url);
+      entry->SetCanLoadLocalResources(params.can_load_local_resources);
       break;
     default:
       NOTREACHED();

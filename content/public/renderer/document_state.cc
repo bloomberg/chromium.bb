@@ -27,7 +27,8 @@ DocumentState::DocumentState()
       cache_policy_override_set_(false),
       cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
       referrer_policy_set_(false),
-      referrer_policy_(WebKit::WebReferrerPolicyDefault) {
+      referrer_policy_(WebKit::WebReferrerPolicyDefault),
+      can_load_local_resources_(false) {
 }
 
 DocumentState::~DocumentState() {}

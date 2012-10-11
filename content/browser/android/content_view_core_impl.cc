@@ -433,7 +433,8 @@ void ContentViewCoreImpl::LoadUrl(
     jstring extra_headers,
     jbyteArray post_data,
     jstring base_url_for_data_url,
-    jstring virtual_url_for_data_url) {
+    jstring virtual_url_for_data_url,
+    jboolean can_load_local_resources) {
   DCHECK(url);
   NavigationController::LoadURLParams params(
       GURL(ConvertJavaStringToUTF8(env, url)));
@@ -464,6 +465,8 @@ void ContentViewCoreImpl::LoadUrl(
     params.virtual_url_for_data_url =
         GURL(ConvertJavaStringToUTF8(env, virtual_url_for_data_url));
   }
+
+  params.can_load_local_resources = can_load_local_resources;
 
   LoadUrl(params);
 }

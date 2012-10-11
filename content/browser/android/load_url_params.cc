@@ -6,7 +6,10 @@
 
 #include <jni.h>
 
+#include "base/android/jni_string.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "jni/LoadUrlParams_jni.h"
 
 namespace {
@@ -32,6 +35,11 @@ bool RegisterLoadUrlParams(JNIEnv* env) {
     return false;
   RegisterConstants(env);
   return true;
+}
+
+jboolean IsDataScheme(JNIEnv* env, jclass clazz, jstring jurl) {
+  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+  return url.SchemeIs(chrome::kDataScheme);
 }
 
 }  // namespace content

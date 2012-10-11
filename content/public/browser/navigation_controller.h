@@ -148,6 +148,9 @@ class NavigationController {
     // after LoadURLWithParams call.
     scoped_refptr<base::RefCountedMemory> browser_initiated_post_data;
 
+    // True if this URL should be able to access local resources.
+    bool can_load_local_resources;
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 

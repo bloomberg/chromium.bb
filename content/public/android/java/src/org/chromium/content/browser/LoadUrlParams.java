@@ -41,6 +41,7 @@ public class LoadUrlParams {
     byte[] mPostData;
     String mBaseUrlForDataUrl;
     String mVirtualUrlForDataUrl;
+    boolean mCanLoadLocalResources;
 
     public LoadUrlParams(String url) {
         // Check initializeConstants was called.
@@ -200,6 +201,27 @@ public class LoadUrlParams {
         mVirtualUrlForDataUrl = virtualUrl;
     }
 
+    /**
+     * Set whether the load should be able to access local resources. This
+     * defaults to false.
+     */
+    public void setCanLoadLocalResources(boolean canLoad) {
+        mCanLoadLocalResources = canLoad;
+    }
+
+    public int getLoadUrlType() {
+        return mLoadUrlType;
+    }
+
+    public boolean isBaseUrlDataScheme() {
+        // If there's no base url set, but this is a data load then
+        // treat the scheme as data:.
+        if (mBaseUrlForDataUrl == null && mLoadUrlType == LOAD_TYPE_DATA) {
+            return true;
+        }
+        return nativeIsDataScheme(mBaseUrlForDataUrl);
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private static void initializeConstants(
@@ -216,4 +238,10 @@ public class LoadUrlParams {
         UA_OVERRIDE_FALSE = ua_override_false;
         UA_OVERRIDE_TRUE = ua_override_true;
     }
+
+    /**
+     * Parses |url| as a GURL on the native side, and
+     * returns true if it's scheme is data:.
+     */
+    private static native boolean nativeIsDataScheme(String url);
 }

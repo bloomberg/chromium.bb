@@ -32,6 +32,8 @@ class AwRenderViewExt : public content::RenderViewObserver,
 
   // RenderView::Observer:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+                                        bool is_new_navigation) OVERRIDE;
 
   void OnDocumentHasImagesRequest(int id);
 

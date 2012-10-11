@@ -67,7 +67,8 @@ class ContentViewCoreImpl : public ContentViewCore,
       jstring extra_headers,
       jbyteArray post_data,
       jstring base_url_for_data_url,
-      jstring virtual_url_for_data_url);
+      jstring virtual_url_for_data_url,
+      jboolean can_load_local_resources);
   void SetAllUserAgentOverridesInHistory(
       JNIEnv* env,
       jobject obj,

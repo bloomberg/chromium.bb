@@ -662,7 +662,8 @@ public class ContentViewCore implements MotionEventDelegate {
                 params.getExtraHeadersString(),
                 params.mPostData,
                 params.mBaseUrlForDataUrl,
-                params.mVirtualUrlForDataUrl);
+                params.mVirtualUrlForDataUrl,
+                params.mCanLoadLocalResources);
     }
 
     void setAllUserAgentOverridesInHistory() {
@@ -2112,7 +2113,8 @@ public class ContentViewCore implements MotionEventDelegate {
             String extraHeaders,
             byte[] postData,
             String baseUrlForDataUrl,
-            String virtualUrlForDataUrl);
+            String virtualUrlForDataUrl,
+            boolean canLoadLocalResources);
 
     private native void nativeSetAllUserAgentOverridesInHistory(int nativeContentViewCoreImpl,
             String userAgentOverride);

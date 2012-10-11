@@ -3127,6 +3127,7 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
   document_state->set_must_reset_scroll_and_scale_state(
       params.navigation_type ==
           ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+  document_state->set_can_load_local_resources(params.can_load_local_resources);
 }
 
 NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {

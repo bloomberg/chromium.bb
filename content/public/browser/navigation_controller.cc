@@ -14,7 +14,8 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
       transition_type(PAGE_TRANSITION_LINK),
       is_renderer_initiated(false),
       override_user_agent(UA_OVERRIDE_INHERIT),
-      browser_initiated_post_data(NULL) {
+      browser_initiated_post_data(NULL),
+      can_load_local_resources(false) {
 }
 
 NavigationController::LoadURLParams::~LoadURLParams() {
