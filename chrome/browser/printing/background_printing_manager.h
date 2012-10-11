@@ -17,6 +17,7 @@ class TabContents;
 
 namespace content {
 class RenderProcessHost;
+class WebContents;
 }
 
 namespace printing {
@@ -53,7 +54,7 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
   // Notifications handlers.
   void OnRendererProcessClosed(content::RenderProcessHost* rph);
   void OnPrintJobReleased(TabContents* preview_tab);
-  void OnTabContentsDestroyed(TabContents* preview_tab);
+  void OnWebContentsDestroyed(content::WebContents* preview_tab);
 
   // Add |tab| to the pending deletion set and schedule deletion.
   void DeletePreviewTab(TabContents* tab);

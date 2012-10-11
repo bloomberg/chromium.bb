@@ -83,9 +83,9 @@ class PrintPreviewTabController
   // the initiator renderer crashed.
   void OnRendererProcessClosed(content::RenderProcessHost* rph);
 
-  // Handler for the TAB_CONTENTS_DESTROYED notification. This is observed when
+  // Handler for the WEB_CONTENTS_DESTROYED notification. This is observed when
   // either tab is closed.
-  void OnTabContentsDestroyed(TabContents* tab);
+  void OnWebContentsDestroyed(content::WebContents* tab);
 
   // Handler for the NAV_ENTRY_COMMITTED notification. This is observed when the
   // renderer is navigated to a different page.

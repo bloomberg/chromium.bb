@@ -289,8 +289,8 @@ void PrintPreviewTabController::Observe(
   if (type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED) {
     OnRendererProcessClosed(
         content::Source<content::RenderProcessHost>(source).ptr());
-  } else if (type == chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
-    OnTabContentsDestroyed(content::Source<TabContents>(source).ptr());
+  } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+    OnWebContentsDestroyed(content::Source<WebContents>(source).ptr());
   } else {
     DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
     TabContents* tab = TabContents::FromWebContents(
@@ -357,17 +357,19 @@ void PrintPreviewTabController::OnRendererProcessClosed(
     RemoveInitiatorTab(closed_initiator_tabs[i]);
 }
 
-void PrintPreviewTabController::OnTabContentsDestroyed(TabContents* tab) {
-  TabContents* preview_tab = GetPrintPreviewForTab(tab);
+void PrintPreviewTabController::OnWebContentsDestroyed(
+    content::WebContents* tab) {
+  TabContents* destroyed_tab_contents = TabContents::FromWebContents(tab);
+  TabContents* preview_tab = GetPrintPreviewForTab(destroyed_tab_contents);
   if (!preview_tab) {
     NOTREACHED();
     return;
   }
 
-  if (tab == preview_tab)
-    RemovePreviewTab(tab);
+  if (destroyed_tab_contents == preview_tab)
+    RemovePreviewTab(destroyed_tab_contents);
   else
-    RemoveInitiatorTab(tab);
+    RemoveInitiatorTab(destroyed_tab_contents);
 }
 
 void PrintPreviewTabController::OnNavEntryCommitted(
@@ -468,8 +470,8 @@ void PrintPreviewTabController::SetInitiatorTabURLAndTitle(
 
 void PrintPreviewTabController::AddObservers(TabContents* tab) {
   WebContents* web_contents = tab->web_contents();
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(tab));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(web_contents));
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(&web_contents->GetController()));
 
@@ -486,8 +488,8 @@ void PrintPreviewTabController::AddObservers(TabContents* tab) {
 
 void PrintPreviewTabController::RemoveObservers(TabContents* tab) {
   WebContents* web_contents = tab->web_contents();
-  registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    content::Source<TabContents>(tab));
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    content::Source<WebContents>(web_contents));
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(&web_contents->GetController()));
 

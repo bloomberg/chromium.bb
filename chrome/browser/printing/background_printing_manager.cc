@@ -41,13 +41,16 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(TabContents* preview_tab) {
 
   printing_tabs_.insert(preview_tab);
 
-  content::Source<TabContents> preview_source(preview_tab);
-  registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_RELEASED, preview_source);
+  content::Source<TabContents> preview_tab_source(preview_tab);
+  content::Source<WebContents> preview_source(preview_tab->web_contents());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_PRINT_JOB_RELEASED,
+                 preview_tab_source);
 
   // OwnInitiatorTabContents() may have already added this notification.
   if (!registrar_.IsRegistered(this,
-      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, preview_source)) {
-    registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED, preview_source)) {
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                    preview_source);
   }
 
@@ -86,8 +89,8 @@ void BackgroundPrintingManager::Observe(
   } else if (type == chrome::NOTIFICATION_PRINT_JOB_RELEASED) {
     OnPrintJobReleased(content::Source<TabContents>(source).ptr());
   } else {
-    DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, type);
-    OnTabContentsDestroyed(content::Source<TabContents>(source).ptr());
+    DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
+    OnWebContentsDestroyed(content::Source<WebContents>(source).ptr());
   }
 }
 
@@ -112,37 +115,38 @@ void BackgroundPrintingManager::OnPrintJobReleased(TabContents* preview_tab) {
   DeletePreviewTab(preview_tab);
 }
 
-void BackgroundPrintingManager::OnTabContentsDestroyed(
-    TabContents* preview_tab) {
+void BackgroundPrintingManager::OnWebContentsDestroyed(
+    WebContents* preview_tab) {
+  TabContents* tab_contents = TabContents::FromWebContents(preview_tab);
   // Always need to remove this notification since the tab is gone.
-  content::Source<TabContents> preview_source(preview_tab);
-  registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+  content::Source<WebContents> preview_source(preview_tab);
+  content::Source<TabContents> preview_tab_source(tab_contents);
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                     preview_source);
 
-  if (!HasPrintPreviewTab(preview_tab)) {
+  if (!HasPrintPreviewTab(tab_contents)) {
     NOTREACHED();
     return;
   }
 
   // Remove NOTIFICATION_RENDERER_PROCESS_CLOSED if |preview_tab| is the last
   // WebContents associated with |rph|.
-  bool shared_rph = HasSharedRenderProcessHost(printing_tabs_, preview_tab) ||
-      HasSharedRenderProcessHost(printing_tabs_pending_deletion_, preview_tab);
+  bool shared_rph = HasSharedRenderProcessHost(printing_tabs_, tab_contents) ||
+      HasSharedRenderProcessHost(printing_tabs_pending_deletion_, tab_contents);
   if (!shared_rph) {
-    content::RenderProcessHost* rph =
-        preview_tab->web_contents()->GetRenderProcessHost();
+    content::RenderProcessHost* rph = preview_tab->GetRenderProcessHost();
     registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                       content::Source<content::RenderProcessHost>(rph));
   }
 
   // Remove other notifications and remove the tab from its TabContentsSet.
-  if (printing_tabs_.find(preview_tab) != printing_tabs_.end()) {
+  if (printing_tabs_.find(tab_contents) != printing_tabs_.end()) {
     registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-                      preview_source);
-    printing_tabs_.erase(preview_tab);
+                      preview_tab_source);
+    printing_tabs_.erase(tab_contents);
   } else {
     // DeletePreviewTab already deleted the notification.
-    printing_tabs_pending_deletion_.erase(preview_tab);
+    printing_tabs_pending_deletion_.erase(tab_contents);
   }
 }
 
