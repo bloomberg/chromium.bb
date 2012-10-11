@@ -413,10 +413,12 @@ void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
+  desktop_root_window_host_->OnNativeWidgetFocus();
   native_widget_delegate_->OnNativeFocus(old_focused_window);
 }
 
 void DesktopNativeWidgetAura::OnBlur() {
+  desktop_root_window_host_->OnNativeWidgetBlur();
   native_widget_delegate_->OnNativeBlur(
       window_->GetFocusManager()->GetFocusedWindow());
 }

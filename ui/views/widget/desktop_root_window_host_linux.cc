@@ -123,6 +123,9 @@ void DesktopRootWindowHostLinux::InitX11Window(
   XSelectInput(xdisplay_, xwindow_, event_mask);
   XFlush(xdisplay_);
 
+  if (base::MessagePumpForUI::HasXInput2())
+    ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
+
   invisible_cursor_ = ui::CreateInvisibleCursor();
 
   // TODO(erg): We currently only request window deletion events. We also
@@ -485,8 +488,14 @@ void DesktopRootWindowHostLinux::SetWindowTitle(const string16& title) {
 }
 
 void DesktopRootWindowHostLinux::ClearNativeFocus() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  // This method is weird and misnamed. Instead of clearing the native focus,
+  // it sets the focus to our |content_window_|, which will trigger a cascade
+  // of focus changes into views.
+  if (content_window_ && content_window_->GetFocusManager() &&
+      content_window_->Contains(
+          content_window_->GetFocusManager()->GetFocusedWindow())) {
+    content_window_->GetFocusManager()->SetFocusedWindow(content_window_, NULL);
+  }
 }
 
 Widget::MoveLoopResult DesktopRootWindowHostLinux::RunMoveLoop(
@@ -564,6 +573,15 @@ void DesktopRootWindowHostLinux::InitModalType(ui::ModalType modal_type) {
 void DesktopRootWindowHostLinux::FlashFrame(bool flash_frame) {
   // TODO(erg):
   NOTIMPLEMENTED();
+}
+
+void DesktopRootWindowHostLinux::OnNativeWidgetFocus() {
+  native_widget_delegate_->AsWidget()->GetInputMethod()->OnFocus();
+}
+
+void DesktopRootWindowHostLinux::OnNativeWidgetBlur() {
+  if (xwindow_)
+    native_widget_delegate_->AsWidget()->GetInputMethod()->OnBlur();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

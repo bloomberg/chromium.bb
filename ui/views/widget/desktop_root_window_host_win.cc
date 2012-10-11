@@ -308,6 +308,13 @@ void DesktopRootWindowHostWin::FlashFrame(bool flash_frame) {
   message_handler_->FlashFrame(flash_frame);
 }
 
+void DesktopRootWindowHostWin::OnNativeWidgetFocus() {
+  // HWNDMessageHandler will perform the proper updating on its own.
+}
+
+void DesktopRootWindowHostWin::OnNativeWidgetBlur() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, RootWindowHost implementation:
 
