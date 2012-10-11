@@ -552,9 +552,9 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 }
 
 
-WL_EXPORT int
-wl_display_dispatch_queue(struct wl_display *display,
-			  struct wl_event_queue *queue)
+static int
+dispatch_queue(struct wl_display *display,
+	       struct wl_event_queue *queue, int block)
 {
 	int len, size;
 
@@ -563,7 +563,7 @@ wl_display_dispatch_queue(struct wl_display *display,
 	/* FIXME: Handle flush errors, EAGAIN... */
 	wl_connection_flush(display->connection);
 
-	if (wl_list_empty(&queue->event_list) &&
+	if (block && wl_list_empty(&queue->event_list) &&
 	    pthread_equal(display->display_thread, pthread_self())) {
 		len = wl_connection_read(display->connection);
 		if (len == -1) {
@@ -576,7 +576,7 @@ wl_display_dispatch_queue(struct wl_display *display,
 				break;
 			len -= size;
 		}
-	} else if (wl_list_empty(&queue->event_list)) {
+	} else if (block && wl_list_empty(&queue->event_list)) {
 		pthread_cond_wait(&queue->cond, &display->mutex);
 	}
 
@@ -589,11 +589,26 @@ wl_display_dispatch_queue(struct wl_display *display,
 }
 
 WL_EXPORT int
+wl_display_dispatch_queue(struct wl_display *display,
+			  struct wl_event_queue *queue)
+{
+	return dispatch_queue(display, queue, 1);
+}
+
+WL_EXPORT int
 wl_display_dispatch(struct wl_display *display)
 {
 	display->display_thread = pthread_self();
 
-	return wl_display_dispatch_queue(display, &display->queue);
+	return dispatch_queue(display, &display->queue, 1);
+}
+
+WL_EXPORT int
+wl_display_dispatch_pending(struct wl_display *display)
+{
+	display->display_thread = pthread_self();
+
+	return dispatch_queue(display, &display->queue, 0);
 }
 
 WL_EXPORT int
