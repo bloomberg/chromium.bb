@@ -290,10 +290,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   int row = 0;
   for (std::vector<ContentSettingBubbleModel::PopupItem>::const_iterator
        it(popupItems.begin()); it != popupItems.end(); ++it, ++row) {
-    const SkBitmap& icon = it->bitmap;
-    NSImage* image = nil;
-    if (!icon.empty())
-      image = gfx::SkBitmapToNSImage(icon);
+    NSImage* image = it->image.AsNSImage();
 
     std::string title(it->title);
     // The popup may not have committed a load yet, in which case it won't

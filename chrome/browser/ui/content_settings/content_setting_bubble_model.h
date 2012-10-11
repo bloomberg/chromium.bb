@@ -15,7 +15,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 
 class ContentSettingBubbleModelDelegate;
 class Profile;
@@ -29,7 +29,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   typedef ContentSettingBubbleModelDelegate Delegate;
 
   struct PopupItem {
-    SkBitmap bitmap;
+    gfx::Image image;
     std::string title;
     TabContents* tab_contents;
   };

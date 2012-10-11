@@ -136,10 +136,9 @@ void ContentSettingBubbleGtk::BuildBubble() {
     for (std::vector<ContentSettingBubbleModel::PopupItem>::const_iterator
          i(popup_items.begin()); i != popup_items.end(); ++i, ++row) {
       GtkWidget* image = gtk_image_new();
-      if (!i->bitmap.empty()) {
-        GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(i->bitmap);
+      if (!i->image.IsEmpty()) {
+        GdkPixbuf* icon_pixbuf = i->image.ToGdkPixbuf();
         gtk_image_set_from_pixbuf(GTK_IMAGE(image), icon_pixbuf);
-        g_object_unref(icon_pixbuf);
 
         // We stuff the image in an event box so we can trap mouse clicks on the
         // image (and launch the popup).
