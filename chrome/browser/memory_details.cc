@@ -227,8 +227,10 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           Profile::FromBrowserContext(
               render_process_host->GetBrowserContext());
       ExtensionService* extension_service = profile->GetExtensionService();
-      extensions::ProcessMap* extension_process_map =
-          extension_service->process_map();
+      extensions::ProcessMap* extension_process_map = NULL;
+      // No extensions on Android. So extension_service can be NULL.
+      if (extension_service)
+          extension_process_map = extension_service->process_map();
 
       // The RenderProcessHost may host multiple WebContentses.  Any
       // of them which contain diagnostics information make the whole
@@ -250,8 +252,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         chrome::ViewType type = chrome::GetViewType(contents);
         if (host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) {
           process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
-        } else if (extension_process_map->Contains(
-            host->GetProcess()->GetID())) {
+        } else if (extension_process_map &&
+            extension_process_map->Contains(host->GetProcess()->GetID())) {
           // For our purposes, don't count processes containing only hosted apps
           // as extension processes. See also: crbug.com/102533.
           std::set<std::string> extension_ids =
@@ -268,7 +270,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
             }
           }
         }
-        if (extension_process_map->Contains(host->GetProcess()->GetID())) {
+        if (extension_process_map &&
+            extension_process_map->Contains(host->GetProcess()->GetID())) {
           const Extension* extension =
               extension_service->extensions()->GetByID(url.host());
           if (extension) {
