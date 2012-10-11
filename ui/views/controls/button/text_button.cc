@@ -547,35 +547,15 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                             text_bounds.height(),
                             draw_string_flags);
 #endif
-    } else if (has_text_shadow_) {
-      SkColor shadow_color =
-          GetWidget()->IsActive() ? active_text_shadow_color_ :
-                                    inactive_text_shadow_color_;
-      canvas->DrawStringInt(text_,
-                            font_,
-                            shadow_color,
-                            text_bounds.x() + text_shadow_offset_.x(),
-                            text_bounds.y() + text_shadow_offset_.y(),
-                            text_bounds.width(),
-                            text_bounds.height(),
-                            draw_string_flags);
-      canvas->DrawStringInt(text_,
-                            font_,
-                            text_color,
-                            text_bounds.x(),
-                            text_bounds.y(),
-                            text_bounds.width(),
-                            text_bounds.height(),
-                            draw_string_flags);
     } else {
-      canvas->DrawStringInt(text_,
-                            font_,
-                            text_color,
-                            text_bounds.x(),
-                            text_bounds.y(),
-                            text_bounds.width(),
-                            text_bounds.height(),
-                            draw_string_flags);
+      gfx::ShadowValues shadows;
+      if (has_text_shadow_) {
+        SkColor color = GetWidget()->IsActive() ? active_text_shadow_color_ :
+                                                  inactive_text_shadow_color_;
+        shadows.push_back(gfx::ShadowValue(text_shadow_offset_, 0, color));
+      }
+      canvas->DrawStringWithShadows(text_, font_, text_color, text_bounds,
+                                    draw_string_flags, shadows);
     }
   }
 }

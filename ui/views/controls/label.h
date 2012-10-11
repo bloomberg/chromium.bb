@@ -302,7 +302,6 @@ class VIEWS_EXPORT Label : public View {
   // Should a shadow be drawn behind the text?
   bool has_shadow_;
 
-
   DISALLOW_COPY_AND_ASSIGN(Label);
 };
 
