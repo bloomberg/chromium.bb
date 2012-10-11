@@ -10,6 +10,5 @@
   <xi:include href="Protocol.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
   <xi:include href="Compositors.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
   <xi:include href="ProtocolSpec.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
-  <index />
 </book>
 
