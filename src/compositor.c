@@ -2436,6 +2436,9 @@ device_setup_new_drag_surface(struct weston_seat *ws,
 static void
 device_release_drag_surface(struct weston_seat *seat)
 {
+	if (weston_surface_is_mapped(seat->drag_surface))
+		weston_surface_unmap(seat->drag_surface);
+
 	seat->drag_surface->configure = NULL;
 	empty_region(&seat->drag_surface->pending.input);
 	wl_list_remove(&seat->drag_surface_destroy_listener.link);
