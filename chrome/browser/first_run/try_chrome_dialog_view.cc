@@ -41,6 +41,8 @@ enum ButtonTags {
   BT_DONT_BUG_RADIO
 };
 
+const int kRadioGroupID = 1;
+
 }  // namespace
 
 // static
@@ -71,7 +73,7 @@ TryChromeDialogView::~TryChromeDialogView() {
 
 TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     ProcessSingleton* process_singleton) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   views::ImageView* icon = new views::ImageView();
   icon->SetImage(rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32).ToImageSkia());
@@ -155,7 +157,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
       views::kRelatedControlHorizontalSpacing + views::kPanelHorizIndentation);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
-  // First row views.
+  // First row.
   layout->StartRow(0, 0);
   layout->AddView(icon);
 
@@ -171,9 +173,9 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     NOTREACHED() << "Cannot determine which headline to show.";
     return DIALOG_ERROR;
   }
-  string16 heading = l10n_util::GetStringUTF16(experiment.heading);
-  views::Label* label = new views::Label(heading);
-  label->SetFont(rb.GetFont(ResourceBundle::MediumBoldFont));
+  views::Label* label = new views::Label(
+      l10n_util::GetStringUTF16(experiment.heading));
+  label->SetFont(rb.GetFont(ui::ResourceBundle::MediumBoldFont));
   label->SetMultiLine(true);
   label->SizeToFit(200);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -189,10 +191,10 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   close_button->set_tag(BT_CLOSE_BUTTON);
   layout->AddView(close_button);
 
-  // Second row views.
-  const string16 try_it(l10n_util::GetStringUTF16(IDS_TRY_TOAST_TRY_OPT));
+  // Second row.
   layout->StartRowWithPadding(0, 1, 0, 10);
-  try_chrome_ = new views::RadioButton(try_it, 1);
+  try_chrome_ = new views::RadioButton(
+      l10n_util::GetStringUTF16(IDS_TRY_TOAST_TRY_OPT), kRadioGroupID);
   try_chrome_->SetChecked(true);
   try_chrome_->set_tag(BT_TRY_IT_RADIO);
   try_chrome_->set_listener(this);
@@ -202,35 +204,34 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   bool dont_bug_me_button =
       ((experiment.flags & BrowserDistribution::kDontBugMeAsButton) != 0);
 
-  // Optional third and fourth row views.
+  // Optional third and fourth row.
   if (!dont_bug_me_button) {
     layout->StartRow(0, 1);
-    const string16 decline(l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
-    dont_try_chrome_ = new views::RadioButton(decline, 1);
+    dont_try_chrome_ = new views::RadioButton(
+        l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL), kRadioGroupID);
     dont_try_chrome_->set_tag(BT_DONT_BUG_RADIO);
     dont_try_chrome_->set_listener(this);
     layout->AddView(dont_try_chrome_);
   }
   if (experiment.flags & BrowserDistribution::kUninstall) {
     layout->StartRow(0, 2);
-    const string16 kill_it(l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME));
-    kill_chrome_ = new views::RadioButton(kill_it, 1);
+    kill_chrome_ = new views::RadioButton(
+        l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME), kRadioGroupID);
     layout->AddView(kill_chrome_);
   }
   if (experiment.flags & BrowserDistribution::kMakeDefault) {
     layout->StartRow(0, 6);
-    const string16 default_text(
+    make_default_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_TRY_TOAST_SET_DEFAULT));
-    make_default_ = new views::Checkbox(default_text);
-    gfx::Font font = make_default_->font().DeriveFont(0, gfx::Font::ITALIC);
-    make_default_->SetFont(font);
+    make_default_->SetFont(
+        make_default_->font().DeriveFont(0, gfx::Font::ITALIC));
     make_default_->SetChecked(true);
     layout->AddView(make_default_);
   }
 
   // Button row, the last or next to last depending on the 'why?' link.
-  const string16 ok_it(l10n_util::GetStringUTF16(IDS_OK));
-  views::Button* accept_button = new views::NativeTextButton(this, ok_it);
+  views::Button* accept_button = new views::NativeTextButton(
+      this, l10n_util::GetStringUTF16(IDS_OK));
   accept_button->set_tag(BT_OK_BUTTON);
 
   layout->StartRowWithPadding(0, dont_bug_me_button ? 3 : 5, 0, 10);
@@ -238,15 +239,15 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   if (dont_bug_me_button) {
     // The bubble needs a "Don't bug me" as a button or as a radio button, this
     // this the button case.
-    const string16 cancel_it(l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
-    views::Button* cancel_button = new views::NativeTextButton(this, cancel_it);
+    views::Button* cancel_button = new views::NativeTextButton(
+        this, l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
     cancel_button->set_tag(BT_CLOSE_BUTTON);
     layout->AddView(cancel_button);
   }
   if (experiment.flags & BrowserDistribution::kWhyLink) {
     layout->StartRowWithPadding(0, 4, 0, 10);
-    const string16 why_this(l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));
-    views::Link* link = new views::Link(why_this);
+    views::Link* link = new views::Link(
+        l10n_util::GetStringUTF16(IDS_TRY_TOAST_WHY));
     link->set_listener(this);
     layout->AddView(link);
   }
