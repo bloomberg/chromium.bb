@@ -9,11 +9,7 @@
 #if USE(ACCELERATED_COMPOSITING)
 
 #include "LayerChromium.h"
-#if defined(OS_CHROMEOS)
 #include "caching_bitmap_canvas_layer_texture_updater.h"
-#else
-#include "BitmapCanvasLayerTextureUpdater.h"
-#endif
 #include <public/WebScrollbar.h>
 #include <public/WebScrollbarThemeGeometry.h>
 #include <public/WebScrollbarThemePainter.h>
@@ -23,12 +19,6 @@ namespace cc {
 class Scrollbar;
 class ScrollbarThemeComposite;
 class CCTextureUpdateQueue;
-
-#if defined(OS_CHROMEOS)
-typedef CachingBitmapCanvasLayerTextureUpdater ScrollLayerTextureUpdater;
-#else
-typedef BitmapCanvasLayerTextureUpdater ScrollLayerTextureUpdater;
-#endif
 
 class ScrollbarLayerChromium : public LayerChromium {
 public:
@@ -54,7 +44,7 @@ protected:
     virtual ~ScrollbarLayerChromium();
 
 private:
-    void updatePart(ScrollLayerTextureUpdater*, LayerTextureUpdater::Texture*, const IntRect&, CCTextureUpdateQueue&, CCRenderingStats&);
+    void updatePart(CachingBitmapCanvasLayerTextureUpdater*, LayerTextureUpdater::Texture*, const IntRect&, CCTextureUpdateQueue&, CCRenderingStats&);
     void createTextureUpdaterIfNeeded();
 
     OwnPtr<WebKit::WebScrollbar> m_scrollbar;
@@ -64,9 +54,9 @@ private:
 
     GC3Denum m_textureFormat;
 
-    RefPtr<ScrollLayerTextureUpdater> m_backTrackUpdater;
-    RefPtr<ScrollLayerTextureUpdater> m_foreTrackUpdater;
-    RefPtr<ScrollLayerTextureUpdater> m_thumbUpdater;
+    RefPtr<CachingBitmapCanvasLayerTextureUpdater> m_backTrackUpdater;
+    RefPtr<CachingBitmapCanvasLayerTextureUpdater> m_foreTrackUpdater;
+    RefPtr<CachingBitmapCanvasLayerTextureUpdater> m_thumbUpdater;
 
     // All the parts of the scrollbar except the thumb
     OwnPtr<LayerTextureUpdater::Texture> m_backTrack;
