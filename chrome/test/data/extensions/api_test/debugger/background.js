@@ -18,6 +18,13 @@ chrome.test.runTests([
     });
   },
 
+  function attachUnsupportedMinorVersion() {
+    chrome.tabs.getSelected(null, function(tab) {
+      chrome.debugger.attach({tabId: tab.id}, "1.5",
+          fail("Requested protocol version is not supported: 1.5."));
+    });
+  },
+
   function attachUnsupportedVersion() {
     chrome.tabs.getSelected(null, function(tab) {
       chrome.debugger.attach({tabId: tab.id}, "100.0",
