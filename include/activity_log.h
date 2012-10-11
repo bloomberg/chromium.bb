@@ -153,6 +153,8 @@ class ActivityLog {
   static const char kKeyHardwarePropYResolution[];
   static const char kKeyHardwarePropXDpi[];
   static const char kKeyHardwarePropYDpi[];
+  static const char kKeyHardwarePropOrientationMinimum[];
+  static const char kKeyHardwarePropOrientationMaximum[];
   static const char kKeyHardwarePropMaxFingerCount[];
   static const char kKeyHardwarePropMaxTouchCount[];
   static const char kKeyHardwarePropSupportsT5R2[];

@@ -85,7 +85,10 @@ TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     10,  // x res (pixels/mm)
     10,  // y res (pixels/mm)
-    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     0, 0, 0  //t5r2, semi, button pad
   };
 

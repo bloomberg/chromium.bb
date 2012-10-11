@@ -39,6 +39,8 @@ TEST(AppleTrackpadFilterInterpreterTest, SimpleTest) {
     500,  // y pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2

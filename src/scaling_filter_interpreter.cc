@@ -24,6 +24,7 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
       tp_y_translate_(0.0),
       screen_x_scale_(1.0),
       screen_y_scale_(1.0),
+      orientation_scale_(1.0),
       pressure_scale_(prop_reg, "Pressure Calibration Slope", 1.0),
       pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0),
       pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0),
@@ -83,6 +84,13 @@ void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
     hwstate->fingers[i].position_y += tp_y_translate_;
     hwstate->fingers[i].pressure *= pressure_scale_.val_;
     hwstate->fingers[i].pressure += pressure_translate_.val_;
+
+    // TODO(clchiou): Output orientation is computed on a pixel-unit circle,
+    // and it is only equal to the orientation computed on a mm-unit circle
+    // when tp_x_scale_ == tp_y_scale_.  Since what we really want is the
+    // latter, fix this!
+    hwstate->fingers[i].orientation *= orientation_scale_;
+
     if (hwstate->fingers[i].touch_major) {
       hwstate->fingers[i].touch_major *= touch_major_scale_.val_;
       hwstate->fingers[i].touch_major += touch_major_translate_.val_;
@@ -121,6 +129,9 @@ void ScalingFilterInterpreter::SetHardwarePropertiesImpl(
   screen_x_scale_ = hw_props.screen_x_dpi / 25.4;
   screen_y_scale_ = hw_props.screen_y_dpi / 25.4;
 
+  orientation_scale_ =
+      M_PI / (hw_props.orientation_maximum - hw_props.orientation_minimum + 1);
+
   // Make fake idealized hardware properties to report to next_.
   HardwareProperties friendly_props = {
     0.0,  // left
@@ -131,6 +142,8 @@ void ScalingFilterInterpreter::SetHardwarePropertiesImpl(
     1.0,  // Y pixels/mm
     25.4,  // screen dpi x
     25.4,  // screen dpi y
+    orientation_scale_ * hw_props.orientation_minimum,  // radians
+    orientation_scale_ * hw_props.orientation_maximum,  // radians
     hw_props.max_finger_cnt,
     hw_props.max_touch_cnt,
     hw_props.supports_t5r2,

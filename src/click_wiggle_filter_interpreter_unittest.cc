@@ -59,6 +59,8 @@ TEST(ClickWiggleFilterInterpreterTest, WiggleSuppressTest) {
     1,  // y pixels/TP height
     26,  // x screen DPI
     26,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -132,6 +134,8 @@ TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
     1,  // y pixels/TP height
     26,  // x screen DPI
     26,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -198,6 +202,8 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
     1,  // y pixels/TP height
     26,  // x screen DPI
     26,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -248,6 +254,8 @@ TEST(ClickWiggleFilterInterpreter, TimeBackwardsTest) {
     1,  // y pixels/TP height
     26,  // x screen DPI
     26,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -311,6 +319,8 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickWiggleWithPalmTest) {
     1.000000,  // y pixels/TP height
     25.400000,  // x screen DPI
     25.400000,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2

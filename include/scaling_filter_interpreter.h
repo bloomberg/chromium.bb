@@ -66,6 +66,8 @@ class ScalingFilterInterpreter : public FilterInterpreter {
 
   float screen_x_scale_, screen_y_scale_;
 
+  float orientation_scale_;
+
   // Output surface area (sq. mm) =
   // input pressure * pressure_scale_ + pressure_translate_;
   DoubleProperty pressure_scale_;

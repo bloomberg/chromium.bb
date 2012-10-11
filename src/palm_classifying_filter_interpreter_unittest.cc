@@ -55,6 +55,8 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmTest) {
     500,  // y pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -130,6 +132,8 @@ TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
     1,  // y pixels/TP height
     1,  // x screen DPI
     1,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     5,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -186,6 +190,8 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
     1,  // y pixels/mm
     1,  // x screen px/mm
     1,  // y screen px/mm
+    -1,  // orientation minimum
+    2,   // orientation maximum
     5,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -306,6 +312,8 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmReevaluateTest) {
     1,  // pixels/TP height
     25.4,  // screen DPI x
     25.4,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -393,6 +401,8 @@ TEST(PalmClassifyingFilterInterpreterTest, LargeTouchMajorTest) {
     1,  // y pixels/mm
     1,  // x screen px/mm
     1,  // y screen px/mm
+    -1,  // orientation minimum
+    2,   // orientation maximum
     5,  // max fingers
     5,  // max touch
     0,  // t5r2

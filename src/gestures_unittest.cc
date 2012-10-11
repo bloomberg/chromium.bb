@@ -246,6 +246,8 @@ TEST(GesturesTest, HardwarePropertiesToStringTest) {
     1009.5, 1002.4, 1003.9, 1004.5,  // left, top, right, bottom
     1005.4, 1006.9,  // res_x, res_y
     1007.4, 1008.5, // x, y screen dpi
+    -1,  // orientation minimum
+    2,   // orientation maximum
     12,  // max fingers
     11,  // max touches
     0, 1, 1  // t5r2, semi-mt, is_button_pad

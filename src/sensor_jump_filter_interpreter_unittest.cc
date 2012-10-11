@@ -69,7 +69,10 @@ TEST(SensorJumpFilterInterpreterTest, SimpleTest) {
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
     1, 1,  // x res (pixels/mm), y res (pixels/mm)
-    1, 1, 5, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    1, 1,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    5, 5,  // max fingers, max_touch
     0, 0, 1  // t5r2, semi, button pad
   };
   EXPECT_FALSE(base_interpreter->set_hwprops_called_);
@@ -126,7 +129,10 @@ TEST(SensorJumpFilterInterpreterTest, ActualLogTest) {
   HardwareProperties hwprops = {
     0, 0, 106.666672, 68,  // left, top, right, bottom
     1, 1,  // x res (pixels/mm), y res (pixels/mm)
-    25.4, 25.4, 15, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    25.4, 25.4,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    15, 5,  // max fingers, max_touch,
     0, 0, 1  // t5r2, semi, button pad
   };
   interpreter.SetHardwareProperties(hwprops);

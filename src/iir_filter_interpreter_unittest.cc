@@ -108,6 +108,8 @@ TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
   HardwareProperties hwprops = {
     0, 0, 100, 60,  // left, top, right, bottom
     1.0, 1.0, 25.4, 25.4, // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
   };
 

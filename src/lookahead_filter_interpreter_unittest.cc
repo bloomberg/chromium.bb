@@ -103,7 +103,10 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     10,  // x res (pixels/mm)
     10,  // y res (pixels/mm)
-    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 0, 0  // t5r2, semi, button pad
   };
 
@@ -242,7 +245,10 @@ TEST(LookaheadFilterInterpreterTest, VariableDelayTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     1,  // x res (pixels/mm)
     1,  // y res (pixels/mm)
-    133, 133, 5, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    5, 5,  // max fingers, max_touch,
     0, 0, 0  // t5r2, semi, button pad
   };
 
@@ -318,7 +324,10 @@ TEST(LookaheadFilterInterpreterTest, NoTapSetTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     1,  // x res (pixels/mm)
     1,  // y res (pixels/mm)
-    133, 133, 5, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    5, 5,  // max fingers, max_touch
     0, 0, 0  // t5r2, semi, button pad
   };
 
@@ -367,7 +376,10 @@ TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     10,  // x res (pixels/mm)
     10,  // y res (pixels/mm)
-    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 0, 0  // t5r2, semi, button pad
   };
 
@@ -415,7 +427,10 @@ TEST(LookaheadFilterInterpreterTest, TimeGoesBackwardsTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     1,  // x res (pixels/mm)
     1,  // y res (pixels/mm)
-    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 0, 0  // t5r2, semi, button pad
   };
   interpreter.SetHardwareProperties(initial_hwprops);
@@ -504,7 +519,10 @@ TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     10,  // x res (pixels/mm)
     10,  // y res (pixels/mm)
-    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 0, 0  // t5r2, semi, button pad
   };
 
@@ -579,7 +597,10 @@ TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
     0, 0, 10, 10,  // left, top, right, bottom
     1,  // x res (pixels/mm)
     1,  // y res (pixels/mm)
-    25, 25, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    25, 25,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 0, 0  // t5r2, semi, button pad
   };
 
@@ -647,7 +668,10 @@ TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     1,  // x res (pixels/mm)
     1,  // y res (pixels/mm)
-    25, 25, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    25, 25,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 0, 0  // t5r2, semi, button pad
   };
 
@@ -717,7 +741,10 @@ TEST(LookaheadFilterInterpreterTest, QuickMoveTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     1,  // x res (pixels/mm)
     1,  // y res (pixels/mm)
-    25, 25, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    25, 25,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 0, 0  // t5r2, semi, button pad
   };
 
@@ -812,6 +839,8 @@ TEST(LookaheadFilterInterpreterTest, QuickSwipeTest) {
     1.000000,  // y pixels/TP height
     25.400000,  // x screen DPI
     25.400000,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     1,  // t5r2
@@ -903,6 +932,8 @@ TEST(LookaheadFilterInterpreterTest, CyapaDrumrollTest) {
     1.000000,  // y pixels/TP height
     25.400000,  // x screen DPI
     25.400000,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -1107,6 +1138,8 @@ TEST(LookaheadFilterInterpreterTest, CyapaQuickTwoFingerMoveTest) {
     1.000000,  // y pixels/TP height
     25.400000,  // x screen DPI
     25.400000,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -1160,7 +1193,10 @@ TEST(LookaheadFilterInterpreterTest, SemiMtNoTrackingIdAssignmentTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     1,  // x res (pixels/mm)
     1,  // y res (pixels/mm)
-    25, 25, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    25, 25,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 1, 0  // t5r2, semi, button pad
   };
 

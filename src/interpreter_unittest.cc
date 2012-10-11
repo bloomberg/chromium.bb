@@ -84,6 +84,10 @@ class InterpreterTestInterpreter : public Interpreter {
     EXPECT_FLOAT_EQ(expected_hwprops_.res_y, hw_props.res_y);
     EXPECT_FLOAT_EQ(expected_hwprops_.screen_x_dpi, hw_props.screen_x_dpi);
     EXPECT_FLOAT_EQ(expected_hwprops_.screen_y_dpi, hw_props.screen_y_dpi);
+    EXPECT_FLOAT_EQ(expected_hwprops_.orientation_minimum,
+                    hw_props.orientation_minimum);
+    EXPECT_FLOAT_EQ(expected_hwprops_.orientation_maximum,
+                    hw_props.orientation_maximum);
     EXPECT_EQ(expected_hwprops_.max_finger_cnt, hw_props.max_finger_cnt);
     EXPECT_EQ(expected_hwprops_.max_touch_cnt, hw_props.max_touch_cnt);
     EXPECT_EQ(expected_hwprops_.supports_t5r2, hw_props.supports_t5r2);
@@ -110,7 +114,10 @@ TEST(InterpreterTest, SimpleTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     10,  // x res (pixels/mm)
     10,  // y res (pixels/mm)
-    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 0, 0  //t5r2, semi, button pad
   };
   char interpreter_name[] = "InterpreterTestInterpreter";
@@ -194,7 +201,10 @@ TEST(InterpreterTest, ResetLogTest) {
     0, 0, 100, 100,  // left, top, right, bottom
     10,  // x res (pixels/mm)
     10,  // y res (pixels/mm)
-    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     1, 0, 0  //t5r2, semi, button pad
   };
 

@@ -114,6 +114,10 @@ const char kSubSubEntryPadding[] = "      ";
   ret->Set(kKeyHardwarePropYResolution, new FundamentalValue(hwprops_.res_y));
   ret->Set(kKeyHardwarePropXDpi, new FundamentalValue(hwprops_.screen_x_dpi));
   ret->Set(kKeyHardwarePropYDpi, new FundamentalValue(hwprops_.screen_y_dpi));
+  ret->Set(kKeyHardwarePropOrientationMinimum,
+           new FundamentalValue(hwprops_.orientation_minimum));
+  ret->Set(kKeyHardwarePropOrientationMaximum,
+           new FundamentalValue(hwprops_.orientation_maximum));
   ret->Set(kKeyHardwarePropMaxFingerCount,
            new FundamentalValue(hwprops_.max_finger_cnt));
   ret->Set(kKeyHardwarePropMaxTouchCount,
@@ -420,6 +424,10 @@ const char ActivityLog::kKeyHardwarePropXResolution[] = "xResolution";
 const char ActivityLog::kKeyHardwarePropYResolution[] = "yResolution";
 const char ActivityLog::kKeyHardwarePropXDpi[] = "xDpi";
 const char ActivityLog::kKeyHardwarePropYDpi[] = "yDpi";
+const char ActivityLog::kKeyHardwarePropOrientationMinimum[] =
+    "orientationMinimum";
+const char ActivityLog::kKeyHardwarePropOrientationMaximum[] =
+    "orientationMaximum";
 const char ActivityLog::kKeyHardwarePropMaxFingerCount[] = "maxFingerCount";
 const char ActivityLog::kKeyHardwarePropMaxTouchCount[] = "maxTouchCount";
 const char ActivityLog::kKeyHardwarePropSupportsT5R2[] = "supportsT5R2";

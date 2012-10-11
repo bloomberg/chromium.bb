@@ -141,6 +141,10 @@ bool ActivityReplay::ParseHardwareProperties(DictionaryValue* obj,
            props.screen_x_dpi, float);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropYDpi, double, GetDouble,
            props.screen_y_dpi, float);
+  PARSE_HP(obj, ActivityLog::kKeyHardwarePropOrientationMinimum,
+           double, GetDouble, props.orientation_minimum, float);
+  PARSE_HP(obj, ActivityLog::kKeyHardwarePropOrientationMaximum,
+           double, GetDouble, props.orientation_maximum, float);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropMaxFingerCount, int, GetInteger,
            props.max_finger_cnt, unsigned short);
   PARSE_HP(obj, ActivityLog::kKeyHardwarePropMaxTouchCount, int, GetInteger,

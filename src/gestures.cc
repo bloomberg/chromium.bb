@@ -58,6 +58,8 @@ std::string HardwareProperties::String() const {
                       "%f,  // y pixels/TP height\n"
                       "%f,  // x screen DPI\n"
                       "%f,  // y screen DPI\n"
+                      "%f,  // orientation minimum\n"
+                      "%f,  // orientation maximum\n"
                       "%u,  // max fingers\n"
                       "%u,  // max touch\n"
                       "%u,  // t5r2\n"
@@ -68,6 +70,8 @@ std::string HardwareProperties::String() const {
                       res_y,
                       screen_x_dpi,
                       screen_y_dpi,
+                      orientation_minimum,
+                      orientation_maximum,
                       max_finger_cnt,
                       max_touch_cnt,
                       supports_t5r2,

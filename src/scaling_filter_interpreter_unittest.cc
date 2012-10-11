@@ -80,6 +80,10 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
     EXPECT_FLOAT_EQ(expected_hwprops_.res_y, hw_props.res_y);
     EXPECT_FLOAT_EQ(expected_hwprops_.screen_x_dpi, hw_props.screen_x_dpi);
     EXPECT_FLOAT_EQ(expected_hwprops_.screen_y_dpi, hw_props.screen_y_dpi);
+    EXPECT_FLOAT_EQ(expected_hwprops_.orientation_minimum,
+                    hw_props.orientation_minimum);
+    EXPECT_FLOAT_EQ(expected_hwprops_.orientation_maximum,
+                    hw_props.orientation_maximum);
     EXPECT_EQ(expected_hwprops_.max_finger_cnt, hw_props.max_finger_cnt);
     EXPECT_EQ(expected_hwprops_.max_touch_cnt, hw_props.max_touch_cnt);
     EXPECT_EQ(expected_hwprops_.supports_t5r2, hw_props.supports_t5r2);
@@ -108,12 +112,17 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
     133, 728, 10279, 5822,  // left, top, right, bottom
     (10279.0 - 133.0) / 100.0,  // x res (pixels/mm)
     (5822.0 - 728.0) / 60,  // y res (pixels/mm)
-    133, 133, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    133, 133,  // scrn DPI X, Y
+    -1,  // orientation minimum
+    2,   // orientation maximum
+    2, 5,  // max fingers, max_touch
     0, 0, 0  //t5r2, semi, button pad
   };
   HardwareProperties expected_hwprops = {
     0, 0, 100, 60,  // left, top, right, bottom
     1.0, 1.0, 25.4, 25.4, // x res, y res, x DPI, y DPI
+    -M_PI_4,  // orientation minimum (1 tick above X-axis)
+    M_PI_2,   // orientation maximum
     2, 5, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
   };
   base_interpreter->expected_hwprops_ = expected_hwprops;

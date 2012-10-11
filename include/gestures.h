@@ -38,6 +38,8 @@ struct HardwareProperties {
   float res_y;  // pixels/mm
   float screen_x_dpi;  // read from X server and passed to library
   float screen_y_dpi;  // read from X server and passed to library
+  float orientation_minimum;
+  float orientation_maximum;
   unsigned short max_finger_cnt; // Max finger slots in one report
   unsigned short max_touch_cnt;  // Max fingers that can be detected at once
   unsigned supports_t5r2:1;

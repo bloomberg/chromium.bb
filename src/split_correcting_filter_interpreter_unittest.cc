@@ -75,6 +75,8 @@ void DoTest(InputEventWithExpectations* events, size_t events_len, bool t5r2) {
     1,  // res_y
     133,  // screen_x_dpi
     133,  // screen_y_dpi
+    -1,  // orientation minimum
+    2,   // orientation maximum
     5,  // max finger cnt
     static_cast<unsigned short>(t5r2 ? 2 : 5),  // max touch cnt
     t5r2 ? 1u : 0u,  // supports_t5r2
@@ -165,6 +167,8 @@ TEST(SplitCorrectingFilterInterpreterTest, FalseMergeTest) {
     1,  // res_y
     133,  // screen_x_dpi
     133,  // screen_y_dpi
+    -1,  // orientation minimum
+    2,   // orientation maximum
     5,  // max finger cnt
     5,  // max touch cnt
     0,  // supports_t5r2
@@ -315,6 +319,8 @@ TEST(SplitCorrectingFilterInterpreterTest, LumpyThumbSplitTest) {
     1.0,  // y pixels/TP height
     25.4,  // x screen DPI
     25.4,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2

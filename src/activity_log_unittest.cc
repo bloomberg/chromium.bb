@@ -43,8 +43,10 @@ TEST(ActivityLogTest, SimpleTest) {
     6016,  // y pixels/TP height
     6017,  // x screen DPI
     6018,  // y screen DPI
-    6019,  // max fingers
-    6020,  // max touch
+    6019,  // orientation minimum
+    6020,  // orientation maximum
+    6021,  // max fingers
+    6022,  // max touch
     1,  // t5r2
     0,  // semi-mt
     1  // is button pad
@@ -54,7 +56,7 @@ TEST(ActivityLogTest, SimpleTest) {
 
   const char* expected_strings[] = {
     "6011", "6012", "6013", "6014", "6015", "6016",
-    "6017", "6018", "6019", "6020"
+    "6017", "6018", "6019", "6020", "6021", "6022"
   };
   string hwprops_log = log.Encode();
   for (size_t i = 0; i < arraysize(expected_strings); i++)

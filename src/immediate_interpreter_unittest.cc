@@ -29,6 +29,8 @@ TEST(ImmediateInterpreterTest, MoveDownTest) {
     500,  // pixels/TP height
     96,  // screen DPI x
     96,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -91,6 +93,8 @@ TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
     50,  // pixels/TP height
     96,  // screen DPI x
     96,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -156,6 +160,8 @@ TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
     20,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     3,  // max touch
     0,  // tripletap
@@ -213,6 +219,8 @@ void ScrollUpTest(float pressure_a, float pressure_b) {
     20,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -283,6 +291,8 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
     20,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -350,6 +360,8 @@ TEST(ImmediateInterpreterTest, FlingTest) {
     1,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -460,6 +472,8 @@ TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
     1,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -517,6 +531,8 @@ TEST(ImmediateInterpreterTest, ScrollReevaluateTest) {
     1,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -587,6 +603,8 @@ TEST(ImmediateInterpreterTest, OneFingerThenTwoDelayedStartScrollTest) {
     1,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -664,6 +682,8 @@ TEST(ImmediateInterpreterTest, OneFatFingerScrollTest) {
     1,  // pixels/TP height
     25.4,  // screen DPI x
     25.4,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -828,6 +848,8 @@ TEST(ImmediateInterpreterTest, NoLiftoffScrollTest) {
     1,  // pixels/TP height
     25.4,  // screen DPI x
     25.4,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -960,6 +982,8 @@ TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
     1,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -1056,6 +1080,8 @@ TEST(ImmediateInterpreterTest, RestingFingerTest) {
     1,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -1120,6 +1146,8 @@ TEST(ImmediateInterpreterTest, ThumbRetainTest) {
     1,  // pixels/TP height
     1,  // x screen DPI
     1,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -1169,6 +1197,8 @@ TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest) {
     1,  // pixels/TP height
     1,  // x screen DPI
     1,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -1215,6 +1245,8 @@ TEST(ImmediateInterpreterTest, SetHardwarePropertiesTwiceTest) {
     500,  // pixels/TP height
     96,  // screen DPI x
     96,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -1253,6 +1285,8 @@ TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
     1,  // y pixels/TP height
     1,  // x screen DPI
     1,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     5,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -1330,6 +1364,8 @@ TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
     500,  // y pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -1383,6 +1419,8 @@ TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
     500,  // pixels/TP height
     96,  // screen DPI x
     96,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -1608,6 +1646,8 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     1.0,  // pixels/TP height
     1.0,  // screen DPI x
     1.0,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     5,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -2047,6 +2087,8 @@ TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
     1,  // pixels/TP height
     25.4,  // screen DPI x
     25.4,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -2131,6 +2173,8 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
     1.0,  // pixels/TP height
     1.0,  // screen DPI x
     1.0,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     5,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -2200,6 +2244,8 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
     1.0,  // pixels/TP height
     1.0,  // screen DPI x
     1.0,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     5,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -2350,6 +2396,8 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     1,  // y pixels/mm
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     1,  // t5r2
@@ -2420,6 +2468,8 @@ TEST(ImmediateInterpreterTest, BigHandsRightClickTest) {
     1,  // pixels/TP height
     25.4,  // screen DPI x
     25.4,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -2568,6 +2618,8 @@ TEST(ImmediateInterpreterTest, ChangeTimeoutTest) {
     500,  // pixels/TP height
     96,  // screen DPI x
     96,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -2654,6 +2706,8 @@ TEST(ImmediateInterpreterTest, SwipeTest) {
     1,  // y pixels/mm
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     3,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -2793,6 +2847,8 @@ TEST(ImmediateInterpreterTest, SwipeTest) {
     1,  // y pixels/mm
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     1,  // t5r2
@@ -2814,6 +2870,8 @@ TEST(ImmediateInterpreterTest, SwipeTest) {
     1,  // y pixels/mm
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     3,  // max touch
     0,  // t5r2
@@ -2852,6 +2910,8 @@ TEST(ImmediateInterpreterTest, PinchTests) {
     1,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -2990,6 +3050,8 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
     1,  // pixels/TP height
     25.4,  // screen DPI x
     25.4,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     15,  // max fingers
     5,  // max touch
     0,  // t5r2
@@ -3138,6 +3200,8 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
     1,  // pixels/TP height
     133,  // screen DPI x
     133,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     3,  // max touch
     0,  // t5r2
@@ -3183,6 +3247,8 @@ TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
     1,  // pixels/TP height
     133,  // screen DPI x
     133,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     3,  // max touch
     0,  // t5r2
@@ -3229,6 +3295,8 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
     1,  // pixels/TP height
     133,  // screen DPI x
     133,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     3,  // max touch
     0,  // t5r2
@@ -3291,6 +3359,8 @@ TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
     1,  // pixels/TP height
     133,  // screen DPI x
     133,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     3,  // max touch
     0,  // t5r2
@@ -3342,6 +3412,8 @@ TEST(ImmediateInterpreterTest, FlingDepthTest) {
     1,  // pixels/TP height
     96,  // x screen DPI
     96,  // y screen DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     5,  // max touch
     0,  // tripletap
@@ -3434,6 +3506,8 @@ TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
     1,  // pixels/TP height
     25.4,  // screen DPI x
     25.4,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     3,  // max touch
     0,  // t5r2
@@ -3501,6 +3575,8 @@ TEST(ImmediateInterpreterTest, BasicButtonTest) {
     1,  // pixels/TP height
     25.4,  // screen DPI x
     25.4,  // screen DPI y
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2,  // max fingers
     3,  // max touch
     0,  // t5r2

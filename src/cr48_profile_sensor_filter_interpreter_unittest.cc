@@ -101,6 +101,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, LowPressureTest) {
   HardwareProperties hwprops = {
     0, 0, 100, 60,  // left, top, right, bottom
     1.0, 1.0, 25.4, 25.4,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
   };
 
@@ -154,6 +156,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TrackingIdMappingTest) {
   HardwareProperties hwprops = {
     0, 0, 100, 60,  // left, top, right, bottom
     1.0, 1.0, 25.4, 25.4,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
   };
 
@@ -201,6 +205,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
   HardwareProperties hwprops = {
     1400, 1400, 5600, 4500,  // left, top, right, bottom
     1.0, 1.0, 25.4, 25.4,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
   };
 
@@ -289,6 +295,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
   HardwareProperties hwprops = {
     1400, 1400, 5600, 4500,  // left, top, right, bottom
     1.0, 1.0, 25.4, 25.4,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
   };
 
@@ -482,6 +490,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, MovingFingerTest) {
   HardwareProperties hwprops = {
     1217, 5733, 1061, 4798,  // left, top, right, bottom
     1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
   };
 
@@ -531,6 +541,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, HistoryTest) {
   HardwareProperties hwprops = {
     1217, 5733, 1061, 4798,  // left, top, right, bottom
     1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
   };
 
@@ -584,6 +596,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TwoToOneJumpTest) {
   HardwareProperties hwprops = {
     1217, 5733, 1061, 4798,  // left, top, right, bottom
     1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
   };
 
@@ -642,6 +656,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, OneToTwoJumpTest) {
   HardwareProperties hwprops = {
     1217, 1061, 5733, 4798,  // left, top, right, bottom
     47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3,  // max_fingers, max_touch
     false, true, true  // t5r2, semi_mt, is_button_pad
   };
@@ -699,6 +715,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, WarpOnSwapTest) {
   HardwareProperties hwprops = {
     1217, 1061, 5733, 4798,  // left, top, right, bottom
     47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3,  // max_fingers, max_touch
     false, true, true,  // t5r2, semi_mt, is_button_pad
   };
@@ -750,6 +768,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, SensorJumpTest) {
   HardwareProperties hwprops = {
     1217, 1061, 5733, 4798,  // left, top, right, bottom
     47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3,  // max_fingers, max_touch
     false, true, true  // t5r2, semi_mt, is_button_pad
   };
@@ -814,6 +834,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest) {
   HardwareProperties hwprops = {
     1217, 1061, 5733, 4798,  // left, top, right, bottom
     47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3,  // max_fingers, max_touch
     false, true, true  // t5r2, semi_mt, is_button_pad
   };
@@ -870,6 +892,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FastMoveTest) {
   HardwareProperties hwprops = {
     1217, 1061, 5733, 4798,  // left, top, right, bottom
     47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    -1,  // orientation minimum
+    2,   // orientation maximum
     2, 3,  // max_fingers, max_touch
     false, true, true  // t5r2, semi_mt, is_button_pad
   };
