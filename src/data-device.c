@@ -228,16 +228,9 @@ drag_grab_motion(struct wl_pointer_grab *grab,
 static void
 data_device_end_drag_grab(struct wl_seat *seat)
 {
-	struct wl_resource *surface_resource;
-	struct wl_surface_interface *implementation;
-
 	if (seat->drag_surface) {
-		surface_resource = &seat->drag_surface->resource;
-		implementation = (struct wl_surface_interface *)
-			surface_resource->object.implementation;
-
-		implementation->attach(surface_resource->client,
-				       surface_resource, NULL, 0, 0);
+		seat->drag_surface = NULL;
+		wl_signal_emit(&seat->drag_icon_signal, NULL);
 		wl_list_remove(&seat->drag_icon_listener.link);
 	}
 
@@ -247,7 +240,6 @@ data_device_end_drag_grab(struct wl_seat *seat)
 	wl_pointer_end_grab(seat->pointer);
 
 	seat->drag_data_source = NULL;
-	seat->drag_surface = NULL;
 	seat->drag_client = NULL;
 }
 
