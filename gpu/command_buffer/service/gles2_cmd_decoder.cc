@@ -2634,7 +2634,7 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
       }
       // Unbind texture from texture units.
       for (size_t jj = 0; jj < group_->max_texture_units(); ++jj) {
-        texture_units_[ii].Unbind(texture);
+        texture_units_[jj].Unbind(texture);
       }
       // Unbind from current framebuffers.
       if (supports_separate_framebuffer_binds) {
