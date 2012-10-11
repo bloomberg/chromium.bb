@@ -207,6 +207,10 @@
     ],
   },
 
+  'includes': [
+    '../chrome/js_unittest_vars.gypi',
+  ],
+
   'target_defaults': {
     'defines': [
     ],
@@ -1986,6 +1990,7 @@
         '../testing/gmock/include',
       ],
       'sources': [
+        '../chrome/test/base/run_all_remoting_unittests.cc',
         'base/auth_token_util_unittest.cc',
         'base/auto_thread_unittest.cc',
         'base/auto_thread_task_runner_unittest.cc',
@@ -2069,7 +2074,6 @@
         'protocol/ppapi_module_stub.cc',
         'protocol/ssl_hmac_channel_authenticator_unittest.cc',
         'protocol/v2_authenticator_unittest.cc',
-        'run_all_unittests.cc',
       ],
       'conditions': [
         [ 'OS=="win"', {
@@ -2084,6 +2088,34 @@
               '-lrpcrt4.lib',
             ],
           },
+        }, {  # else OS != "win"
+          # Javascript unittests are disabled on Windows because they add a
+	  # dependency on 'common_constants' which (only on Windows) requires
+	  # additional dependencies:
+          #   '../content/content.gyp:content_common',
+          #   'installer_util',
+	  # These targets are defined in .gypi files that would need to be
+	  # included here:
+          #   '../chrome/chrome_common.gypi',
+          #   '../chrome/chrome_installer.gypi',
+          #   '../chrome/chrome_installer_util.gypi',
+	  # But we can't do that because ninja will complain about multiple
+	  # target definitions.
+	  # TODO(garykac): Move installer_util into a proper .gyp file so that
+	  # it can be included in multiple .gyp files.
+          'includes': [
+            '../chrome/js_unittest_rules.gypi',
+          ],
+          'dependencies': [
+            '../chrome/common_constants.gyp:common_constants',
+            '../v8/tools/gyp/v8.gyp:v8',
+          ],
+          'sources': [
+            '../chrome/test/base/v8_unit_test.cc',
+            '../chrome/test/base/v8_unit_test.h',
+            'webapp/format_iq.gtestjs',
+            'webapp/format_iq.js',
+          ],
         }],
         ['chromeos != 0', {
           'dependencies!': [
@@ -2110,7 +2142,7 @@
               },
             ],
           ],
-        }],
+        }],  # end of 'toolkit_uses_gtk == 1'
       ],  # end of 'conditions'
     },  # end of target 'remoting_unittests'
   ],  # end of targets
