@@ -78,6 +78,11 @@ AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])
 
 if test "x$enable_documentation" = "xyes"; then
 	AC_PATH_PROG(PUBLICAN, publican)
+
+	AC_CONFIG_FILES([
+	doc/doxygen/wayland.doxygen
+	])
+
 fi
 AM_CONDITIONAL([HAVE_PUBLICAN], [test "x$PUBLICAN" != "x"])
 
@@ -88,6 +93,7 @@ AC_CONFIG_FILES([Makefile
 		 cursor/wayland-cursor-uninstalled.pc
 		 doc/Makefile
 		 doc/Wayland/Makefile
+		 doc/doxygen/Makefile
 		 doc/man/Makefile
 		 src/Makefile
 		 src/wayland-server-uninstalled.pc

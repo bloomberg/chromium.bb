@@ -1,1 +1,1 @@
-SUBDIRS = Wayland man
+SUBDIRS = doxygen Wayland man
