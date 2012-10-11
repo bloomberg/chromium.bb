@@ -9,8 +9,9 @@
 #include "ppapi/tests/testing_instance.h"
 
 namespace {
-  bool g_callback_triggered;
-  int32_t g_callback_result;
+bool g_callback_triggered;
+int32_t g_callback_result;
+PP_PrintSettings_Dev g_print_settings;
 }  // namespace
 
 REGISTER_TEST_CASE(Printing);
@@ -53,12 +54,30 @@ std::string TestPrinting::TestGetDefaultPrintSettings() {
   ASSERT_EQ(PP_OK, g_callback_result);
   ASSERT_TRUE(g_callback_triggered);
 
+  // Sanity check the |printable_area|, |content_area| and |paper_size| members.
+  // It is possible these values are outside these ranges but it shouldn't
+  // happen in practice and probably means there is an error in computing
+  // the default print settings. These values are in points.
+  ASSERT_TRUE(g_print_settings.printable_area.point.x < 200);
+  ASSERT_TRUE(g_print_settings.printable_area.point.y < 200);
+  ASSERT_TRUE(g_print_settings.printable_area.size.width < 2000);
+  ASSERT_TRUE(g_print_settings.printable_area.size.height < 2000);
+
+  ASSERT_TRUE(g_print_settings.content_area.point.x < 200);
+  ASSERT_TRUE(g_print_settings.content_area.point.y < 200);
+  ASSERT_TRUE(g_print_settings.content_area.size.width < 2000);
+  ASSERT_TRUE(g_print_settings.content_area.size.height< 2000);
+
+  ASSERT_TRUE(g_print_settings.paper_size.width < 2000);
+  ASSERT_TRUE(g_print_settings.paper_size.height < 2000);
+
   PASS();
 }
 
 void TestPrinting::Callback(int32_t result,
-                            PP_PrintSettings_Dev& /* unused */) {
+                            PP_PrintSettings_Dev& print_settings) {
   g_callback_triggered = true;
   g_callback_result = result;
+  g_print_settings = print_settings;
   nested_event_.Signal();
 }

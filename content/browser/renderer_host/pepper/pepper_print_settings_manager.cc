@@ -17,8 +17,8 @@ namespace {
 // Print units conversion functions.
 int32_t DeviceUnitsInPoints(int32_t device_units,
                             int32_t device_units_per_inch) {
-  return printing::ConvertUnit(device_units, printing::kPointsPerInch,
-                               device_units_per_inch);
+  return printing::ConvertUnit(device_units, device_units_per_inch,
+                               printing::kPointsPerInch);
 }
 
 PP_Size PrintSizeToPPPrintSize(const gfx::Size& print_size,
