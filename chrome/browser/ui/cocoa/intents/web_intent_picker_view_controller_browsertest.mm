@@ -5,6 +5,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
@@ -66,4 +67,13 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, CloseButton) {
   EXPECT_NSEQ(kKeyEquivalentEscape, [[controller_ closeButton] keyEquivalent]);
   EXPECT_CALL(delegate_, OnUserCancelledPickerDialog());
   [[controller_ closeButton] performClick:nil];
+}
+
+// Test the "no matching services" state.
+IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, NoServices) {
+  model_.SetWaitingForSuggestions(false);
+  EXPECT_EQ(PICKER_STATE_NO_SERVICE, [controller_ state]);
+  WebIntentMessageViewController* message_controller =
+      [controller_ messageViewController];
+  EXPECT_NSEQ([controller_ view], [[message_controller view] superview]);
 }

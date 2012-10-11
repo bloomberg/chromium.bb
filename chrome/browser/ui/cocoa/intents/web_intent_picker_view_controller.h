@@ -11,18 +11,32 @@
 #include "ui/gfx/size.h"
 
 class WebIntentPickerCocoa2;
+@class WebIntentMessageViewController;
+
+// The different states a picker dialog can be in.
+enum WebIntentPickerState {
+  PICKER_STATE_NO_SERVICE,
+};
 
 // Manages the web intent picker UI. The view is meant to be embedded in either
 // a constrained window or a bubble.
 @interface WebIntentPickerViewController : NSViewController {
  @private
   WebIntentPickerCocoa2* picker_;  // weak
+  WebIntentPickerState state_;
   scoped_nsobject<NSButton> closeButton_;
+  scoped_nsobject<WebIntentMessageViewController>
+      messageViewController_;
 }
 
 - (id)initWithPicker:(WebIntentPickerCocoa2*)picker;
 
 - (NSButton*)closeButton;
+
+// Get the current state.
+- (WebIntentPickerState)state;
+
+- (WebIntentMessageViewController*)messageViewController;
 
 // Update the dialog state and perform layout.
 - (void)update;
