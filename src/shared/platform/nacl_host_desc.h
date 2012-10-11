@@ -290,6 +290,14 @@ extern int NaClHostDescStat(char const        *host_os_pathname,
 
 extern int NaClProtMap(int abi_prot);
 
+/*
+ * Utility routine.  Checks |d| is non-NULL, and that d->d is not -1.
+ * If either is true, an appropriate LOG_FATAL message with |fn_name|
+ * interpolated is generated.
+ */
+extern void NaClHostDescCheckValidity(char const *fn_name,
+                                      struct NaClHostDesc *d);
+
 EXTERN_C_END
 
 #endif  /* defined __native_client__ */

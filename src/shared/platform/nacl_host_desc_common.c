@@ -394,3 +394,13 @@ int NaClProtMap(int abi_prot) {
   return host_os_prot;
 #undef M
 }
+
+void NaClHostDescCheckValidity(char const *fn_name,
+                               struct NaClHostDesc *d) {
+  if (NULL == d) {
+    NaClLog(LOG_FATAL, "%s: 'this' is NULL\n", fn_name);
+  }
+  if (-1 == d->d) {
+    NaClLog(LOG_FATAL, "%s: already closed\n", fn_name);
+  }
+}

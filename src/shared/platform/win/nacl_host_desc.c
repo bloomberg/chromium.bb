@@ -141,6 +141,9 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   if (NULL == d && 0 == (flags & NACL_ABI_MAP_ANONYMOUS)) {
     NaClLog(LOG_FATAL, "NaClHostDescMap: 'this' is NULL and not anon map\n");
   }
+  if (NULL != d && -1 == d->d) {
+    NaClLog(LOG_FATAL, "NaClHostDescMap: already closed\n");
+  }
   addr = (uintptr_t) start_addr;
   prot &= (NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE);
   /* may be PROT_NONE too, just not PROT_EXEC */
@@ -455,9 +458,7 @@ ssize_t NaClHostDescRead(struct NaClHostDesc  *d,
     actual_len = UINT_MAX;
   }
 
-  if (NULL == d) {
-    NaClLog(LOG_FATAL, "NaClHostDescRead: 'this' is NULL\n");
-  }
+  NaClHostDescCheckValidity("NaClHostDescRead", d);
   if (-1 == (actual =_read(d->d, buf, actual_len))) {
     return -GetErrno();
   }
@@ -480,9 +481,7 @@ ssize_t NaClHostDescWrite(struct NaClHostDesc *d,
     actual_len = UINT_MAX;
   }
 
-  if (NULL == d) {
-    NaClLog(LOG_FATAL, "NaClHostDescWrite: 'this' is NULL\n");
-  }
+  NaClHostDescCheckValidity("NaClHostDescWrite", d);
   if (-1 == (actual = _write(d->d, buf, actual_len))) {
     return -GetErrno();
   }
@@ -494,24 +493,23 @@ nacl_off64_t NaClHostDescSeek(struct NaClHostDesc  *d,
                               int                  whence) {
   nacl_off64_t retval;
 
-  if (NULL == d) {
-    NaClLog(LOG_FATAL, "NaClHostDescSeek: 'this' is NULL\n");
-  }
+  NaClHostDescCheckValidity("NaClHostDescSeek", d);
   return (-1 == (retval = _lseeki64(d->d, offset, whence))) ? -errno : retval;
 }
 
 int NaClHostDescIoctl(struct NaClHostDesc *d,
                       int                 request,
                       void                *arg) {
-  UNREFERENCED_PARAMETER(d);
   UNREFERENCED_PARAMETER(request);
   UNREFERENCED_PARAMETER(arg);
 
+  NaClHostDescCheckValidity("NaClHostDescIoctl", d);
   return -NACL_ABI_ENOSYS;
 }
 
 int NaClHostDescFstat(struct NaClHostDesc   *d,
                       nacl_host_stat_t      *nasp) {
+  NaClHostDescCheckValidity("NaClHostDescFstat", d);
   if (_fstat64(d->d, nasp) == -1) {
     return -GetErrno();
   }
@@ -522,9 +520,7 @@ int NaClHostDescFstat(struct NaClHostDesc   *d,
 int NaClHostDescClose(struct NaClHostDesc *d) {
   int retval;
 
-  if (NULL == d) {
-    NaClLog(LOG_FATAL, "NaClHostDescClose: 'this' is NULL\n");
-  }
+  NaClHostDescCheckValidity("NaClHostDescClose", d);
   retval = _close(d->d);
   if (-1 != retval) {
     d->d = -1;
