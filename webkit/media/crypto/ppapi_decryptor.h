@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "media/base/decryptor.h"
+#include "media/base/video_decoder_config.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -26,7 +27,7 @@ class PluginInstance;
 
 namespace webkit_media {
 
-// PpapiDecrypor implements media::Decryptor and forwards all calls to the
+// PpapiDecryptor implements media::Decryptor and forwards all calls to the
 // PluginInstance.
 // This class should always be created on the main renderer thread.
 class PpapiDecryptor : public media::Decryptor {
@@ -51,9 +52,10 @@ class PpapiDecryptor : public media::Decryptor {
   virtual void Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted,
                        const DecryptCB& decrypt_cb) OVERRIDE;
   virtual void CancelDecrypt() OVERRIDE;
-  virtual void InitializeVideoDecoder(const media::VideoDecoderConfig& config,
-                                      const DecoderInitCB& init_cb,
-                                      const KeyAddedCB& key_added_cb) OVERRIDE;
+  virtual void InitializeVideoDecoder(
+      scoped_ptr<media::VideoDecoderConfig> config,
+      const DecoderInitCB& init_cb,
+      const KeyAddedCB& key_added_cb) OVERRIDE;
   virtual void DecryptAndDecodeVideo(
       const scoped_refptr<media::DecoderBuffer>& encrypted,
       const VideoDecodeCB& video_decode_cb) OVERRIDE;
@@ -67,6 +69,8 @@ class PpapiDecryptor : public media::Decryptor {
   media::DecryptorClient* client_;
   scoped_refptr<webkit::ppapi::PluginInstance> cdm_plugin_;
   scoped_refptr<base::MessageLoopProxy> render_loop_proxy_;
+
+  KeyAddedCB key_added_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiDecryptor);
 };

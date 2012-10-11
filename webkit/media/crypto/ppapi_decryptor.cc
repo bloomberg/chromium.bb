@@ -71,6 +71,9 @@ void PpapiDecryptor::AddKey(const std::string& key_system,
                                        init_data_length))) {
     ReportFailureToCallPlugin(key_system, session_id);
   }
+
+  if (!key_added_cb_.is_null())
+    key_added_cb_.Run();
 }
 
 void PpapiDecryptor::CancelKeyRequest(const std::string& key_system,
@@ -83,10 +86,11 @@ void PpapiDecryptor::CancelKeyRequest(const std::string& key_system,
     ReportFailureToCallPlugin(key_system, session_id);
 }
 
+// TODO(xhwang): Remove Unretained in the following methods.
+
 void PpapiDecryptor::Decrypt(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const DecryptCB& decrypt_cb) {
-  DVLOG(1) << "Decrypt()";
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
     render_loop_proxy_->PostTask(
         FROM_HERE,
@@ -95,37 +99,70 @@ void PpapiDecryptor::Decrypt(
     return;
   }
 
+  DVLOG(1) << "Decrypt()";
   if (!cdm_plugin_->Decrypt(encrypted, decrypt_cb))
     decrypt_cb.Run(kError, NULL);
 }
 
 void PpapiDecryptor::CancelDecrypt() {
+  // TODO(xhwang): Implement CancelDecrypt() in PluginInstance and call it here.
 }
 
 void PpapiDecryptor::InitializeVideoDecoder(
-    const media::VideoDecoderConfig& config,
+    scoped_ptr<media::VideoDecoderConfig> config,
     const DecoderInitCB& init_cb,
     const KeyAddedCB& key_added_cb) {
-  // TODO(xhwang): Implement this!
-  NOTIMPLEMENTED();
+  if (!render_loop_proxy_->BelongsToCurrentThread()) {
+    render_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::InitializeVideoDecoder,
+                   base::Unretained(this), base::Passed(&config),
+                   init_cb, key_added_cb));
+    return;
+  }
+
+  DVLOG(1) << "InitializeVideoDecoder()";
+  DCHECK(config->is_encrypted());
+  DCHECK(config->IsValidConfig());
+
+  key_added_cb_ = key_added_cb;
+
+  // TODO(xhwang): Enable this once PluginInstance is updated.
+  // if (!cdm_plugin_->InitializeVideoDecoder(video_config.Pass(), init_cb))
+  //   init_cb.Run(false);
   init_cb.Run(false);
 }
 
 void PpapiDecryptor::DecryptAndDecodeVideo(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
-  // TODO(xhwang): Implement this!
+  if (!render_loop_proxy_->BelongsToCurrentThread()) {
+    render_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::DecryptAndDecodeVideo,
+                   base::Unretained(this), encrypted, video_decode_cb));
+    return;
+  }
+
+  DVLOG(1) << "DecryptAndDecodeVideo()";
+  // TODO(xhwang): Enable this once PluginInstance is updated.
+  // if (!cdm_plugin_->DecryptAndDecodeVideo(encrypted, video_decode_cb))
+  //   video_decode_cb.Run(kError, NULL);
   NOTIMPLEMENTED();
   video_decode_cb.Run(kError, NULL);
 }
 
 void PpapiDecryptor::CancelDecryptAndDecodeVideo() {
-  // TODO(xhwang): Implement this!
+  DVLOG(1) << "CancelDecryptAndDecodeVideo()";
+  // TODO(xhwang): Implement CancelDecryptAndDecodeVideo() in PluginInstance
+  // and call it here.
   NOTIMPLEMENTED();
 }
 
 void PpapiDecryptor::StopVideoDecoder() {
-  // TODO(xhwang): Implement this!
+  DVLOG(1) << "StopVideoDecoder()";
+  // TODO(xhwang): Implement StopVideoDecoder() in PluginInstance
+  // and call it here.
   NOTIMPLEMENTED();
 }
 

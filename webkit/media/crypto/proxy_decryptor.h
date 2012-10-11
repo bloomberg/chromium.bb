@@ -67,9 +67,10 @@ class ProxyDecryptor : public media::Decryptor {
   virtual void Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted,
                        const DecryptCB& decrypt_cb) OVERRIDE;
   virtual void CancelDecrypt() OVERRIDE;
-  virtual void InitializeVideoDecoder(const media::VideoDecoderConfig& config,
-                                      const DecoderInitCB& init_cb,
-                                      const KeyAddedCB& key_added_cb) OVERRIDE;
+  virtual void InitializeVideoDecoder(
+      scoped_ptr<media::VideoDecoderConfig> config,
+      const DecoderInitCB& init_cb,
+      const KeyAddedCB& key_added_cb) OVERRIDE;
   virtual void DecryptAndDecodeVideo(
       const scoped_refptr<media::DecoderBuffer>& encrypted,
       const VideoDecodeCB& video_decode_cb) OVERRIDE;

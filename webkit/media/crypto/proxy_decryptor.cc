@@ -92,7 +92,7 @@ void ProxyDecryptor::RequestDecryptorNotification(
 
   // Normal decryptor request.
   DCHECK(decryptor_notification_cb_.is_null());
-  if (decryptor_.get()) {
+  if (decryptor_) {
     decryptor_notification_cb.Run(decryptor_.get());
     return;
   }
@@ -108,9 +108,9 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
 
   base::AutoLock auto_lock(lock_);
 
-  if (!decryptor_.get()) {
+  if (!decryptor_) {
     decryptor_ = CreateDecryptor(key_system);
-    if (!decryptor_.get()) {
+    if (!decryptor_) {
       client_->KeyError(key_system, "", media::Decryptor::kUnknownError, 0);
       return false;
     }
@@ -203,30 +203,24 @@ void ProxyDecryptor::CancelDecrypt() {
 }
 
 void ProxyDecryptor::InitializeVideoDecoder(
-    const media::VideoDecoderConfig& config,
+    scoped_ptr<media::VideoDecoderConfig> config,
     const DecoderInitCB& init_cb,
     const KeyAddedCB& key_added_cb) {
-  // TODO(xhwang): Remove this!
-  NOTREACHED();
-  init_cb.Run(false);
+  NOTREACHED() << "ProxyDecryptor does not support video decoding";
 }
 
 void ProxyDecryptor::DecryptAndDecodeVideo(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
-  // TODO(xhwang): Remove this!
-  NOTREACHED();
-  video_decode_cb.Run(kError, NULL);
+  NOTREACHED() << "ProxyDecryptor does not support video decoding";
 }
 
 void ProxyDecryptor::CancelDecryptAndDecodeVideo() {
-  // TODO(xhwang): Remove this!
-  NOTREACHED();
+  NOTREACHED() << "ProxyDecryptor does not support video decoding";
 }
 
 void ProxyDecryptor::StopVideoDecoder() {
-  // TODO(xhwang): Remove this!
-  NOTREACHED();
+  NOTREACHED() << "ProxyDecryptor does not support video decoding";
 }
 
 scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
@@ -273,7 +267,7 @@ void ProxyDecryptor::OnNewKeyAdded() {
     return;
   }
 
-  DCHECK(decryptor_.get());
+  DCHECK(decryptor_);
 
   if (!pending_buffer_to_decrypt_)
     return;
