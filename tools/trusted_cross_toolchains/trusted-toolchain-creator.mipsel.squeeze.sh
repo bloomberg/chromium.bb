@@ -6,14 +6,41 @@
 #@ This script creates the mips trusted SDK.
 #@ It must be run from the native_client directory.
 
+# This script is intended to build a mipsel-linux-gnu cross compilation
+# toolchain that runs on x86 linux and generates code for a little-endian,
+# hard-float, mips32 target.
+#
+# It expects the host machine to have relatively recent versions of GMP (4.2.0
+# or later), MPFR (2.4.2), and MPC (0.8.1) in order to build the GCC.
+#
+# Common way to get those is:
+# sudo apt-get install libmpfr-dev libmpc-dev libgmp3-dev
+
 ######################################################################
 # Config
 ######################################################################
 
 set -o nounset
 set -o errexit
+set -o xtrace
 
-readonly CS_URL=https://sourcery.mentor.com/sgpp/lite/mips/portal/package9761/public/mips-linux-gnu/mips-2011.09-75-mips-linux-gnu-i686-pc-linux-gnu.tar.bz2
+readonly MAKE_OPTS="-j8"
+readonly ARCH="mips32"
+
+readonly GCC_URL="http://ftp.gnu.org/gnu/gcc/gcc-4.7.2/gcc-4.7.2.tar.bz2"
+readonly GCC_SHA1SUM="a464ba0f26eef24c29bcd1e7489421117fb9ee35"
+
+readonly BINUTILS_URL="http://ftp.gnu.org/gnu/binutils/binutils-2.22.tar.bz2"
+readonly BINUTILS_SHA1SUM="65b304a0b9a53a686ce50a01173d1f40f8efe404"
+
+readonly KERNEL_URL="http://www.linux-mips.org/pub/linux/mips/kernel/v2.6/linux-2.6.38.4.tar.gz"
+readonly KERNEL_SHA1SUM="377fa5cf5f1d0c396759b1c4d147330e7e5b6d7f"
+
+readonly GDB_URL="http://ftp.gnu.org/gnu/gdb/gdb-7.5.tar.bz2"
+readonly GDB_SHA1SUM="79b61152813e5730fa670c89e5fc3c04b670b02c"
+
+readonly EGLIBC_SVN_URL="svn://svn.eglibc.org/branches/eglibc-2_14"
+readonly EGLIBC_REVISION="20996"
 
 readonly DOWNLOAD_QEMU_URL="http://download.savannah.gnu.org/releases/qemu/qemu-0.12.5.tar.gz"
 
@@ -21,16 +48,16 @@ readonly INSTALL_ROOT=$(pwd)/toolchain/linux_mips-trusted
 
 readonly TMP=$(pwd)/toolchain/tmp/crosstool-trusted
 
+readonly BUILD_DIR=${TMP}/build
+
 readonly PATCH_MIPS32=$(readlink -f ../third_party/qemu/qemu-0.12.5.patch_mips)
 
-readonly CS_ROOT=${INSTALL_ROOT}/mips-release
+readonly JAIL_MIPS32=${INSTALL_ROOT}/sysroot
 
-readonly JAIL_MIPS32=${CS_ROOT}/mips-linux-gnu/libc/el
-
-readonly  MAKE_OPTS="-j8"
-# These are simple compiler wrappers to force 32bit builds
+# These are simple compiler wrappers to force 32bit builds.
 readonly  CC32=$(readlink -f pnacl/scripts/mygcc32)
 readonly  CXX32=$(readlink -f pnacl/scripts/myg++32)
+
 ######################################################################
 # Helper
 ######################################################################
@@ -44,7 +71,7 @@ Banner() {
 SubBanner() {
   echo "......................................................................"
   echo $*
-  echo "...................................................................."
+  echo "......................................................................"
 }
 
 Usage() {
@@ -55,15 +82,73 @@ Usage() {
   echo
 }
 
-DownloadOrCopy() {
-  if [[ -f "$2" ]] ; then
-     echo "$2 already in place"
-  elif [[ $1 =~  'http://' || $1 =~  'https://' ]] ; then
-    SubBanner "downloading from $1 -> $2"
-    wget $1 -O $2
+CheckoutOrCopy() {
+  local url=$1
+  local revision=$2
+  local filename="${TMP}/${url##*/}"
+  local filetype="${url%%:*}"
+
+  if [ "${filename}" == "" ]; then
+    echo "Unknown error occured. Aborting."
+    exit 1
+  fi
+
+  if [ "${filetype}" == "svn" ]; then
+    SubBanner "checkout from ${url} -> ${filename}"
+    svn --force export -r ${revision} ${url} ${filename}
   else
-    SubBanner "copying from $1"
-    cp $1 $2
+    SubBanner "copying from ${url}"
+    cp ${url} ${filename}
+  fi
+}
+
+DownloadOrCopy() {
+  local url=$1
+  local filename="${TMP}/${url##*/}"
+  local filetype="${url%%:*}"
+
+  if [ "${filename}" == "" ]; then
+    echo "Unknown error occured. Aborting."
+    exit 1
+  fi
+
+  if [[ "${filetype}" ==  "http" || ${filetype} ==  "https" ]] ; then
+    if [ ! -f "${filename}" ]; then
+      SubBanner "downloading from ${url} -> ${filename}"
+      wget ${url} -O ${filename}
+    fi
+  else
+    SubBanner "copying from ${url}"
+    cp ${url} ${filename}
+  fi
+}
+
+DownloadOrCopyAndVerify() {
+  local url=$1
+  local checksum=$2
+  local filename="${TMP}/${url##*/}"
+  local filetype="${url%%:*}"
+
+  if [ "${filename}" == "" ]; then
+    echo "Unknown error occured. Aborting."
+    exit 1
+  fi
+
+  if [[ "${filetype}" ==  "http" || ${filetype} ==  "https" ]] ; then
+    if [ ! -f "${filename}" ]; then
+      SubBanner "downloading from ${url} -> ${filename}"
+      wget ${url} -O ${filename}
+    fi
+    if [ "${checksum}" != "nochecksum" ]; then
+      if [ "$(sha1sum ${filename} | cut -d ' ' -f 1)" != "${checksum}" ]; then
+        echo "${filename} sha1sum failed. Deleting file and aborting."
+        rm -f ${filename}
+        exit 1
+      fi
+    fi
+  else
+    SubBanner "copying from ${url}"
+    cp ${url} ${filename}
   fi
 }
 
@@ -72,7 +157,7 @@ DownloadOrCopy() {
 ######################################################################
 
 # some sanity checks to make sure this script is run from the right place
-# with the right tools
+# with the right tools.
 SanityCheck() {
   Banner "Sanity Checks"
   if [[ $(basename $(pwd)) != "native_client" ]] ; then
@@ -100,6 +185,10 @@ ClearInstallDir() {
   rm -rf ${INSTALL_ROOT}/*
 }
 
+ClearBuildDir() {
+  Banner "clearing dirs in ${BUILD_DIR}"
+  rm -rf ${BUILD_DIR}/*
+}
 
 CreateTarBall() {
   local tarball=$1
@@ -108,42 +197,251 @@ CreateTarBall() {
 }
 
 
-# try to keep the tarball small
-PruneDirs() {
-  Banner "pruning code sourcery tree"
-  SubBanner "Size before: $(du -msc  ${CS_ROOT})"
-  rm -rf ${CS_ROOT}/share
-  rm -rf ${CS_ROOT}/mips-linux-gnu/lib/uclibc
-  rm -rf ${CS_ROOT}/mips-linux-gnu/lib/soft-float
-  rm -rf ${CS_ROOT}/mips-linux-gnu/lib/micromips
+# Download the toolchain source tarballs or use a local copy when available.
+DownloadOrCopyAndInstallToolchain() {
+  Banner "Installing toolchain"
 
-  rm -rf ${CS_ROOT}/mips-linux-gnu/libc/uclibc
-  rm -rf ${CS_ROOT}/mips-linux-gnu/libc/soft-float
-  rm -rf ${CS_ROOT}/mips-linux-gnu/libc/micromips
+  local tarball="${TMP}/${BINUTILS_URL##*/}"
+  DownloadOrCopyAndVerify ${BINUTILS_URL} ${BINUTILS_SHA1SUM}
+  SubBanner "extracting from ${tarball}"
+  tar jxf ${tarball} -C ${TMP}
 
-  rm -rf ${CS_ROOT}/lib/gcc/mips-linux-gnu/4.4.1/uclibc
-  rm -rf ${CS_ROOT}/lib/gcc/mips-linux-gnu/4.4.1/soft-float
-  rm -rf ${CS_ROOT}/lib/gcc/mips-linux-gnu/4.4.1/micromips
+  tarball="${TMP}/${GCC_URL##*/}"
+  DownloadOrCopyAndVerify ${GCC_URL} ${GCC_SHA1SUM}
+  SubBanner "extracting from ${tarball}"
+  tar jxf ${tarball} -C ${TMP}
 
-  rm -rf ${CS_ROOT}/mips-linux-gnu/include/c++/4.4.1/mips-linux-gnu/uclibc
-  rm -rf ${CS_ROOT}/mips-linux-gnu/include/c++/4.4.1/mips-linux-gnu/soft-float
-  rm -rf ${CS_ROOT}/mips-linux-gnu/include/c++/4.4.1/mips-linux-gnu/micromips
+  tarball="${TMP}/${GDB_URL##*/}"
+  DownloadOrCopyAndVerify ${GDB_URL} ${GDB_SHA1SUM}
+  SubBanner "extracting from ${tarball}"
+  tar jxf ${tarball} -C ${TMP}
 
-  SubBanner "Size after: $(du -msc  ${CS_ROOT})"
-}
+  tarball="${TMP}/${KERNEL_URL##*/}"
+  DownloadOrCopyAndVerify ${KERNEL_URL} ${KERNEL_SHA1SUM}
+  SubBanner "extracting from ${tarball}"
+  tar zxf ${tarball} -C ${TMP}
+
+  local eglibc_dir="${TMP}/${EGLIBC_SVN_URL##*/}"
+  CheckoutOrCopy ${EGLIBC_SVN_URL} ${EGLIBC_REVISION}
 
 
-# Download the codesourcery tarball or use a local copy when available.
-DownloadOrCopyAndInstallCodeSourceryTarball() {
-  Banner "Installing Codesourcery Toolchain"
-  local tarball="${TMP}/${CS_URL##*/}"
-  DownloadOrCopy ${CS_URL} ${tarball}
+  Banner "Preparing the code"
 
-  SubBanner "Untaring  ${INSTALL_ROOT}/${tarball}"
-  tar jxf ${tarball} -C ${INSTALL_ROOT}
+  if [ ! -d "${TMP}/eglibc-2_14/libc/ports" ]; then
+    ln -s ${TMP}/eglibc-2_14/ports ${TMP}/eglibc-2_14/libc/ports
+  fi
 
-  pushd ${INSTALL_ROOT}
-  mv mips-* mips-release
+  # Fix a minor syntax issue in tc-mips.c.
+  local OLD_TEXT="as_warn_where (fragp->fr_file, fragp->fr_line, msg);"
+  local NEW_TEXT="as_warn_where (fragp->fr_file, fragp->fr_line, \"%s\", msg);"
+  local FILE_NAME="${TMP}/binutils-2.22/gas/config/tc-mips.c"
+  sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "${FILE_NAME}"
+
+  export PATH=${INSTALL_ROOT}/bin:$PATH
+
+
+  Banner "Building binutils"
+
+  mkdir -p ${BUILD_DIR}/binutils/
+  pushd ${BUILD_DIR}/binutils/
+
+  SubBanner "Configuring"
+  ${TMP}/binutils-2.22/configure \
+    --prefix=${INSTALL_ROOT}     \
+    --target=mipsel-linux-gnu    \
+    --with-sysroot=${JAIL_MIPS32}
+
+  SubBanner "Make"
+  make ${MAKE_OPTS} all-binutils all-gas all-ld
+
+  SubBanner "Install"
+  make ${MAKE_OPTS} install-binutils install-gas install-ld
+
+  popd
+
+
+  Banner "Building GCC (initial)"
+
+  mkdir -p ${BUILD_DIR}/gcc/initial
+  pushd ${BUILD_DIR}/gcc/initial
+
+  SubBanner "Configuring"
+  ${TMP}/gcc-4.7.2/configure \
+    --prefix=${INSTALL_ROOT} \
+    --disable-libssp         \
+    --disable-libgomp        \
+    --disable-libmudflap     \
+    --disable-fixed-point    \
+    --disable-decimal-float  \
+    --with-mips-plt          \
+    --with-endian=little     \
+    --with-arch=${ARCH}      \
+    --enable-languages=c     \
+    --with-newlib            \
+    --without-headers        \
+    --disable-shared         \
+    --disable-threads        \
+    --disable-libquadmath    \
+    --disable-libatomic      \
+    --target=mipsel-linux-gnu
+
+  SubBanner "Make"
+  make ${MAKE_OPTS} all
+
+  SubBanner "Install"
+  make ${MAKE_OPTS} install
+
+  popd
+
+
+  Banner "Installing Linux kernel headers"
+  pushd ${TMP}/linux-2.6.38.4
+  make headers_install ARCH=mips INSTALL_HDR_PATH=${JAIL_MIPS32}/usr
+  popd
+
+
+  Banner "Building EGLIBC (initial)"
+
+  mkdir -p ${JAIL_MIPS32}/usr/lib
+  mkdir -p ${BUILD_DIR}/eglibc/initial
+  pushd ${BUILD_DIR}/eglibc/initial
+
+  SubBanner "Configuring"
+  BUILD_CC=gcc                      \
+  AR=mipsel-linux-gnu-ar            \
+  RANLIB=mipsel-linux-gnu-ranlib    \
+  CC=mipsel-linux-gnu-gcc           \
+  CXX=mipsel-linux-gnu-g++          \
+  ${TMP}/eglibc-2_14/libc/configure \
+    --prefix=/usr                   \
+    --enable-add-ons                \
+    --build=i686-pc-linux-gnu       \
+    --host=mipsel-linux-gnu         \
+    --disable-profile               \
+    --without-gd                    \
+    --without-cvs                   \
+    --with-headers=${JAIL_MIPS32}/usr/include
+
+  SubBanner "Install"
+  make ${MAKE_OPTS} install-headers install_root=${JAIL_MIPS32} \
+                    install-bootstrap-headers=yes
+
+  make csu/subdir_lib  && \
+       cp csu/crt1.o csu/crti.o csu/crtn.o ${JAIL_MIPS32}/usr/lib
+
+  mipsel-linux-gnu-gcc -nostdlib      \
+                       -nostartfiles  \
+                       -shared        \
+                       -x c /dev/null \
+                       -o ${JAIL_MIPS32}/usr/lib/libc.so
+
+  popd
+
+
+  Banner "Building GCC (intermediate)"
+
+  mkdir -p ${BUILD_DIR}/gcc/intermediate
+  pushd ${BUILD_DIR}/gcc/intermediate
+
+  SubBanner "Configuring"
+  ${TMP}/gcc-4.7.2/configure  \
+    --prefix=${INSTALL_ROOT}  \
+    --disable-libssp          \
+    --disable-libgomp         \
+    --disable-libmudflap      \
+    --disable-fixed-point     \
+    --disable-decimal-float   \
+    --with-mips-plt           \
+    --with-endian=little      \
+    --with-arch=${ARCH}       \
+    --target=mipsel-linux-gnu \
+    --enable-languages=c      \
+    --disable-libquadmath     \
+    --disable-libatomic       \
+    --with-sysroot=${JAIL_MIPS32}
+
+  SubBanner "Make"
+  make ${MAKE_OPTS} all
+
+  SubBanner "Install"
+  make ${MAKE_OPTS} install
+
+  popd
+
+
+  Banner "Building EGLIBC (final)"
+
+  mkdir -p ${BUILD_DIR}/eglibc/final
+  pushd ${BUILD_DIR}/eglibc/final
+
+  BUILD_CC=gcc                      \
+  AR=mipsel-linux-gnu-ar            \
+  RANLIB=mipsel-linux-gnu-ranlibi   \
+  CC=mipsel-linux-gnu-gcc           \
+  CXX=mipsel-linux-gnu-g++          \
+  ${TMP}/eglibc-2_14/libc/configure \
+    --prefix=/usr                   \
+    --enable-add-ons                \
+    --host=mipsel-linux-gnu         \
+    --disable-profile               \
+    --without-gd                    \
+    --without-cvs                   \
+    --build=i686-pc-linux-gnu       \
+    --with-headers=${JAIL_MIPS32}/usr/include
+
+  SubBanner "Make"
+  make ${MAKE_OPTS} all
+
+  SubBanner "Install"
+  make ${MAKE_OPTS} install install_root=${JAIL_MIPS32}
+
+  popd
+
+
+  Banner "Building GCC (final)"
+
+  mkdir -p ${BUILD_DIR}/gcc/final
+  pushd ${BUILD_DIR}/gcc/final
+
+  ${TMP}/gcc-4.7.2/configure  \
+    --prefix=${INSTALL_ROOT}  \
+    --disable-libssp          \
+    --disable-libgomp         \
+    --disable-libmudflap      \
+    --disable-fixed-point     \
+    --disable-decimal-float   \
+    --with-mips-plt           \
+    --with-endian=little      \
+    --with-arch=${ARCH}       \
+    --target=mipsel-linux-gnu \
+    --enable-__cxa_atexit     \
+    --enable-languages=c,c++  \
+    --with-sysroot=${JAIL_MIPS32}
+
+  SubBanner "Make"
+  make ${MAKE_OPTS} all
+
+  SubBanner "Install"
+  make ${MAKE_OPTS} install
+
+  popd
+
+
+  Banner "Building GDB"
+
+  mkdir -p ${BUILD_DIR}/gdb/
+  pushd ${BUILD_DIR}/gdb/
+
+  ${TMP}/gdb-7.5/configure   \
+    --prefix=${INSTALL_ROOT} \
+    --target=mipsel-linux-gnu
+
+  SubBanner "Make"
+  make ${MAKE_OPTS} all-gdb
+
+  SubBanner "Install"
+  make ${MAKE_OPTS} install-gdb
+
   popd
 }
 
@@ -156,22 +454,12 @@ InstallTrustedLinkerScript() {
   # to move the sel_ldr and other images "out of the way"
   Banner "installing trusted linker script to ${trusted_ld_script}"
 
-  ${CS_ROOT}/bin/mips-linux-gnu-ld  --verbose |\
+  ${INSTALL_ROOT}/bin/mipsel-linux-gnu-ld  --verbose |\
       grep -A 10000 "=======" |\
       grep -v "=======" |\
       sed -e 's/0400000/70000000/g' > ${trusted_ld_script}
 }
 
-
-InstallMissingHeaders() {
-  Banner "installing openssl headers from local system"
-  cp -r /usr/include/openssl ${JAIL_MIPS32}/usr/include/
-}
-
-
-MissingSharedLibCleanup() {
-  Banner "Cleanup dangling symlinks"
-}
 
 # ----------------------------------------------------------------------
 # mips32 deb files to complete our code sourcery jail
@@ -182,7 +470,7 @@ readonly MIPS32_PACKAGES=${REPO_DEBIAN}/dists/squeeze/main/binary-mipsel/Package
 
 readonly TMP_PACKAGELIST_MIPS32=${TMP}/../packagelist_mipsel.tmp
 
-# These are good enough for native client
+# These are good enough for native client.
 readonly BASE_PACKAGES="\
   libssl0.9.8 \
   libssl-dev \
@@ -215,11 +503,11 @@ readonly BASE_PACKAGES="\
 GeneratePackageLists() {
   Banner "generating package lists for mips32"
   echo -n > ${TMP_PACKAGELIST_MIPS32}
-  DownloadOrCopy ${MIPS32_PACKAGES} ${TMP}/../Packages_mipsel.bz2
-  bzcat ${TMP}/../Packages_mipsel.bz2\
-    | egrep '^(Package:|Filename:)' > ${TMP}/../Packages_mipsel
+  DownloadOrCopy ${MIPS32_PACKAGES}
+  bzcat ${TMP}/Packages.bz2\
+    | egrep '^(Package:|Filename:)' > ${TMP}/Packages_mipsel
   for pkg in ${BASE_PACKAGES} ; do
-    grep  -A 1 "${pkg}\$" ${TMP}/../Packages_mipsel\
+    grep  -A 1 "${pkg}\$" ${TMP}/Packages_mipsel\
       | egrep -o "pool/.*" >> ${TMP_PACKAGELIST_MIPS32}
   done
 }
@@ -229,7 +517,7 @@ InstallMissingLibraries() {
   for file in ${DEP_FILES_NEEDED_MIPS32} ; do
     local package="${TMP}/${file##*/}"
     Banner "installing ${file}"
-    DownloadOrCopy ${REPO_DEBIAN}/${file} ${package}
+    DownloadOrCopy ${REPO_DEBIAN}/${file}
     SubBanner "extracting to ${JAIL_MIPS32}"
     dpkg --fsys-tarfile ${package}\
       | tar -xvf - --exclude=./usr/share -C ${JAIL_MIPS32}
@@ -263,29 +551,30 @@ FixLibs() {
 
   rm -f libresolv.so
   ln -s ../../lib/libresolv.so.2  libresolv.so
-
-  echo "OUTPUT_FORMAT(elf32-tradlittlemips)" > libc.so
-  echo "GROUP ( libc.so.6 libc_nonshared.a  AS_NEEDED ( ld.so.1 ) )" >> libc.so
-
-  echo "OUTPUT_FORMAT(elf32-tradlittlemips)" > libpthread.so
-  echo "GROUP ( libpthread.so.0 libpthread_nonshared.a )" >> libpthread.so
 }
 
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
   local tmpdir="${TMP}/qemu-mips.nacl"
   local tarball="qemu-0.12.5.tar.gz"
+
   Banner "Building qemu in ${tmpdir}"
+
   rm -rf ${tmpdir}
   mkdir ${tmpdir}
   cd ${tmpdir}
+
   SubBanner "Downloading"
   wget -c ${DOWNLOAD_QEMU_URL}
+
   SubBanner "Untaring"
   tar zxf  ${tarball}
   cd qemu-0.12.5
-  SubBanner "Patching"
-  patch -p1 < ${PATCH_MIPS32}
+
+  if [ -f "${PATCH_MIPS32}" ]; then
+    SubBanner "Patching"
+    patch -p1 < ${PATCH_MIPS32}
+  fi
 
   echo
   echo "NOTE: on 64 bit systems you will need to the following 32bit libs:"
@@ -315,6 +604,7 @@ BuildAndInstallQemu() {
   cp tools/trusted_cross_toolchains/qemu_tool_mips32.sh ${INSTALL_ROOT}
   ln -sf qemu_tool_mips32.sh ${INSTALL_ROOT}/run_under_qemu_mips32
 }
+
 ######################################################################
 # Main
 ######################################################################
@@ -329,12 +619,10 @@ elif [[ $1 == "trusted_sdk" ]]; then
   mkdir -p ${TMP}
   SanityCheck
   ClearInstallDir
-  DownloadOrCopyAndInstallCodeSourceryTarball
-  PruneDirs
+  ClearBuildDir
+  DownloadOrCopyAndInstallToolchain
   GeneratePackageLists
-  InstallMissingHeaders
   InstallMissingLibraries
-  MissingSharedLibCleanup
   InstallTrustedLinkerScript
   BuildAndInstallQemu
   CreateTarBall $1
