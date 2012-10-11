@@ -165,7 +165,7 @@ struct wl_array {
 void wl_array_init(struct wl_array *array);
 void wl_array_release(struct wl_array *array);
 void *wl_array_add(struct wl_array *array, size_t size);
-void wl_array_copy(struct wl_array *array, struct wl_array *source);
+int wl_array_copy(struct wl_array *array, struct wl_array *source);
 
 typedef int32_t wl_fixed_t;
 
