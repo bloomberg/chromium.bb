@@ -989,8 +989,7 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 			if (send && value->new_id != 0)
 				fprintf(stderr, "%u", value->new_id);
 			else if (!send && value->object != NULL)
-				fprintf(stderr, "%u",
-					*((uint32_t *)value->object));
+				fprintf(stderr, "%u", value->object->id);
 			else
 				fprintf(stderr, "nil");
 			break;
