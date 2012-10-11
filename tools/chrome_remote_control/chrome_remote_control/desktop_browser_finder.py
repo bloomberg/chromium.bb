@@ -131,8 +131,9 @@ def FindAllAvailableBrowsers(options):
                                              win_system, False))
 
   if len(browsers) and not has_display:
-    logging.warning('Found (%s), but you have a DISPLAY environment set.' %
-                    ','.join([b.browser_type for b in browsers]))
+    logging.warning(
+      'Found (%s), but you do not have a DISPLAY environment set.' %
+      ','.join([b.browser_type for b in browsers]))
     return []
 
   return browsers
