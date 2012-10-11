@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/gdata/drive_function_remove.h"
 #include "chrome/browser/chromeos/gdata/drive_test_util.h"
+#include "chrome/browser/chromeos/gdata/file_system/remove_operation.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -31,9 +31,9 @@ class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
                      net::NetworkChangeNotifier::ConnectionType());
 };
 
-class MockDriveFunctionRemove : public DriveFunctionRemove {
+class MockRemoveOperation : public file_system::RemoveOperation {
  public:
-  MockDriveFunctionRemove() : DriveFunctionRemove(NULL, NULL, NULL) {}
+  MockRemoveOperation() : file_system::RemoveOperation(NULL, NULL, NULL) {}
 
   MOCK_METHOD3(Remove, void(const FilePath& file_path,
                             bool is_recursive,
@@ -60,7 +60,7 @@ class DriveSchedulerTest : public testing::Test {
     mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
     scheduler_.reset(new DriveScheduler(profile_.get(),
-                                        &mock_remove_function_));
+                                        &mock_remove_operation_));
 
     scheduler_->Initialize();
     scheduler_->SetDisableThrottling(true);
@@ -112,14 +112,14 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<DriveScheduler> scheduler_;
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
 
-  StrictMock<MockDriveFunctionRemove> mock_remove_function_;
+  StrictMock<MockRemoveOperation> mock_remove_operation_;
 };
 
 TEST_F(DriveSchedulerTest, RemoveFile) {
   ConnectToWifi();
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(mock_remove_function_, Remove(file_in_root, _, _))
+  EXPECT_CALL(mock_remove_operation_, Remove(file_in_root, _, _))
       .WillOnce(MockRemove(DRIVE_FILE_OK));
 
   DriveFileError error;
@@ -135,7 +135,7 @@ TEST_F(DriveSchedulerTest, RemoveFileRetry) {
   ConnectToWifi();
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  EXPECT_CALL(mock_remove_function_, Remove(file_in_root, _, _))
+  EXPECT_CALL(mock_remove_operation_, Remove(file_in_root, _, _))
       .WillOnce(MockRemove(DRIVE_FILE_ERROR_FAILED))
       .WillOnce(MockRemove(DRIVE_FILE_OK));
 
@@ -152,7 +152,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_Offline) {
   ConnectToNone();
 
   // This file will not be removed, as network is not connected.
-  EXPECT_CALL(mock_remove_function_, Remove(_, _, _)).Times(0);
+  EXPECT_CALL(mock_remove_operation_, Remove(_, _, _)).Times(0);
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   DriveFileError error;
@@ -167,7 +167,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_CelluarDisabled) {
 
   // This file will not be removed, as fetching over cellular network is
   // disabled by default.
-  EXPECT_CALL(mock_remove_function_, Remove(_, _, _)).Times(0);
+  EXPECT_CALL(mock_remove_operation_, Remove(_, _, _)).Times(0);
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   DriveFileError error;
@@ -185,7 +185,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabled) {
 
   // This file will be removed, as syncing over cellular network is explicitly
   // enabled.
-  EXPECT_CALL(mock_remove_function_, Remove(_, _, _)).Times(1);
+  EXPECT_CALL(mock_remove_operation_, Remove(_, _, _)).Times(1);
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   DriveFileError error;
@@ -201,7 +201,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_WimaxDisabled) {
 
   // This file will not be removed, as syncing over wimax network is disabled
   // by default.
-  EXPECT_CALL(mock_remove_function_, Remove(_, _, _)).Times(0);
+  EXPECT_CALL(mock_remove_operation_, Remove(_, _, _)).Times(0);
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   DriveFileError error;
@@ -219,7 +219,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabledWithWimax) {
 
   // This file will be removed, as syncing over cellular network is explicitly
   // enabled.
-  EXPECT_CALL(mock_remove_function_, Remove(_, _, _)).Times(1);
+  EXPECT_CALL(mock_remove_operation_, Remove(_, _, _)).Times(1);
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   DriveFileError error;
@@ -234,7 +234,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_DriveDisabled) {
   profile_->GetPrefs()->SetBoolean(prefs::kDisableGData, true);
 
   // This file will not be removed, as the Drive feature is disabled.
-  EXPECT_CALL(mock_remove_function_, Remove(_, _, _)).Times(0);
+  EXPECT_CALL(mock_remove_operation_, Remove(_, _, _)).Times(0);
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   DriveFileError error;

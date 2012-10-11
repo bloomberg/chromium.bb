@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
-#include "chrome/browser/chromeos/gdata/drive_function_remove.h"
+#include "chrome/browser/chromeos/gdata/file_system/remove_operation.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -51,12 +51,12 @@ DriveScheduler::RemoveJobPrivate::~RemoveJobPrivate() {
 }
 
 DriveScheduler::DriveScheduler(Profile* profile,
-                               DriveFunctionRemove* remove_function)
+                               file_system::RemoveOperation* remove_operation)
     : job_loop_is_running_(false),
       next_job_id_(0),
       throttle_count_(0),
       disable_throttling_(false),
-      remove_function_(remove_function),
+      remove_operation_(remove_operation),
       profile_(profile),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -134,11 +134,11 @@ void DriveScheduler::DoJobLoop() {
     case TYPE_REMOVE: {
       DCHECK(job_iter->second->remove_private.get());
 
-      remove_function_->Remove(job_info.file_path,
-                               job_iter->second->remove_private->is_recursive,
-                               base::Bind(&DriveScheduler::OnRemoveDone,
-                                          weak_ptr_factory_.GetWeakPtr(),
-                                          job_id));
+      remove_operation_->Remove(job_info.file_path,
+                                job_iter->second->remove_private->is_recursive,
+                                base::Bind(&DriveScheduler::OnRemoveDone,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           job_id));
     }
     break;
   }

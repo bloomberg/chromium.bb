@@ -16,7 +16,9 @@ class Profile;
 
 namespace gdata {
 
-class DriveFunctionRemove;
+namespace file_system {
+class RemoveOperation;
+}
 
 // The DriveScheduler is responsible for queuing and scheduling drive
 // operations.  It is responisble for handling retry logic, rate limiting, as
@@ -68,7 +70,8 @@ class DriveScheduler
     JobState state;
   };
 
-  DriveScheduler(Profile* profile, DriveFunctionRemove* remove_function);
+  DriveScheduler(Profile* profile,
+                 file_system::RemoveOperation* remove_operation);
   virtual ~DriveScheduler();
 
   // Initializes the object. This function should be called before any
@@ -159,7 +162,7 @@ class DriveScheduler
   std::deque<int> queue_;
 
   // Drive operations.
-  DriveFunctionRemove* remove_function_;
+  file_system::RemoveOperation* remove_operation_;
 
   Profile* profile_;
 

@@ -40,6 +40,7 @@ struct LoadFeedParams;
 
 namespace file_system {
 class MoveOperation;
+class RemoveOperation;
 }
 
 // The production implementation of DriveFileSystemInterface.
@@ -867,7 +868,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   scoped_ptr<file_system::MoveOperation> move_operation_;
-  scoped_ptr<DriveFunctionRemove> remove_function_;
+  scoped_ptr<file_system::RemoveOperation> remove_operation_;
 
   scoped_ptr<DriveScheduler> scheduler_;
 

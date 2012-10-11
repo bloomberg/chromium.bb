@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/drive_function_remove.h"
+#include "chrome/browser/chromeos/gdata/file_system/remove_operation.h"
 
 #include <math.h>
 
@@ -22,7 +22,9 @@ namespace {
 int kMaxRetries = 5;
 }
 
-DriveFunctionRemove::DriveFunctionRemove(DriveServiceInterface* drive_service,
+namespace file_system {
+
+RemoveOperation::RemoveOperation(DriveServiceInterface* drive_service,
                                          DriveFileSystem* file_system,
                                          DriveCache* cache)
   : drive_service_(drive_service),
@@ -31,10 +33,10 @@ DriveFunctionRemove::DriveFunctionRemove(DriveServiceInterface* drive_service,
     weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
-DriveFunctionRemove::~DriveFunctionRemove() {
+RemoveOperation::~RemoveOperation() {
 }
 
-void DriveFunctionRemove::Remove(
+void RemoveOperation::Remove(
     const FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
@@ -45,12 +47,12 @@ void DriveFunctionRemove::Remove(
   file_system_->ResourceMetadata()->GetEntryInfoByPath(
       file_path,
       base::Bind(
-          &DriveFunctionRemove::RemoveAfterGetEntryInfo,
+          &RemoveOperation::RemoveAfterGetEntryInfo,
           weak_ptr_factory_.GetWeakPtr(),
           callback));
 }
 
-void DriveFunctionRemove::RemoveAfterGetEntryInfo(
+void RemoveOperation::RemoveAfterGetEntryInfo(
     const FileOperationCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -72,21 +74,21 @@ void DriveFunctionRemove::RemoveAfterGetEntryInfo(
   DoDelete(callback, 0, entry_proto.Pass());
 }
 
-void DriveFunctionRemove::DoDelete(
+void RemoveOperation::DoDelete(
     const FileOperationCallback& callback,
     int retry_count,
     scoped_ptr<DriveEntryProto> entry_proto) {
   GURL edit_url(entry_proto->edit_url());
   drive_service_->DeleteDocument(
       edit_url,
-      base::Bind(&DriveFunctionRemove::RetryIfNeeded,
+      base::Bind(&RemoveOperation::RetryIfNeeded,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  retry_count + 1,
                  base::Passed(&entry_proto)));
 }
 
-void DriveFunctionRemove::RetryIfNeeded(
+void RemoveOperation::RetryIfNeeded(
     const FileOperationCallback& callback,
     int retry_count,
     scoped_ptr<DriveEntryProto> entry_proto,
@@ -106,7 +108,7 @@ void DriveFunctionRemove::RetryIfNeeded(
     VLOG(1) << "Throttling for " << delay.InMillisecondsF();
     const bool posted = base::MessageLoopProxy::current()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&DriveFunctionRemove::DoDelete,
+        base::Bind(&RemoveOperation::DoDelete,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
                    retry_count,
@@ -121,7 +123,7 @@ void DriveFunctionRemove::RetryIfNeeded(
   }
 }
 
-void DriveFunctionRemove::RemoveResourceLocally(
+void RemoveOperation::RemoveResourceLocally(
     const FileOperationCallback& callback,
     const std::string& resource_id,
     GDataErrorCode status) {
@@ -136,14 +138,14 @@ void DriveFunctionRemove::RemoveResourceLocally(
 
   file_system_->ResourceMetadata()->RemoveEntryFromParent(
       resource_id,
-      base::Bind(&DriveFunctionRemove::NotifyDirectoryChanged,
+      base::Bind(&RemoveOperation::NotifyDirectoryChanged,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 
   cache_->RemoveOnUIThread(resource_id, CacheOperationCallback());
 }
 
-void DriveFunctionRemove::NotifyDirectoryChanged(
+void RemoveOperation::NotifyDirectoryChanged(
     const FileOperationCallback& callback,
     DriveFileError error,
     const FilePath& directory_path) {
@@ -154,4 +156,5 @@ void DriveFunctionRemove::NotifyDirectoryChanged(
     callback.Run(error);
 }
 
+}  // namespace file_system
 }  // namespace gdata

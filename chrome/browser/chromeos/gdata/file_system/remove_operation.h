@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FUNCTION_REMOVE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FUNCTION_REMOVE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_FILE_SYSTEM_REMOVE_OPERATION_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_FILE_SYSTEM_REMOVE_OPERATION_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,15 +21,17 @@ class DriveEntryProto;
 class DriveFileSystem;
 class DriveServiceInterface;
 
+namespace file_system {
+
 // This class encapsulates the drive Remove function.  It is resposible for
 // sending the request to the drive API, then updating the local state and
 // metadata to reflect the new state.
-class DriveFunctionRemove {
+class RemoveOperation {
  public:
-  DriveFunctionRemove(DriveServiceInterface* drive_service,
+  RemoveOperation(DriveServiceInterface* drive_service,
                       DriveFileSystem* file_system,
                       DriveCache* cache);
-  virtual ~DriveFunctionRemove();
+  virtual ~RemoveOperation();
 
   // Perform the remove operation on the file at drive path |file_path|.
   // Invokes |callback| when finished with the result of the operation.
@@ -80,11 +82,12 @@ class DriveFunctionRemove {
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveFunctionRemove> weak_ptr_factory_;
+  base::WeakPtrFactory<RemoveOperation> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveFunctionRemove);
+  DISALLOW_COPY_AND_ASSIGN(RemoveOperation);
 };
 
+}  // namespace file_system
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FUNCTION_REMOVE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_FILE_SYSTEM_REMOVE_OPERATION_H_

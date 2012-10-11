@@ -18,11 +18,11 @@
 #include "chrome/browser/chromeos/gdata/drive_files.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
-#include "chrome/browser/chromeos/gdata/drive_function_remove.h"
 #include "chrome/browser/chromeos/gdata/drive_scheduler.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/file_system/move_operation.h"
+#include "chrome/browser/chromeos/gdata/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -455,9 +455,9 @@ DriveFileSystem::DriveFileSystem(
       blocking_task_runner_(blocking_task_runner),
       move_operation_(new file_system::MoveOperation(
           drive_service, ALLOW_THIS_IN_INITIALIZER_LIST(this), cache_)),
-      remove_function_(new DriveFunctionRemove(
+      remove_operation_(new file_system::RemoveOperation(
           drive_service, ALLOW_THIS_IN_INITIALIZER_LIST(this), cache_)),
-      scheduler_(new DriveScheduler(profile, remove_function_.get())),
+      scheduler_(new DriveScheduler(profile, remove_operation_.get())),
       ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
       ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
   // Should be created from the file browser extension API on UI thread.

@@ -20,10 +20,10 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
-#include "chrome/browser/chromeos/gdata/drive_function_remove.h"
 #include "chrome/browser/chromeos/gdata/drive_test_util.h"
 #include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/gdata/file_system/remove_operation.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
@@ -270,7 +270,7 @@ class DriveFileSystemTest : public testing::Test {
   bool RemoveEntry(const FilePath& file_path) {
     DriveFileError error;
     EXPECT_CALL(*mock_drive_service_, DeleteDocument(_, _)).Times(AnyNumber());
-    file_system_->remove_function_->Remove(
+    file_system_->remove_operation_->Remove(
         file_path, false,
         base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
 
