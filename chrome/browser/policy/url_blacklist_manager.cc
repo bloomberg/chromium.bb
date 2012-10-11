@@ -31,7 +31,7 @@ namespace policy {
 namespace {
 
 // Maximum filters per policy. Filters over this index are ignored.
-const size_t kMaxFiltersPerPolicy = 100;
+const size_t kMaxFiltersPerPolicy = 1000;
 
 const char* kStandardSchemes[] = {
   "http",

@@ -2554,7 +2554,7 @@
       The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
       If the optional path is specified, only paths with that prefix will be blocked.
 
-      Exceptions can be defined in the URL whitelist policy. These policies are limited to 100 entries; subsequent entries will be ignored.
+      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
 
       If this policy is not set no URL will be blacklisted in the browser.''',
     },
@@ -2578,7 +2578,7 @@
 
       The most specific filter will determine if a URL is blocked or allowed. The whitelist takes precedence over the blacklist.
 
-      This policy is limited to 100 entries; subsequent entries will be ignored.
+      This policy is limited to 1000 entries; subsequent entries will be ignored.
 
       If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.''',
     },
