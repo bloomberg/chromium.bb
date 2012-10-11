@@ -1822,6 +1822,10 @@ def CMDtrace(args):
   cmd = trace_inputs.fix_python_path(cmd)
   cwd = os.path.normpath(os.path.join(
       complete_state.root_dir, complete_state.isolated.relative_cwd))
+  cmd[0] = os.path.normpath(os.path.join(cwd, cmd[0]))
+  if not os.path.isfile(cmd[0]):
+    raise ExecutionError(
+        'Tracing failed for: %s\nIt doesn\'t exit' % ' '.join(cmd))
   logging.info('Running %s, cwd=%s' % (cmd, cwd))
   api = trace_inputs.get_api()
   logfile = complete_state.isolated_filepath + '.log'
