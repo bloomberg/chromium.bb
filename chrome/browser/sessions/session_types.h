@@ -88,9 +88,6 @@ class TabNavigation {
   const string16& title() const { return title_; }
   const std::string& content_state() const { return content_state_; }
 
-  // Timestamp this navigation occurred.
-  base::Time timestamp() const { return timestamp_; }
-
   // Converts a set of TabNavigations into a list of NavigationEntrys
   // with sequential page IDs and the given context. The caller owns
   // the returned NavigationEntrys.

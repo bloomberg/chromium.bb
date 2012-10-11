@@ -540,10 +540,11 @@ TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
     old_navigations = tab->navigations;
   }
 
-  ASSERT_EQ(3U, old_navigations.size());
-  EXPECT_FALSE(old_navigations[0].timestamp().is_null());
-  EXPECT_FALSE(old_navigations[1].timestamp().is_null());
-  EXPECT_FALSE(old_navigations[2].timestamp().is_null());
+  EXPECT_EQ(3U, old_navigations.size());
+  for (size_t i = 0; i < old_navigations.size(); ++i) {
+    EXPECT_FALSE(
+        SessionTypesTestHelper::GetTimestamp(old_navigations[i]).is_null());
+  }
 
   // Set this, otherwise previous session won't be loaded.
   profile()->set_last_session_exited_cleanly(false);
@@ -560,13 +561,12 @@ TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
       static_cast<Tab*>(restored_entry);
   EXPECT_EQ(tab_timestamp.ToInternalValue(),
             restored_tab->timestamp.ToInternalValue());
-  ASSERT_EQ(3U, restored_tab->navigations.size());
-  EXPECT_EQ(old_navigations[0].timestamp(),
-            restored_tab->navigations[0].timestamp());
-  EXPECT_EQ(old_navigations[1].timestamp(),
-            restored_tab->navigations[1].timestamp());
-  EXPECT_EQ(old_navigations[2].timestamp(),
-            restored_tab->navigations[2].timestamp());
+  ASSERT_EQ(old_navigations.size(), restored_tab->navigations.size());
+  for (size_t i = 0; i < restored_tab->navigations.size(); ++i) {
+    EXPECT_EQ(
+        SessionTypesTestHelper::GetTimestamp(old_navigations[i]),
+        SessionTypesTestHelper::GetTimestamp(restored_tab->navigations[i]));
+  }
 }
 
 TEST_F(TabRestoreServiceTest, PruneEntries) {

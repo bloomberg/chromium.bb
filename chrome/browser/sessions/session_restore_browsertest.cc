@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
     const TabRestoreService::Tab& tab = *it;
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
-      timestamp = tab.navigations[0].timestamp();
+      timestamp = SessionTypesTestHelper::GetTimestamp(tab.navigations[0]);
       service->RestoreEntryById(NULL, tab.id, UNKNOWN);
       break;
     }
@@ -428,9 +428,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
 
   SessionTab tab;
   tab.SetFromSyncData(sync_data, base::Time::Now());
-  ASSERT_EQ(2U, tab.navigations.size());
-  EXPECT_TRUE(tab.navigations[0].timestamp().is_null());
-  EXPECT_TRUE(tab.navigations[1].timestamp().is_null());
+  EXPECT_EQ(2U, tab.navigations.size());
+  for (size_t i = 0; i < tab.navigations.size(); ++i) {
+    EXPECT_TRUE(
+        SessionTypesTestHelper::GetTimestamp(tab.navigations[i]).is_null());
+  }
 
   ASSERT_EQ(1, browser()->tab_count());
 

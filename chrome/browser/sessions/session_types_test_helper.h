@@ -43,6 +43,8 @@ struct SessionTypesTestHelper {
 
   static bool GetIsOverridingUserAgent(const TabNavigation& navigation);
 
+  static base::Time GetTimestamp(const TabNavigation& navigation);
+
   // Setters.
 
   static void SetContentState(TabNavigation* navigation,

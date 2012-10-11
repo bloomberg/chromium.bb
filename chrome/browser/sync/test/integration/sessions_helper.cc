@@ -90,7 +90,8 @@ bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
       nav = (*tab_it)->navigations[nav_index];
       if (nav.virtual_url() == url) {
         DVLOG(1) << "Found tab with url " << url.spec();
-        DVLOG(1) << "Timestamp is " << nav.timestamp().ToInternalValue();
+        DVLOG(1) << "Timestamp is "
+                 << SessionTypesTestHelper::GetTimestamp(nav).ToInternalValue();
         if (nav.title().empty()) {
           DVLOG(1) << "Title empty -- tab hasn't finished loading yet";
           continue;

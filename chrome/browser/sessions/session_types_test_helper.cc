@@ -68,6 +68,11 @@ bool SessionTypesTestHelper::GetIsOverridingUserAgent(
   return navigation.is_overriding_user_agent_;
 }
 
+base::Time SessionTypesTestHelper::GetTimestamp(
+    const TabNavigation& navigation) {
+  return navigation.timestamp_;
+}
+
 void SessionTypesTestHelper::SetContentState(
     TabNavigation* navigation,
     const std::string& content_state) {
