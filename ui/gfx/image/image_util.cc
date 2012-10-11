@@ -43,7 +43,7 @@ bool JPEGEncodedDataFromImage(const Image& image, int quality,
 
   return gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-          gfx::JPEGCodec::FORMAT_BGRA, bitmap.width(),
+          gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(),
           bitmap.height(),
           static_cast<int>(bitmap.rowBytes()), quality,
           dst);
