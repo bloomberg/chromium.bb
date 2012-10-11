@@ -597,42 +597,14 @@
 					<string key="className">BaseBubbleController</string>
 					<string key="superclassName">NSWindowController</string>
 					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>bubble_</string>
-							<string>eventTap_</string>
-							<string>resignationObserver_</string>
-						</object>
-						<object class="NSArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>InfoBubbleView</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
+						<string key="NS.key.0">bubble_</string>
+						<string key="NS.object.0">InfoBubbleView</string>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>bubble_</string>
-							<string>eventTap_</string>
-							<string>resignationObserver_</string>
-						</object>
-						<object class="NSArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">bubble_</string>
-								<string key="candidateClassName">InfoBubbleView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">eventTap_</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">resignationObserver_</string>
-								<string key="candidateClassName">id</string>
-							</object>
+						<string key="NS.key.0">bubble_</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">bubble_</string>
+							<string key="candidateClassName">InfoBubbleView</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -664,14 +636,10 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>closeWindow:</string>
-							<string>extensionUnloaded:</string>
 							<string>onManageShortcutClicked:</string>
-							<string>showWindow:</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 						</object>
@@ -681,9 +649,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>closeWindow:</string>
-							<string>extensionUnloaded:</string>
 							<string>onManageShortcutClicked:</string>
-							<string>showWindow:</string>
 						</object>
 						<object class="NSArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -692,15 +658,7 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">extensionUnloaded:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
 								<string key="name">onManageShortcutClicked:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">showWindow:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 						</object>

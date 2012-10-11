@@ -459,6 +459,8 @@
         'browser/ui/cocoa/extensions/extension_action_context_menu.mm',
         'browser/ui/cocoa/extensions/extension_install_dialog_controller.h',
         'browser/ui/cocoa/extensions/extension_install_dialog_controller.mm',
+        'browser/ui/cocoa/extensions/extension_install_view_controller.h',
+        'browser/ui/cocoa/extensions/extension_install_view_controller.mm',
         'browser/ui/cocoa/extensions/extension_installed_bubble_bridge.mm',
         'browser/ui/cocoa/extensions/extension_installed_bubble_controller.h',
         'browser/ui/cocoa/extensions/extension_installed_bubble_controller.mm',
