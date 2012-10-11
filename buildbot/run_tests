@@ -128,7 +128,7 @@ done
 wait ${children[*]}
 trap - INT TERM
 
-cat "${LOGFILE}".* > "${LOGFILE}"
+cat "${LOGFILE}".* > "${LOGFILE}" 2>/dev/null || :
 rm -f "${LOGFILE}".*
 if [[ $(wc -c "${LOGFILE}" |cut -f1 -d' ') -gt 0 ]]; then
   cat "${LOGFILE}"
