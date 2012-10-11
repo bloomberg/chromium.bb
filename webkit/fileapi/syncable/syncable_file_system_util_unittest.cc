@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/isolated_context.h"
 
 namespace fileapi {
 
@@ -32,16 +33,7 @@ FilePath CreateNormalizedFilePath(const FilePath::CharType* path) {
 
 }  // namespace
 
-class SyncableFileSystemUtilTest : public testing::Test {
- protected:
-  virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(RegisterSyncableFileSystem(kServiceName));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    ASSERT_TRUE(RevokeSyncableFileSystem(kServiceName));
-  }
-};
+class SyncableFileSystemUtilTest : public testing::Test {};
 
 TEST_F(SyncableFileSystemUtilTest, GetSyncableFileSystemRootURI) {
   const GURL root = GetSyncableFileSystemRootURI(GURL(kOrigin), kServiceName);
@@ -50,16 +42,24 @@ TEST_F(SyncableFileSystemUtilTest, GetSyncableFileSystemRootURI) {
 }
 
 TEST_F(SyncableFileSystemUtilTest, CreateSyncableFileSystemURL) {
+  ScopedExternalFileSystem scoped_fs(
+      kServiceName, kFileSystemTypeSyncable, FilePath());
+
   const FilePath path(kPath);
-  const std::string url_str = kSyncableFileSystemRootURI + path.AsUTF8Unsafe();
-  const FileSystemURL url = CreateSyncableFileSystemURL(
-      GURL(kOrigin), kServiceName, path);
+  const FileSystemURL expected_url =
+      CreateFileSystemURL(kSyncableFileSystemRootURI + path.AsUTF8Unsafe());
+  const FileSystemURL url =
+      CreateSyncableFileSystemURL(GURL(kOrigin), kServiceName, path);
+
   EXPECT_TRUE(url.is_valid());
-  EXPECT_EQ(CreateFileSystemURL(url_str), url);
+  EXPECT_EQ(expected_url, url);
 }
 
 TEST_F(SyncableFileSystemUtilTest,
        SerializeAndDesirializeSyncableFileSystemURL) {
+  ScopedExternalFileSystem scoped_fs(
+      kServiceName, kFileSystemTypeSyncable, FilePath());
+
   const std::string expected_url_str = kSyncableFileSystemRootURI +
       CreateNormalizedFilePath(kPath).AsUTF8Unsafe();
   const FileSystemURL expected_url = CreateFileSystemURL(expected_url_str);
@@ -78,6 +78,9 @@ TEST_F(SyncableFileSystemUtilTest,
 
 TEST_F(SyncableFileSystemUtilTest,
        FailInSerializingAndDeserializingSyncableFileSystemURL) {
+  ScopedExternalFileSystem scoped_fs(
+      kServiceName, kFileSystemTypeSyncable, FilePath());
+
   const FilePath normalized_path = CreateNormalizedFilePath(kPath);
   const std::string non_registered_url =
       kNonRegisteredFileSystemRootURI + normalized_path.AsUTF8Unsafe();

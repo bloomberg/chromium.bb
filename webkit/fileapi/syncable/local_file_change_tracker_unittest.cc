@@ -10,7 +10,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
@@ -62,10 +61,6 @@ class LocalFileChangeTrackerTest : public testing::Test {
     change_tracker_.reset(new LocalFileChangeTrackerForTest(
         data_dir_.path(),
         base::MessageLoopProxy::current()));
-    IsolatedContext::GetInstance()->RegisterExternalFileSystem(
-        kExternalFileSystemID,
-        kFileSystemTypeSyncable,
-        FilePath());
   }
 
   virtual void TearDown() OVERRIDE {
