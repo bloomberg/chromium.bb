@@ -454,7 +454,7 @@ void RenderWidgetHostViewAndroid::DidSetNeedTouchEvents(
 
 // static
 void RenderWidgetHostViewPort::GetDefaultScreenInfo(
-    ::WebKit::WebScreenInfo* results) {
+    WebKit::WebScreenInfo* results) {
   DeviceInfo info;
   const int width = info.GetWidth();
   const int height = info.GetHeight();
@@ -463,9 +463,9 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(
   results->depth = info.GetBitsPerPixel();
   results->depthPerComponent = info.GetBitsPerComponent();
   results->isMonochrome = (results->depthPerComponent == 0);
-  results->rect = ::WebKit::WebRect(0, 0, width, height);
+  results->rect = WebKit::WebRect(0, 0, width, height);
   // TODO(husky): Remove any system controls from availableRect.
-  results->availableRect = ::WebKit::WebRect(0, 0, width, height);
+  results->availableRect = WebKit::WebRect(0, 0, width, height);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

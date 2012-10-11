@@ -6,6 +6,6 @@
 
 namespace webkit_media {
 
-WebMediaPlayerProxyAndroid::~WebMediaPlayerProxyAndroid() {};
+WebMediaPlayerProxyAndroid::~WebMediaPlayerProxyAndroid() {}
 
 }  // namespace webkit_media

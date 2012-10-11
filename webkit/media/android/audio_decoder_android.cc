@@ -14,4 +14,4 @@ bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
   return false;
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
