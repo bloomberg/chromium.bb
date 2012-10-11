@@ -99,6 +99,28 @@ PlatformFileError CannedSyncableFileSystem::CreateFile(
   return result_;
 }
 
+PlatformFileError CannedSyncableFileSystem::Copy(
+    const FileSystemURL& src_url, const FileSystemURL& dest_url) {
+  result_ = base::PLATFORM_FILE_ERROR_FAILED;
+  test_helper_.NewOperation()->Copy(
+      src_url, dest_url,
+      base::Bind(&CannedSyncableFileSystem::StatusCallback,
+                 weak_factory_.GetWeakPtr()));
+  MessageLoop::current()->RunAllPending();
+  return result_;
+}
+
+PlatformFileError CannedSyncableFileSystem::Move(
+    const FileSystemURL& src_url, const FileSystemURL& dest_url) {
+  result_ = base::PLATFORM_FILE_ERROR_FAILED;
+  test_helper_.NewOperation()->Move(
+      src_url, dest_url,
+      base::Bind(&CannedSyncableFileSystem::StatusCallback,
+                 weak_factory_.GetWeakPtr()));
+  MessageLoop::current()->RunAllPending();
+  return result_;
+}
+
 PlatformFileError CannedSyncableFileSystem::TruncateFile(
     const FileSystemURL& url, int64 size) {
   result_ = base::PLATFORM_FILE_ERROR_FAILED;

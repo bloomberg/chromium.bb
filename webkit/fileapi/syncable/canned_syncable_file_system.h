@@ -63,6 +63,10 @@ class CannedSyncableFileSystem {
   // (They run on the current thread and returns synchronously).
   base::PlatformFileError CreateDirectory(const FileSystemURL& url);
   base::PlatformFileError CreateFile(const FileSystemURL& url);
+  base::PlatformFileError Copy(const FileSystemURL& src_url,
+                               const FileSystemURL& dest_url);
+  base::PlatformFileError Move(const FileSystemURL& src_url,
+                               const FileSystemURL& dest_url);
   base::PlatformFileError TruncateFile(const FileSystemURL& url, int64 size);
   base::PlatformFileError Remove(const FileSystemURL& url, bool recursive);
 
