@@ -18,6 +18,7 @@ namespace {
 #define AXIS_LABEL_ABS_MT_PRESSURE    "Abs MT Pressure"
 #define AXIS_LABEL_ABS_MT_SLOT_ID     "Abs MT Slot ID"
 #define AXIS_LABEL_ABS_MT_TRACKING_ID "Abs MT Tracking ID"
+#define AXIS_LABEL_TOUCH_TIMESTAMP    "Touch Timestamp"
 
 // Given the Valuator, return the correspoding XIValuatorClassInfo using
 // the X device information through Atom name matching.
@@ -47,6 +48,8 @@ XIValuatorClassInfo* FindValuator(Display* display,
 #endif
     { ui::ValuatorTracker::VAL_TRACKING_ID,
       XInternAtom(ui::GetXDisplay(), AXIS_LABEL_ABS_MT_TRACKING_ID, false) },
+    { ui::ValuatorTracker::VAL_TOUCH_RAW_TIMESTAMP,
+      XInternAtom(ui::GetXDisplay(), AXIS_LABEL_TOUCH_TIMESTAMP, false) },
     { ui::ValuatorTracker::VAL_LAST_ENTRY, None },
   };
 

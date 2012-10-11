@@ -803,9 +803,13 @@ base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
       break;
     case GenericEvent: {
       double start, end;
+      float touch_timestamp;
       if (GetGestureTimes(native_event, &start, &end)) {
         // If the driver supports gesture times, use them.
         return base::TimeDelta::FromMicroseconds(end * 1000000);
+      } else if (ValuatorTracker::GetInstance()->ExtractValuator(*native_event,
+                 ValuatorTracker::VAL_TOUCH_RAW_TIMESTAMP, &touch_timestamp)) {
+        return base::TimeDelta::FromMicroseconds(touch_timestamp * 1000000);
       } else {
         XIDeviceEvent* xide =
             static_cast<XIDeviceEvent*>(native_event->xcookie.data);

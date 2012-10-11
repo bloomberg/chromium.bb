@@ -55,6 +55,9 @@ class UI_EXPORT ValuatorTracker {
     // the numerical limit.
     VAL_TRACKING_ID,       // ID of the touch point.
 
+    // Kernel timestamp from touch screen (if available).
+    VAL_TOUCH_RAW_TIMESTAMP,
+
     VAL_LAST_ENTRY
   };
 
