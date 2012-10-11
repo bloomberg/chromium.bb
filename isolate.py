@@ -378,6 +378,7 @@ def url_open(url, data=None, max_retries=MAX_UPLOAD_ATTEMPTS):
     The response from the url, or it raises an exception it it failed to get
     a response.
   """
+  response = None
   for _ in range(max_retries):
     try:
       response = urllib2.urlopen(url, data=data)
@@ -388,9 +389,9 @@ def url_open(url, data=None, max_retries=MAX_UPLOAD_ATTEMPTS):
   # If we get no response from the server after max_retries, assume it
   # is down and raise an exception
   if response is None:
-    raise run_isolated.MappingError('Unable to connect to server, %s, '
-                                             'to see which files are presents' %
-                                             url)
+    raise run_isolated.MappingError(
+        'Unable to connect to server, %s, to see which files are presents' %
+          url)
 
   return response
 
