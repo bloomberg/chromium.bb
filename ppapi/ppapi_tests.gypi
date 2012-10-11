@@ -29,7 +29,7 @@
             'tests/test_case.html',
             'tests/test_case.html.mock-http-headers',
             'tests/test_page.css',
-            'native_client/tests/ppapi_tests/ppapi_nacl_tests_newlib.nmf',
+            'tests/ppapi_nacl_tests_newlib.nmf',
           ],
         },
         {

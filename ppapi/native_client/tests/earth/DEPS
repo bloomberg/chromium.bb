@@ -1,9 +1,0 @@
-include_rules = [
-  # TODO(bradnelson): Eliminate these rules. While we should keep this test,
-  # it does not currently appear to be connected to the build.
-  # It also appears to have bit-rotted as native_client/common/worker.h seems to
-  # be an obsolete filename.
-  # Once it is building, it shouldn't use files from native_client.
-  "+native_client/tests/earth",
-  "+native_client/common",
-]
