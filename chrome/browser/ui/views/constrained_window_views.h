@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/constrained_window.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
@@ -57,7 +58,8 @@ class NativeConstrainedWindow {
 //
 class ConstrainedWindowViews : public views::Widget,
                                public ConstrainedWindow,
-                               public NativeConstrainedWindowDelegate {
+                               public NativeConstrainedWindowDelegate,
+                               public content::WebContentsObserver {
  public:
   ConstrainedWindowViews(content::WebContents* web_contents,
                          views::WidgetDelegate* widget_delegate,
@@ -77,6 +79,8 @@ class ConstrainedWindowViews : public views::Widget,
   void CenterWindow(const gfx::Size& size);
 
  private:
+  void NotifyTabHelperWillClose();
+
   // Overridden from views::Widget:
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
@@ -89,6 +93,9 @@ class ConstrainedWindowViews : public views::Widget,
 
   // Set the top of the window to overlap the browser chrome.
   void PositionChromeStyleWindow();
+
+  // Overridden from content::WebContentsObserver:
+  virtual void WebContentsDestroyed(content::WebContents* web_contents);
 
   content::WebContents* web_contents_;
 

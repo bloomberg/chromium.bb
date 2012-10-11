@@ -582,7 +582,8 @@ ConstrainedWindowViews::ConstrainedWindowViews(
     content::WebContents* web_contents,
     views::WidgetDelegate* widget_delegate,
     bool enable_chrome_style)
-    : web_contents_(web_contents),
+    : WebContentsObserver(web_contents),
+      web_contents_(web_contents),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))),
       enable_chrome_style_(enable_chrome_style) {
@@ -650,9 +651,7 @@ void ConstrainedWindowViews::CloseConstrainedWindow() {
   if (view && view->parent())
     view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
 #endif
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->WillClose(this);
+  NotifyTabHelperWillClose();
   Close();
 }
 
@@ -674,6 +673,15 @@ void ConstrainedWindowViews::FocusConstrainedWindow() {
 
 gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
   return Widget::GetNativeWindow();
+}
+
+void ConstrainedWindowViews::NotifyTabHelperWillClose() {
+  if (!web_contents_)
+    return;
+
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
+  constrained_window_tab_helper->WillClose(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -705,9 +713,7 @@ views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 // ConstrainedWindowViews, NativeConstrainedWindowDelegate implementation:
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowDestroyed() {
-  ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
-  constrained_window_tab_helper->WillClose(this);
+  NotifyTabHelperWillClose();
 }
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {
@@ -739,4 +745,12 @@ void ConstrainedWindowViews::PositionChromeStyleWindow() {
         browser_window->GetBounds().width() / 2 - bounds.width() / 2);
     SetBounds(bounds);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ConstrainedWindowViews, content::WebContentsObserver implementation:
+
+void ConstrainedWindowViews::WebContentsDestroyed(
+    content::WebContents* web_contents) {
+  web_contents_ = NULL;
 }

@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -173,4 +174,27 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_dialog2->done());
   EXPECT_EQ(0u, constrained_window_helper->constrained_window_count());
+}
+
+// Tests that the constrained window is closed properly when its tab is
+// closed.
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  ASSERT_TRUE(web_contents != NULL);
+  ConstrainedWindowTabHelper* constrained_window_helper =
+      ConstrainedWindowTabHelper::FromWebContents(web_contents);
+  ASSERT_TRUE(constrained_window_helper != NULL);
+
+  // Create a constrained dialog.  It will attach itself to tab_contents.
+  scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
+  ConstrainedWindowViews* window =
+      new ConstrainedWindowViews(web_contents, test_dialog.get(), true);
+
+  bool closed =
+      browser()->tab_strip_model()->CloseTabContentsAt(
+          browser()->tab_strip_model()->active_index(),
+          TabStripModel::CLOSE_NONE);
+  EXPECT_TRUE(closed);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(test_dialog->done());
 }
