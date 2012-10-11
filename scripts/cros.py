@@ -4,12 +4,11 @@
 
 import sys
 
-# Older version of Python might be missing argparse.
+# Older versions of Python might be missing argparse.
 try:
   import argparse
 except ImportError:
-  print >> sys.stderr, "argparse missing. sudo apt-get install python-argparse"
-  sys.exit(1)
+  from chromite.third_party import argparse
 
 from chromite.cros import commands
 
