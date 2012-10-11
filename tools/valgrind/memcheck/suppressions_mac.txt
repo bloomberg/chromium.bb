@@ -310,12 +310,7 @@
    fun:+[QTCaptureDevice devicesWithIOType:]
    fun:+[QTCaptureDevice inputDevices]
    fun:+[QTCaptureDevice inputDevicesWithMediaType:]
-   fun:+[VideoCaptureDeviceQTKit deviceNames]
    ...
-   fun:_ZN5media18VideoCaptureDevice14GetDeviceNamesEPSt4listINS0_4NameESaIS2_EE
-   fun:_ZN5media21VideoCaptureDeviceMac4InitEv
-   fun:_ZN5media18VideoCaptureDevice6CreateERKNS0_4NameE
-   fun:_ZN5media45VideoCaptureDeviceTest_OpenInvalidDevice_Test8TestBodyEv
 }
 {
    # See http://crbug.com/141293
@@ -2491,30 +2486,4 @@
    fun:_ZN5mediaL18GetAudioDeviceInfoEbPSt4listINS_15AudioDeviceNameESaIS1_EE
    fun:_ZN5media15AudioManagerMac24GetAudioInputDeviceNamesEPSt4listINS_15AudioDeviceNameESaIS2_EE
    fun:_ZN12media_stream23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
-}
-{
-   bug_155371
-   Memcheck:Leak
-   fun:calloc
-   fun:QTMLCreateMutex
-   fun:WarholCreateGlobals
-   fun:INIT_QuickTimeLibInternal
-   fun:pthread_once
-   fun:INIT_QuickTimeLib
-   fun:EnterMovies_priv
-   fun:EnterMovies
-   fun:TundraUnitInputFromTSFileEntry
-   fun:TundraUnitVDIGInputEntry
-   fun:TundraUnitCreateFromDescription
-   fun:+[QTCaptureVDIGDevice _refreshDevices]
-   fun:+[QTCaptureVDIGDevice devicesWithIOType:]
-   fun:+[QTCaptureDevice devicesWithIOType:]
-   fun:+[QTCaptureDevice inputDevices]
-   fun:+[QTCaptureDevice inputDevicesWithMediaType:]
-   fun:+[VideoCaptureDeviceQTKit getDeviceNames:]
-   fun:-[NSObject(NSThreadPerformAdditions) performSelector:onThread:withObject:waitUntilDone:modes:]
-   fun:-[NSObject(NSThreadPerformAdditions) performSelectorOnMainThread:withObject:waitUntilDone:]
-   fun:+[VideoCaptureDeviceQTKit deviceNames]
-   fun:_ZN5media18VideoCaptureDevice14GetDeviceNamesEPSt4listINS0_4NameESaIS2_EE
-   fun:_ZN5media21VideoCaptureDeviceMac4InitEv
 }
