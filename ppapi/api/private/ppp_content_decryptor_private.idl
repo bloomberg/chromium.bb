@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M23 = 0.2
+  M24 = 0.3
 };
 
 /**
@@ -99,8 +99,30 @@ interface PPP_ContentDecryptor_Private {
       [in] PP_Resource encrypted_block,
       [in] PP_EncryptedBlockInfo encrypted_block_info);
 
+ /**
+  * Initializes the video decoder using codec and settings in
+  * <code>decoder_config</code>, and returns the result of the initialization
+  * request to the browser using the <code>DecoderInitialized()</code> method
+  * on the <code>PPB_ContentDecryptor_Private</code> interface.
+  *
+  * @param[in] decoder_config A <code>PP_VideoDecoderConfig</code> that
+  * contains video decoder settings and a request ID. The request ID is passed
+  * to the <code>DecoderInitialized()</code> method on the
+  * <code>PPB_ContentDecryptor_Private</code> interface to allow clients to
+  * associate the result with a video decoder initialization request.
+  *
+  * @param[in] codec_extra_data A <code>PP_Resource</code> corresponding to a
+  * <code>PPB_Buffer_Dev</code> resource containing codec setup data required
+  * by some codecs. It should be set to 0 when the codec being initialized
+  * does not require it.
+  */
+  void InitializeVideoDecoder(
+      [in] PP_Instance instance,
+      [in] PP_VideoDecoderConfig decoder_config,
+      [in] PP_Resource codec_extra_data);
+
   /**
-   * Decrypts encrypted_video_frame, decodes it, and returns the unencrypted 
+   * Decrypts encrypted_video_frame, decodes it, and returns the unencrypted
    * uncompressed (decoded) video frame to the browser via the
    * <code>DeliverFrame()</code> method on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
@@ -109,7 +131,7 @@ interface PPP_ContentDecryptor_Private {
    * to a <code>PPB_Buffer_Dev</code> resource that contains an encrypted video
    * frame.
    *
-   * @param[in] encrypted_video_frame_info A 
+   * @param[in] encrypted_video_frame_info A
    * <code>PP_EncryptedVideoFrameInfo</code> that contains all information
    * needed to decrypt and decode <code>encrypted_video_frame</code>.
    */

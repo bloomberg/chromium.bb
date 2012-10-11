@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Mon Oct 01 20:33:45 2012.
+ *   modified Mon Oct  8 13:44:40 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_2 \
-    "PPB_ContentDecryptor_Private;0.2"
+#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_3 \
+    "PPB_ContentDecryptor_Private;0.3"
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_2
+    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_3
 
 /**
  * @file
@@ -42,7 +42,7 @@
  * browser side support for the Content Decryption Module (CDM) for v0.1 of the
  * proposed Encrypted Media Extensions: http://goo.gl/rbdnR
  */
-struct PPB_ContentDecryptor_Private_0_2 {
+struct PPB_ContentDecryptor_Private_0_3 {
   /**
    * The decryptor requires a key that has not been provided.
    *
@@ -160,6 +160,24 @@ struct PPB_ContentDecryptor_Private_0_2 {
       PP_Resource decrypted_block,
       const struct PP_DecryptedBlockInfo* decrypted_block_info);
   /**
+   * Called after the <code>InitializeAudioDecoder()</code> or
+   * <code>InitializeVideoDecoder()</code> method on the
+   * <code>PPP_ContentDecryptor_Private</code> interface completes to report
+   * decoder initialization status to the browser.
+   *
+   * @param[in] success A <code>PP_Bool</code> that is set to
+   * <code>PP_TRUE</code> when the decoder initialization request associated
+   * with <code>request_id</code> was successful.
+   *
+   * @param[in] request_id The <code>request_id</code> value passed to
+   * <code>InitializeAudioDecoder</code> or <code>InitializeVideoDecoder</code>
+   * in <code>PP_AudioDecoderConfig</code> or
+   * <code>PP_VideoDecoderConfig</code>.
+   */
+  void (*DecoderInitialized)(PP_Instance instance,
+                             PP_Bool success,
+                             uint32_t request_id);
+  /**
    * Called after the <code>DecryptAndDecode()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to deliver
    * a decrypted and decoded video frame to the browser for rendering.
@@ -195,7 +213,7 @@ struct PPB_ContentDecryptor_Private_0_2 {
       const struct PP_DecryptedBlockInfo* decrypted_block_info);
 };
 
-typedef struct PPB_ContentDecryptor_Private_0_2 PPB_ContentDecryptor_Private;
+typedef struct PPB_ContentDecryptor_Private_0_3 PPB_ContentDecryptor_Private;
 /**
  * @}
  */

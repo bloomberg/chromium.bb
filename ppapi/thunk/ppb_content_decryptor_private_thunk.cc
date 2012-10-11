@@ -61,6 +61,14 @@ void DeliverBlock(PP_Instance instance,
     enter.functions()->DeliverBlock(instance, decrypted_block, block_info);
 }
 
+void DecoderInitialized(PP_Instance instance,
+                        PP_Bool success,
+                        uint32_t request_id) {
+  EnterInstance enter(instance);
+  if (enter.succeeded())
+    enter.functions()->DecoderInitialized(instance, success, request_id);
+}
+
 void DeliverFrame(PP_Instance instance,
                   PP_Resource decrypted_frame,
                   const PP_DecryptedFrameInfo* frame_info) {
@@ -83,6 +91,7 @@ const PPB_ContentDecryptor_Private g_ppb_decryption_thunk = {
   &KeyMessage,
   &KeyError,
   &DeliverBlock,
+  &DecoderInitialized,
   &DeliverFrame,
   &DeliverSamples
 };
@@ -90,7 +99,7 @@ const PPB_ContentDecryptor_Private g_ppb_decryption_thunk = {
 }  // namespace
 
 const PPB_ContentDecryptor_Private*
-    GetPPB_ContentDecryptor_Private_0_2_Thunk() {
+    GetPPB_ContentDecryptor_Private_0_3_Thunk() {
   return &g_ppb_decryption_thunk;
 }
 

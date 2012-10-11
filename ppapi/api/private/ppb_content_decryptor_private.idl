@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M23 = 0.2
+  M24 = 0.3
 };
 
 /**
@@ -144,6 +144,26 @@ interface PPB_ContentDecryptor_Private {
       [in] PP_Instance instance,
       [in] PP_Resource decrypted_block,
       [in] PP_DecryptedBlockInfo decrypted_block_info);
+
+  /**
+   * Called after the <code>InitializeAudioDecoder()</code> or
+   * <code>InitializeVideoDecoder()</code> method on the
+   * <code>PPP_ContentDecryptor_Private</code> interface completes to report
+   * decoder initialization status to the browser.
+   *
+   * @param[in] success A <code>PP_Bool</code> that is set to
+   * <code>PP_TRUE</code> when the decoder initialization request associated
+   * with <code>request_id</code> was successful.
+   *
+   * @param[in] request_id The <code>request_id</code> value passed to
+   * <code>InitializeAudioDecoder</code> or <code>InitializeVideoDecoder</code>
+   * in <code>PP_AudioDecoderConfig</code> or
+   * <code>PP_VideoDecoderConfig</code>.
+   */
+  void DecoderInitialized(
+      [in] PP_Instance instance,
+      [in] PP_Bool success,
+      [in] uint32_t request_id);
 
   /**
    * Called after the <code>DecryptAndDecode()</code> method on the

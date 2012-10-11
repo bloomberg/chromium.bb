@@ -75,6 +75,7 @@ struct WebPrintParams;
 namespace media {
 class DecoderBuffer;
 class DecryptorClient;
+class VideoDecoderConfig;
 }
 
 namespace ppapi {
@@ -262,7 +263,12 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool CancelKeyRequest(const std::string& session_id);
   bool Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);
+  // TODO(xhwang): Change DecryptCB to a DecoderInitCB.
+  bool InitializeVideoDecoder(
+      const media::VideoDecoderConfig& decoder_config,
+      const media::Decryptor::DecryptCB& decrypt_cb);
   // TODO(xhwang): Update this when we need to support decrypt and decode.
+  // Note: This method can be used with an unencrypted frame.
   bool DecryptAndDecodeFrame(
       const scoped_refptr<media::DecoderBuffer>& encrypted_frame,
       const media::Decryptor::DecryptCB& decrypt_cb);
@@ -437,7 +443,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
 
-  // TODO(tomfinegan): Move the next 7 methods to a delegate class.
   virtual void NeedKey(PP_Instance instance,
                        PP_Var key_system,
                        PP_Var session_id,
@@ -458,6 +463,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;
+  virtual void DecoderInitialized(PP_Instance instance,
+                                  PP_Bool success,
+                                  uint32_t request_id) OVERRIDE;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) OVERRIDE;

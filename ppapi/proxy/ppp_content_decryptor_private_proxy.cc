@@ -91,6 +91,37 @@ PP_Bool AddRefResourceForPlugin(HostDispatcher* dispatcher,
   return PP_TRUE;
 }
 
+bool InitializePppDecryptorBuffer(PP_Instance instance,
+                                  HostDispatcher* dispatcher,
+                                  PP_Resource resource,
+                                  PPPDecryptor_Buffer* buffer) {
+  if (!buffer) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (!AddRefResourceForPlugin(dispatcher, resource))
+    return false;
+
+  HostResource host_resource;
+  host_resource.SetHostResource(instance, resource);
+
+  uint32_t size = 0;
+  if (DescribeHostBufferResource(resource, &size) == PP_FALSE)
+    return false;
+
+  base::SharedMemoryHandle handle;
+  if (ShareHostBufferResourceToPlugin(dispatcher,
+                                      resource,
+                                      &handle) == PP_FALSE)
+    return false;
+
+  buffer->resource = host_resource;
+  buffer->handle = handle;
+  buffer->size = size;
+  return true;
+}
+
 void GenerateKeyRequest(PP_Instance instance,
                         PP_Var key_system,
                         PP_Var init_data) {
@@ -142,40 +173,28 @@ void CancelKeyRequest(PP_Instance instance, PP_Var session_id) {
 }
 
 void Decrypt(PP_Instance instance,
-                PP_Resource encrypted_block,
-                const PP_EncryptedBlockInfo* encrypted_block_info) {
+             PP_Resource encrypted_block,
+             const PP_EncryptedBlockInfo* encrypted_block_info) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
     return;
   }
 
-  if (!AddRefResourceForPlugin(dispatcher, encrypted_block)) {
+  PPPDecryptor_Buffer buffer;
+  if (!InitializePppDecryptorBuffer(instance,
+                                    dispatcher,
+                                    encrypted_block,
+                                    &buffer)) {
     NOTREACHED();
     return;
   }
 
-  HostResource host_resource;
-  host_resource.SetHostResource(instance, encrypted_block);
-
-  uint32_t size = 0;
-  if (DescribeHostBufferResource(encrypted_block, &size) == PP_FALSE)
-    return;
-
-  base::SharedMemoryHandle handle;
-  if (ShareHostBufferResourceToPlugin(dispatcher,
-                                      encrypted_block,
-                                      &handle) == PP_FALSE)
-    return;
-
-  PPPDecryptor_Buffer buffer;
-  buffer.resource = host_resource;
-  buffer.handle = handle;
-  buffer.size = size;
-
   std::string serialized_block_info;
-  if (!SerializeBlockInfo(*encrypted_block_info, &serialized_block_info))
+  if (!SerializeBlockInfo(*encrypted_block_info, &serialized_block_info)) {
+    NOTREACHED();
     return;
+  }
 
   dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_Decrypt(
@@ -184,6 +203,40 @@ void Decrypt(PP_Instance instance,
           buffer,
           serialized_block_info));
 }
+
+void InitializeVideoDecoder(
+    PP_Instance instance,
+    const PP_VideoDecoderConfig* decoder_config,
+    PP_Resource extra_data_buffer) {
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher) {
+    NOTREACHED();
+    return;
+  }
+
+  std::string serialized_decoder_config;
+  if (!SerializeBlockInfo(*decoder_config, &serialized_decoder_config)) {
+    NOTREACHED();
+    return;
+  }
+
+  PPPDecryptor_Buffer buffer;
+  if (!InitializePppDecryptorBuffer(instance,
+                                    dispatcher,
+                                    extra_data_buffer,
+                                    &buffer)) {
+    NOTREACHED();
+    return;
+  }
+
+  dispatcher->Send(
+      new PpapiMsg_PPPContentDecryptor_InitializeVideoDecoder(
+          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
+          instance,
+          serialized_decoder_config,
+          buffer));
+}
+
 
 void DecryptAndDecodeFrame(
     PP_Instance instance,
@@ -195,32 +248,21 @@ void DecryptAndDecodeFrame(
     return;
   }
 
-  if (!AddRefResourceForPlugin(dispatcher, encrypted_frame)) {
+  PPPDecryptor_Buffer buffer;
+  if (!InitializePppDecryptorBuffer(instance,
+                                    dispatcher,
+                                    encrypted_frame,
+                                    &buffer)) {
     NOTREACHED();
     return;
   }
 
-  HostResource host_resource;
-  host_resource.SetHostResource(instance, encrypted_frame);
-
-  uint32_t size = 0;
-  if (DescribeHostBufferResource(encrypted_frame, &size) == PP_FALSE)
-    return;
-
-  base::SharedMemoryHandle handle;
-  if (ShareHostBufferResourceToPlugin(dispatcher,
-                                      encrypted_frame,
-                                      &handle) == PP_FALSE)
-    return;
-
-  PPPDecryptor_Buffer buffer;
-  buffer.resource = host_resource;
-  buffer.handle = handle;
-  buffer.size = size;
-
   std::string serialized_frame_info;
-  if (!SerializeBlockInfo(*encrypted_video_frame_info, &serialized_frame_info))
+  if (!SerializeBlockInfo(*encrypted_video_frame_info,
+                          &serialized_frame_info)) {
+    NOTREACHED();
     return;
+  }
 
   dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_DecryptAndDecodeFrame(
@@ -235,6 +277,7 @@ static const PPP_ContentDecryptor_Private content_decryptor_interface = {
   &AddKey,
   &CancelKeyRequest,
   &Decrypt,
+  &InitializeVideoDecoder,
   &DecryptAndDecodeFrame
 };
 
@@ -272,6 +315,8 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
                         OnMsgCancelKeyRequest)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_Decrypt,
                         OnMsgDecrypt)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_InitializeVideoDecoder,
+                        OnMsgInitializeVideoDecoder)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_DecryptAndDecodeFrame,
                         OnMsgDecryptAndDecodeFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -332,6 +377,32 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgDecrypt(
                       instance,
                       plugin_resource,
                       const_cast<const PP_EncryptedBlockInfo*>(&block_info));
+  }
+}
+
+void PPP_ContentDecryptor_Private_Proxy::OnMsgInitializeVideoDecoder(
+    PP_Instance instance,
+    const std::string& serialized_decoder_config,
+    const PPPDecryptor_Buffer& extra_data_buffer) {
+
+  PP_VideoDecoderConfig decoder_config;
+  if (!DeserializeBlockInfo(serialized_decoder_config, &decoder_config))
+      return;
+
+  if (ppp_decryptor_impl_) {
+    PP_Resource plugin_resource = 0;
+    if (extra_data_buffer.size > 0) {
+      plugin_resource =
+          PPB_Buffer_Proxy::AddProxyResource(extra_data_buffer.resource,
+                                             extra_data_buffer.handle,
+                                             extra_data_buffer.size);
+    }
+
+    CallWhileUnlocked(
+        ppp_decryptor_impl_->InitializeVideoDecoder,
+        instance,
+        const_cast<const PP_VideoDecoderConfig*>(&decoder_config),
+        plugin_resource);
   }
 }
 

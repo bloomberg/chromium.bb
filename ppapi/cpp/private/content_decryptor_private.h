@@ -36,6 +36,9 @@ class ContentDecryptor_Private {
   virtual void CancelKeyRequest(const std::string& session_id) = 0;
   virtual void Decrypt(pp::Buffer_Dev encrypted_buffer,
                        const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
+  virtual void InitializeVideoDecoder(
+      const PP_VideoDecoderConfig& decoder_config,
+      pp::Buffer_Dev extra_data_resource) = 0;
   virtual void DecryptAndDecodeFrame(
       pp::Buffer_Dev encrypted_frame,
       const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) = 0;
@@ -57,6 +60,7 @@ class ContentDecryptor_Private {
                 int32_t system_code);
   void DeliverBlock(pp::Buffer_Dev decrypted_block,
                     const PP_DecryptedBlockInfo& decrypted_block_info);
+  void DecoderInitialized(bool status, uint32_t request_id);
   void DeliverFrame(pp::Buffer_Dev decrypted_frame,
                     const PP_DecryptedFrameInfo& decrypted_frame_info);
   void DeliverSamples(pp::Buffer_Dev decrypted_samples,

@@ -161,6 +161,9 @@ class PPB_Instance_API {
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) = 0;
+  virtual void DecoderInitialized(PP_Instance instance,
+                                  PP_Bool success,
+                                  uint32_t request_id) = 0;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) = 0;

@@ -167,6 +167,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgKeyError)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DeliverBlock,
                         OnHostMsgDeliverBlock)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DecoderInitialized,
+                        OnHostMsgDecoderInitialized)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DeliverFrame,
                         OnHostMsgDeliverFrame)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DeliverSamples,
@@ -530,6 +532,17 @@ void PPB_Instance_Proxy::DeliverBlock(PP_Instance instance,
           instance,
           object->host_resource().host_resource(),
           serialized_block_info));
+}
+
+void PPB_Instance_Proxy::DecoderInitialized(PP_Instance instance,
+                                            PP_Bool success,
+                                            uint32_t request_id) {
+  dispatcher()->Send(
+      new PpapiHostMsg_PPBInstance_DecoderInitialized(
+          API_ID_PPB_INSTANCE,
+          instance,
+          success,
+          request_id));
 }
 
 void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
@@ -950,6 +963,15 @@ void PPB_Instance_Proxy::OnHostMsgDeliverBlock(
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->DeliverBlock(instance, decrypted_block, &block_info);
+}
+
+void PPB_Instance_Proxy::OnHostMsgDecoderInitialized(
+    PP_Instance instance,
+    PP_Bool success,
+    uint32_t request_id) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->DecoderInitialized(instance, success, request_id);
 }
 
 void PPB_Instance_Proxy::OnHostMsgDeliverFrame(

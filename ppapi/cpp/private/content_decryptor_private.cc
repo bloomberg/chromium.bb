@@ -105,6 +105,23 @@ void Decrypt(PP_Instance instance,
       *encrypted_block_info);
 }
 
+void InitializeVideoDecoder(
+    PP_Instance instance,
+    const PP_VideoDecoderConfig* decoder_config,
+    PP_Resource extra_data_resource) {
+  void* object =
+      Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
+  if (!object)
+    return;
+
+  pp::Buffer_Dev extra_data_buffer(pp::PASS_REF, extra_data_resource);
+
+  static_cast<ContentDecryptor_Private*>(object)->InitializeVideoDecoder(
+      *decoder_config,
+      extra_data_buffer);
+}
+
+
 void DecryptAndDecodeFrame(
     PP_Instance instance,
     PP_Resource encrypted_resource,
@@ -126,6 +143,7 @@ const PPP_ContentDecryptor_Private ppp_content_decryptor = {
   &AddKey,
   &CancelKeyRequest,
   &Decrypt,
+  &InitializeVideoDecoder,
   &DecryptAndDecodeFrame
 };
 
@@ -217,6 +235,17 @@ void ContentDecryptor_Private::DeliverBlock(
         associated_instance_.pp_instance(),
         decrypted_block.pp_resource(),
         &decrypted_block_info);
+  }
+}
+
+void ContentDecryptor_Private::DecoderInitialized(
+    bool success,
+    uint32_t request_id) {
+  if (has_interface<PPB_ContentDecryptor_Private>()) {
+    get_interface<PPB_ContentDecryptor_Private>()->DecoderInitialized(
+        associated_instance_.pp_instance(),
+        PP_FromBool(success),
+        request_id);
   }
 }
 

@@ -16,6 +16,8 @@
 #include "base/utf_string_conversions.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor_client.h"
+#include "media/base/video_decoder_config.h"
+#include "media/base/video_frame.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
@@ -379,6 +381,33 @@ bool MakeEncryptedBlockInfo(
   }
 
   return true;
+}
+
+PP_VideoCodec MediaVideoCodecToPpVideoCodec(media::VideoCodec codec) {
+  if (codec == media::kCodecVP8)
+    return PP_VIDEOCODEC_VP8;
+
+  return PP_VIDEOCODEC_UNKNOWN;
+}
+
+PP_VideoCodecProfile MediaVideoCodecProfileToPpVideoCodecProfile(
+    media::VideoCodecProfile profile) {
+  if (profile == media::VP8PROFILE_MAIN)
+    return PP_VIDEOCODECPROFILE_VP8_MAIN;
+
+  return PP_VIDEOCODECPROFILE_UNKNOWN;
+}
+
+PP_DecryptedFrameFormat MediaVideoFormatToPpDecryptedFrameFormat(
+    media::VideoFrame::Format format) {
+  if (format == media::VideoFrame::YV12)
+    return PP_DECRYPTEDFRAMEFORMAT_YV12;
+  else if (format == media::VideoFrame::I420)
+    return PP_DECRYPTEDFRAMEFORMAT_I420;
+  else if (format == media::VideoFrame::EMPTY)
+    return PP_DECRYPTEDFRAMEFORMAT_EMPTY;
+
+  return PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
 }
 
 }  // namespace
@@ -1546,7 +1575,37 @@ bool PluginInstance::Decrypt(
   return true;
 }
 
-// Note: this method can be used with an unencrypted frame.
+bool PluginInstance::InitializeVideoDecoder(
+    const media::VideoDecoderConfig& decoder_config,
+    const media::Decryptor::DecryptCB& decrypt_cb) {
+  PP_VideoDecoderConfig pp_decoder_config;
+  pp_decoder_config.codec =
+      MediaVideoCodecToPpVideoCodec(decoder_config.codec());
+  pp_decoder_config.profile =
+      MediaVideoCodecProfileToPpVideoCodecProfile(decoder_config.profile());
+  pp_decoder_config.format =
+      MediaVideoFormatToPpDecryptedFrameFormat(decoder_config.format());
+  pp_decoder_config.width = decoder_config.coded_size().width();
+  pp_decoder_config.height = decoder_config.coded_size().height();
+  pp_decoder_config.request_id = next_decryption_request_id_++;
+
+  // TODO(xhwang): Use individual variables for decoder init request tracking.
+  DCHECK(!ContainsKey(pending_decryption_cbs_, pp_decoder_config.request_id));
+  pending_decryption_cbs_.insert(std::make_pair(pp_decoder_config.request_id,
+                                                decrypt_cb));
+
+  ScopedPPResource extra_data_resource(
+      ScopedPPResource::PassRef(),
+      MakeBufferResource(pp_instance(),
+                         decoder_config.extra_data(),
+                         decoder_config.extra_data_size()));
+
+  plugin_decryption_interface_->InitializeVideoDecoder(pp_instance(),
+                                                       &pp_decoder_config,
+                                                       extra_data_resource);
+  return true;
+}
+
 bool PluginInstance::DecryptAndDecodeFrame(
     const scoped_refptr<media::DecoderBuffer>& encrypted_frame,
     const media::Decryptor::DecryptCB& decrypt_cb) {
@@ -2277,6 +2336,22 @@ void PluginInstance::KeyError(PP_Instance instance,
       session_id_string->value(),
       static_cast<media::Decryptor::KeyError>(media_error),
       system_code);
+}
+
+void PluginInstance::DecoderInitialized(PP_Instance instance,
+                                        PP_Bool success,
+                                        uint32_t request_id) {
+  // TODO(xhwang): Use individual variables for decoder init request tracking.
+  DecryptionCBMap::iterator found = pending_decryption_cbs_.find(request_id);
+  if (found == pending_decryption_cbs_.end())
+    return;
+  media::Decryptor::DecryptCB decrypt_cb = found->second;
+  pending_decryption_cbs_.erase(found);
+
+  media::Decryptor::Status status =
+      success == PP_TRUE ? media::Decryptor::kSuccess :
+                           media::Decryptor::kError;
+  decrypt_cb.Run(status, NULL);
 }
 
 void PluginInstance::DeliverBlock(PP_Instance instance,

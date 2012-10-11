@@ -86,19 +86,44 @@ void ConfigureInputBuffer(
   input_buffer->timestamp = encrypted_block_info.tracking_info.timestamp;
 }
 
-PP_DecryptedFrameFormat VideoFormatToPpDecryptedFrameFormat(
+PP_DecryptedFrameFormat CdmVideoFormatToPpDecryptedFrameFormat(
     cdm::VideoFormat format) {
-  switch(format) {
-    case cdm::kEmptyVideoFrame:
-      return PP_DECRYPTEDFRAMEFORMAT_EMPTY;
-    case cdm::kYv12:
-      return PP_DECRYPTEDFRAMEFORMAT_YV12;
-    case cdm::kI420:
-      return PP_DECRYPTEDFRAMEFORMAT_I420;
-    case cdm::kUnknownVideoFormat:
-    default:
-      return PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
-  }
+  if (format == cdm::kEmptyVideoFrame)
+    return PP_DECRYPTEDFRAMEFORMAT_EMPTY;
+  else if (format == cdm::kYv12)
+    return PP_DECRYPTEDFRAMEFORMAT_YV12;
+  else if (format == cdm::kI420)
+    return PP_DECRYPTEDFRAMEFORMAT_I420;
+
+  return PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
+}
+
+cdm::VideoDecoderConfig::VideoCodec PpVideoCodecToCdmVideoCodec(
+    PP_VideoCodec codec) {
+  if (codec == PP_VIDEOCODEC_VP8)
+    return cdm::VideoDecoderConfig::kCodecVP8;
+
+  return cdm::VideoDecoderConfig::kUnknownVideoCodec;
+}
+
+cdm::VideoDecoderConfig::VideoCodecProfile PpVCProfileToCdmVCProfile(
+    PP_VideoCodecProfile profile) {
+  if (profile == PP_VIDEOCODECPROFILE_VP8_MAIN)
+    return cdm::VideoDecoderConfig::kVp8ProfileMain;
+
+  return cdm::VideoDecoderConfig::kUnknownVideoCodecProfile;
+}
+
+cdm::VideoFormat PpDecryptedFrameFormatToCdmVideoFormat(
+    PP_DecryptedFrameFormat format) {
+  if (format == PP_DECRYPTEDFRAMEFORMAT_YV12)
+    return cdm::kYv12;
+  else if (format == PP_DECRYPTEDFRAMEFORMAT_I420)
+    return cdm::kI420;
+  else if (format == PP_DECRYPTEDFRAMEFORMAT_EMPTY)
+    return cdm::kEmptyVideoFrame;
+
+  return cdm::kUnknownVideoFormat;
 }
 
 }  // namespace
@@ -379,6 +404,9 @@ class CdmWrapper : public pp::Instance,
   virtual void Decrypt(
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
+  virtual void InitializeVideoDecoder(
+      const PP_VideoDecoderConfig& decoder_config,
+      pp::Buffer_Dev extra_data_buffer) OVERRIDE;
   virtual void DecryptAndDecodeFrame(
       pp::Buffer_Dev encrypted_frame,
       const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) OVERRIDE;
@@ -402,6 +430,9 @@ class CdmWrapper : public pp::Instance,
                     const cdm::Status& status,
                     const LinkedDecryptedBlock& decrypted_block,
                     const PP_DecryptTrackingInfo& tracking_info);
+  void DecoderInitialized(int32_t result,
+                          bool success,
+                          uint32_t request_id);
   void DeliverFrame(int32_t result,
                     const cdm::Status& status,
                     const LinkedVideoFrame& video_frame,
@@ -538,6 +569,31 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
       encrypted_block_info.tracking_info));
 }
 
+void CdmWrapper::InitializeVideoDecoder(
+    const PP_VideoDecoderConfig& decoder_config,
+    pp::Buffer_Dev extra_data_buffer) {
+  PP_DCHECK(cdm_);
+  cdm::VideoDecoderConfig cdm_decoder_config;
+  cdm_decoder_config.codec = PpVideoCodecToCdmVideoCodec(decoder_config.codec);
+  cdm_decoder_config.profile =
+      PpVCProfileToCdmVCProfile(decoder_config.profile);
+  cdm_decoder_config.format =
+      PpDecryptedFrameFormatToCdmVideoFormat(decoder_config.format);
+  cdm_decoder_config.coded_size.width = decoder_config.width;
+  cdm_decoder_config.coded_size.height = decoder_config.height;
+  cdm_decoder_config.extra_data =
+      static_cast<uint8_t*>(extra_data_buffer.data());
+  cdm_decoder_config.extra_data_size =
+      static_cast<int32_t>(extra_data_buffer.size());
+  cdm::Status status = cdm_->InitializeVideoDecoder(cdm_decoder_config);
+
+  CallOnMain(callback_factory_.NewCallback(
+      &CdmWrapper::DecoderInitialized,
+      status == cdm::kSuccess,
+      decoder_config.request_id));
+
+}
+
 void CdmWrapper::DecryptAndDecodeFrame(
     pp::Buffer_Dev encrypted_frame,
     const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) {
@@ -650,6 +706,12 @@ void CdmWrapper::DeliverBlock(int32_t result,
   pp::ContentDecryptor_Private::DeliverBlock(buffer, decrypted_block_info);
 }
 
+void CdmWrapper::DecoderInitialized(int32_t result,
+                                    bool success,
+                                    uint32_t request_id) {
+  pp::ContentDecryptor_Private::DecoderInitialized(success, request_id);
+}
+
 void CdmWrapper::DeliverFrame(
     int32_t result,
     const cdm::Status& status,
@@ -666,7 +728,7 @@ void CdmWrapper::DeliverFrame(
       PP_DCHECK(video_frame.get() && video_frame->frame_buffer());
       decrypted_frame_info.result = PP_DECRYPTRESULT_SUCCESS;
       decrypted_frame_info.format =
-          VideoFormatToPpDecryptedFrameFormat(video_frame->format());
+          CdmVideoFormatToPpDecryptedFrameFormat(video_frame->format());
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_Y] =
         video_frame->plane_offset(cdm::VideoFrame::kYPlane);
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_U] =

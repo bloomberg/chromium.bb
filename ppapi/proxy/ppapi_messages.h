@@ -627,6 +627,11 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_Decrypt,
                     PP_Instance /* instance */,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
                     std::string /* serialized_block_info */)
+IPC_MESSAGE_ROUTED3(
+    PpapiMsg_PPPContentDecryptor_InitializeVideoDecoder,
+    PP_Instance /* instance */,
+    std::string /* serialized_decoder_config */,
+    ppapi::proxy::PPPDecryptor_Buffer /* extra_data_buffer. */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_DecryptAndDecodeFrame,
                     PP_Instance /* instance */,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
@@ -1212,6 +1217,10 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverBlock,
                     PP_Instance /* instance */,
                     PP_Resource /* decrypted_block, PPB_Buffer_Dev */,
                     std::string /* serialized_block_info */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DecoderInitialized,
+                    PP_Instance /* instance */,
+                    PP_Bool /* success */,
+                    uint32_t /* request_id */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverFrame,
                     PP_Instance /* instance */,
                     PP_Resource /* decrypted_frame, PPB_Buffer_Dev */,

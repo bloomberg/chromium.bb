@@ -42,6 +42,10 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   void OnMsgDecrypt(PP_Instance instance,
                     const PPPDecryptor_Buffer& encrypted_buffer,
                     const std::string& serialized_encrypted_block_info);
+  void OnMsgInitializeVideoDecoder(
+      PP_Instance instance,
+      const std::string& decoder_config,
+      const PPPDecryptor_Buffer& extra_data_buffer);
   void OnMsgDecryptAndDecodeFrame(
       PP_Instance instance,
       const PPPDecryptor_Buffer& encrypted_frame,

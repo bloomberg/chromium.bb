@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Wed Oct  3 16:16:49 2012. */
+/* From private/pp_content_decryptor.idl modified Mon Oct  8 12:50:54 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -298,6 +298,69 @@ struct PP_DecryptedFrameInfo {
   struct PP_DecryptTrackingInfo tracking_info;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DecryptedFrameInfo, 56);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Enums
+ * @{
+ */
+/**
+ * <code>PP_VideoCodecProfile</code> contains video codec profile type
+ * constants required for video decoder configuration.
+ *.
+ */
+typedef enum {
+  PP_VIDEOCODECPROFILE_UNKNOWN = 0,
+  PP_VIDEOCODECPROFILE_VP8_MAIN = 1
+} PP_VideoCodecProfile;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoCodecProfile, 4);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
+/**
+ * <code>PP_VideoDecoderConfig</code> contains video decoder configuration
+ * information required to initialize video decoders, and a request ID
+ * that allows clients to associate a decoder initialization request with a
+ * status response. Note: When <code>codec</code> requires extra data for
+ * initialization, the data is sent as a <code>PP_Resource</code> carried
+ * alongside <code>PP_VideoDecoderConfig</code>.
+ */
+struct PP_VideoDecoderConfig {
+  /**
+   * The video codec to initialize.
+   */
+  PP_VideoCodec codec;
+  /**
+   * Profile to use when initializing the video codec.
+   */
+  PP_VideoCodecProfile profile;
+  /**
+   * Output video format.
+   */
+  PP_DecryptedFrameFormat format;
+  /**
+   * Width of decoded video frames, in pixels.
+   */
+  int32_t width;
+  /**
+   * Height of decoded video frames, in pixels.
+   */
+  int32_t height;
+  /**
+   * Client-specified identifier for the associated video decoder initialization
+   * request. By using this value, the client can associate a decoder
+   * initialization status response with an initialization request.
+   */
+  uint32_t request_id;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_VideoDecoderConfig, 24);
 /**
  * @}
  */
