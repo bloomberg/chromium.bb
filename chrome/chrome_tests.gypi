@@ -3052,6 +3052,7 @@
         'browser/ui/cocoa/browser_window_controller_browsertest.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_controller_browsertest.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm',
+        'browser/ui/cocoa/intents/web_intent_picker_view_controller_browsertest.mm',
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/fullscreen/fullscreen_controller_browsertest.cc',
         'browser/ui/global_error/global_error_service_browsertest.cc',

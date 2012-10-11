@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#include "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/web_intent_sheet_controller.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "ipc/ipc_message.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/image/image.h"
@@ -71,6 +74,10 @@ void ConstrainedPickerSheetDelegate::DeleteDelegate() {
 WebIntentPicker* WebIntentPicker::Create(content::WebContents* web_contents,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableFramelessConstrainedDialogs)) {
+    return new WebIntentPickerCocoa2(web_contents, delegate, model);
+  }
   TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   return new WebIntentPickerCocoa(tab_contents, delegate, model);
 }
