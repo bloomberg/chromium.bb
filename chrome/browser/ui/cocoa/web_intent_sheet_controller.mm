@@ -764,14 +764,12 @@ const CGFloat kAddButtonWidth = 128.0;
 - (void)setInlineDispositionFrameSize:(NSSize)inlineContentSize {
   DCHECK(contents_);
 
-  // Make sure inline content size is never shrunk. Also, preserve
-  // origin - see http://crbug.com/150914 for details.
-  inlineContentSize = NSMakeSize(
-      std::max(NSWidth(contentFrame_), inlineContentSize.width),
-      std::max(NSHeight(contentFrame_), inlineContentSize.height));
-  contentFrame_.size = inlineContentSize;
-
   NSView* webContentView = contents_->web_contents()->GetNativeView();
+
+  // Make sure inline content size is never shrunk.
+  inlineContentSize = NSMakeSize(
+      std::max(NSWidth([webContentView frame]), inlineContentSize.width),
+      std::max(NSHeight([webContentView frame]), inlineContentSize.height));
 
   // Compute container size to fit all elements, including padding.
   NSSize containerSize = inlineContentSize;
@@ -784,8 +782,7 @@ const CGFloat kAddButtonWidth = 128.0;
       std::max(CGFloat(WebIntentPicker::kWindowMinWidth), containerSize.width);
 
   // Resize web contents.
-  [webContentView setFrame:contentFrame_];
-
+  [webContentView setFrameSize:inlineContentSize];
   [self setContainerSize:containerSize];
 }
 
@@ -944,17 +941,19 @@ const CGFloat kAddButtonWidth = 128.0;
     return 0;
 
   // Determine a good size for the inline disposition window.
+
   gfx::Size size = picker_->GetMinInlineDispositionSize();
-  contentFrame_ = NSMakeRect(
+  NSView* webContentView = contents_->web_contents()->GetNativeView();
+  NSRect contentFrame = NSMakeRect(
       WebIntentPicker::kContentAreaBorder,
       offset,
-      std::max(NSWidth(contentFrame_), CGFloat(size.width())),
-      std::max(NSHeight(contentFrame_), CGFloat(size.height())));
+      std::max(NSWidth([webContentView frame]),CGFloat(size.width())),
+      std::max(NSHeight([webContentView frame]),CGFloat(size.height())));
 
-  [contents_->web_contents()->GetNativeView() setFrame:contentFrame_];
-  [subviews addObject:contents_->web_contents()->GetNativeView()];
+  [webContentView setFrame:contentFrame];
+  [subviews addObject:webContentView];
 
-  return NSHeight(contentFrame_);
+  return NSHeight(contentFrame);
 }
 
 - (CGFloat)addAnotherServiceLinkToSubviews:(NSMutableArray*)subviews
