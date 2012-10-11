@@ -471,8 +471,12 @@ void FileBrowserEventRouter::OnFileSystemBeingUnmounted() {
                  mount_info);
 }
 
-void FileBrowserEventRouter::OnAuthenticationFailed() {
+void FileBrowserEventRouter::OnAuthenticationFailed(
+    gdata::GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error == gdata::GDATA_NO_CONNECTION)
+    return;
 
   // Raise a MountCompleted event to notify the File Manager.
   const std::string& gdata_path = gdata::util::GetDriveMountPointPathAsString();

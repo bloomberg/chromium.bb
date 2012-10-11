@@ -293,10 +293,10 @@ void DriveAPIService::OnProgressUpdate(
       DriveServiceObserver, observers_, OnProgressUpdate(list));
 }
 
-void DriveAPIService::OnAuthenticationFailed() {
+void DriveAPIService::OnAuthenticationFailed(GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
-      DriveServiceObserver, observers_, OnAuthenticationFailed());
+      DriveServiceObserver, observers_, OnAuthenticationFailed(error));
 }
 
 }  // namespace gdata

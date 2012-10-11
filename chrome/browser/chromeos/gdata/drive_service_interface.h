@@ -51,7 +51,7 @@ class DriveServiceObserver {
   virtual void OnProgressUpdate(const OperationProgressStatusList& list) {}
 
   // Called when GData authentication failed.
-  virtual void OnAuthenticationFailed() {}
+  virtual void OnAuthenticationFailed(GDataErrorCode error) {}
 
  protected:
   virtual ~DriveServiceObserver() {}

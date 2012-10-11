@@ -343,10 +343,10 @@ void GDataWapiService::OnProgressUpdate(
       DriveServiceObserver, observers_, OnProgressUpdate(list));
 }
 
-void GDataWapiService::OnAuthenticationFailed() {
+void GDataWapiService::OnAuthenticationFailed(GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
-      DriveServiceObserver, observers_, OnAuthenticationFailed());
+      DriveServiceObserver, observers_, OnAuthenticationFailed(error));
 }
 
 }  // namespace gdata

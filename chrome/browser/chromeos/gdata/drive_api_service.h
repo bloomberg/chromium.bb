@@ -123,7 +123,7 @@ class DriveAPIService : public DriveServiceInterface,
   // DriveServiceObserver Overrides
   virtual void OnProgressUpdate(
       const OperationProgressStatusList& list) OVERRIDE;
-  virtual void OnAuthenticationFailed() OVERRIDE;
+  virtual void OnAuthenticationFailed(GDataErrorCode error) OVERRIDE;
 
   Profile* profile_;
   scoped_ptr<OperationRunner> runner_;

@@ -13,6 +13,7 @@
 #include "base/id_map.h"
 #include "base/observer_list.h"
 #include "base/time.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace gdata {
 
@@ -111,7 +112,7 @@ class OperationRegistry {
     void NotifySuspend();
     void NotifyResume();
     // Notifies that authentication has failed.
-    void NotifyAuthFailed();
+    void NotifyAuthFailed(GDataErrorCode error);
 
    private:
     // Does the cancellation.
@@ -150,7 +151,7 @@ class OperationRegistry {
   void OnOperationSuspend(OperationID operation);
   void OnOperationResume(Operation* operation,
                          OperationProgressStatus* new_status);
-  void OnOperationAuthFailed();
+  void OnOperationAuthFailed(GDataErrorCode error);
 
   bool IsFileTransferOperation(const Operation* operation) const;
 
@@ -174,12 +175,10 @@ class OperationRegistry {
 class OperationRegistryObserver {
  public:
   // Called when a GData operation started, made some progress, or finished.
-  virtual void OnProgressUpdate(const OperationProgressStatusList& list) {
-  }
+  virtual void OnProgressUpdate(const OperationProgressStatusList& list) {}
 
   // Called when GData authentication failed.
-  virtual void OnAuthenticationFailed() {
-  }
+  virtual void OnAuthenticationFailed(GDataErrorCode error) {}
 
  protected:
   virtual ~OperationRegistryObserver() {}

@@ -87,7 +87,7 @@ class FileBrowserEventRouter
   // gdata::DriveServiceObserver overrides.
   virtual void OnProgressUpdate(
       const gdata::OperationProgressStatusList& list) OVERRIDE;
-  virtual void OnAuthenticationFailed() OVERRIDE;
+  virtual void OnAuthenticationFailed(gdata::GDataErrorCode error) OVERRIDE;
 
   // gdata::DriveFileSystemInterface::Observer overrides.
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
