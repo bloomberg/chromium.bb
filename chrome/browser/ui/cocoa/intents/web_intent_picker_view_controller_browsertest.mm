@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_choose_service_view_controller.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
@@ -19,6 +22,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "ipc/ipc_message.h"
 #import "testing/gtest_mac.h"
 
 namespace {
@@ -138,6 +142,38 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, ChooseService) {
   EXPECT_EQ(PICKER_STATE_CHOOSE_SERVICE, [controller_ state]);
   rows = [choose_controller rows];
   EXPECT_EQ(1u, [rows count]);
+}
+
+// Test showing an inline service.
+IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, InlineService) {
+  testing::InSequence dummy;
+
+  // Create a web view
+  GURL url("about:blank");
+  content::WebContents* web_contents = content::WebContents::Create(
+      browser()->profile(),
+      tab_util::GetSiteInstanceForNewTab(browser()->profile(), url),
+      MSG_ROUTING_NONE,
+      NULL);
+  EXPECT_CALL(delegate_,
+              CreateWebContentsForInlineDisposition(testing::_, testing::_))
+      .WillOnce(testing::Return(web_contents));
+
+  model_.SetWaitingForSuggestions(false);
+
+  webkit_glue::WebIntentServiceData::Disposition disposition =
+      webkit_glue::WebIntentServiceData::DISPOSITION_INLINE;
+  model_.AddInstalledService(ASCIIToUTF16("Title"), url, disposition);
+  model_.SetInlineDisposition(url);
+  EXPECT_EQ(PICKER_STATE_INLINE_SERVICE, [controller_ state]);
+
+  WebIntentInlineServiceViewController * inline_controller =
+      [controller_ inlineServiceViewController];
+  EXPECT_NSEQ([controller_ view], [[inline_controller view] superview]);
+
+  // Test clicking "choose another service.
+  EXPECT_CALL(delegate_, OnChooseAnotherService());
+  [[inline_controller chooseServiceButton] performClick:nil];
 }
 
 // Test the "installing a service" state.

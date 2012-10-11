@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 
 WebIntentPickerCocoa2::WebIntentPickerCocoa2(content::WebContents* web_contents,
                                              WebIntentPickerDelegate* delegate,
@@ -57,6 +58,18 @@ void WebIntentPickerCocoa2::OnInlineDispositionAutoResize(
   [view_controller_ update];
 }
 
+void WebIntentPickerCocoa2::OnInlineDispositionHandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  if (event.skip_in_browser ||
+      event.type == content::NativeWebKeyboardEvent::Char) {
+    return;
+  }
+  ChromeEventProcessingWindow* window =
+      base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(
+          [window_controller_ window]);
+  [window redispatchKeyEvent:event.os_event];
+}
+
 void WebIntentPickerCocoa2::OnPendingAsyncCompleted() {
   [view_controller_ update];
 }
@@ -64,6 +77,10 @@ void WebIntentPickerCocoa2::OnPendingAsyncCompleted() {
 void WebIntentPickerCocoa2::OnInlineDispositionWebContentsLoaded(
     content::WebContents* web_contents) {
   [view_controller_ update];
+}
+
+gfx::Size WebIntentPickerCocoa2::GetMinInlineDispositionSize() {
+  return [view_controller_ minimumInlineWebViewSize];
 }
 
 void WebIntentPickerCocoa2::OnModelChanged(WebIntentPickerModel* model) {

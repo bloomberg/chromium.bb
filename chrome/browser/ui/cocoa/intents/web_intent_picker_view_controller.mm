@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_choose_service_view_controller.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_progress_view_controller.h"
@@ -34,6 +35,7 @@
 - (void)updateWaiting;
 - (void)updateNoService;
 - (void)updateChooseService;
+- (void)updateInlineService;
 - (void)updateInstallingExtension;
 
 // Creates a installed service row using the item at the given index.
@@ -47,6 +49,7 @@
 - (void)onSelectSuggestedService:(id)sender;
 - (void)onShowSuggestedService:(id)sender;
 - (void)onShowMoreServices:(id)sender;
+- (void)onChooseAnotherService:(id)sender;
 
 @end
 
@@ -72,6 +75,12 @@
     [[chooseServiceViewController_ showMoreServicesButton]
         setAction:@selector(onShowMoreServices:)];
 
+    inlineServiceViewController_.reset(
+        [[WebIntentInlineServiceViewController alloc] initWithPicker:picker_]);
+    [[inlineServiceViewController_ chooseServiceButton] setTarget:self];
+    [[inlineServiceViewController_ chooseServiceButton]
+        setAction:@selector(onChooseAnotherService:)];
+
     messageViewController_.reset(
         [[WebIntentMessageViewController alloc] init]);
     progressViewController_.reset(
@@ -84,12 +93,22 @@
   return closeButton_.get();
 }
 
+- (gfx::Size)minimumInlineWebViewSize {
+  NSSize size = [inlineServiceViewController_ minimumInlineWebViewSizeForFrame:
+      [self minimumInnerFrame]];
+  return gfx::Size(NSSizeToCGSize(size));
+}
+
 - (WebIntentPickerState)state {
   return state_;
 }
 
 - (WebIntentChooseServiceViewController*)chooseServiceViewController {
   return chooseServiceViewController_;
+}
+
+- (WebIntentInlineServiceViewController*)inlineServiceViewController {
+  return inlineServiceViewController_;
 }
 
 - (WebIntentMessageViewController*)messageViewController {
@@ -105,6 +124,8 @@
   NSView* currentView = [[self currentViewController] view];
   if (state_ != newState || ![currentView superview]) {
     [currentView removeFromSuperview];
+    // Clear the inline webview.
+    [inlineServiceViewController_ setServiceURL:GURL::EmptyGURL()];
     state_ = newState;
     currentView = [[self currentViewController] view];
     [[self view] addSubview:currentView];
@@ -123,6 +144,9 @@
       break;
     case PICKER_STATE_CHOOSE_SERVICE:
       [self updateChooseService];
+      break;
+    case PICKER_STATE_INLINE_SERVICE:
+      [self updateInlineService];
       break;
     case PICKER_STATE_INSTALLING_EXTENSION:
       [self updateInstallingExtension];
@@ -177,6 +201,8 @@
       return messageViewController_;
     case PICKER_STATE_CHOOSE_SERVICE:
       return chooseServiceViewController_;
+    case PICKER_STATE_INLINE_SERVICE:
+      return inlineServiceViewController_;
     case PICKER_STATE_INSTALLING_EXTENSION:
       return progressViewController_;
   }
@@ -187,6 +213,8 @@
   WebIntentPickerModel* model = picker_->model();
   if (!model->pending_extension_install_id().empty())
     return PICKER_STATE_INSTALLING_EXTENSION;
+  if (model->IsInlineDisposition())
+    return PICKER_STATE_INLINE_SERVICE;
   if (model->GetSuggestedExtensionCount() || model->GetInstalledServiceCount())
     return PICKER_STATE_CHOOSE_SERVICE;
   if (model->IsWaitingForSuggestions())
@@ -231,6 +259,22 @@
     [rows addObject:[self createSuggestedServiceAtIndex:i]];
   }
   [chooseServiceViewController_ setRows:rows];
+}
+
+- (void)updateInlineService {
+  const WebIntentPickerModel::InstalledService* service =
+      picker_->model()->GetInstalledServiceWithURL(
+          picker_->model()->inline_disposition_url());
+  if (!service)
+    return;
+
+  [inlineServiceViewController_ setServiceName:
+      base::SysUTF16ToNSString(service->title)];
+  if (service->favicon.IsEmpty())
+    [inlineServiceViewController_ setServiceIcon:nil];
+  else
+    [inlineServiceViewController_ setServiceIcon:service->favicon.ToNSImage()];
+  [inlineServiceViewController_ setServiceURL:service->url];
 }
 
 - (void)updateInstallingExtension {
@@ -319,6 +363,10 @@
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   picker_->delegate()->OnSuggestionsLinkClicked(disposition);
+}
+
+- (void)onChooseAnotherService:(id)sender {
+  picker_->delegate()->OnChooseAnotherService();
 }
 
 @end

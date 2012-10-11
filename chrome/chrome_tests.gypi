@@ -3062,6 +3062,7 @@
         'browser/ui/cocoa/extensions/extension_install_dialog_controller_browsertest.mm',
         'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h',
         'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm',
+        'browser/ui/cocoa/intents/web_intent_inline_service_view_controller_browsertest.mm',
         'browser/ui/cocoa/intents/web_intent_picker_view_controller_browsertest.mm',
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/fullscreen/fullscreen_controller_browsertest.cc',

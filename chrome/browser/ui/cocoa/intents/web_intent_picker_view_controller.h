@@ -12,6 +12,7 @@
 
 class WebIntentPickerCocoa2;
 @class WebIntentChooseServiceViewController;
+@class WebIntentInlineServiceViewController;
 @class WebIntentMessageViewController;
 @class WebIntentProgressViewController;
 
@@ -20,6 +21,7 @@ enum WebIntentPickerState {
   PICKER_STATE_WAITING,
   PICKER_STATE_NO_SERVICE,
   PICKER_STATE_CHOOSE_SERVICE,
+  PICKER_STATE_INLINE_SERVICE,
   PICKER_STATE_INSTALLING_EXTENSION,
 };
 
@@ -32,6 +34,8 @@ enum WebIntentPickerState {
   scoped_nsobject<NSButton> closeButton_;
   scoped_nsobject<WebIntentChooseServiceViewController>
      chooseServiceViewController_;
+  scoped_nsobject<WebIntentInlineServiceViewController>
+      inlineServiceViewController_;
   scoped_nsobject<WebIntentMessageViewController>
       messageViewController_;
   scoped_nsobject<WebIntentProgressViewController>
@@ -40,12 +44,16 @@ enum WebIntentPickerState {
 
 - (id)initWithPicker:(WebIntentPickerCocoa2*)picker;
 
+// Gets the minimum size of the web view shown inside picker dialog.
+- (gfx::Size)minimumInlineWebViewSize;
+
 - (NSButton*)closeButton;
 
 // Get the current state.
 - (WebIntentPickerState)state;
 
 - (WebIntentChooseServiceViewController*)chooseServiceViewController;
+- (WebIntentInlineServiceViewController*)inlineServiceViewController;
 - (WebIntentMessageViewController*)messageViewController;
 - (WebIntentProgressViewController*)progressViewController;
 

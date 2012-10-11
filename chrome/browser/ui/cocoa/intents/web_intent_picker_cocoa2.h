@@ -38,9 +38,12 @@ class WebIntentPickerCocoa2 : public WebIntentPicker,
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
+  virtual void OnInlineDispositionHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void OnPendingAsyncCompleted() OVERRIDE;
   virtual void OnInlineDispositionWebContentsLoaded(
       content::WebContents* web_contents) OVERRIDE;
+  virtual gfx::Size GetMinInlineDispositionSize() OVERRIDE;
 
   // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
