@@ -100,12 +100,12 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
     MapEntry();  // Required by STL.
     MapEntry(GoogleURLTrackerInfoBarDelegate* infobar,
              const content::NotificationSource& navigation_controller_source,
-             const content::NotificationSource& tab_contents_source);
+             const content::NotificationSource& web_contents_source);
     ~MapEntry();
 
     GoogleURLTrackerInfoBarDelegate* infobar;
     content::NotificationSource navigation_controller_source;
-    content::NotificationSource tab_contents_source;
+    content::NotificationSource web_contents_source;
   };
 
   typedef std::map<const InfoBarTabHelper*, MapEntry> InfoBarMap;
@@ -153,7 +153,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
 
   // Called by Observe() after SearchCommitted() registers notification
   // listeners, to indicate that we've received the "load now pending"
-  // notification.  |navigation_controller_source| and |tab_contents_source| are
+  // notification.  |navigation_controller_source| and |web_contents_source| are
   // NotificationSources pointing to the associated NavigationController and
   // TabContents, respectively, for this load; |infobar_helper| is the
   // InfoBarTabHelper of the associated tab; and |pending_id| is the unique ID
@@ -163,7 +163,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // (still-invisible) InfoBarDelegate for the associated tab.
   void OnNavigationPending(
       const content::NotificationSource& navigation_controller_source,
-      const content::NotificationSource& tab_contents_source,
+      const content::NotificationSource& web_contents_source,
       InfoBarTabHelper* infobar_helper,
       int pending_id);
 
@@ -180,7 +180,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // listening for, may then also call OnNavigationCommittedOrTabClosed().
   void OnInstantCommitted(
     const content::NotificationSource& navigation_controller_source,
-    const content::NotificationSource& tab_contents_source,
+    const content::NotificationSource& web_contents_source,
     InfoBarTabHelper* infobar_helper,
     const GURL& search_url);
 

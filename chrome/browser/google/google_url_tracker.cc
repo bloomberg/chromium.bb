@@ -47,17 +47,17 @@ GoogleURLTracker::MapEntry::MapEntry()
     : infobar(NULL),
       navigation_controller_source(
           content::Source<content::NavigationController>(NULL)),
-      tab_contents_source(content::Source<TabContents>(NULL)) {
+      web_contents_source(content::Source<content::WebContents>(NULL)) {
   NOTREACHED();
 }
 
 GoogleURLTracker::MapEntry::MapEntry(
     GoogleURLTrackerInfoBarDelegate* infobar,
     const content::NotificationSource& navigation_controller_source,
-    const content::NotificationSource& tab_contents_source)
+    const content::NotificationSource& web_contents_source)
     : infobar(infobar),
       navigation_controller_source(navigation_controller_source),
-      tab_contents_source(tab_contents_source) {
+      web_contents_source(web_contents_source) {
 }
 
 GoogleURLTracker::MapEntry::~MapEntry() {
@@ -217,15 +217,15 @@ void GoogleURLTracker::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
+      content::WebContents* web_contents = controller->GetWebContents();
+      InfoBarTabHelper* infobar_tab_helper =
+          InfoBarTabHelper::FromWebContents(web_contents);
       // Because we're listening to all sources, there may be no
       // InfoBarTabHelper for some notifications, e.g. navigations in
       // bubbles/balloons etc.
-      TabContents* tab_contents =
-          TabContents::FromWebContents(controller->GetWebContents());
-      if (tab_contents) {
-        InfoBarTabHelper* infobar_tab_helper =
-            InfoBarTabHelper::FromWebContents(tab_contents->web_contents());
-        OnNavigationPending(source, content::Source<TabContents>(tab_contents),
+      if (infobar_tab_helper) {
+        OnNavigationPending(source,
+                            content::Source<content::WebContents>(web_contents),
                             infobar_tab_helper,
                             controller->GetPendingEntry()->GetUniqueID());
       }
@@ -245,9 +245,9 @@ void GoogleURLTracker::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
       InfoBarTabHelper* infobar_tab_helper = InfoBarTabHelper::FromWebContents(
-          content::Source<TabContents>(source)->web_contents());
+          content::Source<content::WebContents>(source).ptr());
       OnNavigationCommittedOrTabClosed(infobar_tab_helper, GURL());
       break;
     }
@@ -373,7 +373,7 @@ void GoogleURLTracker::SearchCommitted() {
 
 void GoogleURLTracker::OnNavigationPending(
     const content::NotificationSource& navigation_controller_source,
-    const content::NotificationSource& tab_contents_source,
+    const content::NotificationSource& web_contents_source,
     InfoBarTabHelper* infobar_helper,
     int pending_id) {
   InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
@@ -396,11 +396,11 @@ void GoogleURLTracker::OnNavigationPending(
       // if there was already an infobar, then either it's not yet showing and
       // we're already registered for this, or it is showing and its owner will
       // handle tearing it down when the tab is destroyed.
-      registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                     tab_contents_source);
+      registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                     web_contents_source);
       infobar_map_.insert(std::make_pair(infobar_helper, MapEntry(
           (*infobar_creator_)(infobar_helper, this, fetched_google_url_),
-          navigation_controller_source, tab_contents_source)));
+          navigation_controller_source, web_contents_source)));
     } else {
       // This is a new search on a tab where we already have an infobar (which
       // may or may not be showing).
@@ -453,7 +453,7 @@ void GoogleURLTracker::OnNavigationCommittedOrTabClosed(
 
 void GoogleURLTracker::OnInstantCommitted(
     const content::NotificationSource& navigation_controller_source,
-    const content::NotificationSource& tab_contents_source,
+    const content::NotificationSource& web_contents_source,
     InfoBarTabHelper* infobar_helper,
     const GURL& search_url) {
   // If this was the search we were listening for, OnNavigationPending() should
@@ -465,7 +465,7 @@ void GoogleURLTracker::OnInstantCommitted(
   // OnNavigationCommittedOrTabClosed() afterwards.  Note that we need to save
   // off |search_committed_| here because OnNavigationPending() will reset it.
   bool was_search_committed = search_committed_;
-  OnNavigationPending(navigation_controller_source, tab_contents_source,
+  OnNavigationPending(navigation_controller_source, web_contents_source,
                       infobar_helper, 0);
   InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
   DCHECK_EQ(was_search_committed, (i != infobar_map_.end()) &&
@@ -497,14 +497,15 @@ void GoogleURLTracker::UnregisterForEntrySpecificNotifications(
     DCHECK(!must_be_listening_for_commit);
     DCHECK(map_entry.infobar->showing());
   }
-  const bool registered_for_tab_contents_destroyed =
-      registrar_.IsRegistered(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                              map_entry.tab_contents_source);
-  DCHECK_NE(registered_for_tab_contents_destroyed,
+  const bool registered_for_web_contents_destroyed =
+      registrar_.IsRegistered(this,
+                              content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                              map_entry.web_contents_source);
+  DCHECK_NE(registered_for_web_contents_destroyed,
             map_entry.infobar->showing());
-  if (registered_for_tab_contents_destroyed) {
-    registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                      map_entry.tab_contents_source);
+  if (registered_for_web_contents_destroyed) {
+    registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                      map_entry.web_contents_source);
   }
 
   // Our global listeners for these other notifications should be in place iff

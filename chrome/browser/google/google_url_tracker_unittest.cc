@@ -21,8 +21,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TabContents;
-
 // TestNotificationObserver ---------------------------------------------------
 
 namespace {
@@ -249,7 +247,8 @@ void GoogleURLTrackerTest::SetNavigationPending(int unique_id, bool is_search) {
     google_url_tracker_->OnNavigationPending(
         content::Source<content::NavigationController>(
             reinterpret_cast<content::NavigationController*>(unique_id)),
-        content::Source<TabContents>(reinterpret_cast<TabContents*>(unique_id)),
+        content::Source<content::WebContents>(
+            reinterpret_cast<content::WebContents*>(unique_id)),
         reinterpret_cast<InfoBarTabHelper*>(unique_id), unique_id);
   }
 }
@@ -298,7 +297,8 @@ void GoogleURLTrackerTest::DoInstantNavigation(int unique_id,
     google_url_tracker_->OnInstantCommitted(
         content::Source<content::NavigationController>(
             reinterpret_cast<content::NavigationController*>(unique_id)),
-        content::Source<TabContents>(reinterpret_cast<TabContents*>(unique_id)),
+        content::Source<content::WebContents>(
+            reinterpret_cast<content::WebContents*>(unique_id)),
         reinterpret_cast<InfoBarTabHelper*>(unique_id), search_url);
   }
 }
@@ -307,9 +307,11 @@ void GoogleURLTrackerTest::CloseTab(int unique_id) {
   unique_ids_seen_.erase(unique_id);
   InfoBarTabHelper* infobar_helper =
       reinterpret_cast<InfoBarTabHelper*>(unique_id);
-  if (google_url_tracker_->registrar_.IsRegistered(google_url_tracker_.get(),
-      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, content::Source<TabContents>(
-          reinterpret_cast<TabContents*>(unique_id)))) {
+  if (google_url_tracker_->registrar_.IsRegistered(
+          google_url_tracker_.get(),
+          content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+          content::Source<content::WebContents>(
+              reinterpret_cast<content::WebContents*>(unique_id)))) {
     google_url_tracker_->OnNavigationCommittedOrTabClosed(infobar_helper,
                                                           GURL());
   } else {
