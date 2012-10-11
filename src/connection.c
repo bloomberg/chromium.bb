@@ -167,9 +167,27 @@ wl_connection_create(int fd)
 	return connection;
 }
 
+static void
+close_fds(struct wl_buffer *buffer)
+{
+	int fds[MAX_FDS_OUT], i, count;
+	size_t size;
+
+	size = buffer->head - buffer->tail;
+	if (size == 0)
+		return;
+
+	wl_buffer_copy(buffer, fds, size);
+	count = size / sizeof fds[0];
+	for (i = 0; i < count; i++)
+		close(fds[i]);
+	buffer->tail += size;
+}
+
 void
 wl_connection_destroy(struct wl_connection *connection)
 {
+	close_fds(&connection->fds_out);
 	close(connection->fd);
 	free(connection);
 }
@@ -203,23 +221,6 @@ build_cmsg(struct wl_buffer *buffer, char *data, int *clen)
 	} else {
 		*clen = 0;
 	}
-}
-
-static void
-close_fds(struct wl_buffer *buffer)
-{
-	int fds[MAX_FDS_OUT], i, count;
-	size_t size;
-
-	size = buffer->head - buffer->tail;
-	if (size == 0)
-		return;
-
-	wl_buffer_copy(buffer, fds, size);
-	count = size / sizeof fds[0];
-	for (i = 0; i < count; i++)
-		close(fds[i]);
-	buffer->tail += size;
 }
 
 static void
