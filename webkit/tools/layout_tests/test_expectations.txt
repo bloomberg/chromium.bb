@@ -31,18 +31,3 @@
 # Right?)
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
-
-# Need rebaselines because r160044 implements CSS3 hyphenation.
-crbug.com/47083 fast/text/hyphenate-character.html [ Failure ImageOnlyFailure ]
-crbug.com/47083 fast/text/hyphenate-limit-before-after.html [ Failure ImageOnlyFailure ]
-crbug.com/47083 fast/text/hyphens.html [ Failure ImageOnlyFailure ]
-
-# Need rebaselines because r11094014 overrides some JS builtin methods.
-fast/js/date-proto-generic-invocation.html [ Failure ]
-fast/js/kde/StringObject.html [ Failure ]
-fast/js/kde/function_length.html  [ Failure ]
-fast/js/kde/inbuilt_function_tostring.html [ Failure ]
-fast/js/string-prototype-properties.html [ Failure ]
-inspector-protocol/runtime-getProperties.html [ Failure ]
-# Not sure about this one, but it keeps failing and it's not flaky.
-inspector/styles/styles-computed-trace.html [ Failure ]
