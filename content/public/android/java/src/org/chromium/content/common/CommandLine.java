@@ -125,8 +125,9 @@ public abstract class CommandLine {
 
     // Equivalent to CommandLine::ForCurrentProcess in C++.
     public static CommandLine getInstance() {
-        assert sCommandLine.get() != null;
-        return sCommandLine.get();
+        CommandLine commandLine = sCommandLine.get();
+        assert commandLine != null;
+        return commandLine;
     }
 
     /**
@@ -135,8 +136,7 @@ public abstract class CommandLine {
      * @param args command line flags in 'argv' format: args[0] is the program name.
      */
     public static void init(String[] args) {
-        assert sCommandLine.get() == null;
-        sCommandLine.compareAndSet(null, new JavaCommandLine(args));
+        setInstance(new JavaCommandLine(args));
     }
 
     /**
@@ -162,10 +162,7 @@ public abstract class CommandLine {
      * command line initialization to be re-run including the call to onJniLoaded.
      */
     public static void reset() {
-        if (sCommandLine.get() != null && sCommandLine.get().isNativeImplementation()) {
-            nativeReset();
-        }
-        sCommandLine.set(null);
+        setInstance(null);
     }
 
     /**
@@ -227,6 +224,13 @@ public abstract class CommandLine {
             return ((JavaCommandLine) commandLine).getCommandLineArguments();
         }
         return null;
+    }
+
+    private static void setInstance(CommandLine commandLine) {
+        CommandLine oldCommandLine = sCommandLine.getAndSet(commandLine);
+        if (oldCommandLine != null && oldCommandLine.isNativeImplementation()) {
+            nativeReset();
+        }
     }
 
     /**
