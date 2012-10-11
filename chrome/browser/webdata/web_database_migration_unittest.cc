@@ -2209,8 +2209,12 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion45CompatibleToCurrent) {
   }
 }
 
+#if !defined(GOOGLE_CHROME_BUILD)
 // Tests that the |alternate_urls| column is added to the keyword table schema
-// for a version 45 database.
+// for a version 47 database.
+//
+// This is enabled on Chromium only because a valid signature is required for
+// this test, which makes it key-dependent.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion46ToCurrent) {
   ASSERT_NO_FATAL_FAILURE(
       LoadDatabase(FILE_PATH_LITERAL("version_46.sql")));
@@ -2252,5 +2256,59 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion46ToCurrent) {
     EXPECT_TRUE(connection.DoesColumnExist("keywords", "alternate_urls"));
     ASSERT_TRUE(connection.DoesColumnExist("keywords_backup",
                                            "alternate_urls"));
+  }
+}
+#endif  // !defined(GOOGLE_CHROME_BUILD)
+
+// Like MigrateVersion46ToCurrent above, but with a corrupt backup signature.
+// This should result in us dropping the backup table but successfully migrating
+// otherwise.
+//
+// Because this test doesn't rely on a valid signature, we can run it on
+// official builds as well.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion46CorruptBackupToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(
+      LoadDatabase(FILE_PATH_LITERAL("version_46_backup_corrupt.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 46 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 46, 46));
+
+    ASSERT_FALSE(connection.DoesColumnExist("keywords", "alternate_urls"));
+    ASSERT_FALSE(connection.DoesColumnExist("keywords_backup",
+                                            "alternate_urls"));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    // We should detect a "search provider change" as a side effect of dropping
+    // the backup table.
+    ASSERT_TRUE(db.GetKeywordTable()->DidDefaultSearchProviderChange());
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // A new column should have been created.
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "alternate_urls"));
+
+    // The backup table should be gone.
+    EXPECT_FALSE(connection.DoesTableExist("keywords_backup"));
   }
 }
