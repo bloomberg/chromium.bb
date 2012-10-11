@@ -31,6 +31,7 @@
 
 struct display {
 	struct wl_display *display;
+	struct wl_registry *registry;
 	struct wl_compositor *compositor;
 	struct input *input;
 	struct output *output;
@@ -262,8 +263,8 @@ static const struct wl_output_listener output_listener = {
 };
 
 static void
-handle_global(struct wl_display *_display, uint32_t id,
-	      const char *interface, uint32_t version, void *data)
+handle_global(void *data, struct wl_registry *registry, uint32_t id,
+	      const char *interface, uint32_t version)
 {
 	struct display *display = data;
 	struct input *input;
@@ -271,12 +272,12 @@ handle_global(struct wl_display *_display, uint32_t id,
 
 	if (strcmp(interface, "wl_compositor") == 0) {
 		display->compositor =
-			wl_display_bind(display->display,
-					id, &wl_compositor_interface);
+			wl_registry_bind(display->registry,
+					 id, &wl_compositor_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		input = calloc(1, sizeof *input);
-		input->seat = wl_display_bind(display->display, id,
-					      &wl_seat_interface);
+		input->seat = wl_registry_bind(display->registry, id,
+					       &wl_seat_interface, 1);
 		input->pointer_focus = NULL;
 		input->keyboard_focus = NULL;
 
@@ -284,8 +285,8 @@ handle_global(struct wl_display *_display, uint32_t id,
 		display->input = input;
 	} else if (strcmp(interface, "wl_output") == 0) {
 		output = malloc(sizeof *output);
-		output->output = wl_display_bind(display->display,
-						 id, &wl_output_interface);
+		output->output = wl_registry_bind(display->registry,
+						  id, &wl_output_interface, 1);
 		wl_output_add_listener(output->output,
 				       &output_listener, output);
 		display->output = output;
@@ -294,6 +295,10 @@ handle_global(struct wl_display *_display, uint32_t id,
 			display->output);
 	}
 }
+
+static const struct wl_registry_listener registry_listener = {
+	handle_global
+};
 
 static void
 surface_enter(void *data,
@@ -422,10 +427,11 @@ int main(int argc, char *argv[])
 	display->display = wl_display_connect(NULL);
 	assert(display->display);
 
-	wl_display_add_global_listener(display->display,
-				       handle_global, display);
-	wl_display_iterate(display->display, WL_DISPLAY_READABLE);
-	wl_display_roundtrip(display->display);
+	display->registry = wl_display_get_registry(display->display);
+	wl_registry_add_listener(display->registry,
+				 &registry_listener, display);
+	wl_display_dispatch(display->display);
+	wl_display_dispatch(display->display);
 
 	fd = 0;
 	p = getenv("TEST_SOCKET");

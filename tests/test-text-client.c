@@ -31,6 +31,7 @@
 
 struct display {
 	struct wl_display *display;
+	struct wl_registry *registry;
 	struct wl_compositor *compositor;
 
 	struct wl_surface *surface;
@@ -100,8 +101,10 @@ text_model_locale(void *data,
 }
 
 static void
-text_model_activated(void *data,
-		     struct text_model *text_model)
+text_model_enter(void *data,
+		 struct text_model *text_model,
+		 struct wl_surface *surface)
+
 {
 	struct display *display = data;
 
@@ -111,8 +114,8 @@ text_model_activated(void *data,
 }
 
 static void
-text_model_deactivated(void *data,
-		       struct text_model *text_model)
+text_model_leave(void *data,
+		 struct text_model *text_model)
 {
 	struct display *display = data;
 
@@ -128,28 +131,33 @@ static const struct text_model_listener text_model_listener = {
 	text_model_selection_replacement,
 	text_model_direction,
 	text_model_locale,
-	text_model_activated,
-	text_model_deactivated
+	text_model_enter,
+	text_model_leave
 };
 
 static void
-handle_global(struct wl_display *_display, uint32_t id,
-	      const char *interface, uint32_t version, void *data)
+handle_global(void *data,
+	      struct wl_registry *registry, uint32_t id,
+	      const char *interface, uint32_t version)
 {
 	struct display *display = data;
 
 	if (strcmp(interface, "wl_compositor") == 0) {
 		display->compositor =
-			wl_display_bind(display->display,
-					id, &wl_compositor_interface);
+			wl_registry_bind(display->registry,
+					 id, &wl_compositor_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		display->seat = wl_display_bind(display->display, id,
-						&wl_seat_interface);
+		display->seat = wl_registry_bind(display->registry, id,
+						 &wl_seat_interface, 1);
 	} else if (strcmp(interface, "text_model_factory") == 0) {
-		display->factory = wl_display_bind(display->display, id,
-						   &text_model_factory_interface);
+		display->factory = wl_registry_bind(display->registry, id,
+						    &text_model_factory_interface, 1);
 	}
 }
+
+static const struct wl_registry_listener registry_listener = {
+	handle_global
+};
 
 static void
 create_surface(int fd, struct display *display)
@@ -230,10 +238,11 @@ int main(int argc, char *argv[])
 	display->activated = 0;
 	display->deactivated = 0;
 
-	wl_display_add_global_listener(display->display,
-				       handle_global, display);
-	wl_display_iterate(display->display, WL_DISPLAY_READABLE);
-	wl_display_roundtrip(display->display);
+	display->registry = wl_display_get_registry(display->display);
+	wl_registry_add_listener(display->registry,
+				 &registry_listener, display);
+	wl_display_dispatch(display->display);
+	wl_display_dispatch(display->display);
 
 	fd = 0;
 	p = getenv("TEST_SOCKET");
