@@ -89,7 +89,10 @@ def _CheckHeadingIDs(input_api):
 def _CheckVersions(input_api, output_api, results):
   version = '_VERSION ='
   for affected_file in input_api.AffectedFiles():
-    if affected_file.LocalPath().endswith('PRESUBMIT.py'):
+    local_path = affected_file.LocalPath()
+    if not fnmatch.fnmatch(local_path, '%s*' % SERVER2_PATH):
+      continue
+    if local_path.endswith('PRESUBMIT.py'):
       continue
     if any(version in line for line in affected_file.NewContents()):
       found = False
