@@ -657,10 +657,6 @@
         ],
         'isolate_dependency_touched': [
           '../tools/swarm_client/menus/applications-merged',
-          '<(PRODUCT_DIR)/url fixer upper existing file.txt',
-          '<(PRODUCT_DIR)/url fixer-upper dir/url fixer-upper existing file.txt',
-          '<(PRODUCT_DIR)/url fixer-upper dir<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/url_fixer_upper_existing_file.txt',
           'test/data/autofill/merge/output/ambiguous.out',
           'test/data/autofill/merge/output/email.out',
           'test/data/extensions/bad/Extensions/dddddddddddddddddddddddddddddddd/1.0/git_hates_empty_dirs',
@@ -915,9 +911,6 @@
           'test/data/extensions/unpacker/missing_default_has_locales.crx',
           'test/data/extensions/unpacker/missing_messages_file.crx',
           'test/data/extensions/unpacker/no_locale_data.crx',
-          'test/data/value_store_db/000005.log',
-          'test/data/value_store_db/CURRENT',
-          'test/data/value_store_db/MANIFEST-000004',
         ],
         'isolate_dependency_untracked': [
           'test/data/extensions/manifest_tests/_locales/',
