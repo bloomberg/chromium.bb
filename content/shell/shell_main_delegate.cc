@@ -15,6 +15,7 @@
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_renderer_client.h"
 #include "content/shell/shell_switches.h"
+#include "content/shell/webkit_test_platform_support.h"
 #include "net/cookies/cookie_monster.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -91,6 +92,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kForceCompositingMode);
     net::CookieMonster::EnableFileScheme();
+    if (!WebKitTestPlatformInitialize()) {
+      if (exit_code)
+        *exit_code = 1;
+      return true;
+    }
   }
   SetContentClient(&content_client_);
   return false;

@@ -625,6 +625,9 @@
             '../ui/ui.gyp:ui',
             '../webkit/support/webkit_support.gyp:clearkeycdmplugin',
             '../webkit/support/webkit_support.gyp:glue',
+            # TODO(jochen): Change this to DumpRenderTree_helpers once
+            # http://wkb.ug/99023 has landed.
+            '<(webkit_src_dir)/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree',
           ],
           'include_dirs': [
             '..',
