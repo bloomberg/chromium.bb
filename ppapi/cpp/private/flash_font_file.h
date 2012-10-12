@@ -18,6 +18,8 @@ namespace flash {
 
 class FontFile : public Resource {
  public:
+  // Default constructor for making an is_null() FontFile resource.
+  FontFile();
   FontFile(const InstanceHandle& instance,
            const PP_FontDescription_Dev* description,
            PP_PrivateFontCharset charset);

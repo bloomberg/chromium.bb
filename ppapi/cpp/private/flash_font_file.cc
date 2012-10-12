@@ -28,9 +28,12 @@ template <> const char* interface_name<PPB_Flash_FontFile_0_1>() {
 
 namespace flash {
 
+FontFile::FontFile() {
+}
+
 FontFile::FontFile(const InstanceHandle& instance,
                    const PP_FontDescription_Dev* description,
-                   PP_PrivateFontCharset charset) : Resource() {
+                   PP_PrivateFontCharset charset) {
   if (has_interface<PPB_Flash_FontFile_0_1>()) {
     PassRefFromConstructor(get_interface<PPB_Flash_FontFile_0_1>()->Create(
         instance.pp_instance(), description, charset));
