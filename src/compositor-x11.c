@@ -1239,6 +1239,7 @@ output_section_done(void *data)
 		if (output_name)
 			free(output_name);
 		output_name = NULL;
+		free(output);
 		goto err_free;
 	}
 
