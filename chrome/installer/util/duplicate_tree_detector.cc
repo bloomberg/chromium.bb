@@ -23,6 +23,13 @@ bool IsIdenticalFileHierarchy(const FilePath& src_path,
     if (!src_info.is_directory && !dest_info.is_directory) {
       // Two files are "identical" if the file sizes are equivalent.
       is_identical = src_info.size == dest_info.size;
+#ifndef NDEBUG
+      // For Debug builds, also check creation time (to make sure version dir
+      // DLLs are replaced on over-install even if the tested change doesn't
+      // happen to change a given DLL's size).
+      if (is_identical)
+        is_identical = (src_info.creation_time == dest_info.creation_time);
+#endif
     } else if (src_info.is_directory && dest_info.is_directory) {
       // Two directories are "identical" if dest_path contains entries that are
       // "identical" to all the entries in src_path.
