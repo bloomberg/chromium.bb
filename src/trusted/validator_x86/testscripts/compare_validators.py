@@ -154,12 +154,10 @@ def ParseRdfaOutput(rdfa_content):
   return ValidatorResult(verdict=verdict, offsets=offsets)
 
 
-def Compare(options, test_filename, stats):
-  print 'Comparing', test_filename
+def Compare(options, items_list, stats):
   val_field = {32: 'nval', 64: 'rval'}[options.bits]
   val_parser = {32: ParseNval, 64: ParseRval}[options.bits]
 
-  items_list = test_format.LoadTestFile(test_filename)
   info = dict(items_list)
   if 'rdfa_output' not in info:
     if val_field in info:
@@ -168,11 +166,11 @@ def Compare(options, test_filename, stats):
     else:
       print '  both sections are missing'
       stats['both missing'] += 1
-    return
+    return items_list
   if val_field not in info:
     print '  @%s section is missing' % val_field
     stats['val missing'] += 1
-    return
+    return items_list
 
   val = val_parser(info[val_field])
   rdfa = ParseRdfaOutput(info['rdfa_output'])
@@ -193,36 +191,33 @@ def Compare(options, test_filename, stats):
     if 'validators_disagree' in info:
       print '  validators disagree, see @validators_disagree section'
     else:
-      if options.update:
-        print '  validators disagree, creating @validators_disagree section'
-        stats['generated @validators_disagree'] += 1
+      print '  validators disagree!'
+      stats['unexplained disagreements'] += 1
 
-        diff = ['TODO: explain this\n']
-        if val.verdict != rdfa.verdict:
-          diff.append('old validator verdict: %s\n' % val.verdict)
-          diff.append('rdfa validator verdict: %s\n' % rdfa.verdict)
+      diff = ['TODO: explain this\n']
+      if val.verdict != rdfa.verdict:
+        diff.append('old validator verdict: %s\n' % val.verdict)
+        diff.append('rdfa validator verdict: %s\n' % rdfa.verdict)
 
-        set_diff = val.offsets - rdfa.offsets
-        if len(set_diff) > 0:
-          diff.append('errors reported by old validator but not by rdfa one:\n')
-          for offset in sorted(set_diff):
-            if isinstance(offset, int):
-              offset = hex(offset)
-            diff.append('  %s\n' % offset)
+      set_diff = val.offsets - rdfa.offsets
+      if len(set_diff) > 0:
+        diff.append('errors reported by old validator but not by rdfa one:\n')
+        for offset in sorted(set_diff):
+          if isinstance(offset, int):
+            offset = hex(offset)
+          diff.append('  %s\n' % offset)
 
-        set_diff = rdfa.offsets - val.offsets
-        if len(set_diff) > 0:
-          diff.append('errors reported by rdfa validator but not by old one:\n')
-          for offset in sorted(set_diff):
-            if isinstance(offset, int):
-              offset = hex(offset)
-            diff.append('  %s\n' % offset)
+      set_diff = rdfa.offsets - val.offsets
+      if len(set_diff) > 0:
+        diff.append('errors reported by rdfa validator but not by old one:\n')
+        for offset in sorted(set_diff):
+          if isinstance(offset, int):
+            offset = hex(offset)
+          diff.append('  %s\n' % offset)
 
-        items_list.append(('validators_disagree', ''.join(diff)))
-        test_format.SaveTestFile(items_list, test_filename)
-      else:
-        stats['unexplained disagreements'] += 1
-        print '  validators disagree!'
+      items_list = items_list + [('validators_disagree', ''.join(diff))]
+
+  return items_list
 
 
 def main(args):
@@ -257,14 +252,22 @@ def main(args):
       raise AssertionError(
           '%r matched no files, which was probably not intended' % glob_expr)
     for test_file in test_files:
-      Compare(options, test_file, stats)
+      print 'Comparing', test_file
+      tests = test_format.LoadTestFile(test_file)
+      tests = [Compare(options, test, stats) for test in tests]
+      if options.update:
+        test_format.SaveTestFile(tests, test_file)
 
   print 'Stats:'
   for key, value in stats.items():
     print '  %s: %d' %(key, value)
 
-  if stats['unexplained disagreements'] > 0:
-    sys.exit(1)
+  if options.update:
+    if stats['unexplained disagreements'] > 0:
+      print '@validators_disagree sections were created'
+  else:
+    if stats['unexplained disagreements'] > 0:
+      sys.exit(1)
 
 
 if __name__ == '__main__':

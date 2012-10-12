@@ -78,10 +78,7 @@ def GetX8664Combinations():
             yield ext, options
 
 
-def Test(options, test_filename):
-  print 'Testing %s...' % test_filename
-
-  items_list = test_format.LoadTestFile(test_filename)
+def Test(options, items_list):
   info = dict(items_list)
   handled_fields = set(['hex'])
 
@@ -123,10 +120,10 @@ def Test(options, test_filename):
   if unhandled:
     raise AssertionError('Unhandled fields: %r' % sorted(unhandled))
 
-  if options.update:
-    # Preserve the ordering of the fields when writing the updated file.
-    items_list = [(field, info[field]) for field, _ in items_list]
-    test_format.SaveTestFile(items_list, test_filename)
+  # Update field values, but preserve their order.
+  items_list = [(field, info[field]) for field, _ in items_list]
+
+  return items_list
 
 
 def main(args):
@@ -154,7 +151,11 @@ def main(args):
       raise AssertionError(
           '%r matched no files, which was probably not intended' % glob_expr)
     for test_file in test_files:
-      Test(options, test_file)
+      print 'Testing %s...' % test_file
+      tests = test_format.LoadTestFile(test_file)
+      tests = [Test(options, test) for test in tests]
+      if options.update:
+        test_format.SaveTestFile(tests, test_file)
       processed += 1
   print '%s test files were processed.' % processed
 
