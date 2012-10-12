@@ -45,6 +45,10 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
   EXPECT_EQ(kInitialBackoffShortRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 
+  state.last_download_updates_result = NETWORK_CONNECTION_UNAVAILABLE;
+  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+            delay->GetInitialDelay(state).InSeconds());
+
   state.last_download_updates_result = SERVER_RETURN_TRANSIENT_ERROR;
   EXPECT_EQ(kInitialBackoffRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
@@ -62,6 +66,10 @@ TEST_F(BackoffDelayProviderTest, GetInitialDelay) {
             delay->GetInitialDelay(state).InSeconds());
 
   state.commit_result = SERVER_RETURN_MIGRATION_DONE;
+  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+            delay->GetInitialDelay(state).InSeconds());
+
+  state.commit_result = NETWORK_CONNECTION_UNAVAILABLE;
   EXPECT_EQ(kInitialBackoffShortRetrySeconds,
             delay->GetInitialDelay(state).InSeconds());
 }
