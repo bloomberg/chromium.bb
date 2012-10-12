@@ -26,6 +26,8 @@ class SequencedTaskRunner;
 
 namespace fileapi {
 
+class FileSystemContext;
+
 // Tracks local file changes for cloud-backed file systems.
 // All methods must be called on the file_task_runner given to the constructor.
 // Owned by FileSystemContext.
@@ -68,19 +70,23 @@ class FILEAPI_EXPORT LocalFileChangeTracker
   // This removes |url| from the internal change map.
   void FinalizeSyncForURL(const FileSystemURL& url);
 
-  // Called by FileSyncService at the startup time to collect last
-  // dirty changes left after the last shutdown (if any).
-  SyncStatusCode CollectLastDirtyChanges(FileChangeMap* changes);
+  // Called by FileSyncService at the startup time to restore last dirty changes
+  // left after the last shutdown (if any).
+  SyncStatusCode Initialize(FileSystemContext* file_system_context);
 
  protected:
   // Database related methods. These methods are virtual for testing.
   virtual SyncStatusCode MarkDirtyOnDatabase(const FileSystemURL& url);
   virtual SyncStatusCode ClearDirtyOnDatabase(const FileSystemURL& url);
 
+  bool initialized_;
+
  private:
   class TrackerDB;
   friend class LocalFileChangeTrackerTest;
 
+  SyncStatusCode CollectLastDirtyChanges(
+      FileSystemContext* file_system_context);
   void RecordChange(const FileSystemURL& url, const FileChange& change);
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

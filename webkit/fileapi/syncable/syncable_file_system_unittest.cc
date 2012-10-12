@@ -69,6 +69,7 @@ class SyncableFileSystemTest : public testing::Test {
         new LocalFileChangeTracker(
             file_system_context()->partition_path(),
             file_system_context()->task_runners()->file_task_runner()));
+    ASSERT_EQ(tracker->Initialize(file_system_context()), SYNC_STATUS_OK);
     file_system_context()->SetLocalFileChangeTracker(tracker.Pass());
   }
 

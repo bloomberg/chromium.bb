@@ -23,6 +23,7 @@ class FILEAPI_EXPORT FileChange {
   enum FileType {
     FILE_TYPE_DIRECTORY,
     FILE_TYPE_FILE,
+    FILE_TYPE_UNDETERMINED,
   };
 
   FileChange(ChangeType change, FileType file_type);

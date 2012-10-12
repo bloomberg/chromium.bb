@@ -4,11 +4,15 @@
 
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 
+#include <queue>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
@@ -29,6 +33,7 @@ class LocalFileChangeTracker::TrackerDB {
 
   SyncStatusCode MarkDirty(const std::string& url);
   SyncStatusCode ClearDirty(const std::string& url);
+  SyncStatusCode GetDirtyEntries(std::queue<FileSystemURL>* dirty_files);
 
  private:
   enum RecoveryOption {
@@ -53,7 +58,8 @@ class LocalFileChangeTracker::TrackerDB {
 LocalFileChangeTracker::LocalFileChangeTracker(
     const FilePath& base_path,
     base::SequencedTaskRunner* file_task_runner)
-    : file_task_runner_(file_task_runner),
+    : initialized_(false),
+      file_task_runner_(file_task_runner),
       tracker_db_(new TrackerDB(base_path)) {}
 
 LocalFileChangeTracker::~LocalFileChangeTracker() {
@@ -136,17 +142,16 @@ void LocalFileChangeTracker::FinalizeSyncForURL(const FileSystemURL& url) {
   changes_.erase(url);
 }
 
-SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
-    FileChangeMap* changes) {
-  // TODO(kinuko): implement.
-  NOTREACHED();
-  return SYNC_DATABASE_ERROR_NOT_FOUND;
-}
-
-void LocalFileChangeTracker::RecordChange(
-    const FileSystemURL& url, const FileChange& change) {
+SyncStatusCode LocalFileChangeTracker::Initialize(
+    FileSystemContext* file_system_context) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
-  changes_[url].Update(change);
+  DCHECK(!initialized_);
+  DCHECK(file_system_context);
+
+  SyncStatusCode status = CollectLastDirtyChanges(file_system_context);
+  if (status == SYNC_STATUS_OK)
+    initialized_ = true;
+  return status;
 }
 
 SyncStatusCode LocalFileChangeTracker::MarkDirtyOnDatabase(
@@ -165,6 +170,79 @@ SyncStatusCode LocalFileChangeTracker::ClearDirtyOnDatabase(
     return SYNC_FILE_ERROR_INVALID_URL;
 
   return tracker_db_->ClearDirty(serialized_url);
+}
+
+SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
+    FileSystemContext* file_system_context) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+
+  std::queue<FileSystemURL> dirty_files;
+  const SyncStatusCode status = tracker_db_->GetDirtyEntries(&dirty_files);
+  if (status != SYNC_STATUS_OK)
+    return status;
+
+  FileSystemFileUtil* file_util =
+      file_system_context->GetFileUtil(kFileSystemTypeSyncable);
+  DCHECK(file_util);
+  FileSystemOperationContext context =
+      FileSystemOperationContext(file_system_context);
+  base::PlatformFileInfo file_info;
+  FilePath platform_path;
+
+  while (!dirty_files.empty()) {
+    const FileSystemURL url = dirty_files.front();
+    dirty_files.pop();
+    DCHECK_EQ(url.type(), kFileSystemTypeSyncable);
+
+    switch (file_util->GetFileInfo(&context, url, &file_info, &platform_path)) {
+      case base::PLATFORM_FILE_OK: {
+        if (!file_info.is_directory) {
+          changes_[url].Update(FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                          FileChange::FILE_TYPE_FILE));
+          break;
+        }
+
+        changes_[url].Update(FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                        FileChange::FILE_TYPE_DIRECTORY));
+
+        // Push files and directories in this directory into |dirty_files|.
+        scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
+            file_util->CreateFileEnumerator(&context,
+                                            url,
+                                            false /* recursive */));
+        FilePath path_each;
+        while (!(path_each = enumerator->Next()).empty()) {
+          dirty_files.push(CreateSyncableFileSystemURL(
+              url.origin(), url.filesystem_id(), path_each));
+        }
+        break;
+      }
+      case base::PLATFORM_FILE_ERROR_NOT_FOUND: {
+        // File represented by |url| has already been deleted. Since we cannot
+        // figure out if this file was directory or not from the URL, file
+        // type is treated as FILE_TYPE_UNDETERMINED.
+        //
+        // NOTE: Directory to have been reverted (that is, ADD -> DELETE) is
+        // also treated as FILE_CHANGE_DELETE.
+        changes_[url].Update(FileChange(FileChange::FILE_CHANGE_DELETE,
+                                        FileChange::FILE_TYPE_UNDETERMINED));
+        break;
+      }
+      case base::PLATFORM_FILE_ERROR_FAILED:
+      default:
+        // TODO(nhiroki): handle file access error (http://crbug.com/155251).
+        LOG(WARNING) << "Failed to access local file.";
+        break;
+    }
+  }
+  return SYNC_STATUS_OK;
+}
+
+void LocalFileChangeTracker::RecordChange(
+    const FileSystemURL& url, const FileChange& change) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(initialized_);
+  changes_[url].Update(change);
 }
 
 // TrackerDB -------------------------------------------------------------------
@@ -265,6 +343,34 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::ClearDirty(
     db_status_ = LevelDBStatusToSyncStatusCode(status);
     db_.reset();
     return db_status_;
+  }
+  return SYNC_STATUS_OK;
+}
+
+SyncStatusCode LocalFileChangeTracker::TrackerDB::GetDirtyEntries(
+    std::queue<FileSystemURL>* dirty_files) {
+  if (db_status_ != SYNC_STATUS_OK)
+    return db_status_;
+
+  db_status_ = Init(REPAIR_ON_CORRUPTION);
+  if (db_status_ != SYNC_STATUS_OK) {
+    db_.reset();
+    return db_status_;
+  }
+
+  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
+  iter->SeekToFirst();
+  FileSystemURL url;
+  while (iter->Valid()) {
+    if (!DeserializeSyncableFileSystemURL(iter->key().ToString(), &url)) {
+      LOG(WARNING) << "Failed to deserialize an URL. "
+                   << "TrackerDB might be corrupted.";
+      db_status_ = SYNC_DATABASE_ERROR_CORRUPTION;
+      db_.reset();
+      return db_status_;
+    }
+    dirty_files->push(url);
+    iter->Next();
   }
   return SYNC_STATUS_OK;
 }

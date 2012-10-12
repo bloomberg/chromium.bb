@@ -35,6 +35,9 @@ std::string FileChange::DebugString() const {
     case FILE_TYPE_DIRECTORY:
       type_string = "DIRECTORY";
       break;
+    case FILE_TYPE_UNDETERMINED:
+      type_string = "UNDETERMINED";
+      break;
   }
   return base::StringPrintf("%s:%s", change_string, type_string);
 }
