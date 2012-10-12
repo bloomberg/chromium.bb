@@ -25,6 +25,10 @@ var textInputController = textInputController || {};
       get: function(receiver, property) {
         NotImplemented(name, property);
         return function() {}
+      },
+      getPropertyDescriptor: function(property) {
+        NotImplemented(name, property);
+        return undefined;
       }
     }
     return Proxy.create(handler);
