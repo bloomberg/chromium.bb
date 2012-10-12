@@ -737,8 +737,8 @@
 
 	A client can request a frame callback even without an attach,
 	damage, or any other state changes. wl_surface.commit triggers a
-	repaint, so the callback event will arrive after the next output
-	refresh where the surface is visible.
+	display update, so the callback event will arrive after the next
+	output refresh where the surface is visible.
       </description>
 
       <arg name="callback" type="new_id" interface="wl_callback"/>
