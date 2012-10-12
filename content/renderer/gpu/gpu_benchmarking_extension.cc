@@ -177,7 +177,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> GetRenderingStats(const v8::Arguments& args) {
 
-    WebFrame* web_frame = WebFrame::frameForEnteredContext();
+    WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
       return v8::Undefined();
 
@@ -210,7 +210,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (dirname.length() == 0)
       return v8::Undefined();
 
-    WebFrame* web_frame = WebFrame::frameForEnteredContext();
+    WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
       return v8::Undefined();
 
@@ -254,7 +254,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> BeginSmoothScroll(const v8::Arguments& args) {
-    WebFrame* web_frame = WebFrame::frameForEnteredContext();
+    WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
       return v8::Undefined();
 
@@ -337,7 +337,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       name_filter = std::string(filter);
     }
 
-    WebFrame* web_frame = WebFrame::frameForEnteredContext();
+    WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
       return v8::Undefined();
 

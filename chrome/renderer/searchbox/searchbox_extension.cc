@@ -276,7 +276,7 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
 
 // static
 content::RenderView* SearchBoxExtensionWrapper::GetRenderView() {
-  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForEnteredContext();
+  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
   if (!webframe) return NULL;
 
   WebKit::WebView* webview = webframe->view();
