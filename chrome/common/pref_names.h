@@ -278,6 +278,7 @@ extern const char kUseSharedProxies[];
 extern const char kOAuth1Token[];
 extern const char kOAuth1Secret[];
 extern const char kEnableCrosDRM[];
+extern const char kDisplayOverscans[];
 extern const char kPrimaryDisplayID[];
 extern const char kSecondaryDisplayLayout[];
 extern const char kSecondaryDisplayOffset[];

@@ -10,6 +10,7 @@
 class PrefService;
 namespace gfx {
 class Display;
+class Insets;
 }
 
 namespace chromeos {
@@ -35,6 +36,10 @@ void StorePrimaryDisplayIDPref(int64 display_id);
 // Sets or updates the primary display device by its ID, and notifies the update
 // to the system.
 void SetPrimaryDisplayIDPref(int64 display_id);
+
+// Sets or updates the overscan preference for the specified |display| to Local
+// State.
+void SetDisplayOverscan(const gfx::Display& display, const gfx::Insets& insets);
 
 // Checks the current display settings in Preferences and notifies them to the
 // system.

@@ -8,6 +8,7 @@
 #include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -20,6 +21,7 @@
 #include "ui/aura/display_manager.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/insets.h"
 
 namespace chromeos {
 namespace {
@@ -41,6 +43,48 @@ std::string UnescapeDisplayName(const std::string& name) {
   return UTF16ToASCII(string16(decoded.data(), decoded.length()));
 }
 
+// This kind of boilerplates should be done by base::JSONValueConverter but it
+// doesn't support classes like gfx::Insets for now.
+// TODO(mukai): fix base::JSONValueConverter and use it here.
+bool ValueToInsets(const base::DictionaryValue& value, gfx::Insets* insets) {
+  DCHECK(insets);
+  int top = 0;
+  int left = 0;
+  int bottom = 0;
+  int right = 0;
+  if (value.GetInteger("top", &top) &&
+      value.GetInteger("left", &left) &&
+      value.GetInteger("bottom", &bottom) &&
+      value.GetInteger("right", &right)) {
+    insets->Set(top, left, bottom, right);
+    return true;
+  }
+  return false;
+}
+
+void InsetsToValue(const gfx::Insets& insets, base::DictionaryValue* value) {
+  DCHECK(value);
+  value->SetInteger("top", insets.top());
+  value->SetInteger("left", insets.left());
+  value->SetInteger("bottom", insets.bottom());
+  value->SetInteger("right", insets.right());
+}
+
+ash::internal::MultiDisplayManager* GetDisplayManager() {
+  return static_cast<ash::internal::MultiDisplayManager*>(
+      aura::Env::GetInstance()->display_manager());
+}
+
+// Returns true id the current user can write display preferences to
+// Local State.
+bool IsValidUser() {
+  UserManager* user_manager = UserManager::Get();
+  return (user_manager->IsUserLoggedIn() &&
+          !user_manager->IsLoggedInAsDemoUser() &&
+          !user_manager->IsLoggedInAsGuest() &&
+          !user_manager->IsLoggedInAsStub());
+}
+
 void NotifyDisplayLayoutChanged(PrefService* pref_service) {
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
@@ -56,8 +100,10 @@ void NotifyDisplayLayoutChanged(PrefService* pref_service) {
   for (base::DictionaryValue::key_iterator it = layouts->begin_keys();
        it != layouts->end_keys(); ++it) {
     const base::Value* value = NULL;
-    if (!layouts->Get(*it, &value) || value == NULL)
+    if (!layouts->Get(*it, &value) || value == NULL) {
+      LOG(WARNING) << "Can't find dictionary value for " << *it;
       continue;
+    }
 
     ash::DisplayLayout layout;
     if (!ash::DisplayLayout::ConvertFromValue(*value, &layout)) {
@@ -67,6 +113,36 @@ void NotifyDisplayLayoutChanged(PrefService* pref_service) {
 
     display_controller->SetLayoutForDisplayName(
         UnescapeDisplayName(*it), layout);
+  }
+}
+
+void NotifyDisplayOverscans() {
+  PrefService* local_state = g_browser_process->local_state();
+  ash::internal::MultiDisplayManager* display_manager = GetDisplayManager();
+
+  const base::DictionaryValue* overscans = local_state->GetDictionary(
+      prefs::kDisplayOverscans);
+  for (base::DictionaryValue::key_iterator it = overscans->begin_keys();
+       it != overscans->end_keys(); ++it) {
+    int64 display_id = gfx::Display::kInvalidDisplayID;
+    if (!base::StringToInt64(*it, &display_id)) {
+      LOG(WARNING) << "Invalid key, cannot convert to display ID: " << *it;
+      continue;
+    }
+
+    const base::DictionaryValue* value = NULL;
+    if (!overscans->GetDictionary(*it, &value) || value == NULL) {
+      LOG(WARNING) << "Can't find dictionary value for " << *it;
+      continue;
+    }
+
+    gfx::Insets insets;
+    if (!ValueToInsets(*value, &insets)) {
+      LOG(WARNING) << "Can't convert the data into insets for " << *it;
+      continue;
+    }
+
+    display_manager->SetOverscanInsets(display_id, insets);
   }
 }
 
@@ -92,6 +168,10 @@ void RegisterDisplayLocalStatePrefs(PrefService* local_state) {
   local_state->RegisterInt64Pref(prefs::kPrimaryDisplayID,
                                  gfx::Display::kInvalidDisplayID,
                                  PrefService::UNSYNCABLE_PREF);
+
+  // Display overscan preference.
+  local_state->RegisterDictionaryPref(prefs::kDisplayOverscans,
+                                      PrefService::UNSYNCABLE_PREF);
 }
 
 void SetDisplayLayoutPref(PrefService* pref_service,
@@ -128,22 +208,33 @@ void SetDisplayLayoutPref(PrefService* pref_service,
 }
 
 void StorePrimaryDisplayIDPref(int64 display_id) {
-  // The primary display settings is only written by valid users.
-  UserManager* user_manager = UserManager::Get();
-  if (!user_manager->IsUserLoggedIn() || user_manager->IsLoggedInAsDemoUser() ||
-      user_manager->IsLoggedInAsGuest() || user_manager->IsLoggedInAsStub()) {
+  if (!IsValidUser())
     return;
-  }
-
-  const ash::internal::MultiDisplayManager* display_manager =
-      static_cast<ash::internal::MultiDisplayManager*>(
-          aura::Env::GetInstance()->display_manager());
 
   PrefService* local_state = g_browser_process->local_state();
-  if (display_manager->IsInternalDisplayId(display_id))
+  if (GetDisplayManager()->IsInternalDisplayId(display_id))
     local_state->ClearPref(prefs::kPrimaryDisplayID);
   else
     local_state->SetInt64(prefs::kPrimaryDisplayID, display_id);
+}
+
+void SetDisplayOverscan(const gfx::Display& display,
+                        const gfx::Insets& insets) {
+  if (!IsValidUser())
+    return;
+
+  {
+    DictionaryPrefUpdate update(
+        g_browser_process->local_state(), prefs::kDisplayOverscans);
+    const std::string id = base::Int64ToString(display.id());
+
+    base::DictionaryValue* pref_data = update.Get();
+    base::DictionaryValue* insets_value = new base::DictionaryValue();
+    InsetsToValue(insets, insets_value);
+    pref_data->Set(id, insets_value);
+  }
+
+  NotifyDisplayOverscans();
 }
 
 void SetPrimaryDisplayIDPref(int64 display_id) {
@@ -160,6 +251,7 @@ void NotifyDisplayLocalStatePrefChanged() {
   PrefService* local_state = g_browser_process->local_state();
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplayId(
       local_state->GetInt64(prefs::kPrimaryDisplayID));
+  NotifyDisplayOverscans();
 }
 
 }  // namespace chromeos
