@@ -638,7 +638,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called on OnMsgInputEventAck() to process a touch event ack message.
   // This can result in a gesture event being generated and sent back to the
   // renderer.
-  void ProcessTouchAck(WebKit::WebInputEvent::Type type, bool processed);
+  void ProcessTouchAck(bool processed);
 
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).

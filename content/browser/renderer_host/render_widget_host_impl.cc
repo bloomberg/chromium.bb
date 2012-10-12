@@ -1590,7 +1590,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
   } else if (type == WebInputEvent::MouseWheel) {
     ProcessWheelAck(processed);
   } else if (WebInputEvent::isTouchEventType(type)) {
-    ProcessTouchAck(event_type, processed);
+    ProcessTouchAck(processed);
   } else if (WebInputEvent::isGestureEventType(type)) {
     ProcessGestureAck(processed, type);
   }
@@ -1728,10 +1728,9 @@ void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
   gesture_event_filter_->ProcessGestureAck(processed, type);
 }
 
-void RenderWidgetHostImpl::ProcessTouchAck(
-    WebInputEvent::Type type, bool processed) {
+void RenderWidgetHostImpl::ProcessTouchAck(bool processed) {
   if (view_)
-    view_->ProcessTouchAck(type, processed);
+    view_->ProcessTouchAck(processed);
 }
 
 void RenderWidgetHostImpl::OnMsgFocus() {

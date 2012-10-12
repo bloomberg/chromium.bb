@@ -263,8 +263,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // prevent-default on a dispatched touch event, the touch events are queued in
   // the GestureRecognizer until invocation of ProcessTouchAck releases it to be
   // processed (when |processed| is false) or ignored (when |processed| is true)
-  virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,
-                               bool processed) = 0;
+  virtual void ProcessTouchAck(bool processed) = 0;
 
   // Asks the view to create a smooth scroll gesture that will be used to
   // simulate a user-initiated scroll.

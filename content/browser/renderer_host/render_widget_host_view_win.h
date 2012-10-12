@@ -201,8 +201,7 @@ class RenderWidgetHostViewWin
       const base::Callback<void(bool)>& callback,
       skia::PlatformBitmap* output) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
-  virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,
-                               bool processed) OVERRIDE;
+  virtual void ProcessTouchAck(bool processed) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
@@ -407,15 +406,9 @@ class RenderWidgetHostViewWin
   // a WM_POINTERDOWN message.
   void ResetPointerDownContext();
 
-  // Switches between raw-touches mode and gesture mode. Currently touch mode
-  // will only take effect when kEnableTouchEvents is in effect.
-  void UpdateDesiredTouchMode(bool touch);
-
-  // Set window to receive gestures.
-  void SetToGestureMode();
-
-  // Set window to raw touch events. Returns whether registering was successful.
-  bool SetToTouchMode();
+  // Sets the appropriate mode for raw-touches or gestures. Currently touch mode
+  // will only take effect when kEnableTouchEvents is in effect (on Win7+).
+  void UpdateDesiredTouchMode();
 
   // Configures the enable/disable state of |ime_input_| to match with the
   // current |text_input_type_|.

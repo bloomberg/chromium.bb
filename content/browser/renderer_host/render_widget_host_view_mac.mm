@@ -1318,8 +1318,7 @@ void RenderWidgetHostViewMac::ForceTextureReload() {
   plugin_container_manager_.ForceTextureReload();
 }
 
-void RenderWidgetHostViewMac::ProcessTouchAck(
-    WebKit::WebInputEvent::Type type, bool processed) {
+void RenderWidgetHostViewMac::ProcessTouchAck(bool processed) {
 }
 
 void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(

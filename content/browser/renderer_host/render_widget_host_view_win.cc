@@ -951,8 +951,7 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
   render_widget_host_->SetBackground(background);
 }
 
-void RenderWidgetHostViewWin::ProcessTouchAck(
-    WebKit::WebInputEvent::Type type, bool processed) {
+void RenderWidgetHostViewWin::ProcessTouchAck(bool processed) {
 
   DCHECK(render_widget_host_->has_touch_handler() &&
       touch_events_enabled_);
@@ -963,59 +962,35 @@ void RenderWidgetHostViewWin::ProcessTouchAck(
     gestures.reset(gesture_recognizer_->AdvanceTouchQueue(this, processed));
     ProcessGestures(gestures.get());
   }
-
-  if (type == WebKit::WebInputEvent::TouchStart)
-    UpdateDesiredTouchMode(processed);
 }
 
-void RenderWidgetHostViewWin::SetToGestureMode() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-  UnregisterTouchWindow(m_hWnd);
-  // Single finger panning is consistent with other windows applications.
-  const DWORD gesture_allow = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY |
-                              GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
-  const DWORD gesture_block = GC_PAN_WITH_GUTTER;
-  GESTURECONFIG gc[] = {
-      { GID_ZOOM, GC_ZOOM, 0 },
-      { GID_PAN, gesture_allow , gesture_block},
-      { GID_TWOFINGERTAP, GC_TWOFINGERTAP , 0},
-      { GID_PRESSANDTAP, GC_PRESSANDTAP , 0}
-  };
-  if (!SetGestureConfig(m_hWnd, 0, arraysize(gc), gc,
-      sizeof(GESTURECONFIG))) {
-    NOTREACHED();
-  }
-  touch_events_enabled_ = false;
-}
-
-bool RenderWidgetHostViewWin::SetToTouchMode() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return false;
-  bool touch_mode = RegisterTouchWindow(m_hWnd, TWF_WANTPALM) == TRUE;
-  touch_events_enabled_ = touch_mode;
-  return touch_mode;
-}
-
-void RenderWidgetHostViewWin::UpdateDesiredTouchMode(bool touch_mode) {
+void RenderWidgetHostViewWin::UpdateDesiredTouchMode() {
   // Make sure that touch events even make sense.
-  bool touch_mode_valid = base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+  static bool touch_mode = base::win::GetVersion() >= base::win::VERSION_WIN7 &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTouchEvents);
-  touch_mode = touch_mode_valid;
 
-  // Already in correct mode, nothing to do.
-  if ((touch_mode && touch_events_enabled_) ||
-      (!touch_mode && !touch_events_enabled_))
+  if (!touch_mode)
     return;
 
   // Now we know that the window's current state doesn't match the desired
   // state. If we want touch mode, then we attempt to register for touch
   // events, and otherwise to unregister.
-  if (touch_mode) {
-    touch_mode = SetToTouchMode();
-  }
-  if (!touch_mode) {
-    SetToGestureMode();
+  touch_events_enabled_ = RegisterTouchWindow(m_hWnd, TWF_WANTPALM) == TRUE;
+
+  if (!touch_events_enabled_) {
+    UnregisterTouchWindow(m_hWnd);
+    // Single finger panning is consistent with other windows applications.
+    const DWORD gesture_allow = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY |
+                                GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+    const DWORD gesture_block = GC_PAN_WITH_GUTTER;
+    GESTURECONFIG gc[] = {
+        { GID_ZOOM, GC_ZOOM, 0 },
+        { GID_PAN, gesture_allow , gesture_block},
+        { GID_TWOFINGERTAP, GC_TWOFINGERTAP , 0},
+        { GID_PRESSANDTAP, GC_PRESSANDTAP , 0}
+    };
+    if (!SetGestureConfig(m_hWnd, 0, arraysize(gc), gc, sizeof(GESTURECONFIG)))
+      NOTREACHED();
   }
 }
 
@@ -1270,13 +1245,7 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   // scrolled when under the mouse pointer even if inactive.
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
 
-  bool touch_enabled = base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTouchEvents);
-  if (touch_enabled)
-    SetToTouchMode();
-  else
-    SetToGestureMode();
-
+  UpdateDesiredTouchMode();
   UpdateIMEState();
 
   return 0;
