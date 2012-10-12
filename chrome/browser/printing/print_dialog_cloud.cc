@@ -330,10 +330,6 @@ void CloudPrintFlowHandler::RegisterMessages() {
   }
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
-  if (close_after_signin_) {
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   content::Source<NavigationController>(controller));
-  }
 }
 
 void CloudPrintFlowHandler::Observe(
@@ -366,20 +362,6 @@ void CloudPrintFlowHandler::Observe(
     // console and watch things happen with:
     // HandleShowDebugger(NULL);
     HandleSendPrintData(NULL);
-  }
-  if (close_after_signin_ &&
-      type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    GURL url = web_ui()->GetWebContents()->GetURL();
-    GURL dialog_url = CloudPrintURL(
-        Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
-
-    if (url.host() == dialog_url.host() &&
-        url.path() == dialog_url.path() &&
-        url.scheme() == dialog_url.scheme()) {
-      StoreDialogClientSize();
-      web_ui()->GetWebContents()->GetRenderViewHost()->ClosePage();
-      callback_.Run();
-    }
   }
 }
 
@@ -478,6 +460,23 @@ void CloudPrintFlowHandler::StoreDialogClientSize() const {
     profile->GetPrefs()->SetInteger(prefs::kCloudPrintDialogHeight,
                                     size.height());
   }
+}
+
+bool CloudPrintFlowHandler::NavigationToURLDidCloseDialog(const GURL& url) {
+  if (close_after_signin_) {
+    GURL dialog_url = CloudPrintURL(
+        Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
+
+    if (url.host() == dialog_url.host() &&
+        url.path() == dialog_url.path() &&
+        url.scheme() == dialog_url.scheme()) {
+      StoreDialogClientSize();
+      web_ui()->GetWebContents()->GetRenderViewHost()->ClosePage();
+      callback_.Run();
+      return true;
+    }
+  }
+  return false;
 }
 
 CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
@@ -636,6 +635,13 @@ bool CloudPrintWebDialogDelegate::ShouldShowDialogTitle() const {
 bool CloudPrintWebDialogDelegate::HandleContextMenu(
     const content::ContextMenuParams& params) {
   return true;
+}
+
+bool CloudPrintWebDialogDelegate::HandleOpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params,
+    content::WebContents** out_new_contents) {
+  return flow_handler_->NavigationToURLDidCloseDialog(params.url);
 }
 
 void CreatePrintDialogForBytesImpl(content::BrowserContext* browser_context,

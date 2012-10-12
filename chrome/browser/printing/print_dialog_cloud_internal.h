@@ -129,6 +129,8 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
   virtual void SetDialogDelegate(CloudPrintWebDialogDelegate *delegate);
   void StoreDialogClientSize() const;
 
+  bool NavigationToURLDidCloseDialog(const GURL& url);
+
  private:
   virtual scoped_refptr<CloudPrintDataSender> CreateCloudPrintDataSender();
 
@@ -184,6 +186,10 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
+  virtual bool HandleOpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params,
+      content::WebContents** out_new_contents) OVERRIDE;
 
  private:
   friend class ::CloudPrintWebDialogDelegateTest;
