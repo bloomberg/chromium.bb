@@ -653,7 +653,6 @@ wl_connection_demarshal(struct wl_connection *connection,
 	unsigned int i, count, extra_space;
 	const char *signature = message->signature;
 	struct argument_details arg;
-	struct wl_object **object;
 	struct wl_array **array;
 	struct wl_closure *closure;
 
@@ -746,7 +745,6 @@ wl_connection_demarshal(struct wl_connection *connection,
 				printf("NULL object received on non-nullable "
 				       "type, message %s(%s)\n", message->name,
 				       message->signature);
-				*object = NULL;
 				errno = EINVAL;
 				goto err;
 			}
