@@ -1809,6 +1809,7 @@
         'browser/ui/cocoa/infobars/infobar_gradient_view_unittest.mm',
         'browser/ui/cocoa/infobars/translate_infobar_unittest.mm',
         'browser/ui/cocoa/intents/web_intent_choose_service_view_controller_unittest.mm',
+        'browser/ui/cocoa/intents/web_intent_extension_prompt_view_controller_unittest.mm',
         'browser/ui/cocoa/intents/web_intent_message_view_controller_unittest.mm',
         'browser/ui/cocoa/intents/web_intent_progress_view_controller_unittest.mm',
         'browser/ui/cocoa/intents/web_intent_service_row_view_controller_unittest.mm',

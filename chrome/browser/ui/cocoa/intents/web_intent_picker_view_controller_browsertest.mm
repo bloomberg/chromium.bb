@@ -7,7 +7,10 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h"
+#import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_choose_service_view_controller.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_extension_prompt_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
@@ -20,6 +23,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate_mock.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
@@ -202,4 +206,29 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, Installing) {
   int percent_done = 50;
   model_.SetPendingExtensionInstallDownloadProgress(percent_done);
   EXPECT_EQ(percent_done, [progress_indicator percentDone]);
+}
+
+// Test show the extension install prompt.
+IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, ExtensionPrompt) {
+  scoped_refptr<extensions::Extension> extension =
+      chrome::LoadInstallPromptExtension();
+  chrome::MockExtensionInstallPromptDelegate delegate;
+  ExtensionInstallPrompt::Prompt prompt =
+      chrome::BuildExtensionInstallPrompt(extension.get());
+
+  // Set a pending install prompt.
+  model_.SetPendingExtensionInstallDelegate(&delegate);
+  model_.SetPendingExtensionInstallPrompt(prompt);
+  EXPECT_EQ(PICKER_STATE_EXTENSION_PROMPT, [controller_ state]);
+
+  // Verify that the view controll is embedded.
+  WebIntentExtensionPromptViewController* extension_prompt_controller =
+      [controller_ extensionPromptViewController];
+  EXPECT_NSEQ([controller_ view],
+              [[extension_prompt_controller view] superview]);
+
+  // Press cancel.
+  [[[extension_prompt_controller viewController] cancelButton]
+      performClick:nil];
+  EXPECT_EQ(1, delegate.abort_count());
 }

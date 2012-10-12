@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_choose_service_view_controller.h"
+#import "chrome/browser/ui/cocoa/intents/web_intent_extension_prompt_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_message_view_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -37,6 +39,7 @@
 - (void)updateChooseService;
 - (void)updateInlineService;
 - (void)updateInstallingExtension;
+- (void)updateExtensionPrompt;
 
 // Creates a installed service row using the item at the given index.
 - (WebIntentServiceRowViewController*)createInstalledServiceAtIndex:(int)index;
@@ -85,6 +88,8 @@
         [[WebIntentMessageViewController alloc] init]);
     progressViewController_.reset(
         [[WebIntentProgressViewController alloc] init]);
+    extensionPromptViewController_.reset(
+        [[WebIntentExtensionPromptViewController alloc] init]);
   }
   return self;
 }
@@ -119,6 +124,10 @@
   return progressViewController_;
 }
 
+- (WebIntentExtensionPromptViewController*)extensionPromptViewController {
+  return extensionPromptViewController_;
+}
+
 - (void)update {
   WebIntentPickerState newState = [self newPickerState];
   NSView* currentView = [[self currentViewController] view];
@@ -126,6 +135,7 @@
     [currentView removeFromSuperview];
     // Clear the inline webview.
     [inlineServiceViewController_ setServiceURL:GURL::EmptyGURL()];
+    [extensionPromptViewController_ clear];
     state_ = newState;
     currentView = [[self currentViewController] view];
     [[self view] addSubview:currentView];
@@ -150,6 +160,9 @@
       break;
     case PICKER_STATE_INSTALLING_EXTENSION:
       [self updateInstallingExtension];
+      break;
+    case PICKER_STATE_EXTENSION_PROMPT:
+      [self updateExtensionPrompt];
       break;
   }
 
@@ -205,12 +218,18 @@
       return inlineServiceViewController_;
     case PICKER_STATE_INSTALLING_EXTENSION:
       return progressViewController_;
+    case PICKER_STATE_EXTENSION_PROMPT:
+      return extensionPromptViewController_;
   }
   return nil;
 }
 
 - (WebIntentPickerState)newPickerState {
   WebIntentPickerModel* model = picker_->model();
+  if (model->pending_extension_install_delegate() &&
+      model->pending_extension_install_prompt()) {
+    return PICKER_STATE_EXTENSION_PROMPT;
+  }
   if (!model->pending_extension_install_id().empty())
     return PICKER_STATE_INSTALLING_EXTENSION;
   if (model->IsInlineDisposition())
@@ -290,6 +309,18 @@
       model->pending_extension_install_status_string())];
   [progressViewController_ setPercentDone:
       model->pending_extension_install_download_progress()];
+}
+
+- (void)updateExtensionPrompt {
+  ExtensionInstallPrompt::Delegate* delegate =
+      picker_->model()->pending_extension_install_delegate();
+  const ExtensionInstallPrompt::Prompt* prompt =
+      picker_->model()->pending_extension_install_prompt();
+  if (!delegate || !prompt)
+    return;
+  [extensionPromptViewController_ setNavigator:picker_->web_contents()
+                                      delegate:delegate
+                                        prompt:*prompt];
 }
 
 - (WebIntentServiceRowViewController*)createInstalledServiceAtIndex:(int)index {

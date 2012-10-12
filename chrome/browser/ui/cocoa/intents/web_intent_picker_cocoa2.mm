@@ -53,6 +53,14 @@ void WebIntentPickerCocoa2::OnExtensionInstallFailure(const std::string& id) {
   [view_controller_ update];
 }
 
+void WebIntentPickerCocoa2::OnShowExtensionInstallDialog(
+      gfx::NativeWindow parent,
+      content::PageNavigator* navigator,
+      ExtensionInstallPrompt::Delegate* delegate,
+      const ExtensionInstallPrompt::Prompt& prompt) {
+  [view_controller_ update];
+}
+
 void WebIntentPickerCocoa2::OnInlineDispositionAutoResize(
     const gfx::Size& size) {
   [view_controller_ update];

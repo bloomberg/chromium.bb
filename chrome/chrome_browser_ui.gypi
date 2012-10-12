@@ -561,6 +561,8 @@
         'browser/ui/cocoa/infobars/translate_message_infobar_controller.mm',
         'browser/ui/cocoa/intents/web_intent_choose_service_view_controller.h',
         'browser/ui/cocoa/intents/web_intent_choose_service_view_controller.mm',
+        'browser/ui/cocoa/intents/web_intent_extension_prompt_view_controller.h',
+        'browser/ui/cocoa/intents/web_intent_extension_prompt_view_controller.mm',
         'browser/ui/cocoa/intents/web_intent_inline_service_view_controller.h',
         'browser/ui/cocoa/intents/web_intent_inline_service_view_controller.mm',
         'browser/ui/cocoa/intents/web_intent_message_view_controller.h',

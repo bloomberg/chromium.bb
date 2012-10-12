@@ -12,6 +12,7 @@
 
 class WebIntentPickerCocoa2;
 @class WebIntentChooseServiceViewController;
+@class WebIntentExtensionPromptViewController;
 @class WebIntentInlineServiceViewController;
 @class WebIntentMessageViewController;
 @class WebIntentProgressViewController;
@@ -23,6 +24,7 @@ enum WebIntentPickerState {
   PICKER_STATE_CHOOSE_SERVICE,
   PICKER_STATE_INLINE_SERVICE,
   PICKER_STATE_INSTALLING_EXTENSION,
+  PICKER_STATE_EXTENSION_PROMPT
 };
 
 // Manages the web intent picker UI. The view is meant to be embedded in either
@@ -40,6 +42,8 @@ enum WebIntentPickerState {
       messageViewController_;
   scoped_nsobject<WebIntentProgressViewController>
       progressViewController_;
+  scoped_nsobject<WebIntentExtensionPromptViewController>
+      extensionPromptViewController_;
 }
 
 - (id)initWithPicker:(WebIntentPickerCocoa2*)picker;
@@ -56,6 +60,7 @@ enum WebIntentPickerState {
 - (WebIntentInlineServiceViewController*)inlineServiceViewController;
 - (WebIntentMessageViewController*)messageViewController;
 - (WebIntentProgressViewController*)progressViewController;
+- (WebIntentExtensionPromptViewController*)extensionPromptViewController;
 
 // Update the dialog state and perform layout.
 - (void)update;
