@@ -1617,6 +1617,12 @@ bool ExtensionService::CanCrossIncognito(const Extension* extension) const {
 }
 
 bool ExtensionService::CanLoadInIncognito(const Extension* extension) const {
+  // Work around crash loading v2 apps in incognito windows, crbug.com/155130
+  // TODO(jamescook): Remove this after backport to R23. V2 apps need to be
+  // made incognito-aware.
+  if (extension->is_platform_app())
+    return false;
+
   if (extension->is_hosted_app())
     return true;
   // Packaged apps and regular extensions need to be enabled specifically for
