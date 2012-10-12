@@ -1781,4 +1781,323 @@ TEST_F(AndroidProviderBackendTest, AndroidCTSComplianceFolderColumnExists) {
   EXPECT_FALSE(statement->statement()->Step());
 }
 
+TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
+  GURL url1("http://www.cnn.com");
+  URLID url_id1 = 0;
+  const string16 title1(UTF8ToUTF16("cnn"));
+  std::vector<VisitInfo> visits1;
+  Time last_visited1 = Time::Now() - TimeDelta::FromDays(1);
+  Time created1 = last_visited1 - TimeDelta::FromDays(20);
+  visits1.push_back(VisitInfo(created1, content::PAGE_TRANSITION_LINK));
+  visits1.push_back(VisitInfo(last_visited1 - TimeDelta::FromDays(1),
+                              content::PAGE_TRANSITION_LINK));
+  visits1.push_back(VisitInfo(last_visited1, content::PAGE_TRANSITION_LINK));
+
+  GURL url2("http://www.example.com");
+  URLID url_id2 = 0;
+  std::vector<VisitInfo> visits2;
+  const string16 title2(UTF8ToUTF16("example"));
+  Time last_visited2 = Time::Now();
+  Time created2 = last_visited2 - TimeDelta::FromDays(10);
+  visits2.push_back(VisitInfo(created2, content::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(last_visited2 - TimeDelta::FromDays(5),
+                              content::PAGE_TRANSITION_LINK));
+  visits2.push_back(VisitInfo(last_visited2, content::PAGE_TRANSITION_LINK));
+
+  // Only use the HistoryBackend to generate the test data.
+  // HistoryBackend will shutdown after that.
+  {
+  scoped_refptr<HistoryBackend> history_backend;
+  history_backend = new HistoryBackend(temp_dir_.path(), 0,
+      new AndroidProviderBackendDelegate(), bookmark_model_);
+  history_backend->Init(std::string(), false);
+  history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
+  history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);
+  URLRow url_row;
+
+  ASSERT_TRUE(history_backend->GetURL(url1, &url_row));
+  url_id1 = url_row.id();
+  url_row.set_title(title1);
+  ASSERT_TRUE(history_backend->UpdateURL(url_id1, url_row));
+
+  ASSERT_TRUE(history_backend->GetURL(url2, &url_row));
+  url_id2 = url_row.id();
+  url_row.set_title(title2);
+  ASSERT_TRUE(history_backend->UpdateURL(url_id2, url_row));
+
+  // Set favicon to url2.
+  std::vector<unsigned char> data;
+  data.push_back('1');
+  history::FaviconBitmapData bitmap_data_element;
+  bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
+  bitmap_data_element.pixel_size = gfx::Size();
+  bitmap_data_element.icon_url = GURL();
+  std::vector<history::FaviconBitmapData> favicon_bitmap_data;
+  favicon_bitmap_data.push_back(bitmap_data_element);
+
+  FaviconSizes favicon_sizes;
+  favicon_sizes.push_back(gfx::Size());
+  IconURLSizesMap icon_url_sizes;
+  icon_url_sizes[GURL()] = favicon_sizes;
+
+  history_backend->SetFavicons(url2,
+                               FAVICON,
+                               favicon_bitmap_data,
+                               icon_url_sizes);
+  history_backend->Closing();
+  }
+
+  // The history_db_name and thumbnail_db_name files should be created by
+  // HistoryBackend. We need to open the same database files.
+  ASSERT_TRUE(file_util::PathExists(history_db_name_));
+  ASSERT_TRUE(file_util::PathExists(thumbnail_db_name_));
+
+  // Only creates the history database
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_));
+
+  // Set url1 as bookmark.
+  AddBookmark(url1);
+
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_, NULL,
+                                 bookmark_model_, &delegate_));
+
+  std::vector<HistoryAndBookmarkRow::ColumnID> projections;
+
+  projections.push_back(HistoryAndBookmarkRow::ID);
+  projections.push_back(HistoryAndBookmarkRow::URL);
+  projections.push_back(HistoryAndBookmarkRow::TITLE);
+  projections.push_back(HistoryAndBookmarkRow::CREATED);
+  projections.push_back(HistoryAndBookmarkRow::LAST_VISIT_TIME);
+  projections.push_back(HistoryAndBookmarkRow::VISIT_COUNT);
+  projections.push_back(HistoryAndBookmarkRow::FAVICON);
+  projections.push_back(HistoryAndBookmarkRow::BOOKMARK);
+
+  scoped_ptr<AndroidStatement> statement(backend->QueryHistoryAndBookmarks(
+      projections, std::string(), std::vector<string16>(),
+      std::string("url ASC")));
+  ASSERT_TRUE(statement->statement()->Step());
+  ASSERT_EQ(url1, GURL(statement->statement()->ColumnString(1)));
+  EXPECT_EQ(title1, statement->statement()->ColumnString16(2));
+  EXPECT_EQ(ToDatabaseTime(created1),
+            statement->statement()->ColumnInt64(3));
+  EXPECT_EQ(ToDatabaseTime(last_visited1),
+            statement->statement()->ColumnInt64(4));
+  EXPECT_EQ(3, statement->statement()->ColumnInt(5));
+  EXPECT_EQ(6, statement->favicon_index());
+  // No favicon.
+  EXPECT_EQ(0, statement->statement()->ColumnByteLength(6));
+  EXPECT_TRUE(statement->statement()->ColumnBool(7));
+
+  ASSERT_TRUE(statement->statement()->Step());
+  EXPECT_EQ(title2, statement->statement()->ColumnString16(2));
+  ASSERT_EQ(url2, GURL(statement->statement()->ColumnString(1)));
+  EXPECT_EQ(ToDatabaseTime(created2),
+            statement->statement()->ColumnInt64(3));
+  EXPECT_EQ(ToDatabaseTime(last_visited2),
+            statement->statement()->ColumnInt64(4));
+  EXPECT_EQ(3, statement->statement()->ColumnInt(5));
+  std::vector<unsigned char> favicon2;
+  EXPECT_EQ(6, statement->favicon_index());
+  // No favicon because thumbnail database wasn't initialized.
+  EXPECT_EQ(0, statement->statement()->ColumnByteLength(6));
+  EXPECT_FALSE(statement->statement()->ColumnBool(7));
+
+  // No more row.
+  EXPECT_FALSE(statement->statement()->Step());
+}
+
+TEST_F(AndroidProviderBackendTest, InsertWithoutThumbnailDB) {
+  HistoryAndBookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_created(Time::Now() - TimeDelta::FromDays(20));
+  row1.set_visit_count(10);
+  row1.set_is_bookmark(true);
+  row1.set_title(UTF8ToUTF16("cnn"));
+
+  HistoryAndBookmarkRow row2;
+  row2.set_raw_url("http://www.example.com");
+  row2.set_url(GURL("http://www.example.com"));
+  row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
+  row2.set_is_bookmark(false);
+  row2.set_title(UTF8ToUTF16("example"));
+  std::vector<unsigned char> data;
+  data.push_back('1');
+  row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
+
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_, NULL,
+                                 bookmark_model_, &delegate_));
+
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
+  EXPECT_FALSE(delegate_.deleted_details());
+  ASSERT_TRUE(delegate_.modified_details());
+  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
+  EXPECT_EQ(row1.url(), delegate_.modified_details()->changed_urls[0].url());
+  EXPECT_EQ(row1.last_visit_time(),
+            delegate_.modified_details()->changed_urls[0].last_visit());
+  EXPECT_EQ(row1.visit_count(),
+            delegate_.modified_details()->changed_urls[0].visit_count());
+  EXPECT_EQ(row1.title(),
+            delegate_.modified_details()->changed_urls[0].title());
+  EXPECT_FALSE(delegate_.favicon_details());
+  content::RunAllPendingInMessageLoop();
+  ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
+  const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
+  ASSERT_TRUE(child);
+  EXPECT_EQ(row1.title(), child->GetTitle());
+  EXPECT_EQ(row1.url(), child->url());
+
+  delegate_.ResetDetails();
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
+  EXPECT_FALSE(delegate_.deleted_details());
+  ASSERT_TRUE(delegate_.modified_details());
+  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
+  EXPECT_EQ(row2.url(), delegate_.modified_details()->changed_urls[0].url());
+  EXPECT_EQ(row2.last_visit_time(),
+            delegate_.modified_details()->changed_urls[0].last_visit());
+  EXPECT_EQ(row2.title(),
+            delegate_.modified_details()->changed_urls[0].title());
+  // Favicon details is still false because thumbnail database wasn't
+  // initialized, we ignore any changes of favicon.
+  ASSERT_FALSE(delegate_.favicon_details());
+}
+
+TEST_F(AndroidProviderBackendTest, DeleteWithoutThumbnailDB) {
+  HistoryAndBookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_created(Time::Now() - TimeDelta::FromDays(20));
+  row1.set_visit_count(10);
+  row1.set_is_bookmark(true);
+  row1.set_title(UTF8ToUTF16("cnn"));
+
+  HistoryAndBookmarkRow row2;
+  row2.set_raw_url("http://www.example.com");
+  row2.set_url(GURL("http://www.example.com"));
+  row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
+  row2.set_is_bookmark(false);
+  row2.set_title(UTF8ToUTF16("example"));
+  std::vector<unsigned char> data;
+  data.push_back('1');
+  row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
+
+  {
+    HistoryDatabase history_db;
+    ThumbnailDatabase thumbnail_db;
+    ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name_));
+    ASSERT_EQ(sql::INIT_OK, thumbnail_db.Init(thumbnail_db_name_, NULL,
+                                              &history_db));
+
+    scoped_ptr<AndroidProviderBackend> backend(
+        new AndroidProviderBackend(android_cache_db_name_, &history_db,
+                                   &thumbnail_db, bookmark_model_, &delegate_));
+
+    ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
+    ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
+    // Verify the row1 has been added in bookmark model.
+    content::RunAllPendingInMessageLoop();
+    ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
+    const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
+    ASSERT_TRUE(child);
+    EXPECT_EQ(row1.title(), child->GetTitle());
+    EXPECT_EQ(row1.url(), child->url());
+  }
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 NULL, bookmark_model_, &delegate_));
+
+  // Delete all rows.
+  std::vector<string16> args;
+  int deleted_count = 0;
+  delegate_.ResetDetails();
+  ASSERT_TRUE(backend->DeleteHistoryAndBookmarks("Favicon IS NULL", args,
+                                                 &deleted_count));
+  // All rows were deleted.
+  EXPECT_EQ(2, deleted_count);
+  // Verify the rows was removed from bookmark model.
+  content::RunAllPendingInMessageLoop();
+  ASSERT_EQ(0, bookmark_model_->mobile_node()->child_count());
+
+  // Verify notifications
+  ASSERT_TRUE(delegate_.deleted_details());
+  EXPECT_FALSE(delegate_.modified_details());
+  EXPECT_EQ(2u, delegate_.deleted_details()->rows.size());
+  // No favicon has been deleted.
+  EXPECT_FALSE(delegate_.favicon_details());
+
+  // No row exists.
+  std::vector<HistoryAndBookmarkRow::ColumnID> projections;
+  projections.push_back(HistoryAndBookmarkRow::ID);
+  projections.push_back(HistoryAndBookmarkRow::URL);
+  projections.push_back(HistoryAndBookmarkRow::TITLE);
+  projections.push_back(HistoryAndBookmarkRow::CREATED);
+  projections.push_back(HistoryAndBookmarkRow::LAST_VISIT_TIME);
+  projections.push_back(HistoryAndBookmarkRow::VISIT_COUNT);
+  projections.push_back(HistoryAndBookmarkRow::FAVICON);
+  projections.push_back(HistoryAndBookmarkRow::BOOKMARK);
+
+  scoped_ptr<AndroidStatement> statement1(backend->QueryHistoryAndBookmarks(
+      projections, std::string(), std::vector<string16>(),
+      std::string("url ASC")));
+  ASSERT_FALSE(statement1->statement()->Step());
+}
+
+TEST_F(AndroidProviderBackendTest, UpdateFaviconWithoutThumbnail) {
+  HistoryAndBookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_created(Time::Now() - TimeDelta::FromDays(20));
+  row1.set_visit_count(10);
+  row1.set_is_bookmark(true);
+  row1.set_title(UTF8ToUTF16("cnn"));
+
+  {
+    HistoryDatabase history_db;
+    ThumbnailDatabase thumbnail_db;
+    ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name_));
+    ASSERT_EQ(sql::INIT_OK, thumbnail_db.Init(thumbnail_db_name_, NULL,
+                                               &history_db));
+    scoped_ptr<AndroidProviderBackend> backend(
+        new AndroidProviderBackend(android_cache_db_name_, &history_db,
+            &thumbnail_db, bookmark_model_, &delegate_));
+
+    AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
+    ASSERT_TRUE(id1);
+  }
+
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_, NULL,
+                                 bookmark_model_, &delegate_));
+
+  int update_count;
+  std::vector<string16> update_args;
+  // Update the last visit time to a value greater than current one.
+  HistoryAndBookmarkRow update_row1;
+
+  // Set visit count.
+  update_row1.set_visit_count(5);
+  // Set favicon.
+  std::vector<unsigned char> data;
+  data.push_back('1');
+  update_row1.set_favicon(base::RefCountedBytes::TakeVector(&data));
+  update_args.push_back(UTF8ToUTF16(row1.raw_url()));
+  delegate_.ResetDetails();
+  ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
+                                                 update_args, &update_count));
+  // Verify notifications.
+  EXPECT_FALSE(delegate_.deleted_details());
+  ASSERT_TRUE(delegate_.modified_details());
+  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
+  // No favicon will be updated as thumbnail database is missing.
+  EXPECT_FALSE(delegate_.favicon_details());
+}
+
 }  // namespace history

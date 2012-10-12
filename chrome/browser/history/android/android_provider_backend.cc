@@ -236,7 +236,8 @@ AndroidProviderBackend::ScopedTransaction::ScopedTransaction(
       thumbnail_db_(thumbnail_db),
       committed_(false),
       history_transaction_nesting_(history_db_->transaction_nesting()),
-      thumbnail_transaction_nesting_(thumbnail_db_->transaction_nesting()) {
+      thumbnail_transaction_nesting_(
+          thumbnail_db_ ? thumbnail_db_->transaction_nesting() : 0) {
   // Commit all existing transactions since the AndroidProviderBackend's
   // transaction is very like to be rolled back when compared with the others.
   // The existing transactions have been scheduled to commit by
@@ -246,37 +247,42 @@ AndroidProviderBackend::ScopedTransaction::ScopedTransaction(
   int count = history_transaction_nesting_;
   while (count--)
     history_db_->CommitTransaction();
-
-  count = thumbnail_transaction_nesting_;
-  while (count--)
-    thumbnail_db_->CommitTransaction();
-
   history_db_->BeginTransaction();
-  thumbnail_db_->BeginTransaction();
+
+  if (thumbnail_db_) {
+    count = thumbnail_transaction_nesting_;
+    while (count--)
+      thumbnail_db_->CommitTransaction();
+    thumbnail_db_->BeginTransaction();
+  }
 }
 
 AndroidProviderBackend::ScopedTransaction::~ScopedTransaction() {
   if (!committed_) {
     history_db_->RollbackTransaction();
-    thumbnail_db_->RollbackTransaction();
+    if (thumbnail_db_)
+      thumbnail_db_->RollbackTransaction();
   }
   // There is no transaction now.
   DCHECK_EQ(0, history_db_->transaction_nesting());
-  DCHECK_EQ(0, thumbnail_db_->transaction_nesting());
+  DCHECK(!thumbnail_db_ || 0 == thumbnail_db_->transaction_nesting());
 
   int count = history_transaction_nesting_;
   while (count--)
     history_db_->BeginTransaction();
 
-  count = thumbnail_transaction_nesting_;
-  while (count--)
-    thumbnail_db_->BeginTransaction();
+  if (thumbnail_db_) {
+    count = thumbnail_transaction_nesting_;
+    while (count--)
+      thumbnail_db_->BeginTransaction();
+  }
 }
 
 void AndroidProviderBackend::ScopedTransaction::Commit() {
   DCHECK(!committed_);
   history_db_->CommitTransaction();
-  thumbnail_db_->CommitTransaction();
+  if (thumbnail_db_)
+    thumbnail_db_->CommitTransaction();
   committed_ = true;
 }
 
@@ -340,7 +346,8 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
         return false;
       modified->changed_urls.push_back(url_row);
     }
-    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON))
+    if (thumbnail_db_ &&
+        row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON))
       favicon->urls.insert(i->url);
   }
 
@@ -384,8 +391,9 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
   modified->changed_urls.push_back(url_row);
 
   scoped_ptr<FaviconChangeDetails> favicon;
+  // No favicon should be changed if the thumbnail_db_ is not available.
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON) &&
-      row.favicon_valid()) {
+      row.favicon_valid() && thumbnail_db_) {
     favicon.reset(new FaviconChangeDetails);
     if (!favicon.get())
       return false;
@@ -656,14 +664,16 @@ bool AndroidProviderBackend::Init() {
   urls_handler_.reset(new UrlsSQLHandler(history_db_));
   visit_handler_.reset(new VisitSQLHandler(history_db_));
   android_urls_handler_.reset(new AndroidURLsSQLHandler(history_db_));
-  favicon_handler_.reset(new FaviconSQLHandler(thumbnail_db_));
+  if (thumbnail_db_)
+    favicon_handler_.reset(new FaviconSQLHandler(thumbnail_db_));
   bookmark_model_handler_.reset(new BookmarkModelSQLHandler(history_db_));
   // The urls_handler must be pushed first, because the subsequent handlers
   // depend on its output.
   sql_handlers_.push_back(urls_handler_.get());
   sql_handlers_.push_back(visit_handler_.get());
   sql_handlers_.push_back(android_urls_handler_.get());
-  sql_handlers_.push_back(favicon_handler_.get());
+  if (favicon_handler_.get())
+    sql_handlers_.push_back(favicon_handler_.get());
   sql_handlers_.push_back(bookmark_model_handler_.get());
 
   if (!history_db_->CreateAndroidURLsTable())
@@ -792,6 +802,11 @@ bool AndroidProviderBackend::UpdateBookmarks() {
 
 bool AndroidProviderBackend::UpdateFavicon() {
   ThumbnailDatabase::IconMappingEnumerator enumerator;
+
+  // We want the AndroidProviderBackend run without thumbnail_db_
+  if (!thumbnail_db_)
+    return true;
+
   if (!thumbnail_db_->InitIconMappingEnumerator(FAVICON, &enumerator))
     return false;
 
@@ -970,7 +985,8 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   FaviconID favicon_id = statement->statement()->ColumnInt64(4);
   if (favicon_id) {
     std::vector<FaviconBitmap> favicon_bitmaps;
-    if (!thumbnail_db_->GetFaviconBitmaps(favicon_id, &favicon_bitmaps))
+    if (!thumbnail_db_ ||
+        !thumbnail_db_->GetFaviconBitmaps(favicon_id, &favicon_bitmaps))
       return false;
    scoped_refptr<base::RefCountedMemory> bitmap_data =
        favicon_bitmaps[0].bitmap_data;
@@ -990,7 +1006,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   if (!visit_handler_->Delete(ids))
     return false;
 
-  if (!favicon_handler_->Delete(ids))
+  if (favicon_handler_ && !favicon_handler_->Delete(ids))
     return false;
 
   if (!bookmark_model_handler_->Delete(ids))
@@ -1025,7 +1041,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   if (!android_urls_handler_->Update(new_row, ids))
     return false;
 
-  if (!favicon_handler_->Insert(&new_row))
+  if (favicon_handler_ && !favicon_handler_->Insert(&new_row))
     return false;
 
   if (!bookmark_model_handler_->Insert(&new_row))
@@ -1094,7 +1110,8 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
     if (!history_db_->GetURLRow(i->url_id, &url_row))
       return false;
     deleted_details->rows.push_back(url_row);
-    if (thumbnail_db_->GetIconMappingsForPageURL(url_row.url(), NULL))
+    if (thumbnail_db_ &&
+        thumbnail_db_->GetIconMappingsForPageURL(url_row.url(), NULL))
       favicon->urls.insert(url_row.url());
   }
 
