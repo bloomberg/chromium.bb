@@ -87,6 +87,7 @@ class SyncEncryptionHandlerImpl
 
   bool MigratedToKeystore();
   base::Time migration_time() const;
+  base::Time custom_passphrase_time() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
@@ -256,6 +257,10 @@ class SyncEncryptionHandlerImpl
   // Will not perform re-encryption.
   void EnableEncryptEverythingImpl(syncable::BaseTransaction* const trans);
 
+  // If an explicit passphrase is in use, returns the time at which it was set
+  // (if known). Else return base::Time().
+  base::Time GetExplicitPassphraseTime() const;
+
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
@@ -288,6 +293,11 @@ class SyncEncryptionHandlerImpl
 
   // The time the nigori was migrated to support keystore encryption.
   base::Time migration_time_;
+
+  // The time the custom passphrase was set for this account. Not valid
+  // if there is no custom passphrase or the custom passphrase was set
+  // before support for this field was added.
+  base::Time custom_passphrase_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEncryptionHandlerImpl);
 };

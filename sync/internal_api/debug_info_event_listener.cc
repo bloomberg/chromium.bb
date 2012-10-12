@@ -101,7 +101,9 @@ void DebugInfoEventListener::OnCryptographerStateChanged(
   cryptographer_ready_ = cryptographer->is_ready();
 }
 
-void DebugInfoEventListener::OnPassphraseTypeChanged(PassphraseType type) {
+void DebugInfoEventListener::OnPassphraseTypeChanged(
+    PassphraseType type,
+    base::Time explicit_passphrase_time) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_TYPE_CHANGED);
 }
 

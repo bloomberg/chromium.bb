@@ -257,8 +257,11 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
         if (is_explicit) {
           DVLOG(1) << "Setting explicit passphrase for encryption.";
           passphrase_type_ = CUSTOM_PASSPHRASE;
+          custom_passphrase_time_ = base::Time::Now();
           FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                            OnPassphraseTypeChanged(passphrase_type_));
+                            OnPassphraseTypeChanged(
+                                passphrase_type_,
+                                GetExplicitPassphraseTime()));
         } else {
           DVLOG(1) << "Setting implicit passphrase for encryption.";
         }
@@ -597,6 +600,10 @@ base::Time SyncEncryptionHandlerImpl::migration_time() const {
   return migration_time_;
 }
 
+base::Time SyncEncryptionHandlerImpl::custom_passphrase_time() const {
+  return custom_passphrase_time_;
+}
+
 // This function iterates over all encrypted types.  There are many scenarios in
 // which data for some or all types is not currently available.  In that case,
 // the lookup of the root node will fail and we will skip encryption for that
@@ -675,6 +682,11 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   DVLOG(1) << "Applying nigori node update.";
   bool nigori_types_need_update = !UpdateEncryptedTypesFromNigori(nigori,
                                                                   trans);
+
+  if (nigori.custom_passphrase_time() != 0) {
+    custom_passphrase_time_ =
+        ProtoTimeToTime(nigori.custom_passphrase_time());
+  }
   bool is_nigori_migrated = IsNigoriMigratedToKeystore(nigori);
   if (is_nigori_migrated) {
     DCHECK(nigori.has_keystore_migration_time());
@@ -700,7 +712,9 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
                << PassphraseTypeToString(nigori_passphrase_type);
       passphrase_type_ = nigori_passphrase_type;
       FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                        OnPassphraseTypeChanged(passphrase_type_));
+                            OnPassphraseTypeChanged(
+                                passphrase_type_,
+                                GetExplicitPassphraseTime()));
     }
     if (passphrase_type_ == KEYSTORE_PASSPHRASE && encrypt_everything_) {
       // This is the case where another client that didn't support keystore
@@ -713,7 +727,9 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
                << "due to full encryption.";
       passphrase_type_ = FROZEN_IMPLICIT_PASSPHRASE;
       FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                        OnPassphraseTypeChanged(passphrase_type_));
+                            OnPassphraseTypeChanged(
+                                passphrase_type_,
+                                GetExplicitPassphraseTime()));
     }
   } else {
     // It's possible that while we're waiting for migration a client that does
@@ -722,7 +738,9 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
         passphrase_type_ != CUSTOM_PASSPHRASE) {
       passphrase_type_ = CUSTOM_PASSPHRASE;
       FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                        OnPassphraseTypeChanged(passphrase_type_));
+                            OnPassphraseTypeChanged(
+                                passphrase_type_,
+                                GetExplicitPassphraseTime()));
     }
   }
 
@@ -859,6 +877,10 @@ void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
         UnlockVault(trans->GetWrappedTrans()).encrypted_types,
         encrypt_everything_,
         &nigori);
+    if (!custom_passphrase_time_.is_null()) {
+      nigori.set_custom_passphrase_time(
+          TimeToProtoTime(custom_passphrase_time_));
+    }
 
     // If nothing has changed, this is a no-op.
     nigori_node.SetNigoriSpecifics(nigori);
@@ -936,8 +958,11 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
     DVLOG(1) << "Setting custom passphrase.";
     cryptographer->GetBootstrapToken(&bootstrap_token);
     passphrase_type_ = CUSTOM_PASSPHRASE;
+    custom_passphrase_time_ = base::Time::Now();
     FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                      OnPassphraseTypeChanged(passphrase_type_));
+                            OnPassphraseTypeChanged(
+                                passphrase_type_,
+                                GetExplicitPassphraseTime()));
   } else {
     NOTREACHED() << "Failed to add key to cryptographer.";
     return;
@@ -1043,6 +1068,11 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
     } else {
       nigori.set_keybag_is_frozen(
           IsExplicitPassphrase(passphrase_type_));
+    }
+    // If we set a new custom passphrase, store the timestamp.
+    if (!custom_passphrase_time_.is_null()) {
+      nigori.set_custom_passphrase_time(
+          TimeToProtoTime(custom_passphrase_time_));
     }
     nigori_node->SetNigoriSpecifics(nigori);
   }
@@ -1194,6 +1224,11 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     migration_time_ = base::Time::Now();
   migrated_nigori.set_keystore_migration_time(TimeToProtoTime(migration_time_));
 
+  if (!custom_passphrase_time_.is_null()) {
+    migrated_nigori.set_custom_passphrase_time(
+        TimeToProtoTime(custom_passphrase_time_));
+  }
+
   DVLOG(1) << "Completing nigori migration to keystore support.";
   nigori_node->SetNigoriSpecifics(migrated_nigori);
 
@@ -1204,7 +1239,9 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
   if (passphrase_type_ != new_passphrase_type) {
     passphrase_type_ = new_passphrase_type;
     FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                      OnPassphraseTypeChanged(passphrase_type_));
+                            OnPassphraseTypeChanged(
+                                passphrase_type_,
+                                GetExplicitPassphraseTime()));
   }
 
   if (new_encrypt_everything && !encrypt_everything_) {
@@ -1307,6 +1344,14 @@ bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
     }
   }
   return false;
+}
+
+base::Time SyncEncryptionHandlerImpl::GetExplicitPassphraseTime() const {
+  if (passphrase_type_ == FROZEN_IMPLICIT_PASSPHRASE)
+    return migration_time();
+  else if (passphrase_type_ == CUSTOM_PASSPHRASE)
+    return custom_passphrase_time();
+  return base::Time();
 }
 
 }  // namespace browser_sync

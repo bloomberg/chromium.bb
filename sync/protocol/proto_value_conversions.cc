@@ -318,6 +318,7 @@ DictionaryValue* NigoriSpecificsToValue(
   SET_ENUM(passphrase_type, PassphraseTypeString);
   SET(keystore_decryptor_token, EncryptedDataToValue);
   SET_INT64(keystore_migration_time);
+  SET_INT64(custom_passphrase_time);
   return value;
 }
 

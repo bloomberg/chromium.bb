@@ -119,7 +119,8 @@ class SyncBackendHost::Core
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnCryptographerStateChanged(
       syncer::Cryptographer* cryptographer) OVERRIDE;
-  virtual void OnPassphraseTypeChanged(syncer::PassphraseType type) OVERRIDE;
+  virtual void OnPassphraseTypeChanged(syncer::PassphraseType type,
+                                       base::Time passphrase_time) OVERRIDE;
 
   // syncer::InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
@@ -507,7 +508,8 @@ void SyncBackendHost::SetEncryptionPassphrase(const std::string& passphrase,
 
   // SetEncryptionPassphrase should never be called if we are currently
   // encrypted with an explicit passphrase.
-  DCHECK(!IsUsingExplicitPassphrase());
+  DCHECK(cached_passphrase_type_ == syncer::KEYSTORE_PASSPHRASE ||
+         cached_passphrase_type_ == syncer::IMPLICIT_PASSPHRASE);
 
   // Post an encryption task on the syncer thread.
   sync_thread_.message_loop()->PostTask(FROM_HERE,
@@ -765,16 +767,12 @@ bool SyncBackendHost::IsNigoriEnabled() const {
   return registrar_.get() && registrar_->IsNigoriEnabled();
 }
 
-bool SyncBackendHost::IsUsingExplicitPassphrase() {
-  // This should only be called once the nigori node has been downloaded, as
-  // otherwise we have no idea what kind of passphrase we are using. This will
-  // NOTREACH in sync_manager and return false if we fail to load the nigori
-  // node.
-  // TODO(zea): expose whether the custom passphrase is a frozen implicit
-  // passphrase or not to provide better messaging.
-  return IsNigoriEnabled() && (
-      cached_passphrase_type_ == syncer::CUSTOM_PASSPHRASE ||
-      cached_passphrase_type_ == syncer::FROZEN_IMPLICIT_PASSPHRASE);
+syncer::PassphraseType SyncBackendHost::GetPassphraseType() const {
+  return cached_passphrase_type_;
+}
+
+base::Time SyncBackendHost::GetExplicitPassphraseTime() const {
+  return cached_explicit_passphrase_time_;
 }
 
 bool SyncBackendHost::IsCryptographerReady(
@@ -1023,11 +1021,11 @@ void SyncBackendHost::Core::OnCryptographerStateChanged(
 }
 
 void SyncBackendHost::Core::OnPassphraseTypeChanged(
-    syncer::PassphraseType type) {
+    syncer::PassphraseType type, base::Time passphrase_time) {
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::HandlePassphraseTypeChangedOnFrontendLoop,
-      type);
+      type, passphrase_time);
 }
 
 void SyncBackendHost::Core::OnActionableError(
@@ -1518,11 +1516,13 @@ void SyncBackendHost::NotifyEncryptionComplete() {
 }
 
 void SyncBackendHost::HandlePassphraseTypeChangedOnFrontendLoop(
-    syncer::PassphraseType type) {
+    syncer::PassphraseType type,
+    base::Time explicit_passphrase_time) {
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   DVLOG(1) << "Passphrase type changed to "
            << syncer::PassphraseTypeToString(type);
   cached_passphrase_type_ = type;
+  cached_explicit_passphrase_time_ = explicit_passphrase_time;
 }
 
 void SyncBackendHost::HandleStopSyncingPermanentlyOnFrontendLoop() {

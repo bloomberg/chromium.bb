@@ -557,7 +557,9 @@ void SyncManagerImpl::OnCryptographerStateChanged(
       sync_encryption_handler_->migration_time());
 }
 
-void SyncManagerImpl::OnPassphraseTypeChanged(PassphraseType type) {
+void SyncManagerImpl::OnPassphraseTypeChanged(
+    PassphraseType type,
+    base::Time explicit_passphrase_time) {
   allstatus_.SetPassphraseType(type);
   allstatus_.SetKeystoreMigrationTime(
       sync_encryption_handler_->migration_time());

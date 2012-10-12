@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/time.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace sync_pb {
@@ -111,8 +112,12 @@ class SyncEncryptionHandler {
     // Used primarily for debugging.
     virtual void OnCryptographerStateChanged(Cryptographer* cryptographer) = 0;
 
-    // The passprhase state has changed.
-    virtual void OnPassphraseTypeChanged(PassphraseType type) = 0;
+    // The passphrase type has changed. |type| is the new type,
+    // |passphrase_time| is the time the passphrase was set (unset if |type|
+    // is KEYSTORE_PASSPHRASE or the passphrase was set before we started
+    // recording the time).
+    virtual void OnPassphraseTypeChanged(PassphraseType type,
+                                         base::Time passphrase_time) = 0;
 
    protected:
     virtual ~Observer();

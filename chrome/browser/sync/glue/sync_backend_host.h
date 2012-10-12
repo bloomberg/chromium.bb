@@ -267,8 +267,13 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Whether or not we are syncing encryption keys.
   bool IsNigoriEnabled() const;
 
-  // Whether or not the Nigori node is encrypted using an explicit passphrase.
-  bool IsUsingExplicitPassphrase();
+  // Returns the type of passphrase being used to encrypt data. See
+  // sync_encryption_handler.h.
+  syncer::PassphraseType GetPassphraseType() const;
+
+  // If an explicit passphrase is in use, returns the time at which that
+  // passphrase was set (if available).
+  base::Time GetExplicitPassphraseTime() const;
 
   // True if the cryptographer has any keys available to attempt decryption.
   // Could mean we've downloaded and loaded Nigori objects, or we bootstrapped
@@ -450,8 +455,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Invoked when the passphrase state has changed. Caches the passphrase state
   // for later use on the UI thread.
+  // If |type| is FROZEN_IMPLICIT_PASSPHRASE or CUSTOM_PASSPHRASE,
+  // |explicit_passphrase_time| is the time at which that passphrase was set
+  // (if available).
   void HandlePassphraseTypeChangedOnFrontendLoop(
-      syncer::PassphraseType state);
+      syncer::PassphraseType type,
+      base::Time explicit_passphrase_time);
 
   void HandleStopSyncingPermanentlyOnFrontendLoop();
 
@@ -525,6 +534,10 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // manually changes their passphrase state. Cached so we can synchronously
   // check it from the UI thread.
   syncer::PassphraseType cached_passphrase_type_;
+
+  // If an explicit passphrase is in use, the time at which the passphrase was
+  // first set (if available).
+  base::Time cached_explicit_passphrase_time_;
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   syncer::sessions::SyncSessionSnapshot last_snapshot_;

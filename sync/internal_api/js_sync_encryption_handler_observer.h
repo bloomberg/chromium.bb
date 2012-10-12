@@ -44,7 +44,9 @@ class JsSyncEncryptionHandlerObserver : public SyncEncryptionHandler::Observer {
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnCryptographerStateChanged(
       Cryptographer* cryptographer) OVERRIDE;
-  virtual void OnPassphraseTypeChanged(PassphraseType type) OVERRIDE;
+  virtual void OnPassphraseTypeChanged(
+      PassphraseType type,
+      base::Time explicit_passphrase_time) OVERRIDE;
 
  private:
   void HandleJsEvent(const tracked_objects::Location& from_here,

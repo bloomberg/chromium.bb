@@ -120,5 +120,10 @@ message NigoriSpecifics {
   // The time (in epoch milliseconds) at which the keystore migration was
   // performed.
   optional int64 keystore_migration_time = 32;
+
+  // The time (in epoch milliseconds) at which a custom passphrase was set.
+  // Note: this field may not be set if the custom passphrase was applied before
+  // this field was introduced.
+  optional int64 custom_passphrase_time = 33;
 }
 

@@ -697,7 +697,8 @@ class SyncEncryptionHandlerObserverMock
                void(ModelTypeSet, bool));  // NOLINT
   MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
   MOCK_METHOD1(OnCryptographerStateChanged, void(Cryptographer*));  // NOLINT
-  MOCK_METHOD1(OnPassphraseTypeChanged, void(PassphraseType));  // NOLINT
+  MOCK_METHOD2(OnPassphraseTypeChanged, void(PassphraseType,
+                                             base::Time));  // NOLINT
 };
 
 }  // namespace
@@ -1501,7 +1502,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-              OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
+              OnPassphraseTypeChanged(CUSTOM_PASSPHRASE, _));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase", true);
   EXPECT_TRUE(EncryptEverythingEnabledForTest());
@@ -1625,7 +1626,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
+      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE, _));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
@@ -1811,7 +1812,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   }
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-              OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
+              OnPassphraseTypeChanged(CUSTOM_PASSPHRASE, _));
   EXPECT_CALL(encryption_observer_, OnPassphraseRequired(_, _));
   EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
@@ -1896,7 +1897,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
+      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE, _));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
@@ -2123,7 +2124,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
+      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE, _));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
@@ -2322,7 +2323,7 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
+      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE, _));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);

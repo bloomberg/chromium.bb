@@ -143,13 +143,13 @@ std::string GetVersionString() {
       version_modifier;
 }
 
-std::string GetKeystoreMigrationTimeStr(base::Time migration_time) {
-  std::string migration_time_str;
-  if (migration_time.is_null())
-    migration_time_str = "Not Migrated";
+std::string GetTimeStr(base::Time time, const std::string& default_msg) {
+  std::string time_str;
+  if (time.is_null())
+    time_str = default_msg;
   else
-    migration_time_str = syncer::GetTimeDebugString(migration_time);
-  return migration_time_str;
+    time_str = syncer::GetTimeDebugString(time);
+  return time_str;
 }
 
 }  // namespace
@@ -209,6 +209,8 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
                                          "Keystore Migration Time");
   StringSyncStat passphrase_type(section_encryption,
                                  "Passphrase Type");
+  StringSyncStat passphrase_time(section_encryption,
+                                 "Passphrase Time");
 
   ListValue* section_last_session = AddSection(
       stats_list, "Status from Last Completed Session");
@@ -311,6 +313,8 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
     is_using_explicit_passphrase.SetValue(
         service->IsUsingSecondaryPassphrase());
     is_passphrase_required.SetValue(service->IsPassphraseRequired());
+    passphrase_time.SetValue(
+        GetTimeStr(service->GetExplicitPassphraseTime(), "No Passphrase Time"));
   }
   if (is_status_valid) {
     is_cryptographer_ready.SetValue(full_status.cryptographer_ready);
@@ -319,7 +323,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
         ModelTypeSetToString(full_status.encrypted_types));
     has_keystore_key.SetValue(full_status.has_keystore_key);
     keystore_migration_time.SetValue(
-        GetKeystoreMigrationTimeStr(full_status.keystore_migration_time));
+        GetTimeStr(full_status.keystore_migration_time, "Not Migrated"));
     passphrase_type.SetValue(
         PassphraseTypeToString(full_status.passphrase_type));
   }

@@ -479,9 +479,17 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual bool IsCryptographerReady(
       const syncer::BaseTransaction* trans) const;
 
-  // Returns true if a secondary passphrase is being used. It is not legal
-  // to call this method before the backend is initialized.
+  // Returns true if a secondary (explicit) passphrase is being used. It is not
+  // legal to call this method before the backend is initialized.
   virtual bool IsUsingSecondaryPassphrase() const;
+
+  // Returns the actual passphrase type being used for encryption.
+  virtual syncer::PassphraseType GetPassphraseType() const;
+
+  // Returns the time the current explicit passphrase (if any), was set.
+  // If no secondary passphrase is in use, or no time is available, returns an
+  // unset base::Time.
+  virtual base::Time GetExplicitPassphraseTime() const;
 
   // Note about setting passphrases: There are different scenarios under which
   // we might want to apply a passphrase. It could be for first-time encryption,

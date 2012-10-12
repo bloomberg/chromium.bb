@@ -16,6 +16,7 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/util/cryptographer.h"
+#include "sync/util/time.h"
 
 namespace syncer {
 
@@ -98,13 +99,16 @@ void JsSyncEncryptionHandlerObserver::OnCryptographerStateChanged(
 }
 
 void JsSyncEncryptionHandlerObserver::OnPassphraseTypeChanged(
-    PassphraseType type) {
+    PassphraseType type,
+    base::Time explicit_passphrase_time) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.SetString("passphraseType",
                     PassphraseTypeToString(type));
+  details.SetInteger("explicitPassphraseTime",
+                     TimeToProtoTime(explicit_passphrase_time));
   HandleJsEvent(FROM_HERE,
                 "onPassphraseTypeChanged",
                 JsEventDetails(&details));
