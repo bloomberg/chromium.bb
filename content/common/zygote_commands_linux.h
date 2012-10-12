@@ -12,7 +12,7 @@ namespace content {
 static const char kZygoteHelloMessage[] = "ZYGOTE_OK";
 
 // Maximum allowable length for messages sent to the zygote.
-const size_t kZygoteMaxMessageLength = 2048;
+const size_t kZygoteMaxMessageLength = 8192;
 
 // File descriptors initialized by the Zygote Host
 const int kZygoteSocketPairFd = 3;
