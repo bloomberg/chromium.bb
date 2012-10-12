@@ -347,7 +347,8 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
   v8::Local<v8::Context> context =
       instance_->container()->element().document().frame()->
           mainWorldScriptContext();
-  context->Enter();
+  v8::Context::Scope context_scope(context);
+
   v8::Local<v8::Value> v8_val;
   if (!PPVarToV8Value(message_data, &v8_val)) {
     NOTREACHED();
@@ -356,7 +357,6 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
 
   WebSerializedScriptValue serialized_val =
       WebSerializedScriptValue::serialize(v8_val);
-  context->Exit();
 
   MessageLoop::current()->PostTask(
       FROM_HERE,
