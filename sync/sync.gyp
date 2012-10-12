@@ -638,6 +638,15 @@
           'util/protobuf_unittest.cc',
           'internal_api/public/util/weak_handle_unittest.cc',
         ],
+        'conditions': [
+          ['OS == "ios" and coverage != 0', {
+            # These sources can't be built with coverage due to a toolchain
+            # bug: http://openradar.appspot.com/radar?id=1499403
+            'sources!': [
+              'engine/syncer_unittest.cc',
+            ],
+          }],
+        ],
       },
     },
 
