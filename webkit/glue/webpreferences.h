@@ -120,6 +120,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
 #if defined(OS_ANDROID)
   float font_scale_factor;
   bool force_enable_zoom;
+  bool user_gesture_required_for_media_playback;
 #endif
   bool password_echo_enabled;
   bool should_print_backgrounds;

@@ -102,6 +102,7 @@ WebPreferences::WebPreferences()
 #if defined(OS_ANDROID)
       font_scale_factor(1.0f),
       force_enable_zoom(false),
+      user_gesture_required_for_media_playback(true),
 #endif
       password_echo_enabled(false),
       should_print_backgrounds(false),
@@ -415,6 +416,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setTextAutosizingFontScaleFactor(font_scale_factor);
   web_view->setIgnoreViewportTagMaximumScale(force_enable_zoom);
   settings->setAutoZoomFocusedNodeToLegibleScale(true);
+  settings->setMediaPlaybackRequiresUserGesture(
+      user_gesture_required_for_media_playback);
 #endif
   settings->setPasswordEchoEnabled(password_echo_enabled);
   settings->setShouldPrintBackgrounds(should_print_backgrounds);
