@@ -344,7 +344,7 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
   // If we get here, the focused window is not the taskbar, it's context menu,
   // or the app list, so close the app list.
   CloseAppList();
-#endif !defined(USE_AURA)
+#endif
 }
 
 }  // namespace
