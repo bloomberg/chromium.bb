@@ -8,30 +8,34 @@
     'build/common.gypi',
   ],
   ######################################################################
+  'targets': [
+    {
+      'target_name': 'hello_world_nexe',
+      'type': 'none',
+      'dependencies': [
+        'tools.gyp:prep_toolchain',
+        'src/untrusted/nacl/nacl.gyp:nacl_lib',
+        'src/untrusted/irt/irt.gyp:irt_core_nexe'
+      ],
+      'variables': {
+        'nexe_target': 'hello_world',
+        'build_glibc': 0,
+        'build_newlib': 1,
+        'build_pnacl_newlib': 1,
+        'extra_args': [
+          '--strip-debug',
+        ],
+      },
+      'sources': [
+        'tests/hello_world/hello_world.c',
+      ],
+    },
+  ],
   'conditions': [
+    # Only build the tests on arm, but don't try to run them
     ['target_arch!="arm"', {
       'targets': [
-        {
-          'target_name': 'hello_world_nexe',
-          'type': 'none',
-          'dependencies': [
-            'tools.gyp:prep_toolchain',
-            'src/untrusted/nacl/nacl.gyp:nacl_lib',
-            'src/untrusted/irt/irt.gyp:irt_core_nexe'
-          ],
-          'variables': {
-            'nexe_target': 'hello_world',
-            'build_glibc': 0,
-            'build_newlib': 1,
-            'build_pnacl_newlib': 1,
-            'extra_args': [
-              '--strip-debug',
-            ],
-          },
-          'sources': [
-            'tests/hello_world/hello_world.c',
-          ],
-        },
+
         {
           'target_name': 'test_hello_world_nexe',
           'type': 'none',

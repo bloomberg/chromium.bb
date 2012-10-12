@@ -81,14 +81,10 @@
          }, { # target_arch == "arm"
            'sources': ['<@(irt_sources)',
                        'aeabi_read_tp.S'],
-           'cflags': ['--pnacl-allow-translate',
-                      '-arch', 'arm'],
            'asflags': ['-arch', 'arm'],
            'link_flags': [
              '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
              '-Wl,-Ttext=<(NACL_IRT_TEXT_START)',
-             '--pnacl-allow-native',
-             '-arch', 'arm',
              # TODO(olonho): rethink
              '-L<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
            ],

@@ -25,16 +25,11 @@
         '../src/untrusted/nacl/nacl.gyp:*',
         '../src/untrusted/nosys/nosys.gyp:*',
         '../src/untrusted/pthread/pthread.gyp:*',
+        '../tests.gyp:*',
         '../tests/sel_main_chrome/sel_main_chrome.gyp:*',
         'nacl_core_sdk.gyp:*',
       ],
       'conditions': [
-        # No tests on ARM yet.
-        ['target_arch!="arm"', {
-          'dependencies': [
-            '../tests.gyp:*',
-          ],
-        }],
         ['target_arch=="arm"', {
           'dependencies': [
             '../src/trusted/validator_arm/validator_arm.gyp:*',
