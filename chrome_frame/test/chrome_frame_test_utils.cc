@@ -19,6 +19,8 @@
 #include "base/path_service.h"
 #include "base/process.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -420,19 +422,27 @@ std::wstring GetExeVersion(const std::wstring& exe_path) {
 }
 
 IEVersion GetInstalledIEVersion() {
-  std::wstring path = chrome_frame_test::GetExecutableAppPath(kIEImageName);
-  std::wstring version = GetExeVersion(path);
+  std::wstring path(chrome_frame_test::GetExecutableAppPath(kIEImageName));
+  std::wstring version(GetExeVersion(path));
+  size_t first_dot = version.find(L'.');
+  int major_version = 0;
+  if (!base::StringToInt(base::StringPiece16(
+          version.data(),
+          first_dot == std::wstring::npos ? version.size() : first_dot),
+                         &major_version)) {
+    return IE_UNSUPPORTED;
+  }
 
-  switch (version[0]) {
-    case '6':
+  switch (major_version) {
+    case 6:
       return IE_6;
-    case '7':
+    case 7:
       return IE_7;
-    case '8':
+    case 8:
       return IE_8;
-    case '9':
+    case 9:
       return IE_9;
-    case '10':
+    case 10:
       return IE_10;
     default:
       break;
