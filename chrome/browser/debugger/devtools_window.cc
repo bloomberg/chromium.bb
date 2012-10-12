@@ -783,6 +783,16 @@ void DevToolsWindow::RunFileChooser(WebContents* web_contents,
   FileSelectHelper::RunFileChooser(web_contents, params);
 }
 
+void DevToolsWindow::WebContentsFocused(WebContents* contents) {
+  Browser* inspected_browser = NULL;
+  int inspected_tab_index = -1;
+
+  if (docked_ && FindInspectedBrowserAndTabIndex(&inspected_browser,
+                                                 &inspected_tab_index)) {
+    inspected_browser->window()->WebContentsFocused(contents);
+  }
+}
+
 void DevToolsWindow::UpdateBrowserToolbar() {
   if (!inspected_tab_)
     return;

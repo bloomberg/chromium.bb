@@ -133,6 +133,7 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void RunFileChooser(
       content::WebContents* web_contents,
       const content::FileChooserParams& params) OVERRIDE;
+  virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
 
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
