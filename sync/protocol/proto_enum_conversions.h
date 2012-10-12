@@ -39,7 +39,7 @@ const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type);
 const char* GetActionString(sync_pb::SyncEnums::Action action);
 
 const char* GetDeviceTypeString(
-    sync_pb::SessionHeader::DeviceType device_type);
+    sync_pb::SyncEnums::DeviceType device_type);
 
 const char* GetFaviconTypeString(
     sync_pb::SessionTab::FaviconType favicon_type);

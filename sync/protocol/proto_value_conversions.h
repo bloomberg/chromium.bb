@@ -21,6 +21,7 @@ class AutofillSpecifics;
 class BookmarkSpecifics;
 class ClientToServerMessage;
 class ClientToServerResponse;
+class DeviceInfoSpecifics;
 class DeviceInformation;
 class EncryptedData;
 class EntitySpecifics;
@@ -81,11 +82,6 @@ base::DictionaryValue* TabNavigationToValue(
 base::DictionaryValue* PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
 
-// Sub-protocol of NigoriSpecifics.
-
-base::DictionaryValue* DeviceInformationToValue(
-    const sync_pb::DeviceInformation& device_information);
-
 // Main *SpecificsToValue functions.
 
 base::DictionaryValue* AppNotificationToValue(
@@ -117,6 +113,9 @@ base::DictionaryValue* NigoriSpecificsToValue(
 
 base::DictionaryValue* PasswordSpecificsToValue(
     const sync_pb::PasswordSpecifics& password_specifics);
+
+base::DictionaryValue* DeviceInfoSpecificsToValue(
+    const sync_pb::DeviceInfoSpecifics& device_info_specifics);
 
 base::DictionaryValue* PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);

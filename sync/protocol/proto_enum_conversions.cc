@@ -139,16 +139,16 @@ const char* GetActionString(sync_pb::SyncEnums::Action action) {
 }
 
 const char* GetDeviceTypeString(
-    sync_pb::SessionHeader::DeviceType device_type) {
-  ASSERT_ENUM_BOUNDS(sync_pb::SessionHeader, DeviceType, TYPE_WIN, TYPE_TABLET);
+    sync_pb::SyncEnums::DeviceType device_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, DeviceType, TYPE_WIN, TYPE_TABLET);
   switch (device_type) {
-    ENUM_CASE(sync_pb::SessionHeader, TYPE_WIN);
-    ENUM_CASE(sync_pb::SessionHeader, TYPE_MAC);
-    ENUM_CASE(sync_pb::SessionHeader, TYPE_LINUX);
-    ENUM_CASE(sync_pb::SessionHeader, TYPE_CROS);
-    ENUM_CASE(sync_pb::SessionHeader, TYPE_OTHER);
-    ENUM_CASE(sync_pb::SessionHeader, TYPE_PHONE);
-    ENUM_CASE(sync_pb::SessionHeader, TYPE_TABLET);
+    ENUM_CASE(sync_pb::SyncEnums, TYPE_WIN);
+    ENUM_CASE(sync_pb::SyncEnums, TYPE_MAC);
+    ENUM_CASE(sync_pb::SyncEnums, TYPE_LINUX);
+    ENUM_CASE(sync_pb::SyncEnums, TYPE_CROS);
+    ENUM_CASE(sync_pb::SyncEnums, TYPE_OTHER);
+    ENUM_CASE(sync_pb::SyncEnums, TYPE_PHONE);
+    ENUM_CASE(sync_pb::SyncEnums, TYPE_TABLET);
   }
   NOTREACHED();
   return "";

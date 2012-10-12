@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
@@ -69,32 +70,6 @@ static const int kMaxSyncNavigationCount = 6;
 // Default number of days without activity after which a session is considered
 // stale and becomes a candidate for garbage collection.
 static const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
-
-#if defined(OS_ANDROID)
-bool IsTabletUI() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUI);
-}
-#endif
-
-sync_pb::SessionHeader::DeviceType GetLocalDeviceType() {
-  // TODO(yfriedman): Refactor/combine with "DeviceInformation" code in
-  // sync_manager.cc[1060]
-#if defined(OS_CHROMEOS)
-  return sync_pb::SessionHeader_DeviceType_TYPE_CROS;
-#elif defined(OS_LINUX)
-  return sync_pb::SessionHeader_DeviceType_TYPE_LINUX;
-#elif defined(OS_MACOSX)
-  return sync_pb::SessionHeader_DeviceType_TYPE_MAC;
-#elif defined(OS_WIN)
-  return sync_pb::SessionHeader_DeviceType_TYPE_WIN;
-#elif defined(OS_ANDROID)
-  return IsTabletUI() ?
-      sync_pb::SessionHeader_DeviceType_TYPE_TABLET :
-      sync_pb::SessionHeader_DeviceType_TYPE_PHONE;
-#else
-  return sync_pb::SessionHeader_DeviceType_TYPE_OTHER;
-#endif
-}
 
 }  // namespace
 
@@ -203,7 +178,7 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
       synced_session_tracker_.GetSession(local_tag);
   current_session->modified_time = base::Time::Now();
   header_s->set_client_name(current_session_name_);
-  header_s->set_device_type(GetLocalDeviceType());
+  header_s->set_device_type(DeviceInfo::GetLocalDeviceType());
 
   synced_session_tracker_.ResetSessionTracking(local_tag);
   std::set<SyncedWindowDelegate*> windows =
@@ -661,7 +636,7 @@ syncer::SyncError SessionModelAssociator::AssociateModels() {
       base_specifics.set_session_tag(current_machine_tag_);
       sync_pb::SessionHeader* header_s = base_specifics.mutable_header();
       header_s->set_client_name(current_session_name_);
-      header_s->set_device_type(GetLocalDeviceType());
+      header_s->set_device_type(DeviceInfo::GetLocalDeviceType());
       write_node.SetSessionSpecifics(base_specifics);
 
       local_session_syncid_ = write_node.GetId();
@@ -987,25 +962,25 @@ void SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
   }
   if (header_specifics.has_device_type()) {
     switch (header_specifics.device_type()) {
-      case sync_pb::SessionHeader_DeviceType_TYPE_WIN:
+      case sync_pb::SyncEnums_DeviceType_TYPE_WIN:
         session_header->device_type = SyncedSession::TYPE_WIN;
         break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_MAC:
+      case sync_pb::SyncEnums_DeviceType_TYPE_MAC:
         session_header->device_type = SyncedSession::TYPE_MACOSX;
         break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_LINUX:
+      case sync_pb::SyncEnums_DeviceType_TYPE_LINUX:
         session_header->device_type = SyncedSession::TYPE_LINUX;
         break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_CROS:
+      case sync_pb::SyncEnums_DeviceType_TYPE_CROS:
         session_header->device_type = SyncedSession::TYPE_CHROMEOS;
         break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_PHONE:
+      case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
         session_header->device_type = SyncedSession::TYPE_PHONE;
         break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_TABLET:
+      case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
         session_header->device_type = SyncedSession::TYPE_TABLET;
         break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_OTHER:
+      case sync_pb::SyncEnums_DeviceType_TYPE_OTHER:
         // Intentionally fall-through
       default:
         session_header->device_type = SyncedSession::TYPE_OTHER;

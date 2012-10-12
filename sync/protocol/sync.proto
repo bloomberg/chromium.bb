@@ -19,20 +19,21 @@ import "app_setting_specifics.proto";
 import "app_specifics.proto";
 import "autofill_specifics.proto";
 import "bookmark_specifics.proto";
-import "get_updates_caller_info.proto";
+import "client_commands.proto";
+import "client_debug_info.proto";
+import "device_info_specifics.proto";
+import "encryption.proto";
 import "extension_setting_specifics.proto";
 import "extension_specifics.proto";
+import "get_updates_caller_info.proto";
 import "nigori_specifics.proto";
 import "password_specifics.proto";
 import "preference_specifics.proto";
 import "search_engine_specifics.proto";
 import "session_specifics.proto";
+import "sync_enums.proto";
 import "theme_specifics.proto";
 import "typed_url_specifics.proto";
-import "encryption.proto";
-import "sync_enums.proto";
-import "client_commands.proto";
-import "client_debug_info.proto";
 
 // Used for inspecting how long we spent performing operations in different
 // backends. All times must be in millis.
@@ -97,6 +98,7 @@ message EntitySpecifics {
   optional SearchEngineSpecifics search_engine = 88610;
   optional ExtensionSettingSpecifics extension_setting = 96159;
   optional AppSettingSpecifics app_setting = 103656;
+  optional DeviceInfoSpecifics device_info = 154522;
 }
 
 message SyncEntity {

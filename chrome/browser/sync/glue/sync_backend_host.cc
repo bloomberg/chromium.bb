@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
+#include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -358,44 +359,12 @@ SyncBackendHost::~SyncBackendHost() {
 
 namespace {
 
-// Helper to construct a user agent string (ASCII) suitable for use by
-// the syncapi for any HTTP communication. This string is used by the sync
-// backend for classifying client types when calculating statistics.
-std::string MakeUserAgentForSyncApi() {
-  std::string user_agent;
-  user_agent = "Chrome ";
-#if defined(OS_WIN)
-  user_agent += "WIN ";
-#elif defined(OS_CHROMEOS)
-  user_agent += "CROS ";
-#elif defined(OS_ANDROID)
-  user_agent += "ANDROID ";
-#elif defined(OS_LINUX)
-  user_agent += "LINUX ";
-#elif defined(OS_FREEBSD)
-  user_agent += "FREEBSD ";
-#elif defined(OS_OPENBSD)
-  user_agent += "OPENBSD ";
-#elif defined(OS_MACOSX)
-  user_agent += "MAC ";
-#endif
-  chrome::VersionInfo version_info;
-  if (!version_info.is_valid()) {
-    DLOG(ERROR) << "Unable to create chrome::VersionInfo object";
-    return user_agent;
-  }
-
-  user_agent += version_info.Version();
-  user_agent += " (" + version_info.LastChange() + ")";
-  if (!version_info.IsOfficialBuild())
-    user_agent += "-devel";
-  return user_agent;
-}
-
 scoped_ptr<syncer::HttpPostProviderFactory> MakeHttpBridgeFactory(
     const scoped_refptr<net::URLRequestContextGetter>& getter) {
+  chrome::VersionInfo version_info;
   return scoped_ptr<syncer::HttpPostProviderFactory>(
-      new syncer::HttpBridgeFactory(getter, MakeUserAgentForSyncApi()));
+      new syncer::HttpBridgeFactory(
+          getter, DeviceInfo::MakeUserAgentForSyncApi(version_info)));
 }
 
 }  // namespace

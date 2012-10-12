@@ -100,4 +100,14 @@ message SyncEnums {
                                      // stop syncing.
     UNKNOWN_ACTION              = 5; // This is the default.
   }
+
+  enum DeviceType {
+    TYPE_WIN = 1;
+    TYPE_MAC = 2;
+    TYPE_LINUX = 3;
+    TYPE_CROS = 4;
+    TYPE_OTHER = 5;
+    TYPE_PHONE = 6;
+    TYPE_TABLET = 7;
+  }
 }

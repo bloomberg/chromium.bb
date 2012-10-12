@@ -129,7 +129,7 @@ TEST_F(SyncSessionModelAssociatorTest,
 TEST_F(SyncSessionModelAssociatorTest, PopulateSessionHeader) {
   sync_pb::SessionHeader header_s;
   header_s.set_client_name("Client 1");
-  header_s.set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_WIN);
+  header_s.set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_WIN);
 
   SyncedSession session;
   base::Time time = base::Time::Now();

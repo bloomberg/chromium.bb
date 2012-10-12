@@ -33,16 +33,7 @@ message SessionHeader {
   // A non-unique but human-readable name to describe this client.
   optional string client_name = 3;
   // The type of device.
-  enum DeviceType {
-    TYPE_WIN = 1;
-    TYPE_MAC = 2;
-    TYPE_LINUX = 3;
-    TYPE_CROS = 4;
-    TYPE_OTHER = 5;
-    TYPE_PHONE = 6;
-    TYPE_TABLET = 7;
-  }
-  optional DeviceType device_type = 4;
+  optional SyncEnums.DeviceType device_type = 4;
 }
 
 message SessionWindow {

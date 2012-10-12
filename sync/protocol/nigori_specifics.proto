@@ -27,24 +27,6 @@ message NigoriKeyBag {
   repeated NigoriKey key = 2;
 }
 
-// Information about a device that is running a sync-enabled Chrome browser.
-// We are mapping the unique per-device cache guid to more specific information
-// about the device.
-message DeviceInformation {
-  optional string cache_guid = 1;
-
-  // The name of the device is dependent on the OS running the Chrome instance.
-  // On a Chromebook this is "Chromebook", on Linux the distribution name, on
-  // Mac OSX the hadware model name and on Windows the computer name.
-  optional string name = 2;
-
-  // The platform of the device (ChromeOS, Linux, Mac, or Windows).
-  optional string platform = 3;
-
-  // The Chrome version of the sync-enabled Chrome browser.
-  optional string chrome_version = 4;
-}
-
 // Properties of nigori sync object.
 message NigoriSpecifics {
   optional EncryptedData encryption_keybag = 1;
@@ -92,7 +74,8 @@ message NigoriSpecifics {
 
   // User device information. Contains information about each device that has a
   // sync-enabled Chrome browser connected to the user account.
-  repeated DeviceInformation device_information = 28;
+  // This has been moved to the DeviceInfo message.
+  // repeated DeviceInformation deprecated_device_information = 28;
 
   // Enable syncing favicons as part of tab sync.
   optional bool sync_tab_favicons = 29;

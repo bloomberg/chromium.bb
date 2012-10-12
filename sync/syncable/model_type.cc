@@ -73,6 +73,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case APP_NOTIFICATIONS:
       specifics->mutable_app_notification();
       break;
+    case DEVICE_INFO:
+      specifics->mutable_device_info();
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -134,6 +137,9 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       break;
     case APP_NOTIFICATIONS:
       return sync_pb::EntitySpecifics::kAppNotificationFieldNumber;
+      break;
+    case DEVICE_INFO:
+      return sync_pb::EntitySpecifics::kDeviceInfoFieldNumber;
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -227,6 +233,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_app_notification())
     return APP_NOTIFICATIONS;
 
+  if (specifics.has_device_info())
+    return DEVICE_INFO;
+
   return UNSPECIFIED;
 }
 
@@ -247,6 +256,10 @@ ModelTypeSet ControlTypes() {
   for (int i = FIRST_CONTROL_MODEL_TYPE; i <= LAST_CONTROL_MODEL_TYPE; ++i) {
     set.Put(ModelTypeFromInt(i));
   }
+
+  // TODO(rlarocque): Re-enable this when the server supports it.
+  set.Remove(DEVICE_INFO);
+
   return set;
 }
 
@@ -293,6 +306,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Extension settings";
     case APP_NOTIFICATIONS:
       return "App Notifications";
+    case DEVICE_INFO:
+      return "Device Info";
     default:
       break;
   }
@@ -358,6 +373,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return EXTENSION_SETTINGS;
   else if (model_type_string == "App Notifications")
     return APP_NOTIFICATIONS;
+  else if (model_type_string == "Device Info")
+    return DEVICE_INFO;
   else
     NOTREACHED() << "No known model type corresponding to "
                  << model_type_string << ".";
@@ -426,6 +443,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_extension_settings";
     case APP_NOTIFICATIONS:
       return "google_chrome_app_notifications";
+    case DEVICE_INFO:
+      return "google_chrome_device_info";
     default:
       break;
   }
@@ -451,6 +470,7 @@ const char kSearchEngineNotificationType[] = "SEARCH_ENGINE";
 const char kSessionNotificationType[] = "SESSION";
 const char kAutofillProfileNotificationType[] = "AUTOFILL_PROFILE";
 const char kAppNotificationNotificationType[] = "APP_NOTIFICATION";
+const char kDeviceInfoNotificationType[] = "DEVICE_INFO";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -500,6 +520,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case APP_NOTIFICATIONS:
       *notification_type = kAppNotificationNotificationType;
+      return true;
+    case DEVICE_INFO:
+      *notification_type = kDeviceInfoNotificationType;
       return true;
     default:
       break;
@@ -554,6 +577,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kAppNotificationNotificationType) {
     *model_type = APP_NOTIFICATIONS;
+    return true;
+  } else if (notification_type == kDeviceInfoNotificationType) {
+    *model_type = DEVICE_INFO;;
     return true;
   } else {
     *model_type = UNSPECIFIED;

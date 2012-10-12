@@ -191,12 +191,13 @@ DictionaryValue* PasswordSpecificsDataToValue(
   return value;
 }
 
-DictionaryValue* DeviceInformationToValue(
-    const sync_pb::DeviceInformation& proto) {
+DictionaryValue* DeviceInfoSpecificsToValue(
+    const sync_pb::DeviceInfoSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
   SET_STR(cache_guid);
-  SET_STR(name);
-  SET_STR(platform);
+  SET_STR(client_name);
+  SET_ENUM(device_type, GetDeviceTypeString);
+  SET_STR(sync_user_agent);
   SET_STR(chrome_version);
   return value;
 }
@@ -313,7 +314,6 @@ DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(encrypt_apps);
   SET_BOOL(encrypt_search_engines);
   SET_BOOL(encrypt_everything);
-  SET_REP(device_information, DeviceInformationToValue);
   SET_BOOL(sync_tab_favicons);
   SET_ENUM(passphrase_type, PassphraseTypeString);
   SET(keystore_decryptor_token, EncryptedDataToValue);
@@ -400,6 +400,7 @@ DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(autofill, AutofillSpecificsToValue);
   SET_FIELD(autofill_profile, AutofillProfileSpecificsToValue);
   SET_FIELD(bookmark, BookmarkSpecificsToValue);
+  SET_FIELD(device_info, DeviceInfoSpecificsToValue);
   SET_FIELD(extension, ExtensionSpecificsToValue);
   SET_FIELD(extension_setting, ExtensionSettingSpecificsToValue);
   SET_FIELD(nigori, NigoriSpecificsToValue);

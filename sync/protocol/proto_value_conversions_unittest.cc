@@ -14,6 +14,7 @@
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/protocol/device_info_specifics.pb.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/extension_setting_specifics.pb.h"
 #include "sync/protocol/extension_specifics.pb.h"
@@ -47,7 +48,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(17, MODEL_TYPE_COUNT);
+  EXPECT_EQ(18, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -136,6 +137,10 @@ TEST_F(ProtoValueConversionsTest, PasswordSpecificsToValue) {
   TestSpecificsToValue(PasswordSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, DeviceInfoSpecificsToValue) {
+  TestSpecificsToValue(DeviceInfoSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, PreferenceSpecificsToValue) {
   TestSpecificsToValue(PreferenceSpecificsToValue);
 }
@@ -174,6 +179,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(extension_setting);
   SET_FIELD(nigori);
   SET_FIELD(password);
+  SET_FIELD(device_info);
   SET_FIELD(preference);
   SET_FIELD(search_engine);
   SET_FIELD(session);

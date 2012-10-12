@@ -166,6 +166,10 @@ class BaseNode {
   // data.  Can only be called if GetModelType() == SESSIONS.
   const sync_pb::SessionSpecifics& GetSessionSpecifics() const;
 
+  // Getter specific to the DEVICE_INFO datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == DEVICE_INFO.
+  const sync_pb::DeviceInfoSpecifics& GetDeviceInfoSpecifics() const;
+
   const sync_pb::EntitySpecifics& GetEntitySpecifics() const;
 
   // Returns the local external ID associated with the node.

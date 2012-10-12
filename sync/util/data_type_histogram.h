@@ -81,6 +81,9 @@
       case ::syncer::APP_NOTIFICATIONS: \
         PER_DATA_TYPE_MACRO("AppNotifications"); \
         break; \
+      case ::syncer::DEVICE_INFO: \
+        PER_DATA_TYPE_MACRO("DeviceInfo"); \
+        break; \
       default: \
         NOTREACHED() << "Unknown datatype " \
                      << ::syncer::ModelTypeToString(datatype);  \

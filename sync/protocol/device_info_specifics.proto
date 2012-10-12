@@ -1,0 +1,37 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for nigori keys.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+import "sync_enums.proto";
+
+// Information about a device that is running a sync-enabled Chrome browser.  We
+// are mapping the per-client cache guid to more specific information about the
+// device.
+message DeviceInfoSpecifics {
+  // The cache_guid created to identify a sync client on this device.
+  optional string cache_guid = 1;
+
+  // A non-unique but human readable name to describe this client.
+  optional string client_name = 2;
+
+  // The platform of the device.
+  optional SyncEnums.DeviceType device_type = 3;
+
+  // The UserAgent used when contacting the Chrome Sync server.
+  optional string sync_user_agent = 4;
+
+  // The Chrome instance's version.  Updated (if necessary) on every startup.
+  optional string chrome_version = 5;
+}

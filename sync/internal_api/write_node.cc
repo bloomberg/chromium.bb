@@ -189,6 +189,13 @@ void WriteNode::SetSessionSpecifics(
   SetEntitySpecifics(entity_specifics);
 }
 
+void WriteNode::SetDeviceInfoSpecifics(
+    const sync_pb::DeviceInfoSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.mutable_device_info()->CopyFrom(new_value);
+  SetEntitySpecifics(entity_specifics);
+}
+
 void WriteNode::SetEntitySpecifics(
     const sync_pb::EntitySpecifics& new_value) {
   ModelType new_specifics_type =

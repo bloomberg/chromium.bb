@@ -26,6 +26,7 @@ using syncer::sessions::SyncSourceInfo;
 using syncer::UserShare;
 using syncer::syncable::Directory;
 using syncer::NIGORI;
+using syncer::DEVICE_INFO;
 
 namespace browser_sync {
 

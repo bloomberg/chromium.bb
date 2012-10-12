@@ -41,6 +41,7 @@ enum UserSelectableSyncType {
   // APP_SETTINGS,
   // EXTENSION_SETTINGS,
   // APP_NOTIFICATIONS,
+  // DEVICE_INFO,
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
   SELECTABLE_DATATYPE_COUNT = 9,
