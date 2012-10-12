@@ -1275,9 +1275,7 @@ public class ContentViewCore implements MotionEventDelegate {
      * @see View#computeHorizontalScrollExtent()
      */
     @SuppressWarnings("javadoc")
-    protected int computeHorizontalScrollExtent() {
-        // TODO (dtrainor): Need to expose scroll events properly to public. Either make getScroll*
-        // work or expose computeHorizontalScrollOffset()/computeVerticalScrollOffset as public.
+    public int computeHorizontalScrollExtent() {
         return getWidth();
     }
 
@@ -1327,7 +1325,7 @@ public class ContentViewCore implements MotionEventDelegate {
      * @see View#awakenScrollBars(int, boolean)
      */
     @SuppressWarnings("javadoc")
-    protected boolean awakenScrollBars(int startDelay, boolean invalidate) {
+    public boolean awakenScrollBars(int startDelay, boolean invalidate) {
         // For the default implementation of ContentView which draws the scrollBars on the native
         // side, calling this function may get us into a bad state where we keep drawing the
         // scrollBars, so disable it by always returning false.
