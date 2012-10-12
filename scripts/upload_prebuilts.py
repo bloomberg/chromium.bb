@@ -402,41 +402,27 @@ class PrebuiltUploader(object):
     """
     remote_location = '%s/%s' % (self._upload_location.rstrip('/'), url_suffix)
     assert remote_location.startswith('gs://')
-    cwd, boardname = os.path.split(board_path.rstrip(os.path.sep))
-    with osutils.TempDirContextManager() as tmpdir:
-      if prepackaged is None:
-        tarfile = os.path.join(tmpdir, '%s.tbz2' % boardname)
-        bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
-        cmd = ['tar', '-I', bzip2, '-cf', tarfile]
-        excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
-                          'tmp')
-        cmd.extend('--exclude=%s/*' % path for path in excluded_paths)
-        cmd.append('.')
-        cros_build_lib.SudoRunCommand(cmd, cwd=os.path.join(cwd, boardname))
-      else:
-        tarfile = prepackaged
+    boardname = os.path.basename(board_path.rstrip('/'))
+    # We do not upload non SDK board tarballs,
+    assert boardname == constants.CHROOT_BUILDER_BOARD
+    assert prepackaged is not None
 
-      remote_tarfile = '%s/%s.tbz2' % (remote_location.rstrip('/'), boardname)
-      version_str = version
-      # FIXME(zbehan): Temporary hack to upload amd64-host chroots to a
-      # different gs bucket. The right way is to do the upload in a separate
-      # pass of this script.
-      if boardname == constants.CHROOT_BUILDER_BOARD:
-        # FIXME(zbehan): Why does version contain the prefix "chroot-"?
-        version_str = version[len('chroot-'):]
-        remote_tarfile = \
-            '%s/cros-sdk-%s.tar.xz' % (_SDK_GS_BUCKET, version_str)
-        # For SDK, also upload the manifest which is guaranteed to exist
-        # by the builderstage.
-        _GsUpload(tarfile + '.Manifest', remote_tarfile + '.Manifest',
-                  self._acl)
-        # Finally, also update the pointer to the latest SDK on which polling
-        # scripts rely.
-        pointerfile = os.path.join(tmpdir, 'cros-sdk-latest.conf')
-        remote_pointerfile = '%s/cros-sdk-latest.conf' % _SDK_GS_BUCKET
-        osutils.WriteFile(pointerfile, 'LATEST_SDK="%s"' % version_str)
-        _GsUpload(pointerfile, remote_pointerfile, self._acl)
-      _GsUpload(tarfile, remote_tarfile, self._acl)
+    version_str = version[len('chroot-'):]
+    remote_tarfile = \
+        '%s/cros-sdk-%s.tar.xz' % (_SDK_GS_BUCKET, version_str)
+    # For SDK, also upload the manifest which is guaranteed to exist
+    # by the builderstage.
+    _GsUpload(prepackaged + '.Manifest', remote_tarfile + '.Manifest',
+              self._acl)
+    _GsUpload(prepackaged, remote_tarfile, self._acl)
+
+    # Finally, also update the pointer to the latest SDK on which polling
+    # scripts rely.
+    with osutils.TempDirContextManager() as tmpdir:
+      pointerfile = os.path.join(tmpdir, 'cros-sdk-latest.conf')
+      remote_pointerfile = '%s/cros-sdk-latest.conf' % _SDK_GS_BUCKET
+      osutils.WriteFile(pointerfile, 'LATEST_SDK="%s"' % version_str)
+      _GsUpload(pointerfile, remote_pointerfile, self._acl)
 
   def _GetTargets(self):
     """Retuns the list of targets to use."""
@@ -687,6 +673,10 @@ def ParseOptions():
       not options.upload.startswith('gs://')):
     Usage(parser, 'Error: --upload-board-tarball only works with gs:// URLs.\n'
                   '--upload must be a gs:// URL.')
+
+  if options.upload_board_tarball and options.prepackaged_tarball is None:
+    Usage(parser, 'Error: --upload-board-tarball requires '
+                  '--prepackaged-tarball.')
 
   if options.private:
     if options.sync_host:
