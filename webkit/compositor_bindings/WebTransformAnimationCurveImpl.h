@@ -5,9 +5,8 @@
 #ifndef WebTransformAnimationCurveImpl_h
 #define WebTransformAnimationCurveImpl_h
 
+#include "base/memory/scoped_ptr.h"
 #include <public/WebTransformAnimationCurve.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 class CCAnimationCurve;
@@ -31,10 +30,10 @@ public:
 
     virtual WebTransformationMatrix getValue(double time) const OVERRIDE;
 
-    PassOwnPtr<cc::CCAnimationCurve> cloneToCCAnimationCurve() const;
+    scoped_ptr<cc::CCAnimationCurve> cloneToCCAnimationCurve() const;
 
 private:
-    OwnPtr<cc::CCKeyframedTransformAnimationCurve> m_curve;
+    scoped_ptr<cc::CCKeyframedTransformAnimationCurve> m_curve;
 };
 
 }
