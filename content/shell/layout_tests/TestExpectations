@@ -4,3 +4,4 @@
 
 # Crash in WebCore::RenderTextControlSingleLine::layout
 crbug.com/153282 fast/dom/shadow/input-with-validation.html [ Crash ]
+crbug.com/155474 fast/dom/shadow/shadowdom-for-progress-dynamic.html [ Crash ]
