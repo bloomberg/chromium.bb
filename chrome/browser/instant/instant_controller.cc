@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/escape.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/widget/widget.h"
@@ -327,6 +329,30 @@ bool InstantController::IsCurrent() const {
 
 void InstantController::CommitCurrentPreview(InstantCommitType type) {
   TabContents* preview = loader_->ReleasePreviewContents(type, last_full_text_);
+
+  if (mode_ == EXTENDED) {
+    // Consider what's happening:
+    //   1. The user has typed a query in the omnibox and committed it (either
+    //      by pressing Enter or clicking on the preview).
+    //   2. We commit the preview to the tab strip, and tell the page.
+    //   3. The page will update the URL hash fragment with the query terms.
+    // After steps 1 and 3, the omnibox will show the query terms. However, if
+    // the URL we are committing at step 2 doesn't already have query terms, it
+    // will flash for a brief moment as a plain URL. So, avoid that flicker by
+    // pretending that the plain URL is actually the typed query terms.
+    // TODO(samarth,beaudoin): Instead of this hack, we should add a new field
+    // to NavigationEntry to keep track of what the correct query, if any, is.
+    content::NavigationEntry* entry =
+        preview->web_contents()->GetController().GetVisibleEntry();
+    std::string url = entry->GetVirtualURL().spec();
+    if (!google_util::IsInstantExtendedAPIGoogleSearchUrl(url) &&
+        google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
+                                       google_util::ALLOW_NON_STANDARD_PORTS)) {
+      entry->SetVirtualURL(GURL(
+          url + "#q=" +
+          net::EscapeQueryParamValue(UTF16ToUTF8(last_full_text_), true)));
+    }
+  }
 
   // If the preview page has navigated since the last Update(), we need to add
   // the navigation to history ourselves. Else, the page will navigate after
