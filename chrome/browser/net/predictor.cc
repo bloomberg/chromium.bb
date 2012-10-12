@@ -179,6 +179,13 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
       static_cast<base::ListValue*>(user_prefs->GetList(
           prefs::kDnsPrefetchingHostReferralList)->DeepCopy());
 
+  // Now that we have the statistics in memory, wipe them from the Preferences
+  // file. They will be serialized back on a clean shutdown. This way we only
+  // have to worry about clearing our in-memory state when Clearing Browsing
+  // Data.
+  user_prefs->ClearPref(prefs::kDnsPrefetchingStartupList);
+  user_prefs->ClearPref(prefs::kDnsPrefetchingHostReferralList);
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
