@@ -29,7 +29,7 @@ void NativeServiceRegistry::GetSupportedServices(
       switches::kWebIntentsNativeServicesEnabled))
     return;
 
-#if defined(TOOLKIT_VIEWS)
+#if !defined(ANDROID)
   if (EqualsASCII(action, web_intents::kActionPick)) {
     // File picker registrations.
     webkit_glue::WebIntentServiceData service(
@@ -49,11 +49,12 @@ NativeServiceFactory::NativeServiceFactory() {}
 
 IntentServiceHost* NativeServiceFactory::CreateServiceInstance(
     const GURL& service_url,
-    const webkit_glue::WebIntentData& intent) {
+    const webkit_glue::WebIntentData& intent,
+    content::WebContents* web_contents) {
 
-#if defined(TOOLKIT_VIEWS)
+#if !defined(ANDROID)
   if (service_url.spec() == kNativeFilePickerUrl) {
-    return FilePickerFactory::CreateServiceInstance(intent);
+    return FilePickerFactory::CreateServiceInstance(intent, web_contents);
   }
 #endif
 

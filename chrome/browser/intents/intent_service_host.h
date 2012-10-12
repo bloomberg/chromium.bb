@@ -14,6 +14,7 @@ class WebIntentsDispatcher;
 namespace web_intents {
 
 // Interface allowing services to be implemented in various host environments.
+// Implementations should be owned by their creator.
 class IntentServiceHost {
  public:
   virtual ~IntentServiceHost() {}

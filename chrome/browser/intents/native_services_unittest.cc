@@ -18,8 +18,7 @@
 namespace {
 
 TEST(NativeServiceRegistryTest, GetSupportedServices) {
-#if defined(TOOLKIT_VIEWS)
-
+#if !defined(ANDROID)
   // enable native services feature, then check results again
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kWebIntentsNativeServicesEnabled);
@@ -39,13 +38,11 @@ TEST(NativeServiceRegistryTest, GetSupportedServices) {
   // verify the service returned is for "pick"
   EXPECT_EQ(ASCIIToUTF16(web_intents::kActionPick), services[0].action);
   EXPECT_EQ(GURL(web_intents::kNativeFilePickerUrl), services[0].service_url);
-
 #endif
 }
 
 TEST(NativeServiceRegistryTest, GetSupportedServicesDisabled) {
-#if defined(TOOLKIT_VIEWS)
-
+#if !defined(ANDROID)
   std::vector<webkit_glue::WebIntentServiceData> services;
   web_intents::NativeServiceRegistry registry;
 
@@ -53,7 +50,6 @@ TEST(NativeServiceRegistryTest, GetSupportedServicesDisabled) {
       ASCIIToUTF16(web_intents::kActionPick), &services);
 
   ASSERT_EQ(0U, services.size());
-
 #endif
 }
 

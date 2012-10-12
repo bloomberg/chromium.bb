@@ -136,6 +136,13 @@ class SourceWindowObserver : content::WebContentsObserver {
   base::WeakPtr<WebIntentPickerController> controller_;
 };
 
+// Deletes |service|, presumably called from a dispatcher callback.
+void DeleteIntentService(
+    web_intents::IntentServiceHost* service,
+    webkit_glue::WebIntentReplyType type) {
+  delete service;
+}
+
 }  // namespace
 
 // UMAReporter handles reporting Web Intents events to UMA.
@@ -366,8 +373,12 @@ void WebIntentPickerController::OnServiceChosen(
     case webkit_glue::WebIntentServiceData::DISPOSITION_NATIVE: {
       web_intents::IntentServiceHost* service =
           native_services_->CreateServiceInstance(
-              url, intents_dispatcher_->GetIntent());
+              url, intents_dispatcher_->GetIntent(), web_contents_);
       DCHECK(service);
+
+      intents_dispatcher_->RegisterReplyNotification(
+          base::Bind(&DeleteIntentService, base::Unretained(service)));
+
       service->HandleIntent(intents_dispatcher_);
       break;
     }
