@@ -8,6 +8,7 @@
 
 #include "ash/launcher/launcher_types.h"
 #include "ash/launcher/launcher_view.h"
+#include "ash/shell.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -145,7 +146,7 @@ void OverflowBubbleView::ScrollByYOffset(int y_offset) {
 gfx::Size OverflowBubbleView::GetPreferredSize() {
   gfx::Size preferred_size = GetContentsSize();
 
-  const gfx::Rect monitor_rect = gfx::Screen::GetDisplayNearestPoint(
+  const gfx::Rect monitor_rect = Shell::GetScreen()->GetDisplayNearestPoint(
       GetAnchorRect().CenterPoint()).work_area();
   if (!monitor_rect.IsEmpty()) {
     if (is_horizontal_alignment()) {
@@ -215,7 +216,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
       content_size,
       false);
 
-  gfx::Rect monitor_rect = gfx::Screen::GetDisplayNearestPoint(
+  gfx::Rect monitor_rect = Shell::GetScreen()->GetDisplayNearestPoint(
       anchor_rect.CenterPoint()).work_area();
 
   int offset = 0;

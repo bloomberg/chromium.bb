@@ -180,7 +180,8 @@ int AlignToGridRoundDown(int location, int grid_size) {
 }
 
 TEST_F(WindowPositionerTest, cascading) {
-  const gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetPrimaryDisplay().work_area();
 
   // First see that the window will cascade down when there is no space.
   window()->SetBounds(work_area);
@@ -240,7 +241,8 @@ TEST_F(WindowPositionerTest, cascading) {
 }
 
 TEST_F(WindowPositionerTest, filling) {
-  const gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetPrimaryDisplay().work_area();
   gfx::Rect popup_position(0, 0, 256, 128);
   // Leave space on the left and the right and see if we fill top to bottom.
   window()->SetBounds(gfx::Rect(work_area.x() + popup_position.width(),
@@ -294,7 +296,8 @@ TEST_F(WindowPositionerTest, filling) {
 }
 
 TEST_F(WindowPositionerTest, blockedByPanel) {
-  const gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetPrimaryDisplay().work_area();
 
   gfx::Rect pop_position(0, 0, 200, 200);
   // Let the panel cover everything.
@@ -309,7 +312,8 @@ TEST_F(WindowPositionerTest, blockedByPanel) {
 }
 
 TEST_F(WindowPositionerTest, biggerThenBorder) {
-  const gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetPrimaryDisplay().work_area();
 
   gfx::Rect pop_position(0, 0, work_area.width(), work_area.height());
 

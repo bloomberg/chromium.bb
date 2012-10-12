@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
@@ -119,7 +120,8 @@ void MediaPlayer::PopupMediaPlayer() {
 
   Browser* browser = GetBrowser();
   if (!browser) {
-    const gfx::Size screen = gfx::Screen::GetPrimaryDisplay().size();
+    const gfx::Size screen =
+        ash::Shell::GetScreen()->GetPrimaryDisplay().size();
     const gfx::Rect bounds(screen.width() - kPopupRight - kPopupWidth,
                            screen.height() - kPopupBottom - kPopupHeight,
                            kPopupWidth,

@@ -59,7 +59,7 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
   RenderWidgetHostViewWin* rwhv = static_cast<RenderWidgetHostViewWin*>(
       wcv->web_contents()->GetRenderWidgetHostView());
   if (rwhv)
-    rwhv->UpdateScreenInfo();
+    rwhv->UpdateScreenInfo(rwhv->GetNativeView());
 
   return TRUE;  // must return TRUE to continue enumeration.
 }
@@ -346,7 +346,7 @@ LRESULT WebContentsViewWin::OnWindowPosChanged(
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv) {
     RenderWidgetHostViewWin* view = static_cast<RenderWidgetHostViewWin*>(rwhv);
-    view->UpdateScreenInfo();
+    view->UpdateScreenInfo(view->GetNativeView());
   }
 
   // Unless we were specifically told not to size, cause the renderer to be
@@ -382,7 +382,9 @@ LRESULT WebContentsViewWin::OnMouseMove(
   // bubble state).
   if (web_contents_->GetDelegate()) {
     web_contents_->GetDelegate()->ContentsMouseEvent(
-        web_contents_, gfx::Screen::GetCursorScreenPoint(), true);
+        web_contents_,
+        gfx::Screen::GetNativeScreen()->GetCursorScreenPoint(),
+        true);
   }
   return 0;
 }

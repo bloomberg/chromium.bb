@@ -74,7 +74,8 @@ bool CustomButton::IsMouseHovered() const {
   if (!GetWidget())
     return false;
 
-  gfx::Point cursor_pos(gfx::Screen::GetCursorScreenPoint());
+  gfx::Point cursor_pos(gfx::Screen::GetScreenFor(
+      GetWidget()->GetNativeView())->GetCursorScreenPoint());
   ConvertPointToTarget(NULL, this, &cursor_pos);
   return HitTestPoint(cursor_pos);
 }

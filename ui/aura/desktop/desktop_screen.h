@@ -8,14 +8,14 @@
 #include "ui/aura/aura_export.h"
 
 namespace gfx {
-class ScreenImpl;
+class Screen;
 }
 
 namespace aura {
 
-// Creates a ScreenImpl that represents the screen of the environment that hosts
+// Creates a Screen that represents the screen of the environment that hosts
 // a RootWindowHost. Caller owns the result.
-AURA_EXPORT gfx::ScreenImpl* CreateDesktopScreen();
+AURA_EXPORT gfx::Screen* CreateDesktopScreen();
 
 }  // namespace aura
 

@@ -48,7 +48,7 @@ MouseCursorEventFilter::~MouseCursorEventFilter() {
 void MouseCursorEventFilter::ShowSharedEdgeIndicator(
     const aura::RootWindow* from) {
   HideSharedEdgeIndicator();
-  if (gfx::Screen::GetNumDisplays() <= 1 || from == NULL) {
+  if (Shell::GetScreen()->GetNumDisplays() <= 1 || from == NULL) {
     src_indicator_bounds_.SetRect(0, 0, 0, 0);
     dst_indicator_bounds_.SetRect(0, 0, 0, 0);
     drag_source_root_ = NULL;
@@ -107,7 +107,8 @@ ui::EventResult MouseCursorEventFilter::PreHandleGestureEvent(
 bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
     aura::RootWindow* target_root,
     const gfx::Point& point_in_screen) {
-  if (gfx::Screen::GetNumDisplays() <= 1 || mouse_warp_mode_ == WARP_NONE)
+  if (Shell::GetScreen()->GetNumDisplays() <= 1 ||
+      mouse_warp_mode_ == WARP_NONE)
     return false;
   const float scale = ui::GetDeviceScaleFactor(target_root->layer());
 
@@ -147,7 +148,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
   if (dst_root->bounds().Contains(point_in_dst_screen)) {
     DCHECK_NE(dst_root, root_at_point);
     dst_root->MoveCursorTo(point_in_dst_screen);
-    ash::Shell::GetInstance()->cursor_manager()->SetDeviceScaleFactor(
+    Shell::GetInstance()->cursor_manager()->SetDeviceScaleFactor(
         dst_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
     return true;
   }
@@ -157,7 +158,8 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
 void MouseCursorEventFilter::UpdateHorizontalIndicatorWindowBounds() {
   bool from_primary = Shell::GetPrimaryRootWindow() == drag_source_root_;
 
-  const gfx::Rect& primary_bounds = gfx::Screen::GetPrimaryDisplay().bounds();
+  const gfx::Rect& primary_bounds =
+      Shell::GetScreen()->GetPrimaryDisplay().bounds();
   const gfx::Rect& secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
   DisplayLayout::Position position = Shell::GetInstance()->
       display_controller()->GetCurrentDisplayLayout().position;
@@ -184,7 +186,8 @@ void MouseCursorEventFilter::UpdateHorizontalIndicatorWindowBounds() {
 void MouseCursorEventFilter::UpdateVerticalIndicatorWindowBounds() {
   bool in_primary = Shell::GetPrimaryRootWindow() == drag_source_root_;
 
-  const gfx::Rect& primary_bounds = gfx::Screen::GetPrimaryDisplay().bounds();
+  const gfx::Rect& primary_bounds =
+      Shell::GetScreen()->GetPrimaryDisplay().bounds();
   const gfx::Rect& secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
   DisplayLayout::Position position = Shell::GetInstance()->
       display_controller()->GetCurrentDisplayLayout().position;

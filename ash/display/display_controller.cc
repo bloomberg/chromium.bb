@@ -491,10 +491,10 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
 }
 
 void DisplayController::UpdateDisplayBoundsForLayout() {
-  if (gfx::Screen::GetNumDisplays() <= 1)
+  if (Shell::GetScreen()->GetNumDisplays() <= 1)
     return;
 
-  DCHECK_EQ(2, gfx::Screen::GetNumDisplays());
+  DCHECK_EQ(2, Shell::GetScreen()->GetNumDisplays());
   const gfx::Rect& primary_bounds = GetPrimaryDisplay().bounds();
 
   gfx::Display* secondary_display = GetSecondaryDisplay();

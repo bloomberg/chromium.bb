@@ -669,7 +669,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.max_untiled_layer_height =
         GetSwitchValueAsInt(command_line, switches::kMaxUntiledLayerHeight, 1);
 
-  if (gfx::Screen::IsDIPEnabled()) {
+  // TODO(scottmg): Probably Native is wrong: http://crbug.com/133312
+  if (gfx::Screen::GetNativeScreen()->IsDIPEnabled()) {
     // Only apply when using DIP coordinate system as this setting interferes
     // with fixed layout mode.
     prefs.apply_default_device_scale_factor_in_compositor = true;

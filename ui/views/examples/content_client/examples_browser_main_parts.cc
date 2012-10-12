@@ -58,7 +58,8 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(USE_AURA)
   aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
   stacking_client_.reset(new aura::DesktopStackingClient);
-  gfx::Screen::SetInstance(aura::CreateDesktopScreen());
+  gfx::Screen::SetScreenInstance(
+      gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
 #endif
   views_delegate_.reset(new ExamplesViewsDelegate);
 

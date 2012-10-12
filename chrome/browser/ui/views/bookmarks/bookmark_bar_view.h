@@ -142,14 +142,16 @@ class BookmarkBarView : public DetachableToolbarView,
   void StopThrobbing(bool immediate);
 
   // Returns the tooltip text for the specified url and title. The returned
-  // text is clipped to fit within the bounds of the monitor.
+  // text is clipped to fit within the bounds of the monitor. |context| is
+  // used to determine which gfx::Screen is used to retrieve bounds.
   //
   // Note that we adjust the direction of both the URL and the title based on
   // the locale so that pure LTR strings are displayed properly in RTL locales.
   static string16 CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
                                               const GURL& url,
                                               const string16& title,
-                                              Profile* profile);
+                                              Profile* profile,
+                                              gfx::NativeView context);
 
   // DetachableToolbarView methods:
   virtual bool IsDetached() const OVERRIDE;

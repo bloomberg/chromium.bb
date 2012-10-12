@@ -5,6 +5,7 @@
 #include "ash/wm/workspace/workspace_event_handler.h"
 
 #include "ash/screen_ash.h"
+#include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
@@ -141,7 +142,7 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     int component =
         target->delegate()->GetNonClientComponent(event->location());
     gfx::Rect work_area =
-        gfx::Screen::GetDisplayNearestWindow(target).work_area();
+        Shell::GetScreen()->GetDisplayNearestWindow(target).work_area();
     const gfx::Rect* restore_bounds =
         target->GetProperty(aura::client::kRestoreBoundsKey);
     if (component == HTBOTTOM || component == HTTOP) {

@@ -98,7 +98,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
 
   InitJNI(env, obj);
 
-  if (!gfx::Screen::IsDIPEnabled()) {
+  if (!gfx::Screen::GetNativeScreen()->IsDIPEnabled()) {
     dpi_scale_ = 1;
   } else {
     scoped_ptr<content::DeviceInfo> device_info(new content::DeviceInfo());

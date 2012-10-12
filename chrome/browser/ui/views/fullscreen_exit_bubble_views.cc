@@ -340,7 +340,9 @@ gfx::Rect FullscreenExitBubbleViews::GetPopupRect(
   gfx::Size size(view_->GetPreferredSize());
   // NOTE: don't use the bounds of the root_view_. On linux changing window
   // size is async. Instead we use the size of the screen.
-  gfx::Rect screen_bounds = gfx::Screen::GetDisplayNearestWindow(
+  gfx::Screen* screen =
+      gfx::Screen::GetScreenFor(root_view_->GetWidget()->GetNativeView());
+  gfx::Rect screen_bounds = screen->GetDisplayNearestWindow(
       root_view_->GetWidget()->GetNativeView()).bounds();
   gfx::Point origin(screen_bounds.x() +
                     (screen_bounds.width() - size.width()) / 2,
@@ -357,7 +359,8 @@ gfx::Rect FullscreenExitBubbleViews::GetPopupRect(
 }
 
 gfx::Point FullscreenExitBubbleViews::GetCursorScreenPoint() {
-  gfx::Point cursor_pos = gfx::Screen::GetCursorScreenPoint();
+  gfx::Point cursor_pos = gfx::Screen::GetScreenFor(
+      root_view_->GetWidget()->GetNativeView())->GetCursorScreenPoint();
   views::View::ConvertPointToTarget(NULL, root_view_, &cursor_pos);
   return cursor_pos;
 }

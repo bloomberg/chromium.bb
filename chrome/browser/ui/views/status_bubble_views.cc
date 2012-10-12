@@ -766,9 +766,9 @@ void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
 
     // Check if the bubble sticks out from the monitor or will obscure
     // download shelf.
-    gfx::NativeView widget = base_view_->GetWidget()->GetNativeView();
-    gfx::Rect monitor_rect =
-        gfx::Screen::GetDisplayNearestWindow(widget).work_area();
+    gfx::NativeView window = base_view_->GetWidget()->GetNativeView();
+    gfx::Rect monitor_rect = gfx::Screen::GetScreenFor(window)->
+        GetDisplayNearestWindow(window).work_area();
     const int bubble_bottom_y = top_left.y() + position_.y() + size_.height();
 
     if (bubble_bottom_y + offset > monitor_rect.height() ||

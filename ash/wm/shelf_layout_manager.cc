@@ -880,7 +880,7 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
                            -kNotificationBubbleGapHeight : 0,
                        0);
   }
-  return shelf_region.Contains(gfx::Screen::GetCursorScreenPoint()) ?
+  return shelf_region.Contains(Shell::GetScreen()->GetCursorScreenPoint()) ?
       AUTO_HIDE_SHOWN : AUTO_HIDE_HIDDEN;
 }
 

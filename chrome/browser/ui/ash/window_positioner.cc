@@ -47,8 +47,8 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   // work area.
   aura::Window* window = ash::wm::GetActiveWindow();
   const gfx::Rect work_area = window && window->IsVisible() ?
-      gfx::Screen::GetDisplayNearestWindow(window).work_area() :
-      gfx::Screen::GetPrimaryDisplay().work_area();
+      Shell::GetScreen()->GetDisplayNearestWindow(window).work_area() :
+      Shell::GetScreen()->GetPrimaryDisplay().work_area();
   // Only try to reposition the popup when it is not spanning the entire
   // screen.
   if ((old_pos.width() + popup_position_offset_from_screen_corner_x >=

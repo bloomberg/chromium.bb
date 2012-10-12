@@ -211,7 +211,7 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
   std::vector<size_t> added_display_indices;
   gfx::Display current_primary;
   if (Shell::HasInstance())
-    current_primary = gfx::Screen::GetPrimaryDisplay();
+    current_primary = Shell::GetScreen()->GetPrimaryDisplay();
 
   for (DisplayList::iterator curr_iter = displays_.begin(),
        new_iter = new_displays.begin();

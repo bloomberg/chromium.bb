@@ -18,7 +18,8 @@ namespace ash {
 namespace wm {
 
 aura::RootWindow* GetRootWindowAt(const gfx::Point& point) {
-  const gfx::Display& display = gfx::Screen::GetDisplayNearestPoint(point);
+  const gfx::Display& display =
+      Shell::GetScreen()->GetDisplayNearestPoint(point);
   // TODO(yusukes): Move coordinate_conversion.cc and .h to ui/aura/ once
   // GetRootWindowForDisplayId() is moved to aura::Env.
   return Shell::GetInstance()->display_controller()->
@@ -26,7 +27,7 @@ aura::RootWindow* GetRootWindowAt(const gfx::Point& point) {
 }
 
 aura::RootWindow* GetRootWindowMatching(const gfx::Rect& rect) {
-  const gfx::Display& display = gfx::Screen::GetDisplayMatching(rect);
+  const gfx::Display& display = Shell::GetScreen()->GetDisplayMatching(rect);
   return Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display.id());
 }

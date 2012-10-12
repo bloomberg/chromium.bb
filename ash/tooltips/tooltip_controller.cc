@@ -68,8 +68,8 @@ gfx::Font GetDefaultFont() {
 int GetMaxWidth(int x, int y) {
   // TODO(varunjain): implementation duplicated in tooltip_manager_aura. Figure
   // out a way to merge.
-  gfx::Rect display_bounds =
-      gfx::Screen::GetDisplayNearestPoint(gfx::Point(x, y)).bounds();
+  gfx::Rect display_bounds = ash::Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(x, y)).bounds();
   return (display_bounds.width() + 1) / 2;
 }
 
@@ -164,8 +164,8 @@ class TooltipController::Tooltip : public views::WidgetObserver {
                            tooltip_height);
 
     tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
-    gfx::Rect display_bounds =
-        gfx::Screen::GetDisplayNearestPoint(tooltip_rect.origin()).bounds();
+    gfx::Rect display_bounds = Shell::GetScreen()->GetDisplayNearestPoint(
+        tooltip_rect.origin()).bounds();
 
     // If tooltip is out of bounds on the x axis, we simply shift it
     // horizontally by the offset.

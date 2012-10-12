@@ -64,7 +64,7 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(desktop_helper_(
           ViewsDelegate::views_delegate ?
-          ViewsDelegate::views_delegate->CreateNativeWidgetHelper(this) :
+          ViewsDelegate::views_delegate->CreateNativeWidgetHelper(this):
           NULL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
@@ -136,7 +136,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
       // If a parent is specified but no bounds are given,
       // use the origin of the parent's display so that the widget
       // will be added to the same display as the parent.
-      gfx::Rect bounds = gfx::Screen::GetDisplayNearestWindow(parent).bounds();
+      gfx::Rect bounds = gfx::Screen::GetScreenFor(parent)->
+          GetDisplayNearestWindow(parent).bounds();
       window_bounds.set_origin(bounds.origin());
     }
     window_->SetParent(parent);
@@ -284,8 +285,8 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
   // When centering window, we take the intersection of the host and
   // the parent. We assume the root window represents the visible
   // rect of a single screen.
-  gfx::Rect work_area =
-      gfx::Screen::GetDisplayNearestWindow(window_).work_area();
+  gfx::Rect work_area = gfx::Screen::GetScreenFor(window_)->
+      GetDisplayNearestWindow(window_).work_area();
 
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(window_->GetRootWindow());
@@ -392,7 +393,8 @@ void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(root);
     if (screen_position_client) {
-      gfx::Display dst_display = gfx::Screen::GetDisplayMatching(bounds);
+      gfx::Display dst_display =
+          gfx::Screen::GetScreenFor(window_)->GetDisplayMatching(bounds);
       screen_position_client->SetBounds(window_, bounds, dst_display);
       return;
     }
@@ -591,7 +593,8 @@ void NativeWidgetAura::ClearNativeFocus() {
 }
 
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
-  return gfx::Screen::GetDisplayNearestWindow(GetNativeView()).work_area();
+  return gfx::Screen::GetScreenFor(GetNativeView())->
+      GetDisplayNearestWindow(GetNativeView()).work_area();
 }
 
 void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {

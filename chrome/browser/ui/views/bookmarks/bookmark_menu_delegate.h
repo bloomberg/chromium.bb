@@ -85,6 +85,8 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   Profile* profile() { return profile_; }
 
   views::Widget* parent() { return parent_; }
+  const views::Widget* parent() const { return parent_; }
+
 
   // Returns true if we're in the process of mutating the model. This happens
   // when the user deletes menu items using the context menu.

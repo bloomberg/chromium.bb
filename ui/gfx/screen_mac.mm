@@ -75,94 +75,109 @@ gfx::Display GetDisplayForScreen(NSScreen* screen, bool is_primary) {
   return display;
 }
 
+class ScreenMac : public gfx::Screen {
+ public:
+  ScreenMac() {}
+
+  virtual bool IsDIPEnabled() OVERRIDE {
+    return true;
+  }
+
+  virtual gfx::Point GetCursorScreenPoint() OVERRIDE {
+    NSPoint mouseLocation  = [NSEvent mouseLocation];
+    // Flip coordinates to gfx (0,0 in top-left corner) using primary screen.
+    NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+    mouseLocation.y = NSMaxY([screen frame]) - mouseLocation.y;
+    return gfx::Point(mouseLocation.x, mouseLocation.y);
+  }
+
+  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+    NOTIMPLEMENTED();
+    return gfx::NativeWindow();
+  }
+
+  virtual int GetNumDisplays() OVERRIDE {
+    // Don't just return the number of online displays.  It includes displays
+    // that mirror other displays, which are not desired in the count.  It's
+    // tempting to use the count returned by CGGetActiveDisplayList, but active
+    // displays exclude sleeping displays, and those are desired in the count.
+
+    // It would be ridiculous to have this many displays connected, but
+    // CGDirectDisplayID is just an integer, so supporting up to this many
+    // doesn't hurt.
+    CGDirectDisplayID online_displays[128];
+    CGDisplayCount online_display_count = 0;
+    if (CGGetOnlineDisplayList(arraysize(online_displays),
+                              online_displays,
+                              &online_display_count) != kCGErrorSuccess) {
+      // 1 is a reasonable assumption.
+      return 1;
+    }
+
+    int display_count = 0;
+    for (CGDisplayCount online_display_index = 0;
+        online_display_index < online_display_count;
+        ++online_display_index) {
+      CGDirectDisplayID online_display = online_displays[online_display_index];
+      if (CGDisplayMirrorsDisplay(online_display) == kCGNullDirectDisplay) {
+        // If this display doesn't mirror any other, include it in the count.
+        // The primary display in a mirrored set will be counted, but those that
+        // mirror it will not be.
+        ++display_count;
+      }
+    }
+
+    return display_count;
+  }
+
+  virtual gfx::Display GetDisplayNearestWindow(
+      gfx::NativeView view) const OVERRIDE {
+    NSWindow* window = [view window];
+    if (!window)
+      return GetPrimaryDisplay();
+    NSScreen* match_screen = [window screen];
+    return GetDisplayForScreen(match_screen, false /* may not be primary */);
+  }
+
+  virtual gfx::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const OVERRIDE {
+    NSPoint ns_point = NSPointFromCGPoint(point.ToCGPoint());
+
+    NSArray* screens = [NSScreen screens];
+    NSScreen* primary = [screens objectAtIndex:0];
+    for (NSScreen* screen in screens) {
+      if (NSMouseInRect(ns_point, [screen frame], NO))
+        return GetDisplayForScreen(screen, screen == primary);
+    }
+    return GetPrimaryDisplay();
+  }
+
+  // Returns the display that most closely intersects the provided bounds.
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const OVERRIDE {
+    NSScreen* match_screen = GetMatchingScreen(match_rect);
+    return GetDisplayForScreen(match_screen, false /* may not be primary */);
+  }
+
+  // Returns the primary display.
+  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
+    // Primary display is defined as the display with the menubar,
+    // which is always at index 0.
+    NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
+    gfx::Display display = GetDisplayForScreen(primary, true /* primary */);
+    return display;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenMac);
+};
+
 }  // namespace
 
 namespace gfx {
 
-// static
-bool Screen::IsDIPEnabled() {
-  return true;
+Screen* CreateNativeScreen() {
+  return new ScreenMac;
 }
 
-// static
-gfx::Point Screen::GetCursorScreenPoint() {
-  NSPoint mouseLocation  = [NSEvent mouseLocation];
-  // Flip coordinates to gfx (0,0 in top-left corner) using primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
-  mouseLocation.y = NSMaxY([screen frame]) - mouseLocation.y;
-  return gfx::Point(mouseLocation.x, mouseLocation.y);
 }
-
-// static
-gfx::Display Screen::GetDisplayNearestWindow(gfx::NativeView view) {
-  NSWindow* window = [view window];
-  if (!window)
-    return GetPrimaryDisplay();
-  NSScreen* match_screen = [window screen];
-  return GetDisplayForScreen(match_screen, false /* may not be primary */);
-}
-
-// static
-gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
-  NSScreen* match_screen = GetMatchingScreen(match_rect);
-  return GetDisplayForScreen(match_screen, false /* may not be primary */);
-}
-
-// static
-gfx::Display Screen::GetPrimaryDisplay() {
-  // Primary display is defined as the display with the menubar,
-  // which is always at index 0.
-  NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
-  gfx::Display display = GetDisplayForScreen(primary, true /* primary */);
-  return display;
-}
-
-// static
-int Screen::GetNumDisplays() {
-  // Don't just return the number of online displays.  It includes displays
-  // that mirror other displays, which are not desired in the count.  It's
-  // tempting to use the count returned by CGGetActiveDisplayList, but active
-  // displays exclude sleeping displays, and those are desired in the count.
-
-  // It would be ridiculous to have this many displays connected, but
-  // CGDirectDisplayID is just an integer, so supporting up to this many
-  // doesn't hurt.
-  CGDirectDisplayID online_displays[128];
-  CGDisplayCount online_display_count = 0;
-  if (CGGetOnlineDisplayList(arraysize(online_displays),
-                             online_displays,
-                             &online_display_count) != kCGErrorSuccess) {
-    // 1 is a reasonable assumption.
-    return 1;
-  }
-
-  int display_count = 0;
-  for (CGDisplayCount online_display_index = 0;
-       online_display_index < online_display_count;
-       ++online_display_index) {
-    CGDirectDisplayID online_display = online_displays[online_display_index];
-    if (CGDisplayMirrorsDisplay(online_display) == kCGNullDirectDisplay) {
-      // If this display doesn't mirror any other, include it in the count.
-      // The primary display in a mirrored set will be counted, but those that
-      // mirror it will not be.
-      ++display_count;
-    }
-  }
-
-  return display_count;
-}
-
-// static
-gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
-  NSPoint ns_point = NSPointFromCGPoint(point.ToCGPoint());
-
-  NSArray* screens = [NSScreen screens];
-  NSScreen* primary = [screens objectAtIndex:0];
-  for (NSScreen* screen in screens) {
-    if (NSMouseInRect(ns_point, [screen frame], NO))
-      return GetDisplayForScreen(screen, screen == primary);
-  }
-  return GetPrimaryDisplay();
-}
-
-}  // namespace gfx

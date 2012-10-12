@@ -7,15 +7,32 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/ash/ash_init.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/single_display_manager.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/screen_type_delegate.h"
 
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
+#endif
+
+#if !defined(OS_CHROMEOS)
+class ScreenTypeDelegateWin : public gfx::ScreenTypeDelegate {
+ public:
+  ScreenTypeDelegateWin() {}
+  virtual gfx::ScreenType GetScreenTypeForNativeView(
+      gfx::NativeView view) OVERRIDE {
+    return chrome::IsNativeViewInAsh(view) ?
+        gfx::SCREEN_TYPE_ALTERNATE :
+        gfx::SCREEN_TYPE_NATIVE;
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenTypeDelegateWin);
+};
 #endif
 
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {
@@ -30,7 +47,11 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   } else {
     aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
     stacking_client_.reset(new aura::DesktopStackingClient);
-    gfx::Screen::SetInstance(aura::CreateDesktopScreen());
+    gfx::Screen::SetScreenInstance(
+        gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
+#if !defined(OS_CHROMEOS)
+    gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateWin);
+#endif
   }
 
 #if defined(FILE_MANAGER_EXTENSION)

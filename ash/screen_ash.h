@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
-#include "ui/gfx/screen_impl.h"
+#include "ui/gfx/screen.h"
 
 namespace gfx {
 class Rect;
@@ -17,7 +17,7 @@ namespace ash {
 
 // Aura implementation of gfx::Screen. Implemented here to avoid circular
 // dependencies.
-class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
+class ASH_EXPORT ScreenAsh : public gfx::Screen {
  public:
   ScreenAsh();
   virtual ~ScreenAsh();
@@ -56,6 +56,9 @@ class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
   static const gfx::Display& GetSecondaryDisplay();
 
  protected:
+
+  // Implementation of gfx::Screen:
+  virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
 

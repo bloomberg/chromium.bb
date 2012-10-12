@@ -2150,7 +2150,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (void)windowChangedScreen:(NSNotification*)notification {
-  renderWidgetHostView_->UpdateScreenInfo();
+  renderWidgetHostView_->UpdateScreenInfo(
+      renderWidgetHostView_->GetNativeView());
 }
 
 - (void)setFrameSize:(NSSize)newSize {

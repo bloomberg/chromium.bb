@@ -177,7 +177,8 @@ void WebContentsDragWin::StartDragging(const WebDropData& drop_data,
   options.message_loop_type = MessageLoop::TYPE_UI;
   if (drag_drop_thread_->StartWithOptions(options)) {
     gfx::Display display =
-        gfx::Screen::GetDisplayNearestWindow(web_contents_->GetNativeView());
+        gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
+            web_contents_->GetNativeView());
     ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(
         display.device_scale_factor());
     drag_drop_thread_->message_loop()->PostTask(

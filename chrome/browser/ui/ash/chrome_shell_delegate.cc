@@ -283,9 +283,9 @@ void ChromeShellDelegate::ShowKeyboardOverlay() {
   // TODO(mazda): Move the show logic to ash (http://crbug.com/124222).
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   std::string url(chrome::kChromeUIKeyboardOverlayURL);
-  KeyboardOverlayView::ShowDialog(profile,
-                                  new ChromeWebContentsHandler,
-                                  GURL(url));
+  ash::KeyboardOverlayView::ShowDialog(profile,
+                                       new ChromeWebContentsHandler,
+                                       GURL(url));
 #endif
 }
 

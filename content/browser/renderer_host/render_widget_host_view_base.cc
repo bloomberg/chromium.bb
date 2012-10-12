@@ -399,9 +399,10 @@ void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
   browser_accessibility_manager_.reset(manager);
 }
 
-void RenderWidgetHostViewBase::UpdateScreenInfo() {
-  gfx::Display display = gfx::Screen::GetDisplayNearestPoint(
-      GetViewBounds().origin());
+void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
+  gfx::Display display =
+      gfx::Screen::GetScreenFor(view)->GetDisplayNearestPoint(
+          GetViewBounds().origin());
   if (current_display_area_ == display.bounds() &&
       current_device_scale_factor_ == display.device_scale_factor())
     return;

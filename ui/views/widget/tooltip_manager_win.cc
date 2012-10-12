@@ -59,9 +59,10 @@ gfx::Font TooltipManager::GetDefaultFont() {
 }
 
 // static
-int TooltipManager::GetMaxWidth(int x, int y) {
+int TooltipManager::GetMaxWidth(int x, int y, gfx::NativeView context) {
   gfx::Rect monitor_bounds =
-      gfx::Screen::GetDisplayNearestPoint(gfx::Point(x, y)).bounds();
+      gfx::Screen::GetScreenFor(context)->GetDisplayNearestPoint(
+          gfx::Point(x, y)).bounds();
   // Allow the tooltip to be almost as wide as the screen.
   // Otherwise, we would truncate important text, since we're not word-wrapping
   // the text onto multiple lines.
@@ -177,7 +178,8 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
             gfx::Point screen_loc = last_mouse_pos_;
             View::ConvertPointToScreen(widget_->GetRootView(), &screen_loc);
             TrimTooltipToFit(&clipped_text_, &tooltip_width_, &line_count_,
-                             screen_loc.x(), screen_loc.y());
+                             screen_loc.x(), screen_loc.y(),
+                             widget_->GetNativeView());
             // Adjust the clipped tooltip text for locale direction.
             base::i18n::AdjustStringForLocaleDirection(&clipped_text_);
             tooltip_info->lpszText = const_cast<WCHAR*>(clipped_text_.c_str());
@@ -342,7 +344,8 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
   int tooltip_width;
   int line_count;
   TrimTooltipToFit(&tooltip_text, &tooltip_width, &line_count,
-                   screen_point.x(), screen_point.y());
+                   screen_point.x(), screen_point.y(),
+                   widget_->GetNativeView());
   ReplaceSubstringsAfterOffset(&tooltip_text, 0, L"\n", L"\r\n");
   TOOLINFO keyboard_toolinfo;
   memset(&keyboard_toolinfo, 0, sizeof(keyboard_toolinfo));

@@ -441,7 +441,9 @@ void StartupBrowserCreatorImpl::ExtractOptionalAppWindowSize(
     std::string switch_value =
         command_line_.GetSwitchValueASCII(switches::kAppWindowSize);
     if (ParseCommaSeparatedIntegers(switch_value, &width, &height)) {
-      const gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();
+      // TODO(scottmg): NativeScreen might be wrong. http://crbug.com/133312
+      const gfx::Rect work_area =
+          gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area();
       width = std::min(width, work_area.width());
       height = std::min(height, work_area.height());
       bounds->set_size(gfx::Size(width, height));

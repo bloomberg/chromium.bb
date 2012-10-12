@@ -404,6 +404,8 @@ void TabDragController::Init(
   DCHECK(!tabs.empty());
   DCHECK(std::find(tabs.begin(), tabs.end(), source_tab) != tabs.end());
   source_tabstrip_ = source_tabstrip;
+  screen_ = gfx::Screen::GetScreenFor(
+      source_tabstrip->GetWidget()->GetNativeView());
   source_tab_offset_ = source_tab_offset;
   start_point_in_screen_ = gfx::Point(source_tab_offset, mouse_offset.y());
   views::View::ConvertPointToScreen(source_tab, &start_point_in_screen_);
@@ -674,7 +676,7 @@ gfx::Point TabDragController::GetWindowCreatePoint(
 
   // If the cursor is outside the monitor area, move it inside. For example,
   // dropping a tab onto the task bar on Windows produces this situation.
-  gfx::Rect work_area = gfx::Screen::GetDisplayNearestPoint(origin).work_area();
+  gfx::Rect work_area = screen_->GetDisplayNearestPoint(origin).work_area();
   gfx::Point create_point(origin);
   if (!work_area.IsEmpty()) {
     if (create_point.x() < work_area.x())
@@ -1989,7 +1991,7 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
     return touch_point;
   }
 #endif
-  return gfx::Screen::GetCursorScreenPoint();
+  return screen_->GetCursorScreenPoint();
 }
 
 gfx::Point TabDragController::GetWindowOffset(

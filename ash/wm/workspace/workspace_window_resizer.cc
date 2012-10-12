@@ -193,11 +193,12 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   // Check if the destination is another display.
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
   wm::ConvertPointToScreen(window()->parent(), &last_mouse_location_in_screen);
+  gfx::Screen* screen = Shell::GetScreen();
   const gfx::Display dst_display =
-      gfx::Screen::GetDisplayNearestPoint(last_mouse_location_in_screen);
+      screen->GetDisplayNearestPoint(last_mouse_location_in_screen);
 
   if (dst_display.id() !=
-      gfx::Screen::GetDisplayNearestWindow(window()->GetRootWindow()).id()) {
+      screen->GetDisplayNearestWindow(window()->GetRootWindow()).id()) {
     // Don't animate when moving to another display.
     const gfx::Rect dst_bounds =
         ScreenAsh::ConvertRectToScreen(window()->parent(), bounds);
@@ -426,8 +427,8 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
 
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
   wm::ConvertPointToScreen(window()->parent(), &last_mouse_location_in_screen);
-  gfx::Display display =
-      gfx::Screen::GetDisplayNearestPoint(last_mouse_location_in_screen);
+  gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(
+      last_mouse_location_in_screen);
   gfx::Rect work_area =
       ScreenAsh::ConvertRectFromScreen(window()->parent(), display.work_area());
   if (details_.window_component == HTCAPTION) {
@@ -544,7 +545,8 @@ void WorkspaceWindowResizer::UpdateDragPhantomWindow(const gfx::Rect& bounds,
           PhantomWindowController::STYLE_DRAGGING);
       // Always show the drag phantom on the |another_root| window.
       drag_phantom_window_controller_->SetDestinationDisplay(
-          gfx::Screen::GetDisplayMatching(another_root->GetBoundsInScreen()));
+          Shell::GetScreen()->GetDisplayMatching(
+              another_root->GetBoundsInScreen()));
       if (!layer_)
         RecreateWindowLayers();
       drag_phantom_window_controller_->Show(bounds_in_screen, layer_);

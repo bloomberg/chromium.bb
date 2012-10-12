@@ -78,7 +78,8 @@ LRESULT CALLBACK StatusTrayWin::WndProc(HWND hwnd,
              i != status_icons().end(); ++i) {
           StatusIconWin* win_icon = static_cast<StatusIconWin*>(*i);
           if (win_icon->icon_id() == wparam) {
-            gfx::Point cursor_pos(gfx::Screen::GetCursorScreenPoint());
+            gfx::Point cursor_pos(
+                gfx::Screen::GetNativeScreen()->GetCursorScreenPoint());
             win_icon->HandleClickEvent(cursor_pos, lparam == WM_LBUTTONDOWN);
             break;
           }

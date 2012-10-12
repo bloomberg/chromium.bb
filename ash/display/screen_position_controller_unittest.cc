@@ -89,8 +89,9 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreen) {
   EXPECT_EQ("200x200", root_windows[1]->GetHostSize().ToString());
 
   const gfx::Point window_pos(100, 100);
-  window_->SetBoundsInScreen(gfx::Rect(window_pos, gfx::Size(100, 100)),
-                             gfx::Screen::GetDisplayNearestPoint(window_pos));
+  window_->SetBoundsInScreen(
+      gfx::Rect(window_pos, gfx::Size(100, 100)),
+      Shell::GetScreen()->GetDisplayNearestPoint(window_pos));
   SetSecondaryDisplayLayout(DisplayLayout::RIGHT);
   // The point is on the primary root window.
   EXPECT_EQ("150,150", ConvertNativePointToScreen(50, 50));
@@ -126,8 +127,9 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreen) {
 
   SetSecondaryDisplayLayout(DisplayLayout::RIGHT);
   const gfx::Point window_pos2(300, 100);
-  window_->SetBoundsInScreen(gfx::Rect(window_pos2, gfx::Size(100, 100)),
-                             gfx::Screen::GetDisplayNearestPoint(window_pos2));
+  window_->SetBoundsInScreen(
+      gfx::Rect(window_pos2, gfx::Size(100, 100)),
+      Shell::GetScreen()->GetDisplayNearestPoint(window_pos2));
   // The point is on the secondary display.
   EXPECT_EQ("350,150", ConvertNativePointToScreen(50, 50));
   // The point is out of the all root windows.
@@ -171,7 +173,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertNativePointToScreenHiDPI) {
   EXPECT_EQ("200x200", root_windows[1]->GetHostSize().ToString());
 
   ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
+      Shell::GetInstance()->display_controller();
   // Put |window_| to the primary 2x display.
   window_->SetBoundsInScreen(gfx::Rect(20, 20, 50, 50),
                              display_controller->GetPrimaryDisplay());

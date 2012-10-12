@@ -146,11 +146,11 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SnapLeftClosesControls) {
 
 // Ensure that the controls are at the proper locations.
 IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ControlsAtRightSide) {
-  const gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();
-
   aura::RootWindow* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window);
   aura::Window* native_window = app_browser()->window()->GetNativeWindow();
+  const gfx::Rect work_area =
+      gfx::Screen::GetScreenFor(native_window)->GetPrimaryDisplay().work_area();
 
   // Control window exists.
   aura::Window* window = GetChildWindowNamed(

@@ -39,7 +39,8 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
   ChangeDisplayConfig(1.0f, gfx::Rect(0, 0, 1000, 900));
 
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  const gfx::Display display = gfx::Screen::GetDisplayNearestWindow(root);
+  const gfx::Display display =
+      Shell::GetScreen()->GetDisplayNearestWindow(root);
 
   EXPECT_EQ("0,0 1000x900", display.bounds().ToString());
   gfx::Rect work_area = display.work_area();
@@ -48,7 +49,8 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
 
   ChangeDisplayConfig(2.0f, gfx::Rect(0, 0, 2000, 1800));
 
-  const gfx::Display display_2x = gfx::Screen::GetDisplayNearestWindow(root);
+  const gfx::Display display_2x =
+      Shell::GetScreen()->GetDisplayNearestWindow(root);
 
   // The |bounds_in_pixel()| should report bounds in pixel coordinate.
   EXPECT_EQ("0,0 2000x1800", display_2x.bounds_in_pixel().ToString());

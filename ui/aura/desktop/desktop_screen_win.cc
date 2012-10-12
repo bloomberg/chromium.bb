@@ -40,7 +40,11 @@ DesktopScreenWin::~DesktopScreenWin() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopScreenWin, gfx::ScreenImpl implementation:
+// DesktopScreenWin, gfx::Screen implementation:
+
+bool DesktopScreenWin::IsDIPEnabled() {
+  return true;
+}
 
 gfx::Point DesktopScreenWin::GetCursorScreenPoint() {
   POINT pt;
@@ -101,7 +105,7 @@ gfx::Display DesktopScreenWin::GetPrimaryDisplay() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-gfx::ScreenImpl* CreateDesktopScreen() {
+gfx::Screen* CreateDesktopScreen() {
   return new DesktopScreenWin;
 }
 

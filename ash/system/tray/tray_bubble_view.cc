@@ -345,7 +345,7 @@ gfx::Rect TrayBubbleView::GetAnchorRect() {
 
   // TODO(jennyz): May need to add left/right alignment in the following code.
   if (rect.IsEmpty()) {
-    rect = gfx::Screen::GetPrimaryDisplay().bounds();
+    rect = Shell::GetScreen()->GetPrimaryDisplay().bounds();
     rect = gfx::Rect(
         base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreenBottomAlignment :
         rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,

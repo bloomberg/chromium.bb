@@ -21,6 +21,9 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace gfx {
+class Screen;
+}
 namespace views {
 class View;
 }
@@ -470,6 +473,10 @@ class TabDragController : public content::WebContentsDelegate,
   // The TabStrip the dragged Tab is currently attached to, or NULL if the
   // dragged Tab is detached.
   TabStrip* attached_tabstrip_;
+
+  // The screen that this drag is associated with. Cached, because other UI
+  // elements are NULLd at various points during the lifetime of this object.
+  gfx::Screen* screen_;
 
   // The visual representation of the dragged Tab.
   scoped_ptr<DraggedTabView> view_;

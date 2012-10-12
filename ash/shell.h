@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 
 class CommandLine;
@@ -166,6 +167,9 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // RootWindow remains the same even when the active window becomes NULL,
   // until the another window who has a different root window becomes active.
   static aura::RootWindow* GetActiveRootWindow();
+
+  // Returns the global Screen object that's always active in ash.
+  static gfx::Screen* GetScreen();
 
   // Returns all root windows.
   static RootWindowList GetAllRootWindows();

@@ -566,7 +566,8 @@ void TabStrip::RemoveTabDelegate::HighlightCloseButton() {
     return;
 
   widget->ResetLastMouseMoveFlag();
-  gfx::Point position = gfx::Screen::GetCursorScreenPoint();
+  gfx::Point position = gfx::Screen::GetScreenFor(
+      widget->GetNativeView())->GetCursorScreenPoint();
   views::View* root_view = widget->GetRootView();
   views::View::ConvertPointFromScreen(root_view, &position);
   ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED,

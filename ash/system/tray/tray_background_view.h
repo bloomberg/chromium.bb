@@ -99,6 +99,9 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   StatusAreaWidget* status_area_widget() {
     return status_area_widget_;
   }
+  const StatusAreaWidget* status_area_widget() const {
+    return status_area_widget_;
+  }
   TrayContainer* tray_container() const { return tray_container_; }
   ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
 

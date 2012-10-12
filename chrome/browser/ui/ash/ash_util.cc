@@ -36,6 +36,7 @@ bool IsNativeWindowInAsh(gfx::NativeWindow native_window) {
 }
 
 void ToggleAshDesktop() {
+  // TODO(scottmg): Probably need to force Ash here. http://crbug.com/133312
   if (!ash::Shell::HasInstance())
     OpenAsh();
   else

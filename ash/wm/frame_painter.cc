@@ -674,7 +674,7 @@ int FramePainter::AdjustFrameHitCodeForMaximizedModes(int hit_code) {
     // be active.
     const gfx::Rect& bounds = frame_->GetWindowBoundsInScreen();
     const gfx::Rect& screen =
-        gfx::Screen::GetDisplayMatching(bounds).work_area();
+        Shell::GetScreen()->GetDisplayMatching(bounds).work_area();
     if (bounds.y() == screen.y() && bounds.bottom() == screen.bottom()) {
       // The window is probably either left or right maximized.
       if (bounds.x() == screen.x()) {

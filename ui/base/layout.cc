@@ -151,8 +151,9 @@ void SetSupportedScaleFactors(
 
 #if !defined(OS_MACOSX)
 ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view) {
-  if (gfx::Screen::IsDIPEnabled()) {
-    gfx::Display display = gfx::Screen::GetDisplayNearestWindow(view);
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(view);
+  if (screen->IsDIPEnabled()) {
+    gfx::Display display = screen->GetDisplayNearestWindow(view);
     return GetScaleFactorFromScale(display.device_scale_factor());
   }
   return ui::SCALE_FACTOR_100P;

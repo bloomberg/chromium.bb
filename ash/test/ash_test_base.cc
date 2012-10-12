@@ -80,7 +80,8 @@ void AshTestBase::TearDown() {
 
 void AshTestBase::ChangeDisplayConfig(float scale,
                                       const gfx::Rect& bounds_in_pixel) {
-  gfx::Display display = gfx::Display(gfx::Screen::GetPrimaryDisplay().id());
+  gfx::Display display =
+      gfx::Display(Shell::GetScreen()->GetPrimaryDisplay().id());
   display.SetScaleAndBounds(scale, bounds_in_pixel);
   std::vector<gfx::Display> displays;
   displays.push_back(display);

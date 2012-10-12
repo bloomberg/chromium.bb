@@ -31,6 +31,8 @@ const struct KeyEventData {
 
 }
 
+namespace ash {
+
 KeyboardOverlayView::KeyboardOverlayView(
     content::BrowserContext* context,
     WebDialogDelegate* delegate,
@@ -42,7 +44,7 @@ KeyboardOverlayView::~KeyboardOverlayView() {
 }
 
 void KeyboardOverlayView::Cancel() {
-  ash::Shell::GetInstance()->overlay_filter()->Deactivate();
+  Shell::GetInstance()->overlay_filter()->Deactivate();
   views::Widget* widget = GetWidget();
   if (widget)
     widget->Close();
@@ -75,9 +77,11 @@ void KeyboardOverlayView::ShowDialog(
       new KeyboardOverlayView(context, delegate, handler);
   delegate->Show(view);
 
-  ash::Shell::GetInstance()->overlay_filter()->Activate(view);
+  Shell::GetInstance()->overlay_filter()->Activate(view);
 }
 
 void KeyboardOverlayView::WindowClosing() {
   Cancel();
 }
+
+}  // namespace ash

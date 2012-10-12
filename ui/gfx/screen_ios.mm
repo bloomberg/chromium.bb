@@ -6,25 +6,70 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/logging.h"
 #include "ui/gfx/display.h"
+
+namespace {
+
+class ScreenIos : public gfx::Screen {
+  virtual bool IsDIPEnabled() OVERRIDE {
+    return true;
+  }
+
+  virtual gfx::Point GetCursorScreenPoint() OVERRIDE {
+    NOTIMPLEMENTED();
+    return gfx::Point(0, 0);
+  }
+
+  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+    NOTIMPLEMENTED();
+    return gfx::NativeWindow();
+  }
+
+  virtual int GetNumDisplays() OVERRIDE {
+#if TARGET_IPHONE_SIMULATOR
+    // UIScreen does not reliably return correct results on the simulator.
+    return 1;
+#else
+    return [[UIScreen screens] count];
+#endif
+  }
+
+  // Returns the display nearest the specified window.
+  virtual gfx::Display GetDisplayNearestWindow(
+      gfx::NativeView view) const OVERRIDE {
+    NOTIMPLEMENTED();
+    return gfx::Display();
+  }
+
+  // Returns the the display nearest the specified point.
+  virtual gfx::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const OVERRIDE {
+    NOTIMPLEMENTED();
+    return gfx::Display();
+  }
+
+  // Returns the display that most closely intersects the provided bounds.
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const OVERRIDE {
+    NOTIMPLEMENTED();
+    return gfx::Display();
+  }
+
+  // Returns the primary display.
+  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
+    UIScreen* mainScreen = [[UIScreen screens] objectAtIndex:0];
+    gfx::Display display(0, gfx::Rect(mainScreen.bounds));
+    return display;
+  }
+};
+
+}  // namespace
 
 namespace gfx {
 
-// static
-gfx::Display Screen::GetPrimaryDisplay() {
-  UIScreen* mainScreen = [[UIScreen screens] objectAtIndex:0];
-  gfx::Display display(0, gfx::Rect(mainScreen.bounds));
-  return display;
-}
-
-// static
-int Screen::GetNumDisplays() {
-#if TARGET_IPHONE_SIMULATOR
-  // UIScreen does not reliably return correct results on the simulator.
-  return 1;
-#else
-  return [[UIScreen screens] count];
-#endif
+Screen* CreateNativeScreen() {
+  return new ScreenIos;
 }
 
 }  // namespace gfx

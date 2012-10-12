@@ -25,69 +25,73 @@ gfx::Display GetDisplay(MONITORINFO& monitor_info) {
   return display;
 }
 
+class ScreenWin : public gfx::Screen {
+ public:
+  ScreenWin() {}
+
+  bool IsDIPEnabled() OVERRIDE {
+    return false;
+  }
+
+  gfx::Point GetCursorScreenPoint() OVERRIDE {
+    POINT pt;
+    GetCursorPos(&pt);
+    return gfx::Point(pt);
+  }
+
+  gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+    POINT location;
+    return GetCursorPos(&location) ? WindowFromPoint(location) : NULL;
+  }
+
+  int GetNumDisplays() OVERRIDE {
+    return GetSystemMetrics(SM_CMONITORS);
+  }
+
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView window) const OVERRIDE {
+    MONITORINFO monitor_info;
+    monitor_info.cbSize = sizeof(monitor_info);
+    GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST),
+                  &monitor_info);
+    return GetDisplay(monitor_info);
+  }
+
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const OVERRIDE {
+    POINT initial_loc = { point.x(), point.y() };
+    HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi = {0};
+    mi.cbSize = sizeof(mi);
+    if (monitor && GetMonitorInfo(monitor, &mi))
+      return GetDisplay(mi);
+    return gfx::Display();
+  }
+
+  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const OVERRIDE {
+    RECT other_bounds_rect = match_rect.ToRECT();
+    MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
+        &other_bounds_rect, MONITOR_DEFAULTTONEAREST));
+    return GetDisplay(monitor_info);
+  }
+
+  gfx::Display GetPrimaryDisplay() const OVERRIDE {
+    MONITORINFO mi = GetMonitorInfoForMonitor(
+        MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY));
+    gfx::Display display = GetDisplay(mi);
+    DCHECK_EQ(GetSystemMetrics(SM_CXSCREEN), display.size().width());
+    DCHECK_EQ(GetSystemMetrics(SM_CYSCREEN), display.size().height());
+    return display;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenWin);
+};
+
 }  // namespace
 
 namespace gfx {
 
-// static
-bool Screen::IsDIPEnabled() {
-  return false;
-}
-
-// static
-gfx::Point Screen::GetCursorScreenPoint() {
-  POINT pt;
-  GetCursorPos(&pt);
-  return gfx::Point(pt);
-}
-
-// static
-gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
-  POINT location;
-  return GetCursorPos(&location) ? WindowFromPoint(location) : NULL;
-}
-
-// static
-int Screen::GetNumDisplays() {
-  return GetSystemMetrics(SM_CMONITORS);
-}
-
-// static
-gfx::Display Screen::GetDisplayNearestWindow(gfx::NativeView window) {
-  MONITORINFO monitor_info;
-  monitor_info.cbSize = sizeof(monitor_info);
-  GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST),
-                 &monitor_info);
-  return GetDisplay(monitor_info);
-}
-
-// static
-gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
-  POINT initial_loc = { point.x(), point.y() };
-  HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
-  MONITORINFO mi = {0};
-  mi.cbSize = sizeof(mi);
-  if (monitor && GetMonitorInfo(monitor, &mi))
-    return GetDisplay(mi);
-  return gfx::Display();
-}
-
-// static
-gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
-  RECT other_bounds_rect = match_rect.ToRECT();
-  MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
-      &other_bounds_rect, MONITOR_DEFAULTTONEAREST));
-  return GetDisplay(monitor_info);
-}
-
-// static
-gfx::Display Screen::GetPrimaryDisplay() {
-  MONITORINFO mi = GetMonitorInfoForMonitor(
-      MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY));
-  gfx::Display display = GetDisplay(mi);
-  DCHECK_EQ(GetSystemMetrics(SM_CXSCREEN), display.size().width());
-  DCHECK_EQ(GetSystemMetrics(SM_CYSCREEN), display.size().height());
-  return display;
+Screen* CreateNativeScreen() {
+  return new ScreenWin;
 }
 
 }  // namespace gfx

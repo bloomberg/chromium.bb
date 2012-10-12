@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -58,6 +59,8 @@ void PaintMessageHandler::DidPaint(const ListValue* args) {
 
 }  // namespace
 
+namespace ash {
+
 KeyboardOverlayDelegate::KeyboardOverlayDelegate(const string16& title,
                                                  const GURL& url)
     : title_(title),
@@ -80,7 +83,7 @@ void KeyboardOverlayDelegate::Show(views::WebDialogView* view) {
   // Show the widget at the bottom of the work area.
   gfx::Size size;
   GetDialogSize(&size);
-  const gfx::Rect& rect = gfx::Screen::GetDisplayNearestWindow(
+  const gfx::Rect& rect = Shell::GetScreen()->GetDisplayNearestWindow(
       widget->GetNativeView()).work_area();
   gfx::Rect bounds((rect.width() - size.width()) / 2,
                    rect.height() - size.height(),
@@ -112,7 +115,7 @@ void KeyboardOverlayDelegate::GetDialogSize(
     gfx::Size* size) const {
   using std::min;
   DCHECK(view_);
-  gfx::Rect rect = gfx::Screen::GetDisplayNearestWindow(
+  gfx::Rect rect = ash::Shell::GetScreen()->GetDisplayNearestWindow(
       view_->GetWidget()->GetNativeView()).bounds();
   const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);
   const int height = width * kBaseHeight / kBaseWidth;
@@ -141,3 +144,5 @@ bool KeyboardOverlayDelegate::HandleContextMenu(
     const content::ContextMenuParams& params) {
   return true;
 }
+
+}  // namespace ash

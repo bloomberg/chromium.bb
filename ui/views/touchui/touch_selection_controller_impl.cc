@@ -309,8 +309,8 @@ class TouchSelectionControllerImpl::TouchContextMenuView
                             position.y() - height,
                             total_width,
                             height);
-    gfx::Rect monitor_bounds =
-        gfx::Screen::GetDisplayNearestPoint(position).bounds();
+    gfx::Rect monitor_bounds = gfx::Screen::GetNativeScreen()->
+        GetDisplayNearestPoint(position).bounds();
     widget_->SetBounds(widget_bounds.AdjustToFit(monitor_bounds));
     Layout();
   }

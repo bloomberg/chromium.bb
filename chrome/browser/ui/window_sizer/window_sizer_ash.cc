@@ -163,9 +163,8 @@ bool WindowSizer::GetBoundsOverrideAsh(const gfx::Rect& specified_bounds,
     // In case we have only one window, we move the other window fully to the
     // "other side" - making room for this new window.
     if (count == 1) {
-      gfx::Display display =
-            gfx::Screen::GetDisplayMatching(
-                top_window->GetRootWindow()->GetBoundsInScreen());
+      gfx::Display display = ash::Shell::GetScreen()->GetDisplayMatching(
+          top_window->GetRootWindow()->GetBoundsInScreen());
       if (MoveRect(work_area, other_bounds_in_screen, !move_right))
         top_window->SetBoundsInScreen(other_bounds_in_screen, display);
     }

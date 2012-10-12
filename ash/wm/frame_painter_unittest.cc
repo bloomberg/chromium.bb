@@ -336,7 +336,8 @@ TEST_F(FramePainterTest, HitTestSpecialMaximizedModes) {
   views::NonClientFrameView* frame = w1->non_client_view()->frame_view();
   w1->Show();
   gfx::Rect any_rect = gfx::Rect(0, 0, 100, 100);
-  gfx::Rect screen = gfx::Screen::GetDisplayMatching(any_rect).work_area();
+  gfx::Rect screen = Shell::GetScreen()->GetDisplayMatching(
+      any_rect).work_area();
   w1->SetBounds(any_rect);
   EXPECT_EQ(HTTOPLEFT, p1.NonClientHitTest(frame, gfx::Point(0, 15)));
   w1->SetBounds(gfx::Rect(

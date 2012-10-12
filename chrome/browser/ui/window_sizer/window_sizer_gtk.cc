@@ -22,7 +22,8 @@ const int WindowSizer::kWindowTilePixels = 10;
 // static
 gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size,
                                               chrome::HostDesktopType type) {
-  gfx::Rect monitor_bounds = gfx::Screen::GetPrimaryDisplay().work_area();
+  gfx::Rect monitor_bounds = gfx::Screen::GetNativeScreen()->
+      GetPrimaryDisplay().work_area();
   gfx::Point corner(monitor_bounds.x(), monitor_bounds.y());
 
   if (Browser* browser = browser::FindLastActiveWithHostDesktopType(type)) {

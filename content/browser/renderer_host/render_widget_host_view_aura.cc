@@ -146,8 +146,8 @@ bool CanRendererHandleEvent(const ui::MouseEvent* event) {
 
 void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
   const gfx::Display display = window ?
-      gfx::Screen::GetDisplayNearestWindow(window) :
-      gfx::Screen::GetPrimaryDisplay();
+      gfx::Screen::GetScreenFor(window)->GetDisplayNearestWindow(window) :
+      gfx::Screen::GetScreenFor(window)->GetPrimaryDisplay();
   const gfx::Size size = display.size();
   results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
   results->availableRect = results->rect;
@@ -319,8 +319,8 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
       host_tracker_.reset(new aura::WindowTracker);
       host_tracker_->Add(reference_window);
     }
-    gfx::Display display =
-        gfx::Screen::GetDisplayNearestWindow(reference_window);
+    gfx::Display display = gfx::Screen::GetScreenFor(window_)->
+        GetDisplayNearestWindow(reference_window);
     aura::client::StackingClient* stacking_client =
         aura::client::GetStackingClient();
     if (stacking_client)
@@ -496,7 +496,8 @@ gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;
-  const gfx::Display display = gfx::Screen::GetDisplayNearestWindow(window_);
+  const gfx::Display display = gfx::Screen::GetScreenFor(window_)->
+      GetDisplayNearestWindow(window_);
   current_cursor_.SetScaleFactor(display.device_scale_factor());
   UpdateCursorIfOverSelf();
 }
@@ -1705,7 +1706,8 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
-  const gfx::Point screen_point = gfx::Screen::GetCursorScreenPoint();
+  const gfx::Point screen_point =
+      gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
   aura::RootWindow* root_window = window_->GetRootWindow();
   if (!root_window)
     return;

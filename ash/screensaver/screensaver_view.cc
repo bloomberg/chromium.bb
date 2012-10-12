@@ -129,7 +129,7 @@ void ScreensaverView::LoadScreensaver() {
 void ScreensaverView::ShowWindow() {
   aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
   gfx::Rect screen_rect =
-      gfx::Screen::GetDisplayNearestWindow(root_window).bounds();
+      Shell::GetScreen()->GetDisplayNearestWindow(root_window).bounds();
 
   // We want to be the fullscreen topmost child of the root window.
   // There should be nothing ever really that should show up on top of us.

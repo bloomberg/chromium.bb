@@ -25,17 +25,22 @@ const int kMinVisibleWidth = 30;
 
 class DefaultMonitorInfoProvider : public MonitorInfoProvider {
  public:
+  explicit DefaultMonitorInfoProvider(const gfx::Screen* screen)
+      : screen_(screen) {}
   // Overridden from MonitorInfoProvider:
   virtual gfx::Rect GetPrimaryDisplayWorkArea() const OVERRIDE {
-    return gfx::Screen::GetPrimaryDisplay().work_area();
+    return screen_->GetPrimaryDisplay().work_area();
   }
   virtual gfx::Rect GetPrimaryDisplayBounds() const OVERRIDE {
-    return gfx::Screen::GetPrimaryDisplay().bounds();
+    return screen_->GetPrimaryDisplay().bounds();
   }
   virtual gfx::Rect GetMonitorWorkAreaMatching(
       const gfx::Rect& match_rect) const OVERRIDE {
-    return gfx::Screen::GetDisplayMatching(match_rect).work_area();
+    return screen_->GetDisplayMatching(match_rect).work_area();
   }
+ private:
+  const gfx::Screen* screen_;
+  DISALLOW_COPY_AND_ASSIGN(DefaultMonitorInfoProvider);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -150,7 +155,9 @@ const int WindowSizer::kMaximumWindowWidth = 1100;
 
 WindowSizer::WindowSizer(StateProvider* state_provider, const Browser* browser)
     : state_provider_(state_provider),
-      monitor_info_provider_(new DefaultMonitorInfoProvider),
+      monitor_info_provider_(new DefaultMonitorInfoProvider(
+          // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
+          gfx::Screen::GetNativeScreen())),
       browser_(browser) {
 }
 

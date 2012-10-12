@@ -202,7 +202,7 @@ bool WebNotificationTray::IsMouseInNotificationBubble() const {
   if (!popup_bubble())
     return false;
   return popup_bubble_->bubble_view()->GetBoundsInScreen().Contains(
-      gfx::Screen::GetCursorScreenPoint());
+      Shell::GetScreen()->GetCursorScreenPoint());
 }
 
 void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {

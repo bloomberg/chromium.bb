@@ -430,7 +430,8 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         client::ScreenPositionClient* client =
             client::GetScreenPositionClient(root);
         if (client) {
-          gfx::Point p = gfx::Screen::GetCursorScreenPoint();
+          gfx::Point p = gfx::Screen::GetScreenFor(root)->
+              GetCursorScreenPoint();
           client->ConvertPointFromScreen(root, &p);
           if (root->ContainsPoint(p)) {
             root->ConvertPointToNativeScreen(&p);
@@ -686,8 +687,8 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   // Even if the host window's size doesn't change, aura's root window
   // size, which is in DIP, changes when the scale changes.
   float current_scale = delegate_->GetDeviceScaleFactor();
-  float new_scale = gfx::Screen::GetDisplayNearestWindow(
-      delegate_->AsRootWindow()).device_scale_factor();
+  float new_scale = gfx::Screen::GetScreenFor(delegate_->AsRootWindow())->
+      GetDisplayNearestWindow(delegate_->AsRootWindow()).device_scale_factor();
   bool origin_changed = bounds_.origin() != bounds.origin();
   bool size_changed = bounds_.size() != bounds.size();
   XWindowChanges changes = {0};

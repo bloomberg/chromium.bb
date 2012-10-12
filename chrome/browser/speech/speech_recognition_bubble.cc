@@ -130,8 +130,9 @@ SpeechRecognitionBubbleBase::SpeechRecognitionBubbleBase(
       display_mode_(DISPLAY_MODE_RECORDING),
       web_contents_(web_contents),
       scale_factor_(ui::SCALE_FACTOR_NONE) {
-  gfx::Display display = gfx::Screen::GetDisplayNearestWindow(
-      web_contents_ ? web_contents_->GetNativeView() : NULL);
+  gfx::NativeView view = web_contents_ ? web_contents_->GetNativeView() : NULL;
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(view);
+  gfx::Display display = screen->GetDisplayNearestWindow(view);
   scale_factor_ = ui::GetScaleFactorFromScale(
       display.device_scale_factor());
 

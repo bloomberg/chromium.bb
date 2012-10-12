@@ -6,19 +6,20 @@
 #define UI_AURA_TEST_TEST_SCREEN_H_
 
 #include "base/compiler_specific.h"
-#include "ui/gfx/screen_impl.h"
+#include "ui/gfx/screen.h"
 
 namespace aura {
 class RootWindow;
 
 // A minimal, testing Aura implementation of gfx::Screen.
-class TestScreen : public gfx::ScreenImpl {
+class TestScreen : public gfx::Screen {
  public:
   explicit TestScreen(aura::RootWindow* root_window);
   virtual ~TestScreen();
 
  protected:
-  // gfx::ScreenImpl overrides:
+  // gfx::Screen overrides:
+  virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
   virtual int GetNumDisplays() OVERRIDE;

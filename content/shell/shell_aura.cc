@@ -289,7 +289,8 @@ void Shell::PlatformInitialize() {
 #endif
   aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
   stacking_client_ = new aura::DesktopStackingClient();
-  gfx::Screen::SetInstance(aura::CreateDesktopScreen());
+  gfx::Screen::SetScreenInstance(
+      gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
   views_delegate_ = new ShellViewsDelegateAura();
 
   CommandLine::ForCurrentProcess()->AppendSwitch(views::switches::kDesktopAura);

@@ -272,7 +272,7 @@ void MoveToDeviceControlBezelStartPosition(
 TEST_F(SystemGestureEventFilterTest, DeviceControl) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
-  gfx::Rect screen = gfx::Screen::GetPrimaryDisplay().bounds();
+  gfx::Rect screen = Shell::GetScreen()->GetPrimaryDisplay().bounds();
   int ypos_half = screen.height() / 2;
 
   ash::AcceleratorController* accelerator =
@@ -376,7 +376,7 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
 TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
-  gfx::Rect screen = gfx::Screen::GetPrimaryDisplay().bounds();
+  gfx::Rect screen = Shell::GetScreen()->GetPrimaryDisplay().bounds();
   int ypos_half = screen.height() / 2;
 
   aura::test::TestWindowDelegate delegate;

@@ -20,12 +20,16 @@ TestScreen::TestScreen(aura::RootWindow* root_window)
 TestScreen::~TestScreen() {
 }
 
+bool TestScreen::IsDIPEnabled() {
+  return true;
+}
+
 gfx::Point TestScreen::GetCursorScreenPoint() {
   return Env::GetInstance()->last_mouse_location();
 }
 
 gfx::NativeWindow TestScreen::GetWindowAtCursorScreenPoint() {
-  const gfx::Point point = gfx::Screen::GetCursorScreenPoint();
+  const gfx::Point point = GetCursorScreenPoint();
   return root_window_->GetTopWindowContainingPoint(point);
 }
 

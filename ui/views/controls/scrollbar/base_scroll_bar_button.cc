@@ -39,7 +39,9 @@ void BaseScrollBarButton::RepeaterNotifyClick() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   gfx::Point cursor_point(GetMessagePos());
 #else
-  gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
+  // TODO(scottmg): Native is wrong: http://crbug.com/133312
+  gfx::Point cursor_point =
+      gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
 #endif
   ui::MouseEvent event(ui::ET_MOUSE_RELEASED,
                        cursor_point, cursor_point,

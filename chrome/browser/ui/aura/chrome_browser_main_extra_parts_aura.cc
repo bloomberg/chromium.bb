@@ -29,7 +29,8 @@ ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 #if !defined(USE_ASH)
-  gfx::Screen::SetInstance(aura::CreateDesktopScreen());
+  gfx::Screen::SetScreenInstance(
+      gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
   aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
   stacking_client_.reset(new aura::DesktopStackingClient);
 #endif  // !USE_ASH

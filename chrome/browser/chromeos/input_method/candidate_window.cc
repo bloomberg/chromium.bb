@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -1216,8 +1217,8 @@ void CandidateWindowView::ResizeAndMoveParentFrame() {
   const int horizontal_offset = GetHorizontalOffset();
 
   gfx::Rect old_bounds = parent_frame_->GetClientAreaBoundsInScreen();
-  gfx::Rect screen_bounds =
-      gfx::Screen::GetDisplayMatching(cursor_location_).work_area();
+  gfx::Rect screen_bounds = ash::Shell::GetScreen()->GetDisplayMatching(
+      cursor_location_).work_area();
   // The size.
   gfx::Rect frame_bounds = old_bounds;
   frame_bounds.set_size(GetPreferredSize());
@@ -1511,7 +1512,7 @@ void InfolistWindowView::UpdateCandidates(
 void InfolistWindowView::ResizeAndMoveParentFrame() {
   int x, y;
   gfx::Rect old_bounds = parent_frame_->GetClientAreaBoundsInScreen();
-  gfx::Rect screen_bounds = gfx::Screen::GetDisplayNearestWindow(
+  gfx::Rect screen_bounds = ash::Shell::GetScreen()->GetDisplayNearestWindow(
       parent_frame_->GetNativeView()).work_area();
   // The size.
   gfx::Rect frame_bounds = old_bounds;

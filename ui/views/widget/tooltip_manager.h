@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -32,8 +33,9 @@ class VIEWS_EXPORT TooltipManager {
   static gfx::Font GetDefaultFont();
 
   // Returns the maximum width of the tooltip. |x| and |y| give the location
-  // the tooltip is to be displayed on in screen coordinates.
-  static int GetMaxWidth(int x, int y);
+  // the tooltip is to be displayed on in screen coordinates. |context| is
+  // used to determine which gfx::Screen should be used.
+  static int GetMaxWidth(int x, int y, gfx::NativeView context);
 
   TooltipManager() {}
   virtual ~TooltipManager() {}
@@ -54,12 +56,14 @@ class VIEWS_EXPORT TooltipManager {
   // Trims the tooltip to fit, setting |text| to the clipped result,
   // |max_width| to the width (in pixels) of the clipped text and |line_count|
   // to the number of lines of text in the tooltip. |x| and |y| give the
-  // location of the tooltip in screen coordinates.
+  // location of the tooltip in screen coordinates. |context| is used to
+  // determine which gfx::Screen should be used.
   static void TrimTooltipToFit(string16* text,
                                int* max_width,
                                int* line_count,
                                int x,
-                               int y);
+                               int y,
+                               gfx::NativeView context);
 };
 
 }  // namespace views

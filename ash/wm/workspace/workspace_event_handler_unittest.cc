@@ -50,8 +50,8 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
 
   wm::ActivateWindow(window.get());
 
-  gfx::Rect work_area =
-      gfx::Screen::GetDisplayNearestWindow(window.get()).work_area();
+  gfx::Rect work_area = Shell::GetScreen()->GetDisplayNearestWindow(
+      window.get()).work_area();
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        window.get());

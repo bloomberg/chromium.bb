@@ -9,29 +9,51 @@
 
 namespace gfx {
 
-// static
-bool Screen::IsDIPEnabled() {
-  return false;
-}
+class ScreenAndroid : public Screen {
+ public:
+  ScreenAndroid() {}
 
-// static
-gfx::Display Screen::GetPrimaryDisplay() {
-  NOTIMPLEMENTED() << "crbug.com/117839 tracks implementation";
-  return gfx::Display(0, gfx::Rect(0, 0, 1, 1));
-}
+  bool IsDIPEnabled() OVERRIDE {
+    return false;
+  }
 
-// static
-gfx::Display Screen::GetDisplayNearestWindow(gfx::NativeView view) {
-  return GetPrimaryDisplay();
-}
+  gfx::Point GetCursorScreenPoint() OVERRIDE {
+    return gfx::Point();
+  }
 
-// static
-gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
-  return GetPrimaryDisplay();
-}
+  gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
 
-int Screen::GetNumDisplays() {
-  return 1;
+  gfx::Display GetPrimaryDisplay() const OVERRIDE {
+    NOTIMPLEMENTED() << "crbug.com/117839 tracks implementation";
+    return gfx::Display(0, gfx::Rect(0, 0, 1, 1));
+  }
+
+  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const OVERRIDE {
+    return GetPrimaryDisplay();
+  }
+
+  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const OVERRIDE {
+    return GetPrimaryDisplay();
+  }
+
+  int GetNumDisplays() OVERRIDE {
+    return 1;
+  }
+
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const OVERRIDE {
+    return GetPrimaryDisplay();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenAndroid);
+};
+
+Screen* CreateNativeScreen() {
+  return new ScreenAndroid;
 }
 
 }  // namespace gfx

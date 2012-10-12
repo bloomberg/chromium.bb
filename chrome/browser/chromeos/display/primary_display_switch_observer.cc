@@ -16,7 +16,7 @@ namespace chromeos {
 
 void PrimaryDisplaySwitchObserver::OnRootWindowMoved(
     const aura::RootWindow* root_window, const gfx::Point& new_origin) {
-  StorePrimaryDisplayIDPref(gfx::Screen::GetPrimaryDisplay().id());
+  StorePrimaryDisplayIDPref(ash::Shell::GetScreen()->GetPrimaryDisplay().id());
 }
 
 PrimaryDisplaySwitchObserver::PrimaryDisplaySwitchObserver()

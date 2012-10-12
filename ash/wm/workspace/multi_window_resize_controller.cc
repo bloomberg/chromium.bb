@@ -430,7 +430,7 @@ void MultiWindowResizeController::CompleteResize(int event_flags) {
   window_resizer_.reset();
 
   // Mouse may still be over resizer, if not hide.
-  gfx::Point screen_loc = gfx::Screen::GetCursorScreenPoint();
+  gfx::Point screen_loc = Shell::GetScreen()->GetCursorScreenPoint();
   if (!resize_widget_->GetWindowBoundsInScreen().Contains(screen_loc)) {
     Hide();
   } else {

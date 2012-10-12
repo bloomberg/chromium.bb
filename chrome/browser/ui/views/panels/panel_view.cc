@@ -686,8 +686,8 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
   // When the user clicks on the minimized panel, the panel expansion will be
   // done when we process the mouse button pressed message.
   if (focused_ && panel_->IsMinimized() &&
-      gfx::Screen::GetWindowAtCursorScreenPoint() !=
-          widget->GetNativeWindow()) {
+      gfx::Screen::GetScreenFor(widget->GetNativeWindow())->
+          GetWindowAtCursorScreenPoint() != widget->GetNativeWindow()) {
     panel_->Restore();
   }
 

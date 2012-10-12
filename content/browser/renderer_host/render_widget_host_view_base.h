@@ -21,6 +21,7 @@
 #include "content/common/content_export.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "ui/base/range/range.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
 namespace content {
@@ -65,7 +66,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
   // Notification that a resize or move session ended on the native widget.
-  void UpdateScreenInfo();
+  void UpdateScreenInfo(gfx::NativeView view);
 
 #if defined(OS_WIN)
   // The callback that DetachPluginsHelper calls for each child window. Call

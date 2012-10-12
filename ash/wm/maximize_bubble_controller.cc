@@ -490,7 +490,7 @@ void MaximizeBubbleController::Bubble::MouseMovedOutOfHost() {
   // When we leave the bubble, we might be still be in gesture mode or over
   // the maximize button. So only close if none of the other cases apply.
   if (!owner_->frame_maximize_button()->is_snap_enabled()) {
-    gfx::Point screen_location = gfx::Screen::GetCursorScreenPoint();
+    gfx::Point screen_location = Shell::GetScreen()->GetCursorScreenPoint();
     if (!owner_->frame_maximize_button()->GetBoundsInScreen().Contains(
         screen_location)) {
         owner_->RequestDestructionThroughOwner();

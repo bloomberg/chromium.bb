@@ -10,51 +10,66 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/screen_type_delegate.h"
 
 namespace gfx {
 class Rect;
-class ScreenImpl;
 
 // A utility class for getting various info about screen size, displays,
 // cursor position, etc.
 class UI_EXPORT Screen {
  public:
-#if defined(USE_AURA)
-  // Sets the instance to use. This takes owernship of |screen|, deleting the
-  // old instance. This is used on aura to avoid circular dependencies between
-  // ui and aura.
-  static void SetInstance(ScreenImpl* screen);
-#endif
+  // Retrieves the Screen that the specified NativeView belongs to.
+  static Screen* GetScreenFor(NativeView view);
+
+  // Returns the SCREEN_TYPE_NATIVE Screen. This should be used with caution,
+  // as it is likely to be incorrect for code that runs on Windows.
+  static Screen* GetNativeScreen();
+
+  // Sets the global screen for a particular screen type. Only the _NATIVE
+  // ScreenType must be provided.
+  static void SetScreenInstance(ScreenType type, Screen* instance);
+
+  // Sets the global ScreenTypeDelegate. May be left unset if the platform
+  // uses only the _NATIVE ScreenType.
+  static void SetScreenTypeDelegate(ScreenTypeDelegate* delegate);
+
+  Screen();
+  virtual ~Screen();
 
   // Returns true if DIP is enabled.
-  static bool IsDIPEnabled();
+  virtual bool IsDIPEnabled() = 0;
 
   // Returns the current absolute position of the mouse pointer.
-  static gfx::Point GetCursorScreenPoint();
+  virtual gfx::Point GetCursorScreenPoint() = 0;
 
   // Returns the window under the cursor.
-  static gfx::NativeWindow GetWindowAtCursorScreenPoint();
+  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() = 0;
 
   // Returns the number of displays.
   // Mirrored displays are excluded; this method is intended to return the
   // number of distinct, usable displays.
-  static int GetNumDisplays();
+  virtual int GetNumDisplays() = 0;
 
   // Returns the display nearest the specified window.
-  static gfx::Display GetDisplayNearestWindow(gfx::NativeView view);
+  virtual gfx::Display GetDisplayNearestWindow(NativeView view) const = 0;
 
   // Returns the the display nearest the specified point.
-  static gfx::Display GetDisplayNearestPoint(const gfx::Point& point);
+  virtual gfx::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const = 0;
 
   // Returns the display that most closely intersects the provided bounds.
-  static gfx::Display GetDisplayMatching(const gfx::Rect& match_rect);
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const = 0;
 
   // Returns the primary display.
-  static gfx::Display GetPrimaryDisplay();
+  virtual gfx::Display GetPrimaryDisplay() const = 0;
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(Screen);
+  DISALLOW_COPY_AND_ASSIGN(Screen);
 };
+
+Screen* CreateNativeScreen();
 
 }  // namespace gfx
 

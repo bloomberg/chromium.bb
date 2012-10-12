@@ -31,6 +31,9 @@ class Window;
 namespace ui {
 class OSExchangeData;
 }
+namespace gfx {
+class Screen;
+}
 namespace views {
 
 class DropTargetEvent;
@@ -460,6 +463,9 @@ class VIEWS_EXPORT MenuController
   virtual void OnWindowActivated(aura::Window* active,
                                  aura::Window* old_active) OVERRIDE;
 #endif
+
+  // Retrieve an appropriate Screen.
+  gfx::Screen* GetScreen();
 
   // The active instance.
   static MenuController* active_instance_;

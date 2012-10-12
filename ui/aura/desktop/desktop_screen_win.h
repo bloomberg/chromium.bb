@@ -6,16 +6,17 @@
 #define UI_AURA_DESKTOP_DESKTOP_SCREEN_WIN_H_
 
 #include "ui/aura/aura_export.h"
-#include "ui/gfx/screen_impl.h"
+#include "ui/gfx/screen.h"
 
 namespace aura {
 
-class AURA_EXPORT DesktopScreenWin : public gfx::ScreenImpl {
+class AURA_EXPORT DesktopScreenWin : public gfx::Screen {
 public:
   DesktopScreenWin();
   virtual ~DesktopScreenWin();
 
-  // Overridden from gfx::ScreenImpl:
+  // Overridden from gfx::Screen:
+  virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
   virtual int GetNumDisplays() OVERRIDE;

@@ -74,7 +74,7 @@ void SystemModalContainerLayoutManager::OnWindowResized() {
   if (modal_background_) {
     // Note: we have to set the entire bounds with the screen offset.
     modal_background_->SetBounds(
-        gfx::Screen::GetDisplayNearestWindow(container_).bounds());
+        Shell::GetScreen()->GetDisplayNearestWindow(container_).bounds());
   }
   if (!modal_windows_.empty()) {
     aura::Window::Windows::iterator it = modal_windows_.begin();
@@ -166,7 +166,8 @@ void SystemModalContainerLayoutManager::CreateModalBackground() {
     modal_background_ = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
     params.parent = container_;
-    params.bounds = gfx::Screen::GetDisplayNearestWindow(container_).bounds();
+    params.bounds = Shell::GetScreen()->GetDisplayNearestWindow(
+        container_).bounds();
     modal_background_->Init(params);
     modal_background_->GetNativeView()->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");

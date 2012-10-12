@@ -704,7 +704,7 @@ void MenuController::OnDragExitedScrollButton(SubmenuView* source) {
 
 void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
   if (submenu->IsShowing()) {
-    gfx::Point point = gfx::Screen::GetCursorScreenPoint();
+    gfx::Point point = GetScreen()->GetCursorScreenPoint();
     const SubmenuView* root_submenu =
         submenu->GetMenuItem()->GetRootMenuItem()->GetSubmenu();
     views::View::ConvertPointFromScreen(
@@ -1108,14 +1108,14 @@ void MenuController::UpdateInitialLocation(
 
   // Calculate the bounds of the monitor we'll show menus on. Do this once to
   // avoid repeated system queries for the info.
-  pending_state_.monitor_bounds = gfx::Screen::GetDisplayNearestPoint(
+  pending_state_.monitor_bounds = GetScreen()->GetDisplayNearestPoint(
       bounds.origin()).work_area();
 #if defined(USE_ASH)
   if (!pending_state_.monitor_bounds.Contains(bounds)) {
     // Use the monitor area if the work area doesn't contain the bounds. This
     // handles showing a menu from the launcher.
-    gfx::Rect monitor_area =
-        gfx::Screen::GetDisplayNearestPoint(bounds.origin()).bounds();
+    gfx::Rect monitor_area = GetScreen()->GetDisplayNearestPoint(
+        bounds.origin()).bounds();
     if (monitor_area.Contains(bounds))
       pending_state_.monitor_bounds = monitor_area;
   }
@@ -1149,7 +1149,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
   }
 
   gfx::NativeWindow window_under_mouse =
-      gfx::Screen::GetWindowAtCursorScreenPoint();
+      GetScreen()->GetWindowAtCursorScreenPoint();
   // TODO(oshima): Replace with views only API.
   if (window_under_mouse != owner_->GetNativeWindow())
     return false;
@@ -2134,5 +2134,13 @@ void MenuController::OnWindowActivated(aura::Window* active,
     Cancel(EXIT_ALL);
 }
 #endif
+
+gfx::Screen* MenuController::GetScreen() {
+#if defined(USE_AURA)
+  return gfx::Screen::GetScreenFor(root_window_);
+#else
+  return gfx::Screen::GetNativeScreen();
+#endif
+}
 
 }  // namespace views

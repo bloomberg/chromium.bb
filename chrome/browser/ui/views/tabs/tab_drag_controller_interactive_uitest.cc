@@ -157,7 +157,7 @@ Browser* TabDragControllerTest::CreateAnotherWindowBrowserAndRelayout() {
   ResetIDs(browser2->tab_strip_model(), 100);
 
   // Resize the two windows so they're right next to each other.
-  gfx::Rect work_area = gfx::Screen::GetDisplayNearestWindow(
+  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
       browser()->window()->GetNativeWindow()).work_area();
   gfx::Size half_size =
       gfx::Size(work_area.width() / 3 - 10, work_area.height() / 2 - 10);
@@ -1085,7 +1085,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   std::vector<aura::RootWindow*> roots(ash::Shell::GetAllRootWindows());
   ASSERT_EQ(2u, roots.size());
   aura::RootWindow* second_root = roots[1];
-  gfx::Rect work_area = gfx::Screen::GetDisplayNearestWindow(
+  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
       second_root).work_area();
   browser2->window()->SetBounds(work_area);
   EXPECT_EQ(second_root,
@@ -1197,7 +1197,8 @@ IN_PROC_BROWSER_TEST_F(
   std::vector<aura::RootWindow*> roots(ash::Shell::GetAllRootWindows());
   ASSERT_EQ(2u, roots.size());
   gfx::Point final_destination =
-      gfx::Screen::GetDisplayNearestWindow(roots[1]).work_area().CenterPoint();
+      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
+          roots[1]).work_area().CenterPoint();
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough to move to another display.
@@ -1233,14 +1234,15 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
   EXPECT_EQ(roots[0], browser()->window()->GetNativeWindow()->GetRootWindow());
 
-  gfx::Rect work_area =
-      gfx::Screen::GetDisplayNearestWindow(roots[1]).work_area();
+  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->
+      GetDisplayNearestWindow(roots[1]).work_area();
   browser()->window()->SetBounds(work_area);
   EXPECT_EQ(roots[1], browser()->window()->GetNativeWindow()->GetRootWindow());
 
   // Move the second browser to the display.
   gfx::Point final_destination =
-      gfx::Screen::GetDisplayNearestWindow(roots[0]).work_area().CenterPoint();
+      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
+          roots[0]).work_area().CenterPoint();
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough to move to another display.

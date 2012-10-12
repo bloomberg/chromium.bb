@@ -27,7 +27,8 @@ void TooltipManager::TrimTooltipToFit(string16* text,
                                       int* max_width,
                                       int* line_count,
                                       int x,
-                                      int y) {
+                                      int y,
+                                      gfx::NativeView context) {
   *max_width = 0;
   *line_count = 0;
 
@@ -37,7 +38,7 @@ void TooltipManager::TrimTooltipToFit(string16* text,
     *text = text->substr(0, kMaxTooltipLength);
 
   // Determine the available width for the tooltip.
-  int available_width = GetMaxWidth(x, y);
+  int available_width = GetMaxWidth(x, y, context);
 
   // Split the string into at most kMaxLines lines.
   std::vector<string16> lines;

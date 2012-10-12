@@ -29,8 +29,9 @@ ui::ScaleFactor GetDeviceScaleFactorForNativeView(views::Widget* widget) {
   // yet care about device scale factor on other platforms. So to keep drag and
   // drop behavior on other platforms un-touched, we wrap this in the #if guard.
   if (widget && widget->GetNativeView()) {
-    gfx::Display display = gfx::Screen::GetDisplayNearestWindow(
-        widget->GetNativeView());
+    gfx::NativeView view = widget->GetNativeView();
+    gfx::Display display = gfx::Screen::GetScreenFor(view)->
+        GetDisplayNearestWindow(view);
     device_scale_factor = ui::GetScaleFactorFromScale(
         display.device_scale_factor());
   }

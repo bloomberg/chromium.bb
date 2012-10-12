@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
@@ -45,7 +46,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
 }
 
 void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
-  gfx::Rect bounds(gfx::Screen::GetPrimaryDisplay().bounds());
+  gfx::Rect bounds(ash::Shell::GetScreen()->GetPrimaryDisplay().bounds());
 
   lock_time_ = base::TimeTicks::Now();
   LockWindow* lock_window = LockWindow::Create();

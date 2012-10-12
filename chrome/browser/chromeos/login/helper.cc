@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/helper.h"
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
@@ -57,7 +58,7 @@ views::Throbber* CreateDefaultThrobber() {
 }
 
 gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
-  gfx::Rect bounds(gfx::Screen::GetPrimaryDisplay().bounds());
+  gfx::Rect bounds(ash::Shell::GetScreen()->GetPrimaryDisplay().bounds());
   if (!size.IsEmpty()) {
     int horizontal_diff = bounds.width() - size.width();
     int vertical_diff = bounds.height() - size.height();

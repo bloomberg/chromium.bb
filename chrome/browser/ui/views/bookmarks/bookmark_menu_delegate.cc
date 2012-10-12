@@ -110,7 +110,8 @@ string16 BookmarkMenuDelegate::GetTooltipText(
   const BookmarkNode* node = i->second;
   if (node->is_url()) {
     return BookmarkBarView::CreateToolTipForURLAndTitle(
-        screen_loc, node->url(), node->GetTitle(), profile_);
+        screen_loc, node->url(), node->GetTitle(), profile_,
+        parent()->GetNativeView());
   }
   return string16();
 }

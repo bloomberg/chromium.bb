@@ -58,14 +58,14 @@ gfx::Rect ScreenAsh::GetUnmaximizedWorkAreaBoundsInParent(
 gfx::Rect ScreenAsh::GetDisplayBoundsInParent(aura::Window* window) {
   return ConvertRectFromScreen(
       window->parent(),
-      gfx::Screen::GetDisplayNearestWindow(window).bounds());
+      Shell::GetScreen()->GetDisplayNearestWindow(window).bounds());
 }
 
 // static
 gfx::Rect ScreenAsh::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
   return ConvertRectFromScreen(
       window->parent(),
-      gfx::Screen::GetDisplayNearestWindow(window).work_area());
+      Shell::GetScreen()->GetDisplayNearestWindow(window).work_area());
 }
 
 // static
@@ -91,12 +91,16 @@ const gfx::Display& ScreenAsh::GetSecondaryDisplay() {
   return *(Shell::GetInstance()->display_controller()->GetSecondaryDisplay());
 }
 
+bool ScreenAsh::IsDIPEnabled() {
+  return true;
+}
+
 gfx::Point ScreenAsh::GetCursorScreenPoint() {
   return aura::Env::GetInstance()->last_mouse_location();
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPoint() {
-  const gfx::Point point = gfx::Screen::GetCursorScreenPoint();
+  const gfx::Point point = Shell::GetScreen()->GetCursorScreenPoint();
   return wm::GetRootWindowAt(point)->GetTopWindowContainingPoint(point);
 }
 

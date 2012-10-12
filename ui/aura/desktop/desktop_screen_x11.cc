@@ -15,7 +15,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/screen_impl.h"
+#include "ui/gfx/screen.h"
 
 namespace {
 
@@ -30,12 +30,13 @@ gfx::Size GetPrimaryDisplaySize() {
   return gfx::Size(width, height);
 }
 
-class DesktopScreenX11 : public gfx::ScreenImpl {
+class DesktopScreenX11 : public gfx::Screen {
  public:
   DesktopScreenX11();
   virtual ~DesktopScreenX11();
 
-  // Overridden from gfx::ScreenImpl:
+  // Overridden from gfx::Screen:
+  virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
   virtual int GetNumDisplays() OVERRIDE;
@@ -61,7 +62,11 @@ DesktopScreenX11::~DesktopScreenX11() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopScreenX11, gfx::ScreenImpl implementation:
+// DesktopScreenX11, gfx::Screen implementation:
+
+bool DesktopScreenX11::IsDIPEnabled() {
+  return false;
+}
 
 gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
   Display* display = ui::GetXDisplay();
@@ -123,7 +128,7 @@ gfx::Display DesktopScreenX11::GetPrimaryDisplay() const {
 
 namespace aura {
 
-gfx::ScreenImpl* CreateDesktopScreen() {
+gfx::Screen* CreateDesktopScreen() {
   return new DesktopScreenX11;
 }
 

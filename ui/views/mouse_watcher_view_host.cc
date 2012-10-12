@@ -49,8 +49,8 @@ bool MouseWatcherViewHost::IsMouseOverWindow() {
   if (!widget)
     return false;
 
-  return gfx::Screen::GetWindowAtCursorScreenPoint() ==
-      widget->GetNativeWindow();
+  return gfx::Screen::GetScreenFor(widget->GetNativeView())->
+      GetWindowAtCursorScreenPoint() == widget->GetNativeWindow();
 }
 
 }  // namespace views

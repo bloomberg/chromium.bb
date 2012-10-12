@@ -17,12 +17,12 @@ namespace internal {
 namespace {
 
 gfx::Display GetPrimaryDisplay() {
-  return gfx::Screen::GetDisplayNearestWindow(
+  return Shell::GetScreen()->GetDisplayNearestWindow(
       Shell::GetAllRootWindows()[0]);
 }
 
 gfx::Display GetSecondaryDisplay() {
-  return gfx::Screen::GetDisplayNearestWindow(
+  return Shell::GetScreen()->GetDisplayNearestWindow(
       Shell::GetAllRootWindows()[1]);
 }
 
@@ -52,7 +52,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
 
   // Touch the right edge of the primary root window. Pointer should warp.
   is_warped = event_filter->WarpMouseCursorIfNecessary(root_windows[0],
-                                                     gfx::Point(499, 11));
+                                                       gfx::Point(499, 11));
   EXPECT_TRUE(is_warped);
   EXPECT_EQ("501,11",  // by 2px.
             aura::Env::GetInstance()->last_mouse_location().ToString());

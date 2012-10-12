@@ -125,7 +125,7 @@ void HandleCycleDisplayMode() {
 }
 
 void HandleSwapPrimaryDisplay() {
-  if (gfx::Screen::GetNumDisplays() > 1) {
+  if (Shell::GetScreen()->GetNumDisplays() > 1) {
     Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
         ScreenAsh::GetSecondaryDisplay());
   }

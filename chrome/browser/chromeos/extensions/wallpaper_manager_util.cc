@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,7 +63,9 @@ void OpenWallpaperManager() {
     GURL wallpaper_picker_url(url);
     int width = extension->launch_width();
     int height = extension->launch_height();
-    const gfx::Size screen = gfx::Screen::GetPrimaryDisplay().size();
+    // TODO(oshima|bshe): Open WallpaperManager in the display is is requested.
+    const gfx::Size screen =
+        ash::Shell::GetScreen()->GetPrimaryDisplay().size();
     const gfx::Rect bounds((screen.width() - width) / 2,
                            (screen.height() - height) / 2,
                            width,

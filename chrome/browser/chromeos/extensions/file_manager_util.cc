@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -521,7 +522,7 @@ void OpenActionChoiceDialog(const FilePath& path) {
   url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
   GURL dialog_url(url);
 
-  const gfx::Size screen = gfx::Screen::GetPrimaryDisplay().size();
+  const gfx::Size screen = ash::Shell::GetScreen()->GetPrimaryDisplay().size();
   const gfx::Rect bounds((screen.width() - kDialogWidth) / 2,
                          (screen.height() - kDialogHeight) / 2,
                          kDialogWidth,

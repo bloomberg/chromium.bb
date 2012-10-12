@@ -20,6 +20,8 @@ namespace ui {
 class WebDialogDelegate;
 }
 
+namespace ash {
+
 // A customized dialog view for the keyboard overlay.
 class ASH_EXPORT KeyboardOverlayView
     : public views::WebDialogView,
@@ -46,5 +48,7 @@ class ASH_EXPORT KeyboardOverlayView
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayView);
 };
+
+}  // namespace ash
 
 #endif  // ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_VIEW_H_

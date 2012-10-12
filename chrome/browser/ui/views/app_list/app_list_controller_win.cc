@@ -172,7 +172,7 @@ void AppListController::ShowAppList() {
   // owned by the app list view. The app list view manages it's own lifetime.
   current_view_ = new app_list::AppListView(
       new AppListViewDelegate(new AppListControllerDelegateWin()));
-  gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
+  gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   current_view_->InitAsBubble(GetDesktopWindow(),
                               &pagination_model_,
                               NULL,
@@ -265,7 +265,8 @@ void AppListController::UpdateArrowPositionAndAnchorPoint(
   int min_space_y = preferred.height() + kAnchorOffset + kPadding + kArrowSize;
 
   gfx::Point anchor = view->anchor_point();
-  gfx::Display display = gfx::Screen::GetDisplayNearestPoint(anchor);
+  gfx::Display display = gfx::Screen::GetScreenFor(
+      view->GetWidget()->GetNativeView())->GetDisplayNearestPoint(anchor);
   const gfx::Rect& display_rect = display.work_area();
   views::BubbleBorder::ArrowLocation arrow;
   GetArrowLocationAndUpdateAnchor(display.work_area(),

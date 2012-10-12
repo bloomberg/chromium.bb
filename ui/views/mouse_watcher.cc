@@ -86,7 +86,9 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
   // Called from the message loop observer when a mouse movement has occurred.
   void HandleGlobalMouseMoveEvent(MouseWatcherHost::MouseEventType event_type) {
     bool contained = host()->Contains(
-        gfx::Screen::GetCursorScreenPoint(), event_type);
+        // TODO(scottmg): Native is wrong http://crbug.com/133312
+        gfx::Screen::GetNativeScreen()->GetCursorScreenPoint(),
+        event_type);
     if (!contained) {
       // Mouse moved outside the host's zone, start a timer to notify the
       // listener.

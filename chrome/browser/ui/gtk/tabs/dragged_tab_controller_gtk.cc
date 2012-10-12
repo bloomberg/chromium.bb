@@ -85,7 +85,7 @@ DraggedTabControllerGtk::~DraggedTabControllerGtk() {
 }
 
 void DraggedTabControllerGtk::CaptureDragInfo(const gfx::Point& mouse_offset) {
-  start_screen_point_ = gfx::Screen::GetCursorScreenPoint();
+  start_screen_point_ = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   mouse_offset_ = mouse_offset;
 }
 
@@ -248,7 +248,8 @@ void DraggedTabControllerGtk::Observe(
 }
 
 gfx::Point DraggedTabControllerGtk::GetWindowCreatePoint() const {
-  gfx::Point creation_point = gfx::Screen::GetCursorScreenPoint();
+  gfx::Point creation_point =
+      gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
   gfx::Point distance_from_origin =
       dragged_view_->GetDistanceFromTabStripOriginToMousePointer();
   // TODO(dpapad): offset also because of tabstrip origin being different than
@@ -261,7 +262,8 @@ void DraggedTabControllerGtk::ContinueDragging() {
   // TODO(jhawkins): We don't handle the situation where the last tab is dragged
   // out of a window, so we'll just go with the way Windows handles dragging for
   // now.
-  gfx::Point screen_point = gfx::Screen::GetCursorScreenPoint();
+  gfx::Point screen_point =
+      gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
 
   // Determine whether or not we have dragged over a compatible TabStrip in
   // another browser window. If we have, we should attach to it and start
@@ -877,7 +879,8 @@ void DraggedTabControllerGtk::BringWindowUnderMouseToFront() {
     gfx::NativeView dragged_tab = dragged_view_->widget();
     dock_windows_.insert(dragged_tab);
     window = DockInfo::GetLocalProcessWindowAtPoint(
-        gfx::Screen::GetCursorScreenPoint(), dock_windows_);
+        gfx::Screen::GetNativeScreen()->GetCursorScreenPoint(),
+        dock_windows_);
     dock_windows_.erase(dragged_tab);
   }
 

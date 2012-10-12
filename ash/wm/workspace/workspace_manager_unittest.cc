@@ -71,7 +71,7 @@ class WorkspaceManagerTest : public test::AshTestBase {
   }
 
   gfx::Rect GetFullscreenBounds(aura::Window* window) {
-    return gfx::Screen::GetDisplayNearestWindow(window).bounds();
+    return Shell::GetScreen()->GetDisplayNearestWindow(window).bounds();
   }
 
   Workspace* active_workspace() {

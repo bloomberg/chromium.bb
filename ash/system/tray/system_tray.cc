@@ -248,7 +248,7 @@ bool SystemTray::IsMouseInNotificationBubble() const {
   if (!notification_bubble_.get())
     return false;
   return notification_bubble_->bubble_view()->GetBoundsInScreen().Contains(
-      gfx::Screen::GetCursorScreenPoint());
+      Shell::GetScreen()->GetCursorScreenPoint());
 }
 
 bool SystemTray::CloseBubbleForTest() const {

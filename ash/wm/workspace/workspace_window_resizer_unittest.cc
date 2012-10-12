@@ -485,7 +485,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiDisplays) {
   ASSERT_EQ(2U, root_windows.size());
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetPrimaryDisplay());
+                             Shell::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab (0, 0) of the window.
@@ -503,7 +503,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiDisplays) {
   }
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetPrimaryDisplay());
+                             Shell::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab (0, 0) of the window and move the pointer to (790, 10).
@@ -519,7 +519,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiDisplays) {
   }
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetPrimaryDisplay());
+                             Shell::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
     // Grab the top-right edge of the window and move the pointer to (0, 10)
@@ -547,7 +547,7 @@ TEST_F(WorkspaceWindowResizerTest,
 
   window_->SetBoundsInScreen(
       gfx::Rect(800, 00, 50, 60),
-      gfx::Screen::GetDisplayNearestWindow(root_windows[1]));
+      Shell::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
   {
     // Grab (0, 0) of the window.
@@ -569,7 +569,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
   ASSERT_EQ(2U, root_windows.size());
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetPrimaryDisplay());
+                             Shell::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   {
@@ -620,7 +620,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
 
   // Do the same test with RevertDrag().
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetPrimaryDisplay());
+                             Shell::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   {
@@ -644,7 +644,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_CancelSnapPhantom) {
   ASSERT_EQ(2U, root_windows.size());
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
-                             gfx::Screen::GetPrimaryDisplay());
+                             Shell::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   {
@@ -768,7 +768,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 10, 0));
 
-  ASSERT_EQ(1, gfx::Screen::GetNumDisplays());
+  ASSERT_EQ(1, Shell::GetScreen()->GetNumDisplays());
 
   window_->SetBounds(gfx::Rect(100, 200, 300, 400));
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
@@ -784,7 +784,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
 // Makes sure we don't allow dragging on the work area with multidisplay.
 TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
   UpdateDisplay("800x600,800x600");
-  ASSERT_EQ(2, gfx::Screen::GetNumDisplays());
+  ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
 
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 10, 0));

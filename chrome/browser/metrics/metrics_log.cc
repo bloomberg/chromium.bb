@@ -348,15 +348,17 @@ PrefService* MetricsLog::GetPrefService() {
 }
 
 gfx::Size MetricsLog::GetScreenSize() const {
-  return gfx::Screen::GetPrimaryDisplay().GetSizeInPixel();
+  return gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().GetSizeInPixel();
 }
 
 float MetricsLog::GetScreenDeviceScaleFactor() const {
-  return gfx::Screen::GetPrimaryDisplay().device_scale_factor();
+  return gfx::Screen::GetNativeScreen()->
+      GetPrimaryDisplay().device_scale_factor();
 }
 
 int MetricsLog::GetScreenCount() const {
-  return gfx::Screen::GetNumDisplays();
+  // TODO(scottmg): NativeScreen maybe wrong. http://crbug.com/133312
+  return gfx::Screen::GetNativeScreen()->GetNumDisplays();
 }
 
 void MetricsLog::GetFieldTrialIds(

@@ -2015,8 +2015,8 @@ void BrowserWindowGtk::SaveWindowPosition() {
   window_preferences->SetInteger("bottom", restored_bounds_.bottom());
   window_preferences->SetBoolean("maximized", IsMaximized());
 
-  gfx::Rect work_area(
-      gfx::Screen::GetDisplayMatching(restored_bounds_).work_area());
+  gfx::Rect work_area(gfx::Screen::GetNativeScreen()->GetDisplayMatching(
+      restored_bounds_).work_area());
   window_preferences->SetInteger("work_area_left", work_area.x());
   window_preferences->SetInteger("work_area_top", work_area.y());
   window_preferences->SetInteger("work_area_right", work_area.right());

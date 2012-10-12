@@ -102,7 +102,9 @@ void BubbleFrameView::SetBubbleBorder(BubbleBorder* border) {
 }
 
 gfx::Rect BubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {
-  return gfx::Screen::GetDisplayNearestPoint(rect.CenterPoint()).work_area();
+  // TODO(scottmg): Native is wrong. http://crbug.com/133312
+  return gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(
+      rect.CenterPoint()).work_area();
 }
 
 void BubbleFrameView::MirrorArrowIfOffScreen(

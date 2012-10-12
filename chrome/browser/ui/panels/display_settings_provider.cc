@@ -68,8 +68,10 @@ gfx::Rect DisplaySettingsProvider::GetDisplayArea() {
   return adjusted_work_area_;
 }
 
+// TODO(scottmg): This should be moved to ui/.
 gfx::Rect DisplaySettingsProvider::GetPrimaryScreenArea() const {
-  return gfx::Screen::GetPrimaryDisplay().bounds();
+  // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
+  return gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds();
 }
 
 gfx::Rect DisplaySettingsProvider::GetWorkArea() const {
@@ -78,7 +80,8 @@ gfx::Rect DisplaySettingsProvider::GetWorkArea() const {
   // screen (and overlap Dock). And we also want to exclude the system menu
   // area. Note that the rect returned from gfx::Screen util functions is in
   // platform-independent screen coordinates with (0, 0) as the top-left corner.
-  gfx::Display display = gfx::Screen::GetPrimaryDisplay();
+  // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
+  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
   gfx::Rect display_area = display.bounds();
   gfx::Rect work_area = display.work_area();
   int system_menu_height = work_area.y() - display_area.y();
@@ -88,9 +91,11 @@ gfx::Rect DisplaySettingsProvider::GetWorkArea() const {
   }
   return display_area;
 #else
-  gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();
-#endif
+  // TODO(scottmg): NativeScreen is wrong. http://crbug.com/133312
+  gfx::Rect work_area =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area();
   return work_area;
+#endif
 }
 
 void DisplaySettingsProvider::OnDisplaySettingsChanged() {

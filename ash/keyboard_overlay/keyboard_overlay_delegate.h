@@ -14,6 +14,8 @@ namespace views {
 class WebDialogView;
 }
 
+namespace ash {
+
 class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
  public:
   KeyboardOverlayDelegate(const string16& title, const GURL& url);
@@ -52,5 +54,7 @@ class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayDelegate);
 };
+
+}  // namespace ash
 
 #endif  // ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_DELEGATE_H_

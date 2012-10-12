@@ -108,7 +108,8 @@ gfx::Size GetThumbnailSizeInPixel() {
   gfx::Size thumbnail_size(kThumbnailWidth, kThumbnailHeight);
   // Determine the resolution of the thumbnail based on the primary monitor.
   // TODO(oshima): Use device's default scale factor.
-  gfx::Display primary_display = gfx::Screen::GetPrimaryDisplay();
+  gfx::Display primary_display =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
   return gfx::ToFlooredSize(
       thumbnail_size.Scale(primary_display.device_scale_factor()));
 }
