@@ -237,7 +237,7 @@ InterfaceList::InterfaceList() {
 #endif
   AddPPB(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0, API_ID_NONE,
          PPB_Var_Shared::GetVarArrayBufferInterface1_0(),
-         PERMISSION_DEV);
+         PERMISSION_NONE);
   AddPPB(PPB_VAR_INTERFACE_1_1, API_ID_NONE,
          PPB_Var_Shared::GetVarInterface1_1(), PERMISSION_NONE);
   AddPPB(PPB_VAR_INTERFACE_1_0, API_ID_NONE,
