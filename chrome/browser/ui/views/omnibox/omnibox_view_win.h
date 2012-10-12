@@ -151,6 +151,7 @@ class OmniboxViewWin
     MSG_WM_CUT(OnCut)
     MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeComposition)
+    MESSAGE_HANDLER_EX(WM_IME_ENDCOMPOSITION, OnImeEndComposition)
     MESSAGE_HANDLER_EX(WM_IME_NOTIFY, OnImeNotify)
     MESSAGE_HANDLER_EX(WM_POINTERDOWN, OnPointerDown)
     MESSAGE_HANDLER_EX(WM_POINTERUP, OnPointerUp)
@@ -250,6 +251,7 @@ class OmniboxViewWin
   void OnCut();
   LRESULT OnGetObject(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeComposition(UINT message, WPARAM wparam, LPARAM lparam);
+  LRESULT OnImeEndComposition(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeNotify(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnPointerDown(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnPointerUp(UINT message, WPARAM wparam, LPARAM lparam);

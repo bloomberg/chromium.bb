@@ -1418,6 +1418,21 @@ LRESULT OmniboxViewWin::OnImeComposition(UINT message,
   return result;
 }
 
+
+LRESULT OmniboxViewWin::OnImeEndComposition(UINT message, WPARAM wparam,
+                                            LPARAM lparam) {
+  // The edit control auto-clears the selection on WM_IME_ENDCOMPOSITION, which
+  // means any inline autocompletion we were showing will no longer be
+  // selected, and therefore no longer replaced by further user typing.  To
+  // avoid this we manually restore the original selection after the edit
+  // handles the message.
+  CHARRANGE range;
+  GetSel(range);
+  LRESULT result = DefWindowProc(message, wparam, lparam);
+  SetSel(range);
+  return result;
+}
+
 LRESULT OmniboxViewWin::OnImeNotify(UINT message,
                                     WPARAM wparam,
                                     LPARAM lparam) {
