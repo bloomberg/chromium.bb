@@ -11,12 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/browser/plugins/plugin_installer.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -33,7 +32,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
@@ -150,11 +148,8 @@ void PluginPrefs::EnablePlugin(
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &plugin)) {
     scoped_ptr<PluginMetadata> plugin_metadata(
         finder->GetPluginMetadata(plugin));
-    PolicyStatus plugin_status =
-        PolicyStatusForPlugin(plugin.name, plugin.version);
-    PolicyStatus group_status =
-        PolicyStatusForPlugin(plugin_metadata->name(), plugin.version);
-
+    PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);
+    PolicyStatus group_status = PolicyStatusForPlugin(plugin_metadata->name());
     if (enabled) {
       if (plugin_status == POLICY_DISABLED || group_status == POLICY_DISABLED)
         can_enable = false;
@@ -225,12 +220,8 @@ void PluginPrefs::EnablePluginInternal(
 }
 
 PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
-    const string16& name,  const string16& version) const {
+    const string16& name) const {
   base::AutoLock auto_lock(lock_);
-  if (!version.empty() &&
-      PolicyStatusForPluginByVersion(name, version) == POLICY_DISABLED) {
-    return POLICY_DISABLED;
-  }
   if (IsStringMatchedInSet(name, policy_enabled_plugin_patterns_)) {
     return POLICY_ENABLED;
   } else if (IsStringMatchedInSet(name, policy_disabled_plugin_patterns_) &&
@@ -242,39 +233,14 @@ PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
   }
 }
 
-PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPluginByVersion(
-    const string16& name,
-    const string16& version_str) const {
-  Version version;
-  webkit::npapi::CreateVersionFromString(version_str, &version);
-  PluginPrefs::PluginVersionsMap::const_iterator it(
-      policy_disabled_plugins_by_version_.begin());
-  for (; it != policy_disabled_plugins_by_version_.end(); ++it) {
-    if (!MatchPattern(name, it->first))
-      continue;
-
-    for (size_t i = 0; i < it->second.size(); ++i) {
-      CHECK(IsStringASCII(it->second[i]));
-      const std::string& version_wildcard_str = UTF16ToASCII(it->second[i]);
-      CHECK(Version::IsValidWildcardString(version_wildcard_str));
-      if (version.CompareToWildcardString(version_wildcard_str) == 0)
-        return POLICY_DISABLED;
-    }
-  }
-
-  return NO_POLICY;
-}
-
 bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
   scoped_ptr<PluginMetadata> plugin_metadata(
       PluginFinder::GetInstance()->GetPluginMetadata(plugin));
   string16 group_name = plugin_metadata->name();
 
-  PolicyStatus plugin_status =
-      PolicyStatusForPlugin(plugin.name, plugin.version);
-  PolicyStatus group_status = PolicyStatusForPlugin(group_name, plugin.version);
-
   // Check if the plug-in or its group is enabled by policy.
+  PolicyStatus plugin_status = PolicyStatusForPlugin(plugin.name);
+  PolicyStatus group_status = PolicyStatusForPlugin(group_name);
   if (plugin_status == POLICY_ENABLED || group_status == POLICY_ENABLED)
     return true;
 
@@ -331,11 +297,6 @@ void PluginPrefs::Observe(int type,
     base::AutoLock auto_lock(lock_);
     ListValueToStringSet(prefs_->GetList(prefs::kPluginsEnabledPlugins),
                          &policy_enabled_plugin_patterns_);
-  } else if (*pref_name == prefs::kPluginsDisabledPluginsByVersion) {
-    base::AutoLock auto_lock(lock_);
-    ListValueToPluginVersionsMap(
-        prefs_->GetList(prefs::kPluginsDisabledPluginsByVersion),
-        &policy_disabled_plugins_by_version_);
   } else {
     NOTREACHED();
   }
@@ -368,36 +329,6 @@ void PluginPrefs::ListValueToStringSet(const ListValue* src,
     if ((*current)->GetAsString(&plugin_name)) {
       dest->insert(plugin_name);
     }
-  }
-}
-
-/* static */
-void PluginPrefs::ListValueToPluginVersionsMap(
-    const ListValue* src,
-    PluginPrefs::PluginVersionsMap* dest) {
-  DCHECK(src);
-  DCHECK(dest);
-  dest->clear();
-  ListValue::const_iterator end(src->end());
-  for (ListValue::const_iterator current(src->begin());
-      current != end; ++current) {
-    string16 plugin_version;
-    if (!(*current)->GetAsString(&plugin_version)) {
-      NOTREACHED();
-      return;
-    }
-
-    std::vector<string16> plugin_and_versions;
-    base::SplitString(plugin_version, L':', &plugin_and_versions);
-    CHECK_EQ(2U, plugin_and_versions.size());
-    CHECK(!plugin_and_versions[0].empty());
-    CHECK(!plugin_and_versions[1].empty());
-
-    std::vector<string16> versions;
-    base::SplitString(plugin_and_versions[1], L',', &versions);
-    CHECK_NE(0U, versions.size());
-    for (size_t i = 0; i < versions.size(); ++i)
-      (*dest)[plugin_and_versions[0]].push_back(versions[i]);
   }
 }
 
@@ -594,15 +525,11 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
       &policy_disabled_plugin_exception_patterns_);
   ListValueToStringSet(prefs_->GetList(prefs::kPluginsEnabledPlugins),
                        &policy_enabled_plugin_patterns_);
-  ListValueToPluginVersionsMap(
-      prefs_->GetList(prefs::kPluginsDisabledPluginsByVersion),
-      &policy_disabled_plugins_by_version_);
 
   registrar_.Init(prefs_);
   registrar_.Add(prefs::kPluginsDisabledPlugins, this);
   registrar_.Add(prefs::kPluginsDisabledPluginsExceptions, this);
   registrar_.Add(prefs::kPluginsEnabledPlugins, this);
-  registrar_.Add(prefs::kPluginsDisabledPluginsByVersion, this);
 
   if (force_enable_internal_pdf || internal_pdf_enabled) {
     // See http://crbug.com/50105 for background.
@@ -640,12 +567,10 @@ PluginPrefs::~PluginPrefs() {
 void PluginPrefs::SetPolicyEnforcedPluginPatterns(
     const std::set<string16>& disabled_patterns,
     const std::set<string16>& disabled_exception_patterns,
-    const std::set<string16>& enabled_patterns,
-    const PluginPrefs::PluginVersionsMap& disabled_by_version_patterns) {
+    const std::set<string16>& enabled_patterns) {
   policy_disabled_plugin_patterns_ = disabled_patterns;
   policy_disabled_plugin_exception_patterns_ = disabled_exception_patterns;
   policy_enabled_plugin_patterns_ = enabled_patterns;
-  policy_disabled_plugins_by_version_ = disabled_by_version_patterns;
 }
 
 webkit::npapi::PluginList* PluginPrefs::GetPluginList() const {

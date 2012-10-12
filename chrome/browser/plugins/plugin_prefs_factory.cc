@@ -70,8 +70,6 @@ void PluginPrefsFactory::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPluginsEnabledPlugins,
                           PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kPluginsDisabledPluginsByVersion,
-                          PrefService::UNSYNCABLE_PREF);
 }
 
 bool PluginPrefsFactory::ServiceRedirectedInIncognito() const {

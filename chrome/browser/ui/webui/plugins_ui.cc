@@ -397,11 +397,9 @@ void PluginsDOMHandler::PluginsLoaded(
 
       std::string enabled_mode;
       PluginPrefs::PolicyStatus plugin_status =
-          plugin_prefs->PolicyStatusForPlugin(group_plugin.name,
-                                              group_plugin.version);
+          plugin_prefs->PolicyStatusForPlugin(group_plugin.name);
       PluginPrefs::PolicyStatus group_status =
-          plugin_prefs->PolicyStatusForPlugin(group_name, group_plugin.version);
-
+          plugin_prefs->PolicyStatusForPlugin(group_name);
       if (plugin_status == PluginPrefs::POLICY_ENABLED ||
           group_status == PluginPrefs::POLICY_ENABLED) {
         enabled_mode = "enabledByPolicy";

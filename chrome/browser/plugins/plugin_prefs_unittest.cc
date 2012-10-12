@@ -57,10 +57,9 @@ class PluginPrefsTest : public ::testing::Test {
   void SetPolicyEnforcedPluginPatterns(
       const std::set<string16>& disabled,
       const std::set<string16>& disabled_exceptions,
-      const std::set<string16>& enabled,
-      const PluginPrefs::PluginVersionsMap& disabled_by_version) {
+      const std::set<string16>& enabled) {
     plugin_prefs_->SetPolicyEnforcedPluginPatterns(
-        disabled, disabled_exceptions, enabled, disabled_by_version);
+        disabled, disabled_exceptions, enabled);
   }
 
  protected:
@@ -84,18 +83,15 @@ TEST_F(PluginPrefsTest, DisabledByPolicy) {
   disabled_plugins.insert(ASCIIToUTF16("*Google*"));
   SetPolicyEnforcedPluginPatterns(disabled_plugins,
                                   std::set<string16>(),
-                                  std::set<string16>(),
-                                  PluginPrefs::PluginVersionsMap());
+                                  std::set<string16>());
 
   EXPECT_EQ(PluginPrefs::NO_POLICY,
-            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("42"),
-                                                 string16()));
+            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("42")));
   EXPECT_EQ(PluginPrefs::POLICY_DISABLED,
             plugin_prefs_->PolicyStatusForPlugin(
-                ASCIIToUTF16("Disable this!"), string16()));
+                ASCIIToUTF16("Disable this!")));
   EXPECT_EQ(PluginPrefs::POLICY_DISABLED,
-            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("Google Earth"),
-                                                 string16()));
+            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("Google Earth")));
 }
 
 TEST_F(PluginPrefsTest, EnabledByPolicy) {
@@ -104,45 +100,14 @@ TEST_F(PluginPrefsTest, EnabledByPolicy) {
   enabled_plugins.insert(ASCIIToUTF16("PDF*"));
   SetPolicyEnforcedPluginPatterns(std::set<string16>(),
                                   std::set<string16>(),
-                                  enabled_plugins,
-                                  PluginPrefs::PluginVersionsMap());
+                                  enabled_plugins);
 
   EXPECT_EQ(PluginPrefs::NO_POLICY,
-            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("42"),
-                                                 string16()));
+            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("42")));
   EXPECT_EQ(PluginPrefs::POLICY_ENABLED,
-            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("Enable that!"),
-                                                 string16()));
+            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("Enable that!")));
   EXPECT_EQ(PluginPrefs::POLICY_ENABLED,
-            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("PDF Reader"),
-                                                 string16()));
-}
-
-TEST_F(PluginPrefsTest, DisabledByVersionPolicy) {
-  PluginPrefs::PluginVersionsMap disabled_by_version;
-  std::vector<string16> versions;
-  versions.push_back(ASCIIToUTF16("18"));
-  versions.push_back(ASCIIToUTF16("11.1.*"));
-
-  disabled_by_version[ASCIIToUTF16("Disable this!")] = versions;
-  disabled_by_version[ASCIIToUTF16("*Google*")] = versions;
-  SetPolicyEnforcedPluginPatterns(std::set<string16>(),
-                                  std::set<string16>(),
-                                  std::set<string16>(),
-                                  disabled_by_version);
-
-  EXPECT_EQ(PluginPrefs::NO_POLICY,
-            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("42"),
-                                                 ASCIIToUTF16("18")));
-  EXPECT_EQ(PluginPrefs::POLICY_DISABLED,
-            plugin_prefs_->PolicyStatusForPlugin(
-                ASCIIToUTF16("Disable this!"), ASCIIToUTF16("18")));
-  EXPECT_EQ(PluginPrefs::POLICY_DISABLED,
-            plugin_prefs_->PolicyStatusForPlugin(
-                ASCIIToUTF16("Google Earth"), ASCIIToUTF16("11.1.2")));
-  EXPECT_EQ(PluginPrefs::NO_POLICY,
-            plugin_prefs_->PolicyStatusForPlugin(
-                ASCIIToUTF16("Google Earth"), ASCIIToUTF16("11.2")));
+            plugin_prefs_->PolicyStatusForPlugin(ASCIIToUTF16("PDF Reader")));
 }
 
 TEST_F(PluginPrefsTest, EnabledAndDisabledByPolicy) {
@@ -176,23 +141,21 @@ TEST_F(PluginPrefsTest, EnabledAndDisabledByPolicy) {
 
   SetPolicyEnforcedPluginPatterns(disabled_plugins,
                                   disabled_plugins_exceptions,
-                                  enabled_plugins,
-                                  PluginPrefs::PluginVersionsMap());
+                                  enabled_plugins);
 
-  EXPECT_EQ(PluginPrefs::NO_POLICY,
-            plugin_prefs_->PolicyStatusForPlugin(k42, string16()));
+  EXPECT_EQ(PluginPrefs::NO_POLICY, plugin_prefs_->PolicyStatusForPlugin(k42));
 
   EXPECT_EQ(PluginPrefs::POLICY_ENABLED,
-            plugin_prefs_->PolicyStatusForPlugin(kEnabled, string16()));
+            plugin_prefs_->PolicyStatusForPlugin(kEnabled));
   EXPECT_EQ(PluginPrefs::POLICY_ENABLED,
-            plugin_prefs_->PolicyStatusForPlugin(kEnabled2, string16()));
+            plugin_prefs_->PolicyStatusForPlugin(kEnabled2));
   EXPECT_EQ(PluginPrefs::POLICY_ENABLED,
-            plugin_prefs_->PolicyStatusForPlugin(kEnabled3, string16()));
+            plugin_prefs_->PolicyStatusForPlugin(kEnabled3));
 
   EXPECT_EQ(PluginPrefs::NO_POLICY,
-            plugin_prefs_->PolicyStatusForPlugin(kException, string16()));
+            plugin_prefs_->PolicyStatusForPlugin(kException));
   EXPECT_EQ(PluginPrefs::NO_POLICY,
-            plugin_prefs_->PolicyStatusForPlugin(kException2, string16()));
+            plugin_prefs_->PolicyStatusForPlugin(kException2));
 
   disabled_plugins.clear();
   disabled_plugins_exceptions.clear();
@@ -204,15 +167,14 @@ TEST_F(PluginPrefsTest, EnabledAndDisabledByPolicy) {
 
   SetPolicyEnforcedPluginPatterns(disabled_plugins,
                                   disabled_plugins_exceptions,
-                                  enabled_plugins,
-                                  PluginPrefs::PluginVersionsMap());
+                                  enabled_plugins);
 
   EXPECT_EQ(PluginPrefs::POLICY_ENABLED,
-            plugin_prefs_->PolicyStatusForPlugin(kGoogleEarth, string16()));
+            plugin_prefs_->PolicyStatusForPlugin(kGoogleEarth));
   EXPECT_EQ(PluginPrefs::NO_POLICY,
-            plugin_prefs_->PolicyStatusForPlugin(kGoogleMars, string16()));
+            plugin_prefs_->PolicyStatusForPlugin(kGoogleMars));
   EXPECT_EQ(PluginPrefs::POLICY_DISABLED,
-            plugin_prefs_->PolicyStatusForPlugin(k42, string16()));
+            plugin_prefs_->PolicyStatusForPlugin(k42));
 }
 
 TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
@@ -266,8 +228,7 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
   disabled_plugins.insert(component_updated_plugin_name);
   SetPolicyEnforcedPluginPatterns(disabled_plugins,
                                   std::set<string16>(),
-                                  std::set<string16>(),
-                                  PluginPrefs::PluginVersionsMap());
+                                  std::set<string16>());
 
   // Policy settings should be respected.
   EXPECT_FALSE(plugin_prefs_->IsPluginEnabled(component_updated_plugin_1));
