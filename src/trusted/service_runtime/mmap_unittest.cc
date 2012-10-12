@@ -16,6 +16,7 @@
 #include "gtest/gtest.h"
 
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
@@ -395,4 +396,52 @@ TEST_F(MmapTest, TestProtectAnonymousMemory) {
 
   NaClAddrSpaceFree(&app);
 }
+
+// NaCl uses SysV shared memory only on Linux, because X Windows
+// depends on it.
+#if NACL_LINUX
+TEST_F(MmapTest, TestSysvShmMapping) {
+  struct NaClApp app;
+  ASSERT_EQ(NaClAppCtor(&app), 1);
+  ASSERT_EQ(NaClAllocAddrSpace(&app), LOAD_OK);
+
+  size_t shm_size = 0x12000;
+  size_t rounded_size = NaClRoundAllocPage(shm_size);
+  ASSERT_EQ(rounded_size, (size_t) 0x20000);
+
+  struct NaClDescSysvShm *shm_desc =
+      (struct NaClDescSysvShm *) malloc(sizeof(*shm_desc));
+  ASSERT_TRUE(NaClDescSysvShmCtor(shm_desc, shm_size));
+  struct NaClDesc *desc = &shm_desc->base;
+  int fd = NaClSetAvail(&app, desc);
+
+  uintptr_t mapping_addr = 0x200000;
+
+  // First, map something with PROT_READ, so that we can later check
+  // that this is correctly overwritten by PROT_READ|PROT_WRITE and
+  // PROT_NONE mappings.
+  uintptr_t result_addr = (uint32_t) NaClCommonSysMmapIntern(
+      &app, (void *) mapping_addr, shm_size,
+      NACL_ABI_PROT_READ,
+      NACL_ABI_MAP_FIXED | NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,
+      -1, 0);
+  ASSERT_EQ(result_addr, mapping_addr);
+
+  result_addr = (uint32_t) NaClCommonSysMmapIntern(
+      &app, (void *) mapping_addr, shm_size,
+      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+      NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED, fd, 0);
+  ASSERT_EQ(result_addr, mapping_addr);
+  uintptr_t sysaddr = NaClUserToSys(&app, mapping_addr);
+  // We should see two mappings.  The first is the SysV shared memory
+  // segment.  The second is padding upto the 64k page size.
+  CheckMapping(sysaddr, shm_size, PROT_READ | PROT_WRITE, MAP_SHARED);
+  CheckMapping(sysaddr + shm_size, rounded_size - shm_size,
+               PROT_NONE, MAP_PRIVATE);
+
+  NaClDescUnref(desc);
+  NaClAddrSpaceFree(&app);
+}
 #endif
+
+#endif /* NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm */
