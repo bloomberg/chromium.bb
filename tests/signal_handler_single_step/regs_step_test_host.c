@@ -121,16 +121,8 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
     RegsAssertEqual(g_expected_regs, &context);
   } else if ((g_natp->suspend_state & NACL_APP_THREAD_TRUSTED) != 0) {
     SignalSafeLogStringLiteral("Trusted (syscall) context\n");
-    /*
-     * TODO(mseaborn): Fix nacl_syscall_hook.c so that
-     * NaClThreadContext is fully filled out with saved state *before*
-     * setting suspend_state to NACL_APP_THREAD_TRUSTED.
-     *
-     * Then we will be able to enable this check:
-     *
-     *   NaClThreadContextToSignalContext(&g_natp->user, &context);
-     *   RegsAssertEqual(g_expected_regs, &context);
-     */
+    NaClThreadContextToSignalContext(&g_natp->user, &context);
+    RegsAssertEqual(g_expected_regs, &context);
   } else {
     SignalSafeLogStringLiteral("Inside a context switch\n");
     /*
