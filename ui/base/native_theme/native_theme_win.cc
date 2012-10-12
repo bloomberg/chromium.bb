@@ -641,8 +641,6 @@ HRESULT NativeThemeWin::PaintMenuSeparator(
     const gfx::Rect& rect,
     const MenuSeparatorExtraParams& extra) const {
   RECT rect_win = rect.ToRECT();
-  if (!extra.has_gutter)
-    rect_win.top = rect.y() + rect.height() / 3 + 1;
 
   HANDLE handle = GetThemeHandle(MENU);
   if (handle && draw_theme_) {
