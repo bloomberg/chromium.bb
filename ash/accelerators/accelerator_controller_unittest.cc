@@ -541,14 +541,18 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
 TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // CycleBackward
   EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN)));
-  EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
   // CycleForward
   EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_F5, ui::EF_NONE)));
-  EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_TAB, ui::EF_ALT_DOWN)));
+#if defined(OS_CHROMEOS)
+  // CycleBackward
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN)));
+  // CycleForward
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_F5, ui::EF_NONE)));
+
   // Take screenshot / partial screenshot
   // True should always be returned regardless of the existence of the delegate.
   {
@@ -572,6 +576,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
         ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
   }
+#endif
   // ToggleAppList
   {
     EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
@@ -640,6 +645,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
         ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
     EXPECT_TRUE(delegate->IsCapsLockEnabled());
   }
+#if defined(OS_CHROMEOS)
   // Volume
   const ui::Accelerator f8(ui::VKEY_F8, ui::EF_NONE);
   const ui::Accelerator f9(ui::VKEY_F9, ui::EF_NONE);
@@ -682,6 +688,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_volume_up_count());
     EXPECT_EQ(f10, delegate->last_accelerator());
   }
+#endif
   const ui::Accelerator volume_mute(ui::VKEY_VOLUME_MUTE, ui::EF_NONE);
   const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
@@ -720,6 +727,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_volume_up_count());
     EXPECT_EQ(volume_up, delegate->last_accelerator());
   }
+#if defined(OS_CHROMEOS)
   // Brightness
   const ui::Accelerator f6(ui::VKEY_F6, ui::EF_NONE);
   const ui::Accelerator f7(ui::VKEY_F7, ui::EF_NONE);
@@ -765,7 +773,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_brightness_up_count());
     EXPECT_EQ(f7, delegate->last_accelerator());
   }
-#if defined(OS_CHROMEOS)
   // ui::VKEY_BRIGHTNESS_DOWN/UP are not defined on Windows.
   const ui::Accelerator brightness_down(ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE);
   const ui::Accelerator brightness_up(ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE);
@@ -797,7 +804,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_brightness_up_count());
     EXPECT_EQ(brightness_up, delegate->last_accelerator());
   }
-#endif
 
   // Keyboard brightness
   const ui::Accelerator alt_f6(ui::VKEY_F6, ui::EF_ALT_DOWN);
@@ -832,6 +838,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_keyboard_brightness_up_count());
     EXPECT_EQ(alt_f7, delegate->last_accelerator());
   }
+#endif
 
 #if !defined(NDEBUG)
   // RotateScreen
