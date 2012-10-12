@@ -16,3 +16,7 @@ body {
 browser {
   display: inline-block;
 }
+
+html, body {
+  overflow: hidden;
+}
