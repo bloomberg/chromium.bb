@@ -64,7 +64,7 @@ def FindAllAvailableBrowsers(options):
       logging.warn('   -  chown 0600 /root/.ssh/authorized_keys')
       logging.warn('There, that was easy!')
       logging.warn('')
-      logging.warn('P.S. Please, make tell your manager how INANE this.')
+      logging.warn('P.S. Please, tell your manager how INANE this is.')
     else:
       logging.warn(str(ex))
     return []
