@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
+#include "base/time.h"
+#include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
@@ -38,17 +40,16 @@ namespace {
 // amount.
 static const int kAnchorOffset = 25;
 
-class AppListControllerWin : public AppListController {
+class AppListControllerDelegateWin : public AppListControllerDelegate {
  public:
-  AppListControllerWin();
-  virtual ~AppListControllerWin();
+  AppListControllerDelegateWin();
+  virtual ~AppListControllerDelegateWin();
 
  private:
   // AppListController overrides:
   virtual void CloseView() OVERRIDE;
-  virtual bool IsAppPinned(const std::string& extension_id) OVERRIDE;
-  virtual void PinApp(const std::string& extension_id) OVERRIDE;
-  virtual void UnpinApp(const std::string& extension_id) OVERRIDE;
+  virtual void ViewClosing() OVERRIDE;
+  virtual void ViewActivationChanged(bool active) OVERRIDE;
   virtual bool CanPin() OVERRIDE;
   virtual bool CanShowCreateShortcutsDialog() OVERRIDE;
   virtual void ShowCreateShortcutsDialog(
@@ -58,36 +59,85 @@ class AppListControllerWin : public AppListController {
                            const std::string& extension_id,
                            int event_flags) OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerWin);
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateWin);
 };
 
-AppListControllerWin::AppListControllerWin() {
+// The AppListController class manages global resources needed for the app
+// list to operate, and controls when the app list is opened and closed.
+class AppListController {
+ public:
+  AppListController() : current_view_(NULL) {}
+  ~AppListController() {}
+
+  void ShowAppList();
+  void CloseAppList();
+  void AppListClosing();
+  void AppListActivationChanged(bool active);
+
+ private:
+  // Utility methods for showing the app list.
+  void GetArrowLocationAndUpdateAnchor(
+      const gfx::Rect& work_area,
+      int min_space_x,
+      int min_space_y,
+      views::BubbleBorder::ArrowLocation* arrow,
+      gfx::Point* anchor);
+  void UpdateArrowPositionAndAnchorPoint(app_list::AppListView* view);
+  CommandLine GetAppListCommandLine();
+  string16 GetAppListIconPath();
+  string16 GetAppModelId();
+
+  // Check if the app list or the taskbar has focus. The app list is kept
+  // visible whenever either of these have focus, which allows it to be
+  // pinned but will hide it if it otherwise loses focus. This is checked
+  // periodically whenever the app list does not have focus.
+  void CheckTaskbarOrViewHasFocus();
+
+  // Weak pointer. The view manages its own lifetime.
+  app_list::AppListView* current_view_;
+
+  // Timer used to check if the taskbar or app list is active. Using a timer
+  // means we don't need to hook Windows, which is apparently not possible
+  // since Vista (and is not nice at any time).
+  base::RepeatingTimer<AppListController> timer_;
+
+  app_list::PaginationModel pagination_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListController);
+};
+
+base::LazyInstance<AppListController>::Leaky g_app_list_controller =
+    LAZY_INSTANCE_INITIALIZER;
+
+AppListControllerDelegateWin::AppListControllerDelegateWin() {
   browser::StartKeepAlive();
 }
 
-AppListControllerWin::~AppListControllerWin() {
+AppListControllerDelegateWin::~AppListControllerDelegateWin() {
   browser::EndKeepAlive();
 }
 
-void AppListControllerWin::CloseView() {}
+void AppListControllerDelegateWin::CloseView() {
+  g_app_list_controller.Get().CloseAppList();
+}
 
-bool AppListControllerWin::IsAppPinned(const std::string& extension_id)  {
+void AppListControllerDelegateWin::ViewActivationChanged(bool active) {
+  g_app_list_controller.Get().AppListActivationChanged(active);
+}
+
+void AppListControllerDelegateWin::ViewClosing() {
+  g_app_list_controller.Get().AppListClosing();
+}
+
+bool AppListControllerDelegateWin::CanPin() {
   return false;
 }
 
-void AppListControllerWin::PinApp(const std::string& extension_id) {}
-
-void AppListControllerWin::UnpinApp(const std::string& extension_id) {}
-
-bool AppListControllerWin::CanPin() {
-  return false;
-}
-
-bool AppListControllerWin::CanShowCreateShortcutsDialog() {
+bool AppListControllerDelegateWin::CanShowCreateShortcutsDialog() {
   return true;
 }
 
-void AppListControllerWin::ShowCreateShortcutsDialog(
+void AppListControllerDelegateWin::ShowCreateShortcutsDialog(
     Profile* profile,
     const std::string& extension_id) {
   ExtensionService* service = profile->GetExtensionService();
@@ -98,9 +148,9 @@ void AppListControllerWin::ShowCreateShortcutsDialog(
   chrome::ShowCreateChromeAppShortcutsDialog(NULL, profile, extension);
 }
 
-void AppListControllerWin::ActivateApp(Profile* profile,
-                                       const std::string& extension_id,
-                                       int event_flags) {
+void AppListControllerDelegateWin::ActivateApp(Profile* profile,
+                                               const std::string& extension_id,
+                                               int event_flags) {
   ExtensionService* service = profile->GetExtensionService();
   DCHECK(service);
   const extensions::Extension* extension = service->GetInstalledExtension(
@@ -110,25 +160,66 @@ void AppListControllerWin::ActivateApp(Profile* profile,
       profile, extension, extension_misc::LAUNCH_TAB, NEW_FOREGROUND_TAB));
 }
 
-// The AppListResources class manages global resources needed for the app
-// list to operate.
-class AppListResources {
- public:
-  AppListResources::AppListResources() {}
+void AppListController::ShowAppList() {
+#if !defined(USE_AURA)
+  // If there is already a view visible, activate it.
+  if (current_view_) {
+    current_view_->Show();
+    return;
+  }
 
-  app_list::PaginationModel* pagination_model() { return &pagination_model_; }
+  // The controller will be owned by the view delegate, and the delegate is
+  // owned by the app list view. The app list view manages it's own lifetime.
+  current_view_ = new app_list::AppListView(
+      new AppListViewDelegate(new AppListControllerDelegateWin()));
+  gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
+  current_view_->InitAsBubble(GetDesktopWindow(),
+                              &pagination_model_,
+                              NULL,
+                              cursor,
+                              views::BubbleBorder::BOTTOM_LEFT);
 
- private:
-  app_list::PaginationModel pagination_model_;
+  UpdateArrowPositionAndAnchorPoint(current_view_);
+  HWND hwnd =
+      current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+  ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
+  CommandLine relaunch = GetAppListCommandLine();
+  ui::win::SetRelaunchDetailsForWindow(
+      relaunch.GetCommandLineString(),
+      l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME),
+      hwnd);
+  string16 icon_path = GetAppListIconPath();
+  ui::win::SetAppIconForWindow(icon_path, hwnd);
+  current_view_->Show();
+#endif
+}
 
-  DISALLOW_COPY_AND_ASSIGN(AppListResources);
-};
+void AppListController::CloseAppList() {
+  if (current_view_)
+    current_view_->GetWidget()->Close();
+}
 
-void GetArrowLocationAndUpdateAnchor(const gfx::Rect& work_area,
-                                     int min_space_x,
-                                     int min_space_y,
-                                     views::BubbleBorder::ArrowLocation* arrow,
-                                     gfx::Point* anchor) {
+void AppListController::AppListClosing() {
+  current_view_ = NULL;
+  timer_.Stop();
+}
+
+void AppListController::AppListActivationChanged(bool active) {
+  if (active) {
+    timer_.Stop();
+    return;
+  }
+
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,
+               &AppListController::CheckTaskbarOrViewHasFocus);
+}
+
+void AppListController::GetArrowLocationAndUpdateAnchor(
+    const gfx::Rect& work_area,
+    int min_space_x,
+    int min_space_y,
+    views::BubbleBorder::ArrowLocation* arrow,
+    gfx::Point* anchor) {
   // First ensure anchor is within the work area.
   if (!work_area.Contains(*anchor)) {
     anchor->set_x(std::max(anchor->x(), work_area.x()));
@@ -162,7 +253,8 @@ void GetArrowLocationAndUpdateAnchor(const gfx::Rect& work_area,
   anchor->Offset(-kAnchorOffset, 0);
 }
 
-void UpdateArrowPositionAndAnchorPoint(app_list::AppListView* view) {
+void AppListController::UpdateArrowPositionAndAnchorPoint(
+    app_list::AppListView* view) {
   static const int kArrowSize = 10;
   static const int kPadding = 20;
 
@@ -185,7 +277,7 @@ void UpdateArrowPositionAndAnchorPoint(app_list::AppListView* view) {
   view->SetAnchorPoint(anchor);
 }
 
-CommandLine GetAppListCommandLine() {
+CommandLine AppListController::GetAppListCommandLine() {
   CommandLine* current = CommandLine::ForCurrentProcess();
   CommandLine command_line(current->GetProgram());
 
@@ -199,7 +291,7 @@ CommandLine GetAppListCommandLine() {
   return command_line;
 }
 
-string16 GetAppListIconPath() {
+string16 AppListController::GetAppListIconPath() {
   FilePath icon_path;
   if (!PathService::Get(base::DIR_MODULE, &icon_path))
     return string16();
@@ -212,7 +304,7 @@ string16 GetAppListIconPath() {
   return result;
 }
 
-string16 GetAppModelId() {
+string16 AppListController::GetAppModelId() {
   static const wchar_t kAppListId[] = L"ChromeAppList";
   // The AppModelId should be the same for all profiles in a user data directory
   // but different for different user data directories, so base it on the
@@ -223,40 +315,42 @@ string16 GetAppModelId() {
                                                    initial_profile_path);
 }
 
-base::LazyInstance<AppListResources>::Leaky g_app_list_resources =
-    LAZY_INSTANCE_INITIALIZER;
+void AppListController::CheckTaskbarOrViewHasFocus() {
+  // Don't bother checking if the view has been closed.
+  if (!current_view_)
+    return;
+
+  // First get the taskbar and jump lists windows (the jump list is the
+  // context menu which the taskbar uses).
+  HWND jump_list_hwnd = FindWindow(L"DV2ControlHost", NULL);
+  HWND taskbar_hwnd = FindWindow(L"Shell_TrayWnd", NULL);
+  HWND app_list_hwnd =
+      current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+
+  // Get the focused window, and check if it is one of these windows. Keep
+  // checking it's parent until either we find one of these windows, or there
+  // is no parent left.
+  HWND focused_hwnd = GetForegroundWindow();
+  while (focused_hwnd) {
+    if (focused_hwnd == jump_list_hwnd ||
+        focused_hwnd == taskbar_hwnd ||
+        focused_hwnd == app_list_hwnd) {
+      return;
+    }
+    focused_hwnd = GetParent(focused_hwnd);
+  }
+
+  // If we get here, the focused window is not the taskbar, it's context menu,
+  // or the app list, so close the app list.
+  CloseAppList();
+}
 
 }  // namespace
 
 namespace app_list_controller {
 
 void ShowAppList() {
-#if !defined(USE_AURA)
-
-  // The controller will be owned by the view delegate, and the delegate is
-  // owned by the app list view. The app list view manages it's own lifetime.
-  app_list::AppListView* view = new app_list::AppListView(
-      new AppListViewDelegate(new AppListControllerWin()));
-  gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
-  view->InitAsBubble(
-      GetDesktopWindow(),
-      g_app_list_resources.Get().pagination_model(),
-      NULL,
-      cursor,
-      views::BubbleBorder::BOTTOM_LEFT);
-
-  UpdateArrowPositionAndAnchorPoint(view);
-  HWND hwnd = view->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-  ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
-  CommandLine relaunch = GetAppListCommandLine();
-  ui::win::SetRelaunchDetailsForWindow(
-      relaunch.GetCommandLineString(),
-      l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME),
-      hwnd);
-  string16 icon_path = GetAppListIconPath();
-  ui::win::SetAppIconForWindow(icon_path, hwnd);
-  view->Show();
-#endif
+  g_app_list_controller.Get().ShowAppList();
 }
 
 }  // namespace app_list_controller

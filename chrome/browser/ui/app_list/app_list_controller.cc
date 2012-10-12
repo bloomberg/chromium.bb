@@ -6,6 +6,24 @@
 
 #include "build/build_config.h"
 
+AppListControllerDelegate::~AppListControllerDelegate() {}
+
+void AppListControllerDelegate::ViewClosing() {}
+
+void AppListControllerDelegate::ViewActivationChanged(bool active) {}
+
+bool AppListControllerDelegate::IsAppPinned(const std::string& extension_id) {
+  return false;
+}
+
+void AppListControllerDelegate::PinApp(const std::string& extension_id) {}
+
+void AppListControllerDelegate::UnpinApp(const std::string& extension_id) {}
+
+void AppListControllerDelegate::ShowCreateShortcutsDialog(
+    Profile* profile,
+    const std::string& extension_id) {}
+
 namespace app_list_controller {
 
 #if !defined(OS_WIN)

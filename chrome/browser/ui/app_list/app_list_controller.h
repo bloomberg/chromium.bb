@@ -12,23 +12,29 @@ class Profile;
 // Interface to allow the view delegate to call out to whatever is controlling
 // the app list. This will have different implementations for different
 // platforms.
-class AppListController {
+class AppListControllerDelegate {
  public:
-  virtual ~AppListController() {}
+  virtual ~AppListControllerDelegate();
 
-  // Handle the controller being closed.
+  // Close the view.
   virtual void CloseView() = 0;
 
+  // Handle the view being closed.
+  virtual void ViewClosing();
+
+  // Handle the view being activated or deactivated.
+  virtual void ViewActivationChanged(bool active);
+
   // Control of pinning apps.
-  virtual bool IsAppPinned(const std::string& extension_id) = 0;
-  virtual void PinApp(const std::string& extension_id) = 0;
-  virtual void UnpinApp(const std::string& extension_id) = 0;
+  virtual bool IsAppPinned(const std::string& extension_id);
+  virtual void PinApp(const std::string& extension_id);
+  virtual void UnpinApp(const std::string& extension_id);
   virtual bool CanPin() = 0;
 
   // Whether the controller supports showing the Create Shortcuts dialog.
   virtual bool CanShowCreateShortcutsDialog() = 0;
   virtual void ShowCreateShortcutsDialog(Profile* profile,
-                                         const std::string& extension_id) = 0;
+                                         const std::string& extension_id);
 
   // App has been clicked on in the app list.
   virtual void ActivateApp(Profile* profile,

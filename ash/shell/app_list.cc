@@ -279,6 +279,14 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
       Shell::GetInstance()->ToggleAppList();
   }
 
+  virtual void ViewClosing() OVERRIDE {
+    // Nothing needs to be done.
+  }
+
+  virtual void ViewActivationChanged(bool active) OVERRIDE {
+    // Nothing needs to be done.
+  }
+
   app_list::AppListModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);

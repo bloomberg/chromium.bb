@@ -133,7 +133,7 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                    const Extension* extension,
-                                   AppListController* controller)
+                                   AppListControllerDelegate* controller)
     : ChromeAppListItem(TYPE_APP),
       profile_(profile),
       extension_id_(extension->id()),

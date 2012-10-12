@@ -295,7 +295,7 @@ SearchBuilder::SearchBuilder(
     Profile* profile,
     app_list::SearchBoxModel* search_box,
     app_list::AppListModel::SearchResults* results,
-    AppListController* list_controller)
+    AppListControllerDelegate* list_controller)
     : profile_(profile),
       search_box_(search_box),
       results_(results),

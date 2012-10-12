@@ -19,7 +19,7 @@ class SearchBuilder;
 class AppListViewDelegate : public app_list::AppListViewDelegate {
  public:
   // The delegate will take ownership of the controller.
-  explicit AppListViewDelegate(AppListController* controller);
+  explicit AppListViewDelegate(AppListControllerDelegate* controller);
   virtual ~AppListViewDelegate();
 
  private:
@@ -35,10 +35,12 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
                                         int action_index,
                                         int event_flags) OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void ViewClosing() OVERRIDE;
+  virtual void ViewActivationChanged(bool active) OVERRIDE;
 
   scoped_ptr<AppsModelBuilder> apps_builder_;
   scoped_ptr<SearchBuilder> search_builder_;
-  scoped_ptr<AppListController> controller_;
+  scoped_ptr<AppListControllerDelegate> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };

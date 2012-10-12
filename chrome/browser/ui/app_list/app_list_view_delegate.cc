@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/app_list/search_builder.h"
 #include "content/public/browser/user_metrics.h"
 
-AppListViewDelegate::AppListViewDelegate(AppListController* controller)
+AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller) {}
 
 AppListViewDelegate::~AppListViewDelegate() {}
@@ -67,4 +67,12 @@ void AppListViewDelegate::InvokeSearchResultAction(
 
 void AppListViewDelegate::Close()  {
   controller_->CloseView();
+}
+
+void AppListViewDelegate::ViewClosing() {
+  controller_->ViewClosing();
+}
+
+void AppListViewDelegate::ViewActivationChanged(bool active) {
+  controller_->ViewActivationChanged(active);
 }

@@ -16,7 +16,7 @@ class SearchBoxModel;
 class SearchResult;
 }
 
-class AppListController;
+class AppListControllerDelegate;
 class AutocompleteController;
 class AutocompleteResult;
 class Profile;
@@ -27,7 +27,7 @@ class SearchBuilder : public AutocompleteControllerDelegate {
   SearchBuilder(Profile* profile,
                 app_list::SearchBoxModel* search_box,
                 app_list::AppListModel::SearchResults* results,
-                AppListController* list_controller);
+                AppListControllerDelegate* list_controller);
   virtual ~SearchBuilder();
 
   void StartSearch();
@@ -60,7 +60,7 @@ class SearchBuilder : public AutocompleteControllerDelegate {
   scoped_ptr<AutocompleteController> controller_;
 
   // The controller of the app list. Owned by the app list delegate.
-  AppListController* list_controller_;
+  AppListControllerDelegate* list_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBuilder);
 };

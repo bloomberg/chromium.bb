@@ -195,4 +195,18 @@ void AppListView::InvokeResultAction(const SearchResult& result,
     delegate_->InvokeSearchResultAction(result, action_index, event_flags);
 }
 
+void AppListView::OnWidgetClosing(views::Widget* widget) {
+  BubbleDelegateView::OnWidgetClosing(widget);
+  if (delegate_.get() && widget == GetWidget())
+    delegate_->ViewClosing();
+}
+
+void AppListView::OnWidgetActivationChanged(views::Widget* widget,
+                                            bool active) {
+  // Do not called inherited function as the bubble delegate auto close
+  // functionality is not used.
+  if (delegate_.get() && widget == GetWidget())
+    delegate_->ViewActivationChanged(active);
+}
+
 }  // namespace app_list

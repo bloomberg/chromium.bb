@@ -39,7 +39,7 @@ bool AppPrecedes(const ExtensionAppItem* app1, const ExtensionAppItem* app2) {
 
 AppsModelBuilder::AppsModelBuilder(Profile* profile,
                                    app_list::AppListModel::Apps* model,
-                                   AppListController* controller)
+                                   AppListControllerDelegate* controller)
     : profile_(profile),
       controller_(controller),
       model_(model),

@@ -12,6 +12,10 @@
 #include "ui/app_list/search_result_list_view_delegate.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
+namespace views {
+class Widget;
+}
+
 namespace app_list {
 
 class AppListModel;
@@ -72,6 +76,11 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   virtual void InvokeResultAction(const SearchResult& result,
                                   int action_index,
                                   int event_flags) OVERRIDE;
+
+  // Overridden from views::WidgetObserver:
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetActivationChanged(views::Widget* widget, bool active)
+      OVERRIDE;
 
   scoped_ptr<AppListModel> model_;
   scoped_ptr<AppListViewDelegate> delegate_;

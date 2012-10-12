@@ -13,7 +13,7 @@
 #include "sync/api/string_ordinal.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class AppListController;
+class AppListControllerDelegate;
 class ExtensionResource;
 class Profile;
 class SkBitmap;
@@ -30,7 +30,7 @@ class ExtensionAppItem : public ChromeAppListItem,
  public:
   ExtensionAppItem(Profile* profile,
                    const extensions::Extension* extension,
-                   AppListController* controller);
+                   AppListControllerDelegate* controller);
   virtual ~ExtensionAppItem();
 
   // Gets extension associated with this model. Returns NULL if extension
@@ -75,7 +75,7 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   Profile* profile_;
   const std::string extension_id_;
-  AppListController* controller_;
+  AppListControllerDelegate* controller_;
 
   scoped_ptr<extensions::IconImage> icon_;
   scoped_ptr<ui::SimpleMenuModel> context_menu_model_;

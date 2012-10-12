@@ -46,6 +46,12 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Invoked to close app list.
   virtual void Close() = 0;
+
+  // Invoked when the app list is closing.
+  virtual void ViewClosing() = 0;
+
+  // Invoked when the app list's activated state changes.
+  virtual void ViewActivationChanged(bool active) = 0;
 };
 
 }  // namespace app_list
