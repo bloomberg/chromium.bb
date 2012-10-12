@@ -508,16 +508,26 @@ const NamedClassDecoder& Named%(decoder_name)s::decode_%(table_name)s(
      const nacl_arm_dec::Instruction inst) const {
 """
 
+METHOD_HEADER_TRACE="""
+  fprintf(stderr, "decode %(table_name)s\\n");
+"""
+
 METHOD_DISPATCH_BEGIN="""
   if (%s"""
 
 METHOD_DISPATCH_CONTINUE=""" &&
       %s"""
 
-METHOD_DISPATCH_END=")"""
+METHOD_DISPATCH_END=") {"""
+
+METHOD_DISPATCH_TRACE="""
+    fprintf(stderr, "count = %s\\n");"""
 
 PARSE_TABLE_METHOD_ROW="""
     return %(action)s;
+"""
+
+METHOD_DISPATCH_CLOSE="""  }
 """
 
 PARSE_TABLE_METHOD_FOOTER="""
@@ -568,6 +578,7 @@ def generate_named_cc(decoder, decoder_name, filename, out, cl_args):
     out.write(NAMED_CC_FOOTER % values)
 
 def _generate_decoder_method_bodies(decoder, values, out):
+  global _cl_args
   for table in decoder.tables():
     # Add the default row as the last in the optimized row, so that
     # it is applied if all other rows do not.
@@ -584,13 +595,17 @@ def _generate_decoder_method_bodies(decoder, values, out):
     values['table_name'] = table.name
     values['citation'] = table.citation,
     out.write(PARSE_TABLE_METHOD_HEADER % values)
+    if _cl_args.get('trace') == 'True':
+        out.write(METHOD_HEADER_TRACE % values)
 
     # Add message to stop compilation warnings if this table
     # doesn't require subtables to select a class decoder.
     if not table.methods():
       out.write("  UNREFERENCED_PARAMETER(inst);")
 
+    count = 0
     for row in opt_rows:
+      count = count + 1
       if row.action.__class__.__name__ == 'DecoderAction':
         _install_action(decoder, row.action, values)
         action = '%(baseline_instance)s' % values
@@ -617,8 +632,11 @@ def _generate_decoder_method_bodies(decoder, values, out):
       for p in row.patterns[1:]:
         out.write(METHOD_DISPATCH_CONTINUE % p.to_commented_bool())
       out.write(METHOD_DISPATCH_END)
+      if _cl_args.get('trace') == 'True':
+          out.write(METHOD_DISPATCH_TRACE % count)
       values['action'] = action
       out.write(PARSE_TABLE_METHOD_ROW % values)
+      out.write(METHOD_DISPATCH_CLOSE)
     out.write(PARSE_TABLE_METHOD_FOOTER % values)
 
 # Define the source for DECODER_tests.cc
