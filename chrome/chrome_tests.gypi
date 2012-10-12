@@ -2207,6 +2207,19 @@
           'dependencies': [
             '../ash/ash.gyp:ash_resources',
           ],
+          # We eventually want to compile both in Win Aura builds, see
+          # http://crbug.com/155545.
+          'conditions': [
+            ['OS=="win"', {
+              'sources!': [
+                'browser/ui/window_sizer/window_sizer_ash_unittest.cc',
+              ],
+            }, { # else: OS!=win
+              'sources!': [
+                'browser/ui/window_sizer/window_sizer_unittest.cc',
+              ],
+            }],
+          ],
         }],
         ['use_aura==1', {
           'dependencies': [
@@ -2219,7 +2232,6 @@
             ['exclude', '^browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc'],
             ['exclude', '^browser/ui/panels/display_settings_provider_win_unittest.cc'],
             ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
-            ['exclude', '^browser/ui/window_sizer/window_sizer_unittest.cc'],
           ],
           'sources': [
             '../ash/test/ash_test_base.cc',
@@ -4281,7 +4293,7 @@
           'product_name': 'app_mode_app_tests',
           'dependencies': [
             '../base/base.gyp:test_support_base',
-            '../chrome/common_constants.gyp:common_constants',
+	    '../chrome/common_constants.gyp:common_constants',
             '../testing/gtest.gyp:gtest',
             'chrome.gyp:chrome',  # run time dependency
             'app_mode_app_support',
