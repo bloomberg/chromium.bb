@@ -9,6 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 
 namespace IPC {
 class Message;
@@ -16,10 +18,12 @@ class SyncMessage;
 }
 
 namespace gfx {
+class Point;
 class Size;
 }
 
 struct BrowserPluginHostMsg_ResizeGuest_Params;
+struct WebDropData;
 
 namespace content {
 
@@ -68,6 +72,11 @@ class BrowserPluginEmbedderHelper : public RenderViewHostObserver {
   void OnReload(int instance_id);
   void OnTerminateGuest(int instance_id);
   void OnSetGuestVisibility(int instance_id, bool visible);
+  void OnDragStatusUpdate(int instance_id,
+                          WebKit::WebDragStatus drag_status,
+                          const WebDropData& drop_data,
+                          WebKit::WebDragOperationsMask drag_mask,
+                          const gfx::Point& location);
 
   BrowserPluginEmbedder* embedder_;
 

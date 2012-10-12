@@ -164,6 +164,7 @@
     'common/devtools_messages.h',
     'common/dom_storage_messages.h',
     'common/drag_messages.h',
+    'common/drag_traits.h',
     'common/edit_command.h',
     'common/fileapi/file_system_dispatcher.cc',
     'common/fileapi/file_system_dispatcher.h',

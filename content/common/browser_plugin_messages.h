@@ -14,14 +14,20 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/webcursor.h"
+#include "webkit/glue/webdropdata.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START BrowserPluginMsgStart
+
+IPC_ENUM_TRAITS(WebKit::WebDragStatus)
 
 // Browser plugin messages
 
@@ -121,6 +127,14 @@ IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_PluginDestroyed,
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetVisibility,
                     int /* instance_id */,
                     bool /* visible */)
+
+// Tells the guest that a drag event happened on the plugin.
+IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_DragStatusUpdate,
+                    int /* instance_id */,
+                    WebKit::WebDragStatus /* drag_status */,
+                    WebDropData /* drop_data */,
+                    WebKit::WebDragOperationsMask /* operation_mask */,
+                    gfx::Point /* plugin_location */)
 
 // -----------------------------------------------------------------------------
 // These messages are from the guest renderer to the browser process

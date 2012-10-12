@@ -38,11 +38,14 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
 
 class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
+struct WebDropData;
 
 namespace WebKit {
 class WebInputEvent;
@@ -82,6 +85,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void set_embedder_render_process_host(
       RenderProcessHost* render_process_host) {
     embedder_render_process_host_ = render_process_host;
+  }
+  void set_embedder_render_view_host(RenderViewHost* render_view_host) {
+    embedder_render_view_host_ = render_view_host;
   }
 
   bool visible() const { return visible_; }
@@ -160,6 +166,22 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // RenderThreadImpl::IdleHandlerInForegroundTab (executed when visible).
   void SetVisibility(bool embedder_visible, bool visible);
 
+  // Handles drag events from the embedder.
+  // When dragging, the drag events go to the embedder first, and if the drag
+  // happens on the browser plugin, then the plugin sends a corresponding
+  // drag-message to the guest. This routes the drag-message to the guest
+  // renderer.
+  void DragStatusUpdate(WebKit::WebDragStatus drag_status,
+                        const WebDropData& drop_data,
+                        WebKit::WebDragOperationsMask drag_mask,
+                        const gfx::Point& location);
+
+  // Updates the cursor during dragging.
+  // During dragging, if the guest notifies to update the cursor for a drag,
+  // then it is necessary to route the cursor update to the embedder correctly
+  // so that the cursor updates properly.
+  void UpdateDragCursor(WebKit::WebDragOperation operation);
+
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContents* GetWebContents();
 
@@ -218,6 +240,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   NotificationRegistrar notification_registrar_;
   RenderProcessHost* embedder_render_process_host_;
+  RenderViewHost* embedder_render_view_host_;
   // An identifier that uniquely identifies a browser plugin guest within an
   // embedder.
   int instance_id_;

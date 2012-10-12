@@ -14,6 +14,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,7 +24,9 @@
 #include "content/public/common/result_codes.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "ui/surface/transport_dib.h"
+#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/resource_type.h"
 
 namespace content {
@@ -40,6 +43,7 @@ BrowserPluginGuest::BrowserPluginGuest(int instance_id,
                                        RenderViewHost* render_view_host)
     : WebContentsObserver(web_contents),
       embedder_render_process_host_(NULL),
+      embedder_render_view_host_(NULL),
       instance_id_(instance_id),
 #if defined(OS_WIN)
       damage_buffer_size_(0),
@@ -142,6 +146,37 @@ void BrowserPluginGuest::SetVisibility(bool embedder_visible, bool visible) {
     web_contents()->WasShown();
   else
     web_contents()->WasHidden();
+}
+
+void BrowserPluginGuest::DragStatusUpdate(WebKit::WebDragStatus drag_status,
+                                          const WebDropData& drop_data,
+                                          WebKit::WebDragOperationsMask mask,
+                                          const gfx::Point& location) {
+  RenderViewHost* host = web_contents()->GetRenderViewHost();
+  switch (drag_status) {
+    case WebKit::WebDragStatusEnter:
+      host->DragTargetDragEnter(drop_data, location, location, mask, 0);
+      break;
+    case WebKit::WebDragStatusOver:
+      host->DragTargetDragOver(location, location, mask, 0);
+      break;
+    case WebKit::WebDragStatusLeave:
+      host->DragTargetDragLeave();
+      break;
+    case WebKit::WebDragStatusDrop:
+      host->DragTargetDrop(location, location, 0);
+      break;
+    case WebKit::WebDragStatusUnknown:
+      NOTREACHED();
+  }
+}
+
+void BrowserPluginGuest::UpdateDragCursor(WebKit::WebDragOperation operation) {
+  CHECK(embedder_render_view_host_);
+  RenderViewHostDelegateView* view =
+      embedder_render_view_host_->GetDelegate()->GetDelegateView();
+  if (view)
+    view->UpdateDragCursor(operation);
 }
 
 WebContents* BrowserPluginGuest::GetWebContents() {

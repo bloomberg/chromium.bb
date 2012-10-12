@@ -15,6 +15,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_backing_store.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
 
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct BrowserPluginMsg_DidNavigate_Params;
@@ -121,6 +122,11 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual bool handleInputEvent(
       const WebKit::WebInputEvent& event,
       WebKit::WebCursorInfo& cursor_info) OVERRIDE;
+  virtual bool handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
+                                      const WebKit::WebDragData& drag_data,
+                                      WebKit::WebDragOperationsMask mask,
+                                      const WebKit::WebPoint& position,
+                                      const WebKit::WebPoint& screen) OVERRIDE;
   virtual void didReceiveResponse(
       const WebKit::WebURLResponse& response) OVERRIDE;
   virtual void didReceiveData(const char* data, int data_length) OVERRIDE;

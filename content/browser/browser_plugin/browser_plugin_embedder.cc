@@ -95,6 +95,7 @@ void BrowserPluginEmbedder::CreateGuest(RenderViewHost* render_view_host,
 
   guest = guest_web_contents->GetBrowserPluginGuest();
   guest->set_embedder_render_process_host(render_view_host->GetProcess());
+  guest->set_embedder_render_view_host(render_view_host);
 
   RendererPreferences* guest_renderer_prefs =
       guest_web_contents->GetMutableRendererPrefs();
@@ -270,6 +271,17 @@ void BrowserPluginEmbedder::SetGuestVisibility(int instance_id,
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   if (guest)
     guest->SetVisibility(visible_, guest_visible);
+}
+
+void BrowserPluginEmbedder::DragStatusUpdate(
+    int instance_id,
+    WebKit::WebDragStatus drag_status,
+    const WebDropData& drop_data,
+    WebKit::WebDragOperationsMask drag_mask,
+    const gfx::Point& location) {
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  if (guest)
+    guest->DragStatusUpdate(drag_status, drop_data, drag_mask, location);
 }
 
 void BrowserPluginEmbedder::Go(int instance_id, int relative_index) {

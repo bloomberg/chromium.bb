@@ -761,6 +761,24 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   return handled;
 }
 
+bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
+                                           const WebKit::WebDragData& drag_data,
+                                           WebKit::WebDragOperationsMask mask,
+                                           const WebKit::WebPoint& position,
+                                           const WebKit::WebPoint& screen) {
+  if (guest_crashed_ || !navigate_src_sent_)
+    return false;
+  BrowserPluginManager::Get()->Send(
+      new BrowserPluginHostMsg_DragStatusUpdate(
+        render_view_->GetRoutingID(),
+        instance_id_,
+        drag_status,
+        WebDropData(drag_data),
+        mask,
+        position));
+  return false;
+}
+
 void BrowserPlugin::didReceiveResponse(
     const WebKit::WebURLResponse& response) {
 }

@@ -51,6 +51,8 @@ bool BrowserPluginEmbedderHelper::OnMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_TerminateGuest, OnTerminateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility,
                         OnSetGuestVisibility)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
+                        OnDragStatusUpdate)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -160,5 +162,14 @@ void BrowserPluginEmbedderHelper::OnSetGuestVisibility(int instance_id,
   embedder_->SetGuestVisibility(instance_id, visible);
 }
 
+void BrowserPluginEmbedderHelper::OnDragStatusUpdate(
+    int instance_id,
+    WebKit::WebDragStatus drag_status,
+    const WebDropData& drop_data,
+    WebKit::WebDragOperationsMask drag_mask,
+    const gfx::Point& location) {
+  embedder_->DragStatusUpdate(instance_id, drag_status, drop_data, drag_mask,
+      location);
+}
 
 }  // namespace content

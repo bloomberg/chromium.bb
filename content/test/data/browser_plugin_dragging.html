@@ -1,0 +1,29 @@
+<textarea id='id_message'>
+</textarea>
+
+<object id="plugin"
+    tabindex="0"
+    type="application/browser-plugin"
+    width="240"
+    height="120"
+    style='border: solid 1px red'
+    contentEditable
+    >
+</object>
+
+<script>
+function dragLocation() {
+  return [id_message.offsetLeft + id_message.offsetWidth / 2,
+          id_message.offsetTop + id_message.offsetHeight / 2];
+}
+
+function dropLocation() {
+  return [plugin.offsetLeft + plugin.offsetWidth / 2,
+          plugin.offsetTop + plugin.offsetHeight / 2];
+}
+
+function SetSrc(src) {
+  plugin = document.getElementById('plugin');
+  plugin.src = src;
+}
+</script>

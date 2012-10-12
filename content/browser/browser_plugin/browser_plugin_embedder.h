@@ -26,7 +26,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/surface/transport_dib.h"
+#include "webkit/glue/webdropdata.h"
 
 class WebContentsImpl;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
@@ -36,6 +39,7 @@ class WebInputEvent;
 }
 
 namespace gfx {
+class Point;
 class Rect;
 class Size;
 }
@@ -107,6 +111,11 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   void PluginDestroyed(int instance_id);
   void SetGuestVisibility(int instance_id,
                           bool guest_visible);
+  void DragStatusUpdate(int instance_id,
+                        WebKit::WebDragStatus drag_status,
+                        const WebDropData& drop_data,
+                        WebKit::WebDragOperationsMask drag_mask,
+                        const gfx::Point& location);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.

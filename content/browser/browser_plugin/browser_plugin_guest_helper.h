@@ -7,6 +7,7 @@
 
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 class WebCursor;
@@ -42,6 +43,7 @@ class BrowserPluginGuestHelper : public RenderViewHostObserver {
 
  private:
   // Message handlers
+  void OnUpdateDragCursor(WebKit::WebDragOperation current_op);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnHandleInputEventAck(WebKit::WebInputEvent::Type event_type,
                              bool processed);

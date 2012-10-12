@@ -6,6 +6,7 @@
 
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/drag_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_view_host.h"
 
@@ -25,6 +26,7 @@ bool BrowserPluginGuestHelper::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuestHelper, message)
+    IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnHandleInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
@@ -35,6 +37,11 @@ bool BrowserPluginGuestHelper::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void BrowserPluginGuestHelper::OnUpdateDragCursor(
+    WebKit::WebDragOperation current_op) {
+  guest_->UpdateDragCursor(current_op);
 }
 
 void BrowserPluginGuestHelper::OnUpdateRect(
