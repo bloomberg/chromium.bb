@@ -1222,7 +1222,8 @@ void WebIntentPickerViews::OnActionButtonClicked(
   DCHECK_EQ(IntentRowView::ACTION_INVOKE, type);
   const WebIntentPickerModel::InstalledService& service =
       model_->GetInstalledServiceAt(tag);
-  delegate_->OnServiceChosen(service.url, service.disposition);
+  delegate_->OnServiceChosen(service.url, service.disposition,
+                             WebIntentPickerDelegate::kEnableDefaults);
 }
 
 void WebIntentPickerViews::UpdateContents() {

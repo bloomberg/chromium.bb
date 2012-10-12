@@ -13,10 +13,10 @@ class WebIntentPickerDelegateMock : public WebIntentPickerDelegate {
   WebIntentPickerDelegateMock();
   virtual ~WebIntentPickerDelegateMock();
 
-  MOCK_METHOD2(
-      OnServiceChosen,
-      void(const GURL& url,
-           webkit_glue::WebIntentServiceData::Disposition disposition));
+  MOCK_METHOD3(OnServiceChosen,
+               void(const GURL& url,
+                    webkit_glue::WebIntentServiceData::Disposition disposition,
+                    WebIntentPickerDelegate::DefaultsUsage suppress_defaults));
   MOCK_METHOD2(CreateWebContentsForInlineDisposition,
                content::WebContents*(Profile* profile, const GURL& url));
   MOCK_METHOD1(OnExtensionInstallRequested, void(const std::string& id));

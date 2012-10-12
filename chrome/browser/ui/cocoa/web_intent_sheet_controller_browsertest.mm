@@ -63,7 +63,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest,
       webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
 
   EXPECT_CALL(delegate_, OnServiceChosen(
-      url, webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW));
+      url, webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW,
+      WebIntentPickerDelegate::kEnableDefaults));
   EXPECT_CALL(delegate_, OnUserCancelledPickerDialog()).Times(0);
   EXPECT_CALL(delegate_, OnClosing());
 

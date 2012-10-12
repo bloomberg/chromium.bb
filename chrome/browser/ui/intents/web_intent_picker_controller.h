@@ -84,6 +84,11 @@ class WebIntentPickerController
   void ShowDialog(const string16& action,
                   const string16& type);
 
+  // Called directly after SetIntentsDispatcher to handle the dispatch of the
+  // intent to the indicated service. The picker model may still be unloaded.
+  void InvokeServiceWithSelection(
+      const webkit_glue::WebIntentServiceData& service);
+
   // Called by the location bar to see whether the web intents picker button
   // should be shown.
   bool ShowLocationBarPickerButton();
@@ -115,7 +120,8 @@ class WebIntentPickerController
   // WebIntentPickerDelegate implementation.
   virtual void OnServiceChosen(
       const GURL& url,
-      webkit_glue::WebIntentServiceData::Disposition disposition) OVERRIDE;
+      webkit_glue::WebIntentServiceData::Disposition disposition,
+      DefaultsUsage suppress_defaults) OVERRIDE;
   virtual content::WebContents* CreateWebContentsForInlineDisposition(
       Profile* profile, const GURL& url) OVERRIDE;
   virtual void OnExtensionInstallRequested(const std::string& id) OVERRIDE;
@@ -275,7 +281,7 @@ class WebIntentPickerController
 
   // Delegate for ShowDialog and ReshowDialog. Starts all the data queries for
   // loading the picker model and showing the dialog.
-  void ShowDialog(bool suppress_defaults);
+  void ShowDialog(DefaultsUsage suppress_defaults);
 
   // Cancel a pending download if any.
   void CancelDownload();

@@ -126,7 +126,9 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, ChooseService) {
   [[choose_controller showMoreServicesButton] performClick:nil];
 
   // Test click "select" in the installed service row.
-  EXPECT_CALL(delegate_, OnServiceChosen(url, disposition));
+  EXPECT_CALL(delegate_,
+              OnServiceChosen(url, disposition,
+                              WebIntentPickerDelegate::kEnableDefaults));
   [[[rows objectAtIndex:0] selectButton] performClick:nil];
 
   // Test click "select" in the suggested service row.

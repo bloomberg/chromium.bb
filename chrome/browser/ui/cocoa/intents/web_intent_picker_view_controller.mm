@@ -342,7 +342,9 @@
 - (void)onSelectInstalledService:(id)sender {
   const WebIntentPickerModel::InstalledService& service =
       picker_->model()->GetInstalledServiceAt([sender tag]);
-  picker_->delegate()->OnServiceChosen(service.url, service.disposition);
+  picker_->delegate()->OnServiceChosen(
+      service.url, service.disposition,
+      WebIntentPickerDelegate::kEnableDefaults);
 }
 
 - (void)onSelectSuggestedService:(id)sender {

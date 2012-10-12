@@ -314,7 +314,8 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   void OnServiceChosen(
       const GURL& url,
       webkit_glue::WebIntentServiceData::Disposition disposition) {
-    controller_->OnServiceChosen(url, disposition);
+    controller_->OnServiceChosen(url, disposition,
+                                 WebIntentPickerDelegate::kEnableDefaults);
   }
 
   void OnCancelled() {

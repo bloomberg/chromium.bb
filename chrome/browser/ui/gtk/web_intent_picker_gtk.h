@@ -92,6 +92,9 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // Initialize the main picker dialog.
   void InitMainContents();
 
+  // Clear all contents and reset related variables.
+  void ClearContents();
+
   // Reset contents to the initial picker state.
   void ResetContents();
 

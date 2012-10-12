@@ -192,6 +192,7 @@ void WaitingDialog::Init() {
   // Animate throbber
   throbber->Start();
 }
+
 // static
 WebIntentPicker* WebIntentPicker::Create(content::WebContents* web_contents,
                                          WebIntentPickerDelegate* delegate,
@@ -304,7 +305,7 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
       std::string());
 
   // Replace the picker contents with the inline disposition.
-  gtk_util::RemoveAllChildren(contents_);
+  ClearContents();
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   GtkThemeService* theme_service = GetThemeService(tab_contents_);
@@ -383,8 +384,7 @@ void WebIntentPickerGtk::OnPendingAsyncCompleted() {
   // inform the user about it.
 
   // Replace the picker contents with dialog box.
-  gtk_util::RemoveAllChildren(contents_);
-
+  ClearContents();
   GtkWidget* sub_contents = CreateSubContents(contents_);
 
   AddCloseButton(contents_);
@@ -519,7 +519,8 @@ void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
       model_->GetInstalledServiceAt(index);
 
   delegate_->OnServiceChosen(installed_service.url,
-                             installed_service.disposition);
+                             installed_service.disposition,
+                             WebIntentPickerDelegate::kEnableDefaults);
 }
 
 void WebIntentPickerGtk::InitContents() {
@@ -534,7 +535,7 @@ void WebIntentPickerGtk::InitContents() {
   gtk_widget_set_size_request(contents_, kWindowMinWidth, -1);
 
   if (model_ && model_->IsWaitingForSuggestions()) {
-    gtk_util::RemoveAllChildren(contents_);
+    ClearContents();
     AddCloseButton(contents_);
     waiting_dialog_.reset(new WaitingDialog(theme_service));
     gtk_box_pack_start(GTK_BOX(contents_), waiting_dialog_->widget(),
@@ -547,7 +548,7 @@ void WebIntentPickerGtk::InitContents() {
 void WebIntentPickerGtk::InitMainContents() {
   GtkThemeService* theme_service = GetThemeService(tab_contents_);
 
-  gtk_util::RemoveAllChildren(contents_);
+  ClearContents();
 
   AddCloseButton(contents_);
   GtkWidget* sub_contents = CreateSubContents(contents_);
@@ -618,9 +619,16 @@ void WebIntentPickerGtk::InitMainContents() {
   gtk_widget_show_all(contents_);
 }
 
-void WebIntentPickerGtk::ResetContents() {
+void WebIntentPickerGtk::ClearContents() {
   // Wipe out all currently displayed widgets.
   gtk_util::RemoveAllChildren(contents_);
+  button_vbox_ = NULL;
+  cws_label_ = NULL;
+  extensions_vbox_ = NULL;
+}
+
+void WebIntentPickerGtk::ResetContents() {
+  ClearContents();
 
   // Reset potential inline disposition data.
   inline_disposition_delegate_.reset(NULL);

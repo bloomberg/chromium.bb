@@ -219,14 +219,14 @@ void WebIntentPickerController::SetIntentsDispatcher(
 // TODO(smckay): rename this "StartActivity".
 void WebIntentPickerController::ShowDialog(const string16& action,
                                            const string16& type) {
-  ShowDialog(false);
+  ShowDialog(kEnableDefaults);
 }
 
 void WebIntentPickerController::ReshowDialog() {
-  ShowDialog(true);
+  ShowDialog(kSuppressDefaults);
 }
 
-void WebIntentPickerController::ShowDialog(bool suppress_defaults) {
+void WebIntentPickerController::ShowDialog(DefaultsUsage suppress_defaults) {
   web_intents::RecordIntentDispatched(uma_bucket_);
 
   DCHECK(intents_dispatcher_);
@@ -329,11 +329,12 @@ void WebIntentPickerController::Observe(
 
 void WebIntentPickerController::OnServiceChosen(
     const GURL& url,
-    webkit_glue::WebIntentServiceData::Disposition disposition) {
+    webkit_glue::WebIntentServiceData::Disposition disposition,
+    DefaultsUsage suppress_defaults) {
   web_intents::RecordServiceInvoke(uma_bucket_);
   uma_reporter_->ResetServiceActiveTimer();
-  ExtensionService* service = profile_->GetExtensionService();
-  DCHECK(service);
+  ExtensionService* extension_service = profile_->GetExtensionService();
+  DCHECK(extension_service);
 
 #if defined(TOOLKIT_VIEWS)
   cancelled_ = false;
@@ -342,9 +343,11 @@ void WebIntentPickerController::OnServiceChosen(
   // Set the default here. Activating the intent resets the picker model.
   // TODO(gbillock): we should perhaps couple the model to the dispatcher so
   // we can re-activate the model on use-another-service.
-  SetDefaultServiceForSelection(url);
+  if (!suppress_defaults)
+    SetDefaultServiceForSelection(url);
 
-  const extensions::Extension* extension = service->GetInstalledApp(url);
+  const extensions::Extension* extension =
+      extension_service->GetInstalledApp(url);
 
   // TODO(smckay): this basically smells like another disposition.
   if (extension && extension->is_platform_app()) {
@@ -572,7 +575,8 @@ void WebIntentPickerController::DispatchToInstalledExtension(
   picker_model_->AddInstalledService(
       service_data.title, service_data.service_url,
       service_data.disposition);
-  OnServiceChosen(service_data.service_url, service_data.disposition);
+  OnServiceChosen(service_data.service_url, service_data.disposition,
+                  kEnableDefaults);
   AsyncOperationFinished();
 }
 
@@ -661,10 +665,7 @@ void WebIntentPickerController::OnWebIntentServicesAvailableForExplicitIntent(
     if (services[i].service_url != intents_dispatcher_->GetIntent().service)
       continue;
 
-    AddServiceToModel(services[i]);
-
-    InvokeService(*(picker_model_->GetInstalledServiceWithURL(
-        services[i].service_url)));
+    InvokeServiceWithSelection(services[i]);
     AsyncOperationFinished();
     return;
   }
@@ -1009,13 +1010,28 @@ void WebIntentPickerController::AsyncOperationFinished() {
   }
 }
 
+void WebIntentPickerController::InvokeServiceWithSelection(
+    const webkit_glue::WebIntentServiceData& service) {
+  // TODO(gbillock): this is a bit hacky and exists because in the inline case,
+  // the picker currently assumes it exists.
+  AddServiceToModel(service);
+
+  if (service.disposition ==
+      webkit_glue::WebIntentServiceData::DISPOSITION_INLINE) {
+    // This call will ensure the picker dialog is created and initialized.
+    SetDialogState(kPickerInline);
+  }
+  OnServiceChosen(service.service_url, service.disposition, kSuppressDefaults);
+}
+
 void WebIntentPickerController::InvokeService(
     const WebIntentPickerModel::InstalledService& service) {
   if (service.disposition ==
       webkit_glue::WebIntentServiceData::DISPOSITION_INLINE) {
+    // This call will ensure the picker dialog is created and initialized.
     SetDialogState(kPickerInline);
   }
-  OnServiceChosen(service.url, service.disposition);
+  OnServiceChosen(service.url, service.disposition, kEnableDefaults);
 }
 
 void WebIntentPickerController::SetDialogState(WebIntentPickerState state) {

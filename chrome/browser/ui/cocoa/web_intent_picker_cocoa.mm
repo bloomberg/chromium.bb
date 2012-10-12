@@ -203,7 +203,8 @@ void WebIntentPickerCocoa::OnServiceChosen(size_t index) {
       model_->GetInstalledServiceAt(index);
   service_invoked = true;
   delegate_->OnServiceChosen(installed_service.url,
-                             installed_service.disposition);
+                             installed_service.disposition,
+                             WebIntentPickerDelegate::kEnableDefaults);
 }
 
 void WebIntentPickerCocoa::OnExtensionInstallRequested(
