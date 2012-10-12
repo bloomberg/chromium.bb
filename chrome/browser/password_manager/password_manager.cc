@@ -75,7 +75,7 @@ void PasswordManager::CreateForWebContentsAndDelegate(
     return;
   }
 
-  contents->SetUserData(&kLocatorKey,
+  contents->SetUserData(UserDataKey(),
                         new PasswordManager(contents, delegate));
 }
 

@@ -219,7 +219,7 @@ void InfoBarTabHelper::Observe(int type,
   // ourselves lest other parts of the system attempt to add infobars or use
   // us otherwise during the destruction.
   DCHECK_EQ(web_contents(), content::Source<WebContents>(source).ptr());
-  web_contents()->RemoveUserData(&kLocatorKey);
+  web_contents()->RemoveUserData(UserDataKey());
   // That was the equivalent of "delete this". This object is now destroyed;
   // returning from this function is the only safe thing to do.
   return;

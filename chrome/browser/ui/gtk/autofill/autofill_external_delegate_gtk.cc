@@ -17,7 +17,7 @@ void AutofillExternalDelegate::CreateForWebContentsAndManager(
     return;
 
   web_contents->SetUserData(
-      &kLocatorKey,
+      UserDataKey(),
       new AutofillExternalDelegateGtk(web_contents, autofill_manager));
 }
 
