@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/search/search.cc"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -588,9 +587,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   // policy. Also checks that default search can be completely disabled.
   const string16 kKeyword(ASCIIToUTF16("testsearch"));
   const std::string kSearchURL("http://search.example/search?q={searchTerms}");
-  const std::string kAlternateURL0(
-      "http://search.example/search#q={searchTerms}");
-  const std::string kAlternateURL1("http://search.example/#q={searchTerms}");
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
       browser()->profile());
@@ -599,10 +595,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   ASSERT_TRUE(default_search);
   EXPECT_NE(kKeyword, default_search->keyword());
   EXPECT_NE(kSearchURL, default_search->url());
-  EXPECT_FALSE(
-    default_search->alternate_urls().size() == 2 &&
-    default_search->alternate_urls()[0] == kAlternateURL0 &&
-    default_search->alternate_urls()[1] == kAlternateURL1);
 
   // Override the default search provider using policies.
   PolicyMap policies;
@@ -612,19 +604,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
                POLICY_SCOPE_USER, base::Value::CreateStringValue(kKeyword));
   policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL));
-  base::ListValue* alternate_urls = new base::ListValue();
-  alternate_urls->AppendString(kAlternateURL0);
-  alternate_urls->AppendString(kAlternateURL1);
-  policies.Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, alternate_urls);
   provider_.UpdateChromePolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
   EXPECT_EQ(kKeyword, default_search->keyword());
   EXPECT_EQ(kSearchURL, default_search->url());
-  EXPECT_EQ(2U, default_search->alternate_urls().size());
-  EXPECT_EQ(kAlternateURL0, default_search->alternate_urls()[0]);
-  EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
 
   // Verify that searching from the omnibox uses kSearchURL.
   chrome::FocusLocationBar(browser());
@@ -653,11 +637,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableInstantExtendedAPI);
 
-  // Adding the kEnableInstantExtendedAPI is not enough since
-  // IsInstantExtendedAPIEnabled does not return true on CHANNEL_DEV.
-  if (!chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()))
-    return;
-
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
   const string16 kKeyword(ASCIIToUTF16("testsearch"));
@@ -673,10 +652,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   ASSERT_TRUE(default_search);
   EXPECT_NE(kKeyword, default_search->keyword());
   EXPECT_NE(kSearchURL, default_search->url());
-  EXPECT_FALSE(
-    default_search->alternate_urls().size() == 2 &&
-    default_search->alternate_urls()[0] == kAlternateURL0 &&
-    default_search->alternate_urls()[1] == kAlternateURL1);
+  EXPECT_NE(kAlternateURL0, default_search->alternate_urls()[0]);
+  EXPECT_NE(kAlternateURL1, default_search->alternate_urls()[1]);
 
   // Override the default search provider using policies.
   PolicyMap policies;
@@ -696,7 +673,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   ASSERT_TRUE(default_search);
   EXPECT_EQ(kKeyword, default_search->keyword());
   EXPECT_EQ(kSearchURL, default_search->url());
-  EXPECT_EQ(2U, default_search->alternate_urls().size());
   EXPECT_EQ(kAlternateURL0, default_search->alternate_urls()[0]);
   EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
 
