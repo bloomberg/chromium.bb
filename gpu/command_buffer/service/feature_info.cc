@@ -84,7 +84,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       disable_workarounds(false),
       is_intel(false),
       is_nvidia(false),
-      is_amd(false) {
+      is_amd(false),
+      is_mesa(false) {
 }
 
 FeatureInfo::FeatureInfo() {
@@ -207,6 +208,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
       feature_flags_.is_nvidia |= string_set.Contains("nvidia");
       feature_flags_.is_amd |=
           string_set.Contains("amd") || string_set.Contains("ati");
+      feature_flags_.is_mesa |= string_set.Contains("mesa");
     }
   }
 
@@ -344,11 +346,15 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     validators_.render_buffer_format.AddValue(GL_DEPTH24_STENCIL8);
   }
 
-  if (ext.Desire("GL_OES_vertex_array_object") &&
-      (ext.Have("GL_OES_vertex_array_object") ||
-       ext.Have("GL_ARB_vertex_array_object") ||
-       ext.Have("GL_APPLE_vertex_array_object"))) {
-    feature_flags_.native_vertex_array_object_ = true;
+  if (ext.Desire("GL_OES_vertex_array_object")) {
+    if (ext.Have("GL_OES_vertex_array_object") ||
+        ext.Have("GL_ARB_vertex_array_object") ||
+        ext.Have("GL_APPLE_vertex_array_object")) {
+      feature_flags_.native_vertex_array_object_ = true;
+    }
+
+    // OES_vertex_array_object is emulated if not present natively,
+    // so the extension string is always exposed.
     AddExtensionString("GL_OES_vertex_array_object");
   }
 

@@ -86,8 +86,8 @@ VertexAttribManager::VertexAttribManager(
 VertexAttribManager::~VertexAttribManager() {
   if (manager_) {
     if (manager_->have_context_) {
-      GLuint id = service_id();
-      glDeleteVertexArraysOES(1, &id);
+      if (service_id_ != 0)  // 0 indicates an emulated VAO
+        glDeleteVertexArraysOES(1, &service_id_);
     }
     manager_->StopTracking(this);
     manager_ = NULL;

@@ -1037,6 +1037,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for glBindVertexArrayOES
   void DoBindVertexArrayOES(GLuint array);
+  void EmulateVertexArrayState();
 
   // Wrapper for glBlitFramebufferEXT.
   void DoBlitFramebufferEXT(
@@ -2130,7 +2131,8 @@ bool GLES2DecoderImpl::Initialize(
   default_vertex_attrib_manager_ = new VertexAttribManager();
   default_vertex_attrib_manager_->Initialize(group_->max_vertex_attribs());
 
-  vertex_attrib_manager_ = default_vertex_attrib_manager_;
+  // vertex_attrib_manager is set to default_vertex_attrib_manager_ by this call
+  DoBindVertexArrayOES(0);
 
   query_manager_.reset(new QueryManager(this, feature_info_));
   vertex_array_manager_.reset(new VertexArrayManager());
@@ -2393,10 +2395,6 @@ bool GLES2DecoderImpl::Initialize(
   DoBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   DoBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-  if (feature_info_->feature_flags().native_vertex_array_object_) {
-    DoBindVertexArrayOES(0);
-  }
 
   // AMD and Intel drivers on Mac OS apparently get gl_PointCoord
   // backward from the spec and this setting makes them work
@@ -8820,33 +8818,31 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(
 
 bool GLES2DecoderImpl::GenVertexArraysOESHelper(
     GLsizei n, const GLuint* client_ids) {
-
-  if (!feature_info_->feature_flags().native_vertex_array_object_) {
-    // TODO(bajones): Emulate if not present
-    SetGLError(GL_INVALID_OPERATION, "glGenVertexArraysOES", "not supported.");
-  }
-
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (GetVertexAttribManager(client_ids[ii])) {
       return false;
     }
   }
-  scoped_array<GLuint> service_ids(new GLuint[n]);
-  glGenVertexArraysOES(n, service_ids.get());
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    CreateVertexAttribManager(client_ids[ii], service_ids[ii]);
+
+  if (!feature_info_->feature_flags().native_vertex_array_object_) {
+    // Emulated VAO
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      CreateVertexAttribManager(client_ids[ii], 0);
+    }
+  } else {
+    scoped_array<GLuint> service_ids(new GLuint[n]);
+
+    glGenVertexArraysOES(n, service_ids.get());
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      CreateVertexAttribManager(client_ids[ii], service_ids[ii]);
+    }
   }
+
   return true;
 }
 
 void GLES2DecoderImpl::DeleteVertexArraysOESHelper(
     GLsizei n, const GLuint* client_ids) {
-  if (!feature_info_->feature_flags().native_vertex_array_object_) {
-    // TODO(bajones): Emulate if not present
-    SetGLError(GL_INVALID_OPERATION,
-      "glDeleteVertexArraysOES", "not supported.");
-  }
-
   for (GLsizei ii = 0; ii < n; ++ii) {
     VertexAttribManager* vao =
         GetVertexAttribManager(client_ids[ii]);
@@ -8860,11 +8856,6 @@ void GLES2DecoderImpl::DeleteVertexArraysOESHelper(
 }
 
 void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
-  if (!feature_info_->feature_flags().native_vertex_array_object_) {
-    // TODO(bajones): Emulate if not present
-    SetGLError(GL_INVALID_OPERATION, "glBindVertexArrayOES", "not supported.");
-  }
-
   VertexAttribManager* vao = NULL;
   GLuint service_id = 0;
   if (client_id != 0) {
@@ -8881,21 +8872,36 @@ void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
     } else {
       service_id = vao->service_id();
     }
-
-    vertex_attrib_manager_ = vao;
   } else {
-    vertex_attrib_manager_ = default_vertex_attrib_manager_;
+    vao = default_vertex_attrib_manager_;
   }
 
-  glBindVertexArrayOES(service_id);
+  // Only set the VAO state if it's changed
+  if (vertex_attrib_manager_ != vao) {
+    vertex_attrib_manager_ = vao;
+    if (!feature_info_->feature_flags().native_vertex_array_object_) {
+      EmulateVertexArrayState();
+    } else {
+      glBindVertexArrayOES(service_id);
+    }
+  }
+}
+
+// Used when OES_vertex_array_object isn't natively supported
+void GLES2DecoderImpl::EmulateVertexArrayState() {
+  // Setup the Vertex attribute state
+  for (uint32 vv = 0; vv < group_->max_vertex_attribs(); ++vv) {
+    RestoreStateForAttrib(vv);
+  }
+
+  // Setup the element buffer
+  BufferManager::BufferInfo* element_array_buffer =
+      vertex_attrib_manager_->element_array_buffer();
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
+      element_array_buffer ? element_array_buffer->service_id() : 0);
 }
 
 bool GLES2DecoderImpl::DoIsVertexArrayOES(GLuint client_id) {
-  if (!feature_info_->feature_flags().native_vertex_array_object_) {
-    // TODO(bajones): Emulate if not present
-    SetGLError(GL_INVALID_OPERATION, "glIsVertexArrayOES", "not supported.");
-  }
-
   const VertexAttribManager* vao =
       GetVertexAttribManager(client_id);
   return vao && vao->IsValid() && !vao->IsDeleted();

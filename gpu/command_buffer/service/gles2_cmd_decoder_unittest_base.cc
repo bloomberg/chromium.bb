@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
@@ -97,6 +98,8 @@ void GLES2DecoderTestBase::InitDecoder(
   EXPECT_TRUE(group_->Initialize(DisallowedFeatures(), NULL));
 
   AddExpectationsForVertexAttribManager();
+
+  AddExpectationsForBindVertexArrayOES();
 
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)
@@ -304,12 +307,6 @@ void GLES2DecoderTestBase::InitDecoder(
   EXPECT_CALL(*gl_, BindRenderbufferEXT(GL_RENDERBUFFER, 0))
       .Times(1)
       .RetiresOnSaturation();
-
-  if (group_->feature_info()->feature_flags().native_vertex_array_object_) {
-    EXPECT_CALL(*gl_, BindVertexArrayOES(0))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
 
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
   Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
@@ -985,6 +982,69 @@ void GLES2DecoderTestBase::DoVertexAttribDivisorANGLE(
   VertexAttribDivisorANGLE cmd;
   cmd.Init(index, divisor);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderTestBase::AddExpectationsForGenVertexArraysOES(){
+  if (group_->feature_info()->feature_flags().native_vertex_array_object_) {
+      EXPECT_CALL(*gl_, GenVertexArraysOES(1, _))
+          .WillOnce(SetArgumentPointee<1>(kServiceVertexArrayId))
+          .RetiresOnSaturation();
+  }
+}
+
+void GLES2DecoderTestBase::AddExpectationsForDeleteVertexArraysOES(){
+  if (group_->feature_info()->feature_flags().native_vertex_array_object_) {
+      EXPECT_CALL(*gl_, DeleteVertexArraysOES(1, _))
+          .Times(1)
+          .RetiresOnSaturation();
+  }
+}
+
+void GLES2DecoderTestBase::AddExpectationsForBindVertexArrayOES() {
+  if (group_->feature_info()->feature_flags().native_vertex_array_object_) {
+    EXPECT_CALL(*gl_, BindVertexArrayOES(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  } else {
+    for (uint32 vv = 0; vv < group_->max_vertex_attribs(); ++vv) {
+      AddExpectationsForRestoreAttribState(vv);
+    }
+
+    EXPECT_CALL(*gl_, BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  }
+}
+
+void GLES2DecoderTestBase::AddExpectationsForRestoreAttribState(GLuint attrib) {
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, VertexAttribPointer(attrib, _, _, _, _, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, VertexAttribDivisorANGLE(attrib, _))
+        .Times(testing::AtMost(1))
+        .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  if (attrib != 0 ||
+      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
+
+      // TODO(bajones): Not sure if I can tell which of these will be called
+      EXPECT_CALL(*gl_, EnableVertexAttribArray(attrib))
+          .Times(testing::AtMost(1))
+          .RetiresOnSaturation();
+
+      EXPECT_CALL(*gl_, DisableVertexAttribArray(attrib))
+          .Times(testing::AtMost(1))
+          .RetiresOnSaturation();
+  }
 }
 
 // GCC requires these declarations, but MSVC requires they not be present

@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_implementation.h"
 
 using ::gfx::MockGLInterface;
 using ::testing::_;
@@ -88,9 +89,11 @@ TEST_F(FeatureInfoTest, Basic) {
       ).use_arb_occlusion_query2_for_occlusion_query_boolean);
   EXPECT_FALSE(info_->feature_flags(
       ).use_arb_occlusion_query_for_occlusion_query_boolean);
+  EXPECT_FALSE(info_->feature_flags().native_vertex_array_object_);
   EXPECT_FALSE(info_->feature_flags().is_intel);
   EXPECT_FALSE(info_->feature_flags().is_nvidia);
   EXPECT_FALSE(info_->feature_flags().is_amd);
+  EXPECT_FALSE(info_->feature_flags().is_mesa);
 
   // Test good types.
   {
@@ -765,7 +768,7 @@ TEST_F(FeatureInfoTest, InitializeOES_vertex_array_object) {
   SetupInitExpectations("GL_OES_vertex_array_object");
   info_->Initialize(NULL);
   EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_OES_vertex_array_object"));
+      HasSubstr("GL_OES_vertex_array_object"));
   EXPECT_TRUE(info_->feature_flags().native_vertex_array_object_);
 }
 
@@ -773,7 +776,7 @@ TEST_F(FeatureInfoTest, InitializeARB_vertex_array_object) {
   SetupInitExpectations("GL_ARB_vertex_array_object");
   info_->Initialize(NULL);
   EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_OES_vertex_array_object"));
+      HasSubstr("GL_OES_vertex_array_object"));
   EXPECT_TRUE(info_->feature_flags().native_vertex_array_object_);
 }
 
@@ -781,7 +784,7 @@ TEST_F(FeatureInfoTest, InitializeAPPLE_vertex_array_object) {
   SetupInitExpectations("GL_APPLE_vertex_array_object");
   info_->Initialize(NULL);
   EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_OES_vertex_array_object"));
+      HasSubstr("GL_OES_vertex_array_object"));
   EXPECT_TRUE(info_->feature_flags().native_vertex_array_object_);
 }
 
@@ -791,6 +794,8 @@ TEST_F(FeatureInfoTest, InitializeNo_vertex_array_object) {
   // Even if the native extensions are not available the implementation
   // may still emulate the GL_OES_vertex_array_object functionality. In this
   // scenario native_vertex_array_object must be false.
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_OES_vertex_array_object"));
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object_);
 }
 
@@ -800,6 +805,7 @@ TEST_F(FeatureInfoTest, IsIntel) {
   EXPECT_TRUE(info_->feature_flags().is_intel);
   EXPECT_FALSE(info_->feature_flags().is_nvidia);
   EXPECT_FALSE(info_->feature_flags().is_amd);
+  EXPECT_FALSE(info_->feature_flags().is_mesa);
 
   SetupInitExpectationsWithVendor("", "", "IntEl");
   FeatureInfo::Ref feature_info(new FeatureInfo());
@@ -807,6 +813,7 @@ TEST_F(FeatureInfoTest, IsIntel) {
   EXPECT_TRUE(feature_info->feature_flags().is_intel);
   EXPECT_FALSE(feature_info->feature_flags().is_nvidia);
   EXPECT_FALSE(feature_info->feature_flags().is_amd);
+  EXPECT_FALSE(info_->feature_flags().is_mesa);
 }
 
 TEST_F(FeatureInfoTest, IsNvidia) {
@@ -815,6 +822,7 @@ TEST_F(FeatureInfoTest, IsNvidia) {
   EXPECT_FALSE(info_->feature_flags().is_intel);
   EXPECT_TRUE(info_->feature_flags().is_nvidia);
   EXPECT_FALSE(info_->feature_flags().is_amd);
+  EXPECT_FALSE(info_->feature_flags().is_mesa);
 
   SetupInitExpectationsWithVendor("", "", "NViDiA");
   {
@@ -823,6 +831,7 @@ TEST_F(FeatureInfoTest, IsNvidia) {
     EXPECT_FALSE(feature_info->feature_flags().is_intel);
     EXPECT_TRUE(feature_info->feature_flags().is_nvidia);
     EXPECT_FALSE(feature_info->feature_flags().is_amd);
+    EXPECT_FALSE(feature_info->feature_flags().is_mesa);
   }
 
   SetupInitExpectationsWithVendor("", "NVIDIA Corporation", "");
@@ -832,6 +841,7 @@ TEST_F(FeatureInfoTest, IsNvidia) {
     EXPECT_FALSE(feature_info->feature_flags().is_intel);
     EXPECT_TRUE(feature_info->feature_flags().is_nvidia);
     EXPECT_FALSE(feature_info->feature_flags().is_amd);
+    EXPECT_FALSE(feature_info->feature_flags().is_mesa);
   }
 }
 
@@ -841,6 +851,7 @@ TEST_F(FeatureInfoTest, IsAMD) {
   EXPECT_FALSE(info_->feature_flags().is_intel);
   EXPECT_FALSE(info_->feature_flags().is_nvidia);
   EXPECT_TRUE(info_->feature_flags().is_amd);
+  EXPECT_FALSE(info_->feature_flags().is_mesa);
 
   SetupInitExpectationsWithVendor("", "", "AmD");
   FeatureInfo::Ref feature_info(new FeatureInfo());
@@ -848,6 +859,7 @@ TEST_F(FeatureInfoTest, IsAMD) {
   EXPECT_FALSE(feature_info->feature_flags().is_intel);
   EXPECT_FALSE(feature_info->feature_flags().is_nvidia);
   EXPECT_TRUE(feature_info->feature_flags().is_amd);
+  EXPECT_FALSE(feature_info->feature_flags().is_mesa);
 }
 
 TEST_F(FeatureInfoTest, IsAMDATI) {
@@ -856,6 +868,7 @@ TEST_F(FeatureInfoTest, IsAMDATI) {
   EXPECT_FALSE(info_->feature_flags().is_intel);
   EXPECT_FALSE(info_->feature_flags().is_nvidia);
   EXPECT_TRUE(info_->feature_flags().is_amd);
+  EXPECT_FALSE(info_->feature_flags().is_mesa);
 
   SetupInitExpectationsWithVendor("", "", "AtI");
   FeatureInfo::Ref feature_info(new FeatureInfo());
@@ -863,6 +876,24 @@ TEST_F(FeatureInfoTest, IsAMDATI) {
   EXPECT_FALSE(feature_info->feature_flags().is_intel);
   EXPECT_FALSE(feature_info->feature_flags().is_nvidia);
   EXPECT_TRUE(feature_info->feature_flags().is_amd);
+  EXPECT_FALSE(feature_info->feature_flags().is_mesa);
+}
+
+TEST_F(FeatureInfoTest, IsMesa) {
+  SetupInitExpectationsWithVendor("", "MesA", "");
+  info_->Initialize(NULL);
+  EXPECT_FALSE(info_->feature_flags().is_intel);
+  EXPECT_FALSE(info_->feature_flags().is_nvidia);
+  EXPECT_FALSE(info_->feature_flags().is_amd);
+  EXPECT_TRUE(info_->feature_flags().is_mesa);
+
+  SetupInitExpectationsWithVendor("", "", "meSa");
+  FeatureInfo::Ref feature_info(new FeatureInfo());
+  feature_info->Initialize(NULL);
+  EXPECT_FALSE(feature_info->feature_flags().is_intel);
+  EXPECT_FALSE(feature_info->feature_flags().is_nvidia);
+  EXPECT_FALSE(feature_info->feature_flags().is_amd);
+  EXPECT_TRUE(feature_info->feature_flags().is_mesa);
 }
 
 }  // namespace gles2

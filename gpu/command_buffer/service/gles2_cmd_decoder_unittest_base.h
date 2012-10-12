@@ -196,6 +196,7 @@ class GLES2DecoderTestBase : public testing::Test {
   void DoBindFramebuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindRenderbuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
+  void DoBindVertexArrayOES(GLuint client_id, GLuint service_id);
 
   bool DoIsBuffer(GLuint client_id);
   bool DoIsFramebuffer(GLuint client_id);
@@ -327,6 +328,11 @@ class GLES2DecoderTestBase : public testing::Test {
 
   void AddExpectationsForSimulatedAttrib0(
       GLsizei num_vertices, GLuint buffer_id);
+
+  void AddExpectationsForGenVertexArraysOES();
+  void AddExpectationsForDeleteVertexArraysOES();
+  void AddExpectationsForBindVertexArrayOES();
+  void AddExpectationsForRestoreAttribState(GLuint attrib);
 
   GLvoid* BufferOffset(unsigned i) {
     return static_cast<int8 *>(NULL)+(i);

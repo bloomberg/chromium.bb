@@ -43,6 +43,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool is_intel;
     bool is_nvidia;
     bool is_amd;
+    bool is_mesa;
   };
 
   FeatureInfo();
