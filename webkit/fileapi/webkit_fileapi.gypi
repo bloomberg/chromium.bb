@@ -96,6 +96,8 @@
         'syncable/file_change.h',
         'syncable/local_file_change_tracker.cc',
         'syncable/local_file_change_tracker.h',
+        'syncable/local_file_sync_context.cc',
+        'syncable/local_file_sync_context.h',
         'syncable/local_file_sync_status.cc',
         'syncable/local_file_sync_status.h',
         'syncable/sync_status_code.cc',

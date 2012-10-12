@@ -27,6 +27,7 @@ class QuotaManager;
 namespace fileapi {
 
 class FileSystemContext;
+class LocalFileSyncContext;
 
 // A canned syncable filesystem for testing.
 // This internally creates its own QuotaManager and FileSystemContext
@@ -45,6 +46,11 @@ class CannedSyncableFileSystem {
   // Creates a FileSystemURL for the given (utf8) path string.
   FileSystemURL URL(const std::string& path) const;
 
+  // Initialize this with given |sync_context| if it hasn't
+  // been initialized.
+  SyncStatusCode MaybeInitializeFileSystemContext(
+      LocalFileSyncContext* sync_context);
+
   // Opens a new syncable file system.
   base::PlatformFileError OpenFileSystem();
 
@@ -60,6 +66,7 @@ class CannedSyncableFileSystem {
   }
 
   // Helper routines to perform file system operations.
+  // OpenFileSystem() must have been called before calling any of them.
   // (They run on the current thread and returns synchronously).
   base::PlatformFileError CreateDirectory(const FileSystemURL& url);
   base::PlatformFileError CreateFile(const FileSystemURL& url);
@@ -78,6 +85,7 @@ class CannedSyncableFileSystem {
   void DidOpenFileSystem(base::PlatformFileError result,
                          const std::string& name,
                          const GURL& root);
+  void DidInitializeFileSystemContext(SyncStatusCode status);
   void StatusCallback(base::PlatformFileError result);
 
   FileSystemOperationContext* NewOperationContext();
@@ -91,6 +99,10 @@ class CannedSyncableFileSystem {
   GURL root_url_;
   base::PlatformFileError result_;
   SyncStatusCode sync_status_;
+
+  // Boolean flags mainly for helping debug.
+  bool is_filesystem_set_up_;
+  bool is_filesystem_opened_;
 
   base::WeakPtrFactory<CannedSyncableFileSystem> weak_factory_;
 

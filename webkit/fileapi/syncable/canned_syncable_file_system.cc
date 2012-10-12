@@ -15,6 +15,7 @@
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/mock_file_system_options.h"
+#include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -29,12 +30,15 @@ CannedSyncableFileSystem::CannedSyncableFileSystem(
       test_helper_(origin, kFileSystemTypeSyncable),
       result_(base::PLATFORM_FILE_OK),
       sync_status_(SYNC_STATUS_OK),
+      is_filesystem_set_up_(false),
+      is_filesystem_opened_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 CannedSyncableFileSystem::~CannedSyncableFileSystem() {}
 
 void CannedSyncableFileSystem::SetUp() {
+  ASSERT_FALSE(is_filesystem_set_up_);
   ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
   scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
@@ -55,6 +59,7 @@ void CannedSyncableFileSystem::SetUp() {
       CreateAllowFileAccessOptions());
 
   test_helper_.SetUp(file_system_context_.get(), NULL);
+  is_filesystem_set_up_ = true;
 }
 
 void CannedSyncableFileSystem::TearDown() {
@@ -63,10 +68,14 @@ void CannedSyncableFileSystem::TearDown() {
 }
 
 FileSystemURL CannedSyncableFileSystem::URL(const std::string& path) const {
+  EXPECT_TRUE(is_filesystem_set_up_);
+  EXPECT_TRUE(is_filesystem_opened_);
   return FileSystemURL(GURL(root_url_.spec() + path));
 }
 
 PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {
+  EXPECT_TRUE(is_filesystem_set_up_);
+  EXPECT_FALSE(is_filesystem_opened_);
   file_system_context_->OpenSyncableFileSystem(
       service_name_,
       test_helper_.origin(), test_helper_.type(),
@@ -77,8 +86,22 @@ PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {
   return result_;
 }
 
+SyncStatusCode CannedSyncableFileSystem::MaybeInitializeFileSystemContext(
+    LocalFileSyncContext* sync_context) {
+  DCHECK(sync_context);
+  sync_status_ = SYNC_STATUS_UNKNOWN;
+  sync_context->MaybeInitializeFileSystemContext(
+      test_helper_.origin(),
+      file_system_context_,
+      base::Bind(&CannedSyncableFileSystem::DidInitializeFileSystemContext,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+  return sync_status_;
+}
+
 PlatformFileError CannedSyncableFileSystem::CreateDirectory(
     const FileSystemURL& url) {
+  EXPECT_TRUE(is_filesystem_opened_);
   result_ = base::PLATFORM_FILE_ERROR_FAILED;
   test_helper_.NewOperation()->CreateDirectory(
       url, false /* exclusive */, false /* recursive */,
@@ -90,6 +113,7 @@ PlatformFileError CannedSyncableFileSystem::CreateDirectory(
 
 PlatformFileError CannedSyncableFileSystem::CreateFile(
     const FileSystemURL& url) {
+  EXPECT_TRUE(is_filesystem_opened_);
   result_ = base::PLATFORM_FILE_ERROR_FAILED;
   test_helper_.NewOperation()->CreateFile(
       url, false /* exclusive */,
@@ -123,6 +147,7 @@ PlatformFileError CannedSyncableFileSystem::Move(
 
 PlatformFileError CannedSyncableFileSystem::TruncateFile(
     const FileSystemURL& url, int64 size) {
+  EXPECT_TRUE(is_filesystem_opened_);
   result_ = base::PLATFORM_FILE_ERROR_FAILED;
   test_helper_.NewOperation()->Truncate(
       url, size,
@@ -134,6 +159,7 @@ PlatformFileError CannedSyncableFileSystem::TruncateFile(
 
 PlatformFileError CannedSyncableFileSystem::Remove(
     const FileSystemURL& url, bool recursive) {
+  EXPECT_TRUE(is_filesystem_opened_);
   result_ = base::PLATFORM_FILE_ERROR_FAILED;
   test_helper_.NewOperation()->Remove(
       url, recursive,
@@ -144,6 +170,7 @@ PlatformFileError CannedSyncableFileSystem::Remove(
 }
 
 PlatformFileError CannedSyncableFileSystem::DeleteFileSystem() {
+  EXPECT_TRUE(is_filesystem_set_up_);
   file_system_context_->DeleteFileSystem(
       test_helper_.origin(), test_helper_.type(),
       base::Bind(&CannedSyncableFileSystem::StatusCallback,
@@ -156,6 +183,13 @@ void CannedSyncableFileSystem::DidOpenFileSystem(
     PlatformFileError result, const std::string& name, const GURL& root) {
   result_ = result;
   root_url_ = root;
+  is_filesystem_opened_ = true;
+}
+
+void CannedSyncableFileSystem::DidInitializeFileSystemContext(
+    SyncStatusCode status) {
+  sync_status_ = status;
+  MessageLoop::current()->Quit();
 }
 
 void CannedSyncableFileSystem::StatusCallback(PlatformFileError result) {

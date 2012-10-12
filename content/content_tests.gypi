@@ -433,6 +433,7 @@
         '../webkit/fileapi/syncable/canned_syncable_file_system.h',
         '../webkit/fileapi/syncable/file_change_unittest.cc',
         '../webkit/fileapi/syncable/local_file_change_tracker_unittest.cc',
+        '../webkit/fileapi/syncable/local_file_sync_context_unittest.cc',
         '../webkit/fileapi/syncable/local_file_sync_status_unittest.cc',
         '../webkit/fileapi/syncable/syncable_file_system_unittest.cc',
         '../webkit/fileapi/syncable/syncable_file_system_util_unittest.cc',

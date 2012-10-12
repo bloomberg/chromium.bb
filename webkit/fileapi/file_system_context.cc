@@ -20,6 +20,7 @@
 #include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
+#include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/fileapi/test_mount_point_provider.h"
 #include "webkit/quota/quota_manager.h"
@@ -287,6 +288,11 @@ void FileSystemContext::SetLocalFileChangeTracker(
   sandbox_provider_->AddSyncableFileChangeObserver(
       change_tracker_.get(),
       task_runners_->file_task_runner());
+}
+
+void FileSystemContext::set_sync_context(
+    LocalFileSyncContext* sync_context) {
+  sync_context_ = sync_context;
 }
 
 FileSystemContext::~FileSystemContext() {}

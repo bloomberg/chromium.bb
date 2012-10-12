@@ -41,6 +41,7 @@ class FileSystemURL;
 class IsolatedMountPointProvider;
 class LocalFileChangeTracker;
 class SandboxMountPointProvider;
+class LocalFileSyncContext;
 
 struct DefaultContextDeleter;
 
@@ -165,6 +166,9 @@ class FILEAPI_EXPORT FileSystemContext
   LocalFileChangeTracker* change_tracker() { return change_tracker_.get(); }
   void SetLocalFileChangeTracker(scoped_ptr<LocalFileChangeTracker> tracker);
 
+  LocalFileSyncContext* sync_context() { return sync_context_.get(); }
+  void set_sync_context(LocalFileSyncContext* sync_context);
+
   const FilePath& partition_path() const { return partition_path_; }
 
  private:
@@ -193,6 +197,7 @@ class FILEAPI_EXPORT FileSystemContext
 
   // For syncable file systems.
   scoped_ptr<LocalFileChangeTracker> change_tracker_;
+  scoped_refptr<LocalFileSyncContext> sync_context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);
 };
