@@ -181,8 +181,8 @@ class Unary1RegisterSetTesterRegsNotPc : public Unary1RegisterSetTester {
 // +--------+---------------+----+----------------------------+--------+
 // |  cond  |               |mask|                            |   Rn   |
 // +--------+---------------+----+----------------------------+--------+
-// If mask<1>=1, then update conditions flags(NZCVQ) in ASPR
-// If mask<0>=1, then update GE(bits(19:16)) in ASPR.
+// If mask<1>=1, then update conditions flags(NZCVQ) in APSR
+// If mask<0>=1, then update GE(bits(19:16)) in APSR.
 // If mask=0, then UNPREDICTABLE.
 // If Rn=15, then UNPREDICTABLE.
 class Unary1RegisterUseTester : public CondDecoderTester {
@@ -457,7 +457,7 @@ class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc
 // +--------+--------------+--+--------+--------+------------------------+
 // Definitions:
 //    Rn 0 The operand register.
-//    const = ARMExpandImm_C(imm12, ASPR.C)
+//    const = ARMExpandImm_C(imm12, APSR.C)
 class BinaryRegisterImmediateTestTester : public CondDecoderTester {
  public:
   explicit BinaryRegisterImmediateTestTester(
@@ -2015,7 +2015,7 @@ class VfpUsesRegOpTester : public CondVfpOpTester {
 // if Rt=13 && CurrentInstrSet() != ARM then UNPREDICTABLE.
 //
 // Note: if Rt=PC, then it doesn't update PC. Rather, it updates the
-// conditions flags ASPR.{N, Z, C, V} from corresponding conditions
+// conditions flags APSR.{N, Z, C, V} from corresponding conditions
 // in FPSCR.
 class VfpMrsOpTester : public CondVfpOpTester {
  public:

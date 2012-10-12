@@ -512,7 +512,7 @@ class Binary2RegisterImmediateOpDynCodeReplace
 // +--------+--------------+--+--------+--------+------------------------+
 // Definitions:
 //    Rn 0 The operand register.
-//    const = ARMExpandImm_C(imm12, ASPR.C)
+//    const = ARMExpandImm_C(imm12, APSR.C)
 //
 // Implements:
 //    CMN(immediate) A1 A8-74
@@ -2100,7 +2100,7 @@ class VfpUsesRegOp : public CondVfpOp {
 // if Rt=13 && CurrentInstrSet() != ARM then UNPREDICTABLE.
 //
 // Note: if Rt=PC, then it doesn't update PC. Rather, it updates the
-// conditions flags ASPR.{N, Z, C, V} from corresponding conditions
+// conditions flags APSR.{N, Z, C, V} from corresponding conditions
 // in FPSCR.
 class VfpMrsOp : public CondVfpOp {
  public:

@@ -80,7 +80,7 @@
         ".p2align 4\n" \
         "mov sp, %0\n" \
         "bic sp, sp, #0xc0000000\n" \
-        /* Set CPSR (flags) register, a.k.a. ASPR for user mode */ \
+        /* Set CPSR (flags) register, a.k.a. APSR for user mode */ \
         "ldr r0, [sp, #0x40]\n" \
         "msr apsr_nzcvqg, r0\n" \
         /* Set general purpose registers */ \
@@ -144,7 +144,7 @@ extern const uint8_t kX86FlagBits[5];
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
 /*
- * These are the only ARM CSPR bits that user code and untrusted code
+ * These are the only ARM CPSR bits that user code and untrusted code
  * can read and modify, excluding the IT bits which are for Thumb-2
  * (for If-Then-Else instructions).
  */

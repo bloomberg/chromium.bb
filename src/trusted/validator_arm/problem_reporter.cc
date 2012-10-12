@@ -232,7 +232,7 @@ static const char* kValidatorInstructionPairProblem[] = {
   ", because instruction $F can't be used in patterns",
   // kFirstSetsConditionFlags - First instruction sets conditions flags, and
   // hence, can't guarantee that the next instruction will always be executed.
-  ", because instruction $F sets ASPR condition flags",
+  ", because instruction $F sets APSR condition flags",
   // kConditionsOnPairNotSafe - Conditions on instructions don't guarantee
   // that instructions will run atomically.
   ", because the conditions on $p don't guarantee atomicity",

@@ -1094,8 +1094,8 @@ class Unary1RegisterSet : public ClassDecoder {
 // +--------+---------------+----+----------------------------+--------+
 // |  cond  |               |mask|                            |   Rn   |
 // +--------+---------------+----+----------------------------+--------+
-// If mask<1>=1, then update conditions flags(NZCVQ) in ASPR
-// If mask<0>=1, then update GE(bits(19:16)) in ASPR.
+// If mask<1>=1, then update conditions flags(NZCVQ) in APSR
+// If mask<0>=1, then update GE(bits(19:16)) in APSR.
 // If mask=0, then UNPREDICTABLE.
 // If Rn=15, then UNPREDICTABLE.
 class Unary1RegisterUse : public ClassDecoder {
