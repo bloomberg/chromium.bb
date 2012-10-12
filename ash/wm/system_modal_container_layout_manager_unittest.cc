@@ -39,7 +39,7 @@ bool AllRootWindowsHaveModalBackgrounds() {
            controllers.begin();
        iter != controllers.end(); ++iter) {
     has_modal_screen &=
-        (*iter)->GetSystemModalLayoutManager()->has_modal_background();
+        (*iter)->GetSystemModalLayoutManager(NULL)->has_modal_background();
   }
   return has_modal_screen;
 }

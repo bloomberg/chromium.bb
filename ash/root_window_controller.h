@@ -67,7 +67,15 @@ class ASH_EXPORT RootWindowController {
     return status_area_widget_;
   }
 
-  SystemModalContainerLayoutManager* GetSystemModalLayoutManager();
+  // Returns the layout-manager for the appropriate modal-container. If the
+  // window is inside the lockscreen modal container, then the layout manager
+  // for that is returned. Otherwise the layout manager for the default modal
+  // container is returned.
+  // If no window is specified (i.e. |window| is NULL), then the lockscreen
+  // modal container is used if the screen is currently locked. Otherwise, the
+  // default modal container is used.
+  SystemModalContainerLayoutManager* GetSystemModalLayoutManager(
+      aura::Window* window);
 
   aura::Window* GetContainer(int container_id);
 

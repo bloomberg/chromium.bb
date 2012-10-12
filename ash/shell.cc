@@ -628,7 +628,7 @@ void Shell::CreateModalBackground() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
-    (*iter)->GetSystemModalLayoutManager()->CreateModalBackground();
+    (*iter)->GetSystemModalLayoutManager(NULL)->CreateModalBackground();
 }
 
 void Shell::OnModalWindowRemoved(aura::Window* removed) {
@@ -636,15 +636,15 @@ void Shell::OnModalWindowRemoved(aura::Window* removed) {
   bool activated = false;
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end() && !activated; ++iter) {
-    activated =
-        (*iter)->GetSystemModalLayoutManager()->ActivateNextModalWindow();
+    activated = (*iter)->GetSystemModalLayoutManager(removed)->
+        ActivateNextModalWindow();
   }
   if (!activated) {
     RemoveEnvEventFilter(modality_filter_.get());
     modality_filter_.reset();
     for (RootWindowControllerList::iterator iter = controllers.begin();
          iter != controllers.end(); ++iter)
-      (*iter)->GetSystemModalLayoutManager()->DestroyModalBackground();
+      (*iter)->GetSystemModalLayoutManager(removed)->DestroyModalBackground();
   }
 }
 
@@ -657,11 +657,13 @@ internal::StatusAreaWidget* Shell::status_area_widget() const {
 }
 
 SystemTrayDelegate* Shell::tray_delegate() {
-  return status_area_widget()->system_tray_delegate();
+  return status_area_widget() ? status_area_widget()->system_tray_delegate() :
+                                NULL;
 }
 
 SystemTray* Shell::system_tray() {
-  return status_area_widget()->system_tray();
+  return status_area_widget() ? status_area_widget()->system_tray() :
+                                NULL;
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
@@ -723,9 +725,9 @@ void Shell::InitRootWindowController(
       root_window->GetChildById(internal::kShellWindowId_AlwaysOnTopContainer));
   root_window->SetProperty(internal::kAlwaysOnTopControllerKey,
                            always_on_top_controller);
-  if (GetPrimaryRootWindowController()->GetSystemModalLayoutManager()->
+  if (GetPrimaryRootWindowController()->GetSystemModalLayoutManager(NULL)->
           has_modal_background()) {
-    controller->GetSystemModalLayoutManager()->CreateModalBackground();
+    controller->GetSystemModalLayoutManager(NULL)->CreateModalBackground();
   }
 
   window_cycle_controller_->OnRootWindowAdded(root_window);
@@ -738,7 +740,7 @@ bool Shell::CanWindowReceiveEvents(aura::Window* window) {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter) {
-    if ((*iter)->GetSystemModalLayoutManager()->
+    if ((*iter)->GetSystemModalLayoutManager(window)->
             CanWindowReceiveEvents(window)) {
       return true;
     }

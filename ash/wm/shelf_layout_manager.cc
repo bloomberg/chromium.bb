@@ -867,7 +867,8 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return AUTO_HIDE_HIDDEN;
 
   gfx::Rect shelf_region = launcher_widget()->GetWindowBoundsInScreen();
-  if (Shell::GetInstance()->status_area_widget()->IsMessageBubbleShown() &&
+  if (shell->status_area_widget() &&
+      shell->status_area_widget()->IsMessageBubbleShown() &&
       IsVisible()) {
     // Increase the the hit test area to prevent the shelf from disappearing
     // when the mouse is over the bubble gap.

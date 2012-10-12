@@ -15,6 +15,7 @@
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/panel_window_event_filter.h"
@@ -188,9 +189,25 @@ void RootWindowController::Shutdown() {
 }
 
 SystemModalContainerLayoutManager*
-RootWindowController::GetSystemModalLayoutManager() {
+RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
+  aura::Window* container = NULL;
+  if (window) {
+    container = GetContainer(
+        kShellWindowId_LockSystemModalContainer);
+    if (!container->Contains(window))
+      container = GetContainer(kShellWindowId_SystemModalContainer);
+  } else {
+    user::LoginStatus login = Shell::GetInstance()->tray_delegate() ?
+        Shell::GetInstance()->tray_delegate()->GetUserLoginStatus() :
+        user::LOGGED_IN_NONE;
+    int modal_window_id = (login == user::LOGGED_IN_LOCKED ||
+                           login == user::LOGGED_IN_NONE) ?
+        kShellWindowId_LockSystemModalContainer :
+        kShellWindowId_SystemModalContainer;
+    container = GetContainer(modal_window_id);
+  }
   return static_cast<SystemModalContainerLayoutManager*>(
-      GetContainer(kShellWindowId_SystemModalContainer)->layout_manager());
+      container->layout_manager());
 }
 
 aura::Window* RootWindowController::GetContainer(int container_id) {
@@ -309,8 +326,10 @@ void RootWindowController::HandleDesktopBackgroundVisible() {
 
 void RootWindowController::CloseChildWindows() {
   // The status area needs to be shut down before the windows are destroyed.
-  if (status_area_widget_)
+  if (status_area_widget_) {
     status_area_widget_->Shutdown();
+    status_area_widget_ = NULL;
+  }
 
   // Closing the windows frees the workspace controller.
   if (shelf_)
@@ -329,10 +348,6 @@ void RootWindowController::CloseChildWindows() {
     aura::Window* child = root_window_->children()[0];
     delete child;
   }
-  // TODO(oshima): Closing window triggers access to status area widget
-  // in ShelfLayoutManager. We probably should disalb/remove shelf layout
-  // manager before destorying windows?
-  status_area_widget_ = NULL;
 
   // All containers are deleted, so reset shelf_.
   shelf_ = NULL;

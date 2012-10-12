@@ -87,7 +87,8 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   }
 
   virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE {
-    return user::LOGGED_IN_USER;
+    return Shell::GetInstance()->IsScreenLocked() ? user::LOGGED_IN_LOCKED :
+                                                    user::LOGGED_IN_USER;
   }
 
   virtual bool SystemShouldUpgrade() const OVERRIDE {
