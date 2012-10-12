@@ -1634,7 +1634,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #       \- BuildAndArchiveAllImages
     #          (builds recovery image first, then launches functions below)
     #          \- BuildAndArchiveFactoryImages
-    #          \- ArchiveRegularImages
+    #          \- ArchiveZipFiles
+    #          \- ArchiveHWQual
     #       \- PushImage
 
     def ArchiveAutotestTarballs():
@@ -1732,25 +1733,30 @@ class ArchiveStage(BoardSpecificBuilderStage):
             buildroot, board, archive_path, image_root)
         release_upload_queue.put([filename])
 
-    def ArchiveRegularImages():
-      """Build and archive regular images.
+    def ArchiveZipFiles():
+      """Build an archive zip files.
 
       This includes the image.zip archive, the recovery image archive, the
-      hwqual images, and au-generator.zip used for update payload generation.
+      test image archive, and the au-generator.zip used for update payload
+      generation.
       """
+      # Upload standalone zip files for each image.
+      for image_file in glob.glob(os.path.join(image_dir, '*.bin')):
+        zipfile = '%s.zip' % os.path.splitext(os.path.basename(image_file))[0]
+        release_upload_queue.put([commands.BuildSingleImageZip(
+            archive_path, zipfile, image_file)])
 
       # Zip up everything in the image directory.
       image_zip = commands.BuildImageZip(archive_path, image_dir)
       release_upload_queue.put([image_zip])
 
-      # Zip up the recovery image separately.
-      # TODO(gauravsh): Remove recovery_image.bin from image.zip once we
-      #                 we know for sure there are no users relying on it.
-      if 'base' in config['images']:
-        release_upload_queue.put([commands.BuildRecoveryImageZip(
-            archive_path,
-            os.path.join(image_dir, 'recovery_image.bin'))])
+      # Archive au-generator.zip.
+      filename = 'au-generator.zip'
+      shutil.copy(os.path.join(image_dir, filename), archive_path)
+      release_upload_queue.put([filename])
 
+    def ArchiveHWQual():
+      """Build and archive the HWQual images."""
       # TODO(petermayo): This logic needs to be exported from the BuildTargets
       # stage rather than copied/re-evaluated here.
       autotest_built = config['build_tests'] and self._options.tests and (
@@ -1768,11 +1774,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
         filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path)
         release_upload_queue.put([filename])
 
-      # Archive au-generator.zip.
-      filename = 'au-generator.zip'
-      shutil.copy(os.path.join(image_dir, filename), archive_path)
-      release_upload_queue.put([filename])
-
     def ArchiveFirmwareImages():
       """Archive firmware images built from source if available."""
       archive = commands.BuildFirmwareArchive(buildroot, board, archive_path)
@@ -1789,7 +1790,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
       if config['images']:
         background.RunParallelSteps([BuildAndArchiveFactoryImages,
-                                     ArchiveRegularImages])
+                                     ArchiveHWQual,
+                                     ArchiveZipFiles])
 
     def UploadArtifact(filename):
       """Upload generated artifact to Google Storage."""
