@@ -25,6 +25,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kNoSandbox,
     switches::kInProcessWebGL,
     switches::kDisableWebSecurity,
+    switches::kAllowUniversalAccessFromFiles,
     // Browser plugin is dangerous on regular pages because it breaks the Same
     // Origin Policy.
     switches::kEnableBrowserPluginForAllViewTypes,

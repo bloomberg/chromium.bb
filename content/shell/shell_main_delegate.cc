@@ -88,6 +88,8 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   InitLogging();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAllowUniversalAccessFromFiles);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAllowFileAccessFromFiles);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kForceCompositingMode);

@@ -525,6 +525,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnablePrivilegedWebGLExtensions);
   prefs.site_specific_quirks_enabled =
       !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
+  prefs.allow_universal_access_from_file_urls =
+      command_line.HasSwitch(switches::kAllowUniversalAccessFromFiles);
   prefs.allow_file_access_from_file_urls =
       command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
   prefs.show_composited_layer_borders =
