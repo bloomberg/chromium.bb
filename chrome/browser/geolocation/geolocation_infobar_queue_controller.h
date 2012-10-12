@@ -81,6 +81,9 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
   InfoBarTabHelper* GetInfoBarHelper(int render_process_id, int render_view_id);
   bool AlreadyShowingInfoBar(int render_process_id, int render_view_id);
 
+  void RegisterForInfoBarNotifications(InfoBarTabHelper* helper);
+  void UnregisterForInfoBarNotifications(InfoBarTabHelper* helper);
+
   content::NotificationRegistrar registrar_;
 
   NotifyPermissionSetCallback notify_permission_set_callback_;

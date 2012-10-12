@@ -399,8 +399,6 @@ void GeolocationInfoBarQueueController::Observe(
     if (confirm_delegate == delegate) {
       InfoBarTabHelper* helper =
           content::Source<InfoBarTabHelper>(source).ptr();
-      registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-                        source);
       int render_process_id = i->render_process_id;
       int render_view_id = i->render_view_id;
       pending_infobar_requests_.erase(i);
@@ -420,20 +418,16 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBar(
        i != pending_infobar_requests_.end(); ++i) {
     if (i->IsForTab(render_process_id, render_view_id) &&
         !i->infobar_delegate) {
-      DCHECK(!registrar_.IsRegistered(
-          this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-          content::Source<InfoBarTabHelper>(helper)));
-      registrar_.Add(
-          this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-          content::Source<InfoBarTabHelper>(helper));
+      RegisterForInfoBarNotifications(helper);
       i->infobar_delegate = new GeolocationConfirmInfoBarDelegate(
           helper, this, render_process_id,
           render_view_id, i->bridge_id, i->requesting_frame,
           profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
       helper->AddInfoBar(i->infobar_delegate);
-      break;
+      return;
     }
   }
+  UnregisterForInfoBarNotifications(helper);
 }
 
 void GeolocationInfoBarQueueController::ClearPendingInfoBarRequestsForTab(
@@ -465,4 +459,26 @@ bool GeolocationInfoBarQueueController::AlreadyShowingInfoBar(
       return true;
   }
   return false;
+}
+
+void GeolocationInfoBarQueueController::RegisterForInfoBarNotifications(
+    InfoBarTabHelper* helper) {
+  if (!registrar_.IsRegistered(
+      this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+      content::Source<InfoBarTabHelper>(helper))) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+                   content::Source<InfoBarTabHelper>(helper));
+  }
+}
+
+void GeolocationInfoBarQueueController::UnregisterForInfoBarNotifications(
+    InfoBarTabHelper* helper) {
+  if (registrar_.IsRegistered(
+      this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+      content::Source<InfoBarTabHelper>(helper))) {
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+                      content::Source<InfoBarTabHelper>(helper));
+  }
 }
