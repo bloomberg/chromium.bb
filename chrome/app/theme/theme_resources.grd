@@ -470,8 +470,12 @@
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_PLUS" file="common/newtab_plus.png" />
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P_PLUS" file="common/newtab_plus_pressed.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_NEWTAB_CHROMEOS_WELCOME_PAGE_THUMBNAIL" file="ntp_welcome_thumb_chromeos.png" />
-      <structure type="chrome_scaled_image" name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="ntp_welcome_thumb.png" />
+      <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="cros/ntp_welcome_thumb.png" />
+      </if>
+      <if expr="not pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="common/ntp_welcome_thumb.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_NEWTAB_WEBSTORE_THUMBNAIL" file="ntp_webstore_thumb.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_C" file="common/cs_bubble_center.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_L" file="common/cs_bubble_left.png" />
