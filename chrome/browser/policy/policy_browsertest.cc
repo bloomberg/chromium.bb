@@ -170,12 +170,11 @@ void CheckURLIsBlocked(Browser* browser, const GURL& url) {
   EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
       contents->GetRenderViewHost(),
       std::wstring(),
-      ASCIIToWide(
-          "var hasError = false;"
-          "var error = document.getElementById('errorDetails');"
-          "if (error)"
-          "  hasError = error.textContent.indexOf('Error 138') == 0;"
-          "domAutomationController.send(hasError);"),
+      L"var hasError = false;"
+      L"var error = document.getElementById('errorDetails');"
+      L"if (error)"
+      L"  hasError = error.textContent.indexOf('Error 138') == 0;"
+      L"domAutomationController.send(hasError);",
       &result));
   EXPECT_TRUE(result);
 }
@@ -234,9 +233,9 @@ bool IsWebGLEnabled(content::WebContents* contents) {
 
 bool IsJavascriptEnabled(content::WebContents* contents) {
   content::RenderViewHost* rvh = contents->GetRenderViewHost();
-  base::Value* value = rvh->ExecuteJavascriptAndGetValue(
+  scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(
       string16(),
-      ASCIIToUTF16("123"));
+      ASCIIToUTF16("123")));
   int result = 0;
   if (!value->GetAsInteger(&result))
     EXPECT_EQ(base::Value::TYPE_NULL, value->GetType());
@@ -1582,5 +1581,67 @@ INSTANTIATE_TEST_CASE_P(
                     &RestoreOnStartupPolicyTest::ListOfURLs,
                     &RestoreOnStartupPolicyTest::NTP,
                     &RestoreOnStartupPolicyTest::Last));
+
+// Similar to PolicyTest but sets a couple of policies before the browser is
+// started.
+class PolicyStatisticsCollectorTest : public PolicyTest {
+ public:
+  PolicyStatisticsCollectorTest() {}
+  virtual ~PolicyStatisticsCollectorTest() {}
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(
+        key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateBooleanValue(true));
+    policies.Set(
+        key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateBooleanValue(false));
+    policies.Set(
+        key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateStringValue("http://chromium.org"));
+    provider_.UpdateChromePolicy(policies);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
+  // Verifies that policy usage histograms are collected at startup.
+
+  // BrowserPolicyConnector::Init() has already been called. Make sure the
+  // CompleteInitialization() task has executed as well.
+  content::RunAllPendingInMessageLoop();
+
+  GURL kAboutHistograms = GURL(std::string(chrome::kAboutScheme) +
+                               std::string(content::kStandardSchemeSeparator) +
+                               std::string(chrome::kChromeUIHistogramHost));
+  ui_test_utils::NavigateToURL(browser(), kAboutHistograms);
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  std::string text;
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+      contents->GetRenderViewHost(),
+      std::wstring(),
+      L"var nodes = document.querySelectorAll('body > pre');"
+      L"var result = '';"
+      L"for (var i = 0; i < nodes.length; ++i) {"
+      L"  var text = nodes[i].innerHTML;"
+      L"  if (text.indexOf('Histogram: Enterprise.Policies') === 0) {"
+      L"    result = text;"
+      L"    break;"
+      L"  }"
+      L"}"
+      L"domAutomationController.send(result);",
+      &text));
+  ASSERT_FALSE(text.empty());
+  const std::string kExpectedLabel =
+      "Histogram: Enterprise.Policies recorded 3 samples";
+  EXPECT_EQ(kExpectedLabel, text.substr(0, kExpectedLabel.size()));
+  // HomepageLocation has policy ID 1.
+  EXPECT_NE(std::string::npos, text.find("<br>1   ---"));
+  // ShowHomeButton has policy ID 35.
+  EXPECT_NE(std::string::npos, text.find("<br>35  ---"));
+  // BookmarkBarEnabled has policy ID 82.
+  EXPECT_NE(std::string::npos, text.find("<br>82  ---"));
+}
 
 }  // namespace policy

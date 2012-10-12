@@ -621,6 +621,7 @@ void BrowserPolicyConnector::CompleteInitialization() {
       g_browser_process->policy_service(),
       g_browser_process->local_state(),
       MessageLoop::current()->message_loop_proxy()));
+  policy_statistics_collector_->Initialize();
 }
 
 void BrowserPolicyConnector::SetTimezoneIfPolicyAvailable() {
