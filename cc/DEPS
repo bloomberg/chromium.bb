@@ -2,6 +2,7 @@ include_rules = [
   "+skia/ext",
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/khronos/GLES2/gl2ext.h",
+  "+ui/gfx",
 # http://crbug.com/144542
   "+third_party/WebKit/Source/WebCore/platform/graphics/FloatPoint.h",
   "+third_party/WebKit/Source/WebCore/platform/graphics/FloatPoint3D.h",
