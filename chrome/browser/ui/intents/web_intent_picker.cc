@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -22,6 +23,15 @@ const int kMaxInlineDispositionWidth = 900;
 const int kMaxInlineDispositionHeight = 900;
 
 }  // namespace
+
+void WebIntentPicker::OnShowExtensionInstallDialog(
+    gfx::NativeWindow parent,
+    content::PageNavigator* navigator,
+    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt) {
+  ExtensionInstallPrompt::GetDefaultShowDialogCallback().Run(
+      parent, navigator, delegate, prompt);
+}
 
 gfx::Size WebIntentPicker::GetMinInlineDispositionSize() {
   return gfx::Size(1, 1);

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "ui/gfx/size.h"
 
 class WebIntentPickerDelegate;
@@ -82,6 +83,15 @@ class WebIntentPicker {
 
   // Called when an extension installation started via the picker has failed.
   virtual void OnExtensionInstallFailure(const std::string& id) = 0;
+
+  // Shows the default extension install dialog. Override this to show a custom
+  // dialog. We *MUST* eventually call either Proceed() or Abort() on
+  // |delegate|.
+  virtual void OnShowExtensionInstallDialog(
+      gfx::NativeWindow parent,
+      content::PageNavigator* navigator,
+      ExtensionInstallPrompt::Delegate* delegate,
+      const ExtensionInstallPrompt::Prompt& prompt);
 
   // Called when the inline disposition experiences an auto-resize.
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) = 0;

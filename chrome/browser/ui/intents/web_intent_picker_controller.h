@@ -243,6 +243,13 @@ class WebIntentPickerController
   // Called when an extension's icon failed to be decoded or resized.
   void OnExtensionIconUnavailable(const std::string& extension_id);
 
+  // Called to show a custom extension install dialog.
+  void OnShowExtensionInstallDialog(
+      gfx::NativeWindow parent,
+      content::PageNavigator* navigator,
+      ExtensionInstallPrompt::Delegate* delegate,
+      const ExtensionInstallPrompt::Prompt& prompt);
+
   // Signals that a picker event has occurred.
   void OnPickerEvent(WebIntentPickerEvent event);
 

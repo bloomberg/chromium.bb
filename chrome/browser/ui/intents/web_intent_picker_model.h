@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -175,6 +176,25 @@ class WebIntentPickerModel {
     return pending_extension_install_status_string_;
   }
 
+  // Sets the extension install delegate.
+  void SetPendingExtensionInstallDelegate(
+      ExtensionInstallPrompt::Delegate* delegate);
+
+  // Gets the extension install delegate.
+  ExtensionInstallPrompt::Delegate* pending_extension_install_delegate() const {
+    return pending_extension_install_delegate_;
+  }
+
+  // Sets the extension install prompt.
+  void SetPendingExtensionInstallPrompt(
+      const ExtensionInstallPrompt::Prompt& prompt);
+
+  // Gets the extension install prompt.
+  const ExtensionInstallPrompt::Prompt* pending_extension_install_prompt()
+      const {
+    return pending_extension_install_prompt_.get();
+  }
+
   // Removes any pending extension install state.
   void ClearPendingExtensionInstall();
 
@@ -214,6 +234,8 @@ class WebIntentPickerModel {
   std::string pending_extension_install_id_;
   int pending_extension_install_download_progress_;
   string16 pending_extension_install_status_string_;
+  ExtensionInstallPrompt::Delegate* pending_extension_install_delegate_;
+  scoped_ptr<ExtensionInstallPrompt::Prompt> pending_extension_install_prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerModel);
 };

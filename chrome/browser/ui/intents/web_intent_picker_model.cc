@@ -26,7 +26,8 @@ const size_t kMaxSuggestionCount = 5;  // Maximum number of visible suggestions.
 WebIntentPickerModel::WebIntentPickerModel()
     : observer_(NULL),
       waiting_for_suggestions_(true),
-      pending_extension_install_download_progress_(0) {
+      pending_extension_install_download_progress_(0),
+      pending_extension_install_delegate_(NULL) {
 }
 
 WebIntentPickerModel::~WebIntentPickerModel() {
@@ -208,10 +209,27 @@ void WebIntentPickerModel::SetPendingExtensionInstallStatusString(
     observer_->OnModelChanged(this);
 }
 
+void WebIntentPickerModel::SetPendingExtensionInstallDelegate(
+    ExtensionInstallPrompt::Delegate* delegate) {
+  pending_extension_install_delegate_ = delegate;
+  if (observer_)
+    observer_->OnModelChanged(this);
+}
+
+void WebIntentPickerModel::SetPendingExtensionInstallPrompt(
+    const ExtensionInstallPrompt::Prompt& prompt) {
+  pending_extension_install_prompt_.reset(
+      new ExtensionInstallPrompt::Prompt(prompt));
+  if (observer_)
+    observer_->OnModelChanged(this);
+}
+
 void WebIntentPickerModel::ClearPendingExtensionInstall() {
   pending_extension_install_id_.clear();
   pending_extension_install_download_progress_ = 0;
   pending_extension_install_status_string_.clear();
+  pending_extension_install_delegate_ = NULL;
+  pending_extension_install_prompt_.reset();
   if (observer_)
     observer_->OnModelChanged(this);
 }

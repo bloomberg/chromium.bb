@@ -453,6 +453,9 @@ void WebIntentPickerController::OnExtensionInstallRequested(
   // Don't show a bubble pointing to the extension or any other post
   // installation UI.
   approval->skip_post_install_ui = true;
+  approval->show_dialog_callback = base::Bind(
+      &WebIntentPickerController::OnShowExtensionInstallDialog,
+      weak_ptr_factory_.GetWeakPtr());
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile_, this,
@@ -868,6 +871,17 @@ void WebIntentPickerController::OnExtensionIconAvailable(
 void WebIntentPickerController::OnExtensionIconUnavailable(
     const std::string& extension_id) {
   AsyncOperationFinished();
+}
+
+void WebIntentPickerController::OnShowExtensionInstallDialog(
+      gfx::NativeWindow parent,
+      content::PageNavigator* navigator,
+      ExtensionInstallPrompt::Delegate* delegate,
+      const ExtensionInstallPrompt::Prompt& prompt) {
+  picker_model_->SetPendingExtensionInstallDelegate(delegate);
+  picker_model_->SetPendingExtensionInstallPrompt(prompt);
+  if (picker_)
+    picker_->OnShowExtensionInstallDialog(parent, navigator, delegate, prompt);
 }
 
 void WebIntentPickerController::SetWindowDispositionSource(
