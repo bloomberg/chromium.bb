@@ -23,6 +23,10 @@ namespace aura {
 class Window;
 }
 
+namespace base {
+class TimeDelta;
+}
+
 namespace gfx {
 class Point;
 class Rect;
@@ -35,6 +39,7 @@ class Layer;
 namespace ash {
 namespace internal {
 
+class DesktopBackgroundFadeController;
 class ShelfLayoutManager;
 class WorkspaceLayoutManager2;
 class WorkspaceManagerTest2;
@@ -77,20 +82,27 @@ class ASH_EXPORT WorkspaceManager2
   friend class WorkspaceLayoutManager2;
   friend class WorkspaceManager2Test;
 
-  class LayoutManager;
+  class LayoutManagerImpl;
 
   typedef std::vector<Workspace2*> Workspaces;
 
-  // Describes which, if any, of the workspaces should animate. NEW is the
-  // workspace that is becoming active, and OLD the workspace that was active.
-  enum AnimateType {
-    ANIMATE_NONE,
+  // Reason for the workspace switch. Used to determine the characterstics of
+  // the animation.
+  enum SwitchReason {
+    SWITCH_WINDOW_MADE_ACTIVE,
+    SWITCH_WINDOW_REMOVED,
+    SWITCH_VISIBILITY_CHANGED,
+    SWITCH_MINIMIZED,
+    SWITCH_MAXIMIZED_OR_RESTORED,
+    SWITCH_TRACKED_BY_WORKSPACE_CHANGED,
 
-    // Animates only the new workspace in.
-    ANIMATE_NEW,
+    // Switch as the result of DoInitialAnimation(). This isn't a real switch,
+    // rather we run the animations as if a switch occurred.
+    SWITCH_INITIAL,
 
-    // Animates both the old and new workspaces.
-    ANIMATE_OLD_AND_NEW,
+    // Edge case. See comment in OnWorkspaceWindowShowStateChanged().  Don't
+    // make other types randomly use this!
+    SWITCH_OTHER,
   };
 
   // Updates the visibility and whether any windows overlap the shelf.
@@ -100,7 +112,9 @@ class ASH_EXPORT WorkspaceManager2
   Workspace2* FindBy(aura::Window* window) const;
 
   // Sets the active workspace.
-  void SetActiveWorkspace(Workspace2* workspace, AnimateType animate_type);
+  void SetActiveWorkspace(Workspace2* workspace,
+                          SwitchReason reason,
+                          base::TimeDelta duration);
 
   // Returns the bounds of the work area.
   gfx::Rect GetWorkAreaBounds() const;
@@ -121,14 +135,14 @@ class ASH_EXPORT WorkspaceManager2
   // |pending_workspaces_|.
   void MoveWorkspaceToPendingOrDelete(Workspace2* workspace,
                                       aura::Window* stack_beneath,
-                                      AnimateType animate_type);
+                                      SwitchReason reason);
 
   // Moves the children of |window| to the desktop. This excludes certain
   // windows. If |stack_beneath| is non-NULL the windows are stacked beneath it.
   void MoveChildrenToDesktop(aura::Window* window, aura::Window* stack_beneath);
 
   // Selects the next workspace.
-  void SelectNextWorkspace(AnimateType animate_type);
+  void SelectNextWorkspace(SwitchReason reason);
 
   // Schedules |workspace| for deletion when it no longer contains any layers.
   // See comments above |to_delete_| as to why we do this.
@@ -140,6 +154,27 @@ class ASH_EXPORT WorkspaceManager2
 
   // Sets |unminimizing_workspace_| to |workspace|.
   void SetUnminimizingWorkspace(Workspace2* workspace);
+
+  // Fades the desktop. This is only used when maximizing or restoring a
+  // window. The actual fade is handled by
+  // DesktopBackgroundFadeController. |window| is used when restoring and
+  // indicates the window to stack the DesktopBackgroundFadeController's window
+  // above.
+  void FadeDesktop(aura::Window* window, base::TimeDelta duration);
+
+  // Shows or hides the desktop Window |window|.
+  void ShowOrHideDesktopBackground(aura::Window* window,
+                                   SwitchReason reason,
+                                   base::TimeDelta duration,
+                                   bool show) const;
+
+  // Shows/hides |workspace| animating as necessary.
+  void ShowWorkspace(Workspace2* workspace,
+                     Workspace2* last_active,
+                     SwitchReason reason) const;
+  void HideWorkspace(Workspace2* workspace,
+                     SwitchReason reason,
+                     bool is_unminimizing_maximized_window) const;
 
   // These methods are forwarded from the LayoutManager installed on the
   // Workspace's window.
@@ -203,8 +238,11 @@ class ASH_EXPORT WorkspaceManager2
   // animation).
   bool app_terminating_;
 
-  // If non-empty this is the amount of time animating the desktop in/out.
-  base::TimeDelta switch_duration_;
+  scoped_ptr<DesktopBackgroundFadeController> desktop_fade_controller_;
+
+  // Set to true while in the process of creating a
+  // DesktopBackgroundFadeController.
+  bool creating_fade_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager2);
 };

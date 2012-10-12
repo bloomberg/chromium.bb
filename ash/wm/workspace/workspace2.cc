@@ -6,6 +6,7 @@
 
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
@@ -26,6 +27,7 @@ Workspace2::Workspace2(WorkspaceManager2* manager,
       workspace_layout_manager_(NULL) {
   window_->SetProperty(internal::kChildWindowVisibilityChangesAnimatedKey,
                        true);
+  SetWindowVisibilityAnimationTransition(window_, ANIMATE_NONE);
   window_->set_id(kShellWindowId_WorkspaceContainer);
   window_->SetName("WorkspaceContainer");
   window_->Init(ui::LAYER_NOT_DRAWN);

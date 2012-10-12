@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 
+#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -16,13 +17,14 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/desktop_background_fade_controller.h"
+#include "ash/wm/workspace/workspace_animations.h"
 #include "ash/wm/workspace/workspace_layout_manager2.h"
 #include "ash/wm/workspace/workspace2.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -30,6 +32,8 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/widget/widget.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::Workspace2*);
 
@@ -41,6 +45,13 @@ namespace internal {
 DEFINE_WINDOW_PROPERTY_KEY(Workspace2*, kWorkspaceKey, NULL);
 
 namespace {
+
+// Duration for fading out the desktop background when maximizing.
+const int kCrossFadeSwitchTimeMS = 700;
+
+// Amount of time to pause before animating anything. Only used during initial
+// animation (when logging in).
+const int kInitialPauseTimeMS = 750;
 
 // Changes the parent of |window| and all its transient children to
 // |new_parent|. If |stack_beneach| is non-NULL all the windows are stacked
@@ -55,40 +66,39 @@ void ReparentWindow(Window* window,
     ReparentWindow(window->transient_children()[i], new_parent, stack_beneath);
 }
 
-WorkspaceType WorkspaceType(Workspace2* workspace) {
-  return workspace->is_maximized() ? WORKSPACE_MAXIMIZED : WORKSPACE_DESKTOP;
-}
+}  // namespace
 
 // Workspace -------------------------------------------------------------------
 
-// LayoutManager installed on the parent window of all the Workspace windows (eg
+// LayoutManager installed on the parent window of all the Workspace window (eg
 // |WorkspaceManager2::contents_view_|).
-class WorkspaceManagerLayoutManager2 : public BaseLayoutManager {
+class WorkspaceManager2::LayoutManagerImpl : public BaseLayoutManager {
  public:
-  WorkspaceManagerLayoutManager2(Window* window)
-      : BaseLayoutManager(window->GetRootWindow()),
-        window_(window) {
+  explicit LayoutManagerImpl(WorkspaceManager2* workspace_manager)
+      : BaseLayoutManager(workspace_manager->contents_view_->GetRootWindow()),
+        workspace_manager_(workspace_manager) {
   }
-  virtual ~WorkspaceManagerLayoutManager2() {}
+  virtual ~LayoutManagerImpl() {}
 
   // Overridden from BaseWorkspaceLayoutManager:
   virtual void OnWindowResized() OVERRIDE {
-    for (size_t i = 0; i < window_->children().size(); ++i)
-      window_->children()[i]->SetBounds(gfx::Rect(window_->bounds().size()));
+    for (size_t i = 0; i < window()->children().size(); ++i)
+      window()->children()[i]->SetBounds(gfx::Rect(window()->bounds().size()));
   }
   virtual void OnWindowAddedToLayout(Window* child) OVERRIDE {
     // Only workspaces should be added as children.
-    DCHECK_EQ(kShellWindowId_WorkspaceContainer, child->id());
-    child->SetBounds(gfx::Rect(window_->bounds().size()));
+    DCHECK((child->id() == kShellWindowId_WorkspaceContainer) ||
+           workspace_manager_->creating_fade_);
+    child->SetBounds(gfx::Rect(window()->bounds().size()));
   }
 
  private:
-  Window* window_;
+  aura::Window* window() { return workspace_manager_->contents_view_; }
 
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceManagerLayoutManager2);
+  WorkspaceManager2* workspace_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayoutManagerImpl);
 };
-
-}  // namespace
 
 // WorkspaceManager2 -----------------------------------------------------------
 
@@ -100,12 +110,12 @@ WorkspaceManager2::WorkspaceManager2(Window* contents_view)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           clear_unminimizing_workspace_factory_(this)),
       unminimizing_workspace_(NULL),
-      app_terminating_(false) {
+      app_terminating_(false),
+      creating_fade_(false) {
   // Clobber any existing event filter.
   contents_view->SetEventFilter(NULL);
-  // |contents_view| takes ownership of WorkspaceManagerLayoutManager2.
-  contents_view->SetLayoutManager(
-      new WorkspaceManagerLayoutManager2(contents_view));
+  // |contents_view| takes ownership of LayoutManagerImpl.
+  contents_view->SetLayoutManager(new LayoutManagerImpl(this));
   active_workspace_ = CreateWorkspace(false);
   workspaces_.push_back(active_workspace_);
   active_workspace_->window()->Show();
@@ -218,7 +228,8 @@ void WorkspaceManager2::SetActiveWorkspaceByWindow(Window* window) {
          !(wm::IsWindowMinimized(window) && WillRestoreMaximized(window)))) {
       ReparentWindow(window, active_workspace_->window(), NULL);
     } else {
-      SetActiveWorkspace(workspace, ANIMATE_OLD_AND_NEW);
+      SetActiveWorkspace(workspace, SWITCH_WINDOW_MADE_ACTIVE,
+                         base::TimeDelta());
     }
   }
   if (workspace->is_maximized() && IsMaximized(window)) {
@@ -262,12 +273,11 @@ void WorkspaceManager2::DoInitialAnimation() {
       aura::Window* background = root_controller->GetContainer(
           kShellWindowId_DesktopBackgroundContainer);
       background->Show();
-      AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN,
-                          WORKSPACE_DESKTOP, true, base::TimeDelta());
+      ShowOrHideDesktopBackground(background, SWITCH_INITIAL,
+                                  base::TimeDelta(), false);
     }
   }
-  AnimateWorkspaceIn(active_workspace_->window(), WORKSPACE_ANIMATE_DOWN,
-                     true, base::TimeDelta());
+  ShowWorkspace(active_workspace_, active_workspace_, SWITCH_INITIAL);
 }
 
 void WorkspaceManager2::OnAppTerminating() {
@@ -290,7 +300,8 @@ Workspace2* WorkspaceManager2::FindBy(Window* window) const {
 }
 
 void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
-                                           AnimateType animate_type) {
+                                           SwitchReason reason,
+                                           base::TimeDelta duration) {
   DCHECK(workspace);
   if (active_workspace_ == workspace)
     return;
@@ -299,12 +310,11 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
 
   // Adjust the z-order. No need to adjust the z-order for the desktop since
   // it always stays at the bottom.
-  if (workspace != desktop_workspace()) {
-    if (FindWorkspace(workspace) == workspaces_.end()) {
-      contents_view_->StackChildAbove(workspace->window(),
-                                      workspaces_.back()->window());
-      workspaces_.push_back(workspace);
-    }
+  if (workspace != desktop_workspace() &&
+      FindWorkspace(workspace) == workspaces_.end()) {
+    contents_view_->StackChildAbove(workspace->window(),
+                                    workspaces_.back()->window());
+    workspaces_.push_back(workspace);
   }
 
   Workspace2* last_active = active_workspace_;
@@ -332,15 +342,9 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
 
   UpdateShelfVisibility();
 
-  if (animate_type != ANIMATE_NONE) {
-    AnimateBetweenWorkspaces(
-        last_active->window(),
-        WorkspaceType(last_active),
-        (animate_type == ANIMATE_OLD_AND_NEW),
-        workspace->window(),
-        WorkspaceType(workspace),
-        is_unminimizing_maximized_window);
-  }
+  // NOTE: duration supplied to this method is only used for desktop background.
+  HideWorkspace(last_active, reason, is_unminimizing_maximized_window);
+  ShowWorkspace(workspace, last_active, reason);
 
   RootWindowController* root_controller = GetRootWindowController(
       contents_view_->GetRootWindow());
@@ -348,11 +352,9 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
     aura::Window* background = root_controller->GetContainer(
         kShellWindowId_DesktopBackgroundContainer);
     if (last_active == desktop_workspace()) {
-      AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN,
-                          WORKSPACE_DESKTOP, false, switch_duration_);
+      ShowOrHideDesktopBackground(background, reason, duration, false);
     } else if (active_workspace_ == desktop_workspace() && !app_terminating_) {
-      AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP, false,
-                         switch_duration_);
+      ShowOrHideDesktopBackground(background, reason, duration, true);
     }
   }
 }
@@ -369,7 +371,7 @@ Workspace2* WorkspaceManager2::CreateWorkspace(bool maximized) {
 void WorkspaceManager2::MoveWorkspaceToPendingOrDelete(
     Workspace2* workspace,
     Window* stack_beneath,
-    AnimateType animate_type) {
+    SwitchReason reason) {
   // We're all ready moving windows.
   if (in_move_)
     return;
@@ -377,7 +379,7 @@ void WorkspaceManager2::MoveWorkspaceToPendingOrDelete(
   DCHECK_NE(desktop_workspace(), workspace);
 
   if (workspace == active_workspace_)
-    SelectNextWorkspace(animate_type);
+    SelectNextWorkspace(reason);
 
   AutoReset<bool> setter(&in_move_, true);
 
@@ -422,15 +424,15 @@ void WorkspaceManager2::MoveChildrenToDesktop(aura::Window* window,
   }
 }
 
-void WorkspaceManager2::SelectNextWorkspace(AnimateType animate_type) {
+void WorkspaceManager2::SelectNextWorkspace(SwitchReason reason) {
   DCHECK_NE(active_workspace_, desktop_workspace());
 
   Workspaces::const_iterator workspace_i(FindWorkspace(active_workspace_));
   Workspaces::const_iterator next_workspace_i(workspace_i + 1);
   if (next_workspace_i != workspaces_.end())
-    SetActiveWorkspace(*next_workspace_i, animate_type);
+    SetActiveWorkspace(*next_workspace_i, reason, base::TimeDelta());
   else
-    SetActiveWorkspace(*(workspace_i - 1), animate_type);
+    SetActiveWorkspace(*(workspace_i - 1), reason, base::TimeDelta());
 }
 
 void WorkspaceManager2::ScheduleDelete(Workspace2* workspace) {
@@ -456,6 +458,116 @@ void WorkspaceManager2::SetUnminimizingWorkspace(Workspace2* workspace) {
                    clear_unminimizing_workspace_factory_.GetWeakPtr(),
                    static_cast<Workspace2*>(NULL)));
   }
+}
+
+void WorkspaceManager2::FadeDesktop(aura::Window* window,
+                                    base::TimeDelta duration) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshWindowAnimationsDisabled) ||
+      ui::LayerAnimator::disable_animations_for_test())
+    return;
+
+  AutoReset<bool> reseter(&creating_fade_, true);
+  DesktopBackgroundFadeController::Direction direction;
+  aura::Window* parent = NULL;
+  aura::Window* stack_above = NULL;
+  if (active_workspace_ == desktop_workspace()) {
+    direction = DesktopBackgroundFadeController::FADE_IN;
+    parent = desktop_workspace()->window();
+    stack_above = window;
+  } else {
+    direction = DesktopBackgroundFadeController::FADE_OUT;
+    parent = contents_view_;
+    stack_above = desktop_workspace()->window();
+    DCHECK_EQ(kCrossFadeSwitchTimeMS, (int)duration.InMilliseconds());
+    duration = base::TimeDelta::FromMilliseconds(kCrossFadeSwitchTimeMS);
+  }
+  desktop_fade_controller_.reset(
+      new DesktopBackgroundFadeController(
+          parent, stack_above, duration, direction));
+}
+
+void WorkspaceManager2::ShowOrHideDesktopBackground(
+    aura::Window* window,
+    SwitchReason reason,
+    base::TimeDelta duration,
+    bool show) const {
+  WorkspaceAnimationDetails details;
+  details.animate = true;
+  details.direction = show ? WORKSPACE_ANIMATE_UP : WORKSPACE_ANIMATE_DOWN;
+  details.animate_scale = reason != SWITCH_MAXIMIZED_OR_RESTORED;
+  details.duration = duration;
+  if (reason == SWITCH_INITIAL)
+    details.pause_time_ms = kInitialPauseTimeMS;
+  if (show)
+    ash::internal::ShowWorkspace(window, details);
+  else
+    ash::internal::HideWorkspace(window, details);
+}
+
+void WorkspaceManager2::ShowWorkspace(
+    Workspace2* workspace,
+    Workspace2* last_active,
+    SwitchReason reason) const {
+  WorkspaceAnimationDetails details;
+  details.direction =
+      (last_active == desktop_workspace() || reason == SWITCH_INITIAL) ?
+      WORKSPACE_ANIMATE_DOWN : WORKSPACE_ANIMATE_UP;
+
+  switch (reason) {
+    case SWITCH_WINDOW_MADE_ACTIVE:
+    case SWITCH_TRACKED_BY_WORKSPACE_CHANGED:
+    case SWITCH_WINDOW_REMOVED:
+    case SWITCH_VISIBILITY_CHANGED:
+    case SWITCH_MINIMIZED:
+      details.animate = details.animate_scale = true;
+      details.animate_opacity = last_active == desktop_workspace();
+      break;
+
+    case SWITCH_INITIAL:
+      details.animate = details.animate_opacity = details.animate_scale = true;
+      details.pause_time_ms = kInitialPauseTimeMS;
+      break;
+
+    // Remaining cases require no animation.
+    default:
+      break;
+  }
+  ash::internal::ShowWorkspace(workspace->window(), details);
+}
+
+void WorkspaceManager2::HideWorkspace(
+    Workspace2* workspace,
+    SwitchReason reason,
+    bool is_unminimizing_maximized_window) const {
+  WorkspaceAnimationDetails details;
+  details.direction = active_workspace_ == desktop_workspace() ?
+      WORKSPACE_ANIMATE_UP : WORKSPACE_ANIMATE_DOWN;
+  switch (reason) {
+    case SWITCH_WINDOW_MADE_ACTIVE:
+    case SWITCH_TRACKED_BY_WORKSPACE_CHANGED:
+      details.animate_opacity =
+          ((active_workspace_ == desktop_workspace() ||
+            workspace != desktop_workspace()) &&
+           !is_unminimizing_maximized_window);
+      details.animate_scale = true;
+      details.animate = true;
+      break;
+
+    case SWITCH_MAXIMIZED_OR_RESTORED:
+      if (active_workspace_->is_maximized()) {
+        // Delay the hide until the animation is done.
+        details.duration =
+            base::TimeDelta::FromMilliseconds(kCrossFadeSwitchTimeMS);
+        details.animate = true;
+      }
+      break;
+
+    // Remaining cases require no animation.
+    default:
+      break;
+  }
+  ash::internal::HideWorkspace(workspace->window(), details);
 }
 
 void WorkspaceManager2::ProcessDeletion() {
@@ -495,14 +607,14 @@ void WorkspaceManager2::OnWillRemoveWindowFromWorkspace(Workspace2* workspace,
 void WorkspaceManager2::OnWindowRemovedFromWorkspace(Workspace2* workspace,
                                                      Window* child) {
   if (workspace->ShouldMoveToPending())
-    MoveWorkspaceToPendingOrDelete(workspace, NULL, ANIMATE_NEW);
+    MoveWorkspaceToPendingOrDelete(workspace, NULL, SWITCH_WINDOW_REMOVED);
 }
 
 void WorkspaceManager2::OnWorkspaceChildWindowVisibilityChanged(
     Workspace2* workspace,
     Window* child) {
   if (workspace->ShouldMoveToPending())
-    MoveWorkspaceToPendingOrDelete(workspace, NULL, ANIMATE_NEW);
+    MoveWorkspaceToPendingOrDelete(workspace, NULL, SWITCH_VISIBILITY_CHANGED);
   else if (workspace == active_workspace_)
     UpdateShelfVisibility();
 }
@@ -523,7 +635,7 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
   DCHECK_EQ(workspace, child->GetProperty(kWorkspaceKey));
   if (wm::IsWindowMinimized(child)) {
     if (workspace->ShouldMoveToPending())
-      MoveWorkspaceToPendingOrDelete(workspace, NULL, ANIMATE_NEW);
+      MoveWorkspaceToPendingOrDelete(workspace, NULL, SWITCH_MINIMIZED);
     DCHECK(!old_layer);
   } else {
     // Set of cases to deal with:
@@ -536,6 +648,9 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
     const bool is_active = wm::IsActiveWindow(child);
     Workspace2* new_workspace = NULL;
     const int max_count = workspace->GetNumMaximizedWindows();
+    base::TimeDelta duration = old_layer && !IsMaximized(child) ?
+            GetCrossFadeDuration(old_layer->bounds(), child->bounds()) :
+            base::TimeDelta::FromMilliseconds(kCrossFadeSwitchTimeMS);
     if (max_count == 0) {
       if (workspace != desktop_workspace()) {
         {
@@ -543,10 +658,13 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
           ReparentWindow(child, desktop_workspace()->window(), NULL);
         }
         DCHECK(!is_active || old_layer);
-        MoveWorkspaceToPendingOrDelete(workspace, child, ANIMATE_NONE);
+        new_workspace = desktop_workspace();
+        SetActiveWorkspace(new_workspace, SWITCH_MAXIMIZED_OR_RESTORED,
+                           duration);
+        MoveWorkspaceToPendingOrDelete(workspace, child,
+                                       SWITCH_MAXIMIZED_OR_RESTORED);
         if (FindWorkspace(workspace) == workspaces_.end())
           workspace = NULL;
-        new_workspace = desktop_workspace();
       }
     } else if ((max_count == 1 && workspace == desktop_workspace()) ||
                max_count > 1) {
@@ -559,15 +677,16 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
       // WorkspaceLayoutManager2::OnWindowPropertyChanged() the window is made
       // active.
       if (old_layer) {
-        switch_duration_ =
-            GetCrossFadeDuration(old_layer->bounds(), child->bounds());
-        SetActiveWorkspace(new_workspace, ANIMATE_NONE);
-        switch_duration_ = base::TimeDelta();
-        CrossFadeWindowBetweenWorkspaces(
-            workspace ? workspace->window() : NULL, new_workspace->window(),
-            child, old_layer);
+        SetActiveWorkspace(new_workspace, SWITCH_MAXIMIZED_OR_RESTORED,
+                           duration);
+        CrossFadeWindowBetweenWorkspaces(new_workspace->window(), child,
+                                         old_layer);
+        if (workspace == desktop_workspace() ||
+            new_workspace == desktop_workspace()) {
+          FadeDesktop(child, duration);
+        }
       } else {
-        SetActiveWorkspace(new_workspace, ANIMATE_NONE);
+        SetActiveWorkspace(new_workspace, SWITCH_OTHER, base::TimeDelta());
       }
     } else {
       if (last_show_state == ui::SHOW_STATE_MINIMIZED)
@@ -596,8 +715,10 @@ void WorkspaceManager2::OnTrackedByWorkspaceChanged(Workspace2* workspace,
   if (is_active)
     new_workspace->window()->Show();
   ReparentWindow(window, new_workspace->window(), NULL);
-  if (is_active)
-    SetActiveWorkspace(new_workspace, ANIMATE_OLD_AND_NEW);
+  if (is_active) {
+    SetActiveWorkspace(new_workspace, SWITCH_TRACKED_BY_WORKSPACE_CHANGED,
+                       base::TimeDelta());
+  }
 }
 
 }  // namespace internal
