@@ -13,7 +13,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 namespace file_system {
 
 RemoveOperation::RemoveOperation(DriveServiceInterface* drive_service,
@@ -74,7 +74,7 @@ void RemoveOperation::RemoveAfterGetEntryInfo(
 void RemoveOperation::RemoveResourceLocally(
     const FileOperationCallback& callback,
     const std::string& resource_id,
-    GDataErrorCode status,
+    gdata::GDataErrorCode status,
     const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -106,4 +106,4 @@ void RemoveOperation::NotifyDirectoryChanged(
 }
 
 }  // namespace file_system
-}  // namespace gdata
+}  // namespace drive

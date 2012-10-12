@@ -19,7 +19,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -51,7 +51,7 @@ void DriveAPIService::Initialize(Profile* profile) {
   std::vector<std::string> scopes;
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
-  runner_.reset(new OperationRunner(profile, scopes));
+  runner_.reset(new gdata::OperationRunner(profile, scopes));
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);
@@ -82,12 +82,13 @@ bool DriveAPIService::CancelForFilePath(const FilePath& file_path) {
   return operation_registry()->CancelForFilePath(file_path);
 }
 
-OperationProgressStatusList DriveAPIService::GetProgressStatusList() const {
+gdata::OperationProgressStatusList
+DriveAPIService::GetProgressStatusList() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return operation_registry()->GetProgressStatusList();
 }
 
-void DriveAPIService::Authenticate(const AuthStatusCallback& callback) {
+void DriveAPIService::Authenticate(const gdata::AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   runner_->Authenticate(callback);
 }
@@ -96,7 +97,7 @@ void DriveAPIService::GetDocuments(const GURL& url,
                                    int64 start_changestamp,
                                    const std::string& search_query,
                                    const std::string& directory_resource_id,
-                                   const GetDataCallback& callback) {
+                                   const gdata::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (search_query.empty())
@@ -111,11 +112,11 @@ void DriveAPIService::GetDocuments(const GURL& url,
 
 void DriveAPIService::GetFilelist(const GURL& url,
                                   const std::string& search_query,
-                                  const GetDataCallback& callback) {
+                                  const gdata::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new GetFilelistOperation(operation_registry(),
+      new gdata::GetFilelistOperation(operation_registry(),
                                url,
                                search_query,
                                callback));
@@ -123,37 +124,40 @@ void DriveAPIService::GetFilelist(const GURL& url,
 
 void DriveAPIService::GetChangelist(const GURL& url,
                                     int64 start_changestamp,
-                                    const GetDataCallback& callback) {
+                                    const gdata::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new GetChangelistOperation(operation_registry(),
+      new gdata::GetChangelistOperation(operation_registry(),
                                  url,
                                  start_changestamp,
                                  callback));
 }
 
 void DriveAPIService::GetDocumentEntry(const std::string& resource_id,
-                                       const GetDataCallback& callback) {
+                                       const gdata::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  runner_->StartOperationWithRetry(new GetFileOperation(operation_registry(),
-                                                        resource_id,
-                                                        callback));
+  runner_->StartOperationWithRetry(new gdata::GetFileOperation(
+      operation_registry(),
+      resource_id,
+      callback));
 }
 
-void DriveAPIService::GetAccountMetadata(const GetDataCallback& callback) {
+void DriveAPIService::GetAccountMetadata(
+    const gdata::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new GetAboutOperation(operation_registry(), callback));
+      new gdata::GetAboutOperation(operation_registry(), callback));
 }
 
-void DriveAPIService::GetApplicationInfo(const GetDataCallback& callback) {
+void DriveAPIService::GetApplicationInfo(
+    const gdata::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new GetApplistOperation(operation_registry(), callback));
+      new gdata::GetApplistOperation(operation_registry(), callback));
 }
 
 void DriveAPIService::DownloadDocument(
@@ -161,7 +165,7 @@ void DriveAPIService::DownloadDocument(
     const FilePath& local_cache_path,
     const GURL& document_url,
     DocumentExportFormat format,
-    const DownloadActionCallback& callback) {
+    const gdata::DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -172,16 +176,17 @@ void DriveAPIService::DownloadFile(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
       const GURL& document_url,
-      const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback) {
+      const gdata::DownloadActionCallback& download_action_callback,
+      const gdata::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
   NOTREACHED();
 }
 
-void DriveAPIService::DeleteDocument(const GURL& document_url,
-                                     const EntryActionCallback& callback) {
+void DriveAPIService::DeleteDocument(
+    const GURL& document_url,
+    const gdata::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -191,7 +196,7 @@ void DriveAPIService::DeleteDocument(const GURL& document_url,
 void DriveAPIService::CreateDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
-    const GetDataCallback& callback) {
+    const gdata::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -200,16 +205,17 @@ void DriveAPIService::CreateDirectory(
 
 void DriveAPIService::CopyDocument(const std::string& resource_id,
                                    const FilePath::StringType& new_name,
-                                   const GetDataCallback& callback) {
+                                   const gdata::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
   NOTREACHED();
 }
 
-void DriveAPIService::RenameResource(const GURL& resource_url,
-                                     const FilePath::StringType& new_name,
-                                     const EntryActionCallback& callback) {
+void DriveAPIService::RenameResource(
+    const GURL& resource_url,
+    const FilePath::StringType& new_name,
+    const gdata::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -219,7 +225,7 @@ void DriveAPIService::RenameResource(const GURL& resource_url,
 void DriveAPIService::AddResourceToDirectory(
     const GURL& parent_content_url,
     const GURL& resource_url,
-    const EntryActionCallback& callback) {
+    const gdata::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -230,23 +236,25 @@ void DriveAPIService::RemoveResourceFromDirectory(
     const GURL& parent_content_url,
     const GURL& resource_url,
     const std::string& resource_id,
-    const EntryActionCallback& callback) {
+    const gdata::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
   NOTREACHED();
 }
 
-void DriveAPIService::InitiateUpload(const InitiateUploadParams& params,
-                                     const InitiateUploadCallback& callback) {
+void DriveAPIService::InitiateUpload(
+    const gdata::InitiateUploadParams& params,
+    const gdata::InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
   NOTREACHED();
 }
 
-void DriveAPIService::ResumeUpload(const ResumeUploadParams& params,
-                                   const ResumeUploadCallback& callback) {
+void DriveAPIService::ResumeUpload(
+    const gdata::ResumeUploadParams& params,
+    const gdata::ResumeUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -255,7 +263,7 @@ void DriveAPIService::ResumeUpload(const ResumeUploadParams& params,
 
 void DriveAPIService::AuthorizeApp(const GURL& resource_url,
                                    const std::string& app_ids,
-                                   const GetDataCallback& callback) {
+                                   const gdata::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -274,7 +282,7 @@ bool DriveAPIService::HasRefreshToken() const {
   return runner_->auth_service()->HasRefreshToken();
 }
 
-OperationRegistry* DriveAPIService::operation_registry() const {
+gdata::OperationRegistry* DriveAPIService::operation_registry() const {
   return runner_->operation_registry();
 }
 
@@ -287,16 +295,16 @@ void DriveAPIService::OnOAuth2RefreshTokenChanged() {
 }
 
 void DriveAPIService::OnProgressUpdate(
-    const OperationProgressStatusList& list) {
+    const gdata::OperationProgressStatusList& list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
       DriveServiceObserver, observers_, OnProgressUpdate(list));
 }
 
-void DriveAPIService::OnAuthenticationFailed(GDataErrorCode error) {
+void DriveAPIService::OnAuthenticationFailed(gdata::GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
       DriveServiceObserver, observers_, OnAuthenticationFailed(error));
 }
 
-}  // namespace gdata
+}  // namespace drive

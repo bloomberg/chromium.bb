@@ -18,8 +18,11 @@
 class Profile;
 
 namespace gdata {
-
 class DocumentEntry;
+}
+
+namespace drive {
+
 class DriveEntryProto;
 class DriveFileSystemInterface;
 class DriveUploader;
@@ -191,7 +194,7 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
                         DriveFileError error,
                         const FilePath& drive_path,
                         const FilePath& file_path,
-                        scoped_ptr<DocumentEntry> document_entry);
+                        scoped_ptr<gdata::DocumentEntry> document_entry);
 
   // Moves the downloaded file to drive cache.
   // Must be called after DriveDownloadObserver receives COMPLETE notification.
@@ -219,6 +222,6 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   DISALLOW_COPY_AND_ASSIGN(DriveDownloadObserver);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_OBSERVER_H_

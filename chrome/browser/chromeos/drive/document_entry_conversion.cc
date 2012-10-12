@@ -13,10 +13,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
-namespace gdata {
+namespace drive {
 
 DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
-    const DocumentEntry& doc) {
+    const gdata::DocumentEntry& doc) {
   DriveEntryProto entry_proto;
 
   // For regular files, the 'filename' and 'title' attribute in the metadata
@@ -29,11 +29,11 @@ DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
   entry_proto.set_resource_id(doc.resource_id());
   entry_proto.set_content_url(doc.content_url().spec());
 
-  const Link* edit_link = doc.GetLinkByType(Link::LINK_EDIT);
+  const gdata::Link* edit_link = doc.GetLinkByType(gdata::Link::LINK_EDIT);
   if (edit_link)
     entry_proto.set_edit_url(edit_link->href().spec());
 
-  const Link* parent_link = doc.GetLinkByType(Link::LINK_PARENT);
+  const gdata::Link* parent_link = doc.GetLinkByType(gdata::Link::LINK_PARENT);
   if (parent_link) {
     entry_proto.set_parent_resource_id(
         util::ExtractResourceIdFromUrl(parent_link->href()));
@@ -59,8 +59,8 @@ DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
 
       // The resumable-edit-media link should only be present for regular
       // files as hosted documents are not uploadable.
-      const Link* upload_link = doc.GetLinkByType(
-          Link::LINK_RESUMABLE_EDIT_MEDIA);
+      const gdata::Link* upload_link = doc.GetLinkByType(
+          gdata::Link::LINK_RESUMABLE_EDIT_MEDIA);
       if (upload_link)
         entry_proto.set_upload_url(upload_link->href().spec());
     } else if (doc.is_hosted_document()) {
@@ -79,23 +79,25 @@ DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
     file_specific_info->set_content_mime_type(doc.content_mime_type());
     file_specific_info->set_is_hosted_document(doc.is_hosted_document());
 
-    const Link* thumbnail_link = doc.GetLinkByType(Link::LINK_THUMBNAIL);
+    const gdata::Link* thumbnail_link = doc.GetLinkByType(
+        gdata::Link::LINK_THUMBNAIL);
     if (thumbnail_link)
       file_specific_info->set_thumbnail_url(thumbnail_link->href().spec());
 
-    const Link* alternate_link = doc.GetLinkByType(Link::LINK_ALTERNATE);
+    const gdata::Link* alternate_link = doc.GetLinkByType(
+        gdata::Link::LINK_ALTERNATE);
     if (alternate_link)
       file_specific_info->set_alternate_url(alternate_link->href().spec());
   } else if (doc.is_folder()) {
-    const Link* upload_link = doc.GetLinkByType(
-        Link::LINK_RESUMABLE_CREATE_MEDIA);
+    const gdata::Link* upload_link = doc.GetLinkByType(
+        gdata::Link::LINK_RESUMABLE_CREATE_MEDIA);
     if (upload_link)
       entry_proto.set_upload_url(upload_link->href().spec());
   } else {
-    NOTREACHED() << "Unknown DocumentEntry type";
+    NOTREACHED() << "Unknown gdata::DocumentEntry type";
   }
 
   return entry_proto;
 }
 
-}  // namespace gdata
+}  // namespace drive

@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gdata {
+namespace drive {
 
 class DriveCacheMetadataTest : public testing::Test {
  public:
@@ -421,4 +421,4 @@ TEST(DriveCacheMetadataExtraTest, CannotOpenDB) {
   EXPECT_FALSE(metadata->Initialize(cache_paths));
 }
 
-}  // namespace gdata
+}  // namespace drive

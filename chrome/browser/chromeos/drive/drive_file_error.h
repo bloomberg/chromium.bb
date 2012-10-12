@@ -7,7 +7,7 @@
 
 #include "base/platform_file.h"
 
-namespace gdata {
+namespace drive {
 
 enum DriveFileError {
   DRIVE_FILE_OK = 0,
@@ -33,6 +33,6 @@ enum DriveFileError {
 // Returns a PlatformFileError that corresponds to the DriveFileError provided.
 base::PlatformFileError DriveFileErrorToPlatformError(DriveFileError error);
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_ERROR_H_

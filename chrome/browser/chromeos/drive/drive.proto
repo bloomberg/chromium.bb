@@ -8,7 +8,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package gdata;
+package drive;
 
 // Represents base::PlatformFileInfo.
 message PlatformFileInfoProto {

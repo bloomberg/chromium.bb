@@ -23,7 +23,7 @@ class SequencedTaskRunner;
 
 }  // namespace base
 
-namespace gdata {
+namespace drive {
 
 class DriveCacheEntry;
 class DriveCacheMetadata;
@@ -464,6 +464,6 @@ class FreeDiskSpaceGetterInterface {
 void SetFreeDiskSpaceGetterForTesting(
     FreeDiskSpaceGetterInterface* getter);
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_CACHE_H_

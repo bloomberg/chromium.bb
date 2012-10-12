@@ -37,8 +37,8 @@
 using chromeos::disks::DiskMountManager;
 using chromeos::disks::DiskMountManagerEventType;
 using content::BrowserThread;
-using gdata::DriveSystemService;
-using gdata::DriveSystemServiceFactory;
+using drive::DriveSystemService;
+using drive::DriveSystemServiceFactory;
 
 namespace {
   const char kDiskAddedEventType[] = "added";
@@ -172,8 +172,8 @@ bool FileBrowserEventRouter::AddFileWatch(
   // Tweak watch path for remote sources - we need to drop leading /special
   // directory from there in order to be able to pair these events with
   // their change notifications.
-  if (gdata::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
-    watch_path = gdata::util::ExtractDrivePath(watch_path);
+  if (drive::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
+    watch_path = drive::util::ExtractDrivePath(watch_path);
     is_remote_watch = true;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -208,8 +208,8 @@ void FileBrowserEventRouter::RemoveFileWatch(
   // Tweak watch path for remote sources - we need to drop leading /special
   // directory from there in order to be able to pair these events with
   // their change notifications.
-  if (gdata::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
-    watch_path = gdata::util::ExtractDrivePath(watch_path);
+  if (drive::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
+    watch_path = drive::util::ExtractDrivePath(watch_path);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread,
@@ -254,7 +254,7 @@ void FileBrowserEventRouter::OnAuthenticated(
     error_code = chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
 
   // Pass back the gdata mount point path as source path.
-  const std::string& gdata_path = gdata::util::GetDriveMountPointPathAsString();
+  const std::string& gdata_path = drive::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
@@ -271,7 +271,7 @@ void FileBrowserEventRouter::OnAuthenticated(
 void FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread(bool start) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  gdata::DriveFileSystemInterface* file_system = GetRemoteFileSystem();
+  drive::DriveFileSystemInterface* file_system = GetRemoteFileSystem();
   DCHECK(file_system);
 
   if (start) {
@@ -357,11 +357,11 @@ void FileBrowserEventRouter::MountCompleted(
       FilePath source_path(mount_info.source_path);
       DriveSystemService* system_service =
           DriveSystemServiceFactory::GetForProfile(profile_);
-      gdata::DriveCache* cache =
+      drive::DriveCache* cache =
           system_service ? system_service->cache() : NULL;
       if (cache) {
         cache->SetMountedStateOnUIThread(
-            source_path, false, gdata::ChangeCacheStateCallback());
+            source_path, false, drive::ChangeCacheStateCallback());
       }
     }
   }
@@ -461,7 +461,7 @@ void FileBrowserEventRouter::OnFileSystemBeingUnmounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Raise a MountCompleted event to notify the File Manager.
-  const std::string& gdata_path = gdata::util::GetDriveMountPointPathAsString();
+  const std::string& gdata_path = drive::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
@@ -479,7 +479,7 @@ void FileBrowserEventRouter::OnAuthenticationFailed(
     return;
 
   // Raise a MountCompleted event to notify the File Manager.
-  const std::string& gdata_path = gdata::util::GetDriveMountPointPathAsString();
+  const std::string& gdata_path = drive::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
@@ -825,7 +825,7 @@ FileBrowserEventRouter::FileWatcherExtensions::GetVirtualPath() const {
   return virtual_path_;
 }
 
-gdata::DriveFileSystemInterface*
+drive::DriveFileSystemInterface*
 FileBrowserEventRouter::GetRemoteFileSystem() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DriveSystemService* system_service =

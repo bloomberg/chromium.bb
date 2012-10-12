@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
-namespace gdata{
+namespace drive{
 
 class DriveCache;
 class DriveCacheEntry;
@@ -44,7 +44,7 @@ class StaleCacheFilesRemover : public DriveFileSystemObserver {
   void GetEntryInfoAndRemoveCacheIfNecessary(
       const std::string& resource_id,
       bool success,
-      const gdata::DriveCacheEntry& cache_entry);
+      const DriveCacheEntry& cache_entry);
 
   // Check the cache file and removes if it is unavailable or invalid (eg. md5
   // mismatch). This is called from GetCacheEntryAndRemoveCacheIfNecessary();
@@ -53,7 +53,7 @@ class StaleCacheFilesRemover : public DriveFileSystemObserver {
       const std::string& cache_md5,
       DriveFileError error,
       const FilePath& drive_file_path,
-      scoped_ptr<gdata::DriveEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   DriveCache* cache_;  // Not owned.
   DriveFileSystemInterface* file_system_;  // Not owned.
@@ -64,6 +64,6 @@ class StaleCacheFilesRemover : public DriveFileSystemObserver {
   DISALLOW_COPY_AND_ASSIGN(StaleCacheFilesRemover);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_STALE_CACHE_FILES_REMOVER_H_

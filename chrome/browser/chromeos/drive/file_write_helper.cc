@@ -9,7 +9,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -56,7 +56,7 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile(
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != gdata::DRIVE_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!callback.is_null()) {
       content::BrowserThread::GetBlockingPool()->PostTask(
           FROM_HERE,
@@ -79,7 +79,7 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterOpenFile(
     const FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != gdata::DRIVE_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!callback.is_null()) {
       content::BrowserThread::GetBlockingPool()->PostTask(
           FROM_HERE,
@@ -107,4 +107,4 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterCallback(
                           base::Bind(&EmitDebugLogForCloseFile, file_path));
 }
 
-}  // namespace gdata
+}  // namespace drive

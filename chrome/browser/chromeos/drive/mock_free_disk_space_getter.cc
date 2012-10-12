@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/mock_free_disk_space_getter.h"
 
-namespace gdata {
+namespace drive {
 
 MockFreeDiskSpaceGetter::MockFreeDiskSpaceGetter() {
 }
@@ -12,4 +12,4 @@ MockFreeDiskSpaceGetter::MockFreeDiskSpaceGetter() {
 MockFreeDiskSpaceGetter::~MockFreeDiskSpaceGetter() {
 }
 
-}  // namespace gdata
+}  // namespace drive

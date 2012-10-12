@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace gdata {
+namespace drive {
 
 // Mock for DriveFileSystemInterface::Observer::OnDirectoryChanged().
 class MockDirectoryChangeObserver : public DriveFileSystemObserver {
@@ -21,6 +21,6 @@ class MockDirectoryChangeObserver : public DriveFileSystemObserver {
   MOCK_METHOD1(OnDirectoryChanged, void(const FilePath& directory_path));
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DIRECTORY_CHANGE_OBSERVER_H_

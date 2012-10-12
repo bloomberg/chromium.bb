@@ -17,7 +17,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 const int kMaxThrottleCount = 5;
@@ -233,4 +233,4 @@ void DriveScheduler::OnConnectionTypeChanged(
     StartJobLoop();
 }
 
-}  // namespace gdata
+}  // namespace drive

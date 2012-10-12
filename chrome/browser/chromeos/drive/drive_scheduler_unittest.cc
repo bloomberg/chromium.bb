@@ -21,7 +21,7 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -70,7 +70,7 @@ class DriveSchedulerTest : public testing::Test {
     // The scheduler should be deleted before NetworkLibrary, as it
     // registers itself as observer of NetworkLibrary.
     scheduler_.reset();
-    test_util::RunBlockingPoolTask();
+    gdata::test_util::RunBlockingPoolTask();
     mock_network_change_notifier_.reset();
   }
 
@@ -126,7 +126,7 @@ TEST_F(DriveSchedulerTest, RemoveFile) {
   scheduler_->Remove(
       file_in_root, false,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(DRIVE_FILE_OK, error);
 }
@@ -143,7 +143,7 @@ TEST_F(DriveSchedulerTest, RemoveFileRetry) {
   scheduler_->Remove(
       file_in_root, false,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(DRIVE_FILE_OK, error);
 }
@@ -159,7 +159,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_Offline) {
   scheduler_->Remove(
       file_in_root, false,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveSchedulerTest, QueueOperation_CelluarDisabled) {
@@ -174,7 +174,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_CelluarDisabled) {
   scheduler_->Remove(
       file_in_root, false,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabled) {
@@ -192,7 +192,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabled) {
   scheduler_->Remove(
       file_in_root, false,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveSchedulerTest, QueueOperation_WimaxDisabled) {
@@ -208,7 +208,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_WimaxDisabled) {
   scheduler_->Remove(
       file_in_root, false,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabledWithWimax) {
@@ -226,7 +226,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabledWithWimax) {
   scheduler_->Remove(
       file_in_root, false,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
 }
 
 TEST_F(DriveSchedulerTest, QueueOperation_DriveDisabled) {
@@ -241,7 +241,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_DriveDisabled) {
   scheduler_->Remove(
       file_in_root, false,
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
 }
 
-}  // namespace gdata
+}  // namespace drive

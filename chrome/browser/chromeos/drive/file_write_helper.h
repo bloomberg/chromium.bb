@@ -11,7 +11,7 @@
 
 class FilePath;
 
-namespace gdata {
+namespace drive {
 
 // This class provides higher level operations for writing to Drive files over
 // DriveFileSystemInterface.
@@ -55,6 +55,6 @@ class FileWriteHelper {
   DISALLOW_COPY_AND_ASSIGN(FileWriteHelper);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_WRITE_HELPER_H_

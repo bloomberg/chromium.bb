@@ -383,7 +383,7 @@ void FileHandlerSelectFileFunction::GrantPermissions() {
       full_path_,
       file_handler_util::GetReadWritePermissions()));
 
-  if (!gdata::util::IsUnderDriveMountPoint(full_path_)) {
+  if (!drive::util::IsUnderDriveMountPoint(full_path_)) {
     // If the file is not on drive, we have to only grant permission for the
     // file's virtual path.
     OnGotPermissionsToGrant();
@@ -395,7 +395,7 @@ void FileHandlerSelectFileFunction::GrantPermissions() {
   scoped_ptr<std::vector<FilePath> > gdata_paths(new std::vector<FilePath>());
   gdata_paths->push_back(virtual_path_);
 
-  gdata::util::InsertDriveCachePathsPermissions(
+  drive::util::InsertDriveCachePathsPermissions(
       profile(),
       gdata_paths.Pass(),
       &permissions_to_grant_,

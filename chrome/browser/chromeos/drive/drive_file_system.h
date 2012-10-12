@@ -26,8 +26,11 @@ class SequencedTaskRunner;
 }
 
 namespace gdata {
-
 class DocumentFeed;
+}
+
+namespace drive {
+
 class DriveFileSystemObserver;
 class DriveFunctionRemove;
 class DriveResourceMetadata;
@@ -103,11 +106,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void GetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const GetContentCallback& get_content_callback) OVERRIDE;
+      const gdata::GetContentCallback& get_content_callback) OVERRIDE;
   virtual void GetFileByResourceId(
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
-      const GetContentCallback& get_content_callback) OVERRIDE;
+      const gdata::GetContentCallback& get_content_callback) OVERRIDE;
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
       const FileOperationCallback& callback) OVERRIDE;
@@ -121,15 +124,15 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FilePath& directory_path) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
-  virtual void AddUploadedFile(UploadMode upload_mode,
+  virtual void AddUploadedFile(gdata::UploadMode upload_mode,
                                const FilePath& directory_path,
-                               scoped_ptr<DocumentEntry> doc_entry,
+                               scoped_ptr<gdata::DocumentEntry> doc_entry,
                                const FilePath& file_content_path,
                                DriveCache::FileOperationType cache_operation,
                                const base::Closure& callback) OVERRIDE;
   virtual void UpdateEntryData(const std::string& resource_id,
                                const std::string& md5,
-                               scoped_ptr<DocumentEntry> entry,
+                               scoped_ptr<gdata::DocumentEntry> entry,
                                const FilePath& file_content_path,
                                const base::Closure& callback) OVERRIDE;
 
@@ -152,7 +155,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Used in tests to update the file system from |feed_list|.
   // See also the comment at GDataWapiFeedLoader::UpdateFromFeed().
   DriveFileError UpdateFromFeedForTesting(
-      const ScopedVector<DocumentFeed>& feed_list,
+      const ScopedVector<gdata::DocumentFeed>& feed_list,
       int64 start_changestamp,
       int64 root_feed_changestamp);
 
@@ -317,7 +320,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void OnGetEntryInfoCompleteForGetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const GetContentCallback& get_content_callback,
+      const gdata::GetContentCallback& get_content_callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> file_info);
 
@@ -438,23 +441,23 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| must not be null.
   void OnCopyDocumentCompleted(const FilePath& dir_path,
                                const FileOperationCallback& callback,
-                               GDataErrorCode status,
+                               gdata::GDataErrorCode status,
                                scoped_ptr<base::Value> data);
 
   // Callback for handling account metadata fetch.
   void OnGetAvailableSpace(const GetAvailableSpaceCallback& callback,
-                           GDataErrorCode status,
+                           gdata::GDataErrorCode status,
                            scoped_ptr<base::Value> data);
 
   // Callback for handling Drive V2 about resource fetch.
   void OnGetAboutResource(const GetAvailableSpaceCallback& callback,
-                          GDataErrorCode status,
+                          gdata::GDataErrorCode status,
                           scoped_ptr<base::Value> data);
 
   // Callback for handling directory create requests. Adds the directory
   // represented by |created_entry| to the local filesystem.
   void AddNewDirectory(const CreateDirectoryParams& params,
-                       GDataErrorCode status,
+                       gdata::GDataErrorCode status,
                        scoped_ptr<base::Value> created_entry);
 
   // Callback for DriveResourceMetadata::AddEntryToDirectory. Continues the
@@ -466,7 +469,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Callback for handling file downloading requests.
   void OnFileDownloaded(const GetFileFromCacheParams& params,
-                        GDataErrorCode status,
+                        gdata::GDataErrorCode status,
                         const GURL& content_url,
                         const FilePath& downloaded_file_path);
 
@@ -479,7 +482,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Similar to OnFileDownloaded() but takes |has_enough_space| so we report
   // an error in case we don't have enough disk space.
   void OnFileDownloadedAndSpaceChecked(const GetFileFromCacheParams& params,
-                                       GDataErrorCode status,
+                                       gdata::GDataErrorCode status,
                                        const GURL& content_url,
                                        const FilePath& downloaded_file_path,
                                        bool* has_enough_space);
@@ -496,7 +499,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void MoveEntryToDirectory(const FilePath& file_path,
                             const FilePath& directory_path,
                             const FileMoveCallback& callback,
-                            GDataErrorCode status,
+                            gdata::GDataErrorCode status,
                             const GURL& document_url);
 
   // Callback when an entry is moved to another directory on the client side.
@@ -560,7 +563,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                            DriveFileError error,
                            const FilePath& drive_path,
                            const FilePath& file_path,
-                           scoped_ptr<DocumentEntry> document_entry);
+                           scoped_ptr<gdata::DocumentEntry> document_entry);
 
   // Kicks off file upload once it receives |file_size| and |content_type|.
   void StartFileUploadOnUIThread(const StartFileUploadParams& params,
@@ -592,7 +595,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // file download procedure is started for the file. The file is downloaded
   // from the content url extracted from the fetched metadata.
   void OnGetDocumentEntry(const GetFileFromCacheParams& params,
-                          GDataErrorCode status,
+                          gdata::GDataErrorCode status,
                           scoped_ptr<base::Value> data);
 
   // Check available space using file size from the fetched metadata. Called
@@ -657,7 +660,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void GetResolvedFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const GetContentCallback& get_content_callback,
+      const gdata::GetContentCallback& get_content_callback,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of UpdateFileByResourceId(). Called when
@@ -698,7 +701,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                              DriveFileError error,
                              const FilePath& gdata_path,
                              const FilePath& file_path,
-                             scoped_ptr<DocumentEntry> document_entry);
+                             scoped_ptr<gdata::DocumentEntry> document_entry);
 
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
@@ -728,11 +731,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void GetFileByPathOnUIThread(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const GetContentCallback& get_content_callback);
+      const gdata::GetContentCallback& get_content_callback);
   void GetFileByResourceIdOnUIThread(
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
-      const GetContentCallback& get_content_callback);
+      const gdata::GetContentCallback& get_content_callback);
   void UpdateFileByResourceIdOnUIThread(const std::string& resource_id,
                                         const FileOperationCallback& callback);
   void GetEntryInfoByPathOnUIThread(const FilePath& file_path,
@@ -748,14 +751,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                  scoped_ptr<LoadFeedParams> params,
                                  DriveFileError error);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
-  void AddUploadedFileOnUIThread(UploadMode upload_mode,
+  void AddUploadedFileOnUIThread(gdata::UploadMode upload_mode,
                                  const FilePath& directory_path,
-                                 scoped_ptr<DocumentEntry> doc_entry,
+                                 scoped_ptr<gdata::DocumentEntry> doc_entry,
                                  const FilePath& file_content_path,
                                  DriveCache::FileOperationType cache_operation,
                                  const base::Closure& callback);
   void UpdateEntryDataOnUIThread(const UpdateEntryParams& params,
-                                 scoped_ptr<DocumentEntry> entry);
+                                 scoped_ptr<gdata::DocumentEntry> entry);
 
   // Part of CreateDirectory(). Called after
   // FindFirstMissingParentDirectory() is complete.
@@ -782,7 +785,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |get_content_callback| may be null.
   void GetFileByResourceIdAfterGetEntry(
       const GetFileCallback& get_file_callback,
-      const GetContentCallback& get_content_callback,
+      const gdata::GetContentCallback& get_content_callback,
       DriveFileError error,
       const FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
@@ -881,6 +884,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   base::WeakPtr<DriveFileSystem> ui_weak_ptr_;
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_H_

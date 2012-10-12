@@ -30,7 +30,7 @@ void ContinueSettingUpDriveDownload(
     const FilePath& drive_path,
     const FilePath& drive_tmp_download_path) {
   callback.Run(drive_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
-               base::Bind(&gdata::DriveDownloadObserver::SetDownloadParams,
+               base::Bind(&drive::DriveDownloadObserver::SetDownloadParams,
                           drive_path));
 }
 
@@ -92,13 +92,13 @@ void SavePackageFilePickerChromeOS::FileSelectedWithExtraInfo(
       web_contents()->GetBrowserContext());
   DCHECK(profile);
 
-  if (gdata::util::IsUnderDriveMountPoint(selected_path)) {
+  if (drive::util::IsUnderDriveMountPoint(selected_path)) {
     // Here's a map to the callback chain:
     // GetDriveTempDownloadPath ->
     //   ContinueSettingUpDriveDownload ->
     //     callback_ = SavePackage::OnPathPicked ->
     //       download_created_callback = OnSavePackageDownloadCreated
-    gdata::DriveDownloadObserver::SubstituteDriveDownloadPath(
+    drive::DriveDownloadObserver::SubstituteDriveDownloadPath(
         profile, selected_path, NULL,
         base::Bind(&ContinueSettingUpDriveDownload, callback_, selected_path));
   } else {

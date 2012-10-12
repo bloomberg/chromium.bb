@@ -572,7 +572,7 @@ FileTaskExecutor* FileTaskExecutor::Create(Profile* profile,
                                      action_id);
 
   if (task_type == kTaskDrive)
-    return new gdata::DriveTaskExecutor(profile,
+    return new drive::DriveTaskExecutor(profile,
                                         extension_id,  // really app_id
                                         action_id);
 
@@ -737,7 +737,7 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     FilePath virtual_path = url.virtual_path();
 
     bool is_drive_file = url.type() == fileapi::kFileSystemTypeDrive;
-    DCHECK(!is_drive_file || gdata::util::IsUnderDriveMountPoint(local_path));
+    DCHECK(!is_drive_file || drive::util::IsUnderDriveMountPoint(local_path));
 
     // If the file is under gdata mount point, there is no actual file to be
     // found on the url.path().
@@ -980,7 +980,7 @@ void ExtensionTaskExecutor::InitHandlerHostFileAccessPermissions(
         GetAccessPermissionsForFileBrowserHandler(handler_extension,
                                                   action_id_)));
 
-    if (gdata::util::IsUnderDriveMountPoint(iter->absolute_path))
+    if (drive::util::IsUnderDriveMountPoint(iter->absolute_path))
       gdata_paths->push_back(iter->virtual_path);
   }
 
@@ -992,7 +992,7 @@ void ExtensionTaskExecutor::InitHandlerHostFileAccessPermissions(
 
   // For files on gdata mount point, we'll have to give handler host permissions
   // for their cache paths. This has to be called on UI thread.
-  gdata::util::InsertDriveCachePathsPermissions(profile(),
+  drive::util::InsertDriveCachePathsPermissions(profile(),
                                                 gdata_paths.Pass(),
                                                 &handler_host_permissions_,
                                                 callback);

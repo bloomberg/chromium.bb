@@ -29,7 +29,7 @@ using fileapi::FileSystemURL;
 using fileapi::FileSystemOperation;
 using webkit_blob::ShareableFileReference;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -521,7 +521,7 @@ void DriveFileSystemProxy::OpenFile(
                                              callback,
                                              file_flags,
                                              peer_handle),
-                                  GetContentCallback());
+                                  gdata::GetContentCallback());
     }
   } else if ((file_flags & base::PLATFORM_FILE_CREATE) ||
              (file_flags & base::PLATFORM_FILE_CREATE_ALWAYS)) {
@@ -617,7 +617,7 @@ void DriveFileSystemProxy::OnGetEntryInfoByPath(
                               base::Bind(&CallSnapshotFileCallback,
                                          callback,
                                          file_info),
-                              GetContentCallback());
+                              gdata::GetContentCallback());
 }
 
 void DriveFileSystemProxy::CreateWritableSnapshotFile(
@@ -751,4 +751,4 @@ void DriveFileSystemProxy::CloseWritableSnapshotFile(
                           base::Bind(&EmitDebugLogForCloseFile, virtual_path));
 }
 
-}  // namespace gdata
+}  // namespace drive

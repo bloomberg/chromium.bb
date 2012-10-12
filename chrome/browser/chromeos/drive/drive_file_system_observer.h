@@ -9,7 +9,7 @@
 
 class FilePath;
 
-namespace gdata {
+namespace drive {
 
 // Interface for classes that need to observe events from classes implementing
 // DriveFileSystemInterface.
@@ -47,6 +47,6 @@ class DriveFileSystemObserver {
   virtual ~DriveFileSystemObserver() {}
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_OBSERVER_H_

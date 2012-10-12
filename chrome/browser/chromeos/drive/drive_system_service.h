@@ -17,7 +17,7 @@
 
 class FilePath;
 
-namespace gdata {
+namespace drive {
 
 class DriveCache;
 class DriveDownloadObserver;
@@ -135,6 +135,6 @@ class DriveSystemServiceFactory : public ProfileKeyedServiceFactory {
       Profile* profile) const OVERRIDE;
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYSTEM_SERVICE_H_

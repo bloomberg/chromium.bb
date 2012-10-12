@@ -16,14 +16,16 @@
 class FilePath;
 
 namespace gdata {
-
 class AppList;
+}
+
+namespace drive {
 
 // Data structure that defines WebApp
 struct DriveWebAppInfo {
   DriveWebAppInfo(const std::string& app_id,
-                  const InstalledApp::IconList& app_icons,
-                  const InstalledApp::IconList& document_icons,
+                  const gdata::InstalledApp::IconList& app_icons,
+                  const gdata::InstalledApp::IconList& document_icons,
                   const std::string& web_store_id,
                   const string16& app_name,
                   const string16& object_type,
@@ -34,10 +36,10 @@ struct DriveWebAppInfo {
   std::string app_id;
   // Drive application icon URLs for this app, paired with their size (length of
   // a side in pixels).
-  InstalledApp::IconList app_icons;
+  gdata::InstalledApp::IconList app_icons;
   // Drive document icon URLs for this app, paired with their size (length of
   // a side in pixels).
-  InstalledApp::IconList document_icons;
+  gdata::InstalledApp::IconList document_icons;
   // Web store id/extension id;
   std::string web_store_id;
   // WebApp name.
@@ -66,11 +68,11 @@ class DriveWebAppsRegistryInterface {
 
   // Updates the list of drive-enabled WebApps with freshly fetched account
   // metadata feed.
-  virtual void UpdateFromFeed(const AccountMetadataFeed& metadata) = 0;
+  virtual void UpdateFromFeed(const gdata::AccountMetadataFeed& metadata) = 0;
 
   // Updates the list of drive-enabled WebApps with freshly fetched account
   // metadata feed.
-  virtual void UpdateFromApplicationList(const AppList& applist) = 0;
+  virtual void UpdateFromApplicationList(const gdata::AppList& applist) = 0;
 };
 
 // The production implementation of DriveWebAppsRegistryInterface.
@@ -86,16 +88,18 @@ class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
                                  ScopedVector<DriveWebAppInfo>* apps) OVERRIDE;
   virtual std::set<std::string> GetExtensionsForWebStoreApp(
       const std::string& web_store_id) OVERRIDE;
-  virtual void UpdateFromFeed(const AccountMetadataFeed& metadata) OVERRIDE;
-  virtual void UpdateFromApplicationList(const AppList& applist) OVERRIDE;
+  virtual void UpdateFromFeed(
+      const gdata::AccountMetadataFeed& metadata) OVERRIDE;
+  virtual void UpdateFromApplicationList(
+      const gdata::AppList& applist) OVERRIDE;
 
  private:
   // Defines WebApp application details that are associated with a given
   // file extension or content mimetype.
   struct WebAppFileSelector {
     WebAppFileSelector(const GURL& product_link,
-                       const InstalledApp::IconList& app_icons,
-                       const InstalledApp::IconList& document_icons,
+                       const gdata::InstalledApp::IconList& app_icons,
+                       const gdata::InstalledApp::IconList& document_icons,
                        const string16& object_type,
                        const std::string& app_id,
                        bool is_primary_selector);
@@ -104,10 +108,10 @@ class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
     GURL product_link;
     // Drive application icon URLs for this app, paired with their size (length
     // of a side in pixels).
-    InstalledApp::IconList app_icons;
+    gdata::InstalledApp::IconList app_icons;
     // Drive document icon URLs for this app, paired with their size (length of
     // a side in pixels).
-    InstalledApp::IconList document_icons;
+    gdata::InstalledApp::IconList document_icons;
     // Object (file) type description.
     string16 object_type;
     // Drive app id
@@ -128,14 +132,15 @@ class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
 
   // Helper function for loading web application file |selectors| into
   // corresponding |map|.
-  static void AddAppSelectorList(const GURL& product_link,
-                                 const InstalledApp::IconList& app_icons,
-                                 const InstalledApp::IconList& document_icons,
-                                 const string16& object_type,
-                                 const std::string& app_id,
-                                 bool is_primary_selector,
-                                 const ScopedVector<std::string>& selectors,
-                                 WebAppFileSelectorMap* map);
+  static void AddAppSelectorList(
+      const GURL& product_link,
+      const gdata::InstalledApp::IconList& app_icons,
+      const gdata::InstalledApp::IconList& document_icons,
+      const string16& object_type,
+      const std::string& app_id,
+      bool is_primary_selector,
+      const ScopedVector<std::string>& selectors,
+      WebAppFileSelectorMap* map);
 
   // Finds matching |apps| from |map| based on provided file |selector|.
   void FindWebAppsForSelector(const std::string& selector,
@@ -154,6 +159,6 @@ class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
   DISALLOW_COPY_AND_ASSIGN(DriveWebAppsRegistry);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_WEBAPPS_REGISTRY_H_

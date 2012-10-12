@@ -9,7 +9,7 @@
 
 class FilePath;
 
-namespace gdata {
+namespace drive {
 
 // Interface for classes that need to observe events from GdataWapiFeedLoader.
 // All events are notified on UI thread.
@@ -34,6 +34,6 @@ class GDataWapiFeedLoaderObserver {
   virtual ~GDataWapiFeedLoaderObserver() {}
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_LOADER_OBSERVER_H_

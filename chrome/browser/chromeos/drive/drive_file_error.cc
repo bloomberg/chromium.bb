@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace gdata {
+namespace drive {
 
 base::PlatformFileError DriveFileErrorToPlatformError(DriveFileError error) {
   switch (error) {
@@ -69,4 +69,4 @@ base::PlatformFileError DriveFileErrorToPlatformError(DriveFileError error) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-}  // namespace gdata
+}  // namespace drive

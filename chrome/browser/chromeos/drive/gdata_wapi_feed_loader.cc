@@ -28,7 +28,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -148,12 +148,13 @@ void RunFeedLoadCallback(scoped_ptr<LoadFeedParams> params,
   feed_load_callback.Run(params.Pass(), error);
 }
 
-// Parses a DocumentFeed from |data|.
+// Parses a gdata::DocumentFeed from |data|.
 void ParseFeedOnBlockingPool(
     scoped_ptr<base::Value> data,
-    scoped_ptr<DocumentFeed>* out_current_feed) {
+    scoped_ptr<gdata::DocumentFeed>* out_current_feed) {
   DCHECK(out_current_feed);
-  out_current_feed->reset(DocumentFeed::ExtractAndParse(*data).release());
+  out_current_feed->reset(
+      gdata::DocumentFeed::ExtractAndParse(*data).release());
 }
 
 }  // namespace
@@ -280,7 +281,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
     ContentOrigin initial_origin,
     int64 local_changestamp,
     const FileOperationCallback& callback,
-    GDataErrorCode status,
+    gdata::GDataErrorCode status,
     scoped_ptr<base::Value> feed_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -298,15 +299,15 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
     return;
   }
 
-  scoped_ptr<AccountMetadataFeed> account_metadata;
+  scoped_ptr<gdata::AccountMetadataFeed> account_metadata;
   if (feed_data.get()) {
-    account_metadata = AccountMetadataFeed::CreateFrom(*feed_data);
+    account_metadata = gdata::AccountMetadataFeed::CreateFrom(*feed_data);
 #ifndef NDEBUG
     // Save account metadata feed for analysis.
     const FilePath path =
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
             kAccountMetadataFile);
-    util::PostBlockingPoolSequencedTask(
+    gdata::util::PostBlockingPoolSequencedTask(
         FROM_HERE,
         blocking_task_runner_,
         base::Bind(&SaveFeedOnBlockingPoolForDebugging,
@@ -353,7 +354,7 @@ void GDataWapiFeedLoader::OnGetAboutResource(
     ContentOrigin initial_origin,
     int64 local_changestamp,
     const FileOperationCallback& callback,
-    GDataErrorCode status,
+    gdata::GDataErrorCode status,
     scoped_ptr<base::Value> feed_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -370,9 +371,9 @@ void GDataWapiFeedLoader::OnGetAboutResource(
     return;
   }
 
-  scoped_ptr<AboutResource> about_resource;
+  scoped_ptr<gdata::AboutResource> about_resource;
   if (feed_data.get())
-    about_resource = AboutResource::CreateFrom(*feed_data);
+    about_resource = gdata::AboutResource::CreateFrom(*feed_data);
 
   if (!about_resource.get()) {
     LoadFromServer(params.Pass());
@@ -411,7 +412,7 @@ void GDataWapiFeedLoader::OnGetAboutResource(
 }
 
 void GDataWapiFeedLoader::OnGetApplicationList(
-    GDataErrorCode status,
+    gdata::GDataErrorCode status,
     scoped_ptr<base::Value> json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -420,7 +421,7 @@ void GDataWapiFeedLoader::OnGetApplicationList(
     return;
 
   if (json.get()) {
-    scoped_ptr<AppList> applist(AppList::CreateFrom(*json));
+    scoped_ptr<gdata::AppList> applist(gdata::AppList::CreateFrom(*json));
     if (applist.get()) {
       VLOG(1) << "applist get success";
       webapps_registry_->UpdateFromApplicationList(*applist.get());
@@ -518,7 +519,7 @@ void GDataWapiFeedLoader::OnFeedFromServerLoaded(
 void GDataWapiFeedLoader::OnGetDocuments(
     scoped_ptr<LoadFeedParams> params,
     base::TimeTicks start_time,
-    GDataErrorCode status,
+    gdata::GDataErrorCode status,
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -539,8 +540,9 @@ void GDataWapiFeedLoader::OnGetDocuments(
     return;
   }
 
-  scoped_ptr<DocumentFeed>* current_feed = new scoped_ptr<DocumentFeed>;
-  util::PostBlockingPoolSequencedTaskAndReply(
+  scoped_ptr<gdata::DocumentFeed>* current_feed =
+      new scoped_ptr<gdata::DocumentFeed>;
+  gdata::util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&ParseFeedOnBlockingPool,
@@ -553,9 +555,10 @@ void GDataWapiFeedLoader::OnGetDocuments(
                  base::Owned(current_feed)));
 }
 
-void GDataWapiFeedLoader::OnParseFeed(scoped_ptr<LoadFeedParams> params,
-                                      base::TimeTicks start_time,
-                                      scoped_ptr<DocumentFeed>* current_feed) {
+void GDataWapiFeedLoader::OnParseFeed(
+    scoped_ptr<LoadFeedParams> params,
+    base::TimeTicks start_time,
+    scoped_ptr<gdata::DocumentFeed>* current_feed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(current_feed);
 
@@ -628,7 +631,7 @@ void GDataWapiFeedLoader::OnParseFeed(scoped_ptr<LoadFeedParams> params,
 void GDataWapiFeedLoader::OnGetChangelist(
     scoped_ptr<LoadFeedParams> params,
     base::TimeTicks start_time,
-    GDataErrorCode status,
+    gdata::GDataErrorCode status,
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -650,7 +653,8 @@ void GDataWapiFeedLoader::OnGetChangelist(
   }
 
   GURL next_feed_url;
-  scoped_ptr<ChangeList> current_feed(ChangeList::CreateFrom(*data));
+  scoped_ptr<gdata::ChangeList> current_feed(
+      gdata::ChangeList::CreateFrom(*data));
   if (!current_feed.get()) {
     RunFeedLoadCallback(params.Pass(), DRIVE_FILE_ERROR_FAILED);
     return;
@@ -662,7 +666,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
   std::string file_name =
       base::StringPrintf("DEBUG_changelist_%" PRId64 ".json",
                          params->start_changestamp);
-  util::PostBlockingPoolSequencedTask(
+  gdata::util::PostBlockingPoolSequencedTask(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&SaveFeedOnBlockingPoolForDebugging,
@@ -672,8 +676,8 @@ void GDataWapiFeedLoader::OnGetChangelist(
 #endif
 
   // Add the current feed to the list of collected feeds for this directory.
-  scoped_ptr<DocumentFeed> feed =
-      DocumentFeed::CreateFromChangeList(*current_feed);
+  scoped_ptr<gdata::DocumentFeed> feed =
+      gdata::DocumentFeed::CreateFromChangeList(*current_feed);
   params->feed_list.push_back(feed.release());
 
   // Compute and notify the number of entries fetched so far.
@@ -876,7 +880,7 @@ void GDataWapiFeedLoader::SaveFileSystem() {
     resource_metadata_->SerializeToString(serialized_proto.get());
     resource_metadata_->set_last_serialized(base::Time::Now());
     resource_metadata_->set_serialized_size(serialized_proto->size());
-    util::PostBlockingPoolSequencedTask(
+    gdata::util::PostBlockingPoolSequencedTask(
         FROM_HERE,
         blocking_task_runner_,
         base::Bind(&SaveProtoOnBlockingPool, path,
@@ -885,7 +889,7 @@ void GDataWapiFeedLoader::SaveFileSystem() {
 }
 
 DriveFileError GDataWapiFeedLoader::UpdateFromFeed(
-    const ScopedVector<DocumentFeed>& feed_list,
+    const ScopedVector<gdata::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -914,4 +918,4 @@ DriveFileError GDataWapiFeedLoader::UpdateFromFeed(
   return error;
 }
 
-}  // namespace gdata
+}  // namespace drive

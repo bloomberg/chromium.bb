@@ -7,7 +7,7 @@
 #include "base/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gdata {
+namespace drive {
 namespace util {
 
 TEST(DriveFileSystemUtilTest, IsUnderDriveMountPoint) {
@@ -111,4 +111,4 @@ TEST(DriveFileSystemUtilTest, ParseCacheFilePath) {
 }
 
 }  // namespace util
-}  // namespace gdata
+}  // namespace drive

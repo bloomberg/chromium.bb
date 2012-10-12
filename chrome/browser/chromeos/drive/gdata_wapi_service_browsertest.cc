@@ -16,7 +16,7 @@
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -31,7 +31,7 @@ class GDataTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(gdata_test_server_.Start());
-    service_.reset(new gdata::GDataWapiService);
+    service_.reset(new GDataWapiService);
     service_->Initialize(browser()->profile());
     service_->auth_service_for_testing()->set_access_token_for_testing(
         net::TestServer::kGDataAuthToken);
@@ -47,7 +47,7 @@ class GDataTest : public InProcessBrowserTest {
   }
 
   net::TestServer gdata_test_server_;
-  scoped_ptr<gdata::GDataWapiService> service_;
+  scoped_ptr<GDataWapiService> service_;
 };
 
 // The test callback for GDataWapiService::DownloadFile().
@@ -148,4 +148,4 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
   EXPECT_FALSE(result_data);
 }
 
-}  // namespace gdata
+}  // namespace drive

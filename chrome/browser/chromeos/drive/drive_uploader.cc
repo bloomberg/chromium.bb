@@ -29,7 +29,7 @@ const int kMaxFileOpenTries = 5;
 
 }  // namespace
 
-namespace gdata {
+namespace drive {
 
 DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
   : drive_service_(drive_service),
@@ -60,7 +60,7 @@ int DriveUploader::UploadNewFile(
    DCHECK(!content_type.empty());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
-  upload_file_info->upload_mode = UPLOAD_NEW_FILE;
+  upload_file_info->upload_mode = gdata::UPLOAD_NEW_FILE;
   upload_file_info->initial_upload_location = upload_location;
   upload_file_info->drive_path = drive_file_path;
   upload_file_info->file_path = local_file_path;
@@ -96,7 +96,7 @@ int DriveUploader::StreamExistingFile(
   DCHECK(!content_type.empty());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
-  upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
+  upload_file_info->upload_mode = gdata::UPLOAD_EXISTING_FILE;
   upload_file_info->initial_upload_location = upload_location;
   upload_file_info->drive_path = drive_file_path;
   upload_file_info->file_path = local_file_path;
@@ -120,7 +120,7 @@ int DriveUploader::StartUploadFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
   DCHECK_EQ(upload_file_info->upload_id, -1);
-  DCHECK_NE(UPLOAD_INVALID, upload_file_info->upload_mode);
+  DCHECK_NE(gdata::UPLOAD_INVALID, upload_file_info->upload_mode);
 
   const int upload_id = next_upload_id_++;
   upload_file_info->upload_id = upload_id;
@@ -157,7 +157,7 @@ int DriveUploader::UploadExistingFile(
   DCHECK(!content_type.empty());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
-  upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
+  upload_file_info->upload_mode = gdata::UPLOAD_EXISTING_FILE;
   upload_file_info->initial_upload_location = upload_location;
   upload_file_info->drive_path = drive_file_path;
   upload_file_info->file_path = local_file_path;
@@ -299,7 +299,7 @@ void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
       return;
     }
     drive_service_->InitiateUpload(
-        InitiateUploadParams(upload_file_info->upload_mode,
+        gdata::InitiateUploadParams(upload_file_info->upload_mode,
                              upload_file_info->title,
                              upload_file_info->content_type,
                              upload_file_info->content_length,
@@ -329,7 +329,7 @@ void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
 
 void DriveUploader::OnUploadLocationReceived(
     int upload_id,
-    GDataErrorCode code,
+    gdata::GDataErrorCode code,
     const GURL& upload_location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -340,7 +340,7 @@ void DriveUploader::OnUploadLocationReceived(
   DVLOG(1) << "Got upload location [" << upload_location.spec()
            << "] for [" << upload_file_info->title << "]";
 
-  if (code != HTTP_SUCCESS) {
+  if (code != gdata::HTTP_SUCCESS) {
     // TODO(achuith): Handle error codes from Google Docs server.
     UploadFailed(upload_file_info, DRIVE_FILE_ERROR_ABORT);
     return;
@@ -441,14 +441,14 @@ void DriveUploader::ResumeUpload(int upload_id) {
     return;
 
   drive_service_->ResumeUpload(
-      ResumeUploadParams(upload_file_info->upload_mode,
-                         upload_file_info->start_range,
-                         upload_file_info->end_range,
-                         upload_file_info->content_length,
-                         upload_file_info->content_type,
-                         upload_file_info->buf,
-                         upload_file_info->upload_location,
-                         upload_file_info->drive_path),
+      gdata::ResumeUploadParams(upload_file_info->upload_mode,
+                                upload_file_info->start_range,
+                                upload_file_info->end_range,
+                                upload_file_info->content_length,
+                                upload_file_info->content_type,
+                                upload_file_info->buf,
+                                upload_file_info->upload_location,
+                                upload_file_info->drive_path),
       base::Bind(&DriveUploader::OnResumeUploadResponseReceived,
                  weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id));
@@ -456,17 +456,19 @@ void DriveUploader::ResumeUpload(int upload_id) {
 
 void DriveUploader::OnResumeUploadResponseReceived(
     int upload_id,
-    const ResumeUploadResponse& response,
-    scoped_ptr<DocumentEntry> entry) {
+    const gdata::ResumeUploadResponse& response,
+    scoped_ptr<gdata::DocumentEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
-  const UploadMode upload_mode = upload_file_info->upload_mode;
-  if ((upload_mode == UPLOAD_NEW_FILE && response.code == HTTP_CREATED) ||
-      (upload_mode == UPLOAD_EXISTING_FILE && response.code == HTTP_SUCCESS)) {
+  const gdata::UploadMode upload_mode = upload_file_info->upload_mode;
+  if ((upload_mode == gdata::UPLOAD_NEW_FILE &&
+       response.code == gdata::HTTP_CREATED) ||
+      (upload_mode == gdata::UPLOAD_EXISTING_FILE &&
+       response.code == gdata::HTTP_SUCCESS)) {
     DVLOG(1) << "Successfully created uploaded file=["
              << upload_file_info->title;
 
@@ -488,7 +490,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
   // If code is 308 (RESUME_INCOMPLETE) and range_received is what has been
   // previously uploaded (i.e. = upload_file_info->end_range), proceed to
   // upload the next chunk.
-  if (response.code != HTTP_RESUME_INCOMPLETE ||
+  if (response.code != gdata::HTTP_RESUME_INCOMPLETE ||
       response.start_range_received != 0 ||
       response.end_range_received != upload_file_info->end_range) {
     // TODO(achuith): Handle error cases, e.g.
@@ -500,7 +502,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
                << ", expected end range=" << upload_file_info->end_range;
     UploadFailed(
         upload_file_info,
-        response.code == HTTP_FORBIDDEN ?
+        response.code == gdata::HTTP_FORBIDDEN ?
             DRIVE_FILE_ERROR_NO_SPACE : DRIVE_FILE_ERROR_ABORT);
     return;
   }
@@ -539,7 +541,7 @@ DriveUploader::UploadFileInfo::UploadFileInfo()
     : upload_id(-1),
       file_size(0),
       content_length(0),
-      upload_mode(UPLOAD_INVALID),
+      upload_mode(gdata::UPLOAD_INVALID),
       file_stream(NULL),
       buf_len(0),
       start_range(0),
@@ -568,4 +570,4 @@ std::string DriveUploader::UploadFileInfo::DebugString() const {
          "]";
 }
 
-}  // namespace gdata
+}  // namespace drive

@@ -105,7 +105,7 @@ void GetFreeDiskSpace(const FilePath& home_path,
 
 // Formats |entry| into text.
 std::string FormatEntry(const FilePath& path,
-                        const gdata::DriveEntryProto& entry) {
+                        const drive::DriveEntryProto& entry) {
   using base::StringAppendF;
   using gdata::util::FormatTimeAsString;
 
@@ -119,7 +119,7 @@ std::string FormatEntry(const FilePath& path,
                 entry.parent_resource_id().c_str());
   StringAppendF(&out, "  upload_url: %s\n", entry.upload_url().c_str());
 
-  const gdata::PlatformFileInfoProto& file_info = entry.file_info();
+  const drive::PlatformFileInfoProto& file_info = entry.file_info();
   StringAppendF(&out, "  file_info\n");
   StringAppendF(&out, "    size: %"PRId64"\n", file_info.size());
   StringAppendF(&out, "    is_directory: %d\n", file_info.is_directory());
@@ -140,7 +140,7 @@ std::string FormatEntry(const FilePath& path,
                 FormatTimeAsString(creation_time).c_str());
 
   if (entry.has_file_specific_info()) {
-    const gdata::DriveFileSpecificInfo& file_specific_info =
+    const drive::DriveFileSpecificInfo& file_specific_info =
         entry.file_specific_info();
     StringAppendF(&out, "    thumbnail_url: %s\n",
                   file_specific_info.thumbnail_url().c_str());
@@ -175,7 +175,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   virtual void RegisterMessages() OVERRIDE;
 
   // Returns a DriveSystemService.
-  gdata::DriveSystemService* GetSystemService();
+  drive::DriveSystemService* GetSystemService();
 
   // Called when the page is first loaded.
   void OnPageLoaded(const base::ListValue* args);
@@ -186,9 +186,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Called when ReadDirectoryByPath() is complete.
   void OnReadDirectoryByPath(const FilePath& parent_path,
-                             gdata::DriveFileError error,
+                             drive::DriveFileError error,
                              bool hide_hosted_documents,
-                             scoped_ptr<gdata::DriveEntryProtoVector> entries);
+                             scoped_ptr<drive::DriveEntryProtoVector> entries);
 
   // Called when GetResourceIdsOfAllFilesOnUIThread() is complete.
   void OnGetResourceIdsOfAllFiles(
@@ -197,7 +197,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when GetCacheEntryOnUIThread() is complete.
   void OnGetCacheEntry(const std::string& resource_id,
                        bool success,
-                       const gdata::DriveCacheEntry& cache_entry);
+                       const drive::DriveCacheEntry& cache_entry);
 
   // Called when GetFreeDiskSpace() is complete.
   void OnGetFreeDiskSpace(base::DictionaryValue* local_storage_summary);
@@ -211,7 +211,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Updates the summary about in-flight operations.
   void UpdateInFlightOperations(
-      const gdata::DriveServiceInterface* drive_service);
+      const drive::DriveServiceInterface* drive_service);
 
   // The number of pending ReadDirectoryByPath() calls.
   int num_pending_reads_;
@@ -283,20 +283,20 @@ void DriveInternalsWebUIHandler::RegisterMessages() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-gdata::DriveSystemService* DriveInternalsWebUIHandler::GetSystemService() {
+drive::DriveSystemService* DriveInternalsWebUIHandler::GetSystemService() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  return gdata::DriveSystemServiceFactory::GetForProfile(profile);
+  return drive::DriveSystemServiceFactory::GetForProfile(profile);
 }
 
 void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  gdata::DriveSystemService* system_service = GetSystemService();
+  drive::DriveSystemService* system_service = GetSystemService();
   // |system_service| may be NULL in the guest/incognito mode.
   if (!system_service)
     return;
 
-  gdata::DriveServiceInterface* drive_service = system_service->drive_service();
+  drive::DriveServiceInterface* drive_service = system_service->drive_service();
   DCHECK(drive_service);
 
   // Update the auth status section.
@@ -315,7 +315,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   // Start updating the GCache contents section.
   Profile* profile = Profile::FromWebUI(web_ui());
   const FilePath root_path =
-      gdata::DriveCache::GetCacheRootPath(profile);
+      drive::DriveCache::GetCacheRootPath(profile);
   base::ListValue* gcache_contents = new ListValue;
   base::DictionaryValue* gcache_summary = new DictionaryValue;
   BrowserThread::PostBlockingPoolTaskAndReply(
@@ -354,12 +354,12 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
                                    *gcache_summary);
 
   // Start updating the file system tree section, if we have access token.
-  gdata::DriveSystemService* system_service = GetSystemService();
+  drive::DriveSystemService* system_service = GetSystemService();
   if (!system_service->drive_service()->HasAccessToken())
     return;
 
   // Start rendering the file system tree as text.
-  const FilePath root_path = FilePath(gdata::kDriveRootDirectory);
+  const FilePath root_path = FilePath(drive::kDriveRootDirectory);
   ++num_pending_reads_;
   system_service->file_system()->ReadDirectoryByPath(
       root_path,
@@ -370,16 +370,16 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
 
 void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     const FilePath& parent_path,
-    gdata::DriveFileError error,
+    drive::DriveFileError error,
     bool hide_hosted_documents,
-    scoped_ptr<gdata::DriveEntryProtoVector> entries) {
+    scoped_ptr<drive::DriveEntryProtoVector> entries) {
   --num_pending_reads_;
-  if (error == gdata::DRIVE_FILE_OK) {
+  if (error == drive::DRIVE_FILE_OK) {
     DCHECK(entries.get());
 
     std::string file_system_as_text;
     for (size_t i = 0; i < entries->size(); ++i) {
-      const gdata::DriveEntryProto& entry = (*entries)[i];
+      const drive::DriveEntryProto& entry = (*entries)[i];
       const FilePath current_path = parent_path.Append(
           FilePath::FromUTF8Unsafe(entry.base_name()));
 
@@ -427,7 +427,7 @@ void DriveInternalsWebUIHandler::OnGetResourceIdsOfAllFiles(
 void DriveInternalsWebUIHandler::OnGetCacheEntry(
     const std::string& resource_id,
     bool success,
-    const gdata::DriveCacheEntry& cache_entry) {
+    const drive::DriveCacheEntry& cache_entry) {
   if (!success) {
     LOG(ERROR) << "Failed to get cache entry: " << resource_id;
     return;
@@ -458,19 +458,19 @@ void DriveInternalsWebUIHandler::OnGetFreeDiskSpace(
 void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  gdata::DriveSystemService* system_service = GetSystemService();
+  drive::DriveSystemService* system_service = GetSystemService();
   // |system_service| may be NULL in the guest/incognito mode.
   if (!system_service)
     return;
 
-  gdata::DriveServiceInterface* drive_service = system_service->drive_service();
+  drive::DriveServiceInterface* drive_service = system_service->drive_service();
   DCHECK(drive_service);
 
   UpdateInFlightOperations(drive_service);
 }
 
 void DriveInternalsWebUIHandler::UpdateInFlightOperations(
-    const gdata::DriveServiceInterface* drive_service) {
+    const drive::DriveServiceInterface* drive_service) {
   gdata::OperationProgressStatusList
       progress_status_list = drive_service->GetProgressStatusList();
 

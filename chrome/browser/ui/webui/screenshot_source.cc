@@ -188,9 +188,9 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
 
     FilePath download_path;
     GetScreenshotDirectory(&download_path);
-    if (gdata::util::IsUnderDriveMountPoint(download_path)) {
-      gdata::DriveFileSystemInterface* file_system =
-          gdata::DriveSystemServiceFactory::GetForProfile(
+    if (drive::util::IsUnderDriveMountPoint(download_path)) {
+      drive::DriveFileSystemInterface* file_system =
+          drive::DriveSystemServiceFactory::GetForProfile(
               profile_)->file_system();
       file_system->GetFileByResourceId(
           decoded_filename,
@@ -236,11 +236,11 @@ void ScreenshotSource::SendSavedScreenshot(
 void ScreenshotSource::GetSavedScreenshotCallback(
     const std::string& screenshot_path,
     int request_id,
-    gdata::DriveFileError error,
+    drive::DriveFileError error,
     const FilePath& file,
     const std::string& unused_mime_type,
-    gdata::DriveFileType file_type) {
-  if (error != gdata::DRIVE_FILE_OK || file_type != gdata::REGULAR_FILE) {
+    drive::DriveFileType file_type) {
+  if (error != drive::DRIVE_FILE_OK || file_type != drive::REGULAR_FILE) {
     ScreenshotDataPtr read_bytes(new ScreenshotData);
     CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
     return;

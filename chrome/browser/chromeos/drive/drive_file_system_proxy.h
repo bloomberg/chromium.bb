@@ -12,7 +12,7 @@ namespace fileapi {
 class FileSystemURL;
 }
 
-namespace gdata {
+namespace drive {
 
 class DriveEntryProto;
 class DriveFileSystemInterface;

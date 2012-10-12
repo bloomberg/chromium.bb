@@ -23,7 +23,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 namespace {
 
 const FilePath::CharType kDriveCacheVersionDir[] = FILE_PATH_LITERAL("v1");
@@ -1627,4 +1627,4 @@ void SetFreeDiskSpaceGetterForTesting(FreeDiskSpaceGetterInterface* getter) {
   global_free_disk_getter_for_testing = getter;
 }
 
-}  // namespace gdata
+}  // namespace drive

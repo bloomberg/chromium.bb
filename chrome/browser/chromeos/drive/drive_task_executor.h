@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
-namespace gdata {
+namespace drive {
 
 class DriveEntryProto;
 
@@ -40,7 +40,7 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
   void OnFileEntryFetched(DriveFileError error,
                           scoped_ptr<DriveEntryProto> entry_proto);
   void OnAppAuthorized(const std::string& resource_id,
-                       GDataErrorCode error,
+                       gdata::GDataErrorCode error,
                        scoped_ptr<base::Value> feed_data);
 
   // Calls |done_| with |success| status.
@@ -52,6 +52,6 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
   file_handler_util::FileTaskFinishedCallback done_;
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TASK_EXECUTOR_H_

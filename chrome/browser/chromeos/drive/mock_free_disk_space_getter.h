@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace gdata {
+namespace drive {
 
 class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
    public:
@@ -17,6 +17,6 @@ class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
      MOCK_CONST_METHOD0(AmountOfFreeDiskSpace, int64());
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_FREE_DISK_SPACE_GETTER_H_

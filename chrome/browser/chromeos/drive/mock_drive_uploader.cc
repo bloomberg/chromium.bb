@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/mock_drive_uploader.h"
 
-namespace gdata {
+namespace drive {
 
 MockDriveUploader::MockDriveUploader() {
 }
@@ -12,4 +12,4 @@ MockDriveUploader::MockDriveUploader() {
 MockDriveUploader::~MockDriveUploader() {
 }
 
-}   // namespace gdata
+}   // namespace drive

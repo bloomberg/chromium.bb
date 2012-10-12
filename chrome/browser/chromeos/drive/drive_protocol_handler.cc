@@ -38,7 +38,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -153,7 +153,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // For detailed description of logic, refer to comments in definitions of
   // Start() and ReadRawData().
 
-  void OnUrlFetchDownloadData(GDataErrorCode error,
+  void OnUrlFetchDownloadData(gdata::GDataErrorCode error,
                               scoped_ptr<std::string> download_data);
   // Called from ReadRawData, returns true if data is ready, false otherwise.
   bool ContinueReadFromDownloadData(int* bytes_read);
@@ -261,7 +261,7 @@ void DriveURLRequestJob::Start() {
   // 5) Find file from file system to get its mime type, drive file path and
   //    size of physical file.
   // 6) Get file from file system asynchronously with both GetFileCallback and
-  //    GetContentCallback - this would either get it from cache or
+  //    gdata::GetContentCallback - this would either get it from cache or
   //    download it from Drive.
   // 7) If file is downloaded from Drive:
   //    7.1) Whenever net::URLFetcherCore::OnReadCompleted() receives a part
@@ -271,9 +271,9 @@ void DriveURLRequestJob::Start() {
   //    7.2) gdata::DownloadFileOperation overrides the default implementations
   //         of the following methods of net::URLFetcherDelegate:
   //         - ShouldSendDownloadData(): returns true for non-null
-  //                                     GetContentCallback.
+  //                                     gdata::GetContentCallback.
   //         - OnURLFetchDownloadData(): invokes non-null
-  //                                     GetContentCallback
+  //                                     gdata::GetContentCallback
   //    7.3) DriveProtolHandler::OnURLFetchDownloadData (i.e. this class)
   //         is at the end of the invocation chain and actually implements the
   //         method.
@@ -537,7 +537,7 @@ void DriveURLRequestJob::OnGetEntryInfoByResourceId(
 }
 
 void DriveURLRequestJob::OnUrlFetchDownloadData(
-    GDataErrorCode error,
+    gdata::GDataErrorCode error,
     scoped_ptr<std::string> download_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -940,4 +940,4 @@ net::URLRequestJob* DriveProtocolHandler::MaybeCreateJob(
   return new DriveURLRequestJob(request, network_delegate);
 }
 
-}  // namespace gdata
+}  // namespace drive

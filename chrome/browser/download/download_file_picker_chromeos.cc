@@ -25,9 +25,9 @@ void DownloadFilePickerChromeOS::InitSuggestedPath(DownloadItem* item,
                                                    const FilePath& path) {
   // For Drive downloads, |path| is the virtual gdata path instead of the
   // temporary local one.
-  if (gdata::DriveDownloadObserver::IsDriveDownload(item)) {
-    set_suggested_path(gdata::util::GetSpecialRemoteRootPath().Append(
-        gdata::DriveDownloadObserver::GetDrivePath(item)));
+  if (drive::DriveDownloadObserver::IsDriveDownload(item)) {
+    set_suggested_path(drive::util::GetSpecialRemoteRootPath().Append(
+        drive::DriveDownloadObserver::GetDrivePath(item)));
   } else {
     DownloadFilePicker::InitSuggestedPath(item, path);
   }
@@ -55,7 +55,7 @@ void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
 
   if (download_manager_) {
     DownloadItem* download = download_manager_->GetDownload(download_id_);
-    gdata::DriveDownloadObserver::SubstituteDriveDownloadPath(
+    drive::DriveDownloadObserver::SubstituteDriveDownloadPath(
         NULL, path, download,
         base::Bind(&DownloadFilePickerChromeOS::OnFileSelected,
                    base::Unretained(this)));

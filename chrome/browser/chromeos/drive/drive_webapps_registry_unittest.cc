@@ -23,7 +23,7 @@ using base::Value;
 using base::DictionaryValue;
 using base::ListValue;
 
-namespace gdata {
+namespace drive {
 
 class DriveWebAppsRegistryTest : public testing::Test {
  protected:
@@ -76,7 +76,7 @@ class DriveWebAppsRegistryTest : public testing::Test {
 
 TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
   scoped_ptr<Value> document =
-      test_util::LoadJSONFile("gdata/account_metadata.json");
+      gdata::test_util::LoadJSONFile("gdata/account_metadata.json");
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
   DictionaryValue* entry_value;
@@ -85,8 +85,8 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
   ASSERT_TRUE(entry_value);
 
   // Load feed.
-  scoped_ptr<AccountMetadataFeed> feed(
-      AccountMetadataFeed::CreateFrom(*document));
+  scoped_ptr<gdata::AccountMetadataFeed> feed(
+      gdata::AccountMetadataFeed::CreateFrom(*document));
   ASSERT_TRUE(feed.get());
   scoped_ptr<DriveWebAppsRegistry> web_apps(new DriveWebAppsRegistry);
   web_apps->UpdateFromFeed(*feed.get());
@@ -124,12 +124,13 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
 }
 
 TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
-  scoped_ptr<Value> document = test_util::LoadJSONFile("drive/applist.json");
+  scoped_ptr<Value> document =
+      gdata::test_util::LoadJSONFile("drive/applist.json");
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
 
   // Load feed.
-  scoped_ptr<AppList> app_list(AppList::CreateFrom(*document));
+  scoped_ptr<gdata::AppList> app_list(gdata::AppList::CreateFrom(*document));
   ASSERT_TRUE(app_list.get());
   scoped_ptr<DriveWebAppsRegistry> web_apps(new DriveWebAppsRegistry);
   web_apps->UpdateFromApplicationList(*app_list.get());
@@ -158,4 +159,4 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
             "Drive app 1", "", false);
 }
 
-}  // namespace gdata
+}  // namespace drive

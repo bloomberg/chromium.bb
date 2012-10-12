@@ -34,7 +34,7 @@
 using content::BrowserContext;
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 namespace {
 
 // Used in test to setup system service.
@@ -126,7 +126,7 @@ void DriveSystemService::Shutdown() {
 bool DriveSystemService::IsDriveEnabled(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!AuthService::CanAuthenticate(profile))
+  if (!gdata::AuthService::CanAuthenticate(profile))
     return false;
 
   // Disable gdata if preference is set.  This can happen with commandline flag
@@ -170,7 +170,7 @@ void DriveSystemService::AddDriveMountPoint() {
   if (!IsDriveEnabled(profile_))
     return;
 
-  const FilePath mount_point = gdata::util::GetDriveMountPointPath();
+  const FilePath mount_point = util::GetDriveMountPointPath();
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetDefaultStoragePartition(profile_)->
           GetFileSystemContext()->external_provider();
@@ -187,7 +187,7 @@ void DriveSystemService::RemoveDriveMountPoint() {
   file_system_->NotifyFileSystemToBeUnmounted();
   file_system_->StopUpdates();
 
-  const FilePath mount_point = gdata::util::GetDriveMountPointPath();
+  const FilePath mount_point = util::GetDriveMountPointPath();
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetDefaultStoragePartition(profile_)->
           GetFileSystemContext()->external_provider();
@@ -208,7 +208,7 @@ void DriveSystemService::OnCacheInitialized(bool success) {
     // dependency problem. We should move this code to DisableDrive() once
     // the dependency problem is solved. crbug.com/153962
     PrefService* pref_service = profile_->GetPrefs();
-    if (gdata::util::IsUnderDriveMountPoint(
+    if (util::IsUnderDriveMountPoint(
             pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
       pref_service->SetFilePath(prefs::kDownloadDefaultDirectory,
                                 download_util::GetDefaultDownloadDirectory());
@@ -280,7 +280,7 @@ ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
   DriveServiceInterface* drive_service = g_test_drive_service;
   g_test_drive_service = NULL;
   if (!drive_service) {
-    if (util::IsDriveV2ApiEnabled())
+    if (gdata::util::IsDriveV2ApiEnabled())
       drive_service = new DriveAPIService();
     else
       drive_service = new GDataWapiService();
@@ -296,4 +296,4 @@ ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
   return service;
 }
 
-}  // namespace gdata
+}  // namespace drive

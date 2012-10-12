@@ -76,8 +76,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using gdata::DriveSystemService;
-using gdata::DriveSystemServiceFactory;
+using drive::DriveSystemService;
+using drive::DriveSystemServiceFactory;
 
 namespace chromeos {
 
@@ -151,7 +151,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
-                           public gdata::DriveServiceObserver,
+                           public drive::DriveServiceObserver,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
@@ -1143,7 +1143,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   DriveSystemService* FindDriveSystemService() {
     Profile* profile = ProfileManager::GetDefaultProfile();
-    if (!gdata::DriveSystemService::IsDriveEnabled(profile))
+    if (!drive::DriveSystemService::IsDriveEnabled(profile))
       return NULL;
     return DriveSystemServiceFactory::FindForProfile(profile);
   }

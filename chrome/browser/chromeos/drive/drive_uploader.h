@@ -25,16 +25,19 @@ class DownloadItem;
 }
 
 namespace gdata {
+struct ResumeUploadResponse;
+}
+
+namespace drive {
 
 class MockDriveUploader;
 class DriveServiceInterface;
-struct ResumeUploadResponse;
 
 // Callback to be invoked once the upload has completed.
 typedef base::Callback<void(DriveFileError error,
     const FilePath& drive_path,
     const FilePath& file_path,
-    scoped_ptr<DocumentEntry> document_entry)> UploadCompletionCallback;
+    scoped_ptr<gdata::DocumentEntry> document_entry)> UploadCompletionCallback;
 
 // Callback to be invoked once the upoader is ready to upload.
 typedef base::Callback<void(int32 upload_id)> UploaderReadyCallback;
@@ -147,7 +150,7 @@ class DriveUploader : public DriveUploaderInterface {
     std::string content_type;  // Content-Type of file.
     int64 content_length;  // Header content-Length.
 
-    UploadMode upload_mode;
+    gdata::UploadMode upload_mode;
 
     // Location URL used to get |upload_location| with InitiateUpload.
     GURL initial_upload_location;
@@ -184,7 +187,7 @@ class DriveUploader : public DriveUploaderInterface {
     int num_file_open_tries;  // Number of times we've tried to open this file.
 
     // Will be set once the upload is complete.
-    scoped_ptr<DocumentEntry> entry;
+    scoped_ptr<gdata::DocumentEntry> entry;
 
     // Callback to be invoked once the uploader is ready to upload.
     UploaderReadyCallback ready_callback;
@@ -214,7 +217,7 @@ class DriveUploader : public DriveUploaderInterface {
 
   // DriveService callback for InitiateUpload.
   void OnUploadLocationReceived(int upload_id,
-                                GDataErrorCode code,
+                                gdata::GDataErrorCode code,
                                 const GURL& upload_location);
 
   // Uploads the next chunk of data from the file.
@@ -229,9 +232,10 @@ class DriveUploader : public DriveUploaderInterface {
   void ResumeUpload(int upload_id);
 
   // DriveService callback for ResumeUpload.
-  void OnResumeUploadResponseReceived(int upload_id,
-                                      const ResumeUploadResponse& response,
-                                      scoped_ptr<DocumentEntry> entry);
+  void OnResumeUploadResponseReceived(
+      int upload_id,
+      const gdata::ResumeUploadResponse& response,
+      scoped_ptr<gdata::DocumentEntry> entry);
 
   // Initiate the upload.
   void InitiateUpload(UploadFileInfo* uploader_file_info);
@@ -268,6 +272,6 @@ class DriveUploader : public DriveUploaderInterface {
   DISALLOW_COPY_AND_ASSIGN(DriveUploader);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_UPLOADER_H_

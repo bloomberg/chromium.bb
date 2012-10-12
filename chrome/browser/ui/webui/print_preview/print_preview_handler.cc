@@ -225,9 +225,9 @@ void PrintToPdfCallback(Metafile* metafile, const FilePath& path) {
 
 #ifdef OS_CHROMEOS
 void PrintToPdfCallbackWithCheck(Metafile* metafile,
-                                 gdata::DriveFileError error,
+                                 drive::DriveFileError error,
                                  const FilePath& path) {
-  if (error != gdata::DRIVE_FILE_OK) {
+  if (error != drive::DRIVE_FILE_OK) {
     LOG(ERROR) << "Save to pdf failed to write: " << error;
   } else {
     metafile->SaveTo(path);
@@ -909,7 +909,7 @@ void PrintPreviewHandler::PostPrintToPdfTask(base::RefCountedBytes* data) {
   // PrintToPdfCallback takes ownership of |metafile|.
 #ifdef OS_CHROMEOS
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gdata::util::PrepareWritableFileAndRun(
+  drive::util::PrepareWritableFileAndRun(
       Profile::FromBrowserContext(preview_web_contents()->GetBrowserContext()),
       *print_to_pdf_path_,
       base::Bind(&PrintToPdfCallbackWithCheck, metafile));

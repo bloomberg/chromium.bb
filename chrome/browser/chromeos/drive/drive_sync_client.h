@@ -22,7 +22,7 @@
 class Profile;
 class PrefChangeRegistrar;
 
-namespace gdata {
+namespace drive {
 
 class DriveEntryProto;
 class DriveFileSystemInterface;
@@ -208,6 +208,6 @@ class DriveSyncClient
   DISALLOW_COPY_AND_ASSIGN(DriveSyncClient);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYNC_CLIENT_H_

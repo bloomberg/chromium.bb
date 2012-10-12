@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
-namespace gdata {
+namespace drive {
 
 class DriveDirectory;
 class DriveDirectoryProto;
@@ -40,8 +40,8 @@ class DriveEntry {
   virtual DriveFile* AsDriveFile();
   virtual DriveDirectory* AsDriveDirectory();
 
-  // Initializes from DocumentEntry.
-  virtual void InitFromDocumentEntry(const DocumentEntry& doc);
+  // Initializes from gdata::DocumentEntry.
+  virtual void InitFromDocumentEntry(const gdata::DocumentEntry& doc);
 
   // const versions of AsDriveFile and AsDriveDirectory.
   const DriveFile* AsDriveFileConst() const;
@@ -171,7 +171,7 @@ class DriveFile : public DriveEntry {
   void FromProto(const DriveEntryProto& proto);
   void ToProto(DriveEntryProto* proto) const;
 
-  DriveEntryKind kind() const { return kind_; }
+  gdata::DriveEntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
   const GURL& alternate_url() const { return alternate_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
@@ -190,12 +190,12 @@ class DriveFile : public DriveEntry {
   friend class DriveResourceMetadata;  // For access to ctor.
 
   explicit DriveFile(DriveResourceMetadata* resource_metadata);
-  // Initializes from DocumentEntry.
-  virtual void InitFromDocumentEntry(const DocumentEntry& doc) OVERRIDE;
+  // Initializes from gdata::DocumentEntry.
+  virtual void InitFromDocumentEntry(const gdata::DocumentEntry& doc) OVERRIDE;
 
   virtual DriveFile* AsDriveFile() OVERRIDE;
 
-  DriveEntryKind kind_;  // Not saved in proto.
+  gdata::DriveEntryKind kind_;  // Not saved in proto.
   GURL thumbnail_url_;
   GURL alternate_url_;
   std::string content_mime_type_;
@@ -227,8 +227,8 @@ class DriveDirectory : public DriveEntry {
 
   explicit DriveDirectory(DriveResourceMetadata* resource_metadata);
 
-  // Initializes from DocumentEntry.
-  virtual void InitFromDocumentEntry(const DocumentEntry& doc) OVERRIDE;
+  // Initializes from gdata::DocumentEntry.
+  virtual void InitFromDocumentEntry(const gdata::DocumentEntry& doc) OVERRIDE;
 
   virtual DriveDirectory* AsDriveDirectory() OVERRIDE;
 
@@ -276,6 +276,6 @@ class DriveDirectory : public DriveEntry {
   DISALLOW_COPY_AND_ASSIGN(DriveDirectory);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILES_H_

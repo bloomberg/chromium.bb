@@ -14,7 +14,7 @@
 
 class Profile;
 
-namespace gdata {
+namespace drive {
 
 namespace file_system {
 class RemoveOperation;
@@ -173,6 +173,6 @@ class DriveScheduler
   DISALLOW_COPY_AND_ASSIGN(DriveScheduler);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SCHEDULER_H_

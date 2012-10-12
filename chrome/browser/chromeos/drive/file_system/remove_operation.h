@@ -14,7 +14,7 @@
 class FilePath;
 class GURL;
 
-namespace gdata {
+namespace drive {
 
 class DriveCache;
 class DriveEntryProto;
@@ -53,7 +53,7 @@ class RemoveOperation {
   void RemoveResourceLocally(
       const FileOperationCallback& callback,
       const std::string& resource_id,
-      GDataErrorCode status,
+      gdata::GDataErrorCode status,
       const GURL& /* document_url */);
 
   // Sends notification for directory changes. Notifies of directory changes,
@@ -76,6 +76,6 @@ class RemoveOperation {
 };
 
 }  // namespace file_system
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_REMOVE_OPERATION_H_

@@ -640,7 +640,7 @@ void ProfileIOData::SetUpJobFactoryDefaults(
 #if defined(OS_CHROMEOS)
   if (!is_incognito()) {
     set_protocol = job_factory->SetProtocolHandler(
-        chrome::kDriveScheme, new gdata::DriveProtocolHandler());
+        chrome::kDriveScheme, new drive::DriveProtocolHandler());
     DCHECK(set_protocol);
   }
 #if !defined(GOOGLE_CHROME_BUILD)

@@ -34,7 +34,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 namespace util {
 
 namespace {
@@ -418,23 +418,23 @@ void EnsureDirectoryExists(Profile* profile,
   }
 }
 
-DriveFileError GDataToDriveFileError(GDataErrorCode status) {
+DriveFileError GDataToDriveFileError(gdata::GDataErrorCode status) {
   switch (status) {
-    case HTTP_SUCCESS:
-    case HTTP_CREATED:
+    case gdata::HTTP_SUCCESS:
+    case gdata::HTTP_CREATED:
       return DRIVE_FILE_OK;
-    case HTTP_UNAUTHORIZED:
-    case HTTP_FORBIDDEN:
+    case gdata::HTTP_UNAUTHORIZED:
+    case gdata::HTTP_FORBIDDEN:
       return DRIVE_FILE_ERROR_ACCESS_DENIED;
-    case HTTP_NOT_FOUND:
+    case gdata::HTTP_NOT_FOUND:
       return DRIVE_FILE_ERROR_NOT_FOUND;
-    case GDATA_PARSE_ERROR:
-    case GDATA_FILE_ERROR:
+    case gdata::GDATA_PARSE_ERROR:
+    case gdata::GDATA_FILE_ERROR:
       return DRIVE_FILE_ERROR_ABORT;
-    case GDATA_NO_CONNECTION:
+    case gdata::GDATA_NO_CONNECTION:
       return DRIVE_FILE_ERROR_NO_CONNECTION;
-    case HTTP_SERVICE_UNAVAILABLE:
-    case HTTP_INTERNAL_SERVER_ERROR:
+    case gdata::HTTP_SERVICE_UNAVAILABLE:
+    case gdata::HTTP_INTERNAL_SERVER_ERROR:
       return DRIVE_FILE_ERROR_THROTTLED;
     default:
       return DRIVE_FILE_ERROR_FAILED;
@@ -462,4 +462,4 @@ bool IsConnectionTypeCellular() {
 }
 
 }  // namespace util
-}  // namespace gdata
+}  // namespace drive

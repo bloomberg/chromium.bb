@@ -30,7 +30,7 @@ class FileBrowserNotifications;
 class PrefChangeRegistrar;
 class Profile;
 
-namespace gdata {
+namespace drive {
 class DriveEntryProto;
 class DriveFileSystemInterface;
 }
@@ -42,8 +42,8 @@ class FileBrowserEventRouter
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver,
-      public gdata::DriveFileSystemObserver,
-      public gdata::DriveServiceObserver {
+      public drive::DriveFileSystemObserver,
+      public drive::DriveServiceObserver {
  public:
   // RefcountedProfileKeyedService overrides.
   virtual void ShutdownOnUIThread() OVERRIDE;
@@ -84,12 +84,12 @@ class FileBrowserEventRouter
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // gdata::DriveServiceObserver overrides.
+  // drive::DriveServiceObserver overrides.
   virtual void OnProgressUpdate(
       const gdata::OperationProgressStatusList& list) OVERRIDE;
   virtual void OnAuthenticationFailed(gdata::GDataErrorCode error) OVERRIDE;
 
-  // gdata::DriveFileSystemInterface::Observer overrides.
+  // drive::DriveFileSystemInterface::Observer overrides.
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
   virtual void OnDocumentFeedFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFileSystemMounted() OVERRIDE;
@@ -189,7 +189,7 @@ class FileBrowserEventRouter
                       bool small);
 
   // Returns the DriveFileSystem for the current profile.
-  gdata::DriveFileSystemInterface* GetRemoteFileSystem() const;
+  drive::DriveFileSystemInterface* GetRemoteFileSystem() const;
 
   // Handles requests to start and stop periodic updates on remote file system.
   // When |start| is set to true, this function starts periodic updates only if

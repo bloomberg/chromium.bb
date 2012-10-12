@@ -12,15 +12,15 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gdata {
+namespace drive {
 
 TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
   scoped_ptr<base::Value> value =
-      test_util::LoadJSONFile("gdata/file_entry.json");
+      gdata::test_util::LoadJSONFile("gdata/file_entry.json");
   ASSERT_TRUE(value.get());
 
-  scoped_ptr<DocumentEntry> document_entry(
-      DocumentEntry::ExtractAndParse(*value));
+  scoped_ptr<gdata::DocumentEntry> document_entry(
+      gdata::DocumentEntry::ExtractAndParse(*value));
   ASSERT_TRUE(document_entry.get());
 
   DriveEntryProto entry_proto =
@@ -35,7 +35,7 @@ TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
   EXPECT_EQ("",  entry_proto.parent_resource_id());
 
   EXPECT_FALSE(entry_proto.deleted());
-  EXPECT_EQ(ENTRY_KIND_FILE, entry_proto.kind());
+  EXPECT_EQ(gdata::ENTRY_KIND_FILE, entry_proto.kind());
 
   // 2011-12-14T00:40:47.330Z
   base::Time::Exploded exploded;
@@ -75,11 +75,11 @@ TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
 TEST(DocumentEntryConversionTest,
      ConvertDocumentEntryToDriveEntryProto_HostedDocument) {
   scoped_ptr<base::Value> value =
-      test_util::LoadJSONFile("gdata/hosted_document_entry.json");
+      gdata::test_util::LoadJSONFile("gdata/hosted_document_entry.json");
   ASSERT_TRUE(value.get());
 
-  scoped_ptr<DocumentEntry> document_entry(
-      DocumentEntry::ExtractAndParse(*value));
+  scoped_ptr<gdata::DocumentEntry> document_entry(
+      gdata::DocumentEntry::ExtractAndParse(*value));
   ASSERT_TRUE(document_entry.get());
 
   DriveEntryProto entry_proto =
@@ -94,7 +94,7 @@ TEST(DocumentEntryConversionTest,
   EXPECT_EQ("",  entry_proto.parent_resource_id());
 
   EXPECT_FALSE(entry_proto.deleted());
-  EXPECT_EQ(ENTRY_KIND_DOCUMENT, entry_proto.kind());
+  EXPECT_EQ(gdata::ENTRY_KIND_DOCUMENT, entry_proto.kind());
 
   // 2011-12-12T23:28:52.783Z
   base::Time::Exploded exploded;
@@ -155,11 +155,11 @@ TEST(DocumentEntryConversionTest,
 TEST(DocumentEntryConversionTest,
      ConvertDocumentEntryToDriveEntryProto_Directory) {
   scoped_ptr<base::Value> value =
-      test_util::LoadJSONFile("gdata/directory_entry.json");
+      gdata::test_util::LoadJSONFile("gdata/directory_entry.json");
   ASSERT_TRUE(value.get());
 
-  scoped_ptr<DocumentEntry> document_entry(
-      DocumentEntry::ExtractAndParse(*value));
+  scoped_ptr<gdata::DocumentEntry> document_entry(
+      gdata::DocumentEntry::ExtractAndParse(*value));
   ASSERT_TRUE(document_entry.get());
 
   DriveEntryProto entry_proto =
@@ -176,7 +176,7 @@ TEST(DocumentEntryConversionTest,
   EXPECT_EQ("folder:1_folder_resource_id",  entry_proto.parent_resource_id());
 
   EXPECT_FALSE(entry_proto.deleted());
-  EXPECT_EQ(ENTRY_KIND_FOLDER, entry_proto.kind());
+  EXPECT_EQ(gdata::ENTRY_KIND_FOLDER, entry_proto.kind());
 
   // 2011-04-01T18:34:08.234Z
   base::Time::Exploded exploded;
@@ -230,11 +230,12 @@ TEST(DocumentEntryConversionTest,
 TEST(DocumentEntryConversionTest,
      ConvertDocumentEntryToDriveEntryProto_DeletedHostedDocument) {
   scoped_ptr<base::Value> value =
-      test_util::LoadJSONFile("gdata/deleted_hosted_document_entry.json");
+      gdata::test_util::LoadJSONFile(
+          "gdata/deleted_hosted_document_entry.json");
   ASSERT_TRUE(value.get());
 
-  scoped_ptr<DocumentEntry> document_entry(
-      DocumentEntry::ExtractAndParse(*value));
+  scoped_ptr<gdata::DocumentEntry> document_entry(
+      gdata::DocumentEntry::ExtractAndParse(*value));
   ASSERT_TRUE(document_entry.get());
 
   DriveEntryProto entry_proto =
@@ -249,7 +250,7 @@ TEST(DocumentEntryConversionTest,
   EXPECT_EQ("",  entry_proto.parent_resource_id());
 
   EXPECT_TRUE(entry_proto.deleted());  // The document was deleted.
-  EXPECT_EQ(ENTRY_KIND_DOCUMENT, entry_proto.kind());
+  EXPECT_EQ(gdata::ENTRY_KIND_DOCUMENT, entry_proto.kind());
 
   // 2012-04-10T22:50:55.797Z
   base::Time::Exploded exploded;
@@ -307,4 +308,4 @@ TEST(DocumentEntryConversionTest,
   EXPECT_EQ(0,  entry_proto.file_info().size());
 }
 
-}  // namespace gdata
+}  // namespace drive

@@ -19,15 +19,17 @@ class GURL;
 class Profile;
 
 namespace gdata {
-
 class OperationRunner;
+}
+
+namespace drive {
 
 // This class provides documents feed service calls for Drive V2 API.
 // Details of API call are abstracted in each operation class and this class
 // works as a thin wrapper for the API.
 class DriveAPIService : public DriveServiceInterface,
-                        public AuthServiceObserver,
-                        public OperationRegistryObserver {
+                        public gdata::AuthServiceObserver,
+                        public gdata::OperationRegistryObserver {
  public:
   // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
@@ -41,62 +43,72 @@ class DriveAPIService : public DriveServiceInterface,
   virtual bool CanStartOperation() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual bool CancelForFilePath(const FilePath& file_path) OVERRIDE;
-  virtual OperationProgressStatusList GetProgressStatusList() const OVERRIDE;
-  virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
+  virtual gdata::OperationProgressStatusList GetProgressStatusList()
+      const OVERRIDE;
+  virtual void Authenticate(
+      const gdata::AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual void GetDocuments(const GURL& feed_url,
                             int64 start_changestamp,
                             const std::string& search_query,
                             const std::string& directory_resource_id,
-                            const GetDataCallback& callback) OVERRIDE;
-  virtual void GetDocumentEntry(const std::string& resource_id,
-                                const GetDataCallback& callback) OVERRIDE;
+                            const gdata::GetDataCallback& callback) OVERRIDE;
+  virtual void GetDocumentEntry(
+      const std::string& resource_id,
+      const gdata::GetDataCallback& callback) OVERRIDE;
 
-  virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE;
-  virtual void GetApplicationInfo(const GetDataCallback& callback) OVERRIDE;
-  virtual void DeleteDocument(const GURL& document_url,
-                              const EntryActionCallback& callback) OVERRIDE;
+  virtual void GetAccountMetadata(
+      const gdata::GetDataCallback& callback) OVERRIDE;
+  virtual void GetApplicationInfo(
+      const gdata::GetDataCallback& callback) OVERRIDE;
+  virtual void DeleteDocument(
+      const GURL& document_url,
+      const gdata::EntryActionCallback& callback) OVERRIDE;
   virtual void DownloadDocument(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
       const GURL& content_url,
       DocumentExportFormat format,
-      const DownloadActionCallback& callback) OVERRIDE;
+      const gdata::DownloadActionCallback& callback) OVERRIDE;
   virtual void DownloadFile(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
       const GURL& content_url,
-      const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback) OVERRIDE;
+      const gdata::DownloadActionCallback& download_action_callback,
+      const gdata::GetContentCallback& get_content_callback) OVERRIDE;
   virtual void CopyDocument(const std::string& resource_id,
                             const FilePath::StringType& new_name,
-                            const GetDataCallback& callback) OVERRIDE;
-  virtual void RenameResource(const GURL& document_url,
-                              const FilePath::StringType& new_name,
-                              const EntryActionCallback& callback) OVERRIDE;
+                            const gdata::GetDataCallback& callback) OVERRIDE;
+  virtual void RenameResource(
+      const GURL& document_url,
+      const FilePath::StringType& new_name,
+      const gdata::EntryActionCallback& callback) OVERRIDE;
   virtual void AddResourceToDirectory(
       const GURL& parent_content_url,
       const GURL& resource_url,
-      const EntryActionCallback& callback) OVERRIDE;
+      const gdata::EntryActionCallback& callback) OVERRIDE;
   virtual void RemoveResourceFromDirectory(
       const GURL& parent_content_url,
       const GURL& resource_url,
       const std::string& resource_id,
-      const EntryActionCallback& callback) OVERRIDE;
-  virtual void CreateDirectory(const GURL& parent_content_url,
-                               const FilePath::StringType& directory_name,
-                               const GetDataCallback& callback) OVERRIDE;
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) OVERRIDE;
-  virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) OVERRIDE;
+      const gdata::EntryActionCallback& callback) OVERRIDE;
+  virtual void CreateDirectory(
+      const GURL& parent_content_url,
+      const FilePath::StringType& directory_name,
+      const gdata::GetDataCallback& callback) OVERRIDE;
+  virtual void InitiateUpload(
+      const gdata::InitiateUploadParams& params,
+      const gdata::InitiateUploadCallback& callback) OVERRIDE;
+  virtual void ResumeUpload(
+      const gdata::ResumeUploadParams& params,
+      const gdata::ResumeUploadCallback& callback) OVERRIDE;
   virtual void AuthorizeApp(const GURL& resource_url,
                             const std::string& app_id,
-                            const GetDataCallback& callback) OVERRIDE;
+                            const gdata::GetDataCallback& callback) OVERRIDE;
 
  private:
-  OperationRegistry* operation_registry() const;
+  gdata::OperationRegistry* operation_registry() const;
 
   // Fetches a changelist from |url| with |start_changestamp|, using Drive V2
   // API. If this URL is empty the call will use the default URL. Specify |url|
@@ -106,7 +118,7 @@ class DriveAPIService : public DriveServiceInterface,
   // Upon completion, invokes |callback| with results on calling thread.
   void GetChangelist(const GURL& url,
                      int64 start_changestamp,
-                     const GetDataCallback& callback);
+                     const gdata::GetDataCallback& callback);
 
   // Fetches a filelist from |url| with |search_query|, using Drive V2 API. If
   // this URL is empty the call will use the default URL. Specify |url| when
@@ -115,23 +127,23 @@ class DriveAPIService : public DriveServiceInterface,
   // https://developers.google.com/drive/search-parameters
   void GetFilelist(const GURL& url,
                    const std::string& search_query,
-                   const GetDataCallback& callback);
+                   const gdata::GetDataCallback& callback);
 
   // AuthService::Observer override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   // DriveServiceObserver Overrides
   virtual void OnProgressUpdate(
-      const OperationProgressStatusList& list) OVERRIDE;
-  virtual void OnAuthenticationFailed(GDataErrorCode error) OVERRIDE;
+      const gdata::OperationProgressStatusList& list) OVERRIDE;
+  virtual void OnAuthenticationFailed(gdata::GDataErrorCode error) OVERRIDE;
 
   Profile* profile_;
-  scoped_ptr<OperationRunner> runner_;
+  scoped_ptr<gdata::OperationRunner> runner_;
   ObserverList<DriveServiceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAPIService);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_API_SERVICE_H_

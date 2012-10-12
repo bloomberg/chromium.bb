@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace gdata {
+namespace drive {
 
 // Interface for classes that need to observe events from DriveCache.
 // All events are notified on UI thread.
@@ -28,6 +28,6 @@ class DriveCacheObserver {
   virtual ~DriveCacheObserver() {}
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_CACHE_OBSERVER_H_

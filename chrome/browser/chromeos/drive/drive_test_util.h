@@ -17,7 +17,7 @@ namespace base {
 class Value;
 }
 
-namespace gdata {
+namespace drive {
 
 class DriveCacheEntry;
 class DriveEntryProto;
@@ -105,6 +105,6 @@ void LoadChangeFeed(const std::string& relative_path,
                     int64 root_feed_changestamp);
 
 }  // namespace test_util
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TEST_UTIL_H_

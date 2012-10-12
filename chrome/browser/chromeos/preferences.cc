@@ -470,7 +470,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     }
   }
   if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
-    const bool default_download_to_drive = gdata::util::IsUnderDriveMountPoint(
+    const bool default_download_to_drive = drive::util::IsUnderDriveMountPoint(
         download_default_directory_.GetValue());
     if (pref_name)
       UMA_HISTOGRAM_BOOLEAN(
@@ -631,7 +631,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   // selected and GData is disabled.
   if (!pref_name || *pref_name == prefs::kDisableGData) {
     if (disable_drive_.GetValue()) {
-      if (gdata::util::IsUnderDriveMountPoint(
+      if (drive::util::IsUnderDriveMountPoint(
           download_default_directory_.GetValue())) {
         prefs_->SetFilePath(prefs::kDownloadDefaultDirectory,
                             download_util::GetDefaultDownloadDirectory());

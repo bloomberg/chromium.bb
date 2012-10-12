@@ -26,7 +26,7 @@ namespace fileapi {
 class FileSystemContext;
 }
 
-namespace gdata {
+namespace drive {
 struct SearchResultInfo;
 struct DriveWebAppInfo;
 class DriveWebAppsRegistry;
@@ -133,7 +133,7 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
 
   // Typedef for holding a map from app_id to DriveWebAppInfo so
   // we can look up information on the apps.
-  typedef std::map<std::string, gdata::DriveWebAppInfo*> WebAppInfoMap;
+  typedef std::map<std::string, drive::DriveWebAppInfo*> WebAppInfoMap;
 
   // Look up apps in the registry, and collect applications that match the file
   // paths given. Returns the intersection of all available application ids in
@@ -141,7 +141,7 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
   // info collected in |app_info| so details can be collected later. The caller
   // takes ownership of the pointers in |app_info|.
   static void IntersectAvailableDriveTasks(
-      gdata::DriveWebAppsRegistry* registry,
+      drive::DriveWebAppsRegistry* registry,
       const FileInfoList& file_info_list,
       WebAppInfoMap* app_info,
       std::set<std::string>* available_apps);
@@ -150,7 +150,7 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
   // of |available_apps| and adds Drive tasks to the |result_list| for each of
   // the |available_apps|.  If a default task is set in the result list,
   // then |default_already_set| is set to true.
-  static void CreateDriveTasks(gdata::DriveWebAppsRegistry* registry,
+  static void CreateDriveTasks(drive::DriveWebAppsRegistry* registry,
                                const WebAppInfoMap& app_info,
                                const std::set<std::string>& available_apps,
                                const std::set<std::string>& default_apps,
@@ -332,7 +332,7 @@ class AddMountFunction : public FileBrowserFunction {
   // A callback method to handle the result of SetMountedState.
   void OnMountedStateSet(const std::string& mount_type,
                          const FilePath::StringType& file_name,
-                         gdata::DriveFileError error,
+                         drive::DriveFileError error,
                          const FilePath& file_path);
 };
 
@@ -404,7 +404,7 @@ class GetSizeStatsFunction : public FileBrowserFunction {
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
-  void GetDriveAvailableSpaceCallback(gdata::DriveFileError error,
+  void GetDriveAvailableSpaceCallback(drive::DriveFileError error,
                                       int64 bytes_total,
                                       int64 bytes_used);
 
@@ -473,7 +473,7 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
 // Retrieve property information for multiple files, returning a list of the
 // same length as the input list of file URLs.  If a particular file has an
 // error, then return a dictionary with the key "error" set to the error number
-// (gdata::DriveFileError) for that entry in the returned list.
+// (drive::DriveFileError) for that entry in the returned list.
 class GetDriveFilePropertiesFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFileProperties");
@@ -490,12 +490,12 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
   // file path and update its the properties.
   virtual void DoOperation(const FilePath& file_path,
                            base::DictionaryValue* properties,
-                           scoped_ptr<gdata::DriveEntryProto> entry_proto);
+                           scoped_ptr<drive::DriveEntryProto> entry_proto);
 
   void OnOperationComplete(const FilePath& file_path,
                            base::DictionaryValue* properties,
-                           gdata::DriveFileError error,
-                           scoped_ptr<gdata::DriveEntryProto> entry_proto);
+                           drive::DriveFileError error,
+                           scoped_ptr<drive::DriveEntryProto> entry_proto);
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -506,12 +506,12 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
  private:
   void OnGetFileInfo(const FilePath& file_path,
                      base::DictionaryValue* property_dict,
-                     gdata::DriveFileError error,
-                     scoped_ptr<gdata::DriveEntryProto> entry_proto);
+                     drive::DriveFileError error,
+                     scoped_ptr<drive::DriveEntryProto> entry_proto);
 
   void CacheStateReceived(base::DictionaryValue* property_dict,
                           bool success,
-                          const gdata::DriveCacheEntry& cache_entry);
+                          const drive::DriveCacheEntry& cache_entry);
 
   size_t current_index_;
   base::ListValue* path_list_;
@@ -522,7 +522,7 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
 // properties with the updated cache state.  The returned array is the
 // same length as the input list of file URLs.  If a particular file
 // has an error, then return a dictionary with the key "error" set to
-// the error number (gdata::DriveFileError) for that entry in the
+// the error number (drive::DriveFileError) for that entry in the
 // returned list.
 class PinDriveFileFunction : public GetDriveFilePropertiesFunction {
  public:
@@ -541,13 +541,13 @@ class PinDriveFileFunction : public GetDriveFilePropertiesFunction {
   virtual void DoOperation(
       const FilePath& file_path,
       base::DictionaryValue* properties,
-      scoped_ptr<gdata::DriveEntryProto> entry_proto) OVERRIDE;
+      scoped_ptr<drive::DriveEntryProto> entry_proto) OVERRIDE;
 
   // Callback for SetPinState. Updates properties with error.
   void OnPinStateSet(const FilePath& path,
                      base::DictionaryValue* properties,
-                     scoped_ptr<gdata::DriveEntryProto> entry_proto,
-                     gdata::DriveFileError error,
+                     scoped_ptr<drive::DriveEntryProto> entry_proto,
+                     drive::DriveFileError error,
                      const std::string& resource_id,
                      const std::string& md5);
 
@@ -607,10 +607,10 @@ class GetDriveFilesFunction : public FileBrowserFunction {
 
   // Called by DriveFileSystem::GetFile(). Pops the file from
   // |remaining_drive_paths_|, and calls GetFileOrSendResponse().
-  void OnFileReady(gdata::DriveFileError error,
+  void OnFileReady(drive::DriveFileError error,
                    const FilePath& local_path,
                    const std::string& unused_mime_type,
-                   gdata::DriveFileType file_type);
+                   drive::DriveFileType file_type);
 
   std::queue<FilePath> remaining_drive_paths_;
   ListValue* local_paths_;
@@ -668,7 +668,7 @@ class TransferFileFunction : public FileBrowserFunction {
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   // Helper callback for handling response from DriveFileSystem::TransferFile().
-  void OnTransferCompleted(gdata::DriveFileError error);
+  void OnTransferCompleted(drive::DriveFileError error);
 };
 
 // Read setting value.
@@ -710,9 +710,9 @@ class SearchDriveFunction : public AsyncExtensionFunction {
                           const std::string& file_system_name,
                           const GURL& file_system_url);
   // Callback for gdata::SearchAsync called after file system is opened.
-  void OnSearch(gdata::DriveFileError error,
+  void OnSearch(drive::DriveFileError error,
                 const GURL& next_feed,
-                scoped_ptr<std::vector<gdata::SearchResultInfo> > result_paths);
+                scoped_ptr<std::vector<drive::SearchResultInfo> > result_paths);
 
   // Query for which the search is being performed.
   std::string query_;

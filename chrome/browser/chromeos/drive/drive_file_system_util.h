@@ -18,7 +18,7 @@
 class FilePath;
 class Profile;
 
-namespace gdata {
+namespace drive {
 namespace util {
 
 // Path constants.
@@ -131,12 +131,12 @@ void EnsureDirectoryExists(Profile* profile,
                            const FileOperationCallback& callback);
 
 // Converts GData error code into file platform error code.
-DriveFileError GDataToDriveFileError(GDataErrorCode status);
+DriveFileError GDataToDriveFileError(gdata::GDataErrorCode status);
 
 // Returns true if the curernt network connection is over cellular.
 bool IsConnectionTypeCellular();
 
 }  // namespace util
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_UTIL_H_

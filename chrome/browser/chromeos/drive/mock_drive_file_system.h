@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace gdata {
+namespace drive {
 
 class DriveFileSystemObserver;
 
@@ -70,11 +70,11 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   MOCK_METHOD3(GetFileByPath,
                void(const FilePath& file_path,
                     const GetFileCallback& get_file_callback,
-                    const GetContentCallback& get_content_callback));
+                    const gdata::GetContentCallback& get_content_callback));
   MOCK_METHOD3(GetFileByResourceId,
                void(const std::string& resource_id,
                     const GetFileCallback& get_file_callback,
-                    const GetContentCallback& get_content_callback));
+                    const gdata::GetContentCallback& get_content_callback));
   MOCK_METHOD2(UpdateFileByResourceId,
                void(const std::string& resource_id,
                     const FileOperationCallback& callback));
@@ -88,20 +88,20 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   MOCK_METHOD1(GetAvailableSpace,
                void(const GetAvailableSpaceCallback& callback));
   // This function is not mockable by gmock because scoped_ptr is not supported.
-  virtual void AddUploadedFile(UploadMode upload_mode,
+  virtual void AddUploadedFile(gdata::UploadMode upload_mode,
                                const FilePath& file,
-                               scoped_ptr<DocumentEntry> entry,
+                               scoped_ptr<gdata::DocumentEntry> entry,
                                const FilePath& file_content_path,
                                DriveCache::FileOperationType cache_operation,
                                const base::Closure& callback) OVERRIDE {}
   // This function is not mockable by gmock because scoped_ptr is not supported.
   virtual void UpdateEntryData(const std::string& resource_id,
                                const std::string& md5,
-                               scoped_ptr<DocumentEntry> entry,
+                               scoped_ptr<gdata::DocumentEntry> entry,
                                const FilePath& file_content_path,
                                const base::Closure& callback) OVERRIDE {}
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DRIVE_FILE_SYSTEM_H_

@@ -94,7 +94,7 @@ int DownloadItemModel::PercentComplete() const {
   // For Drive uploads, progress is based on the number of bytes
   // uploaded. Progress is unknown until the upload starts.
   if (IsDriveDownload())
-    return gdata::DriveDownloadObserver::PercentComplete(download_);
+    return drive::DriveDownloadObserver::PercentComplete(download_);
 #endif
   return download_->PercentComplete();
 }
@@ -185,14 +185,14 @@ int64 DownloadItemModel::GetCompletedBytes() const {
 #if defined(OS_CHROMEOS)
   // For Drive downloads, the size is the count of bytes uploaded.
   if (IsDriveDownload())
-    return gdata::DriveDownloadObserver::GetUploadedBytes(download_);
+    return drive::DriveDownloadObserver::GetUploadedBytes(download_);
 #endif
   return download_->GetReceivedBytes();
 }
 
 bool DownloadItemModel::IsDriveDownload() const {
 #if defined(OS_CHROMEOS)
-  return gdata::DriveDownloadObserver::IsDriveDownload(download_);
+  return drive::DriveDownloadObserver::IsDriveDownload(download_);
 #else
   return false;
 #endif

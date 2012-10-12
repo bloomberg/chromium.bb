@@ -10,7 +10,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace gdata {
+namespace drive {
 
 class MockDriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
  public:
@@ -22,10 +22,11 @@ class MockDriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
                                        ScopedVector<DriveWebAppInfo>* apps));
   MOCK_METHOD1(GetExtensionsForWebStoreApp,
                std::set<std::string>(const std::string& web_store_id));
-  MOCK_METHOD1(UpdateFromFeed, void(const AccountMetadataFeed& metadata));
-  MOCK_METHOD1(UpdateFromApplicationList, void(const AppList& applist));
+  MOCK_METHOD1(UpdateFromFeed,
+               void(const gdata::AccountMetadataFeed& metadata));
+  MOCK_METHOD1(UpdateFromApplicationList, void(const gdata::AppList& applist));
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DRIVE_WEB_APPS_REGISTRY_H_

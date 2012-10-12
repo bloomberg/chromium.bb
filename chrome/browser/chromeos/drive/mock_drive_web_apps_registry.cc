@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/mock_drive_web_apps_registry.h"
 
-namespace gdata {
+namespace drive {
 
 MockDriveWebAppsRegistry::MockDriveWebAppsRegistry() {
 }
@@ -12,4 +12,4 @@ MockDriveWebAppsRegistry::MockDriveWebAppsRegistry() {
 MockDriveWebAppsRegistry::~MockDriveWebAppsRegistry() {
 }
 
-}  // namespace gdata
+}  // namespace drive

@@ -7,7 +7,7 @@
 
 #include "net/url_request/url_request_job_factory.h"
 
-namespace gdata {
+namespace drive {
 
 class DriveProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
@@ -19,6 +19,6 @@ class DriveProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       net::NetworkDelegate* network_delegate) const OVERRIDE;
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_PROTOCOL_HANDLER_H_

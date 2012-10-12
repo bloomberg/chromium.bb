@@ -188,7 +188,7 @@ DictionaryValue* ProgessStatusToDictionaryValue(
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   GURL file_url;
   if (file_manager_util::ConvertFileToFileSystemUrl(profile,
-          gdata::util::GetSpecialRemoteRootPath().Append(
+          drive::util::GetSpecialRemoteRootPath().Append(
               FilePath(status.file_path)),
           origin_url,
           &file_url)) {
@@ -235,21 +235,21 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
 // in a new tab with a URL computed based on the |file_type|
 void OnDriveFileFound(Profile* profile,
                       const FilePath& file_path,
-                      gdata::DriveFileType file_type,
-                      gdata::DriveFileError error,
-                      scoped_ptr<gdata::DriveEntryProto> entry_proto) {
+                      drive::DriveFileType file_type,
+                      drive::DriveFileError error,
+                      scoped_ptr<drive::DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = gdata::DRIVE_FILE_ERROR_NOT_FOUND;
+    error = drive::DRIVE_FILE_ERROR_NOT_FOUND;
 
-  if (error == gdata::DRIVE_FILE_OK) {
+  if (error == drive::DRIVE_FILE_OK) {
     GURL page_url;
-    if (file_type == gdata::REGULAR_FILE) {
-      page_url = gdata::util::GetFileResourceUrl(
+    if (file_type == drive::REGULAR_FILE) {
+      page_url = drive::util::GetFileResourceUrl(
           entry_proto->resource_id(),
           entry_proto->base_name());
-    } else if (file_type == gdata::HOSTED_DOCUMENT) {
+    } else if (file_type == drive::HOSTED_DOCUMENT) {
       page_url = GURL(entry_proto->file_specific_info().alternate_url());
     } else {
       NOTREACHED();
@@ -262,11 +262,11 @@ void OnDriveFileFound(Profile* profile,
 
 // Called when a crx file on Drive was downloaded.
 void OnCRXDownloadCallback(Browser* browser,
-                           gdata::DriveFileError error,
+                           drive::DriveFileError error,
                            const FilePath& file,
                            const std::string& unused_mime_type,
-                           gdata::DriveFileType file_type) {
-  if (error != gdata::DRIVE_FILE_OK || file_type != gdata::REGULAR_FILE)
+                           drive::DriveFileType file_type) {
+  if (error != drive::DRIVE_FILE_OK || file_type != drive::REGULAR_FILE)
     return;
   InstallCRX(browser, file);
 }
@@ -674,16 +674,16 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
     GURL page_url = net::FilePathToFileURL(path);
     // Override gdata resource to point to internal handler instead of file:
     // URL.
-    if (gdata::util::GetSpecialRemoteRootPath().IsParent(path)) {
-      gdata::DriveSystemService* system_service =
-          gdata::DriveSystemServiceFactory::GetForProfile(profile);
+    if (drive::util::GetSpecialRemoteRootPath().IsParent(path)) {
+      drive::DriveSystemService* system_service =
+          drive::DriveSystemServiceFactory::GetForProfile(profile);
       if (!system_service)
         return false;
 
       // Open the file once the file is found.
       system_service->file_system()->GetEntryInfoByPath(
-          gdata::util::ExtractDrivePath(path),
-          base::Bind(&OnDriveFileFound, profile, path, gdata::REGULAR_FILE));
+          drive::util::ExtractDrivePath(path),
+          base::Bind(&OnDriveFileFound, profile, path, drive::REGULAR_FILE));
       return true;
     }
     OpenNewTab(page_url, NULL);
@@ -691,17 +691,17 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
   }
 
   if (IsSupportedGDocsExtension(file_extension.data())) {
-    if (gdata::util::GetSpecialRemoteRootPath().IsParent(path)) {
+    if (drive::util::GetSpecialRemoteRootPath().IsParent(path)) {
       // The file is on Google Docs. Get the Docs from the Drive service.
-      gdata::DriveSystemService* system_service =
-          gdata::DriveSystemServiceFactory::GetForProfile(profile);
+      drive::DriveSystemService* system_service =
+          drive::DriveSystemServiceFactory::GetForProfile(profile);
       if (!system_service)
         return false;
 
       system_service->file_system()->GetEntryInfoByPath(
-          gdata::util::ExtractDrivePath(path),
+          drive::util::ExtractDrivePath(path),
           base::Bind(&OnDriveFileFound, profile, path,
-                     gdata::HOSTED_DOCUMENT));
+                     drive::HOSTED_DOCUMENT));
     } else {
       // The file is local (downloaded from an attachment or otherwise copied).
       // Parse the file to extract the Docs url and open this url.
@@ -745,13 +745,13 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
   }
 
   if (IsCRXFile(file_extension.data())) {
-    if (gdata::util::IsUnderDriveMountPoint(path)) {
-      gdata::DriveSystemService* system_service =
-          gdata::DriveSystemServiceFactory::GetForProfile(profile);
+    if (drive::util::IsUnderDriveMountPoint(path)) {
+      drive::DriveSystemService* system_service =
+          drive::DriveSystemServiceFactory::GetForProfile(profile);
       if (!system_service)
         return false;
       system_service->file_system()->GetFileByPath(
-          gdata::util::ExtractDrivePath(path),
+          drive::util::ExtractDrivePath(path),
           base::Bind(&OnCRXDownloadCallback, browser),
           gdata::GetContentCallback());
     } else {

@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -642,4 +642,4 @@ void DriveCacheMetadata::AssertOnSequencedWorkerPool() {
          blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
-}  // namespace gdata
+}  // namespace drive

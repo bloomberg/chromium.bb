@@ -12,14 +12,17 @@
 class GURL;
 
 namespace gdata {
-
 class DocumentEntry;
+}
+
+namespace drive {
+
 class DriveEntryProto;
 
-// Converts a DocumentEntry into a DriveEntryProto.
+// Converts a gdata::DocumentEntry into a DriveEntryProto.
 DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
-    const DocumentEntry& document_entry);
+    const gdata::DocumentEntry& document_entry);
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DOCUMENT_ENTRY_CONVERSION_H_

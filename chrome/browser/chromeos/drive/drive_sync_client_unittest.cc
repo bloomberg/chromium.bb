@@ -34,7 +34,7 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -102,7 +102,7 @@ class DriveSyncClientTest : public testing::Test {
     // client registers itself as observer of NetworkLibrary.
     sync_client_.reset();
     cache_->DestroyOnUIThread();
-    test_util::RunBlockingPoolTask();
+    gdata::test_util::RunBlockingPoolTask();
     mock_network_change_notifier_.reset();
   }
 
@@ -285,7 +285,7 @@ TEST_F(DriveSyncClientTest, StartInitialScan) {
   // Start processing the files in the backlog. This will collect the
   // resource IDs of these files.
   sync_client_->StartProcessingBacklog();
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
 
   // Check the contents of the queue for fetching.
@@ -545,7 +545,7 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   // Start checking the existing pinned files. This will collect the resource
   // IDs of pinned files, with stale local cache files.
   sync_client_->StartCheckingExistingPinnedFiles();
-  test_util::RunBlockingPoolTask();
+  gdata::test_util::RunBlockingPoolTask();
   ASSERT_TRUE(initialization_success);
 
   // Check the contents of the queue for fetching.
@@ -560,4 +560,4 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   ASSERT_TRUE(resource_ids.empty());
 }
 
-}  // namespace gdata
+}  // namespace drive

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
 
-namespace gdata {
+namespace drive {
 
 MockDriveFileSystem::MockDriveFileSystem() {
 }
@@ -12,4 +12,4 @@ MockDriveFileSystem::MockDriveFileSystem() {
 MockDriveFileSystem::~MockDriveFileSystem() {
 }
 
-}  // namespace gdata
+}  // namespace drive

@@ -14,7 +14,7 @@
 class FilePath;
 class GURL;
 
-namespace gdata {
+namespace drive {
 
 class DriveCache;
 class DriveEntryProto;
@@ -79,7 +79,7 @@ class MoveOperation {
   void RenameEntryLocally(const FilePath& file_path,
                           const FilePath::StringType& new_name,
                           const FileMoveCallback& callback,
-                          GDataErrorCode status,
+                          gdata::GDataErrorCode status,
                           const GURL& document_url);
 
   // Removes a file or directory at |file_path| from the current directory if
@@ -121,7 +121,7 @@ class MoveOperation {
   void MoveEntryToDirectory(const FilePath& file_path,
                             const FilePath& directory_path,
                             const FileMoveCallback& callback,
-                            GDataErrorCode status,
+                            gdata::GDataErrorCode status,
                             const GURL& document_url);
 
   // Callback when an entry is moved to another directory on the client side.
@@ -153,6 +153,6 @@ class MoveOperation {
 };
 
 }  // namespace file_system
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_MOVE_OPERATION_H_

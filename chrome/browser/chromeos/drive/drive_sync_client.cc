@@ -20,7 +20,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -169,7 +169,7 @@ void DriveSyncClient::DoSyncLoop() {
         base::Bind(&DriveSyncClient::OnFetchFileComplete,
                    weak_ptr_factory_.GetWeakPtr(),
                    sync_task),
-        GetContentCallback());
+        gdata::GetContentCallback());
   } else if (sync_task.sync_type == UPLOAD) {
     DVLOG(1) << "Uploading " << sync_task.resource_id;
     file_system_->UpdateFileByResourceId(
@@ -435,4 +435,4 @@ void DriveSyncClient::OnConnectionTypeChanged(
     StartSyncLoop();
 }
 
-}  // namespace gdata
+}  // namespace drive

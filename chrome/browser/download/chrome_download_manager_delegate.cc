@@ -326,7 +326,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
 #if defined(OS_CHROMEOS)
   // If there's a Drive upload associated with this download, we wait until that
   // is complete before allowing the download item to complete.
-  if (!gdata::DriveDownloadObserver::IsReadyToComplete(
+  if (!drive::DriveDownloadObserver::IsReadyToComplete(
         item, internal_complete_callback))
     return false;
 #endif
@@ -555,7 +555,7 @@ void ChromeDownloadManagerDelegate::GetSaveDir(BrowserContext* browser_context,
 
   *skip_dir_check = false;
 #if defined(OS_CHROMEOS)
-  *skip_dir_check = gdata::util::IsUnderDriveMountPoint(*website_save_dir);
+  *skip_dir_check = drive::util::IsUnderDriveMountPoint(*website_save_dir);
 #endif
 }
 
@@ -802,7 +802,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   }
 
 #if defined (OS_CHROMEOS)
-  gdata::DriveDownloadObserver::SubstituteDriveDownloadPath(
+  drive::DriveDownloadObserver::SubstituteDriveDownloadPath(
       profile_, suggested_path, download,
       base::Bind(
           &ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback,

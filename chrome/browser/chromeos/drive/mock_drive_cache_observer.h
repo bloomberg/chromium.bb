@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace gdata {
+namespace drive {
 
 // Mock for DriveCache::Observer.
 class MockDriveCacheObserver : public DriveCacheObserver {
@@ -25,6 +25,6 @@ class MockDriveCacheObserver : public DriveCacheObserver {
   MOCK_METHOD1(OnCacheCommitted, void(const std::string& resource_id));
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DRIVE_CACHE_OBSERVER_H_

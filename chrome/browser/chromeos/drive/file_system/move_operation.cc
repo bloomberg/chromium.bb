@@ -14,7 +14,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 namespace file_system {
 
 MoveOperation::MoveOperation(DriveServiceInterface* drive_service,
@@ -178,7 +178,7 @@ void MoveOperation::RenameEntryLocally(
     const FilePath& file_path,
     const FilePath::StringType& new_name,
     const FileMoveCallback& callback,
-    GDataErrorCode status,
+    gdata::GDataErrorCode status,
     const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -330,7 +330,7 @@ void MoveOperation::MoveEntryToDirectory(
     const FilePath& file_path,
     const FilePath& directory_path,
     const FileMoveCallback& callback,
-    GDataErrorCode status,
+    gdata::GDataErrorCode status,
     const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -374,4 +374,4 @@ void MoveOperation::NotifyAndRunFileMoveCallback(
 }
 
 }  // namespace file_system
-}  // namespace gdata
+}  // namespace drive

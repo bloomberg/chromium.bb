@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
 
-namespace gdata {
+namespace drive {
 
 MockDriveCacheObserver::MockDriveCacheObserver() {
 }
@@ -12,4 +12,4 @@ MockDriveCacheObserver::MockDriveCacheObserver() {
 MockDriveCacheObserver::~MockDriveCacheObserver() {
 }
 
-}  // namespace gdata
+}  // namespace drive

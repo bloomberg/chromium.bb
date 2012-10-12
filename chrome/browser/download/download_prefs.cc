@@ -130,8 +130,8 @@ FilePath DownloadPrefs::DownloadPath() const {
   // If the download path is under /drive, and DriveSystemService isn't
   // available (which it isn't for incognito mode, for instance), use the
   // default download directory (/Downloads).
-  if (gdata::util::IsUnderDriveMountPoint(*download_path_) &&
-      !gdata::DriveSystemServiceFactory::GetForProfile(profile_))
+  if (drive::util::IsUnderDriveMountPoint(*download_path_) &&
+      !drive::DriveSystemServiceFactory::GetForProfile(profile_))
     return download_util::GetDefaultDownloadDirectory();
 #endif
   return *download_path_;

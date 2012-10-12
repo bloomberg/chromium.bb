@@ -21,9 +21,12 @@ class SequencedTaskRunner;
 }
 
 namespace gdata {
+class DocumentEntry;
+}
+
+namespace drive {
 
 struct CreateDBParams;
-class DocumentEntry;
 class DriveDirectory;
 class DriveEntry;
 class DriveEntryProto;
@@ -148,8 +151,8 @@ class DriveResourceMetadata {
   ContentOrigin origin() const { return origin_; }
   void set_origin(ContentOrigin value) { origin_ = value; }
 
-  // Creates a DriveEntry from a DocumentEntry.
-  scoped_ptr<DriveEntry> FromDocumentEntry(const DocumentEntry& doc);
+  // Creates a DriveEntry from a gdata::DocumentEntry.
+  scoped_ptr<DriveEntry> FromDocumentEntry(const gdata::DocumentEntry& doc);
 
   // Creates a DriveFile instance.
   scoped_ptr<DriveFile> CreateDriveFile();
@@ -164,7 +167,7 @@ class DriveResourceMetadata {
   // callback asynchronously.
   // |callback| must not be null.
   void AddEntryToDirectory(const FilePath& directory_path,
-                           scoped_ptr<DocumentEntry> doc_entry,
+                           scoped_ptr<gdata::DocumentEntry> doc_entry,
                            const FileMoveCallback& callback);
 
   // Moves entry specified by |file_path| to the directory specified by
@@ -238,7 +241,7 @@ class DriveResourceMetadata {
   // it to the parent of the old entry. For directories, this just returns the
   // existing directory proto. |callback| is run with the error, file path and
   // proto of the entry. |callback| must not be null.
-  void RefreshFile(scoped_ptr<DocumentEntry> doc_entry,
+  void RefreshFile(scoped_ptr<gdata::DocumentEntry> doc_entry,
                    const GetEntryInfoWithFilePathCallback& callback);
 
   // Removes all child files of |directory| and replace with file_map.
@@ -315,6 +318,6 @@ class DriveResourceMetadata {
   DISALLOW_COPY_AND_ASSIGN(DriveResourceMetadata);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_RESOURCE_METADATA_H_

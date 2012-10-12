@@ -12,7 +12,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 
 FeedToFileResourceMapUmaStats::FeedToFileResourceMapUmaStats()
     : num_regular_files(0),
@@ -31,7 +31,7 @@ GDataWapiFeedProcessor::~GDataWapiFeedProcessor() {
 }
 
 DriveFileError GDataWapiFeedProcessor::ApplyFeeds(
-    const ScopedVector<DocumentFeed>& feed_list,
+    const ScopedVector<gdata::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp,
     std::set<FilePath>* changed_dirs) {
@@ -228,7 +228,7 @@ DriveDirectory* GDataWapiFeedProcessor::FindDirectoryForNewEntry(
 }
 
 DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
-    const ScopedVector<DocumentFeed>& feed_list,
+    const ScopedVector<gdata::DocumentFeed>& feed_list,
     FileResourceIdMap* file_map,
     int64* feed_changestamp,
     FeedToFileResourceMapUmaStats* uma_stats) {
@@ -239,13 +239,13 @@ DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
   uma_stats->num_regular_files = 0;
   uma_stats->num_hosted_documents = 0;
   for (size_t i = 0; i < feed_list.size(); ++i) {
-    const DocumentFeed* feed = feed_list[i];
+    const gdata::DocumentFeed* feed = feed_list[i];
 
     // Get upload url from the root feed. Links for all other collections will
     // be handled in GDatadirectory::FromDocumentEntry();
     if (i == 0) {
-      const Link* root_feed_upload_link =
-          feed->GetLinkByType(Link::LINK_RESUMABLE_CREATE_MEDIA);
+      const gdata::Link* root_feed_upload_link =
+          feed->GetLinkByType(gdata::Link::LINK_RESUMABLE_CREATE_MEDIA);
       if (root_feed_upload_link)
         resource_metadata_->root()->set_upload_url(
             root_feed_upload_link->href());
@@ -253,10 +253,10 @@ DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
       DCHECK_GE(*feed_changestamp, 0);
     }
 
-    for (ScopedVector<DocumentEntry>::const_iterator iter =
+    for (ScopedVector<gdata::DocumentEntry>::const_iterator iter =
              feed->entries().begin();
          iter != feed->entries().end(); ++iter) {
-      DocumentEntry* doc = *iter;
+      gdata::DocumentEntry* doc = *iter;
       scoped_ptr<DriveEntry> entry =
           resource_metadata_->FromDocumentEntry(*doc);
       // Some document entries don't map into files (i.e. sites).
@@ -301,4 +301,4 @@ DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
   return error;
 }
 
-}  // namespace gdata
+}  // namespace drive

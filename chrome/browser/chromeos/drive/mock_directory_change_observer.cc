@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 
-namespace gdata {
+namespace drive {
 
 MockDirectoryChangeObserver::MockDirectoryChangeObserver() {
 }
@@ -12,4 +12,4 @@ MockDirectoryChangeObserver::MockDirectoryChangeObserver() {
 MockDirectoryChangeObserver::~MockDirectoryChangeObserver() {
 }
 
-}  // namespace gdata
+}  // namespace drive

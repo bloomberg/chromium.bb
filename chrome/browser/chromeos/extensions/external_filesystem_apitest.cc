@@ -253,13 +253,13 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
     FilePath tmp_dir_path;
     PathService::Get(base::DIR_TEMP, &tmp_dir_path);
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));
-    gdata::DriveSystemServiceFactory::set_cache_root_for_test(
+    drive::DriveSystemServiceFactory::set_cache_root_for_test(
         test_cache_root_.path().value());
 
-    mock_drive_service_ = new gdata::MockDriveService();
+    mock_drive_service_ = new drive::MockDriveService();
 
     // |mock_drive_service_| will eventually get owned by a system service.
-    gdata::DriveSystemServiceFactory::set_drive_service_for_test(
+    drive::DriveSystemServiceFactory::set_drive_service_for_test(
         mock_drive_service_);
 
     ExtensionApiTest::SetUp();
@@ -267,14 +267,14 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
 
   virtual void TearDown() OVERRIDE {
     // Let's make sure we don't leak documents service.
-    gdata::DriveSystemServiceFactory::set_drive_service_for_test(NULL);
-    gdata::DriveSystemServiceFactory::set_cache_root_for_test(std::string());
+    drive::DriveSystemServiceFactory::set_drive_service_for_test(NULL);
+    drive::DriveSystemServiceFactory::set_cache_root_for_test(std::string());
     ExtensionApiTest::TearDown();
   }
 
  protected:
   ScopedTempDir test_cache_root_;
-  gdata::MockDriveService* mock_drive_service_;
+  drive::MockDriveService* mock_drive_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {

@@ -13,7 +13,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace drive {
 
 namespace {
 
@@ -21,7 +21,7 @@ namespace {
 void EmitErrorLog(DriveFileError error,
                   const std::string& resource_id,
                   const std::string& md5) {
-  if (error != gdata::DRIVE_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     LOG(WARNING) << "Failed to remove a stale cache file. resource_id:"
                  << resource_id;
   }
@@ -45,7 +45,7 @@ StaleCacheFilesRemover::~StaleCacheFilesRemover() {
 void StaleCacheFilesRemover::OnInitialLoadFinished(DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const FilePath root_path = FilePath(gdata::kDriveRootDirectory);
+  const FilePath root_path = FilePath(kDriveRootDirectory);
   cache_->GetResourceIdsOfAllFilesOnUIThread(
       base::Bind(&StaleCacheFilesRemover::OnGetResourceIdsOfAllFiles,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -70,7 +70,7 @@ void StaleCacheFilesRemover::OnGetResourceIdsOfAllFiles(
 void StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary(
     const std::string& resource_id,
     bool success,
-    const gdata::DriveCacheEntry& cache_entry) {
+    const DriveCacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Removes the cache if GetCacheEntryOnUIThread() failed.
@@ -92,11 +92,11 @@ void StaleCacheFilesRemover::RemoveCacheIfNecessary(
     const std::string& cache_md5,
     DriveFileError error,
     const FilePath& drive_file_path,
-    scoped_ptr<gdata::DriveEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // The entry is not found in the file system.
-  if (error != gdata::DRIVE_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     cache_->RemoveOnUIThread(resource_id, base::Bind(&EmitErrorLog));
     return;
   }
@@ -110,4 +110,4 @@ void StaleCacheFilesRemover::RemoveCacheIfNecessary(
   }
 }
 
-}  // namespace gdata
+}  // namespace drive

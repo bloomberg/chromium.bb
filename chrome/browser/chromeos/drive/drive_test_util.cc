@@ -10,7 +10,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gdata {
+namespace drive {
 namespace test_util {
 
 DriveCacheEntry ToCacheEntry(int cache_state) {
@@ -108,13 +108,13 @@ void LoadChangeFeed(const std::string& relative_path,
                     int64 start_changestamp,
                     int64 root_feed_changestamp) {
   std::string error;
-  scoped_ptr<Value> document = test_util::LoadJSONFile(relative_path);
+  scoped_ptr<Value> document = gdata::test_util::LoadJSONFile(relative_path);
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
-  scoped_ptr<DocumentFeed> document_feed(
-      DocumentFeed::ExtractAndParse(*document));
+  scoped_ptr<gdata::DocumentFeed> document_feed(
+      gdata::DocumentFeed::ExtractAndParse(*document));
   ASSERT_TRUE(document_feed.get());
-  ScopedVector<DocumentFeed> feed_list;
+  ScopedVector<gdata::DocumentFeed> feed_list;
   feed_list.push_back(document_feed.release());
 
   GURL unused;
@@ -126,4 +126,4 @@ void LoadChangeFeed(const std::string& relative_path,
 }
 
 }  // namespace test_util
-}  // namespace gdata
+}  // namespace drive

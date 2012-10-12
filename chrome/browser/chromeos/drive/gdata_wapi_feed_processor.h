@@ -14,7 +14,7 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
-namespace gdata {
+namespace drive {
 
 class DriveDirectory;
 class DriveEntry;
@@ -46,8 +46,8 @@ class GDataWapiFeedProcessor {
   //
   // In the case of processing the root feeds |root_feed_changestamp| is used
   // as its initial changestamp value. The value comes from
-  // AccountMetadataFeed.
-  DriveFileError ApplyFeeds(const ScopedVector<DocumentFeed>& feed_list,
+  // gdata::AccountMetadataFeed.
+  DriveFileError ApplyFeeds(const ScopedVector<gdata::DocumentFeed>& feed_list,
                             int64 start_changestamp,
                             int64 root_feed_changestamp,
                             std::set<FilePath>* changed_dirs);
@@ -55,7 +55,7 @@ class GDataWapiFeedProcessor {
   // Converts list of document feeds from collected feeds into
   // FileResourceIdMap.
   DriveFileError FeedToFileResourceMap(
-    const ScopedVector<DocumentFeed>& feed_list,
+    const ScopedVector<gdata::DocumentFeed>& feed_list,
     FileResourceIdMap* file_map,
     int64* feed_changestamp,
     FeedToFileResourceMapUmaStats* uma_stats);
@@ -104,6 +104,6 @@ class GDataWapiFeedProcessor {
   DISALLOW_COPY_AND_ASSIGN(GDataWapiFeedProcessor);
 };
 
-}  // namespace gdata
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_PROCESSOR_H_
