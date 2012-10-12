@@ -316,6 +316,7 @@ string16 AppListController::GetAppModelId() {
 }
 
 void AppListController::CheckTaskbarOrViewHasFocus() {
+#if !defined(USE_AURA)
   // Don't bother checking if the view has been closed.
   if (!current_view_)
     return;
@@ -343,6 +344,7 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
   // If we get here, the focused window is not the taskbar, it's context menu,
   // or the app list, so close the app list.
   CloseAppList();
+#endif !defined(USE_AURA)
 }
 
 }  // namespace
