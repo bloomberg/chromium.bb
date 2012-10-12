@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/pickle.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/file_descriptor_info.h"
@@ -47,8 +48,14 @@ class CONTENT_EXPORT ZygoteHostImpl : public content::ZygoteHost {
 
  private:
   friend struct DefaultSingletonTraits<ZygoteHostImpl>;
+
   ZygoteHostImpl();
   virtual ~ZygoteHostImpl();
+
+  // Sends |data| to the zygote via |control_fd_|.  If |fds| is non-NULL, the
+  // included file descriptors will also be passed.  The caller is responsible
+  // for acquiring |control_lock_|.
+  bool SendMessage(const Pickle& data, const std::vector<int>* fds);
 
   ssize_t ReadReply(void* buf, size_t buflen);
 

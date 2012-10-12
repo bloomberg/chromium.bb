@@ -20,7 +20,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/pickle.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
@@ -161,8 +160,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   if (using_suid_sandbox_) {
     dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
     CHECK(dummy_fd >= 0);
-    fds_to_map.push_back(std::make_pair(dummy_fd,
-                                        content::kZygoteIdFd));
+    fds_to_map.push_back(std::make_pair(dummy_fd, content::kZygoteIdFd));
   }
 
   base::ProcessHandle process = -1;
@@ -217,11 +215,24 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 
   Pickle pickle;
   pickle.WriteInt(content::kZygoteCommandGetSandboxStatus);
-  std::vector<int> empty_fds;
-  if (!UnixDomainSocket::SendMsg(control_fd_, pickle.data(), pickle.size(),
-                                 empty_fds))
+  if (!SendMessage(pickle, NULL))
     LOG(FATAL) << "Cannot communicate with zygote";
   // We don't wait for the reply. We'll read it in ReadReply.
+}
+
+bool ZygoteHostImpl::SendMessage(const Pickle& data,
+                                 const std::vector<int>* fds) {
+  CHECK(data.size() <= content::kZygoteMaxMessageLength)
+      << "Trying to send too-large message to zygote (sending " << data.size()
+      << " bytes, max is " << content::kZygoteMaxMessageLength << ")";
+  CHECK(!fds || fds->size() <= UnixDomainSocket::kMaxFileDescriptors)
+      << "Trying to send message with too many file descriptors to zygote "
+      << "(sending " << fds->size() << ", max is "
+      << UnixDomainSocket::kMaxFileDescriptors << ")";
+
+  return UnixDomainSocket::SendMsg(control_fd_,
+                                   data.data(), data.size(),
+                                   fds ? *fds : std::vector<int>());
 }
 
 ssize_t ZygoteHostImpl::ReadReply(void* buf, size_t buf_len) {
@@ -276,8 +287,7 @@ pid_t ZygoteHostImpl::ForkRequest(
   pid_t pid;
   {
     base::AutoLock lock(control_lock_);
-    if (!UnixDomainSocket::SendMsg(control_fd_, pickle.data(), pickle.size(),
-                                   fds))
+    if (!SendMessage(pickle, &fds))
       return base::kNullProcessHandle;
 
     // Read the reply, which pickles the PID and an optional UMA enumeration.
@@ -438,9 +448,8 @@ void ZygoteHostImpl::EnsureProcessTerminated(pid_t process) {
 
   pickle.WriteInt(content::kZygoteCommandReap);
   pickle.WriteInt(process);
-
-  if (HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size())) < 0)
-    PLOG(ERROR) << "write";
+  if (!SendMessage(pickle, NULL))
+    LOG(ERROR) << "Failed to send Reap message to zygote";
 }
 
 base::TerminationStatus ZygoteHostImpl::GetTerminationStatus(
@@ -460,9 +469,8 @@ base::TerminationStatus ZygoteHostImpl::GetTerminationStatus(
   ssize_t len;
   {
     base::AutoLock lock(control_lock_);
-    if (HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size())) < 0)
-      PLOG(ERROR) << "write";
-
+    if (!SendMessage(pickle, NULL))
+      LOG(ERROR) << "Failed to send GetTerminationStatus message to zygote";
     len = ReadReply(buf, sizeof(buf));
   }
 

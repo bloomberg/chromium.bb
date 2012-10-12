@@ -128,8 +128,7 @@ bool Zygote::UsingSUIDSandbox() const {
 
 bool Zygote::HandleRequestFromBrowser(int fd) {
   std::vector<int> fds;
-  static const unsigned kMaxMessageLength = 2048;
-  char buf[kMaxMessageLength];
+  char buf[kZygoteMaxMessageLength];
   const ssize_t len = UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
 
   if (len == 0 || (len == -1 && errno == ECONNRESET)) {
