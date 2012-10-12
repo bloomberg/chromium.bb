@@ -8,9 +8,10 @@ from chrome_remote_control import multi_page_benchmark
 from chrome_remote_control import util
 
 class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
-  def MeasurePage(self, _, tab):
+  def MeasurePage(self, _, tab, results):
     if tab.browser.is_content_shell:
-      return {'first_paint_secs': 'unsupported'}
+      results.Add('first_paint', 'seconds', 'unsupported')
+      return
 
     tab.runtime.Execute("""
         window.__rafFired = false;
@@ -22,11 +23,9 @@ class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
 
     first_paint_secs = tab.runtime.Evaluate(
       'window.chrome.loadTimes().firstPaintTime - ' +
-      'window.chrome.loadTimes().startLoadTime')
+      'window.chrome.loadTimes().requestTime')
 
-    return {
-        'first_paint_secs': round(first_paint_secs, 1)
-        }
+    results.Add('first_paint', 'seconds', round(first_paint_secs, 1))
 
 def Main():
   return multi_page_benchmark.Main(FirstPaintTimeBenchmark())

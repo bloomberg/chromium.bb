@@ -8,24 +8,24 @@ from chrome_remote_control import multi_page_benchmark_unittest_base
 from chrome_remote_control import page_set
 
 class BenchThatFails(multi_page_benchmark.MultiPageBenchmark):
-  def MeasurePage(self, page, tab):
+  def MeasurePage(self, page, tab, results):
     raise multi_page_benchmark.MeasurementFailure('Intentional failure.')
 
 class BenchThatHasDefaults(multi_page_benchmark.MultiPageBenchmark):
   def AddOptions(self, parser):
     parser.add_option('-x', dest='x', default=3)
 
-  def MeasurePage(self, page, tab):
+  def MeasurePage(self, page, tab, results):
     assert self.options.x == 3
-    return {'x': 7}
+    results.Add('x', 'ms', 7)
 
 class BenchForBlank(multi_page_benchmark.MultiPageBenchmark):
-  def MeasurePage(self, page, tab):
+  def MeasurePage(self, page, tab, results):
     contents = tab.runtime.Evaluate('document.body.textContent')
     assert contents.strip() == 'Hello world'
 
 class BenchForReplay(multi_page_benchmark.MultiPageBenchmark):
-  def MeasurePage(self, page, tab):
+  def MeasurePage(self, page, tab, results):
     # Web Page Replay returns '404 Not found' if a page is not in the archive.
     contents = tab.runtime.Evaluate('document.body.textContent')
     if '404 Not Found' in contents.strip():
@@ -56,7 +56,7 @@ class MultiPageBenchmarkUnitTest(
     benchmark = BenchThatHasDefaults()
     all_results = self.RunBenchmark(benchmark, ps)
     self.assertEquals(len(all_results.page_results), 1)
-    self.assertEquals(all_results.page_results[0]['results']['x'], 7)
+    self.assertEquals(all_results.page_results[0]['x'], 7)
 
   def testRecordAndReplay(self):
     test_archive = '/tmp/google.wpr'

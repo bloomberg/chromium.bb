@@ -16,8 +16,8 @@ class FirstPaintTimeBenchmarkUnitTest(
     self.assertEqual(0, len(all_results.page_failures))
     self.assertEqual(1, len(all_results.page_results))
 
-    results0 = all_results.page_results[0]['results']
-    if results0['first_paint_secs'] == 'unsupported':
+    results0 = all_results.page_results[0]
+    if results0['first_paint'] == 'unsupported':
       # This test can't run on content_shell.
       return
-    self.assertTrue(results0['first_paint_secs'] > 0)
+    self.assertTrue(results0['first_paint'] > 0)
