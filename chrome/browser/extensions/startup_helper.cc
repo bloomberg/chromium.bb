@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
@@ -21,7 +20,7 @@
 namespace {
 
 void PrintPackExtensionMessage(const std::string& message) {
-  base::StringPrintf("%s\n", message.c_str());
+  printf("%s\n", message.c_str());
 }
 
 }  // namespace
