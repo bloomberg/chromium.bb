@@ -20,5 +20,11 @@ Size ToCeiledSize(const SizeF& size) {
   return Size(w, h);
 }
 
+Size ToRoundedSize(const SizeF& size) {
+  int w = ToRoundedInt(size.width());
+  int h = ToRoundedInt(size.height());
+  return Size(w, h);
+}
+
 }  // namespace gfx
 

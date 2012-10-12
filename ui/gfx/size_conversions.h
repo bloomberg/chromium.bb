@@ -16,6 +16,9 @@ UI_EXPORT Size ToFlooredSize(const SizeF& size);
 // Returns a Size with each component from the input SizeF ceiled.
 UI_EXPORT Size ToCeiledSize(const SizeF& size);
 
+// Returns a Size with each component from the input SizeF rounded.
+UI_EXPORT Size ToRoundedSize(const SizeF& size);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_RECT_CONVERSIONS_H_
