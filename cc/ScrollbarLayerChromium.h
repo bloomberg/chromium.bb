@@ -22,7 +22,7 @@ class CCTextureUpdateQueue;
 
 class ScrollbarLayerChromium : public LayerChromium {
 public:
-    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
     static scoped_refptr<ScrollbarLayerChromium> create(PassOwnPtr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
 

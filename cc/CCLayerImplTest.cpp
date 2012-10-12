@@ -60,7 +60,7 @@ TEST(CCLayerImplTest, verifyLayerChangesAreTrackedProperly)
     DebugScopedSetImplThread setImplThread;
 
     // Create a simple CCLayerImpl tree:
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> root = CCLayerImpl::create(1);
     root->addChild(CCLayerImpl::create(2));
     CCLayerImpl* child = root->children()[0];
     child->addChild(CCLayerImpl::create(3));

@@ -6,8 +6,9 @@
 #define TreeSynchronizer_h
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "cc/scoped_ptr_hash_map.h"
+#include <wtf/HashMap.h>
+#include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -19,18 +20,18 @@ class TreeSynchronizer {
 public:
     // Accepts a LayerChromium tree and returns a reference to a CCLayerImpl tree that duplicates the structure
     // of the LayerChromium tree, reusing the CCLayerImpls in the tree provided by oldCCLayerImplRoot if possible.
-    static scoped_ptr<CCLayerImpl> synchronizeTrees(LayerChromium* layerRoot, scoped_ptr<CCLayerImpl> oldCCLayerImplRoot, CCLayerTreeHostImpl*);
+    static PassOwnPtr<CCLayerImpl> synchronizeTrees(LayerChromium* layerRoot, PassOwnPtr<CCLayerImpl> oldCCLayerImplRoot, CCLayerTreeHostImpl*);
 
 private:
     TreeSynchronizer(); // Not instantiable.
 
-    typedef ScopedPtrHashMap<int, CCLayerImpl> ScopedPtrCCLayerImplMap;
-    typedef base::hash_map<int, CCLayerImpl*> RawPtrCCLayerImplMap;
+    typedef HashMap<int, OwnPtr<CCLayerImpl> > OwnPtrCCLayerImplMap;
+    typedef HashMap<int, CCLayerImpl*> RawPtrCCLayerImplMap;
 
     // Declared as static member functions so they can access functions on LayerChromium as a friend class.
-    static scoped_ptr<CCLayerImpl> reuseOrCreateCCLayerImpl(RawPtrCCLayerImplMap& newLayers, ScopedPtrCCLayerImplMap& oldLayers, LayerChromium*);
-    static void collectExistingCCLayerImplRecursive(ScopedPtrCCLayerImplMap& oldLayers, scoped_ptr<CCLayerImpl>);
-    static scoped_ptr<CCLayerImpl> synchronizeTreeRecursive(RawPtrCCLayerImplMap& newLayers, ScopedPtrCCLayerImplMap& oldLayers, LayerChromium*, CCLayerTreeHostImpl*);
+    static PassOwnPtr<CCLayerImpl> reuseOrCreateCCLayerImpl(RawPtrCCLayerImplMap& newLayers, OwnPtrCCLayerImplMap& oldLayers, LayerChromium*);
+    static void collectExistingCCLayerImplRecursive(OwnPtrCCLayerImplMap& oldLayers, PassOwnPtr<CCLayerImpl>);
+    static PassOwnPtr<CCLayerImpl> synchronizeTreeRecursive(RawPtrCCLayerImplMap& newLayers, OwnPtrCCLayerImplMap& oldLayers, LayerChromium*, CCLayerTreeHostImpl*);
     static void updateScrollbarLayerPointersRecursive(const RawPtrCCLayerImplMap& newLayers, LayerChromium*);
 
     DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);

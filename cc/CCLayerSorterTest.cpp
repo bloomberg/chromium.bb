@@ -203,11 +203,11 @@ TEST(CCLayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     //    - 3 and 4 do not have a 3d z difference, and therefore their relative ordering should be retained.
     //    - 3 and 4 should be re-sorted so they are in front of 1, 2, and 5.
 
-    scoped_ptr<CCLayerImpl> layer1 = CCLayerImpl::create(1);
-    scoped_ptr<CCLayerImpl> layer2 = CCLayerImpl::create(2);
-    scoped_ptr<CCLayerImpl> layer3 = CCLayerImpl::create(3);
-    scoped_ptr<CCLayerImpl> layer4 = CCLayerImpl::create(4);
-    scoped_ptr<CCLayerImpl> layer5 = CCLayerImpl::create(5);
+    OwnPtr<CCLayerImpl> layer1 = CCLayerImpl::create(1);
+    OwnPtr<CCLayerImpl> layer2 = CCLayerImpl::create(2);
+    OwnPtr<CCLayerImpl> layer3 = CCLayerImpl::create(3);
+    OwnPtr<CCLayerImpl> layer4 = CCLayerImpl::create(4);
+    OwnPtr<CCLayerImpl> layer5 = CCLayerImpl::create(5);
 
     WebTransformationMatrix BehindMatrix;
     BehindMatrix.translate3d(0, 0, 2);

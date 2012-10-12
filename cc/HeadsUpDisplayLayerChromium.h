@@ -21,7 +21,7 @@ public:
 
     void setFontAtlas(scoped_ptr<CCFontAtlas>);
 
-    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
     virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
 
 protected:

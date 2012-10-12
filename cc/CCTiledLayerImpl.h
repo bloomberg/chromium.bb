@@ -15,9 +15,9 @@ class DrawableTile;
 
 class CCTiledLayerImpl : public CCLayerImpl {
 public:
-    static scoped_ptr<CCTiledLayerImpl> create(int id)
+    static PassOwnPtr<CCTiledLayerImpl> create(int id)
     {
-        return make_scoped_ptr(new CCTiledLayerImpl(id));
+        return adoptPtr(new CCTiledLayerImpl(id));
     }
     virtual ~CCTiledLayerImpl();
 

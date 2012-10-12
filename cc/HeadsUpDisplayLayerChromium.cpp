@@ -56,9 +56,9 @@ void HeadsUpDisplayLayerChromium::setFontAtlas(scoped_ptr<CCFontAtlas> fontAtlas
     setNeedsCommit();
 }
 
-scoped_ptr<CCLayerImpl> HeadsUpDisplayLayerChromium::createCCLayerImpl()
+PassOwnPtr<CCLayerImpl> HeadsUpDisplayLayerChromium::createCCLayerImpl()
 {
-    return CCHeadsUpDisplayLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
+    return CCHeadsUpDisplayLayerImpl::create(m_layerId);
 }
 
 void HeadsUpDisplayLayerChromium::pushPropertiesTo(CCLayerImpl* layerImpl)

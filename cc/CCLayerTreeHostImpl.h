@@ -174,7 +174,7 @@ public:
 
     void readback(void* pixels, const IntRect&);
 
-    void setRootLayer(scoped_ptr<CCLayerImpl>);
+    void setRootLayer(PassOwnPtr<CCLayerImpl>);
     CCLayerImpl* rootLayer() { return m_rootLayerImpl.get(); }
 
     void setHudLayer(CCHeadsUpDisplayLayerImpl* layerImpl) { m_hudLayerImpl = layerImpl; }
@@ -182,7 +182,7 @@ public:
 
     // Release ownership of the current layer tree and replace it with an empty
     // tree. Returns the root layer of the detached tree.
-    scoped_ptr<CCLayerImpl> detachLayerTree();
+    PassOwnPtr<CCLayerImpl> detachLayerTree();
 
     CCLayerImpl* rootScrollLayer() const { return m_rootScrollLayerImpl; }
 
@@ -307,7 +307,7 @@ private:
     scoped_ptr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
     OwnPtr<CCRenderer> m_renderer;
-    scoped_ptr<CCLayerImpl> m_rootLayerImpl;
+    OwnPtr<CCLayerImpl> m_rootLayerImpl;
     CCLayerImpl* m_rootScrollLayerImpl;
     CCLayerImpl* m_currentlyScrollingLayerImpl;
     CCHeadsUpDisplayLayerImpl* m_hudLayerImpl;

@@ -11,9 +11,9 @@ namespace cc {
 
 class CCTextureLayerImpl : public CCLayerImpl {
 public:
-    static scoped_ptr<CCTextureLayerImpl> create(int id)
+    static PassOwnPtr<CCTextureLayerImpl> create(int id)
     {
-        return make_scoped_ptr(new CCTextureLayerImpl(id));
+        return adoptPtr(new CCTextureLayerImpl(id));
     }
     virtual ~CCTextureLayerImpl();
 

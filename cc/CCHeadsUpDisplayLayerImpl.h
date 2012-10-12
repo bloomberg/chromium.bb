@@ -20,9 +20,9 @@ class CCFrameRateCounter;
 
 class CCHeadsUpDisplayLayerImpl : public CCLayerImpl {
 public:
-    static scoped_ptr<CCHeadsUpDisplayLayerImpl> create(int id)
+    static PassOwnPtr<CCHeadsUpDisplayLayerImpl> create(int id)
     {
-        return make_scoped_ptr(new CCHeadsUpDisplayLayerImpl(id));
+        return adoptPtr(new CCHeadsUpDisplayLayerImpl(id));
     }
     virtual ~CCHeadsUpDisplayLayerImpl();
 

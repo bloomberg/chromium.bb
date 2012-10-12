@@ -19,7 +19,7 @@ class ScrollView;
 
 class CCScrollbarLayerImpl : public CCLayerImpl {
 public:
-    static scoped_ptr<CCScrollbarLayerImpl> create(int id);
+    static PassOwnPtr<CCScrollbarLayerImpl> create(int id);
     virtual ~CCScrollbarLayerImpl();
 
     CCScrollbarGeometryFixedThumb* scrollbarGeometry() const { return m_geometry.get(); }
