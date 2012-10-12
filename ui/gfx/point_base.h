@@ -51,6 +51,10 @@ class UI_EXPORT PointBase {
     return Class((x_ + other.x_) / 2, (y_ + other.y_) / 2);
   }
 
+  bool IsOrigin() const {
+    return x_ == 0 && y_ == 0;
+  }
+
   // A point is less than another point if its y-value is closer
   // to the origin. If the y-values are the same, then point with
   // the x-value closer to the origin is considered less than the

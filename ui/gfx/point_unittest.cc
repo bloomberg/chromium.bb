@@ -28,4 +28,22 @@ TEST(PointTest, ToPointF) {
   EXPECT_EQ(true, equals);
 }
 
+TEST(PointTest, IsOrigin) {
+  EXPECT_FALSE(gfx::Point(1, 0).IsOrigin());
+  EXPECT_FALSE(gfx::Point(0, 1).IsOrigin());
+  EXPECT_FALSE(gfx::Point(1, 2).IsOrigin());
+  EXPECT_FALSE(gfx::Point(-1, 0).IsOrigin());
+  EXPECT_FALSE(gfx::Point(0, -1).IsOrigin());
+  EXPECT_FALSE(gfx::Point(-1, -2).IsOrigin());
+  EXPECT_TRUE(gfx::Point(0, 0).IsOrigin());
+
+  EXPECT_FALSE(gfx::PointF(0.1f, 0).IsOrigin());
+  EXPECT_FALSE(gfx::PointF(0, 0.1f).IsOrigin());
+  EXPECT_FALSE(gfx::PointF(0.1f, 2).IsOrigin());
+  EXPECT_FALSE(gfx::PointF(-0.1f, 0).IsOrigin());
+  EXPECT_FALSE(gfx::PointF(0, -0.1f).IsOrigin());
+  EXPECT_FALSE(gfx::PointF(-0.1f, -2).IsOrigin());
+  EXPECT_TRUE(gfx::PointF(0, 0).IsOrigin());
+}
+
 }  // namespace ui
