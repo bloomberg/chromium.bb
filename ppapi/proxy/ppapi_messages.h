@@ -31,6 +31,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_time.h"
+#include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
@@ -60,6 +61,7 @@
 #define IPC_MESSAGE_START PpapiMsgStart
 
 IPC_ENUM_TRAITS(PP_DeviceType_Dev)
+IPC_ENUM_TRAITS(PP_DecryptorStreamType)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_Permission)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_SettingType)
 IPC_ENUM_TRAITS(PP_FlashSetting)
@@ -632,6 +634,14 @@ IPC_MESSAGE_ROUTED3(
     PP_Instance /* instance */,
     std::string /* serialized_decoder_config */,
     ppapi::proxy::PPPDecryptor_Buffer /* extra_data_buffer. */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_DeinitializeDecoder,
+                    PP_Instance /* instance */,
+                    PP_DecryptorStreamType /* decoder_type */,
+                    uint32_t /* request_id */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_ResetDecoder,
+                    PP_Instance /* instance */,
+                    PP_DecryptorStreamType /* decoder_type */,
+                    uint32_t /* request_id */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_DecryptAndDecodeFrame,
                     PP_Instance /* instance */,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
@@ -1220,6 +1230,14 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverBlock,
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DecoderInitialized,
                     PP_Instance /* instance */,
                     PP_Bool /* success */,
+                    uint32_t /* request_id */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DecoderDeinitializeDone,
+                    PP_Instance /* instance */,
+                    PP_DecryptorStreamType /* decoder_type */,
+                    uint32_t /* request_id */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DecoderResetDone,
+                    PP_Instance /* instance */,
+                    PP_DecryptorStreamType /* decoder_type */,
                     uint32_t /* request_id */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverFrame,
                     PP_Instance /* instance */,

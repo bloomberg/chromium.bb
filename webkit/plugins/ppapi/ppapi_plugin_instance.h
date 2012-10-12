@@ -267,6 +267,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool InitializeVideoDecoder(
       const media::VideoDecoderConfig& decoder_config,
       const media::Decryptor::DecryptCB& decrypt_cb);
+  // TODO(tomfinegan): Add callback args for DeinitializeDecoder() and
+  // ResetDecoder()
+  bool DeinitializeDecoder();
+  bool ResetDecoder();
   // TODO(xhwang): Update this when we need to support decrypt and decode.
   // Note: This method can be used with an unencrypted frame.
   bool DecryptAndDecodeFrame(
@@ -443,6 +447,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
 
+  // PPB_ContentDecryptor_Private
+  // TODO(tomfinegan): Move the PPB_ContentDecryptor_Private methods to a
+  // delegate class.
   virtual void NeedKey(PP_Instance instance,
                        PP_Var key_system,
                        PP_Var session_id,
@@ -466,6 +473,12 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   virtual void DecoderInitialized(PP_Instance instance,
                                   PP_Bool success,
                                   uint32_t request_id) OVERRIDE;
+  virtual void DecoderDeinitializeDone(PP_Instance instance,
+                                       PP_DecryptorStreamType decoder_type,
+                                       uint32_t request_id) OVERRIDE;
+  virtual void DecoderResetDone(PP_Instance instance,
+                                PP_DecryptorStreamType decoder_type,
+                                uint32_t request_id) OVERRIDE;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) OVERRIDE;

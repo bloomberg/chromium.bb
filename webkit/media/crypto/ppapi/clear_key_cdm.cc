@@ -239,19 +239,19 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
   return cdm::kSessionError;
 }
 
+void ClearKeyCdm::ResetDecoder(cdm::StreamType) {
+  NOTIMPLEMENTED();
+}
+
+void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType) {
+  NOTIMPLEMENTED();
+}
+
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::VideoFrame* video_frame) {
   NOTIMPLEMENTED();
   return cdm::kDecryptError;
-}
-
-void ClearKeyCdm::ResetVideoDecoder() {
-  NOTIMPLEMENTED();
-}
-
-void ClearKeyCdm::StopVideoDecoder() {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace webkit_media

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Thu Oct 11 14:14:05 2012. */
+/* Last generated from IDL: Thu Oct 11 21:05:40 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -1994,6 +1994,18 @@ void Pnacl_M24_PPB_ContentDecryptor_Private_DecoderInitialized(PP_Instance insta
 }
 
 static __attribute__((pnaclcall))
+void Pnacl_M24_PPB_ContentDecryptor_Private_DecoderDeinitializeDone(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) {
+  const struct PPB_ContentDecryptor_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_3.real_iface;
+  iface->DecoderDeinitializeDone(instance, decoder_type, request_id);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M24_PPB_ContentDecryptor_Private_DecoderResetDone(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) {
+  const struct PPB_ContentDecryptor_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_3.real_iface;
+  iface->DecoderResetDone(instance, decoder_type, request_id);
+}
+
+static __attribute__((pnaclcall))
 void Pnacl_M24_PPB_ContentDecryptor_Private_DeliverFrame(PP_Instance instance, PP_Resource decrypted_frame, const struct PP_DecryptedFrameInfo* decrypted_frame_info) {
   const struct PPB_ContentDecryptor_Private_0_3 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_3.real_iface;
   iface->DeliverFrame(instance, decrypted_frame, decrypted_frame_info);
@@ -3457,6 +3469,18 @@ static void Pnacl_M24_PPP_ContentDecryptor_Private_InitializeVideoDecoder(PP_Ins
   temp_fp(instance, decoder_config, codec_extra_data);
 }
 
+static void Pnacl_M24_PPP_ContentDecryptor_Private_DeinitializeDecoder(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) {
+  const struct PPP_ContentDecryptor_Private_0_3 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_3.real_iface;
+  void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))iface->DeinitializeDecoder);
+  temp_fp(instance, decoder_type, request_id);
+}
+
+static void Pnacl_M24_PPP_ContentDecryptor_Private_ResetDecoder(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) {
+  const struct PPP_ContentDecryptor_Private_0_3 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_3.real_iface;
+  void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))iface->ResetDecoder);
+  temp_fp(instance, decoder_type, request_id);
+}
+
 static void Pnacl_M24_PPP_ContentDecryptor_Private_DecryptAndDecodeFrame(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info) {
   const struct PPP_ContentDecryptor_Private_0_3 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_3.real_iface;
   void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info))iface->DecryptAndDecodeFrame);
@@ -3953,6 +3977,8 @@ struct PPB_ContentDecryptor_Private_0_3 Pnacl_Wrappers_PPB_ContentDecryptor_Priv
     .KeyError = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var session_id, int32_t media_error, int32_t system_code))&Pnacl_M24_PPB_ContentDecryptor_Private_KeyError,
     .DeliverBlock = (void (*)(PP_Instance instance, PP_Resource decrypted_block, const struct PP_DecryptedBlockInfo* decrypted_block_info))&Pnacl_M24_PPB_ContentDecryptor_Private_DeliverBlock,
     .DecoderInitialized = (void (*)(PP_Instance instance, PP_Bool success, uint32_t request_id))&Pnacl_M24_PPB_ContentDecryptor_Private_DecoderInitialized,
+    .DecoderDeinitializeDone = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M24_PPB_ContentDecryptor_Private_DecoderDeinitializeDone,
+    .DecoderResetDone = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M24_PPB_ContentDecryptor_Private_DecoderResetDone,
     .DeliverFrame = (void (*)(PP_Instance instance, PP_Resource decrypted_frame, const struct PP_DecryptedFrameInfo* decrypted_frame_info))&Pnacl_M24_PPB_ContentDecryptor_Private_DeliverFrame,
     .DeliverSamples = (void (*)(PP_Instance instance, PP_Resource decrypted_samples, const struct PP_DecryptedBlockInfo* decrypted_block_info))&Pnacl_M24_PPB_ContentDecryptor_Private_DeliverSamples
 };
@@ -4274,6 +4300,8 @@ struct PPP_ContentDecryptor_Private_0_3 Pnacl_Wrappers_PPP_ContentDecryptor_Priv
     .CancelKeyRequest = (void (*)(PP_Instance instance, struct PP_Var session_id))&Pnacl_M24_PPP_ContentDecryptor_Private_CancelKeyRequest,
     .Decrypt = (void (*)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info))&Pnacl_M24_PPP_ContentDecryptor_Private_Decrypt,
     .InitializeVideoDecoder = (void (*)(PP_Instance instance, const struct PP_VideoDecoderConfig* decoder_config, PP_Resource codec_extra_data))&Pnacl_M24_PPP_ContentDecryptor_Private_InitializeVideoDecoder,
+    .DeinitializeDecoder = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M24_PPP_ContentDecryptor_Private_DeinitializeDecoder,
+    .ResetDecoder = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M24_PPP_ContentDecryptor_Private_ResetDecoder,
     .DecryptAndDecodeFrame = (void (*)(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info))&Pnacl_M24_PPP_ContentDecryptor_Private_DecryptAndDecodeFrame
 };
 

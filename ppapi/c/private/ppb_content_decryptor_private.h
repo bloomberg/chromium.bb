@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Mon Oct  8 13:44:40 2012.
+ *   modified Thu Oct 11 20:30:13 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -177,6 +177,34 @@ struct PPB_ContentDecryptor_Private_0_3 {
   void (*DecoderInitialized)(PP_Instance instance,
                              PP_Bool success,
                              uint32_t request_id);
+  /**
+   * Called after the <code>DeinitializeDecoder()</code> method on the
+   * <code>PPP_ContentDecryptor_Private</code> interface completes to report
+   * decoder de-initialization completion to the browser.
+   *
+   * @param[in] decoder_type The <code>PP_DecryptorStreamType</code> passed to
+   * <code>DeinitializeDecoder()</code>.
+   *
+   * @param[in] request_id The <code>request_id</code> value passed to
+   * <code>DeinitializeDecoder()</code>.
+   */
+  void (*DecoderDeinitializeDone)(PP_Instance instance,
+                                  PP_DecryptorStreamType decoder_type,
+                                  uint32_t request_id);
+  /**
+   * Called after the <code>ResetDecoder()</code> method on the
+   * <code>PPP_ContentDecryptor_Private</code> interface completes to report
+   * decoder reset completion to the browser.
+   *
+   * @param[in] decoder_type The <code>PP_DecryptorStreamType</code> passed to
+   * <code>ResetDecoder()</code>.
+   *
+   * @param[in] request_id The <code>request_id</code> value passed to
+   * <code>ResetDecoder()</code>.
+   */
+  void (*DecoderResetDone)(PP_Instance instance,
+                           PP_DecryptorStreamType decoder_type,
+                           uint32_t request_id);
   /**
    * Called after the <code>DecryptAndDecode()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to deliver

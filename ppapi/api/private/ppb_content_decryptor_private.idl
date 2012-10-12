@@ -166,6 +166,38 @@ interface PPB_ContentDecryptor_Private {
       [in] uint32_t request_id);
 
   /**
+   * Called after the <code>DeinitializeDecoder()</code> method on the
+   * <code>PPP_ContentDecryptor_Private</code> interface completes to report
+   * decoder de-initialization completion to the browser.
+   *
+   * @param[in] decoder_type The <code>PP_DecryptorStreamType</code> passed to
+   * <code>DeinitializeDecoder()</code>.
+   *
+   * @param[in] request_id The <code>request_id</code> value passed to
+   * <code>DeinitializeDecoder()</code>.
+   */
+  void DecoderDeinitializeDone(
+      [in] PP_Instance instance,
+      [in] PP_DecryptorStreamType decoder_type,
+      [in] uint32_t request_id);
+
+  /**
+   * Called after the <code>ResetDecoder()</code> method on the
+   * <code>PPP_ContentDecryptor_Private</code> interface completes to report
+   * decoder reset completion to the browser.
+   *
+   * @param[in] decoder_type The <code>PP_DecryptorStreamType</code> passed to
+   * <code>ResetDecoder()</code>.
+   *
+   * @param[in] request_id The <code>request_id</code> value passed to
+   * <code>ResetDecoder()</code>.
+   */
+  void DecoderResetDone(
+      [in] PP_Instance instance,
+      [in] PP_DecryptorStreamType decoder_type,
+      [in] uint32_t request_id);
+
+  /**
    * Called after the <code>DecryptAndDecode()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to deliver
    * a decrypted and decoded video frame to the browser for rendering.

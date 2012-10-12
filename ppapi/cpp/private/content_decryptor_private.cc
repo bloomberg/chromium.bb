@@ -121,6 +121,28 @@ void InitializeVideoDecoder(
       extra_data_buffer);
 }
 
+void DeinitializeDecoder(PP_Instance instance,
+                         PP_DecryptorStreamType decoder_type,
+                         uint32_t request_id) {
+  void* object =
+      Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
+  if (!object)
+    return;
+  static_cast<ContentDecryptor_Private*>(object)->DeinitializeDecoder(
+      decoder_type,
+      request_id);
+}
+
+void ResetDecoder(PP_Instance instance,
+                  PP_DecryptorStreamType decoder_type,
+                  uint32_t request_id) {
+  void* object =
+      Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
+  if (!object)
+    return;
+  static_cast<ContentDecryptor_Private*>(object)->ResetDecoder(decoder_type,
+                                                               request_id);
+}
 
 void DecryptAndDecodeFrame(
     PP_Instance instance,
@@ -144,6 +166,8 @@ const PPP_ContentDecryptor_Private ppp_content_decryptor = {
   &CancelKeyRequest,
   &Decrypt,
   &InitializeVideoDecoder,
+  &DeinitializeDecoder,
+  &ResetDecoder,
   &DecryptAndDecodeFrame
 };
 
@@ -245,6 +269,28 @@ void ContentDecryptor_Private::DecoderInitialized(
     get_interface<PPB_ContentDecryptor_Private>()->DecoderInitialized(
         associated_instance_.pp_instance(),
         PP_FromBool(success),
+        request_id);
+  }
+}
+
+void ContentDecryptor_Private::DecoderDeinitializeDone(
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id) {
+  if (has_interface<PPB_ContentDecryptor_Private>()) {
+    get_interface<PPB_ContentDecryptor_Private>()->DecoderDeinitializeDone(
+        associated_instance_.pp_instance(),
+        decoder_type,
+        request_id);
+  }
+}
+
+void ContentDecryptor_Private::DecoderResetDone(
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id) {
+  if (has_interface<PPB_ContentDecryptor_Private>()) {
+    get_interface<PPB_ContentDecryptor_Private>()->DecoderResetDone(
+        associated_instance_.pp_instance(),
+        decoder_type,
         request_id);
   }
 }

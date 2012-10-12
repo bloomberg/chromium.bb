@@ -39,6 +39,10 @@ class ContentDecryptor_Private {
   virtual void InitializeVideoDecoder(
       const PP_VideoDecoderConfig& decoder_config,
       pp::Buffer_Dev extra_data_resource) = 0;
+  virtual void DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
+                                   uint32_t request_id) = 0;
+  virtual void ResetDecoder(PP_DecryptorStreamType decoder_type,
+                            uint32_t request_id) = 0;
   virtual void DecryptAndDecodeFrame(
       pp::Buffer_Dev encrypted_frame,
       const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) = 0;
@@ -61,6 +65,10 @@ class ContentDecryptor_Private {
   void DeliverBlock(pp::Buffer_Dev decrypted_block,
                     const PP_DecryptedBlockInfo& decrypted_block_info);
   void DecoderInitialized(bool status, uint32_t request_id);
+  void DecoderDeinitializeDone(PP_DecryptorStreamType decoder_type,
+                               uint32_t request_id);
+  void DecoderResetDone(PP_DecryptorStreamType decoder_type,
+                        uint32_t request_id);
   void DeliverFrame(pp::Buffer_Dev decrypted_frame,
                     const PP_DecryptedFrameInfo& decrypted_frame_info);
   void DeliverSamples(pp::Buffer_Dev decrypted_samples,

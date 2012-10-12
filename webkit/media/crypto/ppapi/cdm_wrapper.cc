@@ -407,6 +407,10 @@ class CdmWrapper : public pp::Instance,
   virtual void InitializeVideoDecoder(
       const PP_VideoDecoderConfig& decoder_config,
       pp::Buffer_Dev extra_data_buffer) OVERRIDE;
+  virtual void DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
+                                   uint32_t request_id) OVERRIDE;
+  virtual void ResetDecoder(PP_DecryptorStreamType decoder_type,
+                            uint32_t request_id) OVERRIDE;
   virtual void DecryptAndDecodeFrame(
       pp::Buffer_Dev encrypted_frame,
       const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) OVERRIDE;
@@ -433,6 +437,12 @@ class CdmWrapper : public pp::Instance,
   void DecoderInitialized(int32_t result,
                           bool success,
                           uint32_t request_id);
+  void DecoderDeinitializeDone(int32_t result,
+                               PP_DecryptorStreamType decoder_type,
+                               uint32_t request_id);
+  void DecoderResetDone(int32_t result,
+                        PP_DecryptorStreamType decoder_type,
+                        uint32_t request_id);
   void DeliverFrame(int32_t result,
                     const cdm::Status& status,
                     const LinkedVideoFrame& video_frame,
@@ -594,6 +604,25 @@ void CdmWrapper::InitializeVideoDecoder(
 
 }
 
+void CdmWrapper::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
+                                     uint32_t request_id) {
+  // TODO(tomfinegan): Implement DeinitializeDecoder in clear key CDM, and call
+  // it here.
+  CallOnMain(callback_factory_.NewCallback(
+      &CdmWrapper::DecoderDeinitializeDone,
+      decoder_type,
+      request_id));
+}
+
+void CdmWrapper::ResetDecoder(PP_DecryptorStreamType decoder_type,
+                              uint32_t request_id) {
+  // TODO(tomfinegan): Implement ResetDecoder in clear key CDM, and call it
+  // here.
+  CallOnMain(callback_factory_.NewCallback(&CdmWrapper::DecoderResetDone,
+                                           decoder_type,
+                                           request_id));
+}
+
 void CdmWrapper::DecryptAndDecodeFrame(
     pp::Buffer_Dev encrypted_frame,
     const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) {
@@ -710,6 +739,19 @@ void CdmWrapper::DecoderInitialized(int32_t result,
                                     bool success,
                                     uint32_t request_id) {
   pp::ContentDecryptor_Private::DecoderInitialized(success, request_id);
+}
+
+void CdmWrapper::DecoderDeinitializeDone(int32_t result,
+                                         PP_DecryptorStreamType decoder_type,
+                                         uint32_t request_id) {
+  pp::ContentDecryptor_Private::DecoderDeinitializeDone(decoder_type,
+                                                        request_id);
+}
+
+void CdmWrapper::DecoderResetDone(int32_t result,
+                                  PP_DecryptorStreamType decoder_type,
+                                  uint32_t request_id) {
+  pp::ContentDecryptor_Private::DecoderResetDone(decoder_type, request_id);
 }
 
 void CdmWrapper::DeliverFrame(

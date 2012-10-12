@@ -157,6 +157,11 @@ struct VideoDecoderConfig {
   int32_t extra_data_size;
 };
 
+enum StreamType {
+  kStreamTypeAudio = 0,
+  kStreamTypeVideo = 1
+};
+
 // ContentDecryptionModule interface that all CDMs need to implement.
 // Note: ContentDecryptionModule implementations must use the allocator
 // provided in CreateCdmInstance() to allocate any Buffer that needs to
@@ -231,6 +236,16 @@ class ContentDecryptionModule {
   virtual Status InitializeVideoDecoder(
       const VideoDecoderConfig& video_decoder_config) = 0;
 
+  // De-initializes the CDM decoder and sets it to an uninitialized state. The
+  // caller can initialize the decoder again after this call to re-initialize
+  // it. This can be used to reconfigure the decoder if the configuration
+  // changes.
+  virtual void DeinitializeDecoder(StreamType decoder_type) = 0;
+
+  // Resets the CDM decoder to an initialized clean state. All internal buffers
+  // MUST be flushed.
+  virtual void ResetDecoder(StreamType decoder_type) = 0;
+
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into a
   // |video_frame|. Upon end-of-stream, the caller should call this function
   // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
@@ -249,16 +264,6 @@ class ContentDecryptionModule {
   // the caller.
   virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
                                        VideoFrame* video_frame) = 0;
-
-  // Resets the CDM video decoder to an initialized clean state. All internal
-  // buffers will be flushed.
-  virtual void ResetVideoDecoder() = 0;
-
-  // Stops the CDM video decoder and sets it to an uninitialized state. The
-  // caller can call InitializeVideoDecoder() again after this call to
-  // re-initialize the video decoder. This can be used to reconfigure the
-  // video decoder if the config changes.
-  virtual void StopVideoDecoder() = 0;
 
   virtual ~ContentDecryptionModule() {}
 };

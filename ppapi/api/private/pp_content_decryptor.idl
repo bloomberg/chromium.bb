@@ -314,3 +314,12 @@ struct PP_VideoDecoderConfig {
    */
   uint32_t request_id;
 };
+
+/**
+ * <code>PP_DecryptorStreamType</code> contains stream type constants.
+ */
+[assert_size(4)]
+enum PP_DecryptorStreamType {
+  PP_DECRYPTORSTREAMTYPE_AUDIO = 0,
+  PP_DECRYPTORSTREAMTYPE_VIDEO = 1
+};

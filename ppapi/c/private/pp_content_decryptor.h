@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Mon Oct  8 12:50:54 2012. */
+/* From private/pp_content_decryptor.idl modified Thu Oct 11 21:05:33 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -361,6 +361,22 @@ struct PP_VideoDecoderConfig {
   uint32_t request_id;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_VideoDecoderConfig, 24);
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Enums
+ * @{
+ */
+/**
+ * <code>PP_DecryptorStreamType</code> contains stream type constants.
+ */
+typedef enum {
+  PP_DECRYPTORSTREAMTYPE_AUDIO = 0,
+  PP_DECRYPTORSTREAMTYPE_VIDEO = 1
+} PP_DecryptorStreamType;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptorStreamType, 4);
 /**
  * @}
  */

@@ -1606,6 +1606,31 @@ bool PluginInstance::InitializeVideoDecoder(
   return true;
 }
 
+bool PluginInstance::DeinitializeDecoder() {
+  if (!LoadContentDecryptorInterface())
+    return false;
+
+  // TODO(tomfinegan): Add decoder deinitialize request tracking, and get
+  // stream type from media stack.
+  plugin_decryption_interface_->DeinitializeDecoder(
+      pp_instance(),
+      PP_DECRYPTORSTREAMTYPE_VIDEO,
+      0);
+  return true;
+}
+
+bool PluginInstance::ResetDecoder() {
+  if (!LoadContentDecryptorInterface())
+    return false;
+
+  // TODO(tomfinegan): Add decoder reset request tracking, and get
+  // stream type from media stack.
+  plugin_decryption_interface_->ResetDecoder(pp_instance(),
+                                             PP_DECRYPTORSTREAMTYPE_VIDEO,
+                                             0);
+  return true;
+}
+
 bool PluginInstance::DecryptAndDecodeFrame(
     const scoped_refptr<media::DecoderBuffer>& encrypted_frame,
     const media::Decryptor::DecryptCB& decrypt_cb) {
@@ -2352,6 +2377,19 @@ void PluginInstance::DecoderInitialized(PP_Instance instance,
       success == PP_TRUE ? media::Decryptor::kSuccess :
                            media::Decryptor::kError;
   decrypt_cb.Run(status, NULL);
+}
+
+void PluginInstance::DecoderDeinitializeDone(
+    PP_Instance instance,
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id) {
+  // TODO(tomfinegan): Add decoder stop completion handling.
+}
+
+void PluginInstance::DecoderResetDone(PP_Instance instance,
+                                      PP_DecryptorStreamType decoder_type,
+                                      uint32_t request_id) {
+  // TODO(tomfinegan): Add decoder reset completion handling.
 }
 
 void PluginInstance::DeliverBlock(PP_Instance instance,

@@ -141,6 +141,12 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void DecoderInitialized(PP_Instance instance,
                                   PP_Bool success,
                                   uint32_t request_id) OVERRIDE;
+  virtual void DecoderDeinitializeDone(PP_Instance instance,
+                                       PP_DecryptorStreamType decoder_type,
+                                       uint32_t request_id) OVERRIDE;
+  virtual void DecoderResetDone(PP_Instance instance,
+                                PP_DecryptorStreamType decoder_type,
+                                uint32_t request_id) OVERRIDE;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) OVERRIDE;
@@ -237,6 +243,13 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void OnHostMsgDecoderInitialized(PP_Instance instance,
                                            PP_Bool success,
                                            uint32_t request_id);
+  virtual void OnHostMsgDecoderDeinitializeDone(
+      PP_Instance instance,
+      PP_DecryptorStreamType decoder_type,
+      uint32_t request_id);
+  virtual void OnHostMsgDecoderResetDone(PP_Instance instance,
+                                         PP_DecryptorStreamType decoder_type,
+                                         uint32_t request_id);
   virtual void OnHostMsgDeliverBlock(PP_Instance instance,
                                      PP_Resource decrypted_block,
                                      const std::string& serialized_block_info);

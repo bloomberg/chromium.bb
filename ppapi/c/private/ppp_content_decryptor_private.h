@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Mon Oct  8 13:45:19 2012.
+ *   modified Thu Oct 11 20:53:07 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -134,6 +134,48 @@ struct PPP_ContentDecryptor_Private_0_3 {
       PP_Instance instance,
       const struct PP_VideoDecoderConfig* decoder_config,
       PP_Resource codec_extra_data);
+  /**
+   * De-initializes the decoder for the <code>PP_DecryptorStreamType</code>
+   * specified by <code>decoder_type</code> and sets it to an uninitialized
+   * state. The decoder can be re-initialized after de-initialization completes
+   * by calling <code>InitializeAudioDecoder</code> or
+   * <code>InitializeVideoDecoder</code>.
+   *
+   * De-initialization completion is reported to the browser using the
+   * <code>DecoderDeinitializeDone()</code> method on the
+   * <code>PPB_ContentDecryptor_Private</code> interface.
+   *
+   * @param[in] decoder_type A <code>PP_DecryptorStreamType</code> that
+   * specifies the decoder to de-initialize.
+   *
+   * @param[in] request_id A request ID that allows the browser to associate a
+   * request to de-initialize a decoder with the corresponding call to the
+   * <code>DecoderDeinitializeDone()</code> method on the
+   * <code>PPB_ContentDecryptor_Private</code> interface.
+   */
+  void (*DeinitializeDecoder)(PP_Instance instance,
+                              PP_DecryptorStreamType decoder_type,
+                              uint32_t request_id);
+  /**
+   * Resets the decoder for the <code>PP_DecryptorStreamType</code> specified
+   * by <code>decoder_type</code> to an initialized clean state. Reset
+   * completion is reported to the browser using the
+   * <code>DecoderResetDone()</code> method on the
+   * <code>PPB_ContentDecryptor_Private</code> interface. This method can be
+   * used to signal a discontinuity in the encoded data stream, and is safe to
+   * call multiple times.
+   *
+   * @param[in] decoder_type A <code>PP_DecryptorStreamType</code> that
+   * specifies the decoder to reset.
+   *
+   * @param[in] request_id A request ID that allows the browser to associate a
+   * request to reset the decoder with a corresponding call to the
+   * <code>DecoderResetDone()</code> method on the
+   * <code>PPB_ContentDecryptor_Private</code> interface.
+   */
+  void (*ResetDecoder)(PP_Instance instance,
+                       PP_DecryptorStreamType decoder_type,
+                       uint32_t request_id);
   /**
    * Decrypts encrypted_video_frame, decodes it, and returns the unencrypted
    * uncompressed (decoded) video frame to the browser via the

@@ -169,6 +169,10 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgDeliverBlock)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DecoderInitialized,
                         OnHostMsgDecoderInitialized)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DecoderDeinitializeDone,
+                        OnHostMsgDecoderDeinitializeDone)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DecoderResetDone,
+                        OnHostMsgDecoderResetDone)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DeliverFrame,
                         OnHostMsgDeliverFrame)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DeliverSamples,
@@ -542,6 +546,29 @@ void PPB_Instance_Proxy::DecoderInitialized(PP_Instance instance,
           API_ID_PPB_INSTANCE,
           instance,
           success,
+          request_id));
+}
+
+void PPB_Instance_Proxy::DecoderDeinitializeDone(
+    PP_Instance instance,
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id) {
+  dispatcher()->Send(
+      new PpapiHostMsg_PPBInstance_DecoderDeinitializeDone(
+          API_ID_PPB_INSTANCE,
+          instance,
+          decoder_type,
+          request_id));
+}
+
+void PPB_Instance_Proxy::DecoderResetDone(PP_Instance instance,
+                                          PP_DecryptorStreamType decoder_type,
+                                          uint32_t request_id) {
+  dispatcher()->Send(
+      new PpapiHostMsg_PPBInstance_DecoderResetDone(
+          API_ID_PPB_INSTANCE,
+          instance,
+          decoder_type,
           request_id));
 }
 
@@ -972,6 +999,26 @@ void PPB_Instance_Proxy::OnHostMsgDecoderInitialized(
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->DecoderInitialized(instance, success, request_id);
+}
+
+void PPB_Instance_Proxy::OnHostMsgDecoderDeinitializeDone(
+    PP_Instance instance,
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->DecoderDeinitializeDone(instance,
+                                               decoder_type,
+                                               request_id);
+}
+
+void PPB_Instance_Proxy::OnHostMsgDecoderResetDone(
+    PP_Instance instance,
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->DecoderResetDone(instance, decoder_type, request_id);
 }
 
 void PPB_Instance_Proxy::OnHostMsgDeliverFrame(

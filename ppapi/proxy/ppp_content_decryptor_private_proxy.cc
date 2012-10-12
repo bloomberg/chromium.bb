@@ -238,6 +238,40 @@ void InitializeVideoDecoder(
 }
 
 
+void DeinitializeDecoder(PP_Instance instance,
+                         PP_DecryptorStreamType decoder_type,
+                         uint32_t request_id) {
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher) {
+    NOTREACHED();
+    return;
+  }
+
+  dispatcher->Send(
+      new PpapiMsg_PPPContentDecryptor_DeinitializeDecoder(
+          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
+          instance,
+          decoder_type,
+          request_id));
+}
+
+void ResetDecoder(PP_Instance instance,
+                  PP_DecryptorStreamType decoder_type,
+                  uint32_t request_id) {
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher) {
+    NOTREACHED();
+    return;
+  }
+
+  dispatcher->Send(
+      new PpapiMsg_PPPContentDecryptor_ResetDecoder(
+          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
+          instance,
+          decoder_type,
+          request_id));
+}
+
 void DecryptAndDecodeFrame(
     PP_Instance instance,
     PP_Resource encrypted_frame,
@@ -278,6 +312,8 @@ static const PPP_ContentDecryptor_Private content_decryptor_interface = {
   &CancelKeyRequest,
   &Decrypt,
   &InitializeVideoDecoder,
+  &DeinitializeDecoder,
+  &ResetDecoder,
   &DecryptAndDecodeFrame
 };
 
@@ -317,6 +353,10 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
                         OnMsgDecrypt)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_InitializeVideoDecoder,
                         OnMsgInitializeVideoDecoder)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_DeinitializeDecoder,
+                        OnMsgDeinitializeDecoder)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_ResetDecoder,
+                        OnMsgResetDecoder)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_DecryptAndDecodeFrame,
                         OnMsgDecryptAndDecodeFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -403,6 +443,32 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgInitializeVideoDecoder(
         instance,
         const_cast<const PP_VideoDecoderConfig*>(&decoder_config),
         plugin_resource);
+  }
+}
+
+void PPP_ContentDecryptor_Private_Proxy::OnMsgDeinitializeDecoder(
+    PP_Instance instance,
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id) {
+  if (ppp_decryptor_impl_) {
+    CallWhileUnlocked(
+        ppp_decryptor_impl_->DeinitializeDecoder,
+        instance,
+        decoder_type,
+        request_id);
+  }
+}
+
+void PPP_ContentDecryptor_Private_Proxy::OnMsgResetDecoder(
+    PP_Instance instance,
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id) {
+  if (ppp_decryptor_impl_) {
+    CallWhileUnlocked(
+        ppp_decryptor_impl_->ResetDecoder,
+        instance,
+        decoder_type,
+        request_id);
   }
 }
 

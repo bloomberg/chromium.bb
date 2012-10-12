@@ -18,6 +18,7 @@
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_mouse_cursor.h"
+#include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/shared_impl/api_id.h"
 
@@ -164,6 +165,12 @@ class PPB_Instance_API {
   virtual void DecoderInitialized(PP_Instance instance,
                                   PP_Bool success,
                                   uint32_t request_id) = 0;
+  virtual void DecoderDeinitializeDone(PP_Instance instance,
+                                       PP_DecryptorStreamType decoder_type,
+                                       uint32_t request_id) = 0;
+  virtual void DecoderResetDone(PP_Instance instance,
+                                PP_DecryptorStreamType decoder_type,
+                                uint32_t request_id) = 0;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) = 0;

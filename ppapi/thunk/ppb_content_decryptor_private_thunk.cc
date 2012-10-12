@@ -69,6 +69,25 @@ void DecoderInitialized(PP_Instance instance,
     enter.functions()->DecoderInitialized(instance, success, request_id);
 }
 
+void DecoderDeinitializeDone(PP_Instance instance,
+                             PP_DecryptorStreamType decoder_type,
+                             uint32_t request_id) {
+  EnterInstance enter(instance);
+  if (enter.succeeded()) {
+    enter.functions()->DecoderDeinitializeDone(instance,
+                                               decoder_type,
+                                               request_id);
+  }
+}
+
+void DecoderResetDone(PP_Instance instance,
+                      PP_DecryptorStreamType decoder_type,
+                      uint32_t request_id) {
+  EnterInstance enter(instance);
+  if (enter.succeeded())
+    enter.functions()->DecoderResetDone(instance, decoder_type, request_id);
+}
+
 void DeliverFrame(PP_Instance instance,
                   PP_Resource decrypted_frame,
                   const PP_DecryptedFrameInfo* frame_info) {
@@ -92,6 +111,8 @@ const PPB_ContentDecryptor_Private g_ppb_decryption_thunk = {
   &KeyError,
   &DeliverBlock,
   &DecoderInitialized,
+  &DecoderDeinitializeDone,
+  &DecoderResetDone,
   &DeliverFrame,
   &DeliverSamples
 };
