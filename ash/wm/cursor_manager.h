@@ -18,6 +18,7 @@ namespace test {
 class CursorManagerTestApi;
 }
 
+class CursorDelegate;
 class ImageCursors;
 
 // This class controls the visibility and the type of the cursor.
@@ -27,6 +28,12 @@ class ASH_EXPORT CursorManager : public aura::client::CursorClient {
  public:
   CursorManager();
   virtual ~CursorManager();
+
+  void set_delegate(CursorDelegate* delegate) { delegate_ = delegate; }
+
+  // Locks/Unlocks the cursor change.
+  void LockCursor();
+  void UnlockCursor();
 
   bool is_cursor_locked() const { return cursor_lock_count_ > 0; }
 
@@ -38,32 +45,24 @@ class ASH_EXPORT CursorManager : public aura::client::CursorClient {
   virtual void ShowCursor(bool show) OVERRIDE;
   virtual bool IsCursorVisible() const OVERRIDE;
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
-  virtual void LockCursor() OVERRIDE;
-  virtual void UnlockCursor() OVERRIDE;
 
  private:
   friend class test::CursorManagerTestApi;
 
   void SetCursorInternal(gfx::NativeCursor cursor);
-  void ShowCursorInternal(bool show);
+
+  CursorDelegate* delegate_;
 
   // Number of times LockCursor() has been invoked without a corresponding
   // UnlockCursor().
   int cursor_lock_count_;
 
-  // Set to true if SetCursor() is invoked while |cursor_lock_count_| == 0.
+  // Set to true if UpdateCursor() is invoked while |cursor_lock_count_| == 0.
   bool did_cursor_change_;
 
   // Cursor to set once |cursor_lock_count_| is set to 0. Only valid if
   // |did_cursor_change_| is true.
   gfx::NativeCursor cursor_to_set_on_unlock_;
-
-  // Set to true if ShowCursor() is invoked while |cursor_lock_count_| == 0.
-  bool did_visibility_change_;
-
-  // The visibility to set once |cursor_lock_count_| is set to 0. Only valid if
-  // |did_visibility_change_| is true.
-  bool show_on_unlock_;
 
   // Is cursor visible?
   bool cursor_visible_;

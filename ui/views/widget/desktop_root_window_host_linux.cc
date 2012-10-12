@@ -682,6 +682,13 @@ void DesktopRootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
     SetCursorInternal(cursor);
 }
 
+void DesktopRootWindowHostLinux::ShowCursor(bool show) {
+  if (show == cursor_shown_)
+    return;
+  cursor_shown_ = show;
+  SetCursorInternal(show ? current_cursor_ : invisible_cursor_);
+}
+
 bool DesktopRootWindowHostLinux::QueryMouseLocation(
     gfx::Point* location_return) {
   ::Window root_return, child_return;
@@ -775,13 +782,6 @@ void DesktopRootWindowHostLinux::PrepareForShutdown() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostLinux, aura::CursorClient implementation:
 
-void DesktopRootWindowHostLinux::ShowCursor(bool show) {
-  if (show == cursor_shown_)
-    return;
-  cursor_shown_ = show;
-  SetCursorInternal(show ? current_cursor_ : invisible_cursor_);
-}
-
 bool DesktopRootWindowHostLinux::IsCursorVisible() const {
   return cursor_shown_;
 }
@@ -790,16 +790,6 @@ void DesktopRootWindowHostLinux::SetDeviceScaleFactor(
     float device_scale_factor) {
   cursor_loader_.UnloadAll();
   cursor_loader_.set_device_scale_factor(device_scale_factor);
-}
-
-void DesktopRootWindowHostLinux::LockCursor() {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-}
-
-void DesktopRootWindowHostLinux::UnlockCursor() {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
+#include "ash/wm/cursor_delegate.h"
 #include "ash/wm/cursor_manager.h"
 #include "ash/wm/shelf_types.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
@@ -113,7 +114,8 @@ class WorkspaceController;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
+class ASH_EXPORT Shell : CursorDelegate,
+                         internal::SystemModalContainerEventFilterDelegate {
  public:
   typedef std::vector<aura::RootWindow*> RootWindowList;
   typedef std::vector<internal::RootWindowController*> RootWindowControllerList;
@@ -396,6 +398,10 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // primary display.
   void InitLayoutManagersForPrimaryDisplay(
       internal::RootWindowController* root_window_controller);
+
+  // aura::CursorManager::Delegate overrides:
+  virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
+  virtual void ShowCursor(bool visible) OVERRIDE;
 
   // ash::internal::SystemModalContainerEventFilterDelegate overrides:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;

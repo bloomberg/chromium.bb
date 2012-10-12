@@ -70,6 +70,9 @@ class AURA_EXPORT RootWindowHost {
   // Sets the currently displayed cursor.
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
 
+  // Shows or hides the cursor.
+  virtual void ShowCursor(bool show) = 0;
+
   // Queries the mouse's current position relative to the host window and sets
   // it in |location_return|. Returns true if the cursor is within the host
   // window. The position set to |location_return| is constrained within the

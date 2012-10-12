@@ -40,12 +40,6 @@ class TestVisibleClient : public aura::client::CursorClient {
   virtual void SetDeviceScaleFactor(float scale_factor) OVERRIDE {
   }
 
-  virtual void LockCursor() OVERRIDE {
-  }
-
-  virtual void UnlockCursor() OVERRIDE {
-  }
-
  private:
   bool visible_;
 };

@@ -29,15 +29,10 @@ class AURA_EXPORT DesktopCursorClient : public client::CursorClient {
   virtual void ShowCursor(bool show) OVERRIDE;
   virtual bool IsCursorVisible() const OVERRIDE;
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
-  virtual void LockCursor() OVERRIDE;
-  virtual void UnlockCursor() OVERRIDE;
 
  private:
   aura::RootWindow* root_window_;
   scoped_ptr<ui::CursorLoader> cursor_loader_;
-
-  gfx::NativeCursor current_cursor_;
-  bool cursor_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCursorClient);
 };

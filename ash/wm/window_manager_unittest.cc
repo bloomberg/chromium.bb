@@ -598,18 +598,12 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, getTime());
   ui::TouchEvent touch_pressed2(
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 1, getTime());
-  ui::TouchEvent touch_released1(
-      ui::ET_TOUCH_RELEASED, gfx::Point(0, 0), 0, getTime());
-  ui::TouchEvent touch_released2(
-      ui::ET_TOUCH_RELEASED, gfx::Point(0, 0), 1, getTime());
 
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
   EXPECT_TRUE(cursor_manager->cursor_visible());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed1);
   EXPECT_FALSE(cursor_manager->cursor_visible());
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
-  EXPECT_TRUE(cursor_manager->cursor_visible());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_released1);
   EXPECT_TRUE(cursor_manager->cursor_visible());
 
   // If someone else made cursor invisible keep it invisible even after it
@@ -621,8 +615,6 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   EXPECT_FALSE(cursor_manager->cursor_visible());
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
   EXPECT_FALSE(cursor_manager->cursor_visible());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_released2);
-  EXPECT_FALSE(cursor_manager->cursor_visible());
 
   // Back to normal.
   cursor_manager->ShowCursor(true);
@@ -631,8 +623,6 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_pressed2);
   EXPECT_FALSE(cursor_manager->cursor_visible());
   root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse_moved);
-  EXPECT_TRUE(cursor_manager->cursor_visible());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touch_released2);
   EXPECT_TRUE(cursor_manager->cursor_visible());
 }
 

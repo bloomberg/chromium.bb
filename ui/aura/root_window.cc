@@ -131,6 +131,9 @@ RootWindow::RootWindow(const CreateParams& params)
       mouse_button_flags_(0),
       touch_ids_down_(0),
       last_cursor_(ui::kCursorNull),
+      // TODO(ivankr): this currently tracks the default state in
+      // RootWindowHostLinux. Other platforms do not implement ShowCursor().
+      cursor_shown_(true),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       mouse_event_dispatch_target_(NULL),
@@ -257,11 +260,15 @@ void RootWindow::SetCursor(gfx::NativeCursor cursor) {
   host_->SetCursor(cursor);
 }
 
-void RootWindow::OnCursorVisibilityChanged(bool show) {
+void RootWindow::ShowCursor(bool show) {
   // Send entered / exited so that visual state can be updated to match
   // cursor state.
-  Env::GetInstance()->SetCursorShown(show);
-  PostMouseMoveEventAfterWindowChange();
+  if (show != cursor_shown_) {
+    cursor_shown_ = show;
+    host_->ShowCursor(show);
+    Env::GetInstance()->SetCursorShown(show);
+    PostMouseMoveEventAfterWindowChange();
+  }
 }
 
 void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
@@ -535,23 +542,19 @@ void RootWindow::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
   const bool cursor_is_in_bounds =
       GetBoundsInScreen().Contains(Env::GetInstance()->last_mouse_location());
-  bool cursor_visible = false;
-  client::CursorClient* cursor_client = client::GetCursorClient(this);
-  if (cursor_is_in_bounds && cursor_client) {
-    cursor_visible = cursor_client->IsCursorVisible();
-    if (cursor_visible)
-      cursor_client->ShowCursor(false);
-  }
+  if (cursor_is_in_bounds && cursor_shown_)
+    ShowCursor(false);
   host_->OnDeviceScaleFactorChanged(device_scale_factor);
   Window::OnDeviceScaleFactorChanged(device_scale_factor);
   // Update the device scale factor of the cursor client only when the last
   // mouse location is on this root window.
   if (cursor_is_in_bounds) {
+    client::CursorClient* cursor_client = client::GetCursorClient(this);
     if (cursor_client)
       cursor_client->SetDeviceScaleFactor(device_scale_factor);
   }
-  if (cursor_is_in_bounds && cursor_client && cursor_visible)
-    cursor_client->ShowCursor(true);
+  if (cursor_is_in_bounds && cursor_shown_)
+    ShowCursor(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

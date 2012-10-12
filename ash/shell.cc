@@ -211,6 +211,8 @@ Shell::~Shell() {
   if (active_root_window_)
     active_root_window_->GetFocusManager()->SetFocusedWindow(NULL, NULL);
 
+  cursor_manager_.set_delegate(NULL);
+
   // Please keep in same order as in Init() because it's easy to miss one.
   RemoveEnvEventFilter(user_activity_detector_.get());
   RemoveEnvEventFilter(event_rewriter_filter_.get());
@@ -367,6 +369,8 @@ void Shell::Init() {
 
   env_filter_.reset(new aura::shared::CompoundEventFilter);
   AddEnvEventFilter(env_filter_.get());
+
+  cursor_manager_.set_delegate(this);
 
   focus_manager_.reset(new aura::FocusManager);
   activation_controller_.reset(
@@ -796,6 +800,20 @@ void Shell::InitLayoutManagersForPrimaryDisplay(
       new internal::PanelWindowEventFilter(
           panel_container, panel_layout_manager_));
   panel_container->SetLayoutManager(panel_layout_manager_);
+}
+
+void Shell::SetCursor(gfx::NativeCursor cursor) {
+  RootWindowList root_windows = GetAllRootWindows();
+  for (RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter)
+    (*iter)->SetCursor(cursor);
+}
+
+void Shell::ShowCursor(bool visible) {
+  RootWindowList root_windows = GetAllRootWindows();
+  for (RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter)
+    (*iter)->ShowCursor(visible);
 }
 
 bool Shell::CanWindowReceiveEvents(aura::Window* window) {
