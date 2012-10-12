@@ -6067,3 +6067,11 @@
    fun:_ZN2v88internalL21ProfilerSignalHandlerEiP7siginfoPv
    obj:/lib/libpthread-2.11.1.so
 }
+{
+   bug_155530
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEiiP16InfoBarTabHelper
+   ...
+   fun:_ZN77GeolocationInfoBarQueueControllerTests_OneObservationPerInfoBarCancelled_Test8TestBodyEv
+}
