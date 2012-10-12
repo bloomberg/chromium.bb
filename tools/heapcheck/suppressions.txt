@@ -1542,8 +1542,6 @@
    fun:v8::internal::V8::Initialize
    fun:v8::internal::Snapshot::Initialize
    fun:v8::InitializeHelper
-   fun:v8::V8::Initialize
-   fun:WebKit::initialize
 }
 {
    bug_153791
