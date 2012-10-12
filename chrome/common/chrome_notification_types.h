@@ -462,7 +462,7 @@ enum NotificationType {
   NOTIFICATION_PRINT_JOB_EVENT,
 
   // Sent when a PrintJob has been released.
-  // Source is the TabContents that holds the print job.
+  // Source is the WebContents that holds the print job.
   NOTIFICATION_PRINT_JOB_RELEASED,
 
   // Shutdown ----------------------------------------------------------------

@@ -53,7 +53,7 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
  private:
   // Notifications handlers.
   void OnRendererProcessClosed(content::RenderProcessHost* rph);
-  void OnPrintJobReleased(TabContents* preview_tab);
+  void OnPrintJobReleased(content::WebContents* preview_tab);
   void OnWebContentsDestroyed(content::WebContents* preview_tab);
 
   // Add |tab| to the pending deletion set and schedule deletion.

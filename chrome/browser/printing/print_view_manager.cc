@@ -304,8 +304,7 @@ void PrintViewManager::OnPrintingFailed(int cookie) {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-      content::Source<TabContents>(
-          TabContents::FromWebContents(web_contents())),
+      content::Source<content::WebContents>(web_contents()),
       content::NotificationService::NoDetails());
 }
 
@@ -411,8 +410,7 @@ void PrintViewManager::OnNotifyPrintJobEvent(
 
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<TabContents>(
-              TabContents::FromWebContents(web_contents())),
+          content::Source<content::WebContents>(web_contents()),
           content::NotificationService::NoDetails());
       break;
     }
@@ -442,8 +440,7 @@ void PrintViewManager::OnNotifyPrintJobEvent(
 
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<TabContents>(
-              TabContents::FromWebContents(web_contents())),
+          content::Source<content::WebContents>(web_contents()),
           content::NotificationService::NoDetails());
       break;
     }
