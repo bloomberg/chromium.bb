@@ -12,6 +12,7 @@
 #include "ipc/ipc_message.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/host_exit_codes.h"
+#include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 #include "testing/gmock_mutant.h"
@@ -40,10 +41,13 @@ class MockProcessLauncherDelegate
   MockProcessLauncherDelegate() {}
   virtual ~MockProcessLauncherDelegate() {}
 
+  // IPC::Sender implementation.
+  MOCK_METHOD1(Send, bool(IPC::Message*));
+
   // WorkerProcessLauncher::Delegate implementation
   MOCK_METHOD0(GetExitCode, DWORD());
   MOCK_METHOD1(KillProcess, void(DWORD));
-  MOCK_METHOD2(LaunchProcess, bool(const std::string&, ScopedHandle*));
+  MOCK_METHOD2(LaunchProcess, bool(IPC::Listener*, ScopedHandle*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProcessLauncherDelegate);
@@ -81,13 +85,13 @@ class WorkerProcessLauncherTest
 
   // WorkerProcessLauncher::Delegate mocks
   void KillProcess(DWORD exit_code);
-  bool LaunchProcess(const std::string& channel_name,
+  bool LaunchProcess(IPC::Listener* delegate,
                      ScopedHandle* process_exit_event_out);
-  bool LaunchProcessAndConnect(const std::string& channel_name,
+  bool LaunchProcessAndConnect(IPC::Listener* delegate,
                                ScopedHandle* process_exit_event_out);
 
-  void ConnectTo(const std::string& channel_name);
-  void Disconnect();
+  void ConnectChannel();
+  void DisconnectChannel();
 
   // Starts the worker.
   void StartWorker();
@@ -108,8 +112,12 @@ class WorkerProcessLauncherTest
   MockIpcDelegate ipc_delegate_;
   scoped_ptr<MockProcessLauncherDelegate> launcher_delegate_;
 
-  // Client end of the IPC channel.
-  scoped_ptr<IPC::ChannelProxy> ipc_channel_;
+  // The name of the IPC channel.
+  std::string channel_name_;
+
+  // Client and server ends of the IPC channel.
+  scoped_ptr<IPC::ChannelProxy> channel_client_;
+  scoped_ptr<IPC::ChannelProxy> channel_server_;
 
   // The worker process launcher.
   scoped_ptr<WorkerProcessLauncher> launcher_;
@@ -136,6 +144,9 @@ void WorkerProcessLauncherTest::SetUp() {
 
   // Set up process launcher delegate
   launcher_delegate_.reset(new MockProcessLauncherDelegate());
+  EXPECT_CALL(*launcher_delegate_, Send(_))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(false));
   EXPECT_CALL(*launcher_delegate_, GetExitCode())
       .Times(AnyNumber())
       .WillRepeatedly(ReturnPointee(&exit_code_));
@@ -163,24 +174,16 @@ void WorkerProcessLauncherTest::KillProcess(DWORD exit_code) {
 }
 
 bool WorkerProcessLauncherTest::LaunchProcess(
-    const std::string& channel_name,
-    ScopedHandle* process_exit_event_out) {
-  return LaunchProcessAndConnect("", process_exit_event_out);
-}
-
-bool WorkerProcessLauncherTest::LaunchProcessAndConnect(
-    const std::string& channel_name,
+    IPC::Listener* delegate,
     ScopedHandle* process_exit_event_out) {
   process_exit_event_.Set(CreateEvent(NULL, TRUE, FALSE, NULL));
   if (!process_exit_event_.IsValid())
     return false;
 
-  if (!channel_name.empty()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&WorkerProcessLauncherTest::ConnectTo,
-                   base::Unretained(this),
-                   channel_name));
+  channel_name_ = GenerateIpcChannelName(this);
+  if (!CreateIpcChannel(channel_name_, kIpcSecurityDescriptor, task_runner_,
+                        delegate, &channel_server_)) {
+    return false;
   }
 
   exit_code_ = STILL_ACTIVE;
@@ -193,29 +196,41 @@ bool WorkerProcessLauncherTest::LaunchProcessAndConnect(
                          DUPLICATE_SAME_ACCESS) != FALSE;
 }
 
-void WorkerProcessLauncherTest::ConnectTo(const std::string& channel_name) {
-  ipc_channel_.reset(new IPC::ChannelProxy(
-      IPC::ChannelHandle(channel_name),
+bool WorkerProcessLauncherTest::LaunchProcessAndConnect(
+    IPC::Listener* delegate,
+    ScopedHandle* process_exit_event_out) {
+  if (!LaunchProcess(delegate, process_exit_event_out))
+    return false;
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WorkerProcessLauncherTest::ConnectChannel,
+                 base::Unretained(this)));
+  return true;
+}
+
+void WorkerProcessLauncherTest::ConnectChannel() {
+  channel_client_.reset(new IPC::ChannelProxy(
+      IPC::ChannelHandle(channel_name_),
       IPC::Channel::MODE_CLIENT,
       this,
       task_runner_));
 }
 
-void WorkerProcessLauncherTest::Disconnect() {
-  ipc_channel_.reset();
+void WorkerProcessLauncherTest::DisconnectChannel() {
+  channel_client_.reset();
 }
 
 void WorkerProcessLauncherTest::StartWorker() {
-  launcher_.reset(new WorkerProcessLauncher(task_runner_,
-                                            task_runner_,
-                                            launcher_delegate_.Pass(),
-                                            &ipc_delegate_,
-                                            kIpcSecurityDescriptor));
+  launcher_.reset(new WorkerProcessLauncher(
+      task_runner_, launcher_delegate_.Pass(), &ipc_delegate_));
 }
 
 void WorkerProcessLauncherTest::StopWorker() {
   launcher_.reset();
-  Disconnect();
+  DisconnectChannel();
+  channel_name_.clear();
+  channel_server_.reset();
   task_runner_ = NULL;
 }
 
@@ -294,7 +309,7 @@ TEST_F(WorkerProcessLauncherTest, DropIpcChannel) {
   Expectation first_connect =
       EXPECT_CALL(ipc_delegate_, OnChannelConnected())
           .Times(2)
-          .WillOnce(Invoke(this, &WorkerProcessLauncherTest::Disconnect))
+          .WillOnce(Invoke(this, &WorkerProcessLauncherTest::DisconnectChannel))
           .WillOnce(Invoke(this, &WorkerProcessLauncherTest::StopWorker));
 
   EXPECT_CALL(ipc_delegate_, OnPermanentError())

@@ -16,6 +16,11 @@ namespace base {
 class SingleThreadTaskRunner;
 } // namespace base
 
+namespace IPC {
+class Listener;
+class Message;
+} // namespace base
+
 namespace remoting {
 
 // Implements logic for launching and monitoring a worker process in a different
@@ -28,14 +33,18 @@ class WtsSessionProcessDelegate
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const FilePath& binary_path,
       uint32 session_id,
-      bool launch_elevated);
+      bool launch_elevated,
+      const std::string& channel_security);
   ~WtsSessionProcessDelegate();
+
+  // IPC::Sender implementation.
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // WorkerProcessLauncher::Delegate implementation.
   virtual DWORD GetExitCode() OVERRIDE;
   virtual void KillProcess(DWORD exit_code) OVERRIDE;
   virtual bool LaunchProcess(
-      const std::string& channel_name,
+      IPC::Listener* delegate,
       base::win::ScopedHandle* process_exit_event_out) OVERRIDE;
 
  private:

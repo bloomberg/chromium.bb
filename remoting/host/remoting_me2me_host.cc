@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_native_library.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
@@ -48,6 +49,7 @@
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_user_interface.h"
+#include "remoting/host/ipc_consts.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/network_settings.h"
@@ -62,6 +64,7 @@
 
 #if defined(OS_POSIX)
 #include <signal.h>
+#include "base/file_descriptor_posix.h"
 #include "remoting/host/posix/signal_handler.h"
 #endif  // defined(OS_POSIX)
 
@@ -77,6 +80,7 @@
 // N.B. OS_WIN is defined by including src/base headers.
 #if defined(OS_WIN)
 #include <commctrl.h>
+#include "base/win/scoped_handle.h"
 #include "remoting/host/win/session_desktop_environment_factory.h"
 #endif  // defined(OS_WIN)
 
@@ -88,9 +92,6 @@ namespace {
 
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
-
-// The command line switch specifying the name of the daemon IPC endpoint.
-const char kDaemonIpcSwitchName[] = "daemon-pipe";
 
 // The command line switch used to get version of the daemon.
 const char kVersionSwitchName[] = "version";
@@ -139,32 +140,61 @@ class HostProcess
                    base::Unretained(this)));
 }
 
+#if defined(REMOTING_MULTI_PROCESS)
+
+  bool InitWithCommandLine(const CommandLine* cmd_line) {
+    // Parse the handle value and convert it to a handle/file descriptor.
+    std::string channel_name =
+        cmd_line->GetSwitchValueASCII(kDaemonPipeSwitchName);
+
+    int pipe_handle = 0;
+    if (channel_name.empty() ||
+        !base::StringToInt(channel_name, &pipe_handle)) {
+      LOG(ERROR) << "Invalid '" << kDaemonPipeSwitchName
+                 << "' value: " << channel_name;
+      return false;
+    }
+
+#if defined(OS_WIN)
+    base::win::ScopedHandle pipe(reinterpret_cast<HANDLE>(pipe_handle));
+    IPC::ChannelHandle channel_handle(pipe);
+#elif defined(OS_POSIX)
+    base::FileDescriptor pipe(pipe_handle, true);
+    IPC::ChannelHandle channel_handle(channel_name, pipe);
+#endif  // defined(OS_POSIX)
+
+    // Connect to the daemon process.
+    daemon_channel_.reset(new IPC::ChannelProxy(
+        channel_handle,
+        IPC::Channel::MODE_CLIENT,
+        this,
+        context_->network_task_runner()));
+
+    return true;
+  }
+
+#else  // !defined(REMOTING_MULTI_PROCESS)
+
   bool InitWithCommandLine(const CommandLine* cmd_line) {
     // Connect to the daemon process.
     std::string channel_name =
-        cmd_line->GetSwitchValueASCII(kDaemonIpcSwitchName);
-
-#if defined(REMOTING_MULTI_PROCESS)
-    if (channel_name.empty())
-      return false;
-#endif  // defined(REMOTING_MULTI_PROCESS)
-
+        cmd_line->GetSwitchValueASCII(kDaemonPipeSwitchName);
     if (!channel_name.empty()) {
       daemon_channel_.reset(new IPC::ChannelProxy(
           channel_name, IPC::Channel::MODE_CLIENT, this,
           context_->network_task_runner()));
     }
 
-#if !defined(REMOTING_MULTI_PROCESS)
     FilePath default_config_dir = remoting::GetConfigDir();
     host_config_path_ = default_config_dir.Append(kDefaultHostConfigFile);
     if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
       host_config_path_ = cmd_line->GetSwitchValuePath(kHostConfigSwitchName);
     }
-#endif  // !defined(REMOTING_MULTI_PROCESS)
 
     return true;
   }
+
+#endif  // !defined(REMOTING_MULTI_PROCESS)
 
 #if defined(OS_POSIX)
   void SigTermHandler(int signal_number) {

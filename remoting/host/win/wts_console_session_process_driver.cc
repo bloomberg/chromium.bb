@@ -4,31 +4,20 @@
 
 #include "remoting/host/win/wts_console_session_process_driver.h"
 
-#include <sddl.h>
-#include <limits>
-
 #include "base/base_switches.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/path_service.h"
 #include "ipc/ipc_message.h"
+#include "remoting/host/ipc_consts.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_console_monitor.h"
 #include "remoting/host/win/wts_session_process_delegate.h"
 
-namespace {
-
-const FilePath::CharType kMe2meHostBinaryName[] =
-    FILE_PATH_LITERAL("remoting_host.exe");
-
-// The security descriptor of the daemon IPC endpoint. It gives full access
-// to LocalSystem and denies access by anyone else.
+// The security descriptor of the named pipe the process running in the console
+// session connects to. It gives full access to LocalSystem and denies access by
+// anyone else.
 const char kDaemonIpcSecurityDescriptor[] = "O:SYG:SYD:(A;;GA;;;SY)";
-
-} // namespace
 
 namespace remoting {
 
@@ -84,13 +73,11 @@ void WtsConsoleSessionProcessDriver::OnSessionAttached(uint32 session_id) {
   DCHECK(launcher_.get() == NULL);
 
   // Construct the host binary name.
-  FilePath dir_path;
-  if (!PathService::Get(base::DIR_EXE, &dir_path)) {
-    LOG(ERROR) << "Failed to get the executable file name.";
+  FilePath host_binary;
+  if (!GetInstalledBinaryPath(kHostBinaryName, &host_binary)) {
     Stop();
     return;
   }
-  FilePath host_binary = dir_path.Append(kMe2meHostBinaryName);
 
   // Create a Delegate capable of launching an elevated process in the session.
   scoped_ptr<WtsSessionProcessDelegate> delegate(
@@ -98,14 +85,12 @@ void WtsConsoleSessionProcessDriver::OnSessionAttached(uint32 session_id) {
                                     io_task_runner_,
                                     host_binary,
                                     session_id,
-                                    true));
+                                    true,
+                                    kDaemonIpcSecurityDescriptor));
 
   // Use the Delegate to launch the host process.
-  launcher_.reset(new WorkerProcessLauncher(caller_task_runner_,
-                                            io_task_runner_,
-                                            delegate.Pass(),
-                                            this,
-                                            kDaemonIpcSecurityDescriptor));
+  launcher_.reset(new WorkerProcessLauncher(
+      caller_task_runner_, delegate.Pass(), this));
 }
 
 void WtsConsoleSessionProcessDriver::OnSessionDetached() {

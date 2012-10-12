@@ -11,16 +11,23 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
+#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_message.h"
+#include "remoting/host/ipc_consts.h"
 #include "remoting/host/win/launch_process_with_token.h"
 
 using base::win::ScopedHandle;
 
 namespace {
 
-// The command line switch specifying the name of the daemon IPC endpoint.
-const char kDaemonIpcSwitchName[] = "daemon-pipe";
+// The security descriptor used to protect the named pipe in between
+// CreateNamedPipe() and CreateFile() calls before it will be passed to
+// the network process. It gives full access to LocalSystem and denies access by
+// anyone else.
+const char kDaemonIpcSecurityDescriptor[] = "O:SYG:SYD:(A;;GA;;;SY)";
 
 // The command line parameters that should be copied from the service's command
 // line to the host process.
@@ -44,6 +51,12 @@ UnprivilegedProcessDelegate::~UnprivilegedProcessDelegate() {
   KillProcess(CONTROL_C_EXIT);
 }
 
+bool UnprivilegedProcessDelegate::Send(IPC::Message* message) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  return channel_->Send(message);
+}
+
 DWORD UnprivilegedProcessDelegate::GetExitCode() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -62,21 +75,35 @@ DWORD UnprivilegedProcessDelegate::GetExitCode() {
 void UnprivilegedProcessDelegate::KillProcess(DWORD exit_code) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  channel_.reset();
+
   if (worker_process_.IsValid()) {
     TerminateProcess(worker_process_, exit_code);
   }
 }
 
 bool UnprivilegedProcessDelegate::LaunchProcess(
-    const std::string& channel_name,
+    IPC::Listener* delegate,
     ScopedHandle* process_exit_event_out) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  // Generate a unique name for the channel.
+  std::string channel_name = GenerateIpcChannelName(this);
+
+  // Create a connected IPC channel.
+  ScopedHandle client;
+  scoped_ptr<IPC::ChannelProxy> server;
+  if (!CreateConnectedIpcChannel(channel_name, delegate, &client, &server))
+    return false;
+
+  // Convert the handle value into a decimal integer. Handle values are 32bit
+  // even on 64bit platforms.
+  std::string pipe_handle = base::StringPrintf(
+      "%d", reinterpret_cast<ULONG_PTR>(client.Get()));
 
   // Create the command line passing the name of the IPC channel to use and
   // copying known switches from the caller's command line.
   CommandLine command_line(binary_path_);
-  command_line.AppendSwitchNative(kDaemonIpcSwitchName,
-                                  UTF8ToWide(channel_name));
+  command_line.AppendSwitchASCII(kDaemonPipeSwitchName, pipe_handle);
   command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
                                 kCopiedSwitchNames,
                                 arraysize(kCopiedSwitchNames));
@@ -89,6 +116,7 @@ bool UnprivilegedProcessDelegate::LaunchProcess(
   if (!LaunchProcessWithToken(command_line.GetProgram(),
                               command_line.GetCommandLineString(),
                               NULL,
+                              true,
                               0,
                               &worker_process_,
                               &worker_thread)) {
@@ -110,7 +138,48 @@ bool UnprivilegedProcessDelegate::LaunchProcess(
     return false;
   }
 
+  channel_ = server.Pass();
   *process_exit_event_out = process_exit_event.Pass();
+  return true;
+}
+
+bool UnprivilegedProcessDelegate::CreateConnectedIpcChannel(
+    const std::string& channel_name,
+    IPC::Listener* delegate,
+    ScopedHandle* client_out,
+    scoped_ptr<IPC::ChannelProxy>* server_out) {
+  // Create the server end of the channel.
+  scoped_ptr<IPC::ChannelProxy> server;
+  if (!CreateIpcChannel(channel_name, kDaemonIpcSecurityDescriptor,
+                        io_task_runner_, delegate, &server)) {
+    return false;
+  }
+
+  // Convert the channel name to the pipe name.
+  std::string pipe_name(kChromePipeNamePrefix);
+  pipe_name.append(channel_name);
+
+  SECURITY_ATTRIBUTES security_attributes;
+  security_attributes.nLength = sizeof(security_attributes);
+  security_attributes.lpSecurityDescriptor = NULL;
+  security_attributes.bInheritHandle = TRUE;
+
+  // Create the client end of the channel. This code should match the code in
+  // IPC::Channel.
+  ScopedHandle client;
+  client.Set(CreateFile(UTF8ToUTF16(pipe_name).c_str(),
+                        GENERIC_READ | GENERIC_WRITE,
+                        0,
+                        &security_attributes,
+                        OPEN_EXISTING,
+                        SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
+                            FILE_FLAG_OVERLAPPED,
+                        NULL));
+  if (!client.IsValid())
+    return false;
+
+  *client_out = client.Pass();
+  *server_out = server.Pass();
   return true;
 }
 

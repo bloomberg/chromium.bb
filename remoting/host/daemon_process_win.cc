@@ -10,30 +10,19 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "remoting/host/host_exit_codes.h"
+#include "remoting/host/ipc_consts.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/unprivileged_process_delegate.h"
 #include "remoting/host/win/worker_process_launcher.h"
 
 using base::win::ScopedHandle;
 using base::TimeDelta;
-
-namespace {
-
-const FilePath::CharType kMe2meHostBinaryName[] =
-    FILE_PATH_LITERAL("remoting_host.exe");
-
-// The security descriptor of the daemon IPC endpoint. It gives full access
-// to LocalSystem and denies access by anyone else.
-const char kDaemonPipeSecurityDescriptor[] = "O:SYG:SYD:(A;;GA;;;SY)";
-
-} // namespace
 
 namespace remoting {
 
@@ -80,21 +69,17 @@ void DaemonProcessWin::LaunchNetworkProcess() {
   DCHECK(launcher_.get() == NULL);
 
   // Construct the host binary name.
-  FilePath dir_path;
-  if (!PathService::Get(base::DIR_EXE, &dir_path)) {
-    LOG(ERROR) << "Failed to get the executable file name.";
+  FilePath host_binary;
+  if (!GetInstalledBinaryPath(kHostBinaryName, &host_binary)) {
     Stop();
     return;
   }
 
   scoped_ptr<UnprivilegedProcessDelegate> delegate(
       new UnprivilegedProcessDelegate(main_task_runner(), io_task_runner(),
-                                      dir_path.Append(kMe2meHostBinaryName)));
-  launcher_.reset(new WorkerProcessLauncher(main_task_runner(),
-                                            io_task_runner(),
-                                            delegate.Pass(),
-                                            this,
-                                            kDaemonPipeSecurityDescriptor));
+                                      host_binary));
+  launcher_.reset(new WorkerProcessLauncher(
+      main_task_runner(), delegate.Pass(), this));
 }
 
 void DaemonProcessWin::Send(IPC::Message* message) {

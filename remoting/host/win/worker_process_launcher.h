@@ -10,12 +10,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
+#include "ipc/ipc_sender.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 } // namespace base
 
 namespace IPC {
+class Listener;
 class Message;
 } // namespace IPC
 
@@ -29,21 +31,23 @@ class WorkerProcessIpcDelegate;
 // is terminated.
 class WorkerProcessLauncher {
  public:
-  class Delegate {
+  class Delegate : public IPC::Sender {
    public:
     virtual ~Delegate();
 
     // Returns the exit code of the worker process.
     virtual DWORD GetExitCode() = 0;
 
-    // Terminates the worker process with the given exit code.
+    // Terminates the worker process with the given exit code. Destroys the IPC
+    // channel created by LaunchProcess().
     virtual void KillProcess(DWORD exit_code) = 0;
 
-    // Starts the worker process and passes |channel_name| to it.
-    // |process_exit_event_out| receives a handle that becomes signalled once
-    // the launched process has been terminated.
+    // Starts the worker process and creates an IPC channel it can connect to.
+    // |delegate| specifies the object that will receive notifications from
+    // the IPC channel. |process_exit_event_out| receives a handle that becomes
+    // signalled once the launched process has been terminated.
     virtual bool LaunchProcess(
-        const std::string& channel_name,
+        IPC::Listener* delegate,
         base::win::ScopedHandle* process_exit_event_out) = 0;
   };
 
@@ -54,14 +58,11 @@ class WorkerProcessLauncher {
   //
   // The caller should call all the methods on this class on
   // the |caller_task_runner| thread. Methods of both delegate interfaces are
-  // called on the |caller_task_runner| thread as well. |io_task_runner| is used
-  // to perform background IPC I/O.
+  // called on the |caller_task_runner| thread as well.
   WorkerProcessLauncher(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_ptr<Delegate> launcher_delegate,
-      WorkerProcessIpcDelegate* worker_delegate,
-      const std::string& pipe_security_descriptor);
+      WorkerProcessIpcDelegate* worker_delegate);
   ~WorkerProcessLauncher();
 
   // Sends an IPC message to the worker process. The message will be silently
