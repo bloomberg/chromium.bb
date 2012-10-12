@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Thu Oct 11 20:53:07 2012.
+ *   modified Thu Oct 11 22:28:01 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -177,23 +177,27 @@ struct PPP_ContentDecryptor_Private_0_3 {
                        PP_DecryptorStreamType decoder_type,
                        uint32_t request_id);
   /**
-   * Decrypts encrypted_video_frame, decodes it, and returns the unencrypted
-   * uncompressed (decoded) video frame to the browser via the
-   * <code>DeliverFrame()</code> method on the
+   * Decrypts encrypted_buffer, decodes it, and returns the unencrypted
+   * uncompressed (decoded) data to the browser via the
+   * <code>DeliverFrame()</code> or <code>DeliverSamples()</code> method on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
-   * @param[in] encrypted_video_frame A <code>PP_Resource</code> corresponding
-   * to a <code>PPB_Buffer_Dev</code> resource that contains an encrypted video
-   * frame.
+   * @param[in] decoder_type A <code>PP_DecryptorStreamType</code> that
+   * specifies the decoder to use after <code>encrypted_buffer</code> is
+   * decrypted.
    *
-   * @param[in] encrypted_video_frame_info A
-   * <code>PP_EncryptedVideoFrameInfo</code> that contains all information
-   * needed to decrypt and decode <code>encrypted_video_frame</code>.
+   * @param[in] encrypted_buffer A <code>PP_Resource</code> corresponding to a
+   * <code>PPB_Buffer_Dev</code> resource that contains encrypted media data.
+   *
+   * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
+   * contains all auxiliary information needed for decryption of the
+   * <code>encrypted_block</code>.
    */
-  void (*DecryptAndDecodeFrame)(
+  void (*DecryptAndDecode)(
       PP_Instance instance,
-      PP_Resource encrypted_video_frame,
-      const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info);
+      PP_DecryptorStreamType decoder_type,
+      PP_Resource encrypted_buffer,
+      const struct PP_EncryptedBlockInfo* encrypted_block_info);
 };
 
 typedef struct PPP_ContentDecryptor_Private_0_3 PPP_ContentDecryptor_Private;

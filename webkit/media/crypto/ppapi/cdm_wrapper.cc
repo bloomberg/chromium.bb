@@ -411,9 +411,10 @@ class CdmWrapper : public pp::Instance,
                                    uint32_t request_id) OVERRIDE;
   virtual void ResetDecoder(PP_DecryptorStreamType decoder_type,
                             uint32_t request_id) OVERRIDE;
-  virtual void DecryptAndDecodeFrame(
-      pp::Buffer_Dev encrypted_frame,
-      const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) OVERRIDE;
+  virtual void DecryptAndDecode(
+      PP_DecryptorStreamType decoder_type,
+      pp::Buffer_Dev encrypted_buffer,
+      const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
 
   // CdmHost methods.
   virtual void SetTimer(int64 delay_ms) OVERRIDE;
@@ -623,16 +624,20 @@ void CdmWrapper::ResetDecoder(PP_DecryptorStreamType decoder_type,
                                            request_id));
 }
 
-void CdmWrapper::DecryptAndDecodeFrame(
-    pp::Buffer_Dev encrypted_frame,
-    const PP_EncryptedVideoFrameInfo& encrypted_video_frame_info) {
-  PP_DCHECK(!encrypted_frame.is_null());
+void CdmWrapper::DecryptAndDecode(
+    PP_DecryptorStreamType decoder_type,
+    pp::Buffer_Dev encrypted_buffer,
+    const PP_EncryptedBlockInfo& encrypted_block_info) {
+  // TODO(tomfinegan): Remove this check when audio decoding is added.
+  PP_DCHECK(decoder_type == PP_DECRYPTORSTREAMTYPE_VIDEO);
+
+  PP_DCHECK(!encrypted_buffer.is_null());
   PP_DCHECK(cdm_);
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
-  ConfigureInputBuffer(encrypted_frame,
-                       encrypted_video_frame_info.encryption_info,
+  ConfigureInputBuffer(encrypted_buffer,
+                       encrypted_block_info,
                        &subsamples,
                        &input_buffer);
 
@@ -643,7 +648,7 @@ void CdmWrapper::DecryptAndDecodeFrame(
       &CdmWrapper::DeliverFrame,
       status,
       video_frame,
-      encrypted_video_frame_info.encryption_info.tracking_info));
+      encrypted_block_info.tracking_info));
 }
 
 void CdmWrapper::SetTimer(int64 delay_ms) {

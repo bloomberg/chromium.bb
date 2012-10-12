@@ -52,10 +52,11 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   void OnMsgResetDecoder(PP_Instance instance,
                          PP_DecryptorStreamType decoder_type,
                          uint32_t request_id);
-  void OnMsgDecryptAndDecodeFrame(
+  void OnMsgDecryptAndDecode(
       PP_Instance instance,
-      const PPPDecryptor_Buffer& encrypted_frame,
-      const std::string& serialized_encrypted_frame_info);
+      PP_DecryptorStreamType decoder_type,
+      const PPPDecryptor_Buffer& encrypted_buffer,
+      const std::string& serialized_encrypted_block_info);
 
   const PPP_ContentDecryptor_Private* ppp_decryptor_impl_;
 

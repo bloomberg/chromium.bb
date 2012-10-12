@@ -168,21 +168,25 @@ interface PPP_ContentDecryptor_Private {
       [in] uint32_t request_id);
 
   /**
-   * Decrypts encrypted_video_frame, decodes it, and returns the unencrypted
-   * uncompressed (decoded) video frame to the browser via the
-   * <code>DeliverFrame()</code> method on the
+   * Decrypts encrypted_buffer, decodes it, and returns the unencrypted
+   * uncompressed (decoded) data to the browser via the
+   * <code>DeliverFrame()</code> or <code>DeliverSamples()</code> method on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
-   * @param[in] encrypted_video_frame A <code>PP_Resource</code> corresponding
-   * to a <code>PPB_Buffer_Dev</code> resource that contains an encrypted video
-   * frame.
+   * @param[in] decoder_type A <code>PP_DecryptorStreamType</code> that
+   * specifies the decoder to use after <code>encrypted_buffer</code> is
+   * decrypted.
    *
-   * @param[in] encrypted_video_frame_info A
-   * <code>PP_EncryptedVideoFrameInfo</code> that contains all information
-   * needed to decrypt and decode <code>encrypted_video_frame</code>.
+   * @param[in] encrypted_buffer A <code>PP_Resource</code> corresponding to a
+   * <code>PPB_Buffer_Dev</code> resource that contains encrypted media data.
+   *
+   * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
+   * contains all auxiliary information needed for decryption of the
+   * <code>encrypted_block</code>.
    */
-  void DecryptAndDecodeFrame(
+  void DecryptAndDecode(
       [in] PP_Instance instance,
-      [in] PP_Resource encrypted_video_frame,
-      [in] PP_EncryptedVideoFrameInfo encrypted_video_frame_info);
+      [in] PP_DecryptorStreamType decoder_type,
+      [in] PP_Resource encrypted_buffer,
+      [in] PP_EncryptedBlockInfo encrypted_block_info);
 };

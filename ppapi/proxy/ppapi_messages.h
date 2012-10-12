@@ -642,8 +642,9 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_ResetDecoder,
                     PP_Instance /* instance */,
                     PP_DecryptorStreamType /* decoder_type */,
                     uint32_t /* request_id */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_DecryptAndDecodeFrame,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_DecryptAndDecode,
                     PP_Instance /* instance */,
+                    PP_DecryptorStreamType /* decoder_type */,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
                     std::string /* serialized_block_info */)
 

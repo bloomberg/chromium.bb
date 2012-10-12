@@ -273,8 +273,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool ResetDecoder();
   // TODO(xhwang): Update this when we need to support decrypt and decode.
   // Note: This method can be used with an unencrypted frame.
-  bool DecryptAndDecodeFrame(
-      const scoped_refptr<media::DecoderBuffer>& encrypted_frame,
+  bool DecryptAndDecode(
+      const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
       const media::Decryptor::DecryptCB& decrypt_cb);
 
   // There are 2 implementations of the fullscreen interface

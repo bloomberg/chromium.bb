@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Thu Oct 11 21:05:40 2012. */
+/* Last generated from IDL: Thu Oct 11 22:28:05 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -3481,10 +3481,10 @@ static void Pnacl_M24_PPP_ContentDecryptor_Private_ResetDecoder(PP_Instance inst
   temp_fp(instance, decoder_type, request_id);
 }
 
-static void Pnacl_M24_PPP_ContentDecryptor_Private_DecryptAndDecodeFrame(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info) {
+static void Pnacl_M24_PPP_ContentDecryptor_Private_DecryptAndDecode(PP_Instance instance, PP_DecryptorStreamType decoder_type, PP_Resource encrypted_buffer, const struct PP_EncryptedBlockInfo* encrypted_block_info) {
   const struct PPP_ContentDecryptor_Private_0_3 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_3.real_iface;
-  void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info))iface->DecryptAndDecodeFrame);
-  temp_fp(instance, encrypted_video_frame, encrypted_video_frame_info);
+  void (__attribute__((pnaclcall)) *temp_fp)(PP_Instance instance, PP_DecryptorStreamType decoder_type, PP_Resource encrypted_buffer, const struct PP_EncryptedBlockInfo* encrypted_block_info) = ((void (__attribute__((pnaclcall)) *)(PP_Instance instance, PP_DecryptorStreamType decoder_type, PP_Resource encrypted_buffer, const struct PP_EncryptedBlockInfo* encrypted_block_info))iface->DecryptAndDecode);
+  temp_fp(instance, decoder_type, encrypted_buffer, encrypted_block_info);
 }
 
 /* End wrapper methods for PPP_ContentDecryptor_Private_0_3 */
@@ -4302,7 +4302,7 @@ struct PPP_ContentDecryptor_Private_0_3 Pnacl_Wrappers_PPP_ContentDecryptor_Priv
     .InitializeVideoDecoder = (void (*)(PP_Instance instance, const struct PP_VideoDecoderConfig* decoder_config, PP_Resource codec_extra_data))&Pnacl_M24_PPP_ContentDecryptor_Private_InitializeVideoDecoder,
     .DeinitializeDecoder = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M24_PPP_ContentDecryptor_Private_DeinitializeDecoder,
     .ResetDecoder = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M24_PPP_ContentDecryptor_Private_ResetDecoder,
-    .DecryptAndDecodeFrame = (void (*)(PP_Instance instance, PP_Resource encrypted_video_frame, const struct PP_EncryptedVideoFrameInfo* encrypted_video_frame_info))&Pnacl_M24_PPP_ContentDecryptor_Private_DecryptAndDecodeFrame
+    .DecryptAndDecode = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, PP_Resource encrypted_buffer, const struct PP_EncryptedBlockInfo* encrypted_block_info))&Pnacl_M24_PPP_ContentDecryptor_Private_DecryptAndDecode
 };
 
 /* Not generating wrapper interface for PPP_Flash_BrowserOperations_1_0 */

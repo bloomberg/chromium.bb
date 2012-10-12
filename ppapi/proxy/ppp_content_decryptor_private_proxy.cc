@@ -272,10 +272,10 @@ void ResetDecoder(PP_Instance instance,
           request_id));
 }
 
-void DecryptAndDecodeFrame(
-    PP_Instance instance,
-    PP_Resource encrypted_frame,
-    const PP_EncryptedVideoFrameInfo* encrypted_video_frame_info) {
+void DecryptAndDecode(PP_Instance instance,
+                      PP_DecryptorStreamType decoder_type,
+                      PP_Resource encrypted_buffer,
+                      const PP_EncryptedBlockInfo* encrypted_block_info) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
@@ -285,25 +285,25 @@ void DecryptAndDecodeFrame(
   PPPDecryptor_Buffer buffer;
   if (!InitializePppDecryptorBuffer(instance,
                                     dispatcher,
-                                    encrypted_frame,
+                                    encrypted_buffer,
                                     &buffer)) {
     NOTREACHED();
     return;
   }
 
-  std::string serialized_frame_info;
-  if (!SerializeBlockInfo(*encrypted_video_frame_info,
-                          &serialized_frame_info)) {
+  std::string serialized_block_info;
+  if (!SerializeBlockInfo(*encrypted_block_info, &serialized_block_info)) {
     NOTREACHED();
     return;
   }
 
   dispatcher->Send(
-      new PpapiMsg_PPPContentDecryptor_DecryptAndDecodeFrame(
+      new PpapiMsg_PPPContentDecryptor_DecryptAndDecode(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
+          decoder_type,
           buffer,
-          serialized_frame_info));
+          serialized_block_info));
 }
 
 static const PPP_ContentDecryptor_Private content_decryptor_interface = {
@@ -314,7 +314,7 @@ static const PPP_ContentDecryptor_Private content_decryptor_interface = {
   &InitializeVideoDecoder,
   &DeinitializeDecoder,
   &ResetDecoder,
-  &DecryptAndDecodeFrame
+  &DecryptAndDecode
 };
 
 }  // namespace
@@ -357,8 +357,8 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
                         OnMsgDeinitializeDecoder)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_ResetDecoder,
                         OnMsgResetDecoder)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_DecryptAndDecodeFrame,
-                        OnMsgDecryptAndDecodeFrame)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_DecryptAndDecode,
+                        OnMsgDecryptAndDecode)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -472,23 +472,25 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgResetDecoder(
   }
 }
 
-void PPP_ContentDecryptor_Private_Proxy::OnMsgDecryptAndDecodeFrame(
+void PPP_ContentDecryptor_Private_Proxy::OnMsgDecryptAndDecode(
     PP_Instance instance,
-    const PPPDecryptor_Buffer& encrypted_frame,
-    const std::string& serialized_frame_info) {
+    PP_DecryptorStreamType decoder_type,
+    const PPPDecryptor_Buffer& encrypted_buffer,
+    const std::string& serialized_block_info) {
   if (ppp_decryptor_impl_) {
     PP_Resource plugin_resource =
-        PPB_Buffer_Proxy::AddProxyResource(encrypted_frame.resource,
-                                           encrypted_frame.handle,
-                                           encrypted_frame.size);
-    PP_EncryptedVideoFrameInfo frame_info;
-    if (!DeserializeBlockInfo(serialized_frame_info, &frame_info))
+        PPB_Buffer_Proxy::AddProxyResource(encrypted_buffer.resource,
+                                           encrypted_buffer.handle,
+                                           encrypted_buffer.size);
+    PP_EncryptedBlockInfo block_info;
+    if (!DeserializeBlockInfo(serialized_block_info, &block_info))
       return;
     CallWhileUnlocked(
-        ppp_decryptor_impl_->DecryptAndDecodeFrame,
+        ppp_decryptor_impl_->DecryptAndDecode,
         instance,
+        decoder_type,
         plugin_resource,
-        const_cast<const PP_EncryptedVideoFrameInfo*>(&frame_info));
+        const_cast<const PP_EncryptedBlockInfo*>(&block_info));
   }
 }
 

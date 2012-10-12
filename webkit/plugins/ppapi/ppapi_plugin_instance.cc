@@ -1631,42 +1631,38 @@ bool PluginInstance::ResetDecoder() {
   return true;
 }
 
-bool PluginInstance::DecryptAndDecodeFrame(
-    const scoped_refptr<media::DecoderBuffer>& encrypted_frame,
+bool PluginInstance::DecryptAndDecode(
+    const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     const media::Decryptor::DecryptCB& decrypt_cb) {
   if (!LoadContentDecryptorInterface())
     return false;
 
   ScopedPPResource encrypted_resource(MakeBufferResource(
       pp_instance(),
-      encrypted_frame->GetData(),
-      encrypted_frame->GetDataSize()));
+      encrypted_buffer->GetData(),
+      encrypted_buffer->GetDataSize()));
   if (!encrypted_resource.get())
     return false;
 
   const uint32_t request_id = next_decryption_request_id_++;
 
-  // TODO(tomfinegan): Need to get the video format information here somehow.
-  PP_EncryptedVideoFrameInfo frame_info;
-  frame_info.width = 0;
-  frame_info.height = 0;
-  frame_info.format = PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
-  frame_info.codec = PP_VIDEOCODEC_UNKNOWN;
-
-  DCHECK(encrypted_frame->GetDecryptConfig());
-  if (!MakeEncryptedBlockInfo(*encrypted_frame->GetDecryptConfig(),
-                              encrypted_frame->GetTimestamp().InMicroseconds(),
+  PP_EncryptedBlockInfo block_info;
+  DCHECK(encrypted_buffer->GetDecryptConfig());
+  if (!MakeEncryptedBlockInfo(*encrypted_buffer->GetDecryptConfig(),
+                              encrypted_buffer->GetTimestamp().InMicroseconds(),
                               request_id,
-                              &frame_info.encryption_info)) {
+                              &block_info)) {
     return false;
   }
 
   DCHECK(!ContainsKey(pending_decryption_cbs_, request_id));
   pending_decryption_cbs_.insert(std::make_pair(request_id, decrypt_cb));
 
-  plugin_decryption_interface_->DecryptAndDecodeFrame(pp_instance(),
-                                                      encrypted_resource,
-                                                      &frame_info);
+  // TODO(tomfinegan): Need to get stream type from media stack.
+  plugin_decryption_interface_->DecryptAndDecode(pp_instance(),
+                                                 PP_DECRYPTORSTREAMTYPE_VIDEO,
+                                                 encrypted_resource,
+                                                 &block_info);
   return true;
 }
 

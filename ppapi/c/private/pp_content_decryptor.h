@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Thu Oct 11 21:05:33 2012. */
+/* From private/pp_content_decryptor.idl modified Thu Oct 11 22:13:01 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -147,51 +147,7 @@ typedef enum {
   PP_VIDEOCODEC_VP8 = 1
 } PP_VideoCodec;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoCodec, 4);
-/**
- * @}
- */
 
-/**
- * @addtogroup Structs
- * @{
- */
-/**
- * <code>PP_EncryptedVideoFrameInfo</code> contains the information required
- * to decrypt and decode a video frame.
- * TODO(tomfinegan): Revisit necessity of including format information in this
- * struct once we decide how to implement video decoder initialization.
- */
-struct PP_EncryptedVideoFrameInfo {
-  /**
-   * The decoded video frame format.
-   */
-  PP_DecryptedFrameFormat format;
-  /**
-   * The video frame codec type.
-   */
-  PP_VideoCodec codec;
-  /**
-   * Video frame width in pixels.
-   */
-  int32_t width;
-  /**
-   * Video frame height in pixels.
-   */
-  int32_t height;
-  /**
-   * Information required to decrypt the frame.
-   */
-  struct PP_EncryptedBlockInfo encryption_info;
-};
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedVideoFrameInfo, 256);
-/**
- * @}
- */
-
-/**
- * @addtogroup Enums
- * @{
- */
 /**
  * The <code>PP_DecryptResult</code> enum contains decryption and decoding
  * result constants.
@@ -226,8 +182,8 @@ struct PP_DecryptedBlockInfo {
   PP_DecryptResult result;
   /**
    * 4-byte padding to make the size of <code>PP_DecryptedBlockInfo</code>
-   * a multiple of 8 bytes and make sure |tracking_info| starts on an 8-byte
-   * boundary. The value of this field should not be used.
+   * a multiple of 8 bytes, and ensure consistent size on all targets. This
+   * value should never be used.
    */
   uint32_t padding;
   /**

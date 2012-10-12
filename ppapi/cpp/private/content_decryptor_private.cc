@@ -144,20 +144,21 @@ void ResetDecoder(PP_Instance instance,
                                                                request_id);
 }
 
-void DecryptAndDecodeFrame(
-    PP_Instance instance,
-    PP_Resource encrypted_resource,
-    const PP_EncryptedVideoFrameInfo* encrypted_video_frame_info) {
+void DecryptAndDecode(PP_Instance instance,
+                      PP_DecryptorStreamType decoder_type,
+                      PP_Resource encrypted_resource,
+                      const PP_EncryptedBlockInfo* encrypted_block_info) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
     return;
 
-  pp::Buffer_Dev encrypted_frame(pp::PassRef(), encrypted_resource);
+  pp::Buffer_Dev encrypted_buffer(pp::PassRef(), encrypted_resource);
 
-  static_cast<ContentDecryptor_Private*>(object)->DecryptAndDecodeFrame(
-      encrypted_frame,
-      *encrypted_video_frame_info);
+  static_cast<ContentDecryptor_Private*>(object)->DecryptAndDecode(
+      decoder_type,
+      encrypted_buffer,
+      *encrypted_block_info);
 }
 
 const PPP_ContentDecryptor_Private ppp_content_decryptor = {
@@ -168,7 +169,7 @@ const PPP_ContentDecryptor_Private ppp_content_decryptor = {
   &InitializeVideoDecoder,
   &DeinitializeDecoder,
   &ResetDecoder,
-  &DecryptAndDecodeFrame
+  &DecryptAndDecode
 };
 
 template <> const char* interface_name<PPB_ContentDecryptor_Private>() {
