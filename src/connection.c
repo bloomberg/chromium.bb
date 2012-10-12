@@ -517,12 +517,12 @@ wl_closure_vmarshal(struct wl_object *sender,
 				goto err;
 			*p++ = length;
 
-			if (length > 0)
+			if (length > 0) {
+				memcpy(p, s, length);
 				*sp = (const char *) p;
-			else
+			} else
 				*sp = NULL;
 
-			memcpy(p, s, length);
 			memset((char *) p + length, 0, aligned - length);
 			p += aligned / sizeof *p;
 			break;
