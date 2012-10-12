@@ -8,8 +8,7 @@
 #include "net/base/mock_host_resolver.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebSocket) {
-  FilePath websocket_root_dir;
-  ASSERT_TRUE(PathService::Get(content::DIR_LAYOUT_TESTS, &websocket_root_dir));
-  ASSERT_TRUE(StartWebSocketServer(websocket_root_dir));
+  ASSERT_TRUE(StartWebSocketServer(
+      FilePath(FILE_PATH_LITERAL("net/data/websocket"))));
   ASSERT_TRUE(RunExtensionTest("websocket")) << message_;
 }
