@@ -282,8 +282,6 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(ui::kCursorNull),
       window_mapped_(false),
-      cursor_shown_(true),
-      invisible_cursor_(ui::CreateInvisibleCursor(), xdisplay_),
       bounds_(bounds),
       focus_when_shown_(false),
       pointer_barriers_(NULL),
@@ -741,16 +739,7 @@ void RootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
   if (cursor == current_cursor_)
     return;
   current_cursor_ = cursor;
-
-  if (cursor_shown_)
-    SetCursorInternal(cursor);
-}
-
-void RootWindowHostLinux::ShowCursor(bool show) {
-  if (show == cursor_shown_)
-    return;
-  cursor_shown_ = show;
-  SetCursorInternal(show ? current_cursor_ : invisible_cursor_.get());
+  SetCursorInternal(cursor);
 }
 
 bool RootWindowHostLinux::QueryMouseLocation(gfx::Point* location_return) {

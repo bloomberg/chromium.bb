@@ -27,6 +27,15 @@ class AURA_EXPORT CursorClient {
   // Sets the device scale factor of the cursor.
   virtual void SetDeviceScaleFactor(float device_scale_factor) = 0;
 
+  // Locks the cursor change. The cursor type and cursor visibility never change
+  // as long as lock is held by anyone.
+  virtual void LockCursor() = 0;
+
+  // Unlocks the cursor change. If all the locks are released, the cursor type
+  // and visibility are restored to the ones set by the lastest call of
+  // SetCursor and ShowCursor.
+  virtual void UnlockCursor() = 0;
+
  protected:
   virtual ~CursorClient() {}
 };

@@ -57,7 +57,6 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
-  virtual void ShowCursor(bool show) OVERRIDE;
   virtual bool QueryMouseLocation(gfx::Point* location_return) OVERRIDE;
   virtual bool ConfineCursorToRootWindow() OVERRIDE;
   virtual void UnConfineCursor() OVERRIDE;
@@ -97,12 +96,6 @@ class RootWindowHostLinux : public RootWindowHost,
 
   // Is the window mapped to the screen?
   bool window_mapped_;
-
-  // Is the cursor currently shown?
-  bool cursor_shown_;
-
-  // The invisible cursor.
-  ui::XScopedCursor invisible_cursor_;
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;

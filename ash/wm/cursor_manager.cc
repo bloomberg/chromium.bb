@@ -4,19 +4,40 @@
 
 #include "ash/wm/cursor_manager.h"
 
-#include "ash/wm/cursor_delegate.h"
+#include "ash/shell.h"
 #include "ash/wm/image_cursors.h"
 #include "base/logging.h"
-#include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
+
+namespace  {
+
+void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
+  ash::Shell::RootWindowList root_windows =
+      ash::Shell::GetInstance()->GetAllRootWindows();
+  for (ash::Shell::RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter)
+    (*iter)->SetCursor(cursor);
+}
+
+void NotifyCursorVisibilityChange(bool visible) {
+  ash::Shell::RootWindowList root_windows =
+      ash::Shell::GetInstance()->GetAllRootWindows();
+  for (ash::Shell::RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter)
+    (*iter)->OnCursorVisibilityChanged(visible);
+}
+
+}  // namespace
 
 namespace ash {
 
 CursorManager::CursorManager()
-    : delegate_(NULL),
-      cursor_lock_count_(0),
+    : cursor_lock_count_(0),
       did_cursor_change_(false),
       cursor_to_set_on_unlock_(0),
+      did_visibility_change_(false),
+      show_on_unlock_(true),
       cursor_visible_(true),
       current_cursor_(ui::kCursorNone),
       image_cursors_(new ImageCursors) {
@@ -25,28 +46,9 @@ CursorManager::CursorManager()
 CursorManager::~CursorManager() {
 }
 
-void CursorManager::LockCursor() {
-  cursor_lock_count_++;
-}
-
-void CursorManager::UnlockCursor() {
-  cursor_lock_count_--;
-  DCHECK_GE(cursor_lock_count_, 0);
-  if (cursor_lock_count_ == 0) {
-    if (did_cursor_change_) {
-      did_cursor_change_ = false;
-      if (delegate_)
-        SetCursorInternal(cursor_to_set_on_unlock_);
-    }
-    did_cursor_change_ = false;
-    cursor_to_set_on_unlock_ = gfx::kNullCursor;
-  }
-}
-
 void CursorManager::SetCursor(gfx::NativeCursor cursor) {
   if (cursor_lock_count_ == 0) {
-    if (delegate_)
-      SetCursorInternal(cursor);
+    SetCursorInternal(cursor);
   } else {
     cursor_to_set_on_unlock_ = cursor;
     did_cursor_change_ = true;
@@ -54,9 +56,12 @@ void CursorManager::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void CursorManager::ShowCursor(bool show) {
-  cursor_visible_ = show;
-  if (delegate_)
-    delegate_->ShowCursor(show);
+  if (cursor_lock_count_ == 0) {
+    ShowCursorInternal(show);
+  } else {
+    show_on_unlock_ = show;
+    did_visibility_change_ = true;
+  }
 }
 
 bool CursorManager::IsCursorVisible() const {
@@ -70,13 +75,51 @@ void CursorManager::SetDeviceScaleFactor(float device_scale_factor) {
   SetCursorInternal(current_cursor_);
 }
 
+void CursorManager::LockCursor() {
+  cursor_lock_count_++;
+}
+
+void CursorManager::UnlockCursor() {
+  cursor_lock_count_--;
+  DCHECK_GE(cursor_lock_count_, 0);
+  if (cursor_lock_count_ > 0)
+    return;
+
+  if (did_cursor_change_)
+    SetCursorInternal(cursor_to_set_on_unlock_);
+  did_cursor_change_ = false;
+  cursor_to_set_on_unlock_ = gfx::kNullCursor;
+
+  if (did_visibility_change_)
+    ShowCursorInternal(show_on_unlock_);
+  did_visibility_change_ = false;
+}
+
 void CursorManager::SetCursorInternal(gfx::NativeCursor cursor) {
-  DCHECK(delegate_);
   current_cursor_ = cursor;
   image_cursors_->SetPlatformCursor(&current_cursor_);
   current_cursor_.set_device_scale_factor(
       image_cursors_->GetDeviceScaleFactor());
-  delegate_->SetCursor(current_cursor_);
+
+  if (cursor_visible_)
+    SetCursorOnAllRootWindows(current_cursor_);
+}
+
+void CursorManager::ShowCursorInternal(bool show) {
+  if (cursor_visible_ == show)
+    return;
+
+  cursor_visible_ = show;
+
+  if (show) {
+    SetCursorInternal(current_cursor_);
+  } else {
+    gfx::NativeCursor invisible_cursor(ui::kCursorNone);
+    image_cursors_->SetPlatformCursor(&invisible_cursor);
+    SetCursorOnAllRootWindows(invisible_cursor);
+  }
+
+  NotifyCursorVisibilityChange(show);
 }
 
 }  // namespace ash

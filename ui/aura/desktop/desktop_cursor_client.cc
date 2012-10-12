@@ -11,28 +11,49 @@ namespace aura {
 
 DesktopCursorClient::DesktopCursorClient(aura::RootWindow* window)
     : root_window_(window),
-      cursor_loader_(ui::CursorLoader::Create()) {
+      cursor_loader_(ui::CursorLoader::Create()),
+      current_cursor_(ui::kCursorNone),
+      cursor_visible_(true) {
 }
 
 DesktopCursorClient::~DesktopCursorClient() {
 }
 
 void DesktopCursorClient::SetCursor(gfx::NativeCursor cursor) {
-  cursor_loader_->SetPlatformCursor(&cursor);
-  root_window_->SetCursor(cursor);
+  current_cursor_ = cursor;
+  cursor_loader_->SetPlatformCursor(&current_cursor_);
+  if (cursor_visible_)
+    root_window_->SetCursor(current_cursor_);
 }
 
 void DesktopCursorClient::ShowCursor(bool show) {
-  root_window_->ShowCursor(show);
+  if (cursor_visible_ == show)
+    return;
+  cursor_visible_ = show;
+  if (cursor_visible_)
+    root_window_->SetCursor(current_cursor_);
+  else
+    root_window_->SetCursor(ui::kCursorNone);
+  root_window_->OnCursorVisibilityChanged(cursor_visible_);
 }
 
 bool DesktopCursorClient::IsCursorVisible() const {
-  return root_window_->cursor_shown();
+  return cursor_visible_;
 }
 
 void DesktopCursorClient::SetDeviceScaleFactor(float device_scale_factor) {
   cursor_loader_->UnloadAll();
   cursor_loader_->set_device_scale_factor(device_scale_factor);
+}
+
+void DesktopCursorClient::LockCursor() {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+}
+
+void DesktopCursorClient::UnlockCursor() {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace aura

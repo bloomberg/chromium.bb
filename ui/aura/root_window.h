@@ -107,7 +107,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
-  bool cursor_shown() const { return cursor_shown_; }
 
   void set_focus_manager(FocusManager* focus_manager) {
     focus_manager_ = focus_manager;
@@ -143,8 +142,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // used.
   void SetCursor(gfx::NativeCursor cursor);
 
-  // Shows or hides the cursor.
-  void ShowCursor(bool show);
+  // Invoked when the cursor's visibility has changed.
+  void OnCursorVisibilityChanged(bool visible);
 
   // Moves the cursor to the specified location relative to the root window.
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
@@ -381,9 +380,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Last cursor set.  Used for testing.
   gfx::NativeCursor last_cursor_;
-
-  // Is the cursor currently shown?  Used for testing.
-  bool cursor_shown_;
 
   ObserverList<RootWindowObserver> observers_;
 

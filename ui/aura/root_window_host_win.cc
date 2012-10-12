@@ -160,10 +160,6 @@ void RootWindowHostWin::ReleaseCapture() {
   }
 }
 
-void RootWindowHostWin::ShowCursor(bool show) {
-  // NOTIMPLEMENTED();
-}
-
 bool RootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
   POINT pt;
   GetCursorPos(&pt);

@@ -94,9 +94,6 @@ void RemoteRootWindowHostWin::SetCapture() {
 void RemoteRootWindowHostWin::ReleaseCapture() {
 }
 
-void RemoteRootWindowHostWin::ShowCursor(bool show) {
-}
-
 bool RemoteRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
   POINT pt;
   GetCursorPos(&pt);
@@ -156,4 +153,3 @@ void RemoteRootWindowHostWin::OnMouseClick(int x, int y, int extra) {
 }
 
 }  // namespace aura
-

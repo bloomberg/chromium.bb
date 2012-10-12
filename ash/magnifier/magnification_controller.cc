@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
@@ -309,7 +310,10 @@ void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
       int y_diff = origin_.y() - window_rect.y();
       // If the magnified region is moved, hides the mouse cursor and moves it.
       if (x_diff != 0 || y_diff != 0) {
-        root_window_->ShowCursor(false);
+        aura::client::CursorClient* cursor_client =
+            aura::client::GetCursorClient(root_window_);
+        if (cursor_client)
+          cursor_client->ShowCursor(false);
         mouse.set_x(mouse.x() - (origin_.x() - window_rect.x()));
         mouse.set_y(mouse.y() - (origin_.y() - window_rect.y()));
         root_window_->MoveCursorTo(mouse);
@@ -352,7 +356,10 @@ void MagnificationControllerImpl::ValidateScale(float* scale) {
 }
 
 void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
-  root_window_->ShowCursor(true);
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window_);
+  if (cursor_client)
+    cursor_client->ShowCursor(true);
   is_on_zooming_ = false;
 }
 

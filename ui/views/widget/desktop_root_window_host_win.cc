@@ -373,9 +373,6 @@ void DesktopRootWindowHostWin::SetCursor(gfx::NativeCursor cursor) {
   message_handler_->SetCursor(cursor.platform());
 }
 
-void DesktopRootWindowHostWin::ShowCursor(bool show) {
-}
-
 bool DesktopRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
   return false;
 }
