@@ -5,9 +5,9 @@
 #include "ui/base/models/table_model.h"
 
 #include "base/logging.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ui {
 

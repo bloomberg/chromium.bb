@@ -2,24 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "ui/base/models/tree_node_iterator.h"
+
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
 
 namespace ui {
 
-TEST(TreeNodeIteratorTest, Test) {
-  TreeNodeWithValue<int> root;
-  root.Add(new TreeNodeWithValue<int>(1), 0);
-  root.Add(new TreeNodeWithValue<int>(2), 1);
-  TreeNodeWithValue<int>* f3 = new TreeNodeWithValue<int>(3);
-  root.Add(f3, 2);
-  TreeNodeWithValue<int>* f4 = new TreeNodeWithValue<int>(4);
-  f3->Add(f4, 0);
-  f4->Add(new TreeNodeWithValue<int>(5), 0);
+namespace {
 
-  TreeNodeIterator<TreeNodeWithValue<int> > iterator(&root);
+typedef TreeNodeWithValue<int> TestNode;
+
+bool PruneOdd(TestNode* node) {
+  return node->value % 2;
+}
+
+bool PruneEven(TestNode* node) {
+  return !PruneOdd(node);
+}
+
+TEST(TreeNodeIteratorTest, Basic) {
+  TestNode root;
+  root.Add(new TestNode(), 0);
+  root.Add(new TestNode(), 1);
+  TestNode* f3 = new TestNode();
+  root.Add(f3, 2);
+  TestNode* f4 = new TestNode();
+  f3->Add(f4, 0);
+  f4->Add(new TestNode(), 0);
+
+  TreeNodeIterator<TestNode> iterator(&root);
   ASSERT_TRUE(iterator.has_next());
   ASSERT_EQ(root.GetChild(0), iterator.Next());
 
@@ -38,44 +50,37 @@ TEST(TreeNodeIteratorTest, Test) {
   ASSERT_FALSE(iterator.has_next());
 }
 
-static bool PruneOdd(TreeNodeWithValue<int>* node) {
-  return node->value % 2;
-}
-
-static bool PruneEven(TreeNodeWithValue<int>* node) {
-  return !(node->value % 2);
-}
-
 // The tree used for testing:
 // * + 1
 //   + 2
 //   + 3 + 4 + 5
 //       + 7
-
-TEST(TreeNodeIteratorPruneTest, Test) {
-  TreeNodeWithValue<int> root;
-  root.Add(new TreeNodeWithValue<int>(1), 0);
-  root.Add(new TreeNodeWithValue<int>(2), 1);
-  TreeNodeWithValue<int>* f3 = new TreeNodeWithValue<int>(3);
+TEST(TreeNodeIteratorTest, Prune) {
+  TestNode root;
+  root.Add(new TestNode(1), 0);
+  root.Add(new TestNode(2), 1);
+  TestNode* f3 = new TestNode(3);
   root.Add(f3, 2);
-  TreeNodeWithValue<int>* f4 = new TreeNodeWithValue<int>(4);
+  TestNode* f4 = new TestNode(4);
   f3->Add(f4, 0);
-  f4->Add(new TreeNodeWithValue<int>(5), 0);
-  f3->Add(new TreeNodeWithValue<int>(7), 1);
+  f4->Add(new TestNode(5), 0);
+  f3->Add(new TestNode(7), 1);
 
-  TreeNodeIterator<TreeNodeWithValue<int> > oddIterator(&root, PruneOdd);
-  ASSERT_TRUE(oddIterator.has_next());
-  ASSERT_EQ(2, oddIterator.Next()->value);
-  ASSERT_FALSE(oddIterator.has_next());
+  TreeNodeIterator<TestNode> odd_iterator(&root, PruneOdd);
+  ASSERT_TRUE(odd_iterator.has_next());
+  ASSERT_EQ(2, odd_iterator.Next()->value);
+  ASSERT_FALSE(odd_iterator.has_next());
 
-  TreeNodeIterator<TreeNodeWithValue<int> > evenIterator(&root, PruneEven);
-  ASSERT_TRUE(evenIterator.has_next());
-  ASSERT_EQ(1, evenIterator.Next()->value);
-  ASSERT_TRUE(evenIterator.has_next());
-  ASSERT_EQ(3, evenIterator.Next()->value);
-  ASSERT_TRUE(evenIterator.has_next());
-  ASSERT_EQ(7, evenIterator.Next()->value);
-  ASSERT_FALSE(evenIterator.has_next());
+  TreeNodeIterator<TestNode> even_iterator(&root, PruneEven);
+  ASSERT_TRUE(even_iterator.has_next());
+  ASSERT_EQ(1, even_iterator.Next()->value);
+  ASSERT_TRUE(even_iterator.has_next());
+  ASSERT_EQ(3, even_iterator.Next()->value);
+  ASSERT_TRUE(even_iterator.has_next());
+  ASSERT_EQ(7, even_iterator.Next()->value);
+  ASSERT_FALSE(even_iterator.has_next());
 }
+
+}  // namespace
 
 }  // namespace ui
