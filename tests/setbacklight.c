@@ -140,12 +140,11 @@ int
 main(int argc, char **argv)
 {
 	int blight, connector_id;
-	const char *default_seat = "seat0";
-	const char *path, *device_seat;
+	const char *path;
 	struct udev *udev;
 	struct udev_enumerate *e;
 	struct udev_list_entry *entry;
-	struct udev_device *device, *drm_device;
+	struct udev_device *drm_device;
 
 	if (argc < 3) {
 		printf("Please add connector_id and brightness values from 0-255\n");
@@ -169,13 +168,7 @@ main(int argc, char **argv)
 	drm_device = NULL;
 	udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
 		path = udev_list_entry_get_name(entry);
-		device = udev_device_new_from_syspath(udev, path);
-		device_seat =
-			udev_device_get_property_value(device, "ID_SEAT");
-		if (!device_seat)
-			device_seat = default_seat;
-
-		drm_device = device;
+		drm_device = udev_device_new_from_syspath(udev, path);
 		break;
 	}
 

@@ -232,10 +232,8 @@ text_model_commit_string(void *data,
 {
 	struct text_entry *entry = data;
 
-	if (index > strlen(text)) {
+	if (index > strlen(text))
 		fprintf(stderr, "Invalid cursor index %d\n", index);
-		index = strlen(text);
-	}
 
 	text_entry_delete_selected_text(entry);
 	text_entry_insert_at_cursor(entry, text);
