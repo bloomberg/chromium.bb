@@ -33,6 +33,7 @@ import java.util.concurrent.Callable;
 public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     private final static String ABOUT_BLANK_URL = "about:blank";
     private final static String DATA_URL = "data:text/html,<div/>";
+    private final static String REDIRECT_TARGET_PATH = "/redirect_target.html";
 
     private static final long TEST_TIMEOUT = 20000L;
     private static final int CHECK_INTERVAL = 100;
@@ -197,16 +198,12 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     }
 
     private String createRedirectTargetPage(TestWebServer webServer) {
-        return addPageToTestServer(webServer, "/redirect_target.html",
-                getHtmlForPageWithSimpleLinkTo(ABOUT_BLANK_URL));
+        return addPageToTestServer(webServer, REDIRECT_TARGET_PATH,
+                makeHtmlPageFrom("", "<div>This is the end of the redirect chain</div>"));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Navigation"})
-     * BUG=154558
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationNotCalledOnLoadUrl() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -221,12 +218,8 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"Android-WebView", "Navigation"})
-     * BUG=154558
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCantBlockLoads() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -307,6 +300,42 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         assertEquals(onReceivedErrorCallCount, onReceivedErrorHelper.getCallCount());
     }
 
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
+    public void testShouldIgnoreNavigationNotCalledForAnchorNavigations() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
+            contentsClient.getShouldIgnoreNavigationHelper();
+
+        TestWebServer webServer = null;
+        try {
+            // Set up the HTML page.
+            webServer = new TestWebServer(false);
+            final String anchorLinkPath = "/anchor_link.html";
+            final String anchorLinkUrl = webServer.getResponseUrl(anchorLinkPath);
+            addPageToTestServer(webServer, anchorLinkPath,
+                    getHtmlForPageWithSimpleLinkTo(anchorLinkUrl + "#anchor"));
+
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), anchorLinkUrl);
+
+            final int shouldIgnoreNavigationCallCount =
+                shouldIgnoreNavigationHelper.getCallCount();
+
+            clickOnLinkUsingJs(awContents, contentsClient);
+
+            // After we load this URL we're certain that any in-flight callbacks for the previous
+            // navigation have been delivered.
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
+
+            assertEquals(shouldIgnoreNavigationCallCount,
+                    shouldIgnoreNavigationHelper.getCallCount());
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
 
     @SmallTest
     @Feature({"Android-WebView", "Navigation"})
@@ -519,13 +548,6 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
                            "data:"));
     }
 
-    // The +1 comes from the fact that we call shouldIgnoreNavigation for URLs that were passed
-    // to the .loadUrl method.
-    // See BUG=154558.
-    private int adjustForBug154558(int callCount) {
-        return callCount + 1;
-    }
-
     /**
      * Worker method for the various redirect tests.
      *
@@ -550,7 +572,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         int directLoadCallCount = shouldIgnoreNavigationHelper.getCallCount();
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), redirectUrl);
 
-        shouldIgnoreNavigationHelper.waitForCallback(directLoadCallCount, adjustForBug154558(1));
+        shouldIgnoreNavigationHelper.waitForCallback(directLoadCallCount, 1);
         assertEquals(redirectTarget,
                 shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
 
@@ -565,16 +587,11 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 pageWithLinkToRedirectUrl);
 
-        // We waitForCallback here because we call shouldIgnoreNavigation for URLs that were passed
-        // to the .loadUrl method. See BUG=154558.
-        // Do this when the bug is fixed:
-        // assertEquals(indirectLoadCallCount, shouldIgnoreNavigationHelper.getCallCount());
-        shouldIgnoreNavigationHelper.waitForCallback(indirectLoadCallCount, 1);
+        assertEquals(indirectLoadCallCount, shouldIgnoreNavigationHelper.getCallCount());
 
         clickOnLinkUsingJs(awContents, contentsClient);
 
-        shouldIgnoreNavigationHelper.waitForCallback(indirectLoadCallCount, adjustForBug154558(2));
-
+        shouldIgnoreNavigationHelper.waitForCallback(indirectLoadCallCount, 2);
         assertEquals(redirectTarget,
                 shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
         assertEquals(redirectUrl,

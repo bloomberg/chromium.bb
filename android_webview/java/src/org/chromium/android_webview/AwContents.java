@@ -50,7 +50,7 @@ public class AwContents {
     private ContentViewCore mContentViewCore;
     private AwContentsClient mContentsClient;
     private AwContentsIoThreadClient mIoThreadClient;
-    private InterceptNavigationDelegate mInterceptNavigationDelegate;
+    private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
 
@@ -94,8 +94,22 @@ public class AwContents {
     }
 
     private class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
+        private String mLastLoadUrlAddress;
+
+        public void onUrlLoadRequested(String url) {
+            mLastLoadUrlAddress = url;
+        }
+
         @Override
         public boolean shouldIgnoreNavigation(String url, boolean isUserGestrue) {
+            // If the embedder requested the load of a certain URL then querying whether to
+            // override it is pointless.
+            if (mLastLoadUrlAddress != null && mLastLoadUrlAddress.equals(url)) {
+                // Support the case where the user clicks on a link that takes them back to the
+                // same page.
+                mLastLoadUrlAddress = null;
+                return false;
+            }
             return AwContents.this.mContentsClient.shouldIgnoreNavigation(url);
         }
     }
@@ -144,7 +158,7 @@ public class AwContents {
         nativeSetIoThreadClient(mNativeAwContents, mIoThreadClient);
     }
 
-    public void setInterceptNavigationDelegate(InterceptNavigationDelegate delegate) {
+    private void setInterceptNavigationDelegate(InterceptNavigationDelegateImpl delegate) {
         mInterceptNavigationDelegate = delegate;
         nativeSetInterceptNavigationDelegate(mNativeAwContents, delegate);
     }
@@ -202,6 +216,12 @@ public class AwContents {
             params.setCanLoadLocalResources(true);
         }
         mContentViewCore.loadUrl(params);
+
+        if (mInterceptNavigationDelegate != null) {
+            // getUrl returns a sanitized address in the same format that will be used for
+            // callbacks, so it's safe to use string comparison as an equality check later on.
+            mInterceptNavigationDelegate.onUrlLoadRequested(mContentViewCore.getUrl());
+        }
     }
 
     //--------------------------------------------------------------------------------------------

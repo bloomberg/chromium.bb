@@ -116,7 +116,7 @@ public class AndroidWebViewTestBase
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                awContents.getContentViewCore().loadUrl(new LoadUrlParams(url));
+                awContents.loadUrl(new LoadUrlParams(url));
             }
         });
     }
