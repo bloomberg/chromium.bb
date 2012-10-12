@@ -100,9 +100,11 @@ class MultiDisplayManagerTest : public test::AshTestBase,
 // Reenable when extended desktop is enabled by default.
 #define MAYBE_NativeDisplayTest NativeDisplayTest
 #define MAYBE_EmulatorTest EmulatorTest
+#define MAYBE_OverscanInsetsTest OverscanInsetsTest
 #else
 #define MAYBE_NativeDisplayTest DISABLED_NativeDisplayTest
 #define MAYBE_EmulatorTest DISABLED_EmulatorTest
+#define MAYBE_OverscanInsetsTest DISABLED_OverscanInsetsTest
 #endif
 
 TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
@@ -215,6 +217,56 @@ TEST_F(MultiDisplayManagerTest, MAYBE_EmulatorTest) {
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 1 0", GetCountSummary());
   reset();
+}
+
+TEST_F(MultiDisplayManagerTest, MAYBE_OverscanInsetsTest) {
+  UpdateDisplay("0+0-500x500,0+501-400x400");
+  reset();
+  ASSERT_EQ(2u, display_manager()->GetNumDisplays());
+  gfx::Display display1(*display_manager()->GetDisplayAt(0));
+  gfx::Display display2(*display_manager()->GetDisplayAt(1));
+
+  display_manager()->SetOverscanInsets(
+      display2.id(), gfx::Insets(10, 11, 12, 13));
+  std::vector<gfx::Display> changed_displays = changed();
+  EXPECT_EQ(1u, changed_displays.size());
+  EXPECT_EQ(display2.id(), changed_displays[0].id());
+  EXPECT_EQ("0,0 500x500",
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
+  EXPECT_EQ("11,511 376x378",
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+
+  // Recreate a new 2nd display. It won't apply the overscan inset because the
+  // new display has a different ID.
+  UpdateDisplay("0+0-500x500");
+  UpdateDisplay("0+0-500x500,0+501-400x400");
+  EXPECT_EQ("0,0 500x500",
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
+  EXPECT_EQ("0,501 400x400",
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+
+  // Recreate the displays with the same ID.  It should apply the overscan
+  // inset.
+  UpdateDisplay("0+0-500x500");
+  std::vector<gfx::Display> displays;
+  displays.push_back(display1);
+  displays.push_back(display2);
+  display_manager()->OnNativeDisplaysChanged(displays);
+  EXPECT_EQ("0,0 500x500",
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
+  EXPECT_EQ("11,511 376x378",
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+
+  // HiDPI but overscan display. The specified insets size should be doubled.
+  UpdateDisplay("0+0-500x500");
+  UpdateDisplay("0+0-500x500,0+501-400x400*2");
+  display_manager()->SetOverscanInsets(
+      display_manager()->GetDisplayAt(1)->id(), gfx::Insets(4, 5, 6, 7));
+  EXPECT_EQ("0,0 500x500",
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
+  EXPECT_EQ("10,509 376x380",
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+  EXPECT_EQ("188x190", display_manager()->GetDisplayAt(1)->size().ToString());
 }
 
 // TODO(oshima): Device scale factor is supported on chromeos only for now.

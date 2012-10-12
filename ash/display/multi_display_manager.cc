@@ -146,6 +146,12 @@ const gfx::Display& MultiDisplayManager::FindDisplayContainingPoint(
   return GetInvalidDisplay();
 }
 
+void MultiDisplayManager::SetOverscanInsets(int64 display_id,
+                                            const gfx::Insets& insets_in_dip) {
+  overscan_mapping_[display_id] = insets_in_dip;
+  OnNativeDisplaysChanged(displays_);
+}
+
 void MultiDisplayManager::OnNativeDisplaysChanged(
     const std::vector<gfx::Display>& updated_displays) {
   if (updated_displays.empty()) {
@@ -185,6 +191,17 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
     }
   } else {
     new_displays = updated_displays;
+  }
+
+  for (DisplayList::iterator iter = new_displays.begin();
+       iter != new_displays.end(); ++iter) {
+    std::map<int64, gfx::Insets>::const_iterator overscan_insets =
+        overscan_mapping_.find(iter->id());
+    if (overscan_insets != overscan_mapping_.end()) {
+      gfx::Rect bounds = iter->bounds_in_pixel();
+      bounds.Inset(overscan_insets->second.Scale(iter->device_scale_factor()));
+      iter->SetScaleAndBounds(iter->device_scale_factor(), bounds);
+    }
   }
 
   std::sort(displays_.begin(), displays_.end(), DisplaySortFunctor());

@@ -73,6 +73,11 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   const gfx::Display& FindDisplayContainingPoint(
       const gfx::Point& point_in_screen) const;
 
+  // Registers the overscan insets for the display of the specified ID. Note
+  // that the insets size should be specified in DIP size. It also triggers the
+  // display's bounds change.
+  void SetOverscanInsets(int64 display_id, const gfx::Insets& insets_in_dip);
+
   // DisplayManager overrides:
   virtual void OnNativeDisplaysChanged(
       const std::vector<gfx::Display>& displays) OVERRIDE;
@@ -132,6 +137,9 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   scoped_ptr<gfx::Display> internal_display_;
 
   bool force_bounds_changed_;
+
+  // The mapping from the display ID to its overscan insets.
+  std::map<int64, gfx::Insets> overscan_mapping_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDisplayManager);
 };
