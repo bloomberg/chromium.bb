@@ -132,6 +132,12 @@ bool BufferedResourceHandler::OnResponseStarted(
       // treat the response as "text/plain".  This is the most secure option.
       response_->head.mime_type.assign("text/plain");
     }
+
+    // Treat feed types as text/plain.
+    if (response_->head.mime_type == "application/rss+xml" ||
+        response_->head.mime_type == "application/atom+xml") {
+      response_->head.mime_type.assign("text/plain");
+    }
   }
 
   state_ = STATE_PROCESSING;

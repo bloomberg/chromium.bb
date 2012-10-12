@@ -406,10 +406,6 @@ bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
     return false;
 
   std::string mime_type = item->GetMimeType();
-  if (mime_type == "application/rss+xml" ||
-      mime_type == "application/atom+xml") {
-    return true;
-  }
 
 #if defined(OS_CHROMEOS)
   if (mime_type == "application/msword" ||
