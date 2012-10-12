@@ -111,9 +111,6 @@ bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
 
   // The spellchecking service should be avilable only when asynchronous
   // spellchecking is enabled because this service depends on it.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableAsynchronousSpellChecking))
-    return type == SUGGEST;
 
   // Enable the suggest service only on languages not supported by the
   // spellcheck service. When this client calls the spellcheck service, it
@@ -121,6 +118,12 @@ bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
   // by the suggest service. That is, it is not useful to use the suggest
   // service when this client can use the spellcheck service.
   std::string locale = pref->GetString(prefs::kSpellCheckDictionary);
+
+  // This means we are in a test.
+  if (locale.empty()) return false;
+
+  // Otherwise only suggest is currently valid.
+  return type == SUGGEST;
 #if defined(OS_MACOSX)
   bool spellcheck_available = locale.empty();
 #else

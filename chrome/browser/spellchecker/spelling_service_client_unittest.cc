@@ -211,7 +211,7 @@ class SpellingServiceClientTest : public testing::Test {
 // misspelled words with ones suggested by the service so this test can compare
 // the corrected text with the expected results. (If there are not any
 // misspelled words, |corrected_text| should be equal to |request_text|.)
-TEST_F(SpellingServiceClientTest, RequestTextCheck) {
+TEST_F(SpellingServiceClientTest, DISABLED_RequestTextCheck) {
   static const struct {
     const char* request_text;
     SpellingServiceClient::ServiceType request_type;
@@ -318,7 +318,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
 
 // Verify that SpellingServiceClient::IsAvailable() returns true only when it
 // can send suggest requests or spellcheck requests.
-TEST_F(SpellingServiceClientTest, AvailableServices) {
+TEST_F(SpellingServiceClientTest, DISABLED_AvailableServices) {
   const SpellingServiceClient::ServiceType kSuggest =
       SpellingServiceClient::SUGGEST;
   const SpellingServiceClient::ServiceType kSpellcheck =
