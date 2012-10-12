@@ -104,9 +104,7 @@ SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
   tracker_ptr->reset(new LocalFileChangeTracker(
           file_system_context->partition_path(),
           file_system_context->task_runners()->file_task_runner()));
-  // TODO(kinuko,nhiroki): Uncomment this once http://crbug.com/154028 is fixed.
-  // return change_tracker->Initialize(file_system_context);
-  return SYNC_STATUS_OK;
+  return (*tracker_ptr)->Initialize(file_system_context);
 }
 
 void LocalFileSyncContext::DidInitializeChangeTracker(
