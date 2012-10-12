@@ -83,7 +83,7 @@ class ScriptBadgeController
 
  private:
   // Gets the ExtensionService for |tab_contents_|.
-  ExtensionService* GetExtensionService();
+  ExtensionService* GetExtensionService() const;
 
   // Gets the current page ID, or -1 if no navigation entry has been committed.
   int32 GetPageID();
@@ -109,15 +109,8 @@ class ScriptBadgeController
   // Returns true if any change was made.
   bool MarkExtensionExecuting(const std::string& extension_id);
 
-  // Tries to erase an extension from the relevant collections, and returns
-  // whether any change was made.
-  bool EraseExtension(const Extension* extension);
-
-  // The current extension actions in the order they appeared.  These come from
-  // calls to ExecuteScript or getAttention on the current frame.
-  std::vector<ExtensionAction*> current_actions_;
-
-  // The extensions that have actions in current_actions_.
+  // The current extension actions.  These come from calls to ExecuteScript or
+  // getAttention on the current frame.
   std::set<std::string> extensions_in_current_actions_;
 
   // Listen to extension unloaded notifications.

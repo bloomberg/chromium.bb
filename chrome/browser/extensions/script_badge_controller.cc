@@ -45,7 +45,23 @@ ScriptBadgeController::ScriptBadgeController(content::WebContents* web_contents,
 ScriptBadgeController::~ScriptBadgeController() {}
 
 std::vector<ExtensionAction*> ScriptBadgeController::GetCurrentActions() const {
-  return current_actions_;
+  std::vector<ExtensionAction*> result;
+  ExtensionService* service = GetExtensionService();
+  if (!service)
+    return result;
+
+  const ExtensionSet* extensions = service->extensions();
+  for (std::set<std::string>::const_iterator
+           it = extensions_in_current_actions_.begin();
+       it != extensions_in_current_actions_.end(); ++it) {
+    const Extension* extension = extensions->GetByID(*it);
+    if (!extension)
+      continue;
+    ExtensionAction* script_badge = extension->script_badge();
+    if (script_badge)
+      result.push_back(script_badge);
+  }
+  return result;
 }
 
 void ScriptBadgeController::GetAttentionFor(
@@ -180,7 +196,7 @@ void ScriptBadgeController::OnContentScriptsExecuting(
     NotifyChange();
 }
 
-ExtensionService* ScriptBadgeController::GetExtensionService() {
+ExtensionService* ScriptBadgeController::GetExtensionService() const {
   TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   return extensions::ExtensionSystem::Get(
       tab_contents->profile())->extension_service();
@@ -206,7 +222,6 @@ void ScriptBadgeController::DidNavigateMainFrame(
   if (details.is_in_page)
     return;
   extensions_in_current_actions_.clear();
-  current_actions_.clear();
 }
 
 void ScriptBadgeController::Observe(
@@ -216,7 +231,7 @@ void ScriptBadgeController::Observe(
   DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNLOADED);
   const Extension* extension =
       content::Details<UnloadedExtensionInfo>(details)->extension;
-  if (EraseExtension(extension))
+  if (extensions_in_current_actions_.erase(extension->id()))
     NotifyChange();
 }
 
@@ -233,9 +248,7 @@ ExtensionAction* ScriptBadgeController::AddExtensionToCurrentActions(
   if (!extension)
     return NULL;
 
-  ExtensionAction* script_badge = extension->script_badge();
-  current_actions_.push_back(script_badge);
-  return script_badge;
+  return extension->script_badge();
 }
 
 bool ScriptBadgeController::MarkExtensionExecuting(
@@ -246,30 +259,6 @@ bool ScriptBadgeController::MarkExtensionExecuting(
 
   script_badge->SetAppearance(SessionID::IdForTab(web_contents()),
                               ExtensionAction::ACTIVE);
-  return true;
-}
-
-bool ScriptBadgeController::EraseExtension(const Extension* extension) {
-  if (extensions_in_current_actions_.erase(extension->id()) == 0)
-    return false;
-
-  size_t size_before = current_actions_.size();
-
-  for (std::vector<ExtensionAction*>::iterator it = current_actions_.begin();
-       it != current_actions_.end(); ++it) {
-    // Safe to -> the extension action because we still have a handle to the
-    // owner Extension.
-    //
-    // Also note that this means that when extensions are uninstalled their
-    // script badges will disappear, even though they're still acting on the
-    // page (since they would have already acted).
-    if ((*it)->extension_id() == extension->id()) {
-      current_actions_.erase(it);
-      break;
-    }
-  }
-
-  CHECK_EQ(size_before, current_actions_.size() + 1);
   return true;
 }
 
