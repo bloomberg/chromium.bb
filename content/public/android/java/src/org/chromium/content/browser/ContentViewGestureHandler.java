@@ -398,7 +398,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public boolean onSingleTapConfirmed(MotionEvent e) {
                         // Long taps in the edges of the screen have their events delayed by
-                        // ChromeViewHolder for tab swipe operations. As a consequence of the delay
+                        // ContentViewHolder for tab swipe operations. As a consequence of the delay
                         // this method might be called after receiving the up event.
                         // These corner cases should be ignored.
                         if (mLongPressDetector.isInLongPress() || mIgnoreSingleTap) return true;
