@@ -8,7 +8,6 @@
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/test/test_aura_initializer.h"
@@ -60,10 +59,6 @@ void ContentTestSuite::Initialize() {
 #endif
 
   ContentTestSuiteBase::Initialize();
-
-  // Force unittests to run using en-US so if we test against string
-  // output, it'll pass regardless of the system language.
-  ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
