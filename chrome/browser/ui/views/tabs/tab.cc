@@ -64,7 +64,7 @@ int top_padding() {
         value = 7;
         break;
       case ui::LAYOUT_TOUCH:
-        value = 12;
+        value = 10;
         break;
       default:
         NOTREACHED();

@@ -120,10 +120,10 @@ int location_bar_vert_spacing() {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
-        value = 5;
+        value = ToolbarView::kVertSpacing;
         break;
       case ui::LAYOUT_TOUCH:
-        value = 6;
+        value = 10;
         break;
       default:
         NOTREACHED();
@@ -708,10 +708,15 @@ void ToolbarView::Layout() {
   int delta = !chrome::search::IsInstantExtendedAPIEnabled(
       browser_->profile()) ? 0 : kSearchTopButtonSpacing;
 
-  int child_y = std::min(kVertSpacing, height()) + delta;
   // We assume all child elements are the same height.
   int child_height =
-      std::min(back_->GetPreferredSize().height(), height() - child_y);
+      std::min(back_->GetPreferredSize().height(), height());
+
+  // Set child_y such that buttons appear vertically centered. To preseve
+  // the behaviour on non-touch UIs, round-up by taking
+  // ceil((height() - child_height) / 2) + delta
+  // which is equivalent to the below.
+  int child_y = (1 + ((height() - child_height - 1) / 2)) + delta;
 
   // If the window is maximized, we extend the back button to the left so that
   // clicking on the left-most pixel will activate the back button.
@@ -749,8 +754,11 @@ void ToolbarView::Layout() {
   int location_x = home_->x() + home_->width() + kStandardSpacing;
   int available_width = std::max(0, width() - kRightEdgeSpacing -
       app_menu_width - browser_actions_width - location_x);
-  int location_y = std::min(location_bar_vert_spacing() + top_delta,
-                            height());
+
+  int location_y =
+      top_delta + 1 + ((height() -
+          location_bar_container_->GetPreferredSize().height() - 1) / 2);
+
   int available_height = location_bar_->GetPreferredSize().height();
   const gfx::Rect location_bar_bounds(location_x, location_y,
                                       available_width, available_height);
