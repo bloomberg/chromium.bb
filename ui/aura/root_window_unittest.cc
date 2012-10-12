@@ -189,7 +189,7 @@ TEST_F(RootWindowTest, HideCursor) {
       delegate.get(), -1234, bounds, NULL));
   aura::Window* window_ptr = &*window;
 
-  root_window()->ShowCursor(true);
+  root_window()->OnCursorVisibilityChanged(true);
   // Send a mouse event to window.
   gfx::Point point(101, 201);
   gfx::Point local_point;
@@ -202,14 +202,14 @@ TEST_F(RootWindowTest, HideCursor) {
   EXPECT_TRUE(window->bounds().Contains(local_point));
 
   // Location is now out of window.
-  root_window()->ShowCursor(false);
+  root_window()->OnCursorVisibilityChanged(false);
   RunAllPendingInMessageLoop();
   local_point = delegate->mouse_event_location();
   aura::Window::ConvertPointToTarget(window_ptr, root_window(), &local_point);
   EXPECT_FALSE(window->bounds().Contains(local_point));
 
   // Location is back in window.
-  root_window()->ShowCursor(true);
+  root_window()->OnCursorVisibilityChanged(true);
   RunAllPendingInMessageLoop();
   local_point = delegate->mouse_event_location();
   aura::Window::ConvertPointToTarget(window_ptr, root_window(), &local_point);

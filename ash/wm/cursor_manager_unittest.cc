@@ -56,6 +56,58 @@ TEST_F(CursorManagerTest, SetCursor) {
   EXPECT_TRUE(test_api.GetCurrentCursor().platform());
 }
 
+TEST_F(CursorManagerTest, ShowCursor) {
+  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  CursorManagerTestApi test_api(cursor_manager);
+
+  cursor_manager->SetCursor(ui::kCursorCopy);
+  EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
+
+  cursor_manager->ShowCursor(true);
+  EXPECT_TRUE(cursor_manager->cursor_visible());
+  cursor_manager->ShowCursor(false);
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+  // The current cursor does not change even when the cursor is not shown.
+  EXPECT_EQ(ui::kCursorCopy, test_api.GetCurrentCursor().native_type());
+
+  // Check if cursor visibility is locked.
+  cursor_manager->LockCursor();
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+  cursor_manager->ShowCursor(true);
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+  cursor_manager->UnlockCursor();
+  EXPECT_TRUE(cursor_manager->cursor_visible());
+
+  cursor_manager->LockCursor();
+  EXPECT_TRUE(cursor_manager->cursor_visible());
+  cursor_manager->ShowCursor(false);
+  EXPECT_TRUE(cursor_manager->cursor_visible());
+  cursor_manager->UnlockCursor();
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+
+  // Checks setting visiblity while cursor is locked does not affect the
+  // subsequent uses of UnlockCursor.
+  cursor_manager->LockCursor();
+  cursor_manager->ShowCursor(false);
+  cursor_manager->UnlockCursor();
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+
+  cursor_manager->ShowCursor(true);
+  cursor_manager->LockCursor();
+  cursor_manager->UnlockCursor();
+  EXPECT_TRUE(cursor_manager->cursor_visible());
+
+  cursor_manager->LockCursor();
+  cursor_manager->ShowCursor(true);
+  cursor_manager->UnlockCursor();
+  EXPECT_TRUE(cursor_manager->cursor_visible());
+
+  cursor_manager->ShowCursor(false);
+  cursor_manager->LockCursor();
+  cursor_manager->UnlockCursor();
+  EXPECT_FALSE(cursor_manager->cursor_visible());
+}
+
 TEST_F(CursorManagerTest, SetDeviceScaleFactor) {
   CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);

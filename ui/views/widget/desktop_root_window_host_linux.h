@@ -146,7 +146,6 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
-  virtual void ShowCursor(bool show) OVERRIDE;
   virtual bool QueryMouseLocation(gfx::Point* location_return) OVERRIDE;
   virtual bool ConfineCursorToRootWindow() OVERRIDE;
   virtual void UnConfineCursor() OVERRIDE;
@@ -161,8 +160,11 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
 
   // Overridden from aura::CursorClient:
   // Note: other methods are just set on aura::RootWindowHost:
+  virtual void ShowCursor(bool show) OVERRIDE;
   virtual bool IsCursorVisible() const OVERRIDE;
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
+  virtual void LockCursor() OVERRIDE;
+  virtual void UnlockCursor() OVERRIDE;
 
   // Overridden from views::internal::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;

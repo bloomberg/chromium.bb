@@ -172,14 +172,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
 
 TEST_F(ExtendedDesktopTest, TestCursor) {
   UpdateDisplay("1000x600,600x400");
-  Shell::GetInstance()->cursor_manager()->ShowCursor(false);
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  EXPECT_FALSE(root_windows[0]->cursor_shown());
-  EXPECT_FALSE(root_windows[1]->cursor_shown());
-  Shell::GetInstance()->cursor_manager()->ShowCursor(true);
-  EXPECT_TRUE(root_windows[0]->cursor_shown());
-  EXPECT_TRUE(root_windows[1]->cursor_shown());
-
   EXPECT_EQ(ui::kCursorPointer, root_windows[0]->last_cursor().native_type());
   EXPECT_EQ(ui::kCursorPointer, root_windows[1]->last_cursor().native_type());
   Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorCopy);
