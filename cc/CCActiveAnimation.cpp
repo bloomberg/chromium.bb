@@ -42,13 +42,13 @@ COMPILE_ASSERT(static_cast<int>(cc::CCActiveAnimation::TargetPropertyEnumSize) =
 
 namespace cc {
 
-scoped_ptr<CCActiveAnimation> CCActiveAnimation::create(scoped_ptr<CCAnimationCurve> curve, int animationId, int groupId, TargetProperty targetProperty)
+PassOwnPtr<CCActiveAnimation> CCActiveAnimation::create(PassOwnPtr<CCAnimationCurve> curve, int animationId, int groupId, TargetProperty targetProperty)
 {
-    return make_scoped_ptr(new CCActiveAnimation(curve.Pass(), animationId, groupId, targetProperty));
+    return adoptPtr(new CCActiveAnimation(curve, animationId, groupId, targetProperty));
 }
 
-CCActiveAnimation::CCActiveAnimation(scoped_ptr<CCAnimationCurve> curve, int animationId, int groupId, TargetProperty targetProperty)
-    : m_curve(curve.Pass())
+CCActiveAnimation::CCActiveAnimation(PassOwnPtr<CCAnimationCurve> curve, int animationId, int groupId, TargetProperty targetProperty)
+    : m_curve(curve)
     , m_id(animationId)
     , m_group(groupId)
     , m_targetProperty(targetProperty)
@@ -180,14 +180,14 @@ double CCActiveAnimation::trimTimeToCurrentIteration(double monotonicTime) const
     return trimmed;
 }
 
-scoped_ptr<CCActiveAnimation> CCActiveAnimation::clone(InstanceType instanceType) const
+PassOwnPtr<CCActiveAnimation> CCActiveAnimation::clone(InstanceType instanceType) const
 {
     return cloneAndInitialize(instanceType, m_runState, m_startTime);
 }
 
-scoped_ptr<CCActiveAnimation> CCActiveAnimation::cloneAndInitialize(InstanceType instanceType, RunState initialRunState, double startTime) const
+PassOwnPtr<CCActiveAnimation> CCActiveAnimation::cloneAndInitialize(InstanceType instanceType, RunState initialRunState, double startTime) const
 {
-    scoped_ptr<CCActiveAnimation> toReturn(new CCActiveAnimation(m_curve->clone(), m_id, m_group, m_targetProperty));
+    OwnPtr<CCActiveAnimation> toReturn(adoptPtr(new CCActiveAnimation(m_curve->clone(), m_id, m_group, m_targetProperty)));
     toReturn->m_runState = initialRunState;
     toReturn->m_iterations = m_iterations;
     toReturn->m_startTime = startTime;
@@ -196,7 +196,7 @@ scoped_ptr<CCActiveAnimation> CCActiveAnimation::cloneAndInitialize(InstanceType
     toReturn->m_timeOffset = m_timeOffset;
     toReturn->m_alternatesDirection = m_alternatesDirection;
     toReturn->m_isControllingInstance = instanceType == ControllingInstance;
-    return toReturn.Pass();
+    return toReturn.release();
 }
 
 void CCActiveAnimation::pushPropertiesTo(CCActiveAnimation* other) const

@@ -26,9 +26,9 @@ CCLayerAnimationController::~CCLayerAnimationController()
 {
 }
 
-scoped_ptr<CCLayerAnimationController> CCLayerAnimationController::create(CCLayerAnimationControllerClient* client)
+PassOwnPtr<CCLayerAnimationController> CCLayerAnimationController::create(CCLayerAnimationControllerClient* client)
 {
-    return make_scoped_ptr(new CCLayerAnimationController(client));
+    return adoptPtr(new CCLayerAnimationController(client));
 }
 
 void CCLayerAnimationController::pauseAnimation(int animationId, double timeOffset)
@@ -108,9 +108,9 @@ void CCLayerAnimationController::animate(double monotonicTime, CCAnimationEvents
     startAnimationsWaitingForTargetAvailability(monotonicTime, events);
 }
 
-void CCLayerAnimationController::addAnimation(scoped_ptr<CCActiveAnimation> animation)
+void CCLayerAnimationController::addAnimation(PassOwnPtr<CCActiveAnimation> animation)
 {
-    m_activeAnimations.append(animation.Pass());
+    m_activeAnimations.append(animation);
 }
 
 CCActiveAnimation* CCLayerAnimationController::getActiveAnimation(int groupId, CCActiveAnimation::TargetProperty targetProperty) const
@@ -183,9 +183,9 @@ void CCLayerAnimationController::pushNewAnimationsToImplThread(CCLayerAnimationC
         // The new animation should be set to run as soon as possible.
         CCActiveAnimation::RunState initialRunState = CCActiveAnimation::WaitingForTargetAvailability;
         double startTime = 0;
-        scoped_ptr<CCActiveAnimation> toAdd(m_activeAnimations[i]->cloneAndInitialize(CCActiveAnimation::ControllingInstance, initialRunState, startTime));
+        OwnPtr<CCActiveAnimation> toAdd(m_activeAnimations[i]->cloneAndInitialize(CCActiveAnimation::ControllingInstance, initialRunState, startTime));
         ASSERT(!toAdd->needsSynchronizedStartTime());
-        controllerImpl->addAnimation(toAdd.Pass());
+        controllerImpl->addAnimation(toAdd.release());
     }
 }
 
@@ -348,17 +348,17 @@ void CCLayerAnimationController::replaceImplThreadAnimations(CCLayerAnimationCon
 {
     controllerImpl->m_activeAnimations.clear();
     for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
-        scoped_ptr<CCActiveAnimation> toAdd;
+        OwnPtr<CCActiveAnimation> toAdd;
         if (m_activeAnimations[i]->needsSynchronizedStartTime()) {
             // We haven't received an animation started notification yet, so it
             // is important that we add it in a 'waiting' and not 'running' state.
             CCActiveAnimation::RunState initialRunState = CCActiveAnimation::WaitingForTargetAvailability;
             double startTime = 0;
-            toAdd = m_activeAnimations[i]->cloneAndInitialize(CCActiveAnimation::ControllingInstance, initialRunState, startTime).Pass();
+            toAdd = m_activeAnimations[i]->cloneAndInitialize(CCActiveAnimation::ControllingInstance, initialRunState, startTime);
         } else
-            toAdd = m_activeAnimations[i]->clone(CCActiveAnimation::ControllingInstance).Pass();
+            toAdd = m_activeAnimations[i]->clone(CCActiveAnimation::ControllingInstance);
 
-        controllerImpl->addAnimation(toAdd.Pass());
+        controllerImpl->addAnimation(toAdd.release());
     }
 }
 

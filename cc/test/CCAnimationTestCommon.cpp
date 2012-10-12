@@ -19,38 +19,38 @@ namespace {
 template <class Target>
 void addOpacityTransition(Target& target, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
-    scoped_ptr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
+    OwnPtr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
 
     if (duration > 0)
-        curve->addKeyframe(CCFloatKeyframe::create(0, startOpacity, useTimingFunction ? scoped_ptr<CCTimingFunction>(): CCEaseTimingFunction::create()));
-    curve->addKeyframe(CCFloatKeyframe::create(duration, endOpacity, scoped_ptr<cc::CCTimingFunction>()));
+        curve->addKeyframe(CCFloatKeyframe::create(0, startOpacity, useTimingFunction ? nullptr : CCEaseTimingFunction::create()));
+    curve->addKeyframe(CCFloatKeyframe::create(duration, endOpacity, nullptr));
 
-    scoped_ptr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.PassAs<CCAnimationCurve>(), 0, 0, CCActiveAnimation::Opacity));
+    OwnPtr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.release(), 0, 0, CCActiveAnimation::Opacity));
     animation->setNeedsSynchronizedStartTime(true);
 
-    target.addAnimation(animation.Pass());
+    target.addAnimation(animation.release());
 }
 
 template <class Target>
 void addAnimatedTransform(Target& target, double duration, int deltaX, int deltaY)
 {
     static int id = 0;
-    scoped_ptr<CCKeyframedTransformAnimationCurve> curve(CCKeyframedTransformAnimationCurve::create());
+    OwnPtr<CCKeyframedTransformAnimationCurve> curve(CCKeyframedTransformAnimationCurve::create());
 
     if (duration > 0) {
         WebKit::WebTransformOperations startOperations;
         startOperations.appendTranslate(deltaX, deltaY, 0);
-        curve->addKeyframe(CCTransformKeyframe::create(0, startOperations, scoped_ptr<cc::CCTimingFunction>()));
+        curve->addKeyframe(CCTransformKeyframe::create(0, startOperations, nullptr));
     }
 
     WebKit::WebTransformOperations operations;
     operations.appendTranslate(deltaX, deltaY, 0);
-    curve->addKeyframe(CCTransformKeyframe::create(duration, operations, scoped_ptr<cc::CCTimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(duration, operations, nullptr));
 
-    scoped_ptr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.PassAs<CCAnimationCurve>(), id++, 0, CCActiveAnimation::Transform));
+    OwnPtr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.release(), id++, 0, CCActiveAnimation::Transform));
     animation->setNeedsSynchronizedStartTime(true);
 
-    target.addAnimation(animation.Pass());
+    target.addAnimation(animation.release());
 }
 
 } // namespace
@@ -81,9 +81,9 @@ float FakeFloatAnimationCurve::getValue(double now) const
     return 0;
 }
 
-scoped_ptr<cc::CCAnimationCurve> FakeFloatAnimationCurve::clone() const
+PassOwnPtr<cc::CCAnimationCurve> FakeFloatAnimationCurve::clone() const
 {
-    return make_scoped_ptr(new FakeFloatAnimationCurve).PassAs<cc::CCAnimationCurve>();
+    return adoptPtr(new FakeFloatAnimationCurve);
 }
 
 FakeTransformTransition::FakeTransformTransition(double duration)
@@ -105,9 +105,9 @@ WebKit::WebTransformationMatrix FakeTransformTransition::getValue(double time) c
     return WebKit::WebTransformationMatrix();
 }
 
-scoped_ptr<cc::CCAnimationCurve> FakeTransformTransition::clone() const
+PassOwnPtr<cc::CCAnimationCurve> FakeTransformTransition::clone() const
 {
-    return make_scoped_ptr(new FakeTransformTransition(*this)).PassAs<cc::CCAnimationCurve>();
+    return adoptPtr(new FakeTransformTransition(*this));
 }
 
 
@@ -169,9 +169,9 @@ const WebKit::WebTransformationMatrix& FakeLayerAnimationControllerClient::trans
     return m_transform;
 }
 
-scoped_ptr<cc::CCAnimationCurve> FakeFloatTransition::clone() const
+PassOwnPtr<cc::CCAnimationCurve> FakeFloatTransition::clone() const
 {
-    return make_scoped_ptr(new FakeFloatTransition(*this)).PassAs<cc::CCAnimationCurve>();
+    return adoptPtr(new FakeFloatTransition(*this));
 }
 
 void addOpacityTransitionToController(cc::CCLayerAnimationController& controller, double duration, float startOpacity, float endOpacity, bool useTimingFunction)

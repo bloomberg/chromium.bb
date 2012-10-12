@@ -77,9 +77,9 @@ private:
 
 class FakeLayerAnimationController : public CCLayerAnimationController {
 public:
-    static scoped_ptr<FakeLayerAnimationController> create(CCLayerAnimationControllerClient* client)
+    static PassOwnPtr<FakeLayerAnimationController> create(CCLayerAnimationControllerClient* client)
     {
-        return make_scoped_ptr(new FakeLayerAnimationController(client));
+        return adoptPtr(new FakeLayerAnimationController(client));
     }
 
     bool synchronizedAnimations() const { return m_synchronizedAnimations; }
@@ -392,7 +392,7 @@ TEST(TreeSynchronizerTest, synchronizeAnimations)
     scoped_refptr<LayerChromium> layerTreeRoot = LayerChromium::create();
 
     FakeLayerAnimationControllerClient dummy;
-    layerTreeRoot->setLayerAnimationController(FakeLayerAnimationController::create(&dummy).PassAs<CCLayerAnimationController>());
+    layerTreeRoot->setLayerAnimationController(FakeLayerAnimationController::create(&dummy));
 
     EXPECT_FALSE(static_cast<FakeLayerAnimationController*>(layerTreeRoot->layerAnimationController())->synchronizedAnimations());
 

@@ -6,7 +6,8 @@
 #define CCActiveAnimation_h
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -46,7 +47,7 @@ public:
         TargetPropertyEnumSize
     };
 
-    static scoped_ptr<CCActiveAnimation> create(scoped_ptr<CCAnimationCurve>, int animationId, int groupId, TargetProperty);
+    static PassOwnPtr<CCActiveAnimation> create(PassOwnPtr<CCAnimationCurve>, int animationId, int groupId, TargetProperty);
 
     virtual ~CCActiveAnimation();
 
@@ -99,16 +100,16 @@ public:
         NonControllingInstance
     };
 
-    scoped_ptr<CCActiveAnimation> clone(InstanceType) const;
-    scoped_ptr<CCActiveAnimation> cloneAndInitialize(InstanceType, RunState initialRunState, double startTime) const;
+    PassOwnPtr<CCActiveAnimation> clone(InstanceType) const;
+    PassOwnPtr<CCActiveAnimation> cloneAndInitialize(InstanceType, RunState initialRunState, double startTime) const;
     bool isControllingInstance() const { return m_isControllingInstance; }
 
     void pushPropertiesTo(CCActiveAnimation*) const;
 
 private:
-    CCActiveAnimation(scoped_ptr<CCAnimationCurve>, int animationId, int groupId, TargetProperty);
+    CCActiveAnimation(PassOwnPtr<CCAnimationCurve>, int animationId, int groupId, TargetProperty);
 
-    scoped_ptr<CCAnimationCurve> m_curve;
+    OwnPtr<CCAnimationCurve> m_curve;
 
     // IDs are not necessarily unique.
     int m_id;

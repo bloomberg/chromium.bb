@@ -15,21 +15,21 @@ using namespace cc;
 
 namespace {
 
-scoped_ptr<CCActiveAnimation> createActiveAnimation(int iterations, double duration)
+PassOwnPtr<CCActiveAnimation> createActiveAnimation(int iterations, double duration)
 {
-    scoped_ptr<CCActiveAnimation> toReturn(CCActiveAnimation::create(make_scoped_ptr(new FakeFloatAnimationCurve(duration)).PassAs<CCAnimationCurve>(), 0, 1, CCActiveAnimation::Opacity));
+    OwnPtr<CCActiveAnimation> toReturn(CCActiveAnimation::create(adoptPtr(new FakeFloatAnimationCurve(duration)), 0, 1, CCActiveAnimation::Opacity));
     toReturn->setIterations(iterations);
-    return toReturn.Pass();
+    return toReturn.release();
 }
 
-scoped_ptr<CCActiveAnimation> createActiveAnimation(int iterations)
+PassOwnPtr<CCActiveAnimation> createActiveAnimation(int iterations)
 {
     return createActiveAnimation(iterations, 1);
 }
 
 TEST(CCActiveAnimationTest, TrimTimeZeroIterations)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(0));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(0));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(-1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(1));
@@ -37,7 +37,7 @@ TEST(CCActiveAnimationTest, TrimTimeZeroIterations)
 
 TEST(CCActiveAnimationTest, TrimTimeOneIteration)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(-1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(1, anim->trimTimeToCurrentIteration(1));
@@ -46,7 +46,7 @@ TEST(CCActiveAnimationTest, TrimTimeOneIteration)
 
 TEST(CCActiveAnimationTest, TrimTimeInfiniteIterations)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(-1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(-1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(0.5));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(1));
@@ -55,7 +55,7 @@ TEST(CCActiveAnimationTest, TrimTimeInfiniteIterations)
 
 TEST(CCActiveAnimationTest, TrimTimeAlternating)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(-1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(-1));
     anim->setAlternatesDirection(true);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(0.5));
@@ -65,7 +65,7 @@ TEST(CCActiveAnimationTest, TrimTimeAlternating)
 
 TEST(CCActiveAnimationTest, TrimTimeStartTime)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->setStartTime(4);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(4));
@@ -76,7 +76,7 @@ TEST(CCActiveAnimationTest, TrimTimeStartTime)
 
 TEST(CCActiveAnimationTest, TrimTimeTimeOffset)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->setTimeOffset(4);
     anim->setStartTime(4);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
@@ -87,7 +87,7 @@ TEST(CCActiveAnimationTest, TrimTimeTimeOffset)
 
 TEST(CCActiveAnimationTest, TrimTimePauseResume)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(0.5));
@@ -100,7 +100,7 @@ TEST(CCActiveAnimationTest, TrimTimePauseResume)
 
 TEST(CCActiveAnimationTest, TrimTimeSuspendResume)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(0.5));
@@ -113,7 +113,7 @@ TEST(CCActiveAnimationTest, TrimTimeSuspendResume)
 
 TEST(CCActiveAnimationTest, TrimTimeZeroDuration)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(0, 0));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(0, 0));
     anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(-1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
@@ -122,7 +122,7 @@ TEST(CCActiveAnimationTest, TrimTimeZeroDuration)
 
 TEST(CCActiveAnimationTest, IsFinishedAtZeroIterations)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(0));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(0));
     anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_FALSE(anim->isFinishedAt(-1));
     EXPECT_TRUE(anim->isFinishedAt(0));
@@ -131,7 +131,7 @@ TEST(CCActiveAnimationTest, IsFinishedAtZeroIterations)
 
 TEST(CCActiveAnimationTest, IsFinishedAtOneIteration)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_FALSE(anim->isFinishedAt(-1));
     EXPECT_FALSE(anim->isFinishedAt(0));
@@ -141,7 +141,7 @@ TEST(CCActiveAnimationTest, IsFinishedAtOneIteration)
 
 TEST(CCActiveAnimationTest, IsFinishedAtInfiniteIterations)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(-1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(-1));
     anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_FALSE(anim->isFinishedAt(0));
     EXPECT_FALSE(anim->isFinishedAt(0.5));
@@ -151,7 +151,7 @@ TEST(CCActiveAnimationTest, IsFinishedAtInfiniteIterations)
 
 TEST(CCActiveAnimationTest, IsFinishedAtNotRunning)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(0));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(0));
     anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_TRUE(anim->isFinishedAt(0));
     anim->setRunState(CCActiveAnimation::Paused, 0);
@@ -170,7 +170,7 @@ TEST(CCActiveAnimationTest, IsFinishedAtNotRunning)
 
 TEST(CCActiveAnimationTest, IsFinished)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_FALSE(anim->isFinished());
     anim->setRunState(CCActiveAnimation::Paused, 0);
@@ -189,7 +189,7 @@ TEST(CCActiveAnimationTest, IsFinished)
 
 TEST(CCActiveAnimationTest, IsFinishedNeedsSynchronizedStartTime)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->setRunState(CCActiveAnimation::Running, 2);
     EXPECT_FALSE(anim->isFinished());
     anim->setRunState(CCActiveAnimation::Paused, 2);
@@ -208,7 +208,7 @@ TEST(CCActiveAnimationTest, IsFinishedNeedsSynchronizedStartTime)
 
 TEST(CCActiveAnimationTest, RunStateChangesIgnoredWhileSuspended)
 {
-    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    OwnPtr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->suspend(0);
     EXPECT_EQ(CCActiveAnimation::Paused, anim->runState());
     anim->setRunState(CCActiveAnimation::Running, 0);
