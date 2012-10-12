@@ -5,9 +5,8 @@
 #ifndef WebFloatAnimationCurveImpl_h
 #define WebFloatAnimationCurveImpl_h
 
+#include "base/memory/scoped_ptr.h"
 #include <public/WebFloatAnimationCurve.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 class CCAnimationCurve;
@@ -31,10 +30,10 @@ public:
 
     virtual float getValue(double time) const OVERRIDE;
 
-    PassOwnPtr<cc::CCAnimationCurve> cloneToCCAnimationCurve() const;
+    scoped_ptr<cc::CCAnimationCurve> cloneToCCAnimationCurve() const;
 
 private:
-    OwnPtr<cc::CCKeyframedFloatAnimationCurve> m_curve;
+    scoped_ptr<cc::CCKeyframedFloatAnimationCurve> m_curve;
 };
 
 }

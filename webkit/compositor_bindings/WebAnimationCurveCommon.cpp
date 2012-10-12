@@ -8,12 +8,9 @@
 
 #include "CCTimingFunction.h"
 
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-
 namespace WebKit {
 
-PassOwnPtr<cc::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType type)
+scoped_ptr<cc::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType type)
 {
     switch (type) {
     case WebAnimationCurve::TimingFunctionTypeEase:
@@ -25,9 +22,9 @@ PassOwnPtr<cc::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingF
     case WebAnimationCurve::TimingFunctionTypeEaseInOut:
         return cc::CCEaseInOutTimingFunction::create();
     case WebAnimationCurve::TimingFunctionTypeLinear:
-        return nullptr;
+        return scoped_ptr<cc::CCTimingFunction>();
     }
-    return nullptr;
+    return scoped_ptr<cc::CCTimingFunction>();
 }
 
 } // namespace WebKit

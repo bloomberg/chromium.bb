@@ -197,7 +197,7 @@ public:
 
     virtual void pushPropertiesTo(CCLayerImpl*);
 
-    void clearRenderSurface() { m_renderSurface.clear(); }
+    void clearRenderSurface() { m_renderSurface.reset(); }
     RenderSurfaceChromium* renderSurface() const { return m_renderSurface.get(); }
     void createRenderSurface();
 
@@ -249,7 +249,7 @@ public:
     // Set the priority of all desired textures in this layer.
     virtual void setTexturePriorities(const CCPriorityCalculator&) { }
 
-    bool addAnimation(PassOwnPtr<CCActiveAnimation>);
+    bool addAnimation(scoped_ptr<CCActiveAnimation>);
     void pauseAnimation(int animationId, double timeOffset);
     void removeAnimation(int animationId);
 
@@ -257,8 +257,8 @@ public:
     void resumeAnimations(double monotonicTime);
 
     CCLayerAnimationController* layerAnimationController() { return m_layerAnimationController.get(); }
-    void setLayerAnimationController(PassOwnPtr<CCLayerAnimationController>);
-    PassOwnPtr<CCLayerAnimationController> releaseLayerAnimationController();
+    void setLayerAnimationController(scoped_ptr<CCLayerAnimationController>);
+    scoped_ptr<CCLayerAnimationController> releaseLayerAnimationController();
 
     void setLayerAnimationDelegate(WebKit::WebAnimationDelegate* layerAnimationDelegate) { m_layerAnimationDelegate = layerAnimationDelegate; }
 
@@ -323,7 +323,7 @@ private:
     // updated via setLayerTreeHost() if a layer moves between trees.
     CCLayerTreeHost* m_layerTreeHost;
 
-    OwnPtr<CCLayerAnimationController> m_layerAnimationController;
+    scoped_ptr<CCLayerAnimationController> m_layerAnimationController;
 
     // Layer properties.
     IntSize m_bounds;
@@ -367,7 +367,7 @@ private:
     scoped_refptr<LayerChromium> m_replicaLayer;
 
     // Transient properties.
-    OwnPtr<RenderSurfaceChromium> m_renderSurface;
+    scoped_ptr<RenderSurfaceChromium> m_renderSurface;
     float m_drawOpacity;
     bool m_drawOpacityIsAnimating;
 
