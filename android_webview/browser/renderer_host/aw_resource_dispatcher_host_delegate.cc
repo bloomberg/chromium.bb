@@ -94,7 +94,9 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     }
   }
 
-  if (resource_type == ResourceType::MAIN_FRAME) {
+  // We ignore POST requests because of BUG=155250.
+  if (resource_type == ResourceType::MAIN_FRAME &&
+      request->method() != "POST") {
     throttles->push_back(InterceptNavigationDelegate::CreateThrottleFor(
         request));
   }

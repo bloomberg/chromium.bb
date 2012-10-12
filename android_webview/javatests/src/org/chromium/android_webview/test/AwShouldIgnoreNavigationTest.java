@@ -191,6 +191,13 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
                     method, timeout));
     }
 
+    private String getHtmlForPageWithSimplePostFormTo(String destination) {
+        return makeHtmlPageFrom("",
+                "<form action=\"" + destination + "\" method=\"post\">" +
+                  "<input type=\"submit\" value=\"post\" id=\"link\">"+
+                "</form>");
+    }
+
     private String addPageToTestServer(TestWebServer webServer, String httpPath, String html) {
         List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
         headers.add(Pair.create("Content-Type", "text/html"));
@@ -555,6 +562,82 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
                    shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl() + "> instead.",
                    shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl().startsWith(
                            "data:"));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
+    public void testShouldIgnoreNavigationNotCalledForPostNavigations() throws Throwable {
+        // The reason POST requests are excluded is BUG 155250.
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
+            contentsClient.getShouldIgnoreNavigationHelper();
+
+        TestWebServer webServer = null;
+        try {
+            // Set up the HTML page.
+            webServer = new TestWebServer(false);
+            final String redirectTargetUrl = createRedirectTargetPage(webServer);
+            final String postLinkUrl = addPageToTestServer(webServer, "/page_with_post_link.html",
+                    getHtmlForPageWithSimplePostFormTo(redirectTargetUrl));
+
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), postLinkUrl);
+
+            final int shouldIgnoreNavigationCallCount =
+                shouldIgnoreNavigationHelper.getCallCount();
+
+            clickOnLinkUsingJs(awContents, contentsClient);
+
+            // After we load this URL we're certain that any in-flight callbacks for the previous
+            // navigation have been delivered.
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
+
+            assertEquals(shouldIgnoreNavigationCallCount,
+                    shouldIgnoreNavigationHelper.getCallCount());
+            assertEquals(1, webServer.getRequestCount(REDIRECT_TARGET_PATH));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
+    public void testShouldIgnoreNavigationNotCalledForIframeNavigations() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
+            contentsClient.getShouldIgnoreNavigationHelper();
+
+        TestWebServer webServer = null;
+        try {
+            // Set up the HTML page.
+            webServer = new TestWebServer(false);
+            final String iframeRedirectTargetUrl = createRedirectTargetPage(webServer);
+            final String iframeRedirectUrl =
+                webServer.setRedirect("/302.html", iframeRedirectTargetUrl);
+            final String pageWithIframeUrl =
+                addPageToTestServer(webServer, "/iframe_intercept.html",
+                    makeHtmlPageFrom("", "<iframe src=\"" + iframeRedirectUrl + "\" />"));
+
+            final int shouldIgnoreNavigationCallCount =
+                shouldIgnoreNavigationHelper.getCallCount();
+
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), pageWithIframeUrl);
+
+            // After we load this URL we're certain that any in-flight callbacks for the previous
+            // navigation have been delivered.
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
+
+            assertEquals(shouldIgnoreNavigationCallCount,
+                    shouldIgnoreNavigationHelper.getCallCount());
+            assertEquals(1, webServer.getRequestCount(REDIRECT_TARGET_PATH));
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
     }
 
     /**
