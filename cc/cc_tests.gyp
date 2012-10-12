@@ -81,6 +81,25 @@
       'test/MockCCQuadCuller.cpp',
       'test/MockCCQuadCuller.h',
       'test/WebCompositorInitializer.h',
+
+      'test/animation_test_common.h',
+      'test/geometry_test_utils.h',
+      'test/layer_test_common.h',
+      'test/layer_tree_test_common.h',
+      'test/occlusion_tracker_test_common.h',
+      'test/render_pass_test_common.h',
+      'test/scheduler_test_common.h',
+      'test/test_common.h',
+      'test/tiled_layer_test_common.h',
+      'test/compositor_fake_web_graphics_context_3d.h',
+      'test/fake_graphics_context.h',
+      'test/fake_layer_tree_host_client.h',
+      'test/fake_web_compositor_output_surface.h',
+      'test/fake_web_compositor_software_output_device.h',
+      'test/fake_web_graphics_context_3d.h',
+      'test/fake_web_scrollbar_theme_geometry.h',
+      'test/mock_quad_culler.h',
+      'test/web_compositor_initializer.h',
     ],
   },
   'targets': [
@@ -157,4 +176,3 @@
     }],
   ],
 }
-
