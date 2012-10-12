@@ -449,13 +449,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
 // link from that iframe to a new window to a URL in the app's extent (path1/
 // empty.html) results in the new window being in an app process. See
 // http://crbug.com/89272 for more details.
-#if defined(OS_CHROMEOS)
-// http://crbug.com/153513
-#define MAYBE_OpenAppFromIframe DISABLED_OpenAppFromIframe
-#else
-#define MAYBE_OpenAppFromIframe OpenAppFromIframe
-#endif
-IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_OpenAppFromIframe) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   extensions::ProcessMap* process_map =
       browser()->profile()->GetExtensionService()->process_map();
 
@@ -486,7 +480,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_OpenAppFromIframe) {
 
 // Similar to the previous test, but ensure that popup blocking bypass
 // isn't granted to the iframe.  See crbug.com/117446.
-IN_PROC_BROWSER_TEST_F(BlockedAppApiTest, OpenAppFromIframe) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/153513
+#define MAYBE_OpenAppFromIframe DISABLED_OpenAppFromIframe
+#else
+#define MAYBE_OpenAppFromIframe OpenAppFromIframe
+#endif
+IN_PROC_BROWSER_TEST_F(BlockedAppApiTest, MAYBE_OpenAppFromIframe) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
