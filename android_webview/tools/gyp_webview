@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This script runs gyp with the configuration required to build WebView in the
+# Android build system. It is not necessary to source build/android/envsetup.sh
+# before running this script.
+
+set -e
+
+export CHROME_ANDROID_BUILD_WEBVIEW=1
+export CHROME_SRC="$(readlink -f "$(dirname "$0")/../..")"
+export PYTHONDONTWRITEBYTECODE=1
+. build/android/envsetup.sh
+android_gyp
