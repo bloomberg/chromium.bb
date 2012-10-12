@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/chromeos/drive/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"

@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
-#include "chrome/browser/chromeos/drive/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

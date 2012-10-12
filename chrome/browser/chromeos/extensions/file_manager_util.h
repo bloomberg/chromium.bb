@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "chrome/browser/chromeos/drive/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 

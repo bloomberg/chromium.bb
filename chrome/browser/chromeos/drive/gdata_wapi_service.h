@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "base/observer_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_service_interface.h"
+#include "base/observer_list.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
+#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_operations.h"
 
 class FilePath;

@@ -240,7 +240,6 @@
         'browser/chromeos/drive/drive_protocol_handler.h',
         'browser/chromeos/drive/drive_resource_metadata.cc',
         'browser/chromeos/drive/drive_resource_metadata.h',
-        'browser/chromeos/drive/drive_service_interface.h',
         'browser/chromeos/drive/drive_scheduler.cc',
         'browser/chromeos/drive/drive_scheduler.h',
         'browser/chromeos/drive/drive_sync_client.cc',

@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class FilePath;

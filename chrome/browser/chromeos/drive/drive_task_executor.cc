@@ -9,11 +9,11 @@
 
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/drive/drive_service_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
+#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"

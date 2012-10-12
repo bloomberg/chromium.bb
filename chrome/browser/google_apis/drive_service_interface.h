@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SERVICE_INTERFACE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SERVICE_INTERFACE_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_DRIVE_SERVICE_INTERFACE_H_
+#define CHROME_BROWSER_GOOGLE_APIS_DRIVE_SERVICE_INTERFACE_H_
 
 #include <string>
 
@@ -58,11 +58,11 @@ class DriveServiceObserver {
   virtual ~DriveServiceObserver() {}
 };
 
-// This defines an interface for sharing by DocumentService and
-// MockDocumentService so that we can do testing of clients of DocumentService.
+// This defines an interface for sharing by DriveService and MockDriveService
+// so that we can do testing of clients of DriveService.
 //
-// All functions must be called on UI thread. DocumentService is built on top
-// of URLFetcher that runs on UI thread.
+// All functions must be called on UI thread. DriveService is built on top of
+// URLFetcher that runs on UI thread.
 //
 // TODO(zel,benchan): Make the terminology/naming convention (e.g. file vs
 // document vs resource, directory vs collection) more consistent and precise.
@@ -233,4 +233,4 @@ class DriveServiceInterface {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SERVICE_INTERFACE_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_SERVICE_INTERFACE_H_

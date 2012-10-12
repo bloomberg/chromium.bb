@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
-#include "chrome/browser/chromeos/drive/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
