@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -452,8 +453,8 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchPinned) {
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
   TabContents* tab = tab_strip->GetActiveTabContents();
   content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(tab));
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(tab->web_contents()));
   browser()->tab_strip_model()->CloseSelectedTabs();
   close_observer.Wait();
   EXPECT_EQ(--tab_count, tab_strip->count());
@@ -471,8 +472,8 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchUnpinned) {
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
   TabContents* tab = tab_strip->GetActiveTabContents();
   content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(tab));
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(tab->web_contents()));
   browser()->tab_strip_model()->CloseSelectedTabs();
   close_observer.Wait();
   EXPECT_EQ(--tab_count, tab_strip->count());

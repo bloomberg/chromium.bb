@@ -118,8 +118,8 @@ void TabContentsContainerGtk::PackTab(TabContents* tab) {
   }
 
   tab->web_contents()->WasShown();
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(tab));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(tab->web_contents()));
 }
 
 void TabContentsContainerGtk::HideTab(TabContents* tab) {
@@ -128,8 +128,8 @@ void TabContentsContainerGtk::HideTab(TabContents* tab) {
     gtk_widget_hide(widget);
 
   tab->web_contents()->WasHidden();
-  registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                    content::Source<TabContents>(tab));
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    content::Source<WebContents>(tab->web_contents()));
 }
 
 void TabContentsContainerGtk::DetachTab(TabContents* tab) {
@@ -150,9 +150,8 @@ void TabContentsContainerGtk::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, type);
-  WebContentsDestroyed(
-      content::Source<TabContents>(source)->web_contents());
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
+  WebContentsDestroyed(content::Source<WebContents>(source).ptr());
 }
 
 void TabContentsContainerGtk::WebContentsDestroyed(WebContents* contents) {

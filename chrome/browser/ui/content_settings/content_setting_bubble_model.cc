@@ -790,8 +790,8 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(
     : tab_contents_(tab_contents),
       profile_(profile),
       content_type_(content_type) {
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContents>(tab_contents));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(tab_contents->web_contents()));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<Profile>(profile_));
 }
@@ -824,8 +824,9 @@ void ContentSettingBubbleModel::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
-    DCHECK_EQ(tab_contents_, content::Source<TabContents>(source).ptr());
+  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+    DCHECK_EQ(tab_contents_->web_contents(),
+              content::Source<WebContents>(source).ptr());
     tab_contents_ = NULL;
   } else {
     DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);

@@ -164,8 +164,8 @@ DraggedTabData DraggedTabControllerGtk::InitDraggedTabData(TabGtk* tab) {
 
   DraggedTabData dragged_tab_data(tab, contents, original_delegate,
                                   source_model_index, pinned, mini);
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(dragged_tab_data.contents_));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<WebContents>(contents->web_contents()));
   return dragged_tab_data;
 }
 
@@ -228,12 +228,12 @@ void DraggedTabControllerGtk::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, type);
-  TabContents* destroyed_tab_contents =
-      content::Source<TabContents>(source).ptr();
-  WebContents* destroyed_web_contents = destroyed_tab_contents->web_contents();
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
+  WebContents* destroyed_web_contents =
+      content::Source<WebContents>(source).ptr();
   for (size_t i = 0; i < drag_data_->size(); ++i) {
-    if (drag_data_->get(i)->contents_ == destroyed_tab_contents) {
+    if (drag_data_->get(i)->contents_->web_contents() ==
+        destroyed_web_contents) {
       // One of the tabs we're dragging has been destroyed. Cancel the drag.
       if (destroyed_web_contents->GetDelegate() == this)
         destroyed_web_contents->SetDelegate(NULL);
@@ -848,8 +848,9 @@ void DraggedTabControllerGtk::CleanUpDraggedTabs() {
   if (attached_tabstrip_ != source_tabstrip_) {
     for (size_t i = 0; i < drag_data_->size(); ++i) {
       if (drag_data_->get(i)->contents_) {
-        registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-            content::Source<TabContents>(drag_data_->get(i)->contents_));
+        registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+            content::Source<WebContents>(
+                drag_data_->get(i)->contents_->web_contents()));
       }
       source_tabstrip_->DestroyDraggedTab(drag_data_->get(i)->tab_);
       drag_data_->get(i)->tab_ = NULL;
