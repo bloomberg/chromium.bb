@@ -455,6 +455,15 @@ WebHistoryItem ReadHistoryItem(
     item.setHTTPBody(empty_http_body);
   }
 
+#if defined(OS_ANDROID)
+  // Now-unused values that shipped in this version of Chrome for Android when
+  // it was on a private branch.
+  if (obj->version == 11) {
+    ReadReal(obj);
+    ReadBoolean(obj);
+  }
+#endif
+
   // Subitems
   int num_children = ReadInteger(obj);
   for (int i = 0; i < num_children; ++i)
