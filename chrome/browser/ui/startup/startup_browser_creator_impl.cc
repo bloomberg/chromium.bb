@@ -387,25 +387,13 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     // be an app tab.
     OpenApplicationTab(profile);
 
-    if (process_startup) {
-      if (browser_defaults::kOSSupportsOtherBrowsers &&
-          !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
-        // Generally, the default browser prompt should not be shown on first
-        // run. However, when the set-as-default dialog has been suppressed, we
-        // need to allow it.
-        if ((!is_first_run_ ||
-             (browser_creator_ &&
-              browser_creator_->is_default_browser_dialog_suppressed())) &&
-            !chrome::ShowAutolaunchPrompt(profile)) {
-          chrome::ShowDefaultBrowserPrompt(profile);
-        }
-      }
 #if defined(OS_MACOSX)
+    if (process_startup) {
       // Check whether the auto-update system needs to be promoted from user
       // to system.
       KeystoneInfoBar::PromotionInfoBar(profile);
-#endif
     }
+#endif
   }
 
   // If we're recording or playing back, startup the EventRecorder now
@@ -884,6 +872,20 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP) {
     chrome::ShowBadFlagsPrompt(browser);
     chrome::ShowObsoleteOSPrompt(browser);
+
+    if (browser_defaults::kOSSupportsOtherBrowsers &&
+        !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
+      // Generally, the default browser prompt should not be shown on first
+      // run. However, when the set-as-default dialog has been suppressed, we
+      // need to allow it.
+      if ((!is_first_run_ ||
+           (browser_creator_ &&
+            browser_creator_->is_default_browser_dialog_suppressed())) &&
+          !chrome::ShowAutolaunchPrompt(browser)) {
+        chrome::ShowDefaultBrowserPrompt(profile_,
+                                         browser->host_desktop_type());
+      }
+    }
   }
 }
 

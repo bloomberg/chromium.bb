@@ -24,9 +24,6 @@ class ExtensionInstallDialog;
 
 namespace chrome {
 class BrowserListObserver;
-namespace internal {
-void NotifyNotDefaultBrowserCallback();
-}
 }
 
 #if defined(OS_CHROMEOS)
@@ -108,7 +105,6 @@ class BrowserList {
 #if defined(USE_ASH)
   friend content::WebContents* GetActiveWebContents();
 #endif
-  friend void chrome::internal::NotifyNotDefaultBrowserCallback();
   // DO NOT ADD MORE FRIENDS TO THIS LIST.
 
   // Returns the Browser object whose window was most recently active.  If the

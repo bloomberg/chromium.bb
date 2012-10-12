@@ -14,7 +14,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -146,37 +145,18 @@ bool AutolaunchInfoBarDelegate::ShouldExpireInternal(
   return should_expire_;
 }
 
-void CheckAutoLaunchCallback(Profile* profile) {
-  if (!auto_launch_trial::IsInAutoLaunchGroup())
-    return;
-
-  // We must not use GetLastActive here because this is at Chrome startup and
-  // no window might have been made active yet. We'll settle for any window.
-  Browser* browser = browser::FindAnyBrowser(profile, true);
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
-
-  // Don't show the info-bar if there are already info-bars showing.
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents);
-  if (infobar_helper->GetInfoBarCount() > 0)
-    return;
-
-  profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  infobar_helper->AddInfoBar(new AutolaunchInfoBarDelegate(
-      infobar_helper, profile->GetPrefs(), profile));
-}
-
 }  // namespace
 
 namespace chrome {
 
-bool ShowAutolaunchPrompt(Profile* profile) {
+bool ShowAutolaunchPrompt(Browser* browser) {
   if (!auto_launch_trial::IsInAutoLaunchGroup())
     return false;
 
   // Only supported on the main profile for now.
-  if (profile->GetPath().BaseName().value() !=
-      ASCIIToUTF16(chrome::kInitialProfile)) {
+  Profile* profile = browser->profile();
+  if (profile->GetPath().BaseName() !=
+      FilePath(ASCIIToUTF16(chrome::kInitialProfile))) {
     return false;
   }
 
@@ -189,13 +169,24 @@ bool ShowAutolaunchPrompt(Profile* profile) {
   if (command_line.HasSwitch(switches::kChromeFrame))
     return false;
 
-  if (command_line.HasSwitch(switches::kAutoLaunchAtStartup) ||
-      first_run::IsChromeFirstRun()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&CheckAutoLaunchCallback, profile));
-    return true;
+  if (!command_line.HasSwitch(switches::kAutoLaunchAtStartup) &&
+      !first_run::IsChromeFirstRun()) {
+    return false;
   }
-  return false;
+
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+
+  // Don't show the info-bar if there are already info-bars showing.
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents);
+  if (infobar_helper->GetInfoBarCount() > 0)
+    return false;
+
+  profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  infobar_helper->AddInfoBar(new AutolaunchInfoBarDelegate(
+      infobar_helper, profile->GetPrefs(), profile));
+
+  return true;
 }
 
 void RegisterAutolaunchPrefs(PrefService* prefs) {

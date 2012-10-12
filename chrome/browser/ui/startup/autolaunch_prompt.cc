@@ -6,7 +6,7 @@
 
 namespace chrome {
 
-bool ShowAutolaunchPrompt(Profile* profile) {
+bool ShowAutolaunchPrompt(Browser* browser) {
   // Autolaunch is only implemented on Windows right now.
   return false;
 }

@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -158,58 +158,8 @@ bool DefaultBrowserInfoBarDelegate::ShouldExpireInternal(
   return should_expire_;
 }
 
-void CheckDefaultBrowserCallback() {
-  if (!ShellIntegration::IsDefaultBrowser()) {
-    ShellIntegration::DefaultWebClientSetPermission default_change_mode =
-        ShellIntegration::CanSetAsDefaultBrowser();
-
-    if (default_change_mode != ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(&chrome::internal::NotifyNotDefaultBrowserCallback));
-    }
-  }
-}
-
-}  // namespace
-
-namespace chrome {
-
-void ShowDefaultBrowserPrompt(Profile* profile) {
-  // We do not check if we are the default browser if:
-  // - the user said "don't ask me again" on the infobar earlier.
-  // - There is a policy in control of this setting.
-  if (!profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser))
-    return;
-
-  if (g_browser_process->local_state()->IsManagedPreference(
-      prefs::kDefaultBrowserSettingEnabled)) {
-    if (g_browser_process->local_state()->GetBoolean(
-        prefs::kDefaultBrowserSettingEnabled)) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(
-              base::IgnoreResult(&ShellIntegration::SetAsDefaultBrowser)));
-    } else {
-      // TODO(pastarmovj): We can't really do anything meaningful here yet but
-      // just prevent showing the infobar.
-    }
-    return;
-  }
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&CheckDefaultBrowserCallback));
-
-}
-
-#if !defined(OS_WIN)
-bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
-  return false;
-}
-#endif
-
-namespace internal {
-
-void NotifyNotDefaultBrowserCallback() {
-  Browser* browser = BrowserList::GetLastActive();
+void NotifyNotDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
+  Browser* browser = browser::FindLastActiveWithHostDesktopType(desktop_type);
   if (!browser)
     return;  // Reached during ui tests.
 
@@ -235,5 +185,53 @@ void NotifyNotDefaultBrowserCallback() {
                                         interactive_flow));
 }
 
-}  // namespace internal
+void CheckDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
+  if (!ShellIntegration::IsDefaultBrowser()) {
+    ShellIntegration::DefaultWebClientSetPermission default_change_mode =
+        ShellIntegration::CanSetAsDefaultBrowser();
+
+    if (default_change_mode != ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&NotifyNotDefaultBrowserCallback, desktop_type));
+    }
+  }
+}
+
+}  // namespace
+
+namespace chrome {
+
+void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
+  // We do not check if we are the default browser if:
+  // - the user said "don't ask me again" on the infobar earlier.
+  // - There is a policy in control of this setting.
+  if (!profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser))
+    return;
+
+  if (g_browser_process->local_state()->IsManagedPreference(
+      prefs::kDefaultBrowserSettingEnabled)) {
+    if (g_browser_process->local_state()->GetBoolean(
+        prefs::kDefaultBrowserSettingEnabled)) {
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(
+              base::IgnoreResult(&ShellIntegration::SetAsDefaultBrowser)));
+    } else {
+      // TODO(pastarmovj): We can't really do anything meaningful here yet but
+      // just prevent showing the infobar.
+    }
+    return;
+  }
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&CheckDefaultBrowserCallback,
+                                     desktop_type));
+
+}
+
+#if !defined(OS_WIN)
+bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
+  return false;
+}
+#endif
+
 }  // namespace chrome
