@@ -7,6 +7,8 @@
 #include "sync/protocol/proto_value_conversions.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/string_number_conversions.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/app_notification_specifics.pb.h"
@@ -119,6 +121,17 @@ TEST_F(ProtoValueConversionsTest, AutofillProfileSpecificsToValue) {
 
 TEST_F(ProtoValueConversionsTest, BookmarkSpecificsToValue) {
   TestSpecificsToValue(BookmarkSpecificsToValue);
+}
+
+TEST_F(ProtoValueConversionsTest, BookmarkSpecificsData) {
+  const base::Time creation_time(base::Time::Now());
+  sync_pb::BookmarkSpecifics specifics;
+  specifics.set_creation_time_us(creation_time.ToInternalValue());
+  scoped_ptr<DictionaryValue> value(BookmarkSpecificsToValue(specifics));
+  EXPECT_FALSE(value->empty());
+  std::string encoded_time;
+  EXPECT_TRUE(value->GetString("creation_time_us", &encoded_time));
+  EXPECT_EQ(base::Int64ToString(creation_time.ToInternalValue()), encoded_time);
 }
 
 TEST_F(ProtoValueConversionsTest, ExtensionSettingSpecificsToValue) {

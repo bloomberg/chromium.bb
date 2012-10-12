@@ -272,6 +272,7 @@ DictionaryValue* BookmarkSpecificsToValue(
   SET_STR(url);
   SET_BYTES(favicon);
   SET_STR(title);
+  SET_INT64(creation_time_us);
   return value;
 }
 

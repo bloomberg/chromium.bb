@@ -467,7 +467,9 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
 
   bool was_bookmarked = IsBookmarked(url);
 
-  SetDateFolderModified(parent, creation_time);
+  // Syncing may result in dates older than the last modified date.
+  if (creation_time > parent->date_folder_modified())
+    SetDateFolderModified(parent, creation_time);
 
   BookmarkNode* new_node = new BookmarkNode(generate_next_node_id(), url);
   new_node->SetTitle(title);
