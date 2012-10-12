@@ -157,6 +157,12 @@ setup_pam(struct weston_launch *wl)
 	wl->pc.appdata_ptr = wl;
 
 	err = pam_start("login", wl->pw->pw_name, &wl->pc, &wl->ph);
+	if (err != PAM_SUCCESS) {
+		fprintf(stderr, "failed to start pam transaction: %d: %s\n",
+			err, pam_strerror(wl->ph, err));
+		return -1;
+	}
+
 	err = pam_set_item(wl->ph, PAM_TTY, ttyname(wl->tty));
 	if (err != PAM_SUCCESS) {
 		fprintf(stderr, "failed to set PAM_TTY item: %d: %s\n",
