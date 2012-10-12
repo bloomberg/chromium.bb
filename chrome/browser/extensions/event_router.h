@@ -198,7 +198,9 @@ class EventRouter : public content::NotificationObserver,
 
   // Ensures that all lazy background pages that are interested in the given
   // event are loaded, and queues the event if the page is not ready yet.
-  void DispatchLazyEvent(const std::string& extension_id,
+  // Returns true if the event was queued for subsequent dispatch, false
+  // otherwise.
+  bool DispatchLazyEvent(const std::string& extension_id,
                          const linked_ptr<Event>& event);
 
   // Dispatches the event to the specified extension running in |process|.
@@ -216,8 +218,9 @@ class EventRouter : public content::NotificationObserver,
                                  base::ListValue** event_args);
 
   // Possibly loads given extension's background page in preparation to
-  // dispatch an event.
-  void MaybeLoadLazyBackgroundPageToDispatchEvent(
+  // dispatch an event.  Returns true if the event was queued for subsequent
+  // dispatch, false otherwise.
+  bool MaybeLoadLazyBackgroundPageToDispatchEvent(
       Profile* profile,
       const Extension* extension,
       const linked_ptr<Event>& event);
