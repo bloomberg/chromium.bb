@@ -138,8 +138,19 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension,
       extension->location() != Extension::INTERNAL)
     return;
 
-  if (record_oauth2_grant)
-    new OAuth2GrantRecorder(profile_, extension);
+  if (record_oauth2_grant) {
+    // Only record OAuth grant if:
+    // 1. The extension has client id and scopes.
+    // 2. The user is signed in to Chrome.
+    const Extension::OAuth2Info& oauth2_info = extension->oauth2_info();
+    if (!oauth2_info.client_id.empty() && !oauth2_info.scopes.empty()) {
+      TokenService* token_service = TokenServiceFactory::GetForProfile(
+          profile_);
+      if (token_service && token_service->HasOAuthLoginToken()) {
+        new OAuth2GrantRecorder(profile_, extension);
+      }
+    }
+  }
 
   GetExtensionPrefs()->AddGrantedPermissions(extension->id(),
                                              extension->GetActivePermissions());

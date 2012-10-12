@@ -2084,11 +2084,8 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
 
   // Silently grant all active permissions to default apps only on install.
   // After install they should behave like other apps.
-  if (is_default_app_install) {
-    // Not recording any OAuth2 grants since no default apps need them. See
-    // http://crbug.com/154896 for a better way of checking this.
-    GrantPermissions(extension, false);
-  }
+  if (is_default_app_install)
+    GrantPermissions(extension, true);
 
   if (is_extension_upgrade) {
     // Other than for unpacked extensions, CrxInstaller should have guaranteed
