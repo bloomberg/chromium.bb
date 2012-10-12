@@ -12,7 +12,7 @@ namespace cc {
 
 class CCDelegatedRendererLayerImpl : public CCLayerImpl {
 public:
-    static PassOwnPtr<CCDelegatedRendererLayerImpl> create(int id) { return adoptPtr(new CCDelegatedRendererLayerImpl(id)); }
+    static scoped_ptr<CCDelegatedRendererLayerImpl> create(int id) { return make_scoped_ptr(new CCDelegatedRendererLayerImpl(id)); }
     virtual ~CCDelegatedRendererLayerImpl();
 
     virtual bool descendantDrawsContent() OVERRIDE;

@@ -27,9 +27,9 @@ VideoLayerChromium::~VideoLayerChromium()
 {
 }
 
-PassOwnPtr<CCLayerImpl> VideoLayerChromium::createCCLayerImpl()
+scoped_ptr<CCLayerImpl> VideoLayerChromium::createCCLayerImpl()
 {
-    return CCVideoLayerImpl::create(m_layerId, m_provider);
+    return CCVideoLayerImpl::create(m_layerId, m_provider).PassAs<CCLayerImpl>();
 }
 
 } // namespace cc

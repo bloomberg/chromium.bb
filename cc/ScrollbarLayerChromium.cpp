@@ -20,9 +20,9 @@ using WebKit::WebRect;
 
 namespace cc {
 
-PassOwnPtr<CCLayerImpl> ScrollbarLayerChromium::createCCLayerImpl()
+scoped_ptr<CCLayerImpl> ScrollbarLayerChromium::createCCLayerImpl()
 {
-    return CCScrollbarLayerImpl::create(id());
+    return CCScrollbarLayerImpl::create(id()).PassAs<CCLayerImpl>();
 }
 
 scoped_refptr<ScrollbarLayerChromium> ScrollbarLayerChromium::create(PassOwnPtr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)

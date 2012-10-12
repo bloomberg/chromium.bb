@@ -27,7 +27,7 @@ public:
 
     void clearClient() { m_client = 0; }
 
-    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
     // Sets whether this texture should be Y-flipped at draw time. Defaults to true.
     void setFlipped(bool);

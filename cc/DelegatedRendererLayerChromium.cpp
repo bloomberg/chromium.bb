@@ -25,9 +25,9 @@ DelegatedRendererLayerChromium::~DelegatedRendererLayerChromium()
 {
 }
 
-PassOwnPtr<CCLayerImpl> DelegatedRendererLayerChromium::createCCLayerImpl()
+scoped_ptr<CCLayerImpl> DelegatedRendererLayerChromium::createCCLayerImpl()
 {
-    return CCDelegatedRendererLayerImpl::create(m_layerId);
+    return CCDelegatedRendererLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
 }
 
 }

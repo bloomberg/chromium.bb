@@ -72,7 +72,7 @@ protected:
     virtual CCPrioritizedTextureManager* textureManager() const;
 
 private:
-    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
     void createTilerIfNeeded();
     void setTilingOption(TilingOption);

@@ -595,7 +595,7 @@ void LayerChromium::pushPropertiesTo(CCLayerImpl* layer)
     m_updateRect = FloatRect();
 }
 
-PassOwnPtr<CCLayerImpl> LayerChromium::createCCLayerImpl()
+scoped_ptr<CCLayerImpl> LayerChromium::createCCLayerImpl()
 {
     return CCLayerImpl::create(m_layerId);
 }

@@ -6,7 +6,7 @@
 #define CCLayerTreeHostCommon_h
 
 #include "base/memory/ref_counted.h"
-#include "cc/own_ptr_vector.h"
+#include "cc/scoped_ptr_vector.h"
 #include "IntRect.h"
 #include "IntSize.h"
 #include <public/WebTransformationMatrix.h>
@@ -39,7 +39,7 @@ public:
         return children[index].get();
     }
 
-    static CCLayerImpl* getChildAsRawPtr(const OwnPtrVector<CCLayerImpl>& children, size_t index)
+    static CCLayerImpl* getChildAsRawPtr(const ScopedPtrVector<CCLayerImpl>& children, size_t index)
     {
         return children[index];
     }

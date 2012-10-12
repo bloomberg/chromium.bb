@@ -22,9 +22,9 @@ namespace {
 
 class MockCCLayerImpl : public CCLayerImpl {
 public:
-    static PassOwnPtr<MockCCLayerImpl> create(int layerId)
+    static scoped_ptr<MockCCLayerImpl> create(int layerId)
     {
-        return adoptPtr(new MockCCLayerImpl(layerId));
+        return make_scoped_ptr(new MockCCLayerImpl(layerId));
     }
     virtual ~MockCCLayerImpl()
     {
@@ -51,9 +51,9 @@ public:
         return make_scoped_refptr(new MockLayerChromium(ccLayerDestructionList));
     }
 
-    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE
     {
-        return MockCCLayerImpl::create(m_layerId);
+        return MockCCLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
     }
 
     virtual void pushPropertiesTo(CCLayerImpl* ccLayer) OVERRIDE
@@ -119,7 +119,7 @@ void expectTreesAreIdentical(LayerChromium* layer, CCLayerImpl* ccLayer, CCLayer
         expectTreesAreIdentical(layer->replicaLayer(), ccLayer->replicaLayer(), hostImpl);
 
     const std::vector<scoped_refptr<LayerChromium> >& layerChildren = layer->children();
-    const OwnPtrVector<CCLayerImpl>& ccLayerChildren = ccLayer->children();
+    const ScopedPtrVector<CCLayerImpl>& ccLayerChildren = ccLayer->children();
 
     ASSERT_EQ(layerChildren.size(), ccLayerChildren.size());
 
@@ -133,7 +133,7 @@ TEST(TreeSynchronizerTest, syncNullTree)
 {
     DebugScopedSetImplThread impl;
 
-    OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(0, nullptr, 0);
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(0, scoped_ptr<CCLayerImpl>(), 0);
 
     EXPECT_TRUE(!ccLayerTreeRoot.get());
 }
@@ -150,7 +150,7 @@ TEST(TreeSynchronizerTest, syncSimpleTreeFromEmpty)
     layerTreeRoot->addChild(LayerChromium::create());
     layerTreeRoot->addChild(LayerChromium::create());
 
-    OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, hostImpl.get());
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), hostImpl.get());
 
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 }
@@ -168,7 +168,7 @@ TEST(TreeSynchronizerTest, syncSimpleTreeReusingLayers)
     layerTreeRoot->addChild(MockLayerChromium::create(&ccLayerDestructionList));
     layerTreeRoot->addChild(MockLayerChromium::create(&ccLayerDestructionList));
 
-    OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, hostImpl.get());
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     // Add a new layer to the LayerChromium side
@@ -178,7 +178,7 @@ TEST(TreeSynchronizerTest, syncSimpleTreeReusingLayers)
     int secondCCLayerId = ccLayerTreeRoot->children()[1]->id();
 
     // Synchronize again. After the sync the trees should be equivalent and we should have created and destroyed one CCLayerImpl.
-    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.release(), hostImpl.get());
+    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.Pass(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     ASSERT_EQ(1u, ccLayerDestructionList.size());
@@ -200,14 +200,14 @@ TEST(TreeSynchronizerTest, syncSimpleTreeAndTrackStackingOrderChange)
     scoped_refptr<LayerChromium> child2 = MockLayerChromium::create(&ccLayerDestructionList);
     layerTreeRoot->addChild(MockLayerChromium::create(&ccLayerDestructionList));
     layerTreeRoot->addChild(child2);
-    OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, hostImpl.get());
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
     ccLayerTreeRoot->resetAllChangeTrackingForSubtree();
 
     // re-insert the layer and sync again.
     child2->removeFromParent();
     layerTreeRoot->addChild(child2);
-    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.release(), hostImpl.get());
+    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.Pass(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     // Check that the impl thread properly tracked the change.
@@ -237,7 +237,7 @@ TEST(TreeSynchronizerTest, syncSimpleTreeAndProperties)
     IntSize secondChildBounds = IntSize(25, 53);
     layerTreeRoot->children()[1]->setBounds(secondChildBounds);
 
-    OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, hostImpl.get());
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     // Check that the property values we set on the LayerChromium tree are reflected in the CCLayerImpl tree.
@@ -277,7 +277,7 @@ TEST(TreeSynchronizerTest, reuseCCLayersAfterStructuralChange)
     layerB->addChild(MockLayerChromium::create(&ccLayerDestructionList));
     scoped_refptr<LayerChromium> layerD = layerB->children()[1].get();
 
-    OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, hostImpl.get());
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     // Now restructure the tree to look like this:
@@ -295,7 +295,7 @@ TEST(TreeSynchronizerTest, reuseCCLayersAfterStructuralChange)
     layerC->addChild(layerB);
 
     // After another synchronize our trees should match and we should not have destroyed any CCLayerImpls
-    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.release(), hostImpl.get());
+    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.Pass(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     EXPECT_EQ(0u, ccLayerDestructionList.size());
@@ -318,7 +318,7 @@ TEST(TreeSynchronizerTest, syncSimpleTreeThenDestroy)
     int oldTreeFirstChildLayerId = oldLayerTreeRoot->children()[0]->id();
     int oldTreeSecondChildLayerId = oldLayerTreeRoot->children()[1]->id();
 
-    OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(oldLayerTreeRoot.get(), nullptr, hostImpl.get());
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(oldLayerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), hostImpl.get());
     expectTreesAreIdentical(oldLayerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     // Remove all children on the LayerChromium side.
@@ -326,7 +326,7 @@ TEST(TreeSynchronizerTest, syncSimpleTreeThenDestroy)
 
     // Synchronize again. After the sync all CCLayerImpls from the old tree should be deleted.
     scoped_refptr<LayerChromium> newLayerTreeRoot = LayerChromium::create();
-    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(newLayerTreeRoot.get(), ccLayerTreeRoot.release(), hostImpl.get());
+    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(newLayerTreeRoot.get(), ccLayerTreeRoot.Pass(), hostImpl.get());
     expectTreesAreIdentical(newLayerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     ASSERT_EQ(3u, ccLayerDestructionList.size());
@@ -362,23 +362,23 @@ TEST(TreeSynchronizerTest, syncMaskReplicaAndReplicaMaskLayers)
     replicaLayerWithMask->setMaskLayer(replicaMaskLayer.get());
     layerTreeRoot->children()[2]->setReplicaLayer(replicaLayerWithMask.get());
 
-    OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, hostImpl.get());
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), hostImpl.get());
 
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     // Remove the mask layer.
     layerTreeRoot->children()[0]->setMaskLayer(0);
-    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.release(), hostImpl.get());
+    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.Pass(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     // Remove the replica layer.
     layerTreeRoot->children()[1]->setReplicaLayer(0);
-    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.release(), hostImpl.get());
+    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.Pass(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 
     // Remove the replica mask.
     replicaLayerWithMask->setMaskLayer(0);
-    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.release(), hostImpl.get());
+    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.Pass(), hostImpl.get());
     expectTreesAreIdentical(layerTreeRoot.get(), ccLayerTreeRoot.get(), hostImpl.get());
 }
 
@@ -396,8 +396,8 @@ TEST(TreeSynchronizerTest, synchronizeAnimations)
 
     EXPECT_FALSE(static_cast<FakeLayerAnimationController*>(layerTreeRoot->layerAnimationController())->synchronizedAnimations());
 
-    OwnPtr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), nullptr, hostImpl.get());
-    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.release(), hostImpl.get());
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), hostImpl.get());
+    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.Pass(), hostImpl.get());
 
     EXPECT_TRUE(static_cast<FakeLayerAnimationController*>(layerTreeRoot->layerAnimationController())->synchronizedAnimations());
 }
