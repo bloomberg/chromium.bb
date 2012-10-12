@@ -58,8 +58,12 @@
     {
       'target_name': 'common_constants',
       'type': 'static_library',
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)',  # Needed by chrome_paths.cc.
+      ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -74,8 +78,12 @@
         {
           'target_name': 'common_constants_win64',
           'type': 'static_library',
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)',  # Needed by chrome_paths.cc.
+          ],
           'dependencies': [
             '../base/base.gyp:base_nacl_win64',
+            '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],
           'defines': [
             '<@(nacl_win64_defines)',

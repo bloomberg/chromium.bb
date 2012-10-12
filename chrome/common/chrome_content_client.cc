@@ -36,6 +36,7 @@
 #include "webkit/user_agent/user_agent_util.h"
 
 #include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
@@ -79,8 +80,11 @@ const char kGTalkPluginDescription[] = "Google Talk Plugin";
 const uint32 kGTalkPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                        ppapi::PERMISSION_DEV;
 
-const char kInterposeLibraryPath[] =
-    "@executable_path/../../../libplugin_carbon_interpose.dylib";
+#if defined(WIDEVINE_CDM_AVAILABLE)
+const char kWidevineCdmPluginExtension[] = "";
+const uint32 kWidevineCdmPluginPermissions = ppapi::PERMISSION_PRIVATE |
+                                             ppapi::PERMISSION_DEV;
+#endif  // WIDEVINE_CDM_AVAILABLE
 
 #if defined(ENABLE_REMOTING)
 #if defined(GOOGLE_CHROME_BUILD)
@@ -101,6 +105,9 @@ const char kRemotingViewerPluginMimeType[] =
 const char kRemotingViewerPluginMimeExtension[] = "";
 const char kRemotingViewerPluginMimeDescription[] = "";
 #endif  // defined(ENABLE_REMOTING)
+
+const char kInterposeLibraryPath[] =
+    "@executable_path/../../../libplugin_carbon_interpose.dylib";
 
 // Appends the known built-in plugins to the given vector. Some built-in
 // plugins are "internal" which means they are compiled into the Chrome binary,
@@ -195,6 +202,29 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       skip_gtalk_file_check = true;
     }
   }
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  static bool skip_widevine_cdm_file_check = false;
+  if (PathService::Get(chrome::FILE_WIDEVINE_CDM_PLUGIN, &path)) {
+    if (skip_widevine_cdm_file_check || file_util::PathExists(path)) {
+      content::PepperPluginInfo widevine_cdm;
+      widevine_cdm.is_out_of_process = true;
+      widevine_cdm.path = path;
+      widevine_cdm.name = kWidevineCdmPluginName;
+      widevine_cdm.description = kWidevineCdmPluginDescription;
+      widevine_cdm.version = WIDEVINE_CDM_VERSION_STRING;
+      webkit::WebPluginMimeType widevine_cdm_mime_type(
+          kWidevineCdmPluginMimeType,
+          kWidevineCdmPluginExtension,
+          kWidevineCdmPluginMimeTypeDescription);
+      widevine_cdm.mime_types.push_back(widevine_cdm_mime_type);
+      widevine_cdm.permissions = kWidevineCdmPluginPermissions;
+      plugins->push_back(widevine_cdm);
+
+      skip_widevine_cdm_file_check = true;
+    }
+  }
+#endif  // WIDEVINE_CDM_AVAILABLE
 
   // The Remoting Viewer plugin is built-in.
 #if defined(ENABLE_REMOTING)

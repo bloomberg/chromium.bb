@@ -52,6 +52,7 @@
         '<(DEPTH)/third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
         '<(DEPTH)/third_party/re2/re2.gyp:re2',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
+        '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',

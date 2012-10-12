@@ -103,6 +103,8 @@ enum {
                                 // (subdir of DIR_PNACL_BASE).
   FILE_O3D_PLUGIN,              // Full path to the O3D Pepper plugin file.
   FILE_GTALK_PLUGIN,            // Full path to the GTalk Pepper plugin file.
+  FILE_WIDEVINE_CDM_PLUGIN,     // Full path to the Widevine CDM Pepper plugin
+                                // file.
   FILE_LIBAVCODEC,              // Full path to libavcodec media decoding
                                 // library.
   FILE_LIBAVFORMAT,             // Full path to libavformat media parsing

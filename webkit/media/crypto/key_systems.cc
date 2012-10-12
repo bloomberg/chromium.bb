@@ -13,6 +13,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+
 namespace webkit_media {
 
 // Convert a WebString to ASCII, falling back on an empty string in the case
@@ -44,16 +46,27 @@ struct KeySystemPluginTypePair {
 // entries in KeySystems::key_system_map_.
 static const MediaFormatAndKeySystem
 supported_format_key_system_combinations[] = {
+  // Clear Key.
   { "video/webm", "vorbis,vp8,vp8.0,", kClearKeyKeySystem },
   { "audio/webm", "vorbis,", kClearKeyKeySystem },
 
+  // External Clear Key (used for testing).
   { "video/webm", "vorbis,vp8,vp8.0,", kExternalClearKeyKeySystem },
   { "audio/webm", "vorbis,", kExternalClearKeyKeySystem },
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  // Widevine.
+  { "video/webm", "vorbis,vp8,vp8.0,", kWidevineKeySystem },
+  { "audio/webm", "vorbis,", kWidevineKeySystem },
+#endif  // WIDEVINE_CDM_AVAILABLE
 };
 
 static const KeySystemPluginTypePair key_system_to_plugin_type_mapping[] = {
   // TODO(xhwang): Update this with the real plugin name.
-  { kExternalClearKeyKeySystem, "application/x-ppapi-clearkey-cdm" }
+  { kExternalClearKeyKeySystem, "application/x-ppapi-clearkey-cdm" },
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  { kWidevineKeySystem, kWidevineCdmPluginMimeType }
+#endif  // WIDEVINE_CDM_AVAILABLE
 };
 
 class KeySystems {

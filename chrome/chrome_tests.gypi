@@ -4277,7 +4277,7 @@
           'product_name': 'app_mode_app_tests',
           'dependencies': [
             '../base/base.gyp:test_support_base',
-	    '../chrome/common_constants.gyp:common_constants',
+            '../chrome/common_constants.gyp:common_constants',
             '../testing/gtest.gyp:gtest',
             'chrome.gyp:chrome',  # run time dependency
             'app_mode_app_support',
@@ -4303,6 +4303,9 @@
         {
           'target_name': 'perf_tests',
           'type': 'executable',
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems.cc.
+          ],
           'dependencies': [
             'browser',
             'chrome_resources.gyp:chrome_resources',
@@ -4317,6 +4320,7 @@
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
             '../webkit/support/webkit_support.gyp:glue',
+            '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],
           'sources': [
             'browser/net/sqlite_persistent_cookie_store_perftest.cc',

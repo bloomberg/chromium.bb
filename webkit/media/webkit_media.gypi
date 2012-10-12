@@ -8,11 +8,15 @@
       'target_name': 'webkit_media',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems.cc.
+      ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/media/media.gyp:shared_memory_support',
         '<(DEPTH)/media/media.gyp:yuv_convert',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
       'sources': [
         'android/audio_decoder_android.cc',
