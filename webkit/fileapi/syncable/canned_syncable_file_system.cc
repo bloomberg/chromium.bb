@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task_runner_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -26,47 +24,15 @@ using quota::QuotaManager;
 
 namespace fileapi {
 
-namespace {
-
-typedef CannedSyncableFileSystem::StatusCallback StatusCallback;
-
-void Quit() { MessageLoop::current()->Quit(); }
-
-void AssignAndQuit(base::TaskRunner* original_task_runner,
-                   PlatformFileError* result_out,
-                   PlatformFileError result) {
-  DCHECK(result_out);
-  *result_out = result;
-  original_task_runner->PostTask(FROM_HERE, base::Bind(&Quit));
-}
-
-PlatformFileError RunOnThread(
-    base::SingleThreadTaskRunner* task_runner,
-    const tracked_objects::Location& location,
-    const base::Callback<void(const StatusCallback& callback)>& task) {
-  scoped_ptr<PlatformFileError> result(
-      new PlatformFileError(base::PLATFORM_FILE_ERROR_FAILED));
-  task_runner->PostTask(
-      location,
-      base::Bind(task, base::Bind(&AssignAndQuit,
-                                  base::MessageLoopProxy::current(),
-                                  result.get())));
-  MessageLoop::current()->Run();
-  return *result;
-}
-
-}  // namespace
-
 CannedSyncableFileSystem::CannedSyncableFileSystem(
-    const GURL& origin, const std::string& service,
-    base::SingleThreadTaskRunner* io_task_runner)
+    const GURL& origin, const std::string& service)
     : service_name_(service),
       test_helper_(origin, kFileSystemTypeSyncable),
       result_(base::PLATFORM_FILE_OK),
       sync_status_(SYNC_STATUS_OK),
-      io_task_runner_(io_task_runner),
       is_filesystem_set_up_(false),
-      is_filesystem_opened_(false) {
+      is_filesystem_opened_(false),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 CannedSyncableFileSystem::~CannedSyncableFileSystem() {}
@@ -81,7 +47,7 @@ void CannedSyncableFileSystem::SetUp() {
   quota_manager_ = new QuotaManager(
       false /* is_incognito */,
       data_dir_.path(),
-      io_task_runner_,
+      base::MessageLoopProxy::current(),
       base::MessageLoopProxy::current(),
       storage_policy);
 
@@ -115,7 +81,7 @@ PlatformFileError CannedSyncableFileSystem::OpenFileSystem() {
       test_helper_.origin(), test_helper_.type(),
       true /* create */,
       base::Bind(&CannedSyncableFileSystem::DidOpenFileSystem,
-                 base::Unretained(this)));
+                  weak_factory_.GetWeakPtr()));
   MessageLoop::current()->RunAllPending();
   return result_;
 }
@@ -124,7 +90,6 @@ SyncStatusCode CannedSyncableFileSystem::MaybeInitializeFileSystemContext(
     LocalFileSyncContext* sync_context) {
   DCHECK(sync_context);
   sync_status_ = SYNC_STATUS_UNKNOWN;
-  EXPECT_EQ(io_task_runner_.get(), sync_context->io_task_runner_.get());
   sync_context->MaybeInitializeFileSystemContext(
       test_helper_.origin(),
       file_system_context_,
@@ -136,109 +101,82 @@ SyncStatusCode CannedSyncableFileSystem::MaybeInitializeFileSystemContext(
 
 PlatformFileError CannedSyncableFileSystem::CreateDirectory(
     const FileSystemURL& url) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoCreateDirectory,
-                                base::Unretained(this), url));
+  EXPECT_TRUE(is_filesystem_opened_);
+  result_ = base::PLATFORM_FILE_ERROR_FAILED;
+  test_helper_.NewOperation()->CreateDirectory(
+      url, false /* exclusive */, false /* recursive */,
+      base::Bind(&CannedSyncableFileSystem::StatusCallback,
+                  weak_factory_.GetWeakPtr()));
+  MessageLoop::current()->RunAllPending();
+  return result_;
 }
 
 PlatformFileError CannedSyncableFileSystem::CreateFile(
     const FileSystemURL& url) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoCreateFile,
-                                base::Unretained(this), url));
+  EXPECT_TRUE(is_filesystem_opened_);
+  result_ = base::PLATFORM_FILE_ERROR_FAILED;
+  test_helper_.NewOperation()->CreateFile(
+      url, false /* exclusive */,
+      base::Bind(&CannedSyncableFileSystem::StatusCallback,
+                  weak_factory_.GetWeakPtr()));
+  MessageLoop::current()->RunAllPending();
+  return result_;
 }
 
 PlatformFileError CannedSyncableFileSystem::Copy(
     const FileSystemURL& src_url, const FileSystemURL& dest_url) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoCopy,
-                                base::Unretained(this), src_url, dest_url));
+  result_ = base::PLATFORM_FILE_ERROR_FAILED;
+  test_helper_.NewOperation()->Copy(
+      src_url, dest_url,
+      base::Bind(&CannedSyncableFileSystem::StatusCallback,
+                 weak_factory_.GetWeakPtr()));
+  MessageLoop::current()->RunAllPending();
+  return result_;
 }
 
 PlatformFileError CannedSyncableFileSystem::Move(
     const FileSystemURL& src_url, const FileSystemURL& dest_url) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoMove,
-                                base::Unretained(this), src_url, dest_url));
+  result_ = base::PLATFORM_FILE_ERROR_FAILED;
+  test_helper_.NewOperation()->Move(
+      src_url, dest_url,
+      base::Bind(&CannedSyncableFileSystem::StatusCallback,
+                 weak_factory_.GetWeakPtr()));
+  MessageLoop::current()->RunAllPending();
+  return result_;
 }
 
 PlatformFileError CannedSyncableFileSystem::TruncateFile(
     const FileSystemURL& url, int64 size) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoTruncateFile,
-                                base::Unretained(this), url, size));
+  EXPECT_TRUE(is_filesystem_opened_);
+  result_ = base::PLATFORM_FILE_ERROR_FAILED;
+  test_helper_.NewOperation()->Truncate(
+      url, size,
+      base::Bind(&CannedSyncableFileSystem::StatusCallback,
+                  weak_factory_.GetWeakPtr()));
+  MessageLoop::current()->RunAllPending();
+  return result_;
 }
 
 PlatformFileError CannedSyncableFileSystem::Remove(
     const FileSystemURL& url, bool recursive) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoRemove,
-                                base::Unretained(this), url, recursive));
+  EXPECT_TRUE(is_filesystem_opened_);
+  result_ = base::PLATFORM_FILE_ERROR_FAILED;
+  test_helper_.NewOperation()->Remove(
+      url, recursive,
+      base::Bind(&CannedSyncableFileSystem::StatusCallback,
+                  weak_factory_.GetWeakPtr()));
+  MessageLoop::current()->RunAllPending();
+  return result_;
 }
 
 PlatformFileError CannedSyncableFileSystem::DeleteFileSystem() {
   EXPECT_TRUE(is_filesystem_set_up_);
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&FileSystemContext::DeleteFileSystem,
-                                file_system_context_,
-                                test_helper_.origin(),
-                                test_helper_.type()));
-}
-
-FileSystemOperation* CannedSyncableFileSystem::NewOperation() {
-  return file_system_context_->CreateFileSystemOperation(URL(""), NULL);
-}
-
-void CannedSyncableFileSystem::DoCreateDirectory(
-    const FileSystemURL& url,
-    const StatusCallback& callback) {
-  EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->CreateDirectory(
-      url, false /* exclusive */, false /* recursive */, callback);
-}
-
-void CannedSyncableFileSystem::DoCreateFile(
-    const FileSystemURL& url,
-    const StatusCallback& callback) {
-  EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->CreateFile(url, false /* exclusive */, callback);
-}
-
-void CannedSyncableFileSystem::DoCopy(
-    const FileSystemURL& src_url,
-    const FileSystemURL& dest_url,
-    const StatusCallback& callback) {
-  EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->Copy(src_url, dest_url, callback);
-}
-
-void CannedSyncableFileSystem::DoMove(
-    const FileSystemURL& src_url,
-    const FileSystemURL& dest_url,
-    const StatusCallback& callback) {
-  EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->Move(src_url, dest_url, callback);
-}
-
-void CannedSyncableFileSystem::DoTruncateFile(
-    const FileSystemURL& url, int64 size,
-    const StatusCallback& callback) {
-  EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->Truncate(url, size, callback);
-}
-
-void CannedSyncableFileSystem::DoRemove(
-    const FileSystemURL& url, bool recursive,
-    const StatusCallback& callback) {
-  EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->Remove(url, recursive, callback);
+  file_system_context_->DeleteFileSystem(
+      test_helper_.origin(), test_helper_.type(),
+      base::Bind(&CannedSyncableFileSystem::StatusCallback,
+                 weak_factory_.GetWeakPtr()));
+  MessageLoop::current()->RunAllPending();
+  return result_;
 }
 
 void CannedSyncableFileSystem::DidOpenFileSystem(
@@ -252,6 +190,16 @@ void CannedSyncableFileSystem::DidInitializeFileSystemContext(
     SyncStatusCode status) {
   sync_status_ = status;
   MessageLoop::current()->Quit();
+}
+
+void CannedSyncableFileSystem::StatusCallback(PlatformFileError result) {
+  result_ = result;
+}
+
+FileSystemOperationContext* CannedSyncableFileSystem::NewOperationContext() {
+  FileSystemOperationContext* context = test_helper_.NewOperationContext();
+  context->set_allowed_bytes_growth(kint64max);
+  return context;
 }
 
 }  // namespace fileapi

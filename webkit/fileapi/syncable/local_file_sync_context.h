@@ -57,7 +57,6 @@ class FILEAPI_EXPORT LocalFileSyncContext
  private:
   typedef std::deque<StatusCallback> StatusCallbackQueue;
   friend class base::RefCountedThreadSafe<LocalFileSyncContext>;
-  friend class CannedSyncableFileSystem;
 
   ~LocalFileSyncContext();
 
