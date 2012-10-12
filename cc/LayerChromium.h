@@ -226,10 +226,15 @@ public:
     void setScreenSpaceTransform(const WebKit::WebTransformationMatrix& matrix) { m_screenSpaceTransform = matrix; }
     const IntRect& drawableContentRect() const { return m_drawableContentRect; }
     void setDrawableContentRect(const IntRect& rect) { m_drawableContentRect = rect; }
+
     // The contentsScale converts from logical, non-page-scaled pixels to target pixels.
     // The contentsScale is 1 for the root layer as it is already in physical pixels.
     float contentsScale() const { return m_contentsScale; }
     void setContentsScale(float);
+    // The scale from the initial CSS transform of the layer, including its ancestors, but
+    // not including the deviceScaleFactor or pageScaleFactor.
+    float initialCssScale() const { return m_initialCssScale; }
+    void setInitialCssScale(float scale) { m_initialCssScale = scale; }
 
     // When true, the layer's contents are not scaled by the current page scale factor.
     // setBoundsContainPageScale recursively sets the value on all child layers.
@@ -376,6 +381,7 @@ private:
     // Uses target surface space.
     IntRect m_drawableContentRect;
     float m_contentsScale;
+    float m_initialCssScale;
     bool m_boundsContainPageScale;
 
     WebKit::WebTransformationMatrix m_implTransform;

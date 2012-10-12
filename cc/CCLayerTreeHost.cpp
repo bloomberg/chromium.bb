@@ -530,14 +530,6 @@ void CCLayerTreeHost::updateLayers(CCTextureUpdateQueue& queue, size_t memoryAll
     updateLayers(rootLayer(), queue);
 }
 
-static void setScale(LayerChromium* layer, float deviceScaleFactor, float pageScaleFactor)
-{
-    if (layer->boundsContainPageScale())
-        layer->setContentsScale(deviceScaleFactor);
-    else
-        layer->setContentsScale(deviceScaleFactor * pageScaleFactor);
-}
-
 static LayerChromium* findFirstScrollableLayer(LayerChromium* layer)
 {
     if (!layer)
@@ -555,28 +547,9 @@ static LayerChromium* findFirstScrollableLayer(LayerChromium* layer)
     return 0;
 }
 
-static void updateLayerScale(LayerChromium* layer, float deviceScaleFactor, float pageScaleFactor)
-{
-    setScale(layer, deviceScaleFactor, pageScaleFactor);
-
-    LayerChromium* maskLayer = layer->maskLayer();
-    if (maskLayer)
-        setScale(maskLayer, deviceScaleFactor, pageScaleFactor);
-
-    LayerChromium* replicaMaskLayer = layer->replicaLayer() ? layer->replicaLayer()->maskLayer() : 0;
-    if (replicaMaskLayer)
-        setScale(replicaMaskLayer, deviceScaleFactor, pageScaleFactor);
-
-    const std::vector<scoped_refptr<LayerChromium> >& children = layer->children();
-    for (unsigned int i = 0; i < children.size(); ++i)
-        updateLayerScale(children[i].get(), deviceScaleFactor, pageScaleFactor);
-}
-
 void CCLayerTreeHost::updateLayers(LayerChromium* rootLayer, CCTextureUpdateQueue& queue)
 {
     TRACE_EVENT0("cc", "CCLayerTreeHost::updateLayers");
-
-    updateLayerScale(rootLayer, m_deviceScaleFactor, m_pageScaleFactor);
 
     LayerList updateList;
 
@@ -588,7 +561,7 @@ void CCLayerTreeHost::updateLayers(LayerChromium* rootLayer, CCTextureUpdateQueu
         }
 
         TRACE_EVENT0("cc", "CCLayerTreeHost::updateLayers::calcDrawEtc");
-        CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize(), m_deviceScaleFactor, rendererCapabilities().maxTextureSize, updateList);
+        CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize(), m_deviceScaleFactor, m_pageScaleFactor, rendererCapabilities().maxTextureSize, updateList);
     }
 
     // Reset partial texture update requests.
