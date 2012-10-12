@@ -552,6 +552,14 @@ extern "C" void HeapProfilerStart(const char* prefix) {
   filename_prefix[prefix_length] = '\0';
 }
 
+extern "C" void IterateAllocatedObjects(AddressVisitor visitor, void* data) {
+  SpinLockHolder l(&heap_lock);
+
+  if (!is_on) return;
+
+  heap_profile->IterateAllocationAddresses(visitor, data);
+}
+
 extern "C" int IsHeapProfilerRunning() {
   SpinLockHolder l(&heap_lock);
   return is_on ? 1 : 0;   // return an int, because C code doesn't have bool

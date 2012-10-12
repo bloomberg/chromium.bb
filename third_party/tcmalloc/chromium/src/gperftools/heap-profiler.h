@@ -97,6 +97,18 @@ PERFTOOLS_DLL_DECL void HeapProfilerDump(const char *reason);
  */
 PERFTOOLS_DLL_DECL char* GetHeapProfile();
 
+/* Callback function for iterating through all allocated objects. Accepts
+ * pointer to user data passed into IterateAllocatedObjects and pointer
+ * to the object being visited.
+ */
+typedef void (*AddressVisitor)(void* data, const void* ptr);
+
+/* Iterate over all live allocated objects. For each allocation the
+ * callback will be invoked with the data argument and allocation pointer.
+ */
+PERFTOOLS_DLL_DECL void IterateAllocatedObjects(AddressVisitor callback,
+                                                void* data);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

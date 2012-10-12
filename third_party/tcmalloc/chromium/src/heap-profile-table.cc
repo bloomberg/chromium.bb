@@ -293,6 +293,13 @@ void HeapProfileTable::MarkAsIgnored(const void* ptr) {
   }
 }
 
+void HeapProfileTable::IterateAllocationAddresses(AddressIterator f,
+                                                  void* data) {
+  const AllocationAddressIteratorArgs args(f, data);
+  alloc_address_map_->Iterate<const AllocationAddressIteratorArgs&>(
+      AllocationAddressesIterator, args);
+}
+
 void HeapProfileTable::MarkCurrentAllocations(AllocationMark mark) {
   const MarkArgs args(mark, true);
   alloc_address_map_->Iterate<const MarkArgs&>(MarkIterator, args);
@@ -573,6 +580,14 @@ void HeapProfileTable::DumpMarkedIterator(const void* ptr, AllocValue* v,
   char buf[1024];
   int len = UnparseBucket(b, buf, 0, sizeof(buf), addr, NULL);
   RawWrite(args.fd, buf, len);
+}
+
+inline
+void HeapProfileTable::AllocationAddressesIterator(
+    const void* ptr,
+    AllocValue* v,
+    const AllocationAddressIteratorArgs& args) {
+  args.callback(args.data, ptr);
 }
 
 inline

@@ -172,6 +172,13 @@ class HeapProfileTable {
     alloc_address_map_->Iterate(MapArgsAllocIterator, callback);
   }
 
+  // Callback for iterating through addresses of all allocated objects. Accepts
+  // pointer to user data and object pointer.
+  typedef void (*AddressIterator)(void* data, const void* ptr);
+
+  // Iterate over the addresses of all allocated objects.
+  void IterateAllocationAddresses(AddressIterator, void* data);
+
   // Allocation context profile data iteration callback
   typedef void (*AllocContextIterator)(const AllocContextInfo& info);
 
@@ -341,6 +348,16 @@ class HeapProfileTable {
   };
 #endif  // defined(TYPE_PROFILING)
 
+  struct AllocationAddressIteratorArgs {
+    AddressIterator callback;
+    void* data;
+
+    AllocationAddressIteratorArgs(AddressIterator iterator, void* d)
+        : callback(iterator),
+          data(d) {
+    }
+  };
+
   // helpers ----------------------------
 
   // Unparse bucket b and print its portion of profile dump into buf.
@@ -384,6 +401,12 @@ class HeapProfileTable {
     info.ignored = v->ignore();
     callback(ptr, info);
   }
+
+  // Helper for IterateAllocationAddresses.
+  inline static void AllocationAddressesIterator(
+      const void* ptr,
+      AllocValue* v,
+      const AllocationAddressIteratorArgs& args);
 
   // Helper for MarkCurrentAllocations and MarkUnmarkedAllocations.
   inline static void MarkIterator(const void* ptr, AllocValue* v,
