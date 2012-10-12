@@ -158,7 +158,7 @@ enum NotificationType {
   // that would navigate as soon as the NTP is done loading.
   // When this notification happen, it guarantees the page is not going to do
   // any further navigation.
-  // The source is the TabContents containing the NTP.
+  // The source is the WebContents containing the NTP.
   NOTIFICATION_NEW_TAB_READY,
 #endif
 
