@@ -7,6 +7,7 @@
 
 #include "VideoLayerChromium.h"
 #include "WebLayerImpl.h"
+#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 

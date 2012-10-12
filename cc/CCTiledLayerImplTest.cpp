@@ -22,9 +22,9 @@ namespace {
 
 // Create a default tiled layer with textures for all tiles and a default
 // visibility of the entire layer size.
-static PassOwnPtr<CCTiledLayerImpl> createLayer(const IntSize& tileSize, const IntSize& layerSize, CCLayerTilingData::BorderTexelOption borderTexels)
+static scoped_ptr<CCTiledLayerImpl> createLayer(const IntSize& tileSize, const IntSize& layerSize, CCLayerTilingData::BorderTexelOption borderTexels)
 {
-    OwnPtr<CCTiledLayerImpl> layer = CCTiledLayerImpl::create(1);
+    scoped_ptr<CCTiledLayerImpl> layer = CCTiledLayerImpl::create(1);
     OwnPtr<CCLayerTilingData> tiler = CCLayerTilingData::create(tileSize, borderTexels);
     tiler->setBounds(layerSize);
     layer->setTilingData(*tiler);
@@ -41,7 +41,7 @@ static PassOwnPtr<CCTiledLayerImpl> createLayer(const IntSize& tileSize, const I
         for (int j = 0; j < tiler->numTilesY(); ++j)
             layer->pushTileProperties(i, j, resourceId++, IntRect(0, 0, 1, 1));
 
-    return layer.release();
+    return layer.Pass();
 }
 
 TEST(CCTiledLayerImplTest, emptyQuadList)
@@ -55,7 +55,7 @@ TEST(CCTiledLayerImplTest, emptyQuadList)
 
     // Verify default layer does creates quads
     {
-        OwnPtr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
+        scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
         MockCCQuadCuller quadCuller;
         CCAppendQuadsData data;
         layer->appendQuads(quadCuller, data);
@@ -65,7 +65,7 @@ TEST(CCTiledLayerImplTest, emptyQuadList)
 
     // Layer with empty visible layer rect produces no quads
     {
-        OwnPtr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
+        scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
         layer->setVisibleContentRect(IntRect());
 
         MockCCQuadCuller quadCuller;
@@ -76,7 +76,7 @@ TEST(CCTiledLayerImplTest, emptyQuadList)
 
     // Layer with non-intersecting visible layer rect produces no quads
     {
-        OwnPtr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
+        scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
 
         IntRect outsideBounds(IntPoint(-100, -100), IntSize(50, 50));
         layer->setVisibleContentRect(outsideBounds);
@@ -89,7 +89,7 @@ TEST(CCTiledLayerImplTest, emptyQuadList)
 
     // Layer with skips draw produces no quads
     {
-        OwnPtr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
+        scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
         layer->setSkipsDraw(true);
 
         MockCCQuadCuller quadCuller;
@@ -108,7 +108,7 @@ TEST(CCTiledLayerImplTest, checkerboarding)
     const int numTilesY = 2;
     const IntSize layerSize(tileSize.width() * numTilesX, tileSize.height() * numTilesY);
 
-    OwnPtr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
+    scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
 
     // No checkerboarding
     {
@@ -140,7 +140,7 @@ TEST(CCTiledLayerImplTest, checkerboarding)
 
 static void getQuads(CCQuadList& quads, CCSharedQuadStateList& sharedStates, IntSize tileSize, const IntSize& layerSize, CCLayerTilingData::BorderTexelOption borderTexelOption, const IntRect& visibleContentRect)
 {
-    OwnPtr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, borderTexelOption);
+    scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, borderTexelOption);
     layer->setVisibleContentRect(visibleContentRect);
     layer->setBounds(layerSize);
 

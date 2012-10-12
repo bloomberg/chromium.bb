@@ -89,7 +89,7 @@ public:
 private:
     int m_setFullRootLayerDamageCount;
     DebugScopedSetImplThread m_implThread;
-    OwnPtr<CCLayerImpl> m_rootLayer;
+    scoped_ptr<CCLayerImpl> m_rootLayer;
     CCRenderPassList m_renderPassesInDrawOrder;
     CCRenderPassIdHashMap m_renderPasses;
     size_t m_memoryAllocationLimitBytes;

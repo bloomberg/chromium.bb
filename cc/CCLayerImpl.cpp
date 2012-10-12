@@ -73,10 +73,10 @@ CCLayerImpl::~CCLayerImpl()
 #endif
 }
 
-void CCLayerImpl::addChild(PassOwnPtr<CCLayerImpl> child)
+void CCLayerImpl::addChild(scoped_ptr<CCLayerImpl> child)
 {
     child->setParent(this);
-    m_children.append(child);
+    m_children.append(child.Pass());
 }
 
 void CCLayerImpl::removeFromParent()
@@ -413,9 +413,9 @@ void CCLayerImpl::setBounds(const IntSize& bounds)
         m_layerPropertyChanged = true;
 }
 
-void CCLayerImpl::setMaskLayer(PassOwnPtr<CCLayerImpl> maskLayer)
+void CCLayerImpl::setMaskLayer(scoped_ptr<CCLayerImpl> maskLayer)
 {
-    m_maskLayer = maskLayer;
+    m_maskLayer = maskLayer.Pass();
 
     int newLayerId = m_maskLayer ? m_maskLayer->id() : -1;
     if (newLayerId == m_maskLayerId)
@@ -425,9 +425,9 @@ void CCLayerImpl::setMaskLayer(PassOwnPtr<CCLayerImpl> maskLayer)
     noteLayerPropertyChangedForSubtree();
 }
 
-void CCLayerImpl::setReplicaLayer(PassOwnPtr<CCLayerImpl> replicaLayer)
+void CCLayerImpl::setReplicaLayer(scoped_ptr<CCLayerImpl> replicaLayer)
 {
-    m_replicaLayer = replicaLayer;
+    m_replicaLayer = replicaLayer.Pass();
 
     int newLayerId = m_replicaLayer ? m_replicaLayer->id() : -1;
     if (newLayerId == m_replicaLayerId)

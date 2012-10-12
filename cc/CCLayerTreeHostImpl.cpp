@@ -785,9 +785,9 @@ static CCLayerImpl* findScrollLayerForContentLayer(CCLayerImpl* layerImpl)
     return 0;
 }
 
-void CCLayerTreeHostImpl::setRootLayer(PassOwnPtr<CCLayerImpl> layer)
+void CCLayerTreeHostImpl::setRootLayer(scoped_ptr<CCLayerImpl> layer)
 {
-    m_rootLayerImpl = layer;
+    m_rootLayerImpl = layer.Pass();
     m_rootScrollLayerImpl = findRootScrollLayer(m_rootLayerImpl.get());
     m_currentlyScrollingLayerImpl = 0;
 
@@ -799,14 +799,14 @@ void CCLayerTreeHostImpl::setRootLayer(PassOwnPtr<CCLayerImpl> layer)
     m_client->onCanDrawStateChanged(canDraw());
 }
 
-PassOwnPtr<CCLayerImpl> CCLayerTreeHostImpl::detachLayerTree()
+scoped_ptr<CCLayerImpl> CCLayerTreeHostImpl::detachLayerTree()
 {
     // Clear all data structures that have direct references to the layer tree.
     m_scrollingLayerIdFromPreviousTree = m_currentlyScrollingLayerImpl ? m_currentlyScrollingLayerImpl->id() : -1;
     m_currentlyScrollingLayerImpl = 0;
     m_renderSurfaceLayerList.clear();
 
-    return m_rootLayerImpl.release();
+    return m_rootLayerImpl.Pass();
 }
 
 void CCLayerTreeHostImpl::setVisible(bool visible)

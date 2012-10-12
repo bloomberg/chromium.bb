@@ -7,6 +7,7 @@
 
 #include "SolidColorLayerChromium.h"
 #include "WebLayerImpl.h"
+#include <wtf/PassOwnPtr.h>
 
 using cc::SolidColorLayerChromium;
 

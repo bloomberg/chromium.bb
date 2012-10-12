@@ -8,6 +8,7 @@
 #include "IOSurfaceLayerChromium.h"
 #include "WebLayerImpl.h"
 #include "webcore_convert.h"
+#include <wtf/PassOwnPtr.h>
 
 using cc::IOSurfaceLayerChromium;
 

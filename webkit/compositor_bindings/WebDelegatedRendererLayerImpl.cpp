@@ -6,6 +6,7 @@
 #include "WebDelegatedRendererLayerImpl.h"
 
 #include "DelegatedRendererLayerChromium.h"
+#include <wtf/PassOwnPtr.h>
 
 using namespace cc;
 

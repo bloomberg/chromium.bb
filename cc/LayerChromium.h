@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "CCLayerAnimationController.h"
 #include "CCOcclusionTracker.h"
-#include "CCPrioritizedTexture.h"
 #include "FloatPoint.h"
 #include "Region.h"
 #include "RenderSurfaceChromium.h"
@@ -20,8 +19,6 @@
 #include <public/WebTransformationMatrix.h>
 #include <string>
 #include <vector>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 class WebAnimationDelegate;
@@ -35,6 +32,7 @@ struct CCAnimationEvent;
 class CCLayerAnimationDelegate;
 class CCLayerImpl;
 class CCLayerTreeHost;
+class CCPriorityCalculator;
 class CCTextureUpdateQueue;
 class ScrollbarLayerChromium;
 struct CCAnimationEvent;
@@ -292,7 +290,7 @@ protected:
     scoped_refptr<LayerChromium> m_maskLayer;
 
     // Constructs a CCLayerImpl of the correct runtime type for this LayerChromium type.
-    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl();
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl();
     int m_layerId;
 
 private:

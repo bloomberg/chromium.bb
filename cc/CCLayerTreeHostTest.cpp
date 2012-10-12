@@ -2428,7 +2428,7 @@ public:
     virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE { return true; }
 
-    virtual PassOwnPtr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
     virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
     virtual void setTexturePriorities(const CCPriorityCalculator&) OVERRIDE;
 
@@ -2456,9 +2456,9 @@ private:
 
 class EvictionTestLayerImpl : public CCLayerImpl {
 public:
-    static PassOwnPtr<EvictionTestLayerImpl> create(int id)
+    static scoped_ptr<EvictionTestLayerImpl> create(int id)
     {
-        return adoptPtr(new EvictionTestLayerImpl(id));
+        return make_scoped_ptr(new EvictionTestLayerImpl(id));
     }
     virtual ~EvictionTestLayerImpl() { }
 
@@ -2496,9 +2496,9 @@ void EvictionTestLayer::update(CCTextureUpdateQueue& queue, const CCOcclusionTra
     queue.appendFullUpload(parameters);
 }
 
-PassOwnPtr<CCLayerImpl> EvictionTestLayer::createCCLayerImpl()
+scoped_ptr<CCLayerImpl> EvictionTestLayer::createCCLayerImpl()
 {
-    return EvictionTestLayerImpl::create(m_layerId);
+    return EvictionTestLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
 }
 
 void EvictionTestLayer::pushPropertiesTo(CCLayerImpl* layerImpl)

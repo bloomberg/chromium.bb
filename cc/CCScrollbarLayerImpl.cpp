@@ -17,9 +17,9 @@ using WebKit::WebScrollbar;
 
 namespace cc {
 
-PassOwnPtr<CCScrollbarLayerImpl> CCScrollbarLayerImpl::create(int id)
+scoped_ptr<CCScrollbarLayerImpl> CCScrollbarLayerImpl::create(int id)
 {
-    return adoptPtr(new CCScrollbarLayerImpl(id));
+    return make_scoped_ptr(new CCScrollbarLayerImpl(id));
 }
 
 CCScrollbarLayerImpl::CCScrollbarLayerImpl(int id)

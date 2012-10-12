@@ -521,7 +521,7 @@ TEST_F(LayerChromiumTest, verifyPushPropertiesAccumulatesUpdateRect)
     DebugScopedSetImplThread setImplThread;
 
     scoped_refptr<LayerChromium> testLayer = LayerChromium::create();
-    OwnPtr<CCLayerImpl> implLayer = CCLayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> implLayer = CCLayerImpl::create(1);
 
     testLayer->setNeedsDisplayRect(FloatRect(FloatPoint::zero(), FloatSize(5, 5)));
     testLayer->pushPropertiesTo(implLayer.get());
