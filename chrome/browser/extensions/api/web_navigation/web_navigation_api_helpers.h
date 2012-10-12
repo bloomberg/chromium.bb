@@ -29,6 +29,8 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
                               int render_process_id,
                               int64 frame_id,
                               bool is_main_frame,
+                              int64 parent_frame_id,
+                              bool parent_is_main_frame,
                               const GURL& validated_url);
 
 void DispatchOnCommitted(const char* event_name,

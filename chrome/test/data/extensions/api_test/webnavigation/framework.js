@@ -110,6 +110,12 @@ function captureEvent(name, details) {
     }
     details.frameId = frameIds[details.frameId];
   }
+  if (('parentFrameId' in details) && (details.parentFrameId > 0)) {
+    if (frameIds[details.parentFrameId] === undefined) {
+      frameIds[details.parentFrameId] = nextFrameId++;
+    }
+    details.parentFrameId = frameIds[details.parentFrameId];
+  }
   if (('sourceFrameId' in details) && (details.sourceFrameId != 0)) {
     if (frameIds[details.sourceFrameId] === undefined) {
       frameIds[details.sourceFrameId] = nextFrameId++;

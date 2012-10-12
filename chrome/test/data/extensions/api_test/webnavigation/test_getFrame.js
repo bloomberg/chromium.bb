@@ -21,8 +21,9 @@ chrome.test.runTests([
           chrome.webNavigation.getFrame(
               {tabId: tabId, frameId: 0, processId: processId},
               function(details) {
-            chrome.test.assertEq({errorOccurred: false, url: URL},
-                                 details);
+            chrome.test.assertEq(
+                {errorOccurred: false, url: URL, parentFrameId: -1},
+                details);
             done();
           });
       });
@@ -46,6 +47,7 @@ chrome.test.runTests([
         chrome.test.assertEq(
             [{errorOccurred: false,
               frameId: 0,
+              parentFrameId: -1,
               processId: processId,
               url: URL}],
              details);

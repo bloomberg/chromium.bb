@@ -59,6 +59,8 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
                               int render_process_id,
                               int64 frame_id,
                               bool is_main_frame,
+                              int64 parent_frame_id,
+                              bool parent_is_main_frame,
                               const GURL& validated_url) {
   scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
@@ -66,6 +68,8 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
   dict->SetString(keys::kUrlKey, validated_url.spec());
   dict->SetInteger(keys::kProcessIdKey, render_process_id);
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
+  dict->SetInteger(keys::kParentFrameIdKey,
+                   GetFrameId(parent_is_main_frame, parent_frame_id));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);
 

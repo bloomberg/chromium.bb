@@ -21,6 +21,7 @@ onload = function() {
             { label: "a-onBeforeNavigate",
               event: "onBeforeNavigate",
               details: { frameId: 0,
+                         parentFrameId: -1,
                          processId: 0,
                          tabId: 0,
                          timeStamp: 0,

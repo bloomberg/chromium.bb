@@ -392,8 +392,13 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     return;
 
   helpers::DispatchOnBeforeNavigate(
-      web_contents(), render_view_host->GetProcess()->GetID(), frame_num,
-      is_main_frame, validated_url);
+      web_contents(),
+      render_view_host->GetProcess()->GetID(),
+      frame_num,
+      is_main_frame,
+      parent_frame_num,
+      navigation_state_.IsMainFrame(parent_frame_id),
+      validated_url);
 }
 
 void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
@@ -682,6 +687,11 @@ bool GetFrameFunction::RunImpl() {
   frame_details.url = frame_url.spec();
   frame_details.error_occurred =
       frame_navigation_state.GetErrorOccurredInFrame(internal_frame_id);
+  FrameNavigationState::FrameID parent_frame_id =
+      frame_navigation_state.GetParentFrameID(internal_frame_id);
+  frame_details.parent_frame_id = helpers::GetFrameId(
+      frame_navigation_state.IsMainFrame(parent_frame_id),
+      parent_frame_id.frame_num);
   results_ = GetFrame::Results::Create(frame_details);
   return true;
 }
@@ -716,6 +726,8 @@ bool GetAllFramesFunction::RunImpl() {
   for (FrameNavigationState::const_iterator it = navigation_state.begin();
        it != navigation_state.end(); ++it) {
     FrameNavigationState::FrameID frame_id = *it;
+    FrameNavigationState::FrameID parent_frame_id =
+        navigation_state.GetParentFrameID(frame_id);
     GURL frame_url = navigation_state.GetUrl(frame_id);
     if (!navigation_state.IsValidUrl(frame_url))
       continue;
@@ -724,6 +736,9 @@ bool GetAllFramesFunction::RunImpl() {
     frame->url = frame_url.spec();
     frame->frame_id = helpers::GetFrameId(
         navigation_state.IsMainFrame(frame_id), frame_id.frame_num);
+    frame->parent_frame_id = helpers::GetFrameId(
+        navigation_state.IsMainFrame(parent_frame_id),
+        parent_frame_id.frame_num);
     frame->process_id = frame_id.render_view_host->GetProcess()->GetID();
     frame->error_occurred = navigation_state.GetErrorOccurredInFrame(frame_id);
     result_list.push_back(frame);

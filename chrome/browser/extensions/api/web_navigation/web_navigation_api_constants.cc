@@ -10,6 +10,7 @@ namespace web_navigation_api_constants {
 
 const char kErrorKey[] = "error";
 const char kFrameIdKey[] = "frameId";
+const char kParentFrameIdKey[] = "parentFrameId";
 const char kProcessIdKey[] = "processId";
 const char kReplacedTabIdKey[] = "replacedTabId";
 const char kSourceFrameIdKey[] = "sourceFrameId";

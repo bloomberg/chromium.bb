@@ -14,6 +14,7 @@ namespace web_navigation_api_constants {
 // Keys.
 extern const char kErrorKey[];
 extern const char kFrameIdKey[];
+extern const char kParentFrameIdKey[];
 extern const char kProcessIdKey[];
 extern const char kReplacedTabIdKey[];
 extern const char kSourceFrameIdKey[];
