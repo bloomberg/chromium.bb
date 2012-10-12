@@ -36,34 +36,75 @@ class GerritHelper(object):
 
   _GERRIT_MAX_QUERY_RETURN = 500
 
-  def __init__(self, remote):
-    """Initializes variables for interaction with a gerrit server."""
-    if remote == constants.INTERNAL_REMOTE:
-      self.ssh_port = constants.GERRIT_INT_PORT
-      self.ssh_host = constants.GERRIT_INT_HOST
-    elif remote == constants.EXTERNAL_REMOTE:
-      self.ssh_port = constants.GERRIT_PORT
-      self.ssh_host = constants.GERRIT_HOST
-    else:
-      raise Exception('Remote %s not supported.' % remote)
+  def __init__(self, host, remote, ssh_port=29418, ssh_user=None, suexec=None,
+               print_cmd=True):
+    """Initializes variables for interaction with a gerrit server.
 
-    self.ssh_url = constants.CROS_REMOTES[remote]
+    Args:
+      host: Mandatory; this should be the address (ip or dns) of where
+        the gerrit instance lives.
+      port: Integer if given; the ssh port gerrit responds on.
+      user: If given, the user to force for all ssh activities.
+      suexec: If given, the email address to suexec to during ssh
+        commands.  Used only by maintenance accounts.
+      print_cmd: This is passed to all RunCommand invocations; set it
+        to False if you want things quiet.
+    """
+    self.host = host
     self.remote = remote
+    self.ssh_port = int(ssh_port)
+    self.ssh_user = ssh_user
+    self.suexec = suexec
+    self.print_cmd = bool(print_cmd)
     self._version = None
 
   @classmethod
-  def GetCrosInternal(cls):
-    """Convenience method for accessing private ChromeOS gerrit."""
-    return cls(constants.INTERNAL_REMOTE)
+  def FromRemote(cls, remote, **kwds):
+    if remote == constants.INTERNAL_REMOTE:
+      port = constants.GERRIT_INT_PORT
+      host = constants.GERRIT_INT_HOST
+    elif remote == constants.EXTERNAL_REMOTE:
+      port = constants.GERRIT_PORT
+      host = constants.GERRIT_HOST
+    else:
+      raise ValueError('Remote %s not supported.' % remote)
+
+    return cls(host, remote, ssh_port=port, **kwds)
 
   @classmethod
-  def GetCrosExternal(cls):
+  def GetCrosInternal(cls, **kwds):
+    """Convenience method for accessing private ChromeOS gerrit."""
+    return cls.FromRemote(constants.INTERNAL_REMOTE, **kwds)
+
+  @classmethod
+  def GetCrosExternal(cls, **kwds):
     """Convenience method for accessing public ChromiumOS gerrit."""
-    return cls(constants.EXTERNAL_REMOTE)
+    return cls.FromRemote(constants.EXTERNAL_REMOTE, **kwds)
 
   @property
+  def ssh_url(self):
+    s = '%s@%s' % (self.ssh_user, self.host) if self.ssh_user else self.host
+    return "ssh://%s:%i" % (s, self.ssh_port)
+
+  @property
+  def base_ssh_prefix(self):
+    l = ['ssh', '-p', str(self.ssh_port), self.host]
+    if self.ssh_user:
+      l.extend(['-l', self.ssh_user])
+    return l
+
+  # Certain code needs access to this to override suexec...
+  def GetSshPrefix(self, suexec=None):
+    l = self.base_ssh_prefix
+    suexec = suexec if suexec is not None else self.suexec
+    if suexec is not None:
+      l += ['suexec', '--as', suexec, '--']
+    return l
+
+  # ... but most code prefers just the property route.
+  @property
   def ssh_prefix(self):
-    return ['ssh', '-p', self.ssh_port, self.ssh_host]
+    return self.GetSshPrefix()
 
   def GetGerritReviewCommand(self, command_list):
     """Returns array corresponding to Gerrit Review command.
@@ -128,7 +169,7 @@ class GerritHelper(object):
     try:
       result = cros_build_lib.RunCommandWithRetries(3,
           ['git', 'ls-remote', ssh_url_project, 'refs/heads/%s' % (branch,)],
-          redirect_stdout=True, print_cmd=True)
+          redirect_stdout=True, print_cmd=self.print_cmd)
       if result:
         return result.output.split()[0]
     except cros_build_lib.RunCommandError as e:
@@ -195,7 +236,6 @@ class GerritHelper(object):
     else:
       raw = True
 
-
     # Note we intentionally cap the query to 500; gerrit does so
     # already, but we force it so that if gerrit were to change
     # its return limit, this wouldn't break.
@@ -208,7 +248,8 @@ class GerritHelper(object):
     if dryrun:
       logging.info('Would have run %s', ' '.join(cmd))
       return []
-    result = cros_build_lib.RunCommand(cmd, redirect_stdout=True)
+    result = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                                       print_cmd=self.print_cmd)
     result = self.InterpretJSONResults(query, result.output)
 
     if len(result) == self._GERRIT_MAX_QUERY_RETURN:
@@ -281,7 +322,7 @@ class GerritHelper(object):
       for query, result in itertools.izip_longest(numeric_queries, results):
         if result is None or result.gerrit_number != query:
           raise GerritException('Change number %s not found on server %s.'
-                                 % (query, self.ssh_host))
+                                 % (query, self.host))
 
         yield query, result
 
@@ -307,16 +348,16 @@ class GerritHelper(object):
           raise GerritException(
               'While querying for change %s, we received '
               'back multiple results.  Please be more specific.  Server=%s'
-              % (last_patch_id, self.ssh_host))
+              % (last_patch_id, self.host))
 
         raise GerritException('Change-ID %s not found on server %s.'
-                              % (query, self.ssh_host))
+                              % (query, self.host))
 
       if query is None:
         raise GerritException(
             'While querying for change %s, we received '
             'back multiple results.  Please be more specific.  Server=%s'
-            % (last_patch_id, self.ssh_host))
+            % (last_patch_id, self.host))
 
       yield query, result
       last_patch_id = query
@@ -325,8 +366,11 @@ class GerritHelper(object):
   def version(self):
     obj = self._version
     if obj is None:
+      # We suppress the gerrit version call's logging; it's basically
+      # never useful log wise.
       obj = cros_build_lib.RunCommandCaptureOutput(
-          self.ssh_prefix + ['gerrit', 'version']).output.strip()
+          self.ssh_prefix + ['gerrit', 'version'],
+          print_cmd=False).output.strip()
       obj = obj.replace('gerrit version ', '')
       self._version = obj
     return obj
@@ -352,7 +396,7 @@ class GerritHelper(object):
 
     command = self.ssh_prefix + ['gerrit', 'gsql', '--format=JSON']
     result = cros_build_lib.RunCommand(command, redirect_stdout=True,
-                                       input=query)
+                                       input=query, print_cmd=self.print_cmd)
 
     query_type = 'update-stats' if is_command else 'query-stats'
 
@@ -427,13 +471,13 @@ def GetGerritPatchInfo(patches):
     # while this may seem silly, we do this to preclude the potential
     # of a conflict between gerrit instances.  Since change-id is
     # effectively user controlled, better safe than sorry.
-    helper = GerritHelper(constants.INTERNAL_REMOTE)
+    helper = GerritHelper.FromRemote(constants.INTERNAL_REMOTE)
     raw_ids = [x[1:] for x in internal_patches]
     parsed_patches.update(('*' + k, v) for k, v in
         helper.QueryMultipleCurrentPatchset(raw_ids))
 
   if external_patches:
-    helper = GerritHelper(constants.EXTERNAL_REMOTE)
+    helper = GerritHelper.FromRemote(constants.EXTERNAL_REMOTE)
     parsed_patches.update(
         helper.QueryMultipleCurrentPatchset(external_patches))
 
@@ -457,7 +501,7 @@ def GetGerritHelperForChange(change):
   If you need a GerritHelper for a specific change, get it via this
   function.
   """
-  return GerritHelper(change.remote)
+  return GerritHelper.FromRemote(change.remote)
 
 
 def GetChangeRef(change_number, patchset=None):
