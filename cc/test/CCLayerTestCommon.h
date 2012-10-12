@@ -2,18 +2,5 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCLayerTestCommon_h
-#define CCLayerTestCommon_h
-
-#include "CCRenderPass.h"
-#include "IntRect.h"
-#include "Region.h"
-
-namespace CCLayerTestCommon {
-
-extern const char* quadString;
-
-void verifyQuadsExactlyCoverRect(const cc::CCQuadList&, const cc::IntRect&);
-
-} // namespace CCLayerTestCommon
-#endif // CCLayerTestCommon_h
+// Temporary forwarding header
+#include "cc/test/layer_test_common.h"
