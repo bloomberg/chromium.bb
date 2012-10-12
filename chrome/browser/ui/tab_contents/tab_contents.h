@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class BasePanelBrowserTest;
 class Browser;
 class BrowserCommandsTabContentsCreator;
 class BrowserLauncherItemControllerContentsCreator;
@@ -73,7 +72,6 @@ class TabContents : public content::WebContentsObserver {
     // more code to construct instances. Explicitly befriend those who currently
     // do so.
 
-    friend class BasePanelBrowserTest;
     friend class Browser;
     friend class BrowserCommandsTabContentsCreator;
     friend class BrowserLauncherItemControllerContentsCreator;
