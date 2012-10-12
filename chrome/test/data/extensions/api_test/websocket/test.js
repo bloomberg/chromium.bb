@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 function echoTest(port) {
-  var url = "ws://localhost:" + port + "/echo";
+  var url =
+      "ws://localhost:" + port + "/websocket/tests/hybi/workers/resources/echo";
   var ws = new WebSocket(url);
   var MESSAGE_A = "message a";
   var MESSAGE_B = "message b";
@@ -33,11 +34,8 @@ function echoTest(port) {
   };
 }
 
-chrome.test.getConfig(function(config) {
-  chrome.test.runTests([
-    function runEchoTest() {
-      echoTest(config.testWebSocketPort);
-    }
-  ]);
-});
-
+chrome.test.runTests([
+  chrome.test.getConfig(function(config) {
+    echoTest(config.testWebSocketPort);
+  })
+]);
