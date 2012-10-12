@@ -15,6 +15,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -481,7 +482,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
 
     @SmallTest
     @Feature({"Android-WebView", "Navigation"})
-    public void testShouldIgnoreNavigationCanOverrideLoading() throws Throwable {
+    public void testShouldIgnoreNavigationCanIgnoreLoading() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(contentsClient);
@@ -494,29 +495,37 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
             // Set up the HTML page.
             webServer = new TestWebServer(false);
             final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                    getHtmlForPageWithSimpleLinkTo(redirectTargetUrl), "text/html", false);
+            final String pageWithLinkToIgnorePath = "/page_with_link_to_ignore.html";
+            final String pageWithLinkToIgnoreUrl = addPageToTestServer(webServer,
+                    pageWithLinkToIgnorePath,
+                    getHtmlForPageWithSimpleLinkTo(redirectTargetUrl));
+            final String synchronizationPath = "/sync.html";
+            final String synchronizationUrl = addPageToTestServer(webServer,
+                    synchronizationPath,
+                    getHtmlForPageWithSimpleLinkTo(redirectTargetUrl));
+
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                    pageWithLinkToIgnoreUrl);
 
             setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
 
-            OnPageFinishedHelper onPageFinishedHelper = contentsClient.getOnPageFinishedHelper();
-            int onPageFinishedCountBeforeClickingOnLink = onPageFinishedHelper.getCallCount();
             int callCount = shouldIgnoreNavigationHelper.getCallCount();
+            int onPageFinishedCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
             clickOnLinkUsingJs(awContents, contentsClient);
             // Some time around here true should be returned from the shouldIgnoreNavigation
             // callback causing the navigation caused by calling clickOnLinkUsingJs to be ignored.
-            // We validate this by indirectly checking that an onPageFinished callback was not
-            // issued after this point.
+            // We validate this by checking which pages were loaded on the server.
             shouldIgnoreNavigationHelper.waitForCallback(callCount);
 
             setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, false);
 
-            final String synchronizationUrl = ABOUT_BLANK_URL;
-            loadUrlSync(awContents, onPageFinishedHelper, synchronizationUrl);
+            // We need to wait for the navigation to complete before we can initiate another load.
+            contentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), synchronizationUrl);
 
-            assertEquals(synchronizationUrl, onPageFinishedHelper.getUrl());
-            assertEquals(onPageFinishedHelper.getCallCount(),
-                    onPageFinishedCountBeforeClickingOnLink + 1);
+            assertEquals(1, webServer.getRequestCount(pageWithLinkToIgnorePath));
+            assertEquals(1, webServer.getRequestCount(synchronizationPath));
+            assertEquals(0, webServer.getRequestCount(REDIRECT_TARGET_PATH));
         } finally {
             if (webServer != null) webServer.shutdown();
         }
