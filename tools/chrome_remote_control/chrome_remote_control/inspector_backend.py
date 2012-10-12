@@ -59,7 +59,9 @@ class InspectorBackend(object):
   def SendAndIgnoreResponse(self, req):
     req['id'] = self._next_request_id
     self._next_request_id += 1
-    self._socket.send(json.dumps(req))
+    data = json.dumps(req)
+    self._socket.send(data)
+    logging.debug('sent [%s]', data)
 
   def _SetTimeout(self, timeout):
     if self._cur_socket_timeout != timeout:
@@ -70,10 +72,7 @@ class InspectorBackend(object):
     # TODO(nduca): Listen to the timeout argument
     # pylint: disable=W0613
     self._SetTimeout(timeout)
-
-    req['id'] = self._next_request_id
-    self._next_request_id += 1
-    self._socket.send(json.dumps(req))
+    self.SendAndIgnoreResponse(req)
 
     while True:
       try:
