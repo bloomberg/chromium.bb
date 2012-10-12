@@ -12109,7 +12109,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Show Google Docs files
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_CLEAR_LOCAL_CACHE" desc="In the Google Drive settings menu, menu item to clear the local cache of Google Drive">
-        Clean Local Cache
+        Clean local cache
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_MENU_HELP" desc="In the Google Drive settings menu, name of the Help item.">
         Help
