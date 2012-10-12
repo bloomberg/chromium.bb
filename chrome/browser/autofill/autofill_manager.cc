@@ -39,7 +39,6 @@
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -213,10 +212,6 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
   RegisterWithSyncService();
   registrar_.Init(manager_delegate_->GetPrefs());
   registrar_.Add(prefs::kPasswordGenerationEnabled, this);
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  notification_registrar_.Add(this,
-      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(tab_contents));
 }
 
 AutofillManager::~AutofillManager() {
@@ -300,18 +295,10 @@ void AutofillManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
   std::string* pref = content::Details<std::string>(details).ptr();
-    DCHECK(prefs::kPasswordGenerationEnabled == *pref);
+  DCHECK(prefs::kPasswordGenerationEnabled == *pref);
   UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
-  } else if (type == chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
-    ProfileSyncServiceBase* service =
-        manager_delegate_->GetProfileSyncService();
-    if (service != NULL && service->HasObserver(this))
-      service->RemoveObserver(this);
-  } else {
-    NOTREACHED();
-  }
 }
 
 void AutofillManager::OnStateChanged() {
@@ -368,6 +355,12 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void AutofillManager::WebContentsDestroyed(content::WebContents* web_contents) {
+  ProfileSyncServiceBase* service = manager_delegate_->GetProfileSyncService();
+  if (service && service->HasObserver(this))
+    service->RemoveObserver(this);
 }
 
 bool AutofillManager::OnFormSubmitted(const FormData& form,

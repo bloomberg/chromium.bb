@@ -25,7 +25,6 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class AutofillExternalDelegate;
@@ -180,6 +179,8 @@ class AutofillManager : public content::NotificationObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
 
   // AutofillDownloadManager::Observer:
   virtual void OnLoadedServerPredictions(
@@ -369,9 +370,6 @@ class AutofillManager : public content::NotificationObserver,
   bool password_generation_enabled_;
   // Listens for changes to the 'enabled' state for password generation.
   PrefChangeRegistrar registrar_;
-  // Listens for TabContents destruction to avoid using pointer during
-  // destruction.
-  content::NotificationRegistrar notification_registrar_;
 
   // To be passed to the password generation UI to generate the password.
   scoped_ptr<autofill::PasswordGenerator> password_generator_;
