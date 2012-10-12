@@ -20,6 +20,25 @@
   </appendix>
 </xsl:template>
 
+<!-- Break text blocks separated by two new lines into paragraphs -->
+<xsl:template name="break">
+     <xsl:param name="text" />
+     <xsl:param name="linebreak" select="'&#10;&#10;'" />
+     <xsl:choose>
+       <xsl:when test="contains($text,$linebreak)">
+         <para>
+           <xsl:value-of select="substring-before($text,$linebreak)" />
+         </para>
+         <xsl:call-template name="break">
+           <xsl:with-param name="text" select="substring-after($text,$linebreak)" />
+         </xsl:call-template>
+       </xsl:when>
+       <xsl:otherwise>
+         <para><xsl:value-of select="$text" /></para>
+       </xsl:otherwise>
+     </xsl:choose>
+</xsl:template>
+
 <!-- Copyright blurb -->
 <xsl:template match="copyright">
   <para>
@@ -41,9 +60,9 @@
 	- <xsl:value-of select="description/@summary" />
       </xsl:if>
     </title>
-    <para>
-      <xsl:value-of select="description"/>
-    </para>
+    <xsl:call-template name="break">
+      <xsl:with-param name="text" select="description" />
+    </xsl:call-template>
     <xsl:if test="request">
       <section>
         <title>Requests provided by <xsl:value-of select="@name" /></title>
@@ -93,7 +112,9 @@
         - <xsl:value-of select="description/@summary" />
       </xsl:if>
     </title>
-    <para><xsl:value-of select="description"/></para>
+    <xsl:call-template name="break">
+      <xsl:with-param name="text" select="description" />
+    </xsl:call-template>
     <xsl:if test="arg">
       <variablelist>
         <title><xsl:value-of select="../@name"/>::<xsl:value-of select="@name" /> arguments</title>
