@@ -25,6 +25,7 @@
 #include <config.h>
 #endif
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -823,18 +824,21 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	xcb_atom_t atom;
 	uint32_t *k;
 	uint32_t i, set;
+	uint8_t response_type;
 	int count;
 
 	prev = NULL;
 	count = 0;
 	while (x11_compositor_next_event(c, &event, mask)) {
+		response_type = event->response_type & ~0x80;
+
 		switch (prev ? prev->response_type & ~0x80 : 0x80) {
 		case XCB_KEY_RELEASE:
 			/* Suppress key repeat events; this is only used if we
 			 * don't have XCB XKB support. */
 			key_release = (xcb_key_press_event_t *) prev;
 			key_press = (xcb_key_press_event_t *) event;
-			if ((event->response_type & ~0x80) == XCB_KEY_PRESS &&
+			if (response_type == XCB_KEY_PRESS &&
 			    key_release->time == key_press->time &&
 			    key_release->detail == key_press->detail) {
 				/* Don't deliver the held key release
@@ -859,8 +863,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			}
 
 		case XCB_FOCUS_IN:
-			/* assert event is keymap_notify */
-			focus_in = (xcb_focus_in_event_t *) prev;
+			assert(response_type == XCB_KEYMAP_NOTIFY);
 			keymap_notify = (xcb_keymap_notify_event_t *) event;
 			c->keys.size = 0;
 			for (i = 0; i < ARRAY_LENGTH(keymap_notify->keys) * 8; i++) {
@@ -872,7 +875,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				}
 			}
 
-			output = x11_compositor_find_output(c, focus_in->event);
 			/* Unfortunately the state only comes with the enter
 			 * event, rather than with the focus event.  I'm not
 			 * sure of the exact semantics around it and whether
@@ -889,7 +891,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			break;
 		}
 
-		switch (event->response_type & ~0x80) {
+		switch (response_type) {
 		case XCB_KEY_PRESS:
 			key_press = (xcb_key_press_event_t *) event;
 			if (!c->has_xkb)
@@ -941,7 +943,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			if (!c->has_xkb)
 				update_xkb_state_from_core(c, enter_notify->state);
-			output = x11_compositor_find_output(c, enter_notify->event);
 			notify_pointer_focus(&c->core_seat, NULL, 0, 0);
 			break;
 
@@ -974,7 +975,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 
 #ifdef HAVE_XCB_XKB
 		if (c->has_xkb &&
-		    (event->response_type & ~0x80) == c->xkb_event_base) {
+		    response_type == c->xkb_event_base) {
 			xcb_xkb_state_notify_event_t *state =
 				(xcb_xkb_state_notify_event_t *) event;
 			if (state->xkbType == XCB_XKB_STATE_NOTIFY)
