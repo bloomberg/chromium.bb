@@ -1,0 +1,140 @@
+﻿<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!--
+  Copyright (c) 2012 The WebRTC project authors. All Rights Reserved.
+
+  Use of this source code is governed by a BSD-style license
+  that can be found in the LICENSE file in the root of the source
+  tree. An additional intellectual property rights grant can be found
+  in the file PATENTS.  All contributing project authors may
+  be found in the AUTHORS file in the root of the source tree.
+-->
+<html>
+<head>
+  <title>WebRTC Multi-PeerConnection Test</title>
+  <script type="text/javascript">
+  var gNumRemoteViews = 0;
+  var gLocalStream1 = null;
+  var gLocalStream2 = null;
+
+  function startTest() {
+    navigator.webkitGetUserMedia(
+        {video: true, audio: true},
+        function(localStream) {
+          gLocalStream1 = localStream;
+          play(localStream, 'local-view-1');
+        },
+        getUserMediaFailedCallback);
+    navigator.webkitGetUserMedia(
+        {video: true, audio: true},
+        function(localStream) {
+          gLocalStream2 = localStream;
+          play(localStream, 'local-view-2');
+        },
+        getUserMediaFailedCallback);
+  }
+
+  function playStreamInNewRemoteView(stream, peerNumber) {
+    console.log('Remote stream to connection ' + peerNumber +
+        ': ' + stream.label);
+    gNumRemoteViews++;
+    var viewName = 'remote-view-' + gNumRemoteViews;
+    addRemoteView(viewName, peerNumber);
+    play(stream, viewName);
+  }
+
+  function addRemoteView(elementName, peerNumber) {
+    var remoteViews = document.getElementById('remote-views-' + peerNumber);
+    remoteViews.innerHTML +=
+      '<tr><td><video width="320" height="240" id="' + elementName + '" ' +
+      'autoplay="autoplay"></video></td></tr>';
+  }
+
+  function play(stream, videoElement) {
+    var streamUrl = webkitURL.createObjectURL(stream);
+    document.getElementById(videoElement).src = streamUrl;
+  }
+
+  function getUserMediaFailedCallback(error) {
+    console.log('getUserMedia request failed with code ' + error.code);
+  }
+
+  function call() {
+    connection1 = new webkitRTCPeerConnection(null, null);
+    connection1.addStream(gLocalStream1);
+    connection1.createOffer(function(offer1) {
+      onOfferCreated(connection1, offer1);
+    });
+  }
+
+  function onOfferCreated(connection1, offer) {
+    connection1.setLocalDescription(offer);
+
+    connection2 = new webkitRTCPeerConnection(null, null);
+    connection2.addStream(gLocalStream2);
+    connection2.onicecandidate = function(event) {
+      if (event.candidate) {
+        var candidate = new RTCIceCandidate(event.candidate);
+        connection1.addIceCandidate(candidate);
+      }
+    };
+    connection1.onicecandidate = function(event) {
+      if (event.candidate) {
+        console.log('Ice candidate: ' + event.candidate);
+        var candidate = new RTCIceCandidate(event.candidate);
+        connection2.addIceCandidate(candidate);
+      }
+    };
+    connection1.onaddstream = function(event) {
+      playStreamInNewRemoteView(event.stream, 1);
+    };
+    connection2.onaddstream = function(event) {
+      playStreamInNewRemoteView(event.stream, 2);
+    };
+
+    connection2.setRemoteDescription(offer);
+    connection2.createAnswer(function(answer) {
+      console.log('Created answer ' + answer);
+      connection2.setLocalDescription(answer);
+      connection1.setRemoteDescription(answer);
+    });
+  }
+
+  window.onload = function() {
+    startTest();
+  }
+  </script>
+</head>
+<body>
+  <table border="0">
+    <tr>
+      <td>Local Preview for Peer 1</td>
+      <td>Local Preview for Peer 2</td>
+    </tr>
+    <tr>
+      <td><video width="320" height="240" id="local-view-1"
+          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="local-view-2"
+          autoplay="autoplay"></video></td>
+    </tr>
+    <tr>
+      <td><button id="add-call" onclick="call();">Add Call</button></td>
+    </tr>
+    <tr>
+      <td>
+        <table id="remote-views-1">
+          <tr>
+            <td>Remote (Incoming to Peer 1)</td>
+          </tr>
+        </table>
+      </td>
+      <td>
+        <table id="remote-views-2">
+          <tr>
+            <td>Remote (Incoming to Peer 2)</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
