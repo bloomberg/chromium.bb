@@ -34,7 +34,7 @@ void executeCalculateDrawTransformsAndVisibility(CCLayerImpl* root, std::vector<
     ASSERT_TRUE(root->renderSurface());
     ASSERT_FALSE(renderSurfaceLayerList.size());
 
-    CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, 1, &layerSorter, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, &layerSorter, dummyMaxTextureSize, renderSurfaceLayerList);
 }
 
 void clearDamageForAllSurfaces(CCLayerImpl* layer)

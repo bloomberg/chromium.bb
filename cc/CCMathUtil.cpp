@@ -9,7 +9,6 @@
 #include "FloatPoint.h"
 #include "FloatQuad.h"
 #include "IntRect.h"
-#include <cmath>
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;
@@ -360,20 +359,6 @@ void CCMathUtil::flattenTransformTo2d(WebTransformationMatrix& transform)
     transform.setM33(1);
     transform.setM34(0);
     transform.setM43(0);
-}
-
-static inline float scaleOnAxis(double a, double b, double c)
-{
-    return std::sqrt(a * a + b * b + c * c);
-}
-
-FloatPoint CCMathUtil::computeTransform2dScaleComponents(const WebTransformationMatrix& transform)
-{
-    if (transform.hasPerspective())
-        return FloatPoint(1, 1);
-    float xScale = scaleOnAxis(transform.m11(), transform.m12(), transform.m13());
-    float yScale = scaleOnAxis(transform.m21(), transform.m22(), transform.m23());
-    return FloatPoint(xScale, yScale);
 }
 
 float CCMathUtil::smallestAngleBetweenVectors(const FloatSize& v1, const FloatSize& v2)

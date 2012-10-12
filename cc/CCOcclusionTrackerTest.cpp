@@ -9,14 +9,14 @@
 #include "CCAnimationTestCommon.h"
 #include "CCGeometryTestUtils.h"
 #include "CCLayerAnimationController.h"
+#include "CCLayerImpl.h"
 #include "CCLayerTreeHostCommon.h"
 #include "CCMathUtil.h"
 #include "CCOcclusionTrackerTestCommon.h"
 #include "CCOverdrawMetrics.h"
 #include "CCSingleThreadProxy.h"
-#include "CCTiledLayerImpl.h"
+#include "LayerChromium.h"
 #include "Region.h"
-#include "TiledLayerChromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebFilterOperation.h>
@@ -29,10 +29,10 @@ using namespace WebKitTests;
 
 namespace {
 
-class TestContentLayerChromium : public TiledLayerChromium {
+class TestContentLayerChromium : public LayerChromium {
 public:
     TestContentLayerChromium()
-        : TiledLayerChromium()
+        : LayerChromium()
         , m_overrideOpaqueContentsRect(false)
     {
     }
@@ -50,9 +50,6 @@ public:
         m_opaqueContentsRect = opaqueContentsRect;
     }
 
-    virtual LayerTextureUpdater* textureUpdater() const OVERRIDE { return 0; }
-    virtual void createTextureUpdaterIfNeeded() OVERRIDE { }
-
 private:
     virtual ~TestContentLayerChromium()
     {
@@ -62,10 +59,10 @@ private:
     IntRect m_opaqueContentsRect;
 };
 
-class TestContentLayerImpl : public CCTiledLayerImpl {
+class TestContentLayerImpl : public CCLayerImpl {
 public:
     TestContentLayerImpl(int id)
-        : CCTiledLayerImpl(id)
+        : CCLayerImpl(id)
         , m_overrideOpaqueContentsRect(false)
     {
         setDrawsContent(true);
@@ -257,7 +254,7 @@ protected:
 
         ASSERT(!root->renderSurface());
 
-        CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, 1, &layerSorter, dummyMaxTextureSize, m_renderSurfaceLayerListImpl);
+        CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, &layerSorter, dummyMaxTextureSize, m_renderSurfaceLayerListImpl);
 
         m_layerIterator = m_layerIteratorBegin = Types::LayerIterator::begin(&m_renderSurfaceLayerListImpl);
     }
@@ -269,7 +266,7 @@ protected:
 
         ASSERT(!root->renderSurface());
 
-        CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, 1, dummyMaxTextureSize, m_renderSurfaceLayerListChromium);
+        CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, dummyMaxTextureSize, m_renderSurfaceLayerListChromium);
 
         m_layerIterator = m_layerIteratorBegin = Types::LayerIterator::begin(&m_renderSurfaceLayerListChromium);
     }
@@ -417,18 +414,14 @@ private:
     RUN_TEST_IMPL_THREAD_OPAQUE_PAINTS(ClassName)
 
 #define MAIN_THREAD_TEST(ClassName) \
-    RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName) \
-    RUN_TEST_MAIN_THREAD_OPAQUE_PAINTS(ClassName)
+    RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName)
 
 #define IMPL_THREAD_TEST(ClassName) \
-    RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName) \
-    RUN_TEST_IMPL_THREAD_OPAQUE_PAINTS(ClassName)
+    RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName)
 
 #define MAIN_AND_IMPL_THREAD_TEST(ClassName) \
     RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName) \
-    RUN_TEST_MAIN_THREAD_OPAQUE_PAINTS(ClassName) \
-    RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName) \
-    RUN_TEST_IMPL_THREAD_OPAQUE_PAINTS(ClassName)
+    RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName)
 
 template<class Types, bool opaqueLayers>
 class CCOcclusionTrackerTestIdentityTransforms : public CCOcclusionTrackerTest<Types, opaqueLayers> {
@@ -2192,7 +2185,7 @@ protected:
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(500, 500));
         typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, surfaceTransform, FloatPoint(0, 0), IntSize(300, 300), false);
         typename Types::ContentLayerType* surface2 = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(50, 50), IntSize(300, 300), false);
-        surface->setOpaqueContentsRect(IntRect(0, 0, 400, 400));
+        surface->setOpaqueContentsRect(IntRect(0, 0, 200, 200));
         surface2->setOpaqueContentsRect(IntRect(0, 0, 200, 200));
         this->calcDrawEtc(parent);
 
@@ -2220,8 +2213,7 @@ protected:
     }
 };
 
-// Scale transforms require main thread+commit to get contentBounds right.
-MAIN_THREAD_TEST(CCOcclusionTrackerTestSurfaceOcclusionTranslatesToParent);
+MAIN_AND_IMPL_THREAD_TEST(CCOcclusionTrackerTestSurfaceOcclusionTranslatesToParent);
 
 template<class Types, bool opaqueLayers>
 class CCOcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping : public CCOcclusionTrackerTest<Types, opaqueLayers> {
@@ -2563,15 +2555,15 @@ protected:
 
         // Everything outside the surface/replica is occluded but the surface/replica itself is not.
         this->enterLayer(filteredSurface, occlusion);
-        EXPECT_RECT_EQ(IntRect(1, 0, 49, 50), occlusion.unoccludedContentRect(filteredSurface, IntRect(1, 0, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(0, 1, 50, 49), occlusion.unoccludedContentRect(filteredSurface, IntRect(0, 1, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(0, 0, 49, 50), occlusion.unoccludedContentRect(filteredSurface, IntRect(-1, 0, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(0, 0, 50, 49), occlusion.unoccludedContentRect(filteredSurface, IntRect(0, -1, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(1, 0, 99, 100), occlusion.unoccludedContentRect(filteredSurface, IntRect(1, 0, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(0, 1, 100, 99), occlusion.unoccludedContentRect(filteredSurface, IntRect(0, 1, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 99, 100), occlusion.unoccludedContentRect(filteredSurface, IntRect(-1, 0, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(0, 0, 100, 99), occlusion.unoccludedContentRect(filteredSurface, IntRect(0, -1, 100, 100)));
 
-        EXPECT_RECT_EQ(IntRect(150 + 1, 0, 49, 50), occlusion.unoccludedContentRect(filteredSurface, IntRect(150 + 1, 0, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(150 + 0, 1, 50, 49), occlusion.unoccludedContentRect(filteredSurface, IntRect(150 + 0, 1, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(150 + 0, 0, 49, 50), occlusion.unoccludedContentRect(filteredSurface, IntRect(150 - 1, 0, 50, 50)));
-        EXPECT_RECT_EQ(IntRect(150 + 0, 0, 50, 49), occlusion.unoccludedContentRect(filteredSurface, IntRect(150 + 0, -1, 50, 50)));
+        EXPECT_RECT_EQ(IntRect(300 + 1, 0, 99, 100), occlusion.unoccludedContentRect(filteredSurface, IntRect(300 + 1, 0, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(300 + 0, 1, 100, 99), occlusion.unoccludedContentRect(filteredSurface, IntRect(300 + 0, 1, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(300 + 0, 0, 99, 100), occlusion.unoccludedContentRect(filteredSurface, IntRect(300 - 1, 0, 100, 100)));
+        EXPECT_RECT_EQ(IntRect(300 + 0, 0, 100, 99), occlusion.unoccludedContentRect(filteredSurface, IntRect(300 + 0, -1, 100, 100)));
         this->leaveLayer(filteredSurface, occlusion);
 
         // The filtered layer/replica does not occlude.
@@ -2581,7 +2573,7 @@ protected:
         EXPECT_EQ(0u, occlusion.occlusionInTargetSurface().rects().size());
 
         // The surface has a background blur, so it needs pixels that are currently considered occluded in order to be drawn. So the pixels
-        // it needs should be removed from the occluded area so that when we get to the parent they are drawn.
+        // it needs should be removed some the occluded area so that when we get to the parent they are drawn.
         this->visitContributingSurface(filteredSurface, occlusion);
 
         this->enterLayer(parent, occlusion);
@@ -2637,8 +2629,7 @@ protected:
     }
 };
 
-// Scale transforms require main thread+commit to get contentBounds right.
-MAIN_THREAD_TEST(CCOcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter);
 
 template<class Types, bool opaqueLayers>
 class CCOcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice : public CCOcclusionTrackerTest<Types, opaqueLayers> {
@@ -2649,12 +2640,12 @@ protected:
         scaleByHalf.scale(0.5);
 
         // Makes two surfaces that completely cover |parent|. The occlusion both above and below the filters will be reduced by each of them.
-        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(150, 150));
-        typename Types::LayerType* parent = this->createDrawingSurface(root, scaleByHalf, FloatPoint(0, 0), IntSize(300, 300), false);
+        typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(75, 75));
+        typename Types::LayerType* parent = this->createSurface(root, scaleByHalf, FloatPoint(0, 0), IntSize(150, 150));
         parent->setMasksToBounds(true);
-        typename Types::LayerType* filteredSurface1 = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(0, 0), IntSize(600, 600), false);
-        typename Types::LayerType* filteredSurface2 = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(0, 0), IntSize(600, 600), false);
-        typename Types::LayerType* occludingLayerAbove = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(200, 200), IntSize(100, 100), true);
+        typename Types::LayerType* filteredSurface1 = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(0, 0), IntSize(300, 300), false);
+        typename Types::LayerType* filteredSurface2 = this->createDrawingLayer(parent, scaleByHalf, FloatPoint(0, 0), IntSize(300, 300), false);
+        typename Types::LayerType* occludingLayerAbove = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(100, 100), IntSize(50, 50), true);
 
         // Filters make the layers own surfaces.
         WebFilterOperations filters;
@@ -2672,9 +2663,9 @@ protected:
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(occludingLayerAbove, occlusion);
-        EXPECT_RECT_EQ(IntRect(200 / 2, 200 / 2, 100 / 2, 100 / 2), occlusion.occlusionInScreenSpace().bounds());
+        EXPECT_RECT_EQ(IntRect(100 / 2, 100 / 2, 50 / 2, 50 / 2), occlusion.occlusionInScreenSpace().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
-        EXPECT_RECT_EQ(IntRect(200 / 2, 200 / 2, 100 / 2, 100 / 2), occlusion.occlusionInTargetSurface().bounds());
+        EXPECT_RECT_EQ(IntRect(100, 100, 50, 50), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
         this->visitLayer(filteredSurface2, occlusion);
@@ -2685,18 +2676,22 @@ protected:
         ASSERT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
         ASSERT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
-        // Test expectations in the target. The target is scaled in half so the occlusion should be scaled within its contents as well.
-        IntRect expectedOcclusion = IntRect(200 / 2 + outsetRight * 2, 200 / 2 + outsetBottom * 2, 100 / 2 - (outsetLeft + outsetRight) * 2, 100 / 2 - (outsetTop + outsetBottom) * 2);
+        // Test expectations in the target.
+        IntRect expectedOcclusion = IntRect(100 + outsetRight * 2, 100 + outsetBottom * 2, 50 - (outsetLeft + outsetRight) * 2, 50 - (outsetTop + outsetBottom) * 2);
         EXPECT_RECT_EQ(expectedOcclusion, occlusion.occlusionInTargetSurface().rects()[0]);
 
-        // Test expectations in the screen. The parent is scaled in half so it will scale the occlusion to the screen as well.
-        expectedOcclusion = IntRect(200 / 2 + outsetRight * 2, 200 / 2 + outsetBottom * 2, 100 / 2 - (outsetLeft + outsetRight) * 2, 100 / 2 - (outsetTop + outsetBottom) * 2);
+        // Test expectations in the screen. Take the ceiling of half of the outsets.
+        outsetTop = (outsetTop + 1) / 2;
+        outsetRight = (outsetRight + 1) / 2;
+        outsetBottom = (outsetBottom + 1) / 2;
+        outsetLeft = (outsetLeft + 1) / 2;
+        expectedOcclusion = IntRect(100 / 2 + outsetRight * 2, 100 / 2 + outsetBottom * 2, 50 / 2 - (outsetLeft + outsetRight) * 2, 50 /2 - (outsetTop + outsetBottom) * 2);
+
         EXPECT_RECT_EQ(expectedOcclusion, occlusion.occlusionInScreenSpace().rects()[0]);
     }
 };
 
-// Scale transforms require main thread+commit to get contentBounds right.
-MAIN_THREAD_TEST(CCOcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice);
 
 template<class Types, bool opaqueLayers>
 class CCOcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip : public CCOcclusionTrackerTest<Types, opaqueLayers> {
@@ -2870,8 +2865,7 @@ protected:
     }
 };
 
-// Scale transforms require main thread+commit to get contentBounds right.
-MAIN_THREAD_TEST(CCOcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter);
 
 template<class Types, bool opaqueLayers>
 class CCOcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded : public CCOcclusionTrackerTest<Types, opaqueLayers> {
@@ -2919,8 +2913,7 @@ protected:
     }
 };
 
-// Scale transforms require main thread+commit to get contentBounds right.
-MAIN_THREAD_TEST(CCOcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded);
 
 template<class Types, bool opaqueLayers>
 class CCOcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded : public CCOcclusionTrackerTest<Types, opaqueLayers> {
@@ -2992,8 +2985,7 @@ protected:
     }
 };
 
-// Scale transforms require main thread+commit to get contentBounds right.
-MAIN_THREAD_TEST(CCOcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded);
 
 template<class Types, bool opaqueLayers>
 class CCOcclusionTrackerTestMinimumTrackingSize : public CCOcclusionTrackerTest<Types, opaqueLayers> {

@@ -22,8 +22,8 @@ class CCLayerTreeHostCommon {
 public:
     static IntRect calculateVisibleRect(const IntRect& targetSurfaceRect, const IntRect& layerBoundRect, const WebKit::WebTransformationMatrix&);
 
-    static void calculateDrawTransforms(LayerChromium* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<scoped_refptr<LayerChromium> >& renderSurfaceLayerList);
-    static void calculateDrawTransforms(CCLayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, CCLayerSorter*, int maxTextureSize, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
+    static void calculateDrawTransforms(LayerChromium* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, int maxTextureSize, std::vector<scoped_refptr<LayerChromium> >& renderSurfaceLayerList);
+    static void calculateDrawTransforms(CCLayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, CCLayerSorter*, int maxTextureSize, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
 
     // Performs hit testing for a given renderSurfaceLayerList.
     static CCLayerImpl* findLayerThatIsHitByPoint(const IntPoint& viewportPoint, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
