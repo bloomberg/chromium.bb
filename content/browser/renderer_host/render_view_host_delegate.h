@@ -152,6 +152,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void DidStartProvisionalLoadForFrame(
       RenderViewHost* render_view_host,
       int64 frame_id,
+      int64 parent_frame_id,
       bool main_frame,
       const GURL& opener_url,
       const GURL& url) {}

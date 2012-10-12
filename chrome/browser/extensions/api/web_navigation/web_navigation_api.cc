@@ -368,6 +368,7 @@ void WebNavigationTabObserver::AboutToNavigateRenderView(
 
 void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     int64 frame_num,
+    int64 parent_frame_num,
     bool is_main_frame,
     const GURL& validated_url,
     bool is_error_page,
@@ -379,8 +380,11 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     return;
 
   FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  FrameNavigationState::FrameID parent_frame_id(
+      parent_frame_num, render_view_host);
 
   navigation_state_.TrackFrame(frame_id,
+                               parent_frame_id,
                                validated_url,
                                is_main_frame,
                                is_error_page);

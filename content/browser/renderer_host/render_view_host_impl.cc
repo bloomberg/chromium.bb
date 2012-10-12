@@ -1166,11 +1166,12 @@ void RenderViewHostImpl::OnMsgRenderViewGone(int status, int exit_code) {
 
 void RenderViewHostImpl::OnMsgDidStartProvisionalLoadForFrame(
     int64 frame_id,
+    int64 parent_frame_id,
     bool is_main_frame,
     const GURL& opener_url,
     const GURL& url) {
   delegate_->DidStartProvisionalLoadForFrame(
-      this, frame_id, is_main_frame, opener_url, url);
+      this, frame_id, parent_frame_id, is_main_frame, opener_url, url);
 }
 
 void RenderViewHostImpl::OnMsgDidRedirectProvisionalLoad(

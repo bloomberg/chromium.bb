@@ -1672,8 +1672,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
                     GURL         /* target URL */)
 
 // Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_DidStartProvisionalLoadForFrame,
+IPC_MESSAGE_ROUTED5(ViewHostMsg_DidStartProvisionalLoadForFrame,
                     int64 /* frame_id */,
+                    int64 /* parent_frame_id */,
                     bool /* true if it is the main frame */,
                     GURL /* opener url if present, else empty */,
                     GURL /* url */)

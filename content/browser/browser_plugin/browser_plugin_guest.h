@@ -100,6 +100,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // WebContentsObserver implementation.
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
+      int64 parent_frame_id,
       bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,

@@ -301,6 +301,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidStartProvisionalLoadForFrame(
       content::RenderViewHost* render_view_host,
       int64 frame_id,
+      int64 parent_frame_id,
       bool main_frame,
       const GURL& opener_url,
       const GURL& url) OVERRIDE;

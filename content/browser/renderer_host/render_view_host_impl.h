@@ -484,6 +484,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgRenderViewReady();
   void OnMsgRenderViewGone(int status, int error_code);
   void OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
+                                            int64 parent_frame_id,
                                             bool main_frame,
                                             const GURL& opener_url,
                                             const GURL& url);

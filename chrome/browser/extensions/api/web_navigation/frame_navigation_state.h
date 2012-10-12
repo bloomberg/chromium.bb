@@ -53,6 +53,7 @@ class FrameNavigationState {
 
   // Starts to track a frame identified by its |frame_id| showing the URL |url|.
   void TrackFrame(FrameID frame_id,
+                  FrameID parent_frame_id,
                   const GURL& url,
                   bool is_main_frame,
                   bool is_error_page);
@@ -78,6 +79,9 @@ class FrameNavigationState {
   // Returns the frame ID of the last comitted main frame, or -1 if the frame
   // ID is not known.
   FrameID GetMainFrameID() const;
+
+  // Get the parent frame ID (or an invalid ID, if |frame_id| is a main frame).
+  FrameID GetParentFrameID(FrameID frame_id) const;
 
   // Marks a frame as in an error state, i.e. the onErrorOccurred event was
   // fired for this frame, and no further events should be sent for it.
@@ -119,6 +123,7 @@ class FrameNavigationState {
     bool is_navigating;  // True if there is a navigation going on.
     bool is_committed;  // True if the navigation is already committed.
     bool is_server_redirected;  // True if a server redirect happened.
+    int64 parent_frame_num;
     GURL url;  // URL of this frame.
   };
   typedef std::map<FrameID, FrameState> FrameIdToStateMap;

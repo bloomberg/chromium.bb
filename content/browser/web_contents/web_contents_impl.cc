@@ -1999,6 +1999,7 @@ void WebContentsImpl::OnWebIntentDispatch(
 void WebContentsImpl::DidStartProvisionalLoadForFrame(
     content::RenderViewHost* render_view_host,
     int64 frame_id,
+    int64 parent_frame_id,
     bool is_main_frame,
     const GURL& opener_url,
     const GURL& url) {
@@ -2018,8 +2019,9 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
 
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidStartProvisionalLoadForFrame(frame_id, is_main_frame,
-                    validated_url, is_error_page, render_view_host));
+                    DidStartProvisionalLoadForFrame(frame_id, parent_frame_id,
+                    is_main_frame, validated_url, is_error_page,
+                    render_view_host));
 
   if (is_main_frame) {
     // Notify observers about the provisional change in the main frame URL.

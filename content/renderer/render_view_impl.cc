@@ -3236,8 +3236,9 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
       RenderViewObserver, observers_, DidStartProvisionalLoad(frame));
 
   Send(new ViewHostMsg_DidStartProvisionalLoadForFrame(
-       routing_id_, frame->identifier(), is_top_most, GetOpenerUrl(),
-       ds->request().url()));
+       routing_id_, frame->identifier(),
+       frame->parent() ? frame->parent()->identifier() : -1,
+       is_top_most, GetOpenerUrl(), ds->request().url()));
 }
 
 void RenderViewImpl::didReceiveServerRedirectForProvisionalLoad(

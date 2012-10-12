@@ -55,6 +55,7 @@ class WebNavigationTabObserver
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_num,
+      int64 parent_frame_num,
       bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,
