@@ -88,7 +88,7 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
   }
 
   virtual void LockScreen() OVERRIDE {
-    VLOG(1) << "In: ScreenLockObserver::LockScreen";
+    VLOG(1) << "Received LockScreen D-Bus signal from session manager";
     if (session_started_) {
       chromeos::ScreenLocker::Show();
     } else {
@@ -96,16 +96,19 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
       // avoids complications with displaying the lock screen over the login
       // screen while remaining secure in the case that they walk away during
       // the signin steps. See crbug.com/112225 and crbug.com/110933.
+      VLOG(1) << "Calling session manager's StopSession D-Bus method";
       chromeos::DBusThreadManager::Get()->
           GetSessionManagerClient()->StopSession();
     }
   }
 
   virtual void UnlockScreen() OVERRIDE {
+    VLOG(1) << "Received UnlockScreen D-Bus signal from session manager";
     chromeos::ScreenLocker::Hide();
-    chromeos::SessionManagerClient* session_manager =
-        chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-    session_manager->NotifyLockScreenDismissed();
+    VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus "
+            << "method";
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+        NotifyLockScreenDismissed();
   }
 
  private:
@@ -151,13 +154,12 @@ void ScreenLocker::Init() {
 }
 
 void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
-  DVLOG(1) << "OnLoginFailure";
   content::RecordAction(UserMetricsAction("ScreenLocker_OnLoginFailure"));
   if (authentication_start_time_.is_null()) {
-    LOG(ERROR) << "authentication_start_time_ is not set";
+    LOG(ERROR) << "Start time is not set at authentication failure";
   } else {
     base::TimeDelta delta = base::Time::Now() - authentication_start_time_;
-    VLOG(1) << "Authentication failure time: " << delta.InSecondsF();
+    VLOG(1) << "Authentication failure: " << delta.InSecondsF() << " second(s)";
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationFailureTime", delta);
   }
 
@@ -179,14 +181,13 @@ void ScreenLocker::OnLoginSuccess(
     const std::string& password,
     bool pending_requests,
     bool using_oauth) {
-  VLOG(1) << "OnLoginSuccess: Sending Unlock request.";
   incorrect_passwords_count_ = 0;
   if (authentication_start_time_.is_null()) {
     if (!username.empty())
-      LOG(WARNING) << "authentication_start_time_ is not set";
+      LOG(ERROR) << "Start time is not set at authentication success";
   } else {
     base::TimeDelta delta = base::Time::Now() - authentication_start_time_;
-    VLOG(1) << "Authentication success time: " << delta.InSecondsF();
+    VLOG(1) << "Authentication success: " << delta.InSecondsF() << " second(s)";
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationSuccessTime", delta);
   }
 
@@ -204,6 +205,7 @@ void ScreenLocker::OnLoginSuccess(
         content::Source<Profile>(profile),
         content::Details<const GoogleServiceSigninSuccessDetails>(&details));
   }
+  VLOG(1) << "Calling session manager's UnlockScreen D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->RequestUnlockScreen();
 
   if (login_status_consumer_)
@@ -262,7 +264,6 @@ void ScreenLocker::SetLoginStatusConsumer(
 
 // static
 void ScreenLocker::Show() {
-  DVLOG(1) << "In ScreenLocker::Show";
   content::RecordAction(UserMetricsAction("ScreenLocker_Show"));
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
 
@@ -273,7 +274,7 @@ void ScreenLocker::Show() {
   // unlock_on_input is supported by the WebUI screen locker.
   if (UserManager::Get()->IsLoggedInAsGuest() ||
       UserManager::Get()->IsLoggedInAsDemoUser()) {
-    DVLOG(1) << "Show: Refusing to lock screen for guest/demo account.";
+    VLOG(1) << "Refusing to lock screen for guest/demo account";
     return;
   }
 
@@ -286,12 +287,13 @@ void ScreenLocker::Show() {
   }
 
   if (!screen_locker_) {
-    DVLOG(1) << "Show: Locking screen";
     ScreenLocker* locker =
         new ScreenLocker(UserManager::Get()->GetLoggedInUser());
+    VLOG(1) << "Created ScreenLocker " << locker;
     locker->Init();
   } else {
-    DVLOG(1) << "Show: locker already exists. Just sending completion event.";
+    VLOG(1) << "ScreenLocker " << screen_locker_ << " already exists; "
+            << " calling session manager's HandleLockScreenShown D-Bus method";
     DBusThreadManager::Get()->GetSessionManagerClient()->
         NotifyLockScreenShown();
   }
@@ -303,12 +305,12 @@ void ScreenLocker::Hide() {
   // For a guest/demo user, screen_locker_ would have never been initialized.
   if (UserManager::Get()->IsLoggedInAsGuest() ||
       UserManager::Get()->IsLoggedInAsDemoUser()) {
-    DVLOG(1) << "Hide: Nothing to do for guest/demo account.";
+    VLOG(1) << "Refusing to hide lock screen for guest/demo account";
     return;
   }
 
   DCHECK(screen_locker_);
-  VLOG(1) << "Hide: Deleting ScreenLocker: " << screen_locker_;
+  VLOG(1) << "Posting task to delete ScreenLocker " << screen_locker_;
   MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker_);
 }
 
@@ -321,17 +323,22 @@ void ScreenLocker::InitClass() {
 // ScreenLocker, private:
 
 ScreenLocker::~ScreenLocker() {
+  VLOG(1) << "Destroying ScreenLocker " << this;
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   ClearErrors();
+
+  VLOG(1) << "Moving desktop background to unlocked container";
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToUnlockedContainer();
 
   screen_locker_ = NULL;
   bool state = false;
+  VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this),
       content::Details<bool>(&state));
+  VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->
       NotifyLockScreenDismissed();
 }
@@ -341,20 +348,23 @@ void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
 }
 
 void ScreenLocker::ScreenLockReady() {
-  VLOG(1) << "ScreenLockReady: sending completed signal to session manager.";
   locked_ = true;
   base::TimeDelta delta = base::Time::Now() - start_time_;
-  VLOG(1) << "Screen lock time: " << delta.InSecondsF();
+  VLOG(1) << "ScreenLocker " << this << " is ready after "
+          << delta.InSecondsF() << " second(s)";
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
 
+  VLOG(1) << "Moving desktop background to locked container";
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToLockedContainer();
 
   bool state = true;
+  VLOG(1) << "Emitting SCREEN_LOCK_STATE_CHANGED with state=" << state;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this),
       content::Details<bool>(&state));
+  VLOG(1) << "Calling session manager's HandleLockScreenShown D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->NotifyLockScreenShown();
 }
 

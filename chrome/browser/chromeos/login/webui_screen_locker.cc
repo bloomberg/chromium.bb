@@ -134,6 +134,8 @@ void WebUIScreenLocker::Observe(
       break;
     }
     case chrome::NOTIFICATION_LOCK_WEBUI_READY: {
+      VLOG(1) << "WebUI ready; lock window is "
+              << (lock_ready_ ? "too" : "not");
       webui_ready_ = true;
       if (lock_ready_)
         ScreenLockReady();
@@ -202,6 +204,7 @@ void WebUIScreenLocker::OnStartDeviceReset() {
 // LockWindow::Observer implementation:
 
 void WebUIScreenLocker::OnLockWindowReady() {
+  VLOG(1) << "Lock window ready; WebUI is " << (webui_ready_ ? "too" : "not");
   lock_ready_ = true;
   if (webui_ready_)
     ScreenLockReady();
