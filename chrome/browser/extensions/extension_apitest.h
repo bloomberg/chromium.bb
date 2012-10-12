@@ -15,6 +15,10 @@
 
 class FilePath;
 
+namespace content {
+class TestWebSocketServer;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -180,7 +184,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   scoped_ptr<DictionaryValue> test_config_;
 
   // Hold the test WebSocket server.
-  scoped_ptr<net::TestServer> websocket_server_;
+  scoped_ptr<content::TestWebSocketServer> websocket_server_;
 };
 
 // PlatformAppApiTest sets up the command-line flags necessary for platform

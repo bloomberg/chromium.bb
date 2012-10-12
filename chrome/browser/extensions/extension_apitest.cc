@@ -18,8 +18,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
-#include "net/test/test_server.h"
 
 namespace {
 
@@ -293,17 +293,12 @@ bool ExtensionApiTest::StartTestServer() {
 }
 
 bool ExtensionApiTest::StartWebSocketServer(const FilePath& root_directory) {
-  websocket_server_.reset(new net::TestServer(
-      net::TestServer::TYPE_WS,
-      net::TestServer::kLocalhost,
-      root_directory));
-
-  if (!websocket_server_->Start())
+  websocket_server_.reset(new content::TestWebSocketServer());
+  int port = websocket_server_->UseRandomPort();
+  if (!websocket_server_->Start(root_directory))
     return false;
 
-  test_config_->SetInteger(kTestWebSocketPort,
-                           websocket_server_->host_port_pair().port());
-
+  test_config_->SetInteger(kTestWebSocketPort, port);
   return true;
 }
 
