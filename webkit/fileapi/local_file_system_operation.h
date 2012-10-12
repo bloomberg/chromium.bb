@@ -43,9 +43,6 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   virtual void Copy(const FileSystemURL& src_url,
                     const FileSystemURL& dest_url,
                     const StatusCallback& callback) OVERRIDE;
-  virtual void CopyInForeignFile(const FilePath& src_local_disk_path,
-                                 const FileSystemURL& dest_url,
-                                 const StatusCallback& callback);
   virtual void Move(const FileSystemURL& src_url,
                     const FileSystemURL& dest_url,
                     const StatusCallback& callback) OVERRIDE;
@@ -81,6 +78,10 @@ class FILEAPI_EXPORT LocalFileSystemOperation
       const FileSystemURL& path,
       const SnapshotFileCallback& callback) OVERRIDE;
 
+  void CopyInForeignFile(const FilePath& src_local_disk_path,
+                         const FileSystemURL& dest_url,
+                         const StatusCallback& callback);
+
   // Synchronously gets the platform path for the given |url|.
   void SyncGetPlatformPath(const FileSystemURL& url, FilePath* platform_path);
 
@@ -106,6 +107,8 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   friend class FileWriterDelegateTest;
   friend class FileSystemQuotaTest;
   friend class LocalFileSystemTestOriginHelper;
+
+  friend class SyncableFileSystemOperation;
 
   LocalFileSystemOperation(
       FileSystemContext* file_system_context,
@@ -144,6 +147,17 @@ class FILEAPI_EXPORT LocalFileSystemOperation
       const base::Closure& error_callback,
       quota::QuotaStatusCode status,
       int64 usage, int64 quota);
+
+  // returns a closure which actually perform the write operation.
+  base::Closure GetWriteClosure(
+      const net::URLRequestContext* url_request_context,
+      const FileSystemURL& url,
+      const GURL& blob_url,
+      int64 offset,
+      const WriteCallback& callback);
+  void DidFailWrite(
+      const WriteCallback& callback,
+      base::PlatformFileError result);
 
   // The 'body' methods that perform the actual work (i.e. posting the
   // file task on proxy_) after the quota check.
