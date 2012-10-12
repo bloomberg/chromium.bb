@@ -741,7 +741,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			closure->args[i] = id;
 			*id = p;
 
-			if (*id == 0 && !arg.nullable) {
+			if (**id == 0 && !arg.nullable) {
 				printf("NULL object received on non-nullable "
 				       "type, message %s(%s)\n", message->name,
 				       message->signature);
@@ -758,7 +758,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			closure->args[i] = id;
 			*id = p;
 
-			if (*id == 0 && !arg.nullable) {
+			if (**id == 0 && !arg.nullable) {
 				printf("NULL new ID received on non-nullable "
 				       "type, message %s(%s)\n", message->name,
 				       message->signature);
