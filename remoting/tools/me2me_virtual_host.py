@@ -806,12 +806,14 @@ Web Store: https://chrome.google.com/remotedesktop"""
     return 0
 
   if options.add_user:
-    command = ("sudo -k && gksudo --message "
+    sudo_command = "gksudo --message" if os.getenv("DISPLAY") else "sudo -p"
+    command = ("sudo -k && %(sudo)s "
                "\"Please enter your password to enable Chrome Remote Desktop\" "
                "-- sh -c "
                "\"groupadd -f %(group)s && gpasswd --add %(user)s %(group)s\"" %
                { 'group': CHROME_REMOTING_GROUP_NAME,
-                 'user': getpass.getuser() })
+                 'user': getpass.getuser(),
+                 'sudo': sudo_command })
     return os.system(command) >> 8
 
   if options.host_version:
