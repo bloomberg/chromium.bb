@@ -126,6 +126,8 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.CreateFile(URL("dir/foo")));
 
+  const int64 kOriginalQuota = QuotaManager::kSyncableStorageDefaultHostQuota;
+
   const int64 kQuota = 12345 * 1024;
   QuotaManager::kSyncableStorageDefaultHostQuota = kQuota;
   int64 usage, quota;
@@ -165,6 +167,9 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
   // Now the usage must be zero.
   GetUsageAndQuota(&usage, NULL);
   EXPECT_EQ(0, usage);
+
+  // Restore the system default quota.
+  QuotaManager::kSyncableStorageDefaultHostQuota = kOriginalQuota;
 }
 
 // Combined testing with LocalFileChangeTracker.
