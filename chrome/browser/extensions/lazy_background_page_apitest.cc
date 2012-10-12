@@ -5,13 +5,14 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -371,6 +372,42 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnUnload) {
   BrowserActionTestUtil browser_action(browser());
   ASSERT_EQ(1, browser_action.NumberOfBrowserActions());
   EXPECT_EQ("Success", browser_action.GetTooltip(0));
+}
+
+// Tests that both a regular page and an event page will receive events when
+// the event page is not loaded.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventDispatchToTab) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  const extensions::Extension* extension =
+      LoadExtensionAndWait("event_dispatch_to_tab");
+
+  ExtensionTestMessageListener page_ready("ready", true);
+  GURL page_url = extension->GetResourceURL("page.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  EXPECT_TRUE(page_ready.WaitUntilSatisfied());
+
+  // After the event is sent below, wait for the event page to have received
+  // the event before proceeding with the test.  This allows the regular page
+  // to test that the event page received the event, which makes the pass/fail
+  // logic simpler.
+  ExtensionTestMessageListener event_page_ready("ready", true);
+
+  // Send an event by making a bookmark.
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(browser()->profile());
+  ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
+  bookmark_utils::AddIfNotBookmarked(
+      bookmark_model,
+      GURL("http://www.google.com"),
+      UTF8ToUTF16("Google"));
+
+  EXPECT_TRUE(event_page_ready.WaitUntilSatisfied());
+
+  page_ready.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 // TODO: background page with timer.
