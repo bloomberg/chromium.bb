@@ -209,7 +209,7 @@ def main(argv):
     logging.error('Upload failed with %s', str(e).strip())
     if not options.wipe:
       logging.info('Not wiping the directory. You can inspect the failed '
-                   'change at %s. After fixing the change (if trivial) you can '
+                   'change at %s; After fixing the change (if trivial) you can '
                    'try to upload the change by running:\n'
                    'git push %s HEAD:refs/for/%s', work_dir, patch.project_url,
                    branch)
