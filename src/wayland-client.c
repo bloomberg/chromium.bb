@@ -42,6 +42,9 @@
 #include "wayland-client.h"
 #include "wayland-private.h"
 
+
+/** \cond */
+
 struct wl_proxy {
 	struct wl_object object;
 	struct wl_display *display;
@@ -73,6 +76,8 @@ struct wl_display {
 	pthread_mutex_t mutex;
 };
 
+/** \endcond */
+
 static int wl_debug = 0;
 
 static void
@@ -96,6 +101,15 @@ wl_event_queue_release(struct wl_event_queue *queue)
 	pthread_cond_destroy(&queue->cond);
 }
 
+/** Destroy an event queue
+ *
+ * \param queue The event queue to be destroyed
+ *
+ * Destroy the given event queue. Any pending event on that queue is
+ * discarded.
+ *
+ * \memberof wl_event_queue
+ */
 WL_EXPORT void
 wl_event_queue_destroy(struct wl_event_queue *queue)
 {
@@ -103,6 +117,14 @@ wl_event_queue_destroy(struct wl_event_queue *queue)
 	free(queue);
 }
 
+/** Create a new event queue for this display
+ *
+ * \param display The display context object
+ * \return A new event queue associated with this display on NULL on
+ * failure.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT struct wl_event_queue *
 wl_display_create_queue(struct wl_display *display)
 {
@@ -117,6 +139,10 @@ wl_display_create_queue(struct wl_display *display)
 	return queue;
 }
 
+/**
+ *
+ * \memberof wl_proxy
+ */
 WL_EXPORT struct wl_proxy *
 wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 {
@@ -165,6 +191,12 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	return proxy;
 }
 
+/** Destroy a proxy object
+ *
+ * \param proxy The proxy to be destroyed
+ *
+ * \memberof wl_proxy
+ */
 WL_EXPORT void
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
@@ -184,6 +216,23 @@ wl_proxy_destroy(struct wl_proxy *proxy)
 	free(proxy);
 }
 
+/** Set a proxy's listener
+ *
+ * \param proxy The proxy object
+ * \param implementation The listener to be added to proxy
+ * \param data User data to be associated with the proxy
+ * \return 0 on success or -1 on failure
+ *
+ * Set proxy's listener to \c implementation and its user data to
+ * \c data. Ifa listener has already been set, this functions
+ * fails and nothing is changed.
+ *
+ * \c implementation is a vector of function pointers. For an opcode
+ * \c n, \c implemention[n] should point to the handler of \c n for
+ * the given object.
+ *
+ * \memberof wl_proxy
+ */
 WL_EXPORT int
 wl_proxy_add_listener(struct wl_proxy *proxy,
 		      void (**implementation)(void), void *data)
@@ -199,6 +248,10 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
 	return 0;
 }
 
+/**
+ *
+ * \memberof wl_proxy
+ */
 WL_EXPORT void
 wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 {
@@ -317,6 +370,13 @@ connect_to_socket(const char *name)
 	return fd;
 }
 
+/** Connect to Wayland display on an already open fd
+ *
+ * \param fd The fd to use for the connection
+ * \return A \ref wl_display object or \c NULL on failure
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT struct wl_display *
 wl_display_connect_to_fd(int fd)
 {
@@ -360,6 +420,17 @@ wl_display_connect_to_fd(int fd)
 	return display;
 }
 
+/** Connect to a Wayland display
+ *
+ * \param name Name of the Wayland display to connect to
+ * \return A \ref wl_display object or \c NULL on failure
+ *
+ * Connect to the Wayland display named \c name. If \c name is \c NULL,
+ * its value will bee replaced with the WAYLAND_DISPLAY environment
+ * variable if it is set, otherwise display "wayland-0" will be used.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT struct wl_display *
 wl_display_connect(const char *name)
 {
@@ -390,6 +461,15 @@ wl_display_connect(const char *name)
 	return display;
 }
 
+/** Close a connection to a Wayland display
+ *
+ * \param display The display context object
+ *
+ * Close the connection to \c display and free all resources associated
+ * with it.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT void
 wl_display_disconnect(struct wl_display *display)
 {
@@ -404,6 +484,16 @@ wl_display_disconnect(struct wl_display *display)
 	free(display);
 }
 
+/** Get a display context's file descriptor
+ *
+ * \param display The display context object
+ * \return Display object file descriptor
+ *
+ * Return the file descriptor associated with a display so it can be
+ * integrated into the client's main loop.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT int
 wl_display_get_fd(struct wl_display *display)
 {
@@ -423,6 +513,15 @@ static const struct wl_callback_listener sync_listener = {
 	sync_callback
 };
 
+/** Block until all pending request are processed by the server
+ *
+ * \param display The display context object
+ *
+ * Blocks until the server process all currently issued requests and
+ * sends out pending events on all event queues.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT void
 wl_display_roundtrip(struct wl_display *display)
 {
@@ -551,7 +650,6 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 	pthread_mutex_lock(&display->mutex);
 }
 
-
 static int
 dispatch_queue(struct wl_display *display,
 	       struct wl_event_queue *queue, int block)
@@ -588,6 +686,17 @@ dispatch_queue(struct wl_display *display,
 	return count;
 }
 
+/** Dispatch events in an event queue
+ *
+ * \param display The display context object
+ * \param queue The event queue to dispatch
+ * \return 0 on success; -1 on failure
+ *
+ * Dispatch all incoming events for objects assigned to the given
+ * event queue. On failure -1 is returned and errno set appropriately.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT int
 wl_display_dispatch_queue(struct wl_display *display,
 			  struct wl_event_queue *queue)
@@ -595,6 +704,17 @@ wl_display_dispatch_queue(struct wl_display *display,
 	return dispatch_queue(display, queue, 1);
 }
 
+/** Dispatch a display's main event queue
+ *
+ * \param display The display context object
+ * \return 0 on success or -1 on failure
+ *
+ * Dispatch the display's main event queue.
+ *
+ * \sa wl_display_dispatch_queue()
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT int
 wl_display_dispatch(struct wl_display *display)
 {
@@ -611,6 +731,18 @@ wl_display_dispatch_pending(struct wl_display *display)
 	return dispatch_queue(display, &display->queue, 0);
 }
 
+/** Send all buffered request on the display to the server
+ *
+ * \param display The display context object
+ * \return The number of bytes send on success or -1 on failure
+ *
+ * Send all buffered data on the client side to the servre. Clients
+ * should call this function before blocking. On success, the number
+ * of bytes sent to the server is returned. On failure, this
+ * function returns -1 and errno is set appropriately.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT int
 wl_display_flush(struct wl_display *display)
 {
@@ -625,18 +757,42 @@ wl_display_flush(struct wl_display *display)
 	return ret;
 }
 
+/** Set the user data associated with a proxy
+ *
+ * \param proxy The proxy object
+ * \param user_data The data to be associated with proxy
+ *
+ * Set the user data associated with proxy. When events for this
+ * proxy are received, user_data will be supplied to its listener.
+ *
+ * \memberof wl_proxy
+ */
 WL_EXPORT void
 wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data)
 {
 	proxy->user_data = user_data;
 }
 
+/** Get the user data associated with a proxy
+ *
+ * \param proxy The proxy object
+ * \return The user data associated with proxy
+ *
+ * \memberof wl_proxy
+ */
 WL_EXPORT void *
 wl_proxy_get_user_data(struct wl_proxy *proxy)
 {
 	return proxy->user_data;
 }
 
+/** Get the id of a proxy object
+ *
+ * \param proxy The proxy object
+ * \return The id the object associated with the proxy
+ *
+ * \memberof wl_proxy
+ */
 WL_EXPORT uint32_t
 wl_proxy_get_id(struct wl_proxy *proxy)
 {
@@ -644,6 +800,18 @@ wl_proxy_get_id(struct wl_proxy *proxy)
 }
 
 
+/** Assign a proxy to an event queue
+ *
+ * \param proxy The proxy object
+ * \param queue The event queue that will handle this proxy
+ *
+ * Assign proxy to event queue. Events coming from proxy will be
+ * queued in \c queue instead of the display's main queue.
+ *
+ * \sa wl_display_dispatch_queue()
+ *
+ * \memberof wl_proxy
+ */
 WL_EXPORT void
 wl_proxy_set_queue(struct wl_proxy *proxy, struct wl_event_queue *queue)
 {

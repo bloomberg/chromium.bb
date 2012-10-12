@@ -30,8 +30,17 @@
 extern "C" {
 #endif
 
+/** \class wl_proxy
+ *
+ */
 struct wl_proxy;
+
+/** \class wl_display
+ */
 struct wl_display;
+
+/** \class wl_event_queue
+ */
 struct wl_event_queue;
 
 void wl_event_queue_destroy(struct wl_event_queue *queue);
