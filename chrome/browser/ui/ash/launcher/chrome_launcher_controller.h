@@ -160,6 +160,9 @@ class ChromeLauncherController
   // Returns true if the specified item is open.
   bool IsOpen(ash::LauncherID id);
 
+  // Returns true if the specified item is for a platform app.
+  bool IsPlatformApp(ash::LauncherID id);
+
   // Returns the launch type of app for the specified id.
   extensions::ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);
 

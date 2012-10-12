@@ -380,6 +380,17 @@ bool ChromeLauncherController::IsOpen(ash::LauncherID id) {
   return id_to_item_controller_map_[id]->IsOpen();
 }
 
+bool ChromeLauncherController::IsPlatformApp(ash::LauncherID id) {
+  if (!HasItemController(id))
+    return false;
+
+  std::string app_id = GetAppIDForLauncherID(id);
+  const Extension* extension =
+      profile_->GetExtensionService()->GetInstalledExtension(app_id);
+  DCHECK(extension);
+  return extension->is_platform_app();
+}
+
 extensions::ExtensionPrefs::LaunchType ChromeLauncherController::GetLaunchType(
     ash::LauncherID id) {
   DCHECK(HasItemController(id));
