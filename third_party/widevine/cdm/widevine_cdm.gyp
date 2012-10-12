@@ -71,10 +71,10 @@
               # remove it.
               'cflags!': ['-gstabs'],
             }],
-            [ 'OS == "win"', {
+            [ 'OS == "win" and 0', {
               'type': 'shared_library',
             }],
-            [ 'OS == "mac"', {
+            [ 'OS == "mac" and 0', {
               'type': 'loadable_module',
               'mac_bundle': 1,
               'product_extension': 'plugin',
