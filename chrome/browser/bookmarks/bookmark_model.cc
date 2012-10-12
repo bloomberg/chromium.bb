@@ -22,7 +22,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -171,7 +170,7 @@ void BookmarkModel::Load() {
   }
 
   expanded_state_tracker_.reset(new BookmarkExpandedStateTracker(
-      profile_, prefs::kBookmarkEditorExpandedNodes, this));
+      profile_, this));
 
   // Listen for changes to favicons so that we can update the favicon of the
   // node appropriately.
@@ -639,7 +638,7 @@ void BookmarkModel::DoneLoading(BookmarkLoadDetails* details_delete_me) {
   // And generic notification.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-      content::Source<Profile>(profile_),
+      content::Source<content::BrowserContext>(profile_),
       content::NotificationService::NoDetails());
 }
 
@@ -692,7 +691,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_URLS_STARRED,
-      content::Source<Profile>(profile_),
+      content::Source<content::BrowserContext>(profile_),
       content::Details<history::URLsStarredDetails>(&details));
 }
 
