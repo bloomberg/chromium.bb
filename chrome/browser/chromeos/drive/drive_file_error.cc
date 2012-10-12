@@ -60,6 +60,9 @@ base::PlatformFileError DriveFileErrorToPlatformError(DriveFileError error) {
 
     case DRIVE_FILE_ERROR_NO_CONNECTION:
       return base::PLATFORM_FILE_ERROR_FAILED;
+
+    case DRIVE_FILE_ERROR_THROTTLED:
+      return base::PLATFORM_FILE_ERROR_FAILED;
   }
 
   NOTREACHED();

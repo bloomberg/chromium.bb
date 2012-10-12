@@ -136,7 +136,7 @@ TEST_F(DriveSchedulerTest, RemoveFileRetry) {
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   EXPECT_CALL(mock_remove_operation_, Remove(file_in_root, _, _))
-      .WillOnce(MockRemove(DRIVE_FILE_ERROR_FAILED))
+      .WillOnce(MockRemove(DRIVE_FILE_ERROR_THROTTLED))
       .WillOnce(MockRemove(DRIVE_FILE_OK));
 
   DriveFileError error;

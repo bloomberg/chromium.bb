@@ -27,6 +27,7 @@ enum DriveFileError {
   DRIVE_FILE_ERROR_NOT_EMPTY = -14,
   DRIVE_FILE_ERROR_INVALID_URL = -15,
   DRIVE_FILE_ERROR_NO_CONNECTION = -16,
+  DRIVE_FILE_ERROR_THROTTLED = -17,
 };
 
 // Returns a PlatformFileError that corresponds to the DriveFileError provided.

@@ -433,6 +433,9 @@ DriveFileError GDataToDriveFileError(GDataErrorCode status) {
       return DRIVE_FILE_ERROR_ABORT;
     case GDATA_NO_CONNECTION:
       return DRIVE_FILE_ERROR_NO_CONNECTION;
+    case HTTP_SERVICE_UNAVAILABLE:
+    case HTTP_INTERNAL_SERVER_ERROR:
+      return DRIVE_FILE_ERROR_THROTTLED;
     default:
       return DRIVE_FILE_ERROR_FAILED;
   }

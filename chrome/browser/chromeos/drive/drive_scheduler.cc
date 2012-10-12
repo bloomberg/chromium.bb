@@ -200,7 +200,7 @@ void DriveScheduler::OnRemoveDone(int job_id, DriveFileError error) {
   DCHECK(job_iter != job_info_.end());
 
   // Retry, depending on the error.
-  if (error == DRIVE_FILE_ERROR_FAILED ||
+  if (error == DRIVE_FILE_ERROR_THROTTLED ||
       error == DRIVE_FILE_ERROR_NO_CONNECTION) {
     job_iter->second->job_info.state = STATE_RETRY;
 
