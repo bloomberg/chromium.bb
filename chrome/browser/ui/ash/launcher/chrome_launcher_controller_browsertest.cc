@@ -43,7 +43,8 @@ class LauncherPlatformAppBrowserTest
     : public extensions::PlatformAppBrowserTest {
  protected:
   LauncherPlatformAppBrowserTest()
-      : launcher_(NULL) {
+      : launcher_(NULL),
+        controller_(NULL) {
   }
 
   virtual ~LauncherPlatformAppBrowserTest() {}
@@ -607,4 +608,109 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, Navigation) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("http://www.example.com/path1/foo.html"));
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
+}
+
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, MultipleOwnedTabs) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  int tab_count = tab_strip->count();
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+
+  // Create new tab owned by app.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("http://www.example.com/path2/bar.html"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  // Confirm app is still active.
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+  TabContents* second_tab = tab_strip->GetActiveTabContents();
+
+  // Create new tab not owned by app.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("http://www.example.com/path3/foo.html"),
+      NEW_FOREGROUND_TAB,
+      0);
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  // No longer active.
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(shortcut_id)->status);
+
+  // Activating app makes second tab active again.
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(tab_strip->GetActiveTabContents(), second_tab);
+}
+
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilter) {
+  ChromeLauncherController* controller =
+      static_cast<ChromeLauncherController*>(launcher_->delegate());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  int tab_count = tab_strip->count();
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+  TabContents* first_tab = tab_strip->GetActiveTabContents();
+
+  controller->SetRefocusURLPattern(
+      shortcut_id, GURL("http://www.example.com/path1/*"));
+  // Create new tab owned by app.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("http://www.example.com/path2/bar.html"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  // Confirm app is still active.
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+
+  // Create new tab not owned by app.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("http://www.example.com/path3/foo.html"),
+      NEW_FOREGROUND_TAB,
+      0);
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  // No longer active.
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(shortcut_id)->status);
+
+  // Activating app makes first tab active again, because second tab isn't
+  // in its refocus url path.
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(tab_strip->GetActiveTabContents(), first_tab);
+}
+
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilterLaunch) {
+  ChromeLauncherController* controller =
+      static_cast<ChromeLauncherController*>(launcher_->delegate());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  int tab_count = tab_strip->count();
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+  controller->SetRefocusURLPattern(
+      shortcut_id, GURL("http://www.example.com/path1/*"));
+
+  // Create new tab owned by app.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("http://www.example.com/path2/bar.html"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  TabContents* first_tab = tab_strip->GetActiveTabContents();
+  // Confirm app is active.
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+
+  // Activating app should launch new tab, because second tab isn't
+  // in its refocus url path.
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  TabContents* second_tab = tab_strip->GetActiveTabContents();
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
+  EXPECT_NE(first_tab, second_tab);
+  EXPECT_EQ(tab_strip->GetActiveTabContents(), second_tab);
 }

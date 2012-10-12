@@ -78,6 +78,8 @@ class BrowserLauncherItemController : public LauncherItemController,
   virtual void Close() OVERRIDE;
   virtual void Clicked() OVERRIDE;
   virtual void OnRemoved() OVERRIDE;
+  virtual void LauncherItemChanged(int index,
+                                   const ash::LauncherItem& old_item) OVERRIDE;
 
   // TabStripModel overrides:
   virtual void ActiveTabChanged(TabContents* old_contents,

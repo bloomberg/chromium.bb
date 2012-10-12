@@ -220,6 +220,12 @@ class ChromeLauncherController
   // have changed,
   void UpdateAppState(TabContents* tab, AppState app_state);
 
+  // Limits application refocusing to urls that match |url| for |id|.
+  void SetRefocusURLPattern(ash::LauncherID id, const GURL& url);
+
+  // Returns the extension identified by |app_id|.
+  const extensions::Extension* GetExtensionForAppID(const std::string& app_id);
+
   // ash::LauncherDelegate overrides:
   virtual void CreateNewTab() OVERRIDE;
   virtual void CreateNewWindow() OVERRIDE;

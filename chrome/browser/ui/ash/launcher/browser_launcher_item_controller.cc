@@ -148,6 +148,15 @@ void BrowserLauncherItemController::Clicked() {
 void BrowserLauncherItemController::OnRemoved() {
 }
 
+void BrowserLauncherItemController::LauncherItemChanged(
+    int index,
+    const ash::LauncherItem& old_item) {
+  if (launcher_model()->items()[index].status == ash::STATUS_ACTIVE &&
+      old_item.status == ash::STATUS_RUNNING) {
+    Open(ui::EF_NONE);
+  }
+}
+
 void BrowserLauncherItemController::ActiveTabChanged(
     TabContents* old_contents,
     TabContents* new_contents,

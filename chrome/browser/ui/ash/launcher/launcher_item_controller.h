@@ -61,6 +61,10 @@ class LauncherItemController {
   // Closes all windows associated with this item.
   virtual void Close() = 0;
 
+  // Indicates that the item at |index| has changed from its previous value.
+  virtual void LauncherItemChanged(int model_index,
+                                   const ash::LauncherItem& old_item) = 0;
+
   // Called when the item is clicked. The bahavior varies by the number of
   // windows associated with the item:
   // * One window: toggles the minimize state.

@@ -149,6 +149,10 @@ class ShellWindowLauncherController::AppLauncherItemController
   virtual void OnRemoved() OVERRIDE {
   }
 
+  virtual void LauncherItemChanged(int model_index,
+                                   const ash::LauncherItem& old_item) OVERRIDE {
+  }
+
   size_t shell_window_count() const { return shell_windows_.size(); }
 
  private:
