@@ -16,7 +16,11 @@ namespace {
 // Field trial names.
 static const char kDisallowInlineHQPFieldTrialName[] =
     "OmniboxDisallowInlineHQP";
-static const char kSuggestFieldTrialName[] = "OmniboxSearchSuggest";
+// Because we regularly change the name of the suggest field trial in
+// order to shuffle users among groups, we use the date the current trial
+// was created as part of the name.
+static const char kSuggestFieldTrialStarted2012Q4Name[] =
+    "OmniboxSearchSuggestTrialStarted2012Q4";
 static const char kHQPNewScoringFieldTrialName[] = "OmniboxHQPNewScoring";
 static const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 static const char kHUPCreateShorterMatchFieldTrialName[] =
@@ -99,19 +103,21 @@ void AutocompleteFieldTrial::Activate() {
 
   // Create the suggest field trial (regardless of sticky-ness status, but
   // make it sticky if possible).
-  // Make it expire on March 1, 2013.
+  // Make it expire on July 1, 2013.
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-        kSuggestFieldTrialName, kSuggestFieldTrialNumberOfGroups,
-        "0", 2013, 3, 1, NULL));
+        kSuggestFieldTrialStarted2012Q4Name, kSuggestFieldTrialNumberOfGroups,
+        "0", 2013, 7, 1, NULL));
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
     trial->UseOneTimeRandomization();
 
   // Mark this group in suggest requests to Google.
   chrome_variations::AssociateGoogleVariationID(
-      kSuggestFieldTrialName, "0", chrome_variations::kSuggestIDMin);
+      kSuggestFieldTrialStarted2012Q4Name, "0",
+      chrome_variations::kSuggestTrialStarted2012Q4IDMin);
   DCHECK_EQ(kSuggestFieldTrialNumberOfGroups,
-      chrome_variations::kSuggestIDMax - chrome_variations::kSuggestIDMin + 1);
+      chrome_variations::kSuggestTrialStarted2012Q4IDMax -
+      chrome_variations::kSuggestTrialStarted2012Q4IDMin + 1);
 
   // We've already created one group; now just need to create
   // kSuggestFieldTrialNumGroups - 1 more. Mark these groups in
@@ -120,9 +126,9 @@ void AutocompleteFieldTrial::Activate() {
     const std::string group_name = base::IntToString(i);
     trial->AppendGroup(group_name, 1);
     chrome_variations::AssociateGoogleVariationID(
-        kSuggestFieldTrialName, group_name,
+        kSuggestFieldTrialStarted2012Q4Name, group_name,
         static_cast<chrome_variations::VariationID>(
-            chrome_variations::kSuggestIDMin + i));
+            chrome_variations::kSuggestTrialStarted2012Q4IDMin + i));
   }
 
   // Create inline History Quick Provider new scoring field trial.
@@ -173,11 +179,12 @@ bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
 }
 
 bool AutocompleteFieldTrial::InSuggestFieldTrial() {
-  return base::FieldTrialList::TrialExists(kSuggestFieldTrialName);
+  return base::FieldTrialList::TrialExists(kSuggestFieldTrialStarted2012Q4Name);
 }
 
 std::string AutocompleteFieldTrial::GetSuggestGroupName() {
-  return base::FieldTrialList::FindFullName(kSuggestFieldTrialName);
+  return base::FieldTrialList::FindFullName(
+      kSuggestFieldTrialStarted2012Q4Name);
 }
 
 // Yes, this is roundabout.  It's easier to provide the group number as

@@ -100,6 +100,8 @@ enum VariationID {
   // Name: OmniboxSearchSuggest
   // Range: 3310000 - 3310019
   // Suggest (Autocomplete) field trial, 20 IDs.
+  // Now retired.  But please don't reuse these IDs; they may taint
+  // your experiment results.
   kSuggestIDMin = 3310000,
   kSuggestIDMax = 3310019,
 
@@ -115,6 +117,17 @@ enum VariationID {
   kDummyInstantIDControl       = 3310026,
   kDummyInstantIDExperimentOne = 3310027,
   kDummyInstantIDExperimentTwo = 3310028,
+
+  // Name: OmniboxSearchSuggestStarted2012Q4
+  // Range: 3310029 - 3310048
+  // Suggest (Autocomplete) field trial, 20 IDs.  This differs from
+  // the earlier omnibox suggest field trial in this file because
+  // we created a new trial (with a new name) in order to shuffle IDs.
+  // We assign new experiment IDs because it's a good practice not to
+  // reuse experiment IDs.
+  kSuggestTrialStarted2012Q4IDMin = 3310029,
+  kSuggestTrialStarted2012Q4IDMax = 3310048,
+
 
   // USABLE IDs END HERE.
   //

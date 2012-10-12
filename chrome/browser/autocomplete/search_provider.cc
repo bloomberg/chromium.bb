@@ -139,14 +139,6 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
     suggest_field_trial_group_number_ =
         AutocompleteFieldTrial::GetSuggestGroupNameAsNumber();
   }
-  // Add a beacon to the logs that'll allow us to identify later what
-  // suggest field trial group a user is in.  Do this by incrementing a
-  // bucket in a histogram, where the bucket represents the user's
-  // suggest group id.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Omnibox.SuggestFieldTrialBeacon",
-      suggest_field_trial_group_number_,
-      AutocompleteFieldTrial::GetSuggestNumberOfGroups() + 1);
 }
 
 void SearchProvider::FinalizeInstantQuery(const string16& input_text,
