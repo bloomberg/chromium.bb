@@ -802,6 +802,7 @@ TEST_EXAMPLE_LIST = [
 ]
 
 TEST_LIBRARY_LIST = [
+  'gmock',
   'gtest',
   'gtest_ppapi',
 ]
