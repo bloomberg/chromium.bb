@@ -2,33 +2,5 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCSolidColorLayerImpl_h
-#define CCSolidColorLayerImpl_h
-
-#include "CCLayerImpl.h"
-#include <public/WebTransformationMatrix.h>
-
-namespace cc {
-
-class CCSolidColorLayerImpl : public CCLayerImpl {
-public:
-    static scoped_ptr<CCSolidColorLayerImpl> create(int id)
-    {
-        return make_scoped_ptr(new CCSolidColorLayerImpl(id));
-    }
-    virtual ~CCSolidColorLayerImpl();
-
-    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
-
-protected:
-    explicit CCSolidColorLayerImpl(int id);
-
-private:
-    virtual const char* layerTypeAsString() const OVERRIDE;
-
-    const int m_tileSize;
-};
-
-}
-
-#endif // CCSolidColorLayerImpl_h
+// Temporary forwarding header
+#include "cc/solid_color_layer_impl.h"
