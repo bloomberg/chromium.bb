@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -387,13 +388,16 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
       browser_(browser),
       icon_(icon),
       animation_wait_retries_(0) {
+  extensions::ExtensionActionManager* extension_action_manager =
+      extensions::ExtensionActionManager::Get(browser_->profile());
   if (extension->is_app())
     type_ = APP;
   else if (!extension_->omnibox_keyword().empty())
     type_ = OMNIBOX_KEYWORD;
-  else if (extension_->browser_action())
+  else if (extension_action_manager->GetBrowserAction(*extension_))
     type_ = BROWSER_ACTION;
-  else if (extension->page_action() && extension->is_verbose_install_message())
+  else if (extension_action_manager->GetPageAction(*extension) &&
+           extension->is_verbose_install_message())
     type_ = PAGE_ACTION;
   else
     type_ = GENERIC;
@@ -438,6 +442,8 @@ void ExtensionInstalledBubble::Observe(
 
 void ExtensionInstalledBubble::ShowInternal() {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  extensions::ExtensionActionManager* extension_action_manager =
+      extensions::ExtensionActionManager::Get(browser_->profile());
 
   views::View* reference_view = NULL;
   if (type_ == APP) {
@@ -466,7 +472,7 @@ void ExtensionInstalledBubble::ShowInternal() {
       return;
     }
     reference_view = container->GetBrowserActionView(
-        extension_->browser_action());
+        extension_action_manager->GetBrowserAction(*extension_));
     // If the view is not visible then it is in the chevron, so point the
     // install bubble to the chevron instead. If this is an incognito window,
     // both could be invisible.
@@ -477,10 +483,11 @@ void ExtensionInstalledBubble::ShowInternal() {
     }
   } else if (type_ == PAGE_ACTION) {
     LocationBarView* location_bar_view = browser_view->GetLocationBarView();
-    location_bar_view->SetPreviewEnabledPageAction(extension_->page_action(),
+    ExtensionAction* page_action =
+        extension_action_manager->GetPageAction(*extension_);
+    location_bar_view->SetPreviewEnabledPageAction(page_action,
                                                    true);  // preview_enabled
-    reference_view = location_bar_view->GetPageActionView(
-        extension_->page_action());
+    reference_view = location_bar_view->GetPageActionView(page_action);
     DCHECK(reference_view);
   } else if (type_ == OMNIBOX_KEYWORD) {
     LocationBarView* location_bar_view = browser_view->GetLocationBarView();
@@ -518,7 +525,8 @@ void ExtensionInstalledBubble::WindowClosing() {
   if (extension_ && type_ == PAGE_ACTION) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
     browser_view->GetLocationBarView()->SetPreviewEnabledPageAction(
-        extension_->page_action(),
+        extensions::ExtensionActionManager::Get(browser_->profile())->
+        GetPageAction(*extension_),
         false);  // preview_enabled
   }
 }

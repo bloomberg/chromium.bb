@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -24,8 +25,7 @@
 // These are a mash-up of the tests from from page_actions_apitest.cc and
 // browser_actions_apitest.cc.
 
-using extensions::Extension;
-
+namespace extensions {
 namespace {
 
 class PageAsBrowserActionApiTest : public ExtensionApiTest {
@@ -42,6 +42,10 @@ class PageAsBrowserActionApiTest : public ExtensionApiTest {
   BrowserActionTestUtil GetBrowserActionsBar() {
     return BrowserActionTestUtil(browser());
   }
+
+  ExtensionActionManager* extension_action_manager() {
+    return ExtensionActionManager::Get(browser()->profile());
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
@@ -52,11 +56,11 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
 
   // The extension declares a page action, but it should have gotten a browser
   // action instead.
-  ASSERT_TRUE(extension->browser_action());
-  ASSERT_FALSE(extension->page_action());
+  ASSERT_TRUE(extension_action_manager()->GetBrowserAction(*extension));
+  ASSERT_FALSE(extension_action_manager()->GetPageAction(*extension));
 
   // With the "action box" there won't be browser actions unless they're pinned.
-  extensions::ExtensionPrefs* prefs =
+  ExtensionPrefs* prefs =
       browser()->profile()->GetExtensionService()->extension_prefs();
   prefs->SetBrowserActionVisibility(extension, true);
 
@@ -74,7 +78,8 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
   // Test that we received the changes.
   int tab_id = ExtensionTabUtil::GetTabId(
       chrome::GetActiveWebContents(browser()));
-  ExtensionAction* action = extension->browser_action();
+  ExtensionAction* action =
+      extension_action_manager()->GetBrowserAction(*extension);
   ASSERT_TRUE(action);
   EXPECT_EQ("Modified", action->GetTitle(tab_id));
 
@@ -112,7 +117,8 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, AddPopup) {
   int tab_id = ExtensionTabUtil::GetTabId(
       chrome::GetActiveWebContents(browser()));
 
-  ExtensionAction* page_action = extension->browser_action();
+  ExtensionAction* page_action =
+      extension_action_manager()->GetBrowserAction(*extension);
   ASSERT_TRUE(page_action)
       << "Page action test extension should have a page action.";
 
@@ -158,7 +164,8 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, RemovePopup) {
   int tab_id = ExtensionTabUtil::GetTabId(
       chrome::GetActiveWebContents(browser()));
 
-  ExtensionAction* page_action = extension->browser_action();
+  ExtensionAction* page_action =
+      extension_action_manager()->GetBrowserAction(*extension);
   ASSERT_TRUE(page_action)
       << "Page action test extension should have a page action.";
 
@@ -190,3 +197,4 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Getters) {
 }
 
 }
+}  // namespace extensions

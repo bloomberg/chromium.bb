@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -395,8 +396,10 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 - (NSPoint)popupPointForBrowserAction:(const Extension*)extension {
-  if (!extension->browser_action())
+  if (!extensions::ExtensionActionManager::Get(profile_)->
+      GetBrowserAction(*extension)) {
     return NSZeroPoint;
+  }
 
   NSButton* button = [self buttonForExtension:extension];
   if (!button)
@@ -487,7 +490,8 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 
 - (void)createActionButtonForExtension:(const Extension*)extension
                              withIndex:(NSUInteger)index {
-  if (!extension->browser_action())
+  if (!extensions::ExtensionActionManager::Get(profile_)->
+      GetBrowserAction(*extension))
     return;
 
   if (![self shouldDisplayBrowserAction:extension])

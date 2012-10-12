@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 
 #include "chrome/browser/extensions/browser_event_router.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -116,7 +117,9 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
   if (tab_id < 0)
     return ACTION_NONE;
 
-  ExtensionAction* browser_action = extension->browser_action();
+  ExtensionAction* browser_action =
+      extensions::ExtensionActionManager::Get(service_->profile())->
+      GetBrowserAction(*extension);
 
   // For browser actions, visibility == enabledness.
   if (!browser_action->GetIsVisible(tab_id))
@@ -194,8 +197,10 @@ void ExtensionToolbarModel::Observe(
 void ExtensionToolbarModel::AddExtension(const Extension* extension,
                                          ExtensionList* list) {
   // We only care about extensions with browser actions.
-  if (!extension->browser_action())
+  if (!extensions::ExtensionActionManager::Get(service_->profile())->
+      GetBrowserAction(*extension)) {
     return;
+  }
 
   if (extension->id() == last_extension_removed_ &&
       last_extension_removed_index_ < list->size()) {
@@ -277,12 +282,15 @@ void ExtensionToolbarModel::PopulateForActionBoxMode() {
   extensions::ExtensionIdList action_box_order =
       service_->extension_prefs()->GetActionBoxOrder();
 
+  extensions::ExtensionActionManager* extension_action_manager =
+      extensions::ExtensionActionManager::Get(service_->profile());
+
   // Add all browser actions not already in the toolbar or action box
   // to the action box (the prefs list may omit some extensions).
   for (ExtensionSet::const_iterator iter = service_->extensions()->begin();
        iter != service_->extensions()->end(); ++iter) {
     const Extension* extension = *iter;
-    if (!extension->browser_action())
+    if (!extension_action_manager->GetBrowserAction(*extension))
       continue;
 
     if (std::find(toolbar_order.begin(), toolbar_order.end(),
@@ -309,11 +317,14 @@ void ExtensionToolbarModel::PopulateForNonActionBoxMode() {
   // The items that don't have a pref for their position.
   ExtensionList unsorted;
 
+  extensions::ExtensionActionManager* extension_action_manager =
+      extensions::ExtensionActionManager::Get(service_->profile());
+
   // Create the lists.
   for (ExtensionSet::const_iterator it = service_->extensions()->begin();
        it != service_->extensions()->end(); ++it) {
     const Extension* extension = *it;
-    if (!extension->browser_action())
+    if (!extension_action_manager->GetBrowserAction(*extension))
       continue;
     if (!service_->extension_prefs()->GetBrowserActionVisibility(extension))
       continue;

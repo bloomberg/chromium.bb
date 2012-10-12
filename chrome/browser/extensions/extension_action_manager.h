@@ -26,9 +26,17 @@ class ExtensionActionManager : public content::NotificationObserver {
   explicit ExtensionActionManager(Profile* profile);
   virtual ~ExtensionActionManager();
 
-  // Called during ExtensionSystem::Shutdown(), when the associated
-  // Profile is going to be destroyed.
-  void Shutdown();
+  // Returns this profile's ExtensionActionManager.  One instance is
+  // shared between a profile and its incognito version.
+  static ExtensionActionManager* Get(Profile* profile);
+
+  // Retrieves the page action, browser action, or script badge for |extension|.
+  // If the result is not NULL, it remains valid until the extension is
+  // unloaded.
+  ExtensionAction* GetPageAction(const extensions::Extension& extension) const;
+  ExtensionAction* GetBrowserAction(
+      const extensions::Extension& extension) const;
+  ExtensionAction* GetScriptBadge(const extensions::Extension& extension) const;
 
  private:
   // Implement content::NotificationObserver.
@@ -36,7 +44,6 @@ class ExtensionActionManager : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  Profile* const profile_;
   content::NotificationRegistrar registrar_;
 
   // Keyed by Extension ID.  These maps are populated when the extension is

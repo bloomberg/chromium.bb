@@ -60,7 +60,7 @@ typedef enum {
   // We need to remove the page action immediately when the browser window
   // closes while this bubble is still open, so the bubble's closing animation
   // doesn't overlap browser destruction.
-  BOOL pageActionRemoved_;
+  BOOL pageActionPreviewShowing_;
 
   // Lets us register for EXTENSION_LOADED notifications.  The actual
   // notifications are sent to the observer object, which proxies them
@@ -85,7 +85,7 @@ typedef enum {
 
 @property(nonatomic, readonly) const extensions::Extension* extension;
 @property(nonatomic, readonly) const extensions::BundleInstaller* bundle;
-@property(nonatomic) BOOL pageActionRemoved;
+@property(nonatomic) BOOL pageActionPreviewShowing;
 
 // Initialize the window, and then create observers to wait for the extension
 // to complete loading, or the browser window to close.

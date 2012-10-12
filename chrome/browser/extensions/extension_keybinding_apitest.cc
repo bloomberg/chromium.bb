@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -129,7 +130,9 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
   int tab_id = SessionTabHelper::FromWebContents(
       chrome::GetActiveWebContents(browser()))->session_id().id();
-  ExtensionAction* action = extension->page_action();
+  ExtensionAction* action =
+      ExtensionActionManager::Get(browser()->profile())->
+      GetPageAction(*extension);
   ASSERT_TRUE(action);
   EXPECT_EQ("Make this page red", action->GetTitle(tab_id));
 

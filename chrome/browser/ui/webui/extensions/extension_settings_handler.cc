@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -174,8 +175,12 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     views->Append(view_value);
   }
   extension_data->Set("views", views);
-  extension_data->SetBoolean("hasPopupAction",
-      extension->browser_action() || extension->page_action());
+  extensions::ExtensionActionManager* extension_action_manager =
+      extensions::ExtensionActionManager::Get(extension_service_->profile());
+  extension_data->SetBoolean(
+      "hasPopupAction",
+      extension_action_manager->GetBrowserAction(*extension) ||
+      extension_action_manager->GetPageAction(*extension));
 
   // Add warnings.
   if (warnings_set) {

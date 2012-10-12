@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -70,10 +71,12 @@ void ScriptBubbleController::DidNavigateMainFrame(
   UpdateScriptBubble();
 }
 
+Profile* ScriptBubbleController::profile() const {
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+}
+
 ExtensionService* ScriptBubbleController::GetExtensionService() const {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return ExtensionSystem::Get(profile)->extension_service();
+  return ExtensionSystem::Get(profile())->extension_service();
 }
 
 void ScriptBubbleController::UpdateScriptBubble() {
@@ -82,7 +85,8 @@ void ScriptBubbleController::UpdateScriptBubble() {
   if (!script_bubble)
     return;
 
-  ExtensionAction* script_bubble_action = script_bubble->page_action();
+  ExtensionAction* script_bubble_action =
+      ExtensionActionManager::Get(profile())->GetPageAction(*script_bubble);
 
   ExtensionAction::Appearance appearance = ExtensionAction::INVISIBLE;
   std::string badge_text;

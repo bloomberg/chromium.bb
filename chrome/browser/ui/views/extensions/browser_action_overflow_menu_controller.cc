@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -49,8 +50,9 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
 
     // Set the tooltip for this item.
     string16 tooltip = UTF8ToUTF16(
-        view->button()->extension()->browser_action()->GetTitle(
-            owner_->GetCurrentTabId()));
+        extensions::ExtensionActionManager::Get(owner_->profile())->
+        GetBrowserAction(*view->button()->extension())->
+        GetTitle(owner_->GetCurrentTabId()));
     menu_->SetTooltip(tooltip, command_id);
 
     ++command_id;

@@ -37,7 +37,6 @@ TestExtensionSystem::~TestExtensionSystem() {
 }
 
 void TestExtensionSystem::Shutdown() {
-  extension_action_manager_.Shutdown();
   extension_process_manager_.reset();
 }
 
@@ -150,6 +149,10 @@ MessageService* TestExtensionSystem::message_service() {
 
 EventRouter* TestExtensionSystem::event_router() {
   return NULL;
+}
+
+ExtensionActionManager* TestExtensionSystem::extension_action_manager() {
+  return &extension_action_manager_;
 }
 
 RulesRegistryService* TestExtensionSystem::rules_registry_service() {

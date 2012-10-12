@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/test_browser_thread.h"
@@ -97,7 +98,8 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
 
   const Extension* script_bubble =
       extension_service_->component_loader()->GetScriptBubble();
-  ExtensionAction* script_bubble_action = script_bubble->page_action();
+  ExtensionAction* script_bubble_action =
+      ExtensionActionManager::Get(profile())->GetPageAction(*script_bubble);
   ASSERT_TRUE(script_bubble_action);
 
   // By default, the bubble should be invisible.

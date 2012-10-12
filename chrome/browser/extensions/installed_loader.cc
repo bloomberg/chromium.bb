@@ -10,6 +10,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -261,9 +262,11 @@ void InstalledLoader::LoadAllExtensions() {
     }
     if (!Extension::IsExternalLocation((*ex)->location()))
       ++item_user_count;
-    if ((*ex)->page_action() != NULL)
+    ExtensionActionManager* extension_action_manager =
+        ExtensionActionManager::Get(extension_service_->profile());
+    if (extension_action_manager->GetPageAction(**ex))
       ++page_action_count;
-    if ((*ex)->browser_action() != NULL)
+    if (extension_action_manager->GetBrowserAction(**ex))
       ++browser_action_count;
 
     extension_service_->RecordPermissionMessagesHistogram(

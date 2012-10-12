@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,6 +52,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 
 using extensions::Extension;
+using extensions::ExtensionActionManager;
 
 namespace {
 
@@ -103,7 +105,7 @@ class BrowserActionButton : public content::NotificationObserver,
       : toolbar_(toolbar),
         extension_(extension),
         image_(NULL),
-        icon_factory_(extension, extension->browser_action(), this),
+        icon_factory_(extension, browser_action(), this),
         accel_group_(NULL) {
     button_.reset(new CustomDrawButton(
         theme_provider,
@@ -117,7 +119,7 @@ class BrowserActionButton : public content::NotificationObserver,
     gtk_container_add(GTK_CONTAINER(alignment_.get()), button());
     gtk_widget_show(button());
 
-    DCHECK(extension_->browser_action());
+    DCHECK(browser_action());
 
     UpdateState();
 
@@ -142,7 +144,7 @@ class BrowserActionButton : public content::NotificationObserver,
 
     registrar_.Add(
         this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-        content::Source<ExtensionAction>(extension->browser_action()));
+        content::Source<ExtensionAction>(browser_action()));
     registrar_.Add(
         this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
         content::Source<Profile>(
@@ -214,13 +216,13 @@ class BrowserActionButton : public content::NotificationObserver,
     if (tab_id < 0)
       return;
 
-    std::string tooltip = extension_->browser_action()->GetTitle(tab_id);
+    std::string tooltip = browser_action()->GetTitle(tab_id);
     if (tooltip.empty())
       gtk_widget_set_has_tooltip(button(), FALSE);
     else
       gtk_widget_set_tooltip_text(button(), tooltip.c_str());
 
-    enabled_ = extension_->browser_action()->GetIsVisible(tab_id);
+    enabled_ = browser_action()->GetIsVisible(tab_id);
     if (!enabled_)
       button_->SetPaintOverride(GTK_STATE_INSENSITIVE);
     else
@@ -336,7 +338,7 @@ class BrowserActionButton : public content::NotificationObserver,
     if (tab_id < 0)
       return FALSE;
 
-    ExtensionAction* action = button->extension_->browser_action();
+    ExtensionAction* action = button->browser_action();
     if (action->GetBadgeText(tab_id).empty())
       return FALSE;
 
@@ -435,6 +437,11 @@ class BrowserActionButton : public content::NotificationObserver,
                         chrome::NOTIFICATION_WINDOW_CLOSED,
                         content::Source<GtkWindow>(window));
     }
+  }
+
+  ExtensionAction* browser_action() const {
+    return ExtensionActionManager::Get(toolbar_->browser()->profile())->
+        GetBrowserAction(*extension_);
   }
 
   // The toolbar containing this button.
@@ -793,7 +800,8 @@ bool BrowserActionsToolbarGtk::IsCommandIdChecked(int command_id) const {
 
 bool BrowserActionsToolbarGtk::IsCommandIdEnabled(int command_id) const {
   const Extension* extension = model_->toolbar_items()[command_id];
-  return extension->browser_action()->GetIsVisible(GetCurrentTabId());
+  return ExtensionActionManager::Get(profile_)->
+      GetBrowserAction(*extension)->GetIsVisible(GetCurrentTabId());
 }
 
 bool BrowserActionsToolbarGtk::GetAcceleratorForCommandId(

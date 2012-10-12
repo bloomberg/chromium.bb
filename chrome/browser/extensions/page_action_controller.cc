@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -35,19 +36,23 @@ std::vector<ExtensionAction*> PageActionController::GetCurrentActions() const {
   // Accumulate the list of all page actions to display.
   std::vector<ExtensionAction*> current_actions;
 
+  ExtensionActionManager* extension_action_manager =
+      ExtensionActionManager::Get(profile());
+
   // The script bubble, if present, is always first. This will make it show up
   // last in the omnibox.
   const Extension* script_bubble =
       service->component_loader()->GetScriptBubble();
   if (script_bubble)
-    current_actions.push_back(script_bubble->page_action());
+    current_actions.push_back(
+        extension_action_manager->GetPageAction(*script_bubble));
 
   for (ExtensionSet::const_iterator i = service->extensions()->begin();
        i != service->extensions()->end(); ++i) {
     if (script_bubble && *i == script_bubble)
       continue;
 
-    ExtensionAction* action = (*i)->page_action();
+    ExtensionAction* action = extension_action_manager->GetPageAction(**i);
     if (action)
       current_actions.push_back(action);
   }
@@ -63,7 +68,8 @@ LocationBarController::Action PageActionController::OnClicked(
 
   const Extension* extension = service->extensions()->GetByID(extension_id);
   CHECK(extension);
-  ExtensionAction* page_action = extension->page_action();
+  ExtensionAction* page_action =
+      ExtensionActionManager::Get(profile())->GetPageAction(*extension);
   CHECK(page_action);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents());
 
@@ -77,11 +83,8 @@ LocationBarController::Action PageActionController::OnClicked(
         return ACTION_SHOW_POPUP;
 
       GetExtensionService()->browser_event_router()->PageActionExecuted(
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-          *page_action,
-          tab_id,
-          web_contents()->GetURL().spec(),
-          mouse_button);
+          profile(), *page_action, tab_id,
+          web_contents()->GetURL().spec(), mouse_button);
       return ACTION_NONE;
 
     case 3:  // right
@@ -116,9 +119,13 @@ void PageActionController::DidNavigateMainFrame(
   NotifyChange();
 }
 
-ExtensionService* PageActionController::GetExtensionService() const {
+Profile* PageActionController::profile() const {
   TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  return ExtensionSystem::Get(tab_contents->profile())->extension_service();
+  return tab_contents->profile();
+}
+
+ExtensionService* PageActionController::GetExtensionService() const {
+  return ExtensionSystem::Get(profile())->extension_service();
 }
 
 }  // namespace extensions

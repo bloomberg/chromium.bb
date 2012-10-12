@@ -655,12 +655,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const ActionInfo* browser_action_info() const {
     return browser_action_info_.get();
   }
-  // TODO(jyasskin): Remove these accessors in favor of access through
-  // ExtensionActionManager.  In tests, call
-  // TestExtensionSystem::CreateExtensionActionManager() to get these created.
-  ExtensionAction* script_badge() const { return script_badge_; }
-  ExtensionAction* page_action() const { return page_action_; }
-  ExtensionAction* browser_action() const { return browser_action_; }
   bool is_verbose_install_message() const {
     return !omnibox_keyword().empty() ||
            browser_action_info() ||
@@ -1071,14 +1065,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's script badge.  Never NULL.
   scoped_ptr<ActionInfo> script_badge_info_;
-
-  // The extension's page action, browser action, and script badge, if any.
-  // Owned by the ExtensionActionManager, which sets these pointers on load and
-  // sets them to NULL on unload.
-  mutable ExtensionAction* page_action_;
-  mutable ExtensionAction* browser_action_;
-  mutable ExtensionAction* script_badge_;
-  friend class ExtensionActionManager;
 
   // The extension's file browser actions, if any.
   scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;

@@ -199,8 +199,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {
-  if (extension_action_manager_.get())
-    extension_action_manager_->Shutdown();
   if (extension_service_.get())
     extension_service_->Shutdown();
 }
@@ -243,6 +241,11 @@ MessageService* ExtensionSystemImpl::Shared::message_service() {
 
 EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return extension_event_router_.get();
+}
+
+ExtensionActionManager*
+    ExtensionSystemImpl::Shared::extension_action_manager() {
+  return extension_action_manager_.get();
 }
 
 //
@@ -359,6 +362,10 @@ MessageService* ExtensionSystemImpl::message_service() {
 
 EventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();
+}
+
+ExtensionActionManager* ExtensionSystemImpl::extension_action_manager() {
+  return shared_->extension_action_manager();
 }
 
 RulesRegistryService* ExtensionSystemImpl::rules_registry_service() {

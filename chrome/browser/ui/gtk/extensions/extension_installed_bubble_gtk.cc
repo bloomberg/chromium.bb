@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
@@ -37,6 +38,7 @@
 #include "ui/gfx/gtk_util.h"
 
 using extensions::Extension;
+using extensions::ExtensionActionManager;
 
 namespace {
 
@@ -78,11 +80,15 @@ ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(
       animation_wait_retries_(kAnimationWaitRetries) {
   AddRef();  // Balanced in Close().
 
+  extensions::ExtensionActionManager* extension_action_manager =
+      ExtensionActionManager::Get(browser_->profile());
+
   if (!extension_->omnibox_keyword().empty())
     type_ = OMNIBOX_KEYWORD;
-  else if (extension_->browser_action())
+  else if (extension_action_manager->GetBrowserAction(*extension_))
     type_ = BROWSER_ACTION;
-  else if (extension->page_action() && extension->is_verbose_install_message())
+  else if (extension_action_manager->GetPageAction(*extension) &&
+           extension->is_verbose_install_message())
     type_ = PAGE_ACTION;
   else
     type_ = GENERIC;
@@ -157,10 +163,12 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   } else if (type_ == PAGE_ACTION) {
     LocationBarViewGtk* location_bar_view =
         browser_window->GetToolbar()->GetLocationBarView();
-    location_bar_view->SetPreviewEnabledPageAction(extension_->page_action(),
+    ExtensionAction* page_action =
+        ExtensionActionManager::Get(browser_->profile())->
+        GetPageAction(*extension_);
+    location_bar_view->SetPreviewEnabledPageAction(page_action,
                                                    true);  // preview_enabled
-    reference_widget = location_bar_view->GetPageActionWidget(
-        extension_->page_action());
+    reference_widget = location_bar_view->GetPageActionWidget(page_action);
     // glib delays recalculating layout, but we need reference_widget to know
     // its coordinates, so we force a check_resize here.
     gtk_container_check_resize(GTK_CONTAINER(
@@ -378,8 +386,10 @@ void ExtensionInstalledBubbleGtk::BubbleClosing(BubbleGtk* bubble,
               browser_->window()->GetNativeWindow());
     LocationBarViewGtk* location_bar_view =
         browser_window->GetToolbar()->GetLocationBarView();
-    location_bar_view->SetPreviewEnabledPageAction(extension_->page_action(),
-                                                   false);  // preview_enabled
+    location_bar_view->SetPreviewEnabledPageAction(
+        ExtensionActionManager::Get(browser_->profile())->
+        GetPageAction(*extension_),
+        false);  // preview_enabled
   }
 
   // We need to allow the bubble to close and remove the widgets from

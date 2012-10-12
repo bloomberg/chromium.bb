@@ -59,6 +59,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
   virtual MessageService* message_service() OVERRIDE;
   virtual EventRouter* event_router() OVERRIDE;
+  virtual ExtensionActionManager* extension_action_manager() OVERRIDE;
   virtual RulesRegistryService* rules_registry_service() OVERRIDE;
   virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
       OVERRIDE;

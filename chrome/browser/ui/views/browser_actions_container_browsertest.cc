@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -275,7 +276,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {
   gfx::Size size(Extension::kBrowserActionIconMaxSize,
                  Extension::kBrowserActionIconMaxSize);
   const ExtensionIconSet* default_icon =
-      extension->browser_action()->default_icon();
+      extensions::ExtensionActionManager::Get(browser()->profile())->
+      GetBrowserAction(*extension)->default_icon();
   const std::string path =
       default_icon->Get(extension_misc::EXTENSION_ICON_ACTION,
                         ExtensionIconSet::MATCH_EXACTLY);

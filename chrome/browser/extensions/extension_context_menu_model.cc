@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -159,16 +160,18 @@ ExtensionContextMenuModel::~ExtensionContextMenuModel() {}
 void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
   DCHECK(extension);
 
-  extension_action_ = extension->browser_action();
+  extensions::ExtensionActionManager* extension_action_manager =
+      extensions::ExtensionActionManager::Get(profile_);
+  extension_action_ = extension_action_manager->GetBrowserAction(*extension);
   if (!extension_action_)
-    extension_action_ = extension->page_action();
+    extension_action_ = extension_action_manager->GetPageAction(*extension);
 
   AddItem(NAME, UTF8ToUTF16(extension->name()));
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
   AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
   AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
-  if (extension->browser_action())
+  if (extension_action_manager->GetBrowserAction(*extension))
     AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE_BUTTON);
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSIONS);

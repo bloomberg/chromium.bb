@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/activity_log.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/page_action_controller.h"
@@ -185,9 +186,12 @@ void TabHelper::DidNavigateMainFrame(
   if (!service)
     return;
 
+  ExtensionActionManager* extension_action_manager =
+      ExtensionActionManager::Get(profile);
   for (ExtensionSet::const_iterator it = service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
-    ExtensionAction* browser_action = (*it)->browser_action();
+    ExtensionAction* browser_action =
+        extension_action_manager->GetBrowserAction(**it);
     if (browser_action) {
       browser_action->ClearAllValuesForTab(SessionID::IdForTab(web_contents()));
       content::NotificationService::current()->Notify(

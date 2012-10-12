@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class ExtensionService;
+class Profile;
 
 namespace extensions {
 
@@ -38,6 +39,9 @@ class PageActionController : public LocationBarController,
       const content::FrameNavigateParams& params) OVERRIDE;
 
  private:
+  // Gets the Profile for the web contents.
+  Profile* profile() const;
+
   // Gets the ExtensionService for the web contents.
   ExtensionService* GetExtensionService() const;
 

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 
@@ -71,26 +73,28 @@ TEST_F(PageActionControllerTest, NavigationClearsState) {
 
   NavigateAndCommit(GURL("http://www.google.com"));
 
-  extension->page_action()->SetTitle(tab_id(), "Goodbye");
-  extension->page_action()->SetPopupUrl(
+  ExtensionAction& page_action = *ExtensionActionManager::Get(profile())->
+      GetPageAction(*extension);
+  page_action.SetTitle(tab_id(), "Goodbye");
+  page_action.SetPopupUrl(
       tab_id(), extension->GetResourceURL("popup.html"));
 
-  EXPECT_EQ("Goodbye", extension->page_action()->GetTitle(tab_id()));
+  EXPECT_EQ("Goodbye", page_action.GetTitle(tab_id()));
   EXPECT_EQ(extension->GetResourceURL("popup.html"),
-            extension->page_action()->GetPopupUrl(tab_id()));
+            page_action.GetPopupUrl(tab_id()));
 
   // Within-page navigation should keep the settings.
   NavigateAndCommit(GURL("http://www.google.com/#hash"));
 
-  EXPECT_EQ("Goodbye", extension->page_action()->GetTitle(tab_id()));
+  EXPECT_EQ("Goodbye", page_action.GetTitle(tab_id()));
   EXPECT_EQ(extension->GetResourceURL("popup.html"),
-            extension->page_action()->GetPopupUrl(tab_id()));
+            page_action.GetPopupUrl(tab_id()));
 
   // Should discard the settings, and go back to the defaults.
   NavigateAndCommit(GURL("http://www.yahoo.com"));
 
-  EXPECT_EQ("Hello", extension->page_action()->GetTitle(tab_id()));
-  EXPECT_EQ(GURL(), extension->page_action()->GetPopupUrl(tab_id()));
+  EXPECT_EQ("Hello", page_action.GetTitle(tab_id()));
+  EXPECT_EQ(GURL(), page_action.GetPopupUrl(tab_id()));
 };
 
 }  // namespace

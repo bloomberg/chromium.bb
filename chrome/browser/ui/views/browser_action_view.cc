@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
@@ -61,7 +62,9 @@ BrowserActionView::~BrowserActionView() {
 gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
   int tab_id = delegate_->GetCurrentTabId();
 
-  const ExtensionAction* action = button_->extension()->browser_action();
+  const ExtensionAction* action =
+      extensions::ExtensionActionManager::Get(browser_->profile())->
+      GetBrowserAction(*button_->extension());
   gfx::Size spacing(0, ToolbarView::kVertSpacing);
   gfx::ImageSkia icon = *button_->icon_factory().GetIcon(tab_id).ToImageSkia();
   if (!button_->IsEnabled(tab_id))
@@ -110,10 +113,12 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           MenuButton(this, string16(), NULL, false)),
       browser_(browser),
-      browser_action_(extension->browser_action()),
+      browser_action_(
+          extensions::ExtensionActionManager::Get(browser->profile())->
+          GetBrowserAction(*extension)),
       extension_(extension),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          icon_factory_(extension, extension->browser_action(), this)),
+          icon_factory_(extension, browser_action_, this)),
       delegate_(delegate),
       context_menu_(NULL),
       called_registered_extension_command_(false) {

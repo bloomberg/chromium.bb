@@ -11,6 +11,7 @@
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -196,8 +197,10 @@ void ExtensionActionStorageManager::Observe(
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      if (!extension->browser_action())
+      if (!extensions::ExtensionActionManager::Get(profile_)->
+          GetBrowserAction(*extension)) {
         break;
+      }
 
       StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
       if (storage) {
@@ -245,20 +248,22 @@ void ExtensionActionStorageManager::ReadFromStorage(
   if (!extension)
     return;
 
-  CHECK(extension->browser_action());
+  ExtensionAction* browser_action =
+      ExtensionActionManager::Get(profile_)->GetBrowserAction(*extension);
+  CHECK(browser_action);
 
   // Don't load values from storage if the extension has updated a value
   // already. The extension may have only updated some of the values, but
   // this is a good first approximation. If the extension is doing stuff
   // to the browser action, we can assume it is ready to take over.
-  if (extension->browser_action()->has_changed())
+  if (browser_action->has_changed())
     return;
 
   const base::DictionaryValue* dict = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict))
     return;
 
-  SetDefaultsFromValue(dict, extension->browser_action());
+  SetDefaultsFromValue(dict, browser_action);
 }
 
 }  // namespace extensions
@@ -280,11 +285,15 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 
 bool ExtensionActionFunction::RunImpl() {
   if (base::StringPiece(name()).starts_with("scriptBadge.")) {
-    extension_action_ = GetExtension()->script_badge();
+    extension_action_ = extensions::ExtensionActionManager::Get(profile_)->
+        GetScriptBadge(*GetExtension());
   } else {
-    extension_action_ = GetExtension()->browser_action();
-    if (!extension_action_)
-      extension_action_ = GetExtension()->page_action();
+    extension_action_ = extensions::ExtensionActionManager::Get(profile_)->
+        GetBrowserAction(*GetExtension());
+    if (!extension_action_) {
+      extension_action_ = extensions::ExtensionActionManager::Get(profile_)->
+          GetPageAction(*GetExtension());
+    }
   }
   if (!extension_action_) {
     // TODO(kalman): ideally the browserAction/pageAction APIs wouldn't event
@@ -336,7 +345,9 @@ bool ExtensionActionFunction::RunImpl() {
 
   // Find the TabContents that contains this tab id if one is required.
   if (tab_id_ == ExtensionAction::kDefaultTabId) {
-    EXTENSION_FUNCTION_VALIDATE(GetExtension()->browser_action());
+    EXTENSION_FUNCTION_VALIDATE(
+        extensions::ExtensionActionManager::Get(profile_)->
+        GetBrowserAction(*GetExtension()));
   } else {
     ExtensionTabUtil::GetTabById(
         tab_id_, profile(), include_incognito(), NULL, NULL, &contents_, NULL);
@@ -354,9 +365,11 @@ void ExtensionActionFunction::NotifyChange() {
   switch (extension_action_->action_type()) {
     case extensions::Extension::ActionInfo::TYPE_BROWSER:
     case extensions::Extension::ActionInfo::TYPE_PAGE:
-      if (extension_->browser_action()) {
+      if (extensions::ExtensionActionManager::Get(profile_)->
+          GetBrowserAction(*extension_)) {
         NotifyBrowserActionChange();
-      } else if (extension_->page_action()) {
+      } else if (extensions::ExtensionActionManager::Get(profile_)->
+                 GetPageAction(*extension_)) {
         NotifyLocationBarChange();
       }
       return;

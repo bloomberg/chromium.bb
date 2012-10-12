@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/script_badge_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -90,6 +91,10 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
     return extension;
   }
 
+  ExtensionAction* GetScriptBadge(const Extension& extension) {
+    return ExtensionActionManager::Get(profile())->GetScriptBadge(extension);
+  }
+
   ExtensionService* extension_service_;
   ScriptBadgeController* script_badge_controller_;
 
@@ -145,7 +150,7 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
       GURL(""),
       val);
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
-              testing::ElementsAre(extension->script_badge()));
+              testing::ElementsAre(GetScriptBadge(*extension)));
   EXPECT_THAT(location_bar_updated.events, testing::Gt(0));
 };
 
@@ -174,7 +179,7 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
         val);
 
     EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
-                testing::ElementsAre(extension->script_badge()));
+                testing::ElementsAre(GetScriptBadge(*extension)));
     EXPECT_EQ(1, location_bar_updated.events);
   }
 
@@ -190,7 +195,7 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
     NavigateAndCommit(GURL("http://www.google.com#hash"));
 
     EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
-                testing::ElementsAre(extension->script_badge()));
+              testing::ElementsAre(GetScriptBadge(*extension)));
     EXPECT_EQ(0, location_bar_updated.events);
   }
 
@@ -242,7 +247,7 @@ TEST_F(ScriptBadgeControllerTest, GetAttentionMakesBadgeVisible) {
   script_badge_controller_->GetAttentionFor(extension->id());
 
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
-              testing::ElementsAre(extension->script_badge()));
+              testing::ElementsAre(GetScriptBadge(*extension)));
   EXPECT_THAT(initial_badge_display.events, testing::Gt(0));
 
   CountingNotificationObserver subsequent_get_attention_call;
@@ -255,7 +260,7 @@ TEST_F(ScriptBadgeControllerTest, GetAttentionMakesBadgeVisible) {
   script_badge_controller_->GetAttentionFor(extension->id());
 
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
-              testing::ElementsAre(extension->script_badge()));
+              testing::ElementsAre(GetScriptBadge(*extension)));
   EXPECT_EQ(0, subsequent_get_attention_call.events);
 };
 

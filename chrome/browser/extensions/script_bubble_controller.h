@@ -14,6 +14,8 @@
 
 namespace extensions {
 
+class ExtensionSystem;
+
 // Controls the script bubble in the omnibox, which displays information about
 // extensions which are interacting with the current tab.
 class ScriptBubbleController
@@ -42,6 +44,9 @@ class ScriptBubbleController
       const content::FrameNavigateParams& params) OVERRIDE;
 
  private:
+  // Helper to get the profile of the web contents we're associated with.
+  Profile* profile() const;
+
   // Helper to get the extension service for the profile of the web contents
   // we're associated with.
   ExtensionService* GetExtensionService() const;

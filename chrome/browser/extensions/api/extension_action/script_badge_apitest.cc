@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/browser_event_router.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
@@ -21,7 +22,8 @@
 #include "net/test/test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using extensions::Extension;
+namespace extensions {
+namespace {
 
 class ScriptBadgeApiTest : public ExtensionApiTest {
  public:
@@ -42,7 +44,9 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {
   ASSERT_TRUE(RunExtensionTest("script_badge/basics")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
-  ExtensionAction* script_badge = extension->script_badge();
+  ExtensionAction* script_badge =
+      ExtensionActionManager::Get(browser()->profile())->
+      GetScriptBadge(*extension);
   ASSERT_TRUE(script_badge);
   const extensions::LocationBarController* location_bar_controller =
       extensions::TabHelper::FromWebContents(
@@ -90,3 +94,6 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {
   EXPECT_THAT(location_bar_controller->GetCurrentActions(),
               testing::ElementsAre(script_badge));
 }
+
+}  // namespace
+}  // namespace extensions

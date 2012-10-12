@@ -8,9 +8,10 @@
 
 #include "base/string_number_conversions.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -56,7 +57,9 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
       EXTENSION_FUNCTION_VALIDATE(action->GetString(keys::kTitleKey, &title));
   }
 
-  ExtensionAction* page_action = GetExtension()->page_action();
+  ExtensionAction* page_action =
+      extensions::ExtensionActionManager::Get(profile())->
+      GetPageAction(*GetExtension());
   if (!page_action) {
     error_ = kNoPageActionError;
     return false;

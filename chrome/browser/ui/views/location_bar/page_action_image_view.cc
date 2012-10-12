@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -259,7 +260,9 @@ void PageActionImageView::Observe(int type,
   DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
   const Extension* unloaded_extension =
       content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
-  if (page_action_ == unloaded_extension->page_action())
+  if (page_action_ ==
+      extensions::ExtensionActionManager::Get(owner_->profile())->
+      GetPageAction(*unloaded_extension))
     owner_->UpdatePageActions();
 }
 

@@ -10,6 +10,7 @@
 
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -38,8 +39,8 @@
 #endif
 
 using content::WebContents;
-using extensions::Extension;
 
+namespace extensions {
 namespace {
 
 const char kEmptyImageDataError[] =
@@ -87,6 +88,11 @@ class BrowserActionApiTest : public ExtensionApiTest {
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
     return GetBrowserActionsBar().HasPopup();
   }
+
+  ExtensionAction* GetBrowserAction(const Extension& extension) {
+    return ExtensionActionManager::Get(browser()->profile())->
+        GetBrowserAction(extension);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
@@ -105,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   // Test that we received the changes.
-  ExtensionAction* action = extension->browser_action();
+  ExtensionAction* action = GetBrowserAction(*extension);
   ASSERT_EQ("Modified", action->GetTitle(ExtensionAction::kDefaultTabId));
   ASSERT_EQ("badge", action->GetBadgeText(ExtensionAction::kDefaultTabId));
   ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
@@ -134,9 +140,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   // We should not be creating icons asynchronously, so we don't need an
   // observer.
-  ExtensionActionIconFactory icon_factory(extension,
-                                          extension->browser_action(),
-                                          NULL);
+  ExtensionActionIconFactory icon_factory(
+      extension,
+      GetBrowserAction(*extension),
+      NULL);
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
   EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
@@ -375,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
   int tab_id = ExtensionTabUtil::GetTabId(
       chrome::GetActiveWebContents(browser()));
 
-  ExtensionAction* browser_action = extension->browser_action();
+  ExtensionAction* browser_action = GetBrowserAction(*extension);
   ASSERT_TRUE(browser_action)
       << "Browser action test extension should have a browser action.";
 
@@ -431,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
   int tab_id = ExtensionTabUtil::GetTabId(
       chrome::GetActiveWebContents(browser()));
 
-  ExtensionAction* browser_action = extension->browser_action();
+  ExtensionAction* browser_action = GetBrowserAction(*extension);
   ASSERT_TRUE(browser_action)
       << "Browser action test extension should have a browser action.";
 
@@ -572,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
   ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension->id()));
-  ExtensionAction* action = extension->browser_action();
+  ExtensionAction* action = GetBrowserAction(*extension);
   ASSERT_EQ("", action->GetBadgeText(ExtensionAction::kDefaultTabId));
 
   content::WindowedNotificationObserver host_destroyed_observer(
@@ -601,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
 
   // Test that CSS values (#FF0000) set color correctly.
-  ExtensionAction* action = extension->browser_action();
+  ExtensionAction* action = GetBrowserAction(*extension);
   ASSERT_EQ(SkColorSetARGB(255, 255, 0, 0),
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 
@@ -612,7 +619,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
   ASSERT_TRUE(catcher.GetNextResult());
 
   // Test that CSS values (#0F0) set color correctly.
-  action = extension->browser_action();
   ASSERT_EQ(SkColorSetARGB(255, 0, 255, 0),
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 
@@ -621,7 +627,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
   ASSERT_TRUE(catcher.GetNextResult());
 
   // Test that array values set color correctly.
-  action = extension->browser_action();
   ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 }
@@ -647,3 +652,4 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Getters) {
 }
 
 }  // namespace
+}  // namespace extensions

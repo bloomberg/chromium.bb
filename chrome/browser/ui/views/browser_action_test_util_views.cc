@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/browser_action_view.h"
@@ -35,8 +36,9 @@ int BrowserActionTestUtil::VisibleBrowserActions() {
 }
 
 ExtensionAction* BrowserActionTestUtil::GetExtensionAction(int index) {
-  return GetContainer(browser_)->GetBrowserActionViewAt(index)->
-          button()->extension()->browser_action();
+  return extensions::ExtensionActionManager::Get(browser_->profile())->
+      GetBrowserAction(*GetContainer(browser_)->GetBrowserActionViewAt(index)->
+                       button()->extension());
 }
 
 bool BrowserActionTestUtil::HasIcon(int index) {

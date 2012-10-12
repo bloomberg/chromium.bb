@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/browser_event_router.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -35,11 +36,9 @@ ScriptBadgeController::ScriptBadgeController(content::WebContents* web_contents,
     : ScriptExecutor::Observer(script_executor),
       TabHelper::ContentScriptObserver(tab_helper),
       content::WebContentsObserver(web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile));
+                 content::Source<Profile>(profile()));
 }
 
 ScriptBadgeController::~ScriptBadgeController() {}
@@ -50,6 +49,8 @@ std::vector<ExtensionAction*> ScriptBadgeController::GetCurrentActions() const {
   if (!service)
     return result;
 
+  ExtensionActionManager* extension_action_manager =
+      ExtensionActionManager::Get(profile());
   const ExtensionSet* extensions = service->extensions();
   for (std::set<std::string>::const_iterator
            it = extensions_in_current_actions_.begin();
@@ -57,7 +58,8 @@ std::vector<ExtensionAction*> ScriptBadgeController::GetCurrentActions() const {
     const Extension* extension = extensions->GetByID(*it);
     if (!extension)
       continue;
-    ExtensionAction* script_badge = extension->script_badge();
+    ExtensionAction* script_badge =
+        extension_action_manager->GetScriptBadge(*extension);
     if (script_badge)
       result.push_back(script_badge);
   }
@@ -87,7 +89,8 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
 
   const Extension* extension = service->extensions()->GetByID(extension_id);
   CHECK(extension);
-  ExtensionAction* script_badge = extension->script_badge();
+  ExtensionAction* script_badge =
+      ExtensionActionManager::Get(profile())->GetScriptBadge(*extension);
   CHECK(script_badge);
 
   switch (mouse_button) {
@@ -96,7 +99,6 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
       extensions::TabHelper::FromWebContents(web_contents())->
           active_tab_permission_granter()->GrantIfRequested(extension);
 
-      TabContents* tab_contents = TabContents::FromWebContents(web_contents());
       // Even if clicking the badge doesn't immediately cause the extension to
       // run script on the page, we want to help users associate clicking with
       // the extension having permission to modify the page, so we make the icon
@@ -107,9 +109,7 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
 
       // Fire the scriptBadge.onClicked event.
       GetExtensionService()->browser_event_router()->ScriptBadgeExecuted(
-          tab_contents->profile(),
-          *script_badge,
-          SessionID::IdForTab(web_contents()));
+          profile(), *script_badge, SessionID::IdForTab(web_contents()));
 
       // TODO(jyasskin): The fallback order should be user-defined popup ->
       // onClicked handler -> default popup.
@@ -196,10 +196,13 @@ void ScriptBadgeController::OnContentScriptsExecuting(
     NotifyChange();
 }
 
-ExtensionService* ScriptBadgeController::GetExtensionService() const {
+Profile* ScriptBadgeController::profile() const {
   TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  return extensions::ExtensionSystem::Get(
-      tab_contents->profile())->extension_service();
+  return tab_contents->profile();
+}
+
+ExtensionService* ScriptBadgeController::GetExtensionService() const {
+  return ExtensionSystem::Get(profile())->extension_service();
 }
 
 int32 ScriptBadgeController::GetPageID() {
@@ -209,10 +212,9 @@ int32 ScriptBadgeController::GetPageID() {
 }
 
 void ScriptBadgeController::NotifyChange() {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-      content::Source<Profile>(tab_contents->profile()),
+      content::Source<Profile>(profile()),
       content::Details<content::WebContents>(web_contents()));
 }
 
@@ -248,7 +250,7 @@ ExtensionAction* ScriptBadgeController::AddExtensionToCurrentActions(
   if (!extension)
     return NULL;
 
-  return extension->script_badge();
+  return ExtensionActionManager::Get(profile())->GetScriptBadge(*extension);
 }
 
 bool ScriptBadgeController::MarkExtensionExecuting(

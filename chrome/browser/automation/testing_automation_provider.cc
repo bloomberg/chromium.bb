@@ -50,6 +50,7 @@
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -191,6 +192,7 @@ using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
 using extensions::Extension;
+using extensions::ExtensionActionManager;
 using extensions::ExtensionList;
 
 namespace {
@@ -3787,6 +3789,8 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
   all.insert(all.end(),
              disabled_extensions->begin(),
              disabled_extensions->end());
+  ExtensionActionManager* extension_action_manager =
+      ExtensionActionManager::Get(browser->profile());
   for (ExtensionList::const_iterator it = all.begin();
        it != all.end(); ++it) {
     const Extension* extension = *it;
@@ -3817,8 +3821,9 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
     extension_value->SetBoolean("is_enabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean("allowed_in_incognito",
                                 service->IsIncognitoEnabled(id));
-    extension_value->SetBoolean("has_page_action",
-                                extension->page_action() != NULL);
+    extension_value->SetBoolean(
+        "has_page_action",
+        extension_action_manager->GetPageAction(*extension) != NULL);
     extensions_values->Append(extension_value);
   }
   return_value->Set("extensions", extensions_values);
@@ -3942,7 +3947,9 @@ void TestingAutomationProvider::TriggerPageActionById(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  ExtensionAction* page_action = extension->page_action();
+  ExtensionAction* page_action =
+      ExtensionActionManager::Get(browser->profile())->
+      GetPageAction(*extension);
   if (!page_action) {
     AutomationJSONReply(this, reply_message).SendError(
         "Extension doesn't have any page action.");
@@ -3995,7 +4002,8 @@ void TestingAutomationProvider::TriggerBrowserActionById(
     AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
-  ExtensionAction* action = extension->browser_action();
+  ExtensionAction* action = ExtensionActionManager::Get(browser->profile())->
+      GetBrowserAction(*extension);
   if (!action) {
     AutomationJSONReply(this, reply_message).SendError(
         "Extension doesn't have any browser action.");
@@ -6222,13 +6230,15 @@ void TestingAutomationProvider::IsPageActionVisible(
     reply.SendError(error);
     return;
   }
-  ExtensionAction* page_action = extension->page_action();
-  if (!page_action) {
-    reply.SendError("Extension doesn't have any page action");
-    return;
-  }
   if (!browser) {
     reply.SendError("Tab does not belong to an open browser");
+    return;
+  }
+  ExtensionAction* page_action =
+      ExtensionActionManager::Get(browser->profile())->
+      GetPageAction(*extension);
+  if (!page_action) {
+    reply.SendError("Extension doesn't have any page action");
     return;
   }
   EnsureTabSelected(browser, tab);

@@ -102,6 +102,11 @@ class ExtensionSystem : public ProfileKeyedService {
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
 
+  // Provides access to an Extension's page actions, browser actions, and script
+  // badges.
+  // The ExtensionActionManager is created at startup.
+  virtual ExtensionActionManager* extension_action_manager() = 0;
+
   // The RulesRegistryService is created at startup.
   virtual RulesRegistryService* rules_registry_service() = 0;
 
@@ -162,6 +167,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
   virtual MessageService* message_service() OVERRIDE;  // shared
   virtual EventRouter* event_router() OVERRIDE;  // shared
+  virtual ExtensionActionManager* extension_action_manager() OVERRIDE; // shared
   virtual RulesRegistryService* rules_registry_service()
       OVERRIDE;  // shared
   virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
