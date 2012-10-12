@@ -417,7 +417,6 @@ cr.define('options', function() {
     showSpinner_: function() {
       this.resetPage_('sync-setup-spinner');
       $('sync-setup-spinner').hidden = false;
-      this.setThrobbersVisible_(true);
     },
 
     showTimeoutPage_: function() {
