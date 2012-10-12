@@ -195,7 +195,8 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
 /**
  * Show or hide the "Low Google Drive space" warning.
  * @param {boolean} show True if the box need to be shown.
- * @param {object} sizeStats Size statistics.
+ * @param {object} sizeStats Size statistics. Should be defined when showing the
+ *     warning.
  * @private
  */
 FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
@@ -204,9 +205,11 @@ FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
 
   // Avoid showing two banners.
   // TODO(kaznacheev): Unify the low space warning and the promo header.
-  if (show) this.cleanupGDataWelcome_();
+  if (show)
+    this.cleanupGDataWelcome_();
 
-  if (box.hidden == !show) return;
+  if (box.hidden == !show)
+    return;
 
   // If the warning was dismissed before, this key stores the quota value
   // (as of the moment of dismissal).
@@ -288,7 +291,8 @@ FileListBannerController.prototype.checkFreeSpace_ = function(currentPath) {
         function(sizeStats) {
           // If new check started while we were in async getSizeStats call,
           // then we shouldn't do anything.
-          if (selfTimer != self.checkFreeSpaceTimer_) return;
+          if (selfTimer != self.checkFreeSpaceTimer_)
+            return;
 
           // sizeStats is undefined, if some error occurs.
           var ratio = (sizeStats && sizeStats.totalSizeKB > 0) ?
@@ -340,16 +344,18 @@ FileListBannerController.prototype.closeBanner_ = function() {
 FileListBannerController.prototype.checkSpaceAndShowBanner_ = function() {
   var self = this;
   this.preparePromo_(function() {
-    if (this.newWelcome_ && this.isOnGData())
+    if (this.newWelcome_ && this.isOnGData()) {
       chrome.fileBrowserPrivate.getSizeStats(
           util.makeFilesystemUrl(this.directoryModel_.getCurrentRootPath()),
-      function(result) {
-        if (result.totalSizeKB >= 100 * 1024 * 1024)  // Already >= 100 GB.
-          self.newWelcome_ = false;
-          self.maybeShowBanner_();
-      });
-    else
+          function(result) {
+            // Already >= 100 GB.
+            if (result && result.totalSizeKB >= 100 * 1024 * 1024)
+              self.newWelcome_ = false;
+            self.maybeShowBanner_();
+          });
+    } else {
       self.maybeShowBanner_();
+    }
   });
 };
 

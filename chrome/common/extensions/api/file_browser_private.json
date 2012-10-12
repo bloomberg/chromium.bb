@@ -863,8 +863,9 @@
             "parameters": [
               {
                 "name" : "sizeStats",
+                "optional": true,
                 "$ref": "MountPointSizeStats",
-                "description": "Name/value pairs of size stats."
+                "description": "Name/value pairs of size stats. Will be undefined if stats could not be determined."
               }
             ]
           }

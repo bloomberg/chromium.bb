@@ -1547,8 +1547,8 @@ void GetSizeStatsFunction::GetDriveAvailableSpaceCallback(
     GetSizeStatsCallbackOnUIThread(static_cast<size_t>(bytes_total/1024),
                                    static_cast<size_t>(bytes_remaining/1024));
   } else {
-    error_ = base::StringPrintf(kFileError, static_cast<int>(error));
-    SendResponse(false);
+    // If stats couldn't be gotten for drive, result should be left undefined.
+    SendResponse(true);
   }
 }
 
