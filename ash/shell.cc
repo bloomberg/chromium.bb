@@ -29,7 +29,6 @@
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/activation_controller.h"
@@ -42,17 +41,13 @@
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/event_rewriter_event_filter.h"
 #include "ash/wm/overlay_event_filter.h"
-#include "ash/wm/panel_layout_manager.h"
-#include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
 #include "ash/wm/shadow_controller.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/stacking_controller.h"
-#include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -189,9 +184,6 @@ Shell::Shell(ShellDelegate* delegate)
       output_configurator_animation_(
           new internal::OutputConfiguratorAnimation()),
 #endif  // defined(OS_CHROMEOS)
-      shelf_(NULL),
-      panel_layout_manager_(NULL),
-      status_area_widget_(NULL),
       browser_context_(NULL) {
   gfx::Screen::SetInstance(screen_);
   ui_controls::InstallUIControlsAura(internal::CreateUIControls());
@@ -231,18 +223,12 @@ Shell::~Shell() {
   // TooltipController is deleted with the Shell so removing its references.
   RemoveEnvEventFilter(tooltip_controller_.get());
 
-  // The status area needs to be shut down before the windows are destroyed.
-  status_area_widget_->Shutdown();
-
   // AppList needs to be released before shelf layout manager, which is
   // destroyed with launcher container in the loop below. However, app list
   // container is now on top of launcher container and released after it.
   // TODO(xiyuan): Move it back when app list container is no longer needed.
   app_list_controller_.reset();
 
-
-  // Closing the windows frees the workspace controller.
-  shelf_->set_workspace_controller(NULL);
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
 
@@ -265,13 +251,6 @@ Shell::~Shell() {
   // This also deletes all RootWindows.
   display_controller_.reset();
   screen_position_controller_.reset();
-
-  // Launcher widget has a InputMethodBridge that references to
-  // input_method_filter_'s input_method_. So explicitly release launcher_
-  // before input_method_filter_. And this needs to be after we delete all
-  // containers in case there are still live browser windows which access
-  // LauncherModel during close.
-  launcher_.reset();
 
   // Delete the activation controller after other controllers and launcher
   // because they might have registered ActivationChangeObserver.
@@ -362,6 +341,12 @@ std::vector<aura::Window*> Shell::GetAllContainers(int container_id) {
   return containers;
 }
 
+// static
+bool Shell::IsLauncherPerDisplayEnabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kAshLauncherPerDisplay);
+}
+
 void Shell::Init() {
   // Install the custom factory first so that views::FocusManagers for Tray,
   // Launcher, and WallPaper could be created by the factory.
@@ -375,6 +360,8 @@ void Shell::Init() {
   focus_manager_.reset(new aura::FocusManager);
   activation_controller_.reset(
       new internal::ActivationController(focus_manager_.get()));
+
+  focus_cycler_.reset(new internal::FocusCycler());
 
   screen_position_controller_.reset(new internal::ScreenPositionController);
   display_controller_.reset(new DisplayController);
@@ -473,25 +460,12 @@ void Shell::Init() {
   else
     caps_lock_delegate_.reset(new CapsLockDelegateStub);
 
-  // Initialize Primary RootWindow specific items.
-  status_area_widget_ = new internal::StatusAreaWidget();
-  status_area_widget_->CreateTrayViews(delegate_.get());
-  // Login screen manages status area visibility by itself.
-  if (delegate_.get() && delegate_->IsSessionStarted())
-    status_area_widget_->Show();
-
-  focus_cycler_.reset(new internal::FocusCycler());
-  focus_cycler_->AddWidget(status_area_widget_);
-
-  InitLayoutManagersForPrimaryDisplay(root_window_controller);
-
   if (!command_line->HasSwitch(switches::kAuraNoShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
     shadow_controller_.reset(new internal::ShadowController());
   }
 
-  if (!delegate_.get() || delegate_->IsUserLoggedIn())
-    CreateLauncher();
+  root_window_controller->InitForPrimaryDisplay();
 
   // Force Layout
   root_window_controller->root_window_layout()->OnWindowResized();
@@ -602,28 +576,11 @@ void Shell::OnLockStateChanged(bool locked) {
 }
 
 void Shell::CreateLauncher() {
-  if (launcher_.get())
-    return;
-
-  aura::Window* default_container =
-      GetPrimaryRootWindowController()->
-      GetContainer(internal::kShellWindowId_DefaultContainer);
-  launcher_.reset(new Launcher(default_container, shelf_));
-
-  launcher_->SetFocusCycler(focus_cycler_.get());
-  shelf_->SetLauncher(launcher_.get());
-  if (panel_layout_manager_)
-    panel_layout_manager_->SetLauncher(launcher_.get());
-
-  if (delegate())
-    launcher_->SetVisible(delegate()->IsSessionStarted());
-  launcher_->widget()->Show();
+  GetPrimaryRootWindowController()->CreateLauncher();
 }
 
 void Shell::ShowLauncher() {
-  if (!launcher_.get())
-    return;
-  launcher_->SetVisible(true);
+  GetPrimaryRootWindowController()->ShowLauncher();
 }
 
 void Shell::AddShellObserver(ShellObserver* observer) {
@@ -634,26 +591,30 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+Launcher* Shell::launcher() {
+  return GetPrimaryRootWindowController()->launcher();
+}
+
 void Shell::UpdateShelfVisibility() {
-  shelf_->UpdateVisibilityState();
+  GetPrimaryRootWindowController()->UpdateShelfVisibility();
 }
 
 void Shell::SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior) {
-  shelf_->SetAutoHideBehavior(behavior);
+  GetPrimaryRootWindowController()->SetShelfAutoHideBehavior(behavior);
 }
 
 ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior() const {
-  return shelf_->auto_hide_behavior();
+  return GetPrimaryRootWindowController()->GetShelfAutoHideBehavior();
 }
 
 void Shell::SetShelfAlignment(ShelfAlignment alignment) {
-  if (!shelf_->SetAlignment(alignment))
-    return;
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnShelfAlignmentChanged());
+  if (GetPrimaryRootWindowController()->SetShelfAlignment(alignment)) {
+    FOR_EACH_OBSERVER(ShellObserver, observers_, OnShelfAlignmentChanged());
+  }
 }
 
 ShelfAlignment Shell::GetShelfAlignment() {
-  return shelf_->alignment();
+  return GetPrimaryRootWindowController()->GetShelfAlignment();
 }
 
 void Shell::SetDimming(bool should_dim) {
@@ -691,12 +652,20 @@ void Shell::OnModalWindowRemoved(aura::Window* removed) {
   }
 }
 
+internal::ShelfLayoutManager* Shell::shelf() const {
+  return GetPrimaryRootWindowController()->shelf();
+}
+
+internal::StatusAreaWidget* Shell::status_area_widget() const {
+  return GetPrimaryRootWindowController()->status_area_widget();
+}
+
 SystemTrayDelegate* Shell::tray_delegate() {
-  return status_area_widget_->system_tray_delegate();
+  return status_area_widget()->system_tray_delegate();
 }
 
 SystemTray* Shell::system_tray() {
-  return status_area_widget_->system_tray();
+  return status_area_widget()->system_tray();
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
@@ -768,39 +737,6 @@ void Shell::InitRootWindowController(
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
-
-void Shell::InitLayoutManagersForPrimaryDisplay(
-    internal::RootWindowController* controller) {
-  DCHECK(status_area_widget_);
-
-  internal::ShelfLayoutManager* shelf_layout_manager =
-      new internal::ShelfLayoutManager(status_area_widget_);
-  controller->GetContainer(internal::kShellWindowId_LauncherContainer)->
-      SetLayoutManager(shelf_layout_manager);
-  shelf_ = shelf_layout_manager;
-
-  internal::StatusAreaLayoutManager* status_area_layout_manager =
-      new internal::StatusAreaLayoutManager(shelf_layout_manager);
-  controller->GetContainer(internal::kShellWindowId_StatusContainer)->
-      SetLayoutManager(status_area_layout_manager);
-
-  shelf_layout_manager->set_workspace_controller(
-      controller->workspace_controller());
-
-  // TODO(oshima): Support multiple displays.
-  controller->workspace_controller()->SetShelf(shelf());
-
-  // Create Panel layout manager
-  aura::Window* panel_container = GetContainer(
-      GetPrimaryRootWindow(),
-      internal::kShellWindowId_PanelContainer);
-  panel_layout_manager_ =
-      new internal::PanelLayoutManager(panel_container);
-  panel_container->SetEventFilter(
-      new internal::PanelWindowEventFilter(
-          panel_container, panel_layout_manager_));
-  panel_container->SetLayoutManager(panel_layout_manager_);
-}
 
 void Shell::SetCursor(gfx::NativeCursor cursor) {
   RootWindowList root_windows = GetAllRootWindows();

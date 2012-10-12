@@ -9,13 +9,21 @@
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/multi_display_manager.h"
+#include "ash/focus_cycler.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/base_layout_manager.h"
+#include "ash/wm/panel_layout_manager.h"
+#include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
+#include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/shelf_types.h"
+#include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/visibility_controller.h"
@@ -141,7 +149,11 @@ void SetUsesScreenCoordinates(aura::Window* container) {
 namespace internal {
 
 RootWindowController::RootWindowController(aura::RootWindow* root_window)
-    : root_window_(root_window) {
+    : root_window_(root_window),
+      root_window_layout_(NULL),
+      status_area_widget_(NULL),
+      shelf_(NULL),
+      panel_layout_manager_(NULL) {
   SetRootWindowController(root_window, this);
   screen_dimmer_.reset(new ScreenDimmer(root_window));
 }
@@ -166,6 +178,13 @@ void RootWindowController::Shutdown() {
   root_window_->ClearProperty(kDisplayIdKey);
   // And this root window should no longer process events.
   root_window_->PrepareForShutdown();
+
+  // Launcher widget has an InputMethodBridge that references to
+  // |input_method_filter_|'s |input_method_|. So explicitly release
+  // |launcher_| before |input_method_filter_|. And this needs to be
+  // after we delete all containers in case there are still live
+  // browser windows which access LauncherModel during close.
+  launcher_.reset();
 }
 
 SystemModalContainerLayoutManager*
@@ -196,6 +215,49 @@ void RootWindowController::InitLayoutManagers() {
           always_on_top_container->GetRootWindow()));
 }
 
+void RootWindowController::InitForPrimaryDisplay() {
+  DCHECK(!status_area_widget_);
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+
+  // Initialize Primary RootWindow specific items.
+  status_area_widget_ = new internal::StatusAreaWidget();
+  status_area_widget_->CreateTrayViews(delegate);
+  // Login screen manages status area visibility by itself.
+  if (delegate && delegate->IsSessionStarted())
+    status_area_widget_->Show();
+
+  Shell::GetInstance()->focus_cycler()->AddWidget(status_area_widget_);
+
+  internal::ShelfLayoutManager* shelf_layout_manager =
+      new internal::ShelfLayoutManager(status_area_widget_);
+  GetContainer(internal::kShellWindowId_LauncherContainer)->
+      SetLayoutManager(shelf_layout_manager);
+  shelf_ = shelf_layout_manager;
+
+  internal::StatusAreaLayoutManager* status_area_layout_manager =
+      new internal::StatusAreaLayoutManager(shelf_layout_manager);
+  GetContainer(internal::kShellWindowId_StatusContainer)->
+      SetLayoutManager(status_area_layout_manager);
+
+  shelf_layout_manager->set_workspace_controller(
+      workspace_controller());
+
+  workspace_controller()->SetShelf(shelf_);
+
+  // Create Panel layout manager
+  aura::Window* panel_container = GetContainer(
+      internal::kShellWindowId_PanelContainer);
+  panel_layout_manager_ =
+      new internal::PanelLayoutManager(panel_container);
+  panel_container->SetEventFilter(
+      new internal::PanelWindowEventFilter(
+          panel_container, panel_layout_manager_));
+  panel_container->SetLayoutManager(panel_layout_manager_);
+
+  if (!delegate || delegate->IsUserLoggedIn())
+    CreateLauncher();
+}
+
 void RootWindowController::CreateContainers() {
   CreateContainersInRootWindow(root_window_.get());
 }
@@ -214,12 +276,46 @@ void RootWindowController::CreateSystemBackground(
   background_->GetWidget()->Show();
 }
 
+void RootWindowController::CreateLauncher() {
+  if (launcher_.get())
+    return;
+
+  aura::Window* default_container =
+      GetContainer(internal::kShellWindowId_DefaultContainer);
+  launcher_.reset(new Launcher(default_container, shelf_));
+
+  launcher_->SetFocusCycler(Shell::GetInstance()->focus_cycler());
+  shelf_->SetLauncher(launcher_.get());
+
+  if (panel_layout_manager_)
+    panel_layout_manager_->SetLauncher(launcher_.get());
+
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+  if (delegate)
+    launcher_->SetVisible(delegate->IsSessionStarted());
+  launcher_->widget()->Show();
+}
+
+void RootWindowController::ShowLauncher() {
+  if (!launcher_.get())
+    return;
+  launcher_->SetVisible(true);
+}
+
 void RootWindowController::HandleDesktopBackgroundVisible() {
   if (background_.get())
     background_->SetColor(SK_ColorBLACK);
 }
 
 void RootWindowController::CloseChildWindows() {
+  // The status area needs to be shut down before the windows are destroyed.
+  if (status_area_widget_)
+    status_area_widget_->Shutdown();
+
+  // Closing the windows frees the workspace controller.
+  if (shelf_)
+    shelf_->set_workspace_controller(NULL);
+
   // Close background widget first as it depends on tooltip.
   root_window_->SetProperty(kDesktopController,
       static_cast<DesktopBackgroundWidgetController*>(NULL));
@@ -233,6 +329,13 @@ void RootWindowController::CloseChildWindows() {
     aura::Window* child = root_window_->children()[0];
     delete child;
   }
+  // TODO(oshima): Closing window triggers access to status area widget
+  // in ShelfLayoutManager. We probably should disalb/remove shelf layout
+  // manager before destorying windows?
+  status_area_widget_ = NULL;
+
+  // All containers are deleted, so reset shelf_.
+  shelf_ = NULL;
 }
 
 bool RootWindowController::IsInMaximizedMode() const {
@@ -268,6 +371,27 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   } else if (active && tracker.Contains(active) && dst->Contains(active)) {
     activation_client->ActivateWindow(active);
   }
+}
+
+void RootWindowController::UpdateShelfVisibility() {
+  shelf_->UpdateVisibilityState();
+}
+
+void RootWindowController::SetShelfAutoHideBehavior(
+    ShelfAutoHideBehavior behavior) {
+  shelf_->SetAutoHideBehavior(behavior);
+}
+
+ShelfAutoHideBehavior RootWindowController::GetShelfAutoHideBehavior() const {
+  return shelf_->auto_hide_behavior();
+}
+
+bool RootWindowController::SetShelfAlignment(ShelfAlignment alignment) {
+  return shelf_->SetAlignment(alignment);
+}
+
+ShelfAlignment RootWindowController::GetShelfAlignment() {
+  return shelf_->alignment();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

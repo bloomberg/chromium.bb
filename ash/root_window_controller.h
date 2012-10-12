@@ -6,6 +6,7 @@
 #define ASH_ROOT_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -22,12 +23,18 @@ class RootWindowEventFilter;
 }  // namespace aura
 
 namespace ash {
+class Launcher;
 class ToplevelWindowEventHandler;
+
 namespace internal {
 
 class ColoredWindowController;
+class PanelLayoutManager;
 class RootWindowLayoutManager;
 class ScreenDimmer;
+class ShelfLayoutManager;
+class StatusAreaWidget;
+class SystemBackgroundController;
 class SystemModalContainerLayoutManager;
 class WorkspaceController;
 
@@ -41,20 +48,23 @@ class ASH_EXPORT RootWindowController {
   explicit RootWindowController(aura::RootWindow* root_window);
   ~RootWindowController();
 
-  aura::RootWindow* root_window() {
-    return root_window_.get();
-  }
+  aura::RootWindow* root_window() { return root_window_.get(); }
 
-  RootWindowLayoutManager* root_window_layout() {
-    return root_window_layout_;
-  }
+  RootWindowLayoutManager* root_window_layout() { return root_window_layout_; }
 
   WorkspaceController* workspace_controller() {
     return workspace_controller_.get();
   }
 
-  ScreenDimmer* screen_dimmer() {
-    return screen_dimmer_.get();
+  ScreenDimmer* screen_dimmer() { return screen_dimmer_.get(); }
+
+  Launcher* launcher() { return launcher_.get(); }
+
+  // TODO(sky): don't expose this!
+  internal::ShelfLayoutManager* shelf() const { return shelf_; }
+
+  internal::StatusAreaWidget* status_area_widget() const {
+    return status_area_widget_;
   }
 
   SystemModalContainerLayoutManager* GetSystemModalLayoutManager();
@@ -64,9 +74,19 @@ class ASH_EXPORT RootWindowController {
   void InitLayoutManagers();
   void CreateContainers();
 
+  // Initializs the RootWindowController for primary display. This
+  // creates
+  void InitForPrimaryDisplay();
+
   // Initializes |background_|.  |is_first_run_after_boot| determines the
   // background's initial color.
   void CreateSystemBackground(bool is_first_run_after_boot);
+
+  // Initializes |launcher_|.  Does nothing if it's already initialized.
+  void CreateLauncher();
+
+  // Show launcher view if it was created hidden (before session has started).
+  void ShowLauncher();
 
   // Updates |background_| to be black after the desktop background is visible.
   void HandleDesktopBackgroundVisible();
@@ -86,13 +106,37 @@ class ASH_EXPORT RootWindowController {
   // Moves child windows to |dest|.
   void MoveWindowsTo(aura::RootWindow* dest);
 
- private:
+  // Force the shelf to query for it's current visibility state.
+  void UpdateShelfVisibility();
+
+  // Sets/gets the shelf auto-hide behavior.
+  void SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior);
+  ShelfAutoHideBehavior GetShelfAutoHideBehavior() const;
+
+  // Sets/gets the shelf alignemnt.
+  bool SetShelfAlignment(ShelfAlignment alignment);
+  ShelfAlignment GetShelfAlignment();
+
+private:
   // Creates each of the special window containers that holds windows of various
   // types in the shell UI.
   void CreateContainersInRootWindow(aura::RootWindow* root_window);
 
   scoped_ptr<aura::RootWindow> root_window_;
   RootWindowLayoutManager* root_window_layout_;
+
+  // Widget containing system tray.
+  internal::StatusAreaWidget* status_area_widget_;
+
+  // The shelf for managing the launcher and the status widget.
+  // RootWindowController does not own the shelf. Instead, it is owned
+  // by container of the status area.
+  internal::ShelfLayoutManager* shelf_;
+
+  // Manages layout of panels. Owned by PanelContainer.
+  internal::PanelLayoutManager* panel_layout_manager_;
+
+  scoped_ptr<Launcher> launcher_;
 
   // A background layer that's displayed beneath all other layers.  Without
   // this, portions of the root window that aren't covered by layers will be

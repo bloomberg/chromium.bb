@@ -90,7 +90,6 @@ class MagnificationController;
 class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
 class OverlayEventFilter;
-class PanelLayoutManager;
 class ResizeShadowController;
 class RootWindowController;
 class RootWindowLayoutManager;
@@ -181,6 +180,9 @@ class ASH_EXPORT Shell : CursorDelegate,
   // Returns the list of containers that match |container_id| in
   // all root windows.
   static std::vector<aura::Window*> GetAllContainers(int container_id);
+
+  // True if "launcher per display" feature  is enabled.
+  static bool IsLauncherPerDisplayEnabled();
 
   void set_active_root_window(aura::RootWindow* active_root_window) {
     active_root_window_ = active_root_window;
@@ -307,7 +309,8 @@ class ASH_EXPORT Shell : CursorDelegate,
     return magnification_controller_.get();
   }
 
-  Launcher* launcher() { return launcher_.get(); }
+  // TODO(oshima): Remove methods that are moved to RootWindowController.
+  Launcher* launcher();
 
   const ScreenAsh* screen() { return screen_; }
 
@@ -334,11 +337,9 @@ class ASH_EXPORT Shell : CursorDelegate,
   void OnModalWindowRemoved(aura::Window* removed);
 
   // TODO(sky): don't expose this!
-  internal::ShelfLayoutManager* shelf() const { return shelf_; }
+  internal::ShelfLayoutManager* shelf() const;
 
-  internal::StatusAreaWidget* status_area_widget() const {
-    return status_area_widget_;
-  }
+  internal::StatusAreaWidget* status_area_widget() const;
 
   // Convenience accessor for members of StatusAreaWidget.
   SystemTrayDelegate* tray_delegate();
@@ -432,8 +433,6 @@ class ASH_EXPORT Shell : CursorDelegate,
   scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
 
-  scoped_ptr<Launcher> launcher_;
-
   scoped_ptr<internal::AppListController> app_list_controller_;
 
   scoped_ptr<internal::StackingController> stacking_controller_;
@@ -492,18 +491,7 @@ class ASH_EXPORT Shell : CursorDelegate,
 
   CursorManager cursor_manager_;
 
-  // The shelf for managing the launcher and the status widget in non-compact
-  // mode. Shell does not own the shelf. Instead, it is owned by container of
-  // the status area.
-  internal::ShelfLayoutManager* shelf_;
-
-  // Manages layout of panels. Owned by PanelContainer.
-  internal::PanelLayoutManager* panel_layout_manager_;
-
   ObserverList<ShellObserver> observers_;
-
-  // Widget containing system tray.
-  internal::StatusAreaWidget* status_area_widget_;
 
   // Used by ash/shell.
   content::BrowserContext* browser_context_;

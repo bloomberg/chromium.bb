@@ -34,6 +34,9 @@ const char kAshEnableOak[] = "ash-enable-oak";
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 
+// Enables creating a launcher per display.
+const char kAshLauncherPerDisplay[] = "ash-launcher-per-display";
+
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display

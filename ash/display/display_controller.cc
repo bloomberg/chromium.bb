@@ -469,7 +469,7 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   DCHECK(controller);
   controller->MoveWindowsTo(GetPrimaryRootWindow());
   // Delete most of root window related objects, but don't delete
-  // root window itself yet because the stak may be using it.
+  // root window itself yet because the stack may be using it.
   controller->Shutdown();
   MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
 }
