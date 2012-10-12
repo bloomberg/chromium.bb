@@ -47,26 +47,14 @@ class RemoveOperation {
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Perform the actual delete operation.
-  void DoDelete(const FileOperationCallback& callback,
-                int retry_count,
-                scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Check the result of the delete operation.  If it failed due to flooding the
-  // server, retry up to kMaxRetries times.
-  void RetryIfNeeded(const FileOperationCallback& callback,
-                     int retry_count,
-                     scoped_ptr<DriveEntryProto> entry_proto,
-                     GDataErrorCode status,
-                     const GURL& /* document_url */);
-
   // Callback for DriveServiceInterface::DeleteDocument. Removes the entry with
   // |resource_id| from the local snapshot of the filesystem and the cache.
   // |document_url| is unused. |callback| must not be null.
   void RemoveResourceLocally(
       const FileOperationCallback& callback,
       const std::string& resource_id,
-      GDataErrorCode status);
+      GDataErrorCode status,
+      const GURL& /* document_url */);
 
   // Sends notification for directory changes. Notifies of directory changes,
   // and runs |callback| with |error|. |callback| may be null.

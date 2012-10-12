@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 
-#include <math.h>
-
-#include "base/rand_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
@@ -17,16 +14,11 @@
 using content::BrowserThread;
 
 namespace gdata {
-
-namespace {
-int kMaxRetries = 5;
-}
-
 namespace file_system {
 
 RemoveOperation::RemoveOperation(DriveServiceInterface* drive_service,
-                                         DriveFileSystem* file_system,
-                                         DriveCache* cache)
+                                 DriveFileSystem* file_system,
+                                 DriveCache* cache)
   : drive_service_(drive_service),
     file_system_(file_system),
     cache_(cache),
@@ -71,62 +63,19 @@ void RemoveOperation::RemoveAfterGetEntryInfo(
     return;
   }
 
-  DoDelete(callback, 0, entry_proto.Pass());
-}
-
-void RemoveOperation::DoDelete(
-    const FileOperationCallback& callback,
-    int retry_count,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  GURL edit_url(entry_proto->edit_url());
   drive_service_->DeleteDocument(
-      edit_url,
-      base::Bind(&RemoveOperation::RetryIfNeeded,
+      GURL(entry_proto->edit_url()),
+      base::Bind(&RemoveOperation::RemoveResourceLocally,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 retry_count + 1,
-                 base::Passed(&entry_proto)));
-}
-
-void RemoveOperation::RetryIfNeeded(
-    const FileOperationCallback& callback,
-    int retry_count,
-    scoped_ptr<DriveEntryProto> entry_proto,
-    GDataErrorCode status,
-    const GURL& /* document_url */) {
-  // If the call failed due to flooding the server, and we haven't hit the
-  // maximum number of retries, throttle and retry.
-  //
-  // TODO(zork): Move this retry logic into the scheduler when it is completed.
-  if ((status == HTTP_SERVICE_UNAVAILABLE ||
-       status == HTTP_INTERNAL_SERVER_ERROR) &&
-      retry_count < kMaxRetries) {
-    base::TimeDelta delay =
-        base::TimeDelta::FromSeconds(pow(2, retry_count)) +
-        base::TimeDelta::FromMilliseconds(base::RandInt(0, 1000));
-
-    VLOG(1) << "Throttling for " << delay.InMillisecondsF();
-    const bool posted = base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RemoveOperation::DoDelete,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   retry_count,
-                   base::Passed(&entry_proto)),
-        delay);
-    DCHECK(posted);
-  } else {
-    // If the operation completed, or we hit max retries, continue.
-    RemoveResourceLocally(callback,
-                          entry_proto->resource_id(),
-                          status);
-  }
+                 entry_proto->resource_id()));
 }
 
 void RemoveOperation::RemoveResourceLocally(
     const FileOperationCallback& callback,
     const std::string& resource_id,
-    GDataErrorCode status) {
+    GDataErrorCode status,
+    const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
