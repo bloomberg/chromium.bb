@@ -702,8 +702,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enableQuota(true);
 
-  WebRuntimeFeatures::enableShadowDOM(
-      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
+  WebRuntimeFeatures::enableShadowDOM(true);
 
   WebRuntimeFeatures::enableStyleScoped(
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
