@@ -350,6 +350,9 @@ start_element(void *data, const char *element_name, const char **atts)
 
 		ctx->message = message;
 	} else if (strcmp(element_name, "arg") == 0) {
+		if (name == NULL)
+			fail(ctx, "no argument name given");
+
 		arg = malloc(sizeof *arg);
 		arg->name = strdup(name);
 
