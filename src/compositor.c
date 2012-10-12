@@ -1099,6 +1099,9 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 
 	if (compositor->fade.surface == NULL) {
 		surface = weston_surface_create(compositor);
+		if (!surface)
+			return;
+
 		weston_surface_configure(surface, 0, 0, 8192, 8192);
 		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 0.0);
 		wl_list_insert(&compositor->fade_layer.surface_list,
