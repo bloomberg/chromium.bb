@@ -4,7 +4,6 @@
 
 #include "content/browser/device_monitor_mac.h"
 
-#include <IOKit/audio/IOAudioDefines.h>
 #include <IOKit/usb/IOUSBLib.h>
 
 #include "base/logging.h"
@@ -98,9 +97,18 @@ DeviceMonitorMac::~DeviceMonitorMac() {
 }
 
 void DeviceMonitorMac::RegisterAudioServices() {
-  CFMutableDictionaryRef dictionary =
-      IOServiceMatching(kIOAudioDeviceClassName);
-  RegisterServices(dictionary, &AudioDeviceCallback);
+  // We can't use IOService for audio since IOKit notification will come prior
+  // to the driver is actually fully initialized, and this has two issues:
+  // 1, device enumeration is not correct.
+  // 2, it might crash if the device is being enumerated at the same time as
+  //    as being initialized. See issue 153411 for details.
+  AudioObjectPropertyAddress property = {
+    kAudioHardwarePropertyDevices,
+    kAudioObjectPropertyScopeGlobal,
+    kAudioObjectPropertyElementMaster
+  };
+  AudioObjectAddPropertyListener(kAudioObjectSystemObject, &property,
+                                 &AudioDeviceCallback, this);
 }
 
 void DeviceMonitorMac::RegisterVideoServices() {
@@ -134,16 +142,20 @@ void DeviceMonitorMac::RegisterServices(CFMutableDictionaryRef dictionary,
   }
 }
 
-void DeviceMonitorMac::AudioDeviceCallback(void *context,
-                                           io_iterator_t iterator) {
- for (base::mac::ScopedIOObject<io_service_t> object(IOIteratorNext(iterator));
-      object;
-      object.reset(IOIteratorNext(iterator))) {
-    if (context) {
-      reinterpret_cast<DeviceMonitorMac*>(context)->NotifyDeviceChanged(
-          base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
+OSStatus DeviceMonitorMac::AudioDeviceCallback(
+    AudioObjectID object, UInt32 size,
+    const AudioObjectPropertyAddress addresses[], void* context) {
+  for (UInt32 i = 0; i < size; ++i) {
+    if (addresses[i].mSelector == kAudioHardwarePropertyDevices) {
+      if (context) {
+        reinterpret_cast<DeviceMonitorMac*>(context)->NotifyDeviceChanged(
+            base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
+        break;
+      }
     }
   }
+
+  return noErr;
 }
 
 void DeviceMonitorMac::VideoDeviceCallback(void *context,

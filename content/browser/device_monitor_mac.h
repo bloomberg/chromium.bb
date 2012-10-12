@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVICE_MONITOR_MAC_H_
 #define CONTENT_BROWSER_DEVICE_MONITOR_MAC_H_
 
+#include <CoreAudio/AudioHardware.h>
 #include <IOKit/IOKitLib.h>
 
 #include <vector>
@@ -23,8 +24,12 @@ class DeviceMonitorMac {
   void RegisterAudioServices();
   void RegisterVideoServices();
 
-  static void AudioDeviceCallback(void *context, io_iterator_t iterator);
-  static void VideoDeviceCallback(void *context, io_iterator_t iterator);
+  static OSStatus AudioDeviceCallback(
+      AudioObjectID object, UInt32 size,
+      const AudioObjectPropertyAddress addresses[],
+      void* context);
+
+  static void VideoDeviceCallback(void* context, io_iterator_t iterator);
 
   // Forward the notifications to system monitor.
   void NotifyDeviceChanged(base::SystemMonitor::DeviceType type);
