@@ -396,6 +396,7 @@ extern const char kLoginScreenSize[];
 extern const char kLoginProfile[];
 extern const char kLoginUser[];
 extern const char kLoginPassword[];
+extern const char kNaturalScrollDefault[];
 extern const char kNoDiscardTabs[];
 extern const char kGuestSession[];
 extern const char kEchoExtensionPath[];

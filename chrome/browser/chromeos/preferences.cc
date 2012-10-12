@@ -37,17 +37,6 @@
 #include "unicode/timezone.h"
 
 namespace chromeos {
-namespace {
-
-// TODO(achuith): Get rid of this.
-bool IsLink() {
-  std::string board;
-  system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-      "CHROMEOS_RELEASE_BOARD", &board);
-  return StartsWithASCII(board, "link", false);
-}
-
-}  // namespace
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
@@ -424,8 +413,10 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN("Touchpad.ThreeFingerClick.Started", enabled);
   }
   if (!pref_name || *pref_name == prefs::kNaturalScroll) {
-    // If user is on link, force natural scroll to on.
-    if (IsLink() &&
+    // Force natural scroll to on if kNaturalScrollDefault is specified on the
+    // cmd line.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kNaturalScrollDefault) &&
         !pref_name &&
         !prefs_->GetUserPrefValue(prefs::kNaturalScroll)) {
       natural_scroll_.SetValue(true);

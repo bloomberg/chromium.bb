@@ -1451,6 +1451,9 @@ const char kLoginUser[]                     = "login-user";
 // Specifies a password to be used to login (along with login-user).
 const char kLoginPassword[]                 = "login-password";
 
+// Enables natural scroll by default.
+const char kNaturalScrollDefault[]          = "enable-natural-scroll-default";
+
 // Disables tab discard in low memory conditions, a feature which silently
 // closes inactive tabs to free memory and to attempt to avoid the kernel's
 // out-of-memory process killer.
