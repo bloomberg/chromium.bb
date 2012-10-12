@@ -10,11 +10,6 @@ namespace switches {
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 
-// Explicitely grant the ability to access every other SecurityOrigin to
-// file URLs. This is a security havoc and should only be used for testing.
-const char kAllowUniversalAccessFromFiles[] =
-    "allow-universal-access-from-files";
-
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 

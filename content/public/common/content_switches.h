@@ -13,7 +13,6 @@
 namespace switches {
 
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
-CONTENT_EXPORT extern const char kAllowUniversalAccessFromFiles[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAllowWebUICompositing[];
 extern const char kAuditHandles[];
