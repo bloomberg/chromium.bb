@@ -11,6 +11,30 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
+namespace {
+
+void ShowExtensionInstallDialogImpl(
+    gfx::NativeWindow parent,
+    content::PageNavigator* navigator,
+    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt) {
+  // TODO(sail) Update ShowExtensionInstallDialogImpl to take a web contents.
+  Browser* browser = browser::FindBrowserWithWindow(parent);
+  if (!browser)
+    return;
+  TabContents* tab = browser->tab_strip_model()->GetActiveTabContents();
+  if (!tab)
+    return;
+
+  // This object will delete itself when the dialog closes.
+  new ExtensionInstallDialogController(tab->web_contents(),
+                                       navigator,
+                                       delegate,
+                                       prompt);
+}
+
+}  // namespace
+
 ExtensionInstallDialogController::ExtensionInstallDialogController(
     content::WebContents* webContents,
     content::PageNavigator* navigator,
@@ -40,22 +64,8 @@ void ExtensionInstallDialogController::InstallUIAbort(bool user_initiated) {
   delete this;
 }
 
-void ShowExtensionInstallDialogImpl(
-    gfx::NativeWindow parent,
-    content::PageNavigator* navigator,
-    ExtensionInstallPrompt::Delegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt) {
-  // TODO(sail) Update ShowExtensionInstallDialogImpl to take a web contents.
-  Browser* browser = browser::FindBrowserWithWindow(parent);
-  if (!browser)
-    return;
-  TabContents* tab = browser->tab_strip_model()->GetActiveTabContents();
-  if (!tab)
-    return;
-
-  // This object will delete itself when the dialog closes.
-  new ExtensionInstallDialogController(tab->web_contents(),
-                                       navigator,
-                                       delegate,
-                                       prompt);
+// static
+ExtensionInstallPrompt::ShowDialogCallback
+ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
+  return base::Bind(&ShowExtensionInstallDialogImpl);
 }

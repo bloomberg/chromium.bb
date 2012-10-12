@@ -256,7 +256,9 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
   }
 
   // Simulate a user abort on an extension installation.
-  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
+  virtual void ConfirmInstall(Delegate* delegate,
+                              const Extension* extension,
+                              const ShowDialogCallback& show_dialog_callback) {
     delegate->InstallUIAbort(true);
     MessageLoopForUI::current()->Quit();
   }
@@ -274,7 +276,9 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
       Profile* profile) : ExtensionInstallPrompt(parent, navigator, profile) {}
 
   // Proceed without confirmation prompt.
-  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
+  virtual void ConfirmInstall(Delegate* delegate,
+                              const Extension* extension,
+                              const ShowDialogCallback& show_dialog_callback) {
     delegate->InstallUIProceed();
   }
 };

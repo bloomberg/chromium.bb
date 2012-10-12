@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
-#include "chrome/browser/extensions/extension_install_dialog.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
@@ -383,10 +383,20 @@ GtkWidget* ExtensionInstallDialog::CreateWidgetForIssueAdvice(
 
 }  // namespace browser
 
+namespace {
+
 void ShowExtensionInstallDialogImpl(
     gfx::NativeWindow parent,
     content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
   new browser::ExtensionInstallDialog(parent, navigator, delegate, prompt);
+}
+
+}  // namespace
+
+// static
+ExtensionInstallPrompt::ShowDialogCallback
+ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
+  return base::Bind(&ShowExtensionInstallDialogImpl);
 }

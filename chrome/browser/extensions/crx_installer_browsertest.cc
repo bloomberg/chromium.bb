@@ -47,7 +47,8 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
 
   // Overriding some of the ExtensionInstallUI API.
   void ConfirmInstall(Delegate* delegate,
-                      const Extension* extension) {
+                      const Extension* extension,
+                      const ShowDialogCallback& show_dialog_callback) {
     confirmation_requested_ = true;
     delegate->InstallUIProceed();
   }

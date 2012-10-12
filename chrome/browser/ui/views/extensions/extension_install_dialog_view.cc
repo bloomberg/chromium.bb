@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
-#include "chrome/browser/extensions/extension_install_dialog.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/page_navigator.h"
@@ -171,6 +171,16 @@ class IssueAdviceView : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(IssueAdviceView);
 };
+
+void ShowExtensionInstallDialogImpl(
+    gfx::NativeWindow parent,
+    content::PageNavigator* navigator,
+    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt) {
+  views::Widget::CreateWindowWithParent(
+      new ExtensionInstallDialogView(navigator, delegate, prompt),
+      parent)->Show();
+}
 
 }  // namespace
 
@@ -476,14 +486,10 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
   GetWidget()->Close();
 }
 
-void ShowExtensionInstallDialogImpl(
-    gfx::NativeWindow parent,
-    content::PageNavigator* navigator,
-    ExtensionInstallPrompt::Delegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt) {
-  views::Widget::CreateWindowWithParent(
-      new ExtensionInstallDialogView(navigator, delegate, prompt),
-      parent)->Show();
+// static
+ExtensionInstallPrompt::ShowDialogCallback
+ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
+  return base::Bind(&ShowExtensionInstallDialogImpl);
 }
 
 // IssueAdviceView::DetailsView ------------------------------------------------

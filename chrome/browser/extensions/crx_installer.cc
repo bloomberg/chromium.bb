@@ -106,6 +106,8 @@ CrxInstaller::CrxInstaller(
       error_on_unsupported_requirements_(false),
       requirements_checker_(new extensions::RequirementsChecker()),
       has_requirement_errors_(false) {
+  show_dialog_callback_ =
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback();
   if (!approval)
     return;
 
@@ -124,6 +126,8 @@ CrxInstaller::CrxInstaller(
     expected_id_ = approval->extension_id;
     record_oauth2_grant_ = approval->record_oauth2_grant;
   }
+
+  show_dialog_callback_ = approval->show_dialog_callback;
 }
 
 CrxInstaller::~CrxInstaller() {
@@ -453,7 +457,7 @@ void CrxInstaller::ConfirmInstall() {
 
   if (client_ && (!allow_silent_install_ || !approved_)) {
     AddRef();  // Balanced in Proceed() and Abort().
-    client_->ConfirmInstall(this, extension_.get());
+    client_->ConfirmInstall(this, extension_.get(), show_dialog_callback_);
   } else {
     if (!BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -157,6 +158,16 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
     virtual ~Delegate() {}
   };
 
+  typedef base::Callback<void(gfx::NativeWindow,
+                              content::PageNavigator*,
+                              ExtensionInstallPrompt::Delegate*,
+                              const ExtensionInstallPrompt::Prompt&)>
+      ShowDialogCallback;
+
+  // Callback to show the default extension install dialog.
+  // The implementations of this function are platform-specific.
+  static ShowDialogCallback GetDefaultShowDialogCallback();
+
   // Creates a dummy extension from the |manifest|, replacing the name and
   // description with the localizations if provided.
   static scoped_refptr<extensions::Extension> GetLocalizedExtensionForDisplay(
@@ -196,19 +207,24 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
                                         const Prompt& prompt);
 
   // This is called by the installer to verify whether the installation from
-  // the webstore should proceed.
+  // the webstore should proceed. |show_dialog_callback| is optional and can be
+  // NULL.
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmWebstoreInstall(Delegate* delegate,
-                                      const extensions::Extension* extension,
-                                      const SkBitmap* icon);
+  virtual void ConfirmWebstoreInstall(
+      Delegate* delegate,
+      const extensions::Extension* extension,
+      const SkBitmap* icon,
+      const ShowDialogCallback& show_dialog_callback);
 
   // This is called by the installer to verify whether the installation should
-  // proceed. This is declared virtual for testing.
+  // proceed. This is declared virtual for testing. |show_dialog_callback| is
+  // optional and can be NULL.
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmInstall(Delegate* delegate,
-                              const extensions::Extension* extension);
+                              const extensions::Extension* extension,
+                              const ShowDialogCallback& show_dialog_callback);
 
   // This is called by the app handler launcher to verify whether the app
   // should be re-enabled. This is declared virtual for testing.
@@ -311,6 +327,9 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // Keeps track of extension images being loaded on the File thread for the
   // purpose of showing the install UI.
   ImageLoadingTracker tracker_;
+
+  // Used to show the confirm dialog.
+  ShowDialogCallback show_dialog_callback_;
 };
 
 namespace chrome {

@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_install_dialog.h"
+#include "base/bind.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
+
+namespace {
 
 void ShowExtensionInstallDialogImpl(
     gfx::NativeWindow parent,
@@ -12,3 +15,10 @@ void ShowExtensionInstallDialogImpl(
   NOTIMPLEMENTED();
 }
 
+}  // namespace
+
+// static
+ExtensionInstallPrompt::ShowDialogCallback
+ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
+  return base::Bind(&ShowExtensionInstallDialogImpl);
+}

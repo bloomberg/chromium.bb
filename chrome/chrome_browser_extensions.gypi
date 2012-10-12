@@ -428,8 +428,6 @@
         'browser/extensions/extension_input_method_api.h',
         'browser/extensions/extension_input_module_constants.cc',
         'browser/extensions/extension_input_module_constants.h',
-        'browser/extensions/extension_install_dialog.cc',
-        'browser/extensions/extension_install_dialog.h',
         'browser/extensions/extension_install_prompt.cc',
         'browser/extensions/extension_install_prompt.h',
         'browser/extensions/extension_install_ui.cc',

@@ -14,7 +14,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
-#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -118,6 +117,39 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 
   return Extension::GetDefaultIcon(is_app).
       GetRepresentation(max_scale_factor).sk_bitmap();
+}
+
+// If auto confirm is enabled then posts a task to proceed with or cancel the
+// install and returns true. Otherwise returns false.
+bool AutoConfirmPrompt(ExtensionInstallPrompt::Delegate* delegate) {
+  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  if (!cmdline->HasSwitch(switches::kAppsGalleryInstallAutoConfirmForTests))
+    return false;
+  std::string value = cmdline->GetSwitchValueASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests);
+
+  // We use PostTask instead of calling the delegate directly here, because in
+  // the real implementations it's highly likely the message loop will be
+  // pumping a few times before the user clicks accept or cancel.
+  if (value == "accept") {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExtensionInstallPrompt::Delegate::InstallUIProceed,
+                   base::Unretained(delegate)));
+    return true;
+  }
+
+  if (value == "cancel") {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExtensionInstallPrompt::Delegate::InstallUIAbort,
+                   base::Unretained(delegate),
+                   true));
+    return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace
@@ -348,23 +380,29 @@ void ExtensionInstallPrompt::ConfirmStandaloneInstall(
   FetchOAuthIssueAdviceIfNeeded();
 }
 
-void ExtensionInstallPrompt::ConfirmWebstoreInstall(Delegate* delegate,
-                                                    const Extension* extension,
-                                                    const SkBitmap* icon) {
+void ExtensionInstallPrompt::ConfirmWebstoreInstall(
+    Delegate* delegate,
+    const Extension* extension,
+    const SkBitmap* icon,
+    const ShowDialogCallback& show_dialog_callback) {
   // SetIcon requires |extension_| to be set. ConfirmInstall will setup the
   // remaining fields.
   extension_ = extension;
   SetIcon(icon);
-  ConfirmInstall(delegate, extension);
+  ConfirmInstall(delegate, extension, show_dialog_callback);
 }
 
-void ExtensionInstallPrompt::ConfirmInstall(Delegate* delegate,
-                                            const Extension* extension) {
+void ExtensionInstallPrompt::ConfirmInstall(
+    Delegate* delegate,
+    const Extension* extension,
+    const ShowDialogCallback& show_dialog_callback) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
   prompt_type_ = INSTALL_PROMPT;
+  show_dialog_callback_ = show_dialog_callback;
+  DCHECK(!show_dialog_callback_.is_null());
 
   // We special-case themes to not show any confirm UI. Instead they are
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
@@ -537,18 +575,22 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case INSTALL_PROMPT: {
       prompt_.set_extension(extension_);
       prompt_.set_icon(gfx::Image(icon_));
-      ShowExtensionInstallDialog(parent_, navigator_, delegate_, prompt_);
       break;
     }
     case BUNDLE_INSTALL_PROMPT: {
       prompt_.set_bundle(bundle_);
-      ShowExtensionInstallDialog(parent_, navigator_, delegate_, prompt_);
       break;
     }
     default:
       NOTREACHED() << "Unknown message";
-      break;
+      return;
   }
+
+  if (AutoConfirmPrompt(delegate_))
+    return;
+
+  DCHECK(!show_dialog_callback_.is_null());
+  show_dialog_callback_.Run(parent_, navigator_, delegate_, prompt_);
 }
 
 namespace chrome {

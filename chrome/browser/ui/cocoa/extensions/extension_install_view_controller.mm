@@ -12,7 +12,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
-#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"

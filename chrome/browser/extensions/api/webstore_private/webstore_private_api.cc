@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_installer.h"
@@ -325,7 +324,11 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
 
   install_prompt_.reset(
       chrome::CreateExtensionInstallPromptWithBrowser(GetCurrentBrowser()));
-  install_prompt_->ConfirmWebstoreInstall(this, dummy_extension_, &icon_);
+  install_prompt_->ConfirmWebstoreInstall(
+      this,
+      dummy_extension_,
+      &icon_,
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
 

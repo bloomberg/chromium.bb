@@ -151,6 +151,7 @@ WebstoreInstaller::Approval::Approval()
       skip_post_install_ui(false),
       skip_install_dialog(false),
       record_oauth2_grant(false) {
+  show_dialog_callback = ExtensionInstallPrompt::GetDefaultShowDialogCallback();
 }
 
 scoped_ptr<WebstoreInstaller::Approval>

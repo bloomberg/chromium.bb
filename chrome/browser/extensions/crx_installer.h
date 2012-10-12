@@ -359,6 +359,9 @@ class CrxInstaller
 
   bool has_requirement_errors_;
 
+  // Used to show the install dialog.
+  ExtensionInstallPrompt::ShowDialogCallback show_dialog_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };
 
