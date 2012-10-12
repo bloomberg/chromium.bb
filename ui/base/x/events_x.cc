@@ -599,7 +599,8 @@ gfx::Point CalibrateTouchCoordinates(
   // Temporarily disabling the calibration for X.
   bool calibration_x = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTouchCalibrationX);
-  gfx::Rect bounds = gfx::Screen::GetPrimaryDisplay().bounds_in_pixel();
+  gfx::Rect bounds =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().bounds_in_pixel();
   const int kLeftBorder = 40;
   const int kRightBorder = 40;
   const int kBottomBorder = 30;
