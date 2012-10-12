@@ -70,6 +70,7 @@ class InstantLoader::WebContentsDelegateImpl
   virtual bool CanDownload(content::RenderViewHost* render_view_host,
                            int request_id,
                            const std::string& request_method) OVERRIDE;
+  virtual void HandleMouseDown() OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandlePointerActivate() OVERRIDE;
   virtual void HandleGestureBegin() OVERRIDE;
@@ -155,6 +156,10 @@ bool InstantLoader::WebContentsDelegateImpl::CanDownload(
     const std::string& request_method) {
   // Downloads are disabled.
   return false;
+}
+
+void InstantLoader::WebContentsDelegateImpl::HandleMouseDown() {
+  is_pointer_down_from_activate_ = true;
 }
 
 void InstantLoader::WebContentsDelegateImpl::HandleMouseUp() {
