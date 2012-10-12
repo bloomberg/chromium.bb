@@ -33,9 +33,8 @@ class PepperFileMessageFilter : public content::BrowserMessageFilter {
   explicit PepperFileMessageFilter(int child_id);
 
   // content::BrowserMessageFilter methods:
-  virtual void OverrideThreadForMessage(
-      const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
+  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& message) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;

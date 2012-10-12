@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -67,11 +68,19 @@ PepperFileMessageFilter::PepperFileMessageFilter(int child_id)
           channel_(NULL) {
 }
 
-void PepperFileMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message,
-    BrowserThread::ID* thread) {
+base::TaskRunner* PepperFileMessageFilter::OverrideTaskRunnerForMessage(
+    const IPC::Message& message) {
+  // The blocking pool provides a pool of threads to run file
+  // operations, instead of a single thread which might require
+  // queuing time.  Since these messages are synchronous as sent from
+  // the plugin, the sending thread cannot send a new message until
+  // this one returns, so there is no need to sequence tasks here.  If
+  // the plugin has multiple threads, it cannot make assumptions about
+  // ordering of IPC message sends, so it cannot make assumptions
+  // about ordering of operations caused by those IPC messages.
   if (IPC_MESSAGE_CLASS(message) == PepperFileMsgStart)
-    *thread = BrowserThread::FILE;
+    return BrowserThread::GetBlockingPool();
+  return NULL;
 }
 
 bool PepperFileMessageFilter::OnMessageReceived(const IPC::Message& message,
