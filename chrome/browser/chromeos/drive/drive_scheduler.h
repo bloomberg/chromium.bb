@@ -17,7 +17,7 @@ class Profile;
 namespace drive {
 
 namespace file_system {
-class RemoveOperation;
+class DriveOperations;
 }
 
 // The DriveScheduler is responsible for queuing and scheduling drive
@@ -71,7 +71,7 @@ class DriveScheduler
   };
 
   DriveScheduler(Profile* profile,
-                 file_system::RemoveOperation* remove_operation);
+                 file_system::DriveOperations* drive_operations);
   virtual ~DriveScheduler();
 
   // Initializes the object. This function should be called before any
@@ -162,7 +162,7 @@ class DriveScheduler
   std::deque<int> queue_;
 
   // Drive operations.
-  file_system::RemoveOperation* remove_operation_;
+  file_system::DriveOperations* drive_operations_;
 
   Profile* profile_;
 

@@ -14,6 +14,7 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/gdata_wapi_feed_loader_observer.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/notification_observer.h"
@@ -870,8 +871,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  scoped_ptr<file_system::MoveOperation> move_operation_;
-  scoped_ptr<file_system::RemoveOperation> remove_operation_;
+  file_system::DriveOperations drive_operations_;
 
   scoped_ptr<DriveScheduler> scheduler_;
 

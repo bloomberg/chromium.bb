@@ -270,7 +270,7 @@ class DriveFileSystemTest : public testing::Test {
   bool RemoveEntry(const FilePath& file_path) {
     DriveFileError error;
     EXPECT_CALL(*mock_drive_service_, DeleteDocument(_, _)).Times(AnyNumber());
-    file_system_->remove_operation_->Remove(
+    file_system_->Remove(
         file_path, false,
         base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
 

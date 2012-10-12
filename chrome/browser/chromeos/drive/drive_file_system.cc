@@ -453,11 +453,7 @@ DriveFileSystem::DriveFileSystem(
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
-      move_operation_(new file_system::MoveOperation(
-          drive_service, ALLOW_THIS_IN_INITIALIZER_LIST(this), cache_)),
-      remove_operation_(new file_system::RemoveOperation(
-          drive_service, ALLOW_THIS_IN_INITIALIZER_LIST(this), cache_)),
-      scheduler_(new DriveScheduler(profile, remove_operation_.get())),
+      scheduler_(new DriveScheduler(profile, &drive_operations_)),
       ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
       ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
   // Should be created from the file browser extension API on UI thread.
@@ -476,6 +472,11 @@ void DriveFileSystem::Initialize() {
                                              cache_,
                                              blocking_task_runner_));
   feed_loader_->AddObserver(this);
+
+  // Allocate the drive operation handlers.
+  drive_operations_.Init(
+      new file_system::MoveOperation(drive_service_, this, cache_),
+      new file_system::RemoveOperation(drive_service_, this, cache_));
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
@@ -1015,7 +1016,7 @@ void DriveFileSystem::Move(const FilePath& src_file_path,
 void DriveFileSystem::MoveOnUIThread(const FilePath& src_file_path,
                                      const FilePath& dest_file_path,
                                      const FileOperationCallback& callback) {
-  move_operation_->Move(src_file_path, dest_file_path, callback);
+  drive_operations_.Move(src_file_path, dest_file_path, callback);
 }
 
 void DriveFileSystem::MoveEntryFromRootDirectory(
