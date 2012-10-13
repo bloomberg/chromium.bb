@@ -19,7 +19,6 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
 
 import java.util.ArrayList;
@@ -707,30 +706,10 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     /**
-     * Register the listener to be used when content can not be handled by the
-     * rendering engine, and should be downloaded instead. This will replace the
-     * current listener.
-     * @param listener An implementation of DownloadListener.
-     */
-    // TODO(nileshagrawal): decide if setDownloadDelegate will be public API. If so,
-    // this method should be deprecated and the javadoc should make reference to the
-    // fact that a ContentViewDownloadDelegate will be used in preference to a
-    // DownloadListener.
-    public void setDownloadListener(DownloadListener listener) {
-        mContentViewCore.setDownloadListener(listener);
-    }
-
-    // Called by DownloadController.
-    DownloadListener downloadListener() {
-        return mContentViewCore.downloadListener();
-    }
-
-    /**
      * Register the delegate to be used when content can not be handled by
      * the rendering engine, and should be downloaded instead. This will replace
-     * the current delegate or existing DownloadListner.
-     * Embedders should prefer this over the legacy DownloadListener.
-     * @param listener An implementation of ContentViewDownloadDelegate.
+     * the current delegate.
+     * @param delegate An implementation of ContentViewDownloadDelegate.
      */
     public void setDownloadDelegate(ContentViewDownloadDelegate delegate) {
         mContentViewCore.setDownloadDelegate(delegate);
