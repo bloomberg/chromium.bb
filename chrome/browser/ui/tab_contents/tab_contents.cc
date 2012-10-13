@@ -193,11 +193,6 @@ TabContents::TabContents(WebContents* contents)
 
 TabContents::~TabContents() {
   in_destructor_ = true;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-      content::Source<TabContents>(this),
-      content::NotificationService::NoDetails());
 }
 
 TabContents* TabContents::Clone() {

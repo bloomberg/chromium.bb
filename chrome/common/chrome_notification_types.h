@@ -193,17 +193,9 @@ enum NotificationType {
   // Source<NavigationController> with a pointer to the controller for the
   // closed tab.  No details are expected.
   //
-  // See also NOTIFICATION_TAB_CONTENTS_DESTROYED, which is sent when the
-  // TabContents is destroyed, and content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-  // which is sent when the WebContents containing the NavigationController is
-  // destroyed.
+  // See also content::NOTIFICATION_WEB_CONTENTS_DESTROYED, which is sent when
+  // the WebContents containing the NavigationController is destroyed.
   NOTIFICATION_TAB_CLOSING,
-
-  // Sent when a TabContents is being destroyed.  At this point it's safe to
-  // call TabContents member functions, which is not true of the similar
-  // content::NOTIFICATION_WEB_CONTENTS_DESTROYED that fires later during
-  // teardown.  The source is a Source<TabContents>.  There are no details.
-  NOTIFICATION_TAB_CONTENTS_DESTROYED,
 
   // Stuff inside the tabs ---------------------------------------------------
 
