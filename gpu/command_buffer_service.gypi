@@ -34,6 +34,8 @@
     'command_buffer/service/common_decoder.h',
     'command_buffer/service/context_group.h',
     'command_buffer/service/context_group.cc',
+    'command_buffer/service/context_state.h',
+    'command_buffer/service/context_state.cc',
     'command_buffer/service/feature_info.h',
     'command_buffer/service/feature_info.cc',
     'command_buffer/service/framebuffer_manager.h',
