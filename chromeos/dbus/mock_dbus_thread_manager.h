@@ -39,7 +39,6 @@ class MockShillServiceClient;
 class MockGsmSMSClient;
 class MockImageBurnerClient;
 class MockIntrospectableClient;
-class MockMediaTransferProtocolDaemonClient;
 class MockModemMessagingClient;
 class MockPermissionBrokerClient;
 class MockPowerManagerClient;
@@ -80,8 +79,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetGsmSMSClient, GsmSMSClient*(void));
   MOCK_METHOD0(GetImageBurnerClient, ImageBurnerClient*(void));
   MOCK_METHOD0(GetIntrospectableClient, IntrospectableClient*(void));
-  MOCK_METHOD0(GetMediaTransferProtocolDaemonClient,
-               MediaTransferProtocolDaemonClient*(void));
   MOCK_METHOD0(GetModemMessagingClient, ModemMessagingClient*(void));
   MOCK_METHOD0(GetPermissionBrokerClient, PermissionBrokerClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
