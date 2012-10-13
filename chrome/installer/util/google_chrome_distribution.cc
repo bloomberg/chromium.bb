@@ -344,7 +344,7 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
     return false;
   }
 
-  const DictionaryValue* uninstall_metrics_dict;
+  const DictionaryValue* uninstall_metrics_dict = NULL;
   if (!root.HasKey(installer::kUninstallMetricsName) ||
       !root.GetDictionary(installer::kUninstallMetricsName,
                           &uninstall_metrics_dict)) {
