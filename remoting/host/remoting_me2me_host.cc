@@ -119,7 +119,6 @@ class HostProcess
  public:
   explicit HostProcess(scoped_ptr<ChromotingHostContext> context)
       : context_(context.Pass()),
-        config_(FilePath()),
         allow_nat_traversal_(true),
         restarting_(false),
         shutting_down_(false),
@@ -206,53 +205,43 @@ class HostProcess
 #endif
 
   virtual void OnConfigUpdated(const std::string& serialized_config) OVERRIDE {
-    DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
-
-    LOG(INFO) << "Processing new host configuration.";
-
-    if (!config_.SetSerializedData(serialized_config)) {
-      LOG(ERROR) << "Invalid configuration.";
-      OnConfigWatcherError();
+    if (!context_->network_task_runner()->BelongsToCurrentThread()) {
+      context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
+          &HostProcess::OnConfigUpdated, base::Unretained(this),
+          serialized_config));
       return;
     }
 
-    if (!ApplyConfig()) {
+    // Filter out duplicates.
+    if (serialized_config_ == serialized_config)
+      return;
+
+    LOG(INFO) << "Processing new host configuration.";
+
+    serialized_config_ = serialized_config;
+    scoped_ptr<JsonHostConfig> config(new JsonHostConfig(FilePath()));
+    if (!config->SetSerializedData(serialized_config)) {
+      LOG(ERROR) << "Invalid configuration.";
+      Shutdown(kInvalidHostConfigurationExitCode);
+      return;
+    }
+
+    if (!ApplyConfig(config.Pass())) {
       LOG(ERROR) << "Failed to apply the configuration.";
-      OnConfigWatcherError();
+      Shutdown(kInvalidHostConfigurationExitCode);
       return;
     }
 
     // Start watching the policy (and eventually start the host) if this is
-    // the first configuration update. Otherwise, post a task to create new
-    // authenticator factory in case PIN has changed.
-    if (policy_watcher_.get() == NULL) {
-      bool want_user_interface = true;
-#if defined(OS_LINUX)
-      want_user_interface = false;
-#elif defined(OS_MACOSX)
-      // Don't try to display any UI on top of the system's login screen as this
-      // is rejected by the Window Server on OS X 10.7.4, and prevents the
-      // capturer from working (http://crbug.com/140984).
-
-      // TODO(lambroslambrou): Use a better technique of detecting whether we're
-      // running in the LoginWindow context, and refactor this into a separate
-      // function to be used here and in CurtainMode::ActivateCurtain().
-      want_user_interface = getuid() != 0;
-#endif  // OS_MACOSX
-
-      if (want_user_interface) {
-        host_user_interface_.reset(
-            new HostUserInterface(context_->network_task_runner(),
-                                  context_->ui_task_runner()));
-      }
-
-      StartWatchingPolicy();
+    // the first configuration update. Otherwise, create new authenticator
+    // factory in case PIN has changed.
+    if (!policy_watcher_) {
+      policy_watcher_.reset(
+          policy_hack::PolicyWatcher::Create(context_->file_task_runner()));
+      policy_watcher_->StartWatching(
+          base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)));
     } else {
-      // PostTask to create new authenticator factory in case PIN has changed.
-      context_->network_task_runner()->PostTask(
-          FROM_HERE,
-          base::Bind(&HostProcess::CreateAuthenticatorFactory,
-                     base::Unretained(this)));
+      CreateAuthenticatorFactory();
     }
   }
 
@@ -332,6 +321,27 @@ class HostProcess
         base::Bind(&HostProcess::ListenForShutdownSignal,
                    base::Unretained(this)));
 
+    // The host UI should be created on the UI thread.
+    bool want_user_interface = true;
+#if defined(OS_LINUX)
+    want_user_interface = false;
+#elif defined(OS_MACOSX)
+    // Don't try to display any UI on top of the system's login screen as this
+    // is rejected by the Window Server on OS X 10.7.4, and prevents the
+    // capturer from working (http://crbug.com/140984).
+
+    // TODO(lambroslambrou): Use a better technique of detecting whether we're
+    // running in the LoginWindow context, and refactor this into a separate
+    // function to be used here and in CurtainMode::ActivateCurtain().
+    want_user_interface = getuid() != 0;
+#endif  // OS_MACOSX
+
+    if (want_user_interface) {
+      host_user_interface_.reset(
+          new HostUserInterface(context_->network_task_runner(),
+                                context_->ui_task_runner()));
+    }
+
     StartWatchingConfigChanges();
   }
 
@@ -347,13 +357,6 @@ class HostProcess
     desktop_environment_factory_.reset();
     host_user_interface_.reset();
 
-    if (policy_watcher_.get()) {
-      base::WaitableEvent done_event(true, false);
-      policy_watcher_->StopWatching(&done_event);
-      done_event.Wait();
-      policy_watcher_.reset();
-    }
-
     context_.reset();
   }
 
@@ -363,28 +366,21 @@ class HostProcess
     Shutdown(kInvalidHostIdExitCode);
   }
 
-  void StartWatchingPolicy() {
-    policy_watcher_.reset(
-        policy_hack::PolicyWatcher::Create(context_->file_task_runner()));
-    policy_watcher_->StartWatching(
-        base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)));
-  }
-
   // Applies the host config, returning true if successful.
-  bool ApplyConfig() {
-    DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
+  bool ApplyConfig(scoped_ptr<JsonHostConfig> config) {
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-    if (!config_.GetString(kHostIdConfigPath, &host_id_)) {
+    if (!config->GetString(kHostIdConfigPath, &host_id_)) {
       LOG(ERROR) << "host_id is not defined in the config.";
       return false;
     }
 
-    if (!key_pair_.Load(config_)) {
+    if (!key_pair_.Load(*config)) {
       return false;
     }
 
     std::string host_secret_hash_string;
-    if (!config_.GetString(kHostSecretHashConfigPath,
+    if (!config->GetString(kHostSecretHashConfigPath,
                            &host_secret_hash_string)) {
       host_secret_hash_string = "plain:";
     }
@@ -395,9 +391,9 @@ class HostProcess
     }
 
     // Use an XMPP connection to the Talk network for session signalling.
-    if (!config_.GetString(kXmppLoginConfigPath, &xmpp_login_) ||
-        !(config_.GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_) ||
-          config_.GetString(kOAuthRefreshTokenConfigPath,
+    if (!config->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
+        !(config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_) ||
+          config->GetString(kOAuthRefreshTokenConfigPath,
                             &oauth_refresh_token_))) {
       LOG(ERROR) << "XMPP credentials are not defined in the config.";
       return false;
@@ -406,7 +402,7 @@ class HostProcess
     if (!oauth_refresh_token_.empty()) {
       xmpp_auth_token_ = "";  // This will be set to the access token later.
       xmpp_auth_service_ = "oauth2";
-    } else if (!config_.GetString(kXmppAuthServiceConfigPath,
+    } else if (!config->GetString(kXmppAuthServiceConfigPath,
                                   &xmpp_auth_service_)) {
       // For the me2me host, we default to ClientLogin token for chromiumsync
       // because earlier versions of the host had no HTTP stack with which to
@@ -662,6 +658,13 @@ class HostProcess
     host_ = NULL;
     ResetHost();
 
+    if (policy_watcher_.get()) {
+      base::WaitableEvent done_event(true, false);
+      policy_watcher_->StopWatching(&done_event);
+      done_event.Wait();
+      policy_watcher_.reset();
+    }
+
     // Complete the rest of shutdown on the main thread.
     context_->ui_task_runner()->PostTask(
         FROM_HERE,
@@ -685,18 +688,18 @@ class HostProcess
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
-  JsonHostConfig config_;
   FilePath host_config_path_;
   scoped_ptr<ConfigFileWatcher> config_watcher_;
 
+  // Accessed on the network thread.
   std::string host_id_;
-  HostKeyPair key_pair_;
   protocol::SharedSecretHash host_secret_hash_;
+  HostKeyPair key_pair_;
+  std::string oauth_refresh_token_;
+  std::string serialized_config_;
   std::string xmpp_login_;
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;
-
-  std::string oauth_refresh_token_;
 
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   bool allow_nat_traversal_;
