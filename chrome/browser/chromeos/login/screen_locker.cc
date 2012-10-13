@@ -105,10 +105,6 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
   virtual void UnlockScreen() OVERRIDE {
     VLOG(1) << "Received UnlockScreen D-Bus signal from session manager";
     chromeos::ScreenLocker::Hide();
-    VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus "
-            << "method";
-    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-        NotifyLockScreenDismissed();
   }
 
  private:
