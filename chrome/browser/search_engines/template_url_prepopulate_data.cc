@@ -3565,7 +3565,7 @@ void GetPrepopulatedTemplateFromPrefs(Profile* profile,
   std::string search_url;
   std::string suggest_url;
   std::string instant_url;
-  const ListValue* alternate_urls;
+  const ListValue* alternate_urls = NULL;
   std::string favicon_url;
   std::string encoding;
   int id;
