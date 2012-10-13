@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
 #include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -268,7 +269,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     titleField_.reset([[NSTextField alloc] initWithFrame:frame]);
     ConfigureTextFieldAsLabel(titleField_);
-    gfx::Font titleFont = rb.GetFont(ConstrainedWindow::kTitleFontStyle);
+    gfx::Font titleFont = rb.GetFont(
+        ConstrainedWindowConstants::kTitleFontStyle);
     titleFont = titleFont.DeriveFont(0, gfx::Font::BOLD);
     [titleField_ setFont:titleFont.GetNativeFont()];
 
@@ -276,7 +278,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
                        kTextWidth, 1);
     subtitleField_.reset([[NSTextField alloc] initWithFrame:frame]);
     ConfigureTextFieldAsLabel(subtitleField_);
-    gfx::Font textFont = rb.GetFont(ConstrainedWindow::kTextFontStyle);
+    gfx::Font textFont = rb.GetFont(ConstrainedWindowConstants::kTextFontStyle);
     [subtitleField_ setFont:textFont.GetNativeFont()];
 
     frame = NSMakeRect(0, 0, WebIntentPicker::kWindowMinWidth, 1.0);
@@ -1052,7 +1054,7 @@ const CGFloat kAddButtonWidth = 128.0;
       [[NSTextField alloc] initWithFrame:titleFrame]);
   ConfigureTextFieldAsLabel(title);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::Font titleFont = rb.GetFont(ConstrainedWindow::kTitleFontStyle);
+  gfx::Font titleFont = rb.GetFont(ConstrainedWindowConstants::kTitleFontStyle);
   titleFont = titleFont.DeriveFont(0, gfx::Font::BOLD);
   [title setFont:titleFont.GetNativeFont()];
   [title setStringValue:
@@ -1153,7 +1155,8 @@ const CGFloat kAddButtonWidth = 128.0;
     actionTextField_.reset([[NSTextField alloc] initWithFrame:textFrame]);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     ConfigureTextFieldAsLabel(actionTextField_);
-    gfx::Font titleFont = rb.GetFont(ConstrainedWindow::kTitleFontStyle);
+    gfx::Font titleFont = rb.GetFont(
+        ConstrainedWindowConstants::kTitleFontStyle);
     titleFont = titleFont.DeriveFont(0, gfx::Font::BOLD);
     [actionTextField_ setFont:titleFont.GetNativeFont()];
   } else {

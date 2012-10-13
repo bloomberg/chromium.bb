@@ -31,11 +31,12 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
 
 namespace {
 const int kChromeStyleUniformInset = 0;
-const int kChromeStyleInterRowVerticalSpacing = 20;
+const int kChromeStyleInterRowVerticalSpacing = 17;
 
 const int kChromeStyleButtonVEdgeMargin = 0;
 const int kChromeStyleButtonHEdgeMargin = 0;
 const int kChromeStyleDialogButtonLabelSpacing = 24;
+const int kChromeStyleButtonContentSpacing = 0;
 
 views::MessageBoxView::InitParams CreateMessageBoxViewInitParams(
     const string16& message,
@@ -118,6 +119,7 @@ views::ClientView* TabModalConfirmDialogViews::CreateClientView(
     params.button_label_spacing = kChromeStyleDialogButtonLabelSpacing;
     params.text_button_factory =
         &views::DialogClientView::CreateChromeStyleDialogButton;
+    params.button_content_spacing = kChromeStyleButtonContentSpacing;
 
     return new views::DialogClientView(widget, GetContentsView(), params);
   }

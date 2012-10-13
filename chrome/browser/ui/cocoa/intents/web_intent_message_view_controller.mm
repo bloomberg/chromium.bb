@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/constrained_window.h"
+#import "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
@@ -35,7 +36,7 @@
   [titleTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           title,
-          ConstrainedWindow::kTitleFontStyle,
+          ConstrainedWindowConstants::kTitleFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByWordWrapping)];
 }
@@ -44,7 +45,7 @@
   [messageTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           message,
-          ConstrainedWindow::kTextFontStyle,
+          ConstrainedWindowConstants::kTextFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByWordWrapping)];
 }
@@ -53,7 +54,7 @@
   [self resizeTextFieldsToWidth:innerWidth];
   CGFloat height = NSHeight([titleTextField_ frame]);
   height += NSHeight([messageTextField_ frame]);
-  height += ConstrainedWindow::kRowPadding;
+  height += ConstrainedWindowConstants::kRowPadding;
   return NSMakeSize(innerWidth, height);
 }
 
@@ -66,7 +67,8 @@
 
   NSRect messageFrame = [messageTextField_ frame];
   messageFrame.origin.x = NSMinX(innerFrame);
-  messageFrame.origin.y = NSMaxY(titleFrame) + ConstrainedWindow::kRowPadding;
+  messageFrame.origin.y = NSMaxY(titleFrame) +
+      ConstrainedWindowConstants::kRowPadding;
   [messageTextField_ setFrame:messageFrame];
 }
 

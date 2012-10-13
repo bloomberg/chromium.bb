@@ -786,6 +786,7 @@
         'browser/ui/content_settings/content_setting_image_model.h',
         'browser/ui/constrained_window.cc',
         'browser/ui/constrained_window.h',
+        'browser/ui/constrained_window_constants.h',
         'browser/ui/constrained_window_tab_helper.cc',
         'browser/ui/constrained_window_tab_helper.h',
         'browser/ui/constrained_window_tab_helper_delegate.cc',

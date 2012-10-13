@@ -6,6 +6,7 @@
 
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/constrained_window.h"
+#import "chrome/browser/ui/constrained_window_constants.h"
 #include "skia/ext/skia_utils_mac.h"
 
 // The content view for the custom window.
@@ -41,8 +42,8 @@
 - (void)drawRect:(NSRect)rect {
   NSBezierPath* path = [NSBezierPath
       bezierPathWithRoundedRect:[self bounds]
-                        xRadius:ConstrainedWindow::kBorderRadius
-                        yRadius:ConstrainedWindow::kBorderRadius];
+                        xRadius:ConstrainedWindowConstants::kBorderRadius
+                        yRadius:ConstrainedWindowConstants::kBorderRadius];
   [gfx::SkColorToCalibratedNSColor(
       ConstrainedWindow::GetBackgroundColor()) set];
   [path fill];

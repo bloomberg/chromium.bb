@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_cocoa2.h"
 #include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
@@ -76,7 +77,7 @@
   [serviceNameTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           serviceName,
-          ConstrainedWindow::kBoldTextFontStyle,
+          ConstrainedWindowConstants::kBoldTextFontStyle,
           NSLeftTextAlignment,
           NSLineBreakByTruncatingTail)];
   [serviceNameTextField_ sizeToFit];

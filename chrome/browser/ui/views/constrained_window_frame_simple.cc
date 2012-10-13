@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/constrained_window_frame_simple.h"
 
 #include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "grit/ui_resources.h"
 #include "grit/chromium_strings.h"
@@ -34,15 +35,12 @@ typedef ConstrainedWindowFrameSimple::HeaderViews HeaderViews;
 // and sized to the widget's client view.
 class HeaderLayout : public views::LayoutManager {
  public:
-  explicit HeaderLayout(views::Widget* container) : container_(container) {}
+  explicit HeaderLayout() {}
   virtual ~HeaderLayout() {}
 
   // Overridden from LayoutManager
   virtual void Layout(views::View* host);
   virtual gfx::Size GetPreferredSize(views::View* host);
-
- private:
-  views::Widget* container_;
 
   DISALLOW_COPY_AND_ASSIGN(HeaderLayout);
 };
@@ -51,32 +49,29 @@ void HeaderLayout::Layout(views::View* host) {
   if (!host->has_children())
     return;
 
-  int horizontal_padding = ConstrainedWindow::kHorizontalPadding;
-  int vertical_padding = ConstrainedWindow::kVerticalPadding;
-  int row_padding = ConstrainedWindow::kRowPadding;
+  int top_padding = ConstrainedWindowConstants::kCloseButtonPadding;
+  int left_padding = ConstrainedWindowConstants::kHorizontalPadding;
+  int right_padding = ConstrainedWindowConstants::kCloseButtonPadding;
 
   views::View* header = host->child_at(0);
   gfx::Size preferred_size = GetPreferredSize(host);
-  int width = preferred_size.width() - 2 * horizontal_padding;
-  int height = preferred_size.height() - vertical_padding - row_padding;
+  int width = preferred_size.width() - left_padding - right_padding;
+  int height = preferred_size.height() - top_padding;
 
-  header->SetBounds(horizontal_padding, vertical_padding, width, height);
+  header->SetBounds(left_padding, top_padding, width, height);
 }
 
 gfx::Size HeaderLayout::GetPreferredSize(views::View* host) {
-  int horizontal_padding = ConstrainedWindow::kHorizontalPadding;
-  int vertical_padding = ConstrainedWindow::kVerticalPadding;
-  int row_padding = ConstrainedWindow::kRowPadding;
+  int top_padding = ConstrainedWindowConstants::kCloseButtonPadding;
+  int left_padding = ConstrainedWindowConstants::kHorizontalPadding;
+  int right_padding = ConstrainedWindowConstants::kCloseButtonPadding;
 
   views::View* header = host->child_at(0);
-  views::View* client_view = container_->client_view();
-
   gfx::Size header_size = header ? header->GetPreferredSize() : gfx::Size();
-  gfx::Size client_size =
-      client_view ? client_view->GetPreferredSize() : gfx::Size();
-  int width = std::max(client_size.width(), header_size.width()) +
-      2 * horizontal_padding;
-  int height = vertical_padding + header_size.height() + row_padding;
+  int width = std::max(host->GetPreferredSize().width(),
+      left_padding + header_size.width() + right_padding);
+  int height = header_size.height() + top_padding;
+
   return gfx::Size(width, height);
 }
 
@@ -97,13 +92,19 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
     : container_(container) {
   container_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
-  layout_ = new HeaderLayout(container_);
+  layout_ = new HeaderLayout();
   SetLayoutManager(layout_);
 
   SetHeaderView(CreateDefaultHeaderView());
 
   set_background(views::Background::CreateSolidBackground(
       ConstrainedWindow::GetBackgroundColor()));
+
+  set_border(views::Border::CreateEmptyBorder(
+      ConstrainedWindowConstants::kClientTopPadding,
+      ConstrainedWindowConstants::kHorizontalPadding,
+      ConstrainedWindowConstants::kClientBottomPadding,
+      ConstrainedWindowConstants::kHorizontalPadding));
 }
 
 ConstrainedWindowFrameSimple::~ConstrainedWindowFrameSimple() {
@@ -119,6 +120,12 @@ void ConstrainedWindowFrameSimple::SetHeaderView(HeaderViews* header_views)
 }
 
 HeaderViews* ConstrainedWindowFrameSimple::CreateDefaultHeaderView() {
+  const int kTitleTopPadding = ConstrainedWindowConstants::kTitleTopPadding -
+      ConstrainedWindowConstants::kCloseButtonPadding;
+  const int kTitleLeftPadding = 0;
+  const int kTitleBottomPadding = 0;
+  const int kTitleRightPadding = 0;
+
   views::View* header_view = new views::View;
 
   views::GridLayout* grid_layout = new views::GridLayout(header_view);
@@ -128,17 +135,20 @@ HeaderViews* ConstrainedWindowFrameSimple::CreateDefaultHeaderView() {
   header_cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
                        views::GridLayout::USE_PREF, 0, 0);  // Title.
   header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-  header_cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
-                       views::GridLayout::USE_PREF, 0, 0);  // Close Button.
+  header_cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
+                       0, views::GridLayout::USE_PREF, 0, 0);  // Close Button.
 
   // Header row.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   grid_layout->StartRow(0, 0);
+
   views::Label* title_label = new views::Label();
   title_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_label->SetFont(rb.GetFont(ConstrainedWindow::kTitleFontStyle));
+  title_label->SetFont(rb.GetFont(ConstrainedWindowConstants::kTitleFontStyle));
   title_label->SetEnabledColor(ConstrainedWindow::GetTextColor());
   title_label->SetText(container_->widget_delegate()->GetWindowTitle());
+  title_label->set_border(views::Border::CreateEmptyBorder(kTitleTopPadding,
+      kTitleLeftPadding, kTitleBottomPadding, kTitleRightPadding));
   grid_layout->AddView(title_label);
 
   views::Button* close_button = CreateCloseButton();
@@ -148,37 +158,19 @@ HeaderViews* ConstrainedWindowFrameSimple::CreateDefaultHeaderView() {
 }
 
 gfx::Rect ConstrainedWindowFrameSimple::GetBoundsForClientView() const {
-  int horizontal_padding = ConstrainedWindow::kHorizontalPadding;
-  int vertical_padding = ConstrainedWindow::kVerticalPadding;
-  int row_padding = ConstrainedWindow::kRowPadding;
-  gfx::Size header_size =
-      header_views_->header ?
-      header_views_->header->GetPreferredSize() : gfx::Size();
-
-  return gfx::Rect(horizontal_padding,
-                   vertical_padding + header_size.height() + row_padding,
-                   std::max(0, width() - 2 * horizontal_padding),
-                   std::max(0, (height() - 2 * vertical_padding -
-                                header_size.height() - row_padding)));
+  gfx::Rect bounds(GetContentsBounds());
+  if (header_views_->header)
+    bounds.Inset(0, header_views_->header->GetPreferredSize().height(), 0, 0);
+  return bounds;
 }
 
 gfx::Rect ConstrainedWindowFrameSimple::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  int horizontal_padding = ConstrainedWindow::kHorizontalPadding;
-  int vertical_padding = ConstrainedWindow::kVerticalPadding;
-  int row_padding = ConstrainedWindow::kRowPadding;
-  gfx::Size header_size =
-      header_views_->header ?
-      header_views_->header->GetPreferredSize() : gfx::Size();
-
-  int x = client_bounds.x() - horizontal_padding;
-  int y = client_bounds.y() - vertical_padding - header_size.height() -
-      row_padding;
-  int width = client_bounds.width() + 2 * horizontal_padding;
-  int height = client_bounds.height() + 2 * vertical_padding +
-      header_size.height() + row_padding;
-
-  return gfx::Rect(x, y, width, height);
+  gfx::Rect bounds(client_bounds);
+  bounds.Inset(-GetInsets());
+  if (header_views_->header)
+    bounds.Inset(0, -header_views_->header->GetPreferredSize().height(), 0, 0);
+  return bounds;
 }
 
 int ConstrainedWindowFrameSimple::NonClientHitTest(const gfx::Point& point) {
@@ -196,7 +188,7 @@ void ConstrainedWindowFrameSimple::GetWindowMask(const gfx::Size& size,
   // which causes the width, but not the height, to be off by one.
   SkRect rect = {0, 0, size.width(), size.height() - 1};
 #endif
-  SkScalar radius = SkIntToScalar(ConstrainedWindow::kBorderRadius);
+  SkScalar radius = SkIntToScalar(ConstrainedWindowConstants::kBorderRadius);
   SkScalar radii[8] = {radius, radius, radius, radius,
                        radius, radius, radius, radius};
 
@@ -238,6 +230,6 @@ views::ImageButton* ConstrainedWindowFrameSimple::CreateCloseButton() {
   close_button->SetImage(views::CustomButton::BS_HOT,
                           rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
   close_button->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
+                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_PRESSED));
   return close_button;
 }

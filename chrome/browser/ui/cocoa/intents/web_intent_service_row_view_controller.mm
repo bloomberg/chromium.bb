@@ -7,6 +7,7 @@
 #include <cmath>
 
 #import "chrome/browser/ui/constrained_window.h"
+#import "chrome/browser/ui/constrained_window_constants.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
@@ -184,7 +185,7 @@ NSSize GetSelectButtonSize() {
     [titleTextField_ setAttributedStringValue:
         constrained_window::GetAttributedLabelString(
             title,
-            ConstrainedWindow::kTextFontStyle,
+            ConstrainedWindowConstants::kTextFontStyle,
             NSNaturalTextAlignment,
             NSLineBreakByTruncatingTail)];
     [titleTextField_ sizeToFit];

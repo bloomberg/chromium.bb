@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/spinner_progress_indicator.h"
 #import "chrome/browser/ui/constrained_window.h"
+#import "chrome/browser/ui/constrained_window_constants.h"
 #include "grit/theme_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -118,12 +119,12 @@ NSAttributedString* JoinString(NSAttributedString* string1,
 - (void)updateTextFieldAndResizeToWidth:(CGFloat)width {
   NSAttributedString* title = constrained_window::GetAttributedLabelString(
       title_,
-      ConstrainedWindow::kBoldTextFontStyle,
+      ConstrainedWindowConstants::kBoldTextFontStyle,
       NSCenterTextAlignment,
       NSLineBreakByWordWrapping);
   NSAttributedString* message = constrained_window::GetAttributedLabelString(
       message_,
-      ConstrainedWindow::kTextFontStyle,
+      ConstrainedWindowConstants::kTextFontStyle,
       NSCenterTextAlignment,
       NSLineBreakByWordWrapping);
   [messageTextField_ setAttributedStringValue:JoinString(title, message)];

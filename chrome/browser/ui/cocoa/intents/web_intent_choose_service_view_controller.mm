@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/constrained_window.h"
+#import "chrome/browser/ui/constrained_window_constants.h"
 #import "chrome/browser/ui/intents/web_intent_picker.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -75,7 +76,7 @@
   [titleTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           title,
-          ConstrainedWindow::kBoldTextFontStyle,
+          ConstrainedWindowConstants::kBoldTextFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByWordWrapping)];
 }
@@ -84,7 +85,7 @@
   [messageTextField_ setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
           message,
-          ConstrainedWindow::kTextFontStyle,
+          ConstrainedWindowConstants::kTextFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByWordWrapping)];
 }

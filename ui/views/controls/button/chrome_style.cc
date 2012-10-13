@@ -62,9 +62,9 @@ const SkColor kBorderNormalColor = SkColorSetARGB(0x3f, 0x0, 0x0, 0x0);
 const SkColor kBorderActiveColor = SkColorSetARGB(0x4b, 0x0, 0x0, 0x0);
 const SkColor kBorderDisabledColor = SkColorSetARGB(0x1d, 0x0, 0x0, 0x0);
 
-const int kFocusRingWidth = 2;
+const int kFocusRingWidth = 1;
 const int kFocusRingRadius = 2;
-const SkColor kFocusRingColor = SkColorSetARGB(0x7f, 0xe5, 0x97, 0x00);
+const SkColor kFocusRingColor = SkColorSetRGB(0x4d, 0x90, 0xfe);
 
 // Returns the uniform inset of the button from its local bounds.
 int GetButtonInset() {
@@ -262,14 +262,20 @@ class ChromeStyleFocusBorder : public views::FocusBorder {
 
   // Overriden from Border
   virtual void Paint(const View& view, gfx::Canvas* canvas) const {
-    gfx::Rect rect(view.GetLocalBounds());
-    SkScalar inset = SkFloatToScalar(GetButtonInset() - kFocusRingWidth / 2.0f);
-    rect.Inset(inset, inset);
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(kFocusRingWidth));
     paint.setColor(kFocusRingColor);
-    canvas->DrawRoundRect(rect, SkIntToScalar(kFocusRingRadius), paint);
+
+    SkScalar inset = SkFloatToScalar(GetButtonInset() - kFocusRingWidth / 2.0f);
+    gfx::Rect view_bounds(view.GetLocalBounds());
+    SkRect rect = SkRect::MakeLTRB(
+        SkIntToScalar(view_bounds.x()) + inset,
+        SkIntToScalar(view_bounds.y()) + inset,
+        SkIntToScalar(view_bounds.width()) - inset,
+        SkIntToScalar(view_bounds.height()) - inset);
+    canvas->sk_canvas()->drawRoundRect(rect, SkIntToScalar(kFocusRingRadius),
+        SkIntToScalar(kFocusRingRadius), paint);
   }
 
  private:
