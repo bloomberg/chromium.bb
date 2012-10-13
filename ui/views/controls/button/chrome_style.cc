@@ -238,7 +238,7 @@ class ChromeStyleTextButtonBorder : public views::Border {
     gfx::Rect bounds = view.GetLocalBounds();
     int border_inset = GetButtonInset() - kBorderWidth;
     bounds.Inset(border_inset, border_inset, border_inset, border_inset);
-    Painter::PaintPainterAt(canvas, painter_, bounds);
+    Painter::PaintPainterAt(canvas, painter_.get(), bounds);
   }
   virtual void GetInsets(gfx::Insets* insets) const {
     DCHECK(insets);
@@ -251,7 +251,7 @@ class ChromeStyleTextButtonBorder : public views::Border {
   }
 
  private:
-  ChromeStyleTextButtonBorderPainter* painter_;
+  scoped_ptr<ChromeStyleTextButtonBorderPainter> painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeStyleTextButtonBorder);
 };
