@@ -37,16 +37,22 @@ message MouseEvent {
   optional int32 x = 1;
   optional int32 y = 2;
 
-  // Mouse wheel information.
+  // Legacy mouse wheel information.
   // These values encode the number of wheel 'ticks' (sometimes called
   // 'clicks' although 'ticks' is the most common cross-platform term).
-  // Additional fields may be added later to support high-resolution devices.
+  // TODO(wez): Remove these when hosts no longer need them (crbug.com/155668).
   optional int32 wheel_offset_x = 3;
   optional int32 wheel_offset_y = 4;
 
   // Mouse button event.
   optional MouseButton button = 5;
   optional bool button_down = 6;
+
+  // Mouse wheel information.
+  // These values encode the number of pixels of movement that would result
+  // from the wheel event on the client system.
+  optional float wheel_delta_x = 7;
+  optional float wheel_delta_y = 8;
 }
 
 // Defines an event that sends clipboard data between peers.

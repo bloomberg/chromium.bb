@@ -28,6 +28,11 @@ class PepperInputHandler {
  private:
   protocol::InputStub* input_stub_;
 
+  // Accumulated sub-pixel deltas from wheel events.
+  float wheel_delta_x_;
+  float wheel_delta_y_;
+
+  // Accumulates "ticks" derived from wheel events.
   float wheel_ticks_x_;
   float wheel_ticks_y_;
 
