@@ -266,9 +266,12 @@ void CreateApplicationShortcutView::InitControls() {
   quick_launch_check_box_ = NULL;
 
 #if defined(OS_WIN)
-  menu_check_box_ = AddCheckbox(
-      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX),
-      profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
+  // Do not allow creating shortcuts on the Start Screen for Windows 8.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+    menu_check_box_ = AddCheckbox(
+        l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX),
+        profile_->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
+  }
 
   quick_launch_check_box_ = AddCheckbox(
       (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
