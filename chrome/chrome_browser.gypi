@@ -29,8 +29,6 @@
         'feedback_proto',
         'in_memory_url_index_cache_proto',
         'installer_util',
-        'mtp_file_entry_proto',
-        'mtp_storage_info_proto',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'variations_seed_proto',
@@ -2233,6 +2231,8 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
+            'mtp_file_entry_proto',
+            'mtp_storage_info_proto',
             '../build/linux/system.gyp:udev',
           ],
           'sources': [
