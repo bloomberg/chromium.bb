@@ -248,6 +248,28 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   static OMX_ERRORTYPE FillBufferCallback(OMX_HANDLETYPE component,
                                           OMX_PTR priv_data,
                                           OMX_BUFFERHEADERTYPE* buffer);
+
+  // When we get a texture back via ReusePictureBuffer(), we want to ensure
+  // that its contents have been read out by rendering layer, before we start
+  // overwriting it with the decoder. This class is used to wait for a sync
+  // object inserted into the GPU command stream at the time of
+  // ReusePictureBuffer. This guarantees that the object gets into the stream
+  // after the corresponding texture commands have been inserted into it. Once
+  // the sync object is signalled, we are sure that the stream reached the sync
+  // object, which ensures that all commands related to the texture we are
+  // getting back have been finished as well.
+  class PictureSyncObject;
+
+  // Check if the client is done reading out from the texture. If yes, queue
+  // it for reuse by the decoder. Otherwise post self as a delayed task
+  // to check later.
+  void CheckPictureStatus(int32 picture_buffer_id,
+                          scoped_ptr<PictureSyncObject> egl_sync_obj);
+
+  // Queue a picture for use by the decoder, either by sending it directly to it
+  // via OMX_FillThisBuffer, or by queueing it for later if we are RESETTING.
+  void QueuePictureBuffer(int32 picture_buffer_id);
+
 };
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_OMX_VIDEO_DECODE_ACCELERATOR_H_

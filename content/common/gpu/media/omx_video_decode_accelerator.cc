@@ -21,6 +21,11 @@ typedef std::pair<scoped_ptr<base::SharedMemory>, int32> SharedMemoryAndId;
 
 enum { kNumPictureBuffers = 8 };
 
+// Delay between polling for texture sync status. 5ms feels like a good
+// compromise, allowing some decoding ahead (up to 3 frames/vsync) to compensate
+// for more difficult frames.
+enum { kSyncPollDelayMs = 5 };
+
 void* omx_handle = NULL;
 
 typedef OMX_ERRORTYPE (*OMXInit)();
@@ -35,6 +40,10 @@ OMXGetHandle omx_gethandle = NULL;
 OMXGetComponentsOfRole omx_get_components_of_role = NULL;
 OMXFreeHandle omx_free_handle = NULL;
 OMXDeinit omx_deinit = NULL;
+
+static PFNEGLCREATESYNCKHRPROC egl_create_sync_khr = NULL;
+static PFNEGLGETSYNCATTRIBKHRPROC egl_get_sync_attrib_khr = NULL;
+static PFNEGLDESTROYSYNCKHRPROC egl_destroy_sync_khr = NULL;
 
 // Maps h264-related Profile enum values to OMX_VIDEO_AVCPROFILETYPE values.
 static OMX_U32 MapH264ProfileToOMXAVCProfile(uint32 profile) {
@@ -88,6 +97,41 @@ static OMX_U32 MapH264ProfileToOMXAVCProfile(uint32 profile) {
 
 // static
 bool OmxVideoDecodeAccelerator::pre_sandbox_init_done_ = false;
+
+class OmxVideoDecodeAccelerator::PictureSyncObject {
+ public:
+  // Create a sync object and insert into the GPU command stream.
+  PictureSyncObject(EGLDisplay egl_display);
+  ~PictureSyncObject();
+
+  bool IsSynced();
+
+ private:
+  EGLSyncKHR egl_sync_obj_;
+  EGLDisplay egl_display_;
+};
+
+OmxVideoDecodeAccelerator::PictureSyncObject::PictureSyncObject(
+    EGLDisplay egl_display)
+    : egl_display_(egl_display) {
+  DCHECK(egl_display_ != EGL_NO_DISPLAY);
+
+  egl_sync_obj_ = egl_create_sync_khr(egl_display_, EGL_SYNC_FENCE_KHR, NULL);
+  DCHECK_NE(egl_sync_obj_, EGL_NO_SYNC_KHR);
+}
+
+OmxVideoDecodeAccelerator::PictureSyncObject::~PictureSyncObject() {
+  egl_destroy_sync_khr(egl_display_, egl_sync_obj_);
+}
+
+bool OmxVideoDecodeAccelerator::PictureSyncObject::IsSynced() {
+  EGLint value = EGL_UNSIGNALED_KHR;
+  EGLBoolean ret = egl_get_sync_attrib_khr(
+      egl_display_, egl_sync_obj_, EGL_SYNC_STATUS_KHR, &value);
+  DCHECK(ret) << "Failed getting sync object state.";
+
+  return value == EGL_SIGNALED_KHR;
+}
 
 OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
     EGLDisplay egl_display, EGLContext egl_context,
@@ -387,8 +431,38 @@ void OmxVideoDecodeAccelerator::AssignPictureBuffers(
 }
 
 void OmxVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
   TRACE_EVENT1("Video Decoder", "OVDA::ReusePictureBuffer",
                "Picture id", picture_buffer_id);
+  scoped_ptr<PictureSyncObject> egl_sync_obj(
+      new PictureSyncObject(egl_display_));
+
+  // Start checking sync status periodically.
+  CheckPictureStatus(picture_buffer_id, egl_sync_obj.Pass());
+}
+
+void OmxVideoDecodeAccelerator::CheckPictureStatus(
+    int32 picture_buffer_id,
+    scoped_ptr<PictureSyncObject> egl_sync_obj) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
+  // It's possible for this task to never run if the message loop is
+  // stopped. In that case we may never call QueuePictureBuffer().
+  // This is fine though, because all pictures, irrespective of their state,
+  // are in pictures_ map and that's what will be used to do the clean up.
+  if (!egl_sync_obj->IsSynced()) {
+    MessageLoop::current()->PostDelayedTask(FROM_HERE, base::Bind(
+        &OmxVideoDecodeAccelerator::CheckPictureStatus, weak_this_,
+        picture_buffer_id, base::Passed(&egl_sync_obj)),
+        base::TimeDelta::FromMilliseconds(kSyncPollDelayMs));
+    return;
+  }
+
+  // Synced successfully. Queue the buffer for reuse.
+  QueuePictureBuffer(picture_buffer_id);
+}
+
+void OmxVideoDecodeAccelerator::QueuePictureBuffer(int32 picture_buffer_id) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   // During port-flushing, do not call OMX FillThisBuffer.
@@ -397,7 +471,11 @@ void OmxVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
     return;
   }
 
-  RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer", ILLEGAL_STATE,);
+  // We might have started destroying while waiting for the picture. It's safe
+  // to drop it here, because we will free all the pictures regardless of their
+  // state using the pictures_ map.
+  if (!CanFillBuffer())
+    return;
 
   OutputPictureById::iterator it = pictures_.find(picture_buffer_id);
   RETURN_ON_FAILURE(it != pictures_.end(),
@@ -1091,8 +1169,17 @@ bool OmxVideoDecodeAccelerator::PostSandboxInitialization() {
       reinterpret_cast<OMXFreeHandle>(dlsym(omx_handle, "OMX_FreeHandle"));
   omx_deinit =
       reinterpret_cast<OMXDeinit>(dlsym(omx_handle, "OMX_Deinit"));
+
+  egl_create_sync_khr = reinterpret_cast<PFNEGLCREATESYNCKHRPROC>(
+      eglGetProcAddress("eglCreateSyncKHR"));
+  egl_get_sync_attrib_khr = reinterpret_cast<PFNEGLGETSYNCATTRIBKHRPROC>(
+      eglGetProcAddress("eglGetSyncAttribKHR"));
+  egl_destroy_sync_khr = reinterpret_cast<PFNEGLDESTROYSYNCKHRPROC>(
+      eglGetProcAddress("eglDestroySyncKHR"));
+
   return (omx_init && omx_gethandle && omx_get_components_of_role &&
-          omx_free_handle && omx_deinit);
+          omx_free_handle && omx_deinit && egl_create_sync_khr &&
+          egl_get_sync_attrib_khr && egl_destroy_sync_khr);
 }
 
 // static
