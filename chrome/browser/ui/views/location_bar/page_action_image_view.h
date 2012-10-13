@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/common/extensions/extension_action.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget_observer.h"

@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
-#include "chrome/common/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/text/text_elider.h"

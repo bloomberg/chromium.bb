@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 
+#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -63,4 +63,3 @@ gfx::ImageSkia ExtensionActionIconFactory::GetBaseIconFromAction(int tab_id) {
 
   return GetDefaultIcon();
 }
-

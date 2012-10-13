@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_BROWSER_ACTIONS_API_H_
 
 #include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/extensions/extension_action.h"
 
 //
 // browserAction.* aliases for supported browserActions APIs.
