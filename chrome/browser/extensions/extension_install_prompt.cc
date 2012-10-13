@@ -402,7 +402,6 @@ void ExtensionInstallPrompt::ConfirmInstall(
   delegate_ = delegate;
   prompt_type_ = INSTALL_PROMPT;
   show_dialog_callback_ = show_dialog_callback;
-  DCHECK(!show_dialog_callback_.is_null());
 
   // We special-case themes to not show any confirm UI. Instead they are
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
@@ -589,8 +588,10 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   if (AutoConfirmPrompt(delegate_))
     return;
 
-  DCHECK(!show_dialog_callback_.is_null());
-  show_dialog_callback_.Run(parent_, navigator_, delegate_, prompt_);
+  if (show_dialog_callback_.is_null())
+    GetDefaultShowDialogCallback().Run(parent_, navigator_, delegate_, prompt_);
+  else
+    show_dialog_callback_.Run(parent_, navigator_, delegate_, prompt_);
 }
 
 namespace chrome {

@@ -106,8 +106,6 @@ CrxInstaller::CrxInstaller(
       error_on_unsupported_requirements_(false),
       requirements_checker_(new extensions::RequirementsChecker()),
       has_requirement_errors_(false) {
-  show_dialog_callback_ =
-      ExtensionInstallPrompt::GetDefaultShowDialogCallback();
   if (!approval)
     return;
 
