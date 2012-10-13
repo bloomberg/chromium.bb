@@ -91,54 +91,61 @@ std::string BuildOSCpuInfo() {
   if (position != std::string::npos)
     platform = platform.substr(0, position);
 
-  // The locale string is not easy to set correctly. Safari uses a language
-  // code and a dialect code. However, there is no setting allowing the user
-  // to set the dialect code, and no API to retrieve it.
-  // Note: The NSLocale methods (currentIdentifier:,
-  // objectForKey:NSLocaleLanguageCode and objectForKey:NSLocaleCountryCode) are
-  // not useful here because they return information related to the "Region
-  // Format" setting, which is different from the "Language" setting.
-  scoped_nsobject<NSDictionary> dialects([[NSDictionary alloc]
-      initWithObjectsAndKeys:
-          @"ar",    @"ar",  // No dialect code in Safari.
-          @"ca-es", @"ca",
-          @"cs-cz", @"cs",
-          @"da-dk", @"da",
-          @"el-gr", @"el",
-          @"en-gb", @"en-GB",
-          @"en-us", @"en",
-          @"he-il", @"he",
-          @"id",    @"id",  // No dialect code in Safari.
-          @"ja-jp", @"ja",
-          @"ko-kr", @"ko",
-          @"nb-no", @"nb",
-          @"pt-br", @"pt",
-          @"pt-pt", @"pt-PT",
-          @"sv-se", @"sv",
-          @"uk-ua", @"uk",
-          @"vi-vn", @"vi",
-          @"zh-cn", @"zh-Hans",
-          @"zh-tw", @"zh-Hant",
-          nil]);
-
-  NSArray* preferredLanguages = [NSLocale preferredLanguages];
-  NSString* language = ([preferredLanguages count] > 0) ?
-      [preferredLanguages objectAtIndex:0] : @"en";
-  NSString* localeIdentifier = [dialects objectForKey:language];
-  if (!localeIdentifier) {
-    // No entry in the dictionary, so duplicate the language string.
-    localeIdentifier = [NSString stringWithFormat:@"%@-%@", language, language];
-  }
-
   std::string os_cpu;
   base::StringAppendF(
       &os_cpu,
-      "%s;%s CPU %sOS %s like Mac OS X; %s",
+      "%s;%s CPU %sOS %s like Mac OS X",
       platform.c_str(),
       (os_major_version < 5) ? " U;" : "",  // iOS < 5 has a "U;" in the UA.
       (platform == "iPad") ? "" : "iPhone ",  // iPad has an empty string here.
-      os_version.c_str(),
-      base::SysNSStringToUTF8(localeIdentifier).c_str());
+      os_version.c_str());
+
+  // Up until iOS 5, the locale was included at the end of the Safari UA.
+  // TODO(stuartmorgan): Remove this once iOS 4.3 is no longer supported.
+  if (os_major_version < 5) {
+    // The locale string is not easy to set correctly. Safari uses a language
+    // code and a dialect code. However, there is no setting allowing the user
+    // to set the dialect code, and no API to retrieve it.
+    // Note: The NSLocale methods (currentIdentifier:,
+    // objectForKey:NSLocaleLanguageCode and objectForKey:NSLocaleCountryCode)
+    // are not useful here because they return information related to the
+    // "Region Format" setting, which is different from the "Language" setting.
+    scoped_nsobject<NSDictionary> dialects([[NSDictionary alloc]
+        initWithObjectsAndKeys:
+            @"ar",    @"ar",  // No dialect code in Safari.
+            @"ca-es", @"ca",
+            @"cs-cz", @"cs",
+            @"da-dk", @"da",
+            @"el-gr", @"el",
+            @"en-gb", @"en-GB",
+            @"en-us", @"en",
+            @"he-il", @"he",
+            @"id",    @"id",  // No dialect code in Safari.
+            @"ja-jp", @"ja",
+            @"ko-kr", @"ko",
+            @"nb-no", @"nb",
+            @"pt-br", @"pt",
+            @"pt-pt", @"pt-PT",
+            @"sv-se", @"sv",
+            @"uk-ua", @"uk",
+            @"vi-vn", @"vi",
+            @"zh-cn", @"zh-Hans",
+            @"zh-tw", @"zh-Hant",
+            nil]);
+
+    NSArray* preferredLanguages = [NSLocale preferredLanguages];
+    NSString* language = ([preferredLanguages count] > 0) ?
+        [preferredLanguages objectAtIndex:0] : @"en";
+    NSString* localeIdentifier = [dialects objectForKey:language];
+    if (!localeIdentifier) {
+      // No entry in the dictionary, so duplicate the language string.
+      localeIdentifier =
+          [NSString stringWithFormat:@"%@-%@", language, language];
+    }
+
+    base::StringAppendF(&os_cpu, "; %s",
+                        base::SysNSStringToUTF8(localeIdentifier).c_str());
+  }
 
   return os_cpu;
 }
