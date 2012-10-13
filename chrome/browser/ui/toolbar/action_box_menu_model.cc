@@ -53,9 +53,14 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
   SetIcon(GetIndexOfCommandId(IDC_BOOKMARK_PAGE),
           rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
 
-  AddItemWithStringId(IDC_SHARE_PAGE, IDS_SHARE_PAGE);
-  SetIcon(GetIndexOfCommandId(IDC_SHARE_PAGE),
-          rb.GetNativeImageNamed(IDR_SHARE));
+  // Since web intents are not working in incognito window (issue 142463),
+  // hide "share this page" menu item in incognito mode
+  // till the issue gets fixed.
+  if (!browser_->profile()->IsOffTheRecord()) {
+    AddItemWithStringId(IDC_SHARE_PAGE, IDS_SHARE_PAGE);
+    SetIcon(GetIndexOfCommandId(IDC_SHARE_PAGE),
+            rb.GetNativeImageNamed(IDR_SHARE));
+  }
 }
 
 ActionBoxMenuModel::~ActionBoxMenuModel() {
