@@ -29,6 +29,7 @@
   'sources': [
     'public/renderer/content_renderer_client.cc',
     'public/renderer/content_renderer_client.h',
+    'public/renderer/context_menu_client.h',
     'public/renderer/document_state.cc',
     'public/renderer/document_state.h',
     'public/renderer/navigation_state.cc',

@@ -38,7 +38,9 @@ struct WebPluginInfo;
 
 namespace content {
 
+class ContextMenuClient;
 class RenderViewVisitor;
+struct ContextMenuParams;
 
 class CONTENT_EXPORT RenderView : public IPC::Sender {
  public:
@@ -108,10 +110,17 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Filtered time per frame based on UpdateRect messages.
   virtual float GetFilteredTimePerFrame() const = 0;
 
-  // Shows a context menu with commands relevant to a specific element on
-  // the given frame. Additional context data is supplied.
-  virtual void ShowContextMenu(WebKit::WebFrame* frame,
-                               const WebKit::WebContextMenuData& data) = 0;
+  // Shows a context menu with the given information. The given client will
+  // be called with the result. The client pointer is owned by the caller and
+  // must remain valid as long as the RenderView is alive.
+  //
+  // The request ID will be returned by this function. This is passed to the
+  // client functions for identification.
+  //
+  // Note: if you end up having clients outliving the RenderView, we should add
+  // a CancelContextMenuCallback function that takes a request id.
+  virtual int ShowContextMenu(ContextMenuClient* client,
+                              const ContextMenuParams& params) = 0;
 
   // Returns the current visibility of the WebView.
   virtual WebKit::WebPageVisibilityState GetVisibilityState() const = 0;

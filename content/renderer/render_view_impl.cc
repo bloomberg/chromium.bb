@@ -4421,9 +4421,13 @@ float RenderViewImpl::GetFilteredTimePerFrame() const {
   return filtered_time_per_frame();
 }
 
-void RenderViewImpl::ShowContextMenu(WebKit::WebFrame* frame,
-                                     const WebKit::WebContextMenuData& data) {
-  showContextMenu(frame, data);
+int RenderViewImpl::ShowContextMenu(content::ContextMenuClient* client,
+                                    const content::ContextMenuParams& params) {
+  DCHECK(client);  // A null client means "internal" when we issue callbacks.
+  content::ContextMenuParams our_params(params);
+  our_params.custom_context.request_id = pending_context_menus_.Add(client);
+  Send(new ViewHostMsg_ContextMenu(routing_id_, our_params));
+  return our_params.custom_context.request_id;
 }
 
 WebKit::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
@@ -5154,12 +5158,15 @@ void RenderViewImpl::OnSetAltErrorPageURL(const GURL& url) {
 void RenderViewImpl::OnCustomContextMenuAction(
     const content::CustomContextMenuContext& custom_context,
     unsigned action) {
-  if (custom_context.is_pepper_menu)
-    pepper_delegate_.OnCustomContextMenuAction(custom_context, action);
-  else
+  if (custom_context.request_id) {
+    // External context menu request, look in our map.
+    content::ContextMenuClient* client =
+        pending_context_menus_.Lookup(custom_context.request_id);
+    client->OnMenuAction(custom_context.request_id, action);
+  } else {
+    // Internal request, forward to WebKit.
     webview()->performCustomContextMenuAction(action);
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    ContextMenuAction(action));
+  }
 }
 
 void RenderViewImpl::OnEnumerateDirectoryResponse(
@@ -6293,10 +6300,16 @@ void RenderViewImpl::OnSelectPopupMenuItems(
 
 void RenderViewImpl::OnContextMenuClosed(
     const content::CustomContextMenuContext& custom_context) {
-  if (custom_context.is_pepper_menu)
-    pepper_delegate_.OnContextMenuClosed(custom_context);
-  else
+  if (custom_context.request_id) {
+    // External request, should be in our map.
+    content::ContextMenuClient* client =
+        pending_context_menus_.Lookup(custom_context.request_id);
+    client->OnMenuClosed(custom_context.request_id);
+    pending_context_menus_.Remove(custom_context.request_id);
+  } else {
+    // Internal request, forward to WebKit.
     context_menu_node_.reset();
+  }
 }
 
 void RenderViewImpl::OnEnableViewSourceMode() {

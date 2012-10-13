@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_PLUGINS_PLUGIN_PLACEHOLDER_H_
 #define CHROME_RENDERER_PLUGINS_PLUGIN_PLACEHOLDER_H_
 
+#include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
@@ -23,7 +24,8 @@ struct WebPluginInfo;
 class PluginPlaceholder : public content::RenderViewObserver,
                           public content::RenderProcessObserver,
                           public webkit_glue::CppBoundClass,
-                          public webkit::WebViewPlugin::Delegate {
+                          public webkit::WebViewPlugin::Delegate,
+                          public content::ContextMenuClient {
  public:
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static PluginPlaceholder* CreateMissingPlugin(
@@ -93,11 +95,14 @@ class PluginPlaceholder : public content::RenderViewObserver,
   virtual void ShowContextMenu(const WebKit::WebMouseEvent&) OVERRIDE;
 
   // content::RenderViewObserver methods:
-  virtual void ContextMenuAction(unsigned id) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // content::RenderProcessObserver methods:
   virtual void PluginListChanged() OVERRIDE;
+
+  // content::ContextMenuClient methods:
+  virtual void OnMenuAction(int request_id, unsigned action) OVERRIDE;
+  virtual void OnMenuClosed(int request_id) OVERRIDE;
 
   // Replace this placeholder with a different plugin (which could be
   // a placeholder again).
@@ -180,6 +185,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
   bool finished_loading_;
   string16 plugin_name_;
   std::string identifier_;
+  int context_menu_request_id_;  // Nonzero when request pending.
 
   DISALLOW_COPY_AND_ASSIGN(PluginPlaceholder);
 };

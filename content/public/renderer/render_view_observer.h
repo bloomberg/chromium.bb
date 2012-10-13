@@ -90,7 +90,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidCreatePepperPlugin(RendererPpapiHost* host) {}
 
   // These match incoming IPCs.
-  virtual void ContextMenuAction(unsigned id) {}
   virtual void Navigate(const GURL& url) {}
   virtual void ClosePage() {}
 

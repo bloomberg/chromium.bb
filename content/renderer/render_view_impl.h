@@ -715,8 +715,9 @@ class RenderViewImpl : public RenderWidget,
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual bool GetContentStateImmediately() const OVERRIDE;
   virtual float GetFilteredTimePerFrame() const OVERRIDE;
-  virtual void ShowContextMenu(WebKit::WebFrame* frame,
-                               const WebKit::WebContextMenuData& data) OVERRIDE;
+  virtual int ShowContextMenu(
+      content::ContextMenuClient* client,
+      const content::ContextMenuParams& params) OVERRIDE;
   virtual WebKit::WebPageVisibilityState GetVisibilityState() const OVERRIDE;
   virtual void RunModalAlertDialog(WebKit::WebFrame* frame,
                                    const WebKit::WebString& message) OVERRIDE;
@@ -1339,6 +1340,20 @@ class RenderViewImpl : public RenderWidget,
   string16 selection_text_;
   size_t selection_text_offset_;
   ui::Range selection_range_;
+
+  // External context menu requests we're waiting for. "Internal"
+  // (WebKit-originated) context menu events will have an ID of 0 and will not
+  // be in this map.
+  //
+  // We don't want to add internal ones since some of the "special" page
+  // handlers in the browser process just ignore the context menu requests so
+  // avoid showing context menus, and so this will cause right clicks to leak
+  // entries in this map. Most users of the custom context menu (e.g. Pepper
+  // plugins) are normally only on "regular" pages and the regular pages will
+  // always respond properly to the request, so we don't have to worry so
+  // much about leaks.
+  IDMap<content::ContextMenuClient, IDMapExternalPointer>
+      pending_context_menus_;
 
   // View ----------------------------------------------------------------------
 

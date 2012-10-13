@@ -480,6 +480,31 @@ scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
   return broker;
 }
 
+void PepperPluginDelegateImpl::OnMenuAction(int request_id, unsigned action) {
+  // Just save the action.
+  DCHECK(!has_saved_context_menu_action_);
+  has_saved_context_menu_action_ = true;
+  saved_context_menu_action_ = action;
+}
+
+void PepperPluginDelegateImpl::OnMenuClosed(int request_id) {
+  PendingContextMenuMap::iterator found =
+      pending_context_menus_.find(request_id);
+  if (found == pending_context_menus_.end()) {
+    NOTREACHED() << "OnContextMenuClosed() called twice for the same menu.";
+    return;
+  }
+
+  if (has_saved_context_menu_action_) {
+    found->second->CompleteShow(PP_OK, saved_context_menu_action_);
+    has_saved_context_menu_action_ = false;
+    saved_context_menu_action_ = 0;
+  } else {
+    found->second->CompleteShow(PP_ERROR_USERCANCEL, 0);
+  }
+  pending_context_menus_.erase(found);
+}
+
 void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
     int request_id,
     const IPC::ChannelHandle& handle) {
@@ -1373,14 +1398,10 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
         static_cast<RenderWidgetFullscreenPepper*>(container)->routing_id();
   }
 
-  int request_id = pending_context_menus_.Add(
-      new scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>(menu));
-
   ContextMenuParams params;
   params.x = position.x();
   params.y = position.y();
   params.custom_context.is_pepper_menu = true;
-  params.custom_context.request_id = request_id;
   params.custom_context.render_widget_id = render_widget_id;
   params.custom_items = menu->menu_data();
 
@@ -1395,45 +1416,10 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
     params.y += instance->view_data().rect.point.y;
   }
 
-  IPC::Message* msg = new ViewHostMsg_ContextMenu(render_view_->routing_id(),
-                                                  params);
-  if (!render_view_->Send(msg)) {
-    pending_context_menus_.Remove(request_id);
-    return PP_ERROR_FAILED;
-  }
-
+  int request_id = render_view_->ShowContextMenu(this, params);
+  pending_context_menus_[request_id] =
+      scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>(menu);
   return PP_OK_COMPLETIONPENDING;
-}
-
-void PepperPluginDelegateImpl::OnContextMenuClosed(
-    const CustomContextMenuContext& custom_context) {
-  int request_id = custom_context.request_id;
-  scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>* menu_ptr =
-      pending_context_menus_.Lookup(request_id);
-  if (!menu_ptr) {
-    NOTREACHED() << "CompleteShowContextMenu() called twice for the same menu.";
-    return;
-  }
-  scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl> menu = *menu_ptr;
-  DCHECK(menu.get());
-  pending_context_menus_.Remove(request_id);
-
-  if (has_saved_context_menu_action_) {
-    menu->CompleteShow(PP_OK, saved_context_menu_action_);
-    has_saved_context_menu_action_ = false;
-    saved_context_menu_action_ = 0;
-  } else {
-    menu->CompleteShow(PP_ERROR_USERCANCEL, 0);
-  }
-}
-
-void PepperPluginDelegateImpl::OnCustomContextMenuAction(
-    const CustomContextMenuContext& custom_context,
-    unsigned action) {
-  // Just save the action.
-  DCHECK(!has_saved_context_menu_action_);
-  has_saved_context_menu_action_ = true;
-  saved_context_menu_action_ = action;
 }
 
 webkit::ppapi::FullscreenContainer*
