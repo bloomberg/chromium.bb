@@ -135,21 +135,39 @@ bool ShouldRunCompositingFieldTrial() {
   return false;
 #endif
 
+// Necessary for linux_chromeos build since it defines both OS_LINUX
+// and OS_CHROMEOS.
+#if defined(OS_CHROMEOS)
+  return false;
+#endif
+
 #if defined(OS_WIN)
   // Don't run the trial on Windows XP.
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return false;
 #endif
 
+  const GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
+  content::GpuFeatureType blacklisted_features =
+      gpu_data_manager->GetBlacklistedFeatures();
+
+  // Don't run the field trial if gpu access has been blocked or
+  // accelerated compositing is blacklisted.
+  if (!gpu_data_manager->GpuAccessAllowed() ||
+      blacklisted_features & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)
+    return false;
+
   // The performance of accelerated compositing is too low with software
   // rendering.
-  if (content::GpuDataManager::GetInstance()->ShouldUseSoftwareRendering())
+  if (gpu_data_manager->ShouldUseSoftwareRendering())
     return false;
 
   // Don't activate the field trial if force-compositing-mode has been
   // explicitly disabled from the command line.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableForceCompositingMode))
+          switches::kDisableForceCompositingMode) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAcceleratedCompositing))
     return false;
 
   return true;
