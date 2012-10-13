@@ -33,7 +33,8 @@ def get_grd_outputs(grit_cmd, grit_defines, grd_file, grd_strip_path_prefix):
   grit_path = os.path.join(os.getcwd(), os.path.dirname(grit_cmd))
   sys.path.append(grit_path)
   import grit_info
-  outputs = grit_info.Outputs(grd_file, grit_defines)
+  outputs = grit_info.Outputs(grd_file, grit_defines,
+                              'GRIT_DIR/../gritsettings/resource_ids')
   result = []
   for item in outputs:
     assert item.startswith(grd_strip_path_prefix)
