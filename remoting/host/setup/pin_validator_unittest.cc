@@ -9,27 +9,27 @@
 namespace remoting {
 
 TEST(IsPinValidTest, Normal) {
-  EXPECT_EQ(true, IsPinValid("123456"));
+  EXPECT_TRUE(IsPinValid("123456"));
 }
 
 TEST(IsPinValidTest, Short) {
-  EXPECT_EQ(false, IsPinValid("12345"));
+  EXPECT_FALSE(IsPinValid("12345"));
 }
 
 TEST(IsPinValidTest, Long) {
-  EXPECT_EQ(true, IsPinValid("1234567"));
+  EXPECT_TRUE(IsPinValid("1234567"));
 }
 
 TEST(IsPinValidTest, BadCharacter) {
-  EXPECT_EQ(false, IsPinValid("12345/"));
-  EXPECT_EQ(false, IsPinValid("123456/"));
-  EXPECT_EQ(false, IsPinValid("/123456"));
-  EXPECT_EQ(false, IsPinValid("12345:"));
-  EXPECT_EQ(false, IsPinValid("123456:"));
-  EXPECT_EQ(false, IsPinValid(":123456"));
-  EXPECT_EQ(false, IsPinValid("12345a"));
-  EXPECT_EQ(false, IsPinValid("123456a"));
-  EXPECT_EQ(false, IsPinValid("a123456"));
+  EXPECT_FALSE(IsPinValid("12345/"));
+  EXPECT_FALSE(IsPinValid("123456/"));
+  EXPECT_FALSE(IsPinValid("/123456"));
+  EXPECT_FALSE(IsPinValid("12345:"));
+  EXPECT_FALSE(IsPinValid("123456:"));
+  EXPECT_FALSE(IsPinValid(":123456"));
+  EXPECT_FALSE(IsPinValid("12345a"));
+  EXPECT_FALSE(IsPinValid("123456a"));
+  EXPECT_FALSE(IsPinValid("a123456"));
 }
 
 }  // namespace remoting
