@@ -2990,7 +2990,7 @@ void TestingAutomationProvider::SetLocalStatePrefs(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   std::string path;
-  Value* val;
+  Value* val = NULL;
   AutomationJSONReply reply(this, reply_message);
   if (args->GetString("path", &path) && args->Get("value", &val)) {
     PrefService* pref_service = g_browser_process->local_state();
@@ -3047,7 +3047,7 @@ void TestingAutomationProvider::SetPrefs(DictionaryValue* args,
     return;
   }
   std::string path;
-  Value* val;
+  Value* val = NULL;
   if (args->GetString("path", &path) && args->Get("value", &val)) {
     PrefService* pref_service = browser->profile()->GetPrefs();
     const PrefService::Preference* pref =
