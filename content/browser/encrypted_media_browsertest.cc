@@ -98,7 +98,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback) {
   ASSERT_NO_FATAL_FAILURE(PlayMedia(GetParam(), kExpected));
 }
 #else
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback) {
+// TODO(fgalligan): Enable after WebM parser has been updated.
+// http://crbug.com/155641
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(PlayMedia(GetParam(), kExpected));
 }
@@ -110,11 +112,15 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
   ASSERT_NO_FATAL_FAILURE(PlayMedia("com.example.invalid", kExpected));
 }
 
-INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
+// TODO(fgalligan): Enable after WebM parser has been updated.
+// http://crbug.com/155641
+INSTANTIATE_TEST_CASE_P(DISABLED_ClearKey, EncryptedMediaTest,
                         ::testing::Values(kClearKeyKeySystem));
 
 // http://crbug.com/152864
 #if !defined(OS_MACOSX)
-INSTANTIATE_TEST_CASE_P(ExternalClearKey, EncryptedMediaTest,
+// TODO(fgalligan): Enable after WebM parser has been updated.
+// http://crbug.com/155641
+INSTANTIATE_TEST_CASE_P(DISABLED_ExternalClearKey, EncryptedMediaTest,
                         ::testing::Values(kExternalClearKeyKeySystem));
 #endif
