@@ -90,10 +90,44 @@
   width: 10px !important;
 }
 
+/* -----------------------------------------------------------------------------
+   Tile Row Animation
+----------------------------------------------------------------------------- */
+
 .hide-row {
   opacity: 0;
 }
 
 .tile-grid .hide-row .tile-cell {
   opacity: 1;
+}
+
+/* -----------------------------------------------------------------------------
+   Tile Position Animation
+----------------------------------------------------------------------------- */
+
+.animate-tile-repositioning .tile {
+  -webkit-transition-duration: 200ms;
+  -webkit-transition-property: -webkit-transform, left, opacity, top;
+  position: absolute;
+}
+
+.animate-tile-repositioning .tile:not(.target-tile) {
+  -webkit-transition-duration: 400ms;
+}
+
+.animate-tile-repositioning.undo-removal .target-tile {
+  -webkit-transition-delay: 200ms;
+}
+
+.animate-tile-repositioning .tile .title {
+  display: none;
+}
+
+.animate-tile-repositioning .animate-hide-tile {
+  opacity: 0;
+}
+
+.animate-tile-repositioning .animate-hide-tile.target-tile {
+  -webkit-transform: scale(0.5);
 }

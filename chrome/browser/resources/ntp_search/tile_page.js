@@ -137,6 +137,9 @@ cr.define('ntp', function() {
       this.reset();
     },
 
+    tearDown: function() {
+    },
+
     /**
      * Resets the tile DOM.
      */
@@ -225,7 +228,7 @@ cr.define('ntp', function() {
      */
     initialize: function(tile, config) {
       this.className = 'tile-cell';
-      this.assign_(tile);
+      this.assign(tile);
     },
 
     /**
@@ -249,7 +252,7 @@ cr.define('ntp', function() {
      * Assigns a Tile to the this TileCell.
      * @type {TilePage}
      */
-    assign_: function(tile) {
+    assign: function(tile) {
       if (this.firstChild)
         this.replaceChild(tile, this.firstChild);
       else
@@ -338,6 +341,7 @@ cr.define('ntp', function() {
       this.eventTracker = new EventTracker();
       this.eventTracker.add(window, 'keyup', this.onKeyUp_.bind(this));
 
+      // TODO(pedrosimonetti): Check duplication of these methods.
       this.eventTracker.add(this, 'cardselected', this.handleCardSelection_);
       this.eventTracker.add(this, 'carddeselected',
           this.handleCardDeselection_);
@@ -345,6 +349,8 @@ cr.define('ntp', function() {
       this.eventTracker.add(this.tileGrid_, 'webkitTransitionEnd',
           this.onTileGridTransitionEnd_.bind(this));
 
+      // TODO(pedrosimonetti): This should be handled by BottomPanel class,
+      // not by each individual page.
       this.eventTracker.add($('page-list'), 'webkitTransitionEnd',
           this.onPageListTransitionEnd_.bind(this));
     },
@@ -420,10 +426,11 @@ cr.define('ntp', function() {
      *     last tile is removed from it.
      */
     removeTile: function(tile, opt_animate, opt_dontNotify) {
-      if (opt_animate)
-        this.classList.add('animating-tile-page');
-      var index = tile.index;
+      var tiles = this.tiles;
+      var index = tiles.indexOf(tile);
+      tile.tearDown();
       tile.parentNode.removeChild(tile);
+      tiles.splice(index, 1);
       this.renderGrid_();
 
       if (!opt_dontNotify)
@@ -574,14 +581,20 @@ cr.define('ntp', function() {
       if (tileCount < dataListLength) {
         this.createTiles_(dataListLength - tileCount);
       } else if (tileCount > dataListLength) {
-        // TODO(jeremycho): Consider rewriting removeTile to be compatible with
-        // pages other than Apps and calling it here.
-        for (var i = 0; i < tileCount - dataListLength; i++)
-          this.tiles_.pop();
+        var tiles = this.tiles_;
+        while (tiles.length > dataListLength) {
+          var previousLength = this.length;
+          // It doesn't matter which tiles are being removed here because
+          // they're going to be reconstructed below when calling updateTiles_
+          // method, so the first tiles are being removed here.
+          this.removeTile(tiles[0]);
+          assert(tiles.length < previousLength);
+        }
       }
 
       if (dataListLength != tileCount)
         this.renderGrid_();
+
       this.updateTiles_();
     },
 
@@ -644,6 +657,23 @@ cr.define('ntp', function() {
       }
 
       return width;
+    },
+
+    /**
+     * Returns the position of the tile at |index|.
+     * @param {number} index Tile index.
+     * @private
+     * @return {!{top: number, left: number}} Position.
+     */
+    getTilePosition_: function(index) {
+      var colCount = this.colCount_;
+      var col = index % colCount;
+      if (isRTL())
+        col = colCount - col - 1;
+      var config = this.config_;
+      var top = Math.floor(index / colCount) * config.rowHeight;
+      var left = col * (config.cellWidth + config.cellMarginStart);
+      return {top: top, left: left};
     },
 
     // rendering
@@ -885,8 +915,270 @@ cr.define('ntp', function() {
       this.animatingColCount_ = colCount;
     },
 
+    // tile repositioning animation
+    // -------------------------------------------------------------------------
+
+    /**
+     * Tile repositioning state.
+     * @type {{index: number, isRemoving: number}}
+     */
+    tileRepositioningState_: null,
+
+    /**
+     * Gets the repositioning state.
+     * @return {{index: number, isRemoving: number}} The repositioning data.
+     */
+    getTileRepositioningState: function() {
+      return this.tileRepositioningState_;
+    },
+
+    /**
+     * Sets the repositioning state that will be used to animate the tiles.
+     * @param {number} index The tile's index.
+     * @param {boolean} isRemoving Whether the tile is being removed.
+     */
+    setTileRepositioningState: function(index, isRemoving) {
+      this.tileRepositioningState_ = {
+        index: index,
+        isRemoving: isRemoving
+      };
+    },
+
+    /**
+     * Resets the repositioning state.
+     */
+    resetTileRepositioningState: function() {
+      this.tileRepositioningState_ = null;
+    },
+
+    /**
+     * Animates a tile removal.
+     * @param {number} index The index of the tile to be removed.
+     * @param {Object} newDataList The new data list.
+     */
+    animateTileRemoval: function(index, newDataList) {
+      var tiles = this.tiles_;
+      var tileCount = tiles.length;
+      assert(tileCount > 0);
+
+      var tileCells = this.querySelectorAll('.tile-cell');
+      var extraTileIndex = tileCount - 1;
+      var extraCell = tileCells[extraTileIndex];
+      var extraTileData = newDataList[extraTileIndex];
+
+      var repositioningStartIndex = index + 1;
+      var repositioningEndIndex = tileCount;
+
+      this.initializeRepositioningAnimation_(index, repositioningEndIndex,
+          true);
+
+      var tileBeingRemoved = tiles[index];
+      tileBeingRemoved.scrollTop;
+
+      // The extra tile is the new one that will appear. It can be a normal
+      // tile (when there's extra data for it), or a filler tile.
+      var extraTile = createTile(this, extraTileData);
+      if (!extraTileData)
+        extraCell.classList.add('filler');
+      // The extra tile is being assigned in order to put it in the right spot.
+      extraCell.assign(extraTile);
+
+      this.executeRepositioningAnimation_(tileBeingRemoved, extraTile,
+          repositioningStartIndex, repositioningEndIndex, true);
+
+      // Cleans up the animation.
+      var onPositioningTransitionEnd = function(e) {
+        var propertyName = e.propertyName;
+        if (!(propertyName == '-webkit-transform' ||
+              propertyName == 'opacity')) {
+          return;
+        }
+
+        lastAnimatingTile.removeEventListener('webkitTransitionEnd',
+            onPositioningTransitionEnd);
+
+        this.finalizeRepositioningAnimation_(tileBeingRemoved,
+            repositioningStartIndex, repositioningEndIndex, true);
+
+        this.removeTile(tileBeingRemoved);
+
+        // If the extra tile is a real one (not a filler), then it needs to be
+        // added to the tile list. The tile has been placed in the right spot
+        // but the tile page still doesn't know about this new tile.
+        if (extraTileData)
+          this.appendTile(extraTile);
+
+        this.renderGrid_();
+      }.bind(this);
+
+      // Listens to the animation end.
+      var lastAnimatingTile = extraTile;
+      lastAnimatingTile.addEventListener('webkitTransitionEnd',
+          onPositioningTransitionEnd);
+    },
+
+    /**
+     * Animates a tile restoration.
+     * @param {number} index The index of the tile to be restored.
+     * @param {Object} newDataList The new data list.
+     */
+    animateTileRestoration: function(index, newDataList) {
+      var tiles = this.tiles_;
+      var tileCount = tiles.length;
+
+      var tileCells = this.querySelectorAll('.tile-cell');
+      var extraTileIndex = Math.min(tileCount, this.config_.maxTileCount - 1);
+      var extraCell = tileCells[extraTileIndex];
+      var extraTileData = newDataList[extraTileIndex + 1];
+
+      var repositioningStartIndex = index;
+      var repositioningEndIndex = tileCount - (extraTileData ? 1 : 0);
+
+      this.initializeRepositioningAnimation_(index, repositioningEndIndex);
+
+      var restoredData = newDataList[index];
+      var tileBeingRestored = createTile(this, restoredData);
+      tileCells[index].appendChild(tileBeingRestored);
+
+      var extraTile = extraCell.firstChild;
+
+      this.executeRepositioningAnimation_(tileBeingRestored, extraTile,
+          repositioningStartIndex, repositioningEndIndex, false);
+
+      // Cleans up the animation.
+      var onPositioningTransitionEnd = function(e) {
+        var propertyName = e.propertyName;
+        if (!(propertyName == '-webkit-transform' ||
+              propertyName == 'opacity')) {
+          return;
+        }
+
+        lastAnimatingTile.removeEventListener('webkitTransitionEnd',
+            onPositioningTransitionEnd);
+
+        // When there's an extra data, it means the tile is a real one (not a
+        // filler), and therefore it needs to be removed from the tile list.
+        if (extraTileData)
+          this.removeTile(extraTile);
+
+        this.finalizeRepositioningAnimation_(tileBeingRestored,
+            repositioningStartIndex, repositioningEndIndex, false);
+
+        this.addTileAt(tileBeingRestored, index);
+
+        this.renderGrid_();
+      }.bind(this);
+
+      // Listens to the animation end.
+      var lastAnimatingTile = tileBeingRestored;
+      lastAnimatingTile.addEventListener('webkitTransitionEnd',
+          onPositioningTransitionEnd);
+    },
+
     // animation helpers
     // -------------------------------------------------------------------------
+
+    /**
+     * Moves a tile to a new position.
+     * @param {Tile} tile A tile.
+     * @param {number} left Left coordinate.
+     * @param {number} top Top coordinate.
+     * @private
+     */
+    moveTileTo_: function(tile, left, top) {
+      tile.style.left = left + 'px';
+      tile.style.top = top + 'px';
+    },
+
+    /**
+     * Resets a tile's position.
+     * @param {Tile} tile A tile.
+     * @private
+     */
+    resetTilePosition_: function(tile) {
+      tile.style.left = '';
+      tile.style.top = '';
+    },
+
+    /**
+     * Initializes the repositioning animation.
+     * @param {number} startIndex Index of the first tile to be repositioned.
+     * @param {number} endIndex Index of the last tile to be repositioned.
+     * @param {boolean} isRemoving Whether the tile is being removed.
+     * @private
+     */
+    initializeRepositioningAnimation_: function(startIndex, endIndex,
+        isRemoving) {
+      // Move tiles from relative to absolute position.
+      var tiles = this.tiles_;
+      var tileGridContent = this.tileGridContent_;
+      for (var i = startIndex; i < endIndex; i++) {
+        var tile = tiles[i];
+        var position = this.getTilePosition_(i);
+        this.moveTileTo_(tile, position.left, position.top);
+        tile.style.zIndex = endIndex - i;
+        tileGridContent.appendChild(tile);
+      }
+
+      tileGridContent.classList.add('animate-tile-repositioning');
+
+      if (!isRemoving)
+        tileGridContent.classList.add('undo-removal');
+    },
+
+    /**
+     * Executes the repositioning animation.
+     * @param {Tile} targetTile The tile that is being removed/restored.
+     * @param {Tile} extraTile The extra tile that is going to appear/disappear.
+     * @param {number} startIndex Index of the first tile to be repositioned.
+     * @param {number} endIndex Index of the last tile to be repositioned.
+     * @param {boolean} isRemoving Whether the tile is being removed.
+     * @private
+     */
+    executeRepositioningAnimation_: function(targetTile, extraTile, startIndex,
+        endIndex, isRemoving) {
+      targetTile.classList.add('target-tile');
+
+      // Alternate the visualization of the target and extra tiles.
+      fadeTile(targetTile, !isRemoving);
+      fadeTile(extraTile, isRemoving);
+
+      // Move tiles to the new position.
+      var tiles = this.tiles_;
+      var positionDiff = isRemoving ? -1 : 1;
+      for (var i = startIndex; i < endIndex; i++) {
+        var position = this.getTilePosition_(i + positionDiff);
+        this.moveTileTo_(tiles[i], position.left, position.top);
+      }
+    },
+
+    /**
+     * Finalizes the repositioning animation.
+     * @param {Tile} targetTile The tile that is being removed/restored.
+     * @param {number} startIndex Index of the first tile to be repositioned.
+     * @param {number} endIndex Index of the last tile to be repositioned.
+     * @param {boolean} isRemoving Whether the tile is being removed.
+     * @private
+     */
+    finalizeRepositioningAnimation_: function(targetTile, startIndex, endIndex,
+        isRemoving) {
+      // Remove temporary class names.
+      var tileGridContent = this.tileGridContent_;
+      tileGridContent.classList.remove('animate-tile-repositioning');
+      tileGridContent.classList.remove('undo-removal');
+      targetTile.classList.remove('target-tile');
+
+      // Move tiles back to relative position.
+      var tiles = this.tiles_;
+      var tileCells = this.querySelectorAll('.tile-cell');
+      var positionDiff = isRemoving ? -1 : 1;
+      for (var i = startIndex; i < endIndex; i++) {
+        var tile = tiles[i];
+        this.resetTilePosition_(tile);
+        tile.style.zIndex = '';
+        tileCells[i + positionDiff].assign(tile);
+      }
+    },
 
     /**
      * Animates the display the Bottom Panel.
@@ -948,7 +1240,8 @@ cr.define('ntp', function() {
 
         this.pageOffset_ = pageOffset;
         this.tileGridContent_.style.webkitTransform =
-            'translate3d(0,' + (-pageOffset * this.config_.rowHeight) + 'px,0)';
+            'translate3d(0, ' + (-pageOffset * this.config_.rowHeight) +
+            'px, 0)';
       }
     },
 
@@ -960,6 +1253,9 @@ cr.define('ntp', function() {
      * @param {Event} e The tile grid webkitTransitionEnd event.
      */
     onTileGridTransitionEnd_: function(e) {
+      if (!this.selected)
+        return;
+
       // We should remove the classes that control transitions when the
       // transition ends so when the text is resized (Ctrl + '+'), no other
       // transition should happen except those defined in the specification.
@@ -973,7 +1269,7 @@ cr.define('ntp', function() {
       // individual tile transitions. TODO(pedrosimonetti): Investigate if we
       // can improve the performance here by using a more efficient selector.
       var tileGrid = this.tileGrid_;
-      if (event.target == tileGrid &&
+      if (e.target == tileGrid &&
           tileGrid.classList.contains('animate-grid-width')) {
         tileGrid.classList.remove('animate-grid-width');
 
@@ -987,11 +1283,14 @@ cr.define('ntp', function() {
      * @param {Event} e The tile grid webkitTransitionEnd event.
      */
     onPageListTransitionEnd_: function(e) {
+      if (!this.selected)
+        return;
+
       // For the same reason as explained in onTileGridTransitionEnd_, we need
       // to remove the class 'animate-page-height' when the vertical transition
       // ends.
       var pageList = $('page-list');
-      if (event.target == pageList &&
+      if (e.target == pageList &&
           pageList.classList.contains('animate-page-height')) {
         pageList.classList.remove('animate-page-height');
       }
@@ -1015,6 +1314,43 @@ cr.define('ntp', function() {
         this.paginate_(pageOffset);
     },
   };
+
+  /**
+   * Creates a new tile given a particular data. If there's no data, then
+   * a tile filler will be created.
+   * @param {TilePage} tilePage A TilePage.
+   * @param {Object=} opt_data The data that will be used to create the tile.
+   * @return {Tile} The new tile.
+   */
+  function createTile(tilePage, opt_data) {
+    var tile;
+    if (opt_data) {
+      // If there's data, the new tile will be a real one (not a filler).
+      tile = new tilePage.TileClass(tilePage.config_);
+      tile.setData(opt_data);
+    } else {
+      // Otherwise, it will be a fake filler tile.
+      tile = cr.doc.createElement('span');
+      tile.className = 'tile';
+    }
+    return tile;
+  }
+
+  /**
+   * Fades a tile.
+   * @param {Tile} tile A Tile.
+   * @param {boolean} isFadeIn Whether to fade-in the tile. If |isFadeIn| is
+   * false, then the tile is going to fade-out.
+   */
+  function fadeTile(tile, isFadeIn) {
+    var className = 'animate-hide-tile';
+    tile.classList.add(className);
+    if (isFadeIn) {
+      // Forces a reflow to ensure that the fade-out animation will work.
+      tile.scrollTop;
+      tile.classList.remove(className);
+    }
+  }
 
   return {
     Tile: Tile,

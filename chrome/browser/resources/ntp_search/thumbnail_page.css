@@ -13,7 +13,7 @@
   width: 132px;
 }
 
-.thumbnail-page .tile-cell .tile {
+.thumbnail-page .tile {
   background: #fff;
   border: 1px solid rgb(192, 192, 192);
   border-radius: 2px;
@@ -25,8 +25,8 @@
   width: 130px;
 }
 
-.thumbnail-page .tile-cell .tile:hover,
-.thumbnail-page .tile-cell .tile:hover .thumbnail-card {
+.thumbnail-page .tile:hover,
+.thumbnail-page .tile:hover .thumbnail-card {
   /* TODO(pedrosimonetti): Confirm value with Marcin. */
   border-color: rgb(127, 127, 127);
 }

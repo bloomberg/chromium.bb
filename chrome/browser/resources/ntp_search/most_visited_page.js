@@ -108,10 +108,9 @@ cr.define('ntp', function() {
      * @private
      */
     blacklist_: function() {
+      this.tileCell.tilePage.setTileRepositioningState(this.index, true);
       this.showUndoNotification_();
       chrome.send('blacklistURLFromMostVisited', [this.data_.url]);
-      this.reset();
-      chrome.send('getMostVisited');
       this.classList.add('blacklisted');
     },
 
@@ -121,10 +120,11 @@ cr.define('ntp', function() {
      */
     showUndoNotification_: function() {
       var data = this.data_;
-      var self = this;
+      var tilePage = this.tileCell.tilePage;
+      var index = this.index;
       var doUndo = function() {
+        tilePage.setTileRepositioningState(index, false);
         chrome.send('removeURLsFromMostVisitedBlacklist', [data.url]);
-        self.setData(data);
       };
 
       var undo = {

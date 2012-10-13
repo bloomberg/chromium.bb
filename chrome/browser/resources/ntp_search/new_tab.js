@@ -235,7 +235,7 @@ cr.define('ntp', function() {
      *
      * @param {TilePage} page The page element.
      * @param {string} title The title of the tile page.
-     * @param {TilePage} opt_refNode Optional reference node to insert in front
+     * @param {TilePage=} opt_refNode Optional reference node to insert in front
      *     of.
      * When opt_refNode is falsey, |page| will just be appended to the end of
      * the page list.
@@ -364,14 +364,6 @@ cr.define('ntp', function() {
 
       // Get a list of page names
       var pageNames = data.appPageNames;
-
-      function stringListIsEmpty(list) {
-        for (var i = 0; i < list.length; i++) {
-          if (list[i])
-            return false;
-        }
-        return true;
-      }
 
       // Sort by launch ordinal
       apps.sort(function(a, b) {
@@ -728,7 +720,7 @@ cr.define('ntp', function() {
 
   /**
    * Queued callbacks which lie in wait for all sections to be ready.
-   * @type {array}
+   * @type {!Array}
    */
   var readyCallbacks = [];
 
@@ -802,7 +794,7 @@ cr.define('ntp', function() {
    *     records describing the links in the notification. Each record should
    *     have a 'text' attribute (the display string) and an 'action' attribute
    *     (a function to run when the link is activated).
-   * @param {Function} opt_closeHandler The callback invoked if the user
+   * @param {Function=} opt_closeHandler The callback invoked if the user
    *     manually dismisses the notification.
    */
   function showNotification(message, links, opt_closeHandler, opt_timeout) {
@@ -872,9 +864,20 @@ cr.define('ntp', function() {
     cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
-  function setMostVisitedPages(dataList, hasBlacklistedUrls) {
-    newTabView.mostVisitedPage.setDataList(dataList);
-    cr.dispatchSimpleEvent(document, 'sectionready', true, true);
+  function setMostVisitedPages(data, hasBlacklistedUrls) {
+    var page = newTabView.mostVisitedPage;
+    var state = page.getTileRepositioningState();
+    if (state) {
+      if (state.isRemoving)
+        page.animateTileRemoval(state.index, data);
+      else
+        page.animateTileRestoration(state.index, data);
+
+      page.resetTileRepositioningState();
+    } else {
+      page.setDataList(data);
+      cr.dispatchSimpleEvent(document, 'sectionready', true, true);
+    }
   }
 
   function setForeignSessions(dataList, isTabSyncEnabled) {

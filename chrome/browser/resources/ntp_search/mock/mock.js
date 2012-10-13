@@ -122,12 +122,20 @@ var recordMockData = false;
       loadTimeData.data = dataMap['__loadTimeData__'];
   }
 
+  function getAnimationDuration(duration) {
+    var slownessFactor = debugArgs.slownessFactor || 1;
+    return Math.round(duration * slownessFactor);
+  }
 
   //----------------------------------------------------------------------------
   // ChromeMock implementation
   //----------------------------------------------------------------------------
 
   var ChromeMock = {
+    get debugArgs() {
+      return debugArgs;
+    },
+
     mock: function(newDataMap) {
       if (newDataMap) {
         dataMap = newDataMap;
@@ -211,6 +219,7 @@ var recordMockData = false;
         if (data[i].url == url)
           mostVisitedBlackList['' + i] = 1;
       }
+      dispatchCallbackForMessage('getMostVisited');
     },
 
     removeURLsFromMostVisitedBlacklist: function(urls) {
@@ -235,11 +244,12 @@ var recordMockData = false;
 
   var debugArgs = {
     debug: false,
-    slownessFactor: null
+    slownessFactor: null,
   };
 
   var debugStylesheet = null;
-  var animationSelectorSpeedMap = {
+  var selectorDurationMap = {
+    '#page-list': 200,
     '#card-slider-frame': 250,
     '.dot': 200,
     '.animate-page-height': 200,
@@ -247,16 +257,28 @@ var recordMockData = false;
     '.tile-grid-content': 200,
     '.tile-row': 200,
     '.animate-grid-width .tile-cell': 200,
+    '.animate-tile-repositioning .tile': 200,
+    '.animate-tile-repositioning .tile:not(.target-tile)': 400,
   };
 
-  function adjustAnimationSpeed(slownessFactor) {
-    slownessFactor = slownessFactor || 1;
+  var selectorDelayMap = {
+    '.animate-tile-repositioning.undo-removal .target-tile': 200,
+  };
 
+  function adjustAnimationSpeed() {
     var animationRules = [];
-    for (var selector in animationSelectorSpeedMap) {
-      if (animationSelectorSpeedMap.hasOwnProperty(selector)) {
+    for (var selector in selectorDurationMap) {
+      if (selectorDurationMap.hasOwnProperty(selector)) {
         animationRules.push(selector + ' { -webkit-transition-duration: ' +
-            Math.round(animationSelectorSpeedMap[selector] * slownessFactor) +
+            getAnimationDuration(selectorDurationMap[selector]) +
+            'ms !important; }\n');
+      }
+    }
+
+    for (var selector in selectorDelayMap) {
+      if (selectorDelayMap.hasOwnProperty(selector)) {
+        animationRules.push(selector + ' { -webkit-transition-delay: ' +
+            getAnimationDuration(selectorDelayMap[selector]) +
             'ms !important; }\n');
       }
     }
@@ -284,7 +306,7 @@ var recordMockData = false;
         var key = data[0];
         var value = data[1];
         debugArgs[key] = typeof value == 'undefined' ? true :
-            parseInt(value) ? parseInt(value) : value;
+            parseFloat(value) ? parseFloat(value) : value;
       }
     }
   }
@@ -295,9 +317,12 @@ var recordMockData = false;
     if (debugArgs.debug)
       document.body.classList.add('debug');
 
+    if (debugArgs.background)
+      document.body.style.background = debugArgs.background;
+
     var slownessFactor = debugArgs.slownessFactor;
     if (slownessFactor)
-      adjustAnimationSpeed(slownessFactor);
+      adjustAnimationSpeed();
   });
 
   //----------------------------------------------------------------------------

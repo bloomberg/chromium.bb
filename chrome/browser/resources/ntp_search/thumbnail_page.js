@@ -110,7 +110,7 @@ cr.define('ntp', function() {
         favicon.style.backgroundImage =
             url('chrome://favicon/size/16/' + dataUrl);
         thumbnailImage.appendChild(favicon);
-      }
+      };
 
       var thumbnailUrl = ntp.getThumbnailUrl(dataUrl);
       thumbnailImage.style.backgroundImage = url(thumbnailUrl);
