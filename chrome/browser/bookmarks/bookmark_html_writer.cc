@@ -106,7 +106,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     if (!OpenFile())
       return;
 
-    Value* roots;
+    Value* roots = NULL;
     if (!Write(kHeader) ||
         bookmarks_->GetType() != Value::TYPE_DICTIONARY ||
         !static_cast<DictionaryValue*>(bookmarks_.get())->Get(
@@ -118,8 +118,8 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
     DictionaryValue* roots_d_value = static_cast<DictionaryValue*>(roots);
     Value* root_folder_value;
-    Value* other_folder_value;
-    Value* mobile_folder_value;
+    Value* other_folder_value = NULL;
+    Value* mobile_folder_value = NULL;
     if (!roots_d_value->Get(BookmarkCodec::kRootFolderNameKey,
                             &root_folder_value) ||
         root_folder_value->GetType() != Value::TYPE_DICTIONARY ||
@@ -295,7 +295,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
     // Folder.
     std::string last_modified_date;
-    const Value* child_values;
+    const Value* child_values = NULL;
     if (!value.GetString(BookmarkCodec::kDateModifiedKey,
                          &last_modified_date) ||
         !value.Get(BookmarkCodec::kChildrenKey, &child_values) ||

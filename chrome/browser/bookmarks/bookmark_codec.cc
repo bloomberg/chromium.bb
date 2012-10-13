@@ -154,7 +154,7 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   const DictionaryValue* roots_d_value =
       static_cast<const DictionaryValue*>(roots);
   const Value* root_folder_value;
-  const Value* other_folder_value;
+  const Value* other_folder_value = NULL;
   if (!roots_d_value->Get(kRootFolderNameKey, &root_folder_value) ||
       root_folder_value->GetType() != Value::TYPE_DICTIONARY ||
       !roots_d_value->Get(kOtherBookmarkFolderNameKey, &other_folder_value) ||
