@@ -98,6 +98,10 @@ class PRINTING_EXPORT Emf : public Metafile {
   // metafile. Returns NULL if fails.
   Emf* RasterizeMetafile(int raster_area_in_pixels) const;
 
+  // Returns new metafile where AlphaBlend replaced by bitmaps. Returns NULL
+  // if fails.
+  Emf* RasterizeAlphaBlend() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(EmfTest, DC);
   FRIEND_TEST_ALL_PREFIXES(EmfPrintingTest, PageBreak);

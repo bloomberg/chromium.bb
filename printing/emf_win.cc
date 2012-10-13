@@ -54,6 +54,101 @@ int CALLBACK IsAlphaBlendUsedEnumProc(HDC,
   return 1;
 }
 
+int CALLBACK RasterizeAlphaBlendProc(HDC metafile_dc,
+                                     HANDLETABLE* handle_table,
+                                     const ENHMETARECORD *record,
+                                     int num_objects,
+                                     LPARAM data) {
+    HDC bitmap_dc = *reinterpret_cast<HDC*>(data);
+    // Play this command to the bitmap DC.
+    ::PlayEnhMetaFileRecord(bitmap_dc, handle_table, record, num_objects);
+    switch (record->iType) {
+    case EMR_ALPHABLEND: {
+      const EMRALPHABLEND* alpha_blend =
+          reinterpret_cast<const EMRALPHABLEND*>(record);
+      // Don't modify transformation here.
+      // Old implementation did reset transformations for DC to identity matrix.
+      // That was not correct and cause some bugs, like unexpected cropping.
+      // EMRALPHABLEND is rendered into bitmap and metafile contexts with
+      // current transformation. If we don't touch them here BitBlt will copy
+      // same areas.
+      ::BitBlt(metafile_dc,
+               alpha_blend->xDest,
+               alpha_blend->yDest,
+               alpha_blend->cxDest,
+               alpha_blend->cyDest,
+               bitmap_dc,
+               alpha_blend->xDest,
+               alpha_blend->yDest,
+               SRCCOPY);
+      break;
+    }
+    case EMR_CREATEBRUSHINDIRECT:
+    case EMR_CREATECOLORSPACE:
+    case EMR_CREATECOLORSPACEW:
+    case EMR_CREATEDIBPATTERNBRUSHPT:
+    case EMR_CREATEMONOBRUSH:
+    case EMR_CREATEPALETTE:
+    case EMR_CREATEPEN:
+    case EMR_DELETECOLORSPACE:
+    case EMR_DELETEOBJECT:
+    case EMR_EXTCREATEFONTINDIRECTW:
+      // Play object creation command only once.
+      break;
+
+    default:
+      // Play this command to the metafile DC.
+      ::PlayEnhMetaFileRecord(metafile_dc, handle_table, record, num_objects);
+      break;
+    }
+    return 1;  // Continue enumeration
+}
+
+// Bitmapt for rasterization.
+class RasterBitmap {
+ public:
+  explicit RasterBitmap(const gfx::Size& raster_size)
+      : saved_object_(NULL) {
+    context_.Set(::CreateCompatibleDC(NULL));
+    if (!context_) {
+      NOTREACHED() << "Bitmap DC creation failed";
+      return;
+    }
+    ::SetGraphicsMode(context_, GM_ADVANCED);
+    void* bits = NULL;
+    gfx::Rect bitmap_rect(raster_size);
+    gfx::CreateBitmapHeader(raster_size.width(), raster_size.height(),
+                            &header_.bmiHeader);
+    bitmap_.Set(::CreateDIBSection(context_, &header_, DIB_RGB_COLORS, &bits,
+                                   NULL, 0));
+    if (!bitmap_)
+      NOTREACHED() << "Raster bitmap creation for printing failed";
+
+    saved_object_ = ::SelectObject(context_, bitmap_);
+    ::FillRect(context_, &bitmap_rect.ToRECT(),
+               static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH)));
+
+  }
+
+  ~RasterBitmap() {
+    ::SelectObject(context_, saved_object_);
+  }
+
+  HDC context() const {
+    return context_;
+  }
+
+  base::win::ScopedCreateDC context_;
+  BITMAPINFO header_;
+  base::win::ScopedBitmap bitmap_;
+  HGDIOBJ saved_object_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RasterBitmap);
+};
+
+
+
 }  // namespace
 
 namespace printing {
@@ -516,28 +611,11 @@ Emf* Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   page_size.set_width(std::max<int>(1, page_size.width() * scale));
   page_size.set_height(std::max<int>(1, page_size.height() * scale));
 
-  base::win::ScopedCreateDC bitmap_dc(::CreateCompatibleDC(NULL));
-  if (!bitmap_dc) {
-    NOTREACHED() << "Bitmap DC creation failed";
-    return NULL;
-  }
-  ::SetGraphicsMode(bitmap_dc, GM_ADVANCED);
-  void* bits = NULL;
-  BITMAPINFO hdr;
-  gfx::CreateBitmapHeader(page_size.width(), page_size.height(),
-                          &hdr.bmiHeader);
-  base::win::ScopedBitmap hbitmap(CreateDIBSection(
-      bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0));
-  if (!hbitmap)
-    NOTREACHED() << "Raster bitmap creation for printing failed";
 
-  base::win::ScopedSelectObject selectBitmap(bitmap_dc, hbitmap);
-  RECT rect = { 0, 0, page_size.width(), page_size.height() };
-  HBRUSH white_brush = static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH));
-  FillRect(bitmap_dc, &rect, white_brush);
+  RasterBitmap bitmap(page_size);
 
   gfx::Rect bitmap_rect(page_size);
-  Playback(bitmap_dc, &bitmap_rect.ToRECT());
+  Playback(bitmap.context(), &bitmap_rect.ToRECT());
 
   scoped_ptr<Emf> result(new Emf);
   result->Init();
@@ -557,12 +635,41 @@ Emf* Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   };
   ::SetWorldTransform(hdc, &xform);
   ::BitBlt(hdc, 0, 0, bitmap_rect.width(), bitmap_rect.height(),
-           bitmap_dc, bitmap_rect.x(), bitmap_rect.y(), SRCCOPY);
+           bitmap.context(), bitmap_rect.x(), bitmap_rect.y(), SRCCOPY);
 
   result->FinishPage();
   result->FinishDocument();
 
   return result.release();
 }
+
+Emf* Emf::RasterizeAlphaBlend() const {
+  gfx::Rect page_bounds = GetPageBounds(1);
+  if (page_bounds.size().GetArea() <= 0) {
+    NOTREACHED() << "Metafile is empty";
+    page_bounds = gfx::Rect(1, 1);
+  }
+
+  RasterBitmap bitmap(page_bounds.size());
+
+  // Map metafile page_bounds.x(), page_bounds.y() to bitmap 0, 0.
+  XFORM xform = { 1, 0, 0, 1, -page_bounds.x(), -page_bounds.y()};
+  ::SetWorldTransform(bitmap.context(), &xform);
+
+  scoped_ptr<Emf> result(new Emf);
+  result->Init();
+  HDC hdc = result->context();
+  DCHECK(hdc);
+  skia::InitializeDC(hdc);
+
+  HDC bitmap_dc = bitmap.context();
+  ::EnumEnhMetaFile(hdc, emf(), &RasterizeAlphaBlendProc, &bitmap_dc,
+                    &page_bounds.ToRECT());
+
+  result->FinishDocument();
+
+  return result.release();
+}
+
 
 }  // namespace printing
