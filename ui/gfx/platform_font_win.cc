@@ -98,8 +98,14 @@ Font PlatformFontWin::DeriveFontWithHeight(int height, int style) {
   if (GetHeight() > height) {
     const int min_font_size = GetMinimumFontSize();
     Font font = DeriveFont(-1, style);
-    while (font.GetHeight() > height && font.GetFontSize() != min_font_size) {
+    int font_height = font.GetHeight();
+    int font_size = font.GetFontSize();
+    while (font_height > height && font_size != min_font_size) {
       font = font.DeriveFont(-1, style);
+      if (font_height == font.GetHeight() && font_size == font.GetFontSize())
+        break;
+      font_height = font.GetHeight();
+      font_size = font.GetFontSize();
     }
     return font;
   }

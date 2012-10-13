@@ -92,4 +92,13 @@ TEST(PlatformFontWinTest, DeriveFontWithHeight_MinSize) {
   PlatformFontWin::get_minimum_font_size_callback = old_callback;
 }
 
+TEST(PlatformFontWinTest, DeriveFontWithHeight_TooSmall) {
+  const Font base_font;
+  PlatformFontWin* platform_font =
+      static_cast<PlatformFontWin*>(base_font.platform_font());
+
+  const Font derived_font = platform_font->DeriveFontWithHeight(1, 0);
+  EXPECT_GT(derived_font.GetHeight(), 1);
+}
+
 }  // namespace gfx
