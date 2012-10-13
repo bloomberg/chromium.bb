@@ -735,7 +735,7 @@ void RenderThreadImpl::RecordUserMetrics(const std::string& action) {
 
 base::SharedMemoryHandle RenderThreadImpl::HostAllocateSharedMemoryBuffer(
     uint32 buffer_size) {
-  base::SharedMemoryHandle mem_handle;
+  base::SharedMemoryHandle mem_handle = base::SharedMemoryHandle();
   Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
                 buffer_size, &mem_handle));
   return mem_handle;
