@@ -19,6 +19,11 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+#ifdef _MSC_VER
+// Allow 'this' in initializer list
+#pragma warning(disable : 4355)
+#endif
+
 namespace mouselock {
 
 class MouseLockInstance : public pp::Instance, public pp::MouseLock {

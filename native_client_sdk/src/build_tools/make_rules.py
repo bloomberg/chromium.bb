@@ -13,7 +13,7 @@ import os
 #
 NEWLIB_DEFAULTS = """
 NEWLIB_CC?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-gcc -c
-NEWLIB_CXX?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -c -std=gnu++98
+NEWLIB_CXX?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -c
 NEWLIB_LINK?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -Wl,-as-needed
 NEWLIB_LIB?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-ar r
 NEWLIB_DUMP?=$(TC_PATH)/$(OSNAME)_x86_newlib/x86_64-nacl/bin/objdump
@@ -23,7 +23,7 @@ NEWLIB_LDFLAGS?=-pthread
 
 GLIBC_DEFAULTS = """
 GLIBC_CC?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-gcc -c
-GLIBC_CXX?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -c -std=gnu++98
+GLIBC_CXX?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -c
 GLIBC_LINK?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -Wl,-as-needed
 GLIBC_LIB?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-ar r
 GLIBC_DUMP?=$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
@@ -35,7 +35,7 @@ GLIBC_LDFLAGS?=-pthread
 
 PNACL_DEFAULTS = """
 PNACL_CC?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang -c
-PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++ -c -std=gnu++98
+PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++ -c
 PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++
 PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-ar r
 PNACL_DUMP?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/objdump
@@ -46,18 +46,18 @@ TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 
 LINUX_DEFAULTS = """
 LINUX_CC?=gcc -c
-LINUX_CXX?=g++ -c -std=gnu++98
+LINUX_CXX?=g++ -c
 LINUX_LINK?=g++
 LINUX_LIB?=ar r
 LINUX_CCFLAGS=-I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
 """
 
 WIN_DEFAULTS = """
-WIN_CC?=cl.exe /nologo
-WIN_CXX?=cl.exe /nologo
+WIN_CC?=cl.exe /nologo /WX
+WIN_CXX?=cl.exe /nologo /EHsc /WX
 WIN_LINK?=link.exe /nologo
 WIN_LIB?=lib.exe /nologo
-WIN_CCFLAGS=/I$(NACL_SDK_ROOT)/include /I$(NACL_SDK_ROOT)/include/win -D WIN32 -D _WIN32 -D PTW32_STATIC_LIB
+WIN_CCFLAGS=/I$(NACL_SDK_ROOT)\\include /I$(NACL_SDK_ROOT)\\include\\win -D WIN32 -D _WIN32 -D PTW32_STATIC_LIB
 """
 
 #
@@ -74,7 +74,7 @@ SO_CC_RULES = {
 }
 
 WIN_CC_RULES = {
-  'Debug': '<TAB>$(<CC>) /Od /Fo$@ /MTd /Zi /c $< $(WIN_CCFLAGS) <DEFLIST> <INCLIST>',
+  'Debug': '<TAB>$(<CC>) /Od /Fo$@ /MTd /Z7 /c $< $(WIN_CCFLAGS) <DEFLIST> <INCLIST>',
   'Release': '<TAB>$(<CC>) /O2 /Fo$@ /MT /c $< $(WIN_CCFLAGS) <DEFLIST> <INCLIST>'
 }
 
@@ -112,7 +112,7 @@ PEXE_LINK_RULES = {
 }
 
 WIN_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) /DLL /OUT:$@ /PDG:$@.pdb /Zi $(<PROJ>_LDFLAGS) /DEBUG /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Debug $^ <LIBLIST> $(WIN_LDFLAGS)',
+  'Debug': '<TAB>$(<LINK>) /DLL /OUT:$@ /PDB:$@.pdb $(<PROJ>_LDFLAGS) /DEBUG /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Debug $^ <LIBLIST> $(WIN_LDFLAGS)',
   'Release': '<TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_LDFLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Release $^ <LIBLIST> $(WIN_LDFLAGS)'
 }
 
@@ -339,11 +339,14 @@ class MakeRules(object):
       rules += '-include %s/%s/*.d\n' % (tc, cfg)
     return rules + '\n'
 
-  def BuildCompileRule(self, EXT, src):
-    self.vars['<EXT>'] = EXT
+  def BuildCompileRule(self, ext, src):
+    self.vars['<EXT>'] = ext
     out = '<tc>/<config>/%s_<ARCH>.o : %s $(THIS_MAKE) | <tc>/<config>\n' % (
         os.path.splitext(src)[0], src)
-    out += BUILD_RULES[self.tc][EXT][self.cfg] + '\n\n'
+    rule = BUILD_RULES[self.tc][ext][self.cfg]
+    if ext == 'CXX':
+      rule = rule.replace('<CC>', '<CXX>')
+    out += rule + '\n\n'
     return self.Replace(out)
 
   def BuildLinkRule(self):

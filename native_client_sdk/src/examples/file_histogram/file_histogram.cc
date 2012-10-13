@@ -40,6 +40,11 @@
 #undef min
 #undef max
 #undef PostMessage
+
+// Allow 'this' in initializer list
+#pragma warning(disable : 4355)
+// Disable warning about behaviour of array initialization.
+#pragma warning(disable : 4351)
 #endif
 
 namespace {

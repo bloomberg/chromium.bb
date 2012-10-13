@@ -15,6 +15,9 @@
 #undef min
 #undef max
 #undef PostMessage
+
+// Allow 'this' in initializer list
+#pragma warning(disable : 4355)
 #endif
 
 GetURLHandler* GetURLHandler::Create(pp::Instance* instance,
