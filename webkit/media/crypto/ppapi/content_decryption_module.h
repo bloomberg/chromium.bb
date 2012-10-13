@@ -359,6 +359,9 @@ class VideoFrame {
   virtual void set_format(VideoFormat format) = 0;
   virtual VideoFormat format() const = 0;
 
+  virtual void set_size(cdm::Size size) = 0;
+  virtual cdm::Size size() const = 0;
+
   virtual void set_frame_buffer(Buffer* frame_buffer) = 0;
   virtual Buffer* frame_buffer() = 0;
 

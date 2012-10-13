@@ -250,6 +250,9 @@ class VideoFrameImpl : public cdm::VideoFrame {
   virtual void set_format(cdm::VideoFormat format) OVERRIDE;
   virtual cdm::VideoFormat format() const OVERRIDE;
 
+  virtual void set_size(cdm::Size size) OVERRIDE;
+  virtual cdm::Size size() const OVERRIDE;
+
   virtual void set_frame_buffer(cdm::Buffer* frame_buffer) OVERRIDE;
   virtual cdm::Buffer* frame_buffer() OVERRIDE;
 
@@ -266,6 +269,9 @@ class VideoFrameImpl : public cdm::VideoFrame {
  private:
   // The video buffer format.
   cdm::VideoFormat format_;
+
+  // Width and height of the video frame.
+  cdm::Size size_;
 
   // The video frame buffer.
   PpbBuffer* frame_buffer_;
@@ -342,6 +348,14 @@ cdm::VideoFormat VideoFrameImpl::format() const {
   return format_;
 }
 
+void VideoFrameImpl::set_size(cdm::Size size) {
+  size_ = size;
+}
+
+cdm::Size VideoFrameImpl::size() const {
+  return size_;
+}
+
 void VideoFrameImpl::set_frame_buffer(cdm::Buffer* frame_buffer) {
   frame_buffer_ = static_cast<PpbBuffer*>(frame_buffer);
 }
@@ -352,23 +366,23 @@ cdm::Buffer* VideoFrameImpl::frame_buffer() {
 
 void VideoFrameImpl::set_plane_offset(cdm::VideoFrame::VideoPlane plane,
                                       int32_t offset) {
-  PP_DCHECK(0 < plane && plane < kMaxPlanes);
+  PP_DCHECK(0 <= plane && plane < kMaxPlanes);
   PP_DCHECK(offset >= 0);
   plane_offsets_[plane] = offset;
 }
 
 int32_t VideoFrameImpl::plane_offset(VideoPlane plane) {
-  PP_DCHECK(0 < plane && plane < kMaxPlanes);
+  PP_DCHECK(0 <= plane && plane < kMaxPlanes);
   return plane_offsets_[plane];
 }
 
 void VideoFrameImpl::set_stride(VideoPlane plane, int32_t stride) {
-  PP_DCHECK(0 < plane && plane < kMaxPlanes);
+  PP_DCHECK(0 <= plane && plane < kMaxPlanes);
   strides_[plane] = stride;
 }
 
 int32_t VideoFrameImpl::stride(VideoPlane plane) {
-  PP_DCHECK(0 < plane && plane < kMaxPlanes);
+  PP_DCHECK(0 <= plane && plane < kMaxPlanes);
   return strides_[plane];
 }
 
@@ -776,6 +790,8 @@ void CdmWrapper::DeliverFrame(
       decrypted_frame_info.result = PP_DECRYPTRESULT_SUCCESS;
       decrypted_frame_info.format =
           CdmVideoFormatToPpDecryptedFrameFormat(video_frame->format());
+      decrypted_frame_info.width = video_frame->size().width;
+      decrypted_frame_info.height = video_frame->size().height;
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_Y] =
         video_frame->plane_offset(cdm::VideoFrame::kYPlane);
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_U] =
