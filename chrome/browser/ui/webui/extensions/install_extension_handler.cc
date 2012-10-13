@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
@@ -36,7 +36,7 @@ void InstallExtensionHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALL_DROP_TARGET));
   localized_strings->SetBoolean(
       "offStoreInstallEnabled",
-      extensions::switch_utils::IsEasyOffStoreInstallEnabled());
+      extensions::FeatureSwitch::easy_off_store_install()->IsEnabled());
 }
 
 void InstallExtensionHandler::RegisterMessages() {

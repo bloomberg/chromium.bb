@@ -60,7 +60,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -116,7 +116,7 @@ LocationBarViewMac::LocationBarViewMac(
           content::PAGE_TRANSITION_TYPED |
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       weak_ptr_factory_(this) {
-  if (extensions::switch_utils::IsActionBoxEnabled()) {
+  if (extensions::FeatureSwitch::action_box()->IsEnabled()) {
     plus_decoration_.reset(new PlusDecoration(this, browser_));
   }
 
@@ -790,13 +790,13 @@ void LocationBarViewMac::UpdateStarDecorationVisibility() {
   // If the action box is enabled, only show the star if it's lit.
   bool visible = IsStarEnabled();
   if (!star_decoration_->starred() &&
-      extensions::switch_utils::IsActionBoxEnabled())
+      extensions::FeatureSwitch::action_box()->IsEnabled())
     visible = false;
   star_decoration_->SetVisible(visible);
 }
 
 void LocationBarViewMac::UpdatePlusDecorationVisibility() {
-  if (extensions::switch_utils::IsActionBoxEnabled()) {
+  if (extensions::FeatureSwitch::action_box()->IsEnabled()) {
     // If the action box is enabled, hide it when input is in progress.
     plus_decoration_->SetVisible(!toolbar_model_->GetInputInProgress());
   }

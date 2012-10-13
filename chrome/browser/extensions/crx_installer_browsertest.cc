@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
 #endif
 IN_PROC_BROWSER_TEST_F(
     ExtensionCrxInstallerTest, MAYBE_PackAndInstallExtension) {
-  if (!switch_utils::IsEasyOffStoreInstallEnabled())
+  if (!FeatureSwitch::easy_off_store_install()->IsEnabled())
     return;
 
   const int kNumDownloadsExpected = 1;

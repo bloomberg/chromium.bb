@@ -58,7 +58,7 @@
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -328,8 +328,8 @@ void LocationBarView::Init(views::View* popup_parent_view) {
     AddChildView(star_view_);
     star_view_->SetVisible(true);
   }
-  if (extensions::switch_utils::IsActionBoxEnabled() && (mode_ == NORMAL) &&
-      browser_) {
+  if (extensions::FeatureSwitch::action_box()->IsEnabled() &&
+      mode_ == NORMAL && browser_) {
     action_box_button_view_ = new ActionBoxButtonView(browser_,
         gfx::Point(kNormalHorizontalEdgeThickness, kVerticalEdgeThickness));
     AddChildView(action_box_button_view_);
@@ -412,7 +412,7 @@ SkColor LocationBarView::GetColor(bool instant_extended_api_enabled,
 int LocationBarView::GetItemPadding() {
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH)
     return kTouchItemPadding;
-  return extensions::switch_utils::AreScriptBadgesEnabled() ?
+  return extensions::FeatureSwitch::script_badges()->IsEnabled() ?
       kDesktopScriptBadgeItemPadding : kDesktopItemPadding;
 }
 
@@ -420,7 +420,7 @@ int LocationBarView::GetItemPadding() {
 int LocationBarView::GetEdgeItemPadding() {
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH)
     return kTouchEdgeItemPadding;
-  return extensions::switch_utils::AreScriptBadgesEnabled() ?
+  return extensions::FeatureSwitch::script_badges()->IsEnabled() ?
       kDesktopScriptBadgeEdgeItemPadding : kDesktopEdgeItemPadding;
 }
 
@@ -464,7 +464,7 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
                       edit_bookmarks_enabled_.GetValue();
 
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  if (star_view_ && !extensions::switch_utils::IsActionBoxEnabled())
+  if (star_view_ && !extensions::FeatureSwitch::action_box()->IsEnabled())
     star_view_->SetVisible(star_enabled);
 
   ChromeToMobileService* chrome_to_mobile_service =

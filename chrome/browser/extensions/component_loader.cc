@@ -310,7 +310,7 @@ void ComponentLoader::AddChromeApp() {
 }
 
 void ComponentLoader::AddScriptBubble() {
-  if (FeatureSwitch::GetScriptBubble()->IsEnabled()) {
+  if (FeatureSwitch::script_bubble()->IsEnabled()) {
     script_bubble_id_ =
         Add(IDR_SCRIPT_BUBBLE_MANIFEST,
             FilePath(FILE_PATH_LITERAL("script_bubble")));

@@ -39,7 +39,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -259,7 +259,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
   }
 
   if (install_cause_ == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
-    if (switch_utils::IsEasyOffStoreInstallEnabled()) {
+    if (FeatureSwitch::easy_off_store_install()->IsEnabled()) {
       const char* kHistogramName = "Extensions.OffStoreInstallDecisionEasy";
       if (is_gallery_install()) {
         UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,

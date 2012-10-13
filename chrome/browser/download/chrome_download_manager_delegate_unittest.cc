@@ -16,7 +16,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_pref_service.h"

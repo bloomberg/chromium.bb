@@ -160,6 +160,22 @@ const Experiment::Choice kNaClDebugMaskChoices[] = {
       switches::kNaClDebugMask, "*://*/*debug.nmf" }
 };
 
+const Experiment::Choice kActionBoxChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kActionBox, "0"},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kActionBox, "1"}
+};
+
+const Experiment::Choice kScriptBubbleChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kScriptBubble, "0"},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kScriptBubble, "1"}
+};
+
 #if defined(OS_CHROMEOS)
 const Experiment::Choice kAshBootAnimationFunction[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -400,18 +416,25 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalExtensionApis)
   },
   {
-    "disable-action-box",
+    "action-box",
     IDS_FLAGS_ACTION_BOX_NAME,
     IDS_FLAGS_ACTION_BOX_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableActionBox),
+    MULTI_VALUE_TYPE(kActionBoxChoices),
   },
   {
     "script-badges",
     IDS_FLAGS_SCRIPT_BADGES_NAME,
     IDS_FLAGS_SCRIPT_BADGES_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableScriptBadges),
+    SINGLE_VALUE_TYPE(switches::kScriptBadges)
+  },
+  {
+    "script-bubble",
+    IDS_FLAGS_SCRIPT_BUBBLE_NAME,
+    IDS_FLAGS_SCRIPT_BUBBLE_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kScriptBubbleChoices),
   },
   {
     "apps-new-install-bubble",

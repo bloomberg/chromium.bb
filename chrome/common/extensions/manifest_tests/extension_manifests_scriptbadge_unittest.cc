@@ -6,13 +6,11 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
-namespace switch_utils = extensions::switch_utils;
 using extensions::DictionaryBuilder;
 using extensions::Extension;
 using extensions::ExtensionBuilder;

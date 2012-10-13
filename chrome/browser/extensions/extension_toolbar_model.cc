@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -171,7 +171,7 @@ void ExtensionToolbarModel::Observe(
     // hides the browser action and then disables and enables the extension.
     if (list_with_extension)
       return;
-    if (extensions::switch_utils::IsExtensionsInActionBoxEnabled())
+    if (extensions::FeatureSwitch::extensions_in_action_box()->IsEnabled())
       AddExtension(extension, &action_box_menu_items_);
     else if (service_->extension_prefs()->GetBrowserActionVisibility(extension))
       AddExtension(extension, &toolbar_items_);
@@ -180,7 +180,7 @@ void ExtensionToolbarModel::Observe(
       RemoveExtension(extension, list_with_extension);
   } else if (type ==
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
-    if (extensions::switch_utils::IsExtensionsInActionBoxEnabled()) {
+    if (extensions::FeatureSwitch::extensions_in_action_box()->IsEnabled()) {
       // TODO(yefim): Implement this when implementing drag & drop
       // for action box menu.
     } else if (
@@ -265,7 +265,7 @@ extensions::ExtensionList* ExtensionToolbarModel::FindListWithExtension(
 void ExtensionToolbarModel::InitializeExtensionLists() {
   DCHECK(service_->is_ready());
 
-  if (extensions::switch_utils::IsExtensionsInActionBoxEnabled())
+  if (extensions::FeatureSwitch::extensions_in_action_box()->IsEnabled())
     PopulateForActionBoxMode();
   else
     PopulateForNonActionBoxMode();

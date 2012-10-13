@@ -35,7 +35,7 @@ class PageAsBrowserActionApiTest : public ExtensionApiTest {
 
   void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableScriptBadges);
+    command_line->AppendSwitchASCII(switches::kScriptBadges, "1");
   }
 
  protected:

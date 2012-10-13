@@ -23,6 +23,7 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
+extern const char kActionBox[];
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kAllowFileAccess[];
 extern const char kAllowHTTPBackgroundPage[];
@@ -75,7 +76,6 @@ extern const char kDebugPackedApps[];
 extern const char kDebugPrint[];
 extern const char kDeviceManagementUrl[];
 extern const char kDiagnostics[];
-extern const char kDisableActionBox[];
 extern const char kDisableAsyncDns[];
 extern const char kDisableAsynchronousSpellChecking[];
 extern const char kDisableAuthNegotiateCnameLookup[];
@@ -142,11 +142,11 @@ extern const char kEnableConnectBackupJobs[];
 extern const char kEnableContacts[];
 extern const char kEnableCrxlessWebApps[];
 extern const char kEnableDevToolsExperiments[];
-extern const char kEnableEasyOffStoreExtensionInstall[];
+extern const char kEasyOffStoreExtensionInstall[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityUI[];
-extern const char kEnableExtensionsInActionBox[];
+extern const char kExtensionsInActionBox[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFramelessConstrainedDialogs[];
 extern const char kEnableFileCookies[];
@@ -172,7 +172,7 @@ extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableRestoreSessionState[];
-extern const char kEnableScriptBadges[];
+extern const char kScriptBadges[];
 extern const char kEnableSdch[];
 extern const char kEnableSpdy3[];
 extern const char kEnableSpdyCredentialFrames[];
@@ -305,7 +305,7 @@ extern const char kSavePageAsMHTML[];
 extern const char kSbURLPrefix[];
 extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];
-extern const char kScriptBubbleEnabled[];
+extern const char kScriptBubble[];
 extern const char kSearchInOmniboxHint[];
 extern const char kSetToken[];
 extern const char kShowAppList[];

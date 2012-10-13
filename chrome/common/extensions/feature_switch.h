@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_EXTENSIONS_FEATURE_SWITCH_H_
 #define CHROME_COMMON_EXTENSIONS_FEATURE_SWITCH_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 
 class CommandLine;
@@ -15,7 +17,22 @@ namespace extensions {
 // command-line switches but can be overridden, e.g., for testing.
 class FeatureSwitch {
  public:
-  static FeatureSwitch* GetScriptBubble();
+  static FeatureSwitch* action_box();
+  static FeatureSwitch* easy_off_store_install();
+  static FeatureSwitch* extensions_in_action_box();
+  static FeatureSwitch* script_badges();
+  static FeatureSwitch* script_bubble();
+
+  enum DefaultValue {
+    DEFAULT_ENABLED,
+    DEFAULT_DISABLED
+  };
+
+  enum OverrideValue {
+    OVERRIDE_NONE,
+    OVERRIDE_ENABLED,
+    OVERRIDE_DISABLED
+  };
 
   // A temporary override for the switch value.
   class ScopedOverride {
@@ -23,31 +40,30 @@ class FeatureSwitch {
     ScopedOverride(FeatureSwitch* feature, bool override_value);
     ~ScopedOverride();
    private:
-    friend class FeatureSwitch;
     FeatureSwitch* feature_;
-    bool previous_value_;
+    FeatureSwitch::OverrideValue previous_value_;
     DISALLOW_COPY_AND_ASSIGN(ScopedOverride);
   };
 
-  enum DefaultValue {
-    DEFAULT_ENABLED,
-    DEFAULT_DISABLED
-  };
-
+  FeatureSwitch(const char* switch_name,
+                DefaultValue default_value);
   FeatureSwitch(const CommandLine* command_line,
                 const char* switch_name,
                 DefaultValue default_value);
 
+  // Consider using ScopedOverride instead.
+  void SetOverrideValue(OverrideValue value);
+  OverrideValue GetOverrideValue() const;
+
   bool IsEnabled() const;
 
- private:
-  enum OverrideValue {
-    OVERRIDE_NONE,
-    OVERRIDE_ENABLED,
-    OVERRIDE_DISABLED
-  };
+  std::string GetLegacyEnableFlag() const;
+  std::string GetLegacyDisableFlag() const;
 
-  void SetOverrideValue(OverrideValue value);
+ private:
+  void Init(const CommandLine* command_line,
+            const char* switch_name,
+            DefaultValue default_value);
 
   const CommandLine* command_line_;
   const char* switch_name_;

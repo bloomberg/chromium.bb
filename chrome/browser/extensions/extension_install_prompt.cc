@@ -28,7 +28,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
@@ -413,7 +413,7 @@ void ExtensionInstallPrompt::ConfirmInstall(
   // we need the UI confirmation.
   if (extension->is_theme()) {
     if (extension->from_webstore() ||
-        extensions::switch_utils::IsEasyOffStoreInstallEnabled()) {
+        extensions::FeatureSwitch::easy_off_store_install()->IsEnabled()) {
       delegate->InstallUIProceed();
       return;
     }

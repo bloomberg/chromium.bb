@@ -29,7 +29,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -193,7 +193,7 @@ ChromeToMobileService::JobData::~JobData() {}
 // static
 bool ChromeToMobileService::IsChromeToMobileEnabled() {
   // Chrome To Mobile is currently gated on the Action Box UI.
-  return extensions::switch_utils::IsActionBoxEnabled();
+  return extensions::FeatureSwitch::action_box()->IsEnabled();
 }
 
 // static

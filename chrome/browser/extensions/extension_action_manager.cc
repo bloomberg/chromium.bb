@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
@@ -49,7 +49,7 @@ void ExtensionActionManager::Observe(
                                 *extension->page_action_info()));
         // The action box changes the meaning of the page action area, so we
         // need to convert page actions into browser actions.
-        if (switch_utils::AreScriptBadgesEnabled())
+        if (FeatureSwitch::script_badges()->IsEnabled())
           browser_actions_[extension->id()] = page_action;
         else
           page_actions_[extension->id()] = page_action;

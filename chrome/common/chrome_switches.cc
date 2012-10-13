@@ -18,6 +18,9 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
+// Enables or disables the "action box" UI in the toolbar.
+const char kActionBox[]                     = "action-box";
+
 // Allows third-party content included on a page to prompt for a HTTP basic
 // auth username/password pair.
 const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";
@@ -245,9 +248,6 @@ const char kDiagnostics[]                   = "diagnostics";
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
-
-// Disables the Action Box toolbar UI.
-const char kDisableActionBox[]              = "disable-action-box";
 
 // Disables the experimental asynchronous DNS client.
 const char kDisableAsyncDns[]               = "disable-async-dns";
@@ -500,8 +500,7 @@ const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 // Enables extensions to be easily installed from sites other than the web
 // store. Without this flag, they can still be installed, but must be manually
 // dragged onto chrome://extensions/.
-const char kEnableEasyOffStoreExtensionInstall[] =
-    "enable-easy-off-store-extension-install";
+const char kEasyOffStoreExtensionInstall[] = "easy-off-store-extension-install";
 
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
@@ -514,8 +513,8 @@ const char kEnableExtensionActivityLogging[] =
 // Enables the extension activity UI.
 const char kEnableExtensionActivityUI[]     = "enable-extension-activity-ui";
 
-// Enables to show extensions in an action box.
-const char kEnableExtensionsInActionBox[]   = "enable-extensions-in-action-box";
+// Enables or disables showing extensions in the action box.
+const char kExtensionsInActionBox[]         = "extensions-in-action-box";
 
 // Enables experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
@@ -624,8 +623,8 @@ const char kEnablePnacl[]                   = "enable-pnacl";
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
 
-// Enables extension scripts badges in the location bar.
-const char kEnableScriptBadges[]            = "enable-script-badges";
+// Enables or disables extension scripts badges in the location bar.
+const char kScriptBadges[]                  = "script-badges";
 
 // Controls the support for SDCH filtering (dictionary based expansion of
 // content). By default SDCH filtering is enabled. To disable SDCH filtering,
@@ -1148,15 +1147,15 @@ const char kRestoreLastSession[]            = "restore-last-session";
 // Disable saving pages as HTML-only, disable saving pages as HTML Complete
 // (with a directory of sub-resources). Enable only saving pages as MHTML.
 // See http://crbug.com/120416 for how to remove this switch.
-const char kSavePageAsMHTML[] = "save-page-as-mhtml";
+const char kSavePageAsMHTML[]               = "save-page-as-mhtml";
 
 // URL prefix used by safebrowsing to fetch hash, download data and report
 // malware.
-const char kSbURLPrefix[] = "safebrowsing-url-prefix";
+const char kSbURLPrefix[]                   = "safebrowsing-url-prefix";
 
-// Enable an icon in the URL bar that tells you how many extensions are running
-// scripts on a page.
-const char kScriptBubbleEnabled[] = "script-bubble-enabled";
+// Enable or diable the "script bubble" icon in the URL bar that tells you how
+// many extensions are running scripts on a page.
+const char kScriptBubble[]                  = "script-bubble";
 
 // If present, safebrowsing only performs update when
 // SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.

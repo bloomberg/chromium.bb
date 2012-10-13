@@ -35,7 +35,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/download_item.h"
@@ -600,7 +600,7 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
   // Extensions that are not from the gallery are considered dangerous.
   // When off-store install is disabled we skip this, since in this case, we
   // will not offer to install the extension.
-  if (extensions::switch_utils::IsEasyOffStoreInstallEnabled() &&
+  if (extensions::FeatureSwitch::easy_off_store_install()->IsEnabled() &&
       download_crx_util::IsExtensionDownload(download) &&
       !extensions::WebstoreInstaller::GetAssociatedApproval(download)) {
     return true;

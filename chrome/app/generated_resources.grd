@@ -5856,7 +5856,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Action box
       </message>
       <message name="IDS_FLAGS_ACTION_BOX_DESCRIPTION" desc="Description of the 'Action Box' lab.">
-        Disables the "Action Box" experimental toolbar UI.
+        Enable or disable the "Action Box" experimental toolbar UI.
       </message>
       <message name="IDS_FLAGS_EXTENSIONS_IN_ACTION_BOX_NAME" desc="Name of the 'Extensions in the Action Box' lab.">
         Extensions in the Action box
@@ -5869,6 +5869,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_SCRIPT_BADGES_DESCRIPTION" desc="Description of the 'Script Badges' lab.">
         Shows extension "script badges" in the location bar rather than page actions.
+      </message>
+      <message name="IDS_FLAGS_SCRIPT_BUBBLE_NAME" desc="Name of the 'Script Bubble' lab.">
+        Script Bubble
+      </message>
+      <message name="IDS_FLAGS_SCRIPT_BUBBLE_DESCRIPTION" desc="Description of the 'Script Bubble' lab.">
+        Enable or disable the "Script Bubble" experimental toolbar UI.
       </message>
       <message name="IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_NAME" desc="Name of the 'New Apps Install Bubble' lab">
         New Apps Install Bubble

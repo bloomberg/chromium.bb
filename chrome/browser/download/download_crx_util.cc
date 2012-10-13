@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_service.h"
 

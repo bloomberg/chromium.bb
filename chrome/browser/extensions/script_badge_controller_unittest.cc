@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/testing_profile.h"
@@ -39,19 +40,10 @@ namespace {
 class ScriptBadgeControllerTest : public TabContentsTestHarness {
  public:
   ScriptBadgeControllerTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      : feature_override_(FeatureSwitch::script_badges(), true),
+        ui_thread_(BrowserThread::UI, MessageLoop::current()),
         file_thread_(BrowserThread::FILE, MessageLoop::current()),
         current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
-
-  static void SetUpTestCase() {
-    old_command_line_ = *CommandLine::ForCurrentProcess();
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableScriptBadges);
-  }
-
-  static void TearDownTestCase() {
-    *CommandLine::ForCurrentProcess() = old_command_line_;
-  }
 
   virtual void SetUp() OVERRIDE {
     // Note that this sets a PageActionController into the
@@ -99,14 +91,11 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
   ScriptBadgeController* script_badge_controller_;
 
  private:
-  static CommandLine old_command_line_;
+  FeatureSwitch::ScopedOverride feature_override_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   Feature::ScopedCurrentChannel current_channel_;
 };
-
-CommandLine ScriptBadgeControllerTest::old_command_line_(
-    CommandLine::NO_PROGRAM);
 
 struct CountingNotificationObserver : public content::NotificationObserver {
   CountingNotificationObserver() : events(0) {}

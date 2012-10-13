@@ -27,7 +27,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -87,7 +86,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       web_contents,
       SessionID::IdForTab(web_contents),
       Profile::FromBrowserContext(web_contents->GetBrowserContext())));
-  if (switch_utils::AreScriptBadgesEnabled()) {
+  if (FeatureSwitch::script_badges()->IsEnabled()) {
     location_bar_controller_.reset(
         new ScriptBadgeController(web_contents, &script_executor_, this));
   } else {
@@ -95,7 +94,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
         new PageActionController(web_contents));
   }
 
-  if (FeatureSwitch::GetScriptBubble()->IsEnabled()) {
+  if (FeatureSwitch::script_bubble()->IsEnabled()) {
     script_bubble_controller_.reset(
         new ScriptBubbleController(web_contents, this));
   }

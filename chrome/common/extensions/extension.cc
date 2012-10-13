@@ -30,7 +30,7 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/features/simple_feature_provider.h"
 #include "chrome/common/extensions/file_browser_handler.h"
@@ -59,7 +59,6 @@ namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 namespace info_keys = extension_info_keys;
-namespace switch_utils = extensions::switch_utils;
 
 using extensions::csp_validator::ContentSecurityPolicyIsLegal;
 using extensions::csp_validator::ContentSecurityPolicyIsSandboxed;
@@ -2367,7 +2366,7 @@ bool Extension::LoadBrowserAction(string16* error) {
 
 bool Extension::LoadScriptBadge(string16* error) {
   if (manifest_->HasKey(keys::kScriptBadge)) {
-    if (!switch_utils::AreScriptBadgesEnabled()) {
+    if (!FeatureSwitch::script_badges()->IsEnabled()) {
       // So as to not confuse developers if they specify a script badge section
       // in the manifest, show a warning if the script badge declaration isn't
       // going to have any effect.

@@ -12,8 +12,10 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
-#import "chrome/common/extensions/extension_switch_utils.h"
+#import "chrome/common/extensions/feature_switch.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+
+using extensions::FeatureSwitch;
 
 namespace {
 
@@ -35,9 +37,9 @@ CGFloat RightDecorationXOffset() {
   const CGFloat kScriptBadgeRightDecorationXOffset = 9.0;
   const CGFloat kActionBoxRightDecorationXOffset = 0.0;
 
-  if (extensions::switch_utils::AreScriptBadgesEnabled()) {
+  if (FeatureSwitch::script_badges()->IsEnabled()) {
     return kScriptBadgeRightDecorationXOffset;
-  } else if (extensions::switch_utils::IsActionBoxEnabled()) {
+  } else if (FeatureSwitch::action_box()->IsEnabled()) {
     return kActionBoxRightDecorationXOffset;
   } else {
     return kRightDecorationXOffset;
@@ -50,7 +52,7 @@ CGFloat DecorationHorizontalPad() {
   const CGFloat kDecorationHorizontalPad = 3.0;
   const CGFloat kScriptBadgeDecorationHorizontalPad = 9.0;
 
-  return extensions::switch_utils::AreScriptBadgesEnabled() ?
+  return FeatureSwitch::script_badges()->IsEnabled() ?
       kScriptBadgeDecorationHorizontalPad : kDecorationHorizontalPad;
 }
 
@@ -160,7 +162,7 @@ size_t CalculatePositionsInFrame(
                decoration_frames->end());
 
   *remaining_frame = frame;
-  if (extensions::switch_utils::AreScriptBadgesEnabled()) {
+  if (FeatureSwitch::script_badges()->IsEnabled()) {
     // Keep the padding distance between the right-most decoration and the edit
     // box, so that any decoration background isn't overwritten by the edit
     // box's background.
@@ -184,7 +186,7 @@ void CalculateSnappedPositionsInFrame(
     NSView* control_view) {
   // The Action Box is snapped to the right edge, so subtract the line width to
   // draw up to but excluding the omnibox's border.
-  if (extensions::switch_utils::IsActionBoxEnabled())
+  if (FeatureSwitch::action_box()->IsEnabled())
     frame.size.width -= [control_view cr_lineWidth];
 
   size_t left_count = CalculatePositionsInFrame(frame,

@@ -43,7 +43,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -77,6 +77,7 @@ using content::DownloadPersistentStoreInfo;
 using content::DownloadUrlParameters;
 using content::WebContents;
 using extensions::Extension;
+using extensions::FeatureSwitch;
 
 namespace {
 
@@ -1560,8 +1561,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
 // Download an extension.  Expect a dangerous download warning.
 // Deny the download.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
-  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
-    return;
+  FeatureSwitch::ScopedOverride enable_easy_off_store_install(
+      FeatureSwitch::easy_off_store_install(), true);
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
@@ -1587,8 +1588,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, deny the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
-  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
-    return;
+  FeatureSwitch::ScopedOverride enable_easy_off_store_install(
+      FeatureSwitch::easy_off_store_install(), true);
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
@@ -1625,8 +1626,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, and the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
-  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
-    return;
+  FeatureSwitch::ScopedOverride enable_easy_off_store_install(
+      FeatureSwitch::easy_off_store_install(), true);
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
@@ -1687,8 +1688,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
 
 // Install a large (100kb) theme.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
-  if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
-    return;
+  FeatureSwitch::ScopedOverride enable_easy_off_store_install(
+      FeatureSwitch::easy_off_store_install(), true);
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kLargeThemePath));
 

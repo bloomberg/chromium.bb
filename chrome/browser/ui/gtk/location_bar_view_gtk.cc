@@ -75,7 +75,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -163,7 +163,7 @@ const GdkColor kTopColorGray = GDK_COLOR_RGB(0xe5, 0xe5, 0xe5);
 const GdkColor kBottomColorGray = GDK_COLOR_RGB(0xd0, 0xd0, 0xd0);
 
 inline int InnerPadding() {
-  return extensions::switch_utils::AreScriptBadgesEnabled() ?
+  return extensions::FeatureSwitch::script_badges()->IsEnabled() ?
       kScriptBadgeInnerPadding : kInnerPadding;
 }
 
@@ -548,7 +548,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // doesn't work, someone is probably calling show_all on our parent box.
   gtk_box_pack_end(GTK_BOX(entry_box_), tab_to_search_hint_, FALSE, FALSE, 0);
 
-  if (extensions::switch_utils::IsActionBoxEnabled()) {
+  if (extensions::FeatureSwitch::action_box()->IsEnabled()) {
     // TODO(mpcomplete): should we hide this if ShouldOnlyShowLocation()==true?
     action_box_button_.reset(new ActionBoxButtonGtk(browser_));
 
@@ -1610,7 +1610,7 @@ void LocationBarViewGtk::UpdateStarIcon() {
   bool star_enabled = !toolbar_model_->GetInputInProgress() &&
                       edit_bookmarks_enabled_.GetValue();
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  if (extensions::switch_utils::IsActionBoxEnabled() && !starred_) {
+  if (extensions::FeatureSwitch::action_box()->IsEnabled() && !starred_) {
     star_enabled = false;
   }
   if (star_enabled) {

@@ -39,8 +39,8 @@ class ScriptBadgesCommandsApiTest : public ExtensionApiTest {
   ScriptBadgesCommandsApiTest() {
     // We cannot add this to CommandsApiTest because then PageActions get
     // treated like BrowserActions and the PageAction test starts failing.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableScriptBadges);
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kScriptBadges, "1");
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalExtensionApis);
   }

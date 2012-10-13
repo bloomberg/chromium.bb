@@ -53,7 +53,7 @@
 #include "chrome/browser/ui/webui/version_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -390,7 +390,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ExtensionActivityUI>;
   }
   if (url.host() == chrome::kChromeUIExtensionInfoHost &&
-      extensions::switch_utils::AreScriptBadgesEnabled()) {
+      extensions::FeatureSwitch::script_badges()->IsEnabled()) {
     return &NewWebUI<ExtensionInfoUI>;
   }
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)

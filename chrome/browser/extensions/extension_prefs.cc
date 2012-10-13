@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_switch_utils.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
@@ -299,7 +299,7 @@ bool ScopeToPrefKey(ExtensionPrefsScope scope, std::string* result) {
 }
 
 const char* GetToolbarOrderKeyName() {
-  return switch_utils::IsExtensionsInActionBoxEnabled() ?
+  return FeatureSwitch::extensions_in_action_box()->IsEnabled() ?
       kExtensionActionBoxBar : kExtensionToolbar;
 }
 
@@ -1523,7 +1523,7 @@ void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::GetBrowserActionVisibility(const Extension* extension) {
-  if (switch_utils::IsExtensionsInActionBoxEnabled()) {
+  if (FeatureSwitch::extensions_in_action_box()->IsEnabled()) {
     ExtensionIdList ids = GetToolbarOrder();
     return find(ids.begin(), ids.end(), extension->id()) != ids.end();
   }
@@ -1544,7 +1544,7 @@ void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
   if (GetBrowserActionVisibility(extension) == visible)
     return;
 
-  if (switch_utils::IsExtensionsInActionBoxEnabled()) {
+  if (FeatureSwitch::extensions_in_action_box()->IsEnabled()) {
     ExtensionIdList ids = GetToolbarOrder();
     ids.push_back(extension->id());
     SetToolbarOrder(ids);

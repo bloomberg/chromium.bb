@@ -151,8 +151,6 @@
         'common/extensions/extension_resource.h',
         'common/extensions/extension_set.cc',
         'common/extensions/extension_set.h',
-        'common/extensions/extension_switch_utils.cc',
-        'common/extensions/extension_switch_utils.h',
         'common/extensions/feature_switch.cc',
         'common/extensions/feature_switch.h',
         'common/extensions/features/feature.cc',

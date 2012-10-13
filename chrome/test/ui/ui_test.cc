@@ -189,7 +189,8 @@ void UITestBase::SetLaunchSwitches() {
   if (dom_automation_enabled_)
     launch_arguments_.AppendSwitch(switches::kDomAutomationController);
   // Allow off-store extension installs.
-  launch_arguments_.AppendSwitch(switches::kEnableEasyOffStoreExtensionInstall);
+  launch_arguments_.AppendSwitchASCII(
+      switches::kEasyOffStoreExtensionInstall, "1");
   if (!homepage_.empty()) {
     // Pass |homepage_| both as an arg (so that it opens on startup) and to the
     // homepage switch (so that the homepage is set).
