@@ -6,6 +6,7 @@
 #define CCTextureUpdateController_h
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "CCTextureUpdateQueue.h"
 #include "CCTimer.h"
