@@ -45,8 +45,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job.h"
@@ -890,6 +890,10 @@ UIThreadExtensionFunction* MockedGetFileIconFunction(
   return function.release();
 }
 
+bool WaitForPersisted(DownloadItem* item) {
+  return item->IsPersisted();
+}
+
 // Test downloads.getFileIcon() on in-progress, finished, cancelled and deleted
 // download items.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
@@ -935,6 +939,11 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   args32 = base::StringPrintf("[%d, {\"size\": 32}]", download_item->GetId());
   ASSERT_TRUE(download_item);
 
+  // http://crbug.com/154995
+  content::DownloadUpdatedObserver persisted(
+      download_item, base::Bind(&WaitForPersisted));
+  persisted.WaitForEvent();
+
   // Cancel the download. As long as the download has a target path, we should
   // be able to query the file icon.
   download_item->Cancel(true);
@@ -951,12 +960,14 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   std::string error = RunFunctionAndReturnError(MockedGetFileIconFunction(
         download_item->GetTargetFilePath(), IconLoader::NORMAL, ""),
       args32);
-  EXPECT_STREQ(download_extension_errors::kIconNotFoundError,
-               error.c_str());
+  EXPECT_STREQ(download_extension_errors::kIconNotFoundError, error.c_str());
 
   // Once the download item is deleted, we should return kInvalidOperationError.
+  int id = download_item->GetId();
   download_item->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
   download_item = NULL;
+  EXPECT_EQ(static_cast<DownloadItem*>(NULL),
+            GetCurrentManager()->GetDownload(id));
   error = RunFunctionAndReturnError(new DownloadsGetFileIconFunction(), args32);
   EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
                error.c_str());
