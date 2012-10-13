@@ -207,19 +207,29 @@ bool ShouldLaunchInWindows8ImmersiveMode(const FilePath& user_data_dir) {
   if (default_user_data_dir != user_data_dir)
     return false;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUninstall))
+  // TODO(gab): This is a temporary solution to avoid activating Metro Chrome
+  // when chrome.exe is invoked with one of the short-lived commands below. The
+  // long-term and correct solution is to only check/activate Chrome later;
+  // after handling of these short-lived commands has occured
+  // (http://crbug.com/155585).
+  // This is a 1:1 mapping of the switches that force an early exit of Chrome in
+  // ChromeBrowserMainParts::PreMainMessageLoopRunImpl().
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUninstall) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kHideIcons) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowIcons) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMakeDefaultBrowser) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kPackExtension)) {
     return false;
+  }
 
   base::win::RegKey reg_key;
-  LONG key_result = reg_key.Create(HKEY_CURRENT_USER,
-                                   chrome::kMetroRegistryPath,
-                                   KEY_READ);
-  if (key_result == ERROR_SUCCESS) {
-    DWORD reg_value = 0;
-    if (reg_key.ReadValueDW(chrome::kLaunchModeValue, &reg_value)
-          == ERROR_SUCCESS) {
-      return reg_value == 1;
-    }
+  DWORD reg_value = 0;
+  if (reg_key.Create(HKEY_CURRENT_USER, chrome::kMetroRegistryPath,
+                     KEY_READ) == ERROR_SUCCESS &&
+      reg_key.ReadValueDW(chrome::kLaunchModeValue,
+                          &reg_value) == ERROR_SUCCESS) {
+    return reg_value == 1;
   }
   return base::win::IsMachineATablet();
 }
