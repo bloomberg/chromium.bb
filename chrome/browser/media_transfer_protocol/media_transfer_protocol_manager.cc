@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 #include <map>
 #include <queue>
@@ -13,16 +13,20 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/media_transfer_protocol_daemon_client.h"
-#include "chromeos/dbus/mtp_file_entry.pb.h"
-#include "chromeos/dbus/mtp_storage_info.pb.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
+#include "chrome/browser/media_transfer_protocol/mtp_file_entry.pb.h"
+#include "chrome/browser/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#else
+#include "dbus/bus.h"
+#endif
 
 using content::BrowserThread;
 
-namespace chromeos {
-namespace mtp {
+namespace chrome {
 
 namespace {
 
@@ -32,8 +36,26 @@ MediaTransferProtocolManager* g_media_transfer_protocol_manager = NULL;
 class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
  public:
   MediaTransferProtocolManagerImpl() : weak_ptr_factory_(this) {
-    DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
-    mtp_client_ = dbus_thread_manager->GetMediaTransferProtocolDaemonClient();
+    dbus::Bus* bus = NULL;
+#if defined(OS_CHROMEOS)
+    chromeos::DBusThreadManager* dbus_thread_manager =
+        chromeos::DBusThreadManager::Get();
+    bus = dbus_thread_manager->GetSystemBus();
+    if (!bus)
+      return;
+#else
+    dbus::Bus::Options options;
+    options.bus_type = dbus::Bus::SYSTEM;
+    options.connection_type = dbus::Bus::PRIVATE;
+    options.dbus_thread_message_loop_proxy =
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+    session_bus_ = new dbus::Bus(options);
+    bus = session_bus_.get();
+#endif
+
+    DCHECK(bus);
+    mtp_client_.reset(
+        MediaTransferProtocolDaemonClient::Create(bus, false /* not stub */));
 
     // Set up signals and start initializing |storage_info_map_|.
     mtp_client_->SetUpConnections(
@@ -362,7 +384,12 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // Mtpd DBus client.
-  MediaTransferProtocolDaemonClient* mtp_client_;
+  scoped_ptr<chrome::MediaTransferProtocolDaemonClient> mtp_client_;
+
+#if !defined(OS_CHROMEOS)
+  // And a D-Bus session for talking to mtpd.
+  scoped_refptr<dbus::Bus> session_bus_;
+#endif
 
   // Device attachment / detachment observers.
   ObserverList<Observer> observers_;
@@ -416,5 +443,4 @@ MediaTransferProtocolManager* MediaTransferProtocolManager::GetInstance() {
   return g_media_transfer_protocol_manager;
 }
 
-}  // namespace mtp
-}  // namespace chromeos
+}  // namespace chrome

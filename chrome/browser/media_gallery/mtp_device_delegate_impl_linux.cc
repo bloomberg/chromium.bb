@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_gallery/mtp_device_delegate_impl_chromeos.h"
+#include "chrome/browser/media_gallery/mtp_device_delegate_impl_linux.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -12,10 +12,8 @@
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
-#include "chromeos/dbus/media_transfer_protocol_daemon_client.h"
-#include "chromeos/dbus/mtp_file_entry.pb.h"
-#include "chromeos/dbus/mtp_storage_info.pb.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "chrome/browser/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -27,12 +25,13 @@ using base::Time;
 using content::BrowserThread;
 using fileapi::FileSystemFileUtil;
 
+namespace chrome {
+
 namespace {
 
 using base::DeleteHelper;
 using base::RefCountedThreadSafe;
 using base::WaitableEvent;
-using chromeos::mtp::MediaTransferProtocolManager;
 
 // Helper struct to delete worker objects on |media_task_runner_| thread.
 template <typename WORKER> struct WorkerDeleter {
@@ -617,9 +616,7 @@ class RecursiveMediaFileEnumerator
 
 }  // namespace
 
-namespace chromeos {
-
-MtpDeviceDelegateImplCros::MtpDeviceDelegateImplCros(
+MtpDeviceDelegateImplLinux::MtpDeviceDelegateImplLinux(
     const std::string& device_location)
     : device_path_(device_location) {
   CHECK(!device_path_.empty());
@@ -631,13 +628,13 @@ MtpDeviceDelegateImplCros::MtpDeviceDelegateImplCros(
   DCHECK(media_task_runner_);
 }
 
-MtpDeviceDelegateImplCros::~MtpDeviceDelegateImplCros() {
+MtpDeviceDelegateImplLinux::~MtpDeviceDelegateImplLinux() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GetMediaTransferProtocolManager()->CloseStorage(device_handle_,
                                                   Bind(&DoNothing));
 }
 
-PlatformFileError MtpDeviceDelegateImplCros::GetFileInfo(
+PlatformFileError MtpDeviceDelegateImplLinux::GetFileInfo(
     const FilePath& file_path,
     PlatformFileInfo* file_info) {
   if (!LazyInit())
@@ -651,7 +648,7 @@ PlatformFileError MtpDeviceDelegateImplCros::GetFileInfo(
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*
-MtpDeviceDelegateImplCros::CreateFileEnumerator(
+MtpDeviceDelegateImplLinux::CreateFileEnumerator(
         const FilePath& root,
         bool recursive) {
   if (root.value().empty() || !LazyInit())
@@ -672,7 +669,7 @@ MtpDeviceDelegateImplCros::CreateFileEnumerator(
   return new MediaFileEnumerator(worker->get_file_entries());
 }
 
-PlatformFileError MtpDeviceDelegateImplCros::CreateSnapshotFile(
+PlatformFileError MtpDeviceDelegateImplLinux::CreateSnapshotFile(
     const FilePath& device_file_path,
     const FilePath& local_path,
     PlatformFileInfo* file_info) {
@@ -701,11 +698,11 @@ PlatformFileError MtpDeviceDelegateImplCros::CreateSnapshotFile(
   return error;
 }
 
-SequencedTaskRunner* MtpDeviceDelegateImplCros::media_task_runner() {
+SequencedTaskRunner* MtpDeviceDelegateImplLinux::media_task_runner() {
   return media_task_runner_.get();
 }
 
-void MtpDeviceDelegateImplCros::DeleteOnCorrectThread() const {
+void MtpDeviceDelegateImplLinux::DeleteOnCorrectThread() const {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
     return;
@@ -713,7 +710,7 @@ void MtpDeviceDelegateImplCros::DeleteOnCorrectThread() const {
   delete this;
 }
 
-bool MtpDeviceDelegateImplCros::LazyInit() {
+bool MtpDeviceDelegateImplLinux::LazyInit() {
   DCHECK(media_task_runner_);
   DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
 
@@ -730,4 +727,4 @@ bool MtpDeviceDelegateImplCros::LazyInit() {
   return !device_handle_.empty();
 }
 
-}  // namespace chromeos
+}  // namespace chrome

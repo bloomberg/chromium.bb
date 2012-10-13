@@ -22,6 +22,10 @@ class RemovableDeviceNotificationsLinux;
 }
 #endif
 
+namespace chrome {
+class MediaTransferProtocolDeviceObserverLinux;
+}
+
 class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
  public:
   explicit ChromeBrowserMainPartsLinux(
@@ -30,6 +34,7 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
 
   // ChromeBrowserMainParts overrides.
   virtual void PreProfileInit() OVERRIDE;
+  virtual void PostProfileInit() OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
@@ -40,6 +45,9 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
   scoped_refptr<chrome::RemovableDeviceNotificationsLinux>
       removable_device_notifications_linux_;
 #endif
+
+  scoped_ptr<chrome::MediaTransferProtocolDeviceObserverLinux>
+      media_transfer_protocol_device_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);
 };

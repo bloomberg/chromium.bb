@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chrome_browser_main_linux.h"
 
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_linux.h"
+
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
 #endif
@@ -82,6 +85,7 @@ ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
 }
 
 ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
+  chrome::MediaTransferProtocolManager::Shutdown();
 }
 
 void ChromeBrowserMainPartsLinux::PreProfileInit() {
@@ -109,7 +113,14 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   removable_device_notifications_linux_->Init();
 #endif
 
+  chrome::MediaTransferProtocolManager::Initialize();
+
   ChromeBrowserMainPartsPosix::PreProfileInit();
+}
+
+void ChromeBrowserMainPartsLinux::PostProfileInit() {
+  media_transfer_protocol_device_observer_.reset(
+      new chrome::MediaTransferProtocolDeviceObserverLinux());
 }
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {
@@ -119,6 +130,8 @@ void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {
   // single browser_test.
   removable_device_notifications_linux_ = NULL;
 #endif
+
+  media_transfer_protocol_device_observer_.reset();
 
   ChromeBrowserMainPartsPosix::PostMainMessageLoopRun();
 }

@@ -525,7 +525,7 @@ deps_os = {
     "src/third_party/libmtp":
       "/trunk/deps/third_party/libmtp@160216",
 
-    # For Chromium OS.
+    # For Linux and Chromium OS.
     "src/third_party/cros_system_api":
       Var("chromiumos_git") + "/platform/system_api.git" +
       "@572f3ee95be807777dced75795eb916ce53ac3b9",

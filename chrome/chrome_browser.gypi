@@ -29,6 +29,8 @@
         'feedback_proto',
         'in_memory_url_index_cache_proto',
         'installer_util',
+        'mtp_file_entry_proto',
+        'mtp_storage_info_proto',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'variations_seed_proto',
@@ -1002,8 +1004,8 @@
         'browser/media_gallery/media_gallery_database_types.cc',
         'browser/media_gallery/media_gallery_database_types.h',
         'browser/media_gallery/mtp_device_delegate_impl.h',
-        'browser/media_gallery/mtp_device_delegate_impl_chromeos.cc',
-        'browser/media_gallery/mtp_device_delegate_impl_chromeos.h',
+        'browser/media_gallery/mtp_device_delegate_impl_linux.cc',
+        'browser/media_gallery/mtp_device_delegate_impl_linux.h',
         'browser/memory_details.cc',
         'browser/memory_details.h',
         'browser/memory_details_android.cc',
@@ -1934,8 +1936,8 @@
         'browser/system_monitor/disk_info_mac.mm',
         'browser/system_monitor/media_device_notifications_utils.cc',
         'browser/system_monitor/media_device_notifications_utils.h',
-        'browser/system_monitor/media_transfer_protocol_device_observer_chromeos.cc',
-        'browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h',
+        'browser/system_monitor/media_transfer_protocol_device_observer_linux.cc',
+        'browser/system_monitor/media_transfer_protocol_device_observer_linux.h',
         'browser/system_monitor/removable_device_constants.cc',
         'browser/system_monitor/removable_device_constants.h',
         'browser/system_monitor/media_storage_util.cc',
@@ -2233,6 +2235,12 @@
           'dependencies': [
             '../build/linux/system.gyp:udev',
           ],
+          'sources': [
+            'browser/media_transfer_protocol/media_transfer_protocol_daemon_client.cc',
+            'browser/media_transfer_protocol/media_transfer_protocol_daemon_client.h',
+            'browser/media_transfer_protocol/media_transfer_protocol_manager.cc',
+            'browser/media_transfer_protocol/media_transfer_protocol_manager.h',
+          ],
         }],
         ['chromeos==0', {
           'sources/': [
@@ -2277,6 +2285,8 @@
             ['exclude', 'browser/icon_loader_linux.cc'],
             ['exclude', 'browser/icon_manager_linux.cc'],
             ['exclude', 'browser/idle_linux.cc'],
+            ['exclude', 'browser/media_gallery/media_transfer_protocol_manager_linux.cc'],
+            ['exclude', 'browser/media_gallery/media_transfer_protocol_manager_linux.h'],
             ['exclude', 'browser/password_manager/native_backend_gnome_x.cc'],
             ['exclude', 'browser/password_manager/native_backend_gnome_x.h'],
             ['exclude', 'browser/password_manager/native_backend_kwallet_x.cc'],
@@ -2824,6 +2834,39 @@
             'jni_gen_dir': 'chrome',
           },
           'includes': [ '../build/jni_generator.gypi' ],
+        },
+      ],
+     },
+    ],
+    ['OS=="linux"', {
+      'targets': [
+        {
+          # Protobuf compiler / generator for the MtpFileEntry and
+          # MtpFileEntries protocol buffers.
+          'target_name': 'mtp_file_entry_proto',
+          'type': 'static_library',
+          'sources': [
+            '../third_party/cros_system_api/dbus/mtp_file_entry.proto',
+          ],
+          'variables': {
+            'proto_in_dir': '../third_party/cros_system_api/dbus',
+            'proto_out_dir': 'chrome/browser/media_transfer_protocol',
+          },
+          'includes': ['../build/protoc.gypi'],
+        },
+        {
+          # Protobuf compiler / generator for the MtpStorageInfo protocol
+          # buffer.
+          'target_name': 'mtp_storage_info_proto',
+          'type': 'static_library',
+          'sources': [
+            '../third_party/cros_system_api/dbus/mtp_storage_info.proto',
+          ],
+          'variables': {
+            'proto_in_dir': '../third_party/cros_system_api/dbus',
+            'proto_out_dir': 'chrome/browser/media_transfer_protocol',
+          },
+          'includes': ['../build/protoc.gypi'],
         },
       ],
      },

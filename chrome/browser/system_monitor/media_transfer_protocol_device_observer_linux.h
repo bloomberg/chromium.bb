@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_CHROMEOS_H_
-#define CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_CHROMEOS_H_
+#ifndef CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_LINUX_H_
+#define CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_LINUX_H_
 
 #include <map>
 #include <string>
 
 #include "base/string16.h"
 #include "base/system_monitor/system_monitor.h"
-#include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 class FilePath;
 
-namespace chromeos {
-namespace mtp {
+namespace chrome {
 
 // Gets the mtp device information given a |storage_name|. On success,
 // fills in |id|, |name| and |location|.
@@ -26,14 +25,14 @@ typedef void (*GetStorageInfoFunc)(const std::string& storage_name,
 
 // Helper class to send MTP storage attachment and detachment events to
 // SystemMonitor.
-class MediaTransferProtocolDeviceObserverCros
+class MediaTransferProtocolDeviceObserverLinux
     : public MediaTransferProtocolManager::Observer {
  public:
   // Should only be called by browser start up code. Use GetInstance() instead.
-  MediaTransferProtocolDeviceObserverCros();
-  virtual ~MediaTransferProtocolDeviceObserverCros();
+  MediaTransferProtocolDeviceObserverLinux();
+  virtual ~MediaTransferProtocolDeviceObserverLinux();
 
-  static MediaTransferProtocolDeviceObserverCros* GetInstance();
+  static MediaTransferProtocolDeviceObserverLinux* GetInstance();
 
   // Finds the storage that contains |path| and populates |storage_info|.
   // Returns false if unable to find the storage.
@@ -43,7 +42,7 @@ class MediaTransferProtocolDeviceObserverCros
 
  protected:
   // Only used in unit tests.
-  explicit MediaTransferProtocolDeviceObserverCros(
+  explicit MediaTransferProtocolDeviceObserverLinux(
       GetStorageInfoFunc get_storage_info_func);
 
   // MediaTransferProtocolManager::Observer implementation.
@@ -66,10 +65,9 @@ class MediaTransferProtocolDeviceObserverCros
   // handler for unit testing.
   GetStorageInfoFunc get_storage_info_func_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverCros);
+  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinux);
 };
 
-}  // namespace mtp
-}  // namespace chromeos
+}  // namespace chrome
 
-#endif  // CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_CHROMEOS_H_
+#endif  // CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_LINUX_H_

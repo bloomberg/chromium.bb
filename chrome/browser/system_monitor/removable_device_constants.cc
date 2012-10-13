@@ -9,7 +9,7 @@ namespace chrome {
 const char kFSUniqueIdPrefix[] = "UUID:";
 const char kVendorModelSerialPrefix[] = "VendorModelSerial:";
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 const char kLeftParen[] = "(";
 const char kRightParen[] = ")";
 const char kVendorModelVolumeStoragePrefix[] = "VendorModelVolumeStorage:";

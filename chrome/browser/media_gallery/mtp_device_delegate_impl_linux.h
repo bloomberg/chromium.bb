@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_CHROMEOS_H_
-#define CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_CHROMEOS_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
+#define CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
@@ -16,17 +16,17 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chromeos {
+namespace chrome {
 
 // Helper class to communicate with MTP storage to complete isolated file system
 // operations. This class contains platform specific code to communicate with
 // the attached MTP storage. Instantiate this class per MTP storage.
 // This class is ref-counted, because MtpDeviceDelegate is ref-counted.
-class MtpDeviceDelegateImplCros : public fileapi::MtpDeviceDelegate {
+class MtpDeviceDelegateImplLinux : public fileapi::MtpDeviceDelegate {
  public:
   // Constructed on UI thread. Defer the device initializations until the first
   // file operation request. Do all the initializations in LazyInit() function.
-  explicit MtpDeviceDelegateImplCros(const std::string& device_location);
+  explicit MtpDeviceDelegateImplLinux(const std::string& device_location);
 
   // Overridden from MtpDeviceDelegate. All the functions are called on
   // |media_task_runner_|.
@@ -44,10 +44,10 @@ class MtpDeviceDelegateImplCros : public fileapi::MtpDeviceDelegate {
 
  private:
   friend struct fileapi::MtpDeviceDelegateDeleter;
-  friend class base::DeleteHelper<MtpDeviceDelegateImplCros>;
+  friend class base::DeleteHelper<MtpDeviceDelegateImplLinux>;
 
   // Private because this class is ref-counted.
-  virtual ~MtpDeviceDelegateImplCros();
+  virtual ~MtpDeviceDelegateImplLinux();
 
   // Opens the device for communication. This function is called on
   // |media_task_runner_|. Returns true if the device is ready for
@@ -66,9 +66,9 @@ class MtpDeviceDelegateImplCros : public fileapi::MtpDeviceDelegate {
   // operations are posted on |media_task_runner_|.
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(MtpDeviceDelegateImplCros);
+  DISALLOW_COPY_AND_ASSIGN(MtpDeviceDelegateImplLinux);
 };
 
-}  // namespace chromeos
+}  // namespace chrome
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_CHROMEOS_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERY_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_

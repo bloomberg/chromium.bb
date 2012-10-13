@@ -42,7 +42,6 @@ class IBusEngineService;
 class IBusInputContextClient;
 class ImageBurnerClient;
 class IntrospectableClient;
-class MediaTransferProtocolDaemonClient;
 class ModemMessagingClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
@@ -206,12 +205,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManger is shut
   // down.
   virtual IntrospectableClient* GetIntrospectableClient() = 0;
-
-  // Returns the media transfer protocol client, owned by DBusThreadManager.
-  // Do not cache this pointer and use it after DBusThreadManager is shut
-  // down.
-  virtual MediaTransferProtocolDaemonClient*
-      GetMediaTransferProtocolDaemonClient() = 0;
 
   // Returns the Modem Messaging client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut

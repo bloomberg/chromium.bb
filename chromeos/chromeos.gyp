@@ -16,8 +16,6 @@
         '../dbus/dbus.gyp:dbus',
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
-        'mtp_file_entry_proto',
-        'mtp_storage_info_proto',
         'power_state_control_proto',
         'power_supply_properties_proto',
         'video_activity_update_proto',
@@ -101,8 +99,6 @@
         'dbus/image_burner_client.h',
         'dbus/introspectable_client.cc',
         'dbus/introspectable_client.h',
-        'dbus/media_transfer_protocol_daemon_client.cc',
-        'dbus/media_transfer_protocol_daemon_client.h',
         'dbus/modem_messaging_client.cc',
         'dbus/modem_messaging_client.h',
         'dbus/permission_broker_client.cc',
@@ -143,7 +139,6 @@
         '../build/linux/system.gyp:dbus',
         '../testing/gmock.gyp:gmock',
         'chromeos',
-        'mtp_file_entry_proto',
       ],
       'sources': [
         'cryptohome/mock_async_method_caller.cc',
@@ -188,8 +183,6 @@
         'dbus/mock_image_burner_client.h',
         'dbus/mock_introspectable_client.cc',
         'dbus/mock_introspectable_client.h',
-        'dbus/mock_media_transfer_protocol_daemon_client.cc',
-        'dbus/mock_media_transfer_protocol_daemon_client.h',
         'dbus/mock_modem_messaging_client.cc',
         'dbus/mock_modem_messaging_client.h',
         'dbus/mock_permission_broker_client.h',
@@ -283,37 +276,6 @@
           },
         ],
       ],
-    },
-    {
-      # Protobuf compiler / generator for the MtpFileEntry and MtpFileEntries
-      # protocol buffers.
-      'target_name': 'mtp_file_entry_proto',
-      'type': 'static_library',
-      'sources': [
-        '../third_party/cros_system_api/dbus/mtp_file_entry.proto',
-      ],
-      'variables': {
-        'proto_in_dir': '../third_party/cros_system_api/dbus',
-        'proto_out_dir': 'chromeos/dbus',
-        'cc_generator_options': 'dllexport_decl=CHROMEOS_EXPORT:',
-        'cc_include': 'chromeos/chromeos_export.h',
-      },
-      'includes': ['../build/protoc.gypi'],
-    },
-    {
-      # Protobuf compiler / generator for the MtpStorageInfo protocol buffers.
-      'target_name': 'mtp_storage_info_proto',
-      'type': 'static_library',
-      'sources': [
-        '../third_party/cros_system_api/dbus/mtp_storage_info.proto',
-      ],
-      'variables': {
-        'proto_in_dir': '../third_party/cros_system_api/dbus',
-        'proto_out_dir': 'chromeos/dbus',
-        'cc_generator_options': 'dllexport_decl=CHROMEOS_EXPORT:',
-        'cc_include': 'chromeos/chromeos_export.h',
-      },
-      'includes': ['../build/protoc.gypi'],
     },
     {
       # Protobuf compiler / generator for the PowerSupplyProperties protocol

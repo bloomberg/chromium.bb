@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/media_transfer_protocol_daemon_client.h"
+#include "chrome/browser/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 
 #include "base/bind.h"
-#include "chromeos/dbus/mtp_file_entry.pb.h"
-#include "chromeos/dbus/mtp_storage_info.pb.h"
+#include "chrome/browser/media_transfer_protocol/mtp_file_entry.pb.h"
+#include "chrome/browser/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace chrome {
 
 namespace {
 
@@ -461,12 +461,10 @@ MediaTransferProtocolDaemonClient::~MediaTransferProtocolDaemonClient() {}
 
 // static
 MediaTransferProtocolDaemonClient*
-MediaTransferProtocolDaemonClient::Create(DBusClientImplementationType type,
-                                          dbus::Bus* bus) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new MediaTransferProtocolDaemonClientImpl(bus);
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new MediaTransferProtocolDaemonClientStubImpl();
+MediaTransferProtocolDaemonClient::Create(dbus::Bus* bus, bool is_stub) {
+  if (is_stub)
+    return new MediaTransferProtocolDaemonClientStubImpl();
+  return new MediaTransferProtocolDaemonClientImpl(bus);
 }
 
-}  // namespace chromeos
+}  // namespace chrome

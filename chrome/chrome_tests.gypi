@@ -1684,7 +1684,7 @@
         'browser/sync/test_profile_sync_service.h',
         'browser/system_monitor/media_device_notifications_utils_unittest.cc',
         'browser/system_monitor/media_storage_util_unittest.cc',
-        'browser/system_monitor/media_transfer_protocol_device_observer_chromeos_unittest.cc',
+        'browser/system_monitor/media_transfer_protocol_device_observer_linux_unittest.cc',
         'browser/system_monitor/removable_device_notifications_chromeos_unittest.cc',
         'browser/system_monitor/removable_device_notifications_linux_unittest.cc',
         'browser/system_monitor/removable_device_notifications_mac_unittest.mm',
@@ -4292,7 +4292,7 @@
           'product_name': 'app_mode_app_tests',
           'dependencies': [
             '../base/base.gyp:test_support_base',
-	    '../chrome/common_constants.gyp:common_constants',
+            '../chrome/common_constants.gyp:common_constants',
             '../testing/gtest.gyp:gtest',
             'chrome.gyp:chrome',  # run time dependency
             'app_mode_app_support',

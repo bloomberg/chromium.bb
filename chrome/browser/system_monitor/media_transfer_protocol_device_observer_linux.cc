@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h"
+#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_linux.h"
 
 #include "base/file_path.h"
 #include "base/stl_util.h"
@@ -10,20 +10,17 @@
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
+#include "chrome/browser/media_gallery/mtp_storage_info.pb.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
-#include "chromeos/dbus/mtp_storage_info.pb.h"
 
-namespace chromeos {
-namespace mtp {
+namespace chrome {
 
 using base::SystemMonitor;
-using chrome::MediaStorageUtil;
 
 namespace {
 
-static MediaTransferProtocolDeviceObserverCros* g_mtp_device_observer = NULL;
+static MediaTransferProtocolDeviceObserverLinux* g_mtp_device_observer = NULL;
 
 // Device root path constant.
 const char kRootPath[] = "/";
@@ -61,13 +58,13 @@ std::string GetDeviceIdFromStorageInfo(const MtpStorageInfo& storage_info) {
   const std::string& volume_id = storage_info.volume_identifier();
   std::string unique_id = base::StringPrintf(
       "%s%s%s%s%s%s%s%s",
-      chrome::kVendorModelVolumeStoragePrefix,
+      kVendorModelVolumeStoragePrefix,
       vendor_id.c_str(),
-      chrome::kNonSpaceDelim,
+      kNonSpaceDelim,
       model_id.c_str(),
-      chrome::kNonSpaceDelim,
+      kNonSpaceDelim,
       volume_id.c_str(),
-      chrome::kNonSpaceDelim,
+      kNonSpaceDelim,
       storage_id.c_str());
   return MediaStorageUtil::MakeDeviceId(MediaStorageUtil::MTP_OR_PTP,
                                         unique_id);
@@ -76,8 +73,8 @@ std::string GetDeviceIdFromStorageInfo(const MtpStorageInfo& storage_info) {
 // Returns the |data_store_id| string in the required format.
 // If the |data_store_id| is 65537, this function returns " (65537)".
 std::string GetFormattedIdString(const std::string& data_store_id) {
-  return base::StringPrintf(" %s%s%s", chrome::kLeftParen,
-                            data_store_id.c_str(), chrome::kRightParen);
+  return base::StringPrintf(" %s%s%s", kLeftParen, data_store_id.c_str(),
+                            kRightParen);
 }
 
 // Helper function to get device label from storage information.
@@ -89,7 +86,7 @@ string16 GetDeviceLabelFromStorageInfo(const MtpStorageInfo& storage_info) {
   const std::string& product_name = storage_info.product();
   if (!product_name.empty()) {
     if (!device_label.empty())
-      device_label += chrome::kSpaceDelim;
+      device_label += kSpaceDelim;
     device_label += product_name;
   }
 
@@ -136,8 +133,8 @@ void GetStorageInfo(const std::string& storage_name,
 
 }  // namespace
 
-MediaTransferProtocolDeviceObserverCros::
-MediaTransferProtocolDeviceObserverCros()
+MediaTransferProtocolDeviceObserverLinux::
+MediaTransferProtocolDeviceObserverLinux()
     : get_storage_info_func_(&GetStorageInfo) {
   DCHECK(!g_mtp_device_observer);
   g_mtp_device_observer = this;
@@ -149,9 +146,9 @@ MediaTransferProtocolDeviceObserverCros()
 }
 
 // This constructor is only used by unit tests.
-MediaTransferProtocolDeviceObserverCros::
-    MediaTransferProtocolDeviceObserverCros(
-        GetStorageInfoFunc get_storage_info_func)
+MediaTransferProtocolDeviceObserverLinux::
+MediaTransferProtocolDeviceObserverLinux(
+    GetStorageInfoFunc get_storage_info_func)
     : get_storage_info_func_(get_storage_info_func) {
   // In unit tests, we don't have a media transfer protocol manager.
   DCHECK(!MediaTransferProtocolManager::GetInstance());
@@ -159,8 +156,8 @@ MediaTransferProtocolDeviceObserverCros::
   g_mtp_device_observer = this;
 }
 
-MediaTransferProtocolDeviceObserverCros::
-~MediaTransferProtocolDeviceObserverCros() {
+MediaTransferProtocolDeviceObserverLinux::
+~MediaTransferProtocolDeviceObserverLinux() {
   DCHECK_EQ(this, g_mtp_device_observer);
   g_mtp_device_observer = NULL;
 
@@ -171,13 +168,13 @@ MediaTransferProtocolDeviceObserverCros::
 }
 
 // static
-MediaTransferProtocolDeviceObserverCros*
-MediaTransferProtocolDeviceObserverCros::GetInstance() {
+MediaTransferProtocolDeviceObserverLinux*
+MediaTransferProtocolDeviceObserverLinux::GetInstance() {
   DCHECK(g_mtp_device_observer != NULL);
   return g_mtp_device_observer;
 }
 
-bool MediaTransferProtocolDeviceObserverCros::GetStorageInfoForPath(
+bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
     const FilePath& path,
     SystemMonitor::RemovableStorageInfo* storage_info) const {
   if (!path.IsAbsolute())
@@ -202,7 +199,7 @@ bool MediaTransferProtocolDeviceObserverCros::GetStorageInfoForPath(
 }
 
 // MediaTransferProtocolManager::Observer override.
-void MediaTransferProtocolDeviceObserverCros::StorageChanged(
+void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
     bool is_attached,
     const std::string& storage_name) {
   DCHECK(!storage_name.empty());
@@ -241,11 +238,10 @@ void MediaTransferProtocolDeviceObserverCros::StorageChanged(
   }
 }
 
-void MediaTransferProtocolDeviceObserverCros::EnumerateStorages() {
+void MediaTransferProtocolDeviceObserverLinux::EnumerateStorages() {
   typedef std::vector<std::string> StorageList;
   MediaTransferProtocolManager* mtp_manager =
       MediaTransferProtocolManager::GetInstance();
-  DCHECK(mtp_manager);
   StorageList storages = mtp_manager->GetStorages();
   for (StorageList::const_iterator storage_iter = storages.begin();
        storage_iter != storages.end(); ++storage_iter) {
@@ -253,5 +249,4 @@ void MediaTransferProtocolDeviceObserverCros::EnumerateStorages() {
   }
 }
 
-}  // namespace mtp
-}  // namespace chromeos
+}  // namespace chrome

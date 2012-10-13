@@ -154,10 +154,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockIntrospectableClient* mock_introspectable_client() {
     return mock_introspectable_client_.get();
   }
-  MockMediaTransferProtocolDaemonClient*
-  mock_media_transfer_protocol_daemon_client() {
-    return mock_media_transfer_protocol_daemon_client_.get();
-  }
   MockModemMessagingClient* mock_modem_messaging_client() {
     return mock_modem_messaging_client_.get();
   }
@@ -200,8 +196,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockGsmSMSClient> mock_gsm_sms_client_;
   scoped_ptr<MockImageBurnerClient> mock_image_burner_client_;
   scoped_ptr<MockIntrospectableClient> mock_introspectable_client_;
-  scoped_ptr<MockMediaTransferProtocolDaemonClient>
-      mock_media_transfer_protocol_daemon_client_;
   scoped_ptr<MockModemMessagingClient> mock_modem_messaging_client_;
   scoped_ptr<MockPermissionBrokerClient> mock_permission_broker_client_;
   scoped_ptr<MockPowerManagerClient> mock_power_manager_client_;

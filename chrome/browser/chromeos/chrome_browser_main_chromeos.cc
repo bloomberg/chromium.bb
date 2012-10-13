@@ -40,7 +40,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/memory/low_memory_observer.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
-#include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
@@ -67,7 +66,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h"
 #include "chrome/browser/system_monitor/removable_device_notifications_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -213,7 +211,6 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     chromeos::ShutdownKioskModeScreensaver();
   cryptohome::AsyncMethodCaller::Shutdown();
-  chromeos::mtp::MediaTransferProtocolManager::Shutdown();
   chromeos::disks::DiskMountManager::Shutdown();
 
   // CrosLibrary is shut down before DBusThreadManager even though the former
@@ -305,7 +302,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
       chromeos::OwnerKeyUtil::Create());
 
   chromeos::disks::DiskMountManager::Initialize();
-  chromeos::mtp::MediaTransferProtocolManager::Initialize();
   cryptohome::AsyncMethodCaller::Initialize();
 
   // Initialize the network change notifier for Chrome OS. The network
@@ -455,8 +451,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Initialize the brightness observer so that we'll display an onscreen
   // indication of brightness changes during login.
   brightness_observer_.reset(new chromeos::BrightnessObserver());
-  media_transfer_protocol_device_observer_.reset(
-      new chromeos::mtp::MediaTransferProtocolDeviceObserverCros());
   output_observer_.reset(new chromeos::OutputObserver());
   resume_observer_.reset(new chromeos::ResumeObserver());
   screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
@@ -546,7 +540,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   screen_lock_observer_.reset();
   resume_observer_.reset();
   brightness_observer_.reset();
-  media_transfer_protocol_device_observer_.reset();
   output_observer_.reset();
   power_state_override_.reset();
 

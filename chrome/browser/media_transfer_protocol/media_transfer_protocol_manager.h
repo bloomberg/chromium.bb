@@ -2,19 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_MTP_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_MTP_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
+#ifndef CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
+#define CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "build/build_config.h"
+
+#if !defined(OS_LINUX)
+#error "Only used on Linux and ChromeOS"
+#endif
 
 class MtpFileEntry;
 class MtpStorageInfo;
 
-namespace chromeos {
-namespace mtp {
+namespace chrome {
 
 // This class handles the interaction with mtpd.
 // Other classes can add themselves as observers.
@@ -77,8 +81,6 @@ class MediaTransferProtocolManager {
       const std::string& storage_name) const = 0;
 
   // Opens |storage_name| in |mode| and runs |callback|.
-  // See third_party/cros_system_api/dbus/service_constants.h's mtpd section
-  // for valid values of |mode|. e.g. mtpd::kReadOnlyMode.
   virtual void OpenStorage(const std::string& storage_name,
                            const std::string& mode,
                            const OpenStorageCallback& callback) = 0;
@@ -131,7 +133,6 @@ class MediaTransferProtocolManager {
   static MediaTransferProtocolManager* GetInstance();
 };
 
-}  // namespace mtp
-}  // namespace chromeos
+}  // namespace chrome
 
-#endif  // CHROME_BROWSER_CHROMEOS_MTP_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_
+#endif  // CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_MANAGER_H_

@@ -9,19 +9,19 @@
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 #if !defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-#error Media file system is not supported for this platform.
+#error "Media file system is not supported for this platform."
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/media_gallery/mtp_device_delegate_impl_chromeos.h"
-#endif // OS_CHROMEOS
+#if defined(OS_LINUX)  // Implies OS_CHROMEOS
+#include "chrome/browser/media_gallery/mtp_device_delegate_impl_linux.h"
+#endif
 
 namespace chrome {
 
 // TODO(kmadhusu): Implement mtp device delegates on other platforms.
-#if defined(OS_CHROMEOS)
-typedef class chromeos::MtpDeviceDelegateImplCros MtpDeviceDelegateImpl;
-#endif  // OS_CHROMEOS
+#if defined(OS_LINUX)  // Implies OS_CHROMEOS
+typedef class MtpDeviceDelegateImplLinux MtpDeviceDelegateImpl;
+#endif
 
 }  // namespace chrome
 

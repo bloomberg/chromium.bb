@@ -36,7 +36,6 @@
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
-#include "chromeos/dbus/media_transfer_protocol_daemon_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -126,10 +125,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the introspectable object client.
     introspectable_client_.reset(
         IntrospectableClient::Create(client_type, system_bus_.get()));
-    // Create the media transfer protocol daemon client.
-    media_transfer_protocol_daemon_client_.reset(
-        MediaTransferProtocolDaemonClient::Create(client_type,
-                                                  system_bus_.get()));
     // Create the ModemMessaging client.
     modem_messaging_client_.reset(
         ModemMessagingClient::Create(client_type, system_bus_.get()));
@@ -324,12 +319,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
-  virtual MediaTransferProtocolDaemonClient*
-  GetMediaTransferProtocolDaemonClient() OVERRIDE {
-    return media_transfer_protocol_daemon_client_.get();
-  }
-
-  // DBusThreadManager override.
   virtual ModemMessagingClient* GetModemMessagingClient() OVERRIDE {
     return modem_messaging_client_.get();
   }
@@ -428,8 +417,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<GsmSMSClient> gsm_sms_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<IntrospectableClient> introspectable_client_;
-  scoped_ptr<MediaTransferProtocolDaemonClient>
-      media_transfer_protocol_daemon_client_;
   scoped_ptr<ModemMessagingClient> modem_messaging_client_;
   scoped_ptr<PermissionBrokerClient> permission_broker_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;

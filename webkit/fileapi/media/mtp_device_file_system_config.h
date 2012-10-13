@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)  // Implies defined(OS_CHROMEOS)
 #define SUPPORT_MTP_DEVICE_FILESYSTEM
 #endif
 

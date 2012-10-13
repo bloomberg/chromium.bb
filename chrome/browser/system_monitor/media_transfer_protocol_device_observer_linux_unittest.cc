@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// MediaTransferProtocolDeviceObserverCros unit tests.
+// MediaTransferProtocolDeviceObserverLinux unit tests.
 
-#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h"
+#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_linux.h"
 
 #include <string>
 
@@ -16,8 +16,7 @@
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-namespace mtp {
+namespace chrome {
 
 using testing::_;
 
@@ -32,8 +31,8 @@ const char kStorageWithValidInfo[] = "usb:2,2,88888";
 
 // Returns the mtp device id given the |unique_id|.
 std::string GetMtpDeviceId(const std::string& unique_id) {
-  return chrome::MediaStorageUtil::MakeDeviceId(
-      chrome::MediaStorageUtil::MTP_OR_PTP, unique_id);
+  return MediaStorageUtil::MakeDeviceId(MediaStorageUtil::MTP_OR_PTP,
+                                        unique_id);
 }
 
 // Helper function to get the device storage details such as device id, label
@@ -57,17 +56,17 @@ void GetStorageInfo(const std::string& storage_name,
 
 }  // namespace
 
-// A class to test the functionality of MediaTransferProtocolDeviceObserverCros
+// A class to test the functionality of MediaTransferProtocolDeviceObserverLinux
 // member functions.
-class MediaTransferProtocolDeviceObserverCrosTest
+class MediaTransferProtocolDeviceObserverLinuxTest
     : public testing::Test,
-      public MediaTransferProtocolDeviceObserverCros {
+      public MediaTransferProtocolDeviceObserverLinux {
  public:
-  MediaTransferProtocolDeviceObserverCrosTest()
-      : MediaTransferProtocolDeviceObserverCros(&GetStorageInfo) {
+  MediaTransferProtocolDeviceObserverLinuxTest()
+      : MediaTransferProtocolDeviceObserverLinux(&GetStorageInfo) {
   }
 
-  virtual ~MediaTransferProtocolDeviceObserverCrosTest() {}
+  virtual ~MediaTransferProtocolDeviceObserverLinuxTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
@@ -86,18 +85,19 @@ class MediaTransferProtocolDeviceObserverCrosTest
     return *mock_devices_changed_observer_;
   }
 
-  // Notifies MediaTransferProtocolDeviceObserverCros about the attachment of
+  // Notifies MediaTransferProtocolDeviceObserverLinux about the attachment of
   // mtp storage device given the |storage_name|.
   void MtpStorageAttached(const std::string& storage_name) {
-    MediaTransferProtocolDeviceObserverCros::StorageChanged(true, storage_name);
+    MediaTransferProtocolDeviceObserverLinux::StorageChanged(true,
+                                                             storage_name);
     ui_loop_.RunAllPending();
   }
 
-  // Notifies MediaTransferProtocolDeviceObserverCros about the detachment of
+  // Notifies MediaTransferProtocolDeviceObserverLinux about the detachment of
   // mtp storage device given the |storage_name|.
   void MtpStorageDetached(const std::string& storage_name) {
-    MediaTransferProtocolDeviceObserverCros::StorageChanged(false,
-                                                            storage_name);
+    MediaTransferProtocolDeviceObserverLinux::StorageChanged(false,
+                                                             storage_name);
     ui_loop_.RunAllPending();
   }
 
@@ -109,11 +109,11 @@ class MediaTransferProtocolDeviceObserverCrosTest
   base::SystemMonitor system_monitor_;
   scoped_ptr<base::MockDevicesChangedObserver> mock_devices_changed_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverCrosTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinuxTest);
 };
 
 // Test to verify basic mtp storage attach and detach notifications.
-TEST_F(MediaTransferProtocolDeviceObserverCrosTest, BasicAttachDetach) {
+TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, BasicAttachDetach) {
   testing::Sequence mock_sequence;
   std::string device_id = GetMtpDeviceId(kStorageUniqueId);
 
@@ -136,7 +136,7 @@ TEST_F(MediaTransferProtocolDeviceObserverCrosTest, BasicAttachDetach) {
 // When a mtp storage device with invalid storage label and id is
 // attached/detached, there should not be any device attach/detach
 // notifications.
-TEST_F(MediaTransferProtocolDeviceObserverCrosTest, StorageWithInvalidInfo) {
+TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, StorageWithInvalidInfo) {
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
 
   // Attach the mtp storage with invalid storage info.
@@ -148,5 +148,4 @@ TEST_F(MediaTransferProtocolDeviceObserverCrosTest, StorageWithInvalidInfo) {
   MtpStorageDetached(kStorageWithInvalidInfo);
 }
 
-}  // namespace mtp
-}  // namespace chromeos
+}  // namespace chrome

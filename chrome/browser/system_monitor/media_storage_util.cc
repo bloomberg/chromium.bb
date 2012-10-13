@@ -16,7 +16,6 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h"
 #include "chrome/browser/system_monitor/removable_device_notifications_chromeos.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
@@ -24,6 +23,10 @@
 #include "chrome/browser/system_monitor/removable_device_notifications_mac.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/system_monitor/removable_device_notifications_window_win.h"
+#endif
+
+#if defined(OS_LINUX)  // Implies OS_CHROMEOS
+#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_linux.h"
 #endif
 
 using base::SystemMonitor;
@@ -54,7 +57,7 @@ const char kRemovableMassStorageNoDCIMPrefix[] = "nodcim:";
 const char kFixedMassStoragePrefix[] = "path:";
 const char kMtpPtpPrefix[] = "mtp:";
 
-static bool (*g_test_get_device_info_from_path_function)(
+static bool (*g_test_get_device_info_from_path_function)(  // NOLINT
     const FilePath& path, std::string* device_id, string16* device_name,
     FilePath* relative_path) = NULL;
 
@@ -241,10 +244,10 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
   found_device = notifier->GetDeviceInfoForPath(path, &device_info);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   if (!found_device) {
-    chromeos::mtp::MediaTransferProtocolDeviceObserverCros* mtp_manager =
-        chromeos::mtp::MediaTransferProtocolDeviceObserverCros::GetInstance();
+    MediaTransferProtocolDeviceObserverLinux* mtp_manager =
+        MediaTransferProtocolDeviceObserverLinux::GetInstance();
     found_device = mtp_manager->GetStorageInfoForPath(path, &device_info);
   }
 #endif

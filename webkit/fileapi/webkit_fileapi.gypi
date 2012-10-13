@@ -129,6 +129,10 @@
             '../chromeos/fileapi/remote_file_system_proxy.h',
             '../chromeos/fileapi/remote_file_stream_writer.cc',
             '../chromeos/fileapi/remote_file_stream_writer.h',
+          ],
+        }],
+        ['OS=="linux" or chromeos==1', {
+          'sources': [
             'media/device_media_file_util.cc',
             'media/device_media_file_util.h',
             'media/mtp_device_delegate.h',

@@ -6,16 +6,19 @@
 // responsible for communicating with PTP / MTP capable devices like cameras
 // and smartphones.
 
-#ifndef CHROMEOS_DBUS_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
-#define CHROMEOS_DBUS_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
+#ifndef CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
+#define CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "build/build_config.h"
+
+#if !defined(OS_LINUX)
+#error "Only used on Linux and ChromeOS"
+#endif
 
 class MtpFileEntry;
 class MtpStorageInfo;
@@ -24,12 +27,12 @@ namespace dbus {
 class Bus;
 }
 
-namespace chromeos {
+namespace chrome {
 
 // A class to make the actual DBus calls for mtpd service.
 // This class only makes calls, result/error handling should be done
 // by callbacks.
-class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
+class MediaTransferProtocolDaemonClient {
  public:
   // A callback to be called when DBus method call fails.
   typedef base::Callback<void()> ErrorCallback;
@@ -153,9 +156,9 @@ class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
   virtual void SetUpConnections(const MTPStorageEventHandler& handler) = 0;
 
   // Factory function, creates a new instance and returns ownership.
-  // For normal usage, access the singleton via DBusThreadManager::Get().
-  static MediaTransferProtocolDaemonClient* Create(
-      DBusClientImplementationType type, dbus::Bus* bus);
+  // For normal usage, set |is_stub| to false.
+  static MediaTransferProtocolDaemonClient* Create(dbus::Bus* bus,
+                                                   bool is_stub);
 
  protected:
   // Create() should be used instead.
@@ -165,6 +168,6 @@ class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDaemonClient);
 };
 
-}  // namespace chromeos
+}  // namespace chrome
 
-#endif  // CHROMEOS_DBUS_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_
+#endif  // CHROME_BROWSER_MEDIA_TRANSFER_PROTOCOL_MEDIA_TRANSFER_PROTOCOL_DAEMON_CLIENT_H_

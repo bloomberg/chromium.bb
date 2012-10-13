@@ -24,7 +24,6 @@
 #include "chromeos/dbus/mock_gsm_sms_client.h"
 #include "chromeos/dbus/mock_image_burner_client.h"
 #include "chromeos/dbus/mock_introspectable_client.h"
-#include "chromeos/dbus/mock_media_transfer_protocol_daemon_client.h"
 #include "chromeos/dbus/mock_modem_messaging_client.h"
 #include "chromeos/dbus/mock_permission_broker_client.h"
 #include "chromeos/dbus/mock_power_manager_client.h"
@@ -60,8 +59,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_gsm_sms_client_(new MockGsmSMSClient),
       mock_image_burner_client_(new MockImageBurnerClient),
       mock_introspectable_client_(new MockIntrospectableClient),
-      mock_media_transfer_protocol_daemon_client_(
-          new MockMediaTransferProtocolDaemonClient),
       mock_modem_messaging_client_(new MockModemMessagingClient),
       mock_permission_broker_client_(new MockPermissionBrokerClient),
       mock_power_manager_client_(new MockPowerManagerClient),
@@ -107,8 +104,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_image_burner_client()));
   EXPECT_CALL(*this, GetIntrospectableClient())
       .WillRepeatedly(Return(mock_introspectable_client()));
-  EXPECT_CALL(*this, GetMediaTransferProtocolDaemonClient())
-      .WillRepeatedly(Return(mock_media_transfer_protocol_daemon_client()));
   EXPECT_CALL(*this, GetModemMessagingClient())
       .WillRepeatedly(Return(mock_modem_messaging_client()));
   EXPECT_CALL(*this, GetPowerManagerClient())
