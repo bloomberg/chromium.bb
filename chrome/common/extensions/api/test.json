@@ -35,6 +35,12 @@
                   "testDataDirectory": {
                     "type": "string",
                     "description": "file:/// URL for the API test data directory."
+                  },
+                  "testWebSocketPort": {
+                    "type": "integer",
+                    "description": "The port on which the test WebSocket server is listening.",
+                    "minimum": 0,
+                    "maximum": 65535
                   }
                 }
               }
