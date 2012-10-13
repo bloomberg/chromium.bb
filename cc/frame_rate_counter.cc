@@ -11,7 +11,6 @@
 
 #include "CCProxy.h"
 #include <public/Platform.h>
-#include <wtf/CurrentTime.h>
 
 namespace cc {
 
@@ -25,7 +24,7 @@ static inline int safeMod(int number, int modulus)
     return (number + modulus) % modulus;
 }
 
-inline double CCFrameRateCounter::frameInterval(int frameNumber) const
+inline base::TimeDelta CCFrameRateCounter::frameInterval(int frameNumber) const
 {
     return m_timeStampHistory[frameIndex(frameNumber)] -
         m_timeStampHistory[frameIndex(frameNumber - 1)];
@@ -40,23 +39,24 @@ CCFrameRateCounter::CCFrameRateCounter()
     : m_currentFrameNumber(1)
     , m_droppedFrameCount(0)
 {
-    m_timeStampHistory[0] = currentTime();
+    m_timeStampHistory[0] = base::TimeTicks::Now();
     m_timeStampHistory[1] = m_timeStampHistory[0];
     for (int i = 2; i < kTimeStampHistorySize; i++)
-        m_timeStampHistory[i] = 0;
+        m_timeStampHistory[i] = base::TimeTicks();
 }
 
-void CCFrameRateCounter::markBeginningOfFrame(double timestamp)
+void CCFrameRateCounter::markBeginningOfFrame(base::TimeTicks timestamp)
 {
     m_timeStampHistory[frameIndex(m_currentFrameNumber)] = timestamp;
-    double frameIntervalSeconds = frameInterval(m_currentFrameNumber);
+    base::TimeDelta frameIntervalSeconds = frameInterval(m_currentFrameNumber);
 
     if (CCProxy::hasImplThread() && m_currentFrameNumber > 0) {
-        double drawDelayMs = frameIntervalSeconds * 1000.0;
+        double drawDelayMs = frameIntervalSeconds.InMillisecondsF();
         WebKit::Platform::current()->histogramCustomCounts("Renderer4.CompositorThreadImplDrawDelay", static_cast<int>(drawDelayMs), 1, 120, 60);
     }
 
-    if (!isBadFrameInterval(frameIntervalSeconds) && frameIntervalSeconds > kDroppedFrameTime)
+    if (!isBadFrameInterval(frameIntervalSeconds) &&
+        frameIntervalSeconds.InSecondsF() > kDroppedFrameTime)
         ++m_droppedFrameCount;
 }
 
@@ -65,11 +65,11 @@ void CCFrameRateCounter::markEndOfFrame()
     m_currentFrameNumber += 1;
 }
 
-bool CCFrameRateCounter::isBadFrameInterval(double intervalBetweenConsecutiveFrames) const
+bool CCFrameRateCounter::isBadFrameInterval(base::TimeDelta intervalBetweenConsecutiveFrames) const
 {
     bool schedulerAllowsDoubleFrames = !CCProxy::hasImplThread();
-    bool intervalTooFast = schedulerAllowsDoubleFrames && intervalBetweenConsecutiveFrames < kFrameTooFast;
-    bool intervalTooSlow = intervalBetweenConsecutiveFrames > kFrameTooSlow;
+    bool intervalTooFast = schedulerAllowsDoubleFrames && intervalBetweenConsecutiveFrames.InSecondsF() < kFrameTooFast;
+    bool intervalTooSlow = intervalBetweenConsecutiveFrames.InSecondsF() > kFrameTooSlow;
     return intervalTooFast || intervalTooSlow;
 }
 
@@ -98,9 +98,9 @@ void CCFrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, d
     while (1) {
         if (!isBadFrame(frame)) {
             averageFPSCount++;
-            double secForLastFrame = m_timeStampHistory[frameIndex(frame)] -
-                                     m_timeStampHistory[frameIndex(frame - 1)];
-            double x = 1.0 / secForLastFrame;
+            base::TimeDelta secForLastFrame = m_timeStampHistory[frameIndex(frame)] -
+                                              m_timeStampHistory[frameIndex(frame - 1)];
+            double x = 1.0 / secForLastFrame.InSecondsF();
             double deltaFromAverage = x - averageFPS;
             // Change with caution - numerics. http://en.wikipedia.org/wiki/Standard_deviation
             averageFPS = averageFPS + deltaFromAverage / averageFPSCount;
@@ -120,13 +120,13 @@ void CCFrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, d
     standardDeviation = sqrt(fpsVarianceNumerator / averageFPSCount);
 }
 
-double CCFrameRateCounter::timeStampOfRecentFrame(int n)
+base::TimeTicks CCFrameRateCounter::timeStampOfRecentFrame(int n)
 {
     ASSERT(n >= 0 && n < kTimeStampHistorySize);
     int desiredIndex = (frameIndex(m_currentFrameNumber) + n) % kTimeStampHistorySize;
     return m_timeStampHistory[desiredIndex];
 }
 
-} // namespace cc
+}  // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

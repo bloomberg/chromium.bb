@@ -187,7 +187,7 @@ void CCHeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, CCFrameRateCoun
     SkPath path;
     for (int i = 0; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
         int j = i + 1;
-        double delta = fpsCounter->timeStampOfRecentFrame(j) - fpsCounter->timeStampOfRecentFrame(i);
+        base::TimeDelta delta = fpsCounter->timeStampOfRecentFrame(j) - fpsCounter->timeStampOfRecentFrame(i);
 
         // Skip plotting this particular instantaneous frame rate if it is not likely to have been valid.
         if (fpsCounter->isBadFrameInterval(delta)) {
@@ -195,7 +195,7 @@ void CCHeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, CCFrameRateCoun
             continue;
         }
 
-        double fps = 1.0 / delta;
+        double fps = 1.0 / delta.InSecondsF();
 
         // Clamp the FPS to the range we want to plot visually.
         double p = 1 - ((fps - loFPS) / (hiFPS - loFPS));

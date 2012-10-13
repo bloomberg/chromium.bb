@@ -668,7 +668,7 @@ void CCLayerTreeHostImpl::drawLayers(const FrameData& frame)
     // FIXME: use the frame begin time from the overall compositor scheduler.
     // This value is currently inaccessible because it is up in Chromium's
     // RenderWidget.
-    m_fpsCounter->markBeginningOfFrame(currentTime());
+    m_fpsCounter->markBeginningOfFrame(base::TimeTicks::Now());
 
     if (m_settings.showDebugRects())
         m_debugRectHistory->saveDebugRectsForCurrentFrame(m_rootLayerImpl.get(), *frame.renderSurfaceLayerList, frame.occludingScreenSpaceRects, settings());

@@ -8,6 +8,7 @@
 #if USE(ACCELERATED_COMPOSITING)
 
 #include "base/basictypes.h"
+#include "base/time.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace cc {
@@ -21,7 +22,7 @@ public:
         return adoptPtr(new CCFrameRateCounter());
     }
 
-    void markBeginningOfFrame(double timestamp);
+    void markBeginningOfFrame(base::TimeTicks timestamp);
     void markEndOfFrame();
     int currentFrameNumber() const { return m_currentFrameNumber; }
     void getAverageFPSAndStandardDeviation(double& averageFPS, double& standardDeviation) const;
@@ -29,18 +30,18 @@ public:
 
     // n = 0 returns the oldest frame retained in the history,
     // while n = timeStampHistorySize() - 1 returns the timestamp most recent frame.
-    double timeStampOfRecentFrame(int /* n */);
+    base::TimeTicks timeStampOfRecentFrame(int n);
 
     // This is a heuristic that can be used to ignore frames in a reasonable way. Returns
     // true if the given frame interval is too fast or too slow, based on constant thresholds.
-    bool isBadFrameInterval(double intervalBetweenConsecutiveFrames) const;
+    bool isBadFrameInterval(base::TimeDelta intervalBetweenConsecutiveFrames) const;
 
     int droppedFrameCount() const { return m_droppedFrameCount; }
 
 private:
     CCFrameRateCounter();
 
-    double frameInterval(int frameNumber) const;
+    base::TimeDelta frameInterval(int frameNumber) const;
     int frameIndex(int frameNumber) const;
     bool isBadFrame(int frameNumber) const;
 
@@ -58,7 +59,7 @@ private:
     static const int kTimeStampHistorySize = 120;
 
     int m_currentFrameNumber;
-    double m_timeStampHistory[kTimeStampHistorySize];
+    base::TimeTicks m_timeStampHistory[kTimeStampHistorySize];
 
     int m_droppedFrameCount;
 
