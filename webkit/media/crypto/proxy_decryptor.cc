@@ -154,6 +154,7 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& key_system,
 void ProxyDecryptor::Decrypt(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const DecryptCB& decrypt_cb) {
+  DVLOG(2) << "Decrypt()";
   DCHECK(decryption_message_loop_->BelongsToCurrentThread());
 
   DCHECK(!is_canceling_decrypt_);
@@ -170,7 +171,7 @@ void ProxyDecryptor::Decrypt(
     decryptor = decryptor_.get();
   }
   if (!decryptor) {
-    DVLOG(1) << "ProxyDecryptor::Decrypt(): decryptor not initialized.";
+    DVLOG(1) << "Decrypt(): decryptor not initialized.";
 
     // TODO(xhwang): The same NeedKey may be fired here and multiple times in
     // OnBufferDecrypted(). While the spec says only one NeedKey should be
@@ -183,6 +184,7 @@ void ProxyDecryptor::Decrypt(
 }
 
 void ProxyDecryptor::CancelDecrypt() {
+  DVLOG(1) << "CancelDecrypt()";
   DCHECK(decryption_message_loop_->BelongsToCurrentThread());
 
   if (!pending_buffer_to_decrypt_) {
@@ -281,6 +283,7 @@ void ProxyDecryptor::OnNewKeyAdded() {
 }
 
 void ProxyDecryptor::DecryptPendingBuffer() {
+  DVLOG(3) << "DecryptPendingBuffer()";
   DCHECK(decryption_message_loop_->BelongsToCurrentThread());
   DCHECK(pending_buffer_to_decrypt_);
   DCHECK(!is_waiting_for_decryptor_);
@@ -301,6 +304,7 @@ void ProxyDecryptor::OnBufferDecrypted(
     return;
   }
 
+  DVLOG(2) << "OnBufferDecrypted() - status: " << status;
   DCHECK(pending_buffer_to_decrypt_);
   DCHECK(!pending_decrypt_cb_.is_null());
   DCHECK(is_waiting_for_decryptor_);

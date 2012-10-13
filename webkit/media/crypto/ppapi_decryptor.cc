@@ -105,6 +105,7 @@ void PpapiDecryptor::Decrypt(
 }
 
 void PpapiDecryptor::CancelDecrypt() {
+  DVLOG(1) << "CancelDecrypt()";
   // TODO(xhwang): Implement CancelDecrypt() in PluginInstance and call it here.
 }
 
@@ -125,12 +126,15 @@ void PpapiDecryptor::InitializeVideoDecoder(
   DCHECK(config->is_encrypted());
   DCHECK(config->IsValidConfig());
 
-  key_added_cb_ = key_added_cb;
-
   // TODO(xhwang): Enable this once PluginInstance is updated.
   // if (!cdm_plugin_->InitializeVideoDecoder(video_config.Pass(), init_cb))
-  //   init_cb.Run(false);
-  init_cb.Run(false);
+  {
+    init_cb.Run(false);
+    return;
+  }
+
+  key_added_cb_ = key_added_cb;
+  init_cb.Run(true);
 }
 
 void PpapiDecryptor::DecryptAndDecodeVideo(

@@ -522,10 +522,15 @@ void PPB_Instance_Proxy::KeyError(PP_Instance instance,
 void PPB_Instance_Proxy::DeliverBlock(PP_Instance instance,
                                       PP_Resource decrypted_block,
                                       const PP_DecryptedBlockInfo* block_info) {
-  Resource* object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(decrypted_block);
-  if (!object || object->pp_instance() != instance)
-    return;
+  PP_Resource decrypted_block_host_resource = 0;
+
+  if (decrypted_block) {
+    Resource* object =
+        PpapiGlobals::Get()->GetResourceTracker()->GetResource(decrypted_block);
+    if (!object || object->pp_instance() != instance)
+      return;
+    decrypted_block_host_resource = object->host_resource().host_resource();
+  }
 
   std::string serialized_block_info;
   if (!SerializeBlockInfo(*block_info, &serialized_block_info))
@@ -534,7 +539,7 @@ void PPB_Instance_Proxy::DeliverBlock(PP_Instance instance,
   dispatcher()->Send(
       new PpapiHostMsg_PPBInstance_DeliverBlock(API_ID_PPB_INSTANCE,
           instance,
-          object->host_resource().host_resource(),
+          decrypted_block_host_resource,
           serialized_block_info));
 }
 
@@ -572,6 +577,7 @@ void PPB_Instance_Proxy::DecoderResetDone(PP_Instance instance,
           request_id));
 }
 
+// TODO(tomfinegan): Handle null decrypted_frame after landing other patches.
 void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
                                       PP_Resource decrypted_frame,
                                       const PP_DecryptedFrameInfo* frame_info) {
@@ -591,6 +597,7 @@ void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
           serialized_block_info));
 }
 
+// TODO(tomfinegan): Handle null decrypted_samples after landing other patches.
 void PPB_Instance_Proxy::DeliverSamples(
     PP_Instance instance,
     PP_Resource decrypted_samples,

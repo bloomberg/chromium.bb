@@ -1544,6 +1544,7 @@ bool PluginInstance::CancelKeyRequest(const std::string& session_id) {
 bool PluginInstance::Decrypt(
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     const media::Decryptor::DecryptCB& decrypt_cb) {
+  DVLOG(3) << "Decrypt()";
   if (!LoadContentDecryptorInterface())
     return false;
 
@@ -1556,6 +1557,7 @@ bool PluginInstance::Decrypt(
     return false;
 
   uint32_t request_id = next_decryption_request_id_++;
+  DVLOG(2) << "Decrypt() - request_id " << request_id;
 
   PP_EncryptedBlockInfo block_info;
   DCHECK(encrypted_buffer->GetDecryptConfig());
@@ -2391,6 +2393,8 @@ void PluginInstance::DecoderResetDone(PP_Instance instance,
 void PluginInstance::DeliverBlock(PP_Instance instance,
                                   PP_Resource decrypted_block,
                                   const PP_DecryptedBlockInfo* block_info) {
+  DVLOG(2) << "DeliverBlock() - request_id: "
+           << block_info->tracking_info.request_id;
   DCHECK(block_info);
   DecryptionCBMap::iterator found = pending_decryption_cbs_.find(
       block_info->tracking_info.request_id);
@@ -2432,6 +2436,8 @@ void PluginInstance::DeliverBlock(PP_Instance instance,
 void PluginInstance::DeliverFrame(PP_Instance instance,
                                   PP_Resource decrypted_frame,
                                   const PP_DecryptedFrameInfo* frame_info) {
+  DVLOG(2) << "DeliverFrame() - request_id: "
+           << frame_info->tracking_info.request_id;
   // TODO(tomfinegan): To be implemented after completion of v0.1 of the
   // EME/CDM work.
 }
@@ -2439,6 +2445,8 @@ void PluginInstance::DeliverFrame(PP_Instance instance,
 void PluginInstance::DeliverSamples(PP_Instance instance,
                                     PP_Resource decrypted_samples,
                                     const PP_DecryptedBlockInfo* block_info) {
+  DVLOG(2) << "DeliverSamples() - request_id: "
+           << block_info->tracking_info.request_id;
   // TODO(tomfinegan): To be implemented after completion of v0.1 of the
   // EME/CDM work.
 }
