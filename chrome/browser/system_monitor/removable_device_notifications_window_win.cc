@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
@@ -30,6 +31,20 @@ const char16 kWindowClassName[] = L"Chrome_RemovableDeviceNotificationWindow";
 
 static chrome::RemovableDeviceNotificationsWindowWin*
     g_removable_device_notifications_window_win = NULL;
+
+bool IsRemovable(const char16* mount_point) {
+  if (GetDriveType(mount_point) != DRIVE_REMOVABLE)
+    return false;
+
+  // We don't consider floppy disks as removable, so check for that.
+  string16 device = mount_point;
+  if (EndsWith(device, L"\\", false))
+    device = device.substr(0, device.length() - 1);
+  char16 device_path[kMaxPathBufLen];
+  if (!QueryDosDevice(device.c_str(), device_path, kMaxPathBufLen))
+    return true;
+  return string16(device_path).find(L"Floppy") == string16::npos;
+}
 
 // The following msdn blog entry is helpful for understanding disk volumes
 // and how they are treated in Windows:
@@ -54,21 +69,11 @@ bool GetDeviceInfo(const FilePath& device_path, string16* device_location,
      WideToUTF8(guid, wcslen(guid), unique_id);
    }
 
-  if (name) {
-    char16 volume_name[kMaxPathBufLen];
-    if (!GetVolumeInformation(mount_point, volume_name, kMaxPathBufLen, NULL,
-                              NULL, NULL, NULL, 0)) {
-      return false;
-    }
-    if (wcslen(volume_name) > 0) {
-      *name = string16(volume_name);
-    } else {
-      *name = device_path.LossyDisplayName();
-    }
-  }
+  if (name)
+    *name = device_path.LossyDisplayName();
 
   if (removable)
-    *removable = (GetDriveType(mount_point) == DRIVE_REMOVABLE);
+    *removable = IsRemovable(mount_point);
 
   return true;
 }
@@ -85,7 +90,7 @@ std::vector<FilePath> GetAttachedDevices() {
     DWORD return_count;
     if (GetVolumePathNamesForVolumeName(volume_name, volume_path,
                                         kMaxPathBufLen, &return_count)) {
-      if (GetDriveType(volume_path) == DRIVE_REMOVABLE)
+      if (IsRemovable(volume_path))
         result.push_back(FilePath(volume_path));
     } else {
       DPLOG(ERROR);
