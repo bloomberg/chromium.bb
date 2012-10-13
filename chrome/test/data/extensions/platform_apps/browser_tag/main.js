@@ -48,6 +48,32 @@ onload = function() {
           }, 0);
         }, 0);
       }, 0);
+    },
+
+    function browserTagApiMethodExistence() {
+      var browserTag = document.createElement('browser');
+      browserTag.setAttribute('src', 'data:text/html,browser tag check api');
+      var apiMethodsToCheck = [
+        'addEventListener',
+        'back',
+        'forward',
+        'getProcessId',
+        'go',
+        'reload',
+        'removeEventListener',
+        'stop',
+        'terminate'
+      ];
+      document.body.appendChild(browserTag);
+
+      // Timeout is necessary to give the mutation observers a chance to fire.
+      setTimeout(function() {
+        for (var i = 0; i < apiMethodsToCheck.length; ++i) {
+          chrome.test.assertEq('function',
+                               typeof browserTag[apiMethodsToCheck[i]]);
+        }
+        chrome.test.succeed();
+      }, 0);
     }
   ]);
 };

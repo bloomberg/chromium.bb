@@ -9,6 +9,20 @@
 
 var BROWSER_TAG_ATTRIBUTES = ['src', 'width', 'height'];
 
+// All exposed api methods for <browser>, these are forwarded to the browser
+// plugin.
+var BROWSER_TAG_API_METHODS = [
+    'addEventListener',
+    'back',
+    'forward',
+    'getProcessId',
+    'go',
+    'reload',
+    'removeEventListener',
+    'stop',
+    'terminate'
+    ];
+
 window.addEventListener('DOMContentLoaded', function() {
   // Handle <browser> tags already in the document.
   var browserNodes = document.body.querySelectorAll('browser');
@@ -39,7 +53,14 @@ function BrowserTag(node) {
   this.objectNode_ = document.createElement('object');
   this.objectNode_.type = 'application/browser-plugin';
   BROWSER_TAG_ATTRIBUTES.forEach(this.copyAttribute_, this);
+
   shadowRoot.appendChild(this.objectNode_);
+
+  // this.objectNode_[apiMethod] are defined after the shadow object is appended
+  // to the shadow root.
+  BROWSER_TAG_API_METHODS.forEach(function(apiMethod) {
+    node[apiMethod] = this.objectNode_[apiMethod].bind(this.objectNode_);
+  }, this);
 
   // Map attribute modifications on the <browser> tag to changes on the
   // underlying <object> node.
