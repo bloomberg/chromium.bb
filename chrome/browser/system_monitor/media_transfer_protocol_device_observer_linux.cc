@@ -10,7 +10,7 @@
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/media_gallery/mtp_storage_info.pb.h"
+#include "chrome/browser/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/system_monitor/removable_device_constants.h"
 
