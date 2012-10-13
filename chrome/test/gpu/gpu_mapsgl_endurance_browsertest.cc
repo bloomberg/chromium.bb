@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
@@ -41,6 +42,11 @@ using ::testing::Ge;
 // pixels are checked, their expected values and tolerances are all
 // encoded in a JSON file accompanying the test.
 //
+// Pass the command line argument --save-test-failures to save the PNG
+// of any failing test runs. Currently there is only one test and it
+// will write its output to "single-run-basic-output.png" in the
+// current working directory.
+//
 // TODO(kbr): Add more documentation on adding to and modifying these
 // tests.
 class MapsGLEnduranceTest : public InProcessBrowserTest {
@@ -59,7 +65,8 @@ class MapsGLEnduranceTest : public InProcessBrowserTest {
 
   void RunSingleTest(const gfx::Size& tab_container_size,
                      const std::string& url,
-                     const std::string& json_test_expectations_filename) {
+                     const std::string& json_test_expectations_filename,
+                     const std::string& failure_filename_prefix) {
     std::vector<SinglePixelExpectation> expectations;
     FilePath test_expectations_path =
         test_data_dir().AppendASCII(json_test_expectations_filename);
@@ -92,10 +99,25 @@ class MapsGLEnduranceTest : public InProcessBrowserTest {
     SkBitmap bitmap;
     ASSERT_TRUE(TabSnapShotToImage(&bitmap));
 
-#if defined(OS_WIN)
     bool all_pixels_match =
-#endif
         CompareToExpectedResults(bitmap, expectations);
+
+    if (!all_pixels_match &&
+        CommandLine::ForCurrentProcess()->HasSwitch("save-test-failures")) {
+      std::vector<unsigned char> output;
+      if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &output)) {
+        LOG(ERROR) << "Re-encode PNG failed";
+      } else {
+        FilePath output_path;
+        output_path = output_path.AppendASCII(
+            failure_filename_prefix + "-output.png");
+        if (file_util::WriteFile(
+                output_path,
+                reinterpret_cast<char*>(&*output.begin()), output.size()) < 0) {
+          LOG(ERROR) << "Write PNG to disk failed";
+        }
+      }
+    }
 
 #if defined(OS_WIN)
     // For debugging the flaky test, this prints out a trace of what happened on
@@ -320,5 +342,6 @@ IN_PROC_BROWSER_TEST_F(MapsGLEnduranceTest, MANUAL_SingleRunBasic) {
   // This expects the MapsGL python server to be running.
   RunSingleTest(gfx::Size(1024, 768),
                 "http://localhost:8000/basic.html",
-                "mapsgl_single_run_basic_expectations.json");
+                "mapsgl_single_run_basic_expectations.json",
+                "single-run-basic");
 }
