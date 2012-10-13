@@ -527,6 +527,59 @@ TEST_P(CCResourceProviderTest, TransferResources)
     EXPECT_EQ(0u, m_resourceProvider->mailboxCount());
 }
 
+TEST_P(CCResourceProviderTest, DeleteTransferredResources)
+{
+    // Resource transfer is only supported with GL textures for now.
+    if (GetParam() != CCResourceProvider::GLTexture)
+        return;
+
+    scoped_ptr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get())));
+    OwnPtr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
+
+    IntSize size(1, 1);
+    WGC3Denum format = GraphicsContext3D::RGBA;
+    int pool = 1;
+    size_t pixelSize = textureSize(size, format);
+    ASSERT_EQ(4U, pixelSize);
+
+    CCResourceProvider::ResourceId id = childResourceProvider->createResource(pool, size, format, CCResourceProvider::TextureUsageAny);
+    uint8_t data[4] = {1, 2, 3, 4};
+    IntRect rect(IntPoint(), size);
+    childResourceProvider->upload(id, data, rect, rect, IntSize());
+
+    int childPool = 2;
+    int childId = m_resourceProvider->createChild(childPool);
+
+    {
+        // Transfer some resource to the parent.
+        CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
+        resourceIdsToTransfer.append(id);
+        CCResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
+        EXPECT_NE(0u, list.syncPoint);
+        EXPECT_EQ(1u, list.resources.size());
+        EXPECT_TRUE(childResourceProvider->inUseByConsumer(id));
+        m_resourceProvider->receiveFromChild(childId, list);
+    }
+
+    // Delete textures in the child, while they are transfered.
+    childResourceProvider->deleteResource(id);
+    EXPECT_EQ(1u, childResourceProvider->numResources());
+
+    {
+        // Transfer resources back from the parent to the child.
+        CCResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
+        CCResourceProvider::ResourceId mappedId = resourceMap.get(id);
+        EXPECT_NE(0u, mappedId);
+        CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
+        resourceIdsToTransfer.append(mappedId);
+        CCResourceProvider::TransferableResourceList list = m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer);
+        EXPECT_NE(0u, list.syncPoint);
+        EXPECT_EQ(1u, list.resources.size());
+        childResourceProvider->receiveFromParent(list);
+    }
+    EXPECT_EQ(0u, childResourceProvider->numResources());
+}
+
 INSTANTIATE_TEST_CASE_P(CCResourceProviderTests,
                         CCResourceProviderTest,
                         ::testing::Values(CCResourceProvider::GLTexture,

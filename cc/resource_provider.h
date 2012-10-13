@@ -223,6 +223,7 @@ private:
         bool lockedForWrite;
         bool external;
         bool exported;
+        bool markedForDeletion;
         IntSize size;
         GC3Denum format;
         ResourceType type;
@@ -249,6 +250,7 @@ private:
 
     bool transferResource(WebKit::WebGraphicsContext3D*, ResourceId, TransferableResource*);
     void trimMailboxDeque();
+    void deleteResourceInternal(ResourceMap::iterator it);
 
     CCGraphicsContext* m_context;
     ResourceId m_nextId;

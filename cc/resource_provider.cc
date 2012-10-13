@@ -67,6 +67,7 @@ CCResourceProvider::Resource::Resource()
     , lockedForWrite(false)
     , external(false)
     , exported(false)
+    , markedForDeletion(false)
     , size()
     , format(0)
     , type(static_cast<ResourceType>(0))
@@ -81,6 +82,7 @@ CCResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSi
     , lockedForWrite(false)
     , external(false)
     , exported(false)
+    , markedForDeletion(false)
     , size(size)
     , format(format)
     , type(GLTexture)
@@ -95,6 +97,7 @@ CCResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const IntSize&
     , lockedForWrite(false)
     , external(false)
     , exported(false)
+    , markedForDeletion(false)
     , size(size)
     , format(format)
     , type(Bitmap)
@@ -220,7 +223,22 @@ void CCResourceProvider::deleteResource(ResourceId id)
 #endif
     ASSERT(!resource->lockedForWrite);
     ASSERT(!resource->lockForReadCount);
+    ASSERT(!resource->markedForDeletion);
 
+    if (resource->exported) {
+        resource->markedForDeletion = true;
+        return;
+    } else
+        deleteResourceInternal(it);
+}
+
+void CCResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
+{
+#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
+    Resource* resource = &it->value;
+#else
+    Resource* resource = &it->second;
+#endif
     if (resource->glId && !resource->external) {
         WebGraphicsContext3D* context3d = m_context->context3D();
         ASSERT(context3d);
@@ -238,10 +256,10 @@ void CCResourceProvider::deleteOwnedResources(int pool)
     ResourceIdArray toDelete;
     for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        if (it->value.pool == pool && !it->value.external)
+        if (it->value.pool == pool && !it->value.external && !it->value.markedForDeletion)
             toDelete.append(it->key);
 #else
-        if (it->second.pool == pool && !it->second.external)
+        if (it->second.pool == pool && !it->second.external && !it->value.markedForDeletion)
             toDelete.append(it->first);
 #endif
     }
@@ -274,6 +292,7 @@ void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRe
     ASSERT(!resource->lockedForWrite);
     ASSERT(!resource->lockForReadCount);
     ASSERT(!resource->external);
+    ASSERT(!resource->exported);
 
     if (resource->glId) {
         WebGraphicsContext3D* context3d = m_context->context3D();
@@ -329,6 +348,7 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId i
     Resource* resource = &it->second;
 #endif
     ASSERT(!resource->lockedForWrite);
+    ASSERT(!resource->exported);
     resource->lockForReadCount++;
     return resource;
 }
@@ -344,6 +364,7 @@ void CCResourceProvider::unlockForRead(ResourceId id)
     Resource* resource = &it->second;
 #endif
     ASSERT(resource->lockForReadCount > 0);
+    ASSERT(!resource->exported);
     resource->lockForReadCount--;
 }
 
@@ -359,6 +380,7 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForWrite(ResourceId 
 #endif
     ASSERT(!resource->lockedForWrite);
     ASSERT(!resource->lockForReadCount);
+    ASSERT(!resource->exported);
     ASSERT(!resource->external);
     resource->lockedForWrite = true;
     return resource;
@@ -375,6 +397,7 @@ void CCResourceProvider::unlockForWrite(ResourceId id)
     Resource* resource = &it->second;
 #endif
     ASSERT(resource->lockedForWrite);
+    ASSERT(!resource->exported);
     ASSERT(!resource->external);
     resource->lockedForWrite = false;
 }
@@ -627,16 +650,20 @@ void CCResourceProvider::receiveFromParent(const TransferableResourceList& resou
     if (resources.syncPoint)
         GLC(context3d, context3d->waitSyncPoint(resources.syncPoint));
     for (Vector<TransferableResource>::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
+        ResourceMap::iterator mapIterator = m_resources.find(it->id);
+        ASSERT(mapIterator != m_resources.end());
 #if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        Resource* resource = &m_resources.find(it->id)->value;
+        Resource* resource = &mapIterator->value;
 #else
-        Resource* resource = &m_resources.find(it->id)->second;
+        Resource* resource = &mapIterator->second;
 #endif
         ASSERT(resource->exported);
         resource->exported = false;
         GLC(context3d, context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, resource->glId));
         GLC(context3d, context3d->consumeTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, it->mailbox.name));
         m_mailboxes.append(it->mailbox);
+        if (resource->markedForDeletion)
+            deleteResourceInternal(mapIterator);
     }
 }
 
