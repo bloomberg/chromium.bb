@@ -59,7 +59,7 @@ protected:
     void updateMoreTexturesNow();
 
     CCTextureUpdateControllerClient* m_client;
-    OwnPtr<CCTimer> m_timer;
+    scoped_ptr<CCTimer> m_timer;
     OwnPtr<CCTextureUpdateQueue> m_queue;
     bool m_contentsTexturesPurged;
     CCResourceProvider* m_resourceProvider;
@@ -72,6 +72,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CCTextureUpdateController);
 };
 
-}
+}  // namespace cc
 
 #endif // CCTextureUpdateController_h

@@ -75,5 +75,6 @@ protected:
     CCTimer m_timer;
 };
 
-}
+}  // namespace cc
+
 #endif // CCDelayBasedTimeSource_h

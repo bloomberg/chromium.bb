@@ -36,6 +36,6 @@ private:
     CCTimerTask* m_task; // weak pointer
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif

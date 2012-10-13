@@ -26,8 +26,7 @@ const double doubleTickThreshold = 0.25;
 const double intervalChangeThreshold = 0.25;
 const double phaseChangeThreshold = 0.25;
 
-}
-
+}  // namespace
 
 PassRefPtr<CCDelayBasedTimeSource> CCDelayBasedTimeSource::create(base::TimeDelta interval, CCThread* thread)
 {
@@ -229,4 +228,4 @@ void CCDelayBasedTimeSource::postNextTickTask(base::TimeTicks now)
     m_currentParameters = m_nextParameters;
 }
 
-}
+}  // namespace cc

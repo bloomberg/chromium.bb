@@ -16,21 +16,21 @@
 namespace {
 
 // Number of partial updates we allow.
-static const size_t partialTextureUpdatesMax = 12;
+const size_t partialTextureUpdatesMax = 12;
 
 // Measured in seconds.
-static const double textureUpdateTickRate = 0.004;
+const double textureUpdateTickRate = 0.004;
 
 // Measured in seconds.
-static const double uploaderBusyTickRate = 0.001;
+const double uploaderBusyTickRate = 0.001;
 
 // Flush interval when performing texture uploads.
-static const int textureUploadFlushPeriod = 4;
+const int textureUploadFlushPeriod = 4;
 
 // Number of blocking update intervals to allow.
-static const size_t maxBlockingUpdateIntervals = 4;
+const size_t maxBlockingUpdateIntervals = 4;
 
-} // anonymous namespace
+}  // namespace
 
 namespace cc {
 
@@ -48,7 +48,7 @@ size_t CCTextureUpdateController::maxFullUpdatesPerTick(TextureUploader* uploade
 
 CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerClient* client, CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
     : m_client(client)
-    , m_timer(adoptPtr(new CCTimer(thread, this)))
+    , m_timer(new CCTimer(thread, this))
     , m_queue(queue)
     , m_resourceProvider(resourceProvider)
     , m_uploader(uploader)
@@ -194,4 +194,4 @@ void CCTextureUpdateController::updateMoreTexturesNow()
     m_resourceProvider->shallowFlushIfSupported();
 }
 
-}
+}  // namespace cc
