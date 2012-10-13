@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/system_info_cpu/cpu_info_provider.h"
 
 #include <cstdio>
-#include <iostream>
+#include <sstream>
 
 #include "base/file_util.h"
 #include "base/format_macros.h"
