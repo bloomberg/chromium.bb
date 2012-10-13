@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/intents/web_intent_extension_prompt_view_controller.h"
+
+#include <cmath>
+
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 
@@ -49,8 +52,8 @@
   NSRect bounds = [[self view] bounds];
   NSRect viewFrame;
   viewFrame.size = [[viewController_ view] frame].size;
-  viewFrame.origin.x = NSMidX(bounds) - viewFrame.size.width / 2.0;
-  viewFrame.origin.y = NSMidY(bounds) - viewFrame.size.height / 2.0;
+  viewFrame.origin.x = roundf(NSMidX(bounds) - viewFrame.size.width / 2.0);
+  viewFrame.origin.y = roundf(NSMidY(bounds) - viewFrame.size.height / 2.0);
   [[viewController_ view] setFrame:viewFrame];
 }
 

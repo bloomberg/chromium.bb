@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/intents/web_intent_choose_service_view_controller.h"
 
+#include <cmath>
+
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
@@ -152,10 +154,10 @@
 
   for (NSViewController<WebIntentViewController>* row in rows_.get()) {
     NSRect rowRect = NSMakeRect(
-        NSWidth(innerFrame),
-        WebIntentPicker::kServiceRowHeight,
         NSMinX(innerFrame),
-        yPos);
+        yPos,
+        NSWidth(innerFrame),
+        WebIntentPicker::kServiceRowHeight);
     [[row view] setFrame:rowRect];
     [row layoutSubviewsWithinFrame:[[row view] bounds]];
     yPos = NSMaxY(rowRect);
@@ -167,14 +169,15 @@
                                   WebIntentPicker::kServiceRowHeight);
   NSRect moreIconRect = [moreServicesIconView_ frame];
   moreIconRect.origin.x = NSMinX(moreRowRect);
-  moreIconRect.origin.y = NSMidY(moreRowRect) - NSHeight(moreIconRect) / 2.0;
+  moreIconRect.origin.y =
+      roundf(NSMidY(moreRowRect) - NSHeight(moreIconRect) / 2.0);
   [moreServicesIconView_ setFrame:moreIconRect];
 
   NSRect moreButtonRect = [showMoreServicesButton_ frame];
   moreButtonRect.origin.x = NSMaxX(moreIconRect) +
                             WebIntentPicker::kIconTextPadding;
-  moreButtonRect.origin.y = NSMidY(moreRowRect) -
-                            NSHeight(moreButtonRect) / 2.0;
+  moreButtonRect.origin.y = roundf(NSMidY(moreRowRect) -
+                                   NSHeight(moreButtonRect) / 2.0);
   moreButtonRect.size.width = NSWidth(moreRowRect) - NSMinX(moreButtonRect);
   [showMoreServicesButton_ setFrame:moreButtonRect];
 }

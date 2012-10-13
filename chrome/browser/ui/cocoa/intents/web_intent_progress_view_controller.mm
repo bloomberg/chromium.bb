@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/intents/web_intent_progress_view_controller.h"
 
+#include <cmath>
+
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/flipped_view.h"
@@ -96,9 +98,10 @@ NSAttributedString* JoinString(NSAttributedString* string1,
   [self updateTextFieldAndResizeToWidth:NSWidth(innerFrame)];
 
   NSRect progressFrame = [progressIndicator_ frame];
-  progressFrame.origin.x = NSMidX(innerFrame) - NSWidth(progressFrame) / 2.0;
-  progressFrame.origin.y = NSMinY(innerFrame) +
-      NSHeight(innerFrame) / 3.0 - NSHeight(progressFrame) / 2.0;
+  progressFrame.origin.x =
+      roundf(NSMidX(innerFrame) - NSWidth(progressFrame) / 2.0);
+  progressFrame.origin.y = roundf(NSMinY(innerFrame) +
+      NSHeight(innerFrame) / 3.0 - NSHeight(progressFrame) / 2.0);
 
   NSRect textFrame = [messageTextField_ frame];
   CGFloat newHeight = NSMaxY(progressFrame) + NSHeight(textFrame) +

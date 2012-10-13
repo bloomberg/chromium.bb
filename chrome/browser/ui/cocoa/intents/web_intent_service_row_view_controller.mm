@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/intents/web_intent_service_row_view_controller.h"
 
+#include <cmath>
+
 #import "chrome/browser/ui/constrained_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
@@ -84,6 +86,11 @@ NSSize GetSelectButtonSize() {
                        asLink:NO
                   buttonTitle:buttonTitle
                          icon:icon];
+    ratingsView_.reset([[RatingsView2 alloc] initWithRating:0]);
+
+    // Hide the ratings view so that it still takes up space and the
+    // installed services titles line up with suggested services titles.
+    [ratingsView_ setHidden:YES];
   }
   return self;
 }
@@ -107,11 +114,8 @@ NSSize GetSelectButtonSize() {
   }
   CGFloat width = WebIntentPicker::kServiceIconWidth +
                   WebIntentPicker::kIconTextPadding * 2 + NSWidth(titleRect);
-  if (ratingsView_) {
-    width += NSWidth([ratingsView_ frame]) +
-             WebIntentPicker::kStarButtonPadding;
-  }
-
+  width += NSWidth([ratingsView_ frame]) +
+           WebIntentPicker::kStarButtonPadding;
   width += GetSelectButtonSize().width;
   return NSMakeSize(width, WebIntentPicker::kServiceRowHeight);
 }
@@ -120,23 +124,22 @@ NSSize GetSelectButtonSize() {
   NSRect buttonRect;
   buttonRect.size = GetSelectButtonSize();
   buttonRect.origin.x = NSMaxX(innerFrame) - NSWidth(buttonRect);
-  buttonRect.origin.y = NSMidY(innerFrame) - NSHeight(buttonRect) / 2.0;
+  buttonRect.origin.y = roundf(NSMidY(innerFrame) - NSHeight(buttonRect) / 2.0);
   [selectButton_ setFrame:buttonRect];
 
-  NSRect ratingsRect = buttonRect;
-  if (ratingsView_.get()) {
-    ratingsRect.size = [ratingsView_ frame].size;
-    ratingsRect.origin.x = NSMinX(buttonRect) - NSWidth(ratingsRect) -
-                           WebIntentPicker::kStarButtonPadding;
-    ratingsRect.origin.y = NSMidY(innerFrame) - NSHeight(ratingsRect) / 2.0;
-    [ratingsView_ setFrame:ratingsRect];
-  }
+  NSRect ratingsRect;
+  ratingsRect.size = [ratingsView_ frame].size;
+  ratingsRect.origin.x = NSMinX(buttonRect) - NSWidth(ratingsRect) -
+                         WebIntentPicker::kStarButtonPadding;
+  ratingsRect.origin.y =
+      roundf(NSMidY(innerFrame) - NSHeight(ratingsRect) / 2.0);
+  [ratingsView_ setFrame:ratingsRect];
 
   NSRect iconFrame;
   iconFrame.size.width = WebIntentPicker::kServiceIconWidth;
   iconFrame.size.height = WebIntentPicker::kServiceIconHeight;
   iconFrame.origin.x = NSMinX(innerFrame);
-  iconFrame.origin.y = NSMidY(innerFrame) - NSHeight(iconFrame) / 2.0;
+  iconFrame.origin.y = roundf(NSMidY(innerFrame) - NSHeight(iconFrame) / 2.0);
   [iconView_ setFrame:iconFrame];
 
   NSRect titleRect;
@@ -148,7 +151,7 @@ NSSize GetSelectButtonSize() {
     titleRect = [titleLinkButton_ frame];
   }
   titleRect.origin.x = NSMaxX(iconFrame) + WebIntentPicker::kIconTextPadding;
-  titleRect.origin.y = NSMidY(innerFrame) - NSHeight(titleRect) / 2.0;
+  titleRect.origin.y = roundf(NSMidY(innerFrame) - NSHeight(titleRect) / 2.0);
   titleRect.size.width = NSMinX(ratingsRect) - NSMinX(titleRect) -
                          WebIntentPicker::kIconTextPadding;
   if (NSWidth(titleRect) < 0)
