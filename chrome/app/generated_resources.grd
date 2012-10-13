@@ -4744,9 +4744,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
         Manage your apps, extensions, and themes
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT" desc="Permisson string for access to page capture.">
-        Access the content of pages you visit
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_TABS" desc="Permission string for access to tabs.">
         Access your tabs and browsing activity
       </message>

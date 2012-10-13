@@ -39,7 +39,6 @@ class PermissionMessage {
     kClipboard,
     kTtsEngine,
     kContentSettings,
-    kAllPageContent,
     kPrivacy,
     kManagedMode,
     kInput,

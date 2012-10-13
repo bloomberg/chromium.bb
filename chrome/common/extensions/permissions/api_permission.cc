@@ -212,9 +212,6 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kManagement, "management", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       PermissionMessage::kManagement },
-    { APIPermission::kPageCapture, "pageCapture", kFlagNone,
-      IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT,
-      PermissionMessage::kAllPageContent },
     { APIPermission::kPrivacy, "privacy", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_PRIVACY,
       PermissionMessage::kPrivacy },
@@ -273,19 +270,21 @@ void APIPermissionInfo::RegisterAllPermissions(
       kFlagCannotBeOptional },
 
     // Full url access permissions.
-    { APIPermission::kProxy, "proxy",
-      kFlagImpliesFullURLAccess | kFlagCannotBeOptional },
     { APIPermission::kDebugger, "debugger",
       kFlagImpliesFullURLAccess | kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_DEBUGGER,
       PermissionMessage::kDebugger },
     { APIPermission::kDevtools, "devtools",
       kFlagImpliesFullURLAccess | kFlagCannotBeOptional },
+    { APIPermission::kPageCapture, "pageCapture",
+      kFlagImpliesFullURLAccess },
     { APIPermission::kPlugin, "plugin",
       kFlagImpliesFullURLAccess | kFlagImpliesFullAccess |
           kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
       PermissionMessage::kFullAccess },
+    { APIPermission::kProxy, "proxy",
+      kFlagImpliesFullURLAccess | kFlagCannotBeOptional },
 
     // Platform-app permissions.
     { APIPermission::kSerial, "serial", kFlagNone,

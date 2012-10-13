@@ -675,8 +675,8 @@ TEST(PermissionsTest, PermissionMessages) {
   // permissions.
   skip.insert(APIPermission::kCookie);
 
-  // The ime, proxy, and webRequest permissions are warned as part of host
-  // permission checks.
+  // These are warned as part of host permission checks.
+  skip.insert(APIPermission::kPageCapture);
   skip.insert(APIPermission::kProxy);
   skip.insert(APIPermission::kWebRequest);
   skip.insert(APIPermission::kWebRequestBlocking);
