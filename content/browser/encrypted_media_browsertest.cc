@@ -64,28 +64,27 @@ class EncryptedMediaTest
   }
 
  protected:
-  // Registers all necessary CDM plugins.
+  // Registers any CDM plugins not registered by default.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kDisableAudio);
     command_line->AppendSwitch(switches::kEnableEncryptedMedia);
+    command_line->AppendSwitch(switches::kPpapiOutOfProcess);
 
-    // Append the switch to register the clearkeycdm plugin.
-    // library name = <out dir>/<test_name>.<library_extension>
-    // MIME type = application/x-ppapi-clearkey-cdm
+    // Append the switch to register the Clear Key CDM plugin.
     FilePath plugin_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
     FilePath plugin_lib = plugin_dir.Append(kLibraryName);
     EXPECT_TRUE(file_util::PathExists(plugin_lib));
     FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL(
-        "#ClearKey CDM#ClearKey CDM 0.1.0.0#0.1.0.0;"));
-    #if defined(OS_WIN)
+        "#Clear Key CDM#Clear Key CDM 0.1.0.0#0.1.0.0;"));
+#if defined(OS_WIN)
       pepper_plugin.append(ASCIIToWide(
           webkit_media::GetPluginType(kExternalClearKeyKeySystem)));
-    #else
+#else
       pepper_plugin.append(
           webkit_media::GetPluginType(kExternalClearKeyKeySystem));
-    #endif
+#endif
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugin);
   }
