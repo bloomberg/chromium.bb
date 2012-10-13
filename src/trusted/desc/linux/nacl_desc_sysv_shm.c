@@ -253,30 +253,6 @@ static uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
             (uintptr_t) result, (uintptr_t) start_addr);
   }
 
-  /*
-   * If len is greater than the specified region's size, we need to mmap a
-   * region after the id mapping to close the gap at the end.  ImportCtor
-   * enforces that self->size is a multiple of 4K (the Linux page size).
-   */
-  if (self->size < NaClRoundAllocPage(len)) {
-    int tail_prot = PROT_READ;
-    void* tail_addr = (void*) ((uintptr_t) start_addr + self->size);
-    size_t tail_size = NaClRoundAllocPage(len) - self->size;
-
-    if (0 != (NACL_ABI_PROT_READ & prot)) {
-      tail_prot |= PROT_WRITE;
-    }
-
-    if (MAP_FAILED == mmap(tail_addr,
-                           tail_size,
-                           tail_prot,
-                           MAP_PRIVATE | MAP_ANONYMOUS,
-                           -1,
-                           0)) {
-      NaClLog(LOG_FATAL, ("NaClDescSysvShmMap: Couldn't map the tail page"));
-    }
-  }
-
   return (uintptr_t) start_addr;
 }
 
