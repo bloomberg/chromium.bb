@@ -20,15 +20,29 @@
 #include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 
-static base::LazyInstance<std::map<
-    content::WebContents*, ChromeWebContentsViewDelegateGtk*> >
-        g_instances = LAZY_INSTANCE_INITIALIZER;
+namespace {
+
+const char kViewDelegateUserDataKey[] = "ChromeWebContentsViewDelegateGtk";
+
+class ViewDelegateUserData : public base::SupportsUserData::Data {
+ public:
+  explicit ViewDelegateUserData(ChromeWebContentsViewDelegateGtk* view_delegate)
+      : view_delegate_(view_delegate) {}
+  virtual ~ViewDelegateUserData() {}
+  ChromeWebContentsViewDelegateGtk* view_delegate() { return view_delegate_; }
+
+ private:
+  ChromeWebContentsViewDelegateGtk* view_delegate_;  // unowned
+};
+
+}  // namespace
 
 ChromeWebContentsViewDelegateGtk* ChromeWebContentsViewDelegateGtk::GetFor(
     content::WebContents* web_contents) {
-  if (!g_instances.Get().count(web_contents))
-    return 0;
-  return g_instances.Get()[web_contents];
+  ViewDelegateUserData* user_data = static_cast<ViewDelegateUserData*>(
+      web_contents->GetUserData(&kViewDelegateUserDataKey));
+
+  return user_data ? user_data->view_delegate() : NULL;
 }
 
 ChromeWebContentsViewDelegateGtk::ChromeWebContentsViewDelegateGtk(
@@ -41,14 +55,14 @@ ChromeWebContentsViewDelegateGtk::ChromeWebContentsViewDelegateGtk(
   gtk_widget_set_name(floating_.get(), "chrome-tab-contents-view");
   g_signal_connect(floating_.get(), "set-floating-position",
                    G_CALLBACK(OnSetFloatingPositionThunk), this);
-  DCHECK_EQ(g_instances.Get().count(web_contents), 0u);
-  g_instances.Get()[web_contents] = this;
+
+  // Stash this in the WebContents.
+  web_contents->SetUserData(&kViewDelegateUserDataKey,
+                            new ViewDelegateUserData(this));
 }
 
 ChromeWebContentsViewDelegateGtk::~ChromeWebContentsViewDelegateGtk() {
   floating_.Destroy();
-  DCHECK_EQ(g_instances.Get().count(web_contents_), 1u);
-  g_instances.Get().erase(web_contents_);
 }
 
 void ChromeWebContentsViewDelegateGtk::AttachConstrainedWindow(
