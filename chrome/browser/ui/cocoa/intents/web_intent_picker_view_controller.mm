@@ -129,6 +129,11 @@
 }
 
 - (void)update {
+  // The model may be NULL between the time the dialog is closed and this object
+  // is deleted.
+  if (!picker_->model())
+    return;
+
   WebIntentPickerState newState = [self newPickerState];
   NSView* currentView = [[self currentViewController] view];
   if (state_ != newState || ![currentView superview]) {

@@ -62,7 +62,7 @@ class WebIntentPickerCocoa2 : public WebIntentPicker,
  private:
   content::WebContents* const web_contents_;
   WebIntentPickerDelegate* const delegate_;
-  WebIntentPickerModel* const model_;
+  WebIntentPickerModel* model_;
   scoped_nsobject<WebIntentPickerViewController> view_controller_;
   scoped_nsobject<NSWindowController> window_controller_;
 };

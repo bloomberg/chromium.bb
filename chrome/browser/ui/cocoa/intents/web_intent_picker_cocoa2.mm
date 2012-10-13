@@ -32,10 +32,13 @@ WebIntentPickerCocoa2::WebIntentPickerCocoa2(content::WebContents* web_contents,
 }
 
 WebIntentPickerCocoa2::~WebIntentPickerCocoa2() {
-  model_->set_observer(NULL);
 }
 
 void WebIntentPickerCocoa2::Close() {
+  // After the OnClosing call the model may be deleted so unset this reference.
+  model_->set_observer(NULL);
+  model_ = NULL;
+
   [window_controller_ close];
   delegate_->OnClosing();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
