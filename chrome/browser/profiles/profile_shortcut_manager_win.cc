@@ -302,7 +302,6 @@ void ProfileShortcutManagerWin::StartProfileShortcutNameChange(
           profile_manager_->GetProfileInfoCache().
               GetNameOfProfileAtIndex(profile_index);
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   string16 old_shortcut_file(GetShortcutNameForProfile(old_profile_name));
   string16 new_shortcut_file(GetShortcutNameForProfile(new_profile_name));
   BrowserThread::PostTask(
