@@ -1805,18 +1805,18 @@
           'type': 'int-enum',
           'schema': {
             'type': 'integer',
-            'enum': [ 1, 2 ],
+            'enum': [ 2, 3 ],
           },
           'items': [
-            {
-              'name': 'PromptOnAccess',
-              'value': 1,
-              'caption': '''Ask every time a site wants to access my camera and/or microphone''',
-            },
             {
               'name': 'BlockAccess',
               'value': 2,
               'caption': '''Do not allow any site to access my camera and microphone''',
+            },
+            {
+              'name': 'PromptOnAccess',
+              'value': 3,
+              'caption': '''Ask every time a site wants to access my camera and/or microphone''',
             },
           ],
           'supported_on': ['chrome.*:22-', 'chrome_os:0.22-'],
