@@ -9,6 +9,7 @@
 
 #include "BitmapCanvasLayerTextureUpdater.h"
 
+#include "CCTextureUpdateQueue.h"
 #include "LayerPainterChromium.h"
 #include "PlatformColor.h"
 #include "skia/ext/platform_canvas.h"
@@ -25,9 +26,9 @@ BitmapCanvasLayerTextureUpdater::Texture::~Texture()
 {
 }
 
-void BitmapCanvasLayerTextureUpdater::Texture::updateRect(CCResourceProvider* resourceProvider, const IntRect& sourceRect, const IntSize& destOffset)
+void BitmapCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&)
 {
-    textureUpdater()->updateTextureRect(resourceProvider, texture(), sourceRect, destOffset);
+    textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
 PassRefPtr<BitmapCanvasLayerTextureUpdater> BitmapCanvasLayerTextureUpdater::create(PassOwnPtr<LayerPainterChromium> painter)
@@ -67,13 +68,13 @@ void BitmapCanvasLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect
     paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
 }
 
-void BitmapCanvasLayerTextureUpdater::updateTextureRect(CCResourceProvider* resourceProvider, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset)
+void BitmapCanvasLayerTextureUpdater::updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
 {
-    const SkBitmap& bitmap = m_canvas->getDevice()->accessBitmap(false);
-    bitmap.lockPixels();
-
-    texture->upload(resourceProvider, static_cast<const uint8_t*>(bitmap.getPixels()), contentRect(), sourceRect, destOffset);
-    bitmap.unlockPixels();
+    TextureUploader::Parameters upload = { texture, &m_canvas->getDevice()->accessBitmap(false), NULL, { contentRect(), sourceRect, destOffset } };
+    if (partialUpdate)
+        queue.appendPartialUpload(upload);
+    else
+        queue.appendFullUpload(upload);
 }
 
 void BitmapCanvasLayerTextureUpdater::setOpaque(bool opaque)

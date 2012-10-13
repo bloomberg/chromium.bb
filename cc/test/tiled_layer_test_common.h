@@ -29,8 +29,7 @@ public:
         Texture(FakeLayerTextureUpdater*, scoped_ptr<cc::CCPrioritizedTexture>);
         virtual ~Texture();
 
-        virtual void updateRect(cc::CCResourceProvider* , const cc::IntRect&, const cc::IntSize&) OVERRIDE;
-        virtual void prepareRect(const cc::IntRect&, cc::CCRenderingStats&) OVERRIDE;
+        virtual void update(cc::CCTextureUpdateQueue&, const cc::IntRect&, const cc::IntSize&, bool, cc::CCRenderingStats&) OVERRIDE;
 
     private:
         FakeLayerTextureUpdater* m_layer;
@@ -53,22 +52,16 @@ public:
     int prepareCount() const { return m_prepareCount; }
     void clearPrepareCount() { m_prepareCount = 0; }
 
-    // Number of times updateRect has been invoked.
+    // Number of times update() has been invoked on a texture.
     int updateCount() const { return m_updateCount; }
     void clearUpdateCount() { m_updateCount = 0; }
-    void updateRect() { m_updateCount++; }
-
-    // Number of times prepareRect() has been invoked on a texture.
-    int prepareRectCount() const { return m_prepareRectCount; }
-    void clearPrepareRectCount() { m_prepareRectCount = 0; }
-    void prepareRect() { m_prepareRectCount++; }
+    void update() { m_updateCount++; }
 
     void setOpaquePaintRect(const cc::IntRect& opaquePaintRect) { m_opaquePaintRect = opaquePaintRect; }
 
 private:
     int m_prepareCount;
     int m_updateCount;
-    int m_prepareRectCount;
     cc::IntRect m_rectToInvalidate;
     cc::IntRect m_lastUpdateRect;
     cc::IntRect m_opaquePaintRect;

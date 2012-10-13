@@ -6,6 +6,8 @@
 
 #include "UnthrottledTextureUploader.h"
 
+#include "CCPrioritizedTexture.h"
+
 namespace cc {
 
 size_t UnthrottledTextureUploader::numBlockingUploads()
@@ -24,7 +26,18 @@ double UnthrottledTextureUploader::estimatedTexturesPerSecond()
 
 void UnthrottledTextureUploader::uploadTexture(CCResourceProvider* resourceProvider, Parameters upload)
 {
-    upload.texture->updateRect(resourceProvider, upload.sourceRect, upload.destOffset);
+    if (upload.bitmap) {
+        upload.bitmap->lockPixels();
+        upload.texture->upload(
+            resourceProvider,
+            static_cast<const uint8_t*>(upload.bitmap->getPixels()),
+            upload.geometry.contentRect,
+            upload.geometry.sourceRect,
+            upload.geometry.destOffset);
+        upload.bitmap->unlockPixels();
+    }
+
+    ASSERT(!upload.picture);
 }
 
 }

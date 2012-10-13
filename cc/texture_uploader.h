@@ -5,16 +5,28 @@
 #ifndef TextureUploader_h
 #define TextureUploader_h
 
-#include "LayerTextureUpdater.h"
+#include "IntRect.h"
+
+class SkBitmap;
+class SkPicture;
 
 namespace cc {
 
+class CCPrioritizedTexture;
+class CCResourceProvider;
+
 class TextureUploader {
 public:
-    struct Parameters {
-        LayerTextureUpdater::Texture* texture;
+    struct Geometry {
+        IntRect contentRect;
         IntRect sourceRect;
         IntSize destOffset;
+    };
+    struct Parameters {
+        CCPrioritizedTexture* texture;
+        const SkBitmap* bitmap;
+        SkPicture* picture;
+        Geometry geometry;
     };
 
     virtual ~TextureUploader() { }

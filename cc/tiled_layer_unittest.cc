@@ -907,7 +907,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithoutOcclusion)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), 0, m_stats);
-    EXPECT_EQ(2, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(2, layer->fakeLayerTextureUpdater()->updateCount());
 }
 
 TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusion)
@@ -927,33 +927,33 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusion)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(36-3, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(36-3, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
     EXPECT_EQ(3, occluded.overdrawMetrics().tilesCulledForUpload());
 
-    layer->fakeLayerTextureUpdater()->clearPrepareRectCount();
+    layer->fakeLayerTextureUpdater()->clearUpdateCount();
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
 
     occluded.setOcclusion(IntRect(250, 200, 300, 100));
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(36-2, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(36-2, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000 + 340000, 1);
     EXPECT_EQ(3 + 2, occluded.overdrawMetrics().tilesCulledForUpload());
 
-    layer->fakeLayerTextureUpdater()->clearPrepareRectCount();
+    layer->fakeLayerTextureUpdater()->clearUpdateCount();
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
 
     occluded.setOcclusion(IntRect(250, 250, 300, 100));
     layer->invalidateContentRect(IntRect(0, 0, 600, 600));
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(36, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(36, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000 + 340000 + 360000, 1);
@@ -978,13 +978,13 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(24-3, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(24-3, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 210000, 1);
     EXPECT_EQ(3, occluded.overdrawMetrics().tilesCulledForUpload());
 
-    layer->fakeLayerTextureUpdater()->clearPrepareRectCount();
+    layer->fakeLayerTextureUpdater()->clearUpdateCount();
 
     // Now the visible region stops at the edge of the occlusion so the partly visible tiles become fully occluded.
     occluded.setOcclusion(IntRect(200, 200, 300, 150));
@@ -994,13 +994,13 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(24-6, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(24-6, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 210000 + 180000, 1);
     EXPECT_EQ(3 + 6, occluded.overdrawMetrics().tilesCulledForUpload());
 
-    layer->fakeLayerTextureUpdater()->clearPrepareRectCount();
+    layer->fakeLayerTextureUpdater()->clearUpdateCount();
 
     // Now the visible region is even smaller than the occlusion, it should have the same result.
     occluded.setOcclusion(IntRect(200, 200, 300, 150));
@@ -1010,7 +1010,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(24-6, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(24-6, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 210000 + 180000 + 180000, 1);
@@ -1034,7 +1034,7 @@ TEST_F(TiledLayerChromiumTest, tilesNotPaintedWithoutInvalidation)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(36-3, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(36-3, layer->fakeLayerTextureUpdater()->updateCount());
     {
         updateTextures();
     }
@@ -1043,13 +1043,13 @@ TEST_F(TiledLayerChromiumTest, tilesNotPaintedWithoutInvalidation)
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
     EXPECT_EQ(3, occluded.overdrawMetrics().tilesCulledForUpload());
 
-    layer->fakeLayerTextureUpdater()->clearPrepareRectCount();
+    layer->fakeLayerTextureUpdater()->clearUpdateCount();
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
 
     // Repaint without marking it dirty. The 3 culled tiles will be pre-painted now.
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(3, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(3, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
@@ -1078,7 +1078,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndTransforms)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(36-3, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(36-3, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
@@ -1112,13 +1112,13 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndScaling)
     // The content is half the size of the layer (so the number of tiles is fewer).
     // In this case, the content is 300x300, and since the tile size is 100, the
     // number of tiles 3x3.
-    EXPECT_EQ(9, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(9, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 90000, 1);
     EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
 
-    layer->fakeLayerTextureUpdater()->clearPrepareRectCount();
+    layer->fakeLayerTextureUpdater()->clearUpdateCount();
 
     // This makes sure the painting works when the content space is scaled to
     // a different layer space. In this case the occluded region catches the
@@ -1130,13 +1130,13 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndScaling)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(9-1, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(9-1, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 90000 + 80000, 1);
     EXPECT_EQ(1, occluded.overdrawMetrics().tilesCulledForUpload());
 
-    layer->fakeLayerTextureUpdater()->clearPrepareRectCount();
+    layer->fakeLayerTextureUpdater()->clearUpdateCount();
 
     // This makes sure content scaling and transforms work together.
     WebTransformationMatrix screenTransform;
@@ -1151,7 +1151,7 @@ TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndScaling)
     layer->setTexturePriorities(m_priorityCalculator);
     m_textureManager->prioritizeTextures();
     layer->update(*m_queue.get(), &occluded, m_stats);
-    EXPECT_EQ(9-1, layer->fakeLayerTextureUpdater()->prepareRectCount());
+    EXPECT_EQ(9-1, layer->fakeLayerTextureUpdater()->updateCount());
 
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
     EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 90000 + 80000 + 80000, 1);

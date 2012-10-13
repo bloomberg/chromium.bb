@@ -17,9 +17,4 @@ LayerTextureUpdater::Texture::~Texture()
 {
 }
 
-bool LayerTextureUpdater::Texture::backingResourceWasEvicted() const
-{
-    return m_texture->backingResourceWasEvicted();
-}
-
 }

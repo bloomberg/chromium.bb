@@ -235,11 +235,8 @@ void ScrollbarLayerChromium::updatePart(CachingBitmapCanvasLayerTextureUpdater* 
         return;
     }
 
-    texture->prepareRect(rect, stats);
-
     IntSize destOffset(0, 0);
-    TextureUploader::Parameters upload = { texture, rect, destOffset };
-    queue.appendFullUpload(upload);
+    texture->update(queue, rect, destOffset, false, stats);
 }
 
 

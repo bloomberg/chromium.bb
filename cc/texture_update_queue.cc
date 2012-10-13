@@ -8,6 +8,8 @@
 
 #include "CCTextureUpdateQueue.h"
 
+#include "CCPrioritizedTexture.h"
+
 namespace cc {
 
 CCTextureUpdateQueue::CCTextureUpdateQueue()

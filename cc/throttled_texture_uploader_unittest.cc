@@ -6,6 +6,7 @@
 
 #include "ThrottledTextureUploader.h"
 
+#include "CCPrioritizedTexture.h"
 #include "Extensions3DChromium.h"
 #include "FakeWebGraphicsContext3D.h"
 #include "GraphicsContext3D.h"
@@ -43,26 +44,20 @@ private:
     unsigned m_resultAvailable;
 };
 
-class FakeTexture : public cc::LayerTextureUpdater::Texture {
-public:
-  FakeTexture() : LayerTextureUpdater::Texture(
-      CCPrioritizedTexture::create(NULL, IntSize(256,256), GL_RGBA)) {
-  }
-
-  virtual void updateRect(cc::CCResourceProvider* , const cc::IntRect&, const cc::IntSize&) OVERRIDE { }
-
-};
-
 
 TEST(ThrottledTextureUploaderTest, NumBlockingUploads)
 {
     OwnPtr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(adoptPtr(new FakeWebGraphicsContext3DWithQueryTesting));
     OwnPtr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
-    OwnPtr<FakeTexture> texture = adoptPtr(new FakeTexture);
+    scoped_ptr<CCPrioritizedTexture> texture =
+        CCPrioritizedTexture::create(NULL, IntSize(256, 256), GL_RGBA);
     TextureUploader::Parameters upload;
     upload.texture = texture.get();
-    upload.sourceRect = IntRect(IntPoint(0,0), texture->texture()->size());
-    upload.destOffset = IntSize();
+    upload.bitmap = NULL;
+    upload.picture = NULL;
+    upload.geometry.contentRect = IntRect(IntPoint(0,0), texture->size());
+    upload.geometry.sourceRect = IntRect(IntPoint(0,0), texture->size());
+    upload.geometry.destOffset = IntSize();
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());
@@ -84,11 +79,15 @@ TEST(ThrottledTextureUploaderTest, MarkPendingUploadsAsNonBlocking)
 {
     OwnPtr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(adoptPtr(new FakeWebGraphicsContext3DWithQueryTesting));
     OwnPtr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
-    OwnPtr<FakeTexture> texture = adoptPtr(new FakeTexture);
+    scoped_ptr<CCPrioritizedTexture> texture =
+        CCPrioritizedTexture::create(NULL, IntSize(256, 256), GL_RGBA);
     TextureUploader::Parameters upload;
     upload.texture = texture.get();
-    upload.sourceRect = IntRect(IntPoint(0,0), texture->texture()->size());
-    upload.destOffset = IntSize();
+    upload.bitmap = NULL;
+    upload.picture = NULL;
+    upload.geometry.contentRect = IntRect(IntPoint(0,0), texture->size());
+    upload.geometry.sourceRect = IntRect(IntPoint(0,0), texture->size());
+    upload.geometry.destOffset = IntSize();
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());

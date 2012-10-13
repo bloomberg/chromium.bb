@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include <deque>
 #include <wtf/Deque.h>
+#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 class WebGraphicsContext3D;

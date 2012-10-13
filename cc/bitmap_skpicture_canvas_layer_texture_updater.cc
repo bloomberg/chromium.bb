@@ -10,6 +10,7 @@
 #include "BitmapSkPictureCanvasLayerTextureUpdater.h"
 
 #include "CCRenderingStats.h"
+#include "CCTextureUpdateQueue.h"
 #include "LayerPainterChromium.h"
 #include "PlatformColor.h"
 #include "SkCanvas.h"
@@ -24,7 +25,7 @@ BitmapSkPictureCanvasLayerTextureUpdater::Texture::Texture(BitmapSkPictureCanvas
 {
 }
 
-void BitmapSkPictureCanvasLayerTextureUpdater::Texture::prepareRect(const IntRect& sourceRect, CCRenderingStats& stats)
+void BitmapSkPictureCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats& stats)
 {
     m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, sourceRect.width(), sourceRect.height());
     m_bitmap.allocPixels();
@@ -34,14 +35,12 @@ void BitmapSkPictureCanvasLayerTextureUpdater::Texture::prepareRect(const IntRec
     double paintBeginTime = monotonicallyIncreasingTime();
     textureUpdater()->paintContentsRect(&canvas, sourceRect, stats);
     stats.totalPaintTimeInSeconds += monotonicallyIncreasingTime() - paintBeginTime;
-}
 
-void BitmapSkPictureCanvasLayerTextureUpdater::Texture::updateRect(CCResourceProvider* resourceProvider, const IntRect& sourceRect, const IntSize& destOffset)
-{
-    m_bitmap.lockPixels();
-    texture()->upload(resourceProvider, static_cast<uint8_t*>(m_bitmap.getPixels()), sourceRect, sourceRect, destOffset);
-    m_bitmap.unlockPixels();
-    m_bitmap.reset();
+    TextureUploader::Parameters upload = { texture(), &m_bitmap, NULL, { sourceRect, sourceRect, destOffset } };
+    if (partialUpdate)
+        queue.appendPartialUpload(upload);
+    else
+        queue.appendFullUpload(upload);
 }
 
 PassRefPtr<BitmapSkPictureCanvasLayerTextureUpdater> BitmapSkPictureCanvasLayerTextureUpdater::create(PassOwnPtr<LayerPainterChromium> painter)

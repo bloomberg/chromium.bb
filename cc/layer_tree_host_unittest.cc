@@ -2398,29 +2398,6 @@ private:
 
 SINGLE_AND_MULTI_THREAD_TEST_F(CCLayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit)
 
-
-class EvictionTrackingTexture : public LayerTextureUpdater::Texture {
-public:
-    static PassOwnPtr<EvictionTrackingTexture> create(scoped_ptr<CCPrioritizedTexture> texture) { return adoptPtr(new EvictionTrackingTexture(texture.Pass())); }
-    virtual ~EvictionTrackingTexture() { }
-
-    virtual void updateRect(CCResourceProvider* resourceProvider, const IntRect&, const IntSize&) OVERRIDE
-    {
-        ASSERT_TRUE(!texture()->haveBackingTexture() || resourceProvider->numResources() > 0);
-        texture()->acquireBackingTexture(resourceProvider);
-        m_updated = true;
-    }
-    void resetUpdated() { m_updated = false; }
-    bool updated() const { return m_updated; }
-
-private:
-    explicit EvictionTrackingTexture(scoped_ptr<CCPrioritizedTexture> texture)
-        : LayerTextureUpdater::Texture(texture.Pass())
-        , m_updated(false)
-    { }
-    bool m_updated;
-};
-
 class EvictionTestLayer : public LayerChromium {
 public:
     static scoped_refptr<EvictionTestLayer> create() { return make_scoped_refptr(new EvictionTestLayer()); }
@@ -2432,12 +2409,7 @@ public:
     virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
     virtual void setTexturePriorities(const CCPriorityCalculator&) OVERRIDE;
 
-    void resetUpdated()
-    {
-        if (m_texture.get())
-            m_texture->resetUpdated();
-    }
-    bool updated() const { return m_texture.get() ? m_texture->updated() : false; }
+    bool haveBackingTexture() const { return m_texture.get() ? m_texture->haveBackingTexture() : false; }
 
 private:
     EvictionTestLayer() : LayerChromium() { }
@@ -2447,11 +2419,13 @@ private:
     {
         if (m_texture.get())
             return;
-        m_texture = EvictionTrackingTexture::create(CCPrioritizedTexture::create(layerTreeHost()->contentsTextureManager()));
-        m_texture->texture()->setDimensions(IntSize(10, 10), cc::GraphicsContext3D::RGBA);
+        m_texture = CCPrioritizedTexture::create(layerTreeHost()->contentsTextureManager());
+        m_texture->setDimensions(IntSize(10, 10), cc::GraphicsContext3D::RGBA);
+        m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
     }
 
-    OwnPtr<EvictionTrackingTexture> m_texture;
+    scoped_ptr<CCPrioritizedTexture> m_texture;
+    SkBitmap m_bitmap;
 };
 
 class EvictionTestLayerImpl : public CCLayerImpl {
@@ -2483,7 +2457,7 @@ void EvictionTestLayer::setTexturePriorities(const CCPriorityCalculator&)
     createTextureIfNeeded();
     if (!m_texture.get())
         return;
-    m_texture->texture()->setRequestPriority(CCPriorityCalculator::uiPriority(true));
+    m_texture->setRequestPriority(CCPriorityCalculator::uiPriority(true));
 }
 
 void EvictionTestLayer::update(CCTextureUpdateQueue& queue, const CCOcclusionTracker*, CCRenderingStats&)
@@ -2492,8 +2466,8 @@ void EvictionTestLayer::update(CCTextureUpdateQueue& queue, const CCOcclusionTra
     if (!m_texture.get())
         return;
     IntRect fullRect(0, 0, 10, 10);
-    TextureUploader::Parameters parameters = { m_texture.get(), fullRect, IntSize() };
-    queue.appendFullUpload(parameters);
+    TextureUploader::Parameters upload = { m_texture.get(), &m_bitmap, NULL, { fullRect, fullRect, IntSize() } };
+    queue.appendFullUpload(upload);
 }
 
 scoped_ptr<CCLayerImpl> EvictionTestLayer::createCCLayerImpl()
@@ -2506,7 +2480,7 @@ void EvictionTestLayer::pushPropertiesTo(CCLayerImpl* layerImpl)
     LayerChromium::pushPropertiesTo(layerImpl);
 
     EvictionTestLayerImpl* testLayerImpl = static_cast<EvictionTestLayerImpl*>(layerImpl);
-    testLayerImpl->setHasTexture(m_texture->texture()->haveBackingTexture());
+    testLayerImpl->setHasTexture(m_texture->haveBackingTexture());
 }
 
 class CCLayerTreeHostTestEvictTextures : public CCLayerTreeHostTest {
@@ -2573,23 +2547,23 @@ public:
     {
         switch (m_numCommits) {
         case 1:
-            EXPECT_TRUE(m_layer->updated());
+            EXPECT_TRUE(m_layer->haveBackingTexture());
             postEvictTextures();
             break;
         case 2:
-            EXPECT_TRUE(m_layer->updated());
+            EXPECT_TRUE(m_layer->haveBackingTexture());
             m_layerTreeHost->setNeedsCommit();
             break;
         case 3:
             break;
         case 4:
-            EXPECT_TRUE(m_layer->updated());
+            EXPECT_TRUE(m_layer->haveBackingTexture());
             m_layerTreeHost->setNeedsCommit();
             break;
         case 5:
             break;
         case 6:
-            EXPECT_TRUE(m_layer->updated());
+            EXPECT_TRUE(m_layer->haveBackingTexture());
             endTest();
             break;
         default:
@@ -2615,21 +2589,20 @@ public:
             break;
         case 4:
             // We couldn't check in didCommitAndDrawFrame on commit 3, so check here.
-            EXPECT_FALSE(m_layer->updated());
+            EXPECT_FALSE(m_layer->haveBackingTexture());
             break;
         case 5:
             postEvictTextures();
             break;
         case 6:
             // We couldn't check in didCommitAndDrawFrame on commit 5, so check here.
-            EXPECT_FALSE(m_layer->updated());
+            EXPECT_FALSE(m_layer->haveBackingTexture());
             postEvictTextures();
             break;
         default:
             ASSERT_NOT_REACHED();
             break;
         }
-        m_layer->resetUpdated();
     }
 
     virtual void afterTest() OVERRIDE
@@ -2706,7 +2679,7 @@ public:
         ++m_numCommits;
         switch (m_numCommits) {
         case 1:
-            EXPECT_TRUE(m_layer->updated());
+            EXPECT_TRUE(m_layer->haveBackingTexture());
             m_layerTreeHost->setVisible(false);
             postEvictTextures();
             m_layerTreeHost->loseContext(1);

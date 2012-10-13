@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "CCLayerTreeHost.h"
+#include "CCTextureUpdateQueue.h"
 #include "LayerTextureUpdater.h"
 #include "PlatformColor.h"
 
@@ -25,9 +26,9 @@ public:
         {
         }
 
-        virtual void updateRect(CCResourceProvider* resourceProvider, const IntRect& sourceRect, const IntSize& destOffset) OVERRIDE
+        virtual void update(CCTextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&) OVERRIDE
         {
-            textureUpdater()->updateTextureRect(resourceProvider, texture(), sourceRect, destOffset);
+            textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
         }
 
     private:
@@ -55,7 +56,7 @@ public:
                 LayerTextureUpdater::SampledTexelFormatRGBA : LayerTextureUpdater::SampledTexelFormatBGRA;
     }
 
-    void updateTextureRect(CCResourceProvider* resourceProvider, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset)
+    void updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
     {
         // Source rect should never go outside the image pixels, even if this
         // is requested because the texture extends outside the image.
@@ -65,8 +66,11 @@ public:
 
         IntSize clippedDestOffset = destOffset + IntSize(clippedSourceRect.location() - sourceRect.location());
 
-        SkAutoLockPixels lock(m_bitmap);
-        texture->upload(resourceProvider, static_cast<const uint8_t*>(m_bitmap.getPixels()), imageRect, clippedSourceRect, clippedDestOffset);
+        TextureUploader::Parameters upload = { texture, &m_bitmap, NULL, { imageRect, clippedSourceRect, clippedDestOffset } };
+        if (partialUpdate)
+            queue.appendPartialUpload(upload);
+        else
+            queue.appendFullUpload(upload);
     }
 
     void setBitmap(const SkBitmap& bitmap)

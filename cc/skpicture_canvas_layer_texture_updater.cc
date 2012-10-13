@@ -9,6 +9,7 @@
 
 #include "SkPictureCanvasLayerTextureUpdater.h"
 
+#include "CCTextureUpdateQueue.h"
 #include "LayerPainterChromium.h"
 #include "SkCanvas.h"
 #include "TraceEvent.h"
@@ -36,6 +37,15 @@ void SkPictureCanvasLayerTextureUpdater::drawPicture(SkCanvas* canvas)
 {
     TRACE_EVENT0("cc", "SkPictureCanvasLayerTextureUpdater::drawPicture");
     canvas->drawPicture(m_picture);
+}
+
+void SkPictureCanvasLayerTextureUpdater::updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+{
+    TextureUploader::Parameters upload = { texture, NULL, &m_picture, { contentRect(), sourceRect, destOffset } };
+    if (partialUpdate)
+        queue.appendPartialUpload(upload);
+    else
+        queue.appendFullUpload(upload);
 }
 
 void SkPictureCanvasLayerTextureUpdater::setOpaque(bool opaque)

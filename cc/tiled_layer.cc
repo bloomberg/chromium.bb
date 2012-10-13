@@ -521,10 +521,6 @@ void TiledLayerChromium::updateTileTextures(const IntRect& paintRect, int left, 
             if (sourceRect.isEmpty())
                 continue;
 
-            tile->texture()->prepareRect(sourceRect, stats);
-            if (occlusion)
-                occlusion->overdrawMetrics().didUpload(WebTransformationMatrix(), sourceRect, tile->opaqueRect());
-
             const IntPoint anchor = m_tiler->tileRect(tile).location();
 
             // Calculate tile-space rectangle to upload into.
@@ -545,11 +541,10 @@ void TiledLayerChromium::updateTileTextures(const IntRect& paintRect, int left, 
             if (paintOffset.y() + sourceRect.height() > paintRect.height())
                 CRASH();
 
-            TextureUploader::Parameters upload = { tile->texture(), sourceRect, destOffset };
-            if (tile->partialUpdate)
-                queue.appendPartialUpload(upload);
-            else
-                queue.appendFullUpload(upload);
+            tile->texture()->update(queue, sourceRect, destOffset, tile->partialUpdate, stats);
+            if (occlusion)
+                occlusion->overdrawMetrics().didUpload(WebTransformationMatrix(), sourceRect, tile->opaqueRect());
+
         }
     }
 }

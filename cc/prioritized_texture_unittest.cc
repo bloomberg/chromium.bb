@@ -532,5 +532,49 @@ TEST_F(CCPrioritizedTextureTest, requestLateBackingsSorting)
     textureManager->clearAllMemory(resourceProvider());
 }
 
+TEST_F(CCPrioritizedTextureTest, clearUploadsToEvictedResources)
+{
+    const size_t maxTextures = 4;
+    scoped_ptr<CCPrioritizedTextureManager> textureManager =
+        createManager(maxTextures);
+    textureManager->setMaxMemoryLimitBytes(texturesMemorySize(maxTextures));
+
+    // Create textures to fill our memory limit.
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
+
+    for (size_t i = 0; i < maxTextures; ++i)
+        textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
+
+    // Set equal priorities, and allocate backings for all textures.
+    for (size_t i = 0; i < maxTextures; ++i)
+        textures[i]->setRequestPriority(100);
+    prioritizeTexturesAndBackings(textureManager.get());
+    for (unsigned i = 0; i < maxTextures; ++i)
+        EXPECT_TRUE(validateTexture(textures[i], false));
+
+    CCTextureUpdateQueue queue;
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    for (size_t i = 0; i < maxTextures; ++i) {
+        const TextureUploader::Parameters upload = { textures[i].get() };
+        queue.appendFullUpload(upload);
+    }
+
+    // Make sure that we have backings for all of the textures.
+    for (size_t i = 0; i < maxTextures; ++i)
+        EXPECT_TRUE(textures[i]->haveBackingTexture());
+
+    queue.clearUploadsToEvictedResources();
+    EXPECT_EQ(4, queue.fullUploadSize());
+
+    textureManager->reduceMemoryOnImplThread(
+        texturesMemorySize(1), resourceProvider());
+    queue.clearUploadsToEvictedResources();
+    EXPECT_EQ(1, queue.fullUploadSize());
+
+    textureManager->reduceMemoryOnImplThread(0, resourceProvider());
+    queue.clearUploadsToEvictedResources();
+    EXPECT_EQ(0, queue.fullUploadSize());
+
+}
 
 } // namespace

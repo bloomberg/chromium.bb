@@ -20,8 +20,7 @@ public:
     public:
         Texture(BitmapSkPictureCanvasLayerTextureUpdater*, scoped_ptr<CCPrioritizedTexture>);
 
-        virtual void prepareRect(const IntRect& sourceRect, CCRenderingStats&) OVERRIDE;
-        virtual void updateRect(CCResourceProvider*, const IntRect& sourceRect, const IntSize& destOffset) OVERRIDE;
+        virtual void update(CCTextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&) OVERRIDE;
 
     private:
         BitmapSkPictureCanvasLayerTextureUpdater* textureUpdater() { return m_textureUpdater; }

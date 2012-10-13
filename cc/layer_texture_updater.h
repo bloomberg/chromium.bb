@@ -18,6 +18,7 @@ class IntRect;
 class IntSize;
 class TextureManager;
 struct CCRenderingStats;
+class CCTextureUpdateQueue;
 
 class LayerTextureUpdater : public RefCounted<LayerTextureUpdater> {
 public:
@@ -28,9 +29,9 @@ public:
 
         CCPrioritizedTexture* texture() { return m_texture.get(); }
         void swapTextureWith(scoped_ptr<CCPrioritizedTexture>& texture) { m_texture.swap(texture); }
-        virtual void prepareRect(const IntRect& /* sourceRect */, CCRenderingStats&) { }
-        virtual void updateRect(CCResourceProvider*, const IntRect& sourceRect, const IntSize& destOffset) = 0;
-        virtual bool backingResourceWasEvicted() const;
+        // TODO(reveman): partialUpdate should be a property of this class
+        // instead of an argument passed to update().
+        virtual void update(CCTextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&) = 0;
     protected:
         explicit Texture(scoped_ptr<CCPrioritizedTexture> texture);
 

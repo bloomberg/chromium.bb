@@ -6,7 +6,7 @@
 
 #include "CCTextureUpdateController.h"
 
-#include "GraphicsContext3D.h"
+#include "CCResourceProvider.h"
 #include "TextureCopier.h"
 #include "TextureUploader.h"
 #include "TraceEvent.h"

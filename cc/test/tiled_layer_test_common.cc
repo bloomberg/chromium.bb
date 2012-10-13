@@ -20,21 +20,20 @@ FakeLayerTextureUpdater::Texture::~Texture()
 {
 }
 
-void FakeLayerTextureUpdater::Texture::updateRect(CCResourceProvider* resourceProvider, const IntRect&, const IntSize&)
+void FakeLayerTextureUpdater::Texture::update(CCTextureUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, CCRenderingStats&)
 {
-    texture()->acquireBackingTexture(resourceProvider);
-    m_layer->updateRect();
-}
+    TextureUploader::Parameters upload = { texture(), NULL, NULL, { IntRect(), IntRect(), IntSize() } };
+    if (partialUpdate)
+        queue.appendPartialUpload(upload);
+    else
+        queue.appendFullUpload(upload);
 
-void FakeLayerTextureUpdater::Texture::prepareRect(const IntRect&, cc::CCRenderingStats&)
-{
-    m_layer->prepareRect();
+    m_layer->update();
 }
 
 FakeLayerTextureUpdater::FakeLayerTextureUpdater()
     : m_prepareCount(0)
     , m_updateCount(0)
-    , m_prepareRectCount(0)
 {
 }
 
@@ -152,7 +151,7 @@ void FakeTextureUploader::markPendingUploadsAsNonBlocking()
 
 void FakeTextureUploader::uploadTexture(cc::CCResourceProvider* resourceProvider, Parameters upload)
 {
-    upload.texture->updateRect(resourceProvider, upload.sourceRect, upload.destOffset);
+    upload.texture->acquireBackingTexture(resourceProvider);
 }
 
 double FakeTextureUploader::estimatedTexturesPerSecond()
