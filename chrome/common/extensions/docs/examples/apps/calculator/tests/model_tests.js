@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  **/
 
-$(document).ready(function() {
+window.onload = function() {
 
   // TODO(dharcourt@chromium.org): Organize and beef up these tests.
   // TODO(dharcourt@chromium.org): testModel("*", '~ = [-0]');
@@ -141,4 +141,4 @@ $(document).ready(function() {
             '000 [[0==]] 20 [[20]] + 000 [[0==]] 20 [[20]] = [40]' +
             '00020 + 00020 = [40]');
 
-});
+};

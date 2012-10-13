@@ -4,59 +4,58 @@
  * found in the LICENSE file.
  **/
 
-function View(model) {
+function View(window, model) {
   var view = this;
   var model = model;
   var events = this.defineEvents_();
+  var display = window.document.querySelector('#display');
+  var buttons = window.document.querySelectorAll('#buttons .button');
 
-  this.buttonsElement = $('#calculator #buttons');
-  this.displayElement = $('#calculator #display');
-  this.keyPrefix = '';
-
-  $('#calculator #buttons .button').click(function (event) {
-    var button = $(event.target).attr('class').split(' ')[1];
-    view.handleEvent_(model, events.byButton[button]);
+  Array.prototype.forEach.call(buttons, function (button) {
+    button.onclick = function (click) {
+      var button = click.target.getAttribute('class').split(' ')[1];
+      var event = events.byButton[button];
+      if (event) {
+        var values = model.handle(event.name);
+        view.updateDisplay_(display, values, event);
+      }
+    };
   });
 
-  $(document).keydown(function (event) {
-    var key = view.keyPrefix + event.which;
-    if (key === '16') {
-      view.keyPrefix = '^'
-    } else {
-      view.handleEvent_(model, events.byKey[key]);
+  window.onkeydown = function (keydown) {
+    var key = keydown.shiftKey ? ('^' + keydown.which) : keydown.which;
+    var event = events.byKey[key];
+    if (event) {
+      var values = model.handle(event.name);
+      view.updateDisplay_(display, values, event);
     }
-  });
+  };
 
-  $(document).keyup(function (event) {
-    if (event.which === '16') {
-      view.keyPrefix = '';
-    }
-  });
 }
 
 /** @private */
 View.prototype.defineEvents_ = function () {
   var events = {byName: {}, byButton: {}, byKey: {}};
-  this.defineEvent_(events, '0',     'zero',     '48');
-  this.defineEvent_(events, '1',     'one',      '49');
-  this.defineEvent_(events, '2',     'two',      '50');
-  this.defineEvent_(events, '3',     'three',    '51');
-  this.defineEvent_(events, '4',     'four',     '52');
-  this.defineEvent_(events, '5',     'five',     '53');
-  this.defineEvent_(events, '6',     'six',      '54');
-  this.defineEvent_(events, '7',     'seven',    '55');
-  this.defineEvent_(events, '8',     'eight',    '56');
-  this.defineEvent_(events, '9',     'nine',     '57');
-  this.defineEvent_(events, '.',     'point',    '190');
-  this.defineEvent_(events, '+',     'add',      '^187', true);
-  this.defineEvent_(events, '-',     'subtract', '189', true);
-  this.defineEvent_(events, '*',     'multiply', '^56', true);
-  this.defineEvent_(events, '/',     'divide',   '191', true);
-  this.defineEvent_(events, '=',     'equals',   '187');
-  this.defineEvent_(events, '=',     ' ',        '13');
-  this.defineEvent_(events, '+ / -', 'negate',   '32');
-  this.defineEvent_(events, 'AC',    'clear',    '67');
-  this.defineEvent_(events, 'back',  ' ',        '8');
+  this.defineEvent_(events, '0', 'zero', '48');
+  this.defineEvent_(events, '1', 'one', '49');
+  this.defineEvent_(events, '2', 'two', '50');
+  this.defineEvent_(events, '3', 'three', '51');
+  this.defineEvent_(events, '4', 'four', '52');
+  this.defineEvent_(events, '5', 'five', '53');
+  this.defineEvent_(events, '6', 'six', '54');
+  this.defineEvent_(events, '7', 'seven', '55');
+  this.defineEvent_(events, '8', 'eight', '56');
+  this.defineEvent_(events, '9', 'nine', '57');
+  this.defineEvent_(events, '.', 'point', '190');
+  this.defineEvent_(events, '+', 'add', '^187', true);
+  this.defineEvent_(events, '-', 'subtract', '189', true);
+  this.defineEvent_(events, '*', 'multiply', '^56', true);
+  this.defineEvent_(events, '/', 'divide', '191', true);
+  this.defineEvent_(events, '=', 'equals', '187');
+  this.defineEvent_(events, '=', ' ', '13');
+  this.defineEvent_(events, '+ / -', 'negate', '32');
+  this.defineEvent_(events, 'AC', 'clear', '67');
+  this.defineEvent_(events, 'back', ' ', '8');
   return events;
 }
 
@@ -68,60 +67,61 @@ View.prototype.defineEvent_ = function (events, name, button, key, operator) {
 };
 
 /** @private */
-View.prototype.handleEvent_ = function (model, event) {
-  if (event) {
-    var results = model.handle(event.name);
-    console.log('results:', JSON.stringify(results));
-    if (!results.accumulator && !results.operator && !results.operand) {
-      this.displayElement.empty();
-      this.addDisplayEquation_(results);
-    } else if (event.name === '=') {
-      results = {accumulator: results.accumulator, operand:results.accumulator};
-      this.displayElement.append('<div class="hr"></div>');
-      this.addDisplayEquation_(results);
-    } else if (event.operator) {
-      this.updateLastDisplayEquation_({accumulator: results.accumulator});
-      this.addDisplayEquation_({operator: results.operator});
-    } else {
-      results = {operator: results.operator, operand: results.operand};
-      if (!this.updateLastDisplayEquation_(results)) {
-        this.addDisplayEquation_(results);
-      }
-    }
+View.prototype.updateDisplay_ = function (display, values, event) {
+  var operation = {operator: values.operator, operand: values.operand};
+  var result = values.accumulator;
+  if (event.name === 'AC') {
+    display.innerHTML = '';
+    this.addEquation_(display, {operand: '0'});
+  } else if (event.name === '=') {
+    display.appendChild(this.createDiv_(display, 'hr'));
+    this.addEquation_(display, {accumulator: result, operand:result});
+  } else if (event.operator) {
+    this.updateEquation_(display.lastElementChild, {accumulator: result});
+    this.addEquation_(display, {operator: operation.operator});
+  } else if (!this.updateEquation_(display.lastElementChild, operation)) {
+    this.addEquation_(display, operation);
   }
 }
 
 /** @private */
-View.prototype.addDisplayEquation_ = function (values) {
-  console.log('add:', JSON.stringify(values));
-  var zero = (!values.accumulator && !values.operator);
-  var operand = values.operand || (zero ? '0' : '');
-  this.displayElement.append(
-      '<div class="equation">' +
-        '<div class="operand">' + operand + '</div>' +
-        '<div class="operator">' + (values.operator || '') + '</div>' +
-        '<div class="accumulator">' + (values.accumulator || '') + '</div>' +
-      '</div>');
-  this.displayElement.scrollTop(this.displayElement[0].scrollHeight);
+View.prototype.addEquation_ = function (display, values) {
+  // The order of the equation children below makes them stack correctly.
+  var equation = this.createDiv_(display, 'equation');
+  equation.appendChild(this.createDiv_(display, 'operand'));
+  equation.appendChild(this.createDiv_(display, 'operator'));
+  equation.appendChild(this.createDiv_(display, 'accumulator'));
+  this.updateEquation_(equation, values);
+  display.appendChild(equation).scrollIntoView();
 }
 
 /** @private */
-View.prototype.updateLastDisplayEquation_ = function (values) {
-  var equation = this.displayElement.find('.equation').last();
-  var accumulator = equation.find('.accumulator');
-  var operator = equation.find('.operator');
-  var operand = equation.find('.operand');
-  var update = !accumulator.text();
+View.prototype.updateEquation_ = function (equation, values) {
+  // Equations which are "finalized" (which have an accumulator value) shouldn't
+  // and won't be updated, and this method returns whether an update occurred.
+  var accumulator = equation && equation.querySelector('.accumulator');
+  var operator = equation && equation.querySelector('.operator');
+  var operand = equation && equation.querySelector('.operand');
+  var update = accumulator && !accumulator.textContent;
   if (update) {
-    if (values.accumulator !== undefined) {
-      accumulator.text(values.accumulator || '');
-    }
-    if (values.operator !== undefined) {
-      operator.text(values.operator || '');
-    }
-    if (values.operand !== undefined) {
-      operand.text(values.operand || (operator.text() ? '' : '0'));
-    }
+    this.updateValue_(accumulator, values.accumulator);
+    this.updateValue_(operator, values.operator);
+    this.updateValue_(operand, values.operand, !operator.text);
+    equation.scrollIntoView();
   }
   return update;
+}
+
+/** @private */
+View.prototype.updateValue_ = function (element, value, zero) {
+  if (value !== undefined) {
+    element.textContent = zero ? (value || '0') : (value || '');
+  }
+}
+
+/** @private */
+View.prototype.createDiv_ = function (display, classes) {
+  var div = display.ownerDocument.createElement('div');
+  div.setAttribute('class', classes);
+  return div;
 }
