@@ -4,7 +4,6 @@
 
 #include "ppapi/proxy/plugin_resource.h"
 
-#include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 
@@ -81,29 +80,15 @@ bool PluginResource::SendResourceCall(
   return sender->Send(new PpapiHostMsg_ResourceCall(call_params, nested_msg));
 }
 
-int32_t PluginResource::CallBrowserSync(const IPC::Message& msg,
+int32_t PluginResource::GenericSyncCall(Destination dest,
+                                        const IPC::Message& msg,
                                         IPC::Message* reply) {
   ResourceMessageCallParams params(pp_resource(),
                                    next_sequence_number_++);
   params.set_has_callback();
   ResourceMessageReplyParams reply_params;
-  bool success =
-      connection_.browser_sender->Send(new PpapiHostMsg_ResourceSyncCall(
-          params, msg, &reply_params, reply));
-  if (success)
-    return reply_params.result();
-  return PP_ERROR_FAILED;
-}
-
-int32_t PluginResource::CallRendererSync(const IPC::Message& msg,
-                                         IPC::Message* reply) {
-  ResourceMessageCallParams params(pp_resource(),
-                                   next_sequence_number_++);
-  params.set_has_callback();
-  ResourceMessageReplyParams reply_params;
-  bool success =
-      connection_.renderer_sender->Send(new PpapiHostMsg_ResourceSyncCall(
-          params, msg, &reply_params, reply));
+  bool success = GetSender(dest)->Send(new PpapiHostMsg_ResourceSyncCall(
+      params, msg, &reply_params, reply));
   if (success)
     return reply_params.result();
   return PP_ERROR_FAILED;

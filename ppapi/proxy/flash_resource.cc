@@ -39,17 +39,15 @@ int32_t FlashResource::EnumerateVideoCaptureDevices(
   if (enter.failed())
     return PP_ERROR_NOINTERFACE;
 
-  IPC::Message reply;
   std::vector<ppapi::DeviceRefData> device_ref_data;
-  int32_t result = CallRendererSync(
-      PpapiHostMsg_Flash_EnumerateVideoCaptureDevices(
-          enter.resource()->host_resource()), &reply);
+  int32_t result =
+      SyncCall<PpapiPluginMsg_Flash_EnumerateVideoCaptureDevicesReply>(
+          RENDERER,
+          PpapiHostMsg_Flash_EnumerateVideoCaptureDevices(
+              enter.resource()->host_resource()),
+          &device_ref_data);
   if (result != PP_OK)
     return result;
-  PpapiPluginMsg_Flash_EnumerateVideoCaptureDevicesReply::Schema::Param p;
-  if (!PpapiPluginMsg_Flash_EnumerateVideoCaptureDevicesReply::Read(&reply, &p))
-    return PP_ERROR_FAILED;
-  device_ref_data = p.a;
 
   std::vector<scoped_refptr<Resource> > device_resources;
   for (size_t i = 0; i < device_ref_data.size(); ++i) {

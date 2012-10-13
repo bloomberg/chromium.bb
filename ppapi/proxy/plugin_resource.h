@@ -7,16 +7,16 @@
 
 #include <map>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
+#include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource_callback.h"
+#include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/resource.h"
-
-namespace IPC {
-class Message;
-}
 
 namespace ppapi {
 namespace proxy {
@@ -40,6 +40,16 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   virtual void OnReplyReceived(const proxy::ResourceMessageReplyParams& params,
                                const IPC::Message& msg) OVERRIDE;
  protected:
+  enum Destination {
+    RENDERER = 0,
+    BROWSER = 1
+  };
+
+  IPC::Sender* GetSender(Destination dest) {
+    return dest == RENDERER ? connection_.renderer_sender :
+                              connection_.browser_sender;
+  }
+
   // Sends a create message to the browser or renderer for the current resource.
   void SendCreateToBrowser(const IPC::Message& msg);
   void SendCreateToRenderer(const IPC::Message& msg);
@@ -71,10 +81,32 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   template<typename ReplyMsgClass, typename CallbackType>
   int32_t CallRenderer(const IPC::Message& msg, const CallbackType& callback);
 
-  // Call the browser/renderer with sync messages. The pepper error code from
-  // the call is returned and the reply message is stored in |reply_msg|.
-  int32_t CallBrowserSync(const IPC::Message& msg, IPC::Message* reply_msg);
-  int32_t CallRendererSync(const IPC::Message& msg, IPC::Message* reply_msg);
+  // Calls the browser/renderer with sync messages. Returns the pepper error
+  // code from the call.
+  // |ReplyMsgClass| is the type of the reply message that is expected. If it
+  // carries x parameters, then the method with x out parameters should be used.
+  // An example of usage:
+  //
+  // // Assuming the reply message carries a string and an integer.
+  // std::string param_1;
+  // int param_2 = 0;
+  // int32_t result = SyncCall<PpapiPluginMsg_MyResourceType_MyReplyMessage>(
+  //     RENDERER, PpapiHostMsg_MyResourceType_MyRequestMessage(),
+  //     &param_1, &param_2);
+  template <class ReplyMsgClass>
+  int32_t SyncCall(Destination dest, const IPC::Message& msg);
+  template <class ReplyMsgClass, class A>
+  int32_t SyncCall(Destination dest, const IPC::Message& msg, A* a);
+  template <class ReplyMsgClass, class A, class B>
+  int32_t SyncCall(Destination dest, const IPC::Message& msg, A* a, B* b);
+  template <class ReplyMsgClass, class A, class B, class C>
+  int32_t SyncCall(Destination dest, const IPC::Message& msg, A* a, B* b, C* c);
+  template <class ReplyMsgClass, class A, class B, class C, class D>
+  int32_t SyncCall(
+      Destination dest, const IPC::Message& msg, A* a, B* b, C* c, D* d);
+  template <class ReplyMsgClass, class A, class B, class C, class D, class E>
+  int32_t SyncCall(
+      Destination dest, const IPC::Message& msg, A* a, B* b, C* c, D* d, E* e);
 
  private:
   // Helper function to send a |PpapiHostMsg_ResourceCall| to the given sender
@@ -88,6 +120,10 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   int32_t CallHost(IPC::Sender* sender,
                    const IPC::Message& msg,
                    const CallbackType& callback);
+
+  int32_t GenericSyncCall(Destination dest,
+                          const IPC::Message& msg,
+                          IPC::Message* reply_msg);
 
   Connection connection_;
 
@@ -131,6 +167,67 @@ int32_t PluginResource::CallHost(IPC::Sender* sender,
   params.set_has_callback();
   SendResourceCall(sender, params, msg);
   return params.sequence();
+}
+
+template <class ReplyMsgClass>
+int32_t PluginResource::SyncCall(Destination dest, const IPC::Message& msg) {
+  IPC::Message reply;
+  return GenericSyncCall(dest, msg, &reply);
+}
+
+template <class ReplyMsgClass, class A>
+int32_t PluginResource::SyncCall(
+    Destination dest, const IPC::Message& msg, A* a) {
+  IPC::Message reply;
+  int32_t result = GenericSyncCall(dest, msg, &reply);
+
+  if (UnpackMessage<ReplyMsgClass>(reply, a))
+    return result;
+  return PP_ERROR_FAILED;
+}
+
+template <class ReplyMsgClass, class A, class B>
+int32_t PluginResource::SyncCall(
+    Destination dest, const IPC::Message& msg, A* a, B* b) {
+  IPC::Message reply;
+  int32_t result = GenericSyncCall(dest, msg, &reply);
+
+  if (UnpackMessage<ReplyMsgClass>(reply, a, b))
+    return result;
+  return PP_ERROR_FAILED;
+}
+
+template <class ReplyMsgClass, class A, class B, class C>
+int32_t PluginResource::SyncCall(
+    Destination dest, const IPC::Message& msg, A* a, B* b, C* c) {
+  IPC::Message reply;
+  int32_t result = GenericSyncCall(dest, msg, &reply);
+
+  if (UnpackMessage<ReplyMsgClass>(reply, a, b, c))
+    return result;
+  return PP_ERROR_FAILED;
+}
+
+template <class ReplyMsgClass, class A, class B, class C, class D>
+int32_t PluginResource::SyncCall(
+    Destination dest, const IPC::Message& msg, A* a, B* b, C* c, D* d) {
+  IPC::Message reply;
+  int32_t result = GenericSyncCall(dest, msg, &reply);
+
+  if (UnpackMessage<ReplyMsgClass>(reply, a, b, c, d))
+    return result;
+  return PP_ERROR_FAILED;
+}
+
+template <class ReplyMsgClass, class A, class B, class C, class D, class E>
+int32_t PluginResource::SyncCall(
+    Destination dest, const IPC::Message& msg, A* a, B* b, C* c, D* d, E* e) {
+  IPC::Message reply;
+  int32_t result = GenericSyncCall(dest, msg, &reply);
+
+  if (UnpackMessage<ReplyMsgClass>(reply, a, b, c, d, e))
+    return result;
+  return PP_ERROR_FAILED;
 }
 
 }  // namespace proxy

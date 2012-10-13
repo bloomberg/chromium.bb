@@ -44,17 +44,14 @@ PP_Bool FlashFontFileResource::GetFontTable(uint32_t table,
 
   std::string* contents = GetFontTable(table);
   if (!contents) {
-    IPC::Message reply;
-    int32_t result = CallRendererSync(
-        PpapiHostMsg_FlashFontFile_GetFontTable(table), &reply);
+    std::string out_contents;
+    int32_t result = SyncCall<PpapiPluginMsg_FlashFontFile_GetFontTableReply>(
+        RENDERER, PpapiHostMsg_FlashFontFile_GetFontTable(table),
+        &out_contents);
     if (result != PP_OK)
       return PP_FALSE;
 
-    PpapiPluginMsg_FlashFontFile_GetFontTableReply::Param param;
-    if (!PpapiPluginMsg_FlashFontFile_GetFontTableReply::Read(&reply, &param))
-      return PP_FALSE;
-
-    contents = AddFontTable(table, param.a);
+    contents = AddFontTable(table, out_contents);
   }
 
   // If we are going to copy the data into |output|, it must be big enough.

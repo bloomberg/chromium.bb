@@ -10,6 +10,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 using ppapi::host::ResourceHost;
@@ -40,10 +41,12 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
       ppapi::PERMISSION_FLASH)) {
     switch (message.type()) {
       case PpapiHostMsg_FlashFontFile_Create::ID:
-        PpapiHostMsg_FlashFontFile_Create::Param param;
-        if (PpapiHostMsg_FlashFontFile_Create::Read(&message, &param)) {
+        ppapi::proxy::SerializedFontDescription description;
+        PP_PrivateFontCharset charset;
+        if (ppapi::UnpackMessage<PpapiHostMsg_FlashFontFile_Create>(
+            message, &description, &charset)) {
           return scoped_ptr<ResourceHost>(new PepperFlashFontFileHost(
-              host_, instance, params.pp_resource(), param.a, param.b));
+              host_, instance, params.pp_resource(), description, charset));
         }
         break;
     }
