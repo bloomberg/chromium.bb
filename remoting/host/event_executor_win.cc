@@ -198,23 +198,30 @@ void EventExecutorWin::HandleMouse(const MouseEvent& event) {
     }
   }
 
-  if (event.has_wheel_offset_x() && event.has_wheel_offset_y()) {
+  int wheel_delta_x = 0;
+  int wheel_delta_y = 0;
+  if (event.has_wheel_delta_x() && event.has_wheel_delta_y()) {
+    wheel_delta_x = static_cast<int>(event.wheel_delta_x());
+    wheel_delta_y = static_cast<int>(event.wheel_delta_y());
+  } else if (event.has_wheel_offset_x() && event.has_wheel_offset_y()) {
+    wheel_delta_x = event.wheel_offset_x() * WHEEL_DELTA;
+    wheel_delta_y = event.wheel_offset_y() * WHEEL_DELTA;
+  }
+
+  if (wheel_delta_x != 0 || wheel_delta_y != 0) {
     INPUT wheel;
     wheel.type = INPUT_MOUSE;
     wheel.mi.time = 0;
 
-    int dx = event.wheel_offset_x();
-    int dy = event.wheel_offset_y();
-
-    if (dx != 0) {
-      wheel.mi.mouseData = dx * WHEEL_DELTA;
+    if (wheel_delta_x != 0) {
+      wheel.mi.mouseData = wheel_delta_x;
       wheel.mi.dwFlags = MOUSEEVENTF_HWHEEL;
       if (SendInput(1, &wheel, sizeof(INPUT)) == 0) {
         LOG_GETLASTERROR(ERROR) << "Failed to inject a mouse wheel(x) event";
       }
     }
-    if (dy != 0) {
-      wheel.mi.mouseData = dy * WHEEL_DELTA;
+    if (wheel_delta_y != 0) {
+      wheel.mi.mouseData = wheel_delta_y;
       wheel.mi.dwFlags = MOUSEEVENTF_WHEEL;
       if (SendInput(1, &wheel, sizeof(INPUT)) == 0) {
         LOG_GETLASTERROR(ERROR) << "Failed to inject a mouse wheel(y) event";
