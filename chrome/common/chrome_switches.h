@@ -462,4 +462,12 @@ extern const char kEnablePrintPreview[];
 
 }  // namespace switches
 
+namespace chrome {
+
+// Returns true if the new frameless constrained window style is enabled.
+// TODO(sail): Remove this once the feature is fully baked.
+bool IsFramelessConstrainedDialogEnabled();
+
+}  // namespace chrome
+
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

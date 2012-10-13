@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/tab_modal_confirm_dialog_views.h"
 
-#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -24,9 +23,7 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
     TabContents* tab_contents) {
   // TODO(wittman): We're using this dialog during development; disable
   // Chrome style here at flag-flip time.
-  bool enable_chrome_style =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFramelessConstrainedDialogs);
+  bool enable_chrome_style = chrome::IsFramelessConstrainedDialogEnabled();
   return new TabModalConfirmDialogViews(delegate,
                                         tab_contents,
                                         enable_chrome_style);
@@ -114,8 +111,7 @@ bool TabModalConfirmDialogViews::Accept() {
 
 views::ClientView* TabModalConfirmDialogViews::CreateClientView(
     views::Widget* widget) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableFramelessConstrainedDialogs)) {
+  if (chrome::IsFramelessConstrainedDialogEnabled()) {
     views::DialogClientView::StyleParams params;
     params.button_vedge_margin = kChromeStyleButtonVEdgeMargin;
     params.button_hedge_margin = kChromeStyleButtonHEdgeMargin;

@@ -365,8 +365,7 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
 }
 
 void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableFramelessConstrainedDialogs)) {
+  if (chrome::IsFramelessConstrainedDialogEnabled()) {
     if (!dimmed_animating_overlay_.get()) {
       dimmed_animating_overlay_.reset(
           new WebViewAnimatingOverlay(render_view()));

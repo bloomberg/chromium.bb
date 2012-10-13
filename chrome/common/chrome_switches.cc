@@ -1596,3 +1596,12 @@ const char kEnablePrintPreview[]            = "enable-print-preview";
 // -----------------------------------------------------------------------------
 
 }  // namespace switches
+
+namespace chrome {
+
+bool IsFramelessConstrainedDialogEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableFramelessConstrainedDialogs);
+}
+
+}  // namespace chrome

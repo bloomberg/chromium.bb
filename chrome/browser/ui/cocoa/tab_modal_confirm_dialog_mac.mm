@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/tab_modal_confirm_dialog_mac.h"
 
-#include "base/command_line.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
@@ -20,8 +19,7 @@
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
     TabModalConfirmDialogDelegate* delegate,
     TabContents* tab_contents) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableFramelessConstrainedDialogs)) {
+  if (chrome::IsFramelessConstrainedDialogEnabled()) {
     // Deletes itself when closed.
     return new TabModalConfirmDialogMac2(delegate, tab_contents);
   }

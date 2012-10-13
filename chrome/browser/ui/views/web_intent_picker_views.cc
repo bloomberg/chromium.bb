@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -936,8 +935,7 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       waiting_view_(NULL),
       displaying_web_contents_(false),
       can_close_(true) {
-  bool enable_chrome_style = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFramelessConstrainedDialogs);
+  bool enable_chrome_style = chrome::IsFramelessConstrainedDialogEnabled();
   use_close_button_ = enable_chrome_style;
 
   model_->set_observer(this);
