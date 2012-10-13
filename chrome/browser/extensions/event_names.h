@@ -77,7 +77,8 @@ extern const char kBluetoothOnPowerChanged[];
 // Push messaging.
 extern const char kOnPushMessage[];
 
-// SystemInfo storage
+// systemInfo event names.
+extern const char kOnCpuUpdated[];
 extern const char kOnStorageAvailableCapacityChanged[];
 extern const char kOnStorageAdded[];
 extern const char kOnStorageRemoved[];

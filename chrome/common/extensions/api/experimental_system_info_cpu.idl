@@ -28,4 +28,10 @@ namespace experimental.systemInfo.cpu {
     // Get CPU information.
     static void get(CpuInfoCallback callback);
   };
+
+  interface Events {
+    // Fired periodically to report CPU history usage information. The default
+    // period interval is 1 seconds.
+    static void onUpdated(CpuUpdateInfo info);
+  };
 };

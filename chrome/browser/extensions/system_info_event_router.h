@@ -13,6 +13,16 @@
 
 namespace extensions {
 
+namespace api {
+
+namespace experimental_system_info_cpu {
+
+struct CpuUpdateInfo;
+
+}  // namespace experimental_system_info_cpu
+
+}  // namespace api
+
 // Event router for systemInfo API. It is a singleton instance shared by
 // multiple profiles.
 // TODO(hongbo): It should derive from SystemMonitor::DevicesChangedObserver.
@@ -46,10 +56,14 @@ class SystemInfoEventRouter {
   SystemInfoEventRouter();
   virtual ~SystemInfoEventRouter();
 
-  // Called on the UI thread to dispatch the systemInfo event to all extension
+  // Called from any thread to dispatch the systemInfo event to all extension
   // processes cross multiple profiles.
   void DispatchEvent(const std::string& event_name,
       scoped_ptr<base::ListValue> args);
+
+  // The callback for CPU sampling cycle. Called from FILE thread.
+  void OnNextCpuSampling(
+      scoped_ptr<api::experimental_system_info_cpu::CpuUpdateInfo> info);
 
   // Used to record the event names being watched.
   std::multiset<std::string> watching_event_set_;

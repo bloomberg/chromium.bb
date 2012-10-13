@@ -5,7 +5,7 @@
   "permissions": ["experimental"],
   "app": {
     "background": {
-      "scripts": ["test_cpuinfo_api.js"]
+      "scripts": ["test_cpu_api.js"]
     }
   }
 }
