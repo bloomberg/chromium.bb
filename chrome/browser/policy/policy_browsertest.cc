@@ -1273,7 +1273,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   CheckCanOpenURL(browser(), kBBB_PATH);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, DisableScreenshotsFeedback) {
+// Flaky on Linux. http://crbug.com/155459
+#if defined(OS_LINUX)
+#define MAYBE_DisableScreenshotsFeedback DISABLED_DisableScreenshotsFeedback
+#else
+#define MAYBE_DisableScreenshotsFeedback DisableScreenshotsFeedback
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_DisableScreenshotsFeedback) {
   // Make sure current screenshot can be taken and displayed on feedback page.
   TestScreenshotFeedback(true);
 
