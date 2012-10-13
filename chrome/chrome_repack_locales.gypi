@@ -22,6 +22,7 @@
   'action': [
     '<@(repack_locales_cmd)',
     '<@(branding_flag)',
+    '-p', '<(OS)',
     '-g', '<(grit_out_dir)',
     '-s', '<(SHARED_INTERMEDIATE_DIR)',
     '-x', '<(SHARED_INTERMEDIATE_DIR)/.',
