@@ -338,7 +338,7 @@ Buffer CommandBufferProxyImpl::GetTransferBuffer(int32 id) {
 
   // Assuming we are in the renderer process, the service is responsible for
   // duplicating the handle. This might not be true for NaCl.
-  base::SharedMemoryHandle handle;
+  base::SharedMemoryHandle handle = base::SharedMemoryHandle();
   uint32 size;
   if (!Send(new GpuCommandBufferMsg_GetTransferBuffer(route_id_,
                                                       id,
