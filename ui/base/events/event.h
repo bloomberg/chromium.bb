@@ -17,8 +17,11 @@
 #include "ui/base/ui_export.h"
 #include "ui/gfx/point.h"
 
-namespace ui {
+namespace gfx {
 class Transform;
+}
+
+namespace ui {
 class EventTarget;
 
 class UI_EXPORT Event {
@@ -220,7 +223,7 @@ class UI_EXPORT LocatedEvent : public Event {
 
   // Applies |root_transform| to the event.
   // This is applied to both |location_| and |root_location_|.
-  virtual void UpdateForRootTransform(const Transform& root_transform);
+  virtual void UpdateForRootTransform(const gfx::Transform& root_transform);
 
   template <class T> void ConvertLocationToTarget(T* source, T* target) {
     if (target && target != source)
@@ -426,7 +429,8 @@ class UI_EXPORT TouchEvent : public LocatedEvent {
   void set_radius_y(const float r) { radius_y_ = r; }
 
   // Overridden from LocatedEvent.
-  virtual void UpdateForRootTransform(const Transform& root_transform) OVERRIDE;
+  virtual void UpdateForRootTransform(
+      const gfx::Transform& root_transform) OVERRIDE;
 
  protected:
   void set_radius(float radius_x, float radius_y) {

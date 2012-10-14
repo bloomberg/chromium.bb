@@ -20,7 +20,7 @@ bool PointsAreNearlyEqual(const gfx::Point3f& lhs,
 }
 
 TEST(XFormTest, Equality) {
-  ui::Transform lhs, rhs, interpolated;
+  gfx::Transform lhs, rhs, interpolated;
   rhs.matrix().set3x3(1, 2, 3,
                       4, 5, 6,
                       7, 8, 9);
@@ -40,8 +40,8 @@ TEST(XFormTest, Equality) {
       EXPECT_TRUE(rhs != interpolated);
     }
   }
-  lhs = ui::Transform();
-  rhs = ui::Transform();
+  lhs = gfx::Transform();
+  rhs = gfx::Transform();
   for (int i = 1; i < 100; ++i) {
     lhs.SetTranslate(i, i);
     rhs.SetTranslate(-i, -i);
@@ -69,7 +69,7 @@ TEST(XFormTest, ConcatTranslate) {
       10, 20 },
   };
 
-  ui::Transform xform;
+  gfx::Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     xform.ConcatTranslate(value.tx, value.ty);
@@ -96,7 +96,7 @@ TEST(XFormTest, ConcatScale) {
     { 1, std::numeric_limits<float>::quiet_NaN(), 1 }
   };
 
-  ui::Transform xform;
+  gfx::Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     xform.ConcatScale(value.scale, value.scale);
@@ -125,7 +125,7 @@ TEST(XFormTest, ConcatRotate) {
     { 1, 0, std::numeric_limits<float>::quiet_NaN(), 1, 0 }
   };
 
-  ui::Transform xform;
+  gfx::Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     xform.ConcatRotate(value.degrees);
@@ -157,7 +157,7 @@ TEST(XFormTest, SetTranslate) {
     const TestCase& value = test_cases[i];
     for (int k = 0; k < 3; ++k) {
       gfx::Point3f p0, p1, p2;
-      ui::Transform xform;
+      gfx::Transform xform;
       switch (k) {
       case 0:
         p1.SetPoint(value.x1, 0, 0);
@@ -204,7 +204,7 @@ TEST(XFormTest, SetScale) {
     const TestCase& value = test_cases[i];
     for (int k = 0; k < 3; ++k) {
       gfx::Point3f p0, p1, p2;
-      ui::Transform xform;
+      gfx::Transform xform;
       switch (k) {
       case 0:
         p1.SetPoint(value.before, 0, 0);
@@ -259,7 +259,7 @@ TEST(XFormTest, SetRotate) {
     gfx::Point3f p1(value.x, value.y, 0);
     gfx::Point3f p2(value.xprime, value.yprime, 0);
     p0 = p1;
-    ui::Transform xform;
+    gfx::Transform xform;
     xform.SetRotate(value.degree);
     // just want to make sure that we don't crash in the case of NaN.
     if (value.degree == value.degree) {
@@ -290,7 +290,7 @@ TEST(XFormTest, ConcatTranslate2D) {
       10, 20},
   };
 
-  ui::Transform xform;
+  gfx::Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     xform.ConcatTranslate(value.tx, value.ty);
@@ -318,7 +318,7 @@ TEST(XFormTest, ConcatScale2D) {
     { 1, std::numeric_limits<float>::quiet_NaN(), 1}
   };
 
-  ui::Transform xform;
+  gfx::Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     xform.ConcatScale(value.scale, value.scale);
@@ -348,7 +348,7 @@ TEST(XFormTest, ConcatRotate2D) {
     { 1, 0, std::numeric_limits<float>::quiet_NaN(), 1, 0}
   };
 
-  ui::Transform xform;
+  gfx::Transform xform;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     const TestCase& value = test_cases[i];
     xform.ConcatRotate(value.degrees);
@@ -383,7 +383,7 @@ TEST(XFormTest, SetTranslate2D) {
       for (int k = 0; k < 3; ++k) {
         float epsilon = 0.0001f;
         gfx::Point p0, p1, p2;
-        ui::Transform xform;
+        gfx::Transform xform;
         switch (k) {
         case 0:
           p1.SetPoint(value.x1, 0);
@@ -436,7 +436,7 @@ TEST(XFormTest, SetScale2D) {
       for (int k = 0; k < 3; ++k) {
         float epsilon = 0.0001f;
         gfx::Point p0, p1, p2;
-        ui::Transform xform;
+        gfx::Transform xform;
         switch (k) {
         case 0:
           p1.SetPoint(value.before, 0);
@@ -496,7 +496,7 @@ TEST(XFormTest, SetRotate2D) {
     for (int j = 1; j >= -1; --j) {
       float epsilon = 0.1f;
       gfx::Point pt(value.x, value.y);
-      ui::Transform xform;
+      gfx::Transform xform;
       // should be invariant to small floating point errors.
       xform.SetRotate(value.degree + j * epsilon);
       // just want to make sure that we don't crash in the case of NaN.

@@ -9,14 +9,12 @@
 #include "ui/gfx/transform.h"
 
 namespace gfx {
-class Point;
-}
 
-namespace ui {
+class Point;
 
 // Returns a scale transform at |anchor| point.
-UI_EXPORT Transform GetScaleTransform(const gfx::Point& anchor, float scale);
+UI_EXPORT Transform GetScaleTransform(const Point& anchor, float scale);
 
-}  // namespace ui
+}  // namespace gfx
 
 #endif  // UI_GFX_TRANSFORM_UTIL_H_

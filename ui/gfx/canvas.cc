@@ -489,7 +489,7 @@ void Canvas::EndPlatformPaint() {
   skia::EndPlatformPaint(canvas_);
 }
 
-void Canvas::Transform(const ui::Transform& transform) {
+void Canvas::Transform(const gfx::Transform& transform) {
   canvas_->concat(transform.matrix());
 }
 

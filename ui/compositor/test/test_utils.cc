@@ -10,7 +10,8 @@
 
 namespace ui {
 
-void CheckApproximatelyEqual(const Transform& lhs, const Transform& rhs) {
+void CheckApproximatelyEqual(const gfx::Transform& lhs,
+                             const gfx::Transform& rhs) {
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
       EXPECT_FLOAT_EQ(lhs.matrix().get(i, j), rhs.matrix().get(i, j));

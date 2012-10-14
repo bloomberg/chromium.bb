@@ -108,12 +108,12 @@ class COMPOSITOR_EXPORT Layer
   LayerAnimator* GetAnimator();
 
   // The transform, relative to the parent.
-  void SetTransform(const Transform& transform);
-  const Transform& transform() const { return transform_; }
+  void SetTransform(const gfx::Transform& transform);
+  const gfx::Transform& transform() const { return transform_; }
 
   // Return the target transform if animator is running, or the current
   // transform otherwise.
-  Transform GetTargetTransform() const;
+  gfx::Transform GetTargetTransform() const;
 
   // The bounds, relative to the parent.
   void SetBounds(const gfx::Rect& bounds);
@@ -287,7 +287,7 @@ class COMPOSITOR_EXPORT Layer
   bool ConvertPointFromAncestor(const Layer* ancestor, gfx::Point* point) const;
 
   bool GetTransformRelativeTo(const Layer* ancestor,
-                              Transform* transform) const;
+                              gfx::Transform* transform) const;
 
   // The only externally updated layers are ones that get their pixels from
   // WebKit and WebKit does not produce valid alpha values. All other layers
@@ -297,7 +297,7 @@ class COMPOSITOR_EXPORT Layer
   // Following are invoked from the animation or if no animation exists to
   // update the values immediately.
   void SetBoundsImmediately(const gfx::Rect& bounds);
-  void SetTransformImmediately(const ui::Transform& transform);
+  void SetTransformImmediately(const gfx::Transform& transform);
   void SetOpacityImmediately(float opacity);
   void SetVisibilityImmediately(bool visibility);
   void SetBrightnessImmediately(float brightness);
@@ -306,7 +306,8 @@ class COMPOSITOR_EXPORT Layer
 
   // Implementation of LayerAnimatorDelegate
   virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) OVERRIDE;
-  virtual void SetTransformFromAnimation(const Transform& transform) OVERRIDE;
+  virtual void SetTransformFromAnimation(
+      const gfx::Transform& transform) OVERRIDE;
   virtual void SetOpacityFromAnimation(float opacity) OVERRIDE;
   virtual void SetVisibilityFromAnimation(bool visibility) OVERRIDE;
   virtual void SetBrightnessFromAnimation(float brightness) OVERRIDE;
@@ -314,7 +315,7 @@ class COMPOSITOR_EXPORT Layer
   virtual void SetColorFromAnimation(SkColor color) OVERRIDE;
   virtual void ScheduleDrawForAnimation() OVERRIDE;
   virtual const gfx::Rect& GetBoundsForAnimation() const OVERRIDE;
-  virtual const Transform& GetTransformForAnimation() const OVERRIDE;
+  virtual const gfx::Transform& GetTransformForAnimation() const OVERRIDE;
   virtual float GetOpacityForAnimation() const OVERRIDE;
   virtual bool GetVisibilityForAnimation() const OVERRIDE;
   virtual float GetBrightnessForAnimation() const OVERRIDE;
@@ -340,7 +341,7 @@ class COMPOSITOR_EXPORT Layer
   // This layer's children, in bottom-to-top stacking order.
   std::vector<Layer*> children_;
 
-  ui::Transform transform_;
+  gfx::Transform transform_;
 
   gfx::Rect bounds_;
 

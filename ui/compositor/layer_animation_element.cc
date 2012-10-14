@@ -38,7 +38,7 @@ class Pause : public LayerAnimationElement {
 
 class TransformTransition : public LayerAnimationElement {
  public:
-  TransformTransition(const Transform& target, base::TimeDelta duration)
+    TransformTransition(const gfx::Transform& target, base::TimeDelta duration)
       : LayerAnimationElement(GetProperties(), duration),
         target_(target) {
   }
@@ -68,8 +68,8 @@ class TransformTransition : public LayerAnimationElement {
     return properties;
   }
 
-  Transform start_;
-  const Transform target_;
+  gfx::Transform start_;
+  const gfx::Transform target_;
 
   DISALLOW_COPY_AND_ASSIGN(TransformTransition);
 };
@@ -382,7 +382,8 @@ LayerAnimationElement::TargetValue::TargetValue()
 LayerAnimationElement::TargetValue::TargetValue(
     const LayerAnimationDelegate* delegate)
     : bounds(delegate ? delegate->GetBoundsForAnimation() : gfx::Rect()),
-      transform(delegate ? delegate->GetTransformForAnimation() : Transform()),
+      transform(delegate ?
+                delegate->GetTransformForAnimation() : gfx::Transform()),
       opacity(delegate ? delegate->GetOpacityForAnimation() : 0.0f),
       visibility(delegate ? delegate->GetVisibilityForAnimation() : false),
       brightness(delegate ? delegate->GetBrightnessForAnimation() : 0.0f),
@@ -436,7 +437,7 @@ base::TimeDelta LayerAnimationElement::GetEffectiveDuration(
 
 // static
 LayerAnimationElement* LayerAnimationElement::CreateTransformElement(
-    const Transform& transform,
+    const gfx::Transform& transform,
     base::TimeDelta duration) {
   return new TransformTransition(transform, duration);
 }

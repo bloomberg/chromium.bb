@@ -94,7 +94,7 @@ void TrayItemView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void TrayItemView::AnimationProgressed(const ui::Animation* animation) {
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.SetScale(animation->GetCurrentValue(),
                      animation->GetCurrentValue());
   transform.ConcatTranslate(0, animation->CurrentValueBetween(

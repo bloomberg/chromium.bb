@@ -169,13 +169,13 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   // Original layer stays opaque and stretches to new size.
   EXPECT_EQ(1.0f, old_layer->GetTargetOpacity());
   EXPECT_EQ("5,10 320x240", old_layer->bounds().ToString());
-  ui::Transform grow_transform;
+  gfx::Transform grow_transform;
   grow_transform.ConcatScale(640.f / 320.f, 480.f / 240.f);
   grow_transform.ConcatTranslate(-5.f, -10.f);
   EXPECT_EQ(grow_transform, old_layer->GetTargetTransform());
   // New layer animates in to the identity transform.
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
-  EXPECT_EQ(ui::Transform(), window->layer()->GetTargetTransform());
+  EXPECT_EQ(gfx::Transform(), window->layer()->GetTargetTransform());
 
   // Run the animations to completion.
   static_cast<ui::AnimationContainerElement*>(old_layer->GetAnimator())->Step(
@@ -191,13 +191,13 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   // Original layer fades out and stretches down to new size.
   EXPECT_EQ(0.0f, old_layer->GetTargetOpacity());
   EXPECT_EQ("0,0 640x480", old_layer->bounds().ToString());
-  ui::Transform shrink_transform;
+  gfx::Transform shrink_transform;
   shrink_transform.ConcatScale(320.f / 640.f, 240.f / 480.f);
   shrink_transform.ConcatTranslate(5.f, 10.f);
   EXPECT_EQ(shrink_transform, old_layer->GetTargetTransform());
   // New layer animates in to the identity transform.
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
-  EXPECT_EQ(ui::Transform(), window->layer()->GetTargetTransform());
+  EXPECT_EQ(gfx::Transform(), window->layer()->GetTargetTransform());
 
   static_cast<ui::AnimationContainerElement*>(old_layer->GetAnimator())->Step(
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));

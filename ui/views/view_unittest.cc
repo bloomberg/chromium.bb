@@ -962,13 +962,13 @@ gfx::Rect ConvertRectToView(View* view, const gfx::Rect& r) {
   return tmp;
 }
 
-void RotateCounterclockwise(ui::Transform* transform) {
+void RotateCounterclockwise(gfx::Transform* transform) {
   transform->matrix().set3x3(0, -1, 0,
                              1,  0, 0,
                              0,  0, 1);
 }
 
-void RotateClockwise(ui::Transform* transform) {
+void RotateClockwise(gfx::Transform* transform) {
   transform->matrix().set3x3( 0, 1, 0,
                              -1, 0, 0,
                               0, 0, 1);
@@ -2048,7 +2048,7 @@ TEST_F(ViewTest, TransformPaint) {
   EXPECT_EQ(gfx::Rect(100, 100, 200, 100), v1->scheduled_paint_rect());
 
   // Rotate |v1| counter-clockwise.
-  ui::Transform transform;
+  gfx::Transform transform;
   RotateCounterclockwise(&transform);
   transform.SetTranslateY(500.0f);
   v1->SetTransform(transform);
@@ -2082,7 +2082,7 @@ TEST_F(ViewTest, TransformEvent) {
   // At this moment, |v2| occupies (100, 100) to (300, 200) in |root|.
 
   // Rotate |v1| counter-clockwise.
-  ui::Transform transform(v1->GetTransform());
+  gfx::Transform transform(v1->GetTransform());
   RotateCounterclockwise(&transform);
   transform.SetTranslateY(500.0f);
   v1->SetTransform(transform);
@@ -2126,8 +2126,8 @@ TEST_F(ViewTest, TransformEvent) {
 
   root->OnMouseReleased(released);
 
-  v1->SetTransform(ui::Transform());
-  v2->SetTransform(ui::Transform());
+  v1->SetTransform(gfx::Transform());
+  v2->SetTransform(gfx::Transform());
 
   TestView* v3 = new TestView();
   v3->SetBoundsRect(gfx::Rect(10, 10, 20, 30));
@@ -2161,9 +2161,9 @@ TEST_F(ViewTest, TransformEvent) {
 
   root->OnMouseReleased(released);
 
-  v1->SetTransform(ui::Transform());
-  v2->SetTransform(ui::Transform());
-  v3->SetTransform(ui::Transform());
+  v1->SetTransform(gfx::Transform());
+  v2->SetTransform(gfx::Transform());
+  v3->SetTransform(gfx::Transform());
 
   v1->Reset();
   v2->Reset();
@@ -2223,7 +2223,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
   EXPECT_EQ(gfx::Rect(0, 0, 50, 10), child->GetVisibleBounds());
 
   // Rotate |child| counter-clockwise
-  ui::Transform transform;
+  gfx::Transform transform;
   RotateCounterclockwise(&transform);
   transform.SetTranslateY(50.0f);
   child->SetTransform(transform);
@@ -2339,18 +2339,18 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   top_view.SetBoundsRect(gfx::Rect(0, 0, 1000, 1000));
 
   child->SetBoundsRect(gfx::Rect(7, 19, 500, 500));
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.SetScale(3.0f, 4.0f);
   child->SetTransform(transform);
 
   child_child->SetBoundsRect(gfx::Rect(17, 13, 100, 100));
-  transform = ui::Transform();
+  transform = gfx::Transform();
   transform.SetScale(5.0f, 7.0f);
   child_child->SetTransform(transform);
 
   // Sanity check to make sure basic transforms act as expected.
   {
-    ui::Transform transform;
+    gfx::Transform transform;
     transform.ConcatTranslate(1, 1);
     transform.ConcatScale(100, 55);
     transform.ConcatTranslate(110, -110);
@@ -2367,11 +2367,11 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   }
 
   {
-    ui::Transform transform;
+    gfx::Transform transform;
     transform.SetTranslate(1, 1);
-    ui::Transform t2;
+    gfx::Transform t2;
     t2.SetScale(100, 55);
-    ui::Transform t3;
+    gfx::Transform t3;
     t3.SetTranslate(110, -110);
     transform.ConcatTransform(t2);
     transform.ConcatTransform(t3);
@@ -2459,7 +2459,7 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
   EXPECT_EQ(gfx::Rect(35, 35, 15, 40), v2->ConvertRectToWidget(rect));
 
   // Rotate |v2|
-  ui::Transform t2;
+  gfx::Transform t2;
   RotateCounterclockwise(&t2);
   t2.SetTranslateY(100.0f);
   v2->SetTransform(t2);
@@ -2469,7 +2469,7 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
   EXPECT_EQ(gfx::Rect(35, 110, 40, 15), v2->ConvertRectToWidget(rect));
 
   // Scale down |v1|
-  ui::Transform t1;
+  gfx::Transform t1;
   t1.SetScale(0.5, 0.5);
   v1->SetTransform(t1);
 
@@ -2976,7 +2976,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   EXPECT_EQ(gfx::Rect(30, 50, 30, 40), v2->layer()->bounds());
 
   // Make v1 have a layer again and verify v2s layer is wired up correctly.
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.SetScale(2.0f, 2.0f);
   v1->SetTransform(transform);
   EXPECT_TRUE(v1->layer() != NULL);
@@ -3128,7 +3128,7 @@ TEST_F(ViewLayerTest, BoundInRTL) {
 // Makes sure a transform persists after toggling the visibility.
 TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
   View* view = new View;
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.SetScale(2.0f, 2.0f);
   view->SetTransform(transform);
   widget()->SetContentsView(view);
@@ -3144,7 +3144,7 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithTransform) {
 // Verifies a transform persists after removing/adding a view with a transform.
 TEST_F(ViewLayerTest, ResetTransformOnLayerAfterAdd) {
   View* view = new View;
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.SetScale(2.0f, 2.0f);
   view->SetTransform(transform);
   widget()->SetContentsView(view);

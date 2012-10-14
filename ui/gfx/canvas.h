@@ -17,16 +17,13 @@
 
 class SkBitmap;
 
-namespace ui {
-class Transform;
-}
-
 namespace gfx {
 
 class Rect;
 class Font;
 class Point;
 class Size;
+class Transform;
 
 // Canvas is a SkCanvas wrapper that provides a number of methods for
 // common operations used throughout an application built using ui/gfx.
@@ -362,7 +359,7 @@ class UI_EXPORT Canvas {
   void EndPlatformPaint();
 
   // Apply transformation on the canvas.
-  void Transform(const ui::Transform& transform);
+  void Transform(const gfx::Transform& transform);
 
   // Draws the given string with the beginning and/or the end using a fade
   // gradient. When truncating the head

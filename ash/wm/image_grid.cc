@@ -105,7 +105,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
 
   if (top_layer_.get()) {
     if (center_width > 0) {
-      ui::Transform transform;
+      gfx::Transform transform;
       transform.SetScaleX(
           static_cast<float>(center_width) / top_layer_->bounds().width());
       transform.ConcatTranslate(left, 0);
@@ -115,7 +115,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   }
   if (bottom_layer_.get()) {
     if (center_width > 0) {
-      ui::Transform transform;
+      gfx::Transform transform;
       transform.SetScaleX(
           static_cast<float>(center_width) / bottom_layer_->bounds().width());
       transform.ConcatTranslate(
@@ -126,7 +126,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   }
   if (left_layer_.get()) {
     if (center_height > 0) {
-      ui::Transform transform;
+      gfx::Transform transform;
       transform.SetScaleY(
           (static_cast<float>(center_height) / left_layer_->bounds().height()));
       transform.ConcatTranslate(0, top);
@@ -136,7 +136,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   }
   if (right_layer_.get()) {
     if (center_height > 0) {
-      ui::Transform transform;
+      gfx::Transform transform;
       transform.SetScaleY(
           static_cast<float>(center_height) / right_layer_->bounds().height());
       transform.ConcatTranslate(
@@ -155,7 +155,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
         top_left_layer_.get());
   }
   if (top_right_layer_.get()) {
-    ui::Transform transform;
+    gfx::Transform transform;
     transform.SetTranslateX(size.width() - top_right_layer_->bounds().width());
     top_right_layer_->SetTransform(transform);
     top_right_painter_->SetClipRect(
@@ -166,7 +166,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
         top_right_layer_.get());
   }
   if (bottom_left_layer_.get()) {
-    ui::Transform transform;
+    gfx::Transform transform;
     transform.SetTranslateY(
         size.height() - bottom_left_layer_->bounds().height());
     bottom_left_layer_->SetTransform(transform);
@@ -178,7 +178,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
         bottom_left_layer_.get());
   }
   if (bottom_right_layer_.get()) {
-    ui::Transform transform;
+    gfx::Transform transform;
     transform.SetTranslate(
         size.width() - bottom_right_layer_->bounds().width(),
         size.height() - bottom_right_layer_->bounds().height());
@@ -194,7 +194,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
 
   if (center_layer_.get()) {
     if (center_width > 0 && center_height > 0) {
-      ui::Transform transform;
+      gfx::Transform transform;
       transform.SetScale(center_width / center_layer_->bounds().width(),
                          center_height / center_layer_->bounds().height());
       transform.ConcatTranslate(left, top);

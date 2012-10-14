@@ -33,7 +33,7 @@ enum WorkspaceScaleType {
 void ApplyWorkspaceScale(ui::Layer* layer, WorkspaceScaleType type) {
   const float scale = type == WORKSPACE_SCALE_ABOVE ? kWorkspaceScaleAbove :
       kWorkspaceScaleBelow;
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.ConcatScale(scale, scale);
   transform.ConcatTranslate(
       -layer->bounds().width() * (scale - 1.0f) / 2,
@@ -70,7 +70,7 @@ void ShowWorkspace(aura::Window* window,
   if (!details.animate || CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAshWindowAnimationsDisabled)) {
     window->layer()->SetOpacity(1.0f);
-    window->layer()->SetTransform(ui::Transform());
+    window->layer()->SetTransform(gfx::Transform());
     return;
   }
 
@@ -80,7 +80,7 @@ void ShowWorkspace(aura::Window* window,
                         details.direction == WORKSPACE_ANIMATE_UP ?
                             WORKSPACE_SCALE_BELOW : WORKSPACE_SCALE_ABOVE);
   } else {
-    window->layer()->SetTransform(ui::Transform());
+    window->layer()->SetTransform(gfx::Transform());
   }
 
   // In order for pause to work we need to stop animations.
@@ -102,14 +102,14 @@ void ShowWorkspace(aura::Window* window,
 
     settings.SetTweenType(kWorkspaceTweenType);
     settings.SetTransitionDuration(DurationForWorkspaceShowOrHide(details));
-    window->layer()->SetTransform(ui::Transform());
+    window->layer()->SetTransform(gfx::Transform());
     window->layer()->SetOpacity(1.0f);
   }
 }
 
 void HideWorkspace(aura::Window* window,
                    const WorkspaceAnimationDetails& details) {
-  window->layer()->SetTransform(ui::Transform());
+  window->layer()->SetTransform(gfx::Transform());
   window->layer()->SetOpacity(1.0f);
   window->layer()->GetAnimator()->StopAnimating();
 
@@ -138,7 +138,7 @@ void HideWorkspace(aura::Window* window,
                         details.direction == WORKSPACE_ANIMATE_UP ?
                             WORKSPACE_SCALE_ABOVE : WORKSPACE_SCALE_BELOW);
   } else {
-    window->layer()->SetTransform(ui::Transform());
+    window->layer()->SetTransform(gfx::Transform());
   }
 
   // NOTE: Hide() must be before SetOpacity(), else
@@ -154,7 +154,7 @@ void HideWorkspace(aura::Window* window,
   // version.
   settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
   settings.SetTransitionDuration(base::TimeDelta());
-  window->layer()->SetTransform(ui::Transform());
+  window->layer()->SetTransform(gfx::Transform());
 }
 
 }  // namespace internal

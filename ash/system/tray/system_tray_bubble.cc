@@ -167,7 +167,7 @@ void SystemTrayBubble::UpdateView(
     settings.AddObserver(new AnimationObserverDeleteLayer(layer));
     settings.SetTransitionDuration(swipe_duration);
     settings.SetTweenType(ui::Tween::EASE_OUT);
-    ui::Transform transform;
+    gfx::Transform transform;
     transform.SetTranslateX(layer->bounds().width());
     layer->SetTransform(transform);
   }
@@ -220,7 +220,7 @@ void SystemTrayBubble::UpdateView(
   if (bubble_type == BUBBLE_TYPE_DETAILED) {
     ui::Layer* new_layer = bubble_view_->layer();
     gfx::Rect bounds = new_layer->bounds();
-    ui::Transform transform;
+    gfx::Transform transform;
     transform.SetTranslateX(bounds.width());
     new_layer->SetTransform(transform);
     {
@@ -228,7 +228,7 @@ void SystemTrayBubble::UpdateView(
       settings.AddObserver(new AnimationObserverDeleteLayer(layer));
       settings.SetTransitionDuration(swipe_duration);
       settings.SetTweenType(ui::Tween::EASE_OUT);
-      new_layer->SetTransform(ui::Transform());
+      new_layer->SetTransform(gfx::Transform());
     }
   }
 }

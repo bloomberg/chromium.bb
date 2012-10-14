@@ -200,7 +200,7 @@ class LongPressAffordanceHandler::LongPressAffordanceView
                       GetPreferredSize().height() / 2);
     canvas->Save();
 
-    ui::Transform scale;
+    gfx::Transform scale;
     scale.SetScale(current_scale_, current_scale_);
     // We want to scale from the center.
     canvas->Translate(gfx::Point(center.x(), center.y()));

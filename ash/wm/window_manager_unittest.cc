@@ -469,7 +469,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
                 gfx::Point()).bounds().ToString());
 
   // Rotate it clock-wise 90 degrees.
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.SetRotate(90.0f);
   transform.ConcatTranslate(size.width(), 0);
   root_window->SetTransform(transform);

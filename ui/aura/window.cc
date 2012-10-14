@@ -268,7 +268,7 @@ gfx::Rect Window::GetBoundsInScreen() const {
   return bounds;
 }
 
-void Window::SetTransform(const ui::Transform& transform) {
+void Window::SetTransform(const gfx::Transform& transform) {
   RootWindow* root_window = GetRootWindow();
   bool contained_mouse = IsVisible() && root_window &&
       ContainsPointInRoot(root_window->GetLastMouseLocationInRoot());

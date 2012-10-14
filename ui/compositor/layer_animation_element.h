@@ -18,7 +18,6 @@ namespace ui {
 
 class InterpolatedTransform;
 class LayerAnimationDelegate;
-class Transform;
 
 // LayerAnimationElements represent one segment of an animation between two
 // keyframes. They know how to update a LayerAnimationDelegate given a value
@@ -41,7 +40,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     explicit TargetValue(const LayerAnimationDelegate* delegate);
 
     gfx::Rect bounds;
-    Transform transform;
+    gfx::Transform transform;
     float opacity;
     bool visibility;
     float brightness;
@@ -58,7 +57,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // Creates an element that transitions to the given transform. The caller owns
   // the return value.
   static LayerAnimationElement* CreateTransformElement(
-      const Transform& transform,
+      const gfx::Transform& transform,
       base::TimeDelta duration);
 
   // Creates an element that transitions to another in a way determined by an

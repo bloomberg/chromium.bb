@@ -19,7 +19,7 @@ static int SymmetricRound(float x) {
 
 } // namespace
 
-namespace ui {
+namespace gfx {
 
 Transform::Transform() {
   matrix_.reset();
@@ -39,7 +39,7 @@ void Transform::SetRotate(float degree) {
   matrix_.setRotateDegreesAbout(0, 0, 1, SkFloatToScalar(degree));
 }
 
-void Transform::SetRotateAbout(const gfx::Point3f& axis, float degree) {
+void Transform::SetRotateAbout(const Point3f& axis, float degree) {
   matrix_.setRotateDegreesAbout(axis.x(),
                                 axis.y(),
                                 axis.z(),
@@ -86,7 +86,7 @@ void Transform::ConcatRotate(float degree) {
   matrix_.postConcat(rot);
 }
 
-void Transform::ConcatRotateAbout(const gfx::Point3f& axis, float degree) {
+void Transform::ConcatRotateAbout(const Point3f& axis, float degree) {
   SkMatrix44 rot;
   rot.setRotateDegreesAbout(axis.x(),
                             axis.y(),
@@ -127,15 +127,15 @@ bool Transform::GetInverse(Transform* transform) const {
   return matrix_.invert(&transform->matrix_);
 }
 
-void Transform::TransformPoint(gfx::Point& point) const {
+void Transform::TransformPoint(Point& point) const {
   TransformPointInternal(matrix_, point);
 }
 
-void Transform::TransformPoint(gfx::Point3f& point) const {
+void Transform::TransformPoint(Point3f& point) const {
   TransformPointInternal(matrix_, point);
 }
 
-bool Transform::TransformPointReverse(gfx::Point& point) const {
+bool Transform::TransformPointReverse(Point& point) const {
   // TODO(sad): Try to avoid trying to invert the matrix.
   SkMatrix44 inverse;
   if (!matrix_.invert(&inverse))
@@ -145,7 +145,7 @@ bool Transform::TransformPointReverse(gfx::Point& point) const {
   return true;
 }
 
-bool Transform::TransformPointReverse(gfx::Point3f& point) const {
+bool Transform::TransformPointReverse(Point3f& point) const {
   // TODO(sad): Try to avoid trying to invert the matrix.
   SkMatrix44 inverse;
   if (!matrix_.invert(&inverse))
@@ -155,26 +155,26 @@ bool Transform::TransformPointReverse(gfx::Point3f& point) const {
   return true;
 }
 
-void Transform::TransformRect(gfx::Rect* rect) const {
-  SkRect src = gfx::RectToSkRect(*rect);
+void Transform::TransformRect(Rect* rect) const {
+  SkRect src = RectToSkRect(*rect);
   const SkMatrix& matrix = matrix_;
   matrix.mapRect(&src);
-  *rect = gfx::SkRectToRect(src);
+  *rect = SkRectToRect(src);
 }
 
-bool Transform::TransformRectReverse(gfx::Rect* rect) const {
+bool Transform::TransformRectReverse(Rect* rect) const {
   SkMatrix44 inverse;
   if (!matrix_.invert(&inverse))
     return false;
   const SkMatrix& matrix = inverse;
-  SkRect src = gfx::RectToSkRect(*rect);
+  SkRect src = RectToSkRect(*rect);
   matrix.mapRect(&src);
-  *rect = gfx::SkRectToRect(src);
+  *rect = SkRectToRect(src);
   return true;
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
-                                       gfx::Point3f& point) const {
+                                       Point3f& point) const {
   SkScalar p[4] = {
     SkFloatToScalar(point.x()),
     SkFloatToScalar(point.y()),
@@ -191,7 +191,7 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
-                                       gfx::Point& point) const {
+                                       Point& point) const {
   SkScalar p[4] = {
     SkIntToScalar(point.x()),
     SkIntToScalar(point.y()),
@@ -204,4 +204,4 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
                  SymmetricRound(p[1]));
 }
 
-}  // namespace ui
+}  // namespace gfx

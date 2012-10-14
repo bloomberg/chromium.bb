@@ -196,7 +196,7 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::Point& position_in_dip,
   scale_ = scale;
 
   // Creates transform matrix.
-  ui::Transform transform;
+  gfx::Transform transform;
   // Flips the signs intentionally to convert them from the position of the
   // magnification window.
   transform.ConcatTranslate(-origin_.x(), -origin_.y());

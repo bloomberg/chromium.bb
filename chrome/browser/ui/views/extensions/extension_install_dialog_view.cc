@@ -607,7 +607,7 @@ void IssueAdviceView::AnimationProgressed(const ui::Animation* animation) {
     details_view_->AnimateToState(animation->GetCurrentValue());
 
   if (arrow_view_) {
-    ui::Transform rotate;
+    gfx::Transform rotate;
     if (animation->GetCurrentValue() != 0.0) {
       rotate.SetTranslate(-arrow_view_->width() / 2.0,
                           -arrow_view_->height() / 2.0);

@@ -9,12 +9,10 @@
 #include "ui/base/ui_export.h"
 
 namespace gfx {
+
 class Rect;
 class Point;
 class Point3f;
-}
-
-namespace ui {
 
 // 4x4 transformation matrix. Transform is cheap and explicitly allows
 // copy/assign.
@@ -39,7 +37,7 @@ class UI_EXPORT Transform {
   void SetRotate(float degree);
 
   // Sets the rotation of the transform (about a vector).
-  void SetRotateAbout(const gfx::Point3f& point, float degree);
+  void SetRotateAbout(const Point3f& point, float degree);
 
   // Sets the scaling parameters.
   void SetScaleX(float x);
@@ -60,7 +58,7 @@ class UI_EXPORT Transform {
   void ConcatRotate(float degree);
 
   // Applies an axis-angle rotation on the current transformation.
-  void ConcatRotateAbout(const gfx::Point3f& point, float degree);
+  void ConcatRotateAbout(const Point3f& point, float degree);
 
   // Applies scaling on current transform.
   void ConcatScale(float x, float y);
@@ -84,30 +82,30 @@ class UI_EXPORT Transform {
 
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully.
-  void TransformPoint(gfx::Point3f& point) const;
+  void TransformPoint(Point3f& point) const;
 
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully. Rounds the result to the nearest point.
-  void TransformPoint(gfx::Point& point) const;
+  void TransformPoint(Point& point) const;
 
   // Applies the reverse transformation on the point. Returns true if the
   // transformation can be inverted.
-  bool TransformPointReverse(gfx::Point3f& point) const;
+  bool TransformPointReverse(Point3f& point) const;
 
   // Applies the reverse transformation on the point. Returns true if the
   // transformation can be inverted. Rounds the result to the nearest point.
-  bool TransformPointReverse(gfx::Point& point) const;
+  bool TransformPointReverse(Point& point) const;
 
   // Applies transformation on the rectangle. Returns true if the transformed
   // rectangle was axis aligned. If it returns false, rect will be the
   // smallest axis aligned bounding box containing the transformed rect.
-  void TransformRect(gfx::Rect* rect) const;
+  void TransformRect(Rect* rect) const;
 
   // Applies the reverse transformation on the rectangle. Returns true if
   // the transformed rectangle was axis aligned. If it returns false,
   // rect will be the smallest axis aligned bounding box containing the
   // transformed rect.
-  bool TransformRectReverse(gfx::Rect* rect) const;
+  bool TransformRectReverse(Rect* rect) const;
 
   // Returns the underlying matrix.
   const SkMatrix44& matrix() const { return matrix_; }
@@ -115,16 +113,16 @@ class UI_EXPORT Transform {
 
  private:
   void TransformPointInternal(const SkMatrix44& xform,
-                              gfx::Point& point) const;
+                              Point& point) const;
 
   void TransformPointInternal(const SkMatrix44& xform,
-                              gfx::Point3f& point) const;
+                              Point3f& point) const;
 
   SkMatrix44 matrix_;
 
   // copy/assign are allowed.
 };
 
-}// namespace ui
+}  // namespace gfx
 
 #endif  // UI_GFX_TRANSFORM_H_

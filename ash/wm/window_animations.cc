@@ -236,8 +236,8 @@ class WorkspaceHidingWindowAnimationObserver
 // its visibility to true, and its transform from |start_transform| to
 // |end_transform|.
 void AnimateShowWindowCommon(aura::Window* window,
-                             const ui::Transform& start_transform,
-                             const ui::Transform& end_transform) {
+                             const gfx::Transform& start_transform,
+                             const gfx::Transform& end_transform) {
   window->layer()->set_delegate(window);
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(start_transform);
@@ -258,7 +258,7 @@ void AnimateShowWindowCommon(aura::Window* window,
 // Hides a window using an animation, animating its opacity from 1.f to 0.f,
 // its visibility to false, and its transform to |end_transform|.
 void AnimateHideWindowCommon(aura::Window* window,
-                             const ui::Transform& end_transform) {
+                             const gfx::Transform& end_transform) {
   window->layer()->set_delegate(NULL);
 
   // Property sets within this scope will be implicitly animated.
@@ -276,18 +276,18 @@ void AnimateHideWindowCommon(aura::Window* window,
 
 // Show/Hide windows using a shrink animation.
 void AnimateShowWindow_Drop(aura::Window* window) {
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.ConcatScale(kWindowAnimation_ScaleFactor,
                         kWindowAnimation_ScaleFactor);
   gfx::Rect bounds = window->bounds();
   transform.ConcatTranslate(
       kWindowAnimation_TranslateFactor * bounds.width(),
       kWindowAnimation_TranslateFactor * bounds.height());
-  AnimateShowWindowCommon(window, transform, ui::Transform());
+  AnimateShowWindowCommon(window, transform, gfx::Transform());
 }
 
 void AnimateHideWindow_Drop(aura::Window* window) {
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.ConcatScale(kWindowAnimation_ScaleFactor,
                         kWindowAnimation_ScaleFactor);
   gfx::Rect bounds = window->bounds();
@@ -299,14 +299,14 @@ void AnimateHideWindow_Drop(aura::Window* window) {
 
 // Show/Hide windows using a vertical Glenimation.
 void AnimateShowWindow_Vertical(aura::Window* window) {
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.ConcatTranslate(0, window->GetProperty(
       kWindowVisibilityAnimationVerticalPositionKey));
-  AnimateShowWindowCommon(window, transform, ui::Transform());
+  AnimateShowWindowCommon(window, transform, gfx::Transform());
 }
 
 void AnimateHideWindow_Vertical(aura::Window* window) {
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.ConcatTranslate(0, window->GetProperty(
       kWindowVisibilityAnimationVerticalPositionKey));
   AnimateHideWindowCommon(window, transform);
@@ -314,16 +314,17 @@ void AnimateHideWindow_Vertical(aura::Window* window) {
 
 // Show/Hide windows using a fade.
 void AnimateShowWindow_Fade(aura::Window* window) {
-  AnimateShowWindowCommon(window, ui::Transform(), ui::Transform());
+  AnimateShowWindowCommon(window, gfx::Transform(), gfx::Transform());
 }
 
 void AnimateHideWindow_Fade(aura::Window* window) {
-  AnimateHideWindowCommon(window, ui::Transform());
+  AnimateHideWindowCommon(window, gfx::Transform());
 }
 
 // Builds the transform used when switching workspaces for the specified
 // window.
-ui::Transform BuildWorkspaceSwitchTransform(aura::Window* window, float scale) {
+gfx::Transform BuildWorkspaceSwitchTransform(aura::Window* window,
+                                             float scale) {
   // Animations for transitioning workspaces scale all windows. To give the
   // effect of scaling from the center of the screen the windows are translated.
   gfx::Rect bounds = window->bounds();
@@ -336,7 +337,7 @@ ui::Transform BuildWorkspaceSwitchTransform(aura::Window* window, float scale) {
   float initial_y =
       (static_cast<float>(bounds.y()) - mid_y) * scale + mid_y;
 
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.ConcatTranslate(
       initial_x - static_cast<float>(bounds.x()),
       initial_y - static_cast<float>(bounds.y()));
@@ -345,7 +346,7 @@ ui::Transform BuildWorkspaceSwitchTransform(aura::Window* window, float scale) {
 }
 
 void AnimateShowWindow_Workspace(aura::Window* window) {
-  ui::Transform transform(
+  gfx::Transform transform(
       BuildWorkspaceSwitchTransform(window, kWorkspaceScale));
   // When we call SetOpacity here, if a hide sequence is already running,
   // the default animation preemption strategy fast forwards the hide sequence
@@ -360,7 +361,7 @@ void AnimateShowWindow_Workspace(aura::Window* window) {
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
 
-    window->layer()->SetTransform(ui::Transform());
+    window->layer()->SetTransform(gfx::Transform());
     // Opacity animates only during the first half of the animation.
     settings.SetTransitionDuration(settings.GetTransitionDuration() / 2);
     window->layer()->SetOpacity(1.0f);
@@ -368,10 +369,10 @@ void AnimateShowWindow_Workspace(aura::Window* window) {
 }
 
 void AnimateHideWindow_Workspace(aura::Window* window) {
-  ui::Transform transform(
+  gfx::Transform transform(
       BuildWorkspaceSwitchTransform(window, kWorkspaceScale));
   window->layer()->SetOpacity(1.0f);
-  window->layer()->SetTransform(ui::Transform());
+  window->layer()->SetTransform(gfx::Transform());
 
   // Opacity animates from 1 to 0 only over the second half of the animation. To
   // get this functionality two animations are schedule for opacity, the first
@@ -710,7 +711,7 @@ TimeDelta CrossFadeImpl(aura::Window* window,
     settings.AddObserver(new internal::CrossFadeObserver(window, old_layer));
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
-    ui::Transform out_transform;
+    gfx::Transform out_transform;
     float scale_x = static_cast<float>(new_bounds.width()) /
         static_cast<float>(old_bounds.width());
     float scale_y = static_cast<float>(new_bounds.height()) /
@@ -730,7 +731,7 @@ TimeDelta CrossFadeImpl(aura::Window* window,
 
   // Set the new layer's current transform, such that the user sees a scaled
   // version of the window with the original bounds at the original position.
-  ui::Transform in_transform;
+  gfx::Transform in_transform;
   const float scale_x = static_cast<float>(old_bounds.width()) /
       static_cast<float>(new_bounds.width());
   const float scale_y = static_cast<float>(old_bounds.height()) /
@@ -750,7 +751,7 @@ TimeDelta CrossFadeImpl(aura::Window* window,
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
-    window->layer()->SetTransform(ui::Transform());
+    window->layer()->SetTransform(gfx::Transform());
     if (!old_on_top) {
       // New layer is on top, fade it in.
       window->layer()->SetOpacity(1.f);

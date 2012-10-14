@@ -11,7 +11,7 @@ TEST(TransformUtilTest, GetScaleTransform) {
   const gfx::Point kAnchor(20, 40);
   const float kScale = 0.5f;
 
-  ui::Transform scale = ui::GetScaleTransform(kAnchor, kScale);
+  gfx::Transform scale = gfx::GetScaleTransform(kAnchor, kScale);
 
   const int kOffset = 10;
   for (int sign_x = -1; sign_x <= 1; ++sign_x) {

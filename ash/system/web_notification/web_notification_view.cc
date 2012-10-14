@@ -245,7 +245,7 @@ ui::EventResult WebNotificationView::OnGestureEvent(
     // The scroll-update events include the incremental scroll amount.
     gesture_scroll_amount_ += event.details().scroll_x();
 
-    ui::Transform transform;
+    gfx::Transform transform;
     transform.SetTranslateX(gesture_scroll_amount_);
     layer()->SetTransform(transform);
     layer()->SetOpacity(
@@ -298,7 +298,7 @@ void WebNotificationView::RestoreVisualState() {
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kSwipeRestoreDurationMS));
-  layer()->SetTransform(ui::Transform());
+  layer()->SetTransform(gfx::Transform());
   layer()->SetOpacity(1.f);
 }
 
@@ -310,7 +310,7 @@ void WebNotificationView::SlideOutAndClose(SlideDirection direction) {
       base::TimeDelta::FromMilliseconds(swipe_out_duration));
   settings.AddObserver(this);
 
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.SetTranslateX(direction == SLIDE_LEFT ? -width() : width());
   layer()->SetTransform(transform);
   layer()->SetOpacity(0.f);

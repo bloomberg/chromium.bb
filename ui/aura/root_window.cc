@@ -469,7 +469,7 @@ const RootWindow* RootWindow::GetRootWindow() const {
   return this;
 }
 
-void RootWindow::SetTransform(const ui::Transform& transform) {
+void RootWindow::SetTransform(const gfx::Transform& transform) {
   Window::SetTransform(transform);
 
   // If the layer is not animating, then we need to update the host size
@@ -835,7 +835,7 @@ bool RootWindow::OnHostMouseEvent(ui::MouseEvent* event) {
 bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
   DispatchHeldMouseMove();
   float scale = ui::GetDeviceScaleFactor(layer());
-  ui::Transform transform = layer()->transform();
+  gfx::Transform transform = layer()->transform();
   transform.ConcatScale(scale, scale);
   event->UpdateForRootTransform(transform);
 
@@ -879,7 +879,7 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
       break;
   }
   float scale = ui::GetDeviceScaleFactor(layer());
-  ui::Transform transform = layer()->transform();
+  gfx::Transform transform = layer()->transform();
   transform.ConcatScale(scale, scale);
   event->UpdateForRootTransform(transform);
   bool handled = false;
@@ -970,7 +970,7 @@ RootWindow* RootWindow::AsRootWindow() {
 
 bool RootWindow::DispatchMouseEventImpl(ui::MouseEvent* event) {
   float scale = ui::GetDeviceScaleFactor(layer());
-  ui::Transform transform = layer()->transform();
+  gfx::Transform transform = layer()->transform();
   transform.ConcatScale(scale, scale);
   event->UpdateForRootTransform(transform);
   Window* target = mouse_pressed_handler_ ?
@@ -1047,7 +1047,7 @@ void RootWindow::SynthesizeMouseMoveEvent() {
 #if !defined(OS_WIN)
   // Temporarily disabled for windows. See crbug.com/112222.
   gfx::Point3f point(GetLastMouseLocationInRoot());
-  ui::Transform transform = layer()->transform();
+  gfx::Transform transform = layer()->transform();
   float scale = ui::GetDeviceScaleFactor(layer());
   transform.ConcatScale(scale, scale);
   transform.TransformPoint(point);

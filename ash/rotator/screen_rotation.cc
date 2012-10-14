@@ -45,7 +45,7 @@ void ScreenRotation::OnStart(ui::LayerAnimationDelegate* delegate) {
   if (degrees_ == 0)
     return;
 
-  const ui::Transform& current_transform =
+  const gfx::Transform& current_transform =
       delegate->GetTransformForAnimation();
   const gfx::Rect& bounds = delegate->GetBoundsForAnimation();
 

@@ -37,9 +37,9 @@ class UI_EXPORT Tween {
   static gfx::Rect ValueBetween(double value,
                                 const gfx::Rect& start_bounds,
                                 const gfx::Rect& target_bounds);
-  static Transform ValueBetween(double value,
-                                const Transform& start_transform,
-                                const Transform& target_transform);
+  static gfx::Transform ValueBetween(double value,
+                                const gfx::Transform& start_transform,
+                                const gfx::Transform& target_transform);
 
  private:
   Tween();

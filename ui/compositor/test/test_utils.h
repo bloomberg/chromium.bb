@@ -7,13 +7,13 @@
 
 namespace gfx {
 class Rect;
+class Transform;
 }
 
 namespace ui {
 
-class Transform;
-
-void CheckApproximatelyEqual(const Transform& lhs, const Transform& rhs);
+void CheckApproximatelyEqual(const gfx::Transform& lhs,
+                             const gfx::Transform& rhs);
 void CheckApproximatelyEqual(const gfx::Rect& lhs, const gfx::Rect& rhs);
 
 }  // namespace ui

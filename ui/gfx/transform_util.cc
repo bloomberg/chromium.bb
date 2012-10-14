@@ -6,10 +6,10 @@
 
 #include "ui/gfx/point.h"
 
-namespace ui {
+namespace gfx {
 
-Transform GetScaleTransform(const gfx::Point& anchor, float scale) {
-  ui::Transform transform;
+Transform GetScaleTransform(const Point& anchor, float scale) {
+  Transform transform;
   transform.ConcatScale(scale, scale);
   transform.ConcatTranslate(anchor.x() * (1 - scale),
                             anchor.y() * (1 - scale));

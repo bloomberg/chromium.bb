@@ -32,7 +32,7 @@ void TestLayerAnimationDelegate::SetBoundsFromAnimation(
 }
 
 void TestLayerAnimationDelegate::SetTransformFromAnimation(
-    const Transform& transform) {
+    const gfx::Transform& transform) {
   transform_ = transform;
 }
 
@@ -63,7 +63,8 @@ const gfx::Rect& TestLayerAnimationDelegate::GetBoundsForAnimation() const {
   return bounds_;
 }
 
-const Transform& TestLayerAnimationDelegate::GetTransformForAnimation() const {
+const gfx::Transform&
+TestLayerAnimationDelegate::GetTransformForAnimation() const {
   return transform_;
 }
 

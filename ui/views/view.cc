@@ -325,7 +325,7 @@ gfx::Rect View::GetVisibleBounds() const {
   gfx::Rect vis_bounds(GetLocalBounds());
   gfx::Rect ancestor_bounds;
   const View* view = this;
-  ui::Transform transform;
+  gfx::Transform transform;
 
   while (view != NULL && !vis_bounds.IsEmpty()) {
     transform.ConcatTransform(view->GetTransform());
@@ -426,12 +426,12 @@ void View::OnEnabledChanged() {
 
 // Transformations -------------------------------------------------------------
 
-const ui::Transform& View::GetTransform() const {
-  static const ui::Transform* no_op = new ui::Transform;
+const gfx::Transform& View::GetTransform() const {
+  static const gfx::Transform* no_op = new gfx::Transform;
   return layer() ? layer()->transform() : *no_op;
 }
 
-void View::SetTransform(const ui::Transform& transform) {
+void View::SetTransform(const gfx::Transform& transform) {
   if (!transform.HasChange()) {
     if (layer()) {
       layer()->SetTransform(transform);
@@ -1765,7 +1765,7 @@ void View::SetLayerBounds(const gfx::Rect& bounds) {
 // Transformations -------------------------------------------------------------
 
 bool View::GetTransformRelativeTo(const View* ancestor,
-                                  ui::Transform* transform) const {
+                                  gfx::Transform* transform) const {
   const View* p = this;
 
   while (p && p != ancestor) {
@@ -1783,7 +1783,7 @@ bool View::GetTransformRelativeTo(const View* ancestor,
 
 bool View::ConvertPointForAncestor(const View* ancestor,
                                    gfx::Point* point) const {
-  ui::Transform trans;
+  gfx::Transform trans;
   // TODO(sad): Have some way of caching the transformation results.
   bool result = GetTransformRelativeTo(ancestor, &trans);
   gfx::Point3f p(*point);
@@ -1794,7 +1794,7 @@ bool View::ConvertPointForAncestor(const View* ancestor,
 
 bool View::ConvertPointFromAncestor(const View* ancestor,
                                     gfx::Point* point) const {
-  ui::Transform trans;
+  gfx::Transform trans;
   bool result = GetTransformRelativeTo(ancestor, &trans);
   gfx::Point3f p(*point);
   trans.TransformPointReverse(p);

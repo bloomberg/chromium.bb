@@ -37,6 +37,7 @@ namespace gfx {
 class Canvas;
 class Insets;
 class Path;
+class Transform;
 }
 
 namespace ui {
@@ -46,7 +47,6 @@ class Layer;
 class TextInputClient;
 class Texture;
 class ThemeProvider;
-class Transform;
 }
 
 #if defined(OS_WIN)
@@ -260,13 +260,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Methods for setting transformations for a view (e.g. rotation, scaling).
 
-  const ui::Transform& GetTransform() const;
+  const gfx::Transform& GetTransform() const;
 
   // Clipping parameters. Clipping is done relative to the view bounds.
   void set_clip_insets(gfx::Insets clip_insets) { clip_insets_ = clip_insets; }
 
   // Sets the transform to the supplied transform.
-  void SetTransform(const ui::Transform& transform);
+  void SetTransform(const gfx::Transform& transform);
 
   // Sets whether this view paints to a layer. A view paints to a layer if
   // either of the following are true:
@@ -1231,7 +1231,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // to this. Returns true if |ancestor| is found. If |ancestor| is not found,
   // or NULL, |transform| is set to convert from root view coordinates to this.
   bool GetTransformRelativeTo(const View* ancestor,
-                              ui::Transform* transform) const;
+                              gfx::Transform* transform) const;
 
   // Coordinate conversion -----------------------------------------------------
 

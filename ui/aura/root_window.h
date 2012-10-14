@@ -29,6 +29,7 @@
 
 namespace gfx {
 class Size;
+class Transform;
 }
 
 namespace ui {
@@ -39,7 +40,6 @@ class LayerAnimationSequence;
 class MouseEvent;
 class ScrollEvent;
 class TouchEvent;
-class Transform;
 class ViewProp;
 }
 
@@ -251,7 +251,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Overridden from Window:
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual const RootWindow* GetRootWindow() const OVERRIDE;
-  virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
+  virtual void SetTransform(const gfx::Transform& transform) OVERRIDE;
 
   // Overridden from ui::EventTarget:
   virtual ui::EventTarget* GetParentTarget() OVERRIDE;

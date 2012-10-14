@@ -23,7 +23,7 @@ namespace {
 // that the element can be reused after it completes.
 TEST(LayerAnimationElementTest, TransformElement) {
   TestLayerAnimationDelegate delegate;
-  Transform start_transform, target_transform, middle_transform;
+  gfx::Transform start_transform, target_transform, middle_transform;
   start_transform.SetRotate(-90);
   target_transform.SetRotate(90);
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);

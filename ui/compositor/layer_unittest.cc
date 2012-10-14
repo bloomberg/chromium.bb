@@ -909,7 +909,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
 
   // Setting the transform of a layer should alert the observers.
   observer.Reset();
-  Transform transform;
+  gfx::Transform transform;
   transform.ConcatTranslate(-200, -200);
   transform.ConcatRotate(90.0f);
   transform.ConcatTranslate(200, 200);

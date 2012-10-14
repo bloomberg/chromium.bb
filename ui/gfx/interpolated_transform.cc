@@ -28,13 +28,13 @@ bool IsMultipleOfNinetyDegrees(float degrees)
 // *rotation is set to be the appropriate sanitized rotation matrix. That is,
 // the rotation matrix corresponding to |degrees| which has entries that are all
 // either 0, 1 or -1.
-bool MassageRotationIfMultipleOfNinetyDegrees(ui::Transform* rotation,
+bool MassageRotationIfMultipleOfNinetyDegrees(gfx::Transform* rotation,
                                               float degrees)
 {
   if (!IsMultipleOfNinetyDegrees(degrees) || !rotation)
     return false;
 
-  ui::Transform transform;
+  gfx::Transform transform;
   SkMatrix44& m = transform.matrix();
   float degrees_by_ninety = degrees / 90.0f;
 
@@ -88,10 +88,10 @@ InterpolatedTransform::InterpolatedTransform(float start_time,
 
 InterpolatedTransform::~InterpolatedTransform() {}
 
-ui::Transform InterpolatedTransform::Interpolate(float t) const {
+gfx::Transform InterpolatedTransform::Interpolate(float t) const {
   if (reversed_)
     t = 1.0f - t;
-  ui::Transform result = InterpolateButDoNotCompose(t);
+  gfx::Transform result = InterpolateButDoNotCompose(t);
   if (child_.get()) {
     result.ConcatTransform(child_->Interpolate(t));
   }
@@ -102,7 +102,7 @@ void InterpolatedTransform::SetChild(InterpolatedTransform* child) {
   child_.reset(child);
 }
 
-bool InterpolatedTransform::FactorTRS(const ui::Transform& transform,
+bool InterpolatedTransform::FactorTRS(const gfx::Transform& transform,
                                       gfx::Point* translation,
                                       float* rotation,
                                       gfx::Point3f* scale) {
@@ -203,8 +203,8 @@ InterpolatedRotation::InterpolatedRotation(float start_degrees,
 
 InterpolatedRotation::~InterpolatedRotation() {}
 
-ui::Transform InterpolatedRotation::InterpolateButDoNotCompose(float t) const {
-  ui::Transform result;
+gfx::Transform InterpolatedRotation::InterpolateButDoNotCompose(float t) const {
+  gfx::Transform result;
   float interpolated_degrees = ValueBetween(t, start_degrees_, end_degrees_);
   result.SetRotate(interpolated_degrees);
   if (t == 0.0f || t == 1.0f)
@@ -240,9 +240,9 @@ InterpolatedAxisAngleRotation::InterpolatedAxisAngleRotation(
 
 InterpolatedAxisAngleRotation::~InterpolatedAxisAngleRotation() {}
 
-ui::Transform
+gfx::Transform
 InterpolatedAxisAngleRotation::InterpolateButDoNotCompose(float t) const {
-  ui::Transform result;
+  gfx::Transform result;
   result.SetRotateAbout(axis_, ValueBetween(t, start_degrees_, end_degrees_));
   return result;
 }
@@ -282,8 +282,8 @@ InterpolatedScale::InterpolatedScale(const gfx::Point3f& start_scale,
 
 InterpolatedScale::~InterpolatedScale() {}
 
-ui::Transform InterpolatedScale::InterpolateButDoNotCompose(float t) const {
-  ui::Transform result;
+gfx::Transform InterpolatedScale::InterpolateButDoNotCompose(float t) const {
+  gfx::Transform result;
   float scale_x = ValueBetween(t, start_scale_.x(), end_scale_.x());
   float scale_y = ValueBetween(t, start_scale_.y(), end_scale_.y());
   // TODO(vollick) 3d xforms.
@@ -313,9 +313,9 @@ InterpolatedTranslation::InterpolatedTranslation(const gfx::Point& start_pos,
 
 InterpolatedTranslation::~InterpolatedTranslation() {}
 
-ui::Transform
+gfx::Transform
 InterpolatedTranslation::InterpolateButDoNotCompose(float t) const {
-  ui::Transform result;
+  gfx::Transform result;
   // TODO(vollick) 3d xforms.
   result.SetTranslate(ValueBetween(t, start_pos_.x(), end_pos_.x()),
                       ValueBetween(t, start_pos_.y(), end_pos_.y()));
@@ -327,12 +327,12 @@ InterpolatedTranslation::InterpolateButDoNotCompose(float t) const {
 //
 
 InterpolatedConstantTransform::InterpolatedConstantTransform(
-  const ui::Transform& transform)
+  const gfx::Transform& transform)
     : InterpolatedTransform(),
   transform_(transform) {
 }
 
-ui::Transform
+gfx::Transform
 InterpolatedConstantTransform::InterpolateButDoNotCompose(float t) const {
   return transform_;
 }
@@ -361,18 +361,18 @@ InterpolatedTransformAboutPivot::InterpolatedTransformAboutPivot(
 
 InterpolatedTransformAboutPivot::~InterpolatedTransformAboutPivot() {}
 
-ui::Transform
+gfx::Transform
 InterpolatedTransformAboutPivot::InterpolateButDoNotCompose(float t) const {
   if (transform_.get()) {
     return transform_->Interpolate(t);
   }
-  return Transform();
+  return gfx::Transform();
 }
 
 void InterpolatedTransformAboutPivot::Init(const gfx::Point& pivot,
                                            InterpolatedTransform* xform) {
-  ui::Transform to_pivot;
-  ui::Transform from_pivot;
+  gfx::Transform to_pivot;
+  gfx::Transform from_pivot;
   to_pivot.SetTranslate(-pivot.x(), -pivot.y());
   from_pivot.SetTranslate(pivot.x(), pivot.y());
 
@@ -387,15 +387,15 @@ void InterpolatedTransformAboutPivot::Init(const gfx::Point& pivot,
 }
 
 InterpolatedTRSTransform::InterpolatedTRSTransform(
-    const ui::Transform& start_transform,
-    const ui::Transform& end_transform)
+    const gfx::Transform& start_transform,
+    const gfx::Transform& end_transform)
     : InterpolatedTransform() {
   Init(start_transform, end_transform);
 }
 
 InterpolatedTRSTransform::InterpolatedTRSTransform(
-    const ui::Transform& start_transform,
-    const ui::Transform& end_transform,
+    const gfx::Transform& start_transform,
+    const gfx::Transform& end_transform,
     float start_time,
     float end_time)
     : InterpolatedTransform() {
@@ -404,16 +404,16 @@ InterpolatedTRSTransform::InterpolatedTRSTransform(
 
 InterpolatedTRSTransform::~InterpolatedTRSTransform() {}
 
-ui::Transform
+gfx::Transform
 InterpolatedTRSTransform::InterpolateButDoNotCompose(float t) const {
   if (transform_.get()) {
     return transform_->Interpolate(t);
   }
-  return Transform();
+  return gfx::Transform();
 }
 
-void InterpolatedTRSTransform::Init(const Transform& start_transform,
-                                    const Transform& end_transform) {
+void InterpolatedTRSTransform::Init(const gfx::Transform& start_transform,
+                                    const gfx::Transform& end_transform) {
   gfx::Point start_translation, end_translation;
   gfx::Point3f start_scale, end_scale;
   float start_degrees, end_degrees;

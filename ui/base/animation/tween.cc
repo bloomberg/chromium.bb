@@ -96,15 +96,15 @@ gfx::Rect Tween::ValueBetween(double value,
 }
 
 // static
-Transform Tween::ValueBetween(double value,
-                              const Transform& start_transform,
-                              const Transform& end_transform) {
+gfx::Transform Tween::ValueBetween(double value,
+                              const gfx::Transform& start_transform,
+                              const gfx::Transform& end_transform) {
   if (value >= 1.0)
     return end_transform;
   if (value <= 0.0)
     return start_transform;
 
-  Transform to_return;
+  gfx::Transform to_return;
   gfx::Point start_translation, end_translation;
   float start_rotation, end_rotation;
   gfx::Point3f start_scale, end_scale;

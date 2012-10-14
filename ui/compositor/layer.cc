@@ -185,11 +185,11 @@ LayerAnimator* Layer::GetAnimator() {
   return animator_.get();
 }
 
-void Layer::SetTransform(const ui::Transform& transform) {
+void Layer::SetTransform(const gfx::Transform& transform) {
   GetAnimator()->SetTransform(transform);
 }
 
-Transform Layer::GetTargetTransform() const {
+gfx::Transform Layer::GetTargetTransform() const {
   if (animator_.get() && animator_->IsAnimatingProperty(
       LayerAnimationElement::TRANSFORM)) {
     return animator_->GetTargetTransform();
@@ -559,7 +559,7 @@ void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
 
 bool Layer::ConvertPointForAncestor(const Layer* ancestor,
                                     gfx::Point* point) const {
-  ui::Transform transform;
+  gfx::Transform transform;
   bool result = GetTransformRelativeTo(ancestor, &transform);
   gfx::Point3f p(*point);
   transform.TransformPoint(p);
@@ -569,7 +569,7 @@ bool Layer::ConvertPointForAncestor(const Layer* ancestor,
 
 bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
                                      gfx::Point* point) const {
-  ui::Transform transform;
+  gfx::Transform transform;
   bool result = GetTransformRelativeTo(ancestor, &transform);
   gfx::Point3f p(*point);
   transform.TransformPointReverse(p);
@@ -578,7 +578,7 @@ bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
 }
 
 bool Layer::GetTransformRelativeTo(const Layer* ancestor,
-                                   ui::Transform* transform) const {
+                                   gfx::Transform* transform) const {
   const Layer* p = this;
   for (; p && p != ancestor; p = p->parent()) {
     if (p->transform().HasChange())
@@ -615,7 +615,7 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
   }
 }
 
-void Layer::SetTransformImmediately(const ui::Transform& transform) {
+void Layer::SetTransformImmediately(const gfx::Transform& transform) {
   transform_ = transform;
 
   RecomputeTransform();
@@ -662,7 +662,7 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
   SetBoundsImmediately(bounds);
 }
 
-void Layer::SetTransformFromAnimation(const Transform& transform) {
+void Layer::SetTransformFromAnimation(const gfx::Transform& transform) {
   SetTransformImmediately(transform);
 }
 
@@ -694,7 +694,7 @@ const gfx::Rect& Layer::GetBoundsForAnimation() const {
   return bounds();
 }
 
-const Transform& Layer::GetTransformForAnimation() const {
+const gfx::Transform& Layer::GetTransformForAnimation() const {
   return transform();
 }
 
@@ -741,12 +741,12 @@ void Layer::CreateWebLayer() {
 }
 
 void Layer::RecomputeTransform() {
-  ui::Transform scale_translate;
+  gfx::Transform scale_translate;
   scale_translate.matrix().set3x3(device_scale_factor_, 0, 0,
                                   0, device_scale_factor_, 0,
                                   0, 0, 1);
   // Start with the inverse matrix of above.
-  Transform transform;
+  gfx::Transform transform;
   transform.matrix().set3x3(1.0f / device_scale_factor_, 0, 0,
                             0, 1.0f / device_scale_factor_, 0,
                             0, 0, 1);

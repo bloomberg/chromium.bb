@@ -348,7 +348,7 @@ void BaseLoginDisplayHost::StartAnimation() {
             ash::internal::kShellWindowId_DesktopBackgroundContainer)->
                 layer();
 
-    ui::Transform background_transform;
+    gfx::Transform background_transform;
     background_transform.SetScale(kBackgroundScale, kBackgroundScale);
     background_transform.SetTranslateX(kBackgroundTranslate);
     background_transform.SetTranslateY(kBackgroundTranslate);
@@ -369,7 +369,7 @@ void BaseLoginDisplayHost::StartAnimation() {
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kBackgroundTransitionDurationMs));
     settings.SetTweenType(ui::Tween::EASE_OUT);
-    background_layer->SetTransform(ui::Transform());
+    background_layer->SetTransform(gfx::Transform());
   }
 
   // Browser windows layer opacity and transform animation.
@@ -385,7 +385,7 @@ void BaseLoginDisplayHost::StartAnimation() {
 
     // Set the initial opacity and transform.
     if (do_browser_transform_animation) {
-      ui::Transform browser_transform;
+      gfx::Transform browser_transform;
       browser_transform.SetScale(kBrowserScale, kBrowserScale);
       browser_transform.SetTranslateX(kBrowserTranslate);
       browser_transform.SetTranslateY(kBrowserTranslate);
@@ -419,7 +419,7 @@ void BaseLoginDisplayHost::StartAnimation() {
 
     if (do_browser_transform_animation) {
       settings.SetTweenType(ui::Tween::EASE_OUT);
-      default_container_layer->SetTransform(ui::Transform());
+      default_container_layer->SetTransform(gfx::Transform());
     }
   }
 }

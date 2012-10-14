@@ -38,9 +38,9 @@ const float kSlowCloseSizeRatio = 0.95f;
 
 // Returns the transform that should be applied to containers for the slow-close
 // animation.
-ui::Transform GetSlowCloseTransform() {
+gfx::Transform GetSlowCloseTransform() {
   gfx::Size root_size = Shell::GetPrimaryRootWindow()->bounds().size();
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.SetScale(kSlowCloseSizeRatio, kSlowCloseSizeRatio);
   transform.ConcatTranslate(
       floor(0.5 * (1.0 - kSlowCloseSizeRatio) * root_size.width() + 0.5),
@@ -50,9 +50,9 @@ ui::Transform GetSlowCloseTransform() {
 
 // Returns the transform that should be applied to containers for the fast-close
 // animation.
-ui::Transform GetFastCloseTransform() {
+gfx::Transform GetFastCloseTransform() {
   gfx::Size root_size = Shell::GetPrimaryRootWindow()->bounds().size();
-  ui::Transform transform;
+  gfx::Transform transform;
   transform.SetScale(0.0, 0.0);
   transform.ConcatTranslate(floor(0.5 * root_size.width() + 0.5),
                             floor(0.5 * root_size.height() + 0.5));
@@ -79,7 +79,7 @@ void StartUndoSlowCloseAnimationForWindow(aura::Window* window) {
   animator->StartAnimation(
       new ui::LayerAnimationSequence(
           ui::LayerAnimationElement::CreateTransformElement(
-              ui::Transform(),
+              gfx::Transform(),
               base::TimeDelta::FromMilliseconds(kUndoSlowCloseAnimMs))));
 }
 
@@ -119,7 +119,7 @@ void HideWindow(aura::Window* window) {
 // Restores |window| to its original position and scale and full opacity
 // instantaneously.
 void RestoreWindow(aura::Window* window) {
-  window->layer()->SetTransform(ui::Transform());
+  window->layer()->SetTransform(gfx::Transform());
   window->layer()->SetOpacity(1.0);
 }
 
@@ -145,7 +145,7 @@ bool SessionStateAnimator::TestApi::ContainersAreAnimated(
           return false;
         break;
       case ANIMATION_UNDO_SLOW_CLOSE:
-        if (layer->GetTargetTransform() != ui::Transform())
+        if (layer->GetTargetTransform() != gfx::Transform())
           return false;
         break;
       case ANIMATION_FAST_CLOSE:
@@ -162,7 +162,7 @@ bool SessionStateAnimator::TestApi::ContainersAreAnimated(
           return false;
         break;
       case ANIMATION_RESTORE:
-        if (layer->opacity() < 0.9999 || layer->transform() != ui::Transform())
+        if (layer->opacity() < 0.9999 || layer->transform() != gfx::Transform())
           return false;
         break;
       default:

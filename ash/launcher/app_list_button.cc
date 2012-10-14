@@ -86,7 +86,7 @@ void AppListButton::StopLoadingAnimation() {
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kAnimationDurationInMs));
   layer()->SetOpacity(1.0f);
-  layer()->SetTransform(ui::Transform());
+  layer()->SetTransform(gfx::Transform());
 }
 
 bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {

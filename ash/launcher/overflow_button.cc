@@ -28,13 +28,13 @@ const int kButtonHoverSize = 28;
 
 const int kBackgroundOffset = (48 - kButtonHoverSize) / 2;
 
-void RotateCounterclockwise(ui::Transform* transform) {
+void RotateCounterclockwise(gfx::Transform* transform) {
   transform->matrix().set3x3(0, -1, 0,
                              1,  0, 0,
                              0,  0, 1);
 }
 
-void RotateClockwise(ui::Transform* transform) {
+void RotateClockwise(gfx::Transform* transform) {
   transform->matrix().set3x3( 0, 1, 0,
                              -1, 0, 0,
                               0, 0, 1);
@@ -107,7 +107,7 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
   if (height() < kButtonHoverSize)
     return;
 
-  ui::Transform transform;
+  gfx::Transform transform;
 
   switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:

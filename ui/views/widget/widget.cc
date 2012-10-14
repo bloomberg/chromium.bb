@@ -1045,7 +1045,7 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
   // to avoid leaving ghosts.
   bool force_clear = false;
   if (GetRootView()->layer()) {
-    const ui::Transform& layer_transform = GetRootView()->layer()->transform();
+    const gfx::Transform& layer_transform = GetRootView()->layer()->transform();
     if (layer_transform != GetRootView()->GetTransform()) {
       // The layer has not caught up to the view (i.e., the layer is still
       // animating), and so a clear is required.

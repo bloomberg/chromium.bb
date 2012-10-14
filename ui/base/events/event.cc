@@ -143,7 +143,8 @@ LocatedEvent::LocatedEvent(EventType type,
       system_location_(0, 0) {
 }
 
-void LocatedEvent::UpdateForRootTransform(const Transform& root_transform) {
+void LocatedEvent::UpdateForRootTransform(
+    const gfx::Transform& root_transform) {
   // Transform has to be done at root level.
   DCHECK_EQ(root_location_.x(), location_.x());
   DCHECK_EQ(root_location_.y(), location_.y());
@@ -314,7 +315,7 @@ void TouchEvent::CalibrateLocation(const gfx::Size& from, const gfx::Size& to) {
   root_location_ = CalibratePoint(root_location_, from, to);
 }
 
-void TouchEvent::UpdateForRootTransform(const Transform& root_transform) {
+void TouchEvent::UpdateForRootTransform(const gfx::Transform& root_transform) {
   LocatedEvent::UpdateForRootTransform(root_transform);
   gfx::Point3f scale;
   InterpolatedTransform::FactorTRS(root_transform, NULL, NULL, &scale);

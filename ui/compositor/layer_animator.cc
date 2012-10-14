@@ -73,7 +73,7 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
   return new LayerAnimator(kDefaultTransitionDuration);
 }
 
-void LayerAnimator::SetTransform(const Transform& transform) {
+void LayerAnimator::SetTransform(const gfx::Transform& transform) {
   base::TimeDelta duration = GetTransitionDuration();
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateTransformElement(transform, duration));
@@ -81,7 +81,7 @@ void LayerAnimator::SetTransform(const Transform& transform) {
   StartAnimation(new LayerAnimationSequence(element.release()));
 }
 
-Transform LayerAnimator::GetTargetTransform() const {
+gfx::Transform LayerAnimator::GetTargetTransform() const {
   LayerAnimationElement::TargetValue target(delegate());
   GetTargetValue(&target);
   return target.transform;
