@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/compositor/layer.h"

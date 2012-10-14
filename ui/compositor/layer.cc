@@ -18,7 +18,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
 #include "ui/base/animation/animation.h"
 #include "ui/compositor/compositor_switches.h"
