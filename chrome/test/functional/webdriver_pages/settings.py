@@ -52,15 +52,108 @@ def _FocusField(driver, list_elem, field_elem):
     raise RuntimeError('Unable to focus list item ' + field_elem.tag_name)
 
 
-class DynamicList(object):
-  """A web element that holds a dynamic list of items.
+class Item(object):
+  """A list item web element."""
+  def __init__(self, elem):
+    self._elem = elem
+
+  def Remove(self, driver):
+    button = self._elem.find_element_by_xpath('./button')
+    ActionChains(driver).move_to_element(button).click().perform()
+
+
+class TextFieldsItem(Item):
+  """An item consisting only of text fields."""
+  def _GetFields(self):
+    """Returns the text fields list."""
+    return self._elem.find_elements_by_tag_name('input')
+
+  def Set(self, values):
+    """Sets the value(s) of the item's text field(s).
+
+    Args:
+      values: The new value or the list of the new values of the fields.
+    """
+    field_list = self._GetFields()
+    if len(field_list) > 1:
+      assert type(values) == types.ListType, \
+          """The values must be a list for a HTML list that has multi-field
+          items. '%s' should be in a list.""" % values
+      value_list = values
+    else:
+      value_list = [values]
+
+    assert len(field_list) == len(value_list), \
+        """The item to be added must have the same number of fields as an item
+        in the HTML list. Given item '%s' should have %s fields.""" % (
+            value_list, len(field_list))
+    for field, value in zip(field_list, value_list):
+      field.clear()
+      field.send_keys(value)
+    field_list[-1].send_keys('\n') # press enter on the last field.
+
+  def Get(self):
+    """Returns the list of the text field values."""
+    return map(lambda f: f.get_attribute('value'), self._GetFields())
+
+
+class TextField(object):
+  """A text field web element."""
+  def __init__(self, elem):
+    self._elem = elem
+
+  def Set(self, value):
+    """Sets the value of the text field.
+
+    Args:
+      value: The new value of the field.
+    """
+    self._elem.clear()
+    self._elem.send_keys(value)
+
+  def Get(self):
+    """Returns the value of the text field."""
+    return self._elem.get_attribute('value')
+
+
+class List(object):
+  """A web element that holds a list of items."""
+
+  def __init__(self, driver, elem, item_class=Item):
+    """item element is an element in the HTML list.
+    item class is the class of item the list holds."""
+    self._driver = driver
+    self._elem = elem
+    self._item_class = item_class
+
+  def RemoveAll(self):
+    """Removes all items from the list.
+
+    In the loop the removal of an elem renders the remaining elems of the list
+    invalid. After each item is removed, GetItems() is called.
+    """
+    for i in range(len(self.GetItems())):
+      self.GetItems()[0].Remove(self._driver)
+
+  def GetItems(self):
+    """Returns all the items that are in the list."""
+    items = self._GetItemElems()
+    return map(lambda x: self._item_class(x), items)
+
+  def GetSize(self):
+    """Returns the number of items in the list."""
+    return len(self._GetItemElems())
+
+  def _GetItemElems(self):
+    return self._elem.find_elements_by_xpath('.//*[@role="listitem"]')
+
+
+class DynamicList(List):
+  """A web element that holds a dynamic list of items of text fields.
 
   Terminology:
-    field: an HTML text field
-    item element: an element in the HTML list
-    item: the value of an item element; if the item element only has 1
-      field, it will be a single value; if the item element has multiple
-      fields, it will be a python list of values
+    item element: an element in the HTML list item.
+    item_class: the class of item the list holds
     placeholder: the last item element in the list, which is not committed yet
 
   The user can add new items to the list by typing in the placeholder item.
@@ -69,88 +162,16 @@ class DynamicList(object):
   more text fields.
   """
 
-  def __init__(self, driver, elem):
-    self.driver = driver
-    self.elem = elem
+  def __init__(self, driver, elem, item_class=TextFieldsItem):
+    return super(DynamicList, self).__init__(
+        driver, elem, item_class=item_class)
 
-  def Add(self, item):
-    """Adds an item to the list.
-
-    An item may contain several fields, in which case 'item' should be a python
-    list.
-
-    Args:
-      item: The item to add to the list.
-    """
-    fields = self._GetPlaceholderElem().find_elements_by_tag_name('input')
-    if len(fields) > 1:
-      assert type(item) == types.ListType, \
-          """The item must be a list for a HTML list that has multi-field
-          items. '%s' should be in a list.""" % item
-      values = item
-    else:
-      values = [item]
-
-    assert len(fields) == len(values), \
-        """The item to be added must have the same number of fields as an item
-        in the HTML list. Given item '%s' should have %s fields.""" % (
-            item, len(fields))
-    _FocusField(self.driver, self.elem, fields[0])
-    for field, value in zip(fields, values)[1:-1]:
-      field.send_keys(value + '\t')
-    fields[-1].send_keys(values[-1] + '\n')
-
-  def Remove(self, item):
-    """Removes all item occurrences from the list.
-
-    Args:
-      item: The item to remove from the list.
-    """
-    # There's no close button for the last field.
-    fields = self._GetPlaceholderElem().find_elements_by_tag_name('input')
-    if len(fields) > 1:
-      assert type(item) == types.ListType, \
-          """The item must be a list for a HTML list that has multi-field
-          items. '%s' should be in a list.""" % item
-      values = item
-    else:
-      values = [item]
-
-    assert len(fields) == len(values), \
-        """The item to be added must have the same number of fields as an item
-        in the HTML list. Given item '%s' should have %d fields.""" % (
-            item, len(fields))
-
-    item_list = self.GetCommittedItems()
-    close_button_list = self.elem.find_elements_by_class_name(
-        'row-delete-button')[:-1]
-    for i in range(len(item_list)):
-      if item_list[i] == item:
-        # Highlight the item, so the close button shows up, then click it.
-        ActionChains(self.driver).move_to_element(
-            close_button_list[i]).click().perform()
-
-  def RemoveAll(self):
-    """Removes all items from the list."""
-    # There's no close button for the last field.
-    close_buttons = self.elem.find_elements_by_class_name('close-button')[:-1]
-    for button in close_buttons:
-      # Highlight the item, so the close button shows up, then click it.
-      ActionChains(self.driver).move_to_element(button).click().perform()
+  def GetPlaceholderItem(self):
+    return self.GetItems()[-1]
 
   def GetCommittedItems(self):
     """Returns all the items that are in the list, except the placeholder."""
-    def GetItemFromElem(elem):
-      """Gets the item held by the list item element.
-
-      This may be an array of items, if there are multiple fields per item.
-      """
-      fields = elem.find_elements_by_tag_name('input')
-      if len(fields) == 1:
-        return TextField(fields[0]).Get()
-      return map(lambda x: TextField(x).Get(), fields)
-
-    return map(GetItemFromElem, self._GetCommittedItemElems())
+    return map(lambda x: self._item_class(x), self._GetCommittedItemElems())
 
   def GetSize(self):
     """Returns the number of items in the list, excluding the placeholder."""
@@ -161,28 +182,6 @@ class DynamicList(object):
 
   def _GetPlaceholderElem(self):
     return self._GetItemElems()[-1]
-
-  def _GetItemElems(self):
-    return self.elem.find_elements_by_xpath('.//*[@role="listitem"]')
-
-
-class TextField(object):
-  """A text field web element."""
-  def __init__(self, elem):
-    self.elem = elem
-
-  def Set(self, value):
-    """Sets the value of the text field.
-
-    Args:
-      value: The new value of the field.
-    """
-    self.elem.clear()
-    self.elem.send_keys(value)
-
-  def Get(self):
-    """Returns the value of the text field."""
-    return self.elem.get_attribute('value')
 
 
 class AutofillEditAddressDialog(object):
@@ -239,7 +238,7 @@ class AutofillEditAddressDialog(object):
                            self.dialog_elem.find_element_by_id(list_id))
         list.RemoveAll()
         for value in values:
-          list.Add(value)
+          list.GetPlaceholderItem().Set(value)
 
     if country_code is not None:
       self.dialog_elem.find_element_by_xpath(
@@ -257,7 +256,7 @@ class AutofillEditAddressDialog(object):
     """Returns a list of the phone numbers in the phones list."""
     list = DynamicList(
         self.driver, self.dialog_elem.find_element_by_id('phone-list'))
-    return list.GetCommittedItems()
+    return [item.Get()[0] for item in list.GetCommittedItems()]
 
 
 class ContentTypes(object):
@@ -269,6 +268,7 @@ class ContentTypes(object):
   POPUPS = 'popups'
   GEOLOCATION = 'location'
   NOTIFICATIONS = 'notifications'
+  PASSWORDS = 'passwords'
 
 
 class Behaviors(object):
@@ -387,7 +387,7 @@ class ManageExceptionsPage(object):
           'Adding new exception not allowed in "%s" content page'
           % self._content_type)
     # Set pattern now.
-    self._GetExceptionList(incognito).Add(pattern)
+    self._GetExceptionList(incognito).GetPlaceholderItem().Set(pattern)
 
   def DeleteException(self, pattern, incognito=False):
     """Delete the exception for the selected hostname pattern.
@@ -398,7 +398,10 @@ class ManageExceptionsPage(object):
     """
     if incognito:
       self._AssertIncognitoAvailable()
-    self._GetExceptionList(incognito).Remove(pattern)
+    list = self._GetExceptionList(incognito)
+    items = filter(lambda item: item.Get()[0] == pattern,
+                   list.GetComittedItems())
+    map(lambda item: item.Remove(self._driver), items)
 
   def GetExceptions(self, incognito=False):
     """Returns a dictionary of {pattern: behavior}.
@@ -467,7 +470,6 @@ class ManageExceptionsPage(object):
           '"%s" in "%s" content page' % (behavior, self._content_type))
     # Send enter key.
     pattern_elem = listitem_elem.find_element_by_tag_name('input')
-    _FocusField(self._driver, list_elem, pattern_elem)
     pattern_elem.send_keys('\n')
 
 
@@ -518,7 +520,7 @@ class BasicSettingsPage(object):
   def _FillStartupURL(self, url):
     list = DynamicList(self._driver, self._driver.find_element_by_id(
                        'startupPagesList'))
-    list.Add(url + '\n')
+    list.GetPlaceholderItem().Set(url + '\n')
 
   def AddStartupPage(self, url):
     """Add a startup URL.
@@ -578,6 +580,55 @@ class BasicSettingsPage(object):
     self._FillStartupURL(url)
     self._driver.find_element_by_id('startup-overlay-cancel').click()
     self._driver.get(self._URL)
+
+
+class PasswordsSettings(object):
+  """The overlay for managing passwords on the Content Settings page."""
+
+  _URL = 'chrome://settings-frame/passwords'
+
+  class PasswordsItem(Item):
+    """A list of passwords item web element."""
+    def _GetFields(self):
+      """Returns the field list element."""
+      return self._elem.find_elements_by_xpath('./div/*')
+
+    def GetSite(self):
+      """Returns the site field value."""
+      return self._GetFields()[0].text
+
+    def GetUsername(self):
+      """Returns the username field value."""
+      return self._GetFields()[1].text
+
+
+  @staticmethod
+  def FromNavigation(driver):
+    """Creates an instance of the dialog by navigating directly to it.
+
+    Args:
+      driver: The remote WebDriver instance to manage some content type.
+    """
+    driver.get(PasswordsSettings._URL)
+    return PasswordsSettings(driver)
+
+  def __init__(self, driver):
+    self._driver = driver
+    assert self._URL == driver.current_url
+    list_elem = driver.find_element_by_id('saved-passwords-list')
+    self._items_list = List(self._driver, list_elem, self.PasswordsItem)
+
+  def DeleteItem(self, url, username):
+    """Deletes a line entry in Passwords Content Settings.
+
+    Args:
+      url: The URL string as it appears in the UI.
+      username: The username string as it appears in the second column.
+    """
+    for password_item in self._items_list.GetItems():
+      if (password_item.GetSite() == url and
+          password_item.GetUsername() == username):
+        password_item.Remove(self._driver)
 
 
 class CookiesAndSiteDataSettings(object):

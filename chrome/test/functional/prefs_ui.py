@@ -205,6 +205,42 @@ class PrefsUITest(pyauto.PyUITest):
         ContentTypes.PLUGINS, 'http://maps.google.com:80',
         Behaviors.BLOCK, incognito=True)
 
+  def testSetPasswordAndDelete(self):
+    """Verify a password can be deleted in the Content Settings UI."""
+    password_list = []
+    # Add two passwords, 1 for example0.com and 1 for example1.com.
+    for i in range(2):
+      # Construct a password dictionary with required fields.
+      password = {
+          'username_value': 'user%s@example.com'  % i,
+          'password_value': 'test.password',
+          'signon_realm': 'https://www.example%s.com/'  % i,
+          'time': 1279650942.0,
+          'origin_url': 'https://www.example%s.com/login'  % i,
+          'username_element': 'username%s',
+          'password_element': 'password',
+          'submit_element': 'submit',
+          'action_target': 'https://www.example%s.com/login/'  % i,
+          'blacklist': False,
+      }
+
+      password_list.append(password)
+      self.AddSavedPassword(password)
+
+    saved_passwords = self.GetSavedPasswords()
+    self.assertEquals(len(password_list), len(saved_passwords),
+                      msg='Not all Passwords were saved.')
+    for password in password_list:
+      self.assertTrue(password in saved_passwords,
+                      msg='Passwords were not saved correctly.')
+
+    page = settings.PasswordsSettings.FromNavigation(self._driver)
+    # Delete one of the passwords.
+    password = password_list[1]
+    page.DeleteItem(password['origin_url'], password['username_value'])
+    self.assertTrue(password not in self.GetSavedPasswords(),
+                    msg='Password was not deleted.')
+
   def testSetCookieAndDeleteInContentSettings(self):
     """Verify a cookie can be deleted in the Content Settings UI."""
     # Create a cookie.

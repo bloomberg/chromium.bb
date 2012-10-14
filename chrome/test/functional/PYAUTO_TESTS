@@ -149,6 +149,8 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # Keychain popups make autofill/password tests difficult: crbug.com/49378
+      '-prefs_ui.PrefsUITest.testSetPasswordAndDelete',
       # codesign tests should run *after* signing. crbug.com/50481
       '-codesign',
       # crbug.com/124922
