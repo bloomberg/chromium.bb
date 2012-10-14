@@ -504,17 +504,14 @@
       ],
     }, # target_name: views
     {
-      'target_name': 'test_support_views',
+      'target_name': 'views_test_support',
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../content/content.gyp:content',
-        '../../content/content.gyp:test_support_content',
         '../../ipc/ipc.gyp:test_support_ipc',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../ui.gyp:ui',
-        'controls/webview/webview.gyp:webview',
         'views',
       ],
       'include_dirs': [
@@ -525,10 +522,31 @@
         'test/test_views_delegate.h',
         'test/views_test_base.cc',
         'test/views_test_base.h',
+      ],
+    },  # target_name: views_test_support
+    {
+      'target_name': 'views_with_content_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../content/content.gyp:content',
+        '../../content/content.gyp:test_support_content',
+        '../../ipc/ipc.gyp:test_support_ipc',
+        '../../skia/skia.gyp:skia',
+        '../../testing/gtest.gyp:gtest',
+        '../ui.gyp:ui',
+        'controls/webview/webview.gyp:webview',
+        'views_test_support',
+        'views',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
         'test/webview_test_helper.cc',
         'test/webview_test_helper.h',
       ],
-    },  # target_name: test_support_views
+    },  # target_name: views_with_content_test_support
     {
       'target_name': 'views_unittests',
       'type': 'executable',
@@ -551,8 +569,8 @@
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_test_support',
-        'test_support_views',
         'views',
+        'views_test_support',
       ],
       'include_dirs': [
         '..',

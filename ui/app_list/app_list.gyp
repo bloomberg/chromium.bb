@@ -75,7 +75,7 @@
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',
         '../views/views.gyp:views',
-        '../views/views.gyp:test_support_views',
+        '../views/views.gyp:views_test_support',
         'app_list',
       ],
       'sources': [
