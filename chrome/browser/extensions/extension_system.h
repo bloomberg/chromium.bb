@@ -28,7 +28,6 @@ namespace extensions {
 class AlarmManager;
 class EventRouter;
 class Extension;
-class ExtensionActionManager;
 class ExtensionPrefs;
 class ExtensionSystemSharedFactory;
 class LazyBackgroundTaskQueue;
@@ -102,11 +101,6 @@ class ExtensionSystem : public ProfileKeyedService {
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
 
-  // Provides access to an Extension's page actions, browser actions, and script
-  // badges.
-  // The ExtensionActionManager is created at startup.
-  virtual ExtensionActionManager* extension_action_manager() = 0;
-
   // The RulesRegistryService is created at startup.
   virtual RulesRegistryService* rules_registry_service() = 0;
 
@@ -167,7 +161,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
   virtual MessageService* message_service() OVERRIDE;  // shared
   virtual EventRouter* event_router() OVERRIDE;  // shared
-  virtual ExtensionActionManager* extension_action_manager() OVERRIDE; // shared
   virtual RulesRegistryService* rules_registry_service()
       OVERRIDE;  // shared
   virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
@@ -211,7 +204,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     MessageService* message_service();
     EventRouter* event_router();
-    ExtensionActionManager* extension_action_manager();
 
    private:
     Profile* profile_;
@@ -232,7 +224,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<MessageService> message_service_;
     scoped_ptr<EventRouter> extension_event_router_;
     scoped_ptr<NavigationObserver> navigation_observer_;
-    scoped_ptr<ExtensionActionManager> extension_action_manager_;
   };
 
   Profile* profile_;

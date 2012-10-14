@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -109,7 +108,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   extension_event_router_.reset(new EventRouter(profile_,
                                                 extension_prefs_.get()));
   navigation_observer_.reset(new NavigationObserver(profile_));
-  extension_action_manager_.reset(new ExtensionActionManager(profile_));
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
 
@@ -243,11 +241,6 @@ EventRouter* ExtensionSystemImpl::Shared::event_router() {
   return extension_event_router_.get();
 }
 
-ExtensionActionManager*
-    ExtensionSystemImpl::Shared::extension_action_manager() {
-  return extension_action_manager_.get();
-}
-
 //
 // ExtensionSystemImpl
 //
@@ -362,10 +355,6 @@ MessageService* ExtensionSystemImpl::message_service() {
 
 EventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();
-}
-
-ExtensionActionManager* ExtensionSystemImpl::extension_action_manager() {
-  return shared_->extension_action_manager();
 }
 
 RulesRegistryService* ExtensionSystemImpl::rules_registry_service() {

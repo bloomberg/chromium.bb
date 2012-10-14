@@ -7,6 +7,8 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/feature_switch.h"
@@ -15,11 +17,47 @@
 
 namespace extensions {
 
+namespace {
+
+// ProfileKeyedServiceFactory for ExtensionActionManager.
+class ExtensionActionManagerFactory : public ProfileKeyedServiceFactory {
+ public:
+  // ProfileKeyedServiceFactory implementation:
+  static ExtensionActionManager* GetForProfile(Profile* profile) {
+    return static_cast<ExtensionActionManager*>(
+        GetInstance()->GetServiceForProfile(profile, true));
+  }
+
+  static ExtensionActionManagerFactory* GetInstance();
+
+ private:
+  friend struct DefaultSingletonTraits<ExtensionActionManagerFactory>;
+
+  ExtensionActionManagerFactory()
+      : ProfileKeyedServiceFactory("ExtensionActionManager",
+                                   ProfileDependencyManager::GetInstance()) {
+  }
+
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
+      Profile* profile) const OVERRIDE {
+    return new ExtensionActionManager(profile);
+  }
+
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE {
+    return true;
+  }
+};
+
+ExtensionActionManagerFactory*
+ExtensionActionManagerFactory::GetInstance() {
+  return Singleton<ExtensionActionManagerFactory>::get();
+}
+
+}  // namespace
+
 ExtensionActionManager::ExtensionActionManager(Profile* profile) {
   CHECK_EQ(profile, profile->GetOriginalProfile())
       << "Don't instantiate this with an incognito profile.";
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
 }
@@ -30,7 +68,7 @@ ExtensionActionManager::~ExtensionActionManager() {
 }
 
 ExtensionActionManager* ExtensionActionManager::Get(Profile* profile) {
-  return ExtensionSystem::Get(profile)->extension_action_manager();
+  return ExtensionActionManagerFactory::GetForProfile(profile);
 }
 
 void ExtensionActionManager::Observe(
@@ -38,40 +76,6 @@ void ExtensionActionManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      if (extension->page_action_info() &&
-          !ContainsKey(page_actions_, extension->id())) {
-        linked_ptr<ExtensionAction> page_action(
-            new ExtensionAction(extension->id(),
-                                Extension::ActionInfo::TYPE_PAGE,
-                                *extension->page_action_info()));
-        // The action box changes the meaning of the page action area, so we
-        // need to convert page actions into browser actions.
-        if (FeatureSwitch::script_badges()->IsEnabled())
-          browser_actions_[extension->id()] = page_action;
-        else
-          page_actions_[extension->id()] = page_action;
-      }
-      if (extension->browser_action_info() &&
-          !ContainsKey(browser_actions_, extension->id())) {
-        linked_ptr<ExtensionAction> browser_action(
-            new ExtensionAction(extension->id(),
-                                Extension::ActionInfo::TYPE_BROWSER,
-                                *extension->browser_action_info()));
-        browser_actions_[extension->id()] = browser_action;
-      }
-      DCHECK(extension->script_badge_info());
-      if (!ContainsKey(script_badges_, extension->id())) {
-        linked_ptr<ExtensionAction> script_badge(
-            new ExtensionAction(extension->id(),
-                                Extension::ActionInfo::TYPE_SCRIPT_BADGE,
-                                *extension->script_badge_info()));
-        script_badges_[extension->id()] = script_badge;
-      }
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
@@ -85,30 +89,59 @@ void ExtensionActionManager::Observe(
 
 namespace {
 
-template<typename MapT>
-typename MapT::mapped_type GetOrDefault(const MapT& map,
-                                        const typename MapT::key_type& key) {
-  typename MapT::const_iterator it = map.find(key);
-  if (it == map.end())
-    return typename MapT::mapped_type();
-  return it->second;
+// Returns map[extension_id] if that entry exists. Otherwise, if
+// action_info!=NULL, creates an ExtensionAction from it, fills in the map, and
+// returns that.  Otherwise (action_info==NULL), returns NULL.
+ExtensionAction* GetOrCreateOrNull(
+    std::map<std::string, linked_ptr<ExtensionAction> >* map,
+    const std::string& extension_id,
+    Extension::ActionInfo::Type action_type,
+    const Extension::ActionInfo* action_info) {
+  std::map<std::string, linked_ptr<ExtensionAction> >::const_iterator it =
+      map->find(extension_id);
+  if (it != map->end())
+    return it->second.get();
+  if (!action_info)
+    return NULL;
+  linked_ptr<ExtensionAction> action(new ExtensionAction(
+      extension_id, action_type, *action_info));
+  (*map)[extension_id] = action;
+  return action.get();
 }
 
 }
 
 ExtensionAction* ExtensionActionManager::GetPageAction(
     const extensions::Extension& extension) const {
-  return GetOrDefault(page_actions_, extension.id()).get();
+  // The action box changes the meaning of the page action area, so we
+  // need to convert page actions into browser actions.
+  if (FeatureSwitch::script_badges()->IsEnabled())
+    return NULL;
+  return GetOrCreateOrNull(&page_actions_, extension.id(),
+                           Extension::ActionInfo::TYPE_PAGE,
+                           extension.page_action_info());
 }
 
 ExtensionAction* ExtensionActionManager::GetBrowserAction(
     const extensions::Extension& extension) const {
-  return GetOrDefault(browser_actions_, extension.id()).get();
+  const Extension::ActionInfo* action_info = extension.browser_action_info();
+  Extension::ActionInfo::Type action_type = Extension::ActionInfo::TYPE_BROWSER;
+  if (FeatureSwitch::script_badges()->IsEnabled() &&
+      extension.page_action_info()) {
+    // The action box changes the meaning of the page action area, so we
+    // need to convert page actions into browser actions.
+    action_info = extension.page_action_info();
+    action_type = Extension::ActionInfo::TYPE_PAGE;
+  }
+  return GetOrCreateOrNull(&browser_actions_, extension.id(),
+                           action_type, action_info);
 }
 
 ExtensionAction* ExtensionActionManager::GetScriptBadge(
     const extensions::Extension& extension) const {
-  return GetOrDefault(script_badges_, extension.id()).get();
+  return GetOrCreateOrNull(&script_badges_, extension.id(),
+                           Extension::ActionInfo::TYPE_SCRIPT_BADGE,
+                           extension.script_badge_info());
 }
 
 }

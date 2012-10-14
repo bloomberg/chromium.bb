@@ -56,7 +56,6 @@ FORWARD_DECLARE_TEST(TabStripModelTest, Apps);
 
 namespace extensions {
 
-class ExtensionActionManager;
 class Manifest;
 class PermissionSet;
 

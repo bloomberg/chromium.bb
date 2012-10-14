@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 
 class CommandLine;
@@ -59,7 +58,6 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
   virtual MessageService* message_service() OVERRIDE;
   virtual EventRouter* event_router() OVERRIDE;
-  virtual ExtensionActionManager* extension_action_manager() OVERRIDE;
   virtual RulesRegistryService* rules_registry_service() OVERRIDE;
   virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
       OVERRIDE;
@@ -80,7 +78,6 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ManagementPolicy> management_policy_;
-  ExtensionActionManager extension_action_manager_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<AlarmManager> alarm_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;

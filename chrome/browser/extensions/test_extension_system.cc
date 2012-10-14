@@ -29,7 +29,6 @@ namespace extensions {
 
 TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
-      extension_action_manager_(profile_),
       info_map_(new ExtensionInfoMap()) {
 }
 
@@ -149,10 +148,6 @@ MessageService* TestExtensionSystem::message_service() {
 
 EventRouter* TestExtensionSystem::event_router() {
   return NULL;
-}
-
-ExtensionActionManager* TestExtensionSystem::extension_action_manager() {
-  return &extension_action_manager_;
 }
 
 RulesRegistryService* TestExtensionSystem::rules_registry_service() {
