@@ -33,13 +33,9 @@ include_rules = [
   "!chrome/browser/profiles/profile_keyed_service.h",
   "!chrome/browser/profiles/profile_keyed_service_factory.h",
   "!chrome/browser/ui/bookmarks/bookmark_tab_helper.h",
-  "!chrome/browser/ui/browser.h",
-  "!chrome/browser/ui/browser_tabstrip.h",
-  "!chrome/browser/ui/browser_window.h",
   "!chrome/browser/ui/chrome_select_file_policy.h",
   "!chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h",
   "!chrome/browser/ui/gtk/custom_drag.h",
-  "!chrome/browser/ui/simple_message_box.h",
   "!chrome/browser/ui/tab_contents/tab_contents.h",
   "!chrome/browser/ui/webui/chrome_url_data_manager.h",
   "!chrome/browser/view_type_utils.h",
@@ -57,7 +53,5 @@ specific_include_rules = {
     "!chrome/browser/history/in_memory_database.h",
     "!chrome/browser/importer/firefox2_importer.h",
     "!chrome/browser/profiles/profile_manager.h",
-    "!chrome/browser/ui/browser_commands.h",
-    "!chrome/browser/ui/host_desktop.h",
   ]
 }
