@@ -634,6 +634,24 @@
           ],
         },
         {
+          # 'asan' is a developer, testing-only package, so it shouldn't be
+          # included in the 'linux_packages_all' collection.
+          'target_name': 'linux_packages_asan',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            'linux_packages_asan_deb',
+          ],
+          # ChromeOS doesn't care about RPM packages.
+          'conditions': [
+            ['chromeos==0', {
+              'dependencies': [
+                'linux_packages_asan_rpm',
+              ],
+            }],
+          ],
+        },
+        {
           # 'trunk' is a developer, testing-only package, so it shouldn't be
           # included in the 'linux_packages_all' collection.
           'target_name': 'linux_packages_trunk',
@@ -701,6 +719,34 @@
         },
         # TODO(mmoss) gyp looping construct would be handy here ...
         # These package actions are the same except for the 'channel' variable.
+        {
+          'target_name': 'linux_packages_asan_deb',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            'chrome',
+            'linux_installer_configs',
+          ],
+          'actions': [
+            {
+              'variables': {
+                'channel': 'asan',
+              },
+              'action_name': 'deb_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(deb_build)',
+                '<@(packaging_files_binaries)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_deb)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
+              ],
+              'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
+            },
+          ],
+        },
         {
           'target_name': 'linux_packages_trunk_deb',
           'suppress_wildcard': 1,
@@ -810,6 +856,35 @@
                 '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
               ],
               'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
+            },
+          ],
+        },
+        {
+          'target_name': 'linux_packages_asan_rpm',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            'chrome',
+            'linux_installer_configs',
+          ],
+          'actions': [
+            {
+              'variables': {
+                'channel': 'asan',
+              },
+              'action_name': 'rpm_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(rpm_build)',
+                '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
+                '<@(packaging_files_binaries)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_rpm)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
+              ],
+              'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
             },
           ],
         },
