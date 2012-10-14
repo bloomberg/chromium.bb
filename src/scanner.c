@@ -791,7 +791,7 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		}
 		if (mdesc) {
 			printf("\t *\n");
-			desc_dump("\t * ", mdesc->text, 8, 0);
+			desc_dump("\t * ", mdesc->text);
 		}
 		if (m->since > 1) {
 			printf("\t * @since: %d\n", m->since);
