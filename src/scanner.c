@@ -158,6 +158,9 @@ static const char *indent(int n)
 }
 
 static void
+desc_dump(char *desc, const char *fmt, ...) __attribute__((format(printf,2,3)));
+
+static void
 desc_dump(char *desc, const char *fmt, ...)
 {
 	va_list ap;
