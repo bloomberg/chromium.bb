@@ -177,9 +177,15 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, InlineService) {
       [controller_ inlineServiceViewController];
   EXPECT_NSEQ([controller_ view], [[inline_controller view] superview]);
 
-  // Test clicking "choose another service.
+  // Test clicking "choose another service".
   EXPECT_CALL(delegate_, OnChooseAnotherService());
   [[inline_controller chooseServiceButton] performClick:nil];
+
+  // Test hiding "choose another service".
+  EXPECT_FALSE([[inline_controller chooseServiceButton] isHidden]);
+  model_.set_show_use_another_service(false);
+  [controller_ update];
+  EXPECT_TRUE([[inline_controller chooseServiceButton] isHidden]);
 }
 
 // Test the "installing a service" state.

@@ -309,6 +309,8 @@
   else
     [inlineServiceViewController_ setServiceIcon:service->favicon.ToNSImage()];
   [inlineServiceViewController_ setServiceURL:service->url];
+  [inlineServiceViewController_ setChooseServiceButtonHidden:
+      !picker_->model()->show_use_another_service()];
 }
 
 - (void)updateInstallingExtension {

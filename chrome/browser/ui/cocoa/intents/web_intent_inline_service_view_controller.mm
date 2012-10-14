@@ -115,6 +115,10 @@
   [webContentView_ addSubview:webContents_->GetNativeView()];
 }
 
+- (void)setChooseServiceButtonHidden:(BOOL)isHidden {
+  [chooseServiceButton_ setHidden:isHidden];
+}
+
 - (NSSize)minimumSizeForInnerWidth:(CGFloat)innerWidth {
   CGFloat height = NSHeight([serviceNameTextField_ frame]);
   height += WebIntentPicker::kHeaderSeparatorPaddingTop +
@@ -136,6 +140,8 @@
   [serviceIconImageView_ setFrame:iconFrame];
 
   NSRect buttonRect = [chooseServiceButton_ frame];
+  if ([chooseServiceButton_ isHidden])
+    buttonRect.size.width = 0;
   buttonRect.origin.x = NSMaxX(innerFrame) - NSWidth(buttonRect) -
                         ConstrainedWindow::GetCloseButtonSize() -
                         WebIntentPicker::kIconTextPadding;

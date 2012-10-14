@@ -47,6 +47,7 @@ class WebIntentPickerCocoa2;
 - (void)setServiceName:(NSString*)serviceName;
 - (void)setServiceIcon:(NSImage*)serviceIcon;
 - (void)setServiceURL:(const GURL&)url;
+- (void)setChooseServiceButtonHidden:(BOOL)isHidden;
 
 @end
 
