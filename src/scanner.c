@@ -158,15 +158,14 @@ static const char *indent(int n)
 }
 
 static void
-desc_dump(const char *fmt, ...)
+desc_dump(char *desc, const char *fmt, ...)
 {
 	va_list ap;
-	char buf[128], *desc, hang;
+	char buf[128], hang;
 	int col, i, j, k, startcol;
 
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof buf, fmt, ap);
-	desc = va_arg(ap, char *);
 	va_end(ap);
 
 	for (i = 0, col = 0; buf[i] != '*'; i++) {
@@ -718,18 +717,19 @@ emit_enumerations(struct interface *interface)
 
 		if (desc) {
 			printf("/**\n");
-			desc_dump(" * %s_%s - ",
-				  interface->name, e->name, desc->summary);
+			desc_dump(desc->summary,
+				  " * %s_%s - ",
+				  interface->name, e->name);
 			wl_list_for_each(entry, &e->entry_list, link) {
-				desc_dump(" * @%s_%s_%s: ",
+				desc_dump(entry->summary,
+					  " * @%s_%s_%s: ",
 					  interface->uppercase_name,
 					  e->uppercase_name,
-					  entry->uppercase_name,
-					  entry->summary);
+					  entry->uppercase_name);
 			}
 			if (desc->text) {
 				printf(" *\n");
-				desc_dump(" * ", desc->text);
+				desc_dump(desc->text, " * ");
 			}
 			printf(" */\n");
 		}
@@ -759,14 +759,15 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 	if (interface->description) {
 		struct description *desc = interface->description;
 		printf("/**\n");
-		desc_dump(" * %s - ", interface->name, desc->summary);
+		desc_dump(desc->summary, " * %s - ", interface->name);
 		wl_list_for_each(m, message_list, link) {
 			struct description *mdesc = m->description;
-			desc_dump(" * @%s: ",
-				  m->name, mdesc ? mdesc->summary : "(none)");
+			desc_dump(mdesc ? mdesc->summary : "(none)",
+				  " * @%s: ",
+				  m->name);
 		}
 		printf(" *\n");
-		desc_dump(" * ", desc->text);
+		desc_dump(desc->text, " * ");
 		printf(" */\n");
 	}
 	printf("struct %s_%s {\n", interface->name,
@@ -776,8 +777,8 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		struct description *mdesc = m->description;
 
 		printf("\t/**\n");
-		desc_dump("\t * %s - ",
-			  m->name, mdesc ? mdesc->summary : "(none)");
+		desc_dump(mdesc ? mdesc->summary : "(none)",
+			  "\t * %s - ", m->name);
 		wl_list_for_each(a, &m->arg_list, link) {
 
 			if (is_interface && a->type == NEW_ID &&
@@ -786,12 +787,12 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 				       "\t * @version: version of the objects interface\n");
 
 
-			desc_dump("\t * @%s: ",
-				  a->name, a->summary ? a->summary : "(none)");
+			desc_dump(a->summary ? a->summary : "(none)",
+				  "\t * @%s: ", a->name);
 		}
 		if (mdesc) {
 			printf("\t *\n");
-			desc_dump("\t * ", mdesc->text);
+			desc_dump(mdesc->text, "\t * ");
 		}
 		if (m->since > 1) {
 			printf("\t * @since: %d\n", m->since);
