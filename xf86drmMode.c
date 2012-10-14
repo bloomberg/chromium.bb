@@ -351,8 +351,11 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 	r->x               = crtc.x;
 	r->y               = crtc.y;
 	r->mode_valid      = crtc.mode_valid;
-	if (r->mode_valid)
+	if (r->mode_valid) {
 		memcpy(&r->mode, &crtc.mode, sizeof(struct drm_mode_modeinfo));
+		r->width = crtc.mode.hdisplay;
+		r->height = crtc.mode.vdisplay;
+	}
 	r->buffer_id       = crtc.fb_id;
 	r->gamma_size      = crtc.gamma_size;
 	return r;
