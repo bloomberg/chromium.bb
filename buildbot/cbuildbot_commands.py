@@ -1164,20 +1164,20 @@ def BuildImageZip(archive_dir, image_dir):
   return filename
 
 
-def BuildRecoveryImageZip(archive_dir, recovery_image_bin):
-  """Build recovery_image.zip in archive_dir from recovery_image.bin
+def BuildSingleImageZip(archive_dir, filename, image_bin):
+  """Build image zipfile in archive_dir from specified image.
 
   Args:
-    archive_dir: Directory to store recovery_image.zip
-    recovery_image_bin: Recovery image to zip up.
+    archive_dir: Directory to store image zip.
+    filename: Filename to use for image zip.
+    image_bin: Image to zip up.
 
     Returns the base name of the zipfile.
   """
-  filename = 'recovery_image.zip'
   zipfile = os.path.join(archive_dir, filename)
   cros_build_lib.RunCommandCaptureOutput(
-      ['zip', zipfile, os.path.basename(recovery_image_bin)],
-      cwd=os.path.dirname(recovery_image_bin))
+      ['zip', zipfile, os.path.basename(image_bin)],
+      cwd=os.path.dirname(image_bin))
   return filename
 
 
