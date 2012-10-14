@@ -17,6 +17,7 @@
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
@@ -343,6 +344,14 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     service_controller->LocationBarPickerButtonClicked();
   }
 
+  void CloseCurrentTab() {
+    content::WindowedNotificationObserver tab_close_observer(
+        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::NotificationService::AllSources());
+    chrome::CloseTab(browser());
+    tab_close_observer.Wait();
+  }
+
   WebIntentPickerMock picker_;
   scoped_refptr<WebDataService> web_data_service_;
   FaviconService* favicon_service_;
@@ -457,6 +466,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   OnSendReturnMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS);
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(original, chrome::GetActiveWebContents(browser())->GetURL());
+
+  CloseCurrentTab();
 }
 
 class WebIntentPickerControllerIncognitoBrowserTest
@@ -516,6 +527,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   // window disposition, it will create a new tab.
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, picker_.num_inline_disposition_);
+
+  CloseCurrentTab();
 }
 
 // Tests that inline install of an extension using inline disposition works
@@ -585,8 +598,19 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
                                              "share.html"));
   IntentsDispatcherMock dispatcher2(explicitIntent);
   controller_->SetIntentsDispatcher(&dispatcher2);
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
+      content::Source<content::WebContentsDelegate>(browser())));
   controller_->ShowDialog(kAction1, kType2);
-  picker_.Wait();
+  new_tab_observer.Wait();
+
+  content::WebContents* service_web_contents = new_tab_observer.GetTab();
+  DCHECK(service_web_contents);
+
+  // Location bar button should not be shown for explicit intents.
+  WebIntentPickerController* service_controller =
+      WebIntentPickerController::FromWebContents(service_web_contents);
+  DCHECK(service_controller);
+  EXPECT_FALSE(service_controller->ShowLocationBarPickerButton());
 
   EXPECT_EQ(3, browser()->tab_count());
   EXPECT_EQ(0, picker_.num_inline_disposition_);
@@ -594,6 +618,11 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
 
   // num_installed_services_ would be 2 if the intent wasn't explicit.
   EXPECT_EQ(1, picker_.num_installed_services_);
+
+  // Close tabs to get rid of them before the dispatchers go out of scope at the
+  // end of this method.
+  CloseCurrentTab();
+  CloseCurrentTab();
 }
 
 // Test that an explicit intent for non-installed extension won't
@@ -624,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   EXPECT_EQ(0, picker_.num_installed_services_);
 }
 
-// Test that explicit intents won't load non-extensions.
+// Test that explicit intents won't load uninstalled non-extensions.
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
                        ExplicitIntentNonExtensionTest) {
   AddWebIntentService(kAction1, kServiceURL1);
@@ -634,10 +663,11 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   webkit_glue::WebIntentData intent;
   intent.action = kAction1;
   intent.type = kType1;
-  intent.service = GURL("http://www.google.com/");
+  intent.service = GURL("http://www.uninstalled.com/");
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
   controller_->ShowDialog(kAction1, kType1);
+  picker_.Wait();
 
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(0, picker_.num_inline_disposition_);
@@ -677,6 +707,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
             chrome::GetActiveWebContents(browser())->GetURL());
 
   EXPECT_TRUE(dispatcher.dispatched_);
+
+  CloseCurrentTab();
 }
 
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,

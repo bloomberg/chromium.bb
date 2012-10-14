@@ -198,6 +198,16 @@ class WebIntentPickerModel {
   // Removes any pending extension install state.
   void ClearPendingExtensionInstall();
 
+  // Set whether the picker should be showing the use-another-app control.
+  void set_show_use_another_service(bool show) {
+    show_use_another_service_ = show;
+  }
+
+  // Whether or not the picker should show the use-another-app control.
+  bool show_use_another_service() const {
+    return show_use_another_service_;
+  }
+
  private:
   // Delete all elements in |installed_services_| and |suggested_extensions_|.
   // Note that this method does not reset the observer.
@@ -236,6 +246,9 @@ class WebIntentPickerModel {
   string16 pending_extension_install_status_string_;
   ExtensionInstallPrompt::Delegate* pending_extension_install_delegate_;
   scoped_ptr<ExtensionInstallPrompt::Prompt> pending_extension_install_prompt_;
+
+  // Indicates the use-another-service control should be shown.
+  bool show_use_another_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerModel);
 };

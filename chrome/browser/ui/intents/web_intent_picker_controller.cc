@@ -270,16 +270,6 @@ void WebIntentPickerController::ShowDialog(DefaultsUsage suppress_defaults) {
   // TODO(gbillock): Decide whether to honor the default suppression flag
   // here or suppress the control for explicit intents.
   if (service.is_valid() && !suppress_defaults) {
-    // TODO(gbillock): When we can parse pages for the intent tag,
-    // take out this requirement that explicit intents dispatch to
-    // extension urls.
-    if (!service.SchemeIs(chrome::kExtensionScheme)) {
-      intents_dispatcher_->SendReplyMessage(
-          webkit_glue::WEB_INTENT_REPLY_FAILURE, ASCIIToUTF16(
-              "Only extension urls are supported for explicit invocation"));
-      return;
-    }
-
     // Get services from the registry to verify a registered extension
     // page for this action/type if it is permitted to be dispatched. (Also
     // required to find disposition set by service.)
@@ -353,10 +343,10 @@ void WebIntentPickerController::OnServiceChosen(
   if (!suppress_defaults)
     SetDefaultServiceForSelection(url);
 
-  const extensions::Extension* extension =
-      extension_service->GetInstalledApp(url);
 
   // TODO(smckay): this basically smells like another disposition.
+  const extensions::Extension* extension =
+      extension_service->GetInstalledApp(url);
   if (extension && extension->is_platform_app()) {
     extensions::LaunchPlatformAppWithWebIntent(profile_,
         extension, intents_dispatcher_, web_contents_);
@@ -398,9 +388,12 @@ void WebIntentPickerController::OnServiceChosen(
           MSG_ROUTING_NONE, NULL);
 
       // Let the controller for the target TabContents know that it is hosting a
-      // web intents service.
-      WebIntentPickerController::FromWebContents(contents->web_contents())->
-          SetWindowDispositionSource(web_contents_, intents_dispatcher_);
+      // web intents service. Suppress if we're not showing the
+      // use-another-service button.
+      if (picker_model_->show_use_another_service()) {
+        WebIntentPickerController::FromWebContents(contents->web_contents())->
+            SetWindowDispositionSource(web_contents_, intents_dispatcher_);
+      }
 
       intents_dispatcher_->DispatchIntent(contents->web_contents());
       service_tab_ = contents->web_contents();
@@ -908,12 +901,12 @@ void WebIntentPickerController::SetWindowDispositionSource(
                              weak_ptr_factory_.GetWeakPtr());
   }
 
-  source_intents_dispatcher_ = dispatcher;
   if (dispatcher) {
     dispatcher->RegisterReplyNotification(
       base::Bind(&WebIntentPickerController::SourceDispatcherReplied,
                  weak_ptr_factory_.GetWeakPtr()));
   }
+  source_intents_dispatcher_ = dispatcher;
 }
 
 void WebIntentPickerController::SourceWebContentsDestroyed(
@@ -1023,9 +1016,17 @@ void WebIntentPickerController::AsyncOperationFinished() {
 
 void WebIntentPickerController::InvokeServiceWithSelection(
     const webkit_glue::WebIntentServiceData& service) {
+  if (picker_shown_) {
+    intents_dispatcher_->SendReplyMessage(
+        webkit_glue::WEB_INTENT_REPLY_FAILURE,
+        ASCIIToUTF16("Simultaneous intent invocation."));
+    return;
+  }
+
   // TODO(gbillock): this is a bit hacky and exists because in the inline case,
   // the picker currently assumes it exists.
   AddServiceToModel(service);
+  picker_model_->set_show_use_another_service(false);
 
   if (service.disposition ==
       webkit_glue::WebIntentServiceData::DISPOSITION_INLINE) {

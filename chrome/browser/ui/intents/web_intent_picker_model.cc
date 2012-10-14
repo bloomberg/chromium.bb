@@ -27,7 +27,8 @@ WebIntentPickerModel::WebIntentPickerModel()
     : observer_(NULL),
       waiting_for_suggestions_(true),
       pending_extension_install_download_progress_(0),
-      pending_extension_install_delegate_(NULL) {
+      pending_extension_install_delegate_(NULL),
+      show_use_another_service_(true) {
 }
 
 WebIntentPickerModel::~WebIntentPickerModel() {
