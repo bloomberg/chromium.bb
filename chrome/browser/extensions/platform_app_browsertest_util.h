@@ -19,9 +19,26 @@ class ShellWindow;
 namespace extensions {
 class Extension;
 
+class MockExternalUrlController : public content::WebContentsDelegate {
+ public:
+  MockExternalUrlController();
+  virtual ~MockExternalUrlController();
+
+ private:
+  // content::WebContentsDelegate implementation.
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(MockExternalUrlController);
+};
+
 class PlatformAppBrowserTest : public ExtensionApiTest {
  public:
+  PlatformAppBrowserTest();
+  virtual ~PlatformAppBrowserTest();
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
 
  protected:
   // Runs the app named |name| out of the platform_apps subdirectory. Waits
@@ -66,6 +83,8 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
   // Closes |window| and waits until it's gone.
   void CloseShellWindow(ShellWindow* window);
+
+  scoped_ptr<MockExternalUrlController> mock_external_url_controller_;
 };
 
 }

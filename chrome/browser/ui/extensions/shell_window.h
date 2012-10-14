@@ -97,6 +97,10 @@ class ShellWindow : public content::NotificationObserver,
   // Save the window position in the prefs.
   virtual void SaveWindowPosition();
 
+  // Set the WebContentsDelegate for external url in test.
+  static void SetExternalUrlControllerForTesting(
+      content::WebContentsDelegate* controller);
+
  protected:
   ShellWindow(Profile* profile,
               const extensions::Extension* extension);
