@@ -23,6 +23,10 @@
 #include "content/public/common/sandbox_init.h"
 #endif
 
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#include <stdlib.h>
+#endif
+
 #if defined(OS_WIN)
 sandbox::TargetServices* g_target_services = NULL;
 #else
@@ -53,6 +57,20 @@ int PpapiPluginMain(const content::MainFunctionParams& parameters) {
   if (command_line.HasSwitch(switches::kLang)) {
     std::string locale = command_line.GetSwitchValueASCII(switches::kLang);
     base::i18n::SetICUDefaultLocale(locale);
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+    // TODO(shess): Flash appears to have a POSIX locale dependency
+    // outside of the existing PPAPI ICU support.  Certain games hang
+    // while loading, and it seems related to datetime formatting.
+    // http://crbug.com/155396
+    // http://crbug.com/155671
+    //
+    // ICU can accept "en-US" or "en_US", but POSIX wants "en_US".
+    // TODO(shess): "en_US.UTF-8" might be even better.
+    std::replace(locale.begin(), locale.end(), '-', '_');
+    setlocale(LC_ALL, locale.c_str());
+    setenv("LANG", locale.c_str(), 0);
+#endif
   }
 
   MessageLoop main_message_loop;
