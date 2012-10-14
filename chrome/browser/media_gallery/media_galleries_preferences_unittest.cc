@@ -98,7 +98,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     }
 
     std::vector<std::string> all_permissions;
-    all_permissions.push_back("all-auto-detected");
+    all_permissions.push_back("allAutoDetected");
     all_permissions.push_back("read");
     std::vector<std::string> read_permissions;
     read_permissions.push_back("read");

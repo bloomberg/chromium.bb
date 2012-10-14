@@ -7,5 +7,5 @@
       "scripts": ["test.js"]
     }
   },
-  "permissions": [{"mediaGalleries": ["read", "all-auto-detected"]}]
+  "permissions": [{"mediaGalleries": ["read", "allAutoDetected"]}]
 }

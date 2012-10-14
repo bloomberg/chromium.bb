@@ -20,7 +20,7 @@
 
 namespace {
 
-const char kAllAutoDetectedString[] = "all-auto-detected";
+const char kAllAutoDetectedString[] = "allAutoDetected";
 const char kReadString[] = "read";
 const char kInvalidString[] = "invalid";
 

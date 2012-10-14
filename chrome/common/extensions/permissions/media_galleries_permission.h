@@ -29,7 +29,7 @@ class Extension;
 //
 // The default location permission (no permission parameter) does not grant
 // access to any galleries, but lets the user grant access on a per gallery
-// basis.  The other location permission "all-auto-detected" gives the user
+// basis.  The other location permission "allAutoDetected" gives the user
 // access to all auto detected galleries.  This includes per platform default
 // galleries and removable devices that are detected as media devices.
 //
@@ -38,7 +38,7 @@ class Extension;
 // "write," "delete," and "add-file."
 //
 // <media galleries permissions>
-//     :=  'all-auto-detected' | 'read' | <media galleries permissions>
+//     :=  'allAutoDetected' | 'read' | <media galleries permissions>
 
 class MediaGalleriesPermission : public APIPermission {
  public:

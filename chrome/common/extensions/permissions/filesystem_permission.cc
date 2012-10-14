@@ -20,7 +20,6 @@
 
 namespace {
 
-const char kImplicitReadString[] = "read";
 const char kWriteString[] = "write";
 const char kInvalidString[] = "invalid";
 
@@ -53,8 +52,6 @@ FileSystemPermission::PermissionTypes
 FileSystemPermission::PermissionStringToType(const std::string& str) {
   if (str == kWriteString)
     return kWrite;
-  if (str == kImplicitReadString)
-    return kImplicitRead;
   return kNone;
 }
 
@@ -63,8 +60,6 @@ const char* FileSystemPermission::PermissionTypeToString(PermissionTypes type) {
   switch (type) {
     case kWrite:
       return kWriteString;
-    case kImplicitRead:
-      return kImplicitReadString;
     default:
       NOTREACHED();
       return kInvalidString;
@@ -116,10 +111,6 @@ bool FileSystemPermission::Equal(const APIPermission* rhs) const {
 
 bool FileSystemPermission::FromValue(const base::Value* value) {
   permissions_.clear();
-
-  // Always configure with the implicit read string. This may also be specified
-  // in the manifest, but is redundant.
-  permissions_.insert(kImplicitRead);
 
   // The simple "fileSystem" form, without an argument, is allowed.
   if (!value)
@@ -180,7 +171,7 @@ APIPermission* FileSystemPermission::Union(const APIPermission* rhs) const {
                  perm->permissions_.begin(), perm->permissions_.end(),
                  std::inserter<std::set<PermissionTypes> >(
                      result->permissions_, result->permissions_.begin()));
-  return result->permissions_.empty() ? NULL : result.release();
+  return result.release();
 }
 
 APIPermission* FileSystemPermission::Intersect(
@@ -194,7 +185,7 @@ APIPermission* FileSystemPermission::Intersect(
                         std::inserter<std::set<PermissionTypes> >(
                             result->permissions_,
                             result->permissions_.begin()));
-  return result->permissions_.empty() ? NULL : result.release();
+  return result.release();
 }
 
 void FileSystemPermission::Write(IPC::Message* m) const {

@@ -18,17 +18,14 @@ class Extension;
 
 // The default filesystem permission (no permission parameter) grants read
 // access to files based on user action, i.e., through a file chooser.
-// Specifically, the "read" permission may be specified in a manifest, but
-// is always implicitly added here.
 
 // <filesystem permissions>
-//     :=  'write' | 'read' | <filesystem permissions>
+//     :=  'write' | <filesystem permissions>
 
 class FileSystemPermission : public APIPermission {
  public:
   enum PermissionTypes {
     kNone = 0,
-    kImplicitRead,
     kWrite,
   };
 
