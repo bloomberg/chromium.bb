@@ -42,7 +42,7 @@ class Observer : public chrome::BrowserListObserver,
   // chrome::BrowserListObserver:
   virtual void OnBrowserAdded(Browser* browser) {}
   virtual void OnBrowserRemoved(Browser* browser) {
-    [controller_ activeBrowserChangedTo:browser::GetLastActiveBrowser()];
+    [controller_ activeBrowserChangedTo:chrome::GetLastActiveBrowser()];
   }
   virtual void OnBrowserSetLastActive(Browser* browser) {
     [controller_ activeBrowserChangedTo:browser];

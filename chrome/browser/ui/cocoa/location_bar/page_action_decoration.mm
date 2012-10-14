@@ -245,7 +245,7 @@ void PageActionDecoration::ShowPopup(const NSRect& frame,
   anchor = [field convertPoint:anchor toView:nil];
 
   [ExtensionPopupController showURL:popup_url
-                          inBrowser:browser::GetLastActiveBrowser()
+                          inBrowser:chrome::GetLastActiveBrowser()
                          anchoredAt:anchor
                       arrowLocation:info_bubble::kTopRight
                             devMode:NO];

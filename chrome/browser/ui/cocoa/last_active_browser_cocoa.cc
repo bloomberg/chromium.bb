@@ -6,10 +6,10 @@
 
 #include "chrome/browser/ui/browser_list.h"
 
-namespace browser {
+namespace chrome {
 
 Browser* GetLastActiveBrowser() {
   return BrowserList::GetLastActive();
 }
 
-}  // namespace browser
+}  // namespace chrome

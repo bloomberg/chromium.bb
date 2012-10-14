@@ -189,7 +189,7 @@ bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
 
   if (status != kAutoupdateRegisterFailed &&
       [[KeystoneGlue defaultKeystoneGlue] needsPromotion]) {
-    Browser* browser = browser::GetLastActiveBrowser();
+    Browser* browser = chrome::GetLastActiveBrowser();
     if (browser) {
       content::WebContents* webContents = chrome::GetActiveWebContents(browser);
 

@@ -48,7 +48,7 @@ using content::WebContents;
 
 - (void)UpdateActiveTabPairs {
   activeTabPairsVector_.clear();
-  Browser* browser = browser::GetLastActiveBrowser();
+  Browser* browser = chrome::GetLastActiveBrowser();
   const int tabCount = browser->tab_count();
   for (int i = 0; i < tabCount; ++i) {
     WebContents* contents = chrome::GetWebContentsAt(browser, i);

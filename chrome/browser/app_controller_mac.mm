@@ -117,7 +117,7 @@ Browser* CreateBrowser(Profile* profile) {
     chrome::NewEmptyWindow(profile);
   }
 
-  Browser* browser = browser::GetLastActiveBrowser();
+  Browser* browser = chrome::GetLastActiveBrowser();
   CHECK(browser);
   return browser;
 }
@@ -686,7 +686,7 @@ void RecordLastRunAppBundlePath() {
 // sheets) will not count as blocking the browser. But things like open/save
 // dialogs that are window modal will block the browser.
 - (BOOL)keyWindowIsNotModal {
-  Browser* browser = browser::GetLastActiveBrowser();
+  Browser* browser = chrome::GetLastActiveBrowser();
   return [NSApp modalWindow] == nil && (!browser ||
          ![[browser->window()->GetNativeWindow() attachedSheet]
              isKindOfClass:[NSWindow class]]);
@@ -1072,7 +1072,7 @@ void RecordLastRunAppBundlePath() {
     return;
   }
 
-  Browser* browser = browser::GetLastActiveBrowser();
+  Browser* browser = chrome::GetLastActiveBrowser();
   // if no browser window exists then create one with no tabs to be filled in
   if (!browser) {
     browser = new Browser(Browser::CreateParams([self lastProfile]));

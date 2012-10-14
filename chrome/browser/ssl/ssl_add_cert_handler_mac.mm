@@ -56,7 +56,7 @@ void SSLAddCertHandler::AskToAddCert() {
 
 - (void)askToAddCert {
   NSWindow* parentWindow = NULL;
-  Browser* browser = browser::GetLastActiveBrowser();
+  Browser* browser = chrome::GetLastActiveBrowser();
   // TODO(snej): Can I get the Browser that issued the request?
   if (browser) {
     parentWindow = browser->window()->GetNativeWindow();

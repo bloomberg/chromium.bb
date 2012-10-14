@@ -18,10 +18,10 @@
 
 class Browser;
 
-namespace browser {
+namespace chrome {
 
 Browser* GetLastActiveBrowser();
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_COCOA_LAST_ACTIVE_BROWSER_COCOA_H_

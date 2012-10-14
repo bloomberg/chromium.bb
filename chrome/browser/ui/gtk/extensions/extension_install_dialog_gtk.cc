@@ -75,7 +75,7 @@ gboolean OnZippyButtonRelease(GtkWidget* event_box,
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 // Displays the dialog when constructed, deletes itself when dialog is
 // dismissed. Success/failure is passed back through the
@@ -381,7 +381,7 @@ GtkWidget* ExtensionInstallDialog::CreateWidgetForIssueAdvice(
   return box;
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 namespace {
 
@@ -390,7 +390,7 @@ void ShowExtensionInstallDialogImpl(
     content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  new browser::ExtensionInstallDialog(parent, navigator, delegate, prompt);
+  new chrome::ExtensionInstallDialog(parent, navigator, delegate, prompt);
 }
 
 }  // namespace

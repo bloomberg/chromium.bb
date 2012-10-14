@@ -113,7 +113,7 @@ const CGFloat kLocBarBottomInset = 1;
 
   // Only save main window information to preferences.
   PrefService* prefs = browser_->profile()->GetPrefs();
-  if (!prefs || browser_ != browser::GetLastActiveBrowser())
+  if (!prefs || browser_ != chrome::GetLastActiveBrowser())
     return;
 
   // Save the current work area, in flipped coordinates.
