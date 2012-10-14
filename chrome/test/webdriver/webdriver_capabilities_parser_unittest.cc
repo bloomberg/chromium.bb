@@ -276,4 +276,26 @@ TEST(CapabilitiesParser, DriverLoggingCapString) {
   ASSERT_TRUE(parser.Parse());
 }
 
+TEST(CapabilitiesParser, ExcludeSwitches) {
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("chromeOptions", options);
+
+  ListValue* switches = new ListValue();
+  switches->Append(Value::CreateStringValue(switches::kNoFirstRun));
+  switches->Append(Value::CreateStringValue(switches::kDisableSync));
+  switches->Append(Value::CreateStringValue(switches::kDisableTranslate));
+  options->Set("excludeSwitches", switches);
+
+  Capabilities caps;
+  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  ASSERT_FALSE(parser.Parse());
+
+  const std::set<std::string>& rm_set = caps.exclude_switches;
+  EXPECT_EQ(static_cast<size_t>(3), rm_set.size());
+  ASSERT_TRUE(rm_set.find(switches::kNoFirstRun) != rm_set.end());
+  ASSERT_TRUE(rm_set.find(switches::kDisableSync) != rm_set.end());
+  ASSERT_TRUE(rm_set.find(switches::kDisableTranslate) != rm_set.end());
+}
+
 }  // namespace webdriver

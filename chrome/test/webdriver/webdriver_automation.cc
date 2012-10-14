@@ -356,23 +356,37 @@ void Automation::Init(
   if (CommandLine::ForCurrentProcess()->HasSwitch("no-sandbox")) {
     command.AppendSwitch(switches::kNoSandbox);
   }
+
+  const char* excludable_switches[] = {
+      switches::kDisableHangMonitor,
+      switches::kDisablePromptOnRepost,
+      switches::kDomAutomationController,
+      switches::kFullMemoryCrashReport,
+      switches::kNoDefaultBrowserCheck,
+      switches::kNoFirstRun,
+      switches::kDisableBackgroundNetworking,
+      switches::kDisableSync,
+      switches::kDisableTranslate,
+      switches::kDisableWebResources,
+      switches::kSbDisableAutoUpdate,
+      switches::kSbDisableDownloadProtection,
+      switches::kDisableClientSidePhishingDetection,
+      switches::kDisableComponentUpdate,
+      switches::kDisableDefaultApps
+  };
+  std::vector<std::string> switches(excludable_switches,
+      excludable_switches + arraysize(excludable_switches));
+  for (size_t i = 0; i < switches.size(); ++i) {
+    const std::string& switch_name = switches[i];
+    if (options.exclude_switches.find(switch_name) ==
+        options.exclude_switches.end()) {
+      command.AppendSwitch(switch_name);
+    }
+  }
+
   command.AppendSwitch(switches::kEnableLogging);
   command.AppendSwitchASCII(switches::kLoggingLevel, "1");
-  command.AppendSwitch(switches::kDisableHangMonitor);
-  command.AppendSwitch(switches::kDisablePromptOnRepost);
-  command.AppendSwitch(switches::kDomAutomationController);
-  command.AppendSwitch(switches::kFullMemoryCrashReport);
-  command.AppendSwitch(switches::kNoDefaultBrowserCheck);
-  command.AppendSwitch(switches::kNoFirstRun);
-  command.AppendSwitch(switches::kDisableBackgroundNetworking);
-  command.AppendSwitch(switches::kDisableSync);
-  command.AppendSwitch(switches::kDisableTranslate);
-  command.AppendSwitch(switches::kDisableWebResources);
-  command.AppendSwitch(switches::kSbDisableAutoUpdate);
-  command.AppendSwitch(switches::kSbDisableDownloadProtection);
-  command.AppendSwitch(switches::kDisableClientSidePhishingDetection);
-  command.AppendSwitch(switches::kDisableComponentUpdate);
-  command.AppendSwitch(switches::kDisableDefaultApps);
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   command.AppendSwitchASCII(switches::kPasswordStore, "basic");
 #endif

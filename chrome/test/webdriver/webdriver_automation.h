@@ -68,6 +68,9 @@ class Automation {
 
     // True if the browser should ignore certificate related errors.
     bool ignore_certificate_errors;
+
+    // Set of switches to be excluded from default list when starting Chrome.
+    std::set<std::string> exclude_switches;
   };
 
   explicit Automation(const Logger& logger);

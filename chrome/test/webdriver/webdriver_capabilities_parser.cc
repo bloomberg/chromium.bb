@@ -109,6 +109,8 @@ Error* CapabilitiesParser::Parse() {
     parser_map["chrome.switches"] = &CapabilitiesParser::ParseArgs;
     parser_map["chrome.noWebsiteTestingDefaults"] =
         &CapabilitiesParser::ParseNoWebsiteTestingDefaults;
+    parser_map["chrome.excludeSwitches"] =
+        &CapabilitiesParser::ParseExcludeSwitches;
   } else {
     parser_map["args"] = &CapabilitiesParser::ParseArgs;
     parser_map["binary"] = &CapabilitiesParser::ParseBinary;
@@ -122,6 +124,8 @@ Error* CapabilitiesParser::Parse() {
     parser_map["profile"] = &CapabilitiesParser::ParseProfile;
     parser_map["noWebsiteTestingDefaults"] =
         &CapabilitiesParser::ParseNoWebsiteTestingDefaults;
+    parser_map["excludeSwitches"] =
+        &CapabilitiesParser::ParseExcludeSwitches;
   }
 
   DictionaryValue::key_iterator key_iter = options->begin_keys();
@@ -427,6 +431,22 @@ Error* CapabilitiesParser::ParseNoWebsiteTestingDefaults(const Value* option) {
   if (!option->GetAsBoolean(&caps_->no_website_testing_defaults))
     return CreateBadInputError("noWebsiteTestingDefaults",
                                Value::TYPE_BOOLEAN, option);
+  return NULL;
+}
+
+Error* CapabilitiesParser::ParseExcludeSwitches(const Value* option) {
+  const base::ListValue* switches;
+  if (!option->GetAsList(&switches))
+    return CreateBadInputError("excludeSwitches", Value::TYPE_LIST,
+                               option);
+  for (size_t i = 0; i < switches->GetSize(); ++i) {
+    std::string switch_name;
+    if (!switches->GetString(i, &switch_name)) {
+      return new Error(kBadRequest,
+                       "Each switch to be removed must be a string");
+    }
+    caps_->exclude_switches.insert(switch_name);
+  }
   return NULL;
 }
 

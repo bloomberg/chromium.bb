@@ -65,6 +65,10 @@ struct Capabilities {
   // behavior.
   bool no_website_testing_defaults;
 
+  // Set of switches which should be removed from default list when launching
+  // Chrome.
+  std::set<std::string> exclude_switches;
+
   // Profile-level preferences to apply after Chrome starts but during session
   // initialization.
   scoped_ptr<base::DictionaryValue> prefs;
@@ -97,19 +101,21 @@ class CapabilitiesParser {
   Error* ParseBinary(const base::Value* option);
   Error* ParseChannel(const base::Value* option);
   Error* ParseDetach(const base::Value* option);
+  Error* ParseExcludeSwitches(const base::Value* options);
   Error* ParseExtensions(const base::Value* option);
   Error* ParseLoadAsync(const base::Value* option);
   Error* ParseLocalState(const base::Value* option);
   Error* ParseLoggingPrefs(const base::Value* option);
   Error* ParseNativeEvents(const base::Value* option);
   Error* ParseNoProxy(const base::Value* option);
+  Error* ParseNoWebsiteTestingDefaults(const base::Value* option);
   Error* ParsePrefs(const base::Value* option);
   Error* ParseProfile(const base::Value* option);
   Error* ParseProxy(const base::Value* option);
   Error* ParseProxyAutoDetect(const base::DictionaryValue* options);
   Error* ParseProxyAutoconfigUrl(const base::DictionaryValue* options);
   Error* ParseProxyServers(const base::DictionaryValue* options);
-  Error* ParseNoWebsiteTestingDefaults(const base::Value* option);
+
 
   // The capabilities dictionary to parse.
   const base::DictionaryValue* dict_;
