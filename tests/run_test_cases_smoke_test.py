@@ -28,7 +28,10 @@ def RunTest(test_file, extra_flags):
   cmd.append(target)
   logging.debug(' '.join(cmd))
   proc = subprocess.Popen(
-      cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      cmd,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      universal_newlines=True)
     # pylint is confused.
   out, err = proc.communicate() or ('', '')
 
@@ -48,15 +51,13 @@ class TraceTestCases(unittest.TestCase):
       os.remove(self.filename)
 
   def _check_results(self, expected_out_re, out, err):
-    if sys.platform == 'win32':
-      out = out.replace('\r\n', '\n')
     lines = out.splitlines()
 
     for index in range(len(expected_out_re)):
       line = lines.pop(0)
       self.assertTrue(
           re.match('^%s$' % expected_out_re[index], line),
-          (index, expected_out_re[index], repr(line)))
+          (index, repr(expected_out_re[index]), repr(line)))
     self.assertEqual([], lines)
     self.assertEqual('', err)
 
@@ -143,8 +144,10 @@ class TraceTestCases(unittest.TestCase):
 
     expected_out_re = [
         'Failed to run %s %s --gtest_list_tests' % (
-          sys.executable,
-          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_error.py')),
+          re.escape(sys.executable),
+          re.escape(
+            os.path.join(
+              ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_error.py'))),
         'stdout:',
         '',
         'stderr:',
@@ -161,9 +164,9 @@ class TraceTestCases(unittest.TestCase):
     expected_out = (
       'Foo.\n  Bar1\n  Bar2\n  Bar3\nBaz.\n  Fail\n'
       '  YOU HAVE 2 tests with ignored failures (FAILS prefix)\n\n')
-    self.assertEqual(0, return_code)
-    self.assertEqual(expected_out, out)
     self.assertEqual('', err)
+    self.assertEqual(expected_out, out)
+    self.assertEqual(0, return_code)
 
 
 if __name__ == '__main__':

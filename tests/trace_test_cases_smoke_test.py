@@ -105,7 +105,10 @@ class TraceTestCases(unittest.TestCase):
       'Foo.Bar3',
     )
     self.assertEquals(dict, result.__class__)
-    self.assertEquals(['traces'], result.keys())
+    if sys.platform != 'win32':
+      self.assertEquals(['traces'], sorted(result))
+    else:
+      self.assertEquals(['format', 'traces'], sorted(result))
     for index, trace in enumerate(
         sorted(result['traces'], key=lambda x: x['trace'])):
       self.assertEquals(test_cases[index], trace['trace'])

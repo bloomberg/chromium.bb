@@ -211,7 +211,7 @@ class IsolateModeBase(IsolateBase):
         # time.
         v[u'timestamp'] = int(round(filestats.st_mtime))
         if is_link:
-          v['link'] = os.readlink(filepath)
+          v['link'] = os.readlink(filepath)  # pylint: disable=E1101
 
       if self.LEVEL >= isolate.WITH_HASH:
         if not is_link:

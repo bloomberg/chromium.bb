@@ -136,7 +136,8 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
       # this code blows up.
       symlink_relfile = os.path.join(base, symlink)
       symlink_path = os.path.join(indir, symlink_relfile)
-      pointed = os.readlink(symlink_path)
+      # readlink doesn't exist on Windows.
+      pointed = os.readlink(symlink_path)  # pylint: disable=E1101
       dest_infile = normpath(
           os.path.join(os.path.dirname(symlink_path), pointed))
       if rest:
@@ -252,7 +253,8 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
     if 'link' in metadata:
       pointed = metadata['link']
       logging.debug('Symlink: %s -> %s' % (outfile, pointed))
-      os.symlink(pointed, outfile)
+      # symlink doesn't exist on Windows.
+      os.symlink(pointed, outfile)  # pylint: disable=E1101
     else:
       run_isolated.link_file(outfile, infile, action)
 
@@ -537,7 +539,7 @@ def process_input(filepath, prevdict, level, read_only):
         out['link'] = prevdict['link']
     if is_link and not 'link' in out:
       # A symlink, store the link destination.
-      out['link'] = os.readlink(filepath)
+      out['link'] = os.readlink(filepath)  # pylint: disable=E1101
 
   if level >= WITH_HASH and not out.get('sha-1') and not out.get('link'):
     if not is_link:

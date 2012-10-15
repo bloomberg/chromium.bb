@@ -2219,7 +2219,8 @@ class Dtrace(ApiBase):
         try:
           super(Dtrace.Tracer, self).close(timeout)
           # Signal dtrace that it should stop now.
-          os.ftruncate(self._dummy_file_id, 0)
+          # ftruncate doesn't exist on Windows.
+          os.ftruncate(self._dummy_file_id, 0)  # pylint: disable=E1101
           if timeout:
             start = time.time()
             # Use polling. :/
@@ -2726,7 +2727,7 @@ class LogmanTrace(ApiBase):
       with self._lock:
         assert tracename not in (i['trace'] for i in self._traces)
         self._traces.append({
-          'command': cmd,
+          'cmd': cmd,
           'cwd': cwd,
           'pid': child.pid,
           'trace': tracename,

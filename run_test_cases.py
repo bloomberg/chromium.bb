@@ -68,7 +68,7 @@ def num_processors():
     return multiprocessing.cpu_count()
   except:  # pylint: disable=W0702
     # Mac OS 10.6
-    return int(os.sysconf('SC_NPROCESSORS_ONLN'))
+    return int(os.sysconf('SC_NPROCESSORS_ONLN'))  # pylint: disable=E1101
 
 
 if subprocess.mswindows:
@@ -116,7 +116,7 @@ if subprocess.mswindows:
       return None
 
 else:
-  import fcntl
+  import fcntl  # pylint: disable=F0401
   import select
 
   def recv_impl(conn, maxsize, timeout):
@@ -127,6 +127,7 @@ else:
     # Temporarily make it non-blocking.
     flags = fcntl.fcntl(conn, fcntl.F_GETFL)
     if not conn.closed:
+      # pylint: disable=E1101
       fcntl.fcntl(conn, fcntl.F_SETFL, flags | os.O_NONBLOCK)
     try:
       return conn.read(maxsize)
@@ -875,7 +876,7 @@ def main(argv):
 
   if options.gtest_list_tests:
     # Special case, return the output of the target unmodified.
-    return subprocess.call(args + ['--gtest_list_tests'])
+    return subprocess.call(cmd + ['--gtest_list_tests'])
 
   test_cases = parser.process_gtest_options(cmd, options)
   if not test_cases:

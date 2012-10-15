@@ -89,7 +89,7 @@ def link_file(outfile, infile, action):
     readable_copy(outfile, infile)
   elif action == SYMLINK and sys.platform != 'win32':
     # On windows, symlink are converted to hardlink and fails over to copy.
-    os.symlink(infile, outfile)
+    os.symlink(infile, outfile)  # pylint: disable=E1101
   else:
     try:
       os_link(infile, outfile)
@@ -173,7 +173,8 @@ def get_free_space(path):
     ctypes.windll.kernel32.GetDiskFreeSpaceExW(
         ctypes.c_wchar_p(path), None, None, ctypes.pointer(free_bytes))
     return free_bytes.value
-  f = os.statvfs(path)
+  # For OSes other than Windows.
+  f = os.statvfs(path)  # pylint: disable=E1101
   return f.f_bfree * f.f_frsize
 
 
@@ -847,7 +848,9 @@ def run_tha_test(manifest_hash, cache_dir, remote, policies):
           if 'link' not in properties:
             continue
           outfile = os.path.join(outdir, filepath)
-          os.symlink(properties['link'], outfile)
+          # symlink doesn't exist on Windows. So the 'link' property should
+          # never be specified for windows .isolated file.
+          os.symlink(properties['link'], outfile)  # pylint: disable=E1101
           if 'mode' in properties:
             # It's not set on Windows.
             os.chmod(outfile, properties['mode'])
