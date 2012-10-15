@@ -6,5 +6,5 @@
   "version": "1.2",
   "offline_enabled": true,
   "app": {"background": {"scripts": ["model.js", "view.js", "background.js"]}},
-  "icons": {"128": "assets/icon-128x128.png"}
+  "icons": {"128": "images/icon-128x128.png"}
 }
