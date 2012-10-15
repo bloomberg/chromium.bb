@@ -338,8 +338,10 @@ TEST(ExceptionHandlerTest, RedeliveryOnBadSignalHandlerFlag) {
     // Then re-install the current one with 'signal', this loses the
     // SA_SIGINFO flag associated with the Breakpad handler.
     sighandler_t old_handler = signal(SIGSEGV, SIG_DFL);
-    ASSERT_NE(old_handler, SIG_ERR);
-    ASSERT_NE(signal(SIGSEGV, old_handler), SIG_ERR);
+    ASSERT_NE(reinterpret_cast<void*>(old_handler),
+              reinterpret_cast<void*>(SIG_ERR));
+    ASSERT_NE(reinterpret_cast<void*>(signal(SIGSEGV, old_handler)),
+              reinterpret_cast<void*>(SIG_ERR));
 
     // Crash with the exception handler in scope.
     *reinterpret_cast<volatile int*>(NULL) = 0;
