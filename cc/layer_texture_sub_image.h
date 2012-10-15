@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef LayerTextureSubImage_h
 #define LayerTextureSubImage_h
 
+#include "base/memory/scoped_ptr.h"
 #include "GraphicsTypes3D.h"
 #include "IntRect.h"
 #include "IntSize.h"
-#include <wtf/OwnArrayPtr.h>
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -36,8 +35,9 @@ private:
 
     bool m_useMapTexSubImage;
     size_t m_subImageSize;
-    OwnArrayPtr<uint8_t> m_subImage;
+    scoped_array<uint8_t> m_subImage;
 };
 
 } // namespace cc
+
 #endif // LayerTextureSubImage_h

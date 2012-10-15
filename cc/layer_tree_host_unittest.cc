@@ -23,7 +23,6 @@
 #include <public/Platform.h>
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>
-#include <wtf/OwnArrayPtr.h>
 
 using namespace cc;
 using namespace WebKit;
@@ -316,7 +315,7 @@ public:
             // Make the viewport empty so the host says it can't draw.
             m_layerTreeHost->setViewportSize(IntSize(0, 0), IntSize(0, 0));
 
-            OwnArrayPtr<char> pixels(adoptArrayPtr(new char[4]));
+            scoped_array<char> pixels(new char[4]);
             m_layerTreeHost->compositeAndReadback(static_cast<void*>(pixels.get()), IntRect(0, 0, 1, 1));
         } else if (m_numCommits == 2) {
             m_layerTreeHost->setNeedsRedraw();
@@ -440,7 +439,7 @@ public:
             m_layerTreeHost->setVisible(false);
             m_layerTreeHost->setNeedsCommit();
             m_layerTreeHost->setNeedsCommit();
-            OwnArrayPtr<char> pixels(adoptArrayPtr(new char[4]));
+            scoped_array<char> pixels(new char[4]);
             m_layerTreeHost->compositeAndReadback(static_cast<void*>(pixels.get()), IntRect(0, 0, 1, 1));
         } else
             endTest();
@@ -2304,7 +2303,7 @@ public:
     {
         LayerChromium* rootLayer = m_layerTreeHost->rootLayer();
 
-        OwnArrayPtr<char> pixels(adoptArrayPtr(new char[4]));
+        scoped_array<char> pixels(new char[4]);
         m_layerTreeHost->compositeAndReadback(static_cast<void*>(pixels.get()), IntRect(0, 0, 1, 1));
         EXPECT_FALSE(rootLayer->renderSurface());
 

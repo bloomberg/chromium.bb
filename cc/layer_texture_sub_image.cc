@@ -51,7 +51,7 @@ void LayerTextureSubImage::uploadWithTexSubImage(const uint8_t* image, const Int
     else {
         size_t neededSize = 4 * sourceRect.width() * sourceRect.height();
         if (m_subImageSize < neededSize) {
-          m_subImage = adoptArrayPtr(new uint8_t[neededSize]);
+          m_subImage.reset(new uint8_t[neededSize]);
           m_subImageSize = neededSize;
         }
         // Strides not equal, so do a row-by-row memcpy from the

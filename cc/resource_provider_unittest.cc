@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/HashMap.h>
-#include <wtf/OwnArrayPtr.h>
 #include <wtf/OwnPtr.h>
 
 using namespace cc;
@@ -33,13 +32,13 @@ struct Texture {
     Texture(const IntSize& size, WGC3Denum format)
         : size(size)
         , format(format)
-        , data(adoptArrayPtr(new uint8_t[textureSize(size, format)]))
+        , data(new uint8_t[textureSize(size, format)])
     {
     }
 
     IntSize size;
     WGC3Denum format;
-    OwnArrayPtr<uint8_t> data;
+    scoped_array<uint8_t> data;
 };
 
 // Shared data between multiple ResourceProviderContext. This contains mailbox

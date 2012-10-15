@@ -21,7 +21,6 @@
 #include "FakeWebCompositorOutputSurface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <wtf/OwnArrayPtr.h>
 
 using namespace cc;
 using namespace WebKit;
@@ -88,7 +87,7 @@ TEST_F(CCRendererSoftwareTest, solidColorQuad)
     hashmap.add(rootRenderPassId, rootRenderPass.Pass());
     renderer()->drawFrame(list, hashmap);
 
-    OwnArrayPtr<SkColor> pixels = adoptArrayPtr(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
+    scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
     renderer()->getFramebufferPixels(pixels.get(), outerRect);
 
     EXPECT_EQ(SK_ColorYELLOW, pixels[0]);
@@ -113,8 +112,8 @@ TEST_F(CCRendererSoftwareTest, tileQuad)
 
     SkColor yellow = SK_ColorYELLOW;
     SkColor cyan = SK_ColorCYAN;
-    OwnArrayPtr<SkColor> yellowPixels = adoptArrayPtr(new SkColor[outerPixels]);
-    OwnArrayPtr<SkColor> cyanPixels = adoptArrayPtr(new SkColor[innerPixels]);
+    scoped_array<SkColor> yellowPixels(new SkColor[outerPixels]);
+    scoped_array<SkColor> cyanPixels(new SkColor[innerPixels]);
     for (int i = 0; i < outerPixels; i++)
       yellowPixels[i] = yellow;
     for (int i = 0; i < innerPixels; i++)
@@ -140,7 +139,7 @@ TEST_F(CCRendererSoftwareTest, tileQuad)
     hashmap.add(rootRenderPassId, rootRenderPass.Pass());
     renderer()->drawFrame(list, hashmap);
 
-    OwnArrayPtr<SkColor> pixels = adoptArrayPtr(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
+    scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
     renderer()->getFramebufferPixels(pixels.get(), outerRect);
 
     EXPECT_EQ(SK_ColorYELLOW, pixels[0]);
