@@ -90,11 +90,13 @@ private:
         Backing(unsigned id, CCResourceProvider*, IntSize, GC3Denum format);
         ~Backing();
         void updatePriority();
+        void updateInDrawingImplTree();
 
         CCPrioritizedTexture* owner() { return m_owner; }
-        bool hadOwnerAtLastPriorityUpdate() const { return m_ownerExistedAtLastPriorityUpdate; }
+        bool canBeRecycled() const;
         int requestPriorityAtLastPriorityUpdate() const { return m_priorityAtLastPriorityUpdate; }
         bool wasAbovePriorityCutoffAtLastPriorityUpdate() const { return m_wasAbovePriorityCutoffAtLastPriorityUpdate; }
+        bool inDrawingImplTree() const { return m_inDrawingImplTree; }
 
         void deleteResource(CCResourceProvider*);
         bool resourceHasBeenDeleted() const;
@@ -103,8 +105,11 @@ private:
         friend class CCPrioritizedTexture;
         CCPrioritizedTexture* m_owner;
         int m_priorityAtLastPriorityUpdate;
-        bool m_ownerExistedAtLastPriorityUpdate;
         bool m_wasAbovePriorityCutoffAtLastPriorityUpdate;
+
+        // Set if this is currently-drawing impl tree.
+        bool m_inDrawingImplTree;
+
         bool m_resourceHasBeenDeleted;
 #ifndef NDEBUG
         CCResourceProvider* m_resourceProvider;

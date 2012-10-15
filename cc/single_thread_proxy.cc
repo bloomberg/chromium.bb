@@ -189,6 +189,7 @@ void CCSingleThreadProxy::doCommit(PassOwnPtr<CCTextureUpdateQueue> queue)
         base::TimeTicks startTime = base::TimeTicks::HighResNow();
         m_layerTreeHostImpl->beginCommit();
 
+        m_layerTreeHost->contentsTextureManager()->pushTexturePrioritiesToBackings();
         m_layerTreeHost->beginCommitOnImplThread(m_layerTreeHostImpl.get());
 
         OwnPtr<CCTextureUpdateController> updateController =
@@ -282,7 +283,8 @@ void CCSingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr
 void CCSingleThreadProxy::releaseContentsTexturesOnImplThread()
 {
     ASSERT(isImplThread());
-    m_layerTreeHost->reduceContentsTexturesMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
+    if (m_layerTreeHost->contentsTextureManager())
+        m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
 }
 
 // Called by the legacy scheduling path (e.g. where render_widget does the scheduling)
@@ -319,13 +321,9 @@ bool CCSingleThreadProxy::commitAndComposite()
     CCPrioritizedTextureManager::BackingVector evictedContentsTexturesBackings;
     {
         DebugScopedSetImplThread implThread;
-        m_layerTreeHost->getEvictedContentTexturesBackings(evictedContentsTexturesBackings);
+        m_layerTreeHost->contentsTextureManager()->getEvictedBackings(evictedContentsTexturesBackings);
     }
-    m_layerTreeHost->unlinkEvictedContentTexturesBackings(evictedContentsTexturesBackings);
-    {
-        DebugScopedSetImplThreadAndMainThreadBlocked implAndMainBlocked;
-        m_layerTreeHost->deleteEvictedContentTexturesBackings();
-    }
+    m_layerTreeHost->contentsTextureManager()->unlinkEvictedBackings(evictedContentsTexturesBackings);
 
     OwnPtr<CCTextureUpdateQueue> queue = adoptPtr(new CCTextureUpdateQueue);
     m_layerTreeHost->updateLayers(*(queue.get()), m_layerTreeHostImpl->memoryAllocationLimitBytes());

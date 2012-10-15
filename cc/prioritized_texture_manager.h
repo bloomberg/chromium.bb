@@ -67,14 +67,19 @@ public:
     void prioritizeTextures();
     void clearPriorities();
 
+    // Delete contents textures' backing resources until they use only bytesLimit bytes. This may
+    // be called on the impl thread while the main thread is running.
     void reduceMemoryOnImplThread(size_t limitBytes, CCResourceProvider*);
-    bool evictedBackingsExist() const { return !m_evictedBackings.isEmpty(); }
+    // Returns true if there exist any textures that are linked to backings that have had their
+    // resources evicted. Only when we commit a tree that has no textures linked to evicted backings
+    // may we allow drawing.
+    bool linkedEvictedBackingsExist() const;
+    // Retrieve the list of all contents textures' backings that have been evicted, to pass to the
+    // main thread to unlink them from their owning textures.
     void getEvictedBackings(BackingVector& evictedBackings);
+    // Unlink the list of contents textures' backings from their owning textures on the main thread
+    // before updating layers.
     void unlinkEvictedBackings(const BackingVector& evictedBackings);
-    // Deletes all evicted backings, unlinking them from their owning textures if needed.
-    // Returns true if this function unlinked any backings from their owning texture while
-    // destroying them.
-    bool deleteEvictedBackings();
 
     bool requestLate(CCPrioritizedTexture*);
 
@@ -86,6 +91,12 @@ public:
     void registerTexture(CCPrioritizedTexture*);
     void unregisterTexture(CCPrioritizedTexture*);
     void returnBackingTexture(CCPrioritizedTexture*);
+
+    // Update all backings' priorities from their owning texture.
+    void pushTexturePrioritiesToBackings();
+
+    // Mark all textures' backings as being in the drawing impl tree.
+    void updateBackingsInDrawingImplTree();
 
 private:
     friend class CCPrioritizedTextureTest;
@@ -105,25 +116,29 @@ private:
     // Compare backings. Lowest priority first.
     static inline bool compareBackings(CCPrioritizedTexture::Backing* a, CCPrioritizedTexture::Backing* b)
     {
-        int priorityA = a->requestPriorityAtLastPriorityUpdate();
-        int priorityB = b->requestPriorityAtLastPriorityUpdate();
-        if (priorityA != priorityB)
-            return CCPriorityCalculator::priorityIsLower(priorityA, priorityB);
-        bool aboveCutoffA = a->wasAbovePriorityCutoffAtLastPriorityUpdate();
-        bool aboveCutoffB = b->wasAbovePriorityCutoffAtLastPriorityUpdate();
-        if (!aboveCutoffA && aboveCutoffB)
-            return true;
-        if (aboveCutoffA && !aboveCutoffB)
-            return false;
+        // Make textures that can be recycled appear first
+        if (a->canBeRecycled() != b->canBeRecycled())
+            return (a->canBeRecycled() > b->canBeRecycled());
+        // Then sort by being above or below the priority cutoff.
+        if (a->wasAbovePriorityCutoffAtLastPriorityUpdate() != b->wasAbovePriorityCutoffAtLastPriorityUpdate())
+            return (a->wasAbovePriorityCutoffAtLastPriorityUpdate() < b->wasAbovePriorityCutoffAtLastPriorityUpdate());
+        // Then sort by priority (note that backings that no longer have owners will
+        // always have the lowest priority)
+        if (a->requestPriorityAtLastPriorityUpdate() != b->requestPriorityAtLastPriorityUpdate())
+            return CCPriorityCalculator::priorityIsLower(a->requestPriorityAtLastPriorityUpdate(), b->requestPriorityAtLastPriorityUpdate());
+        // Finally sort by being in the impl tree versus being completely unreferenced
+        if (a->inDrawingImplTree() != b->inDrawingImplTree())
+            return (a->inDrawingImplTree() < b->inDrawingImplTree());
         return a < b;
     }
 
     CCPrioritizedTextureManager(size_t maxMemoryLimitBytes, int maxTextureSize, int pool);
 
-    void updateBackingsPriorities();
     void evictBackingsToReduceMemory(size_t limitBytes, EvictionPriorityPolicy, CCResourceProvider*);
     CCPrioritizedTexture::Backing* createBacking(IntSize, GC3Denum format, CCResourceProvider*);
     void evictBackingResource(CCPrioritizedTexture::Backing*, CCResourceProvider*);
+    void deleteUnlinkedEvictedBackings();
+    void sortBackings();
 
 #if !ASSERT_DISABLED
     void assertInvariants();
@@ -146,10 +161,6 @@ private:
 
     TextureVector m_tempTextureVector;
     BackingVector m_tempBackingVector;
-
-    // Set by the main thread when it adjust priorities in such a way that
-    // the m_backings array's view of priorities is now out of date.
-    bool m_needsUpdateBackingsPrioritites;
 
     DISALLOW_COPY_AND_ASSIGN(CCPrioritizedTextureManager);
 };

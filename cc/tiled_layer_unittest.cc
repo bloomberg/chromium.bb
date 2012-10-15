@@ -96,6 +96,7 @@ public:
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         textureManager->clearAllMemory(resourceProvider);
+        textureManager->reduceMemory(resourceProvider);
     }
     void updateTextures()
     {

@@ -23,7 +23,6 @@ CCPrioritizedTextureManager::CCPrioritizedTextureManager(size_t maxMemoryLimitBy
     , m_memoryAboveCutoffBytes(0)
     , m_memoryAvailableBytes(0)
     , m_pool(pool)
-    , m_needsUpdateBackingsPrioritites(false)
 {
 }
 
@@ -32,7 +31,8 @@ CCPrioritizedTextureManager::~CCPrioritizedTextureManager()
     while (m_textures.size() > 0)
         unregisterTexture(*m_textures.begin());
 
-    deleteEvictedBackings();
+    deleteUnlinkedEvictedBackings();
+    ASSERT(m_evictedBackings.isEmpty());
 
     // Each remaining backing is a leaked opengl texture. There should be none.
     ASSERT(m_backings.isEmpty());
@@ -94,31 +94,44 @@ void CCPrioritizedTextureManager::prioritizeTextures()
     }
     sortedTextures.clear();
 
-    m_needsUpdateBackingsPrioritites = true;
-
     ASSERT(m_memoryAboveCutoffBytes <= m_memoryAvailableBytes);
     ASSERT(memoryAboveCutoffBytes() <= maxMemoryLimitBytes());
 }
 
-void CCPrioritizedTextureManager::updateBackingsPriorities()
+void CCPrioritizedTextureManager::pushTexturePrioritiesToBackings()
+{
+    TRACE_EVENT0("cc", "CCPrioritizedTextureManager::pushTexturePrioritiesToBackings");
+    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+
+    for (BackingSet::iterator it = m_backings.begin(); it != m_backings.end(); ++it)
+        (*it)->updatePriority();
+
+    sortBackings();
+}
+
+void CCPrioritizedTextureManager::updateBackingsInDrawingImplTree()
+{
+    TRACE_EVENT0("cc", "CCPrioritizedTextureManager::updateBackingsInDrawingImplTree");
+    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+
+    for (BackingSet::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
+        CCPrioritizedTexture::Backing* backing = (*it);
+        backing->updateInDrawingImplTree();
+    }
+
+    sortBackings();
+}
+
+void CCPrioritizedTextureManager::sortBackings()
 {
     TRACE_EVENT0("cc", "CCPrioritizedTextureManager::updateBackingsPriorities");
     ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
 
-    if (!m_needsUpdateBackingsPrioritites)
-        return;
-
-#if !ASSERT_DISABLED
-    assertInvariants();
-#endif
-
     // Update backings' priorities and put backings in eviction/recycling order.
     BackingVector& sortedBackings = m_tempBackingVector;
     sortedBackings.clear();
-    for (BackingSet::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
-        (*it)->updatePriority();
+    for (BackingSet::iterator it = m_backings.begin(); it != m_backings.end(); ++it)
         sortedBackings.append(*it);
-    }
     std::sort(sortedBackings.begin(), sortedBackings.end(), compareBackings);
 
     for (BackingVector::iterator it = sortedBackings.begin(); it != sortedBackings.end(); ++it) {
@@ -126,7 +139,6 @@ void CCPrioritizedTextureManager::updateBackingsPriorities()
         m_backings.add(*it);
     }
     sortedBackings.clear();
-    m_needsUpdateBackingsPrioritites = false;
 
 #if !ASSERT_DISABLED
     assertInvariants();
@@ -162,7 +174,6 @@ bool CCPrioritizedTextureManager::requestLate(CCPrioritizedTexture* texture)
 
     m_memoryAboveCutoffBytes = newMemoryBytes;
     texture->setAbovePriorityCutoff(true);
-    m_needsUpdateBackingsPrioritites = true;
     return true;
 }
 
@@ -174,15 +185,12 @@ void CCPrioritizedTextureManager::acquireBackingTextureIfNeeded(CCPrioritizedTex
     if (texture->backing() || !texture->isAbovePriorityCutoff())
         return;
 
-    // Make sure that the backings list is up to date and sorted before traversing it.
-    updateBackingsPriorities();
-
     // Find a backing below, by either recycling or allocating.
     CCPrioritizedTexture::Backing* backing = 0;
 
     // First try to recycle
     for (BackingSet::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
-        if ((*it)->hadOwnerAtLastPriorityUpdate() && (*it)->wasAbovePriorityCutoffAtLastPriorityUpdate())
+        if (!(*it)->canBeRecycled())
             break;
         if ((*it)->size() == texture->size() && (*it)->format() == texture->format()) {
             backing = (*it);
@@ -218,7 +226,7 @@ void CCPrioritizedTextureManager::evictBackingsToReduceMemory(size_t limitBytes,
     while (memoryUseBytes() > limitBytes && m_backings.size() > 0) {
         CCPrioritizedTexture::Backing* backing = *m_backings.begin();
         if (evictionPolicy == RespectManagerPriorityCutoff)
-            if (backing->hadOwnerAtLastPriorityUpdate() && backing->wasAbovePriorityCutoffAtLastPriorityUpdate())
+            if (backing->wasAbovePriorityCutoffAtLastPriorityUpdate())
                 break;
         evictBackingResource(backing, resourceProvider);
     }
@@ -227,9 +235,6 @@ void CCPrioritizedTextureManager::evictBackingsToReduceMemory(size_t limitBytes,
 void CCPrioritizedTextureManager::reduceMemory(CCResourceProvider* resourceProvider)
 {
     ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
-
-    // Make sure that the backings list is up to date and sorted before traversing it.
-    updateBackingsPriorities();
 
     evictBackingsToReduceMemory(m_memoryAvailableBytes, RespectManagerPriorityCutoff, resourceProvider);
     ASSERT(memoryUseBytes() <= maxMemoryLimitBytes());
@@ -249,7 +254,14 @@ void CCPrioritizedTextureManager::reduceMemory(CCResourceProvider* resourceProvi
     if (wastedMemory > tenPercentOfMemory)
         evictBackingsToReduceMemory(memoryUseBytes() - (wastedMemory - tenPercentOfMemory), RespectManagerPriorityCutoff, resourceProvider);
 
-    deleteEvictedBackings();
+    // Unlink all evicted backings
+    for (BackingVector::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
+        if ((*it)->owner())
+            (*it)->owner()->unlink();
+    }
+
+    // And clear the list of evicted backings
+    deleteUnlinkedEvictedBackings();
 }
 
 void CCPrioritizedTextureManager::clearAllMemory(CCResourceProvider* resourceProvider)
@@ -257,7 +269,6 @@ void CCPrioritizedTextureManager::clearAllMemory(CCResourceProvider* resourcePro
     ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
     ASSERT(resourceProvider);
     evictBackingsToReduceMemory(0, DoNotRespectManagerPriorityCutoff, resourceProvider);
-    deleteEvictedBackings();
 }
 
 void CCPrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, CCResourceProvider* resourceProvider)
@@ -284,20 +295,27 @@ void CCPrioritizedTextureManager::unlinkEvictedBackings(const BackingVector& evi
     }
 }
 
-bool CCPrioritizedTextureManager::deleteEvictedBackings()
+void CCPrioritizedTextureManager::deleteUnlinkedEvictedBackings()
 {
     ASSERT(CCProxy::isMainThread() || (CCProxy::isImplThread() && CCProxy::isMainThreadBlocked()));
-    bool linkedEvictedBackingsExisted = false;
+    BackingVector newEvictedBackings;
     for (BackingVector::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
         CCPrioritizedTexture::Backing* backing = (*it);
-        if (backing->owner()) {
-            linkedEvictedBackingsExisted = true;
-            backing->owner()->unlink();
-        }
-        delete backing;
+        if (backing->owner())
+            newEvictedBackings.append(backing);
+        else
+            delete backing;
     }
-    m_evictedBackings.clear();
-    return linkedEvictedBackingsExisted;
+    m_evictedBackings.swap(newEvictedBackings);
+}
+
+bool CCPrioritizedTextureManager::linkedEvictedBackingsExist() const
+{
+    for (BackingVector::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
+        if ((*it)->owner())
+            return true;
+    }
+    return false;
 }
 
 void CCPrioritizedTextureManager::registerTexture(CCPrioritizedTexture* texture)
@@ -328,10 +346,8 @@ void CCPrioritizedTextureManager::unregisterTexture(CCPrioritizedTexture* textur
 void CCPrioritizedTextureManager::returnBackingTexture(CCPrioritizedTexture* texture)
 {
     ASSERT(CCProxy::isMainThread() || (CCProxy::isImplThread() && CCProxy::isMainThreadBlocked()));
-    if (texture->backing()) {
+    if (texture->backing())
         texture->unlink();
-        m_needsUpdateBackingsPrioritites = true;
-    }
 }
 
 CCPrioritizedTexture::Backing* CCPrioritizedTextureManager::createBacking(IntSize size, GC3Denum format, CCResourceProvider* resourceProvider)
@@ -380,28 +396,31 @@ void CCPrioritizedTextureManager::assertInvariants()
         }
     }
     for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it) {
-        if ((*it)->backing()) {
-            ASSERT(m_backings.find((*it)->backing()) != m_backings.end());
-            ASSERT((*it)->backing()->owner() == (*it));
+        CCPrioritizedTexture* texture = (*it);
+        CCPrioritizedTexture::Backing* backing = texture->backing();
+        if (backing) {
+            if (backing->resourceHasBeenDeleted()) {
+                ASSERT(m_backings.find(backing) == m_backings.end());
+                ASSERT(m_evictedBackings.contains(backing));
+            } else {
+                ASSERT(m_backings.find(backing) != m_backings.end());
+                ASSERT(!m_evictedBackings.contains(backing));
+            }
+            ASSERT(backing->owner() == texture);
         }
     }
 
     // At all times, backings that can be evicted must always come before
     // backings that can't be evicted in the backing texture list (otherwise
     // reduceMemory will not find all textures available for eviction/recycling).
-    bool reachedOwned = false;
-    bool reachedAboveCutoff = false;
+    bool reachedUnrecyclable = false;
     for (BackingSet::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
-        if ((*it)->hadOwnerAtLastPriorityUpdate())
-            reachedOwned = true;
-        if ((*it)->wasAbovePriorityCutoffAtLastPriorityUpdate())
-            reachedAboveCutoff = true;
-        if (reachedOwned)
-            ASSERT((*it)->hadOwnerAtLastPriorityUpdate());
-        if (reachedAboveCutoff) {
-            ASSERT((*it)->hadOwnerAtLastPriorityUpdate() && (*it)->wasAbovePriorityCutoffAtLastPriorityUpdate());
-            ASSERT(reachedOwned);
-        }
+        if (!(*it)->canBeRecycled())
+            reachedUnrecyclable = true;
+        if (reachedUnrecyclable)
+            ASSERT(!(*it)->canBeRecycled());
+        else
+            ASSERT((*it)->canBeRecycled());
     }
 }
 #endif

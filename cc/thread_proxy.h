@@ -167,10 +167,6 @@ private:
 
     OwnPtr<CCTextureUpdateController> m_currentTextureUpdateControllerOnImplThread;
 
-    // Set when we need to reset the contentsTexturesPurged flag after the
-    // commit.
-    bool m_resetContentsTexturesPurgedAfterCommitOnImplThread;
-
     // Set when the next draw should post didCommitAndDrawFrame to the main thread.
     bool m_nextFrameIsNewlyCommittedFrameOnImplThread;
 

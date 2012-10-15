@@ -70,7 +70,7 @@ public:
     void textureManagerUpdateBackingsPriorities(CCPrioritizedTextureManager* textureManager)
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
-        textureManager->updateBackingsPriorities();
+        textureManager->pushTexturePrioritiesToBackings();
     }
 
     CCResourceProvider* resourceProvider()

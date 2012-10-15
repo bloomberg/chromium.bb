@@ -51,7 +51,6 @@ CCThreadProxy::CCThreadProxy(CCLayerTreeHost* layerTreeHost)
     , m_readbackRequestOnImplThread(0)
     , m_commitCompletionEventOnImplThread(0)
     , m_textureAcquisitionCompletionEventOnImplThread(0)
-    , m_resetContentsTexturesPurgedAfterCommitOnImplThread(false)
     , m_nextFrameIsNewlyCommittedFrameOnImplThread(false)
     , m_renderVSyncEnabled(layerTreeHost->settings().renderVSyncEnabled)
     , m_totalCommitCount(0)
@@ -354,13 +353,12 @@ void CCThreadProxy::releaseContentsTexturesOnImplThread()
 {
     ASSERT(isImplThread());
 
-    m_layerTreeHost->reduceContentsTexturesMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
+    if (m_layerTreeHost->contentsTextureManager()) 
+        m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
 
-    // Make sure that we get a new commit before drawing again.
-    m_resetContentsTexturesPurgedAfterCommitOnImplThread = false;
     // The texture upload queue may reference textures that were just purged, clear
     // them from the queue.
-    if (m_currentTextureUpdateControllerOnImplThread.get() && m_layerTreeHost->evictedContentsTexturesBackingsExist())
+    if (m_currentTextureUpdateControllerOnImplThread.get())
         m_currentTextureUpdateControllerOnImplThread->discardUploadsToEvictedResources();
 }
 
@@ -468,7 +466,8 @@ void CCThreadProxy::scheduledActionBeginFrame()
     m_pendingBeginFrameRequest->scrollInfo = m_layerTreeHostImpl->processScrollDeltas();
     m_pendingBeginFrameRequest->implTransform = m_layerTreeHostImpl->implTransform();
     m_pendingBeginFrameRequest->memoryAllocationLimitBytes = m_layerTreeHostImpl->memoryAllocationLimitBytes();
-    m_layerTreeHost->getEvictedContentTexturesBackings(m_pendingBeginFrameRequest->evictedContentsTexturesBackings);
+    if (m_layerTreeHost->contentsTextureManager())
+         m_layerTreeHost->contentsTextureManager()->getEvictedBackings(m_pendingBeginFrameRequest->evictedContentsTexturesBackings);
 
     m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadProxy::beginFrame));
 
@@ -540,7 +539,7 @@ void CCThreadProxy::beginFrame()
         return;
     }
 
-    m_layerTreeHost->unlinkEvictedContentTexturesBackings(request->evictedContentsTexturesBackings);
+    m_layerTreeHost->contentsTextureManager()->unlinkEvictedBackings(request->evictedContentsTexturesBackings);
 
     OwnPtr<CCTextureUpdateQueue> queue = adoptPtr(new CCTextureUpdateQueue);
     m_layerTreeHost->updateLayers(*(queue.get()), request->memoryAllocationLimitBytes);
@@ -598,23 +597,16 @@ void CCThreadProxy::beginFrameCompleteOnImplThread(CCCompletionEvent* completion
         return;
     }
 
-    // Clear any uploads we were making to textures linked to evicted
-    // resources
-    if (m_layerTreeHost->evictedContentsTexturesBackingsExist())
+    if (m_layerTreeHost->contentsTextureManager()->linkedEvictedBackingsExist()) {
+        // Clear any uploads we were making to textures linked to evicted
+        // resources
         queue->clearUploadsToEvictedResources();
-
-    // If we unlinked evicted textures on the main thread, delete them now.
-    if (m_layerTreeHost->deleteEvictedContentTexturesBackings()) {
-        // Deleting the evicted textures' backings resulted in some textures in the
-        // layer tree being invalidated (unliked from their backings). Kick off
-        // another commit to fill them again.
+        // Some textures in the layer tree are invalid. Kick off another commit
+        // to fill them again.
         setNeedsCommitOnImplThread();
-    } else {
-        // The layer tree does not reference evicted textures, so mark that we
-        // can draw this tree once this commit is complete.
-        if (m_layerTreeHostImpl->contentsTexturesPurged())
-            m_resetContentsTexturesPurgedAfterCommitOnImplThread = true;
     }
+
+    m_layerTreeHost->contentsTextureManager()->pushTexturePrioritiesToBackings();
 
     m_currentTextureUpdateControllerOnImplThread = CCTextureUpdateController::create(this, CCProxy::implThread(), queue, m_layerTreeHostImpl->resourceProvider(), m_layerTreeHostImpl->resourceProvider()->textureUploader());
     m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(
@@ -644,14 +636,17 @@ void CCThreadProxy::scheduledActionCommit()
     m_currentTextureUpdateControllerOnImplThread->finalize();
     m_currentTextureUpdateControllerOnImplThread.clear();
 
-    m_layerTreeHostImpl->beginCommit();
+    // If there are linked evicted backings, these backings' resources may be put into the
+    // impl tree, so we can't draw yet. Determine this before clearing all evicted backings.
+    bool newImplTreeHasNoEvictedResources = !m_layerTreeHost->contentsTextureManager()->linkedEvictedBackingsExist();
 
+    m_layerTreeHostImpl->beginCommit();
     m_layerTreeHost->beginCommitOnImplThread(m_layerTreeHostImpl.get());
     m_layerTreeHost->finishCommitOnImplThread(m_layerTreeHostImpl.get());
 
-    if (m_resetContentsTexturesPurgedAfterCommitOnImplThread) {
-        m_resetContentsTexturesPurgedAfterCommitOnImplThread = false;
-        m_layerTreeHostImpl->resetContentsTexturesPurged();
+    if (newImplTreeHasNoEvictedResources) {
+        if (m_layerTreeHostImpl->contentsTexturesPurged())
+            m_layerTreeHostImpl->resetContentsTexturesPurged();
     }
 
     m_layerTreeHostImpl->commitComplete();

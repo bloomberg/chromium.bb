@@ -129,8 +129,8 @@ CCPrioritizedTexture::Backing::Backing(unsigned id, CCResourceProvider* resource
     : CCTexture(id, size, format)
     , m_owner(0)
     , m_priorityAtLastPriorityUpdate(CCPriorityCalculator::lowestPriority())
-    , m_ownerExistedAtLastPriorityUpdate(false)
     , m_wasAbovePriorityCutoffAtLastPriorityUpdate(false)
+    , m_inDrawingImplTree(false)
     , m_resourceHasBeenDeleted(false)
 #ifndef NDEBUG
     , m_resourceProvider(resourceProvider)
@@ -163,18 +163,30 @@ bool CCPrioritizedTexture::Backing::resourceHasBeenDeleted() const
     return m_resourceHasBeenDeleted;
 }
 
+bool CCPrioritizedTexture::Backing::canBeRecycled() const
+{
+    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+    return !m_wasAbovePriorityCutoffAtLastPriorityUpdate && !m_inDrawingImplTree;
+}
+
 void CCPrioritizedTexture::Backing::updatePriority()
 {
     ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
     if (m_owner) {
-        m_ownerExistedAtLastPriorityUpdate = true;
         m_priorityAtLastPriorityUpdate = m_owner->requestPriority();
         m_wasAbovePriorityCutoffAtLastPriorityUpdate = m_owner->isAbovePriorityCutoff();
     } else {
-        m_ownerExistedAtLastPriorityUpdate = false;
         m_priorityAtLastPriorityUpdate = CCPriorityCalculator::lowestPriority();
         m_wasAbovePriorityCutoffAtLastPriorityUpdate = false;
     }
+}
+
+void CCPrioritizedTexture::Backing::updateInDrawingImplTree()
+{
+    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+    m_inDrawingImplTree = !!owner();
+    if (!m_inDrawingImplTree)
+        ASSERT(m_priorityAtLastPriorityUpdate == CCPriorityCalculator::lowestPriority());
 }
 
 } // namespace cc
