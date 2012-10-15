@@ -40,7 +40,6 @@ bool DecodeAudioFileData(
 
   size_t number_of_channels = reader.channels();
   double file_sample_rate = reader.sample_rate();
-  double duration = reader.duration().InSecondsF();
   size_t number_of_frames = static_cast<size_t>(reader.number_of_frames());
 
   // Apply sanity checks to make sure crazy values aren't coming out of
@@ -50,14 +49,6 @@ bool DecodeAudioFileData(
       file_sample_rate < media::limits::kMinSampleRate ||
       file_sample_rate > media::limits::kMaxSampleRate)
     return false;
-
-  DVLOG(1) << "Decoding file data -"
-           << " data: " << data
-           << " data size: " << data_size
-           << " duration: " << duration
-           << " number of frames: " << number_of_frames
-           << " sample rate: " << file_sample_rate
-           << " number of channels: " << number_of_channels;
 
   // Allocate and configure the output audio channel data.
   destination_bus->initialize(number_of_channels,
@@ -75,7 +66,28 @@ bool DecodeAudioFileData(
       number_of_frames, audio_data);
 
   // Decode the audio file data.
-  return reader.Read(audio_bus.get());
+  // TODO(crogers): If our estimate was low, then we still may fail to read
+  // all of the data from the file.
+  size_t actual_frames = reader.Read(audio_bus.get());
+
+  // Adjust WebKit's bus to account for the actual file length
+  // and valid data read.
+  if (actual_frames != number_of_frames) {
+    DCHECK_LE(actual_frames, number_of_frames);
+    destination_bus->resizeSmaller(actual_frames);
+  }
+
+  double duration = actual_frames / file_sample_rate;
+
+  DVLOG(1) << "Decoded file data -"
+           << " data: " << data
+           << " data size: " << data_size
+           << " duration: " << duration
+           << " number of frames: " << actual_frames
+           << " sample rate: " << file_sample_rate
+           << " number of channels: " << number_of_channels;
+
+  return actual_frames > 0;
 }
 
 }  // namespace webkit_media
