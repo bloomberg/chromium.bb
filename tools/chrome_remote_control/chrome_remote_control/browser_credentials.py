@@ -5,6 +5,7 @@ import logging
 import json
 import os
 
+from chrome_remote_control import facebook_credentials_backend
 from chrome_remote_control import google_credentials_backend
 from chrome_remote_control import options_for_unittests
 
@@ -15,6 +16,7 @@ class BrowserCredentials(object):
 
     if backends is None:
       backends = [
+        facebook_credentials_backend.FacebookCredentialsBackend(),
         google_credentials_backend.GoogleCredentialsBackend()]
 
     self._backends = {}

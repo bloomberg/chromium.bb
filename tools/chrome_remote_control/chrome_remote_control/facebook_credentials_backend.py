@@ -4,24 +4,24 @@
 
 from chrome_remote_control import form_based_credentials_backend
 
-class GoogleCredentialsBackend(
+class FacebookCredentialsBackend(
     form_based_credentials_backend.FormBasedCredentialsBackend):
   @property
   def credentials_type(self):
-    return 'google'
+    return 'facebook'
 
   @property
   def url(self):
-    return 'https://accounts.google.com/'
+    return 'http://www.facebook.com/'
 
   @property
   def form_id(self):
-    return 'gaia_loginform'
+    return 'login_form'
 
   @property
   def login_input_id(self):
-    return 'Email'
+    return 'email'
 
   @property
   def password_input_id(self):
-    return 'Passwd'
+    return 'pass'
