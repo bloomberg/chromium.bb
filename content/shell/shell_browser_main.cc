@@ -7,12 +7,16 @@
 #include <iostream>
 
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_runner_host.h"
+#include "net/base/net_util.h"
 #include "webkit/support/webkit_support.h"
 
 namespace {
@@ -40,11 +44,21 @@ GURL GetURLForLayoutTest(const char* test_name,
   }
   if (expected_pixel_hash)
     *expected_pixel_hash = pixel_hash;
-  GURL test_url = webkit_support::CreateURLForPathOrURL(path_or_url);
-  {
+  GURL test_url(path_or_url);
+  if (!(test_url.is_valid() && test_url.has_scheme())) {
+#if defined(OS_WIN)
+    std::wstring wide_path_or_url =
+        base::SysNativeMBToWide(path_or_url);
+    test_url = net::FilePathToFileURL(FilePath(wide_path_or_url));
+#else
+    test_url = net::FilePathToFileURL(FilePath(path_or_url));
+#endif
+  }
+  FilePath local_path;
+  if (net::FileURLToFilePath(test_url, &local_path)) {
     // We're outside of the message loop here, and this is a test.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    webkit_support::SetCurrentDirectoryForFileURL(test_url);
+    file_util::SetCurrentDirectory(local_path.DirName());
   }
   return test_url;
 }
