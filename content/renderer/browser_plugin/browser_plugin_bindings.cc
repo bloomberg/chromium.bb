@@ -282,6 +282,7 @@ bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
 
   if (IdentifierIsTerminate(name)) {
     bindings->instance()->TerminateGuest();
+    return true;
   }
 
   return false;

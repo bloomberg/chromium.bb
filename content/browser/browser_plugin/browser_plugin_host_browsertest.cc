@@ -675,6 +675,49 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, TerminateGuest) {
   test_guest()->WaitForCrashed();
 }
 
+// This test verifies that the guest is responsive after crashing and going back
+// to a previous navigation entry.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BackAfterTerminateGuest) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(
+      kEmbedderURL, GetHTMLForGuestWithTitle("P1"), true, "");
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+
+  // Navigate to P2 and verify that the navigation occurred.
+  {
+    const string16 expected_title = ASCIIToUTF16("P2");
+    content::TitleWatcher title_watcher(test_guest()->web_contents(),
+                                        expected_title);
+
+    ExecuteSyncJSFunction(rvh, ASCIIToUTF16(StringPrintf("SetSrc('%s');",
+        GetHTMLForGuestWithTitle("P2").c_str())));
+
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+  // Kill the guest.
+  ExecuteSyncJSFunction(rvh,
+      ASCIIToUTF16("document.getElementById('plugin').terminate()"));
+
+  // Expect the guest to report that it crashed.
+  test_guest()->WaitForCrashed();
+  // Go back and verify that we're back at P1.
+  {
+    const string16 expected_title = ASCIIToUTF16("P1");
+    content::TitleWatcher title_watcher(test_guest()->web_contents(),
+                                        expected_title);
+
+    ExecuteSyncJSFunction(rvh, ASCIIToUTF16("Back();"));
+
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+  // Send an input event and verify that the guest receives the input.
+  SimulateMouseClick(test_embedder()->web_contents());
+  test_guest()->WaitForInput();
+}
+
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStart) {
   const char kEmbedderURL[] = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");

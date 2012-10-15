@@ -27,6 +27,8 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
       was_hidden_observed_(false),
       stop_observed_(false),
       reload_observed_(false),
+      set_damage_buffer_observed_(false),
+      input_observed_(false),
       waiting_for_damage_buffer_with_size_(false),
       last_damage_buffer_size_(gfx::Size()) {
   // Listen to visibility changes so that a test can wait for these changes.
@@ -100,6 +102,20 @@ void TestBrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
   BrowserPluginGuest::RenderViewGone(status);
 }
 
+void TestBrowserPluginGuest::HandleInputEvent(
+    RenderViewHost* render_view_host,
+    const gfx::Rect& guest_rect,
+    const WebKit::WebInputEvent& event,
+    IPC::Message* reply_message) {
+  BrowserPluginGuest::HandleInputEvent(render_view_host,
+                                       guest_rect,
+                                       event,
+                                       reply_message);
+  input_observed_ = true;
+  if (input_message_loop_runner_)
+    input_message_loop_runner_->Quit();
+}
+
 void TestBrowserPluginGuest::WaitForCrashed() {
   // Check if we already observed a guest crash, return immediately if so.
   if (crash_observed_)
@@ -153,6 +169,17 @@ void TestBrowserPluginGuest::WaitForStop() {
   stop_message_loop_runner_ = new MessageLoopRunner();
   stop_message_loop_runner_->Run();
   stop_observed_ = false;
+}
+
+void TestBrowserPluginGuest::WaitForInput() {
+  if (input_observed_) {
+    input_observed_ = false;
+    return;
+  }
+
+  input_message_loop_runner_ = new MessageLoopRunner();
+  input_message_loop_runner_->Run();
+  input_observed_ = false;
 }
 
 void TestBrowserPluginGuest::SetFocus(bool focused) {

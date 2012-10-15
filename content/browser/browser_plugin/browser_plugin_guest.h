@@ -130,12 +130,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void UpdateRect(RenderViewHost* render_view_host,
                   const ViewHostMsg_UpdateRect_Params& params);
   void UpdateRectACK(int message_id, const gfx::Size& size);
-  // Handles input event routed through the embedder (which is initiated in the
-  // browser plugin (renderer side of the embedder)).
-  void HandleInputEvent(RenderViewHost* render_view_host,
-                        const gfx::Rect& guest_rect,
-                        const WebKit::WebInputEvent& event,
-                        IPC::Message* reply_message);
   // Overrides default ShowWidget message so we show them on the correct
   // coordinates.
   void ShowWidget(RenderViewHost* render_view_host,
@@ -190,6 +184,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void Terminate();
 
   // Overridden in tests.
+  // Handles input event routed through the embedder (which is initiated in the
+  // browser plugin (renderer side of the embedder)).
+  virtual void HandleInputEvent(RenderViewHost* render_view_host,
+                                const gfx::Rect& guest_rect,
+                                const WebKit::WebInputEvent& event,
+                                IPC::Message* reply_message);
   virtual bool ViewTakeFocus(bool reverse);
   // If possible, navigate the guest to |relative_index| entries away from the
   // current navigation entry.

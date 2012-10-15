@@ -139,7 +139,6 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
     navigate_src_sent_ = true;
   }
   src_ = src;
-  guest_crashed_ = false;
 }
 
 std::string BrowserPlugin::GetPartitionAttribute() const {
@@ -277,7 +276,6 @@ void BrowserPlugin::Stop() {
 void BrowserPlugin::Reload() {
   if (!navigate_src_sent_)
     return;
-  guest_crashed_ = false;
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_Reload(render_view_->GetRoutingID(),
                                       instance_id_));
@@ -357,6 +355,9 @@ void BrowserPlugin::GuestCrashed() {
 
 void BrowserPlugin::DidNavigate(
     const BrowserPluginMsg_DidNavigate_Params& params) {
+  // If the guest has just committed a new navigation then it is no longer
+  // crashed.
+  guest_crashed_ = false;
   src_ = params.url.spec();
   process_id_ = params.process_id;
   current_nav_entry_index_ = params.current_entry_index;
@@ -645,7 +646,7 @@ void BrowserPlugin::updateGeometry(
         *params));
     resize_pending_ = true;
   } else {
-    // Until an actual navigation occurs, there is no browser side embedder
+    // Until an actual navigation occurs, there is no browser-side embedder
     // present to notify about geometry updates. In this case, after we've
     // updated the BrowserPlugin's state we are done and we do not send a resize
     // message to the browser.
@@ -659,7 +660,7 @@ void BrowserPlugin::updateGeometry(
 void BrowserPlugin::FreeDamageBuffer() {
   DCHECK(damage_buffer_);
 #if defined(OS_MACOSX)
-  // We don't need to (nor we should) send ViewHostMsg_FreeTransportDIB
+  // We don't need to (nor should we) send ViewHostMsg_FreeTransportDIB
   // message to the browser to free the damage buffer since we manage the
   // damage buffer ourselves.
   delete damage_buffer_;

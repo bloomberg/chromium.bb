@@ -38,6 +38,10 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
 
   // Overridden methods from BrowserPluginGuest to intercept in test objects.
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void HandleInputEvent(RenderViewHost* render_view_host,
+                                const gfx::Rect& guest_rect,
+                                const WebKit::WebInputEvent& event,
+                                IPC::Message* reply_message) OVERRIDE;
   virtual void SetFocus(bool focused) OVERRIDE;
   virtual bool ViewTakeFocus(bool reverse) OVERRIDE;
   virtual void Reload() OVERRIDE;
@@ -68,6 +72,9 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   void WaitForReload();
   // Waits until a stop request is observed.
   void WaitForStop();
+  // Waits until input is observed.
+  void WaitForInput();
+
 
  private:
   // Overridden methods from BrowserPluginGuest to intercept in test objects.
@@ -82,6 +89,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   bool stop_observed_;
   bool reload_observed_;
   bool set_damage_buffer_observed_;
+  bool input_observed_;
 
   // For WaitForDamageBufferWithSize().
   bool waiting_for_damage_buffer_with_size_;
@@ -96,6 +104,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   scoped_refptr<MessageLoopRunner> reload_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> stop_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> damage_buffer_message_loop_runner_;
+  scoped_refptr<MessageLoopRunner> input_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginGuest);
 };

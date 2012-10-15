@@ -292,10 +292,6 @@ TEST_F(BrowserPluginTest, GuestCrash) {
                                    cursor_info);
   EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
       BrowserPluginHostMsg_HandleInputEvent::ID));
-
-  // Navigate and verify that the guest_crashed_ flag has been reset.
-  browser_plugin->SetSrcAttribute("bar");
-  EXPECT_FALSE(browser_plugin->guest_crashed_);
 }
 
 TEST_F(BrowserPluginTest, RemovePlugin) {
