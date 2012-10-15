@@ -116,6 +116,7 @@ expand_input_file() {
     # Expand to the bzip2ed file within
     local raw_text_log="raw_text_log.txt"
     bzcat "$infile" > "$raw_text_log"
+    cp "$raw_text_log" "full_feedback_log.txt"
     if fgrep -q hack-33025-touchpad_activity "$raw_text_log"; then
       # Expand the hack touchpad activity log
       awk "/hack-33025-touchpad_activity/{found=1} found{print}" \
