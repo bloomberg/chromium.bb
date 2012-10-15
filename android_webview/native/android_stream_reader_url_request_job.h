@@ -7,6 +7,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
@@ -43,7 +44,7 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
     virtual ~Delegate() {}
   };
 
-  explicit AndroidStreamReaderURLRequestJob(
+  AndroidStreamReaderURLRequestJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       scoped_ptr<Delegate> delegate);
@@ -68,10 +69,13 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
   // Skip to the first byte of the requested read range.
   bool SkipToRequestedRange(JNIEnv* env);
 
+  void StartAsync();
+
   net::HttpByteRange byte_range_;
   scoped_ptr<Delegate> delegate_;
   base::android::ScopedJavaGlobalRef<jobject> stream_;
   base::android::ScopedJavaGlobalRef<jbyteArray> buffer_;
+  base::WeakPtrFactory<AndroidStreamReaderURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLRequestJob);
 };

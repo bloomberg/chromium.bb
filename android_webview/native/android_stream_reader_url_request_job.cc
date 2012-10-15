@@ -6,6 +6,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
+#include "base/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
@@ -47,7 +49,8 @@ AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
     net::NetworkDelegate* network_delegate,
     scoped_ptr<Delegate> delegate)
     : URLRequestJob(request, network_delegate),
-      delegate_(delegate.Pass()) {
+      delegate_(delegate.Pass()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(delegate_.get());
 }
 
@@ -55,6 +58,15 @@ AndroidStreamReaderURLRequestJob::~AndroidStreamReaderURLRequestJob() {
 }
 
 void AndroidStreamReaderURLRequestJob::Start() {
+  // Start reading asynchronously so that all error reporting and data
+  // callbacks happen as they would for network requests.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AndroidStreamReaderURLRequestJob::StartAsync,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void AndroidStreamReaderURLRequestJob::StartAsync() {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
 
