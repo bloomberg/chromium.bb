@@ -248,6 +248,9 @@
   action operand0_rax        { SET_OPERAND_NAME(0, REG_RAX); }
   action operand0_rcx        { SET_OPERAND_NAME(0, REG_RCX); }
   action operand0_rdx        { SET_OPERAND_NAME(0, REG_RDX); }
+  action operand0_rbx        { SET_OPERAND_NAME(0, REG_RBX); }
+  action operand0_rsp        { SET_OPERAND_NAME(0, REG_RSP); }
+  action operand0_rbp        { SET_OPERAND_NAME(0, REG_RBP); }
   action operand0_rm         { SET_OPERAND_NAME(0, REG_RM); }
   action operand0_st         { SET_OPERAND_NAME(0, REG_ST); }
 

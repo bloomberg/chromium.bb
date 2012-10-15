@@ -29,9 +29,9 @@
 #        which is used to store the result of the execution.
 #      Possible argument types:
 #       a: Accumulator: %al/%ax/%eax/%rax/%es (depending on size).
-#       b: Base register: %bl/%bx/%ebx/%rbx/%ds (depending on size).
 #       c: Counter register: %cl/%cx/%ecx/%rcx/%cs (depending on size).
 #       d: Data register: %dl/%dx/%edx/%rdx/%ss (depending on size).
+#       b: Base register: %bl/%bx/%ebx/%rbx/%ds (depending on size).
 #       f: Stack pointer: %spl/%sp/%esp/%rsp/%fs (depending on size).
 #       g: Base pointer: %bpl/%bp/%ebp/%rbp/%gs (depending on size).
 #       i: Second immediate value encoded in the instruction.
@@ -128,7 +128,8 @@
 #       pw:   Vector composed of 16-bit words (packed word).
 #       q:    A quadword (64-bit), irrespective of the effective operand size.
 #       r:    Register size (32bit in 32bit mode, 64bit in 64bit mode).
-#       s:    A 6-byte or 10-byte pseudo-descriptor.
+#       s:    Segment register (if register operand).
+#       s:    A 6-byte or 10-byte pseudo-descriptor (if memory operand).
 #       sb:   A scalar 10-byte packed BCD value (scalar BCD).
 #       sd:   A scalar double-precision floating-point operand (scalar double).
 #       se:   A 14-byte or 28-byte x87 environment.
@@ -176,6 +177,24 @@
 #         instructions use this flag)
 #       norexw: "rex.W" can not be used with this instruction (usually used when
 #         instruction with "rex.W" have a different name: e.g. “movd”/“movq”)
+#
+#     Instruction enabling/disabling:
+#       ia32: ia32-only instruction
+#       amd64: amd64-only instruction
+#       nacl-forbidden: instruction is not supported in NaCl sandbox
+#       nacl-ia32-forbidden: instruction is not supported in ia32 NaCl sandbox
+#       nacl-amd64-forbidden: instruction is not supported in amd64 NaCl sandbox
+#
+#     Special marks:
+#       nacl-amd64-zero-extends: instruction can be used to zero-extend register
+#         in amd64 mode
+#       nacl-amd64-modifiable: instruction can be modified in amd64 mode
+#       att-show-name-suffix-{b,l,ll,t,s,q,x,y,w}: instruction is shown with the
+#         given suffix by objdump in AT&T mode
+#       att-show-memory-suffix-{b,l,ll,t,s,q,x,y,w}: instruction is shown in the
+#         given suffix by objdump in AT&T mode, but only if it accesses memory
+#       spurious-rex.w: instruction ignores rex.w bit (most instructions don't
+#         ignore it, that's why it's the default)
 #
 #     Possible CPUID values:
 #       CPUFeature_3DNOW:     Fn8000_0001_EDX[3DNOW]
@@ -817,10 +836,13 @@ pop Er, 0x8f /0, ia32 att-show-memory-suffix-l
 pop Er, 0x8f /0, amd64 att-show-memory-suffix-q
 pop rw, data16 0x58
 pop rr, 0x58
-"pop    %fs", 0x0f 0xa1, ia32 nacl-forbidden
-"pop    %gs", 0x0f 0xa9, ia32 nacl-forbidden
-"popq   %fs", 0x0f 0xa1, amd64 nacl-forbidden
-"popq   %gs", 0x0f 0xa9, amd64 nacl-forbidden
+pop as, 0x07, ia32 nacl-forbidden
+pop ds, 0x17, ia32 nacl-forbidden
+pop bs, 0x1f, ia32 nacl-forbidden
+pop fs, 0x0f 0xa1, ia32 nacl-forbidden
+pop gs, 0x0f 0xa9, ia32 nacl-forbidden
+pop fs, 0x0f 0xa1, amd64 att-show-name-suffix-q nacl-forbidden
+pop gs, 0x0f 0xa9, amd64 att-show-name-suffix-q nacl-forbidden
 ######## POPCNT ################################################################
 # Textbook definition of “popcnt” as per AMD/Intel manuals looks like this:
 #   popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT nacl-amd64-zero-extends
@@ -882,10 +904,14 @@ push =Id, 0x68, amd64 att-show-name-suffix-q
 push =Id, data16 rexw 0x68, amd64 att-show-name-suffix-q nacl-forbidden
 push =Ib, 0x6a, ia32
 push =Ib, 0x6a, amd64 att-show-name-suffix-q
-"push   %fs", 0x0f 0xa0, ia32 nacl-forbidden
-"push   %gs", 0x0f 0xa8, ia32 nacl-forbidden
-"pushq  %fs", 0x0f 0xa0, amd64 nacl-forbidden
-"pushq  %gs", 0x0f 0xa8, amd64 nacl-forbidden
+push =as, 0x06, ia32 nacl-forbidden
+push =cs, 0x0e, ia32 nacl-forbidden
+push =ds, 0x16, ia32 nacl-forbidden
+push =bs, 0x1e, ia32 nacl-forbidden
+push =fs, 0x0f 0xa0, ia32 nacl-forbidden
+push =gs, 0x0f 0xa8, ia32 nacl-forbidden
+push =fs, 0x0f 0xa0, amd64 att-show-name-suffix-q nacl-forbidden
+push =gs, 0x0f 0xa8, amd64 att-show-name-suffix-q nacl-forbidden
 ######## PUSHF/PUSHFD/PUSHFQ ###################################################
 pushf, data16 0x9c, norexw att-show-name-suffix-w nacl-forbidden
 pushf, 0x9c, ia32 nacl-forbidden

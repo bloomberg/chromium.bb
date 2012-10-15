@@ -261,14 +261,6 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     ((struct DecodeState *)userdata)->fwait = FALSE;
   }
 
-  if (rex_prefix && !strcmp(instruction_name, "popq   %fs"))
-    instruction_name = "popq %fs";
-  if (rex_prefix && !strcmp(instruction_name, "popq   %gs"))
-    instruction_name = "popq %gs";
-  if (rex_prefix && !strcmp(instruction_name, "pushq  %fs"))
-    instruction_name = "pushq %fs";
-  if (rex_prefix && !strcmp(instruction_name, "pushq  %gs"))
-    instruction_name = "pushq %gs";
   if ((data16_prefix) && (begin[0] == 0x66) && (!(rex_prefix & 0x08)) &&
       (IsNameInList(instruction_name,
                     "fbld", "fbstp", "fild", "fistp", "fld", "fstp", NULL))) {
@@ -537,18 +529,6 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         "data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)",
         "data32 data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)",
         "data32 data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)",
-        "pop    %fs",
-        "pop    %gs",
-        "popq %fs",
-        "popq %gs",
-        "popq   %fs",
-        "popq   %gs",
-        "push   %fs",
-        "push   %gs",
-        "pushq %fs",
-        "pushq %gs",
-        "pushq  %fs",
-        "pushq  %gs",
         NULL)) {
     while (shown_name < 6) {
       printf(" ");
