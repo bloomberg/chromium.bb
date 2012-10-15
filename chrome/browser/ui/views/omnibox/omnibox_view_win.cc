@@ -1371,6 +1371,10 @@ LRESULT OmniboxViewWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {
     // Enable TSF support of RichEdit.
     SetEditStyle(SES_USECTF, SES_USECTF);
   }
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    BOOL touch_mode = RegisterTouchWindow(m_hWnd, TWF_WANTPALM);
+    DCHECK(touch_mode);
+  }
   SetMsgHandled(FALSE);
   return 0;
 }
@@ -1461,26 +1465,26 @@ LRESULT OmniboxViewWin::OnImeNotify(UINT message,
   return DefWindowProc(message, wparam, lparam);
 }
 
-LRESULT OmniboxViewWin::OnPointerDown(UINT message,
-                                      WPARAM wparam,
-                                      LPARAM lparam) {
-  if (!model()->has_focus())
-    SetFocus();
-
-  if (IS_POINTER_FIRSTBUTTON_WPARAM(wparam)) {
-    TrackMousePosition(kLeft, CPoint(GET_X_LPARAM(lparam),
-                                     GET_Y_LPARAM(lparam)));
+LRESULT OmniboxViewWin::OnTouchEvent(UINT message,
+                                     WPARAM wparam,
+                                     LPARAM lparam) {
+  // There is a bug in Windows 8 where in the generated mouse messages
+  // after touch go to the window which previously had focus. This means that
+  // if a user taps the omnibox to give it focus, we don't get the simulated
+  // WM_LBUTTONDOWN, and thus don't properly select all the text. To ensure
+  // that we get this message, we capture the mouse when the user is doing a
+  // single-point tap on an unfocused model.
+  if ((wparam == 1) && !model()->has_focus()) {
+    TOUCHINPUT point = {0};
+    if (GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(lparam), 1,
+                          &point, sizeof(TOUCHINPUT))) {
+      if (point.dwFlags & TOUCHEVENTF_DOWN)
+        SetCapture();
+      else if (point.dwFlags & TOUCHEVENTF_UP)
+        ReleaseCapture();
+    }
   }
-
   SetMsgHandled(false);
-
-  return 0;
-}
-
-LRESULT OmniboxViewWin::OnPointerUp(UINT message, WPARAM wparam,
-                                    LPARAM lparam) {
-  SetMsgHandled(false);
-
   return 0;
 }
 
@@ -1695,10 +1699,14 @@ LRESULT OmniboxViewWin::OnMouseActivate(HWND window,
   // there.  Also in those cases, we need to already know in OnSetFocus() that
   // we should not restore the saved selection.
   if (!model()->has_focus() &&
-      ((mouse_message == WM_LBUTTONDOWN || mouse_message == WM_RBUTTONDOWN ||
-        mouse_message == WM_POINTERDOWN)) &&
+      ((mouse_message == WM_LBUTTONDOWN || mouse_message == WM_RBUTTONDOWN)) &&
       (result == MA_ACTIVATE)) {
-    DCHECK(!gaining_focus_.get());
+    if (gaining_focus_) {
+      // On Windows 8 in metro mode, we get two WM_MOUSEACTIVATE messages when
+      // we click on the omnibox with the mouse.
+      DCHECK(base::win::IsMetroProcess());
+      return result;
+    }
     gaining_focus_.reset(new ScopedFreeze(this, GetTextObjectModel()));
     // NOTE: Despite |mouse_message| being WM_XBUTTONDOWN here, we're not
     // guaranteed to call OnXButtonDown() later!  Specifically, if this is the
