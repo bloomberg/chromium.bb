@@ -14,17 +14,19 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   apiFunctions.setCustomCallback('create',
                                  function(name, request, windowParams) {
-    if (!windowParams.viewId) {
-      // Create failed? If given a callback, trigger it with an undefined
-      // object.
+    var view = null;
+    if (windowParams.viewId)
+      view = GetView(windowParams.viewId, windowParams.injectTitlebar);
+
+    if (!view) {
+      // No route to created window. If given a callback, trigger it with an
+      // undefined object.
       if (request.callback) {
         request.callback()
         delete request.callback;
       }
       return;
     }
-
-    var view = GetView(windowParams.viewId, windowParams.injectTitlebar);
 
     // Initialize appWindowData in the newly created JS context
     view.chrome.app.window.initializeAppWindow(windowParams);

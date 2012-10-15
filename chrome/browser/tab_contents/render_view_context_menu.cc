@@ -501,7 +501,11 @@ const Extension* RenderViewContextMenu::GetExtension() const {
 
 void RenderViewContextMenu::AppendPlatformAppItems() {
   const Extension* platform_app = GetExtension();
-  DCHECK(platform_app);
+
+  // The RVH might be for a process sandboxed from the extension.
+  if (!platform_app)
+    return;
+
   DCHECK(platform_app->is_platform_app());
 
   bool has_selection = !params_.selection_text.empty();

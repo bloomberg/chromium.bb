@@ -174,6 +174,7 @@ extern const char kEnableResourceContentSettings[];
 extern const char kEnableRestoreSessionState[];
 extern const char kScriptBadges[];
 extern const char kEnableSdch[];
+extern const char kEnableSettingsApp[];
 extern const char kEnableSpdy3[];
 extern const char kEnableSpdyCredentialFrames[];
 extern const char kEnableSpdyFlowControl[];

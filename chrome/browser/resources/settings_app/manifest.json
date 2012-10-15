@@ -1,0 +1,22 @@
+{
+  //chrome-extension://ennkphjdgehloodpbhlhldgbnhmacadg
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDoVDPGX6fvKPVVgc+gnkYlGqHuuapgFDyKhsy4z7UzRLO/95zXPv8h8e5EacqbAQJLUbP6DERH5jowyNEYVxq9GJyntJMwP1ejvoz/52hnY3CCGGCmttmKzzpp5zwLuq3iZf8bslwywfflNUYtaCFSDa0TtrBZz0aOPrAAd/AhNwIDAQAB",
+  "name": "Settings",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Settings",
+
+  "icons": {
+    "16": "settings_app_icon_16.png",
+    "128": "settings_app_icon_128.png"
+  },
+  "app": {
+    "background": {
+      "scripts": [ "settings_app.js" ]
+    }
+  },
+  "permissions": [
+    "chrome://settings-frame/"
+  ],
+  "display_in_launcher": true
+}

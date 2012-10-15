@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/app_window.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -35,6 +36,13 @@ bool AppWindowCreateFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GURL url = GetExtension()->GetResourceURL(params->url);
+  // Allow absolute URLs for component apps, otherwise prepend the extension
+  // path.
+  if (GetExtension()->location() == extensions::Extension::COMPONENT) {
+    GURL absolute = GURL(params->url);
+    if (absolute.has_scheme())
+      url = absolute;
+  }
 
   bool inject_html_titlebar = false;
 
@@ -123,12 +131,19 @@ bool AppWindowCreateFunction::RunImpl() {
     if (create_params.bounds.height() < minimum_size.height())
       create_params.bounds.set_height(minimum_size.height());
   }
+
+  create_params.creator_process_id =
+      render_view_host_->GetProcess()->GetID();
+
   ShellWindow* shell_window =
       ShellWindow::Create(profile(), GetExtension(), url, create_params);
   shell_window->GetBaseWindow()->Show();
 
-  content::WebContents* created_contents = shell_window->web_contents();
-  int view_id = created_contents->GetRenderViewHost()->GetRoutingID();
+  content::RenderViewHost* created_view =
+      shell_window->web_contents()->GetRenderViewHost();
+  int view_id = MSG_ROUTING_NONE;
+  if (create_params.creator_process_id == created_view->GetProcess()->GetID())
+    view_id = created_view->GetRoutingID();
 
   base::DictionaryValue* result = new base::DictionaryValue;
   result->Set("viewId", base::Value::CreateIntegerValue(view_id));

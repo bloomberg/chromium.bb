@@ -325,6 +325,8 @@ bool ImageLoadingTracker::IsComponentExtensionResource(
     {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
     {"chrome_app/product_logo_128.png", IDR_PRODUCT_LOGO_128},
     {"chrome_app/product_logo_16.png", IDR_PRODUCT_LOGO_16},
+    {"settings_app/settings_app_icon_128.png", IDR_SETTINGS_APP_ICON_128},
+    {"settings_app/settings_app_icon_16.png", IDR_SETTINGS_APP_ICON_16},
   };
   static const size_t kExtraComponentExtensionResourcesSize =
       arraysize(kExtraComponentExtensionResources);

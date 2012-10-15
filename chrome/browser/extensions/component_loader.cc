@@ -372,6 +372,14 @@ void ComponentLoader::AddDefaultComponentExtensions() {
 
   Add(IDR_WEBSTORE_MANIFEST, FilePath(FILE_PATH_LITERAL("web_store")));
 
+#if defined(OS_WIN)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSettingsApp)) {
+    Add(IDR_SETTINGS_APP_MANIFEST,
+        FilePath(FILE_PATH_LITERAL("settings_app")));
+  }
+#endif
+
 #if !defined(OS_CHROMEOS)
   // Cloud Print component app. Not required on Chrome OS.
   Add(IDR_CLOUDPRINT_MANIFEST, FilePath(FILE_PATH_LITERAL("cloud_print")));

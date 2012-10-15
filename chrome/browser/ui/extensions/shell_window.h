@@ -66,6 +66,9 @@ class ShellWindow : public content::NotificationObserver,
     gfx::Size maximum_size;
 
     std::string window_key;
+
+    // The process ID of the process that requested the create.
+    int32 creator_process_id;
   };
 
   static ShellWindow* Create(Profile* profile,

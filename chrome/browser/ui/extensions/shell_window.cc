@@ -116,7 +116,8 @@ content::WebContents* ExternalUrlController::OpenURLFromTab(
 ShellWindow::CreateParams::CreateParams()
   : frame(ShellWindow::CreateParams::FRAME_CHROME),
     bounds(-1, -1, kDefaultWidth, kDefaultHeight),
-    restore_position(true), restore_size(true) {
+    restore_position(true), restore_size(true),
+    creator_process_id(0) {
 }
 
 ShellWindow::CreateParams::~CreateParams() {
@@ -179,10 +180,19 @@ void ShellWindow::Init(const GURL& url,
     }
   }
 
-
-  // Block the created RVH from loading anything until the background page
-  // has had a chance to do any initialization it wants.
-  SuspendRenderViewHost(web_contents_->GetRenderViewHost());
+  // If the new view is in the same process as the creator, block the created
+  // RVH from loading anything until the background page has had a chance to do
+  // any initialization it wants. If it's a different process, the new RVH
+  // shouldn't communicate with the background page anyway (e.g. sandboxed).
+  if (web_contents_->GetRenderViewHost()->GetProcess()->GetID() ==
+      params.creator_process_id) {
+    SuspendRenderViewHost(web_contents_->GetRenderViewHost());
+  } else {
+    VLOG(1) << "ShellWindow created in new process ("
+            << web_contents_->GetRenderViewHost()->GetProcess()->GetID()
+            << ") != creator (" << params.creator_process_id
+            << "). Routing disabled.";
+  }
 
   // TODO(jeremya): there's a bug where navigating a web contents to an
   // extension URL causes it to create a new RVH and discard the old (perfectly
