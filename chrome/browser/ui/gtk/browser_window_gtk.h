@@ -269,6 +269,8 @@ class BrowserWindowGtk
   // |relative_to| coordinates. This is the middle of the omnibox location icon.
   int GetXPositionOfLocationIcon(GtkWidget* relative_to);
 
+  DevToolsDockSide devtools_dock_side() { return devtools_dock_side_; }
+
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
@@ -297,6 +299,8 @@ class BrowserWindowGtk
 
   // Top level window.
   GtkWindow* window_;
+  // Determines whether window was shown.
+  bool window_has_shown_;
   // GtkAlignment that holds the interior components of the chromium window.
   // This is used to draw the custom frame border and content shadow.
   GtkWidget* window_container_;

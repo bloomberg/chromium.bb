@@ -756,6 +756,8 @@ bool DraggedTabControllerGtk::CompleteDrag() {
         base::Bind(&DraggedTabControllerGtk::OnAnimateToBoundsComplete,
                    base::Unretained(this)));
     destroy_immediately = false;
+    attached_tabstrip_->window()->SetDevToolsDockSide(
+        source_tabstrip_->window()->devtools_dock_side());
   } else {
     // Compel the model to construct a new window for the detached
     // TabContents.
@@ -778,6 +780,7 @@ bool DraggedTabControllerGtk::CompleteDrag() {
                                      drag_data_->GetAddTypesForDraggedTabAt(i));
     }
     RestoreSelection(new_model);
+    new_browser->window()->SetDevToolsDockSide(window->devtools_dock_side());
     new_browser->window()->Show();
     CleanUpHiddenFrame();
   }
