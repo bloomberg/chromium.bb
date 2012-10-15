@@ -831,7 +831,10 @@ void LocationBarView::Layout() {
   int offset = width() - kEdgeThickness;
   if (action_box_button_view_) {
     offset -= action_box_button_view_->width();
-    action_box_button_view_->SetPosition(gfx::Point(offset, location_y));
+    action_box_button_view_->SetPosition(
+        gfx::Point(offset,
+                   kVerticalEdgeThickness -
+                       ActionBoxButtonView::kBorderOverlap));
     offset -= GetItemPadding();
   } else {
     offset -= GetEdgeItemPadding();
