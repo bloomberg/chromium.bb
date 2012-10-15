@@ -77,11 +77,6 @@ class MockLocalMediaStream : public LocalMediaStreamInterface {
   scoped_refptr<MockVideoTracks> video_tracks_;
 };
 
-cricket::VideoCapturer* MockLocalVideoTrack::GetVideoCapture() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 void MockLocalVideoTrack::AddRenderer(VideoRendererInterface* renderer) {
   NOTIMPLEMENTED();
 }
@@ -127,7 +122,7 @@ void MockLocalVideoTrack::UnregisterObserver(ObserverInterface* observer) {
   NOTIMPLEMENTED();
 }
 
-AudioDeviceModule* MockLocalAudioTrack::GetAudioDevice() {
+VideoSourceInterface* MockLocalVideoTrack::GetSource() const {
   NOTIMPLEMENTED();
   return NULL;
 }
@@ -162,6 +157,11 @@ void MockLocalAudioTrack::RegisterObserver(ObserverInterface* observer) {
 
 void MockLocalAudioTrack::UnregisterObserver(ObserverInterface* observer) {
   NOTIMPLEMENTED();
+}
+
+AudioSourceInterface* MockLocalAudioTrack::GetSource() const {
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 class MockSessionDescription : public SessionDescriptionInterface {

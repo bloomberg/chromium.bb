@@ -152,6 +152,10 @@ class MockVideoTrack : public webrtc::VideoTrackInterface {
       webrtc::ObserverInterface* observer) OVERRIDE {
     NOTIMPLEMENTED();
   }
+  virtual webrtc::VideoSourceInterface* GetSource() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
   MOCK_METHOD1(AddRenderer, void(webrtc::VideoRendererInterface* renderer));
   MOCK_METHOD1(RemoveRenderer, void(webrtc::VideoRendererInterface* renderer));
 

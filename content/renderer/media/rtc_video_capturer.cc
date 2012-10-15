@@ -60,6 +60,10 @@ bool RtcVideoCapturer::GetPreferredFourccs(std::vector<uint32>* fourccs) {
   return true;
 }
 
+bool RtcVideoCapturer::IsScreencast() {
+  return false;
+}
+
 bool RtcVideoCapturer::GetBestCaptureFormat(const cricket::VideoFormat& desired,
                                             cricket::VideoFormat* best_format) {
   if (!best_format) {

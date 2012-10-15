@@ -19,7 +19,6 @@ class MockLocalVideoTrack : public LocalVideoTrackInterface {
     : enabled_(false),
       label_(label) {
   }
-  virtual cricket::VideoCapturer* GetVideoCapture() OVERRIDE;
   virtual void AddRenderer(VideoRendererInterface* renderer) OVERRIDE;
   virtual void RemoveRenderer(VideoRendererInterface* renderer) OVERRIDE;
   virtual cricket::VideoRenderer* FrameInput() OVERRIDE;
@@ -31,6 +30,7 @@ class MockLocalVideoTrack : public LocalVideoTrackInterface {
   virtual bool set_state(TrackState new_state) OVERRIDE;
   virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE;
   virtual void UnregisterObserver(ObserverInterface* observer) OVERRIDE;
+  virtual VideoSourceInterface* GetSource() const OVERRIDE;
 
  protected:
   virtual ~MockLocalVideoTrack() {}
@@ -46,7 +46,6 @@ class MockLocalAudioTrack : public LocalAudioTrackInterface {
     : enabled_(false),
       label_(label) {
   }
-  virtual AudioDeviceModule* GetAudioDevice() OVERRIDE;
   virtual std::string kind() const OVERRIDE;
   virtual std::string label() const OVERRIDE;
   virtual bool enabled() const OVERRIDE;
@@ -55,6 +54,7 @@ class MockLocalAudioTrack : public LocalAudioTrackInterface {
   virtual bool set_state(TrackState new_state) OVERRIDE;
   virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE;
   virtual void UnregisterObserver(ObserverInterface* observer) OVERRIDE;
+  virtual AudioSourceInterface* GetSource() const OVERRIDE;
 
  protected:
   virtual ~MockLocalAudioTrack() {}

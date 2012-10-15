@@ -92,6 +92,20 @@ bool MockPeerConnectionImpl::AddStream(
   return true;
 }
 
+bool MockPeerConnectionImpl::CanSendDtmf(
+    const webrtc::AudioTrackInterface* track) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool MockPeerConnectionImpl::SendDtmf(
+    const webrtc::AudioTrackInterface* send_track,
+    const std::string& tones, int duration,
+    const webrtc::AudioTrackInterface* play_track) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void MockPeerConnectionImpl::RemoveStream(
     MediaStreamInterface* local_stream) {
   DCHECK_EQ(stream_label_, local_stream->label());
