@@ -29,8 +29,8 @@ var QueryString = function () {
 } ();
 
 function getCurrentTime() {
-  if (window.performance.webkitNow)
-    return window.performance.webkitNow();
+  if (window.performance.now)
+    return window.performance.now();
   else
     return new Date().getTime();
 }
