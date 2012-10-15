@@ -25,7 +25,6 @@
 #include "chrome/renderer/frame_sniffer.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
-#include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/webview_color_overlay.h"
 #include "content/public/common/bindings_policy.h"
@@ -201,14 +200,12 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
     ContentSettingsObserver* content_settings,
     ChromeRenderProcessObserver* chrome_render_process_observer,
     extensions::Dispatcher* extension_dispatcher,
-    TranslateHelper* translate_helper,
-    SearchBox* search_box)
+    TranslateHelper* translate_helper)
     : content::RenderViewObserver(render_view),
       chrome_render_process_observer_(chrome_render_process_observer),
       extension_dispatcher_(extension_dispatcher),
       content_settings_(content_settings),
       translate_helper_(translate_helper),
-      search_box_(search_box),
       phishing_classifier_(NULL),
       last_indexed_page_id_(-1),
       allow_displaying_insecure_content_(false),
@@ -489,9 +486,6 @@ bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
 
   WebSecurityOrigin origin = document.securityOrigin();
   if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
-    return true;
-
-  if (search_box_->enable_extended())
     return true;
 
   if (const extensions::Extension* extension = GetExtension(origin)) {

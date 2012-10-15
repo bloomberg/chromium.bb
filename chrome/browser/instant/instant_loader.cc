@@ -309,23 +309,13 @@ InstantLoader::~InstantLoader() {
     preview_contents_->web_contents()->SetDelegate(NULL);
 }
 
-void InstantLoader::Init(bool is_extended_api_enabled) {
+void InstantLoader::Init() {
   SetupPreviewContents();
   // This HTTP header and value are set on loads that originate from instant.
   const char* const kInstantHeader = "X-Purpose: Instant";
   preview_contents_->web_contents()->GetController().LoadURL(GURL(instant_url_),
       content::Referrer(), content::PAGE_TRANSITION_GENERATED, kInstantHeader);
   preview_contents_->web_contents()->WasHidden();
-
-  // TODO(dhollowa): http://crbug.com/153851.  Once the TemplateURL support
-  // is in place to determine extended search providers this logic should
-  // migrate to somewhere more general and be based on the default search
-  // provider and the URL associated with the renderer.
-  if (is_extended_api_enabled) {
-    content::RenderViewHost* rvh =
-        preview_contents_->web_contents()->GetRenderViewHost();
-    rvh->Send(new ChromeViewMsg_SearchBoxEnableExtended(rvh->GetRoutingID()));
-  }
 }
 
 void InstantLoader::Update(const string16& user_text, bool verbatim) {

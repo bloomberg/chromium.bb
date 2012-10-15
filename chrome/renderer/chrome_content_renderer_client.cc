@@ -253,7 +253,7 @@ void ChromeContentRendererClient::RenderViewCreated(
 #if defined(ENABLE_PRINTING)
   new PrintWebViewHelper(render_view);
 #endif
-  SearchBox* search_box = new SearchBox(render_view);
+  new SearchBox(render_view);
   new SpellCheckProvider(render_view, this);
   new prerender::PrerendererClient(render_view);
 #if defined(ENABLE_SAFE_BROWSING)
@@ -278,7 +278,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   TranslateHelper* translate = new TranslateHelper(render_view);
   new ChromeRenderViewObserver(
       render_view, content_settings, chrome_observer_.get(),
-      extension_dispatcher_.get(), translate, search_box);
+      extension_dispatcher_.get(), translate);
 
   new PepperHelper(render_view);
 
