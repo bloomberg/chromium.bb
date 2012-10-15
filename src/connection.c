@@ -44,7 +44,7 @@
 
 struct wl_buffer {
 	char data[4096];
-	int head, tail;
+	uint32_t head, tail;
 };
 
 #define MASK(i) ((i) & 4095)
@@ -70,7 +70,7 @@ union wl_value {
 static void
 wl_buffer_put(struct wl_buffer *b, const void *data, size_t count)
 {
-	int head, size;
+	uint32_t head, size;
 
 	head = MASK(b->head);
 	if (head + count <= sizeof b->data) {
@@ -87,7 +87,7 @@ wl_buffer_put(struct wl_buffer *b, const void *data, size_t count)
 static void
 wl_buffer_put_iov(struct wl_buffer *b, struct iovec *iov, int *count)
 {
-	int head, tail;
+	uint32_t head, tail;
 
 	head = MASK(b->head);
 	tail = MASK(b->tail);
@@ -111,7 +111,7 @@ wl_buffer_put_iov(struct wl_buffer *b, struct iovec *iov, int *count)
 static void
 wl_buffer_get_iov(struct wl_buffer *b, struct iovec *iov, int *count)
 {
-	int head, tail;
+	uint32_t head, tail;
 
 	head = MASK(b->head);
 	tail = MASK(b->tail);
@@ -135,7 +135,7 @@ wl_buffer_get_iov(struct wl_buffer *b, struct iovec *iov, int *count)
 static void
 wl_buffer_copy(struct wl_buffer *b, void *data, size_t count)
 {
-	int tail, size;
+	uint32_t tail, size;
 
 	tail = MASK(b->tail);
 	if (tail + count <= sizeof b->data) {
@@ -147,7 +147,7 @@ wl_buffer_copy(struct wl_buffer *b, void *data, size_t count)
 	}
 }
 
-static int
+static uint32_t
 wl_buffer_size(struct wl_buffer *b)
 {
 	return b->head - b->tail;
