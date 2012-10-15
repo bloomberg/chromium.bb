@@ -5,6 +5,9 @@
 {
   'variables': {
     'chromium_code': 1,
+    # Enable threading for the untrusted side of the proxy.
+    # TODO(bbudge) remove when this is the default.
+    'enable_pepper_threading': '1',
   },
   'includes': [
     '../native_client/build/untrusted.gypi',
