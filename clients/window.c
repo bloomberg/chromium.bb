@@ -1455,13 +1455,16 @@ frame_resize_handler(struct widget *widget,
 
 	shadow_margin = widget->window->type == TYPE_MAXIMIZED ? 0 : t->margin;
 
+	widget->window->input_region =
+		wl_compositor_create_region(display->compositor);
 	if (widget->window->type != TYPE_FULLSCREEN) {
-		widget->window->input_region =
-			wl_compositor_create_region(display->compositor);
 		wl_region_add(widget->window->input_region,
 			      shadow_margin, shadow_margin,
 			      width - 2 * shadow_margin,
 			      height - 2 * shadow_margin);
+	} else {
+		wl_region_add(widget->window->input_region,
+			      0, 0, width, height);
 	}
 
 	widget_set_allocation(widget, 0, 0, width, height);
