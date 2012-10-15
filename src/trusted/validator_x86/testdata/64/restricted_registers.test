@@ -1,0 +1,41 @@
+@hex:
+  # mov %esi, %ecx
+  89 f1
+  # mov %rbp, %rsp
+  48 89 ec
+  # mov (%rsp, %rcx), %ebx
+  8b 1c 0c
+@rval:
+  VALIDATOR: 0000000000000005: 8b 1c 0c                                     mov %ebx, [%rsp+%rcx*1]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 f1                                        mov %ecx, %esi
+  0000000000000002: 48 89 ec                                     mov %rsp, %rbp
+  0000000000000005: 8b 1c 0c                                     mov %ebx, [%rsp+%rcx*1]
+@rdfa_output:
+  5: [0] improper memory address - bad index
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %esi, %ecx
+  89 f1
+  # mov %rsp, %rbp
+  48 89 e5
+  # mov (%rsp, %rcx), %ebx
+  8b 1c 0c
+@rval:
+  VALIDATOR: 0000000000000005: 8b 1c 0c                                     mov %ebx, [%rsp+%rcx*1]
+  VALIDATOR: ERROR: Invalid index register in memory offset
+  VALIDATOR: Checking jump targets: 0 to 8
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 f1                                        mov %ecx, %esi
+  0000000000000002: 48 89 e5                                     mov %rbp, %rsp
+  0000000000000005: 8b 1c 0c                                     mov %ebx, [%rsp+%rcx*1]
+@rdfa_output:
+  5: [0] improper memory address - bad index
+  return code: 1
