@@ -1272,17 +1272,19 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root):
   return filename
 
 
-def ArchiveHWQual(buildroot, hwqual_name, archive_dir):
+def ArchiveHWQual(buildroot, hwqual_name, archive_dir, image_dir):
   """Create a hwqual tarball in archive_dir.
 
   Args:
     buildroot: Root directory where build occurs.
     hwqual_name: Name for tarball.
     archive_dir: Local directory for hwqual tarball.
+    image_dir: Directory containing test image.
   """
   scripts_dir = os.path.join(buildroot, 'src', 'scripts')
   cmd = [os.path.join(scripts_dir, 'archive_hwqual'),
          '--from', archive_dir,
+         '--image_dir', image_dir,
          '--output_tag', hwqual_name]
   cros_build_lib.RunCommandCaptureOutput(cmd)
   return '%s.tar.bz2' % hwqual_name

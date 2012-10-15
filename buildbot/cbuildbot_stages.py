@@ -1765,7 +1765,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
         # Build hwqual image and upload to Google Storage.
         version = self.GetVersion()
         hwqual_name = 'chromeos-hwqual-%s-%s' % (board, version)
-        filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path)
+        filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path,
+                                          image_dir)
         release_upload_queue.put([filename])
 
       # Archive au-generator.zip.
