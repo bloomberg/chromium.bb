@@ -59,47 +59,25 @@ void StackWebViewLayerAtTop(views::WebView* view) {
 
 // SearchContainerView ---------------------------------------------------------
 
-// SearchContainerView contains the |ntp_container_| and
-// |omnibox_popup_parent_|. |ntp_container_| is given the full size and the
-// |omnibox_popup_parent_| is given its preferred height.
+// SearchContainerView contains the |ntp_container_|, which is given the full
+// size.
 class SearchContainerView : public views::View {
  public:
-  SearchContainerView(views::View* ntp_container,
-                      views::View* omnibox_popup_parent)
-      : ntp_container_(ntp_container),
-        omnibox_popup_parent_(omnibox_popup_parent) {
+  explicit SearchContainerView(views::View* ntp_container)
+      : ntp_container_(ntp_container) {
     AddChildView(ntp_container);
-    AddChildView(omnibox_popup_parent);
   }
 
   virtual void Layout() OVERRIDE {
     ntp_container_->SetBounds(0, 0, width(), height());
-
-    gfx::Size preferred_size(omnibox_popup_parent_->GetPreferredSize());
-    int old_height = omnibox_popup_parent_->height();
-    omnibox_popup_parent_->SetBounds(0, 0, width(), preferred_size.height());
-
-    // Schedule paints the line below the popup (painted in
-    // OnPaintBackground()).
-    int border_y = std::max(old_height, preferred_size.height()) + 1;
-    SchedulePaintInRect(gfx::Rect(0, 0, width(), border_y));
   }
 
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawColor(chrome::search::kSearchBackgroundColor);
-    gfx::Size preferred_size = omnibox_popup_parent_->GetPreferredSize();
-    // The color for this rect must be the same as that used as background for
-    // InlineOmniboxPopupView.
-    canvas->FillRect(gfx::Rect(0, 0, width(), preferred_size.height()),
-                     chrome::search::kSuggestBackgroundColor);
-    canvas->FillRect(
-        gfx::Rect(0, preferred_size.height(), width(), 1),
-        chrome::search::kResultsSeparatorColor);
   }
 
  private:
   views::View* ntp_container_;
-  views::View* omnibox_popup_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchContainerView);
 };
@@ -287,6 +265,9 @@ void SearchViewController::StackAtTop() {
     StackViewsLayerAtTop(ntp_container_);
     StackViewsLayerAtTop(GetLogoView());
     StackWebViewLayerAtTop(content_view_);
+    // Instant should go on top.
+    if (contents_container_->preview())
+      StackWebViewLayerAtTop(contents_container_->preview());
   }
 #else
   NOTIMPLEMENTED();
@@ -302,16 +283,10 @@ void SearchViewController::WillCommitInstant() {
 
 void SearchViewController::ModeChanged(const chrome::search::Mode& old_mode,
                                        const chrome::search::Mode& new_mode) {
-  // When the mode changes from |SEARCH_SUGGESTIONS| to |DEFAULT| and omnibox
-  // popup is still visible i.e. still retracting, delay state update, until the
-  // omnibox popup has finished retracting and |PopupVisibilityChanged| has been
-  // called; this persists all the necessary views for the duration of
-  // the animated retraction of the omnibox popup.
-  if (!(old_mode.mode == chrome::search::Mode::MODE_SEARCH_SUGGESTIONS &&
-        new_mode.is_default() &&
-        omnibox_popup_parent_->is_child_visible())) {
-    UpdateState();
-  }
+  // TODO(samarth): When the mode changes from |SEARCH_SUGGESTIONS| to
+  // |DEFAULT|, we need to make sure the popup (currently, Instant) animates up.
+  // We will need to wait for that animation before calling UpdateState() here.
+  UpdateState();
 }
 
 gfx::Rect SearchViewController::GetNTPOmniboxBounds(views::View* destination) {
@@ -343,15 +318,6 @@ void SearchViewController::OnImplicitAnimationsCompleted() {
   DCHECK_EQ(STATE_NTP_ANIMATING, state_);
   state_ = STATE_SUGGESTIONS;
   ntp_container_->SetVisible(false);
-  MaybeHideOverlay();
-  // While |ntp_container_| was fading out, location bar was animating from the
-  // middle of the NTP page to the top toolbar, at the same rate.
-  // Suggestions need to be aligned with the final location of the location bar.
-  // So if omnibox popup view (InlineOmniboxPopupView) is visible, force a
-  // re-layout of its children (i.e. the suggestions) to align with the location
-  // bar's final bounds.
-  if (omnibox_popup_parent_->is_child_visible())
-    omnibox_popup_parent_->child_at(0)->Layout();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SEARCH_VIEW_CONTROLLER_ANIMATION_FINISHED,
@@ -420,7 +386,6 @@ void SearchViewController::SetState(State state) {
 
     case STATE_SUGGESTIONS:
       DestroyViews();
-      CreateViews(state);
       break;
   }
   state_ = state;
@@ -538,18 +503,12 @@ void SearchViewController::CreateViews(State state) {
   ntp_container_->AddChildView(logo_view);
   ntp_container_->AddChildView(content_view_);
 
-  search_container_ =
-      new SearchContainerView(ntp_container_, omnibox_popup_parent_);
+  search_container_ = new SearchContainerView(ntp_container_);
   search_container_->SetPaintToLayer(true);
   search_container_->SetLayoutManager(new views::FillLayout);
   search_container_->layer()->SetMasksToBounds(true);
 
   contents_container_->SetOverlay(search_container_);
-
-  if (state == STATE_SUGGESTIONS) {
-    ntp_container_->SetVisible(false);
-    MaybeHideOverlay();
-  }
 
   // When loading, the |content_view_| needs to be invisible, but the web
   // contents that backs it needs to think it is visible so the back-end
@@ -582,11 +541,6 @@ void SearchViewController::DestroyViews() {
   // are not stopped before the views are destroyed.
   StopAnimation();
 
-  // We persist the parent of the omnibox so that we don't have to inject a new
-  // parent into ToolbarView.
-  omnibox_popup_parent_->parent()->RemoveChildView(
-      omnibox_popup_parent_);
-
   // Restore control/parenting of the web_contents back to the
   // |main_contents_view_|.
   ntp_container_->SetLayoutManager(NULL);
@@ -616,12 +570,6 @@ void SearchViewController::PopupVisibilityChanged() {
     if (!omnibox_popup_parent_->is_child_visible())
       toolbar_search_animator_->OnOmniboxPopupClosed();
   }
-}
-
-void SearchViewController::MaybeHideOverlay() {
-  search_container_->SetVisible(
-      !InstantController::IsInstantEnabled(
-          Profile::FromBrowserContext(browser_context_)));
 }
 
 chrome::search::SearchModel* SearchViewController::search_model() {

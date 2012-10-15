@@ -245,9 +245,9 @@ IN_PROC_BROWSER_TEST_F(SearchViewControllerTest,
   // Expect that the |ntp_container_| layer is hidden.
   EXPECT_FALSE(controller_ntp_container_is_visible());
 
-  // Expect that the |contents_container_| overlay exists and but is invisible.
+  // Expect that the |contents_container_| overlay exists.
   ASSERT_TRUE(controller_contents_has_overlay());
-  EXPECT_FALSE(controller_contents_overlay_visible());
+  EXPECT_TRUE(controller_contents_overlay_visible());
 }
 
 }  // namespace search
