@@ -28,7 +28,7 @@ public:
         BitmapSkPictureCanvasLayerTextureUpdater* m_textureUpdater;
     };
 
-    static PassRefPtr<BitmapSkPictureCanvasLayerTextureUpdater> create(PassOwnPtr<LayerPainterChromium>);
+    static PassRefPtr<BitmapSkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
     virtual ~BitmapSkPictureCanvasLayerTextureUpdater();
 
     virtual PassOwnPtr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
@@ -36,7 +36,9 @@ public:
     void paintContentsRect(SkCanvas*, const IntRect& sourceRect, CCRenderingStats&);
 
 private:
-    explicit BitmapSkPictureCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium>);
+    explicit BitmapSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
 };
-} // namespace cc
-#endif // BitmapSkPictureCanvasLayerTextureUpdater_h
+
+}  // namespace cc
+
+#endif  // BitmapSkPictureCanvasLayerTextureUpdater_h

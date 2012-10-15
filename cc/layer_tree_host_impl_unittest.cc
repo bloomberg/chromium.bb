@@ -813,7 +813,7 @@ protected:
         setSkipsDraw(false);
         setVisibleContentRect(IntRect(0, 0, 10, 10));
 
-        OwnPtr<CCLayerTilingData> tiler = CCLayerTilingData::create(IntSize(100, 100), CCLayerTilingData::HasBorderTexels);
+        scoped_ptr<CCLayerTilingData> tiler = CCLayerTilingData::create(IntSize(100, 100), CCLayerTilingData::HasBorderTexels);
         tiler->setBounds(contentBounds());
         setTilingData(*tiler.get());
     }
@@ -945,7 +945,7 @@ private:
     explicit MissingTextureAnimatingLayer(int id, bool tileMissing, bool skipsDraw, bool animating, CCResourceProvider* resourceProvider)
         : DidDrawCheckLayer(id)
     {
-        OwnPtr<CCLayerTilingData> tilingData = CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::NoBorderTexels);
+        scoped_ptr<CCLayerTilingData> tilingData = CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::NoBorderTexels);
         tilingData->setBounds(bounds());
         setTilingData(*tilingData.get());
         setSkipsDraw(skipsDraw);
@@ -2648,7 +2648,7 @@ TEST_P(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     tileLayer->setContentBounds(IntSize(10, 10));
     tileLayer->setDrawsContent(true);
     tileLayer->setSkipsDraw(false);
-    OwnPtr<CCLayerTilingData> tilingData(CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::NoBorderTexels));
+    scoped_ptr<CCLayerTilingData> tilingData(CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::NoBorderTexels));
     tilingData->setBounds(IntSize(10, 10));
     tileLayer->setTilingData(*tilingData);
     tileLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10));
@@ -2833,7 +2833,7 @@ TEST_P(CCLayerTreeHostImplTest, layersFreeTextures)
     tileLayer->setContentBounds(IntSize(10, 10));
     tileLayer->setDrawsContent(true);
     tileLayer->setSkipsDraw(false);
-    OwnPtr<CCLayerTilingData> tilingData(CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::NoBorderTexels));
+    scoped_ptr<CCLayerTilingData> tilingData(CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::NoBorderTexels));
     tilingData->setBounds(IntSize(10, 10));
     tileLayer->setTilingData(*tilingData);
     tileLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10));
@@ -3629,7 +3629,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithScissor)
     child->setSkipsDraw(false);
 
     // child layer has 10x10 tiles.
-    OwnPtr<CCLayerTilingData> tiler = CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::HasBorderTexels);
+    scoped_ptr<CCLayerTilingData> tiler = CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::HasBorderTexels);
     tiler->setBounds(child->contentBounds());
     child->setTilingData(*tiler.get());
 

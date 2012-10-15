@@ -43,7 +43,7 @@ typedef CCLayerIterator<CCLayerImpl, std::vector<CCLayerImpl*>, CCRenderSurface,
 static scoped_ptr<CCTiledLayerImpl> makeLayer(CCTiledLayerImpl* parent, const WebTransformationMatrix& drawTransform, const IntRect& layerRect, float opacity, bool opaque, const IntRect& layerOpaqueRect, std::vector<CCLayerImpl*>& surfaceLayerList)
 {
     scoped_ptr<CCTiledLayerImpl> layer = CCTiledLayerImpl::create(1);
-    OwnPtr<CCLayerTilingData> tiler = CCLayerTilingData::create(IntSize(100, 100), CCLayerTilingData::NoBorderTexels);
+    scoped_ptr<CCLayerTilingData> tiler = CCLayerTilingData::create(IntSize(100, 100), CCLayerTilingData::NoBorderTexels);
     tiler->setBounds(layerRect.size());
     layer->setTilingData(*tiler);
     layer->setSkipsDraw(false);

@@ -7,12 +7,12 @@
 #define CCLayerTilingData_h
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/hash_pair.h"
+#include "cc/scoped_ptr_hash_map.h"
 #include "IntRect.h"
 #include "Region.h"
 #include "TilingData.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashTraits.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -22,7 +22,7 @@ public:
 
     ~CCLayerTilingData();
 
-    static PassOwnPtr<CCLayerTilingData> create(const IntSize& tileSize, BorderTexelOption);
+    static scoped_ptr<CCLayerTilingData> create(const IntSize& tileSize, BorderTexelOption);
 
     bool hasEmptyBounds() const { return m_tilingData.hasEmptyBounds(); }
     int numTilesX() const { return m_tilingData.numTilesX(); }
@@ -58,20 +58,11 @@ public:
         IntRect m_opaqueRect;
         DISALLOW_COPY_AND_ASSIGN(Tile);
     };
-    // Default hash key traits for integers disallow 0 and -1 as a key, so
-    // use a custom hash trait which disallows -1 and -2 instead.
     typedef std::pair<int, int> TileMapKey;
-    struct TileMapKeyTraits : HashTraits<TileMapKey> {
-        static const bool emptyValueIsZero = false;
-        static const bool needsDestruction = false;
-        static TileMapKey emptyValue() { return std::make_pair(-1, -1); }
-        static void constructDeletedValue(TileMapKey& slot) { slot = std::make_pair(-2, -2); }
-        static bool isDeletedValue(TileMapKey value) { return value.first == -2 && value.second == -2; }
-    };
-    typedef HashMap<TileMapKey, OwnPtr<Tile>, DefaultHash<TileMapKey>::Hash, TileMapKeyTraits> TileMap;
+    typedef ScopedPtrHashMap<TileMapKey, Tile> TileMap;
 
-    void addTile(PassOwnPtr<Tile>, int, int);
-    PassOwnPtr<Tile> takeTile(int, int);
+    void addTile(scoped_ptr<Tile>, int, int);
+    scoped_ptr<Tile> takeTile(int, int);
     Tile* tileAt(int, int) const;
     const TileMap& tiles() const { return m_tiles; }
 

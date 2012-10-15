@@ -14,8 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebFloatRect.h>
 #include <public/WebRect.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefPtr.h>
 
 using namespace cc;
 using namespace WebKit;
@@ -45,9 +43,8 @@ TEST(ContentLayerChromiumTest, ContentLayerPainterWithDeviceScale)
     IntRect opaqueRectInLayerSpace(5, 5, 20, 20);
     IntRect opaqueRectInContentSpace = opaqueRectInLayerSpace;
     opaqueRectInContentSpace.scale(contentsScale);
-    OwnPtr<SkCanvas> canvas = adoptPtr(skia::CreateBitmapCanvas(contentRect.width(), contentRect.height(), false));
     MockContentLayerChromiumClient client(opaqueRectInLayerSpace);
-    RefPtr<BitmapCanvasLayerTextureUpdater> updater = BitmapCanvasLayerTextureUpdater::create(ContentLayerPainter::create(&client));
+    RefPtr<BitmapCanvasLayerTextureUpdater> updater = BitmapCanvasLayerTextureUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainterChromium>());
 
     IntRect resultingOpaqueRect;
     CCRenderingStats stats;

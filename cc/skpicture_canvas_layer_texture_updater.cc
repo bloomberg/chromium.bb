@@ -14,8 +14,8 @@
 
 namespace cc {
 
-SkPictureCanvasLayerTextureUpdater::SkPictureCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium> painter)
-    : CanvasLayerTextureUpdater(painter)
+SkPictureCanvasLayerTextureUpdater::SkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
+    : CanvasLayerTextureUpdater(painter.Pass())
     , m_layerIsOpaque(false)
 {
 }

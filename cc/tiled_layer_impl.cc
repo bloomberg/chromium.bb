@@ -46,7 +46,7 @@ static const int debugTileInvalidatedCheckerboardColorBlue = 245;
 
 class DrawableTile : public CCLayerTilingData::Tile {
 public:
-    static PassOwnPtr<DrawableTile> create() { return adoptPtr(new DrawableTile()); }
+    static scoped_ptr<DrawableTile> create() { return make_scoped_ptr(new DrawableTile()); }
 
     CCResourceProvider::ResourceId resourceId() const { return m_resourceId; }
     void setResourceId(CCResourceProvider::ResourceId resourceId) { m_resourceId = resourceId; }
@@ -106,9 +106,9 @@ DrawableTile* CCTiledLayerImpl::tileAt(int i, int j) const
 
 DrawableTile* CCTiledLayerImpl::createTile(int i, int j)
 {
-    OwnPtr<DrawableTile> tile(DrawableTile::create());
+    scoped_ptr<DrawableTile> tile(DrawableTile::create());
     DrawableTile* addedTile = tile.get();
-    m_tiler->addTile(tile.release(), i, j);
+    m_tiler->addTile(tile.PassAs<CCLayerTilingData::Tile>(), i, j);
     return addedTile;
 }
 

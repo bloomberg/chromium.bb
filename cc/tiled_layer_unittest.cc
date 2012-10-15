@@ -1457,7 +1457,7 @@ TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAlloca
 
 class TrackingLayerPainter : public LayerPainterChromium {
 public:
-    static PassOwnPtr<TrackingLayerPainter> create() { return adoptPtr(new TrackingLayerPainter()); }
+    static scoped_ptr<TrackingLayerPainter> create() { return make_scoped_ptr(new TrackingLayerPainter()); }
 
     virtual void paint(SkCanvas*, const IntRect& contentRect, FloatRect&) OVERRIDE
     {
@@ -1478,9 +1478,9 @@ public:
     explicit UpdateTrackingTiledLayerChromium(CCPrioritizedTextureManager* manager)
         : FakeTiledLayerChromium(manager)
     {
-        OwnPtr<TrackingLayerPainter> trackingLayerPainter(TrackingLayerPainter::create());
+        scoped_ptr<TrackingLayerPainter> trackingLayerPainter(TrackingLayerPainter::create());
         m_trackingLayerPainter = trackingLayerPainter.get();
-        m_layerTextureUpdater = BitmapCanvasLayerTextureUpdater::create(trackingLayerPainter.release());
+        m_layerTextureUpdater = BitmapCanvasLayerTextureUpdater::create(trackingLayerPainter.PassAs<LayerPainterChromium>());
     }
 
     TrackingLayerPainter* trackingLayerPainter() const { return m_trackingLayerPainter; }

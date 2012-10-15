@@ -94,7 +94,7 @@ private:
     LayerTextureUpdater::SampledTexelFormat m_sampledTexelFormat;
 
     TilingOption m_tilingOption;
-    OwnPtr<CCLayerTilingData> m_tiler;
+    scoped_ptr<CCLayerTilingData> m_tiler;
 };
 
 }

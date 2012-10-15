@@ -41,13 +41,13 @@ void BitmapSkPictureCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQu
         queue.appendFullUpload(upload);
 }
 
-PassRefPtr<BitmapSkPictureCanvasLayerTextureUpdater> BitmapSkPictureCanvasLayerTextureUpdater::create(PassOwnPtr<LayerPainterChromium> painter)
+PassRefPtr<BitmapSkPictureCanvasLayerTextureUpdater> BitmapSkPictureCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
 {
-    return adoptRef(new BitmapSkPictureCanvasLayerTextureUpdater(painter));
+    return adoptRef(new BitmapSkPictureCanvasLayerTextureUpdater(painter.Pass()));
 }
 
-BitmapSkPictureCanvasLayerTextureUpdater::BitmapSkPictureCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium> painter)
-    : SkPictureCanvasLayerTextureUpdater(painter)
+BitmapSkPictureCanvasLayerTextureUpdater::BitmapSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
+    : SkPictureCanvasLayerTextureUpdater(painter.Pass())
 {
 }
 

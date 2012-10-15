@@ -26,13 +26,13 @@ void FrameBufferSkPictureCanvasLayerTextureUpdater::Texture::update(CCTextureUpd
     textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
-PassRefPtr<FrameBufferSkPictureCanvasLayerTextureUpdater> FrameBufferSkPictureCanvasLayerTextureUpdater::create(PassOwnPtr<LayerPainterChromium> painter)
+PassRefPtr<FrameBufferSkPictureCanvasLayerTextureUpdater> FrameBufferSkPictureCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
 {
-    return adoptRef(new FrameBufferSkPictureCanvasLayerTextureUpdater(painter));
+    return adoptRef(new FrameBufferSkPictureCanvasLayerTextureUpdater(painter.Pass()));
 }
 
-FrameBufferSkPictureCanvasLayerTextureUpdater::FrameBufferSkPictureCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium> painter)
-    : SkPictureCanvasLayerTextureUpdater(painter)
+FrameBufferSkPictureCanvasLayerTextureUpdater::FrameBufferSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
+    : SkPictureCanvasLayerTextureUpdater(painter.Pass())
 {
 }
 

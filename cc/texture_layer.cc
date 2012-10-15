@@ -8,9 +8,7 @@
 
 #include "CCLayerTreeHost.h"
 #include "CCTextureLayerImpl.h"
-#include "GraphicsContext3D.h"
 #include "TextureLayerChromiumClient.h"
-#include <public/WebGraphicsContext3D.h>
 
 namespace cc {
 

@@ -22,15 +22,16 @@ public:
     virtual ~CanvasLayerTextureUpdater();
 
 protected:
-    explicit CanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium>);
+    explicit CanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
 
     void paintContents(SkCanvas*, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&);
     const IntRect& contentRect() const { return m_contentRect; }
 
 private:
     IntRect m_contentRect;
-    OwnPtr<LayerPainterChromium> m_painter;
+    scoped_ptr<LayerPainterChromium> m_painter;
 };
 
-} // namespace cc
-#endif // CanvasLayerTextureUpdater_h
+}  // namespace cc
+
+#endif  // CanvasLayerTextureUpdater_h

@@ -21,7 +21,7 @@ class LayerTextureUpdater;
 
 class ContentLayerPainter : public LayerPainterChromium {
 public:
-    static PassOwnPtr<ContentLayerPainter> create(ContentLayerChromiumClient*);
+    static scoped_ptr<ContentLayerPainter> create(ContentLayerChromiumClient*);
 
     virtual void paint(SkCanvas*, const IntRect& contentRect, FloatRect& opaque) OVERRIDE;
 

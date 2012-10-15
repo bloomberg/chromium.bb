@@ -23,9 +23,9 @@ ContentLayerPainter::ContentLayerPainter(ContentLayerChromiumClient* client)
 {
 }
 
-PassOwnPtr<ContentLayerPainter> ContentLayerPainter::create(ContentLayerChromiumClient* client)
+scoped_ptr<ContentLayerPainter> ContentLayerPainter::create(ContentLayerChromiumClient* client)
 {
-    return adoptPtr(new ContentLayerPainter(client));
+    return make_scoped_ptr(new ContentLayerPainter(client));
 }
 
 void ContentLayerPainter::paint(SkCanvas* canvas, const IntRect& contentRect, FloatRect& opaque)
@@ -87,12 +87,13 @@ void ContentLayerChromium::createTextureUpdaterIfNeeded()
 {
     if (m_textureUpdater)
         return;
+    scoped_ptr<LayerPainterChromium> painter = ContentLayerPainter::create(m_client).PassAs<LayerPainterChromium>();
     if (layerTreeHost()->settings().acceleratePainting)
-        m_textureUpdater = FrameBufferSkPictureCanvasLayerTextureUpdater::create(ContentLayerPainter::create(m_client));
+        m_textureUpdater = FrameBufferSkPictureCanvasLayerTextureUpdater::create(painter.Pass());
     else if (CCSettings::perTilePaintingEnabled())
-        m_textureUpdater = BitmapSkPictureCanvasLayerTextureUpdater::create(ContentLayerPainter::create(m_client));
+        m_textureUpdater = BitmapSkPictureCanvasLayerTextureUpdater::create(painter.Pass());
     else
-        m_textureUpdater = BitmapCanvasLayerTextureUpdater::create(ContentLayerPainter::create(m_client));
+        m_textureUpdater = BitmapCanvasLayerTextureUpdater::create(painter.Pass());
     m_textureUpdater->setOpaque(contentsOpaque());
 
     GC3Denum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;

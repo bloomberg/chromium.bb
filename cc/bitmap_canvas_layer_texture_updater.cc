@@ -29,13 +29,13 @@ void BitmapCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQueue& queu
     textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
-PassRefPtr<BitmapCanvasLayerTextureUpdater> BitmapCanvasLayerTextureUpdater::create(PassOwnPtr<LayerPainterChromium> painter)
+PassRefPtr<BitmapCanvasLayerTextureUpdater> BitmapCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
 {
-    return adoptRef(new BitmapCanvasLayerTextureUpdater(painter));
+    return adoptRef(new BitmapCanvasLayerTextureUpdater(painter.Pass()));
 }
 
-BitmapCanvasLayerTextureUpdater::BitmapCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium> painter)
-    : CanvasLayerTextureUpdater(painter)
+BitmapCanvasLayerTextureUpdater::BitmapCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
+    : CanvasLayerTextureUpdater(painter.Pass())
     , m_opaque(false)
 {
 }

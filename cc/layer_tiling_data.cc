@@ -11,9 +11,9 @@ using namespace std;
 
 namespace cc {
 
-PassOwnPtr<CCLayerTilingData> CCLayerTilingData::create(const IntSize& tileSize, BorderTexelOption border)
+scoped_ptr<CCLayerTilingData> CCLayerTilingData::create(const IntSize& tileSize, BorderTexelOption border)
 {
-    return adoptPtr(new CCLayerTilingData(tileSize, border));
+    return make_scoped_ptr(new CCLayerTilingData(tileSize, border));
 }
 
 CCLayerTilingData::CCLayerTilingData(const IntSize& tileSize, BorderTexelOption border)
@@ -58,16 +58,16 @@ const CCLayerTilingData& CCLayerTilingData::operator=(const CCLayerTilingData& t
     return *this;
 }
 
-void CCLayerTilingData::addTile(PassOwnPtr<Tile> tile, int i, int j)
+void CCLayerTilingData::addTile(scoped_ptr<Tile> tile, int i, int j)
 {
     ASSERT(!tileAt(i, j));
     tile->moveTo(i, j);
-    m_tiles.add(make_pair(i, j), tile);
+    m_tiles.add(make_pair(i, j), tile.Pass());
 }
 
-PassOwnPtr<CCLayerTilingData::Tile> CCLayerTilingData::takeTile(int i, int j)
+scoped_ptr<CCLayerTilingData::Tile> CCLayerTilingData::takeTile(int i, int j)
 {
-    return m_tiles.take(make_pair(i, j));
+    return m_tiles.take_and_erase(make_pair(i, j));
 }
 
 CCLayerTilingData::Tile* CCLayerTilingData::tileAt(int i, int j) const
@@ -134,16 +134,11 @@ void CCLayerTilingData::setBounds(const IntSize& size)
     contentRectToTileIndices(IntRect(IntPoint(), size), left, top, right, bottom);
     Vector<TileMapKey> invalidTileKeys;
     for (TileMap::const_iterator it = m_tiles.begin(); it != m_tiles.end(); ++it) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        if (it->key.first > right || it->key.second > bottom)
-            invalidTileKeys.append(it->key);
-#else
         if (it->first.first > right || it->first.second > bottom)
             invalidTileKeys.append(it->first);
-#endif
     }
     for (size_t i = 0; i < invalidTileKeys.size(); ++i)
-        m_tiles.remove(invalidTileKeys[i]);
+        m_tiles.erase(invalidTileKeys[i]);
 }
 
 IntSize CCLayerTilingData::bounds() const

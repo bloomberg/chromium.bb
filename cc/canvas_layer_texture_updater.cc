@@ -19,8 +19,8 @@
 
 namespace cc {
 
-CanvasLayerTextureUpdater::CanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium> painter)
-    : m_painter(painter)
+CanvasLayerTextureUpdater::CanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
+    : m_painter(painter.Pass())
 {
 }
 

@@ -54,7 +54,7 @@ private:
     bool m_skipsDraw;
     bool m_contentsSwizzled;
 
-    OwnPtr<CCLayerTilingData> m_tiler;
+    scoped_ptr<CCLayerTilingData> m_tiler;
 };
 
 }

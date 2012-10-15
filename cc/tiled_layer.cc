@@ -12,10 +12,7 @@
 #include "CCOverdrawMetrics.h"
 #include "CCTextureUpdateQueue.h"
 #include "CCTiledLayerImpl.h"
-#include "GraphicsContext3D.h"
 #include "Region.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MathExtras.h>
 
 using namespace std;
 using WebKit::WebTransformationMatrix;
@@ -24,9 +21,9 @@ namespace cc {
 
 class UpdatableTile : public CCLayerTilingData::Tile {
 public:
-    static PassOwnPtr<UpdatableTile> create(PassOwnPtr<LayerTextureUpdater::Texture> texture)
+    static scoped_ptr<UpdatableTile> create(PassOwnPtr<LayerTextureUpdater::Texture> texture)
     {
-        return adoptPtr(new UpdatableTile(texture));
+        return make_scoped_ptr(new UpdatableTile(texture));
     }
 
     LayerTextureUpdater::Texture* texture() { return m_texture.get(); }
@@ -203,15 +200,9 @@ void TiledLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
     Vector<UpdatableTile*> invalidTiles;
 
     for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        int i = iter->key.first;
-        int j = iter->key.second;
-        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->value.get());
-#else
         int i = iter->first.first;
         int j = iter->first.second;
-        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second.get());
-#endif
+        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
         // FIXME: This should not ever be null.
         if (!tile)
             continue;
@@ -248,11 +239,7 @@ void TiledLayerChromium::setLayerTreeHost(CCLayerTreeHost* host)
 {
     if (host && host != layerTreeHost()) {
         for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-            UpdatableTile* tile = static_cast<UpdatableTile*>(iter->value.get());
-#else
-            UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second.get());
-#endif
+            UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
             // FIXME: This should not ever be null.
             if (!tile)
                 continue;
@@ -271,11 +258,11 @@ UpdatableTile* TiledLayerChromium::createTile(int i, int j)
 {
     createTextureUpdaterIfNeeded();
 
-    OwnPtr<UpdatableTile> tile(UpdatableTile::create(textureUpdater()->createTexture(textureManager())));
+    scoped_ptr<UpdatableTile> tile(UpdatableTile::create(textureUpdater()->createTexture(textureManager())));
     tile->managedTexture()->setDimensions(m_tiler->tileSize(), m_textureFormat);
 
     UpdatableTile* addedTile = tile.get();
-    m_tiler->addTile(tile.release(), i, j);
+    m_tiler->addTile(tile.PassAs<CCLayerTilingData::Tile>(), i, j);
 
     addedTile->dirtyRect = m_tiler->tileRect(addedTile);
 
@@ -320,11 +307,7 @@ void TiledLayerChromium::invalidateContentRect(const IntRect& contentRect)
         return;
 
     for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->value.get());
-#else
-        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second.get());
-#endif
+        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
         ASSERT(tile);
         // FIXME: This should not ever be null.
         if (!tile)
@@ -648,11 +631,7 @@ void TiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& priori
 
     // Now update priorities on all tiles we have in the layer, no matter where they are.
     for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->value.get());
-#else
-        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second.get());
-#endif
+        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
         // FIXME: This should not ever be null.
         if (!tile)
             continue;
@@ -677,11 +656,7 @@ void TiledLayerChromium::resetUpdateState()
 
     CCLayerTilingData::TileMap::const_iterator end = m_tiler->tiles().end();
     for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != end; ++iter) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->value.get());
-#else
-        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second.get());
-#endif
+        UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
         // FIXME: This should not ever be null.
         if (!tile)
             continue;

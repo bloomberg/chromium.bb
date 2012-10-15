@@ -32,7 +32,7 @@ public:
         BitmapCanvasLayerTextureUpdater* m_textureUpdater;
     };
 
-    static PassRefPtr<BitmapCanvasLayerTextureUpdater> create(PassOwnPtr<LayerPainterChromium>);
+    static PassRefPtr<BitmapCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
     virtual ~BitmapCanvasLayerTextureUpdater();
 
     virtual PassOwnPtr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
@@ -43,12 +43,13 @@ public:
     virtual void setOpaque(bool) OVERRIDE;
 
 protected:
-    explicit BitmapCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium>);
+    explicit BitmapCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
 
     OwnPtr<SkCanvas> m_canvas;
     IntSize m_canvasSize;
     bool m_opaque;
 };
 
-} // namespace cc
-#endif // BitmapCanvasLayerTextureUpdater_h
+}  // namespace cc
+
+#endif  // BitmapCanvasLayerTextureUpdater_h

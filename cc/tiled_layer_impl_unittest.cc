@@ -25,7 +25,7 @@ namespace {
 static scoped_ptr<CCTiledLayerImpl> createLayer(const IntSize& tileSize, const IntSize& layerSize, CCLayerTilingData::BorderTexelOption borderTexels)
 {
     scoped_ptr<CCTiledLayerImpl> layer = CCTiledLayerImpl::create(1);
-    OwnPtr<CCLayerTilingData> tiler = CCLayerTilingData::create(tileSize, borderTexels);
+    scoped_ptr<CCLayerTilingData> tiler = CCLayerTilingData::create(tileSize, borderTexels);
     tiler->setBounds(layerSize);
     layer->setTilingData(*tiler);
     layer->setSkipsDraw(false);
