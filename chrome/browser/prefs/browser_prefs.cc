@@ -97,6 +97,7 @@
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -198,6 +199,7 @@ void RegisterLocalState(PrefService* local_state) {
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
   chromeos::RegisterDisplayLocalStatePrefs(local_state);
   chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);
+  chromeos::UserImageManager::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
   chromeos::WallpaperManager::RegisterPrefs(local_state);
   chromeos::WizardController::RegisterPrefs(local_state);

@@ -60,7 +60,7 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   lock_window->Grab();
 
   // User list consisting of a single logged-in user.
-  UserList users(1, &chromeos::UserManager::Get()->GetLoggedInUser());
+  UserList users(1, chromeos::UserManager::Get()->GetLoggedInUser());
   login_display_.reset(new WebUILoginDisplay(this));
   login_display_->set_background_bounds(bounds);
   login_display_->set_parent_window(GetNativeWindow());

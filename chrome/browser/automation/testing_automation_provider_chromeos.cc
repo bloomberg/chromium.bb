@@ -313,11 +313,11 @@ void TestingAutomationProvider::GetLoginInfo(DictionaryValue* args,
   return_value->SetBoolean("is_logged_in", user_manager->IsUserLoggedIn());
   return_value->SetBoolean("is_screen_locked", screen_locker);
   if (user_manager->IsUserLoggedIn()) {
-    const User& user = user_manager->GetLoggedInUser();
+    const User* user = user_manager->GetLoggedInUser();
     return_value->SetBoolean("is_guest", user_manager->IsLoggedInAsGuest());
-    return_value->SetString("email", user.email());
-    return_value->SetString("display_email", user.display_email());
-    switch (user.image_index()) {
+    return_value->SetString("email", user->email());
+    return_value->SetString("display_email", user->display_email());
+    switch (user->image_index()) {
       case User::kExternalImageIndex:
         return_value->SetString("user_image", "file");
         break;
@@ -327,7 +327,7 @@ void TestingAutomationProvider::GetLoginInfo(DictionaryValue* args,
         break;
 
       default:
-        return_value->SetInteger("user_image", user.image_index());
+        return_value->SetInteger("user_image", user->image_index());
         break;
     }
   }

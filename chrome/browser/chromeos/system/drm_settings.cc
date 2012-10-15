@@ -111,10 +111,10 @@ void ToggleDrm(bool enable) {
 
   // The user email address is included in the hash to keep the identifier
   // from being the same across users.
-  std::string email = user_manager->GetLoggedInUser().email();
+  std::string email = user_manager->GetLoggedInUser()->email();
   // If there is no real user then there's nothing to do here.
-  if (email.length() == 0) {
-    LOG(WARNING) << "Unexpected 0 length user email.";
+  if (email.empty()) {
+    LOG(WARNING) << "Unexpected empty user email.";
     return;
   }
 

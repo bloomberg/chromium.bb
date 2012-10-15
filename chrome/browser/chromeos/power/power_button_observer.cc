@@ -25,7 +25,7 @@ ash::user::LoginStatus GetCurrentLoginStatus() {
   if (!user_manager->IsUserLoggedIn())
     return ash::user::LOGGED_IN_NONE;
 
-  if (user_manager->GetLoggedInUser().is_guest())
+  if (user_manager->GetLoggedInUser()->is_guest())
     return ash::user::LOGGED_IN_GUEST;
 
   return ash::user::LOGGED_IN_USER;

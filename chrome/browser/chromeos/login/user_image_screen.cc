@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_image.h"
+#include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -68,10 +69,11 @@ void UserImageScreen::Show() {
     return;
 
   actor_->Show();
-  actor_->SelectImage(UserManager::Get()->GetLoggedInUser().image_index());
+  actor_->SelectImage(UserManager::Get()->GetLoggedInUser()->image_index());
 
   // Start fetching the profile image.
-  UserManager::Get()->DownloadProfileImage(kProfileDownloadReason);
+  UserManager::Get()->GetUserImageManager()->
+      DownloadProfileImage(kProfileDownloadReason);
 
   accessibility::MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
@@ -118,8 +120,9 @@ void UserImageScreen::OnPhotoTaken(const gfx::ImageSkia& image) {
   UserManager* user_manager = UserManager::Get();
   // TODO(ivankr): once old camera UI is gone, there's raw data in image
   // decoder, pass UserImage and user it instead.
-  user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(),
-                              UserImage::CreateAndEncode(image));
+  user_manager->GetUserImageManager()->SaveUserImage(
+      user_manager->GetLoggedInUser()->email(),
+      UserImage::CreateAndEncode(image));
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
@@ -130,8 +133,8 @@ void UserImageScreen::OnPhotoTaken(const gfx::ImageSkia& image) {
 
 void UserImageScreen::OnProfileImageSelected() {
   UserManager* user_manager = UserManager::Get();
-  user_manager->SaveUserImageFromProfileImage(
-      user_manager->GetLoggedInUser().email());
+  user_manager->GetUserImageManager()->SaveUserImageFromProfileImage(
+      user_manager->GetLoggedInUser()->email());
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
@@ -142,8 +145,8 @@ void UserImageScreen::OnProfileImageSelected() {
 
 void UserImageScreen::OnDefaultImageSelected(int index) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->SaveUserDefaultImageIndex(
-      user_manager->GetLoggedInUser().email(), index);
+  user_manager->GetUserImageManager()->SaveUserDefaultImageIndex(
+      user_manager->GetLoggedInUser()->email(), index);
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 

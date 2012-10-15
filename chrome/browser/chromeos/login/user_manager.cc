@@ -4,23 +4,13 @@
 
 #include "chrome/browser/chromeos/login/user_manager.h"
 
-#include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
 // static
-const char UserManager::kLoggedInUsers[] = "LoggedInUsers";
 const char UserManager::kStubUser[] = "stub-user@example.com";
-const char UserManager::kUserWallpapers[] = "UserWallpapers";
-const char UserManager::kUserWallpapersProperties[] =
-    "UserWallpapersProperties";
-const char UserManager::kUserImages[] = "UserImages";
-const char UserManager::kUserDisplayName[] = "UserDisplayName";
-const char UserManager::kUserDisplayEmail[] = "UserDisplayEmail";
-const char UserManager::kUserOAuthTokenStatus[] = "OAuthTokenStatus";
 
 // Class that is holds pointer to UserManager instance.
 // One could set UserManager mock instance through it (see UserManager::Set).
@@ -35,7 +25,6 @@ class UserManagerImplWrapper {
   }
 
   UserManager* get() {
-    base::AutoLock create(create_lock_);
     if (!ptr_.get())
       reset(new UserManagerImpl);
     return ptr_.get();
@@ -57,7 +46,6 @@ class UserManagerImplWrapper {
   UserManagerImplWrapper() {
   }
 
-  base::Lock create_lock_;
   scoped_ptr<UserManager> ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImplWrapper);
@@ -73,23 +61,6 @@ UserManager* UserManager::Set(UserManager* mock) {
   UserManager* old_manager = UserManagerImplWrapper::GetInstance()->release();
   UserManagerImplWrapper::GetInstance()->reset(mock);
   return old_manager;
-}
-
-// static
-void UserManager::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterListPref(kLoggedInUsers, PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserWallpapers,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserWallpapersProperties,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserImages,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserOAuthTokenStatus,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserDisplayName,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserDisplayEmail,
-                                      PrefService::UNSYNCABLE_PREF);
 }
 
 UserManager::~UserManager() {

@@ -106,7 +106,7 @@ void SetWallpaperOptionsHandler::FileSelected(const FilePath& path,
 
   // Default wallpaper layout is CENTER_CROPPED.
   WallpaperManager::Get()->SetUserWallpaperFromFile(
-      user_manager->GetLoggedInUser().email(), path, ash::CENTER_CROPPED,
+      user_manager->GetLoggedInUser()->email(), path, ash::CENTER_CROPPED,
       weak_factory_.GetWeakPtr());
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.didSelectFile");
 }

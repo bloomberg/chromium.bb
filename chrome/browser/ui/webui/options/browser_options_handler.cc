@@ -378,22 +378,20 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
 #if defined(OS_CHROMEOS)
-    values->SetString("username",
-        chromeos::UserManager::Get()->IsUserLoggedIn() ?
-            chromeos::UserManager::Get()->GetLoggedInUser().email() :
-            std::string());
+  const chromeos::User* user = chromeos::UserManager::Get()->GetLoggedInUser();
+  values->SetString("username", user ? user->email() : std::string());
 
-    values->SetString(
-        "factoryResetWarning",
-        l10n_util::GetStringFUTF16(
-            IDS_OPTIONS_FACTORY_RESET_WARNING,
-            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+  values->SetString(
+      "factoryResetWarning",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_FACTORY_RESET_WARNING,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 
-    values->SetString(
-        "factoryResetDescription",
-        l10n_util::GetStringFUTF16(
-            IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
-            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+  values->SetString(
+      "factoryResetDescription",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_FACTORY_RESET_DESCRIPTION,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 #endif
 
   // Pass along sync status early so it will be available during page init.
@@ -1022,7 +1020,7 @@ void BrowserOptionsHandler::ThemesSetGTK(const ListValue* args) {
 
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::UpdateAccountPicture() {
-  std::string email = chromeos::UserManager::Get()->GetLoggedInUser().email();
+  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
   if (!email.empty()) {
     web_ui()->CallJavascriptFunction("BrowserOptions.updateAccountPicture");
     base::StringValue email_value(email);

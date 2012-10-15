@@ -56,6 +56,11 @@ class UserImage {
   void set_url(const GURL& url) { url_ = url; }
   GURL url() const { return url_; }
 
+  // Whether |raw_image| contains data in format that is considered safe to
+  // decode in sensitive environment (on Login screen).
+  bool is_safe_format() const { return is_safe_format_; }
+  void MarkAsSafe();
+
  private:
   gfx::ImageSkia image_;
   bool has_raw_image_;
@@ -63,6 +68,7 @@ class UserImage {
   bool has_animated_image_;
   RawImage animated_image_;
   GURL url_;
+  bool is_safe_format_;
 };
 
 }  // namespace chromeos

@@ -687,13 +687,13 @@ std::string OncNetworkParser::GetUserExpandedValue(
   if (!UserManager::Get()->IsUserLoggedIn())
     return string_value;
 
-  const User& logged_in_user(UserManager::Get()->GetLoggedInUser());
+  const User* logged_in_user = UserManager::Get()->GetLoggedInUser();
   ReplaceSubstringsAfterOffset(&string_value, 0,
                                onc::substitutes::kLoginIDField,
-                               logged_in_user.GetAccountName(false));
+                               logged_in_user->GetAccountName(false));
   ReplaceSubstringsAfterOffset(&string_value, 0,
                                onc::substitutes::kEmailField,
-                               logged_in_user.email());
+                               logged_in_user->email());
   return string_value;
 }
 

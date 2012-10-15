@@ -152,7 +152,7 @@ bool WallpaperSetWallpaperFunction::RunImpl() {
     return false;
 
   // Gets email address while at UI thread.
-  email_ = chromeos::UserManager::Get()->GetLoggedInUser().email();
+  email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
 
   image_data_.assign(input->GetBuffer(), input->GetSize());
   if (wallpaper_decoder_)
@@ -252,7 +252,7 @@ bool WallpaperSetCustomWallpaperFunction::RunImpl() {
   layout_ = ash::GetLayoutEnum(layout_string);
 
   // Gets email address while at UI thread.
-  email_ = chromeos::UserManager::Get()->GetLoggedInUser().email();
+  email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
 
   image_data_.assign(input->GetBuffer(), input->GetSize());
   if (wallpaper_decoder_)

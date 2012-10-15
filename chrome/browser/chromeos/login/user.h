@@ -83,12 +83,19 @@ class User {
     return user_image_.animated_image();
   }
 
+  // Whether |raw_image| contains data in format that is considered safe to
+  // decode in sensitive environment (on Login screen).
+  bool image_is_safe_format() const { return user_image_.is_safe_format(); }
+
   // Returns the URL of user image, if there is any. Currently only the profile
   // image has a URL, for other images empty URL is returned.
   GURL image_url() const { return user_image_.url(); }
 
   // True if user image is a stub (while real image is being loaded from file).
   bool image_is_stub() const { return image_is_stub_; }
+
+  // True if image is being loaded from file.
+  bool image_is_loading() const { return image_is_loading_; }
 
   // OAuth token status for this user.
   OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
@@ -104,6 +111,8 @@ class User {
 
  private:
   friend class UserManagerImpl;
+  friend class UserImageManagerImpl;
+  // For testing:
   friend class MockUserManager;
   friend class UserManagerTest;
 
@@ -118,7 +127,8 @@ class User {
 
   // Sets a stub image until the next |SetImage| call. |image_index| may be
   // one of |kExternalImageIndex| or |kProfileImageIndex|.
-  void SetStubImage(int image_index);
+  // If |is_loading| is |true|, that means user image is being loaded from file.
+  void SetStubImage(int image_index, bool is_loading);
 
   // Set thumbnail of user custom wallpaper.
   void SetWallpaperThumbnail(const SkBitmap& wallpaper_thumbnail);
@@ -135,6 +145,8 @@ class User {
     display_email_ = display_email;
   }
 
+  UserImage& user_image() { return user_image_; }
+
   std::string email_;
   string16 display_name_;
   // The displayed user email, defaults to |email_|.
@@ -148,6 +160,9 @@ class User {
 
   // True if current user image is a stub set by a |SetStubImage| call.
   bool image_is_stub_;
+
+  // True if current user image is being loaded from file.
+  bool image_is_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };

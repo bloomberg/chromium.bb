@@ -36,7 +36,7 @@ class SimpleJpegEncoder
   ~SimpleJpegEncoder();
 
   // Encodes a SkBitmap with JPEG codec on worker pool.
-  void EncodeWallpaper();
+  void EncodeBitmap();
 
   base::CancellationFlag cancel_flag_;
 

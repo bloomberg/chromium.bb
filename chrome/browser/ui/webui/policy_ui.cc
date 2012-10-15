@@ -322,9 +322,9 @@ base::DictionaryValue* PolicyUIHandler::GetStatusData() {
     results->SetString("userLastFetchTime", GetLastFetchTime(user_subsystem));
 
 #if defined(OS_CHROMEOS)
-    const chromeos::User& user =
+    const chromeos::User* user =
         chromeos::UserManager::Get()->GetLoggedInUser();
-    results->SetString("user", ASCIIToUTF16(user.email()));
+    results->SetString("user", ASCIIToUTF16(user->email()));
 #else
     results->SetString("user", string16());
 #endif

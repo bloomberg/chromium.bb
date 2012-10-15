@@ -8,45 +8,36 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
-#include "base/time.h"
-#include "base/timer.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_image_loader.h"
+#include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/gfx/image/image_skia.h"
 
 class FilePath;
 class PrefService;
-class ProfileDownloader;
 class ProfileSyncService;
-class SkBitmap;
 
 namespace chromeos {
 
 class RemoveUserDelegate;
-class UserImage;
 
 // Implementation of the UserManager.
 class UserManagerImpl : public UserManager,
-                        public ProfileDownloaderDelegate,
                         public ProfileSyncServiceObserver,
                         public content::NotificationObserver {
  public:
-  // UserManager implementation:
   virtual ~UserManagerImpl();
 
+  // UserManager implementation:
+  virtual UserImageManager* GetUserImageManager() OVERRIDE;
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,
                             bool browser_restart) OVERRIDE;
@@ -59,8 +50,8 @@ class UserManagerImpl : public UserManager,
   virtual void RemoveUserFromList(const std::string& email) OVERRIDE;
   virtual bool IsKnownUser(const std::string& email) const OVERRIDE;
   virtual const User* FindUser(const std::string& email) const OVERRIDE;
-  virtual const User& GetLoggedInUser() const OVERRIDE;
-  virtual User& GetLoggedInUser() OVERRIDE;
+  virtual const User* GetLoggedInUser() const OVERRIDE;
+  virtual User* GetLoggedInUser() OVERRIDE;
   virtual void SaveUserOAuthStatus(
       const std::string& username,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
@@ -74,17 +65,8 @@ class UserManagerImpl : public UserManager,
       const std::string& username) const OVERRIDE;
   virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
                                                    int index) OVERRIDE;
-  virtual void SaveUserDefaultImageIndex(const std::string& username,
-                                         int image_index) OVERRIDE;
-  virtual void SaveUserImage(const std::string& username,
-                             const UserImage& user_image) OVERRIDE;
   virtual void SetLoggedInUserCustomWallpaperLayout(
       ash::WallpaperLayout layout) OVERRIDE;
-  virtual void SaveUserImageFromFile(const std::string& username,
-                                     const FilePath& path) OVERRIDE;
-  virtual void SaveUserImageFromProfileImage(
-      const std::string& username) OVERRIDE;
-  virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
   virtual bool IsCurrentUserOwner() const OVERRIDE;
   virtual bool IsCurrentUserNew() const OVERRIDE;
   virtual bool IsCurrentUserEphemeral() const OVERRIDE;
@@ -97,7 +79,6 @@ class UserManagerImpl : public UserManager,
   virtual void AddObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void RemoveObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
-  virtual const gfx::ImageSkia& DownloadedProfileImage() const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -107,16 +88,12 @@ class UserManagerImpl : public UserManager,
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
 
- protected:
-  UserManagerImpl();
-
-  // Returns image filepath for the given user.
-  FilePath GetImagePathForUser(const std::string& username);
-
  private:
   friend class UserManagerImplWrapper;
-  friend class UserManagerTest;
   friend class WallpaperManager;
+  friend class UserManagerTest;
+
+  UserManagerImpl();
 
   // Loads |users_| from Local State if the list has not been loaded yet.
   // Subsequent calls have no effect. Must be called on the UI thread.
@@ -143,75 +120,11 @@ class UserManagerImpl : public UserManager,
 
   void SetCurrentUserIsOwner(bool is_current_user_owner);
 
-  // Sets one of the default images for the specified user and saves this
-  // setting in local state.
-  // Does not send LOGIN_USER_IMAGE_CHANGED notification.
-  void SetInitialUserImage(const std::string& username);
-
-  // Migrate the old wallpaper index to a new wallpaper structure.
-  // The new wallpaper structure is:
-  // { WallpaperType: DAILY|CUSTOMIZED|DEFAULT,
-  //   index: index of the default wallpapers }
-  void MigrateWallpaperData();
-
-  // Sets image for user |username| and sends LOGIN_USER_IMAGE_CHANGED
-  // notification unless this is a new user and image is set for the first time.
-  // If |image| is empty, sets a stub image for the user.
-  void SetUserImage(const std::string& username,
-                    int image_index,
-                    const GURL& image_url,
-                    const UserImage& user_image);
-
-  // Saves image to file, updates local state preferences to given image index
-  // and sends LOGIN_USER_IMAGE_CHANGED notification.
-  void SaveUserImageInternal(const std::string& username,
-                             int image_index,
-                             const GURL& image_url,
-                             const UserImage& user_image);
-
-  // Saves image to file with specified path and sends LOGIN_USER_IMAGE_CHANGED
-  // notification. Runs on FILE thread. Posts task for saving image info to
-  // Local State on UI thread.
-  void SaveImageToFile(const std::string& username,
-                       const UserImage& user_image,
-                       const FilePath& image_path,
-                       int image_index,
-                       const GURL& image_url);
-
-  // Stores path to the image and its index in local state. Runs on UI thread.
-  // If |is_async| is true, it has been posted from the FILE thread after
-  // saving the image.
-  void SaveImageToLocalState(const std::string& username,
-                             const std::string& image_path,
-                             int image_index,
-                             const GURL& image_url,
-                             bool is_async);
-
   // Stores layout and type preference in local state. Runs on UI thread.
   void SaveWallpaperToLocalState(const std::string& username,
                                  const std::string& wallpaper_path,
                                  ash::WallpaperLayout layout,
                                  User::WallpaperType type);
-
-  // Saves |image| to the specified |image_path|. Runs on FILE thread.
-  bool SaveBitmapToFile(const UserImage& user_image,
-                        const FilePath& image_path);
-
-  // Initializes |downloaded_profile_image_| with the picture of the logged-in
-  // user.
-  void InitDownloadedProfileImage();
-
-  // Download user's profile data, including full name and picture, when
-  // |download_image| is true.
-  // |reason| is an arbitrary string (used to report UMA histograms with
-  // download times).
-  void DownloadProfileData(const std::string& reason, bool download_image);
-
-  // Scheduled call for downloading profile data.
-  void DownloadProfileDataScheduled();
-
-  // Deletes user's image file. Runs on FILE thread.
-  void DeleteUserImage(const FilePath& image_path);
 
   // Updates current user ownership on UI thread.
   void UpdateOwnership(DeviceSettingsService::OwnershipStatus status,
@@ -220,23 +133,12 @@ class UserManagerImpl : public UserManager,
   // Triggers an asynchronous ownership check.
   void CheckOwnership();
 
-  // ProfileDownloaderDelegate implementation.
-  virtual bool NeedsProfilePicture() const OVERRIDE;
-  virtual int GetDesiredImageSideLength() const OVERRIDE;
-  virtual Profile* GetBrowserProfile() OVERRIDE;
-  virtual std::string GetCachedPictureURL() const OVERRIDE;
-  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) OVERRIDE;
-  virtual void OnProfileDownloadFailure(ProfileDownloader* downloader) OVERRIDE;
-
   // Creates a new User instance.
   User* CreateUser(const std::string& email, bool is_ephemeral) const;
 
   // Removes the user from the persistent list only. Also removes the user's
   // picture.
   void RemoveUserFromListInternal(const std::string& email);
-
-  // Loads user image from its file.
-  scoped_refptr<UserImageLoader> image_loader_;
 
   // List of all known users. User instances are owned by |this| and deleted
   // when users are removed by |RemoveUserFromListInternal|.
@@ -285,35 +187,7 @@ class UserManagerImpl : public UserManager,
 
   ObserverList<UserManager::Observer> observer_list_;
 
-  // Download user profile image on login to update it if it's changed.
-  scoped_ptr<ProfileDownloader> profile_image_downloader_;
-
-  // Arbitrary string passed to the last |DownloadProfileImage| call.
-  std::string profile_image_download_reason_;
-
-  // Time when the profile image download has started.
-  base::Time profile_image_load_start_time_;
-
-  // True if the last user image required async save operation (which may not
-  // have been completed yet). This flag is used to avoid races when user image
-  // is first set with |SaveUserImage| and then with |SaveUserImagePath|.
-  bool last_image_set_async_;
-
-  // Result of the last successful profile image download, if any.
-  gfx::ImageSkia downloaded_profile_image_;
-
-  // Data URL for |downloaded_profile_image_|.
-  std::string downloaded_profile_image_data_url_;
-
-  // Original URL of |downloaded_profile_image_|, from which it was downloaded.
-  GURL profile_image_url_;
-
-  // True when |profile_image_downloader_| is fetching profile picture (not
-  // just full name).
-  bool downloading_profile_image_;
-
-  // Timer triggering DownloadProfileDataScheduled for refreshing profile data.
-  base::RepeatingTimer<UserManagerImpl> profile_download_timer_;
+  scoped_ptr<UserImageManagerImpl> user_image_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };

@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_image.h"
+#include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
@@ -496,8 +497,8 @@ void PhotoCaptureObserver::OnCapturingStopped(
     return;
   }
 
-  const chromeos::User& user = user_manager->GetLoggedInUser();
-  if (user.email().empty()) {
+  const chromeos::User* user = user_manager->GetLoggedInUser();
+  if (user->email().empty()) {
     if (automation_) {
       AutomationJSONReply(
           automation_,
@@ -509,8 +510,8 @@ void PhotoCaptureObserver::OnCapturingStopped(
 
   // Set up an observer for UserManager (it will delete itself).
   user_manager->AddObserver(this);
-  user_manager->SaveUserImage(
-      user.email(), chromeos::UserImage::CreateAndEncode(photo));
+  user_manager->GetUserImageManager()->SaveUserImage(
+      user->email(), chromeos::UserImage::CreateAndEncode(photo));
 }
 
 void PhotoCaptureObserver::LocalStateChanged(

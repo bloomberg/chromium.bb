@@ -9,6 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/login/mock_user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,14 +41,8 @@ class MockUserManager : public UserManager {
   MOCK_METHOD2(SaveLoggedInUserWallpaperProperties, void(User::WallpaperType,
                                                          int));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));
-  MOCK_METHOD2(SaveUserDefaultImageIndex, void(const std::string&, int));
-  MOCK_METHOD2(SaveUserImage, void(const std::string&, const UserImage&));
   MOCK_METHOD1(SetLoggedInUserCustomWallpaperLayout,void(
       ash::WallpaperLayout));
-  MOCK_METHOD2(SaveUserImageFromFile, void(const std::string&,
-                                           const FilePath&));
-  MOCK_METHOD1(SaveUserImageFromProfileImage, void(const std::string&));
-  MOCK_METHOD1(DownloadProfileImage, void(const std::string&));
   MOCK_CONST_METHOD0(IsCurrentUserOwner, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserNew, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserEphemeral, bool(void));
@@ -60,20 +55,22 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(AddObserver, void(UserManager::Observer*));
   MOCK_METHOD1(RemoveObserver, void(UserManager::Observer*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
-  MOCK_CONST_METHOD0(DownloadedProfileImage, const gfx::ImageSkia& (void));
 
   // You can't mock this function easily because nobody can create User objects
   // but the UserManagerImpl and us.
-  virtual const User& GetLoggedInUser() const OVERRIDE;
+  virtual const User* GetLoggedInUser() const OVERRIDE;
 
   // You can't mock this function easily because nobody can create User objects
   // but the UserManagerImpl and us.
-  virtual User& GetLoggedInUser() OVERRIDE;
+  virtual User* GetLoggedInUser() OVERRIDE;
+
+  virtual UserImageManager* GetUserImageManager() OVERRIDE;
 
   // Sets a new User instance.
   void SetLoggedInUser(const std::string& email);
 
   User* user_;
+  scoped_ptr<MockUserImageManager> user_image_manager_;
 };
 
 // Class that provides easy life-cycle management for mocking the UserManager

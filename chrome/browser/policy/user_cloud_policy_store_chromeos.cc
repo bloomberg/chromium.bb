@@ -286,7 +286,7 @@ void UserCloudPolicyStoreChromeOS::Validate(
   scoped_ptr<UserCloudPolicyValidator> validator =
       CreateValidator(policy.Pass(), callback);
   validator->ValidateUsername(
-      chromeos::UserManager::Get()->GetLoggedInUser().email());
+      chromeos::UserManager::Get()->GetLoggedInUser()->email());
 
   // TODO(mnissler): Do a signature check here as well. The key is stored by
   // session_manager in the root-owned cryptohome area, which is currently

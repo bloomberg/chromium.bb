@@ -62,6 +62,13 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // added after PowerManagerClient initialized.
   void AddObservers();
 
+  // Migrate the old wallpaper index to a new wallpaper structure for all users
+  // in |users|.
+  // The new wallpaper structure is:
+  // { WallpaperType: DAILY|CUSTOMIZED|DEFAULT,
+  //   index: index of the default wallpapers }
+  void MigrateWallpaperData(const UserList& users);
+
   // Loads wallpaper asynchronously if the current wallpaper is not the
   // wallpaper of logged in user.
   void EnsureLoggedInUserWallpaperLoaded();

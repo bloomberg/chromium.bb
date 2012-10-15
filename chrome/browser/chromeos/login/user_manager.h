@@ -12,17 +12,12 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/ui/webui/options/chromeos/set_wallpaper_options_handler.h"
 
-class FilePath;
 class PrefService;
-
-namespace gfx {
-class ImageSkia;
-}
 
 namespace chromeos {
 
 class RemoveUserDelegate;
-class UserImage;
+class UserImageManager;
 
 // Base class for UserManagerImpl - provides a mechanism for discovering users
 // who have logged into this Chrome OS device before and updating that list.
@@ -39,30 +34,8 @@ class UserManager {
     virtual ~Observer() {}
   };
 
-  // A vector pref of the users who have logged into the device.
-  static const char kLoggedInUsers[];
-
   // Username for stub login when not running on ChromeOS.
   static const char kStubUser[];
-
-  // A dictionary that maps usernames to file paths to their wallpapers.
-  // Deprecated. Will remove this const char after done migration.
-  static const char kUserWallpapers[];
-
-  // A dictionary that maps usernames to wallpaper properties.
-  static const char kUserWallpapersProperties[];
-
-  // A dictionary that maps usernames to file paths to their images.
-  static const char kUserImages[];
-
-  // A dictionary that maps usernames to the displayed name.
-  static const char kUserDisplayName[];
-
-  // A dictionary that maps usernames to the displayed (non-canonical) emails.
-  static const char kUserDisplayEmail[];
-
-  // A dictionary that maps usernames to OAuth token presence flag.
-  static const char kUserOAuthTokenStatus[];
 
   // Returns a shared instance of a UserManager. Not thread-safe, should only be
   // called from the main UI thread.
@@ -92,6 +65,8 @@ class UserManager {
   static void RegisterPrefs(PrefService* local_state);
 
   virtual ~UserManager();
+
+  virtual UserImageManager* GetUserImageManager() = 0;
 
   // Returns a list of users who have logged into this device previously. This
   // is sorted by last login date with the most recent user at the beginning.
@@ -138,8 +113,8 @@ class UserManager {
   virtual const User* FindUser(const std::string& email) const = 0;
 
   // Returns the logged-in user.
-  virtual const User& GetLoggedInUser() const = 0;
-  virtual User& GetLoggedInUser() = 0;
+  virtual const User* GetLoggedInUser() const = 0;
+  virtual User* GetLoggedInUser() = 0;
 
   // Saves user's oauth token status in local state preferences.
   virtual void SaveUserOAuthStatus(
@@ -172,39 +147,10 @@ class UserManager {
   virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
                                                    int index) = 0;
 
-  // Sets user image to the default image with index |image_index|, sends
-  // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
-  virtual void SaveUserDefaultImageIndex(const std::string& username,
-                                         int image_index) = 0;
-
-  // Saves image to file, sends LOGIN_USER_IMAGE_CHANGED notification and
-  // updates Local State.
-  virtual void SaveUserImage(const std::string& username,
-                             const UserImage& user_image) = 0;
-
   // Updates custom wallpaper to selected layout and saves layout to Local
   // State.
   virtual void SetLoggedInUserCustomWallpaperLayout(
       ash::WallpaperLayout layout) = 0;
-
-  // Tries to load user image from disk; if successful, sets it for the user,
-  // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
-  virtual void SaveUserImageFromFile(const std::string& username,
-                                     const FilePath& path) = 0;
-
-  // Sets profile image as user image for |username|, sends
-  // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If the user
-  // is not logged-in or the last |DownloadProfileImage| call has failed, a
-  // default grey avatar will be used until the user logs in and profile image
-  // is downloaded successfully.
-  virtual void SaveUserImageFromProfileImage(const std::string& username) = 0;
-
-  // Starts downloading the profile image for the logged-in user.
-  // If user's image index is |kProfileImageIndex|, newly downloaded image
-  // is immediately set as user's current picture.
-  // |reason| is an arbitrary string (used to report UMA histograms with
-  // download times).
-  virtual void DownloadProfileImage(const std::string& reason) = 0;
 
   // Returns true if current user is an owner.
   virtual bool IsCurrentUserOwner() const = 0;
@@ -240,10 +186,6 @@ class UserManager {
   virtual void RemoveObserver(Observer* obs) = 0;
 
   virtual void NotifyLocalStateChanged() = 0;
-
-  // Returns the result of the last successful profile image download, if any.
-  // Otherwise, returns an empty bitmap.
-  virtual const gfx::ImageSkia& DownloadedProfileImage() const = 0;
 };
 
 }  // namespace chromeos

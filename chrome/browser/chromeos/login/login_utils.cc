@@ -540,7 +540,7 @@ void LoginUtilsImpl::OnProfileCreated(
       google_services_username.Init(prefs::kGoogleServicesUsername,
                                     user_profile->GetPrefs(), NULL);
       google_services_username.SetValue(
-          UserManager::Get()->GetLoggedInUser().display_email());
+          UserManager::Get()->GetLoggedInUser()->display_email());
       // Make sure we flip every profile to not share proxies if the user hasn't
       // specified so explicitly.
       const PrefService::Preference* use_shared_proxies_pref =
@@ -661,7 +661,7 @@ void LoginUtilsImpl::StartSignedInServices(
   // Make sure SigninManager is connected to our current user (this should
   // happen automatically because we set kGoogleServicesUsername in
   // OnProfileCreated()).
-  DCHECK_EQ(UserManager::Get()->GetLoggedInUser().display_email(),
+  DCHECK_EQ(UserManager::Get()->GetLoggedInUser()->display_email(),
             signin->GetAuthenticatedUsername());
   static bool initialized = false;
   if (!initialized) {
@@ -1030,7 +1030,7 @@ bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
                                            std::string* secret) {
   // Skip reading oauth token if user does not have a valid status.
   if (UserManager::Get()->IsUserLoggedIn() &&
-      UserManager::Get()->GetLoggedInUser().oauth_token_status() !=
+      UserManager::Get()->GetLoggedInUser()->oauth_token_status() !=
       User::OAUTH_TOKEN_STATUS_VALID) {
     return false;
   }
@@ -1062,6 +1062,7 @@ void LoginUtilsImpl::StoreOAuth1AccessToken(Profile* user_profile,
   std::string encrypted_secret =
       CrosLibrary::Get()->GetCertLibrary()->EncryptToken(secret);
   PrefService* pref_service = user_profile->GetPrefs();
+  User* user = UserManager::Get()->GetLoggedInUser();
   if (!encrypted_token.empty() && !encrypted_secret.empty()) {
     pref_service->SetString(prefs::kOAuth1Token, encrypted_token);
     pref_service->SetString(prefs::kOAuth1Secret, encrypted_secret);
@@ -1069,15 +1070,13 @@ void LoginUtilsImpl::StoreOAuth1AccessToken(Profile* user_profile,
     // ...then record the presence of valid OAuth token for this account in
     // local state as well.
     UserManager::Get()->SaveUserOAuthStatus(
-        UserManager::Get()->GetLoggedInUser().email(),
-        User::OAUTH_TOKEN_STATUS_VALID);
+        user->email(), User::OAUTH_TOKEN_STATUS_VALID);
   } else {
     LOG(WARNING) << "Failed to get OAuth1 token/secret encrypted.";
     // Set the OAuth status invalid so that the user will go through full
     // GAIA login next time.
     UserManager::Get()->SaveUserOAuthStatus(
-        UserManager::Get()->GetLoggedInUser().email(),
-        User::OAUTH_TOKEN_STATUS_INVALID);
+        user->email(), User::OAUTH_TOKEN_STATUS_INVALID);
   }
 }
 
@@ -1096,7 +1095,7 @@ void LoginUtilsImpl::FetchCredentials(Profile* user_profile,
                                       const std::string& secret) {
   oauth_login_verifier_.reset(new OAuthLoginVerifier(
       this, user_profile, token, secret,
-      UserManager::Get()->GetLoggedInUser().email()));
+      UserManager::Get()->GetLoggedInUser()->email()));
   oauth_login_verifier_->StartOAuthVerification();
 }
 

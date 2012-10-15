@@ -252,15 +252,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual const string16 GetUserDisplayName() const OVERRIDE {
-    return UserManager::Get()->GetLoggedInUser().GetDisplayName();
+    return UserManager::Get()->GetLoggedInUser()->GetDisplayName();
   }
 
   virtual const std::string GetUserEmail() const OVERRIDE {
-    return UserManager::Get()->GetLoggedInUser().display_email();
+    return UserManager::Get()->GetLoggedInUser()->display_email();
   }
 
   virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE {
-    return UserManager::Get()->GetLoggedInUser().image();
+    return UserManager::Get()->GetLoggedInUser()->image();
   }
 
   virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {

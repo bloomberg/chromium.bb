@@ -102,7 +102,7 @@ std::string GetUserEmail() {
   if (!manager)
     return std::string();
   else
-    return manager->GetLoggedInUser().display_email();
+    return manager->GetLoggedInUser()->display_email();
 }
 
 bool ScreenshotDriveTimestampComp(const drive::DriveEntryProto& entry1,

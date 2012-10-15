@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_image.h"
+#include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -239,21 +240,21 @@ void ChangePictureOptionsHandler::HandlePageShown(const base::ListValue* args) {
 }
 
 void ChangePictureOptionsHandler::SendSelectedImage() {
-  const User& user = UserManager::Get()->GetLoggedInUser();
-  DCHECK(!user.email().empty());
+  const User* user = UserManager::Get()->GetLoggedInUser();
+  DCHECK(!user->email().empty());
 
-  previous_image_index_ = user.image_index();
+  previous_image_index_ = user->image_index();
   switch (previous_image_index_) {
     case User::kExternalImageIndex: {
       // User has image from camera/file, record it and add to the image list.
-      previous_image_ = user.image();
+      previous_image_ = user->image();
       previous_image_data_url_ = web_ui_util::GetImageDataUrl(previous_image_);
       web_ui()->CallJavascriptFunction("ChangePictureOptions.setOldImage");
       break;
     }
     case User::kProfileImageIndex: {
       // User has his/her Profile image as the current image.
-      SendProfileImage(user.image(), true);
+      SendProfileImage(user->image(), true);
       break;
     }
     default: {
@@ -282,15 +283,16 @@ void ChangePictureOptionsHandler::SendProfileImage(const gfx::ImageSkia& image,
 }
 
 void ChangePictureOptionsHandler::UpdateProfileImage() {
-  UserManager* user_manager = UserManager::Get();
+  UserImageManager* user_image_manager =
+      UserManager::Get()->GetUserImageManager();
 
   // If we have a downloaded profile image and haven't sent it in
   // |SendSelectedImage|, send it now (without selecting).
   if (previous_image_index_ != User::kProfileImageIndex &&
-      !user_manager->DownloadedProfileImage().isNull())
-    SendProfileImage(user_manager->DownloadedProfileImage(), false);
+      !user_image_manager->DownloadedProfileImage().isNull())
+    SendProfileImage(user_image_manager->DownloadedProfileImage(), false);
 
-  user_manager->DownloadProfileImage(kProfileDownloadReason);
+  user_image_manager->DownloadProfileImage(kProfileDownloadReason);
 }
 
 void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
@@ -303,8 +305,9 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   }
   DCHECK(!image_url.empty());
 
-  UserManager* user_manager = UserManager::Get();
-  const User& user = user_manager->GetLoggedInUser();
+  const User* user = UserManager::Get()->GetLoggedInUser();
+  UserImageManager* user_image_manager =
+      UserManager::Get()->GetUserImageManager();
   int image_index = User::kInvalidImageIndex;
   bool waiting_for_camera_photo = false;
 
@@ -318,13 +321,13 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
 
     if (previous_image_index_ == User::kExternalImageIndex) {
       DCHECK(!previous_image_.isNull());
-      user_manager->SaveUserImage(user.email(),
-                                  UserImage::CreateAndEncode(previous_image_));
+      user_image_manager->SaveUserImage(
+          user->email(), UserImage::CreateAndEncode(previous_image_));
     } else {
       DCHECK(previous_image_index_ >= 0 &&
              previous_image_index_ < kFirstDefaultImageIndex);
-      user_manager->SaveUserDefaultImageIndex(user.email(),
-                                              previous_image_index_);
+      user_image_manager->SaveUserDefaultImageIndex(
+          user->email(), previous_image_index_);
     }
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
@@ -333,7 +336,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     VLOG(1) << "Selected old user image";
   } else if (IsDefaultImageUrl(image_url, &image_index)) {
     // One of the default user images.
-    user_manager->SaveUserDefaultImageIndex(user.email(), image_index);
+    user_image_manager->SaveUserDefaultImageIndex(user->email(), image_index);
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               GetDefaultImageHistogramValue(image_index),
@@ -350,7 +353,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     }
   } else {
     // Profile image selected. Could be previous (old) user image.
-    user_manager->SaveUserImageFromProfileImage(user.email());
+    user_image_manager->SaveUserImageFromProfileImage(user->email());
 
     if (previous_image_index_ == User::kProfileImageIndex) {
       UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
@@ -374,8 +377,8 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
                                                int index,
                                                void* params) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->SaveUserImageFromFile(user_manager->GetLoggedInUser().email(),
-                                      path);
+  user_manager->GetUserImageManager()->SaveUserImageFromFile(
+      user_manager->GetLoggedInUser()->email(), path);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromFile,
                             kHistogramImagesCount);
@@ -386,8 +389,9 @@ void ChangePictureOptionsHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
   UserManager* user_manager = UserManager::Get();
   // TODO(ivankr): once old camera UI is gone, there's always raw data in
   // |image_decoder_|, pass UserImage and user it instead.
-  user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(),
-                              UserImage::CreateAndEncode(photo));
+  user_manager->GetUserImageManager()->SaveUserImage(
+      user_manager->GetLoggedInUser()->email(),
+      UserImage::CreateAndEncode(photo));
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);

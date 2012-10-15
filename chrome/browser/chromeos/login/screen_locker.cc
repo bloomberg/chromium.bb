@@ -284,7 +284,7 @@ void ScreenLocker::Show() {
 
   if (!screen_locker_) {
     ScreenLocker* locker =
-        new ScreenLocker(UserManager::Get()->GetLoggedInUser());
+        new ScreenLocker(*UserManager::Get()->GetLoggedInUser());
     VLOG(1) << "Created ScreenLocker " << locker;
     locker->Init();
   } else {

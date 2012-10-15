@@ -48,7 +48,7 @@ bool IsSettingOwnerOnly(const std::string& pref) {
 bool IsLoggedInOwner(const std::string& username) {
   UserManager* user_manager = UserManager::Get();
   return user_manager->IsCurrentUserOwner() &&
-      user_manager->GetLoggedInUser().email() == username;
+      user_manager->GetLoggedInUser()->email() == username;
 }
 
 // Creates a user info dictionary to be stored in the |ListValue| that is

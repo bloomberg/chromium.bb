@@ -17,6 +17,8 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 
+#include "base/debug/trace_event.h"
+
 namespace {
 
 struct ScaleFactorMap {
@@ -34,6 +36,8 @@ const ScaleFactorMap kScaleFactorMap[] = {
 namespace web_ui_util {
 
 std::string GetImageDataUrl(const gfx::ImageSkia& image) {
+  TRACE_EVENT2("oobe", "GetImageDataUrl",
+               "width", image.width(), "height", image.height());
   std::vector<unsigned char> output;
   gfx::PNGCodec::EncodeBGRASkBitmap(*image.bitmap(), false, &output);
   std::string str_url;

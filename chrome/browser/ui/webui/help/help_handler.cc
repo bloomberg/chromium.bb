@@ -87,7 +87,7 @@ bool CanChangeReleaseChannel() {
       return false;
     // Get the currently logged in user and strip the domain part only.
     std::string domain = "";
-    std::string user = chromeos::UserManager::Get()->GetLoggedInUser().email();
+    std::string user = chromeos::UserManager::Get()->GetLoggedInUser()->email();
     size_t at_pos = user.find('@');
     if (at_pos != std::string::npos && at_pos + 1 < user.length())
       domain = user.substr(user.find('@') + 1);

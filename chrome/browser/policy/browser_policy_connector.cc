@@ -176,7 +176,7 @@ scoped_ptr<UserCloudPolicyManager>
     // Don't wait for a policy fetch if there's no logged in user.
     if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
       std::string email =
-          chromeos::UserManager::Get()->GetLoggedInUser().email();
+          chromeos::UserManager::Get()->GetLoggedInUser()->email();
       wait_for_policy_fetch =
           GetUserAffiliation(email) == USER_AFFILIATION_MANAGED;
     }

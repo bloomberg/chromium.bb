@@ -16,7 +16,7 @@
 namespace chromeos {
 
 namespace {
-const int kCustomWallpaperQuality = 90;
+const int kDefaultEncodingQuality = 90;
 }
 
 SimpleJpegEncoder::SimpleJpegEncoder(
@@ -29,12 +29,12 @@ SimpleJpegEncoder::SimpleJpegEncoder(
 void SimpleJpegEncoder::Run(EncoderCallback callback) {
   base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&SimpleJpegEncoder::EncodeWallpaper, this),
+      base::Bind(&SimpleJpegEncoder::EncodeBitmap, this),
       base::Bind(callback, data_),
       true /* task_is_slow */);
 }
 
-void SimpleJpegEncoder::EncodeWallpaper() {
+void SimpleJpegEncoder::EncodeBitmap() {
   if (cancel_flag_.IsSet())
     return;
   SkAutoLockPixels lock_input(image_);
@@ -44,7 +44,7 @@ void SimpleJpegEncoder::EncodeWallpaper() {
       image_.width(),
       image_.height(),
       image_.width() * image_.bytesPerPixel(),
-      kCustomWallpaperQuality, &data_->data());
+      kDefaultEncodingQuality, &data_->data());
 }
 
 void SimpleJpegEncoder::Cancel() {
