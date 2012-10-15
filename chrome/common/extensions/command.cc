@@ -133,8 +133,8 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
 
 // For Mac, we convert "Ctrl" to "Command" and "MacCtrl" to "Ctrl". Other
 // platforms leave the shortcut untouched.
-std::string NormalizeShortcutSuggestion(std::string suggestion,
-                                        std::string platform) {
+std::string NormalizeShortcutSuggestion(const std::string& suggestion,
+                                        const std::string& platform) {
   bool normalize = false;
   if (platform == "mac") {
     normalize = true;
