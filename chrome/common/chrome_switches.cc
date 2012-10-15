@@ -1469,9 +1469,6 @@ const char kGuestSession[]                  = "bwsi";
 // Useful for testing.
 const char kEchoExtensionPath[]             = "echo-ext-path";
 
-// Show volume controls in status bar on ChromeOS.
-const char kShowVolumeStatus[]              = "show-volume-status";
-
 // Indicates that a stub implementation of CrosSettings that stores settings in
 // memory without signing should be used, treating current user as the owner.
 // This option is for testing the chromeos build of chrome on the desktop only.
