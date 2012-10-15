@@ -7,7 +7,7 @@
 
 namespace switches {
 
-// Turn on Calling GL Error after every command.
+// Always return success when compiling a shader. Linking will still fail.
 const char kCompileShaderAlwaysSucceeds[]   = "compile-shader-always-succeeds";
 
 // Disable the GL error log limit.
