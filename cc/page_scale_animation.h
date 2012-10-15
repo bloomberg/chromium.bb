@@ -5,8 +5,8 @@
 #ifndef CCPageScaleAnimation_h
 #define CCPageScaleAnimation_h
 
+#include "base/memory/scoped_ptr.h"
 #include "IntSize.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -19,7 +19,7 @@ public:
     // Construct with the starting page scale and scroll offset (which is in
     // pageScaleStart space). The window size is the user-viewable area
     // in pixels.
-    static PassOwnPtr<CCPageScaleAnimation> create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime);
+    static scoped_ptr<CCPageScaleAnimation> create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime);
 
     // The following methods initialize the animation. Call one of them
     // immediately after construction to set the final scroll and page scale.
@@ -69,6 +69,6 @@ private:
     double m_duration;
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif

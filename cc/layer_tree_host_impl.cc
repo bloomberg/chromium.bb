@@ -158,9 +158,9 @@ WebTransformationMatrix CCPinchZoomViewport::implTransform() const
 
 class CCLayerTreeHostImplTimeSourceAdapter : public CCTimeSourceClient {
 public:
-    static PassOwnPtr<CCLayerTreeHostImplTimeSourceAdapter> create(CCLayerTreeHostImpl* layerTreeHostImpl, PassRefPtr<CCDelayBasedTimeSource> timeSource)
+    static scoped_ptr<CCLayerTreeHostImplTimeSourceAdapter> create(CCLayerTreeHostImpl* layerTreeHostImpl, PassRefPtr<CCDelayBasedTimeSource> timeSource)
     {
-        return adoptPtr(new CCLayerTreeHostImplTimeSourceAdapter(layerTreeHostImpl, timeSource));
+        return make_scoped_ptr(new CCLayerTreeHostImplTimeSourceAdapter(layerTreeHostImpl, timeSource));
     }
     virtual ~CCLayerTreeHostImplTimeSourceAdapter()
     {
@@ -1351,7 +1351,7 @@ void CCLayerTreeHostImpl::animatePageScale(double monotonicTime)
     m_client->setNeedsRedrawOnImplThread();
 
     if (m_pageScaleAnimation->isAnimationCompleteAtTime(monotonicTime)) {
-        m_pageScaleAnimation.clear();
+        m_pageScaleAnimation.reset();
         m_client->setNeedsCommitOnImplThread();
     }
 }

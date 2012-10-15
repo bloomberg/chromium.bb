@@ -14,6 +14,11 @@
 
 namespace cc {
 
+// static
+scoped_ptr<CCDebugRectHistory> CCDebugRectHistory::create() {
+  return make_scoped_ptr(new CCDebugRectHistory());
+}
+
 CCDebugRectHistory::CCDebugRectHistory()
 {
 }
@@ -115,6 +120,6 @@ void CCDebugRectHistory::saveOccludingRects(const Vector<IntRect>& occludingRect
         m_debugRects.append(CCDebugRect(OccludingRectType, occludingRects[i]));
 }
 
-} // namespace cc
+}  // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

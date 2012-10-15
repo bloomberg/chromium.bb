@@ -8,9 +8,9 @@
 #if USE(ACCELERATED_COMPOSITING)
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "FloatRect.h"
 #include "IntRect.h"
-#include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 #include <vector>
 
@@ -54,10 +54,7 @@ struct CCDebugRect {
 // the appropriate CCLayerTreeSettings are enabled.
 class CCDebugRectHistory {
 public:
-    static PassOwnPtr<CCDebugRectHistory> create()
-    {
-        return adoptPtr(new CCDebugRectHistory());
-    }
+    static scoped_ptr<CCDebugRectHistory> create();
 
     ~CCDebugRectHistory();
 
@@ -80,7 +77,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CCDebugRectHistory);
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)
 

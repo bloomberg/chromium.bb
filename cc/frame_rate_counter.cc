@@ -24,6 +24,11 @@ static inline int safeMod(int number, int modulus)
     return (number + modulus) % modulus;
 }
 
+// static
+scoped_ptr<CCFrameRateCounter> CCFrameRateCounter::create() {
+  return make_scoped_ptr(new CCFrameRateCounter());
+}
+
 inline base::TimeDelta CCFrameRateCounter::frameInterval(int frameNumber) const
 {
     return m_timeStampHistory[frameIndex(frameNumber)] -

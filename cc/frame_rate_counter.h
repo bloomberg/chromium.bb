@@ -8,8 +8,8 @@
 #if USE(ACCELERATED_COMPOSITING)
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -17,10 +17,7 @@ namespace cc {
 // intelligently compute average frames per second (and standard deviation).
 class CCFrameRateCounter {
 public:
-    static PassOwnPtr<CCFrameRateCounter> create()
-    {
-        return adoptPtr(new CCFrameRateCounter());
-    }
+    static scoped_ptr<CCFrameRateCounter> create();
 
     void markBeginningOfFrame(base::TimeTicks timestamp);
     void markEndOfFrame();
@@ -66,7 +63,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CCFrameRateCounter);
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)
 

@@ -6,13 +6,14 @@
 #define CCLayerTreeHostImpl_h
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "CCAnimationEvents.h"
 #include "CCInputHandler.h"
 #include "CCLayerSorter.h"
+#include "CCRenderer.h"
 #include "CCRenderPass.h"
 #include "CCRenderPassSink.h"
-#include "CCRenderer.h"
 #include "SkColor.h"
 #include <public/WebCompositorOutputSurfaceClient.h>
 #include <wtf/PassOwnPtr.h>
@@ -329,10 +330,10 @@ private:
     bool m_pinchGestureActive;
     IntPoint m_previousPinchAnchor;
 
-    OwnPtr<CCPageScaleAnimation> m_pageScaleAnimation;
+    scoped_ptr<CCPageScaleAnimation> m_pageScaleAnimation;
 
     // This is used for ticking animations slowly when hidden.
-    OwnPtr<CCLayerTreeHostImplTimeSourceAdapter> m_timeSourceClientAdapter;
+    scoped_ptr<CCLayerTreeHostImplTimeSourceAdapter> m_timeSourceClientAdapter;
 
     CCLayerSorter m_layerSorter;
 
@@ -342,8 +343,8 @@ private:
 
     CCPinchZoomViewport m_pinchZoomViewport;
 
-    OwnPtr<CCFrameRateCounter> m_fpsCounter;
-    OwnPtr<CCDebugRectHistory> m_debugRectHistory;
+    scoped_ptr<CCFrameRateCounter> m_fpsCounter;
+    scoped_ptr<CCDebugRectHistory> m_debugRectHistory;
 
     size_t m_numImplThreadScrolls;
     size_t m_numMainThreadScrolls;
@@ -351,6 +352,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CCLayerTreeHostImpl);
 };
 
-};
+}  // namespace cc
 
 #endif

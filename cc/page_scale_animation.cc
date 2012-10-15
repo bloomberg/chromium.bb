@@ -13,11 +13,10 @@
 
 namespace cc {
 
-PassOwnPtr<CCPageScaleAnimation> CCPageScaleAnimation::create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
+scoped_ptr<CCPageScaleAnimation> CCPageScaleAnimation::create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
 {
-    return adoptPtr(new CCPageScaleAnimation(scrollStart, pageScaleStart, windowSize, contentSize, startTime));
+    return make_scoped_ptr(new CCPageScaleAnimation(scrollStart, pageScaleStart, windowSize, contentSize, startTime));
 }
-
 
 CCPageScaleAnimation::CCPageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
     : m_scrollStart(scrollStart)
@@ -156,4 +155,4 @@ float CCPageScaleAnimation::pageScaleAtRatio(float ratio) const
     return m_pageScaleStart * diff;
 }
 
-} // namespace cc
+}  // namespace cc
