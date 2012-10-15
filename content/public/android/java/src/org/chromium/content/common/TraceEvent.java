@@ -44,9 +44,7 @@ public class TraceEvent {
      * The native library must be loaded before the first call with enabled == true.
      */
     public static synchronized void setEnabled(boolean enabled) {
-        if (sEnabled == enabled) {
-            return;
-        }
+        if (sEnabled == enabled) return;
         sEnabled = enabled;
         Looper.getMainLooper().setMessageLogging(enabled ? new LooperTracePrinter() : null);
     }
@@ -60,16 +58,83 @@ public class TraceEvent {
         return sEnabled;
     }
 
+    /**
+     * Triggers the 'instant' native trace event with no arguments.
+     * @param name The name of the event.
+     */
     public static void instant(String name) {
-        if (sEnabled) {
-            nativeInstant(name, null);
-        }
+        if (sEnabled) nativeInstant(name, null);
     }
 
+    /**
+     * Triggers the 'instant' native trace event.
+     * @param name The name of the event.
+     * @param arg  The arguments of the event.
+     */
     public static void instant(String name, String arg) {
-        if (sEnabled) {
-            nativeInstant(name, arg);
-        }
+        if (sEnabled) nativeInstant(name, arg);
+    }
+
+    /**
+     * Convenience wrapper around the versions of startAsync() that take string parameters.
+     * @param id The id of the asynchronous event.  Will automatically figure out the name from
+     *           calling {@link #getCallerName()}.
+     * @see #begin()
+     */
+    public static void startAsync(long id) {
+        if (sEnabled) nativeStartAsync(getCallerName(), id, null);
+    }
+
+    /**
+     * Triggers the 'start' native trace event with no arguments.
+     * @param name The name of the event.
+     * @param id   The id of the asynchronous event.
+     * @see #begin()
+     */
+    public static void startAsync(String name, long id) {
+        if (sEnabled) nativeStartAsync(name, id, null);
+    }
+
+    /**
+     * Triggers the 'start' native trace event.
+     * @param name The name of the event.
+     * @param id   The id of the asynchronous event.
+     * @param arg  The arguments of the event.
+     * @see #begin()
+     */
+    public static void startAsync(String name, long id, String arg) {
+        if (sEnabled) nativeStartAsync(name, id, arg);
+    }
+
+    /**
+     * Convenience wrapper around the versions of finishAsync() that take string parameters.
+     * @param id The id of the asynchronous event.  Will automatically figure out the name from
+     *           calling {@link #getCallerName()}.
+     * @see #finish()
+     */
+    public static void finishAsync(long id) {
+        if (sEnabled) nativeFinishAsync(getCallerName(), id, null);
+    }
+
+    /**
+     * Triggers the 'finish' native trace event with no arguments.
+     * @param name The name of the event.
+     * @param id   The id of the asynchronous event.
+     * @see #begin()
+     */
+    public static void finishAsync(String name, long id) {
+        if (sEnabled) nativeFinishAsync(name, id, null);
+    }
+
+    /**
+     * Triggers the 'finish' native trace event.
+     * @param name The name of the event.
+     * @param id   The id of the asynchronous event.
+     * @param arg  The arguments of the event.
+     * @see #begin()
+     */
+    public static void finishAsync(String name, long id, String arg) {
+        if (sEnabled) nativeFinishAsync(name, id, arg);
     }
 
     /**
@@ -79,21 +144,24 @@ public class TraceEvent {
      * same calling context.
      */
     public static void begin() {
-        if (sEnabled) {
-            nativeBegin(getCallerName(), null);
-        }
+        if (sEnabled) nativeBegin(getCallerName(), null);
     }
 
+    /**
+     * Triggers the 'begin' native trace event with no arguments.
+     * @param name The name of the event.
+     */
     public static void begin(String name) {
-        if (sEnabled) {
-            nativeBegin(name, null);
-        }
+        if (sEnabled) nativeBegin(name, null);
     }
 
+    /**
+     * Triggers the 'begin' native trace event.
+     * @param name The name of the event.
+     * @param arg  The arguments of the event.
+     */
     public static void begin(String name, String arg) {
-        if (sEnabled) {
-            nativeBegin(name, arg);
-        }
+        if (sEnabled) nativeBegin(name, arg);
     }
 
     /**
@@ -106,12 +174,21 @@ public class TraceEvent {
         }
     }
 
+    /**
+     * Triggers the 'end' native trace event with no arguments.
+     * @param name The name of the event.
+     */
     public static void end(String name) {
         if (sEnabled) {
             nativeEnd(name, null);
         }
     }
 
+    /**
+     * Triggers the 'end' native trace event.
+     * @param name The name of the event.
+     * @param arg  The arguments of the event.
+     */
     public static void end(String name, String arg) {
         if (sEnabled) {
             nativeEnd(name, arg);
@@ -137,4 +214,6 @@ public class TraceEvent {
     private static native void nativeInstant(String name, String arg);
     private static native void nativeBegin(String name, String arg);
     private static native void nativeEnd(String name, String arg);
+    private static native void nativeStartAsync(String name, long id, String arg);
+    private static native void nativeFinishAsync(String name, long id, String arg);
 }

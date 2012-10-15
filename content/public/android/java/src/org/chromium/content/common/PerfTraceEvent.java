@@ -29,6 +29,12 @@ import java.util.List;
  * PerfTraceEvents can be enabled even when TraceEvent is not.
  *
  * Unlike TraceEvent, PerfTraceEvent data is sent to the system log,
+ * not to a trace file.
+ *
+ * Performance events need to have very specific names so we find
+ * the right ones.  For example, we specify the name exactly in
+ * the @TracePerf annotation.  Thus, unlike TraceEvent, we do not
+ * support an implicit trace name based on the callstack.
  */
 public class PerfTraceEvent {
     private static final int MAX_NAME_LENGTH = 40;
@@ -37,8 +43,8 @@ public class PerfTraceEvent {
 
     /** The event types understood by the perf trace scripts. */
     private enum EventType {
-        BEGIN("B"),
-        END("E"),
+        START("S"),
+        FINISH("F"),
         INSTANT("I");
 
         // The string understood by the trace scripts.
@@ -145,9 +151,11 @@ public class PerfTraceEvent {
      * Record an "instant" perf trace event.  E.g. "screen update happened".
      */
     public static synchronized void instant(String name) {
+        // Instant doesn't really need/take an event id, but this should be okay.
+        final long eventId = name.hashCode();
         TraceEvent.instant(name);
         if (sEnabled && matchesFilter(name)) {
-            savePerfString(name, EventType.INSTANT, false);
+            savePerfString(name, eventId, EventType.INSTANT, false);
         }
     }
 
@@ -157,15 +165,17 @@ public class PerfTraceEvent {
      * Begin trace events should have a matching end event.
      */
     public static synchronized void begin(String name) {
-        TraceEvent.begin(name);
+        final long eventId = name.hashCode();
+        TraceEvent.startAsync(name, eventId);
         if (sEnabled && matchesFilter(name)) {
             // Done before calculating the starting perf data to ensure calculating the memory usage
             // does not influence the timing data.
             if (sTrackMemory) {
-                savePerfString(makeMemoryTraceNameFromTimingName(name), EventType.BEGIN, true);
+                savePerfString(makeMemoryTraceNameFromTimingName(name), eventId, EventType.START,
+                        true);
             }
             if (sTrackTiming) {
-                savePerfString(name, EventType.BEGIN, false);
+                savePerfString(name, eventId, EventType.START, false);
             }
         }
     }
@@ -176,15 +186,17 @@ public class PerfTraceEvent {
      * graph code.
      */
     public static synchronized void end(String name) {
-        TraceEvent.end(name);
+        final long eventId = name.hashCode();
+        TraceEvent.finishAsync(name, eventId);
         if (sEnabled && matchesFilter(name)) {
             if (sTrackTiming) {
-                savePerfString(name, EventType.END, false);
+                savePerfString(name, eventId, EventType.FINISH, false);
             }
             // Done after calculating the ending perf data to ensure calculating the memory usage
             // does not influence the timing data.
             if (sTrackMemory) {
-                savePerfString(makeMemoryTraceNameFromTimingName(name), EventType.END, true);
+                savePerfString(makeMemoryTraceNameFromTimingName(name), eventId, EventType.FINISH,
+                        true);
             }
         }
     }
@@ -194,15 +206,16 @@ public class PerfTraceEvent {
      * Begin trace events should have a matching end event.
      */
     public static synchronized void begin(String name, MemoryInfo memoryInfo) {
-        TraceEvent.begin(name);
+        final long eventId = name.hashCode();
+        TraceEvent.startAsync(name, eventId);
         if (sEnabled && matchesFilter(name)) {
             // Done before calculating the starting perf data to ensure calculating the memory usage
             // does not influence the timing data.
             long timestampUs = (System.nanoTime() - sBeginNanoTime) / 1000;
-            savePerfString(makeMemoryTraceNameFromTimingName(name), EventType.BEGIN,
+            savePerfString(makeMemoryTraceNameFromTimingName(name), eventId, EventType.START,
                     timestampUs, memoryInfo);
             if (sTrackTiming) {
-                savePerfString(name, EventType.BEGIN, false);
+                savePerfString(name, eventId, EventType.START, false);
             }
         }
     }
@@ -213,15 +226,16 @@ public class PerfTraceEvent {
      * graph code.
      */
     public static synchronized void end(String name, MemoryInfo memoryInfo) {
-        TraceEvent.instant(name);
+        final long eventId = name.hashCode();
+        TraceEvent.finishAsync(name, eventId);
         if (sEnabled && matchesFilter(name)) {
             if (sTrackTiming) {
-                savePerfString(name, EventType.END, false);
+                savePerfString(name, eventId, EventType.FINISH, false);
             }
             // Done after calculating the instant perf data to ensure calculating the memory usage
             // does not influence the timing data.
             long timestampUs = (System.nanoTime() - sBeginNanoTime) / 1000;
-            savePerfString(makeMemoryTraceNameFromTimingName(name), EventType.END,
+            savePerfString(makeMemoryTraceNameFromTimingName(name), eventId, EventType.FINISH,
                     timestampUs, memoryInfo);
         }
     }
@@ -238,29 +252,32 @@ public class PerfTraceEvent {
      * Save a perf trace event as a JSON dict.  The format mirrors a TraceEvent dict.
      *
      * @param name The trace data
-     * @param type the type of trace event (I, B, E)
+     * @param id The id of the event
+     * @param type the type of trace event (I, S, F)
      * @param includeMemory Whether to include current browser process memory usage in the trace.
      */
-    private static void savePerfString(String name, EventType type, boolean includeMemory) {
+    private static void savePerfString(String name, long id, EventType type,
+            boolean includeMemory) {
         long timestampUs = (System.nanoTime() - sBeginNanoTime) / 1000;
         MemoryInfo memInfo = null;
         if (includeMemory) {
             memInfo = new MemoryInfo();
             Debug.getMemoryInfo(memInfo);
         }
-        savePerfString(name, type, timestampUs, memInfo);
+        savePerfString(name, id, type, timestampUs, memInfo);
     }
 
     /**
      * Save a perf trace event as a JSON dict.  The format mirrors a TraceEvent dict.
      *
      * @param name The trace data
-     * @param type the type of trace event (I, B, E)
+     * @param id The id of the event
+     * @param type the type of trace event (I, S, F)
      * @param timestampUs The time stamp at which this event was recorded
      * @param memoryInfo Memory details to be included in this perf string, null if
      *                   no memory details are to be included.
      */
-    private static void savePerfString(String name, EventType type, long timestampUs,
+    private static void savePerfString(String name, long id, EventType type, long timestampUs,
             MemoryInfo memoryInfo) {
         try {
             JSONObject traceObj = new JSONObject();
@@ -268,6 +285,7 @@ public class PerfTraceEvent {
             traceObj.put("ts", timestampUs);
             traceObj.put("ph", type);
             traceObj.put("name", name);
+            traceObj.put("id", id);
             if (memoryInfo != null) {
                 int pss = memoryInfo.nativePss + memoryInfo.dalvikPss + memoryInfo.otherPss;
                 traceObj.put("mem", pss);
