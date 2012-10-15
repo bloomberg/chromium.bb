@@ -26,12 +26,16 @@ namespace {
 int GetIconId(FileBrowserNotifications::NotificationType type) {
   switch (type) {
     case FileBrowserNotifications::DEVICE:
-    case FileBrowserNotifications::FORMAT_SUCCESS:
-    case FileBrowserNotifications::FORMAT_START:
-        return IDR_PAGEINFO_INFO;
     case FileBrowserNotifications::DEVICE_FAIL:
-    case FileBrowserNotifications::FORMAT_START_FAIL:
+    case FileBrowserNotifications::FORMAT_SUCCESS:
     case FileBrowserNotifications::FORMAT_FAIL:
+    case FileBrowserNotifications::FORMAT_START:
+    case FileBrowserNotifications::FORMAT_START_FAIL:
+    case FileBrowserNotifications::GDATA_SYNC:
+    case FileBrowserNotifications::GDATA_SYNC_SUCCESS:
+    case FileBrowserNotifications::GDATA_SYNC_FAIL:
+        return IDR_FILES_APP_ICON;
+    case FileBrowserNotifications::DEVICE_HARD_UNPLUG:
         return IDR_PAGEINFO_WARNING_MAJOR;
     default:
       NOTREACHED();
@@ -45,6 +49,9 @@ string16 GetTitle(FileBrowserNotifications::NotificationType type) {
     case FileBrowserNotifications::DEVICE:
     case FileBrowserNotifications::DEVICE_FAIL:
       id = IDS_REMOVABLE_DEVICE_DETECTION_TITLE;
+      break;
+    case FileBrowserNotifications::DEVICE_HARD_UNPLUG:
+      id = IDS_REMOVABLE_DEVICE_HARD_UNPLUG_TITLE;
       break;
     case FileBrowserNotifications::FORMAT_START:
       id = IDS_FORMATTING_OF_DEVICE_PENDING_TITLE;
@@ -69,6 +76,9 @@ string16 GetMessage(FileBrowserNotifications::NotificationType type) {
       break;
     case FileBrowserNotifications::DEVICE_FAIL:
       id = IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE;
+      break;
+    case FileBrowserNotifications::DEVICE_HARD_UNPLUG:
+      id = IDS_EXTERNAL_STORAGE_HARD_UNPLUG_MESSAGE;
       break;
     case FileBrowserNotifications::FORMAT_FAIL:
       id = IDS_FORMATTING_FINISHED_FAILURE_MESSAGE;
@@ -135,7 +145,7 @@ class FileBrowserNotifications::NotificationMessage {
         message_(message) {
     const gfx::ImageSkia& icon =
         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_FILES_APP_ICON);
+            GetIconId(type_));
     const string16 replace_id = UTF8ToUTF16(notification_id_);
     DesktopNotificationService::AddIconNotification(
         GURL(), GetTitle(type_), message, icon, replace_id,

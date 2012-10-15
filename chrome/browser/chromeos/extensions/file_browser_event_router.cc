@@ -648,6 +648,8 @@ void FileBrowserEventRouter::OnDiskRemoved(
   VLOG(1) << "Disk removed: " << disk->device_path();
 
   if (!disk->mount_path().empty()) {
+    notifications_->ShowNotification(
+        FileBrowserNotifications::DEVICE_HARD_UNPLUG, disk->device_path());
     DiskMountManager::GetInstance()->UnmountPath(
         disk->mount_path(), chromeos::UNMOUNT_OPTIONS_LAZY);
   }

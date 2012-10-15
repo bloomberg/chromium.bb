@@ -2351,6 +2351,9 @@ Battery full
   <message name="IDS_REMOVABLE_DEVICE_SCANNING_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
     Scanning content...
   </message>
+  <message name="IDS_REMOVABLE_DEVICE_HARD_UNPLUG_TITLE" desc="Text of notification message which is shown when user removes removable device (SD card, USB key...) without clicking the eject icon">
+    You removed your device too soon!
+  </message>
   <message name="IDS_DEVICE_UNSUPPORTED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
    Sorry, the device <ph name="DEVICE_LABEL">$1<ex>My SD card</ex></ph> is not supported at this time.
   </message>
@@ -2371,6 +2374,9 @@ Battery full
   </message>
   <message name="IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device but external storage is disabled by policy">
    Sorry, your administrator has disabled external storage on your account.
+  </message>
+  <message name="IDS_EXTERNAL_STORAGE_HARD_UNPLUG_MESSAGE" desc="Text of notification message which is shown when user manually removes external storage without clicking the eject icon">
+   Your data may have been lost or damaged. Next time, be sure to click the eject icon in the Files app before removing your device.
   </message>
 
   <!-- Formatting device notifications -->
