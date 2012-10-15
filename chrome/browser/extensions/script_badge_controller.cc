@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -197,8 +196,7 @@ void ScriptBadgeController::OnContentScriptsExecuting(
 }
 
 Profile* ScriptBadgeController::profile() const {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  return tab_contents->profile();
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
 ExtensionService* ScriptBadgeController::GetExtensionService() const {

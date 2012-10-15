@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/invalidate_type.h"
@@ -120,8 +119,7 @@ void PageActionController::DidNavigateMainFrame(
 }
 
 Profile* PageActionController::profile() const {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  return tab_contents->profile();
+  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 }
 
 ExtensionService* PageActionController::GetExtensionService() const {
