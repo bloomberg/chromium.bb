@@ -139,7 +139,7 @@ void ContentVideoView::SetSurface(JNIEnv* env, jobject obj,
 
 void ContentVideoView::UpdateMediaMetadata(JNIEnv* env, jobject obj) {
   media::MediaPlayerBridge* player = manager_->GetFullscreenPlayer();
-  if (player)
+  if (player && player->prepared())
     Java_ContentVideoView_updateMediaMetadata(
         env, obj, player->GetVideoWidth(), player->GetVideoHeight(),
         player->GetDuration().InMilliseconds(), player->can_pause(),

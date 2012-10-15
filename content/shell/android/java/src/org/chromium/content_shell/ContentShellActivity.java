@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 
 import org.chromium.content.app.AppResource;
 import org.chromium.content.app.LibraryLoader;
+import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.CommandLine;
@@ -57,6 +58,7 @@ public class ContentShellActivity extends Activity {
         mActivityNativeWindow = new ActivityNativeWindow(this);
         mActivityNativeWindow.restoreInstanceState(savedInstanceState);
         mShellManager.setWindow(mActivityNativeWindow);
+        ContentVideoView.registerChromeActivity(this);
 
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {
@@ -188,5 +190,6 @@ public class ContentShellActivity extends Activity {
                 R.string.media_player_error_text_unknown;
         AppResource.STRING_MEDIA_PLAYER_ERROR_BUTTON = R.string.media_player_error_button;
         AppResource.STRING_MEDIA_PLAYER_ERROR_TITLE = R.string.media_player_error_title;
+        AppResource.STRING_MEDIA_PLAYER_LOADING_VIDEO = R.string.media_player_loading_video;
     }
 }

@@ -23,8 +23,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.MediaController.MediaPlayerControl;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 
@@ -73,11 +76,9 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
     // all possible internal states
     private static final int STATE_ERROR              = -1;
     private static final int STATE_IDLE               = 0;
-    private static final int STATE_PREPARING          = 1;
-    private static final int STATE_PREPARED           = 2;
-    private static final int STATE_PLAYING            = 3;
-    private static final int STATE_PAUSED             = 4;
-    private static final int STATE_PLAYBACK_COMPLETED = 5;
+    private static final int STATE_PLAYING            = 1;
+    private static final int STATE_PAUSED             = 2;
+    private static final int STATE_PLAYBACK_COMPLETED = 3;
 
     private SurfaceHolder mSurfaceHolder = null;
     private int mVideoWidth;
@@ -100,9 +101,13 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
     static String mUnknownErrorText;
     static String mErrorButton;
     static String mErrorTitle;
+    static String mVideoLoadingText;
 
     // This view will contain the video.
     private VideoSurfaceView mVideoSurfaceView;
+
+    // Progress view when the video is loading.
+    private ProgressView mProgressView;
 
     private Surface mSurface = null;
 
@@ -134,6 +139,25 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         }
     }
 
+    private class ProgressView extends LinearLayout {
+
+        private ProgressBar mProgressBar;
+        private TextView mTextView;
+
+        public ProgressView(Context context) {
+            super(context);
+            setOrientation(LinearLayout.VERTICAL);
+            setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            mProgressBar = new ProgressBar(context, null, android.R.attr.progressBarStyleLarge);
+            mTextView = new TextView(context);
+            mTextView.setText(mVideoLoadingText);
+            addView(mProgressBar);
+            addView(mTextView);
+        }
+    }
+
     private Runnable mExitFullscreenRunnable = new Runnable() {
         @Override
         public void run() {
@@ -154,16 +178,11 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
 
         mCurrentBufferPercentage = 0;
         mVideoSurfaceView = new VideoSurfaceView(context);
-        mCurrentState = isPlaying() ? STATE_PLAYING : STATE_PAUSED;
+        mProgressView = new ProgressView(context);
     }
 
     private static void initResources(Context context) {
         if (mPlaybackErrorText != null) return;
-
-        assert AppResource.STRING_MEDIA_PLAYER_MESSAGE_PLAYBACK_ERROR != 0;
-        assert AppResource.STRING_MEDIA_PLAYER_MESSAGE_UNKNOWN_ERROR != 0;
-        assert AppResource.STRING_MEDIA_PLAYER_ERROR_BUTTON != 0;
-        assert AppResource.STRING_MEDIA_PLAYER_ERROR_TITLE != 0;
 
         mPlaybackErrorText = context.getString(
                 AppResource.STRING_MEDIA_PLAYER_MESSAGE_PLAYBACK_ERROR);
@@ -171,14 +190,16 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
                 AppResource.STRING_MEDIA_PLAYER_MESSAGE_UNKNOWN_ERROR);
         mErrorButton = context.getString(AppResource.STRING_MEDIA_PLAYER_ERROR_BUTTON);
         mErrorTitle = context.getString(AppResource.STRING_MEDIA_PLAYER_ERROR_TITLE);
+        mVideoLoadingText = context.getString(AppResource.STRING_MEDIA_PLAYER_LOADING_VIDEO);
     }
 
     void showContentVideoView() {
-        this.addView(mVideoSurfaceView,
-                new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        Gravity.CENTER));
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER);
+        this.addView(mVideoSurfaceView, layoutParams);
+        this.addView(mProgressView, layoutParams);
         mVideoSurfaceView.setZOrderMediaOverlay(true);
         mVideoSurfaceView.setOnKeyListener(this);
         mVideoSurfaceView.setOnTouchListener(this);
@@ -261,11 +282,12 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
             boolean canPause,
             boolean canSeekBack,
             boolean canSeekForward) {
+        mProgressView.setVisibility(View.GONE);
         mDuration = duration;
         mCanPause = canPause;
         mCanSeekBack = canSeekBack;
         mCanSeekForward = canSeekForward;
-
+        mCurrentState = isPlaying() ? STATE_PLAYING : STATE_PAUSED;
         if (mMediaController != null) {
             mMediaController.setEnabled(true);
             // If paused , should show the controller for ever.
@@ -326,13 +348,15 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         if (mMediaController != null) {
             mMediaController.setMediaPlayer(this);
             mMediaController.setAnchorView(mVideoSurfaceView);
-            mMediaController.setEnabled(true);
+            mMediaController.setEnabled(false);
         }
     }
 
     @CalledByNative
     public void openVideo() {
         if (mSurfaceHolder != null) {
+            mCurrentState = STATE_IDLE;
+            setMediaController(new MediaController(getChromeActivity()));
             if (mNativeContentVideoView != 0) {
                 nativeUpdateMediaMetadata(mNativeContentVideoView);
             }
@@ -343,7 +367,6 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
             }
             requestLayout();
             invalidate();
-            setMediaController(new MediaController(getChromeActivity()));
         }
     }
 
@@ -429,9 +452,7 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
     }
 
     private boolean isInPlaybackState() {
-        return (mCurrentState != STATE_ERROR &&
-                mCurrentState != STATE_IDLE &&
-                mCurrentState != STATE_PREPARING);
+        return (mCurrentState != STATE_ERROR && mCurrentState != STATE_IDLE);
     }
 
     public void start() {
@@ -544,7 +565,9 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
 
     public void removeSurfaceView() {
         removeView(mVideoSurfaceView);
+        removeView(mProgressView);
         mVideoSurfaceView = null;
+        mProgressView = null;
     }
 
     @CalledByNative

@@ -126,6 +126,7 @@ public class ChromiumTestShellActivity extends Activity {
                 R.string.media_player_error_text_unknown;
         AppResource.STRING_MEDIA_PLAYER_ERROR_BUTTON = R.string.media_player_error_button;
         AppResource.STRING_MEDIA_PLAYER_ERROR_TITLE = R.string.media_player_error_title;
+        AppResource.STRING_MEDIA_PLAYER_LOADING_VIDEO = R.string.media_player_loading_video;
     }
 
     private static String getUrlFromIntent(Intent intent) {

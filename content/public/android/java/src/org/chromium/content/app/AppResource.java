@@ -153,6 +153,9 @@ public class AppResource {
     /** String for the title of the media player error dialog. */
     public static int STRING_MEDIA_PLAYER_ERROR_TITLE;
 
+    /** String for the progress bar while loading the fullscreen video. */
+    public static int STRING_MEDIA_PLAYER_LOADING_VIDEO;
+
     /**
      * Iterates through all the resources ids and verifies they have values other than zero.
      * @return true if all the resources have been registered.
