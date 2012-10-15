@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_SERVICE_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_SERVICE_H_
+#define CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_SERVICE_H_
 
 #include <string>
 
@@ -130,4 +130,4 @@ class GDataWapiService : public DriveServiceInterface,
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_SERVICE_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_SERVICE_H_

@@ -696,6 +696,8 @@
         'browser/google_apis/gdata_util.h',
         'browser/google_apis/gdata_wapi_parser.cc',
         'browser/google_apis/gdata_wapi_parser.h',
+        'browser/google_apis/gdata_wapi_service.cc',
+        'browser/google_apis/gdata_wapi_service.h',
         'browser/google_apis/operation_registry.cc',
         'browser/google_apis/operation_registry.h',
         'browser/google_apis/operation_runner.cc',

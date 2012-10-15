@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/gdata_wapi_service.h"
+#include "chrome/browser/google_apis/gdata_wapi_service.h"
 
 #include <string>
 #include <vector>

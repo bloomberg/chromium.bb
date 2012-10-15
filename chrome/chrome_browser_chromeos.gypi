@@ -263,8 +263,6 @@
         'browser/chromeos/drive/gdata_wapi_feed_loader_observer.h',
         'browser/chromeos/drive/gdata_wapi_feed_processor.cc',
         'browser/chromeos/drive/gdata_wapi_feed_processor.h',
-        'browser/chromeos/drive/gdata_wapi_service.cc',
-        'browser/chromeos/drive/gdata_wapi_service.h',
         'browser/chromeos/drive/stale_cache_files_remover.cc',
         'browser/chromeos/drive/stale_cache_files_remover.h',
         'browser/chromeos/enrollment_dialog_view.cc',

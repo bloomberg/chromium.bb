@@ -7,8 +7,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
-#include "chrome/browser/chromeos/drive/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/auth_service.h"
+#include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -78,8 +78,9 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
   std::string contents;
   service_->DownloadFile(
-      FilePath("/dummy/gdata/testfile.txt"),
-      GetTestCachedFilePath(FilePath("cached_testfile.txt")),
+      FilePath(FILE_PATH_LITERAL("/dummy/gdata/testfile.txt")),
+      GetTestCachedFilePath(FilePath(
+          FILE_PATH_LITERAL("cached_testfile.txt"))),
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
       base::Bind(&TestDownloadCallback, &result, &contents),
       gdata::GetContentCallback());
@@ -97,8 +98,9 @@ IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
   std::string dummy_contents;
   service_->DownloadFile(
-      FilePath("/dummy/gdata/no-such-file.txt"),
-      GetTestCachedFilePath(FilePath("cache_no-such-file.txt")),
+      FilePath(FILE_PATH_LITERAL("/dummy/gdata/no-such-file.txt")),
+      GetTestCachedFilePath(FilePath(
+          FILE_PATH_LITERAL("cache_no-such-file.txt"))),
       gdata_test_server_.GetURL("files/chromeos/gdata/no-such-file.txt"),
       base::Bind(&TestDownloadCallback, &result, &dummy_contents),
       gdata::GetContentCallback());
