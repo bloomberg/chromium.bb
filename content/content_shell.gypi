@@ -305,6 +305,8 @@
       'dependencies': [
         'content_shell_lib',
         'content_shell_pak',
+        '../third_party/mesa/mesa.gyp:osmesa',
+        '<(webkit_src_dir)/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner_resources',
       ],
       'include_dirs': [
         '..',
@@ -436,7 +438,6 @@
       'type': 'none',
       'dependencies': [
         'content_shell',
-        '<(webkit_src_dir)/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree',
       ],
     },
   ],
