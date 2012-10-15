@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/navigation_controller.h"
@@ -18,21 +17,14 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "jni/WebContentsDelegateAndroid_jni.h"
-#include "net/http/http_request_headers.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
 
 using base::android::AttachCurrentThread;
-using base::android::CheckException;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
-using base::android::GetClass;
-using base::android::GetMethodID;
 using base::android::HasClass;
 using base::android::ScopedJavaLocalRef;
-using content::DownloadItem;
-using content::JavaScriptDialogCreator;
-using content::RenderViewHost;
 using content::WebContents;
 
 namespace web_contents_delegate_android {
@@ -272,28 +264,6 @@ void WebContentsDelegateAndroid::UpdateTargetURL(WebContents* source,
   Java_WebContentsDelegateAndroid_onUpdateUrl(env,
                                               obj.obj(),
                                               java_url.obj());
-}
-
-bool WebContentsDelegateAndroid::CanDownload(
-    RenderViewHost* source,
-    int request_id,
-    const std::string& request_method) {
-  if (request_method == net::HttpRequestHeaders::kGetMethod) {
-    // TODO(leandrogracia): re-enable this when calling DownloadController
-    // doesn't introduce a DEPS layering violation.
-    // DownloadController::GetInstance()->CreateGETDownload(
-    //     source, request_id);
-    return false;
-  }
-  return true;
-}
-
-void WebContentsDelegateAndroid::OnStartDownload(WebContents* source,
-                                                 DownloadItem* download) {
-  // TODO(leandrogracia): re-enable this when calling DownloadController
-  // doesn't introduce a DEPS layering violation.
-  // DownloadController::GetInstance()->OnPostDownloadStarted(
-  //     source, download);
 }
 
 bool WebContentsDelegateAndroid::ShouldOverrideLoading(const GURL& url) {

@@ -52,6 +52,11 @@ class ChromeWebContentsDelegateAndroid
                                    const gfx::RectF& active_rect) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
   GetJavaScriptDialogCreator() OVERRIDE;
+  virtual bool CanDownload(content::RenderViewHost* source,
+                           int request_id,
+                           const std::string& request_method) OVERRIDE;
+  virtual void OnStartDownload(content::WebContents* source,
+                               content::DownloadItem* download) OVERRIDE;
 
  private:
   // NotificationObserver implementation.

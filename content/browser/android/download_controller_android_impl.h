@@ -10,20 +10,21 @@
 //
 // Call sequence
 // GET downloads:
-// DownloadController::NewGetDownload() =>
+// DownloadControllerAndroid::CreateGETDownload() =>
 // DownloadController.newHttpGetDownload() =>
 // DownloadListener.onDownloadStart() /
 // DownloadListener2.requestHttpGetDownload()
 //
 
-#ifndef CONTENT_BROWSER_ANDROID_DOWNLOAD_CONTROLLER_H_
-#define CONTENT_BROWSER_ANDROID_DOWNLOAD_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_ANDROID_DOWNLOAD_CONTROLLER_ANDROID_IMPL_H_
+#define CONTENT_BROWSER_ANDROID_DOWNLOAD_CONTROLLER_ANDROID_IMPL_H_
 
 #include <string>
 
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/singleton.h"
+#include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/cookie_monster.h"
@@ -37,28 +38,15 @@ struct GlobalRequestID;
 class RenderViewHost;
 class WebContents;
 
-class DownloadController : public DownloadItem::Observer {
+class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
+                                      public DownloadItem::Observer {
  public:
+  static DownloadControllerAndroidImpl* GetInstance();
+
   static bool RegisterDownloadController(JNIEnv* env);
-  static DownloadController* GetInstance();
 
   // Called when DownloadController Java object is instantiated.
   void Init(JNIEnv* env, jobject obj);
-
-  // Starts a new download request with Android. Should be called on the
-  // UI thread.
-  void CreateGETDownload(RenderViewHost* source,
-                         int request_id);
-
-  // Should be called when a POST download is started. Notifies the embedding
-  // app about the download. Called on the UI thread.
-  void OnPostDownloadStarted(WebContents* web_contents,
-                             DownloadItem* download_item);
-
-  // DownloadItem::Observer interface.
-  virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* item) OVERRIDE;
-
  private:
   // Used to store all the information about an Android download.
   struct DownloadInfoAndroid {
@@ -80,11 +68,21 @@ class DownloadController : public DownloadItem::Observer {
     WebContents* web_contents;
     // Default copy constructor is used for passing this struct by value.
   };
-
   struct JavaObject;
-  friend struct DefaultSingletonTraits<DownloadController>;
-  DownloadController();
-  virtual ~DownloadController();
+  friend struct DefaultSingletonTraits<DownloadControllerAndroidImpl>;
+  DownloadControllerAndroidImpl();
+  virtual ~DownloadControllerAndroidImpl();
+
+  // DownloadControllerAndroid implementation.
+  virtual void CreateGETDownload(RenderViewHost* source,
+                                 int request_id) OVERRIDE;
+  virtual void OnPostDownloadStarted(WebContents* web_contents,
+                                     DownloadItem* download_item) OVERRIDE;
+
+  // DownloadItem::Observer interface.
+  virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadOpened(DownloadItem* item) OVERRIDE;
+
 
   void PrepareDownloadInfo(const GlobalRequestID& global_id,
                            int render_process_id,
@@ -121,9 +119,9 @@ class DownloadController : public DownloadItem::Observer {
 
   JavaObject* java_object_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadController);
+  DISALLOW_COPY_AND_ASSIGN(DownloadControllerAndroidImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_DOWNLOAD_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_ANDROID_DOWNLOAD_CONTROLLER_ANDROID_IMPL_H_

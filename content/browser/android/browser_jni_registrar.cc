@@ -11,7 +11,7 @@
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/content_view_statics.h"
-#include "content/browser/android/download_controller.h"
+#include "content/browser/android/download_controller_android_impl.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
@@ -33,8 +33,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "ContentSettings", content::ContentSettings::RegisterContentSettings },
   { "ContentVideoView", content::ContentVideoView::RegisterContentVideoView },
   { "ContentViewCore", content::RegisterContentViewCore },
-  { "DownloadController",
-    content::DownloadController::RegisterDownloadController },
+  { "DownloadControllerAndroidImpl",
+    content::DownloadControllerAndroidImpl::RegisterDownloadController },
   { "RegisterImeAdapter", content::RegisterImeAdapter },
   { "JavaBoundObject", JavaBoundObject::RegisterJavaBoundObject },
   { "LoadUrlParams", content::RegisterLoadUrlParams },

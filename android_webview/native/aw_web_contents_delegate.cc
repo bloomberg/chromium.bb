@@ -8,7 +8,9 @@
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/native/aw_contents.h"
 #include "android_webview/native/aw_javascript_dialog_creator.h"
+#include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/web_contents.h"
+#include "net/http/http_request_headers.h"
 
 using content::WebContents;
 
@@ -45,6 +47,21 @@ void AwWebContentsDelegate::FindReply(WebContents* web_contents,
                                                 number_of_matches,
                                                 active_match_ordinal,
                                                 final_update);
+}
+
+bool AwWebContentsDelegate::CanDownload(content::RenderViewHost* source,
+                                        int request_id,
+                                        const std::string& request_method) {
+  if (request_method == net::HttpRequestHeaders::kGetMethod) {
+    content::DownloadControllerAndroid::Get()->CreateGETDownload(
+        source, request_id);
+  }
+  return false;
+}
+
+void AwWebContentsDelegate::OnStartDownload(WebContents* source,
+                                            content::DownloadItem* download) {
+  NOTREACHED();  // We always return false in CanDownload.
 }
 
 }  // namespace android_webview

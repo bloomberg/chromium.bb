@@ -18,7 +18,6 @@
 #include "net/base/net_errors.h"
 
 namespace content {
-class DownloadItem;
 class JavaScriptDialogCreator;
 class RenderViewHost;
 class WebContents;
@@ -94,11 +93,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   virtual void UpdateTargetURL(content::WebContents* source,
                                int32 page_id,
                                const GURL& url) OVERRIDE;
-  virtual bool CanDownload(content::RenderViewHost* source,
-                           int request_id,
-                           const std::string& request_method) OVERRIDE;
-  virtual void OnStartDownload(content::WebContents* source,
-                               content::DownloadItem* download) OVERRIDE;
   virtual bool ShouldOverrideLoading(const GURL& url) OVERRIDE;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/download_controller.h"
+#include "content/browser/android/download_controller_android_impl.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -40,10 +40,10 @@ namespace content {
 
 // JNI methods
 static void Init(JNIEnv* env, jobject obj) {
-  DownloadController::GetInstance()->Init(env, obj);
+  DownloadControllerAndroidImpl::GetInstance()->Init(env, obj);
 }
 
-struct DownloadController::JavaObject {
+struct DownloadControllerAndroidImpl::JavaObject {
   ScopedJavaLocalRef<jobject> Controller(JNIEnv* env) {
     return GetRealObject(env, obj);
   }
@@ -51,19 +51,25 @@ struct DownloadController::JavaObject {
 };
 
 // static
-bool DownloadController::RegisterDownloadController(JNIEnv* env) {
+bool DownloadControllerAndroidImpl::RegisterDownloadController(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-DownloadController* DownloadController::GetInstance() {
-  return Singleton<DownloadController>::get();
+// static
+DownloadControllerAndroid* DownloadControllerAndroid::Get() {
+  return DownloadControllerAndroidImpl::GetInstance();
 }
 
-DownloadController::DownloadController()
+// static
+DownloadControllerAndroidImpl* DownloadControllerAndroidImpl::GetInstance() {
+  return Singleton<DownloadControllerAndroidImpl>::get();
+}
+
+DownloadControllerAndroidImpl::DownloadControllerAndroidImpl()
     : java_object_(NULL) {
 }
 
-DownloadController::~DownloadController() {
+DownloadControllerAndroidImpl::~DownloadControllerAndroidImpl() {
   if (java_object_) {
     JNIEnv* env = AttachCurrentThread();
     env->DeleteWeakGlobalRef(java_object_->obj);
@@ -73,12 +79,12 @@ DownloadController::~DownloadController() {
 }
 
 // Initialize references to Java object.
-void DownloadController::Init(JNIEnv* env, jobject obj) {
+void DownloadControllerAndroidImpl::Init(JNIEnv* env, jobject obj) {
   java_object_ = new JavaObject;
   java_object_->obj = env->NewWeakGlobalRef(obj);
 }
 
-void DownloadController::CreateGETDownload(
+void DownloadControllerAndroidImpl::CreateGETDownload(
     RenderViewHost* render_view_host,
     int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -90,13 +96,13 @@ void DownloadController::CreateGETDownload(
   // to retrieve it later (if it still exists).
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DownloadController::PrepareDownloadInfo,
+      base::Bind(&DownloadControllerAndroidImpl::PrepareDownloadInfo,
                  base::Unretained(this), global_id,
                  render_process_id,
                  render_view_host->GetRoutingID()));
 }
 
-void DownloadController::PrepareDownloadInfo(
+void DownloadControllerAndroidImpl::PrepareDownloadInfo(
     const GlobalRequestID& global_id,
     int render_process_id, int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -113,7 +119,7 @@ void DownloadController::PrepareDownloadInfo(
     if (cookie_monster) {
       cookie_monster->GetAllCookiesForURLAsync(
           request->url(),
-          base::Bind(&DownloadController::CheckPolicyAndLoadCookies,
+          base::Bind(&DownloadControllerAndroidImpl::CheckPolicyAndLoadCookies,
                      base::Unretained(this), info_android, render_process_id,
                      render_view_id, global_id));
     } else {
@@ -126,7 +132,7 @@ void DownloadController::PrepareDownloadInfo(
   }
 }
 
-void DownloadController::CheckPolicyAndLoadCookies(
+void DownloadControllerAndroidImpl::CheckPolicyAndLoadCookies(
     const DownloadInfoAndroid& info, int render_process_id,
     int render_view_id, const GlobalRequestID& global_id,
     const net::CookieList& cookie_list) {
@@ -142,7 +148,7 @@ void DownloadController::CheckPolicyAndLoadCookies(
   }
 }
 
-void DownloadController::DoLoadCookies(
+void DownloadControllerAndroidImpl::DoLoadCookies(
     const DownloadInfoAndroid& info, int render_process_id,
     int render_view_id, const GlobalRequestID& global_id) {
   net::CookieOptions options;
@@ -154,22 +160,23 @@ void DownloadController::DoLoadCookies(
 
   request->context()->cookie_store()->GetCookiesWithOptionsAsync(
       info.url, options,
-      base::Bind(&DownloadController::OnCookieResponse,
+      base::Bind(&DownloadControllerAndroidImpl::OnCookieResponse,
                  base::Unretained(this), info, render_process_id,
                  render_view_id));
 }
 
-void DownloadController::OnCookieResponse(DownloadInfoAndroid download_info,
-                                          int render_process_id,
-                                          int render_view_id,
-                                          const std::string& cookie) {
+void DownloadControllerAndroidImpl::OnCookieResponse(
+    DownloadInfoAndroid download_info,
+    int render_process_id,
+    int render_view_id,
+    const std::string& cookie) {
   download_info.cookie = cookie;
 
   // We have everything we need, start Android download.
   StartAndroidDownload(download_info, render_process_id, render_view_id);
 }
 
-void DownloadController::StartAndroidDownload(
+void DownloadControllerAndroidImpl::StartAndroidDownload(
     const DownloadInfoAndroid& info,
     int render_process_id,
     int render_view_id) {
@@ -177,7 +184,7 @@ void DownloadController::StartAndroidDownload(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadController::StartAndroidDownload,
+        base::Bind(&DownloadControllerAndroidImpl::StartAndroidDownload,
                    base::Unretained(this), info, render_process_id,
                    render_view_id));
     return;
@@ -213,7 +220,7 @@ void DownloadController::StartAndroidDownload(
       jcookie.obj(), jreferer.obj(), info.total_bytes);
 }
 
-void DownloadController::OnPostDownloadStarted(
+void DownloadControllerAndroidImpl::OnPostDownloadStarted(
     WebContents* web_contents,
     DownloadItem* download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -233,7 +240,7 @@ void DownloadController::OnPostDownloadStarted(
       env, GetJavaObject()->Controller(env).obj(), view.obj());
 }
 
-void DownloadController::OnDownloadUpdated(DownloadItem* item) {
+void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (item->GetState() != DownloadItem::COMPLETE)
@@ -263,10 +270,10 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
       item->GetReceivedBytes(), true);
 }
 
-void DownloadController::OnDownloadOpened(DownloadItem* item) {
+void DownloadControllerAndroidImpl::OnDownloadOpened(DownloadItem* item) {
 }
 
-ScopedJavaLocalRef<jobject> DownloadController::GetContentView(
+ScopedJavaLocalRef<jobject> DownloadControllerAndroidImpl::GetContentView(
     int render_process_id, int render_view_id) {
   RenderViewHost* render_view_host =
       RenderViewHost::FromID(render_process_id, render_view_id);
@@ -284,7 +291,7 @@ ScopedJavaLocalRef<jobject> DownloadController::GetContentView(
 }
 
 ScopedJavaLocalRef<jobject>
-    DownloadController::GetContentViewCoreFromWebContents(
+    DownloadControllerAndroidImpl::GetContentViewCoreFromWebContents(
     WebContents* web_contents) {
   if (!web_contents)
     return ScopedJavaLocalRef<jobject>();
@@ -294,7 +301,8 @@ ScopedJavaLocalRef<jobject>
       ScopedJavaLocalRef<jobject>();
 }
 
-DownloadController::JavaObject* DownloadController::GetJavaObject() {
+DownloadControllerAndroidImpl::JavaObject*
+    DownloadControllerAndroidImpl::GetJavaObject() {
   if (!java_object_) {
     // Initialize Java DownloadController by calling
     // DownloadController.getInstance(), which will call Init()
@@ -313,10 +321,10 @@ DownloadController::JavaObject* DownloadController::GetJavaObject() {
   return java_object_;
 }
 
-DownloadController::DownloadInfoAndroid::DownloadInfoAndroid(
+DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(
     net::URLRequest* request) {
   request->GetResponseHeaderByName("content-disposition", &content_disposition);
-  request->GetMimeType(&original_mime_type);
+  request->GetResponseHeaderByName("mime-type", &original_mime_type);
   request->extra_request_headers().GetHeader(
       net::HttpRequestHeaders::kUserAgent, &user_agent);
   GURL referer_url(request->GetSanitizedReferrer());
@@ -328,6 +336,6 @@ DownloadController::DownloadInfoAndroid::DownloadInfoAndroid(
   }
 }
 
-DownloadController::DownloadInfoAndroid::~DownloadInfoAndroid() {}
+DownloadControllerAndroidImpl::DownloadInfoAndroid::~DownloadInfoAndroid() {}
 
 }  // namespace content

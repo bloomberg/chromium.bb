@@ -11,12 +11,14 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_params.h"
 #include "jni/ChromeWebContentsDelegateAndroid_jni.h"
+#include "net/http/http_request_headers.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 
@@ -232,6 +234,25 @@ void ChromeWebContentsDelegateAndroid::FindMatchRectsReply(
 content::JavaScriptDialogCreator*
 ChromeWebContentsDelegateAndroid::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
+}
+
+bool ChromeWebContentsDelegateAndroid::CanDownload(
+    content::RenderViewHost* source,
+    int request_id,
+    const std::string& request_method) {
+  if (request_method == net::HttpRequestHeaders::kGetMethod) {
+    content::DownloadControllerAndroid::Get()->CreateGETDownload(
+        source, request_id);
+    return false;
+  }
+  return true;
+}
+
+void ChromeWebContentsDelegateAndroid::OnStartDownload(
+    WebContents* source,
+    content::DownloadItem* download) {
+  content::DownloadControllerAndroid::Get()->OnPostDownloadStarted(
+      source, download);
 }
 
 }  // namespace android
