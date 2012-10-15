@@ -54,11 +54,18 @@ class ResourcePrefetchPredictorTest : public testing::Test {
  protected:
   void AddUrlToHistory(const std::string& url,
                        int visit_count,
-                       time_t last_visit) {
-    history::URLRow row = history::URLRow(GURL(url));
-    row.set_visit_count(visit_count);
-    row.set_last_visit(base::Time::FromTimeT(last_visit));
-    url_db_->AddURL(row);
+                       base::Time last_visit) {
+    HistoryServiceFactory::GetForProfile(&profile_,
+                                         Profile::EXPLICIT_ACCESS)->
+        AddPageWithDetails(
+            GURL(url),
+            string16(),
+            visit_count,
+            0,
+            last_visit,
+            false,
+            history::SOURCE_BROWSED);
+    profile_.BlockUntilHistoryProcessesPendingRequests();
   }
 
   NavigationID CreateNavigationID(int process_id,
@@ -90,6 +97,12 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     return summary;
   }
 
+  void InitializePredictor() {
+    predictor_->LazilyInitialize();
+    loop_.RunAllPending();  // Runs the DB lookup.
+    profile_.BlockUntilHistoryProcessesPendingRequests();
+  }
+
   bool URLRequestSummaryAreEqual(const URLRequestSummary& lhs,
                                  const URLRequestSummary& rhs) {
     return lhs.navigation_id == rhs.navigation_id &&
@@ -113,11 +126,13 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   TestingProfile profile_;
+  base::Time time1_;
+  base::Time time2_;
+  base::Time time3_;
 
   scoped_ptr<ResourcePrefetchPredictor> predictor_;
   scoped_refptr<MockResourcePrefetchPredictorTables> mock_tables_;
   UrlTableRows test_url_rows_;
-  history::URLDatabase* url_db_;
 };
 
 ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
@@ -168,6 +183,10 @@ ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
       "http://google.com/image.png",
       ResourceType::IMAGE,
       20, 1, 0, 10.0));
+
+  time1_ = base::Time::Now() - base::TimeDelta::FromDays(80);
+  time2_ = base::Time::Now() - base::TimeDelta::FromDays(79);
+  time3_ = base::Time::Now() - base::TimeDelta::FromDays(78);
 }
 
 ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() {
@@ -178,16 +197,12 @@ void ResourcePrefetchPredictorTest::SetUp() {
   profile_.BlockUntilHistoryProcessesPendingRequests();
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(&profile_,
                                                    Profile::EXPLICIT_ACCESS));
-  url_db_ = HistoryServiceFactory::GetForProfile(&profile_,
-      Profile::EXPLICIT_ACCESS)->InMemoryDatabase();
-
   // Initialize the predictor with empty data.
   ResetPredictor();
   EXPECT_EQ(predictor_->initialization_state_,
             ResourcePrefetchPredictor::NOT_INITIALIZED);
   EXPECT_CALL(*mock_tables_, GetAllRows(Pointee(ContainerEq(UrlTableRows()))));
-  predictor_->LazilyInitialize();
-  profile_.BlockUntilHistoryProcessesPendingRequests();
+  InitializePredictor();
   EXPECT_TRUE(predictor_->inflight_navigations_.empty());
   EXPECT_EQ(predictor_->initialization_state_,
             ResourcePrefetchPredictor::INITIALIZED);
@@ -205,8 +220,8 @@ TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeEmpty) {
 
 TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeWithData) {
   // Tests that the history and the db tables data are loaded correctly.
-  AddUrlToHistory("http://www.google.com", 4, 12345);
-  AddUrlToHistory("http://www.yahoo.com", 2, 12346);
+  AddUrlToHistory("http://www.google.com", 4, time1_);
+  AddUrlToHistory("http://www.yahoo.com", 2, time2_);
 
   EXPECT_CALL(*mock_tables_, GetAllRows(Pointee(ContainerEq(UrlTableRows()))))
       .WillOnce(SetArgPointee<0>(test_url_rows_));
@@ -216,8 +231,7 @@ TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeWithData) {
   EXPECT_CALL(*mock_tables_, DeleteRowsForUrls(ContainerEq(urls_to_delete)));
 
   ResetPredictor();
-  predictor_->LazilyInitialize();
-  loop_.RunAllPending();
+  InitializePredictor();
 
   // Test that the internal variables correctly initialized.
   EXPECT_EQ(predictor_->initialization_state_,
@@ -233,7 +247,7 @@ TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeWithData) {
             google_rows);
   EXPECT_EQ(
       predictor_->url_table_cache_[GURL("http://www.google.com")].last_visit,
-      base::Time::FromTimeT(12345));
+      time1_);
 
   UrlTableRows yahoo_rows(test_url_rows_.begin() + 7,
                           test_url_rows_.begin() + 8);
@@ -241,12 +255,12 @@ TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeWithData) {
             yahoo_rows);
   EXPECT_EQ(
       predictor_->url_table_cache_[GURL("http://www.yahoo.com")].last_visit,
-      base::Time::FromTimeT(12346));
+      time2_);
 }
 
 TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
   // Single navigation but history count is low, so should not record.
-  AddUrlToHistory("http://www.google.com", 1, 12345);
+  AddUrlToHistory("http://www.google.com", 1, time1_);
 
   URLRequestSummary main_frame = CreateURLRequestSummary(
       1, 1, "http://www.google.com", "http://www.google.com",
@@ -268,12 +282,13 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
       ResourceType::SCRIPT, "text/javascript", false);
   predictor_->RecordUrlResponse(resource3);
   predictor_->OnNavigationComplete(main_frame.navigation_id);
+  profile_.BlockUntilHistoryProcessesPendingRequests();
 }
 
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
   // Single navigation that will be recorded. Will check for duplicate
   // resources and also for number of resources saved.
-  AddUrlToHistory("http://www.google.com", 4, 12345);
+  AddUrlToHistory("http://www.google.com", 4, time1_);
 
   URLRequestSummary main_frame = CreateURLRequestSummary(
       1, 1, "http://www.google.com", "http://www.google.com",
@@ -332,12 +347,13 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
                                ContainerEq(db_rows)));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
+  profile_.BlockUntilHistoryProcessesPendingRequests();
 }
 
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   // Tests that navigation is recoreded correctly for URL already present in
   // the database cache.
-  AddUrlToHistory("http://www.google.com", 4, 12345);
+  AddUrlToHistory("http://www.google.com", 4, time1_);
 
   EXPECT_CALL(*mock_tables_, GetAllRows(Pointee(ContainerEq(UrlTableRows()))))
       .WillOnce(SetArgPointee<0>(test_url_rows_));
@@ -348,8 +364,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   EXPECT_CALL(*mock_tables_, DeleteRowsForUrls(ContainerEq(urls_to_delete)));
 
   ResetPredictor();
-  predictor_->LazilyInitialize();
-  loop_.RunAllPending();
+  InitializePredictor();
 
   URLRequestSummary main_frame = CreateURLRequestSummary(
       1, 1, "http://www.google.com", "http://www.google.com",
@@ -408,21 +423,21 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
                                ContainerEq(db_rows)));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
+  profile_.BlockUntilHistoryProcessesPendingRequests();
 }
 
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
   // Tests that a URL is deleted before another is added if the cache is full.
-  AddUrlToHistory("http://www.google.com", 4, 12345);
-  AddUrlToHistory("http://www.reddit.com", 4, 12340);  // Should be deleted.
-  AddUrlToHistory("http://www.yahoo.com", 4, 12350);
-  AddUrlToHistory("http://www.nike.com", 4, 10000);
+  AddUrlToHistory("http://www.google.com", 4, time2_);
+  AddUrlToHistory("http://www.reddit.com", 4, time1_);  // Should be deleted.
+  AddUrlToHistory("http://www.yahoo.com", 4, time3_);
+  AddUrlToHistory("http://www.nike.com", 4, time3_);
 
   EXPECT_CALL(*mock_tables_, GetAllRows(Pointee(ContainerEq(UrlTableRows()))))
       .WillOnce(SetArgPointee<0>(test_url_rows_));
 
   ResetPredictor();
-  predictor_->LazilyInitialize();
-  loop_.RunAllPending();
+  InitializePredictor();
   EXPECT_EQ(3, static_cast<int>(predictor_->url_table_cache_.size()));
 
   URLRequestSummary main_frame = CreateURLRequestSummary(
@@ -456,6 +471,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
                                ContainerEq(db_rows)));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
+  profile_.BlockUntilHistoryProcessesPendingRequests();
 }
 
 TEST_F(ResourcePrefetchPredictorTest, DeleteUrls) {
@@ -587,16 +603,16 @@ TEST_F(ResourcePrefetchPredictorTest, OnSubresourceResponse) {
 
   EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
   EXPECT_EQ(3, static_cast<int>(
-      predictor_->inflight_navigations_[main_frame1.navigation_id].size()));
+      predictor_->inflight_navigations_[main_frame1.navigation_id]->size()));
   EXPECT_TRUE(URLRequestSummaryAreEqual(
       resource1,
-      predictor_->inflight_navigations_[main_frame1.navigation_id][0]));
+      predictor_->inflight_navigations_[main_frame1.navigation_id]->at(0)));
   EXPECT_TRUE(URLRequestSummaryAreEqual(
       resource2,
-      predictor_->inflight_navigations_[main_frame1.navigation_id][1]));
+      predictor_->inflight_navigations_[main_frame1.navigation_id]->at(1)));
   EXPECT_TRUE(URLRequestSummaryAreEqual(
       resource3,
-      predictor_->inflight_navigations_[main_frame1.navigation_id][2]));
+      predictor_->inflight_navigations_[main_frame1.navigation_id]->at(2)));
 }
 
 }  // namespace predictors

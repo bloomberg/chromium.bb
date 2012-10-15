@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
@@ -120,6 +122,7 @@ class ResourcePrefetchPredictor
 
  private:
   friend class ::PredictorsHandler;
+  friend class GetLastVisitTimeForUrlsTask;
   friend class ResourcePrefetchPredictorTest;
 
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, DeleteUrls);
@@ -156,7 +159,8 @@ class ResourcePrefetchPredictor
     base::Time last_visit;
   };
 
-  typedef std::map<NavigationID, std::vector<URLRequestSummary> > NavigationMap;
+  typedef std::map<NavigationID, linked_ptr<std::vector<URLRequestSummary> > >
+      NavigationMap;
   typedef std::map<GURL, UrlTableCacheValue> UrlTableCacheMap;
 
   // content::NotificationObserver methods OVERRIDE.
@@ -188,7 +192,6 @@ class ResourcePrefetchPredictor
   void DeleteAllUrls();
   void DeleteUrls(const history::URLRows& urls);
 
-  bool ShouldTrackUrl(const GURL& url);
   void CleanupAbandonedNavigations(const NavigationID& navigation_id);
   void OnNavigationComplete(const NavigationID& navigation_id);
   void LearnUrlNavigation(const GURL& main_frame_url,
@@ -198,6 +201,13 @@ class ResourcePrefetchPredictor
                                 const std::map<GURL, bool>& actual_resources,
                                 int total_resources_fetched_from_network,
                                 int max_assumed_prefetched) const;
+  void OnVisitCountLookup(
+      int visit_count,
+      const GURL& url,
+      const std::vector<URLRequestSummary>& requests);
+
+  void OnLastVisitTimeLookups(
+      const std::map<GURL, base::Time>& last_visit_times);
 
   void SetTablesForTesting(
       scoped_refptr<ResourcePrefetchPredictorTables> tables);
@@ -207,6 +217,7 @@ class ResourcePrefetchPredictor
   InitializationState initialization_state_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
   content::NotificationRegistrar notification_registrar_;
+  CancelableRequestConsumer history_lookup_consumer_;
 
   NavigationMap inflight_navigations_;
   UrlTableCacheMap url_table_cache_;
