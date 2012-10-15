@@ -6,8 +6,6 @@
 #ifndef ContentLayerChromium_h
 #define ContentLayerChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "base/basictypes.h"
 #include "LayerPainterChromium.h"
 #include "TiledLayerChromium.h"
@@ -62,6 +60,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

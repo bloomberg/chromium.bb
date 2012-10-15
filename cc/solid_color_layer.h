@@ -6,8 +6,6 @@
 #ifndef SolidColorLayerChromium_h
 #define SolidColorLayerChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "LayerChromium.h"
 
 namespace cc {
@@ -28,6 +26,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

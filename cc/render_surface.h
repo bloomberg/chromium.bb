@@ -6,8 +6,6 @@
 #ifndef RenderSurfaceChromium_h
 #define RenderSurfaceChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "FloatRect.h"
@@ -102,6 +100,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

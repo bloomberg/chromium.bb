@@ -4,7 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
 #include "LayerChromium.h"
 
 #include "CCActiveAnimation.h"
@@ -796,4 +795,3 @@ void sortLayers(std::vector<scoped_refptr<LayerChromium> >::iterator, std::vecto
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

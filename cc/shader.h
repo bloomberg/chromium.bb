@@ -5,8 +5,6 @@
 #ifndef ShaderChromium_h
 #define ShaderChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "SkColorPriv.h"
 #include <string>
 
@@ -347,7 +345,5 @@ private:
 };
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

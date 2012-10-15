@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "ShaderChromium.h"
 
 #include <public/WebGraphicsContext3D.h>
@@ -884,5 +882,3 @@ std::string FragmentShaderCheckerboard::getShaderString() const
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

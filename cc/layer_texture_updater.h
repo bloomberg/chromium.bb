@@ -6,8 +6,6 @@
 #ifndef LayerTextureUpdater_h
 #define LayerTextureUpdater_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCPrioritizedTexture.h"
 #include "GraphicsTypes3D.h"
 #include <wtf/RefCounted.h>
@@ -66,5 +64,4 @@ public:
 };
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)
 #endif // LayerTextureUpdater_h

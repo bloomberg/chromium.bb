@@ -6,8 +6,6 @@
 #ifndef CCLayerTilingData_h
 #define CCLayerTilingData_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "base/basictypes.h"
 #include "IntRect.h"
 #include "Region.h"
@@ -95,7 +93,5 @@ protected:
 };
 
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

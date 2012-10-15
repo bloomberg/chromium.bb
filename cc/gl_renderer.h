@@ -6,8 +6,6 @@
 #ifndef CCRendererGL_h
 #define CCRendererGL_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "base/basictypes.h"
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
@@ -234,7 +232,5 @@ private:
 
 
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

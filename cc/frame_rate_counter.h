@@ -5,8 +5,6 @@
 #ifndef CCFrameRateCounter_h
 #define CCFrameRateCounter_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -64,7 +62,5 @@ private:
 };
 
 }  // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

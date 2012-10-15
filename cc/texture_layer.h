@@ -5,8 +5,6 @@
 #ifndef TextureLayerChromium_h
 #define TextureLayerChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "LayerChromium.h"
 
 namespace WebKit {
@@ -72,6 +70,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

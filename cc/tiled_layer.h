@@ -5,8 +5,6 @@
 #ifndef TiledLayerChromium_h
 #define TiledLayerChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCLayerTilingData.h"
 #include "LayerChromium.h"
 #include "LayerTextureUpdater.h"
@@ -100,6 +98,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

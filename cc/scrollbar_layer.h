@@ -6,8 +6,6 @@
 #ifndef ScrollbarLayerChromium_h
 #define ScrollbarLayerChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "LayerChromium.h"
 #include "caching_bitmap_canvas_layer_texture_updater.h"
 #include <public/WebScrollbar.h>
@@ -65,6 +63,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

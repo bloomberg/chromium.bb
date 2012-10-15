@@ -5,8 +5,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CanvasLayerTextureUpdater.h"
 
 #include "CCRenderingStats.h"
@@ -67,4 +65,3 @@ void CanvasLayerTextureUpdater::paintContents(SkCanvas* canvas, const IntRect& c
 }
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)

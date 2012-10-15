@@ -4,7 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
 #include "CCFrameRateCounter.h"
 
 #include <cmath>
@@ -134,4 +133,3 @@ base::TimeTicks CCFrameRateCounter::timeStampOfRecentFrame(int n)
 
 }  // namespace cc
 
-#endif // USE(ACCELERATED_COMPOSITING)

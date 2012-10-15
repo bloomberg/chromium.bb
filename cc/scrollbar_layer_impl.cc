@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCScrollbarLayerImpl.h"
 
 #include "CCQuadSink.h"
@@ -202,5 +200,3 @@ const char* CCScrollbarLayerImpl::layerTypeAsString() const
 }
 
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)

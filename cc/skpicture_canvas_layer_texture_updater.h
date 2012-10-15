@@ -6,8 +6,6 @@
 #ifndef SkPictureCanvasLayerTextureUpdater_h
 #define SkPictureCanvasLayerTextureUpdater_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CanvasLayerTextureUpdater.h"
 #include "SkPicture.h"
 
@@ -45,5 +43,4 @@ private:
 };
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)
 #endif // SkPictureCanvasLayerTextureUpdater_h

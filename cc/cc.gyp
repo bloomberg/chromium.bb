@@ -364,7 +364,6 @@
             '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
           ],
           'defines': [
-            'WTF_USE_ACCELERATED_COMPOSITING=1',
             # http://crbug.com/154052
             'WEBKIT_GLUE_IMPLEMENTATION=1',
           ],

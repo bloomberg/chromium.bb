@@ -6,8 +6,6 @@
 #ifndef CanvasLayerTextureUpdater_h
 #define CanvasLayerTextureUpdater_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "LayerTextureUpdater.h"
 
 class SkCanvas;
@@ -35,5 +33,4 @@ private:
 };
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)
 #endif // CanvasLayerTextureUpdater_h

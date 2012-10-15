@@ -4,7 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
 #include "RateLimiter.h"
 
 #include "CCProxy.h"
@@ -84,4 +83,3 @@ void RateLimiter::rateLimitContext()
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

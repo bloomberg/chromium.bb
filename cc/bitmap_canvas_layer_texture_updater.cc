@@ -5,8 +5,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "BitmapCanvasLayerTextureUpdater.h"
 
 #include "CCTextureUpdateQueue.h"
@@ -87,4 +85,3 @@ void BitmapCanvasLayerTextureUpdater::setOpaque(bool opaque)
 }
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)

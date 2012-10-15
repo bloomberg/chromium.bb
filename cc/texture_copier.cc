@@ -13,7 +13,6 @@
 
 namespace cc {
 
-#if USE(ACCELERATED_COMPOSITING)
 AcceleratedTextureCopier::AcceleratedTextureCopier(WebKit::WebGraphicsContext3D* context, bool usingBindUniforms)
     : m_context(context)
     , m_usingBindUniforms(usingBindUniforms)
@@ -97,5 +96,3 @@ void AcceleratedTextureCopier::flush()
 }
 
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)

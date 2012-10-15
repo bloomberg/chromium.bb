@@ -6,7 +6,6 @@
 #ifndef BitmapSkPictureCanvasLayerTextureUpdater_h
 #define BitmapSkPictureCanvasLayerTextureUpdater_h
 
-#if USE(ACCELERATED_COMPOSITING)
 #include "SkBitmap.h"
 #include "SkPictureCanvasLayerTextureUpdater.h"
 
@@ -40,5 +39,4 @@ private:
     explicit BitmapSkPictureCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium>);
 };
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)
 #endif // BitmapSkPictureCanvasLayerTextureUpdater_h

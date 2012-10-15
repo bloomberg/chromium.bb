@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "RenderSurfaceChromium.h"
 
 #include "CCMathUtil.h"
@@ -39,4 +37,3 @@ FloatRect RenderSurfaceChromium::drawableContentRect() const
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

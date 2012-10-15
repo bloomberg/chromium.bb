@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "SolidColorLayerChromium.h"
 
 #include "CCSolidColorLayerImpl.h"
@@ -32,5 +30,3 @@ SolidColorLayerChromium::~SolidColorLayerChromium()
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

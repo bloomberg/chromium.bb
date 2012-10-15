@@ -5,8 +5,6 @@
 #ifndef CCScrollbarLayerImpl_h
 #define CCScrollbarLayerImpl_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCLayerImpl.h"
 #include "CCScrollbarGeometryFixedThumb.h"
 #include <public/WebRect.h>
@@ -107,6 +105,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

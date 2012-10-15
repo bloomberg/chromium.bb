@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCLayerIterator.h"
 
 #include "CCLayerImpl.h"
@@ -149,5 +147,3 @@ template void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<CCLayer
 template void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, FrontToBack>&);
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

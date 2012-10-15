@@ -5,8 +5,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCLayerTilingData.h"
 
 using namespace std;
@@ -154,5 +152,3 @@ IntSize CCLayerTilingData::bounds() const
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

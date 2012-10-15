@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "LayerTextureSubImage.h"
 
 #include "CCRendererGL.h" // For the GLC() macro.
@@ -113,5 +111,3 @@ void LayerTextureSubImage::uploadWithMapTexSubImage(const uint8_t* image, const 
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

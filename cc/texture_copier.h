@@ -35,8 +35,6 @@ public:
     virtual ~TextureCopier() { }
 };
 
-#if USE(ACCELERATED_COMPOSITING)
-
 class AcceleratedTextureCopier : public TextureCopier {
 public:
     static PassOwnPtr<AcceleratedTextureCopier> create(WebKit::WebGraphicsContext3D* context, bool usingBindUniforms)
@@ -62,8 +60,6 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(AcceleratedTextureCopier);
 };
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 }
 

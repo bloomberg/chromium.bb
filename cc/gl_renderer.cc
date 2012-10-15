@@ -5,7 +5,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
 #include "CCRendererGL.h"
 
 #include "CCDamageTracker.h"
@@ -1526,5 +1525,3 @@ bool CCRendererGL::isContextLost()
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

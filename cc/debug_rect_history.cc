@@ -4,7 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
 #include "CCDebugRectHistory.h"
 
 #include "CCDamageTracker.h"
@@ -122,4 +121,3 @@ void CCDebugRectHistory::saveOccludingRects(const Vector<IntRect>& occludingRect
 
 }  // namespace cc
 
-#endif // USE(ACCELERATED_COMPOSITING)

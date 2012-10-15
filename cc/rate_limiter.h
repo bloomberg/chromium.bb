@@ -5,8 +5,6 @@
 #ifndef RateLimiter_h
 #define RateLimiter_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "base/memory/ref_counted.h"
 
 namespace WebKit {
@@ -48,6 +46,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

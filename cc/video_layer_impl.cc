@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCVideoLayerImpl.h"
 
 #include "CCIOSurfaceDrawQuad.h"
@@ -387,5 +385,3 @@ const char* CCVideoLayerImpl::layerTypeAsString() const
 }
 
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)

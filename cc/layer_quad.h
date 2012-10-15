@@ -6,8 +6,6 @@
 #ifndef CCLayerQuad_h
 #define CCLayerQuad_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "FloatPoint3D.h"
 #include "FloatQuad.h"
 
@@ -100,7 +98,5 @@ private:
 };
 
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

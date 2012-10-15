@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCSolidColorLayerImpl.h"
 
 #include "CCQuadSink.h"
@@ -50,4 +48,3 @@ const char* CCSolidColorLayerImpl::layerTypeAsString() const
 }
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)

@@ -6,8 +6,6 @@
 #ifndef LayerTextureSubImage_h
 #define LayerTextureSubImage_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "GraphicsTypes3D.h"
 #include "IntRect.h"
 #include "IntSize.h"
@@ -42,5 +40,4 @@ private:
 };
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)
 #endif // LayerTextureSubImage_h

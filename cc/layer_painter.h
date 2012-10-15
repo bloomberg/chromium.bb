@@ -6,8 +6,6 @@
 #ifndef LayerPainterChromium_h
 #define LayerPainterChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 class SkCanvas;
 
 namespace cc {
@@ -22,5 +20,4 @@ public:
 };
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)
 #endif // LayerPainterChromium_h

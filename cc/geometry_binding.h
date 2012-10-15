@@ -7,8 +7,6 @@
 
 #include "FloatRect.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 namespace WebKit {
 class WebGraphicsContext3D;
 }
@@ -42,7 +40,5 @@ private:
 };
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

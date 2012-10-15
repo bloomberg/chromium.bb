@@ -6,8 +6,6 @@
 #ifndef ImageLayerChromium_h
 #define ImageLayerChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "ContentLayerChromium.h"
 #include "SkBitmap.h"
 
@@ -43,6 +41,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

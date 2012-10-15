@@ -5,8 +5,6 @@
 #ifndef CCDebugRectHistory_h
 #define CCDebugRectHistory_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "FloatRect.h"
@@ -78,7 +76,5 @@ private:
 };
 
 }  // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

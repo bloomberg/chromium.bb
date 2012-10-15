@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "GeometryBinding.h"
 
 #include "CCRendererGL.h" // For the GLC() macro.
@@ -57,5 +55,3 @@ void GeometryBinding::prepareForDraw()
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

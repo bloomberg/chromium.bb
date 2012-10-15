@@ -4,7 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
 #include "VideoLayerChromium.h"
 
 #include "CCVideoLayerImpl.h"
@@ -33,5 +32,3 @@ scoped_ptr<CCLayerImpl> VideoLayerChromium::createCCLayerImpl()
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

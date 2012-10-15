@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCOverdrawMetrics.h"
 
 #include "CCLayerTreeHost.h"
@@ -186,5 +184,3 @@ void CCOverdrawMetrics::recordMetricsInternal(MetricsType metricsType, const Lay
 }
 
 } // namespace cc
-
-#endif

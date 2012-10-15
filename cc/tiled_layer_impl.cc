@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCTiledLayerImpl.h"
 
 #include "base/basictypes.h"
@@ -249,5 +247,3 @@ const char* CCTiledLayerImpl::layerTypeAsString() const
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

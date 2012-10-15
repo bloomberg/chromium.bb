@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCOcclusionTracker.h"
 
 #include "CCLayerImpl.h"
@@ -479,4 +477,3 @@ template IntRect CCOcclusionTrackerBase<CCLayerImpl, CCRenderSurface>::layerClip
 
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)

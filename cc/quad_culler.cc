@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCQuadCuller.h"
 
 #include "CCAppendQuadsData.h"
@@ -91,4 +89,3 @@ bool CCQuadCuller::append(scoped_ptr<CCDrawQuad> drawQuad, CCAppendQuadsData& ap
 }
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)

@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCRenderSurfaceFilters.h"
 
 #include "FloatSize.h"
@@ -443,4 +441,3 @@ SkBitmap CCRenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filter
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

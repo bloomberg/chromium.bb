@@ -6,8 +6,6 @@
 #ifndef BitmapCanvasLayerTextureUpdater_h
 #define BitmapCanvasLayerTextureUpdater_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CanvasLayerTextureUpdater.h"
 
 class SkCanvas;
@@ -53,5 +51,4 @@ protected:
 };
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)
 #endif // BitmapCanvasLayerTextureUpdater_h

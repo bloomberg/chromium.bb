@@ -4,7 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
 #include "CCFontAtlas.h"
 
 #include "base/string_split.h"
@@ -69,5 +68,3 @@ void CCFontAtlas::drawDebugAtlas(SkCanvas* canvas, const gfx::Point& destPositio
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

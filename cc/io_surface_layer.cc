@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "IOSurfaceLayerChromium.h"
 
 #include "CCIOSurfaceLayerImpl.h"
@@ -53,4 +51,3 @@ void IOSurfaceLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

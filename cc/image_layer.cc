@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "ImageLayerChromium.h"
 
 #include "base/compiler_specific.h"
@@ -164,4 +162,3 @@ bool ImageLayerChromium::needsContentsScale() const
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

@@ -4,11 +4,9 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
-#include "base/basictypes.h"
 #include "TiledLayerChromium.h"
 
+#include "base/basictypes.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHost.h"
 #include "CCOverdrawMetrics.h"
@@ -812,4 +810,3 @@ IntRect TiledLayerChromium::idlePaintRect()
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

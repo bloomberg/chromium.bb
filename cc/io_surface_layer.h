@@ -6,8 +6,6 @@
 #ifndef IOSurfaceLayerChromium_h
 #define IOSurfaceLayerChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "LayerChromium.h"
 
 namespace cc {
@@ -33,6 +31,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

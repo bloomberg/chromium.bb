@@ -5,8 +5,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCLayerQuad.h"
 
 namespace cc {
@@ -70,5 +68,3 @@ void CCLayerQuad::toFloatArray(float flattened[12]) const
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

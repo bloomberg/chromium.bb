@@ -5,8 +5,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "SkPictureCanvasLayerTextureUpdater.h"
 
 #include "CCTextureUpdateQueue.h"
@@ -54,4 +52,3 @@ void SkPictureCanvasLayerTextureUpdater::setOpaque(bool opaque)
 }
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)

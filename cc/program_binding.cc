@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "ProgramBinding.h"
 
 #include "CCRendererGL.h" // For the GLC() macro.
@@ -143,5 +141,3 @@ void ProgramBindingBase::cleanupShaders(WebGraphicsContext3D* context)
 }
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)

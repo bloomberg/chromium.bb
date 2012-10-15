@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCTextureLayerImpl.h"
 
 #include "base/stringprintf.h"
@@ -80,5 +78,3 @@ const char* CCTextureLayerImpl::layerTypeAsString() const
 }
 
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)

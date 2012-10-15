@@ -125,7 +125,6 @@
           ],
           'defines': [
             'USE_LIBCC_FOR_COMPOSITOR',
-            'WTF_USE_ACCELERATED_COMPOSITING=1',
           ],
           'include_dirs': [
             'stubs',
@@ -146,9 +145,6 @@
         {
           'target_name': 'cc_test_support',
           'type': 'static_library',
-          'defines': [
-            'WTF_USE_ACCELERATED_COMPOSITING=1',
-          ],
           'include_dirs': [
             'stubs',
             'test',

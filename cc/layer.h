@@ -6,8 +6,6 @@
 #ifndef LayerChromium_h
 #define LayerChromium_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "base/memory/ref_counted.h"
 #include "CCLayerAnimationController.h"
 #include "CCOcclusionTracker.h"
@@ -385,6 +383,4 @@ private:
 void sortLayers(std::vector<scoped_refptr<LayerChromium> >::iterator, std::vector<scoped_refptr<LayerChromium> >::iterator, void*);
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

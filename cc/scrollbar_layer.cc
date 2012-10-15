@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "ScrollbarLayerChromium.h"
 
 #include "base/basictypes.h"
@@ -284,4 +282,3 @@ void ScrollbarLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusi
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

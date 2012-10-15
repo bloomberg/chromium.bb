@@ -5,8 +5,6 @@
 #ifndef ProgramBinding_h
 #define ProgramBinding_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include <string>
 
 namespace WebKit {
@@ -78,7 +76,5 @@ private:
 };
 
 } // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

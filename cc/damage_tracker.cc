@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCDamageTracker.h"
 
 #include "CCLayerImpl.h"
@@ -346,4 +344,3 @@ void CCDamageTracker::extendDamageForRenderSurface(CCLayerImpl* layer, FloatRect
 
 }  // namespace cc
 
-#endif // USE(ACCELERATED_COMPOSITING)

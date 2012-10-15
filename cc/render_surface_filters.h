@@ -6,8 +6,6 @@
 #ifndef CCRenderSurfaceFilters_h
 #define CCRenderSurfaceFilters_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 class GrContext;
 class SkBitmap;
 
@@ -29,6 +27,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif

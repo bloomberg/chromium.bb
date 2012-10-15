@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCIOSurfaceLayerImpl.h"
 
 #include "base/stringprintf.h"
@@ -114,5 +112,3 @@ const char* CCIOSurfaceLayerImpl::layerTypeAsString() const
 }
 
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)

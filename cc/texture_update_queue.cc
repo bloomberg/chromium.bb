@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCTextureUpdateQueue.h"
 
 #include "CCPrioritizedTexture.h"
@@ -73,5 +71,3 @@ bool CCTextureUpdateQueue::hasMoreUpdates() const
 }
 
 }
-
-#endif // USE(ACCELERATED_COMPOSITING)

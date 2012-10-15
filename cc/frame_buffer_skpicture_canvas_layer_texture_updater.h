@@ -6,8 +6,6 @@
 #ifndef FrameBufferSkPictureCanvasLayerTextureUpdater_h
 #define FrameBufferSkPictureCanvasLayerTextureUpdater_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "SkPictureCanvasLayerTextureUpdater.h"
 
 namespace cc {
@@ -40,5 +38,4 @@ private:
     explicit FrameBufferSkPictureCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium>);
 };
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)
 #endif // FrameBufferSkPictureCanvasLayerTextureUpdater_h

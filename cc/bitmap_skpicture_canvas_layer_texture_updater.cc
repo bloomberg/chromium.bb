@@ -5,8 +5,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "BitmapSkPictureCanvasLayerTextureUpdater.h"
 
 #include "CCRenderingStats.h"
@@ -80,4 +78,3 @@ void BitmapSkPictureCanvasLayerTextureUpdater::paintContentsRect(SkCanvas* canva
 }
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)

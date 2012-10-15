@@ -5,8 +5,6 @@
 #ifndef CCFontAtlas_h
 #define CCFontAtlas_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include <string>
 
 #include "base/basictypes.h"
@@ -64,7 +62,5 @@ private:
 };
 
 }  // namespace cc
-
-#endif // USE(ACCELERATED_COMPOSITING)
 
 #endif

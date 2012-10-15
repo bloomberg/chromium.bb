@@ -5,8 +5,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "FrameBufferSkPictureCanvasLayerTextureUpdater.h"
 
 #include "LayerPainterChromium.h"
@@ -54,4 +52,3 @@ LayerTextureUpdater::SampledTexelFormat FrameBufferSkPictureCanvasLayerTextureUp
 }
 
 } // namespace cc
-#endif // USE(ACCELERATED_COMPOSITING)

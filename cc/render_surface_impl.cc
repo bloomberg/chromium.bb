@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCRenderSurface.h"
 
 #include "base/stringprintf.h"
@@ -250,4 +248,3 @@ void CCRenderSurface::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appen
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

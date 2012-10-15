@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "CCLayerImpl.h"
 
 #include "base/stringprintf.h"
@@ -680,6 +678,3 @@ void CCLayerImpl::setVerticalScrollbarLayer(CCScrollbarLayerImpl* scrollbarLayer
 }
 
 }
-
-
-#endif // USE(ACCELERATED_COMPOSITING)

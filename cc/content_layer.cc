@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "ContentLayerChromium.h"
 
 #include "base/time.h"
@@ -110,4 +108,3 @@ void ContentLayerChromium::setContentsOpaque(bool opaque)
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

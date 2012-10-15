@@ -4,8 +4,6 @@
 
 #include "config.h"
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "TextureLayerChromium.h"
 
 #include "CCLayerTreeHost.h"
@@ -132,4 +130,3 @@ void TextureLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
 }
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)

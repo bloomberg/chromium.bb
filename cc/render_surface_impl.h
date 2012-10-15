@@ -5,8 +5,6 @@
 #ifndef CCRenderSurface_h
 #define CCRenderSurface_h
 
-#if USE(ACCELERATED_COMPOSITING)
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "CCRenderPass.h"
@@ -127,6 +125,4 @@ private:
 };
 
 }
-#endif // USE(ACCELERATED_COMPOSITING)
-
 #endif
