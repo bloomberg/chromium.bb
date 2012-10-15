@@ -82,7 +82,8 @@ void RegexSetMatcher::RebuildMatcher() {
       DCHECK_EQ(static_cast<RE2ID>(re2_id_map_.size()), re2_id);
       re2_id_map_.push_back(it->first);
     } else {
-      // TODO(yoz): Return an unparseable regex error as soon as possible.
+      // Unparseable regexes should have been rejected already in
+      // URLMatcherFactory::CreateURLMatchesCondition.
       LOG(ERROR) << "Could not parse regex (id=" << it->first << ", "
                  << it->second->pattern() << ")";
     }

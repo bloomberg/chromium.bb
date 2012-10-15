@@ -13,7 +13,7 @@ namespace extensions {
 
 namespace keys = url_matcher_constants;
 
-TEST(URLMatcherFactory, CreateFromURLFilterDictionary) {
+TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   URLMatcher matcher;
 
   std::string error;
@@ -26,6 +26,10 @@ TEST(URLMatcherFactory, CreateFromURLFilterDictionary) {
   // Invalid value type: {"hostSuffix": []}
   DictionaryValue invalid_condition2;
   invalid_condition2.Set(keys::kHostSuffixKey, new ListValue);
+
+  // Invalid regex value: {"urlMatches": "*"}
+  DictionaryValue invalid_condition3;
+  invalid_condition3.SetString(keys::kURLMatchesKey, "*");
 
   // Valid values:
   // {
@@ -66,10 +70,17 @@ TEST(URLMatcherFactory, CreateFromURLFilterDictionary) {
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
 
+  // Test invalid regex in urlMatches.
+  error.clear();
+  result = URLMatcherFactory::CreateFromURLFilterDictionary(
+      matcher.condition_factory(), &invalid_condition3, 3, &error);
+  EXPECT_FALSE(error.empty());
+  EXPECT_FALSE(result.get());
+
   // Test success.
   error.clear();
   result = URLMatcherFactory::CreateFromURLFilterDictionary(
-      matcher.condition_factory(), &valid_condition, 3, &error);
+      matcher.condition_factory(), &valid_condition, 100, &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
 

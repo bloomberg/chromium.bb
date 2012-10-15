@@ -8,8 +8,10 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "chrome/common/extensions/matcher/url_matcher_helpers.h"
+#include "third_party/re2/re2/re2.h"
 
 namespace helpers = extensions::url_matcher_helpers;
 namespace keys = extensions::url_matcher_constants;
@@ -18,11 +20,13 @@ namespace {
 // Error messages:
 const char kInvalidPortRanges[] = "Invalid port ranges in UrlFilter.";
 const char kVectorOfStringsExpected[] =
-    "UrlFilter attribute '%s' expected a vector of strings as parameter.";
+    "UrlFilter attribute '*' expected a vector of strings as parameter.";
 const char kUnknownURLFilterAttribute[] =
-    "Unknown attribute '%s' in UrlFilter.";
+    "Unknown attribute '*' in UrlFilter.";
 const char kAttributeExpectedString[] =
-    "UrlFilter attribute '%s' expected a string value.";
+    "UrlFilter attribute '*' expected a string value.";
+const char kUnparseableRegexString[] =
+    "Could not parse regular expression '*': *";
 
 // Registry for all factory methods of extensions::URLMatcherConditionFactory
 // that allows translating string literals from the extension API into
@@ -130,8 +134,9 @@ URLMatcherFactory::CreateFromURLFilterDictionary(
         return scoped_refptr<URLMatcherConditionSet>(NULL);
     } else {
       // Handle unknown attributes.
-      *error = base::StringPrintf(kUnknownURLFilterAttribute,
-                                  condition_attribute_name.c_str());
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          kUnknownURLFilterAttribute,
+          condition_attribute_name);
       return scoped_refptr<URLMatcherConditionSet>(NULL);
     }
   }
@@ -166,9 +171,19 @@ URLMatcherCondition URLMatcherFactory::CreateURLMatcherCondition(
     std::string* error) {
   std::string str_value;
   if (!value->GetAsString(&str_value)) {
-    *error = base::StringPrintf(kAttributeExpectedString,
-                                condition_attribute_name.c_str());
+    *error = ExtensionErrorUtils::FormatErrorMessage(kAttributeExpectedString,
+                                                     condition_attribute_name);
     return URLMatcherCondition();
+  }
+  // Test regular expressions for validity.
+  if (condition_attribute_name == keys::kURLMatchesKey) {
+    re2::RE2 regex(str_value);
+    if (!regex.ok()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(kUnparseableRegexString,
+                                                       str_value,
+                                                       regex.error());
+      return URLMatcherCondition();
+    }
   }
   return g_url_matcher_condition_factory_methods.Get().Call(
       url_matcher_condition_factory, condition_attribute_name, str_value);
@@ -180,7 +195,8 @@ scoped_ptr<URLMatcherSchemeFilter> URLMatcherFactory::CreateURLMatcherScheme(
     std::string* error) {
   std::vector<std::string> schemas;
   if (!helpers::GetAsStringVector(value, &schemas)) {
-    *error = base::StringPrintf(kVectorOfStringsExpected, keys::kSchemesKey);
+    *error = ExtensionErrorUtils::FormatErrorMessage(kVectorOfStringsExpected,
+                                                     keys::kSchemesKey);
     return scoped_ptr<URLMatcherSchemeFilter>(NULL);
   }
   return scoped_ptr<URLMatcherSchemeFilter>(
