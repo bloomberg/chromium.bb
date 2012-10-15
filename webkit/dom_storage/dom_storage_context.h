@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/dom_storage/dom_storage_export.h"
 
 class FilePath;
 class NullableString16;
@@ -56,10 +57,10 @@ class SessionStorageDatabase;
 // Classes intended to be used by an embedder are DomStorageContext,
 // DomStorageHost, and DomStorageSession. The other classes are for
 // internal consumption.
-class DomStorageContext
+class DOM_STORAGE_EXPORT DomStorageContext
     : public base::RefCountedThreadSafe<DomStorageContext> {
  public:
-  struct UsageInfo {
+  struct DOM_STORAGE_EXPORT UsageInfo {
     GURL origin;
     size_t data_size;
     base::Time last_modified;

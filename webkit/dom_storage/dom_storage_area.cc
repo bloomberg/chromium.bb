@@ -24,7 +24,8 @@ using webkit_database::DatabaseUtil;
 
 namespace dom_storage {
 
-static const int kCommitTimerSeconds = 1;
+// Non-const for testing.
+static int commit_timer_seconds = 1;
 
 DomStorageArea::CommitBatch::CommitBatch()
   : clear_all_first(false) {
@@ -250,6 +251,11 @@ void DomStorageArea::Shutdown() {
   DCHECK(success);
 }
 
+// static
+void DomStorageArea::DisableCommitDelayForTesting() {
+  commit_timer_seconds = 0;
+}
+
 void DomStorageArea::InitialImportIfNeeded() {
   if (is_initial_import_done_)
     return;
@@ -274,7 +280,7 @@ DomStorageArea::CommitBatch* DomStorageArea::CreateCommitBatchIfNeeded() {
       task_runner_->PostDelayedTask(
           FROM_HERE,
           base::Bind(&DomStorageArea::OnCommitTimer, this),
-          base::TimeDelta::FromSeconds(kCommitTimerSeconds));
+          base::TimeDelta::FromSeconds(commit_timer_seconds));
     }
   }
   return commit_batch_.get();
@@ -325,7 +331,7 @@ void DomStorageArea::OnCommitComplete() {
     task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&DomStorageArea::OnCommitTimer, this),
-        base::TimeDelta::FromSeconds(kCommitTimerSeconds));
+        base::TimeDelta::FromSeconds(commit_timer_seconds));
   }
 }
 

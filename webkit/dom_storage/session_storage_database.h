@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
+#include "webkit/dom_storage/dom_storage_export.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
 class GURL;
@@ -31,7 +32,7 @@ namespace dom_storage {
 
 // Only one thread is allowed to call the public functions other than
 // ReadAreaValues. Other threads area allowed to call ReadAreaValues.
-class SessionStorageDatabase :
+class DOM_STORAGE_EXPORT SessionStorageDatabase :
     public base::RefCountedThreadSafe<SessionStorageDatabase> {
  public:
   explicit SessionStorageDatabase(const FilePath& file_path);

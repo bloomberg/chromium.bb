@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
+#include "webkit/dom_storage/dom_storage_area.h"
 
 namespace {
 
@@ -53,7 +54,6 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     GURL url = test_server_.GetURL("files/session_restore/" + filename);
     content::WebContents* web_contents =
         chrome::GetActiveWebContents(browser());
-    string16 expected_title(title_storing_);
     content::TitleWatcher title_watcher(web_contents, title_storing_);
     title_watcher.AlsoWaitForTitle(title_pass_);
     title_watcher.AlsoWaitForTitle(title_error_write_failed_);
@@ -98,5 +98,17 @@ IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionCookies) {
 IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionCookies) {
   // The browsing session will be continued; just wait for the page to reload
   // and check the stored data.
+  CheckReloadedPage();
+}
+
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionStorage) {
+  // Write the data on disk less lazily.
+  dom_storage::DomStorageArea::DisableCommitDelayForTesting();
+  SessionStartupPref::SetStartupPref(
+      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
+  StoreDataWithPage("session_storage.html");
+}
+
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionStorage) {
   CheckReloadedPage();
 }

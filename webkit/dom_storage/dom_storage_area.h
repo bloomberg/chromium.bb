@@ -12,6 +12,7 @@
 #include "base/nullable_string16.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/dom_storage/dom_storage_export.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
 namespace dom_storage {
@@ -24,7 +25,7 @@ class SessionStorageDatabase;
 // Container for a per-origin Map of key/value pairs potentially
 // backed by storage on disk and lazily commits changes to disk.
 // See class comments for DomStorageContext for a larger overview.
-class DomStorageArea
+class DOM_STORAGE_EXPORT DomStorageArea
     : public base::RefCountedThreadSafe<DomStorageArea> {
 
  public:
@@ -77,6 +78,8 @@ class DomStorageArea
   // shutdown state such that the value getters and setters will
   // no longer do anything.
   void Shutdown();
+
+  static void DisableCommitDelayForTesting();
 
  private:
   friend class DomStorageAreaTest;

@@ -9,6 +9,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
+#include "webkit/dom_storage/dom_storage_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -25,7 +26,7 @@ namespace dom_storage {
 //   TODO(michaeln): Skip tasks for reading during shutdown.
 // * Internal tasks related to committing changes to disk are performed as
 //   shutdown-blocking commit sequence tasks.
-class DomStorageTaskRunner : public base::TaskRunner {
+class DOM_STORAGE_EXPORT DomStorageTaskRunner : public base::TaskRunner {
  public:
   enum SequenceID {
     PRIMARY_SEQUENCE,
@@ -65,7 +66,8 @@ class DomStorageTaskRunner : public base::TaskRunner {
 // A derived class used in chromium that utilizes a SequenceWorkerPool
 // under dom_storage specific SequenceTokens. The |delayed_task_loop|
 // is used to delay scheduling on the worker pool.
-class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
+class DOM_STORAGE_EXPORT DomStorageWorkerPoolTaskRunner :
+      public DomStorageTaskRunner {
  public:
   DomStorageWorkerPoolTaskRunner(
       base::SequencedWorkerPool* sequenced_worker_pool,
@@ -103,7 +105,8 @@ class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
 // There is no distinction between [non]-shutdown-blocking or
 // the primary sequence vs the commit sequence in the mock,
 // all tasks are scheduled on |message_loop| with zero delay.
-class MockDomStorageTaskRunner : public DomStorageTaskRunner {
+class DOM_STORAGE_EXPORT MockDomStorageTaskRunner :
+      public DomStorageTaskRunner {
  public:
   explicit MockDomStorageTaskRunner(base::MessageLoopProxy* message_loop);
 

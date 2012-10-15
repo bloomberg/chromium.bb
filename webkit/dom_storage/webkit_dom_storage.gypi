@@ -6,14 +6,19 @@
   'targets': [
     {
       'target_name': 'dom_storage',
-      'type': 'static_library',
+      'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
+      'defines': ['DOM_STORAGE_IMPLEMENTATION'],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/sql/sql.gyp:sql',
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:database',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+	'fileapi',
+	'glue',
       ],
       'sources': [
         'dom_storage_area.cc',
@@ -25,6 +30,7 @@
         'dom_storage_database.cc',
         'dom_storage_database.h',
         'dom_storage_database_adapter.h',
+        'dom_storage_export.h',
         'dom_storage_host.cc',
         'dom_storage_host.h',
         'dom_storage_map.cc',

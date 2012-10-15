@@ -13,6 +13,7 @@
         '<(DEPTH)/sql/sql.gyp:sql',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         'databases_table.cc',
