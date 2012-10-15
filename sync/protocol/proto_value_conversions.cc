@@ -170,6 +170,7 @@ DictionaryValue* TabNavigationToValue(
   SET_BOOL(navigation_home_page);
   SET_BOOL(navigation_chain_start);
   SET_BOOL(navigation_chain_end);
+  SET_INT64(global_id);
   return value;
 }
 

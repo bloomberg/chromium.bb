@@ -115,5 +115,7 @@ message TabNavigation {
   optional bool navigation_chain_start = 13;
   // The last transition in a redirect chain.
   optional bool navigation_chain_end = 14;
+  // The id for this navigation, which is globally unique with high
+  // probability.
+  optional int64 global_id = 15;
 }
-

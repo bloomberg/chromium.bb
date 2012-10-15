@@ -244,6 +244,7 @@ TEST(TabNavigationTest, ToSyncData) {
   EXPECT_TRUE(sync_data.has_redirect_type());
   EXPECT_EQ(navigation_entry->GetUniqueID(), sync_data.unique_id());
   EXPECT_EQ(syncer::TimeToProtoTime(kTimestamp), sync_data.timestamp());
+  EXPECT_EQ(kTimestamp.ToInternalValue(), sync_data.global_id());
 }
 
 // Ensure all transition types and qualifiers are converted to/from the sync
