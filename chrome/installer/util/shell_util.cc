@@ -31,6 +31,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/shortcut.h"
 #include "base/win/win_util.h"
@@ -1015,6 +1016,157 @@ base::win::ShortcutProperties GetShortcutPropertiesFromChromeShortcutProperties(
   return shortcut_properties;
 }
 
+// Gets the short (8.3) form of |path|, putting the result in |short_path| and
+// returning true on success.  |short_path| is not modified on failure.
+bool ShortNameFromPath(const FilePath& path, string16* short_path) {
+  DCHECK(short_path);
+  string16 result(MAX_PATH, L'\0');
+  DWORD short_length = GetShortPathName(path.value().c_str(), &result[0],
+                                        result.size());
+  if (short_length == 0 || short_length > result.size()) {
+    PLOG(ERROR) << "Error getting short (8.3) path";
+    return false;
+  }
+
+  result.resize(short_length);
+  short_path->swap(result);
+  return true;
+}
+
+// Probe using IApplicationAssociationRegistration::QueryCurrentDefault
+// (Windows 8); see ProbeProtocolHandlers.  This mechanism is not suitable for
+// use on previous versions of Windows despite the presence of
+// QueryCurrentDefault on them since versions of Windows prior to Windows 8
+// did not perform validation on the ProgID registered as the current default.
+// As a result, stale ProgIDs could be returned, leading to false positives.
+ShellUtil::DefaultState ProbeCurrentDefaultHandlers(
+    const wchar_t* const* protocols,
+    size_t num_protocols) {
+  base::win::ScopedComPtr<IApplicationAssociationRegistration> registration;
+  HRESULT hr = registration.CreateInstance(
+      CLSID_ApplicationAssociationRegistration, NULL, CLSCTX_INPROC);
+  if (FAILED(hr))
+    return ShellUtil::UNKNOWN_DEFAULT;
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return ShellUtil::UNKNOWN_DEFAULT;
+  }
+  string16 prog_id(ShellUtil::kChromeHTMLProgId);
+  prog_id += ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe.value());
+
+  for (size_t i = 0; i < num_protocols; ++i) {
+    base::win::ScopedCoMem<wchar_t> current_app;
+    hr = registration->QueryCurrentDefault(protocols[i], AT_URLPROTOCOL,
+                                           AL_EFFECTIVE, &current_app);
+    if (FAILED(hr) || prog_id.compare(current_app) != 0)
+      return ShellUtil::NOT_DEFAULT;
+  }
+
+  return ShellUtil::IS_DEFAULT;
+}
+
+// Probe using IApplicationAssociationRegistration::QueryAppIsDefault (Vista and
+// Windows 7); see ProbeProtocolHandlers.
+ShellUtil::DefaultState ProbeAppIsDefaultHandlers(
+    const wchar_t* const* protocols,
+    size_t num_protocols) {
+  base::win::ScopedComPtr<IApplicationAssociationRegistration> registration;
+  HRESULT hr = registration.CreateInstance(
+      CLSID_ApplicationAssociationRegistration, NULL, CLSCTX_INPROC);
+  if (FAILED(hr))
+    return ShellUtil::UNKNOWN_DEFAULT;
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return ShellUtil::UNKNOWN_DEFAULT;
+  }
+  string16 app_name(ShellUtil::GetApplicationName(dist, chrome_exe.value()));
+
+  BOOL result;
+  for (size_t i = 0; i < num_protocols; ++i) {
+    result = TRUE;
+    hr = registration->QueryAppIsDefault(protocols[i], AT_URLPROTOCOL,
+        AL_EFFECTIVE, app_name.c_str(), &result);
+    if (FAILED(hr) || result == FALSE)
+      return ShellUtil::NOT_DEFAULT;
+  }
+
+  return ShellUtil::IS_DEFAULT;
+}
+
+// Probe the current commands registered to handle the shell "open" verb for
+// |protocols| (Windows XP); see ProbeProtocolHandlers.
+ShellUtil::DefaultState ProbeOpenCommandHandlers(
+    const wchar_t* const* protocols,
+    size_t num_protocols) {
+  // Get the path to the current exe (Chrome).
+  FilePath app_path;
+  if (!PathService::Get(base::FILE_EXE, &app_path)) {
+    LOG(ERROR) << "Error getting app exe path";
+    return ShellUtil::UNKNOWN_DEFAULT;
+  }
+
+  // Get its short (8.3) form.
+  string16 short_app_path;
+  if (!ShortNameFromPath(app_path, &short_app_path))
+    return ShellUtil::UNKNOWN_DEFAULT;
+
+  const HKEY root_key = HKEY_CLASSES_ROOT;
+  string16 key_path;
+  base::win::RegKey key;
+  string16 value;
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  string16 short_path;
+
+  for (size_t i = 0; i < num_protocols; ++i) {
+    // Get the command line from HKCU\<protocol>\shell\open\command.
+    key_path.assign(protocols[i]).append(ShellUtil::kRegShellOpen);
+    if ((key.Open(root_key, key_path.c_str(),
+                  KEY_QUERY_VALUE) != ERROR_SUCCESS) ||
+        (key.ReadValue(L"", &value) != ERROR_SUCCESS)) {
+      return ShellUtil::NOT_DEFAULT;
+    }
+
+    // Need to normalize path in case it's been munged.
+    command_line = CommandLine::FromString(value);
+    if (!ShortNameFromPath(command_line.GetProgram(), &short_path))
+      return ShellUtil::UNKNOWN_DEFAULT;
+
+    if (!FilePath::CompareEqualIgnoreCase(short_path, short_app_path))
+      return ShellUtil::NOT_DEFAULT;
+  }
+
+  return ShellUtil::IS_DEFAULT;
+}
+
+// A helper function that probes default protocol handler registration (in a
+// manner appropriate for the current version of Windows) to determine if
+// Chrome is the default handler for |protocols|.  Returns IS_DEFAULT_WEB_CLIENT
+// only if Chrome is the default for all specified protocols.
+ShellUtil::DefaultState ProbeProtocolHandlers(
+    const wchar_t* const* protocols,
+    size_t num_protocols) {
+  DCHECK(!num_protocols || protocols);
+  if (DCHECK_IS_ON()) {
+    for (size_t i = 0; i < num_protocols; ++i)
+      DCHECK(protocols[i] && *protocols[i]);
+  }
+
+  const base::win::Version windows_version = base::win::GetVersion();
+
+  if (windows_version >= base::win::VERSION_WIN8)
+    return ProbeCurrentDefaultHandlers(protocols, num_protocols);
+  else if (windows_version >= base::win::VERSION_VISTA)
+    return ProbeAppIsDefaultHandlers(protocols, num_protocols);
+
+  return ProbeOpenCommandHandlers(protocols, num_protocols);
+}
+
 }  // namespace
 
 const wchar_t* ShellUtil::kRegDefaultIcon = L"\\DefaultIcon";
@@ -1334,6 +1486,29 @@ string16 ShellUtil::BuildAppModelId(
   // No spaces are allowed in the AppUserModelId according to MSDN.
   ReplaceChars(app_id, L" ", L"_", &app_id);
   return app_id;
+}
+
+ShellUtil::DefaultState ShellUtil::IsChromeDefault() {
+  // When we check for default browser we don't necessarily want to count file
+  // type handlers and icons as having changed the default browser status,
+  // since the user may have changed their shell settings to cause HTML files
+  // to open with a text editor for example. We also don't want to aggressively
+  // claim FTP, since the user may have a separate FTP client. It is an open
+  // question as to how to "heal" these settings. Perhaps the user should just
+  // re-run the installer or run with the --set-default-browser command line
+  // flag. There is doubtless some other key we can hook into to cause "Repair"
+  // to show up in Add/Remove programs for us.
+  static const wchar_t* const kChromeProtocols[] = { L"http", L"https" };
+  return ProbeProtocolHandlers(kChromeProtocols, arraysize(kChromeProtocols));
+}
+
+ShellUtil::DefaultState ShellUtil::IsChromeDefaultProtocolClient(
+    const string16& protocol) {
+  if (protocol.empty())
+    return UNKNOWN_DEFAULT;
+
+  const wchar_t* const protocols[] = { protocol.c_str() };
+  return ProbeProtocolHandlers(protocols, arraysize(protocols));
 }
 
 // static
