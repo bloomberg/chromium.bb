@@ -120,7 +120,7 @@ wl_event_queue_destroy(struct wl_event_queue *queue)
 /** Create a new event queue for this display
  *
  * \param display The display context object
- * \return A new event queue associated with this display on NULL on
+ * \return A new event queue associated with this display or NULL on
  * failure.
  *
  * \memberof wl_display
@@ -139,7 +139,22 @@ wl_display_create_queue(struct wl_display *display)
 	return queue;
 }
 
-/**
+/** Create a proxy object with a given interface
+ *
+ * \param factory Factory proxy object
+ * \param interface Interface the proxy object should use
+ * \return A newly allocated proxy object or NULL on failure
+ *
+ * This function creates a new proxy object with the supplied interface. The
+ * proxy object will have an id assigned from the client id space. The id
+ * should be created on the compositor side by sending an appropriate request
+ * with \ref wl_proxy_marshal().
+ *
+ * The proxy will inherit the display and event queue of the factory object.
+ *
+ * \note This should not normally be used by non-generated code.
+ *
+ * \sa wl_display, wl_event_queue, wl_proxy_marshal()
  *
  * \memberof wl_proxy
  */
@@ -248,7 +263,31 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
 	return 0;
 }
 
-/**
+/** Prepare a request to be sent to the compositor
+ *
+ * \param proxy The proxy object
+ * \param opcode Opcode of the request to be sent
+ * \param ... Extra arguments for the given request
+ *
+ * Translates the request given by opcode and the extra arguments into the
+ * wire format and write it to the connection buffer.
+ *
+ * The example below creates a proxy object with the wl_surface_interface
+ * using a wl_compositor factory interface and sends the
+ * \c compositor.create_surface request using \ref wl_proxy_marshal(). Note
+ * the \c id is the extra argument to the request as specified by the
+ * protocol.
+ *
+ * \code
+ * id = wl_proxy_create((struct wl_proxy *) wl_compositor,
+ *                      &wl_surface_interface);
+ * wl_proxy_marshal((struct wl_proxy *) wl_compositor,
+ *                  WL_COMPOSITOR_CREATE_SURFACE, id);
+ * \endcode
+ *
+ * \note This should not normally be used by non-generated code.
+ *
+ * \sa wl_proxy_create()
  *
  * \memberof wl_proxy
  */
@@ -736,7 +775,7 @@ wl_display_dispatch_pending(struct wl_display *display)
  * \param display The display context object
  * \return The number of bytes send on success or -1 on failure
  *
- * Send all buffered data on the client side to the servre. Clients
+ * Send all buffered data on the client side to the server. Clients
  * should call this function before blocking. On success, the number
  * of bytes sent to the server is returned. On failure, this
  * function returns -1 and errno is set appropriately.
@@ -762,8 +801,8 @@ wl_display_flush(struct wl_display *display)
  * \param proxy The proxy object
  * \param user_data The data to be associated with proxy
  *
- * Set the user data associated with proxy. When events for this
- * proxy are received, user_data will be supplied to its listener.
+ * Set the user data associated with \c proxy. When events for this
+ * proxy are received, \c user_data will be supplied to its listener.
  *
  * \memberof wl_proxy
  */
@@ -805,7 +844,7 @@ wl_proxy_get_id(struct wl_proxy *proxy)
  * \param proxy The proxy object
  * \param queue The event queue that will handle this proxy
  *
- * Assign proxy to event queue. Events coming from proxy will be
+ * Assign proxy to event queue. Events coming from \c proxy will be
  * queued in \c queue instead of the display's main queue.
  *
  * \sa wl_display_dispatch_queue()
