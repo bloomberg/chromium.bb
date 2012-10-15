@@ -3550,9 +3550,14 @@ display_set_output_configure_handler(struct display *display,
 	if (!handler)
 		return;
 
-	wl_list_for_each(output, &display->output_list, link)
+	wl_list_for_each(output, &display->output_list, link) {
+		if (output->allocation.width == 0 &&
+		    output->allocation.height == 0)
+			continue;
+
 		(*display->output_configure_handler)(output,
 						     display->user_data);
+	}
 }
 
 void
