@@ -1096,11 +1096,12 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.scm.GIT.GetGitSvnHeadRev(cwd=self.base_path).MultipleTimes(
         ).AndReturn(2)
 
-    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'GetSha1ForSvnRev', True)
+    self.mox.StubOutWithMock(
+        gclient_scm.scm.GIT, 'GetBlessedSha1ForSvnRev', True)
     # r1 -> first fake hash, r3 -> second fake hash.
-    gclient_scm.scm.GIT.GetSha1ForSvnRev(cwd=self.base_path, rev='1'
+    gclient_scm.scm.GIT.GetBlessedSha1ForSvnRev(cwd=self.base_path, rev='1'
         ).AndReturn(self.fake_hash_1)
-    gclient_scm.scm.GIT.GetSha1ForSvnRev(cwd=self.base_path, rev='3'
+    gclient_scm.scm.GIT.GetBlessedSha1ForSvnRev(cwd=self.base_path, rev='3'
         ).MultipleTimes().AndReturn(self.fake_hash_2)
 
     # Ensure that we call git svn fetch if our LKGR is > the git-svn HEAD rev.

@@ -402,10 +402,23 @@ class GIT(object):
     if not GIT.IsGitSvn(cwd=cwd):
       return None
     try:
-      git_svn_rev = GIT.Capture(
-          ['svn', 'find-rev', 'r' + str(rev)], cwd=cwd).rstrip()
-      if not git_svn_rev:
-        return None
+      output = GIT.Capture(['svn', 'find-rev', 'r' + str(rev)], cwd=cwd)
+      return GIT.ParseGitSvnSha1(output)
+    except subprocess2.CalledProcessError:
+      return None
+
+  @staticmethod
+  def GetBlessedSha1ForSvnRev(cwd, rev):
+    """Returns a git commit hash from the master branch history that has
+    accurate .DEPS.git and git submodules.  To understand why this is more
+    complicated than a simple call to `git svn find-rev`, refer to:
+
+    http://www.chromium.org/developers/how-tos/git-repo
+    """
+    git_svn_rev = GIT.GetSha1ForSvnRev(cwd, rev)
+    if not git_svn_rev:
+      return None
+    try:
       output = GIT.Capture(
           ['rev-list', '--ancestry-path', '--reverse',
           '--grep', 'SVN changes up to revision [0-9]*',

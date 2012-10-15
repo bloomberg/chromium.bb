@@ -590,7 +590,8 @@ class GitWrapper(SCMWrapper):
             print('Running git svn fetch. This might take a while.\n')
           scm.GIT.Capture(['svn', 'fetch'], cwd=self.checkout_path)
         try:
-          sha1 = scm.GIT.GetSha1ForSvnRev(cwd=self.checkout_path, rev=rev)
+          sha1 = scm.GIT.GetBlessedSha1ForSvnRev(
+              cwd=self.checkout_path, rev=rev)
         except gclient_utils.Error, e:
           sha1 = e.message
           print('\nWarning: Could not find a git revision with accurate\n'

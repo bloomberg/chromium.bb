@@ -79,6 +79,7 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'current_version',
         'FetchUpstreamTuple',
         'GenerateDiff',
+        'GetBlessedSha1ForSvnRev',
         'GetBranch',
         'GetBranchRef',
         'GetCheckoutRoot',
