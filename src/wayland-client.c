@@ -72,7 +72,6 @@ struct wl_display {
 	struct wl_connection *connection;
 	int last_error;
 	int fd;
-	int close_fd;
 	pthread_t display_thread;
 	struct wl_map objects;
 	struct wl_event_queue queue;
@@ -446,6 +445,10 @@ connect_to_socket(const char *name)
  * \param fd The fd to use for the connection
  * \return A \ref wl_display object or \c NULL on failure
  *
+ * The wl_display takes ownership of the fd and will close it when the
+ * display is destroyed.  The fd will also be closed in case of
+ * failure.
+ *
  * \memberof wl_display
  */
 WL_EXPORT struct wl_display *
@@ -459,8 +462,10 @@ wl_display_connect_to_fd(int fd)
 		wl_debug = 1;
 
 	display = malloc(sizeof *display);
-	if (display == NULL)
+	if (display == NULL) {
+		close(fd);
 		return NULL;
+	}
 
 	memset(display, 0, sizeof *display);
 
@@ -506,7 +511,6 @@ wl_display_connect_to_fd(int fd)
 WL_EXPORT struct wl_display *
 wl_display_connect(const char *name)
 {
-	struct wl_display *display;
 	char *connection, *end;
 	int flags, fd;
 
@@ -526,11 +530,7 @@ wl_display_connect(const char *name)
 			return NULL;
 	}
 
-	display = wl_display_connect_to_fd(fd);
-	if (display)
-		display->close_fd = 1;
-
-	return display;
+	return wl_display_connect_to_fd(fd);
 }
 
 /** Close a connection to a Wayland display
@@ -549,9 +549,7 @@ wl_display_disconnect(struct wl_display *display)
 	wl_map_release(&display->objects);
 	wl_event_queue_release(&display->queue);
 	pthread_mutex_destroy(&display->mutex);
-
-	if (display->close_fd)
-		close(display->fd);
+	close(display->fd);
 
 	free(display);
 }
