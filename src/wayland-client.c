@@ -556,7 +556,7 @@ static int
 dispatch_queue(struct wl_display *display,
 	       struct wl_event_queue *queue, int block)
 {
-	int len, size;
+	int len, size, count;
 
 	pthread_mutex_lock(&display->mutex);
 
@@ -580,12 +580,12 @@ dispatch_queue(struct wl_display *display,
 		pthread_cond_wait(&queue->cond, &display->mutex);
 	}
 
-	while (!wl_list_empty(&queue->event_list))
+	for (count = 0; !wl_list_empty(&queue->event_list); count++)
 		dispatch_event(display, queue);
 
 	pthread_mutex_unlock(&display->mutex);
 
-	return 0;
+	return count;
 }
 
 WL_EXPORT int
