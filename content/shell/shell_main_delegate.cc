@@ -19,6 +19,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/global_descriptors_posix.h"
@@ -91,6 +92,10 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
         switches::kAllowFileAccessFromFiles);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kForceCompositingMode);
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kUseGL, gfx::kGLImplementationOSMesaName);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kIgnoreGpuBlacklist);
     net::CookieMonster::EnableFileScheme();
     if (!WebKitTestPlatformInitialize()) {
       if (exit_code)
