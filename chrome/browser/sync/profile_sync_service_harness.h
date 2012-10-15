@@ -105,7 +105,7 @@ class ProfileSyncServiceHarness
 
   // Blocks the caller until this harness has observed that the sync engine
   // has downloaded all the changes seen by the |partner| harness's client.
-  bool WaitUntilTimestampMatches(
+  bool WaitUntilProgressMarkersMatch(
       ProfileSyncServiceHarness* partner, const std::string& reason);
 
   // Calling this acts as a barrier and blocks the caller until |this| and
@@ -125,9 +125,9 @@ class ProfileSyncServiceHarness
       std::vector<ProfileSyncServiceHarness*>& partners);
 
   // Blocks the caller until every client in |clients| completes its ongoing
-  // sync cycle and all the clients' timestamps match.  Note: Use this method
-  // when more than one client makes local change(s), and more than one client
-  // is waiting to receive those changes.
+  // sync cycle and all the clients' progress markers match.  Note: Use this
+  // method when more than one client makes local change(s), and more than one
+  // client is waiting to receive those changes.
   static bool AwaitQuiescence(
       std::vector<ProfileSyncServiceHarness*>& clients);
 
@@ -314,9 +314,10 @@ class ProfileSyncServiceHarness
   // available), annotated with |message|. Useful for logging.
   std::string GetClientInfoString(const std::string& message);
 
-  // Gets the current progress indicator of the current sync session
-  // for a particular datatype.
-  std::string GetUpdatedTimestamp(syncer::ModelType model_type);
+  // Gets the current progress marker of the current sync session for a
+  // particular datatype. Returns an empty string if the progress marker isn't
+  // found.
+  std::string GetSerializedProgressMarker(syncer::ModelType model_type) const;
 
   // Gets detailed status from |service_| in pretty-printable form.
   std::string GetServiceStatus();
@@ -337,7 +338,7 @@ class ProfileSyncServiceHarness
 
   // The harness of the client whose update progress marker we're expecting
   // eventually match.
-  ProfileSyncServiceHarness* timestamp_match_partner_;
+  ProfileSyncServiceHarness* progress_marker_partner_;
 
   // Credentials used for GAIA authentication.
   std::string username_;

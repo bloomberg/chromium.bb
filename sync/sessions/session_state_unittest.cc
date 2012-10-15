@@ -61,11 +61,11 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   scoped_ptr<ListValue> expected_initial_sync_ended_value(
       ModelTypeSetToValue(initial_sync_ended));
 
-  ModelTypeInvalidationMap download_progress_markers;
-  download_progress_markers[BOOKMARKS].payload = "test";
-  download_progress_markers[APPS].payload = "apps";
+  ProgressMarkerMap download_progress_markers;
+  download_progress_markers[BOOKMARKS] = "test";
+  download_progress_markers[APPS] = "apps";
   scoped_ptr<DictionaryValue> expected_download_progress_markers_value(
-      ModelTypeInvalidationMapToValue(download_progress_markers));
+      ProgressMarkerMapToValue(download_progress_markers));
 
   const bool kHasMoreToSync = false;
   const bool kIsSilenced = true;

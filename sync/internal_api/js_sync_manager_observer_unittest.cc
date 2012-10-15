@@ -72,11 +72,10 @@ TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
-  ModelTypeInvalidationMap download_progress_markers;
   sessions::SyncSessionSnapshot snapshot(sessions::ModelNeutralState(),
                                          false,
                                          ModelTypeSet(),
-                                         download_progress_markers,
+                                         ProgressMarkerMap(),
                                          false,
                                          true,
                                          8,

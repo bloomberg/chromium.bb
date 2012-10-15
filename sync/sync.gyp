@@ -50,6 +50,8 @@
         'internal_api/public/base/node_ordinal.cc',
         'internal_api/public/base/node_ordinal.h',
         'internal_api/public/base/ordinal.h',
+        'internal_api/public/base/progress_marker_map.cc',
+        'internal_api/public/base/progress_marker_map.h',
         'internal_api/public/engine/model_safe_worker.cc',
         'internal_api/public/engine/model_safe_worker.h',
         'internal_api/public/engine/passive_model_worker.cc',
