@@ -4,7 +4,9 @@
 
 #include "content/shell/shell_content_client.h"
 
+#include "base/command_line.h"
 #include "base/string_piece.h"
+#include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/user_agent/user_agent_util.h"
@@ -18,7 +20,11 @@ std::string ShellContentClient::GetUserAgent() const {
   // The "19" is so that sites that sniff for version think that this is
   // something reasonably current; the "77.34.5" is a hint that this isn't a
   // standard Chrome.
-  return webkit_glue::BuildUserAgentFromProduct("Chrome/19.77.34.5");
+  std::string product = "Chrome/19.77.34.5";
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
+    product += " Mobile";
+  return webkit_glue::BuildUserAgentFromProduct(product);
 }
 
 string16 ShellContentClient::GetLocalizedString(int message_id) const {

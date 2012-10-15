@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import org.chromium.content.app.AppResource;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.CommandLine;
 import org.chromium.ui.gfx.ActivityNativeWindow;
 
@@ -45,6 +46,8 @@ public class ContentShellActivity extends Activity {
             }
         }
         waitForDebuggerIfNeeded();
+
+        DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
 
         LibraryLoader.loadAndInitSync();
         initializeContentViewResources();

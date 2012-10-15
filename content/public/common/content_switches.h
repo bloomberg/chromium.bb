@@ -212,12 +212,12 @@ CONTENT_EXPORT extern const char kEnableFixedPositionCreatesStackingContext[];
 CONTENT_EXPORT extern const char kDisableFixedPositionCreatesStackingContext[];
 
 extern const char kEnableVisualWordMovement[];
+CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 
 #if defined(OS_ANDROID)
 extern const char kMediaPlayerInRenderProcess[];
 extern const char kDisableMediaHistoryLogging[];
 extern const char kNetworkCountryIso[];
-extern const char kUseMobileUserAgent[];
 extern const char kEnableWebViewSynchronousAPIs[];
 #endif
 

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.content.browser;
 
 import android.content.Context;
+
+import org.chromium.content.common.CommandLine;
 
 /**
  * A utility class that has helper methods for device configuration.
@@ -25,4 +27,15 @@ public class DeviceUtils {
         return minimumScreenWidthDp >= MINIMUM_TABLET_WIDTH_DP;
     }
 
+    /**
+     * Appends the switch specifying which user agent should be used for this device.
+     * @param contex The context for the caller activity.
+     */
+    public static void addDeviceSpecificUserAgentSwitch(Context context) {
+        if (isTablet(context)) {
+            CommandLine.getInstance().appendSwitch(CommandLine.TABLET_UI);
+        } else {
+            CommandLine.getInstance().appendSwitch(CommandLine.USE_MOBILE_UA);
+        }
+    }
 }
