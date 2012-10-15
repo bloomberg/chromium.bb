@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/cws_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_reporting.h"
@@ -37,7 +38,6 @@ class WebIntentsDispatcher;
 
 namespace web_intents {
 class NativeServiceFactory;
-class IconLoader;
 }
 
 namespace webkit_glue {
@@ -207,6 +207,11 @@ class WebIntentPickerController
   void OnWebIntentServicesAvailableForExplicitIntent(
       const std::vector<webkit_glue::WebIntentServiceData>& services);
 
+  // Called when a favicon is returned from the FaviconService.
+  void OnFaviconDataAvailable(
+      FaviconService::Handle handle,
+      const history::FaviconImageResult& image_result);
+
   // Called when IntentExtensionInfo is returned from the CWSIntentsRegistry.
   void OnCWSIntentServicesAvailable(
       const CWSIntentsRegistry::IntentExtensionList& extensions);
@@ -336,8 +341,8 @@ class WebIntentPickerController
   // close it when a reply is sent.
   content::WebContents* service_tab_;
 
-  // Object managing the details of icon loading.
-  scoped_ptr<web_intents::IconLoader> icon_loader_;
+  // Request consumer used when asynchronously loading favicons.
+  CancelableRequestConsumerTSimple<size_t> favicon_consumer_;
 
   // Factory for weak pointers used in callbacks for async calls to load the
   // picker model.

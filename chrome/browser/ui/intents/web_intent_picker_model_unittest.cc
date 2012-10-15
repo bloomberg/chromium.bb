@@ -134,14 +134,14 @@ TEST_F(WebIntentPickerModelTest, GetInstalledServiceWithURL) {
   EXPECT_EQ(NULL, model_.GetInstalledServiceWithURL(kUrl3));
 }
 
-TEST_F(WebIntentPickerModelTest, UpdateFaviconForServiceWithURL) {
+TEST_F(WebIntentPickerModelTest, UpdateFaviconAt) {
   EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
   EXPECT_CALL(observer_, OnFaviconChanged(&model_, 1U)).Times(1);
 
   model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
   model_.AddInstalledService(kTitle2, kUrl2, kWindowDisposition);
   gfx::Image image(gfx::test::CreateImage());
-  model_.UpdateFaviconForServiceWithURL(kUrl2, image);
+  model_.UpdateFaviconAt(1U, image);
 
   EXPECT_FALSE(gfx::test::IsEqual(
       image, model_.GetInstalledServiceAt(0).favicon));

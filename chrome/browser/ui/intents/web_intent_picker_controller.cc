@@ -16,6 +16,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/intents/cws_intents_registry_factory.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/intent_service_host.h"
@@ -31,7 +33,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/intents/web_intent_icon_loader.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -63,6 +64,13 @@ const int kMaxHiddenSetupTimeMs = 200;
 
 // Minimum amount of time to show waiting dialog, if it is shown.
 const int kMinThrobberDisplayTimeMs = 800;
+
+
+// Gets the favicon service for the specified profile.
+FaviconService* GetFaviconService(Profile* profile) {
+  return FaviconServiceFactory::GetForProfile(profile,
+                                              Profile::EXPLICIT_ACCESS);
+}
 
 // Gets the web intents registry for the specified profile.
 WebIntentsRegistry* GetWebIntentsRegistry(Profile* profile) {
@@ -105,6 +113,7 @@ void URLFetcherTrampoline::OnURLFetchComplete(
   delete source;
   delete this;
 }
+
 class SourceWindowObserver : content::WebContentsObserver {
  public:
   SourceWindowObserver(content::WebContents* web_contents,
@@ -178,7 +187,6 @@ WebIntentPickerController::WebIntentPickerController(
       source_intents_dispatcher_(NULL),
       intents_dispatcher_(NULL),
       service_tab_(NULL),
-      icon_loader_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(dispatcher_factory_(this)) {
@@ -186,8 +194,6 @@ WebIntentPickerController::WebIntentPickerController(
 #if defined(TOOLKIT_VIEWS)
   cancelled_ = true;
 #endif
-  icon_loader_.reset(
-      new web_intents::IconLoader(profile_, picker_model_.get()));
 }
 
 WebIntentPickerController::~WebIntentPickerController() {
@@ -607,13 +613,26 @@ void WebIntentPickerController::OnSendReturnMessage(
 
 void WebIntentPickerController::AddServiceToModel(
     const webkit_glue::WebIntentServiceData& service) {
+  FaviconService* favicon_service = GetFaviconService(profile_);
 
   picker_model_->AddInstalledService(
       service.title,
       service.service_url,
       service.disposition);
 
-  icon_loader_->LoadFavicon(service.service_url);
+  pending_async_count_++;
+  FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
+      FaviconService::FaviconForURLParams(
+          profile_,
+          service.service_url,
+          history::FAVICON,
+          gfx::kFaviconSize,
+          &favicon_consumer_),
+      base::Bind(
+          &WebIntentPickerController::OnFaviconDataAvailable,
+          weak_ptr_factory_.GetWeakPtr()));
+  favicon_consumer_.SetClientData(
+      favicon_service, handle, picker_model_->GetInstalledServiceCount() - 1);
 }
 
 void WebIntentPickerController::OnWebIntentServicesAvailable(
@@ -676,6 +695,18 @@ void WebIntentPickerController::RegistryCallsCompleted() {
 
   OnPickerEvent(kPickerEventRegistryDataComplete);
   OnIntentDataArrived();
+}
+
+void WebIntentPickerController::OnFaviconDataAvailable(
+    FaviconService::Handle handle,
+    const history::FaviconImageResult& image_result) {
+  size_t index = favicon_consumer_.GetClientDataForCurrentRequest();
+  if (!image_result.image.IsEmpty()) {
+    picker_model_->UpdateFaviconAt(index, image_result.image);
+    return;
+  }
+
+  AsyncOperationFinished();
 }
 
 void WebIntentPickerController::OnCWSIntentServicesAvailable(
@@ -781,11 +812,7 @@ void WebIntentPickerController::Reset() {
   pending_cws_request_ = false;
 
   // Reset picker.
-  icon_loader_.reset();
   picker_model_.reset(new WebIntentPickerModel());
-  icon_loader_.reset(
-      new web_intents::IconLoader(profile_, picker_model_.get()));
-
   picker_shown_ = false;
 
   DCHECK(web_contents_);

@@ -91,17 +91,12 @@ size_t WebIntentPickerModel::GetInstalledServiceCount() const {
   return installed_services_.size();
 }
 
-void WebIntentPickerModel::UpdateFaviconForServiceWithURL(
-    const GURL& url, const gfx::Image& image) {
-  for (size_t i = 0; i < installed_services_.size(); ++i) {
-    InstalledService* service = installed_services_[i];
-    if (service->url == url) {
-      service->favicon = image;
-      if (observer_)
-        observer_->OnFaviconChanged(this, i);
-    }
-  }
-  NOTREACHED();  // Calling this with an invalid URL is not allowed.
+void WebIntentPickerModel::UpdateFaviconAt(size_t index,
+                                           const gfx::Image& image) {
+  DCHECK_LT(index, installed_services_.size());
+  installed_services_[index]->favicon = image;
+  if (observer_)
+    observer_->OnFaviconChanged(this, index);
 }
 
 void WebIntentPickerModel::AddSuggestedExtensions(
