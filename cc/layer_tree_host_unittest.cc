@@ -6,6 +6,7 @@
 
 #include "CCLayerTreeHost.h"
 
+#include "base/synchronization/lock.h"
 #include "CCGeometryTestUtils.h"
 #include "CCGraphicsContext.h"
 #include "CCLayerTreeHostImpl.h"
@@ -2123,7 +2124,6 @@ class CCLayerTreeHostTestFinishAllRendering : public CCLayerTreeHostTest {
 public:
     CCLayerTreeHostTestFinishAllRendering()
         : m_once(false)
-        , m_mutex()
         , m_drawCount(0)
     {
     }
@@ -2141,12 +2141,12 @@ public:
         m_layerTreeHost->setNeedsRedraw();
         m_layerTreeHost->acquireLayerTextures();
         {
-            Locker<Mutex> lock(m_mutex);
+            base::AutoLock lock(m_lock);
             m_drawCount = 0;
         }
         m_layerTreeHost->finishAllRendering();
         {
-            Locker<Mutex> lock(m_mutex);
+            base::AutoLock lock(m_lock);
             EXPECT_EQ(0, m_drawCount);
         }
         endTest();
@@ -2154,7 +2154,7 @@ public:
 
     virtual void drawLayersOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
     {
-        Locker<Mutex> lock(m_mutex);
+        base::AutoLock lock(m_lock);
         ++m_drawCount;
     }
 
@@ -2164,7 +2164,7 @@ public:
 private:
 
     bool m_once;
-    Mutex m_mutex;
+    base::Lock m_lock;
     int m_drawCount;
 };
 
