@@ -178,15 +178,17 @@ TEST(MediaStreamDispatcherTest, BasicStreamForDevice) {
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
   media_stream::StreamOptions components(kNoAudioType, kVideoType);
+  components.audio_device_id = kDeviceId;
+  components.video_device_id = kDeviceId;
   GURL security_origin;
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
-  dispatcher->GenerateStreamForDevice(kRequestId1, handler.get()->AsWeakPtr(),
-                                      components, kDeviceId, security_origin);
+  dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
+                             components, security_origin);
   int ipc_request_id2 = dispatcher->next_ipc_id_;
   EXPECT_NE(ipc_request_id1, ipc_request_id2);
-  dispatcher->GenerateStreamForDevice(kRequestId2, handler.get()->AsWeakPtr(),
-                                      components, kDeviceId, security_origin);
+  dispatcher->GenerateStream(kRequestId2, handler.get()->AsWeakPtr(),
+                             components, security_origin);
   EXPECT_EQ(dispatcher->requests_.size(), size_t(2));
 
   // No audio requested.

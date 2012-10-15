@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_MEDIA_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_MEDIA_OBSERVER_H_
 
+#include "content/public/browser/media_request_state.h"
 #include "content/public/common/media_stream_request.h"
 
 namespace media {
@@ -41,13 +42,20 @@ class MediaObserver {
   virtual void OnCaptureDevicesOpened(
       int render_process_id,
       int render_view_id,
-      const content::MediaStreamDevices& devices) = 0;
+      const MediaStreamDevices& devices) = 0;
 
   // Called when the opened capture devices are closed.
   virtual void OnCaptureDevicesClosed(
       int render_process_id,
       int render_view_id,
-      const content::MediaStreamDevices& devices) = 0;
+      const MediaStreamDevices& devices) = 0;
+
+  // Called when a media request changes state.
+  virtual void OnMediaRequestStateChanged(
+      int render_process_id,
+      int render_view_id,
+      const MediaStreamDevice& device,
+      MediaRequestState state) = 0;
 
  protected:
   virtual ~MediaObserver() {}

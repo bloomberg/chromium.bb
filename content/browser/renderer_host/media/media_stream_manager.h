@@ -178,7 +178,7 @@ class CONTENT_EXPORT MediaStreamManager
 
  private:
   // Contains all data needed to keep track of requests.
-  struct DeviceRequest;
+  class DeviceRequest;
 
   // Cache enumerated device list.
   struct EnumerationCache {

@@ -62,15 +62,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                                                 components,
                                                 GURL());
   }
-  void OnGenerateStreamForDevice(int page_request_id,
-                                 const StreamOptions& components,
-                                 const std::string& device_id) {
-    MediaStreamDispatcherHost::OnGenerateStreamForDevice(kRenderId,
-                                                         page_request_id,
-                                                         components,
-                                                         device_id,
-                                                         GURL());
-  }
   void OnStopGeneratedStream(const std::string& label) {
     MediaStreamDispatcherHost::OnStopGeneratedStream(kRenderId, label);
   }
@@ -242,32 +233,6 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStream) {
 
   host_->OnStopGeneratedStream(label);
   EXPECT_EQ(host_->NumberOfStreams(), 0u);
-}
-
-TEST_F(MediaStreamDispatcherHostTest, GenerateStreamForDevice) {
-  static const char kDeviceId[] = "/dev/video0";
-
-  StreamOptions options(content::MEDIA_NO_SERVICE,
-                        content::MEDIA_DEVICE_VIDEO_CAPTURE);
-
-  EXPECT_CALL(*host_, GetMediaObserver())
-      .WillRepeatedly(Return(media_observer_.get()));
-  EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
-  host_->OnGenerateStreamForDevice(kPageRequestId, options, kDeviceId);
-
-  EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesOpened(_, _, _));
-  EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesClosed(_, _, _));
-
-  WaitForResult();
-
-  std::string label = host_->label_;
-
-  EXPECT_EQ(0u, host_->audio_devices_.size());
-  EXPECT_EQ(1u, host_->video_devices_.size());
-  EXPECT_EQ(1u, host_->NumberOfStreams());
-
-  host_->OnStopGeneratedStream(label);
-  EXPECT_EQ(0u, host_->NumberOfStreams());
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {

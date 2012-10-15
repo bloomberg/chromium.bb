@@ -42,16 +42,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   virtual void GenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-      media_stream::StreamOptions components,
-      const GURL& security_origin);
-
-  // Like GenerateStream above, except use the device specified by |device_id|
-  // rather than allow the user to choose one.
-  virtual void GenerateStreamForDevice(
-      int request_id,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-      media_stream::StreamOptions components,
-      const std::string& device_id,
+      const media_stream::StreamOptions& components,
       const GURL& security_origin);
 
   // Cancel the request for a new media stream to be created.
@@ -165,8 +156,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   EnumerationState audio_enumeration_state_;
   EnumerationState video_enumeration_state_;
 
-  // List of calls made to GenerateStream/GenerateStreamForDevice that has not
-  // yet completed.
+  // List of calls made to GenerateStream that have not yet completed.
   typedef std::list<Request> RequestList;
   RequestList requests_;
 

@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/common/media_stream_request.h"
 
 class MediaInternalsObserver;
 class MediaStreamCaptureIndicator;
@@ -48,6 +49,11 @@ class MediaInternals : public content::MediaObserver {
       int render_process_id,
       int render_view_id,
       const content::MediaStreamDevices& devices) OVERRIDE;
+  virtual void OnMediaRequestStateChanged(
+      int render_process_id,
+      int render_view_id,
+      const content::MediaStreamDevice& device,
+      content::MediaRequestState state) OVERRIDE;
 
   // Methods for observers.
   // Observers should add themselves on construction and remove themselves

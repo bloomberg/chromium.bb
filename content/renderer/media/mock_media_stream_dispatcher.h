@@ -19,13 +19,7 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   virtual void GenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>&,
-      media_stream::StreamOptions components,
-      const GURL&) OVERRIDE;
-  virtual void GenerateStreamForDevice(
-      int request_id,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>&,
-      media_stream::StreamOptions components,
-      const std::string& device_id,
+      const media_stream::StreamOptions& components,
       const GURL&) OVERRIDE;
   virtual void StopStream(const std::string& label) OVERRIDE;
   virtual bool IsStream(const std::string& label) OVERRIDE;

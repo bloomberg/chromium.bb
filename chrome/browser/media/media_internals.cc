@@ -86,6 +86,18 @@ void MediaInternals::OnCaptureDevicesClosed(
                                                         devices);
 }
 
+void MediaInternals::OnMediaRequestStateChanged(
+    int render_process_id,
+    int render_view_id,
+    const content::MediaStreamDevice& device,
+    content::MediaRequestState state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (observers_.size()) {
+    FOR_EACH_OBSERVER(MediaInternalsObserver, observers_,
+                      OnRequestUpdate(device, state));
+  }
+}
+
 void MediaInternals::AddObserver(MediaInternalsObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.AddObserver(observer);

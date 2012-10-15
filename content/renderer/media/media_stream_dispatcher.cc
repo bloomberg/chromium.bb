@@ -69,7 +69,7 @@ MediaStreamDispatcher::~MediaStreamDispatcher() {}
 void MediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-    media_stream::StreamOptions components,
+    const media_stream::StreamOptions& components,
     const GURL& security_origin) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamDispatcher::GenerateStream(" << request_id << ")";
@@ -79,24 +79,6 @@ void MediaStreamDispatcher::GenerateStream(
                                              next_ipc_id_++,
                                              components,
                                              security_origin));
-}
-
-void MediaStreamDispatcher::GenerateStreamForDevice(
-    int request_id,
-    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-    media_stream::StreamOptions components,
-    const std::string& device_id,
-    const GURL& security_origin) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "MediaStreamDispatcher::GenerateStreamForDevice("
-           << request_id << ")";
-
-  requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
-  Send(new MediaStreamHostMsg_GenerateStreamForDevice(routing_id(),
-                                                      next_ipc_id_++,
-                                                      components,
-                                                      device_id,
-                                                      security_origin));
 }
 
 void MediaStreamDispatcher::CancelGenerateStream(int request_id) {

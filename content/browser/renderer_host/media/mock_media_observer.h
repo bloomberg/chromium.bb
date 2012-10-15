@@ -33,6 +33,10 @@ class MockMediaObserver : public content::MediaObserver {
   MOCK_METHOD3(OnCaptureDevicesClosed,
                void(int render_process_id, int render_view_id,
                     const content::MediaStreamDevices& devices));
+  MOCK_METHOD4(OnMediaRequestStateChanged,
+               void(int render_process_id, int render_view_id,
+                    const content::MediaStreamDevice& device,
+                    const content::MediaRequestState state));
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_MOCK_MEDIA_OBSERVER_H_

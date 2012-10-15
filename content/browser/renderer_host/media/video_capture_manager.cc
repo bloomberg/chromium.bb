@@ -173,6 +173,8 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
       case content::MEDIA_TAB_VIDEO_CAPTURE:
         // TODO(miu): Replace this stub with the actual implementation in a
         // later change.
+        // TODO(justinlin): This is so we don't get a null device. Remove later.
+        vc_device_name.unique_id = "/dev/video1";
         video_capture_device =
             media::FakeVideoCaptureDevice::Create(vc_device_name);
         break;
