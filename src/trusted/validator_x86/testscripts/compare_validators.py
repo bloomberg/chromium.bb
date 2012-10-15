@@ -103,9 +103,9 @@ def ParseRval(rval_content):
     # Parse two-line error messages of the form
     #   VALIDATOR: 0000000000000003: 49 89 14 07    mov [%r15+%rax*1], %rdx
     #   VALIDATOR: ERROR: Invalid index register in memory offset
-    m = re.match(r'VALIDATOR: ((?:ERROR|WARNING): .*)$', line, re.IGNORECASE)
+    m = re.match(r'VALIDATOR: (ERROR|WARNING): .*$', line, re.IGNORECASE)
     if m is not None:
-      message = m.group(1)
+      message_type = m.group(1)
       assert prev_line is not None, (
           "can't deduce error offset because line %r "
           "is not preceded with disassembly" % line)
@@ -114,7 +114,7 @@ def ParseRval(rval_content):
           prev_line,
           line)
       offset = int(m2.group(1), 16)
-      if not message.startswith('WARNING:'):
+      if message_type != 'WARNING':
         offsets.add(offset)
       continue
 
