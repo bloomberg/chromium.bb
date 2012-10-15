@@ -7,6 +7,7 @@ import struct
 import subprocess
 import sys
 import unittest
+import xml.etree.ElementTree
 
 import gdb_rsp
 
@@ -84,7 +85,8 @@ X86_64_REG_DEFS = [
 ]
 
 
-ARM_REG_DEFS = [('r%d' % regno, 'I') for regno in xrange(16)]
+ARM_REG_DEFS = ([('r%d' % regno, 'I') for regno in xrange(16)]
+                + [('cpsr', 'I')])
 
 
 REG_DEFS = {
@@ -109,6 +111,23 @@ IP_REG = {
 
 
 X86_TRAP_FLAG = 1 << 8
+
+# RESET_X86_FLAGS_VALUE is what ASM_WITH_REGS() resets the x86 flags
+# to.  Copied from tests/common/register_set.h.
+RESET_X86_FLAGS_VALUE = (1 << 2) | (1 << 6)
+KNOWN_X86_FLAGS_MASK = (1<<0) | (1<<2) | (1<<6) | (1<<7) | (1<<11) | (1<<8)
+
+# These are the only ARM CPSR bits that user code and untrusted code
+# can read and modify, excluding the IT bits which are for Thumb-2
+# (for If-Then-Else instructions).  Copied from
+# tests/common/register_set.h.
+ARM_USER_CPSR_FLAGS_MASK = (
+    (1<<31) | # N
+    (1<<30) | # Z
+    (1<<29) | # C
+    (1<<28) | # V
+    (1<<27) | # Q
+    (1<<19) | (1<<18) | (1<<17) | (1<<16)) # GE bits
 
 
 def DecodeRegs(reply):
@@ -211,6 +230,12 @@ class DebugStubTest(unittest.TestCase):
       reply = connection.RspRequest('?')
       AssertReplySignal(reply, NACL_SIGTRAP)
 
+  def CheckTargetXml(self, connection):
+    reply = connection.RspRequest('qXfer:features:read:target.xml:0,fff')
+    self.assertEquals(reply[0], 'l')
+    # Just check that we are given parsable XML.
+    xml.etree.ElementTree.fromstring(reply[1:])
+
   # Test that we can fetch register values.
   # This check corresponds to the last instruction of debugger_test.c
   def CheckReadRegisters(self, connection):
@@ -224,6 +249,8 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['edi'], 0x66000077)
       self.assertEquals(registers['ebp'], 0x77000088)
       self.assertEquals(registers['esp'], 0x88000099)
+      self.assertEquals(registers['eflags'] & KNOWN_X86_FLAGS_MASK,
+                        RESET_X86_FLAGS_VALUE)
     elif ARCH == 'x86-64':
       self.assertEquals(registers['rax'], 0x1100000000000022)
       self.assertEquals(registers['rbx'], 0x2200000000000033)
@@ -240,6 +267,8 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r14'], 0xdd000000000000ee)
       self.assertEquals(registers['rsp'], registers['r15'] + 0x12300321)
       self.assertEquals(registers['rbp'], registers['r15'] + 0x23400432)
+      self.assertEquals(registers['eflags'] & KNOWN_X86_FLAGS_MASK,
+                        RESET_X86_FLAGS_VALUE)
     elif ARCH == 'arm':
       self.assertEquals(registers['r0'], 0x00000001)
       self.assertEquals(registers['r1'], 0x10000002)
@@ -257,6 +286,8 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r12'], 0xc000000d)
       self.assertEquals(registers['r13'], 0x12345678)
       self.assertEquals(registers['r14'], 0xe000000f)
+      self.assertEquals(registers['cpsr'] & ARM_USER_CPSR_FLAGS_MASK,
+                        (1 << 29) | (1 << 27))
     else:
       raise AssertionError('Unknown architecture')
 
@@ -338,6 +369,7 @@ class DebugStubTest(unittest.TestCase):
         # The process should have stopped on a HLT instruction.
         AssertReplySignal(reply, NACL_SIGSEGV)
 
+      self.CheckTargetXml(connection)
       self.CheckReadRegisters(connection)
       self.CheckWriteRegisters(connection)
       self.CheckReadOnlyRegisters(connection)

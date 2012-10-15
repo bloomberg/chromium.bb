@@ -98,7 +98,7 @@ int TestAbi() {
   int errs = 0;
 
   // TODO(cbiffle) Figure out how to REALLY detect ARM
-  errs += VerifyAbi("iwmmxt", 16);
+  errs += VerifyAbi("iwmmxt", 17);
   errs += VerifyAbi("i386", 16);
   errs += VerifyAbi("i386:x86-64", 24);
 

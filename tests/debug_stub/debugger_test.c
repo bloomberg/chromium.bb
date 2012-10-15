@@ -99,6 +99,7 @@ void set_registers_and_stop() {
   /* stack_ptr's test value must be within the sandbox address space. */
   regs.stack_ptr = 0x12345678;
   regs.lr = 0xe000000f;
+  regs.cpsr = (1 << 29) | (1 << 27); /* C and Q flags */
   ASM_WITH_REGS(&regs, "b fault_addr\n");
 #else
 # error Update set_registers_and_stop for other architectures

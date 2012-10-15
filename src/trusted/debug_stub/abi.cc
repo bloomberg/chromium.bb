@@ -82,7 +82,33 @@ static Abi::RegDef RegsArm[] = {
   MINIDEF(uint32_t, sp, GENERAL),
   MINIDEF(uint32_t, lr, GENERAL),
   MINIDEF(uint32_t, pc, GENERAL),
+  MINIDEF(uint32_t, cpsr, GENERAL),
 };
+
+// Without this XML description, ARM GDB assumes a default register
+// set with floating point registers f0-f7 and fps between pc and
+// cpsr, and GDB queries CPSR via the "p" command for reading a single
+// register.
+static const char XmlArm[] =
+  "<feature name=\"org.gnu.gdb.arm.core\">\n"
+  "  <reg name=\"r0\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r1\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r2\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r3\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r4\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r5\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r6\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r7\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r8\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r9\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r10\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r11\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"r12\" bitsize=\"32\" type=\"uint32\"/>\n"
+  "  <reg name=\"sp\" bitsize=\"32\" type=\"data_ptr\"/>\n"
+  "  <reg name=\"lr\" bitsize=\"32\"/>\n"
+  "  <reg name=\"pc\" bitsize=\"32\" type=\"code_ptr\"/>\n"
+  "  <reg name=\"cpsr\" bitsize=\"32\" regnum=\"25\"/>\n"
+  "</feature>\n";
 
 // Although INT3 is the traditional instruction for a debugger to use
 // as a breakpoint instruction on x86, we use HLT.  This is for two
@@ -122,15 +148,15 @@ static AbiMap_t *GetAbis() {
 static bool AbiInit() {
   Abi::Register("i386",
                 RegsX86_32, sizeof(RegsX86_32), 8 /* eip */,
-                &breakpoint_x86);
+                &breakpoint_x86, "");
   Abi::Register("i386:x86-64",
                 RegsX86_64, sizeof(RegsX86_64), 16 /* rip */,
-                &breakpoint_x86);
+                &breakpoint_x86, "");
 
   // TODO(cbiffle) Figure out how to REALLY detect ARM
   Abi::Register("iwmmxt",
                 RegsArm, sizeof(RegsArm), 15 /* pc */,
-                &breakpoint_arm);
+                &breakpoint_arm, XmlArm);
 
   return true;
 }
@@ -146,7 +172,8 @@ Abi::Abi() {}
 Abi::~Abi() {}
 
 void Abi::Register(const char *name, RegDef *regs,
-                   uint32_t bytes, uint32_t ip, const BPDef *bp) {
+                   uint32_t bytes, uint32_t ip, const BPDef *bp,
+                   const char *target_xml) {
   uint32_t offs = 0;
   const uint32_t cnt = bytes / sizeof(RegDef);
 
@@ -165,6 +192,7 @@ void Abi::Register(const char *name, RegDef *regs,
   abi->ctxSize_ = offs;
   abi->bpDef_ = bp;
   abi->ipIndex_ = ip;
+  abi->target_xml_ = target_xml;
 
   AbiMap_t *abis = GetAbis();
   (*abis)[name] = abi;

@@ -74,10 +74,15 @@ class Abi {
   // Returns a definition of the instruction pointer.
   const RegDef *GetInstPtrDef() const;
 
+  const char *GetTargetXml() const {
+    return target_xml_;
+  }
+
   // Called to assign a set of register definitions to an ABI.
   // This function is non-reentrant.
   static void Register(const char *name, RegDef *defs,
-                       uint32_t cnt, uint32_t ip, const BPDef *bp);
+                       uint32_t cnt, uint32_t ip, const BPDef *bp,
+                       const char *target_xml);
 
   // Called to search the map for a matching Abi by name.
   // This function is reentrant.
@@ -93,6 +98,7 @@ class Abi {
   uint32_t ctxSize_;
   const BPDef *bpDef_;
   uint32_t ipIndex_;
+  const char *target_xml_;
 
  private:
   Abi();
