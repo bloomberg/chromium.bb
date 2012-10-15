@@ -55,12 +55,24 @@ def ArgToList(opt):
   return outlist
 
 
-def IsStale(ts1, ts2, rebuilt=False):
+def GetMTime(filepath):
+  """GetMTime returns the last modification time of the file or None."""
+  try:
+    return os.path.getmtime(filepath)
+  except OSError:
+    return None
+
+
+def IsStale(out_ts, src_ts, rebuilt=False):
+  # If either source or output timestamp was not available, assume stale.
+  if not out_ts or not src_ts:
+    return True
+
   # If just rebuilt timestamps may be equal due to time granularity.
   if rebuilt:
-    return ts1 < ts2
+    return out_ts < src_ts
   # If about to build, be conservative and rebuilt just in case.
-  return ts1 <= ts2
+  return out_ts <= src_ts
 
 
 class Builder(object):
@@ -292,9 +304,9 @@ class Builder(object):
       if rebuilt:
         print 'Could not find output file %s.' % out
       return True
-    out_tm = os.path.getmtime(out)
-    outd_tm = os.path.getmtime(outd)
-    src_tm = os.path.getmtime(src)
+    out_tm = GetMTime(out)
+    outd_tm = GetMTime(outd)
+    src_tm = GetMTime(src)
     if IsStale(out_tm, src_tm, rebuilt):
       if rebuilt:
         print 'Output %s is older than source %s.' % (out, src)
@@ -317,7 +329,7 @@ class Builder(object):
       deps = [self.FixWindowsPath(d) for d in deps]
     # Check if any input has changed.
     for filename in deps:
-      file_tm = os.path.getmtime(filename)
+      file_tm = GetMTime(filename)
       if IsStale(out_tm, file_tm, rebuilt):
         if rebuilt:
           print 'Dependency %s is older than output %s.' % (filename, out)
