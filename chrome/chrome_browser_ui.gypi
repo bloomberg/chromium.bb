@@ -385,6 +385,8 @@
         'browser/ui/cocoa/constrained_window/constrained_window_button.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_control_utils.h',
         'browser/ui/cocoa/constrained_window/constrained_window_control_utils.mm',
+        'browser/ui/cocoa/constrained_window/constrained_window_controller.h',
+        'browser/ui/cocoa/constrained_window/constrained_window_controller.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_custom_window.h',
         'browser/ui/cocoa/constrained_window/constrained_window_custom_window.h',
         'browser/ui/cocoa/constrained_window/constrained_window_custom_window.mm',

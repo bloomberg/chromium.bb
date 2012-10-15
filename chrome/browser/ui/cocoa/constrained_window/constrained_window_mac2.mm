@@ -14,11 +14,9 @@
 #include "content/public/browser/web_contents_view.h"
 
 ConstrainedWindowMac2::ConstrainedWindowMac2(
-    ConstrainedWindowMacDelegate2* delegate,
     content::WebContents* web_contents,
     NSWindow* window)
-    : delegate_(delegate),
-      web_contents_(web_contents),
+    : web_contents_(web_contents),
       window_([window retain]) {
   DCHECK(web_contents);
   DCHECK(window_.get());
@@ -27,9 +25,6 @@ ConstrainedWindowMac2::ConstrainedWindowMac2(
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
   constrained_window_tab_helper->AddConstrainedDialog(this);
-}
-
-ConstrainedWindowMac2::~ConstrainedWindowMac2() {
 }
 
 void ConstrainedWindowMac2::ShowConstrainedWindow() {
@@ -50,8 +45,7 @@ void ConstrainedWindowMac2::CloseConstrainedWindow() {
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
   constrained_window_tab_helper->WillClose(this);
-  if (delegate_)
-    delegate_->OnConstrainedWindowClosed(this);
+  delete this;
 }
 
 void ConstrainedWindowMac2::PulseConstrainedWindow() {
@@ -68,6 +62,9 @@ bool ConstrainedWindowMac2::CanShowConstrainedWindow() {
   if (!browser)
     return true;
   return !browser->window()->IsInstantTabShowing();
+}
+
+ConstrainedWindowMac2::~ConstrainedWindowMac2() {
 }
 
 NSWindow* ConstrainedWindowMac2::GetParentWindow() const {

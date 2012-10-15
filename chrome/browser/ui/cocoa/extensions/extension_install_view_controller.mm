@@ -35,7 +35,6 @@ using extensions::BundleInstaller;
                            children:(NSArray*)children;
 - (NSDictionary*)buildIssue:(const IssueAdviceInfoEntry&)issue;
 - (NSArray*)buildWarnings:(const ExtensionInstallPrompt::Prompt&)prompt;
-- (void)updateViewFrame:(NSRect)frame;
 @end
 
 namespace {
@@ -270,8 +269,10 @@ void DrawBulletInFrame(NSRect frame) {
   // If necessary, adjust the window size.
   if (totalOffset) {
     NSRect currentRect = [[self view] bounds];
-    currentRect.size.height += totalOffset;
-    [self updateViewFrame:currentRect];
+    [[self view] setFrame:NSMakeRect(0,
+                                     0,
+                                     NSWidth(currentRect),
+                                     NSHeight(currentRect) + totalOffset)];
   }
 }
 
@@ -308,9 +309,11 @@ void DrawBulletInFrame(NSRect frame) {
   CGFloat totalOffset = 0.0;
   OffsetOutlineViewVerticallyToFitContent(outlineView_, &totalOffset);
   if (totalOffset) {
-    NSRect currentRect = [[self view] bounds];
+    NSRect currentRect = [[[self view] window] frame];
+    currentRect.origin.y -= totalOffset;
     currentRect.size.height += totalOffset;
-    [self updateViewFrame:currentRect];
+    [[[self view] window] setFrame:currentRect
+                    display:YES];
   }
 }
 
@@ -488,12 +491,6 @@ void DrawBulletInFrame(NSRect frame) {
   }
 
   return warnings;
-}
-
-- (void)updateViewFrame:(NSRect)frame {
-  NSWindow* window = [[self view] window];
-  [window setFrame:[window frameRectForContentRect:frame] display:YES];
-  [[self view] setFrame:frame];
 }
 
 @end

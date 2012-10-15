@@ -35,8 +35,8 @@
 - (void)showSheet:(NSWindow*)sheet
     forParentView:(NSView*)parentView;
 
-// Calculates the position of the sheet for the given window size.
-- (NSPoint)originForSheet:(NSWindow*)sheet withWindowSize:(NSSize)size;
+// Resize the given sheet.
+- (void)setSheet:(NSWindow*)sheet windowSize:(NSSize)size;
 
 // Closes the given sheet. If the parent view of the sheet is currently active
 // then an asynchronous animation will be run and the sheet will be closed

@@ -11,9 +11,8 @@ class ConstrainedWindowCustomWindowTest : public CocoaTest {
 
 // Simply test creating and drawing the window.
 TEST_F(ConstrainedWindowCustomWindowTest, Basic) {
-  scoped_nsobject<ConstrainedWindowCustomWindow> window(
-      [[ConstrainedWindowCustomWindow alloc]
-          initWithContentRect:NSMakeRect(0, 0, 10, 10)]);
+  ConstrainedWindowCustomWindow* window = [[ConstrainedWindowCustomWindow alloc]
+      initWithContentRect:NSMakeRect(0, 0, 10, 10)];
   EXPECT_TRUE([window canBecomeKeyWindow]);
   EXPECT_FALSE([window canBecomeMainWindow]);
 

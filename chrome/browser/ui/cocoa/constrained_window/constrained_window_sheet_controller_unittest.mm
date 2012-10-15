@@ -178,12 +178,14 @@ TEST_F(ConstrainedWindowSheetControllerTest, Resize) {
   [controller showSheet:sheet_ forParentView:active_tab_view_];
 
   NSRect old_frame = [sheet_ frame];
+  NSSize desired_size = NSMakeSize(NSWidth(old_frame) + 100,
+                                   NSHeight(old_frame) + 50);
+  [controller setSheet:sheet_
+            windowSize:desired_size];
 
-  NSRect sheet_frame;
-  sheet_frame.size = NSMakeSize(NSWidth(old_frame) + 100,
-                                NSHeight(old_frame) + 50);
-  sheet_frame.origin = [controller originForSheet:sheet_
-                                   withWindowSize:sheet_frame.size];
+  NSRect sheet_frame = [sheet_ frame];
+  EXPECT_EQ(NSWidth(sheet_frame), desired_size.width);
+  EXPECT_EQ(NSHeight(sheet_frame), desired_size.height);
 
   // Y pos should not have changed.
   EXPECT_EQ(NSMaxY(sheet_frame), NSMaxY(old_frame));

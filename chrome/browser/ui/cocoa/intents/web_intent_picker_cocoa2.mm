@@ -9,10 +9,9 @@
 #include "base/mac/foundation_util.h"
 #include "base/message_loop.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_controller.h"
 #import "chrome/browser/ui/cocoa/intents/web_intent_picker_view_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 WebIntentPickerCocoa2::WebIntentPickerCocoa2(content::WebContents* web_contents,
@@ -25,14 +24,10 @@ WebIntentPickerCocoa2::WebIntentPickerCocoa2(content::WebContents* web_contents,
 
   view_controller_.reset(
       [[WebIntentPickerViewController alloc] initWithPicker:this]);
-
-  scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
-      initWithContentRect:[[view_controller_ view] bounds]]);
-  [[window contentView] addSubview:[view_controller_ view]];
-
-  constrained_window_.reset(new ConstrainedWindowMac2(
-      this, web_contents, window));
-
+  // TODO(sail) Support bubble window as well.
+  window_controller_.reset([[ConstrainedWindowController alloc]
+      initWithParentWebContents:web_contents
+                   embeddedView:[view_controller_ view]]);
   [view_controller_ update];
 }
 
@@ -40,7 +35,13 @@ WebIntentPickerCocoa2::~WebIntentPickerCocoa2() {
 }
 
 void WebIntentPickerCocoa2::Close() {
-  constrained_window_->CloseConstrainedWindow();
+  // After the OnClosing call the model may be deleted so unset this reference.
+  model_->set_observer(NULL);
+  model_ = NULL;
+
+  [window_controller_ close];
+  delegate_->OnClosing();
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void WebIntentPickerCocoa2::SetActionString(const string16& action) {
@@ -76,7 +77,7 @@ void WebIntentPickerCocoa2::OnInlineDispositionHandleKeyboardEvent(
   }
   ChromeEventProcessingWindow* window =
       base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(
-          constrained_window_->GetNativeWindow());
+          [window_controller_ window]);
   [window redispatchKeyEvent:event.os_event];
 }
 
@@ -111,14 +112,4 @@ void WebIntentPickerCocoa2::OnExtensionIconChanged(
 void WebIntentPickerCocoa2::OnInlineDisposition(const string16& title,
                                                 const GURL& url) {
   [view_controller_ update];
-}
-
-void WebIntentPickerCocoa2::OnConstrainedWindowClosed(
-    ConstrainedWindowMac2* window) {
-  // After the OnClosing call the model may be deleted so unset this reference.
-  model_->set_observer(NULL);
-  model_ = NULL;
-
-  delegate_->OnClosing();
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
