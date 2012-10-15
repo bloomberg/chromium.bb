@@ -161,9 +161,16 @@ DirectoryContents.prototype.isSearch = function() {
 
 /**
  * @return {DirectoryEntry} A DirectoryEntry for current directory. In case of
- *     search -- the top directory from which search is run
+ *     search -- the top directory from which search is run.
  */
 DirectoryContents.prototype.getDirectoryEntry = function() {
+  throw 'Not implemented.';
+};
+
+/**
+ * @return {DirectoryEntry} A DirectoryEntry for the last non search contents.
+ */
+DirectoryContents.prototype.getLastNonSearchDirectoryEntry = function() {
   throw 'Not implemented.';
 };
 
@@ -310,9 +317,16 @@ DirectoryContentsBasic.prototype.getPath = function() {
 };
 
 /**
- * @return {DirectoryEntry?} DirectoryEntry of the current directory.
+ * @return {DirectoryEntry} DirectoryEntry of the current directory.
  */
 DirectoryContentsBasic.prototype.getDirectoryEntry = function() {
+  return this.entry_;
+};
+
+/**
+ * @return {DirectoryEntry} DirectoryEntry for the currnet entry.
+ */
+DirectoryContentsBasic.prototype.getLastNonSearchDirectoryEntry = function() {
   return this.entry_;
 };
 
@@ -397,12 +411,18 @@ DirectoryContentsGDataSearch.MAX_RESULTS = 999;
  * @extends {DirectoryContents}
  * @param {FileListContext} context File list context.
  * @param {DirectoryEntry} dirEntry Current directory.
+ * @param {DirectoryEntry} previousDirEntry DirectoryEntry that was current
+ *     before the search.
  * @param {string} query Search query.
  */
-function DirectoryContentsGDataSearch(context, dirEntry, query) {
+function DirectoryContentsGDataSearch(context,
+                                      dirEntry,
+                                      previousDirEntry,
+                                      query) {
   DirectoryContents.call(this, context);
   this.query_ = query;
   this.directoryEntry_ = dirEntry;
+  this.previousDirectoryEntry_ = previousDirEntry;
   this.nextFeed_ = '';
   this.done_ = false;
   this.fetchedResultsNum_ = 0;
@@ -430,10 +450,20 @@ DirectoryContentsGDataSearch.prototype.isSearch = function() {
 };
 
 /**
- * @return {DirectoryEntry} DirectoryEntry for current directory.
+ * @return {DirectoryEntry} A DirectoryEntry for the top directory from which
+ *     search is run (i.e. drive root).
  */
 DirectoryContentsGDataSearch.prototype.getDirectoryEntry = function() {
   return this.directoryEntry_;
+};
+
+/**
+ * @return {DirectoryEntry} DirectoryEntry for the directory that was current
+ *     before the search.
+ */
+DirectoryContentsGDataSearch.prototype.getLastNonSearchDirectoryEntry =
+    function() {
+  return this.previousDirectoryEntry_;
 };
 
 /**
@@ -529,10 +559,19 @@ DirectoryContentsLocalSearch.prototype.isSearch = function() {
 };
 
 /**
- * @return {DirectoryEntry} A DirectoryEntry for current directory. In case of
- *     search -- the top directory from which search is run
+ * @return {DirectoryEntry} A DirectoryEntry for the top directory from which
+ *     search is run.
  */
 DirectoryContentsLocalSearch.prototype.getDirectoryEntry = function() {
+  return this.directoryEntry_;
+};
+
+/**
+ * @return {DirectoryEntry} DirectoryEntry for current directory (the search is
+ *     run from the directory that was current before search).
+ */
+DirectoryContentsLocalSearch.prototype.getLastNonSearchDirectoryEntry =
+    function() {
   return this.directoryEntry_;
 };
 

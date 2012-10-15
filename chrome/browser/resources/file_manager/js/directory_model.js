@@ -1176,25 +1176,18 @@ DirectoryModel.prototype.search = function(query,
                                            onClearSearch) {
   query = query.trimLeft();
 
+  this.clearSearch_();
+
   var newDirContents;
   if (!query) {
     if (this.isSearching()) {
       newDirContents = new DirectoryContentsBasic(
           this.currentFileListContext_,
-          this.currentDirContents_.getDirectoryEntry());
+          this.currentDirContents_.getLastNonSearchDirectoryEntry());
       this.clearAndScan_(newDirContents);
-      this.clearSearch_();
     }
     return;
   }
-
-  // If we already have event listener for an old search, we have to remove it.
-  if (this.onSearchCompleted_)
-    this.removeEventListener('scan-completed', this.onSearchCompleted_);
-
-  // Current search will be cancelled.
-  if (this.onClearSearch_)
-    this.onClearSearch_();
 
   this.onSearchCompleted_ = onSearchRescan;
   this.onClearSearch_ = onClearSearch;
@@ -1203,8 +1196,13 @@ DirectoryModel.prototype.search = function(query,
 
   // If we are offline, let's fallback to file name search inside dir.
   if (this.getCurrentRootType() === RootType.GDATA && !this.isOffline()) {
+    // GData search is performed over the whole drive, so pass drive root as
+    // |directoryEntry|.
     newDirContents = new DirectoryContentsGDataSearch(
-        this.currentFileListContext_, this.getCurrentDirEntry(), query);
+        this.currentFileListContext_,
+        this.getSelectedRootDirEntry_(),
+        this.currentDirContents_.getLastNonSearchDirectoryEntry(),
+        query);
   } else {
     newDirContents = new DirectoryContentsLocalSearch(
         this.currentFileListContext_, this.getCurrentDirEntry(), query);

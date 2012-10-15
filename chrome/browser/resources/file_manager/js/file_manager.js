@@ -419,7 +419,7 @@ FileManager.prototype = {
       self.restoreItemBeingRenamed_();
       self.currentList_.endBatchUpdates();
     });
-    dm.addEventListener('scan-started', this.showSpinnerLater_.bind(this));
+    dm.addEventListener('scan-started', this.onScanStarted_.bind(this));
     dm.addEventListener('scan-completed', this.showSpinner_.bind(this, false));
     dm.addEventListener('scan-cancelled', this.hideSpinnerLater_.bind(this));
     dm.addEventListener('scan-completed',
@@ -2935,9 +2935,6 @@ FileManager.prototype = {
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
     this.updateOkButton_();
-    this.breadcrumbs_.update(
-        this.directoryModel_.getCurrentRootPath(),
-        this.directoryModel_.getCurrentDirPath());
     this.updateColumnModel_();
     this.updateSearchBoxOnDirChange_();
 
@@ -3123,17 +3120,21 @@ FileManager.prototype = {
     }, 0);
   };
 
+  FileManager.prototype.onScanStarted_ = function() {
+    this.breadcrumbs_.update(
+        this.directoryModel_.getCurrentRootPath(),
+        this.directoryModel_.getCurrentDirPath());
+
+    this.cancelSpinnerTimeout_();
+    this.showSpinnerTimeout_ =
+        setTimeout(this.showSpinner_.bind(this, true), 500);
+  };
+
   FileManager.prototype.cancelSpinnerTimeout_ = function() {
     if (this.showSpinnerTimeout_) {
       clearTimeout(this.showSpinnerTimeout_);
       this.showSpinnerTimeout_ = null;
     }
-  };
-
-  FileManager.prototype.showSpinnerLater_ = function() {
-    this.cancelSpinnerTimeout_();
-    this.showSpinnerTimeout_ =
-        setTimeout(this.showSpinner_.bind(this, true), 500);
   };
 
   FileManager.prototype.hideSpinnerLater_ = function() {

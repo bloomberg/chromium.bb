@@ -10,6 +10,8 @@
 function BreadcrumbsController(div) {
   this.bc_ = div;
   this.hideLast_ = false;
+  this.rootPath_ = null;
+  this.path_ = null;
   div.addEventListener('click', this.onClick_.bind(this));
 }
 
@@ -32,8 +34,12 @@ BreadcrumbsController.prototype.setHideLast = function(value) {
  * @param {string} path Path to directory.
  */
 BreadcrumbsController.prototype.update = function(rootPath, path) {
+  if (path == this.path_)
+    return;
+
   this.bc_.textContent = '';
   this.rootPath_ = rootPath;
+  this.path_ = path;
 
   var relativePath = path.substring(rootPath.length).replace(/\/$/, '');
   var pathNames = relativePath.split('/');
