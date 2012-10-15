@@ -530,10 +530,6 @@ const char kDefaultAppsInstallState[] = "default_apps_install_state";
 // when the policy is lifted the original mute state is restored.
 const char kAudioMute[] = "settings.audio.mute";
 
-// TODO(derat): This is deprecated in favor of |kAudioVolumePercent|; remove it
-// after R20 once we've cleared old user settings: http://crbug.com/112039
-const char kAudioVolumeDb[] = "settings.audio.volume";
-
 // A double pref storing the user-requested volume.
 const char kAudioVolumePercent[] = "settings.audio.volume_percent";
 

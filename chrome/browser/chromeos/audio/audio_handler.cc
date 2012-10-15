@@ -89,15 +89,6 @@ void AudioHandler::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(prefs::kAudioCaptureAllowed,
                                    true,
                                    PrefService::UNSYNCABLE_PREF);
-
-  // Register the old decibel-based pref so we can clear it.
-  // TODO(derat): Remove this after R20: http://crbug.com/112039
-  if (!local_state->FindPreference(prefs::kAudioVolumeDb))
-    local_state->RegisterDoublePref(prefs::kAudioVolumeDb,
-                                    0,
-                                    PrefService::UNSYNCABLE_PREF);
-  local_state->ClearPref(prefs::kAudioVolumeDb);
-  local_state->UnregisterPreference(prefs::kAudioVolumeDb);
 }
 
 double AudioHandler::GetVolumePercent() {
