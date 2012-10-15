@@ -13,22 +13,33 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
-#include "webkit/fileapi/syncable/local_file_change_tracker.h"
+#include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
+#include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
 
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
   LocalFileChangeTrackerTest()
-    : file_system_(GURL("http://example.com"), "test") {}
+    : file_system_(GURL("http://example.com"), "test",
+                   base::MessageLoopProxy::current()) {}
 
   virtual void SetUp() OVERRIDE {
     file_system_.SetUp();
+
+    sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
+                                             base::MessageLoopProxy::current());
+    ASSERT_EQ(SYNC_STATUS_OK,
+              file_system_.MaybeInitializeFileSystemContext(sync_context_));
   }
 
   virtual void TearDown() OVERRIDE {
+    if (sync_context_)
+      sync_context_->ShutdownOnUIThread();
+    sync_context_ = NULL;
+
     message_loop_.RunAllPending();
     file_system_.TearDown();
     // Make sure we don't leave the external filesystem.
@@ -38,15 +49,6 @@ class LocalFileChangeTrackerTest : public testing::Test {
   }
 
  protected:
-  void RegisterChangeTracker() {
-    scoped_ptr<LocalFileChangeTracker> tracker(
-        new LocalFileChangeTracker(
-            file_system_context()->partition_path(),
-            file_system_context()->task_runners()->file_task_runner()));
-    ASSERT_EQ(tracker->Initialize(file_system_context()), SYNC_STATUS_OK);
-    file_system_context()->SetLocalFileChangeTracker(tracker.Pass());
-  }
-
   FileSystemURL URL(const std::string& path) {
     return file_system_.URL(path);
   }
@@ -86,14 +88,12 @@ class LocalFileChangeTrackerTest : public testing::Test {
   MessageLoop message_loop_;
 
   CannedSyncableFileSystem file_system_;
+  scoped_refptr<LocalFileSyncContext> sync_context_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileChangeTrackerTest);
 };
 
 TEST_F(LocalFileChangeTrackerTest, GetChanges) {
-  // Register a new change tracker (before opening a file system).
-  RegisterChangeTracker();
-
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.OpenFileSystem());
 
@@ -148,9 +148,6 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
 }
 
 TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
-  // Register a new change tracker (before opening a file system).
-  RegisterChangeTracker();
-
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.OpenFileSystem());
 
@@ -238,9 +235,6 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
 }
 
 TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
-  // Register a new change tracker (before opening a file system).
-  RegisterChangeTracker();
-
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.OpenFileSystem());
 
@@ -329,9 +323,6 @@ TEST_F(LocalFileChangeTrackerTest, RestoreRemoveChanges) {
 }
 
 TEST_F(LocalFileChangeTrackerTest, RestoreMoveChanges) {
-  // Register a new change tracker (before opening a file system).
-  RegisterChangeTracker();
-
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.OpenFileSystem());
 

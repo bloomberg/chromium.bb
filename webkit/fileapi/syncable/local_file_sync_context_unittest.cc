@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
@@ -17,13 +19,17 @@
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
+// This tests SyncableContext behavior in multi-thread /
+// multi-file-system-context environment.
+// Basic combined tests (single-thread / single-file-system-context)
+// that involve SyncableContext are also in syncable_file_system_unittests.cc.
+
 namespace fileapi {
 
 namespace {
 const char kOrigin1[] = "http://example.com";
 const char kOrigin2[] = "http://chromium.org";
 const char kServiceName[] = "test";
-const FileSystemType kSyncableType = kFileSystemTypeSyncable;
 }
 
 class LocalFileSyncContextTest : public testing::Test {
@@ -71,7 +77,8 @@ TEST_F(LocalFileSyncContextTest, ConstructAndDestruct) {
 }
 
 TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
-  CannedSyncableFileSystem file_system(GURL(kOrigin1), kServiceName);
+  CannedSyncableFileSystem file_system(GURL(kOrigin1), kServiceName,
+                                       io_task_runner_);
   file_system.SetUp();
 
   sync_context_ = new LocalFileSyncContext(ui_task_runner_, io_task_runner_);
@@ -111,8 +118,10 @@ TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
 }
 
 TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
-  CannedSyncableFileSystem file_system1(GURL(kOrigin1), kServiceName);
-  CannedSyncableFileSystem file_system2(GURL(kOrigin2), kServiceName);
+  CannedSyncableFileSystem file_system1(GURL(kOrigin1), kServiceName,
+                                        io_task_runner_);
+  CannedSyncableFileSystem file_system2(GURL(kOrigin2), kServiceName,
+                                        io_task_runner_);
   file_system1.SetUp();
   file_system2.SetUp();
 
@@ -160,6 +169,7 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   EXPECT_EQ(kURL2, urls[0]);
 
   sync_context_->ShutdownOnUIThread();
+  sync_context_ = NULL;
 
   file_system1.TearDown();
   file_system2.TearDown();

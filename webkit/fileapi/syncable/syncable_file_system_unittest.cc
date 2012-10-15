@@ -9,8 +9,9 @@
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
-#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
+#include "webkit/fileapi/syncable/local_file_sync_context.h"
+#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 
@@ -23,7 +24,8 @@ namespace fileapi {
 class SyncableFileSystemTest : public testing::Test {
  public:
   SyncableFileSystemTest()
-      : file_system_(GURL("http://example.com/"), "test"),
+      : file_system_(GURL("http://example.com/"), "test",
+                     base::MessageLoopProxy::current()),
         quota_status_(quota::kQuotaStatusUnknown),
         usage_(-1),
         quota_(-1),
@@ -31,9 +33,18 @@ class SyncableFileSystemTest : public testing::Test {
 
   void SetUp() {
     file_system_.SetUp();
+
+    sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
+                                             base::MessageLoopProxy::current());
+    ASSERT_EQ(SYNC_STATUS_OK,
+              file_system_.MaybeInitializeFileSystemContext(sync_context_));
   }
 
   void TearDown() {
+    if (sync_context_)
+      sync_context_->ShutdownOnUIThread();
+    sync_context_ = NULL;
+
     file_system_.TearDown();
 
     // Make sure we don't leave the external filesystem.
@@ -62,15 +73,6 @@ class SyncableFileSystemTest : public testing::Test {
       *usage = usage_;
     if (quota)
       *quota = quota_;
-  }
-
-  void RegisterChangeTracker() {
-    scoped_ptr<LocalFileChangeTracker> tracker(
-        new LocalFileChangeTracker(
-            file_system_context()->partition_path(),
-            file_system_context()->task_runners()->file_task_runner()));
-    ASSERT_EQ(tracker->Initialize(file_system_context()), SYNC_STATUS_OK);
-    file_system_context()->SetLocalFileChangeTracker(tracker.Pass());
   }
 
   void VerifyAndClearChange(const FileSystemURL& url,
@@ -105,6 +107,7 @@ class SyncableFileSystemTest : public testing::Test {
   MessageLoop message_loop_;
 
   CannedSyncableFileSystem file_system_;
+  scoped_refptr<LocalFileSyncContext> sync_context_;
 
   QuotaStatusCode quota_status_;
   int64 usage_;
@@ -174,9 +177,6 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
 
 // Combined testing with LocalFileChangeTracker.
 TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
-  // Register a new change tracker (before opening a file system).
-  RegisterChangeTracker();
-
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.OpenFileSystem());
 
