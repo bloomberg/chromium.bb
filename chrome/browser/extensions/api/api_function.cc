@@ -12,6 +12,29 @@ using content::BrowserThread;
 
 namespace extensions {
 
+ApiFunction::ApiFunction() {
+}
+
+ApiFunction::~ApiFunction() {
+}
+
+int ApiFunction::ExtractSrcId(const DictionaryValue* options) {
+  int src_id = -1;
+  if (options) {
+    if (options->HasKey(kSrcIdKey))
+      EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSrcIdKey, &src_id));
+  }
+  return src_id;
+}
+
+ApiResourceEventNotifier* ApiFunction::CreateEventNotifier(int src_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return new ApiResourceEventNotifier(
+      profile()->GetExtensionEventRouter(), profile(), extension_id(),
+      src_id, source_url());
+}
+
+// AsyncApiFunction
 AsyncApiFunction::AsyncApiFunction()
     : work_thread_id_(BrowserThread::IO) {
 }
@@ -67,22 +90,6 @@ void AsyncApiFunction::WorkOnWorkThread() {
 void AsyncApiFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SendResponse(Respond());
-}
-
-int AsyncApiFunction::ExtractSrcId(const DictionaryValue* options) {
-  int src_id = -1;
-  if (options) {
-    if (options->HasKey(kSrcIdKey))
-      EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSrcIdKey, &src_id));
-  }
-  return src_id;
-}
-
-ApiResourceEventNotifier* AsyncApiFunction::CreateEventNotifier(int src_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return new ApiResourceEventNotifier(
-      profile()->GetExtensionEventRouter(), profile(), extension_id(),
-      src_id, source_url());
 }
 
 }  // namespace extensions

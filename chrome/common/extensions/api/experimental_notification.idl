@@ -4,13 +4,17 @@
 
 [nodoc] namespace experimental.notification {
   dictionary ShowOptions {
-    DOMString text;
+    DOMString iconUrl;
+    DOMString title;
+    DOMString message;
+    DOMString replaceId;
 
     // Used for internal event routing. Do not set or rely on its value.
     [nodoc] long? srcId;
   };
 
   dictionary ShowInfo {
+    boolean result;
   };
 
   callback ShowCallback = void (ShowInfo showInfo);

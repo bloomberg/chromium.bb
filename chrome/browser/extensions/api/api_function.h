@@ -12,9 +12,22 @@ namespace extensions {
 
 class ApiResourceEventNotifier;
 
+class ApiFunction : public UIThreadExtensionFunction {
+ protected:
+  ApiFunction();
+  virtual ~ApiFunction();
+
+  // Looks for a kSrcId key that might have been added to a create method's
+  // options object.
+  int ExtractSrcId(const DictionaryValue* options);
+
+  // Utility.
+  ApiResourceEventNotifier* CreateEventNotifier(int src_id);
+};
+
 // AsyncApiFunction provides convenient thread management for APIs that need to
 // do essentially all their work on a thread other than the UI thread.
-class AsyncApiFunction : public AsyncExtensionFunction {
+class AsyncApiFunction : public ApiFunction {
  protected:
   AsyncApiFunction();
   virtual ~AsyncApiFunction();
@@ -39,13 +52,6 @@ class AsyncApiFunction : public AsyncExtensionFunction {
 
   // Respond. Guaranteed to happen on UI thread.
   virtual bool Respond() = 0;
-
-  // Looks for a kSrcId key that might have been added to a create method's
-  // options object.
-  int ExtractSrcId(const DictionaryValue* options);
-
-  // Utility.
-  ApiResourceEventNotifier* CreateEventNotifier(int src_id);
 
   // ExtensionFunction::RunImpl()
   virtual bool RunImpl() OVERRIDE;

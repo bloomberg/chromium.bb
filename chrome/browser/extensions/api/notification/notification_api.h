@@ -15,22 +15,24 @@
 
 namespace extensions {
 
-class NotificationShowFunction : public AsyncApiFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("notification.show")
+class ApiResourceEventNotifier;
 
+class NotificationShowFunction : public ApiFunction {
+ public:
   NotificationShowFunction();
 
-  // AsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  // UIThreadExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   virtual ~NotificationShowFunction();
 
  private:
   scoped_ptr<api::experimental_notification::Show::Params> params_;
+  int src_id_;
+  ApiResourceEventNotifier* event_notifier_;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.notification.show")
 };
 
 }  // namespace extensions
