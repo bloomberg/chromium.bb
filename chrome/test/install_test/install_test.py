@@ -60,6 +60,8 @@ def MakeTempDir(parent_dir=None):
         os.remove(filename)
       for name in dirs:
         os.rmdir(os.path.join(root, name))
+    # Delete parent directory after its contents have been removed.
+    os.rmdir(path)
   atexit.register(DeleteDir)
   return path
 
@@ -78,9 +80,11 @@ class InstallTest(unittest.TestCase):
   class SampleUpdater(InstallTest):
 
     def testCanOpenGoogle(self):
+      self.StartChrome()
       self._driver.get('http://www.google.com/')
       self.UpdateBuild()
-      self._driver.get('http://www.msn.com/')
+      self.StartChrome()
+      self._driver.get('http://www.google.org/')
 
   Include the following in your updater test script to make it run standalone.
 
@@ -105,14 +109,14 @@ class InstallTest(unittest.TestCase):
     current_version = chrome_installer_win.ChromeInstallation.GetCurrent()
     if current_version:
       current_version.Uninstall()
-    self._install_type = ('system-level' in self._installer_options and
+    self._install_type = ('--system-level' in self._installer_options and
                           chrome_installer_win.InstallationType.SYSTEM or
                           chrome_installer_win.InstallationType.USER)
 
   def setUp(self):
     """Called before each unittest to prepare the test fixture."""
     self._InstallNext()
-    self._StartChromeDriver()
+    self._StartService()
 
   def tearDown(self):
     """Called at the end of each unittest to do any test related cleanup."""
@@ -120,13 +124,19 @@ class InstallTest(unittest.TestCase):
     self._service.stop()
     self._installation.Uninstall()
 
-  def _StartChromeDriver(self):
-    """Starts ChromeDriver."""
+  def _StartService(self):
+    """Starts ChromeDriver service."""
     self._service = service.Service(InstallTest._chrome_driver)
     self._service.start()
-    self._driver = webdriver.Remote(
-        self._service.service_url,
-        {'chrome.binary' : self._installation.GetExePath()}
+
+  def StartChrome(self, caps={}):
+    """Creates a ChromeDriver instance.
+
+    Args:
+      caps: A dictionary representing the capabilities that will be passed to
+          ChromeDriver.
+    """
+    self._driver = webdriver.Remote(self._service.service_url, caps)
 
   def _InstallNext(self):
     """Helper method that installs Chrome."""
@@ -141,8 +151,6 @@ class InstallTest(unittest.TestCase):
     """Updates Chrome by installing a newer version."""
     self._driver.quit()
     self._InstallNext()
-    self._driver = webdriver.Remote(self._service.service_url,
-                                    self._capabilities)
 
   @staticmethod
   def _Download(url, path):

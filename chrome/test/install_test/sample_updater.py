@@ -28,8 +28,10 @@ class SampleUpdater(InstallTest):
 
   def testCanOpenGoogle(self):
     """Simple Navigation."""
+    self.StartChrome()
     self._driver.get('http://www.google.com/')
     self.UpdateBuild()
+    self.StartChrome()
     self._driver.get('http://www.google.org/')
 
 
