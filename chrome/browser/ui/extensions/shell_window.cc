@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/extensions/shell_window.h"
 
-#include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
@@ -56,7 +54,6 @@ using extensions::APIPermission;
 namespace {
 const int kDefaultWidth = 512;
 const int kDefaultHeight = 384;
-static content::WebContentsDelegate* url_controller_for_test_ = NULL;
 
 void SuspendRenderViewHost(RenderViewHost* rvh) {
   DCHECK(rvh);
@@ -67,51 +64,6 @@ void SuspendRenderViewHost(RenderViewHost* rvh) {
 }
 
 }  // namespace
-
-// ExternalUrlController is a singleton class for link navigation.
-// It helps to open URL in system default browser.
-class ExternalUrlController : public content::WebContentsDelegate {
- public:
-  static ExternalUrlController* GetInstance();
-
- private:
-  ExternalUrlController() {}
-  friend struct DefaultSingletonTraits<ExternalUrlController>;
-
-  // content::WebContentsDelegate implementation.
-  virtual content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(ExternalUrlController);
-};
-
-// static
-ExternalUrlController* ExternalUrlController::GetInstance() {
-  return Singleton<ExternalUrlController>::get();
-}
-
-content::WebContents* ExternalUrlController::OpenURLFromTab(
-    content::WebContents* source,
-    const content::OpenURLParams& params) {
-  // Delete useless web content first to
-  // avoid a potential leak in a render process host.
-  delete source;
-
-#if defined(OS_MACOSX)
-  // This must run on the UI thread on OS X.
-  platform_util::OpenExternal(params.url);
-#else
-  // Otherwise put this work on the file thread. On Windows ShellExecute may
-  // block for a significant amount of time, and it shouldn't hurt on Linux.
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&platform_util::OpenExternal, params.url));
-#endif
-
-  return NULL;
-}
 
 ShellWindow::CreateParams::CreateParams()
   : frame(ShellWindow::CreateParams::FRAME_CHROME),
@@ -322,13 +274,6 @@ void ShellWindow::AddNewContents(WebContents* source,
   DCHECK(source == web_contents_);
   DCHECK(Profile::FromBrowserContext(new_contents->GetBrowserContext()) ==
       profile_);
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  if (url_controller_for_test_)
-    new_contents->SetDelegate(url_controller_for_test_);
-  else
-    new_contents->SetDelegate(ExternalUrlController::GetInstance());
-#else
   Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
   // Force all links to open in a new tab, even if they were trying to open a
   // new window.
@@ -336,7 +281,6 @@ void ShellWindow::AddNewContents(WebContents* source,
       disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
   chrome::AddWebContents(browser, NULL, new_contents, disposition, initial_pos,
                          user_gesture, was_blocked);
-#endif
 }
 
 void ShellWindow::HandleKeyboardEvent(
@@ -544,9 +488,4 @@ void ShellWindow::SaveWindowPosition()
 
   gfx::Rect bounds = native_window_->GetBounds();
   cache->SaveGeometry(extension()->id(), window_key_, bounds);
-}
-
-void ShellWindow::SetExternalUrlControllerForTesting(
-    content::WebContentsDelegate* controller) {
-  url_controller_for_test_ = controller;
 }

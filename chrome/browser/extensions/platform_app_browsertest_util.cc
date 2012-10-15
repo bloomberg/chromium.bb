@@ -10,8 +10,6 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,42 +22,6 @@ namespace utils = extension_function_test_utils;
 
 namespace extensions {
 
-MockExternalUrlController::MockExternalUrlController() {
-}
-
-MockExternalUrlController::~MockExternalUrlController() {
-}
-
-content::WebContents* MockExternalUrlController::OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) {
-  // Delete useless web content first to
-  // avoid a potential leak in a render process host.
-  delete source;
-
-  // Force to open in a new tab.
-  WindowOpenDisposition disposition = params.disposition;
-  content::OpenURLParams new_tab_params = params;
-  new_tab_params.disposition =
-      disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-      i != BrowserList::end(); ++i) {
-    if ((*i)->is_type_tabbed()) {
-      Browser* browser = *i;
-      content::WebContents* new_tab = browser->OpenURL(new_tab_params);
-      browser->window()->Show();
-      return new_tab;
-    }
-  }
-  return NULL;
-}
-
-PlatformAppBrowserTest::PlatformAppBrowserTest() {
-}
-
-PlatformAppBrowserTest::~PlatformAppBrowserTest() {
-}
-
 void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
@@ -67,12 +29,6 @@ void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   // Make event pages get suspended quicker.
   command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
   command_line->AppendSwitchASCII(switches::kEventPageUnloadingTime, "1");
-}
-
-void PlatformAppBrowserTest::SetUpOnMainThread() {
-  mock_external_url_controller_.reset(new MockExternalUrlController());
-  ShellWindow::SetExternalUrlControllerForTesting(
-      mock_external_url_controller_.get());
 }
 
 const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
