@@ -779,15 +779,19 @@ html[oobe=old] .step-controls {
   visibility: hidden;
 }
 
+/* Center spinner wrapper vertically and horizontally.
+ * Vertical centering uses top: 50% and negative margin
+ * instead of top: 0; bottom: 0 due to http://crbug.com/155320.
+ */
 .step-loading {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  bottom: 0;
   display: -webkit-box;
   left: 0;
+  margin-top: -16px;
   position: absolute;
   right: 0;
-  top: 0;
+  top: 50%;
 }
 
 .step-loading .spinner {
