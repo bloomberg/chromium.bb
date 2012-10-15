@@ -21,6 +21,7 @@
 namespace {
 
 const char kAllAutoDetectedString[] = "allAutoDetected";
+const char kAllAutoDetectedAliasString[] = "all-auto-detected";
 const char kReadString[] = "read";
 const char kInvalidString[] = "invalid";
 
@@ -55,6 +56,8 @@ bool MediaGalleriesPermission::HasAllGalleriesAccess(
 MediaGalleriesPermission::PermissionTypes
 MediaGalleriesPermission::PermissionStringToType(const std::string& str) {
   if (str == kAllAutoDetectedString)
+    return kAllAutoDetected;
+  if (str == kAllAutoDetectedAliasString)
     return kAllAutoDetected;
   if (str == kReadString)
     return kRead;
