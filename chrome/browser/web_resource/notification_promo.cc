@@ -122,95 +122,6 @@ const char* PromoTypeToString(NotificationPromo::PromoType promo_type) {
   return "";
 }
 
-// TODO(achuith): http://crbug.com/143773 remove this by m24
-void ClearDeprecatedPrefs(PrefService* prefs) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  const char kNtpPromoLineLong[] = "ntp.promo_line_long";
-  const char kNtpPromoActionType[] = "ntp.promo_action_type";
-  const char kNtpPromoActionArgs[] = "ntp.promo_action_args";
-  prefs->RegisterStringPref(kNtpPromoLineLong,
-                            std::string(),
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(kNtpPromoActionType,
-                            std::string(),
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(kNtpPromoActionArgs,
-                          new base::ListValue,
-                          PrefService::UNSYNCABLE_PREF);
-  prefs->ClearPref(kNtpPromoLineLong);
-  prefs->ClearPref(kNtpPromoActionType);
-  prefs->ClearPref(kNtpPromoActionArgs);
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
-  const char kNtpPromoLine[] = "ntp.promo_line";
-  const char kNtpPromoStart[] = "ntp.promo_start";
-  const char kNtpPromoEnd[] = "ntp.promo_end";
-  const char kNtpPromoNumGroups[] = "ntp.promo_num_groups";
-  const char kNtpPromoInitialSegment[] = "ntp.promo_initial_segment";
-  const char kNtpPromoIncrement[] = "ntp.promo_increment";
-  const char kNtpPromoGroupTimeSlice[] = "ntp.promo_group_timeslice";
-  const char kNtpPromoGroupMax[] = "ntp.promo_group_max";
-  const char kNtpPromoClosed[] = "ntp.promo_closed";
-  const char kNtpPromoGroup[] = "ntp.promo_group";
-  const char kNtpPromoViews[] = "ntp.promo_views";
-  const char kNtpPromoViewsMax[] = "ntp.promo_views_max";
-  const char kNtpPromoGplusRequired[] = "ntp.gplus_required";
-
-  prefs->RegisterStringPref(kNtpPromoLine,
-                            std::string(),
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(kNtpPromoStart,
-                            0,
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(kNtpPromoEnd,
-                            0,
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(kNtpPromoNumGroups,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(kNtpPromoInitialSegment,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(kNtpPromoIncrement,
-                             1,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(kNtpPromoGroupTimeSlice,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(kNtpPromoGroupMax,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(kNtpPromoViewsMax,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(kNtpPromoGroup,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(kNtpPromoViews,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(kNtpPromoClosed,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(kNtpPromoGplusRequired,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-
-  prefs->ClearPref(kNtpPromoLine);
-  prefs->ClearPref(kNtpPromoStart);
-  prefs->ClearPref(kNtpPromoEnd);
-  prefs->ClearPref(kNtpPromoNumGroups);
-  prefs->ClearPref(kNtpPromoInitialSegment);
-  prefs->ClearPref(kNtpPromoIncrement);
-  prefs->ClearPref(kNtpPromoGroupTimeSlice);
-  prefs->ClearPref(kNtpPromoGroupMax);
-  prefs->ClearPref(kNtpPromoViewsMax);
-  prefs->ClearPref(kNtpPromoGroup);
-  prefs->ClearPref(kNtpPromoViews);
-  prefs->ClearPref(kNtpPromoClosed);
-  prefs->ClearPref(kNtpPromoGplusRequired);
-}
-
 // Deep-copies a node, replacing any "value" that is a key
 // into "strings" dictionary with its value from "strings".
 // E.g. for
@@ -399,7 +310,6 @@ void NotificationPromo::OnNewNotification() {
 
 // static
 void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
-  ClearDeprecatedPrefs(prefs);
   prefs->RegisterDictionaryPref(kPrefPromoObject,
                                 new base::DictionaryValue,
                                 PrefService::UNSYNCABLE_PREF);

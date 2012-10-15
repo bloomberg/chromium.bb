@@ -541,16 +541,10 @@ extern const char kNtpTipsResourceServer[];
 
 extern const char kNtpCollapsedForeignSessions[];
 extern const char kNtpMostVisitedURLsBlacklist[];
-extern const char kNtpPromoResourceCache[];
 extern const char kNtpPromoResourceCacheUpdate[];
-extern const char kNtpPromoResourceServer[];
 extern const char kNtpDateResourceServer[];
 extern const char kNtpShownBookmarksFolder[];
 extern const char kNtpShownPage[];
-extern const char kNtpCustomLogoStart[];
-extern const char kNtpCustomLogoEnd[];
-extern const char kNtpPromoVersion[];
-extern const char kNtpPromoLocale[];
 extern const char kNtpPromoDesktopSessionFound[];
 extern const char kNtpWebStoreEnabled[];
 extern const char kNtpAppPageNames[];

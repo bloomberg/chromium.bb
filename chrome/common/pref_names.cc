@@ -1515,15 +1515,8 @@ const char kNtpCollapsedForeignSessions[] = "ntp.collapsed_foreign_sessions";
 // New Tab Page URLs that should not be shown as most visited thumbnails.
 const char kNtpMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 
-// Data downloaded from promo resource pages (JSON, RSS) to be used to
-// dynamically deliver data for the new tab page.
-const char kNtpPromoResourceCache[] = "ntp.promo_resource_cache";
-
 // Last time of update of promo_resource_cache.
 const char kNtpPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
-
-// Serves promo resources for the NTP.
-const char kNtpPromoResourceServer[] = "ntp.web_resource_server";
 
 // Serves tips for the NTP.
 const char kNtpTipsResourceServer[] = "ntp.tips_resource_server";
@@ -1536,18 +1529,6 @@ const char kNtpShownBookmarksFolder[] = "ntp.shown_bookmarks_folder";
 
 // Which page should be visible on the new tab page v4
 const char kNtpShownPage[] = "ntp.shown_page";
-
-// TODO(achuith): Deprecated, will be removed (M23)
-// Dates between which the NTP should show a custom logo rather than the
-// standard one.
-const char kNtpCustomLogoStart[] = "ntp.alt_logo_start";
-const char kNtpCustomLogoEnd[] = "ntp.alt_logo_end";
-
-// The promo resource service version number.
-const char kNtpPromoVersion[] = "ntp.promo_version";
-
-// The last locale the promo was fetched for.
-const char kNtpPromoLocale[] = "ntp.promo_locale";
 
 // True if a desktop sync session was found for this user.
 const char kNtpPromoDesktopSessionFound[] = "ntp.promo_desktop_session_found";

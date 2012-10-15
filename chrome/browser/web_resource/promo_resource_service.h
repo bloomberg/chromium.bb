@@ -33,12 +33,6 @@ class PromoResourceService : public WebResourceService {
  private:
   virtual ~PromoResourceService();
 
-  int GetPromoServiceVersion();
-
-  // Gets the locale of the last promos fetched from the server. This is saved
-  // so we can fetch new data if the locale changes.
-  std::string GetPromoLocale();
-
   // Schedule a notification that a web resource is either going to become
   // available or be no longer valid.
   void ScheduleNotification(const NotificationPromo& notification_promo);
@@ -67,9 +61,6 @@ class PromoResourceService : public WebResourceService {
   // This allows the PromoResourceService to notify the New Tab Page immediately
   // when a new web resource should be shown or removed.
   base::WeakPtrFactory<PromoResourceService> weak_ptr_factory_;
-
-  // Notification type when an update is done.
-  int notification_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PromoResourceService);
 };
