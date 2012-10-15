@@ -28,12 +28,23 @@ body {
 }
 
 #calculator .buttons .button {
-  background-image: url('images/buttons_1x.png');
   background-size: 486px 225px;
   float: left;
   height: 45px;
   position: static;
   width: 61px;
+}
+
+@media all and (-webkit-max-device-pixel-ratio: 1.5) {
+  #calculator .buttons .button {
+    background-image: url('images/buttons_1x.png');
+  }
+}
+
+@media all and (-webkit-min-device-pixel-ratio: 1.5) {
+  #calculator .buttons .button {
+    background-image: url('images/buttons_2x.png');
+  }
 }
 
 #calculator .buttons .button .a-workaround-for-151985 {
