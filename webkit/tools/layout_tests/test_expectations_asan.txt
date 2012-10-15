@@ -3,3 +3,5 @@
 # sheriffs are not usually WebKit committers; we can create an upstream
 # file if this turns out to not be true.
 
+# Crashing on the WebKit Linux ASAN bot
+crbug.com/155911 [ Linux ] platform/chromium/virtual/softwarecompositing [ Skip ]
