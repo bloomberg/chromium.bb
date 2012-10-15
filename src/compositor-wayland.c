@@ -769,13 +769,19 @@ static int
 wayland_compositor_handle_event(int fd, uint32_t mask, void *data)
 {
 	struct wayland_compositor *c = data;
+	int count = 0;
 
 	if (mask & WL_EVENT_READABLE)
-		wl_display_dispatch(c->parent.wl_display);
+		count = wl_display_dispatch(c->parent.wl_display);
 	if (mask & WL_EVENT_WRITABLE)
 		wl_display_flush(c->parent.wl_display);
 
-	return 1;
+	if (mask == 0) {
+		count = wl_display_dispatch_pending(c->parent.wl_display);
+		wl_display_flush(c->parent.wl_display);
+	}
+
+	return count;
 }
 
 static void
@@ -855,6 +861,8 @@ wayland_compositor_create(struct wl_display *display,
 				     wayland_compositor_handle_event, c);
 	if (c->parent.wl_source == NULL)
 		goto err_display;
+
+	wl_event_source_check(c->parent.wl_source);
 
 	return &c->base;
 

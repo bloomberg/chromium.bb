@@ -4118,6 +4118,8 @@ display_run(struct display *display)
 			task->run(task, 0);
 		}
 
+		wl_display_dispatch_pending(display->display);
+
 		if (!display->running)
 			break;
 
