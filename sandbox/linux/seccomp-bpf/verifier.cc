@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 
 
@@ -17,7 +18,8 @@ bool Verifier::verifyBPF(const std::vector<struct sock_filter>& program,
     return false;
   }
   Sandbox::EvaluateSyscall evaluateSyscall = evaluators.begin()->first;
-  for (int nr = MIN_SYSCALL-1; nr <= static_cast<int>(MAX_SYSCALL)+1; ++nr) {
+  for (SyscallIterator iter(false); !iter.Done(); ) {
+    uint32_t sysnum = iter.Next();
     // We ideally want to iterate over the full system call range and values
     // just above and just below this range. This gives us the full result set
     // of the "evaluators".
@@ -25,17 +27,18 @@ bool Verifier::verifyBPF(const std::vector<struct sock_filter>& program,
     // indicates either i386 or x86-64; and a set bit 30 indicates x32. And
     // unless we pay attention to setting this bit correctly, an early check in
     // our BPF program will make us fail with a misleading error code.
+    struct arch_seccomp_data data = { sysnum, SECCOMP_ARCH };
 #if defined(__i386__) || defined(__x86_64__)
 #if defined(__x86_64__) && defined(__ILP32__)
-    int sysnum = nr |  0x40000000;
+    if (!(sysnum & 0x40000000u)) {
+      continue;
+    }
 #else
-    int sysnum = nr & ~0x40000000;
+    if (sysnum & 0x40000000u) {
+      continue;
+    }
 #endif
-#else
-    int sysnum = nr;
 #endif
-
-    struct arch_seccomp_data data = { sysnum, SECCOMP_ARCH };
     ErrorCode code = evaluateSyscall(sysnum);
     uint32_t computedRet = evaluateBPF(program, data, err);
     if (*err) {

@@ -13,9 +13,6 @@ using namespace playground2;
 namespace {
 
 const int kExpectedReturnValue = 42;
-#if defined(__arm__)
-const int kArmPublicSysnoCeiling = __NR_SYSCALL_BASE + 1024;
-#endif
 
 // This test should execute no matter whether we have kernel support. So,
 // we make it a TEST() instead of a BPF_TEST().
@@ -41,11 +38,11 @@ SANDBOX_TEST(SandboxBpf, CallSupportsTwice) {
 // A simple blacklist test
 
 ErrorCode BlacklistNanosleepPolicy(int sysno) {
-  if (sysno < static_cast<int>(MIN_SYSCALL) ||
-      sysno > static_cast<int>(MAX_SYSCALL)) {
+  if (!Sandbox::isValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy
     return ErrorCode(ENOSYS);
   }
+
   switch (sysno) {
     case __NR_nanosleep:
       return ErrorCode(EACCES);
@@ -100,11 +97,11 @@ intptr_t EnomemHandler(const struct arch_seccomp_data& args, void *aux) {
 }
 
 ErrorCode BlacklistNanosleepPolicySigsys(int sysno) {
-  if (sysno < static_cast<int>(MIN_SYSCALL) ||
-      sysno > static_cast<int>(MAX_SYSCALL)) {
+  if (!Sandbox::isValidSyscallNumber(sysno)) {
     // FIXME: we should really not have to do that in a trivial policy
     return ErrorCode(ENOSYS);
   }
+
   switch (sysno) {
     case __NR_nanosleep:
       return Sandbox::Trap(EnomemHandler,
@@ -148,16 +145,16 @@ int SysnoToRandomErrno(int sysno) {
 }
 
 ErrorCode SyntheticPolicy(int sysno) {
-  if (sysno < static_cast<int>(MIN_SYSCALL) ||
-      sysno > static_cast<int>(MAX_SYSCALL)) {
-    // FIXME: we should really not have to do that in a trivial policy.
+  if (!Sandbox::isValidSyscallNumber(sysno)) {
+    // FIXME: we should really not have to do that in a trivial policy
     return ErrorCode(ENOSYS);
   }
 
-  // TODO(jorgelo): remove this restriction once crbug.com/141694 is fixed.
+// TODO(jorgelo): remove this once the new code generator lands.
 #if defined(__arm__)
-  if (sysno > kArmPublicSysnoCeiling)
+  if (sysno > static_cast<int>(MAX_PUBLIC_SYSCALL)) {
     return ErrorCode(ENOSYS);
+  }
 #endif
 
   // TODO(markus): allow calls to write(). This should start working as soon
@@ -177,17 +174,10 @@ BPF_TEST(SandboxBpf, SyntheticPolicy, SyntheticPolicy) {
   // overflow.
   BPF_ASSERT(
    std::numeric_limits<int>::max() - kExpectedReturnValue - 1 >=
-   static_cast<int>(MAX_SYSCALL));
-
-  // TODO(jorgelo): remove this limit once crbug.com/141694 is fixed.
-#if defined(__arm__)
-  const int sysno_ceiling = kArmPublicSysnoCeiling;
-#else
-  const int sysno_ceiling = static_cast<int>(MAX_SYSCALL);
-#endif
+   static_cast<int>(MAX_PUBLIC_SYSCALL));
 
   for (int syscall_number =  static_cast<int>(MIN_SYSCALL);
-           syscall_number <= sysno_ceiling;
+           syscall_number <= static_cast<int>(MAX_PUBLIC_SYSCALL);
          ++syscall_number) {
     if (syscall_number == __NR_exit_group ||
         syscall_number == __NR_write) {
@@ -199,5 +189,47 @@ BPF_TEST(SandboxBpf, SyntheticPolicy, SyntheticPolicy) {
     BPF_ASSERT(errno == SysnoToRandomErrno(syscall_number));
   }
 }
+
+#if defined(__arm__)
+// A simple policy that tests whether ARM private system calls are supported
+// by our BPF compiler and by the BPF interpreter in the kernel.
+
+// For ARM private system calls, return an errno equal to their offset from
+// MIN_PRIVATE_SYSCALL plus 1 (to avoid NUL errno).
+int ArmPrivateSysnoToErrno(int sysno) {
+  if (sysno >= static_cast<int>(MIN_PRIVATE_SYSCALL) &&
+      sysno <= static_cast<int>(MAX_PRIVATE_SYSCALL)) {
+    return (sysno - MIN_PRIVATE_SYSCALL) + 1;
+  } else {
+    return ENOSYS;
+  }
+}
+
+ErrorCode ArmPrivatePolicy(int sysno) {
+  if (!Sandbox::isValidSyscallNumber(sysno)) {
+    // FIXME: we should really not have to do that in a trivial policy.
+    return ErrorCode(ENOSYS);
+  }
+
+  // Start from |__ARM_NR_set_tls + 1| so as not to mess with actual
+  // ARM private system calls.
+  if (sysno >= static_cast<int>(__ARM_NR_set_tls + 1) &&
+      sysno <= static_cast<int>(MAX_PRIVATE_SYSCALL)) {
+    return ErrorCode(ArmPrivateSysnoToErrno(sysno));
+  } else {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+}
+
+BPF_TEST(SandboxBpf, ArmPrivatePolicy, ArmPrivatePolicy) {
+  for (int syscall_number =  static_cast<int>(__ARM_NR_set_tls + 1);
+           syscall_number <= static_cast<int>(MAX_PRIVATE_SYSCALL);
+         ++syscall_number) {
+    errno = 0;
+    BPF_ASSERT(syscall(syscall_number) == -1);
+    BPF_ASSERT(errno == ArmPrivateSysnoToErrno(syscall_number));
+  }
+}
+#endif  // defined(__arm__)
 
 } // namespace

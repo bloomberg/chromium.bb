@@ -1295,8 +1295,7 @@ ErrorCode FlashProcessPolicy_x86_64(int sysno) {
 }
 
 ErrorCode BlacklistDebugAndNumaPolicy(int sysno) {
-  if (sysno < static_cast<int>(MIN_SYSCALL) ||
-      sysno > static_cast<int>(MAX_SYSCALL)) {
+  if (!Sandbox::isValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
   }
@@ -1311,8 +1310,7 @@ ErrorCode BlacklistDebugAndNumaPolicy(int sysno) {
 // This will still deny x32 or IA32 calls in 64 bits mode or
 // 64 bits system calls in compatibility mode.
 ErrorCode AllowAllPolicy(int sysno) {
-  if (sysno < static_cast<int>(MIN_SYSCALL) ||
-      sysno > static_cast<int>(MAX_SYSCALL)) {
+  if (!Sandbox::isValidSyscallNumber(sysno)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ErrorCode(ENOSYS);
   } else {
@@ -1420,7 +1418,7 @@ bool SandboxSeccompBpf::ShouldEnableSeccompBpf(
 
   return true;
 #endif  // __arm__
-#endif  // process_type
+#endif  // SECCOMP_BPF_SANDBOX
   return false;
 }
 
