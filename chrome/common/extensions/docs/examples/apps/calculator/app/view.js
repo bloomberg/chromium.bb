@@ -8,8 +8,8 @@ function View(window, model) {
   var view = this;
   var model = model;
   var events = this.defineEvents_();
-  var display = window.document.querySelector('#display');
-  var buttons = window.document.querySelectorAll('#buttons .button');
+  var display = window.document.querySelector('#calculator .display');
+  var buttons = window.document.querySelectorAll('#calculator .button');
 
   Array.prototype.forEach.call(buttons, function (button) {
     button.onclick = function (click) {

@@ -5,214 +5,271 @@
  **/
 
 body {
-  margin: 0px;
-  padding: 0px;
+  font-family: "Open Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  overflow: hidden;
 }
 
 #calculator {
-  background-color: #fff;
-  border: 0;
-  margin: 0;
-  max-width: 244px;
-  min-width: 244px;
-  padding: 0px;
-}
-
-#calculator #buttons {
   bottom: 0px;
-  height: 225px;
-  max-width: 244px;
-  min-width: 244px;
+  left: 0px;
   position: absolute;
+  top: 0px;
+  width: 243px;
 }
 
-#calculator #buttons .button {
+#calculator .buttons {
+  bottom: 0;
+  height: 225px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+#calculator .buttons .button {
   background-image: url('images/buttons_1x.png');
   background-size: 486px 225px;
   float: left;
   height: 45px;
+  position: static;
   width: 61px;
 }
 
-#calculator #buttons .button.add {
-  background-position: -186px -90px;  /* This button needs to be stretched */
-  background-size: 494px 225px;       /* to 61px (x dimensions *= 61/60) */
-  /* width: 60px;                     /* until crbug.com/154977 is fixed. */
+#calculator .buttons .button .a-workaround-for-151985 {
+  height: 45px;        /* .a-workaround-for-151985 styles and elements hide */
+  left: 60px;          /* the column of dead pixels at the right edge of the */
+  position: relative;  /* screen on OS X where http://crbug.com/151985 makes */
+  width: 1px;          /* the calculator window one pixels too wide. They can */
+}                      /* all be removed when that issue is fixed. */
+
+#calculator .buttons .button.add {
+  background-position: -183px -90px;
+  background-size: 486px 225px;
+  width: 60px;
 }
 
-#calculator #buttons .button.add:active {
-  background-position: -433px -90px;  /* Stretched for crbug.com/154977. */
+#calculator .buttons .button.add:active {
+  background-position: -426px -90px;
 }
 
-#calculator #buttons .button.clear {
+#calculator .buttons .button.add .a-workaround-for-151985 {
+  background: -webkit-linear-gradient(rgb(71, 71, 71), rgb(51, 51, 51));
+  box-shadow: inset 0px 1px 0px 0px rgb(30, 30, 30),
+              inset 0px 2px 0px 0px rgb(87, 87, 87);
+}
+
+#calculator .buttons .button.add:active .a-workaround-for-151985 {
+  background: -webkit-linear-gradient(rgb(51, 51, 51), rgb(45, 45, 45));
+  box-shadow: inset 0px 1px 0px 0px rgb(30, 30, 30),
+              inset 0px 2px 0px 0px rgb(43, 43, 43);
+}
+
+#calculator .buttons .button.clear {
   /* The default background-position: 0 0; is fine */
 }
 
-#calculator #buttons .button.clear:active {
+#calculator .buttons .button.clear:active {
   background-position: -243px 0;
 }
 
-#calculator #buttons .button.divide {
+#calculator .buttons .button.divide {
   background-position: -122px 0;
 }
 
-#calculator #buttons .button.divide:active {
+#calculator .buttons .button.divide:active {
   background-position: -365px 0;
 }
 
-#calculator #buttons .button.eight {
+#calculator .buttons .button.eight {
   background-position: -61px -45px;
 }
 
-#calculator #buttons .button.eight:active {
+#calculator .buttons .button.eight:active {
   background-position: -304px -45px;
 }
 
-#calculator #buttons .button.equals {
-  background-position: -186px -135px;  /* This button needs to */
-  background-size: 494px 225px;        /* be stretched to 61px */
-  height: 90px;                        /* (x dimensions *= 61/60) until */
-  /* width: 60px;                      /* crbug.com/154977 is fixed. */
+#calculator .buttons .button.equals {
+  background-position: -183px -135px;
+  background-size: 486px 225px;
+  height: 90px;
+  margin-bottom: -45px;
+  width: 60px;
 }
 
-#calculator #buttons .button.equals:active {
-  background-position: -433px -135px;  /* Stretched for crbug.com/154977. */
+#calculator .buttons .button.equals:active {
+  background-position: -426px -135px;
 }
 
-#calculator #buttons .button.five {
+#calculator .buttons .button.equals .a-workaround-for-151985 {
+  background: -webkit-linear-gradient(rgb(94, 162, 252), rgb(70, 118, 252));
+  box-shadow: inset 0px 1px 0px 0px rgb(29, 29, 29),
+              inset 0px 2px 0px 0px rgb(115, 175, 253);
+  height: 90px;
+}
+
+#calculator .buttons .button.equals:active .a-workaround-for-151985 {
+  background: -webkit-linear-gradient(rgb(66, 114, 185), rgb(49, 86, 185));
+  box-shadow: inset 0px 1px 0px 0px rgb(29, 29, 29),
+              inset 0px 2px 0px 0px rgb(48, 82, 136);
+  height: 90px;
+}
+
+#calculator .buttons .button.five {
   background-position: -61px -90px;
 }
 
-#calculator #buttons .button.five:active {
+#calculator .buttons .button.five:active {
   background-position: -304px -90px;
 }
 
-#calculator #buttons .button.four {
+#calculator .buttons .button.four {
   background-position: 0 -90px;
 }
 
-#calculator #buttons .button.four:active {
+#calculator .buttons .button.four:active {
   background-position: -243px -90px;
 }
 
-#calculator #buttons .button.multiply {
-  background-position: -186px 0;  /* This button needs to be stretched */
-  background-size: 494px 225px;   /* to 61px (x dimensions *= 61/60) */
-  /* width: 60px;                 /* until crbug.com/154977 is fixed. */
+#calculator .buttons .button.multiply {
+  background-position: -183px 0;
+  background-size: 486px 225px;
+  width: 60px;
 }
 
-#calculator #buttons .button.multiply:active {
-  background-position: -433px 0;  /* Stretched for crbug.com/154977. */
+#calculator .buttons .button.multiply:active {
+  background-position: -426px 0;
 }
 
-#calculator #buttons .button.negate {
+#calculator .buttons .button.multiply .a-workaround-for-151985 {
+  background: -webkit-linear-gradient(rgb(76, 76, 76), rgb(67, 67, 67));
+  box-shadow: inset 0px 1px 0px 0px rgb(30, 30, 30),
+              inset 0px 2px 0px 0px rgb(105, 105, 105);
+}
+
+#calculator .buttons .button.multiply:active .a-workaround-for-151985 {
+  background: -webkit-linear-gradient(rgb(53, 53, 53), rgb(53, 53, 53));
+  box-shadow: inset 0px 1px 0px 0px rgb(30, 30, 30),
+              inset 0px 2px 0px 0px rgb(45, 45, 45);
+}
+
+#calculator .buttons .button.negate {
   background-position: -61px 0;
 }
 
-#calculator #buttons .button.negate:active {
+#calculator .buttons .button.negate:active {
   background-position: -304px 0;
 }
 
-#calculator #buttons .button.nine {
+#calculator .buttons .button.nine {
   background-position: -122px -45px;
 }
 
-#calculator #buttons .button.nine:active {
+#calculator .buttons .button.nine:active {
   background-position: -365px -45px;
 }
 
-#calculator #buttons .button.one {
+#calculator .buttons .button.one {
   background-position: 0 -135px;
 }
 
-#calculator #buttons .button.one:active {
+#calculator .buttons .button.one:active {
   background-position: -243px -135px;
 }
 
-#calculator #buttons .button.point {
+#calculator .buttons .button.point {
   background-position: -122px -180px;
-  margin-left: 122px;
-  margin-top: -45px;
 }
 
-#calculator #buttons .button.point:active {
+#calculator .buttons .button.point:active {
   background-position: -365px -180px;
 }
 
-#calculator #buttons .button.seven {
+#calculator .buttons .button.seven {
   background-position: 0 -45px;
 }
 
-#calculator #buttons .button.seven:active {
+#calculator .buttons .button.seven:active {
   background-position: -243px -45px;
 }
 
-#calculator #buttons .button.six {
+#calculator .buttons .button.six {
   background-position: -122px -90px;
 }
 
-#calculator #buttons .button.six:active {
+#calculator .buttons .button.six:active {
   background-position: -365px -90px;
 }
 
-#calculator #buttons .button.subtract {
-  background-position: -186px -45px;  /* This button needs to be stretched */
-  background-size: 494px 225px;       /* until crbug.com/154977 is fixed. */
-  /* width: 60px;                     /* to 61px (x dimensions *= 61/60) */
+#calculator .buttons .button.subtract {
+  background-position: -183px -45px;
+  background-size: 486px 225px;
+  width: 60px;
 }
 
-#calculator #buttons .button.subtract:active {
-  background-position: -433px -45px;  /* Stretched for crbug.com/154977. */
+#calculator .buttons .button.subtract:active {
+  background-position: -426px -45px;
 }
 
-#calculator #buttons .button.three {
+#calculator .buttons .button.subtract .a-workaround-for-151985 {
+  background: -webkit-linear-gradient(rgb(75, 75, 75), rgb(60, 60, 60));
+  box-shadow: inset 0px 1px 0px 0px rgb(30, 30, 30),
+              inset 0px 2px 0px 0px rgb(96, 96, 96);
+}
+
+#calculator .buttons .button.subtract:active .a-workaround-for-151985 {
+  background: -webkit-linear-gradient(rgb(53, 53, 53), rgb(50, 50, 50));
+  box-shadow: inset 0px 1px 0px 0px rgb(30, 30, 30),
+              inset 0px 2px 0px 0px rgb(48, 48, 48);
+}
+
+#calculator .buttons .button.three {
   background-position: -122px -135px;
 }
 
-#calculator #buttons .button.three:active {
+#calculator .buttons .button.three:active {
   background-position: -365px -135px;
 }
 
-#calculator #buttons .button.two {
+#calculator .buttons .button.two {
   background-position: -61px -135px;
 }
 
-#calculator #buttons .button.two:active {
+#calculator .buttons .button.two:active {
   background-position: -304px -135px;
 }
 
-#calculator #buttons .button.zero {
+#calculator .buttons .button.zero {
   background-position: 0 -180px;
-  margin-top: -45px;
   width: 122px;
 }
 
-#calculator #buttons .button.zero:active {
+#calculator .buttons .button.zero:active {
   background-position: -243px -180px;
 }
 
-#calculator #display,
-#calculator #display:focus {
-  border: none;
+#calculator .display,
+#calculator .display:focus {
+  background: #fff;
   bottom: 225px;
+  left: 0;
   letter-spacing: 1px;
   line-height: 20px;
-  margin: 0px;
-  min-width: 204px;
   overflow: scroll;
   padding: 20px;
   position: absolute;
-  top: 0px;
+  right: 0;
+  top: 0;
 }
 
-#calculator #display .equation {
+#calculator .display .equation {
   clear: both;
   height: 22px;
   position: relative;
   width: 100%;
 }
 
-#calculator #display .equation .accumulator {
+#calculator .display .equation .accumulator {
   color: #888;
   float: left;
   font-size: 13px;
@@ -226,7 +283,7 @@ body {
   width: 85px;
 }
 
-#calculator #display .equation .operand {
+#calculator .display .equation .operand {
   color: #2c2c2c;
   float: right;
   height: 16px;
@@ -238,7 +295,7 @@ body {
   text-align: right;
 }
 
-#calculator #display .equation .operator {
+#calculator .display .equation .operator {
   color: #2c2c2c;
   float: right;
   height: 22px;
@@ -249,40 +306,30 @@ body {
   width: 15px;
 }
 
-#calculator #display .hr {
+#calculator .display .hr {
   border-top: 1px solid #d9d9d9;
-  height: 0px;
+  height: 0;
   position: relative;
   width: 100%;
 }
 
-#calculator #top-edge {
+#calculator .fade {
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 99;
+}
+
+#calculator .fade .edge {
   background: #fff;
   height: 5px;
-  position: absolute;
-  width: 244px;
-  z-index: 99;
 }
 
-#calculator #top-fade {
-  background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,
-                                           rgba(255,255,255,0) 100%);
+#calculator .fade .gradient {
+  background: -webkit-linear-gradient(rgba(255, 255, 255, 1),
+                                      rgba(255, 255, 255, 0));
   height: 20px;
-  position: absolute;
-  top: 5px;
-  width: 244px;
-  z-index: 99;
-}
-
-html {
-  font-family: "Open Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  height: 380px;
-  margin: 0;
-  overflow: hidden;
-  padding: 0;
-  width: 244px;
 }
 
 ::-webkit-scrollbar {
