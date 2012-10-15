@@ -360,7 +360,7 @@ class CMDuploadUnittest(GclTestsBase):
           '--file=descfile'],
         change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
-    change_info.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=1)
+    change_info.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=10)
     gcl.os.chdir('somewhere')
     gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
                          " submit a try. ***")
@@ -401,7 +401,7 @@ class CMDuploadUnittest(GclTestsBase):
         ['upload.py', '-y', '--server=https://my_server', "--file=descfile" ],
         change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
-    change_info.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=1)
+    change_info.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=10)
     gcl.os.chdir('somewhere')
     gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
                          " submit a try. ***")

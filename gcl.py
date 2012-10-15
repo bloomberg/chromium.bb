@@ -398,7 +398,7 @@ class ChangeInfo(object):
     ready when the issue is viewed."""
     if self.issue and self.patchset:
       self.SendToRietveld('/lint/issue%s_%s' % (self.issue, self.patchset),
-          timeout=1)
+          timeout=10)
 
   def SendToRietveld(self, request_path, timeout=None, **kwargs):
     """Send a POST/GET to Rietveld.  Returns the response body."""
