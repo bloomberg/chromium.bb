@@ -23,6 +23,13 @@ void ProxyLock::Release() {
     lock->Release();
 }
 
+// static
+void ProxyLock::AssertAcquired() {
+  base::Lock* lock(PpapiGlobals::Get()->GetProxyLock());
+  if (lock)
+    lock->AssertAcquired();
+}
+
 void CallWhileUnlocked(const base::Closure& closure) {
   ProxyAutoUnlock lock;
   closure.Run();

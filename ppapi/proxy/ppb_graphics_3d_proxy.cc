@@ -5,11 +5,14 @@
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/common/command_buffer.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_command_buffer_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -22,6 +25,7 @@ namespace ppapi {
 namespace proxy {
 
 namespace {
+
 const int32 kCommandBufferSize = 1024 * 1024;
 const int32 kTransferBufferSize = 1024 * 1024;
 
@@ -61,8 +65,129 @@ gpu::CommandBuffer::State GPUStateFromPPState(
 
 }  // namespace
 
+// This class just wraps a CommandBuffer and optionally locks around every
+// method. This is used to ensure that we have the Proxy lock any time we enter
+// PpapiCommandBufferProxy.
+//
+// Note, for performance reasons, most of this code is not truly thread
+// safe in the sense of multiple threads concurrently rendering to the same
+// Graphics3D context; this isn't allowed, and will likely either crash or
+// result in undefined behavior.  It is assumed that the thread which creates
+// the Graphics3D context will be the thread on which subsequent gl rendering
+// will be done.
+//
+// TODO(nfullagar): At some point, allow multiple threads to concurrently render
+// each to its own context.  First step is to allow a single thread (either main
+// thread or background thread) to render to a single Graphics3D context.
+class Graphics3D::LockingCommandBuffer : public gpu::CommandBuffer {
+ public:
+  explicit LockingCommandBuffer(gpu::CommandBuffer* gpu_command_buffer)
+      : gpu_command_buffer_(gpu_command_buffer), need_to_lock_(true) {
+  }
+  virtual ~LockingCommandBuffer() {
+  }
+  void set_need_to_lock(bool need_to_lock) { need_to_lock_ = need_to_lock; }
+  bool need_to_lock() const { return need_to_lock_; }
+
+ private:
+  // MaybeLock acquires the proxy lock on construction if and only if
+  // need_to_lock is true. If it acquired the lock, it releases it on
+  // destruction. If need_to_lock is false, then the lock must already be held.
+  struct MaybeLock {
+    explicit MaybeLock(bool need_to_lock) : locked_(need_to_lock) {
+      if (need_to_lock)
+        ppapi::ProxyLock::Acquire();
+      else
+        ppapi::ProxyLock::AssertAcquired();
+    }
+    ~MaybeLock() {
+      if (locked_)
+        ppapi::ProxyLock::Release();
+    }
+   private:
+    bool locked_;
+  };
+
+  // gpu::CommandBuffer implementation:
+  virtual bool Initialize() OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    return gpu_command_buffer_->Initialize();
+  }
+  virtual State GetState() OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    return gpu_command_buffer_->GetState();
+  }
+  virtual State GetLastState() OVERRIDE {
+    // During a normal scene, the vast majority of calls are to GetLastState().
+    // We don't allow multi-threaded rendering on the same contex, so for
+    // performance reasons, avoid the global lock for this entry point.  We can
+    // get away with this here because the underlying implementation of
+    // GetLastState() is trivial and does not involve global or shared state
+    // between other contexts.
+    // TODO(nfullagar): We can probably skip MaybeLock for other methods, but
+    // the performance gain may not be worth it.
+    //
+    // MaybeLock lock(need_to_lock_);
+    return gpu_command_buffer_->GetLastState();
+  }
+  virtual void Flush(int32 put_offset) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    gpu_command_buffer_->Flush(put_offset);
+  }
+  virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    return gpu_command_buffer_->FlushSync(put_offset, last_known_get);
+  }
+  virtual void SetGetBuffer(int32 transfer_buffer_id) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    gpu_command_buffer_->SetGetBuffer(transfer_buffer_id);
+  }
+  virtual void SetGetOffset(int32 get_offset) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    gpu_command_buffer_->SetGetOffset(get_offset);
+  }
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    return gpu_command_buffer_->CreateTransferBuffer(size, id_request);
+  }
+  virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
+                                       size_t size,
+                                       int32 id_request) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    return gpu_command_buffer_->RegisterTransferBuffer(shared_memory, size,
+        id_request);
+  }
+  virtual void DestroyTransferBuffer(int32 id) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    gpu_command_buffer_->DestroyTransferBuffer(id);
+  }
+  virtual gpu::Buffer GetTransferBuffer(int32 handle) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    return gpu_command_buffer_->GetTransferBuffer(handle);
+  }
+  virtual void SetToken(int32 token) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    gpu_command_buffer_->SetToken(token);
+  }
+  virtual void SetParseError(gpu::error::Error error) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    gpu_command_buffer_->SetParseError(error);
+  }
+  virtual void SetContextLostReason(
+      gpu::error::ContextLostReason reason) OVERRIDE {
+    MaybeLock lock(need_to_lock_);
+    gpu_command_buffer_->SetContextLostReason(reason);
+  }
+
+  // Weak pointer - see class Graphics3D for the scopted_ptr.
+  gpu::CommandBuffer* gpu_command_buffer_;
+
+  bool need_to_lock_;
+};
+
 Graphics3D::Graphics3D(const HostResource& resource)
-    : PPB_Graphics3D_Shared(resource) {
+    : PPB_Graphics3D_Shared(resource),
+      num_already_locked_calls_(0) {
 }
 
 Graphics3D::~Graphics3D() {
@@ -76,6 +201,10 @@ bool Graphics3D::Init(gpu::gles2::GLES2Implementation* share_gles2) {
 
   command_buffer_.reset(
       new PpapiCommandBufferProxy(host_resource(), dispatcher));
+  locking_command_buffer_.reset(
+      new LockingCommandBuffer(command_buffer_.get()));
+
+  ScopedNoLocking already_locked(this);
   if (!command_buffer_->Initialize())
     return false;
 
@@ -123,10 +252,14 @@ PP_Graphics3DTrustedState Graphics3D::FlushSyncFast(int32_t put_offset,
 }
 
 gpu::CommandBuffer* Graphics3D::GetCommandBuffer() {
-  return command_buffer_.get();
+  return locking_command_buffer_.get();
 }
 
 int32 Graphics3D::DoSwapBuffers() {
+  // gles2_impl()->SwapBuffers() results in CommandBuffer calls, and we already
+  // have the proxy lock.
+  ScopedNoLocking already_locked(this);
+
   gles2_impl()->SwapBuffers();
   IPC::Message* msg = new PpapiHostMsg_PPBGraphics3D_SwapBuffers(
       API_ID_PPB_GRAPHICS_3D, host_resource());
@@ -134,6 +267,23 @@ int32 Graphics3D::DoSwapBuffers() {
   PluginDispatcher::GetForResource(this)->Send(msg);
 
   return PP_OK_COMPLETIONPENDING;
+}
+
+void Graphics3D::PushAlreadyLocked() {
+  ppapi::ProxyLock::AssertAcquired();
+  if (num_already_locked_calls_ == 0)
+    locking_command_buffer_->set_need_to_lock(false);
+  ++num_already_locked_calls_;
+}
+
+void Graphics3D::PopAlreadyLocked() {
+  // We must have Pushed before we can Pop.
+  DCHECK(!locking_command_buffer_->need_to_lock());
+  DCHECK_GT(num_already_locked_calls_, 0);
+  ppapi::ProxyLock::AssertAcquired();
+  --num_already_locked_calls_;
+  if (num_already_locked_calls_ == 0)
+    locking_command_buffer_->set_need_to_lock(true);
 }
 
 PPB_Graphics3D_Proxy::PPB_Graphics3D_Proxy(Dispatcher* dispatcher)

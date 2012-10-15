@@ -46,13 +46,18 @@ class Graphics3D : public PPB_Graphics3D_Shared {
       int32_t put_offset,
       int32_t last_known_get) OVERRIDE;
 
- protected:
-  // Graphics3DImpl overrides.
+ private:
+  class LockingCommandBuffer;
+
+  // PPB_Graphics3D_Shared overrides.
   virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;
   virtual int32 DoSwapBuffers() OVERRIDE;
+  virtual void PushAlreadyLocked() OVERRIDE;
+  virtual void PopAlreadyLocked() OVERRIDE;
 
- private:
+  int num_already_locked_calls_;
   scoped_ptr<gpu::CommandBuffer> command_buffer_;
+  scoped_ptr<LockingCommandBuffer> locking_command_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Graphics3D);
 };

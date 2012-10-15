@@ -56,6 +56,28 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   void SwapBuffersACK(int32_t pp_error);
 
  protected:
+  // ScopedNoLocking makes sure we don't try to lock again when we already have
+  // the proxy lock. This is used when we need to use the CommandBuffer
+  // (possibly via gles2_impl) but we already have the proxy lock. The
+  // CommandBuffer in the plugin side of the proxy will otherwise try to acquire
+  // the ProxyLock, causing a crash because we already own the lock. (Locks in
+  // Chromium are never recursive).
+  class ScopedNoLocking {
+   public:
+    explicit ScopedNoLocking(PPB_Graphics3D_Shared* graphics3d_shared)
+        : graphics3d_shared_(graphics3d_shared) {
+      graphics3d_shared_->PushAlreadyLocked();
+    }
+    ~ScopedNoLocking() {
+      graphics3d_shared_->PopAlreadyLocked();
+    }
+   private:
+    PPB_Graphics3D_Shared* graphics3d_shared_;  // Weak
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedNoLocking);
+  };
+
+
   PPB_Graphics3D_Shared(PP_Instance instance);
   PPB_Graphics3D_Shared(const HostResource& host_resource);
   virtual ~PPB_Graphics3D_Shared();
@@ -70,6 +92,13 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   void DestroyGLES2Impl();
 
  private:
+  // On the plugin side, we need to know that we already have the lock, so that
+  // we don't try to acquire it again. The default implementation does nothing;
+  // the Plugin side of the proxy must implement these.
+  friend class ScopedNoLocking;
+  virtual void PushAlreadyLocked();
+  virtual void PopAlreadyLocked();
+
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
   scoped_ptr<gpu::gles2::GLES2Implementation> gles2_impl_;

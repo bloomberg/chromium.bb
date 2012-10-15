@@ -125,6 +125,8 @@ gpu::CommandBuffer::State PpapiCommandBufferProxy::GetState() {
 }
 
 gpu::CommandBuffer::State PpapiCommandBufferProxy::GetLastState() {
+  // Note: The locking command buffer wrapper does not take a global lock before
+  // calling this function.
   return last_state_;
 }
 

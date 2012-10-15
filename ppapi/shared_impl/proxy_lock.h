@@ -36,6 +36,10 @@ class PPAPI_SHARED_EXPORT ProxyLock {
   // Relinquish the proxy lock. If the lock has not been set, this does nothing.
   static void Release();
 
+  // Assert that the lock is owned by the current thread (in the plugin
+  // process). Does nothing when running in-process (or in the host process).
+  static void AssertAcquired();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProxyLock);
 };
