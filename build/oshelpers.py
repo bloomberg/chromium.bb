@@ -274,7 +274,7 @@ def Remove(args):
                 os.remove(dst)
               break
             except OSError as error:
-              if i == 5:
+              if i == 4:
                 print 'Gave up.'
                 raise OSError('rm: ' + str(error))
               print 'Failed remove with %s, retrying' % error
@@ -287,7 +287,7 @@ def Remove(args):
                 shutil.rmtree(dst)
               break
             except OSError as error:
-              if i == 5:
+              if i == 4:
                 print 'Gave up.'
                 raise OSError('rm: ' + str(error))
               print 'Failed rmtree with %s, retrying' % error
