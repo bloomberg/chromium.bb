@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop.h"
 #include "chrome/browser/android/tab_base_android_impl.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/draw_delegate.h"
@@ -22,9 +23,18 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
+class CompositorClient : public content::Compositor::Client {
+ public:
+  virtual void ScheduleComposite() OVERRIDE;
+};
+
 struct GlobalState {
+  GlobalState()
+      : g_scheduled_composite(false) {}
+  CompositorClient client;
   scoped_ptr<content::Compositor> compositor;
   scoped_ptr<WebKit::WebLayer> root_layer;
+  bool g_scheduled_composite;
 };
 
 base::LazyInstance<GlobalState> g_global_state = LAZY_INSTANCE_INITIALIZER;
@@ -33,20 +43,18 @@ content::Compositor* GetCompositor() {
   return g_global_state.Get().compositor.get();
 }
 
-static void SurfacePresented(
-    const content::DrawDelegate::SurfacePresentedCallback& callback,
-    uint32 sync_point) {
-  callback.Run(sync_point);
+void Composite() {
+  g_global_state.Get().g_scheduled_composite = false;
+  if (GetCompositor()) {
+    GetCompositor()->Composite();
+  }
 }
 
-void DummyCallback(uint32) { }
-
-static void SurfaceUpdated(
-    uint64 texture,
-    content::RenderWidgetHostView* view,
-    const content::DrawDelegate::SurfacePresentedCallback& callback) {
-  GetCompositor()->OnSurfaceUpdated(base::Bind(
-      &SurfacePresented, callback));
+void CompositorClient::ScheduleComposite() {
+  if (!g_global_state.Get().g_scheduled_composite) {
+    g_global_state.Get().g_scheduled_composite = true;
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&Composite));
+  }
 }
 
 }  // anonymous namespace
@@ -59,12 +67,10 @@ bool RegisterTabManager(JNIEnv* env) {
 }
 
 static void Init(JNIEnv* env, jclass clazz, jobject obj) {
-  content::DrawDelegate::SurfaceUpdatedCallback cb = base::Bind(
-      &SurfaceUpdated);
-  content::DrawDelegate::GetInstance()->SetUpdateCallback(cb);
   if (!GetCompositor()) {
     content::Compositor::Initialize();
-    g_global_state.Get().compositor.reset(content::Compositor::Create());
+    g_global_state.Get().compositor.reset(content::Compositor::Create(
+        &g_global_state.Get().client));
     DCHECK(!g_global_state.Get().root_layer.get());
     g_global_state.Get().root_layer.reset(WebKit::WebLayer::create());
   }
@@ -95,7 +101,6 @@ static void ShowTab(JNIEnv* env, jclass clazz, jint jtab) {
     return;
   TabBaseAndroidImpl* tab = reinterpret_cast<TabBaseAndroidImpl*>(jtab);
   g_global_state.Get().root_layer->addChild(tab->tab_layer());
-  GetCompositor()->OnSurfaceUpdated(base::Bind(&DummyCallback));
 }
 
 static void HideTab(JNIEnv* env, jclass clazz, jint jtab) {

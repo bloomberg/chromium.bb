@@ -17,6 +17,8 @@
 #include "content/common/android/device_info.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 
 namespace content {
@@ -313,11 +315,15 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
   if (((gfx::Size)texture_layer_->layer()->bounds()).IsEmpty())
     texture_layer_->layer()->setBounds(
         DrawDelegateImpl::GetInstance()->GetBounds());
-  DrawDelegateImpl::GetInstance()->OnSurfaceUpdated(
-      params.surface_handle,
-      this,
-      base::Bind(&RenderWidgetHostImpl::AcknowledgeBufferPresent,
-                 params.route_id, gpu_host_id));
+
+  // TODO(sievers): When running the impl thread in the browser we
+  // need to delay the ACK until after commit.
+  DCHECK(!WebKit::Platform::current()->compositorSupport()->
+         isThreadingEnabled());
+  uint32 sync_point =
+      ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
+  RenderWidgetHostImpl::AcknowledgeBufferPresent(
+      params.route_id, gpu_host_id, sync_point);
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(

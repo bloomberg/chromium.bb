@@ -24,19 +24,8 @@ DrawDelegateImpl::DrawDelegateImpl() {
 DrawDelegateImpl::~DrawDelegateImpl() {
 }
 
-void DrawDelegateImpl::SetUpdateCallback(
-    const SurfaceUpdatedCallback& callback) {
-  draw_callback_ = callback;
-}
-
 void DrawDelegateImpl::SetBounds(const gfx::Size& size) {
   size_ = size;
-}
-
-void DrawDelegateImpl::OnSurfaceUpdated(
-    uint64 texture, RenderWidgetHostView* view,
-    const SurfacePresentedCallback& present_callback) {
-  draw_callback_.Run(texture, view, present_callback);
 }
 
 }  // namespace content

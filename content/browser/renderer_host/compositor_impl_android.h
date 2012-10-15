@@ -24,7 +24,7 @@ class GraphicsContext;
 class CompositorImpl : public Compositor,
                        public WebKit::WebLayerTreeViewClient {
  public:
-  CompositorImpl();
+  explicit CompositorImpl(Compositor::Client* client);
   virtual ~CompositorImpl();
 
   static bool IsInitialized();
@@ -35,8 +35,7 @@ class CompositorImpl : public Compositor,
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE;
   virtual bool CompositeAndReadback(
       void *pixels, const gfx::Rect& rect) OVERRIDE;
-  virtual void OnSurfaceUpdated(
-      const SurfacePresentedCallback& callback) OVERRIDE;
+  virtual void Composite() OVERRIDE;
 
   // WebLayerTreeViewClient implementation.
   virtual void updateAnimations(double frameBeginTime) OVERRIDE;
@@ -58,6 +57,8 @@ class CompositorImpl : public Compositor,
 
   ANativeWindow* window_;
   int surface_id_;
+
+  Compositor::Client* client_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };

@@ -13,26 +13,13 @@ namespace content {
 
 class RenderWidgetHostView;
 
-// This interface facilitates the communication between compositor and
-// UI with respect to new frames arriving and acknowledging when they
-// have been presented.
+// TODO(sievers): Route sizing of views through ContentViewCore
+// and remove this class.
 class DrawDelegate {
  public:
   static DrawDelegate* GetInstance();
   virtual ~DrawDelegate() { }
 
-  // Callback to be run after the frame has been drawn. It passes back
-  // a synchronization point identifier.
-  typedef base::Callback<void(uint32)> SurfacePresentedCallback;
-
-  // Notification to the UI that the surface identified by the texture id
-  // has been updated.
-  typedef base::Callback<void(
-      uint64,
-      RenderWidgetHostView*,
-      const SurfacePresentedCallback&)> SurfaceUpdatedCallback;
-
-  virtual void SetUpdateCallback(const SurfaceUpdatedCallback& callback) = 0;
   virtual void SetBounds(const gfx::Size& size) = 0;
 };
 

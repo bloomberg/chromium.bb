@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
@@ -30,10 +31,19 @@ using content::DrawDelegate;
 
 namespace {
 
+class CompositorClient : public Compositor::Client {
+ public:
+  virtual void ScheduleComposite() OVERRIDE;
+};
+
 struct GlobalState {
+  GlobalState()
+      : g_scheduled_composite(false) {}
   base::android::ScopedJavaGlobalRef<jobject> j_obj;
+  CompositorClient client;
   scoped_ptr<content::Compositor> compositor;
   scoped_ptr<WebKit::WebLayer> root_layer;
+  bool g_scheduled_composite;
 };
 
 base::LazyInstance<GlobalState> g_global_state = LAZY_INSTANCE_INITIALIZER;
@@ -42,18 +52,18 @@ content::Compositor* GetCompositor() {
   return g_global_state.Get().compositor.get();
 }
 
-static void SurfacePresented(
-    const DrawDelegate::SurfacePresentedCallback& callback,
-    uint32 sync_point) {
-  callback.Run(sync_point);
+void Composite() {
+  g_global_state.Get().g_scheduled_composite = false;
+  if (GetCompositor()) {
+    GetCompositor()->Composite();
+  }
 }
 
-static void SurfaceUpdated(
-    uint64 texture,
-    content::RenderWidgetHostView* view,
-    const DrawDelegate::SurfacePresentedCallback& callback) {
-  GetCompositor()->OnSurfaceUpdated(base::Bind(
-      &SurfacePresented, callback));
+void CompositorClient::ScheduleComposite() {
+  if (!g_global_state.Get().g_scheduled_composite) {
+    g_global_state.Get().g_scheduled_composite = true;
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&Composite));
+  }
 }
 
 } // anonymous namespace
@@ -64,7 +74,8 @@ jobject CreateShellView() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!GetCompositor()) {
     Compositor::Initialize();
-    g_global_state.Get().compositor.reset(Compositor::Create());
+    g_global_state.Get().compositor.reset(Compositor::Create(
+        &g_global_state.Get().client));
     DCHECK(!g_global_state.Get().root_layer.get());
     g_global_state.Get().root_layer.reset(WebKit::WebLayer::create());
   }
@@ -80,9 +91,6 @@ bool RegisterShellManager(JNIEnv* env) {
 static void Init(JNIEnv* env, jclass clazz, jobject obj) {
   g_global_state.Get().j_obj.Reset(
       base::android::ScopedJavaLocalRef<jobject>(env, obj));
-  DrawDelegate::SurfaceUpdatedCallback cb = base::Bind(
-      &SurfaceUpdated);
-  DrawDelegate::GetInstance()->SetUpdateCallback(cb);
 }
 
 static void SurfaceCreated(

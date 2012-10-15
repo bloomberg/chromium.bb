@@ -71,8 +71,8 @@ private:
 namespace content {
 
 // static
-Compositor* Compositor::Create() {
-  return new CompositorImpl();
+Compositor* Compositor::Create(Client* client) {
+  return client ? new CompositorImpl(client) : NULL;
 }
 
 // static
@@ -104,9 +104,11 @@ bool CompositorImpl::IsInitialized() {
   return g_initialized;
 }
 
-CompositorImpl::CompositorImpl()
+CompositorImpl::CompositorImpl(Compositor::Client* client)
     : window_(NULL),
-      surface_id_(0) {
+      surface_id_(0),
+      client_(client) {
+  DCHECK(client);
   root_layer_.reset(
       WebKit::Platform::current()->compositorSupport()->createLayer());
 }
@@ -114,14 +116,9 @@ CompositorImpl::CompositorImpl()
 CompositorImpl::~CompositorImpl() {
 }
 
-void CompositorImpl::OnSurfaceUpdated(
-    const SurfacePresentedCallback& callback) {
+void CompositorImpl::Composite() {
   if (host_.get())
     host_->composite();
-  // TODO(sievers): Let RWHV do this
-  uint32 sync_point =
-      ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
-  callback.Run(sync_point);
 }
 
 void CompositorImpl::SetRootLayer(WebKit::WebLayer* root_layer) {
@@ -221,6 +218,7 @@ void CompositorImpl::didCompleteSwapBuffers() {
 }
 
 void CompositorImpl::scheduleComposite() {
+  client_->ScheduleComposite();
 }
 
 } // namespace content

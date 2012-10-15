@@ -19,6 +19,12 @@ namespace content {
 // An interface to the browser-side compositor.
 class Compositor {
  public:
+  class Client {
+   public:
+    // Tells the client that it should schedule a composite.
+    virtual void ScheduleComposite() = 0;
+  };
+
   virtual ~Compositor() {}
 
   // Performs the global initialization needed before any compositor
@@ -26,7 +32,7 @@ class Compositor {
   static void Initialize();
 
   // Creates and returns a compositor instance.
-  static Compositor* Create();
+  static Compositor* Create(Client* client);
 
   // Attaches the layer tree.
   virtual void SetRootLayer(WebKit::WebLayer* root) = 0;
@@ -42,11 +48,8 @@ class Compositor {
   // The buffer is not modified if false is returned.
   virtual bool CompositeAndReadback(void *pixels, const gfx::Rect& rect) = 0;
 
-  // Callback to be run after the frame has been drawn. It passes back
-  // a synchronization point identifier.
-  typedef base::Callback<void(uint32)> SurfacePresentedCallback;
-
-  virtual void OnSurfaceUpdated(const SurfacePresentedCallback& callback) = 0;
+  // Composite immediately. Used in single-threaded mode.
+  virtual void Composite() = 0;
 
  protected:
   Compositor() {}
