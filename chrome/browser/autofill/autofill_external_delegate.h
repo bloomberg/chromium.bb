@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/password_autofill_manager.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
 #include "chrome/common/password_form_fill_data.h"
