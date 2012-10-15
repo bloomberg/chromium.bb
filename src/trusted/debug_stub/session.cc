@@ -122,6 +122,10 @@ bool Session::SendPacketOnly(Packet *pkt) {
     run_xsum += ch;
   }
 
+  if (GetFlags() & DEBUG_SEND) {
+    NaClLog(LOG_INFO, "TX %s\n", outstr.str().c_str());
+  }
+
   // Send XSUM as two nible 8bit value preceeded by '#'
   outstr << '#';
   IntToNibble((run_xsum >> 4) & 0xF, &ch);
@@ -129,9 +133,6 @@ bool Session::SendPacketOnly(Packet *pkt) {
   IntToNibble(run_xsum & 0xF, &ch);
   outstr << ch;
 
-  if (GetFlags() & DEBUG_SEND) {
-    NaClLog(LOG_INFO, "TX %s\n", outstr.str().c_str());
-  }
   return io_->Write(outstr.str().data(),
                     static_cast<int32_t>(outstr.str().length()));
 }
@@ -159,10 +160,10 @@ bool Session::GetPacket(Packet *pkt) {
   while (1) {
     if (!GetChar(&ch)) return false;
 
-    in += ch;
-
     // If we see a '#' we must be done with the data
     if (ch == '#') break;
+
+    in += ch;
 
     // If we see a '$' we must have missed the last cmd
     if (ch == '$') {
@@ -177,18 +178,16 @@ bool Session::GetPacket(Packet *pkt) {
 
   // Get two Nibble XSUM
   if (!GetChar(&ch)) return false;
-  in += ch;
 
   int val;
   NibbleToInt(ch, & val);
   fin_xsum = val << 4;
 
   if (!GetChar(&ch)) return false;
-  in += ch;
   NibbleToInt(ch, &val);
   fin_xsum |= val;
 
-  if (GetFlags() & DEBUG_RECV) NaClLog(LOG_INFO, "RX %s\n", in.data());
+  if (GetFlags() & DEBUG_RECV) NaClLog(LOG_INFO, "RX %s\n", in.c_str());
 
   pkt->ParseSequence();
 
