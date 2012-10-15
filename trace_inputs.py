@@ -1502,8 +1502,8 @@ class Strace(ApiBase):
             for line in open(pidfile, 'rb'):
               context.on_line(pid, line)
         result['results'] = context.to_results()
-      except TracingFailure, e:
-        result['exception'] = e
+      except TracingFailure:
+        result['exception'] = sys.exc_info()
       out.append(result)
     return out
 
@@ -3042,7 +3042,10 @@ def load_trace(logfile, root_dir, api, blacklist):
   assert len(data) == 1, 'More than one trace was detected!'
   if 'exception' in data[0]:
     # It got an exception, raise it.
-    raise data[0]['exception']
+    raise \
+        data[0]['exception'][0], \
+        data[0]['exception'][1], \
+        data[0]['exception'][2]
   results = data[0]['results']
   if root_dir:
     results = results.strip_root(root_dir)
@@ -3114,8 +3117,10 @@ def CMDread(args):
   output_as_json = []
   for item in data:
     if 'exception' in item:
+      # Do not abort the other traces.
       print >> sys.stderr, (
-          'Trace %s: Got an exception: %s' % (item['trace'], item['exception']))
+          'Trace %s: Got an exception: %s' % (
+            item['trace'], item['exception'][1]))
       continue
     results = item['results']
     if options.root_dir:

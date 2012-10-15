@@ -280,12 +280,12 @@ class ThreadPool(object):
     else:
       self._tasks.join()
     out = []
+    # Look for exceptions.
     for w in self._workers:
       if w.exceptions:
         raise w.exceptions[0][0], w.exceptions[0][1], w.exceptions[0][2]
       out.extend(w.outputs)
       w.outputs = []
-    # Look for exceptions.
     return out
 
   def close(self):
