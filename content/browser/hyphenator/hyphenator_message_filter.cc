@@ -10,8 +10,8 @@
 #include "content/browser/hyphenator/hyphenator_message_filter.h"
 #include "content/common/hyphenator_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_paths.h"
 
 namespace {
 
@@ -85,8 +85,10 @@ void HyphenatorMessageFilter::OnOpenDictionary(const string16& locale) {
 void HyphenatorMessageFilter::OpenDictionary(const string16& locale) {
   DCHECK(dictionary_file_ == base::kInvalidPlatformFileValue);
 
-  if (dictionary_base_.empty())
-    PathService::Get(base::DIR_EXE, &dictionary_base_);
+  if (dictionary_base_.empty()) {
+    dictionary_base_ =
+        GetContentClient()->browser()->GetHyphenDictionaryDirectory();
+  }
   std::string rule_file = locale.empty() ? "en-US" : UTF16ToASCII(locale);
   rule_file.append("-1-0.dic");
   FilePath rule_path = dictionary_base_.AppendASCII(rule_file);

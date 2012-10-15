@@ -449,6 +449,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if renderer processes can use private Pepper File APIs.
   virtual bool AllowPepperPrivateFileAPI();
 
+  // Returns the directory containing hyphenation dictionaries.
+  virtual FilePath GetHyphenDictionaryDirectory();
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.

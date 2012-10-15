@@ -241,6 +241,10 @@ bool ContentBrowserClient::AllowPepperPrivateFileAPI() {
   return false;
 }
 
+FilePath ContentBrowserClient::GetHyphenDictionaryDirectory() {
+  return FilePath();
+}
+
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return NULL;

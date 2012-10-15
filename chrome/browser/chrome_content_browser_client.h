@@ -203,6 +203,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual bool AllowPepperSocketAPI(content::BrowserContext* browser_context,
                                     const GURL& url) OVERRIDE;
   virtual bool AllowPepperPrivateFileAPI() OVERRIDE;
+  virtual FilePath GetHyphenDictionaryDirectory() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(
