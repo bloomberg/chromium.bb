@@ -15,6 +15,10 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/path.h"
+
+// static
+const int ActionBoxButtonView::kBorderOverlap = 2;
 
 ActionBoxButtonView::ActionBoxButtonView(Browser* browser,
                                          const gfx::Point& menu_offset)
@@ -46,6 +50,16 @@ void ActionBoxButtonView::GetAccessibleState(ui::AccessibleViewState* state) {
 void ActionBoxButtonView::OnMenuButtonClicked(View* source,
                                               const gfx::Point& point) {
   controller_.OnButtonClicked();
+}
+
+bool ActionBoxButtonView::HasHitTestMask() const {
+  return true;
+}
+
+void ActionBoxButtonView::GetHitTestMask(gfx::Path* mask) const {
+  SkRect clickable_rect;
+  clickable_rect.iset(0, kBorderOverlap, width(), height() - kBorderOverlap);
+  mask->addRect(clickable_rect);
 }
 
 void ActionBoxButtonView::ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model) {
