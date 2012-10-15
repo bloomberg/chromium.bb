@@ -82,7 +82,7 @@ class FILEAPI_EXPORT FileSystemURL {
   // See the class comment for details.
   FileSystemType mount_type() const { return mount_type_; }
 
-  std::string spec() const;
+  std::string DebugString() const;
 
   // Returns a new FileSystemURL with the given path.
   // This creates a new FileSystemURL, copies all fields of this instance

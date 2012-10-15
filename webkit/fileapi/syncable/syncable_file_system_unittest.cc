@@ -77,13 +77,13 @@ class SyncableFileSystemTest : public testing::Test {
 
   void VerifyAndClearChange(const FileSystemURL& url,
                             const FileChange& expected_change) {
-    SCOPED_TRACE(testing::Message() << url.path().value() <<
+    SCOPED_TRACE(testing::Message() << url.DebugString() <<
                  " expecting:" << expected_change.DebugString());
     // Get the changes for URL and verify.
     FileChangeList changes;
     change_tracker()->GetChangesForURL(url, &changes);
     ASSERT_EQ(1U, changes.size());
-    SCOPED_TRACE(testing::Message() << url.path().value() <<
+    SCOPED_TRACE(testing::Message() << url.DebugString() <<
                  " actual:" << changes.DebugString());
     EXPECT_EQ(expected_change, changes.list()[0]);
 

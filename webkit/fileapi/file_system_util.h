@@ -24,11 +24,6 @@ extern const char kTemporaryDir[];
 extern const char kExternalDir[];
 extern const char kIsolatedDir[];
 extern const char kTestDir[];
-extern const char kPersistentName[];
-extern const char kTemporaryName[];
-extern const char kExternalName[];
-extern const char kIsolatedName[];
-extern const char kTestName[];
 
 class FILEAPI_EXPORT VirtualPath {
  public:

@@ -22,6 +22,10 @@ FileSystemURL CreateFileSystemURL(const std::string& url_string) {
  return FileSystemURL(GURL(url_string));
 }
 
+std::string NormalizedUTF8Path(const FilePath& path) {
+  return path.NormalizePathSeparators().AsUTF8Unsafe();
+}
+
 }  // namespace
 
 TEST(FileSystemURLTest, ParsePersistent) {
@@ -30,9 +34,8 @@ TEST(FileSystemURLTest, ParsePersistent) {
   ASSERT_TRUE(url.is_valid());
   EXPECT_EQ("http://chromium.org/", url.origin().spec());
   EXPECT_EQ(kFileSystemTypePersistent, url.type());
-  EXPECT_EQ(FILE_PATH_LITERAL("file"),
-      VirtualPath::BaseName(url.path()).value());
-  EXPECT_EQ(FILE_PATH_LITERAL("directory"), url.path().DirName().value());
+  EXPECT_EQ(FPL("file"), VirtualPath::BaseName(url.path()).value());
+  EXPECT_EQ(FPL("directory"), url.path().DirName().value());
 }
 
 TEST(FileSystemURLTest, ParseTemporary) {
@@ -41,9 +44,8 @@ TEST(FileSystemURLTest, ParseTemporary) {
   ASSERT_TRUE(url.is_valid());
   EXPECT_EQ("http://chromium.org/", url.origin().spec());
   EXPECT_EQ(kFileSystemTypeTemporary, url.type());
-  EXPECT_EQ(FILE_PATH_LITERAL("file"),
-      VirtualPath::BaseName(url.path()).value());
-  EXPECT_EQ(FILE_PATH_LITERAL("directory"), url.path().DirName().value());
+  EXPECT_EQ(FPL("file"), VirtualPath::BaseName(url.path()).value());
+  EXPECT_EQ(FPL("directory"), url.path().DirName().value());
 }
 
 TEST(FileSystemURLTest, EnsureFilePathIsRelative) {
@@ -52,9 +54,8 @@ TEST(FileSystemURLTest, EnsureFilePathIsRelative) {
   ASSERT_TRUE(url.is_valid());
   EXPECT_EQ("http://chromium.org/", url.origin().spec());
   EXPECT_EQ(kFileSystemTypeTemporary, url.type());
-  EXPECT_EQ(FILE_PATH_LITERAL("file"),
-      VirtualPath::BaseName(url.path()).value());
-  EXPECT_EQ(FILE_PATH_LITERAL("directory"), url.path().DirName().value());
+  EXPECT_EQ(FPL("file"), VirtualPath::BaseName(url.path()).value());
+  EXPECT_EQ(FPL("directory"), url.path().DirName().value());
   EXPECT_FALSE(url.path().IsAbsolute());
 }
 
@@ -69,9 +70,8 @@ TEST(FileSystemURLTest, UnescapePath) {
   FileSystemURL url = CreateFileSystemURL(
       "filesystem:http://chromium.org/persistent/%7Echromium/space%20bar");
   ASSERT_TRUE(url.is_valid());
-  EXPECT_EQ(FILE_PATH_LITERAL("space bar"),
-      VirtualPath::BaseName(url.path()).value());
-  EXPECT_EQ(FILE_PATH_LITERAL("~chromium"), url.path().DirName().value());
+  EXPECT_EQ(FPL("space bar"), VirtualPath::BaseName(url.path()).value());
+  EXPECT_EQ(FPL("~chromium"), url.path().DirName().value());
 }
 
 TEST(FileSystemURLTest, RejectBadType) {
@@ -203,6 +203,26 @@ TEST(FileSystemURLTest, IsParent) {
   // False case: different origins.
   EXPECT_FALSE(CreateFileSystemURL(root1 + parent).IsParent(
       CreateFileSystemURL(root4 + child)));
+}
+
+TEST(FileSystemURLTest, DebugString) {
+  const GURL kOrigin("http://example.com");
+  const FilePath kPath(FPL("dir/file"));
+
+  const FileSystemURL kURL1(kOrigin, kFileSystemTypeTemporary, kPath);
+  EXPECT_EQ("filesystem:http://example.com/temporary/" +
+            NormalizedUTF8Path(kPath),
+            kURL1.DebugString());
+
+  const FilePath kRoot(FPL("root"));
+  ScopedExternalFileSystem scoped_fs("foo", kFileSystemTypeNativeLocal, kRoot);
+  const FileSystemURL kURL2(kOrigin, kFileSystemTypeExternal,
+                            scoped_fs.GetVirtualRootPath().Append(kPath));
+  EXPECT_EQ("filesystem:http://example.com/external/" +
+            NormalizedUTF8Path(scoped_fs.GetVirtualRootPath().Append(kPath)) +
+            " (NativeLocal@foo:" +
+            NormalizedUTF8Path(kRoot.Append(kPath)) + ")",
+            kURL2.DebugString());
 }
 
 }  // namespace fileapi

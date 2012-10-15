@@ -25,13 +25,6 @@ const char kIsolatedDir[] = "/isolated";
 const char kExternalDir[] = "/external";
 const char kTestDir[] = "/test";
 
-const char kPersistentName[] = "Persistent";
-const char kTemporaryName[] = "Temporary";
-const char kIsolatedName[] = "Isolated";
-const char kExternalName[] = "External";
-const char kTestName[] = "Test";
-const char kSyncableName[] = "Syncable";
-
 // TODO(ericu): Consider removing support for '\', even on Windows, if possible.
 // There's a lot of test code that will need reworking, and we may have trouble
 // with FilePath elsewhere [e.g. DirName and other methods may also need
@@ -170,21 +163,34 @@ GURL GetOriginURLFromIdentifier(const std::string& origin_identifier) {
 std::string GetFileSystemTypeString(FileSystemType type) {
   switch (type) {
     case kFileSystemTypeTemporary:
-      return fileapi::kTemporaryName;
+      return "Temporary";
     case kFileSystemTypePersistent:
-      return fileapi::kPersistentName;
-    case kFileSystemTypeExternal:
-      return fileapi::kExternalName;
+      return "Persistent";
     case kFileSystemTypeIsolated:
-      return fileapi::kIsolatedName;
+      return "Isolated";
+    case kFileSystemTypeExternal:
+      return "External";
     case kFileSystemTypeTest:
-      return fileapi::kTestName;
+      return "Test";
+    case kFileSystemTypeNativeLocal:
+      return "NativeLocal";
+    case kFileSystemTypeRestrictedNativeLocal:
+      return "RestrictedNativeLocal";
+    case kFileSystemTypeDragged:
+      return "Dragged";
+    case kFileSystemTypeNativeMedia:
+      return "NativeMedia";
+    case kFileSystemTypeDeviceMedia:
+      return "DeviceMedia";
+    case kFileSystemTypeDrive:
+      return "Drive";
     case kFileSystemTypeSyncable:
-      return fileapi::kSyncableName;
+      return "Syncable";
     case kFileSystemTypeUnknown:
-    default:
-      return std::string();
+      return "Unknown";
   }
+  NOTREACHED();
+  return std::string();
 }
 
 std::string FilePathToString(const FilePath& file_path) {
@@ -245,7 +251,8 @@ bool CrackIsolatedFileSystemName(const std::string& filesystem_name,
 
   // |filesystem_name| is of the form {origin}:isolated_{filesystem_id}.
   std::string start_token(":");
-  start_token = start_token.append(kIsolatedName).append("_");
+  start_token = start_token.append(
+      GetFileSystemTypeString(kFileSystemTypeIsolated)).append("_");
   // WebKit uses different case in its constant for isolated file system
   // names, so we do a case insensitive compare by converting both strings
   // to uppercase.
