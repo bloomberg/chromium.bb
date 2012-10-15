@@ -20,6 +20,13 @@ cr.define('oobe', function() {
   ];
 
   /**
+   * Whether the web camera item should be preselected, if available.
+   * @type {boolean}
+   * @const
+   */
+  var PRESELECT_CAMERA = false;
+
+  /**
    * Creates a new OOBE screen div.
    * @constructor
    * @extends {HTMLDivElement}
@@ -532,15 +539,21 @@ cr.define('oobe', function() {
       Oobe.getInstance().headerHidden = true;
       var imageGrid = $('user-image-grid');
       imageGrid.updateAndFocus();
-      // Check for camera presence and select it, if present.
-      imageGrid.checkCameraPresence(
-          function() {  // When present.
-            imageGrid.selectedItem = imageGrid.cameraImage;
-            return true;  // Start capture if ready.
-          },
-          function() {  // When absent.
-            return true;  // Check again after some time.
-          });
+      if (PRESELECT_CAMERA) {
+        // Check for camera presence and select it, if present.
+        imageGrid.checkCameraPresence(
+            function() {  // When present.
+              imageGrid.selectedItem = imageGrid.cameraImage;
+              return true;  // Start capture if ready.
+            },
+            function() {  // When absent.
+              return true;  // Check again after some time.
+            });
+      } else {
+        // Check continuously for camera presence but don't select it.
+        imageGrid.checkCameraPresence(function() { return false; },
+                                      function() { return true; });
+      }
       chrome.send('onUserImageScreenShown');
     },
 
