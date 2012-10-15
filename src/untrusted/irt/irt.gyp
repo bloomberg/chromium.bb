@@ -87,6 +87,7 @@
              '-Wl,-Ttext=<(NACL_IRT_TEXT_START)',
              # TODO(olonho): rethink
              '-L<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
+             '-Wt,-mtls-use-call',
            ],
          },
        ],

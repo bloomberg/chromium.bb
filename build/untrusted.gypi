@@ -342,7 +342,7 @@
                   '--lib-dirs=>(lib_dirs_newlib_arm) ',
                   '--compile_flags=^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--defines=^(defines) >(_defines)',
-                  '--link_flags=-arch arm --pnacl-allow-translate --pnacl-allow-native -Wt,^(newlib_tls_flags) -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
+                  '--link_flags=-arch arm --pnacl-allow-translate --pnacl-allow-native -B<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm ^(link_flags) >(_link_flags)',
                   '--source-list=^|(<(source_list_newlib_arm) ^(_sources) ^(sources))',
                  ],
               },
