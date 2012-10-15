@@ -70,6 +70,7 @@
         'base/models/tree_node_iterator_unittest.cc',
         'base/resource/data_pack_literal.cc',
         'base/resource/data_pack_unittest.cc',
+        'gfx/codec/png_codec_unittest.cc',
         'gfx/color_utils_unittest.cc',
         'gfx/display_unittest.cc',
         'gfx/font_unittest.cc',
@@ -88,6 +89,9 @@
         'gfx/size_unittest.cc',
         'gfx/skbitmap_operations_unittest.cc',
         'gfx/skia_util_unittest.cc',
+        'test/run_all_unittests.cc',
+        'test/test_suite.cc',
+        'test/test_suite.h',
       ],
       'all_sources': [
         '<@(_common_sources)',
@@ -118,7 +122,6 @@
         'gfx/blit_unittest.cc',
         'gfx/canvas_unittest.cc',
         'gfx/codec/jpeg_codec_unittest.cc',
-        'gfx/codec/png_codec_unittest.cc',
         'gfx/color_analysis_unittest.cc',
         'gfx/font_list_unittest.cc',
         'gfx/image/image_mac_unittest.mm',
@@ -127,9 +130,6 @@
         'gfx/render_text_unittest.cc',
         'gfx/transform_util_unittest.cc',
         'gfx/video_decode_acceleration_support_mac_unittest.mm',
-        'test/run_all_unittests.cc',
-        'test/test_suite.cc',
-        'test/test_suite.h',
       ],
       'include_dirs': [
         '../',
@@ -143,10 +143,6 @@
         }, {  # OS=="ios"
           'sources' : [
             '<@(_common_sources)',
-            # TODO(rohitrao): Get ui/test/test_suite.cc and
-            # ui/test/run_all_unittests.cc compiling on iOS and remove this
-            # line.
-            '../base/test/run_all_unittests.cc',
           ],
         }],
         ['OS == "win"', {
@@ -260,6 +256,15 @@
         }],
       ],
     },
+  ],
+  'target_conditions': [
+    ['OS == "ios"', {
+      'sources/': [
+        # Pull in specific Mac files for iOS (which have been filtered out
+        # by file name rules).
+        ['include', '^base/l10n/l10n_util_mac_unittest\\.mm$'],
+      ],
+    }],
   ],
   'conditions': [
     # Special target to wrap a gtest_target_type==shared_library
