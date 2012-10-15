@@ -193,7 +193,7 @@ class FILEAPI_EXPORT FileSystemContext
   std::map<FileSystemType, FileSystemMountPointProvider*> provider_map_;
 
   // The base path of the storage partition for this context.
-  const FilePath& partition_path_;
+  const FilePath partition_path_;
 
   // For syncable file systems.
   scoped_ptr<LocalFileChangeTracker> change_tracker_;
