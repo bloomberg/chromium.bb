@@ -4910,6 +4910,38 @@
             },
           ],
         },
+        {
+          'target_name': 'sync_integration_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'sync_integration_tests',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+          'includes': [
+            'sync_integration_tests.isolate',
+          ],
+          'actions': [
+            {
+              'action_name': 'isolate',
+              'inputs': [
+                '<@(isolate_dependency_tracked)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/sync_integration_tests.isolated',
+              ],
+              'action': [
+                'python',
+                '../tools/swarm_client/isolate.py',
+                '<(test_isolation_mode)',
+                '--outdir', '<(test_isolation_outdir)',
+                '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+                '--variable', 'OS', '<(OS)',
+                '--result', '<@(_outputs)',
+                '--isolate', 'sync_integration_tests.isolate',
+              ],
+            },
+          ],
+        },
       ],
     }],
   ],  # 'conditions'
