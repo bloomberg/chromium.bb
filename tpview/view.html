@@ -281,7 +281,8 @@ $(document).ready(function() {
                        'end': {'xPos': 0.9, 'yPos': 0.5}}]);
   var inGc = new GraphController($('#fview'));
   
-  finger_view_controller = new FingerViewController(inGc, gc, $('#intext'));
+  finger_view_controller = new FingerViewController(inGc, gc, $('#intext'),
+                                                    $('#out-lock-head'));
   $("#out-resetzoom").button({
     icons: {
       primary: "ui-icon-arrow-4-diag"
@@ -397,6 +398,8 @@ $(document).ready(function() {
 <div class="viewspan">
 <div class="heading">Output:</div>
 <canvas class="view" id="gview" width="480" height="320"></canvas><br/>
+<input type="checkbox" id="out-lock-head" />
+<label for="out-lock-head">Lock Head Location</label><br/>
 <button class="button" id="out-resetzoom">Reset Zoom</button><br/>
 </div>
 <div id="playbar">

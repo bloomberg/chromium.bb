@@ -118,16 +118,19 @@ GraphController.prototype = {
   mouseDown: function(xPos, yPos) {
     this.dragStart = { 'xPos': xPos, 'yPos': yPos };
   },
+  moveBy: function(dx, dy) {
+    this.xMin -= dx;
+    this.xMax -= dx;
+    this.yMin -= dy;
+    this.yMax -= dy;
+  },
   dragMove: function(xPos, yPos) {
     var viewPt = { 'xPos': xPos, 'yPos': yPos };
     var viewDx = viewPt.xPos - this.dragStart.xPos;
     var viewDy = viewPt.yPos - this.dragStart.yPos;
     var dx = viewDx * (this.xMax - this.xMin) / this.canvas.width;
     var dy = viewDy * (this.yMax - this.yMin) / this.canvas.height;
-    this.xMin -= dx;
-    this.xMax -= dx;
-    this.yMin -= dy;
-    this.yMax -= dy;
+    this.moveBy(dx, dy);
     this.dragStart = viewPt;
     this.draw();
   },

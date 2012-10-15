@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function FingerViewController(inGraph, outGraph, inText) {
+function FingerViewController(inGraph, outGraph, inText, outLockHead) {
   this.entries = [];
   this.hardwareProperties = [];
   this.begin = -1;
   this.end = -1;
+  this.gestureHead = null;
 
   this.gs_graph = outGraph;
   this.inGraph = inGraph;
   this.inText = inText;
+  this.outLockHead = outLockHead[0];
 };
 
 FingerViewController.prototype = {
@@ -546,6 +548,12 @@ FingerViewController.prototype = {
                                    yMin - yBorder,
                                    xMax + xBorder,
                                    yMax + yBorder);
+      if (this.outLockHead.checked && this.gestureHead) {
+        var dx = this.gestureHead.xPos - xPos;
+        var dy = this.gestureHead.yPos - yPos;
+        this.gs_graph.moveBy(dx, dy);
+      }
+      this.gestureHead = {'xPos': xPos, 'yPos': yPos};
     }
     this.gs_graph.setLineSegments(segs);
   },
