@@ -96,7 +96,7 @@
  "nacl-lucid_64-newlib-x86_64-pnacl-spec/spec2k/runtime_mcf/pnacl_translator.opt.x8664": {"reva": 6681, "revb": 6701, "type": "absolute", "improve": 7, "regress": 9, "sha1": "ddb108df"},
  "nacl-lucid_64-newlib-x86_64-pnacl-spec/spec2k/runtime_mesa/pnacl_translator.opt.x8664": {"reva": 7731, "revb": 7768, "type": "absolute", "improve": 19, "regress": 22, "sha1": "4cbff396"},
  "nacl-lucid_64-newlib-x86_64-pnacl-spec/spec2k/runtime_parser/pnacl_translator.opt.x8664": {"reva": 6681, "revb": 6701, "type": "absolute", "improve": 3, "regress": 5, "sha1": "e567f011"},
- "nacl-lucid_64-newlib-x86_64-pnacl-spec/spec2k/runtime_perlbmk/pnacl_translator.opt.x8664": {"reva": 6777, "revb": 6815, "type": "absolute", "improve": 27, "regress": 32, "sha1": "a09d506a"},
+ "nacl-lucid_64-newlib-x86_64-pnacl-spec/spec2k/runtime_perlbmk/pnacl_translator.opt.x8664": {"reva": 9973, "revb": 9995, "type": "absolute", "improve": 25, "regress": 30, "sha1": "be4be12b"},
  "nacl-lucid_64-newlib-x86_64-pnacl-spec/spec2k/runtime_twolf/pnacl_translator.opt.x8664": {"reva": 6681, "revb": 6701, "type": "absolute", "improve": 6, "regress": 8, "sha1": "3e62cfb9"},
  "nacl-lucid_64-newlib-x86_64-pnacl-spec/spec2k/runtime_vortex/pnacl_translator.opt.x8664": {"reva": 6681, "revb": 6701, "type": "absolute", "improve": 4, "regress": 6, "sha1": "1ae788f2"},
  "nacl-lucid_64-newlib-x86_64-pnacl-spec/spec2k/runtime_vpr/pnacl_translator.opt.x8664": {"reva": 6681, "revb": 6701, "type": "absolute", "improve": 11, "regress": 14, "sha1": "fc41b08c"},
