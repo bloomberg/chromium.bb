@@ -652,8 +652,9 @@ void ProfileIOData::SetUpJobFactoryDefaults(
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_CHROMEOS)
 
-  job_factory->SetProtocolHandler(chrome::kAboutScheme,
-                                  new net::AboutProtocolHandler());
+  job_factory->SetProtocolHandler(
+      chrome::kAboutScheme,
+      new chrome_browser_net::AboutProtocolHandler());
 #if !defined(DISABLE_FTP_SUPPORT)
   DCHECK(ftp_transaction_factory);
   job_factory->SetProtocolHandler(

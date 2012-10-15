@@ -6,14 +6,14 @@
 
 #include "net/url_request/url_request_about_job.h"
 
-namespace net {
+namespace chrome_browser_net {
 
 AboutProtocolHandler::AboutProtocolHandler() {
 }
 
-URLRequestJob* AboutProtocolHandler::MaybeCreateJob(
-    URLRequest* request, NetworkDelegate* network_delegate) const {
-  return new URLRequestAboutJob(request, network_delegate);
+net::URLRequestJob* AboutProtocolHandler::MaybeCreateJob(
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
+  return new net::URLRequestAboutJob(request, network_delegate);
 }
 
-}  // namespace net
+}  // namespace chrome_browser_net
