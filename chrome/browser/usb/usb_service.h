@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/move.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/usb/usb_device.h"
