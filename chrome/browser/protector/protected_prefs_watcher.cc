@@ -9,8 +9,8 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -109,8 +109,19 @@ ProtectedPrefsWatcher::ProtectedPrefsWatcher(Profile* profile)
   // Perform necessary pref migrations before actually starting to observe
   // pref changes, otherwise the migration would affect the backup data as well.
   EnsurePrefsMigration();
-  pref_observer_.reset(PrefSetObserver::CreateProtectedPrefSetObserver(
-      profile->GetPrefs(), this));
+
+  pref_observer_.Init(profile->GetPrefs());
+  pref_observer_.Add(prefs::kHomePageIsNewTabPage, this);
+  pref_observer_.Add(prefs::kHomePage, this);
+  pref_observer_.Add(prefs::kShowHomeButton, this);
+  // Session startup.
+  pref_observer_.Add(prefs::kRestoreOnStartup, this);
+  pref_observer_.Add(prefs::kURLsToRestoreOnStartup, this);
+  // Pinned tabs.
+  pref_observer_.Add(prefs::kPinnedTabs, this);
+  // Extensions.
+  pref_observer_.Add(ExtensionPrefs::kExtensionsPref, this);
+
   UpdateCachedPrefs();
   ValidateBackup();
   VLOG(1) << "Initialized pref watcher";
@@ -190,7 +201,7 @@ void ProtectedPrefsWatcher::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_PREF_CHANGED);
   const std::string* pref_name = content::Details<std::string>(details).ptr();
-  DCHECK(pref_name && pref_observer_->IsObserved(*pref_name));
+  DCHECK(pref_name && pref_observer_.IsObserved(*pref_name));
   if (UpdateBackupEntry(*pref_name))
     UpdateBackupSignature();
 }

@@ -47,6 +47,12 @@ class PrefChangeRegistrar {
   // Returns true if no pref observers are registered.
   bool IsEmpty() const;
 
+  // Check whether |pref| is in the set of preferences being observed.
+  bool IsObserved(const std::string& pref);
+
+  // Check whether any of the observed preferences has the managed bit set.
+  bool IsManaged();
+
  private:
   typedef std::pair<std::string, content::NotificationObserver*>
       ObserverRegistration;

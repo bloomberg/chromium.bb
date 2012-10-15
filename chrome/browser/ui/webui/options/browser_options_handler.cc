@@ -604,8 +604,8 @@ void BrowserOptionsHandler::InitializeHandler() {
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
   default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
 #if !defined(OS_CHROMEOS)
-  proxy_prefs_.reset(
-      PrefSetObserver::CreateProxyPrefSetObserver(prefs, this));
+  proxy_prefs_.Init(prefs);
+  proxy_prefs_.Add(prefs::kProxy, this);
 #endif  // !defined(OS_CHROMEOS)
 }
 
@@ -857,7 +857,7 @@ void BrowserOptionsHandler::Observe(
     } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {
       SetupAutoOpenFileTypes();
 #if !defined(OS_CHROMEOS)
-    } else if (proxy_prefs_->IsObserved(*pref_name)) {
+    } else if (proxy_prefs_.IsObserved(*pref_name)) {
       SetupProxySettingsSection();
 #endif  // !defined(OS_CHROMEOS)
     } else if ((*pref_name == prefs::kCloudPrintEmail) ||
@@ -1389,8 +1389,8 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
   bool is_extension_controlled = (proxy_config &&
                                   proxy_config->IsExtensionControlled());
 
-  base::FundamentalValue disabled(proxy_prefs_->IsManaged() ||
-                            is_extension_controlled);
+  base::FundamentalValue disabled(proxy_prefs_.IsManaged() ||
+                                  is_extension_controlled);
 
   // Get the appropriate info string to describe the button.
   string16 label_str;

@@ -21,7 +21,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #else
-#include "chrome/browser/prefs/pref_set_observer.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #endif  // defined(OS_CHROMEOS)
 
 class AutocompleteController;
@@ -292,7 +292,7 @@ class BrowserOptionsHandler
   DoublePrefMember default_zoom_level_;
 
 #if !defined(OS_CHROMEOS)
-  scoped_ptr<PrefSetObserver> proxy_prefs_;
+  PrefChangeRegistrar proxy_prefs_;
 #endif  // !defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);

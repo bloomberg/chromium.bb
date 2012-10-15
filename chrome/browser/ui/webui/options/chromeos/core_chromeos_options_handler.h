@@ -7,9 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
-
-class PrefSetObserver;
 
 namespace chromeos {
 namespace options {
@@ -43,7 +42,7 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
   void NotifySettingsChanged(const std::string* setting_name);
   void NotifyProxyPrefsChanged();
 
-  scoped_ptr<PrefSetObserver> proxy_prefs_;
+  PrefChangeRegistrar proxy_prefs_;
   base::WeakPtrFactory<CoreChromeOSOptionsHandler> pointer_factory_;
 };
 

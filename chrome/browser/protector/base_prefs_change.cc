@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_set_observer.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/base_prefs_change.h"
 #include "chrome/browser/protector/protected_prefs_watcher.h"
@@ -23,7 +23,7 @@ BasePrefsChange::~BasePrefsChange() {
 bool BasePrefsChange::Init(Profile* profile) {
   if (!BaseSettingChange::Init(profile))
     return false;
-  pref_observer_.reset(new PrefSetObserver(profile->GetPrefs(), this));
+  pref_observer_.Init(profile->GetPrefs());
   return true;
 }
 
@@ -35,12 +35,12 @@ void BasePrefsChange::InitWhenDisabled(Profile* profile) {
 }
 
 void BasePrefsChange::DismissOnPrefChange(const std::string& pref_name) {
-  DCHECK(!pref_observer_->IsObserved(pref_name));
-  pref_observer_->AddPref(pref_name);
+  DCHECK(!pref_observer_.IsObserved(pref_name));
+  pref_observer_.Add(pref_name.c_str(), this);
 }
 
 void BasePrefsChange::IgnorePrefChanges() {
-  pref_observer_.reset();
+  pref_observer_.RemoveAll();
 }
 
 void BasePrefsChange::Observe(int type,
@@ -48,7 +48,7 @@ void BasePrefsChange::Observe(int type,
                              const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_PREF_CHANGED);
   const std::string* pref_name = content::Details<std::string>(details).ptr();
-  DCHECK(pref_name && pref_observer_->IsObserved(*pref_name));
+  DCHECK(pref_name && pref_observer_.IsObserved(*pref_name));
   // Will delete this instance.
   ProtectorServiceFactory::GetForProfile(profile())->DismissChange(this);
 }

@@ -8,10 +8,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/protector/base_setting_change.h"
 #include "content/public/browser/notification_observer.h"
-
-class PrefSetObserver;
 
 namespace protector {
 
@@ -41,7 +40,7 @@ class BasePrefsChange : public BaseSettingChange,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  scoped_ptr<PrefSetObserver> pref_observer_;
+  PrefChangeRegistrar pref_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BasePrefsChange);
 };

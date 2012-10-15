@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/browser/notification_details.h"
@@ -117,4 +119,89 @@ TEST_F(PrefChangeRegistrarTest, RemoveAll) {
   // Explicitly check the expectations now to make sure that the RemoveAll
   // worked (rather than the registrar destructor doing the work).
   Mock::VerifyAndClearExpectations(service());
+}
+
+class ObserveSetOfPreferencesTest : public testing::Test {
+ public:
+  virtual void SetUp() {
+    pref_service_.reset(new TestingPrefService);
+    pref_service_->RegisterStringPref(prefs::kHomePage,
+                                      "http://google.com",
+                                      PrefService::UNSYNCABLE_PREF);
+    pref_service_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
+                                       false,
+                                       PrefService::UNSYNCABLE_PREF);
+    pref_service_->RegisterStringPref(prefs::kApplicationLocale,
+                                      "",
+                                      PrefService::UNSYNCABLE_PREF);
+  }
+
+  PrefChangeRegistrar* CreatePrefChangeRegistrar(
+        content::NotificationObserver* observer) {
+    PrefChangeRegistrar* pref_set = new PrefChangeRegistrar();
+    pref_set->Init(pref_service_.get());
+    pref_set->Add(prefs::kHomePage, observer);
+    pref_set->Add(prefs::kHomePageIsNewTabPage, observer);
+    return pref_set;
+  }
+
+  scoped_ptr<TestingPrefService> pref_service_;
+};
+
+TEST_F(ObserveSetOfPreferencesTest, IsObserved) {
+  scoped_ptr<PrefChangeRegistrar> pref_set(CreatePrefChangeRegistrar(NULL));
+  EXPECT_TRUE(pref_set->IsObserved(prefs::kHomePage));
+  EXPECT_TRUE(pref_set->IsObserved(prefs::kHomePageIsNewTabPage));
+  EXPECT_FALSE(pref_set->IsObserved(prefs::kApplicationLocale));
+}
+
+TEST_F(ObserveSetOfPreferencesTest, IsManaged) {
+  scoped_ptr<PrefChangeRegistrar> pref_set(CreatePrefChangeRegistrar(NULL));
+  EXPECT_FALSE(pref_set->IsManaged());
+  pref_service_->SetManagedPref(prefs::kHomePage,
+                                Value::CreateStringValue("http://crbug.com"));
+  EXPECT_TRUE(pref_set->IsManaged());
+  pref_service_->SetManagedPref(prefs::kHomePageIsNewTabPage,
+                                Value::CreateBooleanValue(true));
+  EXPECT_TRUE(pref_set->IsManaged());
+  pref_service_->RemoveManagedPref(prefs::kHomePage);
+  EXPECT_TRUE(pref_set->IsManaged());
+  pref_service_->RemoveManagedPref(prefs::kHomePageIsNewTabPage);
+  EXPECT_FALSE(pref_set->IsManaged());
+}
+
+MATCHER_P(PrefNameDetails, name, "details references named preference") {
+  std::string* pstr =
+      reinterpret_cast<const content::Details<std::string>&>(arg).ptr();
+  return pstr && *pstr == name;
+}
+
+TEST_F(ObserveSetOfPreferencesTest, Observe) {
+  using testing::_;
+  using testing::Mock;
+
+  content::MockNotificationObserver observer;
+  scoped_ptr<PrefChangeRegistrar> pref_set(
+      CreatePrefChangeRegistrar(&observer));
+
+  EXPECT_CALL(observer,
+              Observe(int(chrome::NOTIFICATION_PREF_CHANGED),
+                      content::Source<PrefService>(pref_service_.get()),
+                      PrefNameDetails(prefs::kHomePage)));
+  pref_service_->SetUserPref(prefs::kHomePage,
+                             Value::CreateStringValue("http://crbug.com"));
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer,
+              Observe(int(chrome::NOTIFICATION_PREF_CHANGED),
+                      content::Source<PrefService>(pref_service_.get()),
+                      PrefNameDetails(prefs::kHomePageIsNewTabPage)));
+  pref_service_->SetUserPref(prefs::kHomePageIsNewTabPage,
+                             Value::CreateBooleanValue(true));
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, Observe(_, _, _)).Times(0);
+  pref_service_->SetUserPref(prefs::kApplicationLocale,
+                             Value::CreateStringValue("en_US.utf8"));
+  Mock::VerifyAndClearExpectations(&observer);
 }

@@ -67,3 +67,23 @@ void PrefChangeRegistrar::RemoveAll() {
 bool PrefChangeRegistrar::IsEmpty() const {
   return observers_.empty();
 }
+
+bool PrefChangeRegistrar::IsObserved(const std::string& pref) {
+  for (std::set<ObserverRegistration>::const_iterator it = observers_.begin();
+       it != observers_.end(); ++it) {
+    if (it->first == pref)
+      return true;
+  }
+  return false;
+}
+
+bool PrefChangeRegistrar::IsManaged() {
+  for (std::set<ObserverRegistration>::const_iterator it = observers_.begin();
+       it != observers_.end(); ++it) {
+    const PrefServiceBase::Preference* pref =
+        service_->FindPreference(it->first.c_str());
+    if (pref && pref->IsManaged())
+      return true;
+  }
+  return false;
+}

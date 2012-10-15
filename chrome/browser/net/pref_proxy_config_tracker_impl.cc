@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -130,8 +129,8 @@ PrefProxyConfigTrackerImpl::PrefProxyConfigTrackerImpl(
       chrome_proxy_config_service_(NULL),
       update_pending_(true) {
   config_state_ = ReadPrefConfig(&pref_config_);
-  proxy_prefs_observer_.reset(
-      PrefSetObserver::CreateProxyPrefSetObserver(pref_service_, this));
+  proxy_prefs_.Init(pref_service);
+  proxy_prefs_.Add(prefs::kProxy, this);
 }
 
 PrefProxyConfigTrackerImpl::~PrefProxyConfigTrackerImpl() {
@@ -150,7 +149,7 @@ void PrefProxyConfigTrackerImpl::SetChromeProxyConfigService(
 void PrefProxyConfigTrackerImpl::DetachFromPrefService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Stop notifications.
-  proxy_prefs_observer_.reset();
+  proxy_prefs_.RemoveAll();
   pref_service_ = NULL;
   SetChromeProxyConfigService(NULL);
 }
