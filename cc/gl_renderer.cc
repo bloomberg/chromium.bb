@@ -428,11 +428,9 @@ void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDra
     if (!renderPass)
         return;
 
-    WebTransformationMatrix renderMatrix = quad->quadTransform();
-    renderMatrix.translate(0.5 * quad->quadRect().width() + quad->quadRect().x(), 0.5 * quad->quadRect().height() + quad->quadRect().y());
-    WebTransformationMatrix deviceMatrix = renderMatrix;
-    deviceMatrix.scaleNonUniform(quad->quadRect().width(), quad->quadRect().height());
-    WebTransformationMatrix contentsDeviceTransform = WebTransformationMatrix(frame.windowMatrix * frame.projectionMatrix * deviceMatrix).to2dTransform();
+    WebTransformationMatrix quadRectMatrix;
+    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->quadRect());
+    WebTransformationMatrix contentsDeviceTransform = (frame.windowMatrix * frame.projectionMatrix * quadRectMatrix).to2dTransform();
 
     // Can only draw surface if device matrix is invertible.
     if (!contentsDeviceTransform.isInvertible())

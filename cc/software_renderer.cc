@@ -10,11 +10,12 @@
 #include "CCSolidColorDrawQuad.h"
 #include "CCTextureDrawQuad.h"
 #include "CCTileDrawQuad.h"
-#include "SkCanvas.h"
-#include "SkColor.h"
-#include "SkMatrix.h"
-#include "SkPixelRef.h"
-#include <GLES2/gl2.h>
+#include "CCRenderPassDrawQuad.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/effects/SkLayerRasterizer.h"
 #include <public/WebImage.h>
 #include <public/WebSize.h>
 #include <public/WebTransformationMatrix.h>
@@ -140,7 +141,14 @@ void CCRendererSoftware::disableScissorTest()
 
 void CCRendererSoftware::clearFramebuffer(DrawingFrame& frame)
 {
-    m_skCurrentCanvas->clear(SK_ColorGREEN);
+    if (frame.currentRenderPass->hasTransparentBackground()) {
+        m_skCurrentCanvas->clear(SkColorSetARGB(0, 0, 0, 0));
+    } else {
+#ifndef NDEBUG
+        // On DEBUG builds, opaque render passes are cleared to blue to easily see regions that were not drawn on the screen.
+        m_skCurrentCanvas->clear(SkColorSetARGB(255, 0, 0, 255));
+#endif
+    }
 }
 
 void CCRendererSoftware::setDrawViewportSize(const IntSize& viewportSize)
@@ -164,16 +172,18 @@ void CCRendererSoftware::drawQuad(DrawingFrame& frame, const CCDrawQuad* quad)
 {
     WebTransformationMatrix quadRectMatrix;
     quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->quadRect());
-    WebTransformationMatrix windowMatrix = frame.windowMatrix * frame.projectionMatrix * quadRectMatrix;
-    SkMatrix skWindowMatrix;
-    toSkMatrix(&skWindowMatrix, windowMatrix);
-    m_skCurrentCanvas->setMatrix(skWindowMatrix);
+    WebTransformationMatrix contentsDeviceTransform = (frame.windowMatrix * frame.projectionMatrix * quadRectMatrix).to2dTransform();
+    SkMatrix skDeviceMatrix;
+    toSkMatrix(&skDeviceMatrix, contentsDeviceTransform);
+    m_skCurrentCanvas->setMatrix(skDeviceMatrix);
 
     m_skCurrentPaint.reset();
-    if (quad->needsBlending())
+    if (quad->needsBlending()) {
         m_skCurrentPaint.setAlpha(quad->opacity() * 255);
-    else
+        m_skCurrentPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    } else {
         m_skCurrentPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    }
 
     switch (quad->material()) {
     case CCDrawQuad::DebugBorder:
@@ -187,6 +197,9 @@ void CCRendererSoftware::drawQuad(DrawingFrame& frame, const CCDrawQuad* quad)
         break;
     case CCDrawQuad::TiledContent:
         drawTileQuad(frame, CCTileDrawQuad::materialCast(quad));
+        break;
+    case CCDrawQuad::RenderPass:
+        drawRenderPassQuad(frame, CCRenderPassDrawQuad::materialCast(quad));
         break;
     default:
         drawUnsupportedQuad(frame, quad);
@@ -243,6 +256,58 @@ void CCRendererSoftware::drawTileQuad(const DrawingFrame& frame, const CCTileDra
 
     SkIRect uvRect = toSkIRect(IntRect(quad->textureOffset(), quad->quadRect().size()));
     m_skCurrentCanvas->drawBitmapRect(*quadResourceLock.skBitmap(), &uvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
+}
+
+void CCRendererSoftware::drawRenderPassQuad(const DrawingFrame& frame, const CCRenderPassDrawQuad* quad)
+{
+    CachedTexture* contentsTexture = m_renderPassTextures.get(quad->renderPassId());
+    if (!contentsTexture || !contentsTexture->id())
+        return;
+
+    ASSERT(isSoftwareResource(contentsTexture->id()));
+    CCResourceProvider::ScopedReadLockSoftware contentsTextureLock(m_resourceProvider, contentsTexture->id());
+
+    const SkBitmap* bitmap = contentsTextureLock.skBitmap();
+
+    SkRect sourceRect;
+    bitmap->getBounds(&sourceRect);
+
+    SkRect destRect = toSkRect(quadVertexRect());
+
+    SkMatrix matrix;
+    matrix.setRectToRect(sourceRect, destRect, SkMatrix::kFill_ScaleToFit);
+
+    SkAutoTUnref<SkShader> shader(SkShader::CreateBitmapShader(*bitmap,
+                                                               SkShader::kClamp_TileMode,
+                                                               SkShader::kClamp_TileMode));
+    shader->setLocalMatrix(matrix);
+    m_skCurrentPaint.setShader(shader);
+
+    if (quad->maskResourceId()) {
+        CCResourceProvider::ScopedReadLockSoftware maskResourceLock(m_resourceProvider, quad->maskResourceId());
+        const SkBitmap* maskBitmap = maskResourceLock.skBitmap();
+
+        SkMatrix maskMat;
+        maskMat.setRectToRect(toSkRect(quad->quadRect()), destRect, SkMatrix::kFill_ScaleToFit);
+        maskMat.postTranslate(quad->maskTexCoordOffsetX(), quad->maskTexCoordOffsetY());
+
+        SkAutoTUnref<SkShader> maskShader(SkShader::CreateBitmapShader(*maskBitmap,
+                                                                       SkShader::kClamp_TileMode,
+                                                                       SkShader::kClamp_TileMode));
+        maskShader->setLocalMatrix(maskMat);
+
+        SkPaint maskPaint;
+        maskPaint.setShader(maskShader);
+
+        SkAutoTUnref<SkLayerRasterizer> maskRasterizer(new SkLayerRasterizer);
+        maskRasterizer->addLayer(maskPaint);
+
+        m_skCurrentPaint.setRasterizer(maskRasterizer);
+        m_skCurrentCanvas->drawRect(destRect, m_skCurrentPaint);
+    } else {
+        // FIXME: Apply background filters and blend with contents
+        m_skCurrentCanvas->drawRect(destRect, m_skCurrentPaint);
+    }
 }
 
 void CCRendererSoftware::drawUnsupportedQuad(const DrawingFrame& frame, const CCDrawQuad* quad)

@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "CCDirectRenderer.h"
-#include "CCLayerTreeHost.h"
 #include <public/WebCompositorSoftwareOutputDevice.h>
 
 namespace cc {
@@ -18,6 +17,7 @@ class CCResourceProvider;
 class CCSolidColorDrawQuad;
 class CCTextureDrawQuad;
 class CCTileDrawQuad;
+class CCRenderPassDrawQuad;
 
 class CCRendererSoftware : public CCDirectRenderer {
 public:
@@ -57,6 +57,7 @@ private:
     void drawSolidColorQuad(const DrawingFrame&, const CCSolidColorDrawQuad*);
     void drawTextureQuad(const DrawingFrame&, const CCTextureDrawQuad*);
     void drawTileQuad(const DrawingFrame&, const CCTileDrawQuad*);
+    void drawRenderPassQuad(const DrawingFrame& frame, const CCRenderPassDrawQuad*);
     void drawUnsupportedQuad(const DrawingFrame&, const CCDrawQuad*);
 
     RendererCapabilities m_capabilities;
