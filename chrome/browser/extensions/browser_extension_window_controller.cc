@@ -82,6 +82,5 @@ Browser* BrowserExtensionWindowController::GetBrowser() const {
 bool BrowserExtensionWindowController::IsVisibleToExtension(
     const extensions::Extension* extension) const {
   // Platform apps can only see their own windows.
-  // TODO(mihaip): what about non-Aura panels?
   return !extension->is_platform_app();
 }
