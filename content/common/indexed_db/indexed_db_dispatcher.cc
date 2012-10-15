@@ -105,6 +105,8 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksBlocked, OnBlocked)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksIntBlocked, OnIntBlocked)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksUpgradeNeeded, OnUpgradeNeeded)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksAbortLegacy,
+                        OnAbortLegacy)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksAbort, OnAbort)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksComplete, OnComplete)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksForcedClose,
@@ -687,13 +689,25 @@ void IndexedDBDispatcher::OnError(int32 thread_id, int32 response_id, int code,
   pending_callbacks_.Remove(response_id);
 }
 
-void IndexedDBDispatcher::OnAbort(int32 thread_id, int32 transaction_id) {
+// TODO(jsbell): Remove once WK99097 has landed.
+void IndexedDBDispatcher::OnAbortLegacy(int32 thread_id, int32 transaction_id) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   WebIDBTransactionCallbacks* callbacks =
       pending_transaction_callbacks_.Lookup(transaction_id);
   if (!callbacks)
     return;
   callbacks->onAbort();
+  pending_transaction_callbacks_.Remove(transaction_id);
+}
+
+void IndexedDBDispatcher::OnAbort(int32 thread_id, int32 transaction_id,
+                                  int code, const string16& message) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebIDBTransactionCallbacks* callbacks =
+      pending_transaction_callbacks_.Lookup(transaction_id);
+  if (!callbacks)
+    return;
+  callbacks->onAbort(WebIDBDatabaseError(code, message));
   pending_transaction_callbacks_.Remove(transaction_id);
 }
 

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_TRANSACTION_CALLBACKS_H_
 
 #include "base/memory/ref_counted.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 
 class IndexedDBDispatcherHost;
@@ -19,7 +20,9 @@ class IndexedDBTransactionCallbacks
 
   virtual ~IndexedDBTransactionCallbacks();
 
+  // TODO(jsbell): Remove once WK99097 has landed.
   virtual void onAbort();
+  virtual void onAbort(const WebKit::WebIDBDatabaseError& error);
   virtual void onComplete();
 
  private:

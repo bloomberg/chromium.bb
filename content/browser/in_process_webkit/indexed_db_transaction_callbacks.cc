@@ -19,9 +19,18 @@ IndexedDBTransactionCallbacks::IndexedDBTransactionCallbacks(
 IndexedDBTransactionCallbacks::~IndexedDBTransactionCallbacks() {
 }
 
+// TODO(jsbell): Remove once WK99097 has landed.
 void IndexedDBTransactionCallbacks::onAbort() {
   dispatcher_host_->Send(
-      new IndexedDBMsg_TransactionCallbacksAbort(thread_id_, transaction_id_));
+      new IndexedDBMsg_TransactionCallbacksAbortLegacy(
+          thread_id_, transaction_id_));
+}
+
+void IndexedDBTransactionCallbacks::onAbort(
+    const WebKit::WebIDBDatabaseError& error) {
+  dispatcher_host_->Send(
+      new IndexedDBMsg_TransactionCallbacksAbort(
+          thread_id_, transaction_id_, error.code(), error.message()));
 }
 
 void IndexedDBTransactionCallbacks::onComplete() {
