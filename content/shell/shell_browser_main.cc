@@ -7,15 +7,12 @@
 #include <iostream>
 
 #include "base/command_line.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_runner_host.h"
-#include "net/base/net_util.h"
 #include "webkit/support/webkit_support.h"
 
 namespace {
@@ -43,14 +40,11 @@ GURL GetURLForLayoutTest(const char* test_name,
   }
   if (expected_pixel_hash)
     *expected_pixel_hash = pixel_hash;
-  GURL test_url(path_or_url);
-  if (!(test_url.is_valid() && test_url.has_scheme()))
-    test_url = net::FilePathToFileURL(FilePath(path_or_url));
-  FilePath local_path;
-  if (net::FileURLToFilePath(test_url, &local_path)) {
+  GURL test_url = webkit_support::CreateURLForPathOrURL(path_or_url);
+  {
     // We're outside of the message loop here, and this is a test.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    file_util::SetCurrentDirectory(local_path.DirName());
+    webkit_support::SetCurrentDirectoryForFileURL(test_url);
   }
   return test_url;
 }
