@@ -2,10 +2,6 @@
   # Test TLS access commands.
   # mov %gs:0, %eax
   65 a1 00 00 00 00
-  # AFAIK it's open question whether # writes to gs:... should be allowed.
-  # Currently RDFA rejects.
-  # mov %eax, %gs:0
-  65 a3 00 00 00 00
   # Forbidden
   # mov %gs:0, %ax
   65 66 a1 00 00 00 00
@@ -22,41 +18,67 @@
   # mov %ax, %fs:0
   64 66 a3 00 00 00 00
   
-  # AFAIK it's open question whether writes to gs:... should be allowed.
-  # Currently RDFA rejects.
-  65 8B 00
-  
   # Forbidden
   # lock add %gs:0x0,%eax
   65 F0 03 05 00 00 00 00
 @nval:
-  VALIDATOR: c: Bad prefix usage
-  VALIDATOR: 13: Bad prefix usage
+  VALIDATOR: 6: Bad prefix usage
+  VALIDATOR: d: Bad prefix usage
+  VALIDATOR: 14: Bad prefix usage
   VALIDATOR: 1a: Bad prefix usage
   VALIDATOR: 20: Bad prefix usage
-  VALIDATOR: 26: Bad prefix usage
-  VALIDATOR: 2d: Bad prefix usage
-  VALIDATOR: 37: Bad prefix usage
+  VALIDATOR: 27: Bad prefix usage
+  VALIDATOR: 2e: Bad prefix usage
   *** <input> IS UNSAFE ***
 @dis:
   00000000: 65 a1 00 00 00 00                            mov %eax, %gs:[0x0]
-  00000006: 65 a3 00 00 00 00                            mov %gs:[0x0], %eax
-  0000000c: 65 66 a1 00 00 00 00                         mov %ax, %gs:[0x0]
-  00000013: 65 66 a3 00 00 00 00                         mov %gs:[0x0], %ax
-  0000001a: 64 a1 00 00 00 00                            mov %eax, %fs:[0x0]
-  00000020: 64 a3 00 00 00 00                            mov %fs:[0x0], %eax
-  00000026: 64 66 a1 00 00 00 00                         mov %ax, %fs:[0x0]
-  0000002d: 64 66 a3 00 00 00 00                         mov %fs:[0x0], %ax
-  00000034: 65 8b 00                                     mov %eax, %gs:[%eax]
-  00000037: 65 f0 03 05 00 00 00 00                      invalid %eax, 0x0
+  00000006: 65 66 a1 00 00 00 00                         mov %ax, %gs:[0x0]
+  0000000d: 65 66 a3 00 00 00 00                         mov %gs:[0x0], %ax
+  00000014: 64 a1 00 00 00 00                            mov %eax, %fs:[0x0]
+  0000001a: 64 a3 00 00 00 00                            mov %fs:[0x0], %eax
+  00000020: 64 66 a1 00 00 00 00                         mov %ax, %fs:[0x0]
+  00000027: 64 66 a3 00 00 00 00                         mov %fs:[0x0], %ax
+  0000002e: 65 f0 03 05 00 00 00 00                      invalid %eax, 0x0
 @vdis:
    0:	65 a1 00 00 00 00   	mov %eax, [0x0]
-   6:	65 a3 00 00 00 00   	mov [0x0], %eax
-   c:	65 66 a1 00 00 00 00	mov %eax, [0x0]
-   13:	65 66 a3 00 00 00 00	mov [0x0], %eax
-   1a:	64 a1 00 00 00 00   	mov %eax, [0x0]
-   20:	64 a3 00 00 00 00   	mov [0x0], %eax
-   26:	64 66 a1 00 00 00 00	mov %eax, [0x0]
-   2d:	64 66 a3 00 00 00 00	mov [0x0], %eax
-   34:	65 8b 00            	mov %eax, gs:[%eax]
-   37:	65 f0 03 05 00 00 00 00	add %eax, gs:[0x0]
+   6:	65 66 a1 00 00 00 00	mov %eax, [0x0]
+   d:	65 66 a3 00 00 00 00	mov [0x0], %eax
+   14:	64 a1 00 00 00 00   	mov %eax, [0x0]
+   1a:	64 a3 00 00 00 00   	mov [0x0], %eax
+   20:	64 66 a1 00 00 00 00	mov %eax, [0x0]
+   27:	64 66 a3 00 00 00 00	mov [0x0], %eax
+   2e:	65 f0 03 05 00 00 00 00	add %eax, gs:[0x0]
+@rdfa_output:
+  6: [0] unrecognized instruction
+  d: [1] unrecognized instruction
+  14: [2] unrecognized instruction
+  1a: [3] unrecognized instruction
+  20: [0] unrecognized instruction
+  27: [1] unrecognized instruction
+  2e: [2] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Can we write to gs segment?
+  # mov %eax, %gs:0
+  65 a3 00 00 00 00
+  
+  # Can we read from arbitrary offset?
+  # mov %gs:%eax, %eax
+  65 8B 00
+@nval:
+  *** <input> is safe ***
+@dis:
+  00000000: 65 a3 00 00 00 00                            mov %gs:[0x0], %eax
+  00000006: 65 8b 00                                     mov %eax, %gs:[%eax]
+@vdis:
+   0:	65 a3 00 00 00 00   	mov [0x0], %eax
+   6:	65 8b 00            	mov %eax, gs:[%eax]
+@rdfa_output:
+  0: [0] unrecognized instruction
+  6: [1] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  gs segment should be read-only and can only be read at offsets 0 and 4, but
+  old validator does not enforce that.
+  See http://code.google.com/p/nativeclient/issues/detail?id=2250
