@@ -6,6 +6,7 @@
 #define CCCompletionEvent_h
 
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace cc {
 
@@ -36,6 +37,7 @@ public:
 #ifndef NDEBUG
         m_waited = true;
 #endif
+        base::ThreadRestrictions::ScopedAllowWait allow_wait;
         m_event.Wait();
     }
 
