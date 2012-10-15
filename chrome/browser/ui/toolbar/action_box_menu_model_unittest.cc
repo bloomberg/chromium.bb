@@ -149,9 +149,10 @@ TEST_F(ActionBoxMenuModelTest, OnRecordNoMobiles) {
   EXPECT_EQ(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
 }
 
-// Tests that Chrome2Mobile is enabled for signed-in profiles with devices.
-TEST_F(ActionBoxMenuModelTest, OnRecordHasMobiles) {
-  //InitProfile();
+// Tests that Chrome2Mobile is enabled for signed-in profiles with devices, and
+// disabled if the profile is set to incognito mode.
+TEST_F(ActionBoxMenuModelTest, HasMobilesOnRecordOrIncognito) {
+  InitProfile();
   SetProfileSignedIn();
   SetProfileHasMobiles();
 
@@ -170,6 +171,18 @@ TEST_F(ActionBoxMenuModelTest, OnRecordHasMobiles) {
 
   // Expect c2m command in model.
   EXPECT_NE(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+
+  // Incognito-ize profile.
+  profile()->set_incognito(true);
+
+  // Create another model.
+  ActionBoxMenuModel model3(browser(), this);
+
+  // Expect no c2m command in this model.
+  EXPECT_EQ(-1, model3.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+
+  // Un-incognito-ize for shutdown.
+  profile()->set_incognito(false);
 }
 
 // Tests that Bookmark Star is lit up only on bookmarked pages.

@@ -5,6 +5,9 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -15,6 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -60,7 +64,8 @@ class ActionBoxTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(ActionBoxTest);
 };
 
-// Test if Bookmark star appears after bookmarking a page in the action box.
+// Test if Bookmark star appears after bookmarking a page in the action box, and
+// disappears after unbookmarking a page.
 IN_PROC_BROWSER_TEST_F(ActionBoxTest, BookmarkAPageTest) {
   LocationBarTesting* loc_bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
@@ -76,4 +81,13 @@ IN_PROC_BROWSER_TEST_F(ActionBoxTest, BookmarkAPageTest) {
 
   // Page is now bookmarked.
   ASSERT_TRUE(loc_bar->GetBookmarkStarVisibility());
+
+   // Get the BookmarkModel to unbookmark the bookmark.
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser()->profile());
+  bookmark_utils::RemoveAllBookmarks(model, GURL("http://www.google.com"));
+
+  // Page is now unbookmarked.
+  ASSERT_FALSE(loc_bar->GetBookmarkStarVisibility());
+
 }
