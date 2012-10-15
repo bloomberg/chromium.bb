@@ -470,8 +470,14 @@ class BeforeUnloadAtQuitWithTwoWindows : public InProcessBrowserTest {
   }
 };
 
+// This test passes on the trybots but fails on the main waterfall.
+#if defined(OS_WIN)
+#define MAYBE_IfThisTestTimesOutItIndicatesFAILURE DISABLED_IfThisTestTimesOutItIndicatesFAILURE
+#else
+#define MAYBE_IfThisTestTimesOutItIndicatesFAILURE IfThisTestTimesOutItIndicatesFAILURE
+#endif
 IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
-                       IfThisTestTimesOutItIndicatesFAILURE) {
+                       MAYBE_IfThisTestTimesOutItIndicatesFAILURE) {
   // In the first browser, set up a page that has a beforeunload handler.
   GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
   ui_test_utils::NavigateToURL(browser(), url);
