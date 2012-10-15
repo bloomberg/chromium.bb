@@ -78,5 +78,26 @@ int main(int argc, char **argv) {
    * Avoid calling exit() because it runs process-global destructors
    * which might break code that is running in our unjoined threads.
    */
+#if NACL_WINDOWS
+  /*
+   * To stop this test from being flaky, and as an experiment, we use
+   * Windows' ExitProcess() API here rather than NaClExit().
+   *
+   * When using NaClExit(), this test was returning an exit status of
+   * 1001 or 1002, which comes from the threads we launch above.  On
+   * Windows, the process's exit status is taken to be the exit status
+   * of the last thread that exits.  Currently, NaClExit() calls
+   * TerminateProcess(), which kills the process's threads in an
+   * undefined order.  This creates a race condition between our
+   * NaClAppThreads and the main thread.  The NaClAppThreads can be
+   * exiting at the same time as the main thread calls
+   * TerminateProcess().
+   *
+   * For background, see:
+   * http://code.google.com/p/nativeclient/issues/detail?id=2870
+   */
+  ExitProcess(0);
+#else
   NaClExit(0);
+#endif
 }
