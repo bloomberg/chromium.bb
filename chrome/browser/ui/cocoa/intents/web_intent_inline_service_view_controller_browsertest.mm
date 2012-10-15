@@ -36,13 +36,13 @@ class WebIntentInlineServiceViewControllerTest : public InProcessBrowserTest {
         [[WebIntentInlineServiceViewController alloc] initWithPicker:picker_]);
     view_.reset([[view_controller_ view] retain]);
 
-    NSWindow* sheet = [picker_->window_controller() window];
+    NSWindow* sheet = picker_->constrained_window()->GetNativeWindow();
     [[sheet contentView] addSubview:view_];
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     EXPECT_CALL(delegate_, OnClosing());
-    NSWindow* sheet = [picker_->window_controller() window];
+    NSWindow* sheet = picker_->constrained_window()->GetNativeWindow();
     ConstrainedWindowSheetController* sheetController =
         [ConstrainedWindowSheetController controllerForSheet:sheet];
     picker_->Close();

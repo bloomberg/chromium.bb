@@ -154,18 +154,13 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
            object:parentView];
 }
 
-- (void)setSheet:(NSWindow*)sheet
-      windowSize:(NSSize)size {
+- (NSPoint)originForSheet:(NSWindow*)sheet
+           withWindowSize:(NSSize)size {
   ConstrainedWindowSheetInfo* info = [self findSheetInfoForSheet:sheet];
   DCHECK(info);
   NSRect containerRect =
       [self overlayWindowFrameForParentView:[info parentView]];
-
-  NSRect sheetRect;
-  sheetRect.size = size;
-  sheetRect.origin = [self originForSheetSize:size
-                              inContainerRect:containerRect];
-  [sheet setFrame:sheetRect display:YES];
+  return [self originForSheetSize:size inContainerRect:containerRect];
 }
 
 - (void)closeSheet:(NSWindow*)sheet {

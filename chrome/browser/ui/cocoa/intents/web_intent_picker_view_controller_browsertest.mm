@@ -49,7 +49,7 @@ class WebIntentPickerViewControllerTest : public InProcessBrowserTest {
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     EXPECT_CALL(delegate_, OnClosing());
-    NSWindow* sheet = [picker_->window_controller() window];
+    NSWindow* sheet = picker_->constrained_window()->GetNativeWindow();
     ConstrainedWindowSheetController* sheetController =
         [ConstrainedWindowSheetController controllerForSheet:sheet];
     picker_->Close();
@@ -68,7 +68,7 @@ class WebIntentPickerViewControllerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(WebIntentPickerViewControllerTest, View) {
   EXPECT_TRUE([controller_ view]);
   EXPECT_TRUE([[controller_ view] superview]);
-  EXPECT_NSEQ([picker_->window_controller() window],
+  EXPECT_NSEQ(picker_->constrained_window()->GetNativeWindow(),
               [[controller_ view] window]);
 }
 

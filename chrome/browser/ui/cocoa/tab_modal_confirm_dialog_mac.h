@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 
 @class ConstrainedWindowAlert;
@@ -46,7 +47,8 @@ class TabModalConfirmDialogMac
 
 // This class is the same as TabModalConfirmDialogMac except that it uses
 // the new constrained window look and feel.
-class TabModalConfirmDialogMac2 : public TabModalConfirmDialog {
+class TabModalConfirmDialogMac2 : public TabModalConfirmDialog,
+                                  public ConstrainedWindowMacDelegate2 {
  public:
   TabModalConfirmDialogMac2(TabModalConfirmDialogDelegate* delegate,
                             TabContents* tab_contents);
@@ -58,6 +60,11 @@ class TabModalConfirmDialogMac2 : public TabModalConfirmDialog {
   virtual void AcceptTabModalDialog() OVERRIDE;
   virtual void CancelTabModalDialog() OVERRIDE;
 
+  // ConstrainedWindowMacDelegate2:
+  virtual void OnConstrainedWindowClosed(
+      ConstrainedWindowMac2* window) OVERRIDE;
+
+  scoped_ptr<ConstrainedWindowMac2> window_;
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
   scoped_nsobject<ConstrainedWindowAlert> alert_;
   scoped_nsobject<TabModalConfirmDialogMacBridge2> bridge_;

@@ -12,6 +12,18 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using ::testing::NiceMock;
+
+namespace {
+
+class ConstrainedWindowDelegateMock : public ConstrainedWindowMacDelegate2 {
+ public:
+  MOCK_METHOD1(OnConstrainedWindowClosed, void(ConstrainedWindowMac2*));
+};
+
+}  // namespace
 
 class ConstrainedWindowMacTest : public InProcessBrowserTest {
  public:
@@ -58,33 +70,29 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
 // tab is activated.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInInactiveTab) {
   // Show dialog in non active tab.
-  // Dialog will delete itself when closed.
-  ConstrainedWindowMac2* dialog = new ConstrainedWindowMac2(tab0_, sheet_);
+  NiceMock<ConstrainedWindowDelegateMock> delegate;
+  ConstrainedWindowMac2 dialog(&delegate, tab0_, sheet_);
   EXPECT_EQ(0.0, [sheet_ alphaValue]);
 
   // Switch to inactive tab.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
-
-  dialog->CloseConstrainedWindow();
 }
 
 // Test that adding a sheet disables tab dragging.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabDragging) {
-  // Dialog will delete itself when closed.
-  ConstrainedWindowMac2* dialog = new ConstrainedWindowMac2(tab1_, sheet_);
+  NiceMock<ConstrainedWindowDelegateMock> delegate;
+  ConstrainedWindowMac2 dialog(&delegate, tab1_, sheet_);
 
   // Verify that the dialog disables dragging.
   EXPECT_TRUE([controller_ isTabDraggable:tab_view0_]);
   EXPECT_FALSE([controller_ isTabDraggable:tab_view1_]);
-
-  dialog->CloseConstrainedWindow();
 }
 
 // Test that closing a browser window with a sheet works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
-  // Dialog will delete itself when closed.
-  new ConstrainedWindowMac2(tab1_, sheet_);
+  NiceMock<ConstrainedWindowDelegateMock> delegate;
+  ConstrainedWindowMac2 dialog(&delegate, tab1_, sheet_);
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
 
   // Close the browser window.
@@ -97,8 +105,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
 
 // Test that closing a tab with a sheet works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
-  // Dialog will delete itself when closed.
-  new ConstrainedWindowMac2(tab1_, sheet_);
+  NiceMock<ConstrainedWindowDelegateMock> delegate;
+  ConstrainedWindowMac2 dialog(&delegate, tab1_, sheet_);
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
 
   // Close the tab.
