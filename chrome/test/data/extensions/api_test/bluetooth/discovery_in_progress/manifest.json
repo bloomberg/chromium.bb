@@ -1,0 +1,12 @@
+{
+  "manifest_version": 2,
+  "name": "Test Bluetooth Discovery Already In-Progress",
+  "version": "1.0",
+  "description": "Tests Bluetooth discovery API while discovery is in progress",
+  "app": {
+    "background": {
+      "scripts": ["runtest.js"]
+    }
+  },
+  "permissions": ["experimental"]
+}

@@ -308,10 +308,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryCallback) {
   catcher.RestrictToProfile(browser()->profile());
 
   ExtensionTestMessageListener discovery_started("ready", true);
-  const extensions::Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
-  GURL page_url = extension->GetResourceURL("test_discovery.html");
-  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(LoadExtension(
+        test_data_dir_.AppendASCII("bluetooth/discovery_callback")));
   EXPECT_TRUE(discovery_started.WaitUntilSatisfied());
 
   event_router()->DeviceAdded(mock_adapter_, device1_.get());
@@ -338,10 +336,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
   catcher.RestrictToProfile(browser()->profile());
 
   ExtensionTestMessageListener discovery_started("ready", true);
-  const extensions::Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
-  GURL page_url = extension->GetResourceURL("test_discovery_in_progress.html");
-  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(LoadExtension(
+        test_data_dir_.AppendASCII("bluetooth/discovery_in_progress")));
   EXPECT_TRUE(discovery_started.WaitUntilSatisfied());
 
   // This should be received in addition to the cached device above.
