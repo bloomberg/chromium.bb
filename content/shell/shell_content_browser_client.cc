@@ -17,6 +17,7 @@
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/webkit_test_runner_host.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/glue/webpreferences.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
@@ -51,6 +52,17 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     command_line->AppendSwitch(switches::kDumpRenderTree);
+}
+
+void ShellContentBrowserClient::OverrideWebkitPrefs(
+    RenderViewHost* render_view_host,
+    const GURL& url,
+    webkit_glue::WebPreferences* prefs) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+  prefs->dom_paste_enabled = true;
+  prefs->javascript_can_access_clipboard = true;
+  prefs->allow_universal_access_from_file_urls = true;
 }
 
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
