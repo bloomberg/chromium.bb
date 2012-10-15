@@ -26,7 +26,8 @@ def _CreateDirectory(path):
     return False
 
 
-def HttpDownload(url, target, username=None, password=None, verbose=True):
+def HttpDownload(url, target, username=None, password=None, verbose=True,
+    logger=None):
   """Download a file from a remote server.
 
   Args:
@@ -34,8 +35,12 @@ def HttpDownload(url, target, username=None, password=None, verbose=True):
     target: Filename to write download to.
     username: Optional username for download.
     password: Optional password for download (ignored if no username).
+    logger: Function to log events to.
   """
 
+  # Log to stdout by default.
+  if logger is None:
+    logger = sys.stdout.write
   headers = [('Accept', '*/*')]
   if username:
     if password:
@@ -57,7 +62,7 @@ def HttpDownload(url, target, username=None, password=None, verbose=True):
   # Retry up to 10 times (appengine logger is flaky).
   for i in xrange(10):
     if i:
-      sys.stdout.write('Download failed on %s, retrying... (%d)\n' % (url, i))
+      logger('Download failed on %s, retrying... (%d)\n' % (url, i))
     try:
       # 30 second timeout to ensure we fail and retry on stalled connections.
       src = urllib2.urlopen(url, timeout=30)
@@ -69,18 +74,19 @@ def HttpDownload(url, target, username=None, password=None, verbose=True):
           content_len = int(content_len)
           file_size = os.path.getsize(target)
           if content_len != file_size:
-            sys.stdout.write('Filesize:%d does not match Content-Length:%d' % (
+            logger('Filesize:%d does not match Content-Length:%d' % (
                 file_size, content_len))
             continue
       finally:
         src.close()
       break
-    except urllib2.HTTPError:
-      sys.stdout.write('Failed to open.\n')
-      pass
+    except urllib2.HTTPError, e:
+      if e.code == 404:
+        logger('Resource does not exist.\n')
+        raise
+      logger('Failed to open.\n')
     except urllib2.URLError:
-      sys.stdout.write('Failed mid stream.\n')
-      pass
+      logger('Failed mid stream.\n')
   else:
-    sys.stdout.write('Download failed on %s, giving up.\n' % url)
+    logger('Download failed on %s, giving up.\n' % url)
     raise
