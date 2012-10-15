@@ -61,7 +61,7 @@ bool WallpaperStringsFunction::RunImpl() {
   SET_STRING("customWallpaperWarning",
              IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING);
   SET_STRING("accessFileFailure", IDS_WALLPAPER_MANAGER_ACCESS_FILE_FAILURE);
-  SET_STRING("invalidFormat", IDS_WALLPAPER_MANAGER_INVALID_FORMAT);
+  SET_STRING("invalidWallpaper", IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER);
 #undef SET_STRING
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);

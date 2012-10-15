@@ -290,7 +290,7 @@ function WallpaperManager(dialogDom) {
       console.error('More than one files are selected or no file selected');
     var file = files[0];
     if (!file.type.match('image/jpeg')) {
-      this.butterBar_.showError_(str('invalidFormat'));
+      this.butterBar_.showError_(str('invalidWallpaper'));
       return;
     }
     var reader = new FileReader();
