@@ -996,8 +996,9 @@ const CGFloat kAddButtonWidth = 128.0;
 
   // Add link for "choose another service" if other suggestions are available
   // or if more than one (the current) service is installed.
-  if (model_->GetInstalledServiceCount() > 1 ||
-    model_->GetSuggestedExtensionCount()) {
+  if (model_->show_use_another_service() &&
+      (model_->GetInstalledServiceCount() > 1 ||
+       model_->GetSuggestedExtensionCount())) {
     NSRect frame = NSMakeRect(
         NSMaxX(textFrame) + WebIntentPicker::kContentAreaBorder, offset,
         1, 1);

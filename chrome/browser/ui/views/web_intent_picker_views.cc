@@ -945,7 +945,10 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
                                        this,
                                        enable_chrome_style);
 
-  UpdateContents();
+  if (model_->IsInlineDisposition())
+    OnInlineDisposition(string16(), model_->inline_disposition_url());
+  else
+    UpdateContents();
 }
 
 WebIntentPickerViews::~WebIntentPickerViews() {
@@ -1118,8 +1121,9 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
   grid_layout->AddView(title);
   // Add link for "choose another service" if other suggestions are available
   // or if more than one (the current) service is installed.
-  if (model_->GetInstalledServiceCount() > 1 ||
-       model_->GetSuggestedExtensionCount()) {
+  if (model_->show_use_another_service() &&
+      (model_->GetInstalledServiceCount() > 1 ||
+       model_->GetSuggestedExtensionCount())) {
     choose_another_service_link_ = new views::Link(
         l10n_util::GetStringUTF16(IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE));
     grid_layout->AddView(choose_another_service_link_);
@@ -1195,8 +1199,10 @@ void WebIntentPickerViews::OnInlineDisposition(
 
   // Disable all buttons.
   // TODO(groby): Add throbber for inline dispo - see http://crbug.com/142519.
-  extensions_->SetEnabled(false);
-  more_suggestions_link_->SetEnabled(false);
+  if (extensions_)
+    extensions_->SetEnabled(false);
+  if (more_suggestions_link_)
+    more_suggestions_link_->SetEnabled(false);
   contents_->Layout();
 }
 
@@ -1225,6 +1231,9 @@ void WebIntentPickerViews::OnActionButtonClicked(
 }
 
 void WebIntentPickerViews::UpdateContents() {
+  if (model_ && model_->IsInlineDisposition())
+    return;
+
   if (model_ && model_->IsWaitingForSuggestions()) {
     ClearContents();
     contents_->SetLayoutManager(new views::FillLayout());
@@ -1233,8 +1242,8 @@ void WebIntentPickerViews::UpdateContents() {
     int height = contents_->GetHeightForWidth(kWindowMinWidth);
     contents_->SetSize(gfx::Size(kWindowMinWidth, height));
     contents_->Layout();
-  } else if (model_->GetInstalledServiceCount() ||
-      model_->GetSuggestedExtensionCount()) {
+  } else if (model_ && (model_->GetInstalledServiceCount() ||
+                        model_->GetSuggestedExtensionCount())) {
     ShowAvailableServices();
   } else {
     ShowNoServicesMessage();

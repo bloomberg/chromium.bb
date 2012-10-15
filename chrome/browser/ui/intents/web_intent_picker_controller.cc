@@ -1013,9 +1013,12 @@ void WebIntentPickerController::InvokeServiceWithSelection(
 
   if (service.disposition ==
       webkit_glue::WebIntentServiceData::DISPOSITION_INLINE) {
-    // This call will ensure the picker dialog is created and initialized.
-    SetDialogState(kPickerInline);
+    picker_model_->SetInlineDisposition(service.service_url);
+    dialog_state_ = kPickerInline;
+    CreatePicker();
+    return;
   }
+
   OnServiceChosen(service.service_url, service.disposition, kSuppressDefaults);
 }
 
