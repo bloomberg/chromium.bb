@@ -14,9 +14,12 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
-class TabContents;
 typedef struct _GdkColor GdkColor;
 class ChromeWebContentsViewDelegateGtk;
+
+namespace content {
+class WebContents;
+}
 
 class ConstrainedWindowGtkDelegate {
  public:
@@ -46,7 +49,7 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
  public:
   typedef ChromeWebContentsViewDelegateGtk TabContentsViewType;
 
-  ConstrainedWindowGtk(TabContents* tab_contents,
+  ConstrainedWindowGtk(content::WebContents* web_contents,
                        ConstrainedWindowGtkDelegate* delegate);
   virtual ~ConstrainedWindowGtk();
 
@@ -55,8 +58,8 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   virtual void CloseConstrainedWindow() OVERRIDE;
   virtual void FocusConstrainedWindow() OVERRIDE;
 
-  // Returns the TabContents that constrains this Constrained Window.
-  TabContents* owner() const { return tab_contents_; }
+  // Returns the WebContents that constrains this Constrained Window.
+  content::WebContents* owner() const { return web_contents_; }
 
   // Returns the toplevel widget that displays this "window".
   GtkWidget* widget() { return border_.get(); }
@@ -73,8 +76,8 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   CHROMEGTK_CALLBACK_1(ConstrainedWindowGtk, void, OnHierarchyChanged,
                        GtkWidget*);
 
-  // The TabContents that owns and constrains this ConstrainedWindow.
-  TabContents* tab_contents_;
+  // The WebContents that owns and constrains this ConstrainedWindow.
+  content::WebContents* web_contents_;
 
   // The top level widget container that exports to our WebContentsView.
   ui::OwnedWidgetGtk border_;

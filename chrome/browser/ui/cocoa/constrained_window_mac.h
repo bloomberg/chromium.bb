@@ -16,7 +16,10 @@ class ConstrainedWindowMac;
 @class GTMWindowSheetController;
 @class NSView;
 @class NSWindow;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // Window controllers that allow hosting constrained windows should
 // implement this protocol.
@@ -117,7 +120,7 @@ class ConstrainedWindowMacDelegateCustomSheet
 //    deleted.
 class ConstrainedWindowMac : public ConstrainedWindow {
  public:
-  ConstrainedWindowMac(TabContents* tab_contents,
+  ConstrainedWindowMac(content::WebContents* web_contents,
                        ConstrainedWindowMacDelegate* delegate);
   virtual ~ConstrainedWindowMac();
 
@@ -126,8 +129,8 @@ class ConstrainedWindowMac : public ConstrainedWindow {
   virtual void CloseConstrainedWindow() OVERRIDE;
   virtual bool CanShowConstrainedWindow() OVERRIDE;
 
-  // Returns the TabContents that constrains this Constrained Window.
-  TabContents* owner() const { return tab_contents_; }
+  // Returns the WebContents that constrains this Constrained Window.
+  content::WebContents* owner() const { return web_contents_; }
 
   // Returns the window's delegate.
   ConstrainedWindowMacDelegate* delegate() { return delegate_; }
@@ -138,8 +141,8 @@ class ConstrainedWindowMac : public ConstrainedWindow {
  private:
   friend class ConstrainedWindow;
 
-  // The TabContents that owns and constrains this ConstrainedWindow.
-  TabContents* tab_contents_;
+  // The WebContents that owns and constrains this ConstrainedWindow.
+  content::WebContents* web_contents_;
 
   // Delegate that provides the contents of this constrained window.
   ConstrainedWindowMacDelegate* delegate_;

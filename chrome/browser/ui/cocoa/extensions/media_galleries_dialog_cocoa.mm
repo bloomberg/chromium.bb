@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -94,8 +95,10 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
 
   set_sheet(alert_);
   // May be NULL during tests.
-  if (controller->tab_contents())
-    window_ = new ConstrainedWindowMac(controller->tab_contents(), this);
+  if (controller->tab_contents()) {
+    window_ = new ConstrainedWindowMac(
+        controller->tab_contents()->web_contents(), this);
+  }
 }
 
 MediaGalleriesDialogCocoa::~MediaGalleriesDialogCocoa() {

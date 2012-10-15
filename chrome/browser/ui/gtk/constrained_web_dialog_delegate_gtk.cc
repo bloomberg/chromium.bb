@@ -105,8 +105,8 @@ ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
       TabContents* overshadowed) {
   ConstrainedWebDialogDelegateGtk* constrained_delegate =
       new ConstrainedWebDialogDelegateGtk(profile, delegate, tab_delegate);
-  ConstrainedWindow* constrained_window =
-      new ConstrainedWindowGtk(overshadowed, constrained_delegate);
+  ConstrainedWindow* constrained_window = new ConstrainedWindowGtk(
+      overshadowed->web_contents(), constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_delegate;
 }

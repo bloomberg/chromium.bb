@@ -4,18 +4,22 @@
 
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
-class ConstrainedWindowTabHelperUnit : public TabContentsTestHarness {
+class ConstrainedWindowTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
-  ConstrainedWindowTabHelperUnit()
-      : TabContentsTestHarness(),
+  ConstrainedWindowTabHelperTest()
+      : ChromeRenderViewHostTestHarness(),
         ui_thread_(BrowserThread::UI, &message_loop_) {
+  }
+
+  virtual void SetUp() {
+    ChromeRenderViewHostTestHarness::SetUp();
+    ConstrainedWindowTabHelper::CreateForWebContents(web_contents());
   }
 
  private:
@@ -24,8 +28,8 @@ class ConstrainedWindowTabHelperUnit : public TabContentsTestHarness {
 
 class ConstrainedWindowCloseTest : public ConstrainedWindow {
  public:
-  explicit ConstrainedWindowCloseTest(TabContents* tab_contents)
-      : tab_contents_(tab_contents) {
+  explicit ConstrainedWindowCloseTest(content::WebContents* web_contents)
+      : web_contents_(web_contents) {
   }
 
   virtual void ShowConstrainedWindow() {}
@@ -34,18 +38,17 @@ class ConstrainedWindowCloseTest : public ConstrainedWindow {
 
   virtual void CloseConstrainedWindow() {
     ConstrainedWindowTabHelper* constrained_window_tab_helper =
-        ConstrainedWindowTabHelper::FromWebContents(
-            tab_contents_->web_contents());
+        ConstrainedWindowTabHelper::FromWebContents(web_contents_);
     constrained_window_tab_helper->WillClose(this);
     close_count++;
   }
 
   int close_count;
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 };
 
-TEST_F(ConstrainedWindowTabHelperUnit, ConstrainedWindows) {
-  ConstrainedWindowCloseTest window(tab_contents());
+TEST_F(ConstrainedWindowTabHelperTest, ConstrainedWindows) {
+  ConstrainedWindowCloseTest window(web_contents());
   window.close_count = 0;
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents());

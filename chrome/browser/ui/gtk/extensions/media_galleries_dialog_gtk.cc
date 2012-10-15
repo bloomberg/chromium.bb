@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,8 +29,10 @@ MediaGalleriesDialogGtk::MediaGalleriesDialogGtk(
   InitWidgets();
 
   // May be NULL during tests.
-  if (controller->tab_contents())
-    window_ = new ConstrainedWindowGtk(controller->tab_contents(), this);
+  if (controller->tab_contents()) {
+    window_ = new ConstrainedWindowGtk(
+        controller->tab_contents()->web_contents(), this);
+  }
 }
 
 MediaGalleriesDialogGtk::~MediaGalleriesDialogGtk() {

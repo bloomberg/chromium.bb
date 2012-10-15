@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/focus_store_gtk.h"
@@ -34,15 +33,16 @@ bool ConstrainedWindowGtkDelegate::ShouldHaveBorderPadding() const {
 }
 
 ConstrainedWindowGtk::ConstrainedWindowGtk(
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     ConstrainedWindowGtkDelegate* delegate)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       delegate_(delegate),
       visible_(false),
       weak_factory_(this) {
-  DCHECK(tab_contents);
+  DCHECK(web_contents);
   DCHECK(delegate);
   GtkWidget* dialog = delegate->GetWidgetRoot();
+  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
 
   // Unlike other users of CreateBorderBin, we need a dedicated frame around
   // our "window".
@@ -80,8 +80,7 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
                    G_CALLBACK(OnHierarchyChangedThunk), this);
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(
-          tab_contents_->web_contents());
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
   constrained_window_tab_helper->AddConstrainedDialog(this);
 }
 
@@ -104,8 +103,7 @@ void ConstrainedWindowGtk::CloseConstrainedWindow() {
     ContainingView()->RemoveConstrainedWindow(this);
   delegate_->DeleteDelegate();
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(
-          tab_contents_->web_contents());
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
   constrained_window_tab_helper->WillClose(this);
 
   delete this;
@@ -119,8 +117,7 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
   // The user may have focused another tab. In this case do not grab focus
   // until this tab is refocused.
   ConstrainedWindowTabHelper* helper =
-      ConstrainedWindowTabHelper::FromWebContents(
-          tab_contents_->web_contents());
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
   if ((!helper->delegate() ||
        helper->delegate()->ShouldFocusConstrainedWindow()) &&
       gtk_util::IsWidgetAncestryVisible(focus_widget)) {
@@ -131,9 +128,8 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
 }
 
 ConstrainedWindowGtk::TabContentsViewType*
-    ConstrainedWindowGtk::ContainingView() {
-  return
-      ChromeWebContentsViewDelegateGtk::GetFor(tab_contents_->web_contents());
+ConstrainedWindowGtk::ContainingView() {
+  return ChromeWebContentsViewDelegateGtk::GetFor(web_contents_);
 }
 
 gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,

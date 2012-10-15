@@ -80,7 +80,8 @@ TabModalConfirmDialogMac::TabModalConfirmDialogMac(
 
   set_sheet(alert);
 
-  delegate->set_window(new ConstrainedWindowMac(tab_contents, this));
+  delegate->set_window(
+      new ConstrainedWindowMac(tab_contents->web_contents(), this));
 }
 
 TabModalConfirmDialogMac::~TabModalConfirmDialogMac() {
@@ -162,7 +163,7 @@ TabModalConfirmDialogMac2::TabModalConfirmDialogMac2(
   [alert_ layout];
 
   delegate->set_window(
-      new ConstrainedWindowMac2(tab_contents, [alert_ window]));
+      new ConstrainedWindowMac2(tab_contents->web_contents(), [alert_ window]));
 }
 
 TabModalConfirmDialogMac2::~TabModalConfirmDialogMac2() {

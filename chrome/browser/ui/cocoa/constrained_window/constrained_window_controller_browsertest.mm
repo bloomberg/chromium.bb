@@ -7,19 +7,18 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 typedef InProcessBrowserTest ConstrainedWindowControllerTest;
 
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowControllerTest, BasicTest) {
-  TabContents* tab = browser()->tab_strip_model()->GetTabContentsAt(0);
+  content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(0);
   NSRect frame = NSMakeRect(0, 0, 100, 50);
   scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
   scoped_nsobject<ConstrainedWindowController> window_controller(
     [[ConstrainedWindowController alloc]
-        initWithParentWebContents:tab->web_contents()
+        initWithParentWebContents:tab
                      embeddedView:view]);
 
   // The window should match the view size.

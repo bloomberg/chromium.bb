@@ -32,9 +32,9 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     AddTabAtIndex(1, GURL("about:blank"), content::PAGE_TRANSITION_LINK);
-    tab0_ = browser()->tab_strip_model()->GetTabContentsAt(0);
-    tab1_ = browser()->tab_strip_model()->GetTabContentsAt(1);
-    EXPECT_EQ(tab1_, browser()->tab_strip_model()->GetActiveTabContents());
+    tab0_ = browser()->tab_strip_model()->GetWebContentsAt(0);
+    tab1_ = browser()->tab_strip_model()->GetWebContentsAt(1);
+    EXPECT_EQ(tab1_, browser()->tab_strip_model()->GetActiveWebContents());
 
     controller_ = [BrowserWindowController browserWindowControllerForWindow:
         browser()->window()->GetNativeWindow()];
@@ -47,8 +47,8 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
 
  protected:
   scoped_nsobject<NSWindow> sheet_;
-  TabContents* tab0_;
-  TabContents* tab1_;
+  content::WebContents* tab0_;
+  content::WebContents* tab1_;
   BrowserWindowController* controller_;
   NSView* tab_view0_;
   NSView* tab_view1_;
@@ -58,7 +58,7 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
 // tab is activated.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInInactiveTab) {
   // Show dialog in non active tab.
-  // Dialog will delete it self when closed.
+  // Dialog will delete itself when closed.
   ConstrainedWindowMac2* dialog = new ConstrainedWindowMac2(tab0_, sheet_);
   EXPECT_EQ(0.0, [sheet_ alphaValue]);
 
@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInInactiveTab) {
 
 // Test that adding a sheet disables tab dragging.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabDragging) {
-  // Dialog will delete it self when closed.
+  // Dialog will delete itself when closed.
   ConstrainedWindowMac2* dialog = new ConstrainedWindowMac2(tab1_, sheet_);
 
   // Verify that the dialog disables dragging.
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabDragging) {
 
 // Test that closing a browser window with a sheet works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
-  // Dialog will delete it self when closed.
+  // Dialog will delete itself when closed.
   new ConstrainedWindowMac2(tab1_, sheet_);
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
 
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
 
 // Test that closing a tab with a sheet works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
-  // Dialog will delete it self when closed.
+  // Dialog will delete itself when closed.
   new ConstrainedWindowMac2(tab1_, sheet_);
   EXPECT_EQ(1.0, [sheet_ alphaValue]);
 

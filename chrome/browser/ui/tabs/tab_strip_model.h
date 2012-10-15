@@ -274,10 +274,12 @@ class TabStripModel : public content::NotificationObserver {
 
   // Returns the currently active TabContents, or NULL if there is none.
   TabContents* GetActiveTabContents() const;
+  content::WebContents* GetActiveWebContents() const;
 
   // Returns the TabContents at the specified index, or NULL if there is
   // none.
   TabContents* GetTabContentsAt(int index) const;
+  content::WebContents* GetWebContentsAt(int index) const;
 
   // Returns the index of the specified TabContents, or
   // TabStripModel::kNoTab if the TabContents is not in this

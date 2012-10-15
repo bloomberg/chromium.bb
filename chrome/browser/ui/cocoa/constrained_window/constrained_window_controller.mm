@@ -7,7 +7,6 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 @interface ConstrainedWindowController ()
 - (void)onEmbeddedViewFrameDidChange:(NSNotification*)note;
@@ -30,8 +29,7 @@
                name:NSViewFrameDidChangeNotification
              object:embeddedView];
 
-    constrainedWindow_ = new ConstrainedWindowMac2(
-        TabContents::FromWebContents(parentWebContents), window);
+    constrainedWindow_ = new ConstrainedWindowMac2(parentWebContents, window);
   }
   return self;
 }

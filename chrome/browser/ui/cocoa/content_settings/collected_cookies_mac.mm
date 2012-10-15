@@ -118,7 +118,7 @@ CollectedCookiesMac::CollectedCookiesMac(NSWindow* parent,
 
   set_sheet([sheet_controller_ window]);
 
-  window_ = new ConstrainedWindowMac(tab_contents, this);
+  window_ = new ConstrainedWindowMac(tab_contents->web_contents(), this);
 }
 
 CollectedCookiesMac::~CollectedCookiesMac() {

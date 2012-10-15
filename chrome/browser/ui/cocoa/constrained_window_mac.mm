@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
@@ -29,12 +28,11 @@ void ConstrainedWindowMacDelegateSystemSheet::set_sheet(id sheet) {
 NSArray* ConstrainedWindowMacDelegateSystemSheet::GetSheetParameters(
     id delegate,
     SEL didEndSelector) {
-  return [NSArray arrayWithObjects:
-      [NSNull null],  // window, must be [NSNull null]
+  return
+      @[[NSNull null],  // window, must be [NSNull null]
       delegate,
       [NSValue valueWithPointer:didEndSelector],
-      [NSValue valueWithPointer:NULL],  // context info for didEndSelector_.
-      nil];
+      [NSValue valueWithPointer:NULL]];  // context info for didEndSelector_.
 }
 
 void ConstrainedWindowMacDelegateSystemSheet::RunSheet(
@@ -88,17 +86,18 @@ void ConstrainedWindowMacDelegateCustomSheet::RunSheet(
 }
 
 ConstrainedWindowMac::ConstrainedWindowMac(
-    TabContents* tab_contents, ConstrainedWindowMacDelegate* delegate)
-    : tab_contents_(tab_contents),
+    content::WebContents* web_contents, ConstrainedWindowMacDelegate* delegate)
+    : web_contents_(web_contents),
       delegate_(delegate),
       controller_(nil),
       should_be_visible_(false),
       closing_(false) {
-  DCHECK(tab_contents);
+  DCHECK(web_contents);
   DCHECK(delegate);
+  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(tab_contents->web_contents());
+      ConstrainedWindowTabHelper::FromWebContents(web_contents);
   constrained_window_tab_helper->AddConstrainedDialog(this);
 }
 
@@ -109,8 +108,7 @@ void ConstrainedWindowMac::ShowConstrainedWindow() {
   // The WebContents only has a native window if it is currently visible. In
   // this case, open the sheet now. Else, Realize() will be called later, when
   // our tab becomes visible.
-  NSWindow* window =
-      tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow();
+  NSWindow* window = web_contents_->GetView()->GetTopLevelNativeWindow();
   NSWindowController<ConstrainedWindowSupport>* window_controller = nil;
   while (window) {
     if ([[window windowController] conformsToProtocol:
@@ -142,16 +140,14 @@ void ConstrainedWindowMac::CloseConstrainedWindow() {
 
   delegate_->DeleteDelegate();
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
-      ConstrainedWindowTabHelper::FromWebContents(
-          tab_contents_->web_contents());
+      ConstrainedWindowTabHelper::FromWebContents(web_contents_);
   constrained_window_tab_helper->WillClose(this);
 
   delete this;
 }
 
 bool ConstrainedWindowMac::CanShowConstrainedWindow() {
-  Browser* browser =
-      browser::FindBrowserWithWebContents(tab_contents_->web_contents());
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
   if (!browser)
     return true;
   return !browser->window()->IsInstantTabShowing();
@@ -172,6 +168,6 @@ void ConstrainedWindowMac::Realize(
   // remove us from it.
   controller_ = controller;
   delegate_->RunSheet([controller_ sheetController],
-                      GetSheetParentViewForTabContents(tab_contents_));
+                      GetSheetParentViewForWebContents(web_contents_));
   delegate_->set_sheet_open(true);
 }

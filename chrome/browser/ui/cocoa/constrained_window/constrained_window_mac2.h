@@ -10,12 +10,14 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/constrained_window.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 // Constrained window implementation for Mac.
 class ConstrainedWindowMac2 : public ConstrainedWindow {
  public:
-  ConstrainedWindowMac2(TabContents* tab_contents, NSWindow* window);
+  ConstrainedWindowMac2(content::WebContents* web_contents, NSWindow* window);
 
   // ConstrainedWindow implementation.
   virtual void ShowConstrainedWindow() OVERRIDE;
@@ -31,7 +33,9 @@ class ConstrainedWindowMac2 : public ConstrainedWindow {
   // Gets the parent window of the dialog.
   NSWindow* GetParentWindow() const;
 
-  TabContents* tab_contents_;  // weak
+  // The WebContents that owns and constrains this ConstrainedWindow. Weak.
+  content::WebContents* web_contents_;
+
   scoped_nsobject<NSWindow> window_;
 };
 

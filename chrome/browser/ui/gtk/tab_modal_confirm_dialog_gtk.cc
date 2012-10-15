@@ -71,7 +71,8 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
   g_signal_connect(ok_, "clicked", G_CALLBACK(OnAcceptThunk), this);
   gtk_box_pack_end(GTK_BOX(buttonBox), ok_, FALSE, TRUE, 0);
 
-  delegate->set_window(new ConstrainedWindowGtk(tab_contents, this));
+  delegate->set_window(
+      new ConstrainedWindowGtk(tab_contents->web_contents(), this));
 }
 
 GtkWidget* TabModalConfirmDialogGtk::GetWidgetRoot() {

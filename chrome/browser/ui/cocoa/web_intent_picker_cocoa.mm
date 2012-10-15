@@ -107,7 +107,8 @@ WebIntentPickerCocoa::WebIntentPickerCocoa(TabContents* tab_contents,
   ConstrainedPickerSheetDelegate* constrained_delegate =
       new ConstrainedPickerSheetDelegate(this, sheet_controller_);
 
-  window_ = new ConstrainedWindowMac(tab_contents, constrained_delegate);
+  window_ = new ConstrainedWindowMac(tab_contents->web_contents(),
+                                     constrained_delegate);
 }
 
 WebIntentPickerCocoa::~WebIntentPickerCocoa() {

@@ -128,7 +128,8 @@ ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
   // Deleted when ConstrainedWebDialogDelegateMac::OnDialogCloseFromWebUI()
   // runs.
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowMac(tab_contents, constrained_delegate);
+      new ConstrainedWindowMac(tab_contents->web_contents(),
+                               constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_delegate;
 }

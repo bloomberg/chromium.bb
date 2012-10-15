@@ -2108,7 +2108,7 @@ private:
 
 @end
 
-NSView* GetSheetParentViewForTabContents(TabContents* tab_contents) {
+NSView* GetSheetParentViewForWebContents(WebContents* web_contents) {
   // View hierarchy of the contents view:
   // NSView  -- switchView, same for all tabs
   // +- NSView  -- TabContentsController's view
@@ -2116,5 +2116,5 @@ NSView* GetSheetParentViewForTabContents(TabContents* tab_contents) {
   //
   // Changing it? Do not forget to modify
   // -[TabStripController swapInTabAtIndex:] too.
-  return [tab_contents->web_contents()->GetNativeView() superview];
+  return [web_contents->GetNativeView() superview];
 }

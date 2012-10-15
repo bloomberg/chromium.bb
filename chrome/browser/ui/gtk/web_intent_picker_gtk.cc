@@ -226,7 +226,7 @@ WebIntentPickerGtk::WebIntentPickerGtk(TabContents* tab_contents,
                        content::Source<ThemeService>(theme_service));
   theme_service->InitThemesFor(this);
 
-  window_ = new ConstrainedWindowGtk(tab_contents, this);
+  window_ = new ConstrainedWindowGtk(tab_contents->web_contents(), this);
 }
 
 WebIntentPickerGtk::~WebIntentPickerGtk() {

@@ -14,7 +14,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/constrained_window_frame_simple.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -591,6 +590,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
+  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
 
   if (enable_chrome_style_) {
     params.parent_widget = Widget::GetTopLevelWidgetForNativeView(
