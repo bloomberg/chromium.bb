@@ -144,10 +144,11 @@ webkit_blob::FileStreamReader*
 IsolatedMountPointProvider::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
+    const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   return new webkit_blob::LocalFileStreamReader(
       context->task_runners()->file_task_runner(),
-      url.path(), offset, base::Time());
+      url.path(), offset, expected_modification_time);
 }
 
 FileStreamWriter* IsolatedMountPointProvider::CreateFileStreamWriter(

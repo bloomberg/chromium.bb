@@ -270,11 +270,13 @@ fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
 webkit_blob::FileStreamReader* CrosMountPointProvider::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,
     int64 offset,
+    const base::Time& expected_modification_time,
     fileapi::FileSystemContext* context) const {
   // For now we return a generic Reader implementation which utilizes
   // CreateSnapshotFile internally (i.e. will download everything first).
   // TODO(satorux,zel): implement more efficient reader for remote cases.
-  return new fileapi::FileSystemFileStreamReader(context, url, offset);
+  return new fileapi::FileSystemFileStreamReader(
+      context, url, offset, expected_modification_time);
 }
 
 fileapi::FileStreamWriter* CrosMountPointProvider::CreateFileStreamWriter(

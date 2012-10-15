@@ -205,7 +205,8 @@ void FileSystemURLRequestJob::DidGetMetadata(
   reader_.reset(
       file_system_context_->CreateFileStreamReader(
           url_,
-          byte_range_.first_byte_position()));
+          byte_range_.first_byte_position(),
+          base::Time()));
 
   set_expected_content_size(remaining_bytes_);
   response_info_.reset(new net::HttpResponseInfo());

@@ -147,14 +147,19 @@ class FILEAPI_EXPORT FileSystemContext
       base::PlatformFileError* error_code);
 
   // Creates new FileStreamReader instance to read a file pointed by the given
-  // filesystem URL |url| starting from |offset|.
+  // filesystem URL |url| starting from |offset|. |expected_modification_time|
+  // specifies the expected last modification if the value is non-null, the
+  // reader will check the underlying file's actual modification time to see if
+  // the file has been modified, and if it does any succeeding read operations
+  // should fail with ERR_UPLOAD_FILE_CHANGED error.
   // This method internally cracks the |url|, get an appropriate
   // MountPointProvider for the URL and call the provider's CreateFileReader.
   // The resolved MountPointProvider could perform further specialization
   // depending on the filesystem type pointed by the |url|.
   webkit_blob::FileStreamReader* CreateFileStreamReader(
       const FileSystemURL& url,
-      int64 offset);
+      int64 offset,
+      const base::Time& expected_modification_time);
 
   // Register a filesystem provider. The ownership of |provider| is
   // transferred to this instance.

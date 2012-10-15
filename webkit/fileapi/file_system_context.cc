@@ -259,14 +259,16 @@ FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
 
 webkit_blob::FileStreamReader* FileSystemContext::CreateFileStreamReader(
     const FileSystemURL& url,
-    int64 offset) {
+    int64 offset,
+    const base::Time& expected_modification_time) {
   if (!url.is_valid())
     return NULL;
   FileSystemMountPointProvider* mount_point_provider =
       GetMountPointProvider(url.type());
   if (!mount_point_provider)
     return NULL;
-  return mount_point_provider->CreateFileStreamReader(url, offset, this);
+  return mount_point_provider->CreateFileStreamReader(
+      url, offset, expected_modification_time, this);
 }
 
 void FileSystemContext::RegisterMountPointProvider(

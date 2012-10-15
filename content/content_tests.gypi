@@ -405,6 +405,7 @@
         '../webkit/fileapi/file_system_database_test_helper.h',
         '../webkit/fileapi/file_system_directory_database_unittest.cc',
         '../webkit/fileapi/file_system_dir_url_request_job_unittest.cc',
+        '../webkit/fileapi/file_system_file_stream_reader_unittest.cc',
         '../webkit/fileapi/file_system_file_util_unittest.cc',
         '../webkit/fileapi/file_system_mount_point_provider_unittest.cc',
         '../webkit/fileapi/file_system_origin_database_unittest.cc',

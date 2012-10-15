@@ -50,10 +50,12 @@ void Int64CallbackAdapter(const net::Int64CompletionCallback& callback,
 FileSystemFileStreamReader::FileSystemFileStreamReader(
     FileSystemContext* file_system_context,
     const FileSystemURL& url,
-    int64 initial_offset)
+    int64 initial_offset,
+    const base::Time& expected_modification_time)
     : file_system_context_(file_system_context),
       url_(url),
       initial_offset_(initial_offset),
+      expected_modification_time_(expected_modification_time),
       has_pending_create_snapshot_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -122,7 +124,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
   local_file_reader_.reset(
       new LocalFileStreamReader(
           file_system_context_->task_runners()->file_task_runner(),
-          platform_path, initial_offset_, base::Time()));
+          platform_path, initial_offset_, expected_modification_time_));
 
   callback.Run();
 }

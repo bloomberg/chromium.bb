@@ -134,8 +134,10 @@ FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
 webkit_blob::FileStreamReader* TestMountPointProvider::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
+    const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return new FileSystemFileStreamReader(context, url, offset);
+  return new FileSystemFileStreamReader(
+      context, url, offset, expected_modification_time);
 }
 
 fileapi::FileStreamWriter* TestMountPointProvider::CreateFileStreamWriter(

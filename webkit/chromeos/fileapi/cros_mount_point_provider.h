@@ -67,6 +67,7 @@ class FILEAPI_EXPORT CrosMountPointProvider
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
       const fileapi::FileSystemURL& path,
       int64 offset,
+      const base::Time& expected_modification_time,
       fileapi::FileSystemContext* context) const OVERRIDE;
   virtual fileapi::FileStreamWriter* CreateFileStreamWriter(
       const fileapi::FileSystemURL& url,

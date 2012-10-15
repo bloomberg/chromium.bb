@@ -58,6 +58,7 @@ class FILEAPI_EXPORT_PRIVATE TestMountPointProvider
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
+      const base::Time& expected_modification_time,
       FileSystemContext* context) const OVERRIDE;
   virtual FileStreamWriter* CreateFileStreamWriter(
       const FileSystemURL& url,

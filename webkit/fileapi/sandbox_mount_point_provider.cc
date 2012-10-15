@@ -470,8 +470,10 @@ webkit_blob::FileStreamReader*
 SandboxMountPointProvider::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
+    const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return new FileSystemFileStreamReader(context, url, offset);
+  return new FileSystemFileStreamReader(
+      context, url, offset, expected_modification_time);
 }
 
 fileapi::FileStreamWriter* SandboxMountPointProvider::CreateFileStreamWriter(
