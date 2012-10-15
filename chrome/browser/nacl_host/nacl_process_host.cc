@@ -718,7 +718,7 @@ bool NaClProcessHost::StartNaClExecution() {
 #endif
 
 #if defined(OS_POSIX)
-  if (enable_debug_stub_) {
+  if (params.enable_debug_stub) {
     SocketDescriptor server_bound_socket = GetDebugStubSocketHandle();
     if (server_bound_socket != net::TCPListenSocket::kInvalidSocket) {
       params.debug_stub_server_bound_socket =
