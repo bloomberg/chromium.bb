@@ -5,7 +5,6 @@
 #include <cmath>
 
 #import "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 
 #include "base/logging.h"
 
@@ -47,11 +46,7 @@ CGFloat ButtonDecoration::GetWidthForSpace(CGFloat width) {
 }
 
 void ButtonDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
-  // Get tne inner frame that excludes the border and the shadow, and draw the
-  // image in there. Assumes that the button's images fit exactly inside that
-  // space.
-  NSRect innerFrame = NSInsetRect(frame, 0, 2 * [control_view cr_lineWidth]);
-  [GetImage() drawInRect:innerFrame
+  [GetImage() drawInRect:frame
                 fromRect:NSZeroRect  // Entire image
                operation:NSCompositeSourceOver
                 fraction:1.0
