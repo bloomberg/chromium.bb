@@ -15,8 +15,8 @@
 void NaClSwitchRemainingRegsSetup(struct NaClSwitchRemainingRegsState *state,
                                   struct NaClAppThread *natp,
                                   const struct NaClSignalContext *regs) {
-  natp->tls_values.new_prog_ctr = regs->prog_ctr;
-  natp->tls_values.new_ecx = regs->ecx;
+  natp->user.gs_segment.new_prog_ctr = regs->prog_ctr;
+  natp->user.gs_segment.new_ecx = regs->ecx;
 
   state->stack_ptr = regs->stack_ptr;
   state->ss = natp->user.ss;

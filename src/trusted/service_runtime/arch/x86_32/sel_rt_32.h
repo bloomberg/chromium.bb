@@ -70,6 +70,19 @@ typedef uint32_t  nacl_reg_t;  /* general purpose register type */
 #define NACL_PRIxNACL_REG NACL_PRIx32
 #define NACL_PRIXNACL_REG NACL_PRIX32
 
+/* The %gs segment points to this struct when running untrusted code. */
+struct NaClGsSegment {
+  uint32_t tls_value1;  /* Used by user code */
+  uint32_t tls_value2;  /* Used by the integrated runtime (IRT) library */
+
+  /*
+   * These are register values to restore when returning to untrusted
+   * code using NaClSwitchRemainingRegs().
+   */
+  uint32_t new_prog_ctr;
+  uint32_t new_ecx;
+};
+
 /*
  * The layout of NaClThreadContext must be kept in sync with the
  * #defines below.
@@ -133,6 +146,9 @@ struct NaClThreadContext {
   /*          48 */
   uint16_t    trusted_gs;
   /*          4a */
+
+  struct NaClGsSegment gs_segment;
+  /*          4c */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
@@ -163,6 +179,7 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES    0x46
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS    0x48
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS    0x4a
+#define NACL_THREAD_CONTEXT_OFFSET_GS_SEGMENT   0x4c
 
 #if !defined(__ASSEMBLER__)
 
@@ -206,6 +223,7 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES, trusted_es);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS, trusted_fs);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS, trusted_gs);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_GS_SEGMENT, gs_segment);
   CHECK(offset == sizeof(struct NaClThreadContext));
 
 #undef NACL_CHECK_FIELD

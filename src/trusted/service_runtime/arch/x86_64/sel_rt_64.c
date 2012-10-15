@@ -34,13 +34,6 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
                           uint32_t                  tls_idx) {
-  /*
-   * This is set by NaClTlsAllocate before we get here, so don't wipe it.
-   * TODO(mseaborn): Clean this up to avoid these awkward ordering issues.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=3041
-   */
-  uint32_t tls1 = ntcp->tls1;
-
   NaClThreadContextOffsetCheck();
 
   memset(ntcp, 0, sizeof(*ntcp));
@@ -72,8 +65,6 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->tls_idx = tls_idx;
 
   ntcp->fcw = NACL_X87_FCW_DEFAULT;
-
-  ntcp->tls1 = tls1;
 
   /*
    * Save the system's state of the x87 FPU control word so we can restore

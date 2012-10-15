@@ -165,8 +165,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
    */
   natp->nap = nap;
   natp->thread_num = -1;  /* illegal index */
-  natp->tls_values.tls1 = user_tls1;
-  natp->tls_values.tls2 = user_tls2;
 
   /*
    * Even though we don't know what segment base/range should gs/r9/nacl_tls_idx
@@ -183,6 +181,9 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   }
 
   NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, tls_idx);
+
+  NaClTlsSetTlsValue1(natp, user_tls1);
+  NaClTlsSetTlsValue2(natp, user_tls2);
 
   natp->signal_stack = NULL;
   natp->exception_stack = 0;

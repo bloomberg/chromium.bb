@@ -40,6 +40,6 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_all_regs):
         /* Restore state from struct NaClSwitchRemainingRegsState. */
         lss     0(%ecx), %esp /* stack_ptr */
         movw    0x10(%ecx), %ds /* ds */
-        movl    %gs:0xc, %ecx /* new_ecx from NaClTlsSegment */
-        jmp     *%gs:8 /* new_prog_ctr from NaClTlsSegment */
+        movl    %gs:0xc, %ecx /* new_ecx from NaClGsSegment */
+        jmp     *%gs:8 /* new_prog_ctr from NaClGsSegment */
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_springboard_all_regs_end):

@@ -28,13 +28,13 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
    * Initialize these so that untrusted code cannot read uninitialized
    * values from the %gs segment.
    */
-  natp->tls_values.new_prog_ctr = 0;
-  natp->tls_values.new_ecx = 0;
+  natp->user.gs_segment.new_prog_ctr = 0;
+  natp->user.gs_segment.new_ecx = 0;
 
   return (uint32_t) NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
                                                 /* read_exec_only= */ 1,
-                                                &natp->tls_values,
-                                                sizeof(natp->tls_values));
+                                                &natp->user.gs_segment,
+                                                sizeof(natp->user.gs_segment));
 }
 
 
@@ -43,8 +43,23 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 }
 
 
-void NaClTlsChange(struct NaClAppThread *natp) {
-  UNREFERENCED_PARAMETER(natp);
+void NaClTlsSetTlsValue1(struct NaClAppThread *natp, uint32_t value) {
+  natp->user.gs_segment.tls_value1 = value;
+}
+
+
+void NaClTlsSetTlsValue2(struct NaClAppThread *natp, uint32_t value) {
+  natp->user.gs_segment.tls_value2 = value;
+}
+
+
+uint32_t NaClTlsGetTlsValue1(struct NaClAppThread *natp) {
+  return natp->user.gs_segment.tls_value1;
+}
+
+
+uint32_t NaClTlsGetTlsValue2(struct NaClAppThread *natp) {
+  return natp->user.gs_segment.tls_value2;
 }
 
 

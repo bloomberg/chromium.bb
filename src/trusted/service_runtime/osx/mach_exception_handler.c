@@ -161,7 +161,7 @@ static int HandleException(mach_port_t thread_port,
        * Step through the instruction we have been asked to restore
        * control to.
        */
-      if (regs.uts.ts32.__eip == natp->tls_values.new_prog_ctr) {
+      if (regs.uts.ts32.__eip == natp->user.gs_segment.new_prog_ctr) {
         return 1;
       }
     }

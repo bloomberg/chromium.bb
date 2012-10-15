@@ -115,8 +115,8 @@ void NaClAppThreadGetSuspendedRegistersInternal(
   uint32_t eip = state->context.uts.ts32.__eip;
   if (eip >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
       eip < (uintptr_t) NaClSwitchRemainingRegsAsmEnd) {
-    state->context.uts.ts32.__eip = natp->tls_values.new_prog_ctr;
-    state->context.uts.ts32.__ecx = natp->tls_values.new_ecx;
+    state->context.uts.ts32.__eip = natp->user.gs_segment.new_prog_ctr;
+    state->context.uts.ts32.__ecx = natp->user.gs_segment.new_ecx;
     /*
      * It is sometimes necessary to restore the following registers
      * too, depending on how far we are through

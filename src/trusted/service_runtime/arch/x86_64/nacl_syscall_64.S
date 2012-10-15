@@ -218,7 +218,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClGetTlsFastPath):
         get_tls
         leaq    IDENTIFIER(nacl_user)(%rip), %rdx
         movq    (%rdx,%rax,8), %rdx
-        movl    NACL_THREAD_CONTEXT_OFFSET_TLS1(%rdx), %eax
+        movl    NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1(%rdx), %eax
         /* sandbox the return, straight off the untrusted stack */
         movq    0x8(%rsp), %rcx
         addq    $0x10, %rsp

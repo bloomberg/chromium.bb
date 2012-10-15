@@ -66,12 +66,11 @@ void NaClTlsSetIdx(uint32_t tls_idx);
  */
 uint32_t NaClTlsGetIdx(void);
 
-/*
- * This is only called from the sycall TlsInit which is typically
- * call at module startup time.
- * It installs tls descriptor for the main thread.
- */
-void NaClTlsChange(struct NaClAppThread *natp);
+void NaClTlsSetTlsValue1(struct NaClAppThread *natp, uint32_t value);
+void NaClTlsSetTlsValue2(struct NaClAppThread *natp, uint32_t value);
+
+uint32_t NaClTlsGetTlsValue1(struct NaClAppThread *natp);
+uint32_t NaClTlsGetTlsValue2(struct NaClAppThread *natp);
 
 /*
  * Get the current thread index which is used to look up information in a

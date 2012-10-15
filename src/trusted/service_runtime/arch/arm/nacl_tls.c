@@ -112,9 +112,9 @@ static int NaClThreadIdxAllocate() {
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
   int idx = NaClThreadIdxAllocate();
 
-  NaClLog(2, "NaClTlsAllocate: $tp %x idx %d\n", natp->tls_values.tls1, idx);
+  NaClLog(2, "NaClTlsAllocate: idx %d\n", idx);
   if (NACL_TLS_INDEX_INVALID != idx) {
-    natp->user.r9 = (uintptr_t) &natp->tls_values.tls1;
+    natp->user.r9 = (uintptr_t) &natp->user.tls_value1;
   }
 
   return idx;
@@ -133,6 +133,21 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 }
 
 
-void NaClTlsChange(struct NaClAppThread *natp) {
-  NaClLog(2, "NaClTlsChange: $tp %x\n", natp->tls_values.tls1);
+void NaClTlsSetTlsValue1(struct NaClAppThread *natp, uint32_t value) {
+  natp->user.tls_value1 = value;
+}
+
+
+void NaClTlsSetTlsValue2(struct NaClAppThread *natp, uint32_t value) {
+  natp->user.tls_value2 = value;
+}
+
+
+uint32_t NaClTlsGetTlsValue1(struct NaClAppThread *natp) {
+  return natp->user.tls_value1;
+}
+
+
+uint32_t NaClTlsGetTlsValue2(struct NaClAppThread *natp) {
+  return natp->user.tls_value2;
 }

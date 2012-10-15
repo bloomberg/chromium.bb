@@ -55,6 +55,8 @@ struct NaClThreadContext {
   /*            3c */
   uint32_t  tls_idx;
   /*            40 */
+  uint32_t  tls_value2;
+  /*            44 */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
@@ -76,6 +78,7 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR        0x38
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR   0x3c
 #define NACL_THREAD_CONTEXT_OFFSET_TLS_IDX             0x40
+#define NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE2          0x44
 
 #if !defined(__ASSEMBLER__)
 
@@ -111,6 +114,7 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR,
                    trusted_stack_ptr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TLS_IDX, tls_idx);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE2, tls_value2);
   CHECK(offset == sizeof(struct NaClThreadContext));
 
 #undef NACL_CHECK_FIELD

@@ -55,6 +55,10 @@ struct NaClThreadContext {
   /*            38 */
   uint32_t  sys_fpscr;
   /*            3c */
+  uint32_t  tls_value1;
+  /*            40 */
+  uint32_t  tls_value2;
+  /*            44 */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
