@@ -185,8 +185,8 @@ Shell::Shell(ShellDelegate* delegate)
           new internal::OutputConfiguratorAnimation()),
 #endif  // defined(OS_CHROMEOS)
       browser_context_(NULL) {
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_.get());
   ui_controls::InstallUIControlsAura(internal::CreateUIControls());
 #if defined(OS_CHROMEOS)
   output_configurator_->AddObserver(output_configurator_animation_.get());

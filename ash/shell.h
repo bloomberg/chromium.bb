@@ -314,7 +314,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // TODO(oshima): Remove methods that are moved to RootWindowController.
   Launcher* launcher();
 
-  const ScreenAsh* screen() { return screen_; }
+  const ScreenAsh* screen() { return screen_.get(); }
 
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
@@ -411,7 +411,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // when the screen is initially created.
   static bool initially_hide_cursor_;
 
-  ScreenAsh* screen_;
+  scoped_ptr<ScreenAsh> screen_;
 
   // Active root window. Never becomes NULL during the session.
   aura::RootWindow* active_root_window_;
