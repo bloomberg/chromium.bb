@@ -587,11 +587,23 @@ const DictionaryValue* ExtensionAPI::GetSchema(const std::string& full_name) {
 
 namespace {
 
+const char* kDisallowedPlatformAppFeatures[] = {
+  // "app" refers to the the legacy app namespace for hosted apps.
+  "app",
+  "extension",
+  "tabs",
+  "windows"
+};
+
 bool IsFeatureAllowedForExtension(const std::string& feature,
                                   const extensions::Extension& extension) {
-  if (extension.is_platform_app() &&
-      (feature == "app" || feature == "extension"))
-    return false;
+  if (extension.is_platform_app()) {
+    for (size_t i = 0; i < arraysize(kDisallowedPlatformAppFeatures); ++i) {
+      if (feature == kDisallowedPlatformAppFeatures[i])
+        return false;
+    }
+  }
+
   return true;
 }
 
