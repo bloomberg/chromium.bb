@@ -22,7 +22,6 @@
 
 namespace ash {
 
-using internal::TrayBubbleView;
 using internal::TrayPopupTextButton;
 
 namespace message_center {
@@ -197,7 +196,8 @@ MessageCenterBubble::MessageCenterBubble(WebNotificationTray* tray) :
   init_params.max_height = message_center::kWebNotificationBubbleMaxHeight;
   init_params.can_activate = true;
   views::View* anchor = tray_->tray_container();
-  bubble_view_ = TrayBubbleView::Create(anchor, this, init_params);
+  bubble_view_ = TrayBubbleView::Create(
+      tray_->GetBubbleWindowContainer(), anchor, this, &init_params);
   contents_view_ = new MessageCenterContentsView(tray);
 
   Initialize(contents_view_);
@@ -218,11 +218,6 @@ void MessageCenterBubble::UpdateBubbleView() {
   contents_view_->Update(tray_->notification_list()->notifications());
   bubble_view_->Show();
   bubble_view_->UpdateBubble();
-}
-
-void MessageCenterBubble::OnClickedOutsideView() {
-  // May delete |this|.
-  tray_->HideMessageCenterBubble();
 }
 
 }  // namespace message_center

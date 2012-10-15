@@ -124,6 +124,8 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView,
   virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
   virtual void AnchorUpdated() OVERRIDE;
   virtual string16 GetAccessibleName() OVERRIDE;
+  virtual void HideBubbleWithView(const TrayBubbleView* bubble_view) OVERRIDE;
+  virtual bool ClickedOutsideBubble() OVERRIDE;
 
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
@@ -186,9 +188,6 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView,
 
   // As above but also updates any visible bubble.
   void UpdateTrayAndBubble();
-
-  // Hides the specified bubble (called when |bubble| is closed from Views).
-  void HideBubble(message_center::WebNotificationBubble* bubble);
 
   // Testing accessors.
   size_t GetNotificationCountForTest() const;

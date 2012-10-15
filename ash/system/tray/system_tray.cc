@@ -54,7 +54,6 @@ namespace ash {
 // SystemTray
 
 using internal::SystemTrayBubble;
-using internal::TrayBubbleView;
 
 SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
     : internal::TrayBackgroundView(status_area_widget),
@@ -270,18 +269,6 @@ void SystemTray::DestroyNotificationBubble() {
   status_area_widget()->SetHideWebNotifications(false);
 }
 
-void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
-  if (bubble == bubble_.get()) {
-    DestroyBubble();
-    UpdateNotificationBubble();  // State changed, re-create notifications.
-    Shell::GetInstance()->shelf()->UpdateAutoHideState();
-  } else if (bubble == notification_bubble_) {
-    DestroyNotificationBubble();
-  } else {
-    NOTREACHED();
-  }
-}
-
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
   // Don't attempt to align the arrow if the shelf is on the left or right.
   if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM)
@@ -331,7 +318,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
         ash::Shell::GetInstance()->tray_delegate();
     views::View* anchor = tray_container();
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
-                                           shelf_alignment());
+                                           GetAnchorAlignment(),
+                                           kTrayPopupWidth);
     init_params.can_activate = can_activate;
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
@@ -344,7 +332,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       init_params.arrow_color = kHeaderBackgroundColorDark;
     }
     init_params.arrow_offset = arrow_offset;
-    bubble_->InitView(anchor, init_params, delegate->GetUserLoginStatus());
+    bubble_->InitView(anchor, delegate->GetUserLoginStatus(), &init_params);
   }
   // Save height of default view for creating detailed views directly.
   if (!detailed)
@@ -399,13 +387,15 @@ void SystemTray::UpdateNotificationBubble() {
     anchor = tray_container();
     anchor_type = TrayBubbleView::ANCHOR_TYPE_TRAY;
   }
-  TrayBubbleView::InitParams init_params(anchor_type, shelf_alignment());
+  TrayBubbleView::InitParams init_params(anchor_type,
+                                         GetAnchorAlignment(),
+                                         kTrayPopupWidth);
   init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kBackgroundColor;
   init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
   user::LoginStatus login_status =
       Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
-  notification_bubble_->InitView(anchor, init_params, login_status);
+  notification_bubble_->InitView(anchor, login_status, &init_params);
   if (notification_bubble_->bubble_view()->child_count() == 0) {
     // It is possible that none of the items generated actual notifications.
     DestroyNotificationBubble();
@@ -448,6 +438,26 @@ void SystemTray::AnchorUpdated() {
 
 string16 SystemTray::GetAccessibleName() {
   return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
+}
+
+void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
+  if (bubble_.get() && bubble_view == bubble_->bubble_view()) {
+    DestroyBubble();
+    UpdateNotificationBubble();  // State changed, re-create notifications.
+    Shell::GetInstance()->shelf()->UpdateAutoHideState();
+  } else if (notification_bubble_.get() &&
+             bubble_view == notification_bubble_->bubble_view()) {
+    DestroyNotificationBubble();
+  }
+}
+
+bool SystemTray::ClickedOutsideBubble() {
+  if (!bubble_.get() ||
+      bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION) {
+    return false;
+  }
+  HideBubbleWithView(bubble_->bubble_view());
+  return true;
 }
 
 bool SystemTray::PerformAction(const ui::Event& event) {

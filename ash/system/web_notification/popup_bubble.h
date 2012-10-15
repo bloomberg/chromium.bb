@@ -28,11 +28,9 @@ class PopupBubble : public WebNotificationBubble {
   bool dirty() const { return dirty_; }
   void set_dirty(bool dirty) { dirty_ = dirty; }
 
-  // Overridden from TrayBubbleView::Host.
+  // Overridden from TrayBubbleView::Delegate.
   virtual void BubbleViewDestroyed() OVERRIDE;
-
   virtual void OnMouseEnteredView() OVERRIDE;
-
   virtual void OnMouseExitedView() OVERRIDE;
 
  private:

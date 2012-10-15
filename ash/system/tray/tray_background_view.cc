@@ -10,10 +10,13 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/wm/window_animations.h"
+#include "ui/aura/event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
@@ -28,6 +31,8 @@ const int kTrayContainerVerticalPaddingBottomAlignment  = 1;
 const int kTrayContainerHorizontalPaddingBottomAlignment  = 1;
 const int kTrayContainerVerticalPaddingVerticalAlignment  = 1;
 const int kTrayContainerHorizontalPaddingVerticalAlignment = 1;
+
+const int kAnimationDurationForPopupMS = 200;
 
 }  // namespace
 
@@ -275,6 +280,84 @@ void TrayBackgroundView::SetBorder() {
         on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
         kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
   }
+}
+
+void TrayBackgroundView::InitializeBubbleAnimations(
+    views::Widget* bubble_widget) {
+  ash::SetWindowVisibilityAnimationType(
+      bubble_widget->GetNativeWindow(),
+      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  ash::SetWindowVisibilityAnimationTransition(
+      bubble_widget->GetNativeWindow(),
+      ash::ANIMATE_BOTH);
+  ash::SetWindowVisibilityAnimationDuration(
+      bubble_widget->GetNativeWindow(),
+      base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
+}
+
+aura::Window* TrayBackgroundView::GetBubbleWindowContainer() const {
+  return ash::Shell::GetContainer(
+      tray_container()->GetWidget()->GetNativeWindow()->GetRootWindow(),
+      ash::internal::kShellWindowId_SettingBubbleContainer);
+}
+
+gfx::Rect TrayBackgroundView::GetAnchorRect(
+    views::Widget* anchor_widget,
+    TrayBubbleView::AnchorType anchor_type,
+    TrayBubbleView::AnchorAlignment anchor_alignment) const {
+  gfx::Rect rect;
+  if (anchor_widget && anchor_widget->IsVisible()) {
+    rect = anchor_widget->GetWindowBoundsInScreen();
+    if (anchor_type == TrayBubbleView::ANCHOR_TYPE_TRAY) {
+      if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
+        bool rtl = base::i18n::IsRTL();
+        rect.Inset(
+            rtl ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0,
+            0,
+            rtl ? 0 : kPaddingFromRightEdgeOfScreenBottomAlignment,
+            kPaddingFromBottomOfScreenBottomAlignment);
+      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
+        rect.Inset(0, 0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+                   kPaddingFromBottomOfScreenVerticalAlignment);
+      } else {
+        rect.Inset(kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+                   0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
+      }
+    } else if (anchor_type == TrayBubbleView::ANCHOR_TYPE_BUBBLE) {
+      // Invert the offsets to align with the bubble below.
+      if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
+        rect.Inset(kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+                   0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
+      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT) {
+        rect.Inset(0, 0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+                   kPaddingFromBottomOfScreenVerticalAlignment);
+      }
+    }
+  }
+
+  // TODO(jennyz): May need to add left/right alignment in the following code.
+  if (rect.IsEmpty()) {
+    rect = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+    rect = gfx::Rect(
+        base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreenBottomAlignment :
+        rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
+        rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
+        0, 0);
+  }
+  return rect;
+}
+
+TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
+  switch (shelf_alignment_) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
+    case SHELF_ALIGNMENT_LEFT:
+      return TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
+    case SHELF_ALIGNMENT_RIGHT:
+      return TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
+  }
+  NOTREACHED();
+  return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
 }
 
 }  // namespace internal

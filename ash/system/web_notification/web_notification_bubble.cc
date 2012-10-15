@@ -4,6 +4,7 @@
 
 #include "ash/system/web_notification/web_notification_bubble.h"
 
+#include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/system/web_notification/web_notification_view.h"
@@ -12,8 +13,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {
-
-using internal::TrayBubbleView;
 
 namespace message_center {
 
@@ -24,29 +23,20 @@ const int kUpdateDelayMs = 50;
 WebNotificationBubble::WebNotificationBubble(WebNotificationTray* tray)
     : tray_(tray),
       bubble_view_(NULL),
-      bubble_widget_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 void WebNotificationBubble::Initialize(views::View* contents_view) {
   DCHECK(bubble_view_);
-
   bubble_view_->AddChildView(contents_view);
 
-  bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
-  bubble_widget_->AddObserver(this);
-
-  InitializeAndShowBubble(bubble_widget_, bubble_view_, tray_);
+  bubble_wrapper_.reset(new internal::TrayBubbleWrapper(tray_, bubble_view_));
   UpdateBubbleView();
 }
 
 WebNotificationBubble::~WebNotificationBubble() {
   if (bubble_view_)
-    bubble_view_->reset_host();
-  if (bubble_widget_) {
-    bubble_widget_->RemoveObserver(this);
-    bubble_widget_->Close();
-  }
+    bubble_view_->reset_delegate();
 }
 
 void WebNotificationBubble::ScheduleUpdate() {
@@ -59,7 +49,7 @@ void WebNotificationBubble::ScheduleUpdate() {
 }
 
 bool WebNotificationBubble::IsVisible() const {
-  return bubble_widget_ && bubble_widget_->IsVisible();
+  return bubble_view() && bubble_view()->GetWidget()->IsVisible();
 }
 
 void WebNotificationBubble::BubbleViewDestroyed() {
@@ -72,29 +62,27 @@ void WebNotificationBubble::OnMouseEnteredView() {
 void WebNotificationBubble::OnMouseExitedView() {
 }
 
-void WebNotificationBubble::OnClickedOutsideView() {
-  // May delete |this|.
-  tray_->HideMessageCenterBubble();
-}
-
 string16 WebNotificationBubble::GetAccessibleName() {
   return tray_->GetAccessibleName();
 }
 
-// Overridden from views::WidgetObserver:
-void WebNotificationBubble::OnWidgetClosing(views::Widget* widget) {
-  CHECK_EQ(bubble_widget_, widget);
-  bubble_widget_ = NULL;
-  tray_->HideBubble(this);  // Will destroy |this|.
+gfx::Rect WebNotificationBubble::GetAnchorRect(
+    views::Widget* anchor_widget,
+    TrayBubbleView::AnchorType anchor_type,
+    TrayBubbleView::AnchorAlignment anchor_alignment) {
+  return tray_->GetAnchorRect(anchor_widget, anchor_type, anchor_alignment);
 }
 
 TrayBubbleView::InitParams WebNotificationBubble::GetInitParams() {
+  TrayBubbleView::AnchorAlignment anchor_alignment =
+      tray_->GetAnchorAlignment();
   TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
-                                         tray_->shelf_alignment());
+                                         anchor_alignment,
+                                         kTrayPopupWidth);
   init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kHeaderBackgroundColorDark;
   init_params.bubble_width = kWebNotificationWidth;
-  if (tray_->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+  if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
     views::View* anchor = tray_->tray_container();
     gfx::Point bounds(anchor->width() / 2, 0);
 

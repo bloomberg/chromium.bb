@@ -8,8 +8,8 @@
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/user/login_status.h"
 #include "base/base_export.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "ui/views/widget/widget_observer.h"
 
 #include <vector>
 
@@ -20,8 +20,9 @@ class SystemTrayItem;
 
 namespace internal {
 
-class SystemTrayBubble : public TrayBubbleView::Host,
-                         public views::WidgetObserver {
+class TrayBubbleWrapper;
+
+class SystemTrayBubble : public TrayBubbleView::Delegate {
  public:
   enum BubbleType {
     BUBBLE_TYPE_DEFAULT,
@@ -39,17 +40,19 @@ class SystemTrayBubble : public TrayBubbleView::Host,
                   BubbleType bubble_type);
 
   // Creates |bubble_view_| and a child views for each member of |items_|.
-  // Also creates |bubble_widget_| and sets up animations.
+  // Also creates |bubble_wrapper_|. |init_params| may be modified.
   void InitView(views::View* anchor,
-                TrayBubbleView::InitParams init_params,
-                user::LoginStatus login_status);
+                user::LoginStatus login_status,
+                TrayBubbleView::InitParams* init_params);
 
-  // Overridden from TrayBubbleView::Host.
+  // Overridden from TrayBubbleView::Delegate.
   virtual void BubbleViewDestroyed() OVERRIDE;
   virtual void OnMouseEnteredView() OVERRIDE;
   virtual void OnMouseExitedView() OVERRIDE;
-  virtual void OnClickedOutsideView() OVERRIDE;
   virtual string16 GetAccessibleName() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
+                                  AnchorType anchor_type,
+                                  AnchorAlignment anchor_alignment) OVERRIDE;
 
   BubbleType bubble_type() const { return bubble_type_; }
   TrayBubbleView* bubble_view() const { return bubble_view_; }
@@ -65,12 +68,9 @@ class SystemTrayBubble : public TrayBubbleView::Host,
  private:
   void CreateItemViews(user::LoginStatus login_status);
 
-  // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-
   ash::SystemTray* tray_;
   TrayBubbleView* bubble_view_;
-  views::Widget* bubble_widget_;
+  scoped_ptr<TrayBubbleWrapper> bubble_wrapper_;
   std::vector<ash::SystemTrayItem*> items_;
   BubbleType bubble_type_;
 

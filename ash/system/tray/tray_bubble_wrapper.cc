@@ -1,0 +1,43 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/system/tray/tray_bubble_wrapper.h"
+
+#include "ash/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_bubble_view.h"
+#include "ash/system/tray/tray_event_filter.h"
+#include "ui/views/widget/widget.h"
+
+namespace ash {
+namespace internal {
+
+TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
+                                     TrayBubbleView* bubble_view)
+    : tray_(tray),
+      bubble_view_(bubble_view) {
+  bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
+  bubble_widget_->AddObserver(this);
+
+  bubble_view_->InitializeAndShowBubble();
+  tray_->InitializeBubbleAnimations(bubble_widget_);
+
+  tray_event_filter_.reset(new TrayEventFilter(this));
+}
+
+TrayBubbleWrapper::~TrayBubbleWrapper() {
+  tray_event_filter_.reset();
+  if (bubble_widget_) {
+    bubble_widget_->RemoveObserver(this);
+    bubble_widget_->Close();
+  }
+}
+
+void TrayBubbleWrapper::OnWidgetClosing(views::Widget* widget) {
+  CHECK_EQ(bubble_widget_, widget);
+  bubble_widget_ = NULL;
+  tray_->HideBubbleWithView(bubble_view_);  // May destroy |bubble_view_|
+}
+
+}  // namespace internal
+}  // namespace ash

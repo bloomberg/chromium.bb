@@ -6,21 +6,22 @@
 #define ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_
 
 #include "ash/system/tray/tray_bubble_view.h"
-#include "ui/views/widget/widget_observer.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 
 class WebNotificationTray;
 
-using internal::TrayBubbleView;
+namespace internal {
+class TrayBubbleWrapper;
+}
 
 namespace message_center {
 
 class WebNotificationContentsView;
 class WebNotificationView;
 
-class WebNotificationBubble : public TrayBubbleView::Host,
-                              public views::WidgetObserver {
+class WebNotificationBubble : public TrayBubbleView::Delegate {
  public:
   explicit WebNotificationBubble(WebNotificationTray* tray);
 
@@ -37,29 +38,23 @@ class WebNotificationBubble : public TrayBubbleView::Host,
 
   bool IsVisible() const;
 
-  views::Widget* bubble_widget() const { return bubble_widget_; }
   TrayBubbleView* bubble_view() const { return bubble_view_; }
 
-  // Overridden from TrayBubbleView::Host.
+  // Overridden from TrayBubbleView::Delegate.
   virtual void BubbleViewDestroyed() OVERRIDE;
-
   virtual void OnMouseEnteredView() OVERRIDE;
-
   virtual void OnMouseExitedView() OVERRIDE;
-
-  virtual void OnClickedOutsideView() OVERRIDE;
-
   virtual string16 GetAccessibleName() OVERRIDE;
-
-  // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
+                                  AnchorType anchor_type,
+                                  AnchorAlignment anchor_alignment) OVERRIDE;
 
  protected:
   TrayBubbleView::InitParams GetInitParams();
 
   WebNotificationTray* tray_;
   TrayBubbleView* bubble_view_;
-  views::Widget* bubble_widget_;
+  scoped_ptr<internal::TrayBubbleWrapper> bubble_wrapper_;
   base::WeakPtrFactory<WebNotificationBubble> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationBubble);

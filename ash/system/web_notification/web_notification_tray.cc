@@ -350,12 +350,22 @@ void WebNotificationTray::UpdateTrayAndBubble() {
   UpdateTray();
 }
 
-void WebNotificationTray::HideBubble(WebNotificationBubble* bubble) {
-  if (bubble == message_center_bubble()) {
+void WebNotificationTray::HideBubbleWithView(
+    const TrayBubbleView* bubble_view) {
+  if (message_center_bubble() &&
+      bubble_view == message_center_bubble()->bubble_view()) {
     HideMessageCenterBubble();
-  } else if (bubble == popup_bubble()) {
+  } else if (popup_bubble() && bubble_view == popup_bubble()->bubble_view()) {
     HidePopupBubble();
   }
+}
+
+bool WebNotificationTray::ClickedOutsideBubble() {
+  // Only hide the message center.
+  if (!message_center_bubble())
+    return false;
+  HideMessageCenterBubble();
+  return true;
 }
 
 // Methods for testing

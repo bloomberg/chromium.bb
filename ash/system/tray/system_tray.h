@@ -159,6 +159,8 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
   virtual void AnchorUpdated() OVERRIDE;
   virtual string16 GetAccessibleName() OVERRIDE;
+  virtual void HideBubbleWithView(const TrayBubbleView* bubble_view) OVERRIDE;
+  virtual bool ClickedOutsideBubble() OVERRIDE;
 
  private:
   friend class internal::SystemTrayBubble;
@@ -169,11 +171,6 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
 
   // Resets |notification_bubble_| and clears any related state.
   void DestroyNotificationBubble();
-
-  // Called when the widget associated with |bubble| closes. |bubble| should
-  // always == |bubble_|. This triggers destroying |bubble_| and hiding the
-  // launcher if necessary.
-  void RemoveBubble(internal::SystemTrayBubble* bubble);
 
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 

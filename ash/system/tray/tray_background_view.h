@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
+#include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "ash/wm/shelf_types.h"
 
@@ -82,7 +83,16 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   // Called when the anchor (tray or bubble) may have moved or changed.
   virtual void AnchorUpdated() {}
 
+  // Called from GetAccessibleState, must return a valid accessible name.
   virtual string16 GetAccessibleName() = 0;
+
+  // Hides the bubble associated with |bubble_view|. Called when the widget
+  // is closed.
+  virtual void HideBubbleWithView(const TrayBubbleView* bubble_view) = 0;
+
+  // Called by the bubble wrapper when a click event occurs outside the bubble.
+  // May close the bubble. Returns true if the event is handled.
+  virtual bool ClickedOutsideBubble() = 0;
 
   // Sets |contents| as a child.
   void SetContents(views::View* contents);
@@ -95,6 +105,21 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   void SetPaintsBackground(
       bool value,
       internal::BackgroundAnimator::ChangeType change_type);
+
+  // Initializes animations for the bubble.
+  void InitializeBubbleAnimations(views::Widget* bubble_widget);
+
+  // Returns the window hosting the bubble.
+  aura::Window* GetBubbleWindowContainer() const;
+
+  // Returns the anchor rect for the bubble.
+  gfx::Rect GetAnchorRect(
+      views::Widget* anchor_widget,
+      TrayBubbleView::AnchorType anchor_type,
+      TrayBubbleView::AnchorAlignment anchor_alignment) const;
+
+  // Returns the bubble anchor alignment based on |shelf_alignment_|.
+  TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
 
   StatusAreaWidget* status_area_widget() {
     return status_area_widget_;

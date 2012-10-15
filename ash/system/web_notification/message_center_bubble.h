@@ -24,10 +24,8 @@ class MessageCenterBubble : public WebNotificationBubble {
 
   size_t NumMessageViewsForTest() const;
 
-  // Overridden from TrayBubbleView::Host.
+  // Overridden from TrayBubbleView::Delegate.
   virtual void BubbleViewDestroyed() OVERRIDE;
-
-  virtual void OnClickedOutsideView() OVERRIDE;
 
  private:
   // Overridden from WebNotificationBubble.

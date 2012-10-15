@@ -15,8 +15,6 @@
 
 namespace ash {
 
-using internal::TrayBubbleView;
-
 namespace message_center {
 
 const int kAutocloseDelaySeconds = 5;
@@ -76,7 +74,8 @@ PopupBubble::PopupBubble(WebNotificationTray* tray) :
   init_params.arrow_color = kBackgroundColor;
   init_params.close_on_deactivate = false;
   views::View* anchor = tray_->tray_container();
-  bubble_view_ = TrayBubbleView::Create(anchor, this, init_params);
+  bubble_view_ = TrayBubbleView::Create(
+      tray_->GetBubbleWindowContainer(), anchor, this, &init_params);
   contents_view_ = new PopupBubbleContentsView(tray);
 
   Initialize(contents_view_);
@@ -107,7 +106,7 @@ void PopupBubble::UpdateBubbleView() {
   WebNotificationList::Notifications popup_notifications;
   tray_->notification_list()->GetPopupNotifications(&popup_notifications);
   if (popup_notifications.size() == 0) {
-    tray_->HideBubble(this);  // deletes |this|!
+    tray_->HideBubbleWithView(bubble_view());  // deletes |this|
     return;
   }
   // Only update the popup tray if the number of visible popup notifications
