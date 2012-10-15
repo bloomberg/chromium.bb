@@ -170,7 +170,22 @@ void BrowserWindowCocoa::Close() {
   if ([controller_ overlayWindow]) {
     [controller_ deferPerformClose];
   } else {
-    [window() performClose:controller_];
+    // Using |-performClose:| can prevent the window from actually closing if
+    // a JavaScript beforeunload handler opens an alert during shutdown, as
+    // documented at <http://crbug.com/118424>. Re-implement
+    // -[NSWindow performClose:] as closely as possible to how Apple documents
+    // it.
+    id<NSWindowDelegate> delegate = [window() delegate];
+    SEL window_should_close = @selector(windowShouldClose:);
+    if ([delegate respondsToSelector:window_should_close]) {
+      if ([delegate windowShouldClose:window()])
+        [window() close];
+    } else if ([window() respondsToSelector:window_should_close]) {
+      if ([window() performSelector:window_should_close withObject:window()])
+        [window() close];
+    } else {
+      [window() close];
+    }
   }
 }
 

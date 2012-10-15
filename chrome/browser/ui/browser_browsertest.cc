@@ -7,9 +7,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -68,6 +65,12 @@
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/i18n/rtl.h"
@@ -427,6 +430,79 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_BeforeUnloadVsBeforeReload) {
 
   // Accept the navigation so we end up on a page without a beforeunload hook.
   alert->native_dialog()->AcceptAppModalDialog();
+}
+
+// BeforeUnloadAtQuitWithTwoWindows is a regression test for
+// http://crbug.com/11842. It opens two windows, one of which has a
+// beforeunload handler and attempts to exit cleanly.
+class BeforeUnloadAtQuitWithTwoWindows : public InProcessBrowserTest {
+ public:
+  // This test is for testing a specific shutdown behavior. This mimics what
+  // happens in InProcessBrowserTest::RunTestOnMainThread and QuitBrowsers, but
+  // ensures that it happens through the single IDC_EXIT of the test.
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    // Cycle both the MessageLoop and the Cocoa runloop twice to flush out any
+    // Chrome work that generates Cocoa work. Do this twice since there are two
+    // Browsers that must be closed.
+    CycleRunLoops();
+    CycleRunLoops();
+
+    // Run the application event loop to completion, which will cycle the
+    // native MessagePump on all platforms.
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    MessageLoop::current()->Run();
+
+    // Take care of any remaining Cocoa work.
+    CycleRunLoops();
+
+    // At this point, quit should be for real now.
+    ASSERT_EQ(0u, BrowserList::size());
+  }
+
+  // A helper function that cycles the MessageLoop, and on Mac, the Cocoa run
+  // loop. It also drains the NSAutoreleasePool.
+  void CycleRunLoops() {
+    content::RunAllPendingInMessageLoop();
+#if defined(OS_MACOSX)
+    chrome::testing::NSRunLoopRunAllPending();
+    AutoreleasePool()->Recycle();
+#endif
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
+                       IfThisTestTimesOutItIndicatesFAILURE) {
+  // In the first browser, set up a page that has a beforeunload handler.
+  GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Open a second browser window at about:blank.
+  ui_test_utils::BrowserAddedObserver browser_added_observer;
+  chrome::NewEmptyWindow(browser()->profile());
+  Browser* second_window = browser_added_observer.WaitForSingleNewBrowser();
+  ui_test_utils::NavigateToURL(second_window, GURL("about:blank"));
+
+  // Tell the application to quit. IDC_EXIT calls AttemptUserExit, which on
+  // everything but ChromeOS allows unload handlers to block exit. On that
+  // platform, though, it exits unconditionally. See the comment and bug ID
+  // in AttemptUserExit() in application_lifetime.cc.
+#if defined(OS_CHROMEOS)
+  browser::AttemptExit();
+#else
+  chrome::ExecuteCommand(second_window, IDC_EXIT);
+#endif
+
+  // The beforeunload handler will run at exit, ensure it does, and then accept
+  // it to allow shutdown to proceed.
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  ASSERT_TRUE(alert);
+  EXPECT_TRUE(
+      static_cast<JavaScriptAppModalDialog*>(alert)->is_before_unload_dialog());
+  alert->native_dialog()->AcceptAppModalDialog();
+
+  // But wait there's more! If this test times out, it likely means that the
+  // browser has not been able to quit correctly, indicating there's a
+  // regression of the bug noted above.
 }
 
 // Test that scripts can fork a new renderer process for a cross-site popup,
