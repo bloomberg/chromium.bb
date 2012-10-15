@@ -6,6 +6,9 @@
 
 #include <string>
 
+#if defined(OS_CHROMEOS)
+#include "ash/ash_switches.h"
+#endif
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -300,6 +303,18 @@ Value* GetFeatureStatus() {
           "Accelerated video presentation has been disabled, either via"
           " about:flags or command line.",
           true
+      },
+      {
+          "panel_fitting",
+          flags & content::GPU_FEATURE_TYPE_PANEL_FITTING,
+#if defined(OS_CHROMEOS)
+          command_line.HasSwitch(ash::switches::kAshDisablePanelFitting),
+#else
+          true,
+#endif
+          "Panel fitting is unavailable, either disabled at the command"
+          " line or not supported by the current system.",
+          false
       }
   };
   const size_t kNumFeatures = sizeof(kGpuFeatureInfo) / sizeof(GpuFeatureInfo);

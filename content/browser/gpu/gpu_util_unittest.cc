@@ -30,6 +30,8 @@ TEST(GpuUtilsTest, GpuFeatureTypFromString) {
             content::GPU_FEATURE_TYPE_3D_CSS);
   EXPECT_EQ(gpu_util::StringToGpuFeatureType("accelerated_video"),
             content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO);
+  EXPECT_EQ(gpu_util::StringToGpuFeatureType("panel_fitting"),
+            content::GPU_FEATURE_TYPE_PANEL_FITTING);
   EXPECT_EQ(gpu_util::StringToGpuFeatureType("all"),
             content::GPU_FEATURE_TYPE_ALL);
   EXPECT_EQ(gpu_util::StringToGpuFeatureType("xxx"),
@@ -78,6 +80,10 @@ TEST(GpuUtilsTest, GpuFeatureTypeToString) {
       gpu_util::GpuFeatureTypeToString(
           content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO).c_str(),
       "accelerated_video");
+  EXPECT_STREQ(
+      gpu_util::GpuFeatureTypeToString(
+          content::GPU_FEATURE_TYPE_PANEL_FITTING).c_str(),
+      "panel_fitting");
   EXPECT_STREQ(
       gpu_util::GpuFeatureTypeToString(
           content::GPU_FEATURE_TYPE_ALL).c_str(),

@@ -28,6 +28,17 @@
 
 namespace chromeos {
 
+struct OutputSnapshot {
+  RROutput output;
+  RRCrtc crtc;
+  RRMode current_mode;
+  int height;
+  int y;
+  RRMode native_mode;
+  RRMode mirror_mode;
+  bool is_internal;
+};
+
 namespace {
 // DPI measurements.
 const float kMmInInch = 25.4;
@@ -196,97 +207,6 @@ static void CreateFrameBuffer(Display* display,
   int mm_width = width * kPixelsToMmScale;
   int mm_height = height * kPixelsToMmScale;
   XRRSetScreenSize(display, window, width, height, mm_width, mm_height);
-}
-
-typedef struct OutputSnapshot {
-  RROutput output;
-  RRCrtc crtc;
-  RRMode current_mode;
-  int height;
-  int y;
-  RRMode native_mode;
-  RRMode mirror_mode;
-  bool is_internal;
-} OutputSnapshot;
-
-static int GetDualOutputs(Display* display,
-                          XRRScreenResources* screen,
-                          OutputSnapshot* one,
-                          OutputSnapshot* two) {
-  int found_count = 0;
-  XRROutputInfo* one_info = NULL;
-  XRROutputInfo* two_info = NULL;
-
-  for (int i = 0; (i < screen->noutput) && (found_count < 2); ++i) {
-    RROutput this_id = screen->outputs[i];
-    XRROutputInfo* output_info = XRRGetOutputInfo(display, screen, this_id);
-    bool is_connected = (RR_Connected == output_info->connection);
-
-    if (is_connected) {
-      OutputSnapshot *to_populate = NULL;
-
-      if (0 == found_count) {
-        to_populate = one;
-        one_info = output_info;
-      } else {
-        to_populate = two;
-        two_info = output_info;
-      }
-
-      to_populate->output = this_id;
-      // Now, look up the corresponding CRTC and any related info.
-      to_populate->crtc = output_info->crtc;
-      if (None != to_populate->crtc) {
-        XRRCrtcInfo* crtc_info =
-            XRRGetCrtcInfo(display, screen, to_populate->crtc);
-        to_populate->current_mode = crtc_info->mode;
-        to_populate->height = crtc_info->height;
-        to_populate->y = crtc_info->y;
-        XRRFreeCrtcInfo(crtc_info);
-      } else {
-        to_populate->current_mode = 0;
-        to_populate->height = 0;
-        to_populate->y = 0;
-      }
-      // Find the native_mode and leave the mirror_mode for the pass after the
-      // loop.
-      if (output_info->nmode > 0)
-        to_populate->native_mode = output_info->modes[0];
-      to_populate->mirror_mode = 0;
-
-      // See if this output refers to an internal display.
-      to_populate->is_internal =
-          OutputConfigurator::IsInternalOutputName(
-              std::string(output_info->name));
-
-      VLOG(1) << "Found display #" << found_count
-              << " with output " << (int)to_populate->output
-              << " crtc " << (int)to_populate->crtc
-              << " current mode " << (int)to_populate->current_mode;
-      ++found_count;
-    } else {
-      XRRFreeOutputInfo(output_info);
-    }
-  }
-
-  if (2 == found_count) {
-    // Find the mirror modes (if there are any).
-    bool can_mirror = FindMirrorModeForOutputs(display,
-                                               screen,
-                                               one->output,
-                                               two->output,
-                                               &one->mirror_mode,
-                                               &two->mirror_mode);
-    if (!can_mirror) {
-      // We can't mirror so set mirror_mode to 0.
-      one->mirror_mode = 0;
-      two->mirror_mode = 0;
-    }
-  }
-
-  XRRFreeOutputInfo(one_info);
-  XRRFreeOutputInfo(two_info);
-  return found_count;
 }
 
 static OutputState InferCurrentState(Display* display,
@@ -566,10 +486,17 @@ static bool IsProjecting(const OutputSnapshot* outputs, int output_count) {
 
 OutputConfigurator::OutputConfigurator()
     : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()),
+      is_panel_fitting_enabled_(false),
+      connected_output_count_(0),
       xrandr_event_base_(0),
       output_state_(STATE_INVALID) {
+}
+
+void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
   if (!is_running_on_chrome_os_)
     return;
+
+  is_panel_fitting_enabled_ = is_panel_fitting_enabled;
 
   // Cache the initial output state.
   Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
@@ -849,6 +776,174 @@ bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
 void OutputConfigurator::NotifyOnDisplayChanged() {
   notification_timer_.reset();
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChanged());
+}
+
+int OutputConfigurator::GetDualOutputs(Display* display,
+                                       XRRScreenResources* screen,
+                                       OutputSnapshot* one,
+                                       OutputSnapshot* two) {
+  int found_count = 0;
+  XRROutputInfo* one_info = NULL;
+  XRROutputInfo* two_info = NULL;
+
+  for (int i = 0; (i < screen->noutput) && (found_count < 2); ++i) {
+    RROutput this_id = screen->outputs[i];
+    XRROutputInfo* output_info = XRRGetOutputInfo(display, screen, this_id);
+    bool is_connected = (RR_Connected == output_info->connection);
+
+    if (is_connected) {
+      OutputSnapshot *to_populate = NULL;
+
+      if (0 == found_count) {
+        to_populate = one;
+        one_info = output_info;
+      } else {
+        to_populate = two;
+        two_info = output_info;
+      }
+
+      to_populate->output = this_id;
+      // Now, look up the corresponding CRTC and any related info.
+      to_populate->crtc = output_info->crtc;
+      if (None != to_populate->crtc) {
+        XRRCrtcInfo* crtc_info =
+            XRRGetCrtcInfo(display, screen, to_populate->crtc);
+        to_populate->current_mode = crtc_info->mode;
+        to_populate->height = crtc_info->height;
+        to_populate->y = crtc_info->y;
+        XRRFreeCrtcInfo(crtc_info);
+      } else {
+        to_populate->current_mode = 0;
+        to_populate->height = 0;
+        to_populate->y = 0;
+      }
+      // Find the native_mode and leave the mirror_mode for the pass after the
+      // loop.
+      to_populate->native_mode = GetOutputNativeMode(output_info);
+      to_populate->mirror_mode = 0;
+
+      // See if this output refers to an internal display.
+      to_populate->is_internal = IsInternalOutput(output_info);
+
+      VLOG(1) << "Found display #" << found_count
+              << " with output " << (int)to_populate->output
+              << " crtc " << (int)to_populate->crtc
+              << " current mode " << (int)to_populate->current_mode;
+      ++found_count;
+    } else {
+      XRRFreeOutputInfo(output_info);
+    }
+  }
+
+  if (2 == found_count) {
+    // Find the mirror modes (if there are any).
+    bool mirror_mode_found = FindMirrorModeForOutputs(display,
+                                                      screen,
+                                                      one->output,
+                                                      two->output,
+                                                      &one->mirror_mode,
+                                                      &two->mirror_mode);
+    if (!mirror_mode_found) {
+      bool mirror_mode_added = AddMirrorModeToInternalOutput(display,
+                                                             screen,
+                                                             one->output,
+                                                             two->output,
+                                                             &one->mirror_mode,
+                                                             &two->mirror_mode);
+      if (!mirror_mode_added) {
+        // We can't mirror so set mirror_mode to 0.
+        one->mirror_mode = 0;
+        two->mirror_mode = 0;
+      }
+    }
+  }
+
+  XRRFreeOutputInfo(one_info);
+  XRRFreeOutputInfo(two_info);
+  return found_count;
+}
+
+bool OutputConfigurator::AddMirrorModeToInternalOutput(
+    Display* display,
+    XRRScreenResources* screen,
+    RROutput output_one,
+    RROutput output_two,
+    RRMode* output_one_mode,
+    RRMode* output_two_mode) {
+  // Add new mode only if panel fitting hardware will be able to display it.
+  if (!is_panel_fitting_enabled_)
+    return false;
+
+  XRROutputInfo* output_one_info =
+      XRRGetOutputInfo(display, screen, output_one);
+  XRROutputInfo* output_two_info =
+      XRRGetOutputInfo(display, screen, output_two);
+  bool success = false;
+
+  // Both outputs should be connected in mirror mode
+  if (output_one_info->connection == RR_Connected &&
+      output_two_info->connection == RR_Connected) {
+    bool one_is_internal = IsInternalOutput(output_one_info);
+    bool two_is_internal = IsInternalOutput(output_two_info);
+
+    XRROutputInfo* internal_info = NULL;
+    XRROutputInfo* external_info = NULL;
+
+    if (one_is_internal) {
+      internal_info = output_one_info;
+      external_info = output_two_info;
+
+      VLOG_IF(1, two_is_internal) << "Two internal outputs detected.";
+      DCHECK(!two_is_internal);
+    } else if (two_is_internal) {
+      internal_info = output_two_info;
+      external_info = output_one_info;
+    }
+
+    bool internal_output_found = internal_info != NULL;
+
+    if (internal_output_found) {
+      RRMode internal_native_mode_id = GetOutputNativeMode(internal_info);
+      RRMode external_native_mode_id = GetOutputNativeMode(external_info);
+
+      if (internal_native_mode_id != None && external_native_mode_id != None) {
+        XRRModeInfo* internal_native_mode =
+            ModeInfoForID(screen, internal_native_mode_id);
+        XRRModeInfo* external_native_mode =
+            ModeInfoForID(screen, external_native_mode_id);
+
+        // Panel fitting will not work if the internal output maximal resolution
+        // is lower than that of the external output
+        if (internal_native_mode->width >= external_native_mode->width &&
+            internal_native_mode->height >= external_native_mode->height) {
+          XRRAddOutputMode(display, one_is_internal ? output_one : output_two,
+              external_native_mode_id);
+
+          *output_one_mode = *output_two_mode = external_native_mode_id;
+          success = true;
+        }
+      }
+    }
+  }
+
+  XRRFreeOutputInfo(output_one_info);
+  XRRFreeOutputInfo(output_two_info);
+
+  return success;
+}
+
+// static
+bool OutputConfigurator::IsInternalOutput(const XRROutputInfo* output_info) {
+  return IsInternalOutputName(std::string(output_info->name));
+}
+
+// static
+RRMode OutputConfigurator::GetOutputNativeMode(
+    const XRROutputInfo* output_info) {
+  if (output_info->nmode <= 0)
+    return None;
+
+  return output_info->modes[0];
 }
 
 }  // namespace chromeos

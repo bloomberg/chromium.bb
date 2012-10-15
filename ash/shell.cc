@@ -94,6 +94,8 @@
 #include "ash/display/output_configurator_animation.h"
 #include "base/message_pump_aurax11.h"
 #include "chromeos/display/output_configurator.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/common/gpu_feature_type.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -189,6 +191,14 @@ Shell::Shell(ShellDelegate* delegate)
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_.get());
   ui_controls::InstallUIControlsAura(internal::CreateUIControls());
 #if defined(OS_CHROMEOS)
+  content::GpuFeatureType blacklisted_features =
+      content::GpuDataManager::GetInstance()->GetBlacklistedFeatures();
+  bool is_panel_fitting_disabled =
+      (blacklisted_features & content::GPU_FEATURE_TYPE_PANEL_FITTING) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDisablePanelFitting);
+  output_configurator_->Init(!is_panel_fitting_disabled);
+
   output_configurator_->AddObserver(output_configurator_animation_.get());
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(
       output_configurator());

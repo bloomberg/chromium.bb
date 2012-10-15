@@ -792,6 +792,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ash::switches::kAshWindowAnimationsDisabled,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
+      ash::switches::kAshDisablePanelFitting,
       ::switches::kUIEnablePartialSwap,
       ::switches::kUIPrioritizeInGpuProcess,
 #if defined(USE_CRAS)

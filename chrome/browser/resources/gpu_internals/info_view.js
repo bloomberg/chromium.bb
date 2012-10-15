@@ -87,6 +87,7 @@ cr.define('gpu', function() {
         'video': 'Video',
         // GPU Switching
         'gpu_switching': 'GPU Switching',
+        'panel_fitting': 'Panel Fitting',
       };
       var statusLabelMap = {
         'disabled_software': 'Software only. Hardware acceleration disabled.',
