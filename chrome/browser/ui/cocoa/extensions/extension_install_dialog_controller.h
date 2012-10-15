@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_controller.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 
 namespace content {
 class PageNavigator;
@@ -20,10 +20,11 @@ class WebContents;
 
 // Displays an extension install prompt as a tab modal dialog.
 class ExtensionInstallDialogController :
-    public ExtensionInstallPrompt::Delegate {
+    public ExtensionInstallPrompt::Delegate,
+    public ConstrainedWindowMacDelegate2 {
  public:
   ExtensionInstallDialogController(
-      content::WebContents* webContents,
+      content::WebContents* web_contents,
       content::PageNavigator* navigator,
       ExtensionInstallPrompt::Delegate* delegate,
       const ExtensionInstallPrompt::Prompt& prompt);
@@ -33,18 +34,21 @@ class ExtensionInstallDialogController :
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
+  // ConstrainedWindowMacDelegate2 implementation.
+  virtual void OnConstrainedWindowClosed(
+      ConstrainedWindowMac2* window) OVERRIDE;
+
+  ConstrainedWindowMac2* constrained_window() const {
+    return constrained_window_.get();
+  }
   ExtensionInstallViewController* view_controller() const {
     return view_controller_;
   }
 
-  ConstrainedWindowController* window_controller() const {
-    return window_controller_;
-  }
-
  private:
-  ExtensionInstallPrompt::Delegate* const delegate_;
+  ExtensionInstallPrompt::Delegate* delegate_;
   scoped_nsobject<ExtensionInstallViewController> view_controller_;
-  scoped_nsobject<ConstrainedWindowController> window_controller_;
+  scoped_ptr<ConstrainedWindowMac2> constrained_window_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALL_DIALOG_CONTROLLER_H_

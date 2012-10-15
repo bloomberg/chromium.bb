@@ -206,6 +206,9 @@
   [closeButton_ setFrame:closeFrame];
 
   [[self view] setFrame:bounds];
+
+  NSWindow* window = [[self view] window];
+  [window setFrame:[window frameRectForContentRect:bounds] display:YES];
 }
 
 - (NSRect)minimumInnerFrame {

@@ -43,7 +43,6 @@ const CGFloat kButtonMinWidth = 72;
   if ((self = [super init])) {
     window_.reset([[ConstrainedWindowCustomWindow alloc]
         initWithContentRect:ui::kWindowSizeDeterminedLater]);
-    [window_ setReleasedWhenClosed:NO];
     NSView* contentView = [window_ contentView];
 
     informativeTextField_.reset([constrained_window::CreateLabel() retain]);

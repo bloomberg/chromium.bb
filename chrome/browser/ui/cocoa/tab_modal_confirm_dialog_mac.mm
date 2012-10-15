@@ -162,8 +162,9 @@ TabModalConfirmDialogMac2::TabModalConfirmDialogMac2(
   [[alert_ closeButton] setAction:@selector(onCancelButton:)];
   [alert_ layout];
 
-  delegate->set_window(
-      new ConstrainedWindowMac2(tab_contents->web_contents(), [alert_ window]));
+  window_.reset(new ConstrainedWindowMac2(
+      this, tab_contents->web_contents(), [alert_ window]));
+  delegate->set_window(window_.get());
 }
 
 TabModalConfirmDialogMac2::~TabModalConfirmDialogMac2() {
@@ -173,4 +174,9 @@ void TabModalConfirmDialogMac2::AcceptTabModalDialog() {
 }
 
 void TabModalConfirmDialogMac2::CancelTabModalDialog() {
+}
+
+void TabModalConfirmDialogMac2::OnConstrainedWindowClosed(
+    ConstrainedWindowMac2* window) {
+  delete this;
 }

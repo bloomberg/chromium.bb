@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac2.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 
@@ -17,7 +18,8 @@
 // the Cocoa WebIntentPickerViewController object.  Note, this will eventually
 // replace WebIntentPickerCocoa, see http://crbug.com/152010.
 class WebIntentPickerCocoa2 : public WebIntentPicker,
-                              public WebIntentPickerModelObserver {
+                              public WebIntentPickerModelObserver,
+                              public ConstrainedWindowMacDelegate2 {
  public:
   WebIntentPickerCocoa2(content::WebContents* web_contents,
                         WebIntentPickerDelegate* delegate,
@@ -27,7 +29,9 @@ class WebIntentPickerCocoa2 : public WebIntentPicker,
   WebIntentPickerDelegate* delegate() const { return delegate_; }
   WebIntentPickerModel* model() const { return model_; }
   content::WebContents* web_contents() const { return web_contents_; }
-  NSWindowController* window_controller() const { return window_controller_; }
+  ConstrainedWindowMac2* constrained_window() const {
+    return constrained_window_.get();
+  }
   WebIntentPickerViewController* view_controller() const {
     return view_controller_;
   }
@@ -59,12 +63,16 @@ class WebIntentPickerCocoa2 : public WebIntentPicker,
   virtual void OnInlineDisposition(const string16& title,
                                    const GURL& url) OVERRIDE;
 
+  // ConstrainedWindowMacDelegate2 implementation.
+  virtual void OnConstrainedWindowClosed(
+      ConstrainedWindowMac2* window) OVERRIDE;
+
  private:
   content::WebContents* const web_contents_;
   WebIntentPickerDelegate* const delegate_;
   WebIntentPickerModel* model_;
   scoped_nsobject<WebIntentPickerViewController> view_controller_;
-  scoped_nsobject<NSWindowController> window_controller_;
+  scoped_ptr<ConstrainedWindowMac2> constrained_window_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_INTENTS_WEB_INTENT_PICKER_COCOA2_H_
