@@ -314,6 +314,11 @@ wl_connection_read(struct wl_connection *connection)
 	char cmsg[CLEN];
 	int len, count, ret;
 
+	if (wl_buffer_size(&connection->in) >= sizeof(connection->in.data)) {
+		errno = EOVERFLOW;
+		return -1;
+	}
+
 	wl_buffer_put_iov(&connection->in, iov, &count);
 
 	msg.msg_name = NULL;
