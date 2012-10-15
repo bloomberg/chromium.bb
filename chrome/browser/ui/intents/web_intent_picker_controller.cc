@@ -38,12 +38,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_intents_dispatcher.h"
@@ -193,11 +190,6 @@ WebIntentPickerController::WebIntentPickerController(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(dispatcher_factory_(this)) {
-  content::NavigationController* controller = &web_contents->GetController();
-  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 content::Source<content::NavigationController>(controller));
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
-                 content::Source<content::NavigationController>(controller));
   native_services_.reset(new web_intents::NativeServiceFactory());
 #if defined(TOOLKIT_VIEWS)
   cancelled_ = true;
@@ -313,15 +305,6 @@ void WebIntentPickerController::ShowDialog(DefaultsUsage suppress_defaults) {
       picker_model_->action(), picker_model_->type(),
       base::Bind(&WebIntentPickerController::OnCWSIntentServicesAvailable,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void WebIntentPickerController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_LOAD_START ||
-         type == chrome::NOTIFICATION_TAB_CLOSING);
-  ClosePicker();
 }
 
 void WebIntentPickerController::OnServiceChosen(

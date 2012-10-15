@@ -19,8 +19,6 @@
 #include "chrome/browser/intents/web_intents_reporting.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "content/public/browser/download_id.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
@@ -49,8 +47,7 @@ struct WebIntentServiceData;
 // Controls the creation of the WebIntentPicker UI and forwards the user's
 // intent handler choice back to the WebContents object.
 class WebIntentPickerController
-    : public content::NotificationObserver,
-      public WebIntentPickerDelegate,
+    : public WebIntentPickerDelegate,
       public extensions::WebstoreInstaller::Delegate,
       public content::WebContentsUserData<WebIntentPickerController> {
  public:
@@ -112,11 +109,6 @@ class WebIntentPickerController
   void SourceWebContentsDestroyed(content::WebContents* source);
 
  protected:
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // WebIntentPickerDelegate implementation.
   virtual void OnServiceChosen(
       const GURL& url,
@@ -293,10 +285,6 @@ class WebIntentPickerController
 
   // A weak pointer to the profile for the web contents.
   Profile* profile_;
-
-  // A notification registrar, listening for notifications when the tab closes
-  // to close the picker ui.
-  content::NotificationRegistrar registrar_;
 
   // A weak pointer to the picker this controller controls.
   WebIntentPicker* picker_;
