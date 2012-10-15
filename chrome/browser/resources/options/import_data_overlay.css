@@ -8,7 +8,6 @@
 
 #import-checkboxes > div:not(:first-child) {
   -webkit-padding-start: 8px;
-  margin: 5px 0;
 }
 
 #import-throbber {
