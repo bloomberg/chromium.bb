@@ -106,7 +106,7 @@
   'targets': [
     {
       'target_name': 'cc_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
@@ -136,10 +136,33 @@
             '<@(cc_tests_source_files)',
           ],
         }],
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
       ],
     },
   ],
   'conditions': [
+    # Special target to wrap a gtest_target_type==shared_library
+    # cc_unittests into an android apk for execution.
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'cc_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'cc_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'cc_unittests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)cc_unittests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [ '../build/apk_test.gypi' ],
+        },
+      ],
+    }],
     ['use_libcc_for_compositor==1', {
       'targets': [
         {
