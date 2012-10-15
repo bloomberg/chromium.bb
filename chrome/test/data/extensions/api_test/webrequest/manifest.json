@@ -4,7 +4,8 @@
   "manifest_version": 2,
   "description": "Tests the webRequest API.",
   "permissions": ["webRequest", "webRequestBlocking", "tabs",
-    "declarativeWebRequest", "http://*.a.com/*"],
+    "declarativeWebRequest", "http://*.a.com/*",
+    "http://non_existing_third_party.com/image.png"],
   "web_accessible_resources": [
     "simpleLoad/a.html",
     "complexLoad/a.html",

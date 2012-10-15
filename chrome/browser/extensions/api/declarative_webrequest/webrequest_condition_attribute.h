@@ -36,7 +36,8 @@ class WebRequestConditionAttribute {
   enum Type {
     CONDITION_RESOURCE_TYPE,
     CONDITION_CONTENT_TYPE,
-    CONDITION_RESPONSE_HEADERS
+    CONDITION_RESPONSE_HEADERS,
+    CONDITION_THIRD_PARTY
   };
 
   WebRequestConditionAttribute();
@@ -170,6 +171,34 @@ class WebRequestConditionAttributeResponseHeaders
   const bool positive_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeResponseHeaders);
+};
+
+// This condition tests whether the request origin is third-party.
+class WebRequestConditionAttributeThirdParty
+    : public WebRequestConditionAttribute {
+ public:
+  virtual ~WebRequestConditionAttributeThirdParty();
+
+  static bool IsMatchingType(const std::string& instance_type);
+
+  // Factory method, see WebRequestConditionAttribute::Create.
+  static scoped_ptr<WebRequestConditionAttribute> Create(
+      const std::string& name,
+      const base::Value* value,
+      std::string* error);
+
+  // Implementation of WebRequestConditionAttribute:
+  virtual int GetStages() const OVERRIDE;
+  virtual bool IsFulfilled(
+      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+
+ private:
+  explicit WebRequestConditionAttributeThirdParty(bool match_third_party);
+
+  const bool match_third_party_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeThirdParty);
 };
 
 }  // namespace extensions

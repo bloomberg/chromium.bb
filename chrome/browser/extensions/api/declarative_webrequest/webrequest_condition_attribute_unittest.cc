@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;
+using base::FundamentalValue;
 using base::ListValue;
 using base::StringValue;
 using base::Value;
@@ -160,6 +161,69 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_TRUE(attribute_unexcluded->IsFulfilled(
       WebRequestRule::RequestData(&url_request, ON_HEADERS_RECEIVED,
                                   url_request.response_headers())));
+}
+
+// Testing WebRequestConditionAttributeThirdParty.
+TEST(WebRequestConditionAttributeTest, ThirdParty) {
+  // Necessary for TestURLRequest.
+  MessageLoop message_loop(MessageLoop::TYPE_IO);
+
+  std::string error;
+  const FundamentalValue value_true(true);
+  // This attribute matches only third party requests.
+  scoped_ptr<WebRequestConditionAttribute> third_party_attribute =
+      WebRequestConditionAttribute::Create(keys::kThirdPartyKey,
+                                           &value_true,
+                                           &error);
+  ASSERT_EQ("", error);
+  ASSERT_TRUE(third_party_attribute.get() != NULL);
+  const FundamentalValue value_false(false);
+  // This attribute matches only first party requests.
+  scoped_ptr<WebRequestConditionAttribute> first_party_attribute =
+      WebRequestConditionAttribute::Create(keys::kThirdPartyKey,
+                                           &value_false,
+                                           &error);
+  ASSERT_EQ("", error);
+  ASSERT_TRUE(first_party_attribute.get() != NULL);
+
+  const GURL url_empty;
+  const GURL url_a("http://a.com");
+  const GURL url_b("http://b.com");
+  TestURLRequestContext context;
+  TestDelegate delegate;
+  TestURLRequest url_request(url_a, &delegate, &context);
+
+  static const RequestStage request_stages[] = {
+    ON_BEFORE_REQUEST,
+    ON_BEFORE_SEND_HEADERS,
+    ON_SEND_HEADERS,
+    ON_HEADERS_RECEIVED,
+    ON_AUTH_REQUIRED,
+    ON_BEFORE_REDIRECT,
+    ON_RESPONSE_STARTED,
+    ON_COMPLETED,
+    ON_ERROR
+  };
+
+  for (size_t i = 0; i < arraysize(request_stages); ++i) {
+    url_request.set_first_party_for_cookies(url_empty);
+    EXPECT_FALSE(third_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+        &url_request, request_stages[i])));
+    EXPECT_TRUE(first_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+        &url_request, request_stages[i])));
+
+    url_request.set_first_party_for_cookies(url_b);
+    EXPECT_TRUE(third_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+        &url_request, request_stages[i])));
+    EXPECT_FALSE(first_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+        &url_request, request_stages[i])));
+
+    url_request.set_first_party_for_cookies(url_a);
+    EXPECT_FALSE(third_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+        &url_request, request_stages[i])));
+    EXPECT_TRUE(first_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+        &url_request, request_stages[i])));
+  }
 }
 
 namespace {

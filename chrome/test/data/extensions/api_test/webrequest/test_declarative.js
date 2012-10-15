@@ -56,6 +56,12 @@ function getURLHttpWithHeaders() {
       "files/extensions/api_test/webrequest/declarative/headers.html");
 }
 
+function getURLThirdParty() {
+  // Returns the URL of a HTML document with a third-party resource.
+  return getServerURL(
+      "files/extensions/api_test/webrequest/declarative/third-party.html");
+}
+
 function getURLSetCookie() {
   return getServerURL('set-cookie?Foo=Bar');
 }
@@ -77,6 +83,79 @@ function getURLHttpXHRData() {
 function getURLHttpSimpleOnB() {
   return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html",
                       "b.com");
+}
+
+// Shared test sections.
+function cancelThirdPartyExpected() {
+    return [
+      { label: "onBeforeRequest",
+        event: "onBeforeRequest",
+        details: {
+          url: getURLThirdParty(),
+          frameUrl: getURLThirdParty()
+        }
+      },
+      { label: "onBeforeSendHeaders",
+        event: "onBeforeSendHeaders",
+        details: {url: getURLThirdParty()}
+      },
+      { label: "onSendHeaders",
+        event: "onSendHeaders",
+        details: {url: getURLThirdParty()}
+      },
+      { label: "onHeadersReceived",
+        event: "onHeadersReceived",
+        details: {
+          url: getURLThirdParty(),
+          statusLine: "HTTP/1.0 200 OK"
+        }
+      },
+      { label: "onResponseStarted",
+        event: "onResponseStarted",
+        details: {
+          url: getURLThirdParty(),
+          fromCache: false,
+          ip: "127.0.0.1",
+          statusCode: 200,
+          statusLine: "HTTP/1.0 200 OK"
+        }
+      },
+      { label: "onCompleted",
+        event: "onCompleted",
+        details: {
+          fromCache: false,
+          ip: "127.0.0.1",
+          url: getURLThirdParty(),
+          statusCode: 200,
+          statusLine: "HTTP/1.0 200 OK"
+        }
+      },
+      { label: "img-onBeforeRequest",
+        event: "onBeforeRequest",
+        details: {
+          type: "image",
+          url: "http://non_existing_third_party.com/image.png",
+          frameUrl: getURLThirdParty()
+        }
+      },
+      { label: "img-onErrorOccurred",
+        event: "onErrorOccurred",
+        details: {
+          error: "net::ERR_BLOCKED_BY_CLIENT",
+          fromCache: false,
+          type: "image",
+          url: "http://non_existing_third_party.com/image.png"
+        }
+      },
+    ];
+}
+
+function cancelThirdPartyExpectedOrder() {
+    return [
+      ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
+       "onHeadersReceived", "onResponseStarted", "onCompleted"],
+      ["img-onBeforeRequest", "img-onErrorOccurred"]
+    ];
 }
 
 runTests([
@@ -111,6 +190,42 @@ runTests([
          'actions': [new CancelRequest()]}
       ],
       function() {navigateAndWait(getURLHttpWithHeaders());}
+    );
+  },
+
+  // Tests that "thirdPartyForCookies: true" matches third party requests.
+  function testThirdParty() {
+    ignoreUnexpected = false;
+    expect(cancelThirdPartyExpected(), cancelThirdPartyExpectedOrder());
+    onRequest.addRules(
+      [ {'conditions': [new RequestMatcher({thirdPartyForCookies: true})],
+         'actions': [new chrome.declarativeWebRequest.CancelRequest()]},],
+      function() {navigateAndWait(getURLThirdParty());}
+    );
+  },
+
+  // Tests that "thirdPartyForCookies: false" matches first party requests,
+  // by cancelling all requests, and overriding the cancelling rule only for
+  // requests matching "thirdPartyForCookies: false".
+  function testFirstParty() {
+    ignoreUnexpected = false;
+    expect(cancelThirdPartyExpected(), cancelThirdPartyExpectedOrder());
+    onRequest.addRules(
+      [ {'priority': 2,
+         'conditions': [
+           new RequestMatcher({thirdPartyForCookies: false})
+         ],
+         'actions': [
+           new chrome.declarativeWebRequest.IgnoreRules({
+              lowerPriorityThan: 2 })
+         ]
+        },
+        {'priority': 1,
+         'conditions': [new RequestMatcher({})],
+         'actions': [new chrome.declarativeWebRequest.CancelRequest()]
+        },
+      ],
+      function() {navigateAndWait(getURLThirdParty());}
     );
   },
 
