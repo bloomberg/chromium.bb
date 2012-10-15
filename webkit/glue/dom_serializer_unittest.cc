@@ -853,4 +853,20 @@ TEST_F(DomSerializerTests, SerializeDocumentWithDownloadedIFrame) {
   SerializeDomForURL(file_url, true);
 }
 
+TEST_F(DomSerializerTests, SubResourceForElementsInNonHTMLNamespace) {
+  FilePath page_file_path = data_dir_;
+  page_file_path = page_file_path.AppendASCII("dom_serializer");
+  page_file_path = page_file_path.AppendASCII("non_html_namespace.htm");
+  GURL file_url = net::FilePathToFileURL(page_file_path);
+  LoadPageFromURL(file_url);
+  WebFrame* web_frame = FindSubFrameByURL(test_shell_->webView(), file_url);
+  ASSERT_TRUE(web_frame != NULL);
+  WebDocument doc = web_frame->document();
+  WebNode lastNodeInBody = doc.body().lastChild();
+  ASSERT_EQ(WebNode::ElementNode, lastNodeInBody.nodeType());
+  WebString uri = webkit_glue::GetSubResourceLinkFromElement(
+      lastNodeInBody.to<WebElement>());
+  EXPECT_TRUE(uri.isNull());
+}
+
 }  // namespace

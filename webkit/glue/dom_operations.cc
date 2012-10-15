@@ -153,25 +153,25 @@ namespace webkit_glue {
 
 WebString GetSubResourceLinkFromElement(const WebElement& element) {
   const char* attribute_name = NULL;
-  if (element.hasTagName("img") ||
-      element.hasTagName("script")) {
+  if (element.hasHTMLTagName("img") ||
+      element.hasHTMLTagName("script")) {
     attribute_name = "src";
-  } else if (element.hasTagName("input")) {
+  } else if (element.hasHTMLTagName("input")) {
     const WebInputElement input = element.toConst<WebInputElement>();
     if (input.isImageButton()) {
       attribute_name = "src";
     }
-  } else if (element.hasTagName("body") ||
-             element.hasTagName("table") ||
-             element.hasTagName("tr") ||
-             element.hasTagName("td")) {
+  } else if (element.hasHTMLTagName("body") ||
+             element.hasHTMLTagName("table") ||
+             element.hasHTMLTagName("tr") ||
+             element.hasHTMLTagName("td")) {
     attribute_name = "background";
-  } else if (element.hasTagName("blockquote") ||
-             element.hasTagName("q") ||
-             element.hasTagName("del") ||
-             element.hasTagName("ins")) {
+  } else if (element.hasHTMLTagName("blockquote") ||
+             element.hasHTMLTagName("q") ||
+             element.hasHTMLTagName("del") ||
+             element.hasHTMLTagName("ins")) {
     attribute_name = "cite";
-  } else if (element.hasTagName("link")) {
+  } else if (element.hasHTMLTagName("link")) {
     // If the link element is not linked to css, ignore it.
     if (LowerCaseEqualsASCII(element.getAttribute("type"), "text/css")) {
       // TODO(jnd): Add support for extracting links of sub-resources which
@@ -289,7 +289,7 @@ bool ElementDoesAutoCompleteForElementWithId(WebView* view,
 
   WebElement element = web_frame->document().getElementById(
       WebString::fromUTF8(element_id));
-  if (element.isNull() || !element.hasTagName("input"))
+  if (element.isNull() || !element.hasHTMLTagName("input"))
     return false;
 
   WebInputElement input_element = element.to<WebInputElement>();
