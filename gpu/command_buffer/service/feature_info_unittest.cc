@@ -799,6 +799,14 @@ TEST_F(FeatureInfoTest, InitializeNo_vertex_array_object) {
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object_);
 }
 
+TEST_F(FeatureInfoTest, InitializeOES_element_index_uint) {
+  SetupInitExpectations("GL_OES_element_index_uint");
+  info_->Initialize(NULL);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_OES_element_index_uint"));
+  EXPECT_TRUE(info_->validators()->index_type.IsValid(GL_UNSIGNED_INT));
+}
+
 TEST_F(FeatureInfoTest, IsIntel) {
   SetupInitExpectationsWithVendor("", "iNTel", "");
   info_->Initialize(NULL);

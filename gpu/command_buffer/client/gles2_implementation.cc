@@ -10,6 +10,7 @@
 #include <map>
 #include <queue>
 #include <set>
+#include <limits>
 #include <stdio.h>
 #include <string.h>
 #include <GLES2/gl2ext.h>
@@ -305,23 +306,13 @@ class ClientSideBufferHelper {
   }
 
   // Copies in indices to the service and returns the highest index accessed + 1
-  GLsizei SetupSimulatedIndexBuffer(
+  bool SetupSimulatedIndexBuffer(
       GLES2Implementation* gl,
       GLES2CmdHelper* gl_helper,
       GLsizei count,
       GLenum type,
-      const void* indices) {
-    gl_helper->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_buffer_id_);
-    GLsizei bytes_per_element =
-        GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
-    GLsizei bytes_needed = bytes_per_element * count;
-    if (bytes_needed > element_array_buffer_size_) {
-      element_array_buffer_size_ = bytes_needed;
-      gl->BufferDataHelper(
-          GL_ELEMENT_ARRAY_BUFFER, bytes_needed, NULL, GL_DYNAMIC_DRAW);
-    }
-    gl->BufferSubDataHelper(
-        GL_ELEMENT_ARRAY_BUFFER, 0, bytes_needed, indices);
+      const void* indices,
+      GLsizei* max_index_out) {
     GLsizei max_index = -1;
     switch (type) {
       case GL_UNSIGNED_BYTE: {
@@ -342,10 +333,42 @@ class ClientSideBufferHelper {
           }
           break;
         }
+      case GL_UNSIGNED_INT: {
+          uint32 max_glsizei = static_cast<uint32>(
+              std::numeric_limits<GLsizei>::max());
+          const uint32* src = static_cast<const uint32*>(indices);
+          for (GLsizei ii = 0; ii < count; ++ii) {
+            // Other parts of the API use GLsizei (signed) to store limits.
+            // As such, if we encounter a index that cannot be represented with
+            // an unsigned int we need to flag it as an error here.
+
+            if(src[ii] > max_glsizei) {
+              return false;
+            }
+            GLsizei signed_index = static_cast<GLsizei>(src[ii]);
+            if (signed_index > max_index) {
+              max_index = signed_index;
+            }
+          }
+          break;
+        }
       default:
         break;
     }
-    return max_index + 1;
+    gl_helper->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_buffer_id_);
+    GLsizei bytes_per_element =
+        GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
+    GLsizei bytes_needed = bytes_per_element * count;
+    if (bytes_needed > element_array_buffer_size_) {
+      element_array_buffer_size_ = bytes_needed;
+      gl->BufferDataHelper(
+          GL_ELEMENT_ARRAY_BUFFER, bytes_needed, NULL, GL_DYNAMIC_DRAW);
+    }
+    gl->BufferSubDataHelper(
+        GL_ELEMENT_ARRAY_BUFFER, 0, bytes_needed, indices);
+
+    *max_index_out = max_index + 1;
+    return true;
   }
 
  private:
@@ -1046,11 +1069,18 @@ void GLES2Implementation::DrawElements(
       client_side_buffer_helper_->HaveEnabledClientSideBuffers();
   GLsizei num_elements = 0;
   GLuint offset = ToGLuint(indices);
+  bool success;
   if (bound_element_array_buffer_id_ == 0) {
     // Index buffer is client side array.
     // Copy to buffer, scan for highest index.
-    num_elements = client_side_buffer_helper_->SetupSimulatedIndexBuffer(
-        this, helper_, count, type, indices);
+    success = client_side_buffer_helper_->SetupSimulatedIndexBuffer(
+        this, helper_, count, type, indices, &num_elements);
+
+    if(!success) {
+      SetGLError(GL_INVALID_OPERATION, "glDrawElements", "index too large.");
+      return;
+    }
+
     offset = 0;
   } else {
     // Index buffer is GL buffer. Ask the service for the highest vertex
@@ -3340,11 +3370,19 @@ void GLES2Implementation::DrawElementsInstancedANGLE(
       client_side_buffer_helper_->HaveEnabledClientSideBuffers();
   GLsizei num_elements = 0;
   GLuint offset = ToGLuint(indices);
+  bool success;
   if (bound_element_array_buffer_id_ == 0) {
     // Index buffer is client side array.
     // Copy to buffer, scan for highest index.
-    num_elements = client_side_buffer_helper_->SetupSimulatedIndexBuffer(
-        this, helper_, count, type, indices);
+    success = client_side_buffer_helper_->SetupSimulatedIndexBuffer(
+        this, helper_, count, type, indices, &num_elements);
+
+    if(!success) {
+      SetGLError(GL_INVALID_OPERATION, "glDrawElementsInstancedANGLE",
+          "index too large.");
+      return;
+    }
+
     offset = 0;
   } else {
     // Index buffer is GL buffer. Ask the service for the highest vertex
