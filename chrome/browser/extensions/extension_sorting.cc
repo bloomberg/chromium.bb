@@ -563,7 +563,7 @@ void ExtensionSorting::CreateDefaultOrdinals() {
     "fppdphmgcddhjeddoeghpjefkdlccljb",  // Play Movies
     "fobcpibfeplaikcclojfdhfdmbbeofai",  // Games
     "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
-    "cmbmjjimlbmpkonhnfabflhampihgnea",  // Camera
+    "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
     "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
   };
 #else
