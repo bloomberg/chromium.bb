@@ -8,6 +8,7 @@ import cPickle
 import functools
 import glob
 import json
+import logging
 import multiprocessing
 import os
 import Queue
@@ -29,6 +30,7 @@ from chromite.buildbot import repository
 from chromite.buildbot import trybot_patch_pool
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 
@@ -1139,7 +1141,7 @@ class SignerTestStage(BoardSpecificBuilderStage):
 
   def _PerformStage(self):
     if not self._archive_stage.WaitForRecoveryImage():
-      raise Exception('Missing recovery image.')
+      raise InvalidTestConditionException('Missing recovery image.')
     with cros_build_lib.SubCommandTimeout(self.SIGNER_TEST_TIMEOUT):
       commands.RunSignerTests(self._build_root,
                               self._current_board)
@@ -1201,6 +1203,16 @@ class VMTestStage(BoardSpecificBuilderStage):
     self._archive_stage.TestResultsReady(None)
 
 
+class TestTimeoutException(Exception):
+  """Raised when a critical test times out."""
+  pass
+
+
+class InvalidTestConditionException(Exception):
+  """Raised when pre-conditions for a test aren't met."""
+  pass
+
+
 class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
@@ -1226,9 +1238,16 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
     else:
       return super(HWTestStage, self)._HandleStageException(exception)
 
+  def DealWithTimeout(self, exception):
+    if not self._build_config['hw_tests_critical']:
+      return self._HandleExceptionAsWarning(exception)
+
+    return super(HWTestStage, self)._HandleStageException(exception)
+
+
   def _PerformStage(self):
     if not self._archive_stage.WaitForHWTestUploads():
-      raise Exception('Missing uploads.')
+      raise InvalidTestConditionException('Missing uploads.')
 
     build = '/'.join([self._bot_id, self._archive_stage.GetVersion()])
     if self._options.remote_trybot and self._options.hwtest:
@@ -1244,10 +1263,30 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
                                 debug)
 
     except cros_build_lib.TimeoutError as exception:
-      if not self._build_config['hw_tests_critical']:
-        return self._HandleExceptionAsWarning(exception)
-      else:
-        return super(HWTestStage, self)._HandleStageException(exception)
+      return self.DealWithTimeout(exception)
+
+
+class HWPerfStage(HWTestStage):
+  """Stage that runs hwtests and prints out their perf results to stdio."""
+
+  RESULT_FILE = 'pyauto_perf.results'
+
+  def __init__(self, options, build_config, board, archive_stage):
+    super(HWPerfStage, self).__init__(options, build_config, board,
+                                      archive_stage, 'pyauto_perf')
+
+  def DealWithTimeout(self, exception):
+    raise TestTimeoutException('HWPerfStage: %s.' % exception)
+
+  def _PerformStage(self):
+    super(HWPerfStage, self)._PerformStage()
+    gs_results_file = '/'.join([self._archive_stage.GetGSUploadLocation(),
+                                self.RESULT_FILE])
+    gs_context = gs.GSContext()
+    result = gs_context.Copy(gs_results_file, '-')
+    # Prints out the actual result from gs_context.Copy.
+    logging.info('Copy of %s completed. Printing below:', self.RESULT_FILE)
+    print result.output
 
 
 class ASyncHWTestStage(HWTestStage, BoardSpecificBuilderStage,
@@ -1589,7 +1628,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     else:
       # Clear the list of uploaded file if it exists
       osutils.SafeUnlink(os.path.join(archive_path,
-                                      commands._UPLOADED_LIST_FILENAME))
+                                      commands.UPLOADED_LIST_FILENAME))
 
     os.makedirs(archive_path)
 
@@ -1824,7 +1863,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       files = glob.glob(chrome_match)
       files.sort()
       if not files:
-        raise Exception('No stripped Chrome found!')
+        raise NothingToArchiveException('No stripped Chrome found!')
       elif len(files) > 1:
         cros_build_lib.PrintBuildbotStepWarnings()
         cros_build_lib.Warning('Expecting one stripped Chrome package, but '

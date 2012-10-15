@@ -28,6 +28,7 @@ from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.scripts import cbuildbot
 
@@ -682,6 +683,8 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config = config.config[self.bot_id].copy()
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
     self.suite = 'bvt'
+    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
+    self.archive_stage_mock.GetVersion().AndReturn('ver')
 
   def ConstructStage(self):
     return stages.HWTestStage(self.options, self.build_config,
@@ -690,7 +693,6 @@ class HWTestStageTest(AbstractStageTest):
 
   def testRemoteTrybotWithHWTest(self):
     """Test remote trybot with hw test enabled"""
-    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     argv = ['--remote-trybot', '--hwtest', '-r', self.build_root, self.bot_id]
     parser = cbuildbot._CreateParser()
@@ -699,9 +701,7 @@ class HWTestStageTest(AbstractStageTest):
                                                        self.options.
                                                        remote_trybot)
 
-    build = 'trybot-%s/%s' % (
-        self.bot_id, self.archive_stage_mock.GetVersion().AndReturn('ver'))
-
+    build = 'trybot-%s/%s' % (self.bot_id, 'ver')
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
@@ -716,7 +716,6 @@ class HWTestStageTest(AbstractStageTest):
 
   def testRemoteTrybotNoHWTest(self):
     """Test remote trybot with no hw test"""
-    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     argv = ['--remote-trybot', '-r', self.build_root, self.bot_id]
     parser = cbuildbot._CreateParser()
@@ -725,9 +724,7 @@ class HWTestStageTest(AbstractStageTest):
                                                        self.options.
                                                        remote_trybot)
 
-    build = 'trybot-%s/%s' % (
-        self.bot_id, self.archive_stage_mock.GetVersion().AndReturn('ver'))
-
+    build = 'trybot-%s/%s' % (self.bot_id, 'ver')
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
@@ -742,10 +739,8 @@ class HWTestStageTest(AbstractStageTest):
 
   def testWithSuite(self):
     """Test if run correctly with a test suite."""
-    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    build = '%s/%s' % (self.bot_id,
-                       self.archive_stage_mock.GetVersion().AndReturn('ver'))
+    build = '%s/%s' % (self.bot_id, 'ver')
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
@@ -760,11 +755,9 @@ class HWTestStageTest(AbstractStageTest):
 
   def testWithSuiteWithInfrastructureFailure(self):
     """Tests that we warn correctly if we get a returncode of 2."""
-    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(bs.BuilderStage, '_HandleExceptionAsWarning')
-    build = '%s/%s' % (self.bot_id,
-                       self.archive_stage_mock.GetVersion().AndReturn('ver'))
+    build = '%s/%s' % (self.bot_id, 'ver')
     result = cros_build_lib.CommandResult(cmd='run_hw_tests', returncode=2)
     error = cros_build_lib.RunCommandError('HWTests failed', result)
     commands.RunHWTestSuite(build,
@@ -781,7 +774,51 @@ class HWTestStageTest(AbstractStageTest):
     except Exception:
       pass
 
-    self.mox.VerifyAll()
+
+class HWPerfStageTest(HWTestStageTest):
+  """Class that wraps around the HWTestStageTest for testing the HWPerfStage."""
+
+  def setUp(self):
+    self.suite = 'pyauto_perf'
+    self.mox.StubOutWithMock(gs.GSContext, 'Copy')
+    self.gs_upload_location = 'gs://dontcare/builder/version'
+    self.archive_stage_mock.GetGSUploadLocation().AndReturn(
+        self.gs_upload_location)
+    result = self.mox.CreateMock(cros_build_lib.CommandResult)
+    result.output = 'my perf results'
+    gs.GSContext.Copy('%s/%s' % (
+        self.gs_upload_location,
+        stages.HWPerfStage.RESULT_FILE), '-').AndReturn(result)
+
+  def ConstructStage(self):
+    return stages.HWPerfStage(self.options, self.build_config,
+                              self._current_board, self.archive_stage_mock)
+
+  def testWithSuiteWithInfrastructureFailure(self):
+    """We suppress the verify here as GetGSUploadLocation will not be called."""
+    self.mox_suppress_verify_all = True
+    HWTestStageTest.testWithSuiteWithInfrastructureFailure(self)
+
+  def testWithTimeout(self):
+    """Test that we correctly raise a TestTimeoutException when we timeout."""
+    build = '%s/%s' % (self.bot_id, 'ver')
+    self.mox_suppress_verify_all = True
+    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    error = cros_build_lib.TimeoutError('Test ran outta time')
+    commands.RunHWTestSuite(build,
+                            self.suite,
+                            self._current_board,
+                            constants.HWTEST_MACH_POOL,
+                            constants.HWTEST_DEFAULT_NUM,
+                            False,
+                            False).AndRaise(error)
+
+    self.mox.ReplayAll()
+    results_lib.Results.Clear()
+    self.RunStage()
+    # Results should contain a timeout expception when this test fails.
+    self.assertTrue(isinstance(results_lib.Results.Get()[0][1],
+                               stages.TestTimeoutException))
 
 
 class UprevStageTest(AbstractStageTest):

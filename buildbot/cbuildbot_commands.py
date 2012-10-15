@@ -40,7 +40,7 @@ _BINHOST_PACKAGE_FILE = '/etc/portage/make.profile/package.installable'
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')
 _LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
-_UPLOADED_LIST_FILENAME = 'UPLOADED'
+UPLOADED_LIST_FILENAME = 'UPLOADED'
 
 class TestFailure(results_lib.StepFailure):
   pass
@@ -892,7 +892,7 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url, debug):
   """
 
   # Append to the uploaded list.
-  filename = _UPLOADED_LIST_FILENAME
+  filename = UPLOADED_LIST_FILENAME
   AppendToFile(os.path.join(archive_path, filename), last_uploaded + '\n')
 
   # Upload the updated list to Google Storage.
