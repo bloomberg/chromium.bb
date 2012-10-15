@@ -24,7 +24,7 @@ using content::BrowserThread;
 
 namespace {
 
-class SerialApiTest : public PlatformAppApiTest {
+class SerialApiTest : public ExtensionApiTest {
  public:
   SerialApiTest() {}
 };

@@ -14,9 +14,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "chromeos/dbus/bluetooth_out_of_band_pairing_data.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using extensions::Extension;
@@ -29,9 +30,14 @@ namespace {
 static const char* kAdapterAddress = "A1:A2:A3:A4:A5:A6";
 static const char* kName = "whatsinaname";
 
-class BluetoothApiTest : public PlatformAppApiTest {
+class BluetoothApiTest : public ExtensionApiTest {
  public:
   BluetoothApiTest() : empty_extension_(utils::CreateEmptyExtension()) {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // The browser will clean this up when it is torn down

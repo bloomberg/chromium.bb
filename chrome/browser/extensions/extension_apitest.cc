@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
@@ -311,18 +310,4 @@ bool ExtensionApiTest::StartWebSocketServer(const FilePath& root_directory) {
 void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   test_data_dir_ = test_data_dir_.AppendASCII("api_test");
-}
-
-PlatformAppApiTest::PlatformAppApiTest() {}
-
-PlatformAppApiTest::~PlatformAppApiTest() {}
-
-void PlatformAppApiTest::SetUpCommandLine(CommandLine* command_line) {
-  ExtensionApiTest::SetUpCommandLine(command_line);
-
-  // If someone is using this class, we're going to insist on management of the
-  // relevant flags. If these flags are already set, die.
-  DCHECK(!command_line->HasSwitch(switches::kEnableExperimentalExtensionApis));
-
-  command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
 }

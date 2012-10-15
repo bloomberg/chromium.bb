@@ -183,14 +183,4 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   scoped_ptr<net::TestServer> websocket_server_;
 };
 
-// PlatformAppApiTest sets up the command-line flags necessary for platform
-// apps (if any).
-class PlatformAppApiTest : public ExtensionApiTest {
- public:
-  PlatformAppApiTest();
-  virtual ~PlatformAppApiTest();
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
-};
-
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_

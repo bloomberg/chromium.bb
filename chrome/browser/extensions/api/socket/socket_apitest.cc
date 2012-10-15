@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
@@ -26,11 +27,19 @@ namespace {
 const std::string kHostname = "127.0.0.1";
 const int kPort = 8888;
 
-class SocketApiTest : public PlatformAppApiTest {
+class SocketApiTest : public ExtensionApiTest {
  public:
   SocketApiTest() : resolver_event_(true, false),
                     resolver_creator_(
                         new extensions::MockHostResolverCreator()) {
+  }
+
+  // We need this while the socket.{listen,accept} methods require the
+  // enable-experimental-extension-apis flag. After that we should remove it,
+  // as well as the "experimental" permission in the test apps' manifests.
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 
   void SetUpOnMainThread() OVERRIDE {

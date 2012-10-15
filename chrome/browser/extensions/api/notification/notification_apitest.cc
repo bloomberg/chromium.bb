@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/notification/notification_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/common/chrome_switches.h"
 
 using extensions::Extension;
 
@@ -12,7 +13,12 @@ namespace utils = extension_function_test_utils;
 
 namespace {
 
-class NotificationApiTest : public PlatformAppApiTest {
+class NotificationApiTest : public ExtensionApiTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
 };
 
 }  // namespace
