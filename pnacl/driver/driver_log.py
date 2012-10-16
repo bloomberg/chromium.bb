@@ -47,11 +47,13 @@ class TempFileHandler(object):
   def wipe(self):
     for path in self.files:
       try:
-        os.remove(path)
-      except OSError:
+        os.remove(pathtools.tosys(path))
+      except OSError as err:
         # If we're exiting early, the temp file
         # may have never been created.
-        pass
+        Log.Warning("TempFileHandler: Unable to wipe file %s w/ error %s",
+                    pathtools.touser(path),
+                    err.strerror)
     self.files = []
 
 TempFiles = TempFileHandler()
