@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/examples/example_base.h"
 
@@ -26,11 +27,15 @@ class ButtonExample : public ExampleBase, public ButtonListener {
   virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
+  void TextButtonPressed(const ui::Event& event);
+  void LabelButtonPressed(const ui::Event& event);
+
   // Overridden from ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
   // Example buttons.
   TextButton* text_button_;
+  LabelButton* label_button_;
   ImageButton* image_button_;
 
   // Values used to modify the look and feel of the button.

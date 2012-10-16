@@ -74,7 +74,7 @@ class VIEWS_EXPORT Label : public View {
   gfx::Font font() const { return font_; }
 
   // Returns the label text.
-  string16 text() const { return text_; };
+  const string16& text() const { return text_; };
 
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will

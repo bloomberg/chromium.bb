@@ -23,6 +23,7 @@ namespace examples {
 ButtonExample::ButtonExample()
     : ExampleBase("Button"),
       text_button_(NULL),
+      label_button_(NULL),
       image_button_(NULL),
       alignment_(TextButton::ALIGN_LEFT),
       use_native_theme_border_(false),
@@ -40,10 +41,18 @@ void ButtonExample::CreateExampleView(View* container) {
       new BoxLayout(BoxLayout::kVertical, 0, 0, kLayoutSpacing));
 
   text_button_ = new TextButton(this, ASCIIToUTF16("Text Button"));
+  text_button_->set_focusable(true);
+  text_button_->SetHoverColor(SK_ColorRED);
   container->AddChildView(text_button_);
+
+  label_button_ = new LabelButton(this, ASCIIToUTF16("Label Button"));
+  label_button_->set_focusable(true);
+  label_button_->SetTextColor(CustomButton::BS_HOT, SK_ColorRED);
+  container->AddChildView(label_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
+  image_button_->set_focusable(true);
   image_button_->SetImage(ImageButton::BS_NORMAL,
                           rb.GetImageNamed(IDR_CLOSE).ToImageSkia());
   image_button_->SetImage(ImageButton::BS_HOT,
@@ -55,19 +64,18 @@ void ButtonExample::CreateExampleView(View* container) {
   container->AddChildView(image_button_);
 }
 
-void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
-  PrintStatus("Pressed! count: %d", ++count_);
-
+void ButtonExample::TextButtonPressed(const ui::Event& event) {
+  PrintStatus("Text Button Pressed! count: %d", ++count_);
   if (event.IsControlDown()) {
     if (event.IsShiftDown()) {
       if (event.IsAltDown()) {
         text_button_->SetMultiLine(!text_button_->multi_line());
         if (text_button_->multi_line()) {
           text_button_->SetText(ASCIIToUTF16("Multi-line text\n") +
-                           ASCIIToUTF16("is here to stay all the way!\n") +
-                           ASCIIToUTF16("123"));
+                                ASCIIToUTF16("is here to stay all the way!\n") +
+                                ASCIIToUTF16("123"));
         } else {
-          text_button_->SetText(ASCIIToUTF16("Button"));
+          text_button_->SetText(ASCIIToUTF16("Text Button"));
         }
       } else {
         switch (text_button_->icon_placement()) {
@@ -103,7 +111,7 @@ void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
     }
   } else if (event.IsShiftDown()) {
     if (event.IsAltDown()) {
-      if (text_button_->text().length() < 10) {
+      if (text_button_->text().length() < 20) {
         text_button_->SetText(
             ASCIIToUTF16("Startof") +
             ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
@@ -111,7 +119,7 @@ void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
             ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
             ASCIIToUTF16("LongButtonText"));
       } else {
-        text_button_->SetText(ASCIIToUTF16("Button"));
+        text_button_->SetText(ASCIIToUTF16("Text Button"));
       }
     } else {
       use_native_theme_border_ = !use_native_theme_border_;
@@ -122,8 +130,58 @@ void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
     }
   } else if (event.IsAltDown()) {
     text_button_->SetIsDefault(!text_button_->is_default());
+  } else {
+    text_button_->ClearMaxTextSize();
   }
   example_view()->GetLayoutManager()->Layout(example_view());
+}
+
+void ButtonExample::LabelButtonPressed(const ui::Event& event) {
+  PrintStatus("Label Button Pressed! count: %d", ++count_);
+  if (event.IsControlDown()) {
+    if (event.IsShiftDown()) {
+      if (event.IsAltDown()) {
+        label_button_->SetTextMultiLine(!label_button_->GetTextMultiLine());
+        label_button_->SetText(ASCIIToUTF16(label_button_->GetTextMultiLine() ?
+            "Multi-line text\nis here to stay all the way!\n123" :
+            "Label Button"));
+      } else {
+        label_button_->SetText(!label_button_->GetText().empty() ?
+            string16() : ASCIIToUTF16("Label Button"));
+      }
+    } else if (event.IsAltDown()) {
+      label_button_->SetImage(CustomButton::BS_NORMAL,
+          label_button_->GetImage(CustomButton::BS_NORMAL).isNull() ?
+          *icon_ : gfx::ImageSkia());
+    } else {
+      label_button_->SetHorizontalAlignment(static_cast<Label::Alignment>(
+          (label_button_->GetHorizontalAlignment() + 1) % 3));
+    }
+  } else if (event.IsShiftDown()) {
+    if (event.IsAltDown()) {
+      label_button_->SetText(ASCIIToUTF16(
+          label_button_->GetText().length() > 20 ? "Label Button" :
+          "StartofReallyReallyReallyReallyReallyReallyReally"
+          "ReallyReallyReallyReallyReallyReallyReally"
+          "ReallyReallyReallyReallyReallyReallyReallyLongButtonText"));
+    } else {
+      label_button_->SetNativeTheme(!label_button_->native_theme());
+    }
+  } else if (event.IsAltDown()) {
+    label_button_->SetDefaultButton(!label_button_->default_button());
+  } else {
+    label_button_->set_min_size(gfx::Size());
+  }
+  example_view()->GetLayoutManager()->Layout(example_view());
+}
+
+void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
+  if (sender == text_button_)
+    TextButtonPressed(event);
+  else if (sender == label_button_)
+    LabelButtonPressed(event);
+  else
+    PrintStatus("Image Button Pressed! count: %d", ++count_);
 }
 
 }  // namespace examples

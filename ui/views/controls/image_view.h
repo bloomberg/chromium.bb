@@ -73,12 +73,15 @@ class VIEWS_EXPORT ImageView : public View {
   void SetTooltipText(const string16& tooltip);
   string16 GetTooltipText() const;
 
-  // Overriden from View
+  void set_interactive(bool interactive) { interactive_ = interactive; }
+
+  // Overriden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
+  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
  private:
   // Compute the image origin given the desired size and the receiver alignment
@@ -102,6 +105,9 @@ class VIEWS_EXPORT ImageView : public View {
 
   // The current tooltip text.
   string16 tooltip_text_;
+
+  // A flag controlling hit test handling for interactivity.
+  bool interactive_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageView);
 };

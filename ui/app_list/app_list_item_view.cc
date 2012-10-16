@@ -54,21 +54,6 @@ const gfx::Font& GetTitleFont() {
   return *font;
 }
 
-// An image view that is not interactive.
-class StaticImageView : public views::ImageView {
- public:
-  StaticImageView() : ImageView() {
-  }
-
- private:
-  // views::View overrides:
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE {
-    return false;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(StaticImageView);
-};
-
 }  // namespace
 
 // static
@@ -79,8 +64,10 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     : CustomButton(apps_grid_view),
       model_(model),
       apps_grid_view_(apps_grid_view),
-      icon_(new StaticImageView),
+      icon_(new views::ImageView),
       title_(new views::Label) {
+  icon_->set_interactive(false);
+
   title_->SetBackgroundColor(0);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kTitleColor);

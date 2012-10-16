@@ -16,7 +16,8 @@ namespace views {
 ImageView::ImageView()
     : image_size_set_(false),
       horiz_alignment_(CENTER),
-      vert_alignment_(CENTER) {
+      vert_alignment_(CENTER),
+      interactive_(true) {
 }
 
 ImageView::~ImageView() {
@@ -170,6 +171,10 @@ bool ImageView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
 
   *tooltip = GetTooltipText();
   return true;
+}
+
+bool ImageView::HitTestRect(const gfx::Rect& rect) const {
+  return interactive_ ? View::HitTestRect(rect) : false;
 }
 
 }  // namespace views

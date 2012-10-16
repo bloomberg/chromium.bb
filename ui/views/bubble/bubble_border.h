@@ -165,8 +165,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   static BorderImages* GetBorderImages(Shadow shadow);
 
   // Overridden from Border:
-  virtual void Paint(const View& view,
-                     gfx::Canvas* canvas) const OVERRIDE;
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE;
 
   void DrawEdgeWithArrow(gfx::Canvas* canvas,
                          bool is_horizontal,
