@@ -1089,6 +1089,8 @@
         'browser/ui/gtk/zoom_bubble_gtk.h',
         'browser/ui/hung_plugin_tab_helper.cc',
         'browser/ui/hung_plugin_tab_helper.h',
+        'browser/ui/intents/web_intent_icon_loader.h',
+        'browser/ui/intents/web_intent_icon_loader.cc',
         'browser/ui/intents/native_file_picker_service.cc',
         'browser/ui/intents/web_intent_inline_disposition_delegate.cc',
         'browser/ui/intents/web_intent_inline_disposition_delegate.h',

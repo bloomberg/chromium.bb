@@ -106,8 +106,8 @@ class WebIntentPickerModel {
   // Return the number of intent services in the picker.
   size_t GetInstalledServiceCount() const;
 
-  // Update the favicon for the intent service at |index| to |image|.
-  void UpdateFaviconAt(size_t index, const gfx::Image& image);
+  // Update favicon for the intent service with service URL |url| to |image|.
+  void UpdateFaviconForServiceWithURL(const GURL& url, const gfx::Image& image);
 
   // Add a list of suggested extensions to the model.
   void AddSuggestedExtensions(
