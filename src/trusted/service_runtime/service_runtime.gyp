@@ -264,12 +264,6 @@
         }],
       ],
     }, {
-      'target_name': 'container',
-      'type': 'static_library',
-      'sources': [
-        'generic_container/container.c',
-      ],
-    }, {
       'target_name': 'nacl_error_code',
       'type': 'static_library',
       'sources': [
@@ -350,16 +344,6 @@
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
           ],
         }, {
-          'target_name': 'container64',
-          'type': 'static_library',
-          'variables': {
-            'win_target': 'x64',
-          },
-          'sources': [
-            'generic_container/container.c',
-          ],
-        },
-        {
           'target_name': 'nacl_error_code64',
           'type': 'static_library',
           'variables': {

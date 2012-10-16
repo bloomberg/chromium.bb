@@ -24,7 +24,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'nacl_perf_counter',
         'nacl_base',
         'imc',
-        'container',
         'nacl_fault_inject',
         'nacl_interval',
         'platform',

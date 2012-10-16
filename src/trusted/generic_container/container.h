@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -8,12 +8,11 @@
  * NaCl Generic containers.
  */
 
-#ifndef NATIVE_CLIENT_GENERIC_CONTAINER_CONTAINER_H_
-#define NATIVE_CLIENT_GENERIC_CONTAINER_CONTAINER_H_
-
-#include <sys/types.h>
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_GENERIC_CONTAINER_CONTAINER_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_GENERIC_CONTAINER_CONTAINER_H_
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/portability.h"
 
 EXTERN_C_BEGIN
 
@@ -94,85 +93,6 @@ struct NaClContainerIter {
   struct NaClContainerIterVtbl const  *vtbl;
 };
 
-/* linked list */
-
-struct NaClItemList {
-  struct NaClItemList *next;
-  void                *datum; /* dynamically allocated, pod */
-};
-
-struct NaClContainerList {
-  struct NaClContainer  base;
-  struct NaClCmpFunctor *cmp_functor;
-  struct NaClItemList   *head;
-};
-
-int NaClContainerListCtor(struct NaClContainerList  *clp,
-                          struct NaClCmpFunctor     *cmp_functor);
-
-int NaClContainerListInsert(struct NaClContainer  *base_pointer,
-                            void              *obj);
-
-struct NaClContainerIter *NaClContainerListFind(
-    struct NaClContainer      *base_pointer,
-    void                      *key,
-    struct NaClContainerIter  *out);
-
-void NaClContainerListDtor(struct NaClContainer  *vself);
-
-struct NaClContainerListIter {
-  struct NaClContainerIter    base;
-  struct NaClItemList         **cur;
-};
-
-int NaClContainerListIterCtor(struct NaClContainer      *vself,
-                              struct NaClContainerIter  *viter);
-
-/* hash table */
-
-struct NaClContainerHashTblEntry {
-  int   flags;
-  void  *datum;
-};
-
-#define NACL_CHTE_USED       (1<<0)
-/* slot occupied, so keep probing */
-
-#define NACL_CHTE_DELETED    (1<<1)
-/* slot occupied but deleted, keep probing */
-
-struct NaClContainerHashTbl {
-  struct NaClContainer              base;
-  struct NaClHashFunctor            *hash_functor;
-  size_t                            num_buckets;
-  size_t                            num_entries;
-  struct NaClContainerHashTblEntry  *bucket;
-};
-
-int NaClContainerHashTblCtor(struct NaClContainerHashTbl  *self,
-                             struct NaClHashFunctor       *hash_functor,
-                             size_t                       num_buckets);
-
-int NaClContainerHashTblInsert(struct NaClContainer *vself,
-                               void                 *obj);
-
-struct NaClContainerIter *NaClContainerHashTblFind(
-    struct NaClContainer      *vself,
-    void                      *key,
-    struct NaClContainerIter  *out);
-
-void NaClContainerHashTblDtor(struct NaClContainer *vself);
-
-struct NaClContainerHashTblIter {
-  struct NaClContainerIter    base;
-  struct NaClContainerHashTbl *htbl;
-  uintptr_t                   idx;
-};
-
-int NaClContainerHashTblIterCtor(struct NaClContainer     *vself,
-                                 struct NaClContainerIter *viter);
-
-
 EXTERN_C_END
 
-#endif
+#endif /* NATIVE_CLIENT_SRC_TRUSTED_GENERIC_CONTAINER_CONTAINER_H_ */

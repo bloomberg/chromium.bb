@@ -274,10 +274,6 @@ env.DualLibrary('nacl_error_code',
                 ['nacl_error_code.c',
                  ])
 
-env.ComponentLibrary('container',
-                     ['generic_container/container.c',
-                      ])
-
 if env.Bit('windows'):
   env.ComponentLibrary('sel_test', 'win/mmap_test_check.cc')
 elif env.Bit('mac'):
@@ -318,7 +314,6 @@ sel_ldr_libs = ['sel',
                 'nacl_perf_counter',
                 'nacl_base',
                 'imc',
-                'container',
                 'nacl_fault_inject',
                 'nacl_interval',
                 'platform',
