@@ -333,7 +333,8 @@ void ExternalProviderImpl::CreateExternalProviders(
       user_manager && user_manager->IsLoggedInAsDemoUser() &&
       g_browser_process->browser_policy_connector()->GetDeviceMode() ==
           policy::DEVICE_MODE_KIOSK;
-  bundled_extension_creation_flags = Extension::FROM_WEBSTORE;
+  bundled_extension_creation_flags = Extension::FROM_WEBSTORE |
+      Extension::WAS_INSTALLED_BY_DEFAULT;
 #endif
 
   if (!is_chromeos_demo_session) {
