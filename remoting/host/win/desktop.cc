@@ -83,11 +83,8 @@ scoped_ptr<Desktop> Desktop::GetDesktop(const wchar_t* desktop_name) {
 scoped_ptr<Desktop> Desktop::GetInputDesktop() {
   HDESK desktop = OpenInputDesktop(
                       0, FALSE, GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE);
-  if (desktop == NULL) {
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to open the desktop receiving user input";
+  if (desktop == NULL)
     return scoped_ptr<Desktop>();
-  }
 
   return scoped_ptr<Desktop>(new Desktop(desktop, true));
 }
