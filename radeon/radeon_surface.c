@@ -939,6 +939,8 @@ static int eg_surface_best(struct radeon_surface_manager *surf_man,
         } else {
             /* tile split must be >= 256 for colorbuffer surfaces */
             surf->tile_split = MAX2(surf->nsamples * surf->bpe * 64, 256);
+            if (surf->tile_split > 4096)
+                surf->tile_split = 4096;
         }
     } else {
         /* set tile split to row size */
