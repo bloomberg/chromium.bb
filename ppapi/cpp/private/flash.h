@@ -6,6 +6,7 @@
 #define PPAPI_CPP_PRIVATE_FLASH_H_
 
 #include <string>
+#include <vector>
 
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/pp_stdint.h"
@@ -15,6 +16,7 @@ struct PP_Point;
 
 namespace pp {
 
+class DeviceRef_Dev;
 class FontDescription_Dev;
 class ImageData;
 class InstanceHandle;
@@ -23,6 +25,7 @@ class Point;
 class Rect;
 class URLRequestInfo;
 class Var;
+class VideoCapture_Dev;
 
 namespace flash {
 
@@ -63,6 +66,9 @@ class Flash {
   static bool SetCrashData(const InstanceHandle& instance,
                            PP_FlashCrashKey key,
                            const pp::Var& value);
+  static int32_t EnumerateVideoCaptureDevices(const InstanceHandle& instance,
+      const VideoCapture_Dev& video_capture,
+      std::vector<DeviceRef_Dev>* devices_out);
 
   // PPB_Flash_Print.
   static bool InvokePrinting(const InstanceHandle& instance);

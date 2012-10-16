@@ -8,7 +8,9 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/dev/device_ref_dev.h"
 #include "ppapi/cpp/dev/font_dev.h"
+#include "ppapi/cpp/dev/video_capture_dev.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
@@ -23,6 +25,10 @@
 namespace pp {
 
 namespace {
+
+template <> const char* interface_name<PPB_Flash_12_6>() {
+  return PPB_FLASH_INTERFACE_12_6;
+}
 
 template <> const char* interface_name<PPB_Flash_12_5>() {
   return PPB_FLASH_INTERFACE_12_5;
@@ -53,7 +59,10 @@ PPB_Flash flash_12_combined_interface;
 void InitializeCombinedInterface() {
   if (initialized_combined_interface)
     return;
-  if (has_interface<PPB_Flash_12_5>()) {
+  if (has_interface<PPB_Flash_12_6>()) {
+    memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_6>(),
+           sizeof(PPB_Flash_12_6));
+  } else if (has_interface<PPB_Flash_12_5>()) {
     memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_5>(),
            sizeof(PPB_Flash_12_5));
   } else if (has_interface<PPB_Flash_12_4>()) {
@@ -72,7 +81,8 @@ namespace flash {
 
 // static
 bool Flash::IsAvailable() {
-  return has_interface<PPB_Flash_12_5>() ||
+  return has_interface<PPB_Flash_12_6>() ||
+         has_interface<PPB_Flash_12_5>() ||
          has_interface<PPB_Flash_12_4>() ||
          has_interface<PPB_Flash_12_3>();
 }
@@ -243,6 +253,22 @@ bool Flash::SetCrashData(const InstanceHandle& instance,
                                                  key, value.pp_var()));
   }
   return false;
+}
+
+// static
+int32_t Flash::EnumerateVideoCaptureDevices(
+    const InstanceHandle& instance,
+    const VideoCapture_Dev& video_capture,
+    std::vector<DeviceRef_Dev>* devices_out) {
+  InitializeCombinedInterface();
+  if (flash_12_combined_interface.EnumerateVideoCaptureDevices) {
+    ResourceArrayOutputAdapter<DeviceRef_Dev> adapter(devices_out);
+    return flash_12_combined_interface.EnumerateVideoCaptureDevices(
+        instance.pp_instance(),
+        video_capture.pp_resource(),
+        adapter.pp_array_output());
+  }
+  return PP_ERROR_FAILED;
 }
 
 // static

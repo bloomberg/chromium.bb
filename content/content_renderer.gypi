@@ -168,6 +168,8 @@
     'renderer/pepper/pepper_device_enumeration_event_handler.h',
     'renderer/pepper/pepper_file_chooser_host.cc',
     'renderer/pepper/pepper_file_chooser_host.h',
+    'renderer/pepper/pepper_flash_host.cc',
+    'renderer/pepper/pepper_flash_host.h',
     'renderer/pepper/pepper_hung_plugin_filter.cc',
     'renderer/pepper/pepper_hung_plugin_filter.h',
     'renderer/pepper/pepper_in_process_resource_creation.cc',

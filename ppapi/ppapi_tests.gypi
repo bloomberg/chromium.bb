@@ -412,6 +412,16 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_enumerate_devices',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/enumerate_devices/enumerate_devices.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_flash_topmost',
       'dependencies': [
         'ppapi_example_skeleton',

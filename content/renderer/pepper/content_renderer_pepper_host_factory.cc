@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
+#include "content/renderer/pepper/pepper_flash_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/host/resource_host.h"
@@ -55,6 +56,16 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
             host_, instance, params.pp_resource()));
     }
   }
+
+  // Resources for Flash interfaces.
+  if (GetPermissions().HasPermission(ppapi::PERMISSION_FLASH)) {
+    switch (message.type()) {
+      case PpapiHostMsg_Flash_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperFlashHost(
+            host_, instance, params.pp_resource()));
+    }
+  }
+
   return scoped_ptr<ResourceHost>();
 }
 
