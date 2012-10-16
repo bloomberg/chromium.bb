@@ -19,52 +19,14 @@ if not (env.Bit('bitcode') and env.Bit('pnacl_generate_pexe')):
 if env.Bit('nacl_glibc') and env.Bit('target_x86_64'):
   Return()
 
-#----------------------------------------------------------------------
-# Test pexe translation.
-
-# Specify the object file to prevent junk from getting left over
-# in source directory. SCons will default to point "-o" to the source
-# directory if it is an absolute directory.
-test_example_obj = env.ComponentObject(
-    'pnacl_test_example_obj',
-    '${SCONSTRUCT_DIR}/tests/ppapi_test_example/ppapi_test_example.cc')
-
-pexe_name = env.ProgramNameForNmf('pnacl_test_example')
-
-test_example_pexe = env.ComponentProgram(
-    pexe_name,
-    [test_example_obj],
-    EXTRA_LIBS=['ppapi',
-                'ppapi_test_lib',
-                'platform', # for CHECK
-                'pthread',
-                'gio',
-                ])
-
-# Grab test routines.
-borrowed_file = '${STAGING_DIR}/ppapi_test_example.js',
-
-env.Publish(pexe_name,
-            'run',
-            ['pnacl_test_example.html'])
-
-node = env.PPAPIBrowserTester(
-    'pnacl_test_example.out',
-    url='pnacl_test_example.html',
-    nmf_names=['pnacl_test_example'],
-    files=env.ExtractPublishedFiles(pexe_name) + [borrowed_file])
-
-env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_pnacl_example_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
-
 #### Test error handling.
 
 # We should add more cases, e.g., try a bad library to crash ld,
 # try a more malicious bitcode, try to exhaust resources, etc.
 # The current llc tests, don't actually crash LLC, they only
 # make llc exit w/ an abnormal status.
+
+program_fragment_obj = env.ComponentObject('program_fragment.cc')
 
 pnacl_bad_files = env.Replicate(
     '${STAGING_DIR}',
@@ -76,14 +38,10 @@ pnacl_bad_files = env.Replicate(
      # This one is the hello world bitcode .ll w/ a missing instruction.
      'bad2.pexe',
      'pnacl_bad2_pexe.nmf',
-     # Borrow the bitcode file from the test above and treat it as a
-     # pexe so that the compile succeeds but linking fails.
-     'pnacl_test_example_obj.bc',
+     program_fragment_obj,
      'pnacl_bad_pexe_undefined_syms.nmf',
      'pnacl_bad_test.html',
      ])
-
-env.Depends(pnacl_bad_files, test_example_obj)
 
 # Borrow bad load test harness.
 borrowed_file = '${STAGING_DIR}/ppapi_bad.js',

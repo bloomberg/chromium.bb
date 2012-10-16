@@ -36,7 +36,6 @@ nonvariant_test_scons_files = [
     'tests/ppapi_browser/ppp_input_event/nacl.scons',
     'tests/ppapi_browser/ppp_instance/nacl.scons',
     'tests/ppapi_browser/progress_events/nacl.scons',
-    'tests/ppapi_browser/stress_many_nexes/nacl.scons',
     'tests/ppapi_messaging/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
 ]
