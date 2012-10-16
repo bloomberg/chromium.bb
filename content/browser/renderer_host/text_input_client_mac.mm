@@ -48,8 +48,8 @@ NSUInteger TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
   AfterRequest();
 
   base::TimeDelta delta(base::TimeTicks::Now() - start);
-  UMA_HISTOGRAM_TIMES("TextInputClient.CharacterIndex",
-                      delta * base::Time::kMicrosecondsPerMillisecond);
+  UMA_HISTOGRAM_LONG_TIMES("TextInputClient.CharacterIndex",
+                           delta * base::Time::kMicrosecondsPerMillisecond);
 
   return character_index_;
 }
@@ -69,8 +69,8 @@ NSRect TextInputClientMac::GetFirstRectForRange(RenderWidgetHost* rwh,
   AfterRequest();
 
   base::TimeDelta delta(base::TimeTicks::Now() - start);
-  UMA_HISTOGRAM_TIMES("TextInputClient.FirstRect",
-                      delta * base::Time::kMicrosecondsPerMillisecond);
+  UMA_HISTOGRAM_LONG_TIMES("TextInputClient.FirstRect",
+                           delta * base::Time::kMicrosecondsPerMillisecond);
 
   return first_rect_;
 }
@@ -90,8 +90,8 @@ NSAttributedString* TextInputClientMac::GetAttributedSubstringFromRange(
   AfterRequest();
 
   base::TimeDelta delta(base::TimeTicks::Now() - start);
-  UMA_HISTOGRAM_TIMES("TextInputClient.Substring",
-                      delta * base::Time::kMicrosecondsPerMillisecond);
+  UMA_HISTOGRAM_LONG_TIMES("TextInputClient.Substring",
+                           delta * base::Time::kMicrosecondsPerMillisecond);
 
   // Lookup.framework calls this method repeatedly and expects that repeated
   // calls don't deallocate previous results immediately. Returning an
@@ -126,8 +126,8 @@ void TextInputClientMac::BeforeRequest() {
   lock_.Acquire();
 
   base::TimeDelta delta(base::TimeTicks::Now() - start);
-  UMA_HISTOGRAM_TIMES("TextInputClient.LockWait",
-                      delta * base::Time::kMicrosecondsPerMillisecond);
+  UMA_HISTOGRAM_LONG_TIMES("TextInputClient.LockWait",
+                           delta * base::Time::kMicrosecondsPerMillisecond);
 
   character_index_ = NSNotFound;
   first_rect_ = NSZeroRect;
