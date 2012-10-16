@@ -136,11 +136,7 @@ WebPreferences::WebPreferences()
   fantasy_font_family_map[kCommonScript] =
       ASCIIToUTF16("Impact");
   pictograph_font_family_map[kCommonScript] =
-#if !defined(OS_MACOSX)
       ASCIIToUTF16("Times New Roman");
-#else
-      ASCIIToUTF16("Apple Color Emoji");
-#endif
 }
 
 WebPreferences::~WebPreferences() {
