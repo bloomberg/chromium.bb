@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -25,9 +26,25 @@ namespace {
 const char kTestExtensionId[] = "lkegdcleigedmkiikoijjgfchobofdbe";
 const char kTestExtensionPath[] = "media_galleries_private/attachdetach";
 
+// JS commands.
+const char kAddAttachListenerCmd[] = "addAttachListener()";
+const char kAddDetachListenerCmd[] = "addDetachListener()";
+const char kAddDummyDetachListenerCmd[] = "addDummyDetachListener()";
+const char kRemoveAttachListenerCmd[] = "removeAttachListener()";
+const char kRemoveDummyDetachListenerCmd[] = "removeDummyDetachListener()";
+
+// And JS reply messages.
+const char kAddAttachListenerOk[] = "add_attach_ok";
+const char kAddDetachListenerOk[] = "add_detach_ok";
+const char kAddDummyDetachListenerOk[] = "add_dummy_detach_ok";
+const char kRemoveAttachListenerOk[] = "remove_attach_ok";
+const char kRemoveDummyDetachListenerOk[] = "remove_dummy_detach_ok";
+
+// Test reply messages.
 const char kAttachTestOk[] = "attach_test_ok";
 const char kDetachTestOk[] = "detach_test_ok";
 
+// Dummy device properties.
 const char kDeviceId[] = "testDeviceId";
 const char kDeviceName[] = "foobar";
 FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
@@ -35,6 +52,17 @@ FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
 }  // namespace
 
 class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
+ public:
+  MediaGalleriesPrivateApiTest() {}
+  virtual ~MediaGalleriesPrivateApiTest() {}
+
+  // ExtensionApiTest overrides.
+  virtual void SetUp() OVERRIDE {
+    device_id_ = chrome::MediaStorageUtil::MakeDeviceId(
+        chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
+    ExtensionApiTest::SetUp();
+  }
+
  protected:
   // ExtensionApiTest overrides.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -42,6 +70,39 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(switches::kWhitelistedExtensionID,
                                     kTestExtensionId);
   }
+
+  void ChangeListener(content::RenderViewHost* host,
+                      const std::string& js_command,
+                      const std::string& ok_message) {
+    ExtensionTestMessageListener listener(ok_message, false  /* no reply */);
+    host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(js_command));
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  void AttachDetach() {
+    Attach();
+    Detach();
+  }
+
+  void Attach() {
+    base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
+        device_id_, ASCIIToUTF16(kDeviceName), kDevicePath);
+    WaitForDeviceEvents();
+  }
+
+  void Detach() {
+    base::SystemMonitor::Get()->ProcessRemovableStorageDetached(device_id_);
+    WaitForDeviceEvents();
+  }
+
+ private:
+  void WaitForDeviceEvents() {
+    content::RunAllPendingInMessageLoop();
+  }
+
+  std::string device_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPrivateApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest, DeviceAttachDetachEvents) {
@@ -50,24 +111,71 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest, DeviceAttachDetachEvents) {
       LoadExtension(test_data_dir_.AppendASCII(kTestExtensionPath));
   ASSERT_TRUE(extension);
 
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  ASSERT_TRUE(system_monitor);
+  content::RenderViewHost* host =
+      browser()->profile()->GetExtensionProcessManager()->
+      GetBackgroundHostForExtension(extension->id())->render_view_host();
+  ASSERT_TRUE(host);
 
-  const std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
-      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
+  // No listeners, attach and detach a couple times.
+  AttachDetach();
+  AttachDetach();
 
-  // Attach event.
+  // Add attach listener.
+  ChangeListener(host, kAddAttachListenerCmd, kAddAttachListenerOk);
+
+  // Attach / detach
   const std::string expect_attach_msg =
       base::StringPrintf("%s,%s", kAttachTestOk, kDeviceName);
   ExtensionTestMessageListener attach_finished_listener(expect_attach_msg,
                                                         false  /* no reply */);
-  system_monitor->ProcessRemovableStorageAttached(
-      device_id, ASCIIToUTF16(kDeviceName), kDevicePath);
+  Attach();
   EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
+  Detach();
 
-  // Detach event.
+  // Attach / detach
+  Attach();
+  EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
+  // Detach
+  Detach();
+
+  // Remove attach listener.
+  ChangeListener(host, kRemoveAttachListenerCmd, kRemoveAttachListenerOk);
+
+  // No listeners, attach and detach a couple times.
+  AttachDetach();
+  AttachDetach();
+
+  // Add detach listener.
+  ChangeListener(host, kAddDummyDetachListenerCmd, kAddDummyDetachListenerOk);
+
+  // Attach / detach
+  Attach();
+
   ExtensionTestMessageListener detach_finished_listener(kDetachTestOk,
                                                         false  /* no reply */);
-  system_monitor->ProcessRemovableStorageDetached(device_id);
+  Detach();
+  EXPECT_TRUE(detach_finished_listener.WaitUntilSatisfied());
+
+  // Attach / detach
+  Attach();
+  Detach();
+  EXPECT_TRUE(detach_finished_listener.WaitUntilSatisfied());
+
+  // Switch ok dummy detach listener for the regular one.
+  ChangeListener(host, kRemoveDummyDetachListenerCmd,
+                 kRemoveDummyDetachListenerOk);
+  ChangeListener(host, kAddDetachListenerCmd, kAddDetachListenerOk);
+
+  // Add attach listener.
+  ChangeListener(host, kAddAttachListenerCmd, kAddAttachListenerOk);
+
+  Attach();
   EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
+  Detach();
+  EXPECT_TRUE(detach_finished_listener.WaitUntilSatisfied());
+
+  Attach();
+  EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
+  Detach();
+  EXPECT_TRUE(detach_finished_listener.WaitUntilSatisfied());
 }

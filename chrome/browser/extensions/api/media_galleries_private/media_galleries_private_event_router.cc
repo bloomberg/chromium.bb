@@ -102,13 +102,14 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
     const std::string& id,
     const string16& name,
     const FilePath::StringType& location) {
+  TransientDeviceIds* device_ids = TransientDeviceIds::GetInstance();
+  if (!device_ids->DeviceAttached(id))
+    return;
+
   EventRouter* router = profile_->GetExtensionEventRouter();
   if (!router->HasEventListener(kOnAttachEventName))
     return;
 
-  TransientDeviceIds* device_ids = TransientDeviceIds::GetInstance();
-  if (!device_ids->DeviceAttached(id))
-    return;
   std::string transient_id = device_ids->GetTransientIdForUniqueId(id);
   CHECK(!transient_id.empty());
 
@@ -123,10 +124,6 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
     const std::string& id) {
-  EventRouter* router = profile_->GetExtensionEventRouter();
-  if (!router->HasEventListener(kOnDetachEventName))
-    return;
-
   TransientDeviceIds* device_ids = TransientDeviceIds::GetInstance();
   std::string transient_id = device_ids->GetTransientIdForUniqueId(id);
   if (transient_id.empty()) {
@@ -134,6 +131,10 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
     return;
   }
   CHECK(device_ids->DeviceDetached(id));
+
+  EventRouter* router = profile_->GetExtensionEventRouter();
+  if (!router->HasEventListener(kOnDetachEventName))
+    return;
 
   DeviceDetachmentDetails details;
   details.device_id = transient_id;
