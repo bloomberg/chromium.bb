@@ -102,9 +102,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::DraggableRegion)
   IPC_STRUCT_TRAITS_MEMBER(draggable)
-  IPC_STRUCT_TRAITS_MEMBER(label)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
-  IPC_STRUCT_TRAITS_MEMBER(clip)
 IPC_STRUCT_TRAITS_END()
 
 // Singly-included section for custom IPC traits.

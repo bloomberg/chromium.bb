@@ -21,7 +21,6 @@ class Profile;
 
 namespace extensions {
 class Extension;
-struct DraggableRegion;
 }
 
 class ShellWindowGtk : public NativeShellWindow,
@@ -62,6 +61,8 @@ class ShellWindowGtk : public NativeShellWindow,
   virtual void UpdateWindowTitle() OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void UpdateDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
 
   content::WebContents* web_contents() const {
     return shell_window_->web_contents();
@@ -69,10 +70,6 @@ class ShellWindowGtk : public NativeShellWindow,
   const extensions::Extension* extension() const {
     return shell_window_->extension();
   }
-  virtual void UpdateDraggableRegions(
-      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
-  virtual void UpdateLegacyDraggableRegions(
-      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
 
   virtual ~ShellWindowGtk();
 
@@ -109,7 +106,7 @@ class ShellWindowGtk : public NativeShellWindow,
 
   // The region is treated as title bar, can be dragged to move
   // and double clicked to maximize.
-  SkRegion draggable_region_;
+  scoped_ptr<SkRegion> draggable_region_;
 
   // If true, don't call gdk_window_raise() when we get a click in the title
   // bar or window border.  This is to work around a compiz bug.

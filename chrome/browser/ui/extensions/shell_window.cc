@@ -42,6 +42,7 @@
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/renderer_preferences.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 using content::BrowserThread;
 using content::ConsoleMessageLevel;
@@ -324,24 +325,7 @@ bool ShellWindow::OnMessageReceived(const IPC::Message& message) {
 
 void ShellWindow::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
-  // Decide if we want to treat it as old syntax by checking labels.
-  // TODO(jianli): to be removed after WebKit patch that changes the draggable
-  // region syntax is landed.
-  bool new_syntax = true;
-  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
-           regions.begin();
-       iter != regions.end(); ++iter) {
-    const extensions::DraggableRegion& region = *iter;
-    if (!region.label.empty() || !region.clip.IsEmpty()) {
-      new_syntax = false;
-      break;
-    }
-  }
-
-  if (new_syntax)
-    native_window_->UpdateDraggableRegions(regions);
-  else
-    native_window_->UpdateLegacyDraggableRegions(regions);
+  native_window_->UpdateDraggableRegions(regions);
 }
 
 void ShellWindow::OnImageLoaded(const gfx::Image& image,
@@ -488,4 +472,22 @@ void ShellWindow::SaveWindowPosition()
 
   gfx::Rect bounds = native_window_->GetBounds();
   cache->SaveGeometry(extension()->id(), window_key_, bounds);
+}
+
+// static
+SkRegion* ShellWindow::RawDraggableRegionsToSkRegion(
+      const std::vector<extensions::DraggableRegion>& regions) {
+  SkRegion* sk_region = new SkRegion;
+  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
+           regions.begin();
+       iter != regions.end(); ++iter) {
+    const extensions::DraggableRegion& region = *iter;
+    sk_region->op(
+        region.bounds.x(),
+        region.bounds.y(),
+        region.bounds.right(),
+        region.bounds.bottom(),
+        region.draggable ? SkRegion::kUnion_Op : SkRegion::kDifference_Op);
+  }
+  return sk_region;
 }

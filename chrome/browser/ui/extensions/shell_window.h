@@ -76,6 +76,11 @@ class ShellWindow : public content::NotificationObserver,
                              const GURL& url,
                              const CreateParams& params);
 
+  // Convert draggable regions in raw format to SkRegion format. Caller is
+  // responsible for deleting the returned SkRegion instance.
+  static SkRegion* RawDraggableRegionsToSkRegion(
+      const std::vector<extensions::DraggableRegion>& regions);
+
   const std::string& window_key() const { return window_key_; }
   const SessionID& session_id() const { return session_id_; }
   const extensions::Extension* extension() const { return extension_; }

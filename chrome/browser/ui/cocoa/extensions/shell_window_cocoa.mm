@@ -583,36 +583,7 @@ void ShellWindowCocoa::UpdateDraggableRegionsForCustomDrag(
 
   // Aggregate the draggable areas and non-draggable areas such that hit test
   // could be performed easily.
-  SkRegion* draggable_region = new SkRegion;
-  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
-           regions.begin();
-       iter != regions.end();
-       ++iter) {
-    const extensions::DraggableRegion& region = *iter;
-    draggable_region->op(
-        region.bounds.x(),
-        region.bounds.y(),
-        region.bounds.right(),
-        region.bounds.bottom(),
-        region.draggable ? SkRegion::kUnion_Op : SkRegion::kDifference_Op);
-  }
-  draggable_region_.reset(draggable_region);
-}
-
-void ShellWindowCocoa::UpdateLegacyDraggableRegions(
-    const std::vector<extensions::DraggableRegion>& regions) {
-  // Draggable region is not supported for non-frameless window.
-  if (has_frame_)
-    return;
-
-  system_drag_exclude_areas_.clear();
-  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
-           regions.begin();
-       iter != regions.end();
-       ++iter) {
-    system_drag_exclude_areas_.push_back(iter->bounds);
-  }
-  InstallDraggableRegionViews();
+  draggable_region_.reset(ShellWindow::RawDraggableRegionsToSkRegion(regions));
 }
 
 void ShellWindowCocoa::HandleKeyboardEvent(
