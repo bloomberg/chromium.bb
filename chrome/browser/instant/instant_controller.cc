@@ -568,7 +568,10 @@ void InstantController::SetSuggestions(
     }
 
     last_suggestion_ = suggestion;
-    if (!last_verbatim_)
+    // Set the suggested text if the suggestion behavior is
+    // INSTANT_COMPLETE_NEVER irrespective of verbatim because in this case
+    // the suggested text does not get committed if the user presses enter.
+    if (suggestion.behavior == INSTANT_COMPLETE_NEVER || !last_verbatim_)
       delegate_->SetSuggestedText(suggestion.text, suggestion.behavior);
   }
 
