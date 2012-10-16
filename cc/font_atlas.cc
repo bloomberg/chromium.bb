@@ -6,11 +6,12 @@
 
 #include "CCFontAtlas.h"
 
+#include <vector>
+
 #include "base/string_split.h"
 #include "ui/gfx/point.h"
 #include "CCProxy.h"
-#include "SkCanvas.h"
-#include <vector>
+#include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
 

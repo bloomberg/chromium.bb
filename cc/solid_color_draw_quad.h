@@ -6,7 +6,7 @@
 #define CCSolidColorDrawQuad_h
 
 #include "CCDrawQuad.h"
-#include "SkColor.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace cc {

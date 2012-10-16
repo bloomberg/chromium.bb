@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef LayerChromium_h
 #define LayerChromium_h
 
@@ -12,7 +11,7 @@
 #include "FloatPoint.h"
 #include "Region.h"
 #include "RenderSurfaceChromium.h"
-#include "SkColor.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <string>
@@ -382,5 +381,6 @@ private:
 
 void sortLayers(std::vector<scoped_refptr<LayerChromium> >::iterator, std::vector<scoped_refptr<LayerChromium> >::iterator, void*);
 
-}
+}  // namespace cc
+
 #endif

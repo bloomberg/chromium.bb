@@ -5,7 +5,7 @@
 #ifndef ShaderChromium_h
 #define ShaderChromium_h
 
-#include "SkColorPriv.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 #include <string>
 
 namespace WebKit {

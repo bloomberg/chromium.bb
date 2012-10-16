@@ -7,12 +7,12 @@
 #include "CCRenderSurfaceFilters.h"
 
 #include "FloatSize.h"
-#include "SkBlurImageFilter.h"
-#include "SkCanvas.h"
-#include "SkColorMatrixFilter.h"
-#include "SkGpuDevice.h"
-#include "SkGrPixelRef.h"
-#include "SkMagnifierImageFilter.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "third_party/skia/include/effects/SkColorMatrixFilter.h"
+#include "third_party/skia/include/effects/SkMagnifierImageFilter.h"
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
+#include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 #include <public/WebGraphicsContext3D.h>

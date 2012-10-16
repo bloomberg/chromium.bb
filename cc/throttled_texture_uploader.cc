@@ -8,7 +8,7 @@
 #include "CCPrioritizedTexture.h"
 #include "CCProxy.h"
 #include "Extensions3DChromium.h"
-#include "SkGpuDevice.h"
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "TraceEvent.h"
 #include <algorithm>
 #include <public/Platform.h>

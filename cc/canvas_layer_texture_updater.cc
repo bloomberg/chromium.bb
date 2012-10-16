@@ -10,11 +10,11 @@
 #include "CCRenderingStats.h"
 #include "FloatRect.h"
 #include "LayerPainterChromium.h"
-#include "SkCanvas.h"
-#include "SkPaint.h"
-#include "SkRect.h"
 #include "SkiaUtils.h"
 #include "TraceEvent.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include <wtf/CurrentTime.h>
 
 namespace cc {

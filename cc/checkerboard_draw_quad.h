@@ -7,7 +7,7 @@
 
 #include "CCDrawQuad.h"
 #include "base/memory/scoped_ptr.h"
-#include "SkColor.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
 

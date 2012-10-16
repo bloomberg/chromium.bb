@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "config.h"
 
 #include "CCRendererGL.h"
@@ -23,14 +22,14 @@
 #include "GrTexture.h"
 #include "NotImplemented.h"
 #include "PlatformColor.h"
-#include "SkBitmap.h"
-#include "SkColor.h"
 #include "TraceEvent.h"
 #ifdef LOG
 #undef LOG
 #endif
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebSharedGraphicsContext3D.h>
 #include <public/WebVideoFrame.h>

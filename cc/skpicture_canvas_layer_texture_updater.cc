@@ -9,8 +9,8 @@
 
 #include "CCTextureUpdateQueue.h"
 #include "LayerPainterChromium.h"
-#include "SkCanvas.h"
 #include "TraceEvent.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
 

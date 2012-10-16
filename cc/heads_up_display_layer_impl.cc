@@ -16,10 +16,10 @@
 #include "CCTextureDrawQuad.h"
 #include "Extensions3DChromium.h"
 #include "GraphicsContext3D.h"
-#include "SkBitmap.h"
-#include "SkColorMatrixFilter.h"
-#include "SkPaint.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 
 namespace cc {
 

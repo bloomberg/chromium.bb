@@ -12,7 +12,7 @@
 #include "CCDrawQuad.h"
 #include "CCSharedQuadState.h"
 #include "FloatRect.h"
-#include "SkColor.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <vector>

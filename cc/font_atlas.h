@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "IntRect.h"
-#include "SkBitmap.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class SkCanvas;
 

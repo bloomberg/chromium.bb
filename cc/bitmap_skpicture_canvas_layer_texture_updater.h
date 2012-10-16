@@ -6,7 +6,7 @@
 #ifndef BitmapSkPictureCanvasLayerTextureUpdater_h
 #define BitmapSkPictureCanvasLayerTextureUpdater_h
 
-#include "SkBitmap.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "SkPictureCanvasLayerTextureUpdater.h"
 
 namespace cc {

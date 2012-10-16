@@ -11,8 +11,8 @@
 #include "CCTextureUpdateQueue.h"
 #include "LayerPainterChromium.h"
 #include "PlatformColor.h"
-#include "SkCanvas.h"
-#include "SkDevice.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include <wtf/CurrentTime.h>
 
 namespace cc {

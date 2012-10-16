@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef ImageLayerChromium_h
 #define ImageLayerChromium_h
 
 #include "ContentLayerChromium.h"
-#include "SkBitmap.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace cc {
 
@@ -40,5 +39,6 @@ private:
     RefPtr<ImageLayerTextureUpdater> m_textureUpdater;
 };
 
-}
+}  // namespace cc
+
 #endif

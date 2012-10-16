@@ -16,7 +16,7 @@
 #include "FloatRect.h"
 #include "IntRect.h"
 #include "Region.h"
-#include "SkColor.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <string>

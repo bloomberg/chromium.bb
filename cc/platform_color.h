@@ -7,7 +7,7 @@
 
 #include "Extensions3D.h"
 #include "GraphicsContext3D.h"
-#include "SkTypes.h" 
+#include "third_party/skia/include/core/SkTypes.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace cc {

@@ -14,7 +14,7 @@
 #include "CCRenderer.h"
 #include "CCRenderPass.h"
 #include "CCRenderPassSink.h"
-#include "SkColor.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include <public/WebCompositorOutputSurfaceClient.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>

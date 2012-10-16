@@ -10,8 +10,8 @@
 #include "CCGraphicsContext.h"
 #include "GraphicsContext3D.h"
 #include "IntSize.h"
-#include "SkBitmap.h"
-#include "SkCanvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "TextureCopier.h"
 #include <wtf/Deque.h>
 #include <wtf/OwnPtr.h>

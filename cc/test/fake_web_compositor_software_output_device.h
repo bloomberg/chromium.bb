@@ -6,7 +6,7 @@
 #define FakeWebCompositorSoftwareOutputDevice_h
 
 #include "base/memory/scoped_ptr.h"
-#include "SkDevice.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include <public/WebCompositorSoftwareOutputDevice.h>
 #include <public/WebImage.h>
 #include <public/WebSize.h>

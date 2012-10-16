@@ -18,7 +18,7 @@
 #include "CCTileDrawQuad.h"
 #include "FloatQuad.h"
 #include "GraphicsContext3D.h"
-#include "SkColor.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 using namespace std;
 using WebKit::WebTransformationMatrix;

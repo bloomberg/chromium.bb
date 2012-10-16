@@ -20,7 +20,7 @@
 #include "IntRect.h"
 #include "RateLimiter.h"
 #include "scoped_ptr_vector.h"
-#include "SkColor.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include <limits>
 
 #if defined(COMPILER_GCC)
