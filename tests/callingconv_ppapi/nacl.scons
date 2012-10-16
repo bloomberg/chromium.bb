@@ -107,5 +107,5 @@ for name, objs in TARGETS:
                                   stdout_golden=env.File('golden.out'))
   env.AddNodeToTestSuite(test,
                          ['medium_tests', 'nonpexe_tests'],
-                         'run_callingconv_ppapi_%s_test' % name)
-
+                         'run_callingconv_ppapi_%s_test' % name,
+                         is_broken=True)

@@ -1311,6 +1311,7 @@ llvm-configure() {
              --enable-targets=x86,x86_64,arm \
              --target=${CROSS_TARGET_ARM} \
              --prefix="${LLVM_INSTALL_DIR}" \
+             --program-prefix= \
              ${llvm_extra_opts}
 
 
