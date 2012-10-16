@@ -470,7 +470,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   void OnRequestStopSystemTracing(dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request systrace stop";
-      pipe_reader_->OnDataReady(-1); // terminate data stream
+      // If debugd crashes or completes I/O before this message is processed
+      // then pipe_reader_ can be NULL, see OnIOComplete().
+      if (pipe_reader_.get())
+        pipe_reader_->OnDataReady(-1); // terminate data stream
     }
     // NB: requester is signaled when i/o completes
   }
