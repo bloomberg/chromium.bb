@@ -111,11 +111,32 @@ class MockZipFile(object):
   def close(self):
     pass
 
-def MockUrlOpen(_url_or_request, _body=None):
+
+def MockUrlOpen(url_or_request, _data, has_return_value):
+  if (isinstance(url_or_request, basestring) and
+      url_or_request.endswith('/content/has')):
+    return StringIO.StringIO(has_return_value)
   return StringIO.StringIO('{}')
 
 
+def MockUrlOpenHasZip(url_or_request, data=None):
+  return MockUrlOpen(url_or_request, data, has_return_value=chr(1))
+
+
+def MockUrlOpenNoZip(url_or_request, data=None):
+  return MockUrlOpen(url_or_request, data, has_return_value=chr(0))
+
+
 class ManifestTest(unittest.TestCase):
+  def setUp(self):
+    self.old_ZipFile = swarm_trigger_step.zipfile.ZipFile
+    self.old_urlopen = swarm_trigger_step.urllib2.urlopen
+    swarm_trigger_step.zipfile.ZipFile = MockZipFile
+
+  def tearDown(self):
+    swarm_trigger_step.zipfile.ZipFile = self.old_ZipFile
+    swarm_trigger_step.urllib2.urlopen = self.old_urlopen
+
   def test_basic_manifest(self):
     options = Options(shards=2)
     manifest = swarm_trigger_step.Manifest(
@@ -140,19 +161,20 @@ class ManifestTest(unittest.TestCase):
     self.assertEqual(expected, manifest_json)
 
   def test_process_manifest_success(self):
-    old_ZipFile = swarm_trigger_step.zipfile.ZipFile
-    old_urlopen = swarm_trigger_step.urllib2.urlopen
-    try:
-      swarm_trigger_step.zipfile.ZipFile = MockZipFile
-      swarm_trigger_step.urllib2.urlopen = MockUrlOpen
-      options = Options()
-      self.assertEqual(
-          0,
-          swarm_trigger_step.ProcessManifest(
+    swarm_trigger_step.urllib2.urlopen = MockUrlOpenNoZip
+    options = Options()
+    self.assertEqual(
+        0,
+        swarm_trigger_step.ProcessManifest(
             FILE_HASH, TEST_NAME, options.shards, '*', options))
-    finally:
-      swarm_trigger_step.zipfile.ZipFile = old_ZipFile
-      swarm_trigger_step.urllib2.urlopen = old_urlopen
+
+  def test_process_manifest_success_zip_already_uploaded(self):
+    swarm_trigger_step.urllib2.urlopen = MockUrlOpenHasZip
+    options = Options()
+    self.assertEqual(
+        0,
+        swarm_trigger_step.ProcessManifest(
+            FILE_HASH, TEST_NAME, options.shards, '*', options))
 
 
 if __name__ == '__main__':

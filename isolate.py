@@ -464,9 +464,9 @@ def upload_sha1_tree(base_url, indir, infiles):
     infile = os.path.join(indir, relfile)
     with open(infile, 'rb') as f:
       hash_data = f.read()
-    remote_uploader.add_item(run_isolated.Remote.MED,
-                             hash_data,
-                             metadata['sha-1'])
+    priority = (run_isolated.Remote.HIGH if metadata.get('priority', '1') == '0'
+                else run_isolated.Remote.MED)
+    remote_uploader.add_item(priority, hash_data, metadata['sha-1'])
   remote_uploader.join()
 
   exception = remote_uploader.next_exception()
@@ -1656,7 +1656,11 @@ def CMDhashtable(args):
       with open(complete_state.isolated_filepath, 'rb') as f:
         content = f.read()
         manifest_hash = hashlib.sha1(content).hexdigest()
-      manifest_metadata = {'sha-1': manifest_hash, 'size': len(content)}
+      manifest_metadata = {
+        'sha-1': manifest_hash,
+        'size': len(content),
+        'priority': '0'
+      }
 
       infiles = complete_state.isolated.files
       infiles[complete_state.isolated_filepath] = manifest_metadata
