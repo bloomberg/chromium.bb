@@ -64,7 +64,11 @@ clients_programs =				\
 	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
+
+if ENABLE_TABLET_SHELL
 tablet_shell = weston-tablet-shell
+endif
+
 screenshooter = weston-screenshooter
 
 noinst_LIBRARIES = libtoytoolkit.a

@@ -213,10 +213,12 @@ AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,
 
 AM_CONDITIONAL(ENABLE_DESKTOP_SHELL, true)
 
-AC_ARG_ENABLE(tablet-shell, [  --enable-tablet-shell],,
+AC_ARG_ENABLE(tablet-shell,
+              AS_HELP_STRING([--disable-tablet-shell],
+                             [do not build tablet-shell server plugin and client]),,
 	      enable_tablet_shell=yes)
 AM_CONDITIONAL(ENABLE_TABLET_SHELL,
-	       test x$enable_tablet_shell = xyes)
+	       test "x$enable_tablet_shell" = "xyes")
 
 
 AC_ARG_ENABLE(wcap-tools, [  --disable-wcap-tools],, enable_wcap_tools=yes)
