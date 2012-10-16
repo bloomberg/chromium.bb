@@ -345,13 +345,13 @@ bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
 
 ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
   return GetDefaultWebClientStateFromShellUtilDefaultState(
-      ShellUtil::IsChromeDefault());
+      ShellUtil::GetChromeDefaultState());
 }
 
 ShellIntegration::DefaultWebClientState
     ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
   return GetDefaultWebClientStateFromShellUtilDefaultState(
-      ShellUtil::IsChromeDefaultProtocolClient(UTF8ToUTF16(protocol)));
+      ShellUtil::GetChromeDefaultProtocolClientState(UTF8ToUTF16(protocol)));
 }
 
 // There is no reliable way to say which browser is default on a machine (each

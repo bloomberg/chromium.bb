@@ -1488,7 +1488,7 @@ string16 ShellUtil::BuildAppModelId(
   return app_id;
 }
 
-ShellUtil::DefaultState ShellUtil::IsChromeDefault() {
+ShellUtil::DefaultState ShellUtil::GetChromeDefaultState() {
   // When we check for default browser we don't necessarily want to count file
   // type handlers and icons as having changed the default browser status,
   // since the user may have changed their shell settings to cause HTML files
@@ -1502,7 +1502,7 @@ ShellUtil::DefaultState ShellUtil::IsChromeDefault() {
   return ProbeProtocolHandlers(kChromeProtocols, arraysize(kChromeProtocols));
 }
 
-ShellUtil::DefaultState ShellUtil::IsChromeDefaultProtocolClient(
+ShellUtil::DefaultState ShellUtil::GetChromeDefaultProtocolClientState(
     const string16& protocol) {
   if (protocol.empty())
     return UNKNOWN_DEFAULT;
@@ -1600,7 +1600,7 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
   // Return true only when the user took an action and there was no error.
   const bool ret = LaunchSelectDefaultProtocolHandlerDialog(L"http");
 
-  if (ret && IsChromeDefault())
+  if (ret && GetChromeDefaultState() == IS_DEFAULT)
     RegisterChromeAsDefaultForXP(dist, CURRENT_USER, chrome_exe);
 
   return ret;
@@ -1671,7 +1671,7 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
   // Return true only when the user took an action and there was no error.
   const bool ret = LaunchSelectDefaultProtocolHandlerDialog(protocol.c_str());
 
-  if (ret && IsChromeDefaultProtocolClient(protocol))
+  if (ret && GetChromeDefaultProtocolClientState(protocol) == IS_DEFAULT)
     RegisterChromeAsDefaultProtocolClientForXP(dist, chrome_exe, protocol);
 
   return ret;
