@@ -83,23 +83,29 @@ function WallpaperManager(dialogDom) {
   WallpaperManager.prototype.fetchManifest_ = function() {
     var xhr = new XMLHttpRequest();
     var locale = navigator.language;
-    xhr.open('GET', ManifestBaseURL + locale + '.json', false);
-    xhr.send(null);
-    // TODO(bshe): We should save the downloaded manifest to local disk. Other
-    // components may want to use it (i.e. screen saver).
-    if (xhr.status === 200) {
-      this.parseManifest_(xhr.responseText);
-    } else {
-      // Fall back to en locale if current locale is not supported.
-      xhr.open('GET', ManifestBaseURL + 'en.json', false);
-      xhr.send(null);
-      if (xhr.status === 200) {
-        this.parseManifest_(xhr.responseText);
-      } else {
+    var urls = [
+        ManifestBaseURL + locale + '.json',
+        // Fallback url. Use 'en' locale by default.
+        ManifestBaseURL + 'en.json'];
+
+    for (var i = 0; i < urls.length; i++) {
+      xhr.open('GET', urls[i], false);
+      try {
+        xhr.send(null);
+        // TODO(bshe): We should save the downloaded manifest to local disk.
+        // Other components may want to use it (i.e. screen saver).
+        if (xhr.status === 200) {
+          this.parseManifest_(xhr.responseText);
+          return;
+        }
+      } catch (e) {
         this.manifest_ = {};
         this.butterBar_.showError_(str('connectionFailed'));
+        return;
       }
     }
+    this.manifest_ = {};
+    this.butterBar_.showError_(str('connectionFailed'));
 
     // TODO(bshe): Fall back to saved manifest if there is a problem fetching
     // manifest from server.
