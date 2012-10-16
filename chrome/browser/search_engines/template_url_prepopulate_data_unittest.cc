@@ -97,17 +97,15 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
                      Value::CreateIntegerValue(1));
   ListValue* overrides = new ListValue;
-  DictionaryValue* entry = new DictionaryValue;
+  scoped_ptr<DictionaryValue> entry(new DictionaryValue);
+  // Set only the minimal required settings for a search provider configuration.
   entry->SetString("name", "foo");
   entry->SetString("keyword", "fook");
   entry->SetString("search_url", "http://foo.com/s?q={searchTerms}");
   entry->SetString("favicon_url", "http://foi.com/favicon.ico");
-  entry->SetString("suggest_url", "");
-  entry->SetString("instant_url", "");
-  entry->Set("alternate_urls", new ListValue());
   entry->SetString("encoding", "UTF-8");
   entry->SetInteger("id", 1001);
-  overrides->Append(entry);
+  overrides->Append(entry->DeepCopy());
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
 
   int version = TemplateURLPrepopulateData::GetDataVersion(prefs);
@@ -125,6 +123,58 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   EXPECT_EQ("foi.com", t_urls[0]->favicon_url().host());
   EXPECT_EQ(1u, t_urls[0]->input_encodings().size());
   EXPECT_EQ(1001, t_urls[0]->prepopulate_id());
+  EXPECT_TRUE(t_urls[0]->suggestions_url().empty());
+  EXPECT_TRUE(t_urls[0]->instant_url().empty());
+  EXPECT_EQ(0u, t_urls[0]->alternate_urls().size());
+
+  // Test the optional settings too.
+  entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
+  entry->SetString("instant_url", "http://foo.com/instant?q={searchTerms}");
+  ListValue* alternate_urls = new ListValue;
+  alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
+  entry->Set("alternate_urls", alternate_urls);
+  overrides = new ListValue;
+  overrides->Append(entry->DeepCopy());
+  prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
+
+  t_urls.clear();
+  TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile, &t_urls.get(),
+                                                     &default_index);
+  ASSERT_EQ(1u, t_urls.size());
+  EXPECT_EQ(ASCIIToUTF16("foo"), t_urls[0]->short_name());
+  EXPECT_EQ(ASCIIToUTF16("fook"), t_urls[0]->keyword());
+  EXPECT_EQ("foo.com", t_urls[0]->url_ref().GetHost());
+  EXPECT_EQ("foi.com", t_urls[0]->favicon_url().host());
+  EXPECT_EQ(1u, t_urls[0]->input_encodings().size());
+  EXPECT_EQ(1001, t_urls[0]->prepopulate_id());
+  EXPECT_EQ("http://foo.com/suggest?q={searchTerms}",
+            t_urls[0]->suggestions_url());
+  EXPECT_EQ("http://foo.com/instant?q={searchTerms}",
+            t_urls[0]->instant_url());
+  ASSERT_EQ(1u, t_urls[0]->alternate_urls().size());
+  EXPECT_EQ("http://foo.com/alternate?q={searchTerms}",
+            t_urls[0]->alternate_urls()[0]);
+
+  // Test that subsequent providers are loaded even if an intermediate
+  // provider has an incomplete configuration.
+  overrides = new ListValue;
+  overrides->Append(entry->DeepCopy());
+  entry->SetInteger("id", 1002);
+  entry->SetString("name", "bar");
+  entry->SetString("keyword", "bark");
+  entry->SetString("encoding", "");
+  overrides->Append(entry->DeepCopy());
+  entry->SetInteger("id", 1003);
+  entry->SetString("name", "baz");
+  entry->SetString("keyword", "bazk");
+  entry->SetString("encoding", "UTF-8");
+  overrides->Append(entry->DeepCopy());
+  prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
+
+  t_urls.clear();
+  TemplateURLPrepopulateData::GetPrepopulatedEngines(&profile, &t_urls.get(),
+                                                     &default_index);
+  EXPECT_EQ(2u, t_urls.size());
 }
 
 TEST(TemplateURLPrepopulateDataTest, GetEngineTypeBasic) {
