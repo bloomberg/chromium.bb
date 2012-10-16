@@ -6,8 +6,8 @@
 
 #include "CCLayerTreeHost.h"
 #include "CCThreadedTest.h"
-#include "HeadsUpDisplayLayerChromium.h"
-#include "LayerChromium.h"
+#include "cc/heads_up_display_layer.h"
+#include "cc/layer.h"
 
 using namespace cc;
 using namespace WebKitTests;

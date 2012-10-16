@@ -19,11 +19,11 @@
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
 #include "CCThreadProxy.h"
-#include "HeadsUpDisplayLayerChromium.h"
-#include "LayerChromium.h"
 #include "Region.h"
 #include "TraceEvent.h"
-#include "TreeSynchronizer.h"
+#include "cc/heads_up_display_layer.h"
+#include "cc/layer.h"
+#include "cc/tree_synchronizer.h"
 
 using namespace std;
 using WebKit::WebTransformationMatrix;

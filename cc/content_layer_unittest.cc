@@ -4,11 +4,11 @@
 
 #include "config.h"
 
-#include "ContentLayerChromium.h"
+#include "cc/content_layer.h"
 
-#include "BitmapCanvasLayerTextureUpdater.h"
 #include "CCRenderingStats.h"
-#include "ContentLayerChromiumClient.h"
+#include "cc/bitmap_canvas_layer_texture_updater.h"
+#include "cc/content_layer_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"

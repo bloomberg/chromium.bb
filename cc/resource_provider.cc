@@ -11,18 +11,18 @@
 
 #include <limits.h>
 
+#include "CCProxy.h"
+#include "CCRendererGL.h" // For the GLC() macro.
+#include "Extensions3DChromium.h"
+#include "IntRect.h"
 #include "base/debug/alias.h"
 #include "base/hash_tables.h"
 #include "base/stl_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "CCProxy.h"
-#include "CCRendererGL.h" // For the GLC() macro.
-#include "Extensions3DChromium.h"
-#include "IntRect.h"
-#include "LayerTextureSubImage.h"
-#include "ThrottledTextureUploader.h"
-#include "UnthrottledTextureUploader.h"
+#include "cc/layer_texture_sub_image.h"
+#include "cc/throttled_texture_uploader.h"
+#include "cc/unthrottled_texture_uploader.h"
 #include <public/WebGraphicsContext3D.h>
 
 using WebKit::WebGraphicsContext3D;

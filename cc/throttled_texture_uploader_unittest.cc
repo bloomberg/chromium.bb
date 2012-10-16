@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "ThrottledTextureUploader.h"
+#include "cc/throttled_texture_uploader.h"
 
 #include "CCPrioritizedTexture.h"
 #include "Extensions3DChromium.h"

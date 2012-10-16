@@ -8,8 +8,8 @@
 
 #include "CCLayerImpl.h"
 #include "CCRenderSurface.h"
-#include "LayerChromium.h"
-#include "RenderSurfaceChromium.h"
+#include "cc/layer.h"
+#include "cc/render_surface.h"
 
 namespace cc {
 

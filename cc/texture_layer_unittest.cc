@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "TextureLayerChromium.h"
+#include "cc/texture_layer.h"
 
 #include "CCLayerTreeHost.h"
 #include "cc/test/fake_layer_tree_host_client.h"

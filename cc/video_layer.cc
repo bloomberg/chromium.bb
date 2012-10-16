@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "VideoLayerChromium.h"
+#include "cc/video_layer.h"
 
 #include "CCVideoLayerImpl.h"
 

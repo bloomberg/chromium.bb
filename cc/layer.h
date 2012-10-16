@@ -5,12 +5,12 @@
 #ifndef LayerChromium_h
 #define LayerChromium_h
 
-#include "base/memory/ref_counted.h"
 #include "CCLayerAnimationController.h"
 #include "CCOcclusionTracker.h"
 #include "FloatPoint.h"
 #include "Region.h"
-#include "RenderSurfaceChromium.h"
+#include "base/memory/ref_counted.h"
+#include "cc/render_surface.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>

@@ -6,7 +6,6 @@
 
 #include "CCLayerTreeHostImpl.h"
 
-#include "base/basictypes.h"
 #include "CCAppendQuadsData.h"
 #include "CCDamageTracker.h"
 #include "CCDebugRectHistory.h"
@@ -29,8 +28,9 @@
 #include "CCScrollbarLayerImpl.h"
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
-#include "TextureUploader.h"
 #include "TraceEvent.h"
+#include "base/basictypes.h"
+#include "cc/texture_uploader.h"
 #include <wtf/CurrentTime.h>
 #include <algorithm>
 

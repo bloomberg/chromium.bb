@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "LayerTextureSubImage.h"
+#include "cc/layer_texture_sub_image.h"
 
 #include "CCRendererGL.h" // For the GLC() macro.
 #include "GraphicsContext3D.h"

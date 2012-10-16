@@ -18,7 +18,7 @@
 #include "CCProxy.h"
 #include "CCRenderingStats.h"
 #include "IntRect.h"
-#include "RateLimiter.h"
+#include "cc/rate_limiter.h"
 #include "scoped_ptr_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <limits>

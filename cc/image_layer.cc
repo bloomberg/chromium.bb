@@ -4,13 +4,13 @@
 
 #include "config.h"
 
-#include "ImageLayerChromium.h"
+#include "cc/image_layer.h"
 
-#include "base/compiler_specific.h"
 #include "CCLayerTreeHost.h"
 #include "CCTextureUpdateQueue.h"
-#include "LayerTextureUpdater.h"
-#include "PlatformColor.h"
+#include "base/compiler_specific.h"
+#include "cc/layer_texture_updater.h"
+#include "cc/platform_color.h"
 
 namespace cc {
 

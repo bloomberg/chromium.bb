@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "GeometryBinding.h"
+#include "cc/geometry_binding.h"
 
 #include "CCRendererGL.h" // For the GLC() macro.
 #include "GraphicsContext3D.h"

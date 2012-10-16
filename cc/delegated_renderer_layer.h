@@ -5,7 +5,7 @@
 #ifndef DelegatedRendererLayerChromium_h
 #define DelegatedRendererLayerChromium_h
 
-#include "LayerChromium.h"
+#include "cc/layer.h"
 
 namespace cc {
 

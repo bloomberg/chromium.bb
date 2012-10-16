@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef IOSurfaceLayerChromium_h
 #define IOSurfaceLayerChromium_h
 
-#include "LayerChromium.h"
+#include "cc/layer.h"
 
 namespace cc {
 

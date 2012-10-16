@@ -4,11 +4,11 @@
 
 #include "config.h"
 
-#include "TextureLayerChromium.h"
+#include "cc/texture_layer.h"
 
 #include "CCLayerTreeHost.h"
 #include "CCTextureLayerImpl.h"
-#include "TextureLayerChromiumClient.h"
+#include "cc/texture_layer_client.h"
 
 namespace cc {
 

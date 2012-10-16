@@ -5,7 +5,7 @@
 #ifndef ImageLayerChromium_h
 #define ImageLayerChromium_h
 
-#include "ContentLayerChromium.h"
+#include "cc/content_layer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace cc {

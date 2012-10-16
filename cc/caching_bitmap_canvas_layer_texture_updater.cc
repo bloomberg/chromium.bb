@@ -6,7 +6,7 @@
 
 #include "caching_bitmap_canvas_layer_texture_updater.h"
 
-#include "LayerPainterChromium.h"
+#include "cc/layer_painter.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace cc {

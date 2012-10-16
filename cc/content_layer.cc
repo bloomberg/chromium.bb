@@ -4,16 +4,16 @@
 
 #include "config.h"
 
-#include "ContentLayerChromium.h"
+#include "cc/content_layer.h"
 
-#include "base/time.h"
-#include "BitmapCanvasLayerTextureUpdater.h"
-#include "BitmapSkPictureCanvasLayerTextureUpdater.h"
 #include "CCLayerTreeHost.h"
 #include "CCSettings.h"
-#include "ContentLayerChromiumClient.h"
-#include "FrameBufferSkPictureCanvasLayerTextureUpdater.h"
-#include "LayerPainterChromium.h"
+#include "base/time.h"
+#include "cc/bitmap_canvas_layer_texture_updater.h"
+#include "cc/bitmap_skpicture_canvas_layer_texture_updater.h"
+#include "cc/content_layer_client.h"
+#include "cc/frame_buffer_skpicture_canvas_layer_texture_updater.h"
+#include "cc/layer_painter.h"
 #include <public/Platform.h>
 
 namespace cc {

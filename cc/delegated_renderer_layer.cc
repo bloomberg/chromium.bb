@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "DelegatedRendererLayerChromium.h"
+#include "cc/delegated_renderer_layer.h"
 
 #include "CCDelegatedRendererLayerImpl.h"
 

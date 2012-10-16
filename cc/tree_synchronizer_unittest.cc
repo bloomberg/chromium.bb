@@ -4,14 +4,14 @@
 
 #include "config.h"
 
-#include "TreeSynchronizer.h"
+#include "cc/tree_synchronizer.h"
 
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
 #include "CCProxy.h"
 #include "CCSingleThreadProxy.h"
-#include "LayerChromium.h"
 #include "Region.h"
+#include "cc/layer.h"
 #include "cc/test/animation_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

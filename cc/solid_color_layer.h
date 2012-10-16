@@ -6,7 +6,7 @@
 #ifndef SolidColorLayerChromium_h
 #define SolidColorLayerChromium_h
 
-#include "LayerChromium.h"
+#include "cc/layer.h"
 
 namespace cc {
 

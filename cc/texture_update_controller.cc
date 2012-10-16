@@ -7,9 +7,9 @@
 #include "CCTextureUpdateController.h"
 
 #include "CCResourceProvider.h"
-#include "TextureCopier.h"
-#include "TextureUploader.h"
 #include "TraceEvent.h"
+#include "cc/texture_copier.h"
+#include "cc/texture_uploader.h"
 #include <limits>
 #include <wtf/CurrentTime.h>
 

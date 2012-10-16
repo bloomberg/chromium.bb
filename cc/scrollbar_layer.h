@@ -6,8 +6,8 @@
 #ifndef ScrollbarLayerChromium_h
 #define ScrollbarLayerChromium_h
 
-#include "LayerChromium.h"
 #include "caching_bitmap_canvas_layer_texture_updater.h"
+#include "cc/layer.h"
 #include <public/WebScrollbar.h>
 #include <public/WebScrollbarThemeGeometry.h>
 #include <public/WebScrollbarThemePainter.h>

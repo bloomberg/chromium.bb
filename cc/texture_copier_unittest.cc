@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "TextureCopier.h"
+#include "cc/texture_copier.h"
 
 #include "GraphicsContext3D.h"
 #include "cc/test/fake_web_graphics_context_3d.h"

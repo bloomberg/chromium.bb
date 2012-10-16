@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "config.h"
 
-#include "BitmapCanvasLayerTextureUpdater.h"
+#include "cc/bitmap_canvas_layer_texture_updater.h"
 
 #include "CCTextureUpdateQueue.h"
-#include "LayerPainterChromium.h"
-#include "PlatformColor.h"
+#include "cc/layer_painter.h"
+#include "cc/platform_color.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace cc {

@@ -6,7 +6,7 @@
 #ifndef FrameBufferSkPictureCanvasLayerTextureUpdater_h
 #define FrameBufferSkPictureCanvasLayerTextureUpdater_h
 
-#include "SkPictureCanvasLayerTextureUpdater.h"
+#include "cc/skpicture_canvas_layer_texture_updater.h"
 
 namespace cc {
 

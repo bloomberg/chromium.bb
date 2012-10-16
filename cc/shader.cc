@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "ShaderChromium.h"
+#include "cc/shader.h"
 
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/StdLibExtras.h>

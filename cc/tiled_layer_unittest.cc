@@ -4,14 +4,14 @@
 
 #include "config.h"
 
-#include "TiledLayerChromium.h"
+#include "cc/tiled_layer.h"
 
-#include "BitmapCanvasLayerTextureUpdater.h"
 #include "CCOverdrawMetrics.h"
 #include "CCRenderingStats.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
 #include "CCTextureUpdateController.h"
-#include "LayerPainterChromium.h"
+#include "cc/bitmap_canvas_layer_texture_updater.h"
+#include "cc/layer_painter.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/fake_layer_tree_host_client.h"

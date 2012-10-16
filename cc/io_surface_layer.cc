@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "IOSurfaceLayerChromium.h"
+#include "cc/io_surface_layer.h"
 
 #include "CCIOSurfaceLayerImpl.h"
 

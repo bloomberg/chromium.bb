@@ -6,7 +6,7 @@
 #define CACHING_BITMAP_CANVAS_LAYER_TEXTURE_UPDATER_H_
 
 #include "base/compiler_specific.h"
-#include "BitmapCanvasLayerTextureUpdater.h"
+#include "cc/bitmap_canvas_layer_texture_updater.h"
 
 namespace cc {
 

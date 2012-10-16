@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "config.h"
 
-#include "FrameBufferSkPictureCanvasLayerTextureUpdater.h"
+#include "cc/frame_buffer_skpicture_canvas_layer_texture_updater.h"
 
-#include "LayerPainterChromium.h"
+#include "cc/layer_painter.h"
 
 namespace cc {
 

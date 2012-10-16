@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "HeadsUpDisplayLayerChromium.h"
+#include "cc/heads_up_display_layer.h"
 
 #include "CCHeadsUpDisplayLayerImpl.h"
 #include "CCLayerTreeHost.h"

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "ThrottledTextureUploader.h"
+#include "cc/throttled_texture_uploader.h"
 
 #include "CCPrioritizedTexture.h"
 #include "CCProxy.h"
 #include "Extensions3DChromium.h"
-#include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "TraceEvent.h"
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include <algorithm>
 #include <public/Platform.h>
 #include <public/WebGraphicsContext3D.h>

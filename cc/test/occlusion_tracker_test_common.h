@@ -9,7 +9,7 @@
 #include "CCRenderSurface.h"
 #include "IntRect.h"
 #include "Region.h"
-#include "RenderSurfaceChromium.h"
+#include "cc/render_surface.h"
 
 namespace WebKitTests {
 

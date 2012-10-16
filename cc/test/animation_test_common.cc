@@ -9,7 +9,7 @@
 #include "CCKeyframedAnimationCurve.h"
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
-#include "LayerChromium.h"
+#include "cc/layer.h"
 #include <public/WebTransformOperations.h>
 
 using namespace cc;

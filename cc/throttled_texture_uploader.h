@@ -5,7 +5,7 @@
 #ifndef ThrottledTextureUploader_h
 #define ThrottledTextureUploader_h
 
-#include "TextureUploader.h"
+#include "cc/texture_uploader.h"
 
 #include "base/basictypes.h"
 #include <deque>

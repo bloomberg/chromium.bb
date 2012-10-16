@@ -5,10 +5,10 @@
 #ifndef TextureCopier_h
 #define TextureCopier_h
 
-#include "base/basictypes.h"
 #include "GraphicsContext3D.h"
-#include "ProgramBinding.h"
-#include "ShaderChromium.h"
+#include "base/basictypes.h"
+#include "cc/program_binding.h"
+#include "cc/shader.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

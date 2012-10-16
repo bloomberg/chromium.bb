@@ -5,7 +5,7 @@
 #ifndef TextureLayerChromium_h
 #define TextureLayerChromium_h
 
-#include "LayerChromium.h"
+#include "cc/layer.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;

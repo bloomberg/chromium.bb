@@ -9,7 +9,7 @@
 #include "CCLayerImpl.h"
 #include "CCMathUtil.h"
 #include "CCOverdrawMetrics.h"
-#include "LayerChromium.h"
+#include "cc/layer.h"
 #include <algorithm>
 
 using namespace std;

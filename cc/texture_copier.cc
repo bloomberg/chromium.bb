@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "TextureCopier.h"
+#include "cc/texture_copier.h"
 
 #include "CCRendererGL.h" // For the GLC() macro.
 #include "GraphicsContext3D.h"

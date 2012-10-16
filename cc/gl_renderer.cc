@@ -18,16 +18,16 @@
 #include "CCVideoLayerImpl.h"
 #include "Extensions3D.h"
 #include "FloatQuad.h"
-#include "GeometryBinding.h"
 #include "GrTexture.h"
 #include "NotImplemented.h"
-#include "PlatformColor.h"
 #include "TraceEvent.h"
 #ifdef LOG
 #undef LOG
 #endif
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "cc/geometry_binding.h"
+#include "cc/platform_color.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <public/WebGraphicsContext3D.h>

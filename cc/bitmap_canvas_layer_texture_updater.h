@@ -6,7 +6,7 @@
 #ifndef BitmapCanvasLayerTextureUpdater_h
 #define BitmapCanvasLayerTextureUpdater_h
 
-#include "CanvasLayerTextureUpdater.h"
+#include "cc/canvas_layer_texture_updater.h"
 
 class SkCanvas;
 

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "config.h"
 
 #include "CCLayerTreeHostCommon.h"
@@ -14,8 +13,8 @@
 #include "CCRenderSurface.h"
 #include "FloatQuad.h"
 #include "IntRect.h"
-#include "LayerChromium.h"
-#include "RenderSurfaceChromium.h"
+#include "cc/layer.h"
+#include "cc/render_surface.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;

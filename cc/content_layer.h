@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef ContentLayerChromium_h
 #define ContentLayerChromium_h
 
 #include "base/basictypes.h"
-#include "LayerPainterChromium.h"
-#include "TiledLayerChromium.h"
+#include "cc/layer_painter.h"
+#include "cc/tiled_layer.h"
 
 class SkCanvas;
 

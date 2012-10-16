@@ -5,10 +5,10 @@
 #ifndef HeadsUpDisplayLayerChromium_h
 #define HeadsUpDisplayLayerChromium_h
 
-#include "base/memory/scoped_ptr.h"
 #include "CCFontAtlas.h"
 #include "IntSize.h"
-#include "LayerChromium.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/layer.h"
 
 namespace cc {
 

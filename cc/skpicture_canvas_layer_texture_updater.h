@@ -6,7 +6,7 @@
 #ifndef SkPictureCanvasLayerTextureUpdater_h
 #define SkPictureCanvasLayerTextureUpdater_h
 
-#include "CanvasLayerTextureUpdater.h"
+#include "cc/canvas_layer_texture_updater.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 class SkCanvas;

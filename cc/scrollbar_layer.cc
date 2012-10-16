@@ -4,14 +4,14 @@
 
 #include "config.h"
 
-#include "ScrollbarLayerChromium.h"
+#include "cc/scrollbar_layer.h"
 
-#include "base/basictypes.h"
 #include "CCLayerTreeHost.h"
 #include "CCScrollbarLayerImpl.h"
 #include "CCTextureUpdateQueue.h"
-#include "LayerPainterChromium.h"
 #include "TraceEvent.h"
+#include "base/basictypes.h"
+#include "cc/layer_painter.h"
 #include <public/WebRect.h>
 
 using WebKit::WebRect;

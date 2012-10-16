@@ -12,11 +12,11 @@
 #include "CCTiledLayerImpl.h"
 #include "IntRect.h"
 #include "IntSize.h"
-#include "LayerTextureUpdater.h"
 #include "Region.h"
-#include "TextureCopier.h"
-#include "TextureUploader.h"
-#include "TiledLayerChromium.h"
+#include "cc/layer_texture_updater.h"
+#include "cc/texture_copier.h"
+#include "cc/texture_uploader.h"
+#include "cc/tiled_layer.h"
 
 namespace WebKitTests {
 

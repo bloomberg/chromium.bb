@@ -4,13 +4,13 @@
 
 #include "config.h"
 
-#include "TreeSynchronizer.h"
+#include "cc/tree_synchronizer.h"
 
 #include "CCLayerImpl.h"
 #include "CCScrollbarAnimationController.h"
 #include "CCScrollbarLayerImpl.h"
-#include "LayerChromium.h"
-#include "ScrollbarLayerChromium.h"
+#include "cc/layer.h"
+#include "cc/scrollbar_layer.h"
 
 namespace cc {
 

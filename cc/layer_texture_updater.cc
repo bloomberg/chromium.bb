@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "LayerTextureUpdater.h"
+#include "cc/layer_texture_updater.h"
 
 namespace cc {
 

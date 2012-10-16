@@ -6,8 +6,8 @@
 #define CCTextureUpdateQueue_h
 
 #include "base/basictypes.h"
-#include "TextureCopier.h"
-#include "TextureUploader.h"
+#include "cc/texture_copier.h"
+#include "cc/texture_uploader.h"
 #include <wtf/Deque.h>
 
 namespace cc {

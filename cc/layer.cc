@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "LayerChromium.h"
+#include "cc/layer.h"
 
 #include "CCActiveAnimation.h"
 #include "CCAnimationEvents.h"

@@ -5,9 +5,9 @@
 #ifndef UnthrottledTextureUploader_h
 #define UnthrottledTextureUploader_h
 
-#include "base/basictypes.h"
 #include "CCResourceProvider.h"
-#include "TextureUploader.h"
+#include "base/basictypes.h"
+#include "cc/texture_uploader.h"
 
 namespace cc {
 

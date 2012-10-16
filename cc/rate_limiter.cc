@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "RateLimiter.h"
+#include "cc/rate_limiter.h"
 
 #include "CCProxy.h"
 #include "CCThread.h"

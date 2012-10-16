@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "UnthrottledTextureUploader.h"
+#include "cc/unthrottled_texture_uploader.h"
 
 #include "CCPrioritizedTexture.h"
 
