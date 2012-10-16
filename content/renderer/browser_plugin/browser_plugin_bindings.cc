@@ -56,56 +56,12 @@ BrowserPluginBindings* GetBindings(NPObject* object) {
       message_channel;
 }
 
-bool IdentifierIsAddEventListener(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kAddEventListener) == identifier;
-}
-
-bool IdentifierIsBackMethod(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kBackMethod) == identifier;
-}
-
-bool IdentifierIsCanGoBack(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kCanGoBack) == identifier;
-}
-
-bool IdentifierIsCanGoForward(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kCanGoForward) == identifier;
-}
-
-bool IdentifierIsForwardMethod(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kForwardMethod) == identifier;
-}
-
-bool IdentifierIsGetProcessID(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kGetProcessId) == identifier;
-}
-
-bool IdentifierIsGoMethod(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kGoMethod) == identifier;
-}
-
 bool IdentifierIsPartitionAttribute(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kPartitionAttribute) == identifier;
 }
 
-bool IdentifierIsReload(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kReloadMethod) == identifier;
-}
-
-bool IdentifierIsRemoveEventListener(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kRemoveEventListener) == identifier;
-}
-
 bool IdentifierIsSrcAttribute(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kSrcAttribute) == identifier;
-}
-
-bool IdentifierIsStop(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kStopMethod) == identifier;
-}
-
-bool IdentifierIsTerminate(NPIdentifier identifier) {
-  return WebBindings::getStringIdentifier(kTerminateMethod) == identifier;
 }
 
 int Int32FromNPVariant(const NPVariant& variant) {
@@ -155,40 +111,11 @@ bool BrowserPluginBindingsHasMethod(NPObject* np_obj, NPIdentifier name) {
   if (!np_obj)
     return false;
 
-  if (IdentifierIsAddEventListener(name))
-    return true;
+  BrowserPluginBindings* bindings = GetBindings(np_obj);
+  if (!bindings)
+    return false;
 
-  if (IdentifierIsBackMethod(name))
-    return true;
-
-  if (IdentifierIsCanGoBack(name))
-    return true;
-
-  if (IdentifierIsCanGoForward(name))
-    return true;
-
-  if (IdentifierIsForwardMethod(name))
-    return true;
-
-  if (IdentifierIsGetProcessID(name))
-    return true;
-
-  if (IdentifierIsGoMethod(name))
-    return true;
-
-  if (IdentifierIsReload(name))
-    return true;
-
-  if (IdentifierIsRemoveEventListener(name))
-    return true;
-
-  if (IdentifierIsStop(name))
-    return true;
-
-  if (IdentifierIsTerminate(name))
-    return true;
-
-  return false;
+  return bindings->HasMethod(name);
 }
 
 bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
@@ -201,91 +128,7 @@ bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
   if (!bindings)
     return false;
 
-  if (IdentifierIsAddEventListener(name) && (arg_count == 2)) {
-    std::string event_name = StringFromNPVariant(args[0]);
-    if (event_name.empty())
-      return false;
-
-    v8::Local<v8::Value> value =
-        v8::Local<v8::Value>::New(WebBindings::toV8Value(&args[1]));
-    if (value.IsEmpty() || !value->IsFunction())
-      return false;
-
-    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-    result->type = NPVariantType_Bool;
-    result->value.boolValue =
-        bindings->instance()->AddEventListener(event_name, function);
-    return true;
-  }
-
-  if (IdentifierIsBackMethod(name) && !arg_count) {
-    bindings->instance()->Back();
-    return true;
-  }
-
-  if (IdentifierIsCanGoBack(name) && !arg_count) {
-    result->type = NPVariantType_Bool;
-    result->value.boolValue = bindings->instance()->CanGoBack();
-    return true;
-  }
-
-  if (IdentifierIsCanGoForward(name) && !arg_count) {
-    result->type = NPVariantType_Bool;
-    result->value.boolValue = bindings->instance()->CanGoForward();
-    return true;
-  }
-
-  if (IdentifierIsForwardMethod(name) && !arg_count) {
-    bindings->instance()->Forward();
-    return true;
-  }
-
-  if (IdentifierIsGetProcessID(name) && !arg_count) {
-    int process_id = bindings->instance()->process_id();
-    result->type = NPVariantType_Int32;
-    result->value.intValue = process_id;
-    return true;
-  }
-
-  if (IdentifierIsGoMethod(name) && arg_count == 1) {
-    bindings->instance()->Go(Int32FromNPVariant(args[0]));
-    return true;
-  }
-
-  if (IdentifierIsReload(name) && !arg_count) {
-    bindings->instance()->Reload();
-    return true;
-  }
-
-  if (IdentifierIsRemoveEventListener(name) && arg_count == 2) {
-    std::string event_name = StringFromNPVariant(args[0]);
-    if (event_name.empty())
-      return false;
-
-    v8::Local<v8::Value> value =
-        v8::Local<v8::Value>::New(WebBindings::toV8Value(&args[1]));
-
-    if (value.IsEmpty() || !value->IsFunction())
-      return false;
-
-    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-    result->type = NPVariantType_Bool;
-    result->value.boolValue =
-        bindings->instance()->RemoveEventListener(event_name, function);
-    return true;
-  }
-
-  if (IdentifierIsStop(name) && !arg_count) {
-    bindings->instance()->Stop();
-    return true;
-  }
-
-  if (IdentifierIsTerminate(name)) {
-    bindings->instance()->TerminateGuest();
-    return true;
-  }
-
-  return false;
+  return bindings->InvokeMethod(name, args, arg_count, result);
 }
 
 bool BrowserPluginBindingsInvokeDefault(NPObject* np_obj,
@@ -385,6 +228,248 @@ NPClass browser_plugin_message_class = {
 
 }  // namespace
 
+namespace internal {
+
+class BrowserPluginMethodBinding {
+ public:
+  BrowserPluginMethodBinding(const char name[], uint32 arg_count)
+      : name_(name),
+        arg_count_(arg_count) {
+  }
+
+  virtual ~BrowserPluginMethodBinding() {}
+
+  bool MatchesName(NPIdentifier name) const {
+    return WebBindings::getStringIdentifier(name_.c_str()) == name;
+  }
+
+  uint32 arg_count() const { return arg_count_; }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) = 0;
+
+ private:
+  std::string name_;
+  uint32 arg_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginMethodBinding);
+};
+
+class BrowserPluginBindingAddListener : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingAddListener()
+      : BrowserPluginMethodBinding(kAddEventListener, 2) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    std::string event_name = StringFromNPVariant(args[0]);
+    if (event_name.empty())
+      return false;
+
+    v8::Local<v8::Value> value =
+        v8::Local<v8::Value>::New(WebBindings::toV8Value(&args[1]));
+    if (value.IsEmpty() || !value->IsFunction())
+      return false;
+
+    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
+    BOOLEAN_TO_NPVARIANT(
+        bindings->instance()->AddEventListener(event_name, function), *result);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingAddListener);
+};
+
+class BrowserPluginBindingBack : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingBack()
+      : BrowserPluginMethodBinding(kBackMethod, 0) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    bindings->instance()->Back();
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingBack);
+};
+
+class BrowserPluginBindingCanGoBack : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingCanGoBack()
+      : BrowserPluginMethodBinding(kCanGoBack, 0) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    BOOLEAN_TO_NPVARIANT(bindings->instance()->CanGoBack(), *result);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingCanGoBack);
+};
+
+class BrowserPluginBindingCanGoForward : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingCanGoForward()
+      : BrowserPluginMethodBinding(kCanGoForward, 0) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    BOOLEAN_TO_NPVARIANT(bindings->instance()->CanGoForward(), *result);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingCanGoForward);
+};
+
+class BrowserPluginBindingForward : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingForward()
+      : BrowserPluginMethodBinding(kForwardMethod, 0) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    bindings->instance()->Forward();
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingForward);
+};
+
+class BrowserPluginBindingGetProcessID : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingGetProcessID()
+      : BrowserPluginMethodBinding(kGetProcessId, 0) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    int process_id = bindings->instance()->process_id();
+    INT32_TO_NPVARIANT(process_id, *result);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingGetProcessID);
+};
+
+class BrowserPluginBindingGo : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingGo()
+      : BrowserPluginMethodBinding(kGoMethod, 1) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    bindings->instance()->Go(Int32FromNPVariant(args[0]));
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingGo);
+};
+
+class BrowserPluginBindingReload : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingReload()
+      : BrowserPluginMethodBinding(kReloadMethod, 0) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    bindings->instance()->Reload();
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingReload);
+};
+
+class BrowserPluginBindingRemoveListener : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingRemoveListener()
+      : BrowserPluginMethodBinding(kRemoveEventListener, 2) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    std::string event_name = StringFromNPVariant(args[0]);
+    if (event_name.empty())
+      return false;
+
+    v8::Local<v8::Value> value =
+        v8::Local<v8::Value>::New(WebBindings::toV8Value(&args[1]));
+
+    if (value.IsEmpty() || !value->IsFunction())
+      return false;
+
+    v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
+    BOOLEAN_TO_NPVARIANT(
+        bindings->instance()->RemoveEventListener(event_name, function),
+        *result);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingRemoveListener);
+};
+
+class BrowserPluginBindingStop : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingStop()
+      : BrowserPluginMethodBinding(kStopMethod, 0) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    bindings->instance()->Stop();
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingStop);
+};
+
+class BrowserPluginBindingTerminate : public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingTerminate()
+      : BrowserPluginMethodBinding(kTerminateMethod, 0) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    bindings->instance()->TerminateGuest();
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingTerminate);
+};
+
+}  // namespace internal
+
 // BrowserPluginBindings ------------------------------------------------------
 
 BrowserPluginBindings::BrowserPluginNPObject::BrowserPluginNPObject() {
@@ -401,10 +486,45 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
       WebBindings::createObject(NULL, &browser_plugin_message_class);
   np_object_ = static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(obj);
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
+
+  method_bindings_.push_back(new internal::BrowserPluginBindingAddListener);
+  method_bindings_.push_back(new internal::BrowserPluginBindingBack);
+  method_bindings_.push_back(new internal::BrowserPluginBindingCanGoBack);
+  method_bindings_.push_back(new internal::BrowserPluginBindingCanGoForward);
+  method_bindings_.push_back(new internal::BrowserPluginBindingForward);
+  method_bindings_.push_back(new internal::BrowserPluginBindingGetProcessID);
+  method_bindings_.push_back(new internal::BrowserPluginBindingGo);
+  method_bindings_.push_back(new internal::BrowserPluginBindingReload);
+  method_bindings_.push_back(new internal::BrowserPluginBindingRemoveListener);
+  method_bindings_.push_back(new internal::BrowserPluginBindingStop);
+  method_bindings_.push_back(new internal::BrowserPluginBindingTerminate);
 }
 
 BrowserPluginBindings::~BrowserPluginBindings() {
   WebBindings::releaseObject(np_object_);
+}
+
+bool BrowserPluginBindings::HasMethod(NPIdentifier name) const {
+  for (BindingList::const_iterator iter = method_bindings_.begin();
+       iter != method_bindings_.end();
+       ++iter) {
+    if ((*iter)->MatchesName(name))
+      return true;
+  }
+  return false;
+}
+
+bool BrowserPluginBindings::InvokeMethod(NPIdentifier name,
+                                         const NPVariant* args,
+                                         uint32 arg_count,
+                                         NPVariant* result) {
+  for (BindingList::iterator iter = method_bindings_.begin();
+       iter != method_bindings_.end();
+       ++iter) {
+    if ((*iter)->MatchesName(name) && (*iter)->arg_count() == arg_count)
+      return (*iter)->Invoke(this, args, result);
+  }
+  return false;
 }
 
 }  // namespace content
