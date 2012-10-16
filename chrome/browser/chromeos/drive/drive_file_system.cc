@@ -546,7 +546,7 @@ void DriveFileSystem::StartInitialFeedFetch() {
   }
 }
 
-void DriveFileSystem::StartUpdates() {
+void DriveFileSystem::StartPolling() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DCHECK(!update_timer_.IsRunning());
@@ -557,7 +557,7 @@ void DriveFileSystem::StartUpdates() {
                           ui_weak_ptr_));
 }
 
-void DriveFileSystem::StopUpdates() {
+void DriveFileSystem::StopPolling() {
   // If unmount request comes from filesystem side, this method may be called
   // twice. First is just after unmounting on filesystem, second is after
   // unmounting on filemanager on JS. In other words, if this is called from

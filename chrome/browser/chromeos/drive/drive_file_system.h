@@ -67,8 +67,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void AddObserver(DriveFileSystemObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveFileSystemObserver* observer) OVERRIDE;
   virtual void StartInitialFeedFetch() OVERRIDE;
-  virtual void StartUpdates() OVERRIDE;
-  virtual void StopUpdates() OVERRIDE;
+  virtual void StartPolling() OVERRIDE;
+  virtual void StopPolling() OVERRIDE;
   virtual void NotifyFileSystemMounted() OVERRIDE;
   virtual void NotifyFileSystemToBeUnmounted() OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;

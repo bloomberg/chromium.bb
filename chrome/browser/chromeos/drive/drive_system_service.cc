@@ -185,7 +185,7 @@ void DriveSystemService::AddDriveMountPoint() {
 
 void DriveSystemService::RemoveDriveMountPoint() {
   file_system_->NotifyFileSystemToBeUnmounted();
-  file_system_->StopUpdates();
+  file_system_->StopPolling();
 
   const FilePath mount_point = util::GetDriveMountPointPath();
   fileapi::ExternalFileSystemMountPointProvider* provider =

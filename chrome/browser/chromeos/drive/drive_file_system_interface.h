@@ -87,9 +87,9 @@ class DriveFileSystemInterface {
   // Starts initial feed fetch from the server.
   virtual void StartInitialFeedFetch() = 0;
 
-  // Starts and stops periodic updates.
-  virtual void StartUpdates() = 0;
-  virtual void StopUpdates() = 0;
+  // Starts and stops periodic polling.
+  virtual void StartPolling() = 0;
+  virtual void StopPolling() = 0;
 
   // Notifies the file system was just mounted.
   virtual void NotifyFileSystemMounted() = 0;
