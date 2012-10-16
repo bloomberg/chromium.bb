@@ -205,7 +205,7 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
     int delta_y = static_cast<int>(event.wheel_delta_y());
     base::mac::ScopedCFTypeRef<CGEventRef> event(
         CGEventCreateScrollWheelEvent(
-            NULL, kCGScrollEventUnitPixel, 2, delta_x, delta_y));
+            NULL, kCGScrollEventUnitPixel, 2, delta_y, delta_x));
     if (event)
       CGEventPost(kCGHIDEventTap, event);
   } else if (event.has_wheel_offset_x() && event.has_wheel_offset_y()) {
