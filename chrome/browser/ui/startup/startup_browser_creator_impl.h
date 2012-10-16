@@ -138,6 +138,12 @@ class StartupBrowserCreatorImpl {
   // that case.
   void CheckPreferencesBackup(Profile* profile);
 
+  // Function to open startup urls in an existing Browser instance for the
+  // profile passed in. Returns true on success.
+  static bool OpenStartupURLsInExistingBrowser(
+      Profile* profile,
+      const std::vector<GURL>& startup_urls);
+
   const FilePath cur_dir_;
   const CommandLine& command_line_;
   Profile* profile_;

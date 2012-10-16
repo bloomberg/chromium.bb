@@ -9,6 +9,10 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/common/url_constants.h"
 
 namespace chrome {
 
@@ -35,3 +39,31 @@ GURL GetURLToOpen(Profile* profile) {
 }
 
 }  // namespace chrome
+
+#if !defined(USE_AURA)
+// static
+bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
+    Profile* profile,
+    const std::vector<GURL>& startup_urls) {
+  if (!base::win::IsMetroProcess())
+    return false;
+
+  // We activate an existing browser window if we are opening just the new tab
+  // page in metro mode.
+  if (startup_urls.size() > 1)
+    return false;
+
+  if (startup_urls[0] != GURL(chrome::kChromeUINewTabURL))
+    return false;
+
+  Browser* browser = browser::FindBrowserWithProfile(
+      profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+
+  if (!browser)
+    return false;
+
+  browser->window()->Show();
+  return true;
+}
+#endif
+

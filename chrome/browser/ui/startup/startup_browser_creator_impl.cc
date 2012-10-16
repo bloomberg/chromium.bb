@@ -617,12 +617,14 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
   std::vector<GURL> adjust_urls = urls_to_open;
   if (adjust_urls.empty()) {
     AddStartupURLs(&adjust_urls);
+    if (StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
+            profile_, adjust_urls))
+      return;
   } else if (!command_line_.HasSwitch(switches::kOpenInNewWindow)) {
     // Always open a list of urls in a window on the native desktop.
     browser = browser::FindBrowserWithProfile(profile_,
                                               chrome::HOST_DESKTOP_TYPE_NATIVE);
   }
-
   // This will launch a browser; prevent session restore.
   in_synchronous_profile_launch = true;
   browser = OpenURLsInBrowser(browser, process_startup, adjust_urls);
@@ -1037,3 +1039,13 @@ void StartupBrowserCreatorImpl::CheckPreferencesBackup(Profile* profile) {
         backup_show_home_button));
   }
 }
+
+#if !defined(OS_WIN) || defined(USE_AURA)
+// static
+bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
+    Profile* profile,
+    const std::vector<GURL>& startup_urls) {
+  return false;
+}
+#endif
+
