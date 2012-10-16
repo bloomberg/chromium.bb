@@ -114,21 +114,13 @@ ENDMACRO
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         cld
 
-        /*
-         * pushl   %r9d
-         * pushl   %r8d
-         * pushl   %ecx
-         * pushl   %edx
-         * pushl   %esi
-         * pushl   %edi
-         */
-        subq $0x18, %rsp
-        movl %r9d, 0x14(%rsp)
-        movl %r8d, 0x10(%rsp)
-        movl %ecx, 0x0c(%rsp)
-        movl %edx, 0x08(%rsp)
-        movl %esi, 0x04(%rsp)
-        movl %edi, 0x00(%rsp)
+        /* Save system call arguments on the untrusted stack. */
+        movl %r9d, -0x04(%rsp)
+        movl %r8d, -0x08(%rsp)
+        movl %ecx, -0x0c(%rsp)
+        movl %edx, -0x10(%rsp)
+        movl %esi, -0x14(%rsp)
+        movl %edi, -0x18(%rsp)
 
         /* rax, rdi, rsi, rdx, rcx, r8, r9 are usable for scratch */
 
@@ -146,9 +138,11 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
         movq    %rbx, NACL_THREAD_CONTEXT_OFFSET_RBX(%rdx)
         movq    %rbp, NACL_THREAD_CONTEXT_OFFSET_RBP(%rdx)
-        movq    %rsp, %rbx
-        addq    $0x18, %rbx      /* tramp ret */
-        /* We get syscall args via the saved %rsp+0x30 */
+        /*
+         * Record the value of %rsp that we will restore when
+         * returning to untrusted code from the syscall.
+         */
+        leaq    0x10(%rsp), %rbx
         movq    %rbx, NACL_THREAD_CONTEXT_OFFSET_RSP(%rdx)
         movq    %r12, NACL_THREAD_CONTEXT_OFFSET_R12(%rdx)
         movq    %r13, NACL_THREAD_CONTEXT_OFFSET_R13(%rdx)

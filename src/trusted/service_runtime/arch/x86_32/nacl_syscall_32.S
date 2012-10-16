@@ -79,7 +79,12 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         movl    %esi, NACL_THREAD_CONTEXT_OFFSET_ESI(%edx)
         movl    %edi, NACL_THREAD_CONTEXT_OFFSET_EDI(%edx)
         movl    %ebp, NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR(%edx)
-        movl    %esp, NACL_THREAD_CONTEXT_OFFSET_STACK_PTR(%edx)
+        /*
+         * Record the value of %esp that we will restore when
+         * returning to untrusted code from the syscall.
+         */
+        leal    0xc(%esp), %ecx
+        movl    %ecx, NACL_THREAD_CONTEXT_OFFSET_STACK_PTR(%edx)
 
         /*
          * Save the x87 FPU control word.  This is callee-saved,

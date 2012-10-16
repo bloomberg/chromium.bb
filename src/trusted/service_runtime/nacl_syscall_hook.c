@@ -73,7 +73,7 @@ static void HandleStackContext(struct NaClAppThread *natp,
    * trampoline was called (and hence the syscall number); we never
    * return to the trampoline.
    */
-  tramp_ret = *(uintptr_t *) sp_sys;
+  tramp_ret = *(uintptr_t *) (sp_sys + NACL_TRAMPRET_FIX);
   tramp_ret = NaClUserToSysStackAddr(nap, tramp_ret);
   /*
    * Get the user return address (where we return to after the system
@@ -83,11 +83,6 @@ static void HandleStackContext(struct NaClAppThread *natp,
   user_ret = *(uintptr_t *) (sp_sys + NACL_USERRET_FIX);
   user_ret = (nacl_reg_t) NaClSandboxCodeAddr(nap, (uintptr_t) user_ret);
   natp->user.new_prog_ctr = user_ret;
-  /*
-   * Fix the user stack, throw away return addresses from the top of
-   * the stack.
-   */
-  NaClSetThreadCtxSp(&natp->user, sp_user + NACL_SYSCALLRET_FIX);
 
   *tramp_ret_out = tramp_ret;
   *sp_user_out = sp_user;

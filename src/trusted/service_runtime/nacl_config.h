@@ -169,13 +169,13 @@
 # if NACL_BUILD_SUBARCH == 32
 /*
  * The untrusted stack looks like this on x86-32:
- *   esp+0xc: syscall args pushed by untrusted code before calling trampoline
- *   esp+0x8: 4 byte return address pushed by untrusted code's call
- *   esp+0x0: 8 bytes pushed by the trampoline's lcall instruction
+ *   esp-0x0: syscall args pushed by untrusted code before calling trampoline
+ *   esp-0x4: 4 byte return address pushed by untrusted code's call
+ *   esp-0xc: 8 bytes pushed by the trampoline's lcall instruction
  */
-#  define NACL_USERRET_FIX        (0x8)
-#  define NACL_SYSARGS_FIX        (0xc)
-#  define NACL_SYSCALLRET_FIX     (0xc)
+#  define NACL_TRAMPRET_FIX       (-0xc)
+#  define NACL_USERRET_FIX        (-0x4)
+#  define NACL_SYSARGS_FIX        (0)
 /*
  * System V Application Binary Interface, Intel386 Architcture
  * Processor Supplement, section 3-10, says stack alignment is
@@ -191,13 +191,13 @@
 # elif NACL_BUILD_SUBARCH == 64
 /*
  * The untrusted stack looks like this on x86-64:
- *   rsp+0x08: 8 byte return address pushed by untrusted code's call
- *   rsp+0x00: 8 byte return address pushed by the trampoline's call
- *   rsp-0x18: 0x18 bytes of syscall arguments saved by NaClSyscallSeg
+ *   rsp-0x08: 8 byte return address pushed by untrusted code's call
+ *   rsp-0x10: 8 byte return address pushed by the trampoline's call
+ *   rsp-0x28: 0x18 bytes of syscall arguments saved by NaClSyscallSeg
  */
-#  define NACL_USERRET_FIX        (0x8)
-#  define NACL_SYSARGS_FIX        (-0x18)
-#  define NACL_SYSCALLRET_FIX     (0x10)
+#  define NACL_TRAMPRET_FIX       (-0x10)
+#  define NACL_USERRET_FIX        (-0x8)
+#  define NACL_SYSARGS_FIX        (-0x28)
 /*
  * System V Application Binary Interface, AMD64 Architecture Processor
  * Supplement, at http://www.x86-64.org/documentation/abi.pdf, section
@@ -228,14 +228,14 @@
 
 /*
  * The untrusted stack looks like this on ARM:
- *   sp+0x18: 0-8 bytes for 0-2 syscall arguments pushed by untrusted code
- *   sp+0x08: 16 bytes for 4 syscall arguments pushed by the trampoline
- *   sp+0x04: 4 byte return address (value of lr) pushed by the trampoline
- *   sp+0x00: 4 byte return address (value of lr) pushed by NaClSyscallSeg
+ *   sp-0x00: 0-8 bytes for 0-2 syscall arguments pushed by untrusted code
+ *   sp-0x10: 16 bytes for 4 syscall arguments pushed by the trampoline
+ *   sp-0x14: 4 byte return address (value of lr) pushed by the trampoline
+ *   sp-0x18: 4 byte return address (value of lr) pushed by NaClSyscallSeg
  */
-# define NACL_USERRET_FIX         (0x4)
-# define NACL_SYSARGS_FIX         (0x8)
-# define NACL_SYSCALLRET_FIX      (0x18)
+# define NACL_TRAMPRET_FIX        (-0x18)
+# define NACL_USERRET_FIX         (-0x14)
+# define NACL_SYSARGS_FIX         (-0x10)
 /*
  * See ARM Procedure Call Standard, ARM IHI 0042D, section 5.2.1.2.
  * http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042a/IHI0042A_aapcs.pdf
@@ -262,9 +262,16 @@
 /* 16-byte bundles, 256MB code segment*/
 # define NACL_CONTROL_FLOW_MASK     0x0FFFFFF0
 # define NACL_DATA_FLOW_MASK        0x3FFFFFFF
-# define NACL_USERRET_FIX           (0x4)
-# define NACL_SYSARGS_FIX           (NACL_USERRET_FIX + 0x4)
-# define NACL_SYSCALLRET_FIX        (NACL_USERRET_FIX + 0x4)
+/*
+ * The untrusted stack looks like this on MIPS:
+ *   $sp+0x10: 0-8 bytes for 0-2 syscall arguments saved by untrusted code
+ *   $sp+0x00: 16 bytes for 4 syscall arguments saved by NaClSyscallSeg
+ *   $sp-0x04: 4 byte user return address saved by NaClSyscallSeg
+ *   $sp-0x08: 4 byte trampoline address saved by NaClSyscallSeg
+ */
+# define NACL_TRAMPRET_FIX          (-0x8)
+# define NACL_USERRET_FIX           (-0x4)
+# define NACL_SYSARGS_FIX           (0)
 # define NACL_STACK_ALIGN_MASK      (0x7)
 # define NACL_STACK_GETS_ARG        (0)
 # define NACL_STACK_PAD_BELOW_ALIGN (0)

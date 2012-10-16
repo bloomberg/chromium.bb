@@ -76,9 +76,10 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   sw    $a2,  8($sp)
   sw    $a1,  4($sp)
   sw    $a0,  0($sp)
-  addiu $sp, $sp, -8
-  sw    $ra,  4($sp)
-  sw    $t5,  0($sp)
+  /* Save return address for returning to untrusted code. */
+  sw    $ra, -4($sp)
+  /* Save return address that indicates which trampoline was called. */
+  sw    $t5, -8($sp)
 
   /* Load the __thread variable's offset into a3. */
   lui   $a3, %tprel_hi(gNaClThreadIdx)
