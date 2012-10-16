@@ -48,6 +48,7 @@ public class AndroidWebViewTestBase
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
+                AwTestResourceProvider.registerResources(context);
                 ContentViewCore.initChromiumBrowserProcess(
                         context, ContentView.MAX_RENDERERS_SINGLE_PROCESS);
             }

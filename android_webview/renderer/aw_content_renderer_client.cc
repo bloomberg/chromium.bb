@@ -4,11 +4,16 @@
 
 #include "android_webview/renderer/aw_content_renderer_client.h"
 
+#include "android_webview/common/aw_resource.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/renderer/render_thread.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 
 namespace android_webview {
@@ -35,8 +40,7 @@ void AwContentRendererClient::RenderViewCreated(
 }
 
 std::string AwContentRendererClient::GetDefaultEncoding() {
-  // TODO(boliu): query android system locale.
-  return std::string("ISO-8859-1");
+  return AwResource::GetDefaultTextEncoding();
 }
 
 WebKit::WebPlugin* AwContentRendererClient::CreatePluginReplacement(
@@ -49,8 +53,7 @@ WebKit::WebPlugin* AwContentRendererClient::CreatePluginReplacement(
 
 bool AwContentRendererClient::HasErrorPage(int http_status_code,
                           std::string* error_domain) {
-  // TODO(boliu): Implement our own error pages.
-  return false;
+  return http_status_code >= 400;
 }
 
 void AwContentRendererClient::GetNavigationErrorStrings(
@@ -58,7 +61,21 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     const WebKit::WebURLError& error,
     std::string* error_html,
     string16* error_description) {
-  // TODO(boliu): Implement our own error pages.
+  if (error_html) {
+    GURL error_url(failed_request.url());
+    std::string err = UTF16ToUTF8(error.localizedDescription);
+    std::string contents;
+    if (err.empty()) {
+      contents = AwResource::GetNoDomainPageContent();
+    } else {
+      contents = AwResource::GetLoadErrorPageContent();
+      ReplaceSubstringsAfterOffset(&contents, 0, "%e", err);
+    }
+
+    ReplaceSubstringsAfterOffset(&contents, 0, "%s",
+                                 error_url.possibly_invalid_spec());
+    *error_html = contents;
+  }
 }
 
 unsigned long long AwContentRendererClient::VisitedLinkHash(
