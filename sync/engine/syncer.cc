@@ -162,6 +162,10 @@ void Syncer::SyncShare(sessions::SyncSession* session,
 
         ApplyUpdatesCommand apply_updates;
         apply_updates.Execute(session);
+
+        session->context()->set_hierarchy_conflict_detected(
+            session->status_controller().num_hierarchy_conflicts() > 0);
+
         session->SendEventNotification(SyncEngineEvent::STATUS_CHANGED);
         if (last_step == APPLY_UPDATES) {
           // We're in configuration mode, but we still need to run the

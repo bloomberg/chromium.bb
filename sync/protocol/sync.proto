@@ -469,6 +469,18 @@ message AuthenticateMessage {
 message ChipBag {
 };
 
+// Information about the syncer's state.
+message ClientStatus {
+  // Flag to indicate if the client has detected hierarchy conflcits.  The flag
+  // is left unset if update application has not been attempted yet.
+  //
+  // The server should attempt to resolve any hierarchy conflicts when this flag
+  // is set.  The client may not assume that any particular action will be
+  // taken.  There is no guarantee the problem will be addressed in a reasonable
+  // amount of time.
+  optional bool hierarchy_conflict_detected = 1;
+}
+
 message ClientToServerMessage {
   required string share = 1;
   optional int32 protocol_version = 2 [default = 31];
@@ -504,6 +516,11 @@ message ClientToServerMessage {
 
   // Google API key.
   optional string api_key = 12;
+
+  // Client's self-reported state.
+  // The client should set this on every message sent to the server, though its
+  // member fields may often be unset.
+  optional ClientStatus client_status = 13;
 };
 
 message CommitResponse {

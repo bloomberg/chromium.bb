@@ -286,6 +286,29 @@ class SyncerTest : public testing::Test,
     EXPECT_EQ("http://demo/", specifics.bookmark().url());
   }
 
+  void VerifyHierarchyConflictsReported(
+      const sync_pb::ClientToServerMessage& message) {
+    // Our request should have included a warning about hierarchy conflicts.
+    const sync_pb::ClientStatus& client_status = message.client_status();
+    EXPECT_TRUE(client_status.has_hierarchy_conflict_detected());
+    EXPECT_TRUE(client_status.hierarchy_conflict_detected());
+  }
+
+  void VerifyNoHierarchyConflictsReported(
+      const sync_pb::ClientToServerMessage& message) {
+    // Our request should have reported no hierarchy conflicts detected.
+    const sync_pb::ClientStatus& client_status = message.client_status();
+    EXPECT_TRUE(client_status.has_hierarchy_conflict_detected());
+    EXPECT_FALSE(client_status.hierarchy_conflict_detected());
+  }
+
+  void VerifyHierarchyConflictsUnspecified(
+      const sync_pb::ClientToServerMessage& message) {
+    // Our request should have neither confirmed nor denied hierarchy conflicts.
+    const sync_pb::ClientStatus& client_status = message.client_status();
+    EXPECT_FALSE(client_status.has_hierarchy_conflict_detected());
+  }
+
   bool initial_sync_ended_for_type(ModelType type) {
     return directory()->initial_sync_ended_for_type(type);
   }
@@ -1585,6 +1608,11 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   EXPECT_EQ(1, status().TotalNumConflictingItems());
   EXPECT_EQ(1, status().num_hierarchy_conflicts());
 
+  // The only request in that loop should have been a GetUpdate.
+  // At that point, we didn't know whether or not we had conflicts.
+  ASSERT_TRUE(mock_server_->last_request().has_get_updates());
+  VerifyHierarchyConflictsUnspecified(mock_server_->last_request());
+
   // These entries will be used in the second set of updates.
   mock_server_->AddUpdateDirectory(4, 0, "newer_version", 20, 10);
   mock_server_->AddUpdateDirectory(5, 0, "circular1", 10, 10);
@@ -1598,6 +1626,10 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   // The name clash should also still be in conflict.
   EXPECT_EQ(3, status().TotalNumConflictingItems());
   EXPECT_EQ(3, status().num_hierarchy_conflicts());
+
+  // This time around, we knew that there were conflicts.
+  ASSERT_TRUE(mock_server_->last_request().has_get_updates());
+  VerifyHierarchyConflictsReported(mock_server_->last_request());
 
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
@@ -3878,6 +3910,12 @@ TEST_F(SyncerTest, UpdateThenCommit) {
   mock_server_->AddUpdateDirectory(to_receive, ids_.root(), "x", 1, 10);
   int64 commit_handle = CreateUnsyncedDirectory("y", to_commit);
   SyncShareNudge();
+
+  // The sync cycle should have included a GetUpdate, then a commit.  By the
+  // time the commit happened, we should have known for sure that there were no
+  // hierarchy conflicts, and reported this fact to the server.
+  ASSERT_TRUE(mock_server_->last_request().has_commit());
+  VerifyNoHierarchyConflictsReported(mock_server_->last_request());
 
   syncable::ReadTransaction trans(FROM_HERE, directory());
 

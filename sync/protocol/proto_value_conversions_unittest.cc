@@ -40,9 +40,7 @@ class ProtoValueConversionsTest : public testing::Test {
       DictionaryValue* (*specifics_to_value)(const T&)) {
     const T& specifics(T::default_instance());
     scoped_ptr<DictionaryValue> value(specifics_to_value(specifics));
-    // We can't do much but make sure that the returned value has
-    // something in it.
-    EXPECT_FALSE(value->empty());
+    // We can't do much but make sure that this doesn't crash.
   }
 };
 

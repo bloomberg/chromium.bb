@@ -361,6 +361,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   DCHECK(msg->has_store_birthday() || IsVeryFirstGetUpdates(*msg));
   AddBagOfChips(session->context()->directory(), msg);
   msg->set_api_key(google_apis::GetAPIKey());
+  msg->mutable_client_status()->CopyFrom(session->context()->client_status());
 
   syncable::Directory* dir = session->context()->directory();
 

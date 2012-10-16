@@ -71,7 +71,10 @@ ListValue* MakeRepeatedValue(const F& fields, V* (*converter_fn)(T)) {
 
 // Helper macros to reduce the amount of boilerplate.
 
-#define SET(field, fn) value->Set(#field, fn(proto.field()))
+#define SET(field, fn) \
+  if (proto.has_##field()) { \
+    value->Set(#field, fn(proto.field())); \
+  }
 #define SET_REP(field, fn) \
   value->Set(#field, MakeRepeatedValue(proto.field(), fn))
 #define SET_ENUM(field, fn) \
@@ -166,7 +169,7 @@ DictionaryValue* TabNavigationToValue(
   SET_INT32(unique_id);
   SET_INT64(timestamp);
   SET_BOOL(navigation_forward_back);
-  SET_BOOL(navigation_from_address_bar),
+  SET_BOOL(navigation_from_address_bar);
   SET_BOOL(navigation_home_page);
   SET_BOOL(navigation_chain_start);
   SET_BOOL(navigation_chain_end);
@@ -503,6 +506,13 @@ DictionaryValue* GetUpdatesMessageToValue(
   return value;
 }
 
+DictionaryValue* ClientStatusToValue(
+    const sync_pb::ClientStatus& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_BOOL(hierarchy_conflict_detected);
+  return value;
+}
+
 DictionaryValue* EntryResponseToValue(
     const sync_pb::CommitResponse::EntryResponse& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -589,6 +599,7 @@ DictionaryValue* ClientToServerMessageToValue(
   SET(get_updates, GetUpdatesMessageToValue);
   SET_STR(store_birthday);
   SET_BOOL(sync_problem_detected);
+  SET(client_status, ClientStatusToValue);
   return value;
 }
 

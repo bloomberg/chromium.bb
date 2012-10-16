@@ -26,6 +26,7 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/protocol/sync.pb.h"
 #include "sync/sessions/debug_info_getter.h"
 
 namespace syncer {
@@ -123,6 +124,14 @@ class SyncSessionContext {
     return keystore_encryption_enabled_;
   }
 
+  void set_hierarchy_conflict_detected(bool value) {
+    client_status_.set_hierarchy_conflict_detected(value);
+  }
+
+  const sync_pb::ClientStatus& client_status() const {
+    return client_status_;
+  }
+
  private:
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
@@ -166,6 +175,9 @@ class SyncSessionContext {
   DebugInfoGetter* const debug_info_getter_;
 
   TrafficRecorder* traffic_recorder_;
+
+  // Satus information to be sent up to the server.
+  sync_pb::ClientStatus client_status_;
 
   // Temporary variable while keystore encryption is behind a flag. True if
   // we should attempt performing keystore encryption related work, false if
