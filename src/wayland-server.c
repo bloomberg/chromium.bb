@@ -341,33 +341,41 @@ wl_client_create(struct wl_display *display, int fd)
 					      WL_EVENT_READABLE,
 					      wl_client_connection_data, client);
 
+	if (!client->source)
+		goto err_client;
+
 	len = sizeof client->ucred;
 	if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED,
-		       &client->ucred, &len) < 0) {
-		free(client);
-		return NULL;
-	}
+		       &client->ucred, &len) < 0)
+		goto err_source;
 
 	client->connection = wl_connection_create(fd);
-	if (client->connection == NULL) {
-		free(client);
-		return NULL;
-	}
+	if (client->connection == NULL)
+		goto err_source;
 
 	wl_map_init(&client->objects);
 
-	if (wl_map_insert_at(&client->objects, 0, NULL) < 0) {
-		wl_map_release(&client->objects);
-		free(client);
-		return NULL;
-	}
+	if (wl_map_insert_at(&client->objects, 0, NULL) < 0)
+		goto err_map;
 
 	wl_signal_init(&client->destroy_signal);
 	bind_display(client, display, 1, 1);
 
+	if (!client->display_resource)
+		goto err_map;
+
 	wl_list_insert(display->client_list.prev, &client->link);
 
 	return client;
+
+err_map:
+	wl_map_release(&client->objects);
+	wl_connection_destroy(client->connection);
+err_source:
+	wl_event_source_remove(client->source);
+err_client:
+	free(client);
+	return NULL;
 }
 
 WL_EXPORT void
@@ -1058,7 +1066,9 @@ bind_display(struct wl_client *client,
 	client->display_resource =
 		wl_client_add_object(client, &wl_display_interface,
 				     &display_interface, id, display);
-	client->display_resource->destroy = destroy_client_display_resource;
+
+	if(client->display_resource)
+		client->display_resource->destroy = destroy_client_display_resource;
 }
 
 WL_EXPORT struct wl_display *
@@ -1230,7 +1240,8 @@ socket_data(int fd, uint32_t mask, void *data)
 	if (client_fd < 0)
 		wl_log("failed to accept: %m\n");
 	else
-		wl_client_create(display, client_fd);
+		if (!wl_client_create(display, client_fd))
+			close(client_fd);
 
 	return 1;
 }
