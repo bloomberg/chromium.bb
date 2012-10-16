@@ -16,7 +16,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/favicon_size.h"
 
 FaviconSource::FaviconSource(Profile* profile, IconType type)
     : DataSource(type == FAVICON ? chrome::kChromeUIFaviconHost :
@@ -52,7 +51,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
     return;
   }
 
-  int pixel_size = gfx::kFaviconSize;
+  int size_in_dip = gfx::kFaviconSize;
   ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE;
 
   FaviconService::Handle handle;
@@ -71,7 +70,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
     handle = favicon_service->GetRawFavicon(
         GURL(path.substr(prefix_length)),
         history::FAVICON,
-        pixel_size,
+        size_in_dip,
         scale_factor,
         &cancelable_consumer_,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
@@ -82,11 +81,12 @@ void FaviconSource::StartDataRequest(const std::string& path,
       size_t slash = path.find("/", 5);
       size_t scale_delimiter = path.find("@", 5);
       std::string size = path.substr(5, slash - 5);
-      pixel_size = atoi(size.c_str());
-      DCHECK(pixel_size == 64 || pixel_size == 32 || pixel_size == 16) <<
+      size_in_dip = atoi(size.c_str());
+      DCHECK(size_in_dip == 64 || size_in_dip == 32 || size_in_dip == 16) <<
           "only 64x64, 32x32 and 16x16 icons are supported";
       // Optional scale factor.
       if (scale_delimiter != std::string::npos && scale_delimiter < slash) {
+        DCHECK(size_in_dip == 16);
         std::string scale_str = path.substr(scale_delimiter + 1,
                                             slash - scale_delimiter - 1);
         web_ui_util::ParseScaleFactor(scale_str, &scale_factor);
@@ -128,7 +128,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
             profile_,
             url,
             icon_types_,
-            pixel_size,
+            size_in_dip,
             &cancelable_consumer_),
         scale_factor,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
@@ -139,7 +139,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
   cancelable_consumer_.SetClientData(favicon_service,
                                      handle,
                                      IconRequest(request_id,
-                                                 pixel_size,
+                                                 size_in_dip,
                                                  scale_factor));
 }
 
@@ -175,7 +175,7 @@ void FaviconSource::OnFaviconDataAvailable(
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
   int favicon_index;
   int resource_id;
-  switch (icon_request.pixel_size) {
+  switch (icon_request.size_in_dip) {
     case 64:
       favicon_index = SIZE_64;
       resource_id = IDR_DEFAULT_FAVICON_64;

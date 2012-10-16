@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "ui/gfx/favicon_size.h"
 
 class Profile;
 
@@ -62,16 +63,16 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   struct IconRequest {
     IconRequest()
       : request_id(0),
-        pixel_size(16),
+        size_in_dip(gfx::kFaviconSize),
         scale_factor(ui::SCALE_FACTOR_NONE) {
     }
     IconRequest(int id, int size, ui::ScaleFactor scale)
       : request_id(id),
-        pixel_size(size),
+        size_in_dip(size),
         scale_factor(scale) {
     }
     int request_id;
-    int pixel_size;
+    int size_in_dip;
     ui::ScaleFactor scale_factor;
   };
 
