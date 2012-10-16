@@ -329,6 +329,7 @@
         '../third_party/webrtc/modules/modules.gyp:audio_device',        
         '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
         '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
+        '<(DEPTH)/crypto/crypto.gyp:crypto',
       ],
       'sources': [
         'renderer/media/media_stream_center.cc',

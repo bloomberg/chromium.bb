@@ -134,6 +134,25 @@
       },
     },
     'conditions': [
+      ['use_openssl!=1', {
+        'defines': [
+          'SSL_USE_NSS',
+        ],
+        'conditions': [
+          ['os_posix == 1 and OS != "mac" and OS != "ios" and '
+           'OS != "android"', {
+            'dependencies': [
+              '<(DEPTH)/build/linux/system.gyp:ssl',
+            ],
+          }],
+          ['OS == "mac" or OS == "ios" or OS == "win"', {
+            'dependencies': [
+              '<(DEPTH)/third_party/nss/nss.gyp:nspr',
+              '<(DEPTH)/third_party/nss/nss.gyp:nss',
+            ],
+          }],
+        ],
+      }],
       ['OS=="win"', {
         'include_dirs': [
           '../third_party/platformsdk_win7/files/Include',
