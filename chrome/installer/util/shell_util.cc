@@ -1600,7 +1600,8 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
   // Return true only when the user took an action and there was no error.
   const bool ret = LaunchSelectDefaultProtocolHandlerDialog(L"http");
 
-  // TODO(gab): RegisterChromeAsDefaultForXP if Chrome was chosen.
+  if (ret && IsChromeDefault())
+    RegisterChromeAsDefaultForXP(dist, CURRENT_USER, chrome_exe);
 
   return ret;
 }
@@ -1670,7 +1671,8 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
   // Return true only when the user took an action and there was no error.
   const bool ret = LaunchSelectDefaultProtocolHandlerDialog(protocol.c_str());
 
-  // TODO(gab): RegisterChromeAsDefaultProtocolClientForXP if Chrome was chosen.
+  if (ret && IsChromeDefaultProtocolClient(protocol))
+    RegisterChromeAsDefaultProtocolClientForXP(dist, chrome_exe, protocol);
 
   return ret;
 }
