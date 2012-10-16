@@ -3750,7 +3750,7 @@ init_egl(struct display *d)
 #endif
 
 	static const EGLint argb_cfg_attribs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PIXMAP_BIT,
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
