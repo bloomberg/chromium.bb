@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/file_reader.h"
@@ -177,8 +176,13 @@ void EnableHighContrast(bool enabled) {
 }
 
 void EnableScreenMagnifier(bool enabled) {
-  if (MagnificationManager::GetInstance())
-    MagnificationManager::GetInstance()->SetEnabled(enabled);
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kScreenMagnifierEnabled, enabled);
+  pref_service->CommitPendingWrite();
+
+#if defined(USE_ASH)
+  ash::Shell::GetInstance()->magnification_controller()->SetEnabled(enabled);
+#endif
 }
 
 void EnableVirtualKeyboard(bool enabled) {
@@ -231,8 +235,12 @@ bool IsHighContrastEnabled() {
 }
 
 bool IsScreenMagnifierEnabled() {
-  return MagnificationManager::GetInstance() &&
-      MagnificationManager::GetInstance()->IsEnabled();
+  if (!g_browser_process) {
+    return false;
+  }
+  PrefService* prefs = g_browser_process->local_state();
+  bool enabled = prefs && prefs->GetBoolean(prefs::kScreenMagnifierEnabled);
+  return enabled;
 }
 
 void MaybeSpeak(const std::string& utterance) {

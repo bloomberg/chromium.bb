@@ -48,7 +48,6 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   // MagnificationController overrides:
   virtual void SetEnabled(bool enabled) OVERRIDE;
-  virtual bool IsEnabled() OVERRIDE { return is_enabled_; }
   virtual void SetScale(float scale, bool animate) OVERRIDE;
   virtual float GetScale() const OVERRIDE { return scale_; }
   virtual void MoveWindow(int x, int y, bool animate) OVERRIDE;
