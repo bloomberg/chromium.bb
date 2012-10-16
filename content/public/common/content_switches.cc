@@ -305,6 +305,10 @@ const char kDisableMediaSource[]             = "disable-media-source";
 // media stream.
 const char kDisableWebMediaPlayerMS[]       = "disable-web-media-player-ms";
 
+// Enables the deprecated PeerConnection functionality.
+const char kEnableDeprecatedPeerConnection[] =
+    "enable-deprecated-peer-connection";
+
 // On Windows, converts the page to the currently-installed monitor profile.
 // This does NOT enable color management for images. The source is still
 // assumed to be sRGB.
