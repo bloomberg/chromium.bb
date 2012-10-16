@@ -659,10 +659,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
   const string16 kKeyword(ASCIIToUTF16("testsearch"));
-  const std::string kSearchURL("http://search.example/search?q={searchTerms}");
+  const std::string kSearchURL("https://search.example/search?q={searchTerms}");
   const std::string kAlternateURL0(
-      "http://search.example/search#q={searchTerms}");
-  const std::string kAlternateURL1("http://search.example/#q={searchTerms}");
+      "https://search.example/search#q={searchTerms}");
+  const std::string kAlternateURL1("https://search.example/#q={searchTerms}");
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
       browser()->profile());
@@ -703,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   chrome::FocusLocationBar(browser());
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
-      "http://search.example/#q=foobar");
+      "https://search.example/#q=foobar");
   OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
   EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
   EXPECT_EQ(ASCIIToUTF16("foobar"), model->CurrentMatch().contents);
@@ -712,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   // second URL pattern.
   chrome::FocusLocationBar(browser());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
-      "http://search.example/search#q=banana");
+      "https://search.example/search#q=banana");
   model = location_bar->GetLocationEntry()->model();
   EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
   EXPECT_EQ(ASCIIToUTF16("banana"), model->CurrentMatch().contents);
@@ -721,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   // standard search URL pattern.
   chrome::FocusLocationBar(browser());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
-      "http://search.example/search?q=tractor+parts");
+      "https://search.example/search?q=tractor+parts");
   model = location_bar->GetLocationEntry()->model();
   EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
   EXPECT_EQ(ASCIIToUTF16("tractor parts"), model->CurrentMatch().contents);
@@ -729,7 +729,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   // Verify that searching from the omnibox prioritizes hash over query.
   chrome::FocusLocationBar(browser());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
-      "http://search.example/search?q=tractor+parts#q=foobar");
+      "https://search.example/search?q=tractor+parts#q=foobar");
   model = location_bar->GetLocationEntry()->model();
   EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
   EXPECT_EQ(ASCIIToUTF16("foobar"), model->CurrentMatch().contents);

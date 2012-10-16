@@ -698,9 +698,9 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
       GURL("http://google.com/foo/?q=foo"), &result));
   EXPECT_EQ(string16(), result);
 
-  EXPECT_FALSE(url.ExtractSearchTermsFromURL(
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("https://google.com/?q=foo"), &result));
-  EXPECT_EQ(string16(), result);
+  EXPECT_EQ(ASCIIToUTF16("foo"), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com:8080/?q=foo"), &result));

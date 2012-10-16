@@ -83,17 +83,17 @@ struct TestItem {
     true
   },
   {
-    GURL("http://google.ca/search?q=tractor+supply"),
-    ASCIIToUTF16("google.ca/search?q=tractor+supply"),
-    ASCIIToUTF16("google.ca/search?q=tractor+supply"),
-    ASCIIToUTF16("google.ca/search?q=tractor+supply"),
+    GURL("https://google.ca/search?q=tractor+supply"),
+    ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
+    ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
+    ASCIIToUTF16("https://google.ca/search?q=tractor+supply"),
     false,
     true
   },
   {
-    GURL("http://google.com/search?q=tractor+supply"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply"),
-    ASCIIToUTF16("google.com/search?q=tractor+supply"),
+    GURL("https://google.com/search?q=tractor+supply"),
+    ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
+    ASCIIToUTF16("https://google.com/search?q=tractor+supply"),
     ASCIIToUTF16("tractor supply"),
     true,
     true

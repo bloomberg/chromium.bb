@@ -457,9 +457,8 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(const GURL& url,
   // Fill-in the replacements. We don't care about search terms in the pattern,
   // so we use the empty string.
   GURL pattern(ReplaceSearchTerms(SearchTermsArgs(string16())));
-  // Scheme, host, path and port must match.
-  if (!url.SchemeIs(pattern.scheme().c_str()) ||
-      url.port() != pattern.port() ||
+  // Host, path and port must match.
+  if (url.port() != pattern.port() ||
       url.host() != host_ ||
       url.path() != path_) {
     return false;
