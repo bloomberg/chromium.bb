@@ -19,7 +19,8 @@
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
-using base::android::GetMethodID;
+using base::android::GetClass;
+using base::android::MethodID;
 using base::WaitableEvent;
 using content::SurfaceTexturePeer;
 
@@ -76,16 +77,12 @@ void ReleaseSurface(jobject surface) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
-  jclass cls = env->FindClass("android/view/Surface");
-  DCHECK(cls);
+  ScopedJavaLocalRef<jclass> cls(GetClass(env, "android/view/Surface"));
 
-  jmethodID method = env->GetMethodID(cls, "release", "()V");
-  DCHECK(method);
+  jmethodID method = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, cls.obj(), "release", "()V");
 
   env->CallVoidMethod(surface, method);
-  DCHECK(env);
-
-  env->DeleteLocalRef(cls);
 }
 
 void SetSurfaceAsync(JNIEnv* env,

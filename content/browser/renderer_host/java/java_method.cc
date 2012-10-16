@@ -13,9 +13,8 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::GetClass;
-using base::android::GetMethodID;
 using base::android::GetMethodIDFromClassName;
-using base::android::GetStaticMethodID;
+using base::android::MethodID;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -214,9 +213,9 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
                                                    kReturningInteger));
   bool is_static = env->CallStaticBooleanMethod(
       g_java_lang_reflect_modifier_class.Get().obj(),
-      GetStaticMethodID(env, g_java_lang_reflect_modifier_class.Get(),
-                        kIsStatic,
-                        kIntegerReturningBoolean),
+      MethodID::Get<MethodID::TYPE_STATIC>(
+          env, g_java_lang_reflect_modifier_class.Get().obj(), kIsStatic,
+          kIntegerReturningBoolean),
       modifiers);
 
   // Get the ID for this method.
@@ -227,8 +226,9 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
           kGetDeclaringClass,
           kReturningJavaLangClass))));
   id_ = is_static ?
-      GetStaticMethodID(env, declaring_class, name_.c_str(),
-                        signature.c_str()) :
-      GetMethodID(env, declaring_class, name_.c_str(), signature.c_str());
+      MethodID::Get<MethodID::TYPE_STATIC>(
+          env, declaring_class.obj(), name_.c_str(), signature.c_str()) :
+      MethodID::Get<MethodID::TYPE_INSTANCE>(
+          env, declaring_class.obj(), name_.c_str(), signature.c_str());
   java_method_.Reset();
 }

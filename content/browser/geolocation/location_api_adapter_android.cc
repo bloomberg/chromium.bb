@@ -14,7 +14,6 @@
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ClearException;
-using base::android::GetMethodID;
 
 static void NewLocationAvailable(JNIEnv* env, jclass,
                                  jdouble latitude,

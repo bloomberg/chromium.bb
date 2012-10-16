@@ -29,6 +29,7 @@ using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
+using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
@@ -310,7 +311,8 @@ DownloadControllerAndroidImpl::JavaObject*
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jclass> clazz =
         GetClass(env, kDownloadControllerClassPathName);
-    jmethodID get_instance = GetStaticMethodID(env, clazz, "getInstance",
+    jmethodID get_instance = MethodID::Get<MethodID::TYPE_STATIC>(
+        env, clazz.obj(), "getInstance",
         "()Lorg/chromium/content/browser/DownloadController;");
     ScopedJavaLocalRef<jobject> jobj(env,
         env->CallStaticObjectMethod(clazz.obj(), get_instance));

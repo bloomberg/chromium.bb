@@ -17,6 +17,7 @@ using base::android::CheckException;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetApplicationContext;
 using base::android::GetClass;
+using base::android::MethodID;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -26,9 +27,10 @@ ScopedJavaLocalRef<jstring> GetAndroidIdJNI(
     JNIEnv* env, const JavaRef<jobject>& content_resolver) {
   ScopedJavaLocalRef<jclass> clazz(
       GetClass(env, "android/provider/Settings$Secure"));
-  jmethodID j_get_string = GetStaticMethodID(env, clazz, "getString",
+  jmethodID j_get_string = MethodID::Get<MethodID::TYPE_STATIC>(
+      env, clazz.obj(), "getString",
       "(Landroid/content/ContentResolver;Ljava/lang/String;)"
-          "Ljava/lang/String;");
+      "Ljava/lang/String;");
   ScopedJavaLocalRef<jstring> j_android_id =
       ConvertUTF8ToJavaString(env, "android_id");
   jstring android_id = static_cast<jstring>(
@@ -41,8 +43,10 @@ ScopedJavaLocalRef<jstring> GetAndroidIdJNI(
 
 ScopedJavaLocalRef<jobject> GetContentResolver(JNIEnv* env) {
   ScopedJavaLocalRef<jclass> clazz(GetClass(env, "android/content/Context"));
-  jmethodID j_get_content_resolver_method = GetMethodID(
-      env, clazz,"getContentResolver", "()Landroid/content/ContentResolver;");
+  jmethodID j_get_content_resolver_method = MethodID::Get<
+      MethodID::TYPE_INSTANCE>(
+          env, clazz.obj(), "getContentResolver",
+          "()Landroid/content/ContentResolver;");
   jobject content_resolver = env->CallObjectMethod(
       GetApplicationContext(), j_get_content_resolver_method);
   CheckException(env);

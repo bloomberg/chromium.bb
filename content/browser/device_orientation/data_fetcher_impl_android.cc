@@ -14,7 +14,6 @@
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::GetClass;
-using base::android::GetMethodID;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 

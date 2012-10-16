@@ -19,7 +19,7 @@ using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
-using base::android::GetMethodID;
+using base::android::MethodID;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -318,8 +318,8 @@ void MediaPlayerBridge::GetMetadata() {
 
   ScopedJavaLocalRef<jclass> media_player_class(
       GetClass(env, "android/media/MediaPlayer"));
-  jmethodID method = GetMethodID(
-      env, media_player_class, "getMetadata",
+  jmethodID method = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, media_player_class.obj(), "getMetadata",
       "(ZZ)Landroid/media/Metadata;");
   ScopedJavaLocalRef<jobject> j_metadata(
       env, env->CallObjectMethod(
@@ -330,8 +330,8 @@ void MediaPlayerBridge::GetMetadata() {
 
   ScopedJavaLocalRef<jclass> metadata_class(
       GetClass(env, "android/media/Metadata"));
-  jmethodID get_boolean = GetMethodID(
-      env, metadata_class, "getBoolean", "(I)Z");
+  jmethodID get_boolean = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, metadata_class.obj(), "getBoolean", "(I)Z");
   can_pause_ = env->CallBooleanMethod(j_metadata.obj(),
                                       get_boolean,
                                       kPauseAvailable);

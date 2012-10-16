@@ -50,6 +50,7 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
 using base::android::HasField;
+using base::android::MethodID;
 using base::android::JavaByteArrayToByteVector;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -228,8 +229,8 @@ void ContentViewCoreImpl::Observe(int type,
 void ContentViewCoreImpl::InitJNI(JNIEnv* env, jobject obj) {
   java_object_ = new JavaObject;
   java_object_->rect_clazz.Reset(GetClass(env, "android/graphics/Rect"));
-  java_object_->rect_constructor =
-      GetMethodID(env, java_object_->rect_clazz, "<init>", "(IIII)V");
+  java_object_->rect_constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, java_object_->rect_clazz.obj(), "<init>", "(IIII)V");
 }
 
 RenderWidgetHostViewAndroid*

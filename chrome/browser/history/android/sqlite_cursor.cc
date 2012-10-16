@@ -16,8 +16,7 @@
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
 using base::android::HasClass;
-using base::android::HasMethod;
-using base::android::GetMethodID;
+using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
@@ -62,12 +61,9 @@ ScopedJavaLocalRef<jobject> SQLiteCursor::NewJavaSqliteCursor(
   }
 
   ScopedJavaLocalRef<jclass> sclass = GetClass(env, kSQLiteCursorClassPath);
-  if (!HasMethod(env, sclass, "<init>", "(I)V")) {
-    LOG(ERROR) << "Can not find " << kSQLiteCursorClassPath << " Constructor";
-    return ScopedJavaLocalRef<jobject>();
-  }
+  jmethodID method_id = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, sclass.obj(), "<init>", "(I)V");
 
-  jmethodID method_id = GetMethodID(env, sclass, "<init>", "(I)V");
   SQLiteCursor* cursor = new SQLiteCursor(column_names, statement, service,
                                           favicon_service);
   ScopedJavaLocalRef<jobject> obj(env,

@@ -646,6 +646,7 @@ TEST_F(ClipboardTest, InternalClipboardInvalidation) {
   // Simulate that another application copied something in the Clipboard
   //
   std::string new_value("Some text copied by some other app");
+  using base::android::MethodID;
   using base::android::ScopedJavaLocalRef;
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -657,8 +658,9 @@ TEST_F(ClipboardTest, InternalClipboardInvalidation) {
   ScopedJavaLocalRef<jclass> context_class =
       base::android::GetClass(env, "android/content/Context");
 
-  jmethodID get_system_service = base::android::GetMethodID(env, context_class,
-      "getSystemService",  "(Ljava/lang/String;)Ljava/lang/Object;");
+  jmethodID get_system_service = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, context_class.obj(), "getSystemService",
+      "(Ljava/lang/String;)Ljava/lang/Object;");
 
   // Retrieve the system service.
   ScopedJavaLocalRef<jstring> service_name(env, env->NewStringUTF("clipboard"));
@@ -669,8 +671,8 @@ TEST_F(ClipboardTest, InternalClipboardInvalidation) {
 
   ScopedJavaLocalRef<jclass> clipboard_class =
       base::android::GetClass(env, "android/text/ClipboardManager");
-  jmethodID set_text = base::android::GetMethodID(env, clipboard_class,
-                          "setText", "(Ljava/lang/CharSequence;)V");
+  jmethodID set_text = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, clipboard_class.obj(), "setText", "(Ljava/lang/CharSequence;)V");
 
   // Will need to call toString as CharSequence is not always a String.
   env->CallVoidMethod(clipboard_manager.obj(),

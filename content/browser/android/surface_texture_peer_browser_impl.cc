@@ -12,6 +12,8 @@
 #include "jni/BrowserProcessSurfaceTexture_jni.h"
 #include "media/base/android/media_player_bridge.h"
 
+using base::android::MethodID;
+
 namespace content {
 
 // Pass a java surface object to the MediaPlayerBridge object
@@ -43,11 +45,12 @@ static void SetSurfacePeer(
           player != host->media_player_manager()->GetFullscreenPlayer()) {
         base::android::ScopedJavaLocalRef<jclass> cls(
             base::android::GetClass(env, "android/view/Surface"));
-        jmethodID constructor = GetMethodID(env, cls, "<init>",
-            "(Landroid/graphics/SurfaceTexture;)V");
-        ScopedJavaLocalRef<jobject> j_surface(env,
-            env->NewObject(cls.obj(), constructor,
-                           surface_texture_bridge->j_surface_texture().obj()));
+        jmethodID constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
+            env, cls.obj(), "<init>", "(Landroid/graphics/SurfaceTexture;)V");
+        ScopedJavaLocalRef<jobject> j_surface(
+            env, env->NewObject(
+                cls.obj(), constructor,
+                surface_texture_bridge->j_surface_texture().obj()));
         player->SetVideoSurface(j_surface.obj());
         ReleaseSurface(j_surface.obj());
       }

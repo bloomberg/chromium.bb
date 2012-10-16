@@ -8,7 +8,12 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 
-using namespace base::android;
+using base::android::AttachCurrentThread;
+using base::android::CheckException;
+using base::android::GetApplicationContext;
+using base::android::GetClass;
+using base::android::MethodID;
+using base::android::ScopedJavaLocalRef;
 
 namespace webkit_glue {
 
@@ -18,18 +23,23 @@ FlingAnimatorImpl::FlingAnimatorImpl()
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
   ScopedJavaLocalRef<jclass> cls(GetClass(env, "android/widget/OverScroller"));
-  jmethodID constructor = GetMethodID(env, cls, "<init>",
-                                      "(Landroid/content/Context;)V");
+  jmethodID constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, cls.obj(), "<init>", "(Landroid/content/Context;)V");
   ScopedJavaLocalRef<jobject> tmp(env, env->NewObject(cls.obj(), constructor,
                                                       GetApplicationContext()));
   DCHECK(tmp.obj());
   java_scroller_.Reset(tmp);
 
-  fling_method_id_ = GetMethodID(env, cls, "fling", "(IIIIIIII)V");
-  abort_method_id_ = GetMethodID(env, cls, "abortAnimation", "()V");
-  compute_method_id_ = GetMethodID(env, cls, "computeScrollOffset", "()Z");
-  getX_method_id_ = GetMethodID(env, cls, "getCurrX", "()I");
-  getY_method_id_ = GetMethodID(env, cls, "getCurrY", "()I");
+  fling_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, cls.obj(), "fling", "(IIIIIIII)V");
+  abort_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, cls.obj(), "abortAnimation", "()V");
+  compute_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, cls.obj(), "computeScrollOffset", "()Z");
+  getX_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, cls.obj(), "getCurrX", "()I");
+  getY_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, cls.obj(), "getCurrY", "()I");
 }
 
 FlingAnimatorImpl::~FlingAnimatorImpl()

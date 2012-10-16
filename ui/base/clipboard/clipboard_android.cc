@@ -25,7 +25,7 @@ using base::android::ClearException;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::GetClass;
-using base::android::GetMethodID;
+using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 
 namespace ui {
@@ -75,8 +75,9 @@ ClipboardMap::ClipboardMap() {
       GetClass(env, "android/content/Context");
 
   // Get the system service method.
-  jmethodID get_system_service = GetMethodID(env, context_class,
-      "getSystemService",  "(Ljava/lang/String;)Ljava/lang/Object;");
+  jmethodID get_system_service = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, context_class.obj(), "getSystemService",
+      "(Ljava/lang/String;)Ljava/lang/Object;");
 
   // Retrieve the system service.
   ScopedJavaLocalRef<jstring> service_name(env, env->NewStringUTF("clipboard"));
@@ -87,18 +88,18 @@ ClipboardMap::ClipboardMap() {
   // Retain a few methods we'll keep using.
   ScopedJavaLocalRef<jclass> clipboard_class =
       GetClass(env, "android/text/ClipboardManager");
-  set_text_ = GetMethodID(env, clipboard_class,
-                          "setText", "(Ljava/lang/CharSequence;)V");
-  get_text_ = GetMethodID(env, clipboard_class,
-                          "getText", "()Ljava/lang/CharSequence;");
-  has_text_ = GetMethodID(env, clipboard_class,
-                          "hasText", "()Z");
+  set_text_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, clipboard_class.obj(), "setText", "(Ljava/lang/CharSequence;)V");
+  get_text_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, clipboard_class.obj(), "getText", "()Ljava/lang/CharSequence;");
+  has_text_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, clipboard_class.obj(), "hasText", "()Z");
 
   // Will need to call toString as CharSequence is not always a String.
   ScopedJavaLocalRef<jclass> charsequence_class =
       GetClass(env, "java/lang/CharSequence");
-  to_string_ = GetMethodID(env, charsequence_class,
-                           "toString", "()Ljava/lang/String;");
+  to_string_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
+      env, charsequence_class.obj(), "toString", "()Ljava/lang/String;");
 }
 
 std::string ClipboardMap::Get(const std::string& format) {
