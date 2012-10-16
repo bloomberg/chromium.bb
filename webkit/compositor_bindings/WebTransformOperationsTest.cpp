@@ -4,41 +4,37 @@
 
 #include "config.h"
 
-#include <public/WebTransformOperations.h>
-
+#include "base/memory/scoped_vector.h"
 #include "cc/test/geometry_test_utils.h"
-#include <gtest/gtest.h>
-#include <public/WebTransformationMatrix.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 
-using namespace std;
 using namespace WebKit;
 
 TEST(WebTransformOperationTest, transformTypesAreUnique)
 {
-    Vector<OwnPtr<WebTransformOperations> > transforms;
+    ScopedVector<WebTransformOperations> transforms;
 
     WebTransformOperations* toAdd = new WebTransformOperations();
     toAdd->appendTranslate(1, 0, 0);
-    transforms.append(adoptPtr(toAdd));
+    transforms.push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendRotate(0, 0, 1, 2);
-    transforms.append(adoptPtr(toAdd));
+    transforms.push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendScale(2, 2, 2);
-    transforms.append(adoptPtr(toAdd));
+    transforms.push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendSkew(1, 0);
-    transforms.append(adoptPtr(toAdd));
+    transforms.push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendPerspective(800);
-    transforms.append(adoptPtr(toAdd));
+    transforms.push_back(toAdd);
 
     for (size_t i = 0; i < transforms.size(); ++i) {
         for (size_t j = 0; j < transforms.size(); ++j) {
@@ -91,60 +87,60 @@ TEST(WebTransformOperationTest, matchTypesDifferentLength)
     EXPECT_FALSE(translates.matchesTypes(translates2));
 }
 
-void getIdentityOperations(Vector<OwnPtr<WebTransformOperations> >* operations)
+void getIdentityOperations(ScopedVector<WebTransformOperations>* operations)
 {
     WebTransformOperations* toAdd = new WebTransformOperations();
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendTranslate(0, 0, 0);
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendTranslate(0, 0, 0);
     toAdd->appendTranslate(0, 0, 0);
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendScale(1, 1, 1);
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendScale(1, 1, 1);
     toAdd->appendScale(1, 1, 1);
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendSkew(0, 0);
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendSkew(0, 0);
     toAdd->appendSkew(0, 0);
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendRotate(0, 0, 1, 0);
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendRotate(0, 0, 1, 0);
     toAdd->appendRotate(0, 0, 1, 0);
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendMatrix(WebTransformationMatrix());
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 
     toAdd = new WebTransformOperations();
     toAdd->appendMatrix(WebTransformationMatrix());
     toAdd->appendMatrix(WebTransformationMatrix());
-    operations->append(adoptPtr(toAdd));
+    operations->push_back(toAdd);
 }
 
 TEST(WebTransformOperationTest, identityAlwaysMatches)
 {
-    Vector<OwnPtr<WebTransformOperations> > operations;
+    ScopedVector<WebTransformOperations> operations;
     getIdentityOperations(&operations);
 
     for (size_t i = 0; i < operations.size(); ++i) {
@@ -435,7 +431,7 @@ TEST(WebTransformOperationTest, largeRotationsWithDifferentAxes)
 
 TEST(WebTransformOperationTest, blendRotationFromIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -453,7 +449,7 @@ TEST(WebTransformOperationTest, blendRotationFromIdentity)
 
 TEST(WebTransformOperationTest, blendTranslationFromIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -471,7 +467,7 @@ TEST(WebTransformOperationTest, blendTranslationFromIdentity)
 
 TEST(WebTransformOperationTest, blendScaleFromIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -489,7 +485,7 @@ TEST(WebTransformOperationTest, blendScaleFromIdentity)
 
 TEST(WebTransformOperationTest, blendSkewFromIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -508,7 +504,7 @@ TEST(WebTransformOperationTest, blendSkewFromIdentity)
 
 TEST(WebTransformOperationTest, blendPerspectiveFromIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -518,7 +514,7 @@ TEST(WebTransformOperationTest, blendPerspectiveFromIdentity)
         double progress = 0.5;
 
         WebTransformationMatrix expected;
-        expected.applyPerspective(500 + 0.5 * numeric_limits<double>::max());
+        expected.applyPerspective(500 + 0.5 * std::numeric_limits<double>::max());
 
         EXPECT_TRANSFORMATION_MATRIX_EQ(expected, operations.blend(*identityOperations[i], progress));
     }
@@ -526,7 +522,7 @@ TEST(WebTransformOperationTest, blendPerspectiveFromIdentity)
 
 TEST(WebTransformOperationTest, blendRotationToIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -544,7 +540,7 @@ TEST(WebTransformOperationTest, blendRotationToIdentity)
 
 TEST(WebTransformOperationTest, blendTranslationToIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -562,7 +558,7 @@ TEST(WebTransformOperationTest, blendTranslationToIdentity)
 
 TEST(WebTransformOperationTest, blendScaleToIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -580,7 +576,7 @@ TEST(WebTransformOperationTest, blendScaleToIdentity)
 
 TEST(WebTransformOperationTest, blendSkewToIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -599,7 +595,7 @@ TEST(WebTransformOperationTest, blendSkewToIdentity)
 
 TEST(WebTransformOperationTest, blendPerspectiveToIdentity)
 {
-    Vector<OwnPtr<WebTransformOperations> > identityOperations;
+    ScopedVector<WebTransformOperations> identityOperations;
     getIdentityOperations(&identityOperations);
 
     for (size_t i = 0; i < identityOperations.size(); ++i) {
@@ -609,7 +605,7 @@ TEST(WebTransformOperationTest, blendPerspectiveToIdentity)
         double progress = 0.5;
 
         WebTransformationMatrix expected;
-        expected.applyPerspective(500 + 0.5 * numeric_limits<double>::max());
+        expected.applyPerspective(500 + 0.5 * std::numeric_limits<double>::max());
 
         EXPECT_TRANSFORMATION_MATRIX_EQ(expected, identityOperations[i]->blend(operations, progress));
     }
