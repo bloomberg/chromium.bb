@@ -63,7 +63,7 @@ void CCVideoLayerImpl::stopUsingProvider()
 {
     // Block the provider from shutting down until this client is done
     // using the frame.
-    MutexLocker locker(m_providerMutex);
+    base::AutoLock locker(m_providerLock);
     ASSERT(!m_frame);
     m_provider = 0;
 }
@@ -91,20 +91,20 @@ void CCVideoLayerImpl::willDraw(CCResourceProvider* resourceProvider)
     ASSERT(CCProxy::isImplThread());
     CCLayerImpl::willDraw(resourceProvider);
 
-    // Explicitly lock and unlock the provider mutex so it can be held from
+    // Explicitly acquire and release the provider mutex so it can be held from
     // willDraw to didDraw. Since the compositor thread is in the middle of
     // drawing, the layer will not be destroyed before didDraw is called.
     // Therefore, the only thing that will prevent this lock from being released
     // is the GPU process locking it. As the GPU process can't cause the
     // destruction of the provider (calling stopUsingProvider), holding this
     // lock should not cause a deadlock.
-    m_providerMutex.lock();
+    m_providerLock.Acquire();
 
     willDrawInternal(resourceProvider);
     freeUnusedPlaneData(resourceProvider);
 
     if (!m_frame)
-        m_providerMutex.unlock();
+        m_providerLock.Release();
 }
 
 void CCVideoLayerImpl::willDrawInternal(CCResourceProvider* resourceProvider)
@@ -236,7 +236,7 @@ void CCVideoLayerImpl::didDraw(CCResourceProvider* resourceProvider)
     m_provider->putCurrentFrame(m_frame);
     m_frame = 0;
 
-    m_providerMutex.unlock();
+    m_providerLock.Release();
 }
 
 static int videoFrameDimension(int originalDimension, unsigned plane, int format)

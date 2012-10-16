@@ -5,6 +5,7 @@
 #ifndef CCVideoLayerImpl_h
 #define CCVideoLayerImpl_h
 
+#include "base/synchronization/lock.h"
 #include "CCLayerImpl.h"
 #include "GraphicsContext3D.h"
 #include "IntSize.h"
@@ -34,8 +35,6 @@ public:
     virtual void didDraw(CCResourceProvider*) OVERRIDE;
 
     virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
-
-    Mutex& providerMutex() { return m_providerMutex; }
 
     // WebKit::WebVideoFrameProvider::Client implementation.
     virtual void stopUsingProvider(); // Callable on any thread.
@@ -71,7 +70,7 @@ private:
     void freeUnusedPlaneData(CCResourceProvider*);
 
     // Guards the destruction of m_provider and the frame that it provides
-    Mutex m_providerMutex;
+    base::Lock m_providerLock;
     WebKit::WebVideoFrameProvider* m_provider;
 
     WebKit::WebTransformationMatrix m_streamTextureMatrix;
