@@ -8,6 +8,8 @@ deps = {
   'src/net/data/ssl/certificates': '/trunk/src/net/data/ssl/certificates',
   'src/net/tools/testserver': '/trunk/src/net/tools/testserver',
   'src/third_party/pyftpdlib/src': 'http://pyftpdlib.googlecode.com/svn/trunk',
+  'src/third_party/pywebsocket/src':
+      'http://pywebsocket.googlecode.com/svn/trunk/src@662',
   'src/third_party/simplejson': '/trunk/src/third_party/simplejson',
   'src/third_party/tlslite': '/trunk/src/third_party/tlslite',
   'src/third_party/webdriver/pylib/selenium':
