@@ -616,6 +616,7 @@ static const struct wl_callback_listener sync_listener = {
 /** Block until all pending request are processed by the server
  *
  * \param display The display context object
+ * \return The number of dispatched events on success or -1 on failure
  *
  * Blocks until the server process all currently issued requests and
  * sends out pending events on all event queues.
@@ -818,7 +819,7 @@ err_unlock:
  *
  * \param display The display context object
  * \param queue The event queue to dispatch
- * \return 0 on success; -1 on failure
+ * \return The number of dispatched events on success or -1 on failure
  *
  * Dispatch all incoming events for objects assigned to the given
  * event queue. On failure -1 is returned and errno set appropriately.
@@ -835,7 +836,7 @@ wl_display_dispatch_queue(struct wl_display *display,
 /** Dispatch a display's main event queue
  *
  * \param display The display context object
- * \return 0 on success or -1 on failure
+ * \return The number of dispatched events on success or -1 on failure
  *
  * Dispatch the display's main event queue.
  *
