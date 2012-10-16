@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.android_webview.AwContents;
@@ -32,11 +31,8 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
         mAwContents = testContainerView.getAwContents();
     }
 
-    /*@MediumTest
-     *@Feature({"Android-WebView"})
-     * Bug crbug.com/152033
-     */
-    @FlakyTest
+    @MediumTest
+    @Feature({"Android-WebView"})
     public void testOnReceivedErrorOnInvalidUrl() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
