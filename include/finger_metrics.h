@@ -13,9 +13,9 @@ namespace gestures {
 // This class can contain methods that are used by multiple interpreters to
 // evaluate fingers.
 
-static const size_t kMaxFingers = 5;
+static const size_t kMaxFingers = 10;
 static const size_t kMaxGesturingFingers = 3;
-static const size_t kMaxTapFingers = 5;
+static const size_t kMaxTapFingers = 10;
 
 class FingerMetrics {
  public:
