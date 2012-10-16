@@ -910,7 +910,7 @@
             '../media/media.gyp:media_test_support',
             '../net/net.gyp:net_java',
             '../net/net.gyp:net_javatests',
-            '../tools/android/forwarder/forwarder.gyp:forwarder',
+            '../tools/android/forwarder2/forwarder.gyp:forwarder2',
           ],
           'variables': {
             'package_name': 'content_shell_test',

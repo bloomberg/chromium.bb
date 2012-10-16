@@ -26,7 +26,7 @@ const char kDefaultAdbSocket[] = "chrome_device_forwarder";
 void KillHandler(int /* unused */) {
   CHECK(g_notifier);
   if (!g_notifier->Notify())
-    exit(-1);
+    exit(1);
 }
 
 }  // namespace

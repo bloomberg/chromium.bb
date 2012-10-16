@@ -39,7 +39,7 @@ void KillHandler(int /* unused */) {
   // (non-nicely). This is useful when debugging.
   ++s_kill_handler_count;
   if (!g_notifier->Notify() || s_kill_handler_count > 2)
-    exit(-1);
+    exit(1);
 }
 
 // Format of arg: <Device port>[:<Forward to port>:<Forward to address>]
@@ -77,6 +77,11 @@ int main(int argc, char** argv) {
     printf("Could not parse adb port number: %s\n", adb_port_str.c_str());
     show_help = true;
   }
+  if (adb_port <= 0) {
+    printf("Invalid adb port number: %s. Adb port must be a "
+           "postivie integer.\n", adb_port_str.c_str());
+    show_help = true;
+  }
   CommandLine::StringVector forward_args = command_line.GetArgs();
   if (show_help || forward_args.empty()) {
     tools::ShowHelp(
@@ -89,7 +94,7 @@ int main(int argc, char** argv) {
             "  <Forward to port> default is <Device port>\n"
             "  <Forward to address> default is 127.0.0.1.",
             kDefaultAdbPort).c_str());
-    return 0;
+    return 1;
   }
 
   g_notifier = new forwarder2::PipeNotifier();
