@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import cStringIO
+import hashlib
 import logging
 import os
 import sys
@@ -128,7 +129,7 @@ class Isolate(unittest.TestCase):
       #   corresponding to the .state file, which is simply to aid the developer
       #   when re-running the same command multiple times and contain
       #   discardable information.
-      complete_state = isolate.load_complete_state(Options, isolate.STATS_ONLY)
+      complete_state = isolate.load_complete_state(Options)
       actual_result = complete_state.isolated.flatten()
       actual_saved_state = complete_state.saved_state.flatten()
 
@@ -137,10 +138,12 @@ class Isolate(unittest.TestCase):
         'files': {
           os.path.join(u'tests', 'isolate', 'touch_root.py'): {
             'mode': 488,
+            'sha-1': self._sha1('tests', 'isolate', 'touch_root.py'),
             'size': self._size('tests', 'isolate', 'touch_root.py'),
           },
           'isolate.py': {
             'mode': 488,
+            'sha-1': self._sha1('isolate.py'),
             'size': self._size('isolate.py'),
           },
         },
@@ -166,6 +169,11 @@ class Isolate(unittest.TestCase):
   @staticmethod
   def _size(*args):
     return os.stat(os.path.join(ROOT_DIR, *args)).st_size
+
+  @staticmethod
+  def _sha1(*args):
+    with open(os.path.join(ROOT_DIR, *args), 'rb') as f:
+      return hashlib.sha1(f.read()).hexdigest()
 
   def test_unknown_key(self):
     try:

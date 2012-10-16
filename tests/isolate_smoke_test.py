@@ -130,10 +130,6 @@ def calc_sha1(filepath):
 
 
 class IsolateBase(unittest.TestCase):
-  # To be defined by the subclass, it defines the amount of meta data saved by
-  # isolate.py for each file. Should be one of (NO_INFO, STATS_ONLY, WITH_HASH).
-  LEVEL = None
-
   def setUp(self):
     # The tests assume the current directory is the file's directory.
     os.chdir(ROOT_DIR)
@@ -198,27 +194,24 @@ class IsolateModeBase(IsolateBase):
 
     for relfile, v in files.iteritems():
       filepath = os.path.join(root_dir, relfile)
-      if self.LEVEL >= isolate.STATS_ONLY:
-        filestats = os.lstat(filepath)
-        is_link = stat.S_ISLNK(filestats.st_mode)
-        if not is_link:
-          v[u'size'] = filestats.st_size
-          if isolate.get_flavor() != 'win':
-            v[u'mode'] = self._fix_file_mode(relfile, read_only)
-        else:
-          v[u'mode'] = 488
-        # Used the skip recalculating the hash. Use the most recent update
-        # time.
-        v[u'timestamp'] = int(round(filestats.st_mtime))
-        if is_link:
-          v['link'] = os.readlink(filepath)  # pylint: disable=E1101
-
-      if self.LEVEL >= isolate.WITH_HASH:
-        if not is_link:
-          # Upgrade the value to unicode so diffing the structure in case of
-          # test failure is easier, since the basestring type must match,
-          # str!=unicode.
-          v[u'sha-1'] = unicode(calc_sha1(filepath))
+      filestats = os.lstat(filepath)
+      is_link = stat.S_ISLNK(filestats.st_mode)
+      if not is_link:
+        v[u'size'] = filestats.st_size
+        if isolate.get_flavor() != 'win':
+          v[u'mode'] = self._fix_file_mode(relfile, read_only)
+      else:
+        v[u'mode'] = 488
+      # Used the skip recalculating the hash. Use the most recent update
+      # time.
+      v[u'timestamp'] = int(round(filestats.st_mtime))
+      if is_link:
+        v['link'] = os.readlink(filepath)  # pylint: disable=E1101
+      else:
+        # Upgrade the value to unicode so diffing the structure in case of
+        # test failure is easier, since the basestring type must match,
+        # str!=unicode.
+        v[u'sha-1'] = unicode(calc_sha1(filepath))
 
     if empty_file:
       item = files[empty_file]
@@ -380,8 +373,6 @@ class Isolate(unittest.TestCase):
 
 
 class Isolate_check(IsolateModeBase):
-  LEVEL = isolate.NO_INFO
-
   def test_fail(self):
     self._execute('check', 'fail.isolate', [], False)
     self._expect_no_tree()
@@ -441,8 +432,6 @@ class Isolate_check(IsolateModeBase):
 
 
 class Isolate_hashtable(IsolateModeBase):
-  LEVEL = isolate.WITH_HASH
-
   def _gen_expected_tree(self, empty_file):
     expected = [
       v['sha-1'] for v in self._gen_files(False, empty_file).itervalues()
@@ -529,8 +518,6 @@ class Isolate_hashtable(IsolateModeBase):
 
 
 class Isolate_remap(IsolateModeBase):
-  LEVEL = isolate.STATS_ONLY
-
   def test_fail(self):
     self._execute('remap', 'fail.isolate', [], False)
     self._expected_tree()
@@ -591,8 +578,6 @@ class Isolate_remap(IsolateModeBase):
 
 
 class Isolate_run(IsolateModeBase):
-  LEVEL = isolate.STATS_ONLY
-
   def _expect_empty_tree(self):
     self.assertEquals([], self._result_tree())
 
@@ -668,8 +653,6 @@ class Isolate_trace_read_merge(IsolateModeBase):
   # Tests both trace, read and merge.
   # Warning: merge updates .isolate files. But they are currently in their
   # canonical format so they shouldn't be changed.
-  LEVEL = isolate.STATS_ONLY
-
   def _check_merge(self, filename):
     filepath = isolate.trace_inputs.get_native_path_case(
         os.path.join(ROOT_DIR, 'tests', 'isolate', filename))

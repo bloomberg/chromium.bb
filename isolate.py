@@ -34,7 +34,6 @@ from run_isolated import get_flavor
 
 
 # Used by process_input().
-NO_INFO, STATS_ONLY, WITH_HASH = range(56, 59)
 SHA_1_NULL = hashlib.sha1().hexdigest()
 
 PATH_VARIABLES = ('DEPTH', 'PRODUCT_DIR')
@@ -474,27 +473,23 @@ def upload_sha1_tree(base_url, indir, infiles):
     raise exception[0], exception[1], exception[2]
 
 
-def process_input(filepath, prevdict, level, read_only):
+def process_input(filepath, prevdict, read_only):
   """Processes an input file, a dependency, and return meta data about it.
 
   Arguments:
   - filepath: File to act on.
   - prevdict: the previous dictionary. It is used to retrieve the cached sha-1
               to skip recalculating the hash.
-  - level: determines the amount of information retrieved.
   - read_only: If True, the file mode is manipulated. In practice, only save
                one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
                windows, mode is not set since all files are 'executable' by
                default.
 
   Behaviors:
-  - NO_INFO retrieves no information.
-  - STATS_ONLY retrieves the file mode, file size, file timestamp, file link
-    destination if it is a file link.
-  - WITH_HASH retrieves all of STATS_ONLY plus the sha-1 of the content of the
-    file.
+  - Retrieves the file mode, file size, file timestamp, file link
+    destination if it is a file link and calcultate the SHA-1 of the file's
+    content if the path points to a file and not a symlink.
   """
-  assert level in (NO_INFO, STATS_ONLY, WITH_HASH)
   out = {}
   # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
   # if prevdict.get('touched_only') == True:
@@ -506,45 +501,55 @@ def process_input(filepath, prevdict, level, read_only):
   #   out['touched_only'] = True
   #   return out
 
-  if level >= STATS_ONLY:
-    try:
-      filestats = os.lstat(filepath)
-    except OSError:
-      # The file is not present.
-      raise run_isolated.MappingError('%s is missing' % filepath)
-    is_link = stat.S_ISLNK(filestats.st_mode)
-    if get_flavor() != 'win':
-      # Ignore file mode on Windows since it's not really useful there.
-      filemode = stat.S_IMODE(filestats.st_mode)
-      # Remove write access for group and all access to 'others'.
-      filemode &= ~(stat.S_IWGRP | stat.S_IRWXO)
-      if read_only:
-        filemode &= ~stat.S_IWUSR
-      if filemode & stat.S_IXUSR:
-        filemode |= stat.S_IXGRP
-      else:
-        filemode &= ~stat.S_IXGRP
-      out['mode'] = filemode
-    if not is_link:
-      out['size'] = filestats.st_size
-    # Used to skip recalculating the hash. Use the most recent update time.
-    out['timestamp'] = int(round(filestats.st_mtime))
-    # If the timestamp wasn't updated, carry on the sha-1.
-    if prevdict.get('timestamp') == out['timestamp']:
-      if 'sha-1' in prevdict:
-        # Reuse the previous hash.
-        out['sha-1'] = prevdict['sha-1']
-      if 'link' in prevdict:
-        # Reuse the previous link destination.
-        out['link'] = prevdict['link']
-    if is_link and not 'link' in out:
-      # A symlink, store the link destination.
-      out['link'] = os.readlink(filepath)  # pylint: disable=E1101
+  # Always check the file stat and check if it is a link. The timestamp is used
+  # to know if the file's content/symlink destination should be looked into.
+  # E.g. only reuse from prevdict if the timestamp hasn't changed.
+  # There is the risk of the file's timestamp being reset to its last value
+  # manually while its content changed. We don't protect against that use case.
+  try:
+    filestats = os.lstat(filepath)
+  except OSError:
+    # The file is not present.
+    raise run_isolated.MappingError('%s is missing' % filepath)
+  is_link = stat.S_ISLNK(filestats.st_mode)
 
-  if level >= WITH_HASH and not out.get('sha-1') and not out.get('link'):
-    if not is_link:
+  if get_flavor() != 'win':
+    # Ignore file mode on Windows since it's not really useful there.
+    filemode = stat.S_IMODE(filestats.st_mode)
+    # Remove write access for group and all access to 'others'.
+    filemode &= ~(stat.S_IWGRP | stat.S_IRWXO)
+    if read_only:
+      filemode &= ~stat.S_IWUSR
+    if filemode & stat.S_IXUSR:
+      filemode |= stat.S_IXGRP
+    else:
+      filemode &= ~stat.S_IXGRP
+    out['mode'] = filemode
+
+  # Used to skip recalculating the hash or link destination. Use the most recent
+  # update time.
+  # TODO(maruel): Save it in the .state file instead of .isolated so the
+  # .isolated file is deterministic.
+  out['timestamp'] = int(round(filestats.st_mtime))
+
+  if not is_link:
+    out['size'] = filestats.st_size
+    # If the timestamp wasn't updated and the file size is still the same, carry
+    # on the sha-1.
+    if (prevdict.get('timestamp') == out['timestamp'] and
+        prevdict.get('size') == out['size']):
+      # Reuse the previous hash if available.
+      out['sha-1'] = prevdict.get('sha-1')
+    if not out.get('sha-1'):
       with open(filepath, 'rb') as f:
         out['sha-1'] = hashlib.sha1(f.read()).hexdigest()
+  else:
+    # If the timestamp wasn't updated, carry on the link destination.
+    if prevdict.get('timestamp') == out['timestamp']:
+      # Reuse the previous link destination if available.
+      out['link'] = prevdict.get('link')
+    if out.get('link') is None:
+      out['link'] = os.readlink(filepath)  # pylint: disable=E1101
   return out
 
 
@@ -1476,7 +1481,7 @@ class CompleteState(object):
     self.isolated.update(command, infiles, touched, read_only, relative_cwd)
     logging.debug(self)
 
-  def process_inputs(self, level):
+  def process_inputs(self):
     """Updates self.isolated.files with the files' mode and hash.
 
     See process_input() for more information.
@@ -1484,7 +1489,7 @@ class CompleteState(object):
     for infile in sorted(self.isolated.files):
       filepath = os.path.join(self.root_dir, infile)
       self.isolated.files[infile] = process_input(
-          filepath, self.isolated.files[infile], level, self.isolated.read_only)
+          filepath, self.isolated.files[infile], self.isolated.read_only)
 
   def save_files(self):
     """Saves both self.isolated and self.saved_state."""
@@ -1530,14 +1535,13 @@ class CompleteState(object):
     return out
 
 
-def load_complete_state(options, level):
+def load_complete_state(options):
   """Loads a CompleteState.
 
   This includes data from .isolate, .isolated and .state files.
 
   Arguments:
     options: Options instance generated with OptionParserIsolate.
-    level: Amount of data to fetch.
   """
   if options.result:
     # Load the previous state if it was present. Namely, "foo.isolated" and
@@ -1560,7 +1564,7 @@ def load_complete_state(options, level):
   complete_state.load_isolate(options.isolate, options.variables)
 
   # Regenerate complete_state.isolated.files.
-  complete_state.process_inputs(level)
+  complete_state.process_inputs()
   return complete_state
 
 
@@ -1623,7 +1627,7 @@ def CMDcheck(args):
   """Checks that all the inputs are present and update .isolated."""
   parser = OptionParserIsolate(command='check')
   options, _ = parser.parse_args(args)
-  complete_state = load_complete_state(options, NO_INFO)
+  complete_state = load_complete_state(options)
 
   # Nothing is done specifically. Just store the result and state.
   complete_state.save_files()
@@ -1642,7 +1646,7 @@ def CMDhashtable(args):
   with run_isolated.Profiler('GenerateHashtable'):
     success = False
     try:
-      complete_state = load_complete_state(options, WITH_HASH)
+      complete_state = load_complete_state(options)
       options.outdir = (
           options.outdir or os.path.join(complete_state.resultdir, 'hashtable'))
       # Make sure that complete_state isn't modified until save_files() is
@@ -1705,7 +1709,7 @@ def CMDmerge(args):
   """
   parser = OptionParserIsolate(command='merge', require_result=False)
   options, _ = parser.parse_args(args)
-  complete_state = load_complete_state(options, NO_INFO)
+  complete_state = load_complete_state(options)
   merge(complete_state)
   return 0
 
@@ -1717,7 +1721,7 @@ def CMDread(args):
   """
   parser = OptionParserIsolate(command='read', require_result=False)
   options, _ = parser.parse_args(args)
-  complete_state = load_complete_state(options, NO_INFO)
+  complete_state = load_complete_state(options)
   value = read_trace_as_isolate_dict(complete_state)
   pretty_print(value, sys.stdout)
   return 0
@@ -1731,7 +1735,7 @@ def CMDremap(args):
   """
   parser = OptionParserIsolate(command='remap', require_result=False)
   options, _ = parser.parse_args(args)
-  complete_state = load_complete_state(options, STATS_ONLY)
+  complete_state = load_complete_state(options)
 
   if not options.outdir:
     options.outdir = run_isolated.make_temp_dir(
@@ -1770,7 +1774,7 @@ def CMDrun(args):
   parser = OptionParserIsolate(command='run', require_result=False)
   parser.enable_interspersed_args()
   options, args = parser.parse_args(args)
-  complete_state = load_complete_state(options, STATS_ONLY)
+  complete_state = load_complete_state(options)
   cmd = complete_state.isolated.command + args
   if not cmd:
     raise ExecutionError('No command to run')
@@ -1825,7 +1829,7 @@ def CMDtrace(args):
       '-m', '--merge', action='store_true',
       help='After tracing, merge the results back in the .isolate file')
   options, args = parser.parse_args(args)
-  complete_state = load_complete_state(options, STATS_ONLY)
+  complete_state = load_complete_state(options)
   cmd = complete_state.isolated.command + args
   if not cmd:
     raise ExecutionError('No command to run')
