@@ -32,34 +32,36 @@ en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/proto
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-interfaces-to-docbook.xsl \
 		$(top_srcdir)/protocol/wayland.xml > en-US/ProtocolInterfaces.xml
 
-en-US/WaylandClientAPI.xml: $(top_srcdir)/doc/doxygen/xml/wayland-client_8h.xml $(srcdir)/doxygen-to-publican.xsl
+en-US/WaylandClientAPI.xml: $(top_builddir)/doc/doxygen/xml/wayland-client_8h.xml $(srcdir)/doxygen-to-publican.xsl
 	$(AM_V_GEN)$(MKDIR_P) en-US/images
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/doxygen-to-publican.xsl \
-		$(top_srcdir)/doc/doxygen/xml/wayland-client_8h.xml > en-US/WaylandClientAPI.xml
+		$(top_builddir)/doc/doxygen/xml/wayland-client_8h.xml > en-US/WaylandClientAPI.xml
 
 # Copy the en_US source files into en-US destination
 # This is required for out-of-source-tree build as publican does not allow us
 # to specify the location of the source code.
 $(builddir)/en-US/%: $(srcdir)/en_US/% en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml en-US/WaylandClientAPI.xml $(publican_sources)
 	$(AM_V_GEN)cp -f $< $@
+	$(AM_V_GEN)chmod a+w $@
 
 # Run publican for the builddir on the generated (or copied) source
 # The output formats are generated in the Wayland sub directory. Also, we need
 # to use a tmp publican.cfg cause 'publican rename' modifies the original.
 Wayland: $(publican_targets)
-	$(AM_V_GEN)cp -f $(srcdir)/publican.cfg $(srcdir)/publican.cfg.tmp
+	$(AM_V_GEN)cp -f $(srcdir)/publican.cfg $(builddir)/publican-copy.cfg
 	$(AM_V_GEN)$(PUBLICAN) rename --name Wayland \
-		--version "$(WAYLAND_VERSION_MAJOR).$(WAYLAND_VERSION_MINOR)"
-	$(AM_V_GEN)mv -f $(srcdir)/publican.cfg.tmp $(srcdir)/publican.cfg
+		--version "$(WAYLAND_VERSION_MAJOR).$(WAYLAND_VERSION_MINOR)" \
+		--config $(builddir)/publican-copy.cfg
 	$(AM_V_GEN)$(PUBLICAN) build --lang en-US --format html,pdf \
-		--config $(srcdir)/publican.cfg
+		--config $(builddir)/publican-copy.cfg
 	@touch Wayland
 
 CLEANFILES = en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml en-US/WaylandClientAPI.xml $(publican_targets)
 
 clean-local:
-	$(AM_V_at)rm -fr en-US
-	$(AM_V_at)rm -fr Wayland
+	$(AM_V_at)rm -fr $(builddir)/en-US
+	$(AM_V_at)rm -fr $(builddir)/Wayland
+	$(AM_V_at)rm -fr $(builddir)/publican-copy.cfg
 
 install-data-local:
 	test -z "$(pubdir)/html/Common_Content/css" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html/Common_Content/css"
