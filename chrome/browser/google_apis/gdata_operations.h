@@ -345,7 +345,7 @@ struct InitiateUploadParams {
   std::string content_type;
   int64 content_length;
   GURL upload_location;
-  const FilePath& virtual_path;
+  FilePath virtual_path;
 };
 
 // Callback type for DocumentServiceInterface::InitiateUpload.
