@@ -120,7 +120,7 @@ void SendStatus(struct mg_connection* connection,
   DictionaryValue* os_info = new DictionaryValue;
   os_info->SetString("name", base::SysInfo::OperatingSystemName());
   os_info->SetString("version", base::SysInfo::OperatingSystemVersion());
-  os_info->SetString("arch", base::SysInfo::CPUArchitecture());
+  os_info->SetString("arch", base::SysInfo::OperatingSystemArchitecture());
 
   DictionaryValue* status = new DictionaryValue;
   status->Set("build", build_info);

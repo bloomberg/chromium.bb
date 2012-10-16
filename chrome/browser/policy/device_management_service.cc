@@ -59,14 +59,14 @@ const int kInvalidArgument = 400;
 const int kInvalidAuthCookieOrDMToken = 401;
 const int kMissingLicenses = 402;
 const int kDeviceManagementNotAllowed = 403;
-const int kInvalidURL = 404; // This error is not coming from the GFE.
+const int kInvalidURL = 404;  // This error is not coming from the GFE.
 const int kInvalidSerialNumber = 405;
 const int kDeviceIdConflict = 409;
 const int kDeviceNotFound = 410;
 const int kPendingApproval = 412;
 const int kInternalServerError = 500;
 const int kServiceUnavailable = 503;
-const int kPolicyNotFound = 902; // This error is not sent as HTTP status code.
+const int kPolicyNotFound = 902;  // This error is not sent as HTTP status code.
 
 #if defined(OS_CHROMEOS)
 // Machine info keys.
@@ -139,7 +139,7 @@ const std::string& GetPlatformString() {
     return platform;
 
   std::string os_name(base::SysInfo::OperatingSystemName());
-  std::string os_hardware(base::SysInfo::CPUArchitecture());
+  std::string os_hardware(base::SysInfo::OperatingSystemArchitecture());
 
 #if defined(OS_CHROMEOS)
   chromeos::system::StatisticsProvider* provider =

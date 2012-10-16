@@ -39,7 +39,7 @@ bool CpuInfoProvider::QueryInfo(CpuInfo* info) {
     return false;
 
   info->num_of_processors = base::SysInfo::NumberOfProcessors();
-  info->arch_name = base::SysInfo::CPUArchitecture();
+  info->arch_name = base::SysInfo::OperatingSystemArchitecture();
   info->model_name = base::SysInfo::CPUModelName();
   return true;
 }

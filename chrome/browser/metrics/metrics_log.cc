@@ -670,7 +670,7 @@ void MetricsLog::RecordEnvironment(
     // Write the XML version.
     // We'll write the protobuf version in RecordEnvironmentProto().
     OPEN_ELEMENT_FOR_SCOPE("cpu");
-    WriteAttribute("arch", base::SysInfo::CPUArchitecture());
+    WriteAttribute("arch", base::SysInfo::OperatingSystemArchitecture());
   }
 
   {
@@ -765,7 +765,7 @@ void MetricsLog::RecordEnvironmentProto(
       content::GetContentClient()->browser()->GetApplicationLocale());
 
   SystemProfileProto::Hardware* hardware = system_profile->mutable_hardware();
-  hardware->set_cpu_architecture(base::SysInfo::CPUArchitecture());
+  hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
 #if defined(OS_WIN)
   hardware->set_dll_base(reinterpret_cast<uint64>(&__ImageBase));
@@ -866,7 +866,7 @@ void MetricsLog::WriteProfileMetrics(const std::string& profileidhash,
        i != profile_metrics.end_keys(); ++i) {
     const Value* value;
     if (profile_metrics.GetWithoutPathExpansion(*i, &value)) {
-      DCHECK(*i != "id");
+      DCHECK_NE(*i, "id");
       switch (value->GetType()) {
         case Value::TYPE_STRING: {
           std::string string_value;
