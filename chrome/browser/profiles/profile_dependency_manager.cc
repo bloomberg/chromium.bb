@@ -51,6 +51,7 @@
 #endif  // OS_WIN
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
@@ -259,6 +260,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   SessionServiceFactory::GetInstance();
 #endif
   ShortcutsBackendFactory::GetInstance();
+  ThumbnailServiceFactory::GetInstance();
   SigninManagerFactory::GetInstance();
 #if defined(ENABLE_INPUT_SPEECH)
   SpeechInputExtensionManager::InitializeFactory();

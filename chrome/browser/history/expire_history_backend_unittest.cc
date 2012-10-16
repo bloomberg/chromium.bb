@@ -237,9 +237,9 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
 
   Time time;
   GURL gurl;
-  top_sites_->SetPageThumbnail(url_row1.url(), &thumbnail, score);
-  top_sites_->SetPageThumbnail(url_row2.url(), &thumbnail, score);
-  top_sites_->SetPageThumbnail(url_row3.url(), &thumbnail, score);
+  top_sites_->SetPageThumbnail(url_row1.url(), thumbnail, score);
+  top_sites_->SetPageThumbnail(url_row2.url(), thumbnail, score);
+  top_sites_->SetPageThumbnail(url_row3.url(), thumbnail, score);
 
   // Four visits.
   VisitRow visit_row1;

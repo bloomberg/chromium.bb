@@ -231,7 +231,7 @@ void TopSites::Init(const FilePath& db_name) {
 }
 
 bool TopSites::SetPageThumbnail(const GURL& url,
-                                gfx::Image* thumbnail,
+                                const gfx::Image& thumbnail,
                                 const ThumbnailScore& score) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -603,13 +603,13 @@ bool TopSites::SetPageThumbnailEncoded(const GURL& url,
 }
 
 // static
-bool TopSites::EncodeBitmap(gfx::Image* bitmap,
+bool TopSites::EncodeBitmap(const gfx::Image& bitmap,
                             scoped_refptr<base::RefCountedBytes>* bytes) {
-  if (!bitmap)
+  if (bitmap.IsEmpty())
     return false;
   *bytes = new base::RefCountedBytes();
   std::vector<unsigned char> data;
-  if (!gfx::JPEGEncodedDataFromImage(*bitmap, kTopSitesImageQuality, &data))
+  if (!gfx::JPEGEncodedDataFromImage(bitmap, kTopSitesImageQuality, &data))
     return false;
 
   // As we're going to cache this data, make sure the vector is only as big as

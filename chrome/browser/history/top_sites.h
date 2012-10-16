@@ -62,7 +62,7 @@ class TopSites
   // was updated. False means either the URL wasn't known to us, or we felt
   // that our current thumbnail was superior to the given one.
   bool SetPageThumbnail(const GURL& url,
-                        gfx::Image* thumbnail,
+                        const gfx::Image& thumbnail,
                         const ThumbnailScore& score);
 
   // Callback for GetMostVisitedURLs.
@@ -226,7 +226,7 @@ class TopSites
 
   // Encodes the bitmap to bytes for storage to the db. Returns true if the
   // bitmap was successfully encoded.
-  static bool EncodeBitmap(gfx::Image* bitmap,
+  static bool EncodeBitmap(const gfx::Image& bitmap,
                            scoped_refptr<base::RefCountedBytes>* bytes);
 
   // Removes the cached thumbnail for url. Does nothing if |url| if not cached

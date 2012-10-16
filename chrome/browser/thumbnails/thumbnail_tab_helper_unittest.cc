@@ -6,9 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -141,102 +139,4 @@ TEST_F(ThumbnailTabHelperTest, GetClippedBitmap_NonSquareOutput) {
   EXPECT_EQ(20, clipped_bitmap.height());
   // The input was taller than wide.
   EXPECT_EQ(ThumbnailTabHelper::kTallerThanWide, clip_result);
-}
-
-// A mock version of TopSites, used for testing ShouldUpdateThumbnail().
-class MockTopSites : public history::TopSites {
- public:
-  explicit MockTopSites(Profile* profile)
-      : history::TopSites(profile),
-        capacity_(1) {
-  }
-
-  // history::TopSites overrides.
-  virtual bool IsFull() {
-    return known_url_map_.size() >= capacity_;
-  }
-  virtual bool IsKnownURL(const GURL& url) {
-    return known_url_map_.find(url.spec()) != known_url_map_.end();
-  }
-  virtual bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score) {
-    std::map<std::string, ThumbnailScore>::const_iterator iter =
-        known_url_map_.find(url.spec());
-    if (iter == known_url_map_.end()) {
-      return false;
-    } else {
-      *score = iter->second;
-      return true;
-    }
-  }
-
-  // Adds a known URL with the associated thumbnail score.
-  void AddKnownURL(const GURL& url, const ThumbnailScore& score) {
-    known_url_map_[url.spec()] = score;
-  }
-
- private:
-  virtual ~MockTopSites() {}
-  size_t capacity_;
-  std::map<std::string, ThumbnailScore> known_url_map_;
-};
-
-TEST_F(ThumbnailTabHelperTest, ShouldUpdateThumbnail) {
-  const GURL kGoodURL("http://www.google.com/");
-  const GURL kBadURL("chrome://newtab");
-
-  // Set up the profile.
-  TestingProfile profile;
-
-  // Set up the top sites service.
-  ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  scoped_refptr<MockTopSites> top_sites(new MockTopSites(&profile));
-
-  // Should be false because it's a bad URL.
-  EXPECT_FALSE(ThumbnailTabHelper::ShouldUpdateThumbnail(
-      &profile, top_sites.get(), kBadURL));
-
-  // Should be true, as it's a good URL.
-  EXPECT_TRUE(ThumbnailTabHelper::ShouldUpdateThumbnail(
-      &profile, top_sites.get(), kGoodURL));
-
-  // Should be false, if it's in the incognito mode.
-  profile.set_incognito(true);
-  EXPECT_FALSE(ThumbnailTabHelper::ShouldUpdateThumbnail(
-      &profile, top_sites.get(), kGoodURL));
-
-  // Should be true again, once turning off the incognito mode.
-  profile.set_incognito(false);
-  EXPECT_TRUE(ThumbnailTabHelper::ShouldUpdateThumbnail(
-      &profile, top_sites.get(), kGoodURL));
-
-  // Add a known URL. This makes the top sites data full.
-  ThumbnailScore bad_score;
-  bad_score.time_at_snapshot = base::Time::UnixEpoch();  // Ancient time stamp.
-  top_sites->AddKnownURL(kGoodURL, bad_score);
-  ASSERT_TRUE(top_sites->IsFull());
-
-  // Should be false, as the top sites data is full, and the new URL is
-  // not known.
-  const GURL kAnotherGoodURL("http://www.youtube.com/");
-  EXPECT_FALSE(ThumbnailTabHelper::ShouldUpdateThumbnail(
-      &profile, top_sites.get(), kAnotherGoodURL));
-
-  // Should be true, as the existing thumbnail is bad (i.e. need a better one).
-  EXPECT_TRUE(ThumbnailTabHelper::ShouldUpdateThumbnail(
-      &profile, top_sites.get(), kGoodURL));
-
-  // Replace the thumbnail score with a really good one.
-  ThumbnailScore good_score;
-  good_score.time_at_snapshot = base::Time::Now();  // Very new.
-  good_score.at_top = true;
-  good_score.good_clipping = true;
-  good_score.boring_score = 0.0;
-  good_score.load_completed = true;
-  top_sites->AddKnownURL(kGoodURL, good_score);
-
-  // Should be false, as the existing thumbnail is good enough (i.e. don't
-  // need to replace the existing thumbnail which is new and good).
-  EXPECT_FALSE(ThumbnailTabHelper::ShouldUpdateThumbnail(
-      &profile, top_sites.get(), kGoodURL));
 }

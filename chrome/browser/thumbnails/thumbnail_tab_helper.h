@@ -21,10 +21,6 @@ class RenderViewHost;
 class RenderWidgetHost;
 }
 
-namespace history {
-class TopSites;
-}
-
 namespace skia {
 class PlatformBitmap;
 }
@@ -75,12 +71,6 @@ class ThumbnailTabHelper
                                    int desired_width,
                                    int desired_height,
                                    ClipResult* clip_result);
-
-  // Returns true if we should update the thumbnail of the given URL.
-  // Statically exposed for use by tests only.
-  static bool ShouldUpdateThumbnail(Profile* profile,
-                                    history::TopSites* top_sites,
-                                    const GURL& url);
 
  private:
   explicit ThumbnailTabHelper(content::WebContents* contents);

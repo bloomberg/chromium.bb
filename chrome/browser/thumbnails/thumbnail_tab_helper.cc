@@ -6,9 +6,10 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
+#include "chrome/browser/thumbnails/thumbnail_service.h"
+#include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -335,10 +336,15 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary(
   const GURL& url = web_contents->GetURL();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  history::TopSites* top_sites = profile->GetTopSites();
+
+  scoped_refptr<thumbnails::ThumbnailService> thumbnail_service =
+      ThumbnailServiceFactory::GetForProfile(profile);
+
   // Skip if we don't need to update the thumbnail.
-  if (!ShouldUpdateThumbnail(profile, top_sites, url))
+  if (thumbnail_service == NULL ||
+      !thumbnail_service->ShouldAcquirePageThumbnail(url)) {
     return;
+  }
 
   AsyncUpdateThumbnail(web_contents);
 }
@@ -348,8 +354,10 @@ void ThumbnailTabHelper::UpdateThumbnail(
     const ClipResult& clip_result) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  history::TopSites* top_sites = profile->GetTopSites();
-  if (!top_sites)
+  scoped_refptr<thumbnails::ThumbnailService> thumbnail_service =
+      ThumbnailServiceFactory::GetForProfile(profile);
+
+  if (!thumbnail_service)
     return;
 
   // Compute the thumbnail score.
@@ -365,7 +373,7 @@ void ThumbnailTabHelper::UpdateThumbnail(
 
   gfx::Image image(thumbnail);
   const GURL& url = web_contents->GetURL();
-  top_sites->SetPageThumbnail(url, &image, score);
+  thumbnail_service->SetPageThumbnail(url, image, score);
   VLOG(1) << "Thumbnail taken for " << url << ": " << score.ToString();
 }
 
@@ -444,35 +452,6 @@ void ThumbnailTabHelper::UpdateThumbnailWithCanvas(
 
   SkBitmap bitmap = temp_bitmap->GetBitmap();
   UpdateThumbnailWithBitmap(web_contents, clip_result, bitmap);
-}
-
-bool ThumbnailTabHelper::ShouldUpdateThumbnail(Profile* profile,
-                                               history::TopSites* top_sites,
-                                               const GURL& url) {
-  if (!profile || !top_sites)
-    return false;
-  // Skip if it's in the incognito mode.
-  if (profile->IsOffTheRecord())
-    return false;
-  // Skip if the given URL is not appropriate for history.
-  if (!HistoryService::CanAddURL(url))
-    return false;
-  // Skip if the top sites list is full, and the URL is not known.
-  if (top_sites->IsFull() && !top_sites->IsKnownURL(url))
-    return false;
-  // Skip if we don't have to udpate the existing thumbnail.
-  ThumbnailScore current_score;
-  if (top_sites->GetPageThumbnailScore(url, &current_score) &&
-      !current_score.ShouldConsiderUpdating())
-    return false;
-  // Skip if we don't have to udpate the temporary thumbnail (i.e. the one
-  // not yet saved).
-  ThumbnailScore temporary_score;
-  if (top_sites->GetTemporaryPageThumbnailScore(url, &temporary_score) &&
-      !temporary_score.ShouldConsiderUpdating())
-    return false;
-
-  return true;
 }
 
 void ThumbnailTabHelper::DidStartLoading(

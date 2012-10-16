@@ -17,8 +17,8 @@ namespace base {
 class RefCountedMemory;
 }
 
-namespace history {
-class TopSites;
+namespace thumbnails {
+class ThumbnailService;
 }
 
 // ThumbnailSource is the gateway between network-level chrome: requests for
@@ -48,8 +48,8 @@ class ThumbnailSource : public ChromeURLDataManager::DataSource {
   // database doesn't have a thumbnail for a webpage.
   scoped_refptr<base::RefCountedMemory> default_thumbnail_;
 
-  // TopSites.
-  scoped_refptr<history::TopSites> top_sites_;
+  // ThumbnailService.
+  scoped_refptr<thumbnails::ThumbnailService> thumbnail_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailSource);
 };

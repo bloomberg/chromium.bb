@@ -1696,6 +1696,7 @@
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_service_unittest.cc',
         'browser/themes/theme_syncable_service_unittest.cc',
+        'browser/thumbnails/thumbnail_service_unittest.cc',
         'browser/thumbnails/thumbnail_tab_helper_unittest.cc',
         'browser/ui/ash/event_rewriter_unittest.cc',
         'browser/ui/ash/ime_controller_chromeos_unittest.cc',

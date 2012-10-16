@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 
 #include "base/callback.h"
+#include "base/message_loop.h"
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/thumbnails/thumbnail_service.h"
+#include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -15,8 +17,8 @@
 
 ThumbnailSource::ThumbnailSource(Profile* profile)
     : DataSource(chrome::kChromeUIThumbnailHost, MessageLoop::current()),
-      // Set TopSites now as Profile isn't thread safe.
-      top_sites_(profile->GetTopSites()) {
+      // Set ThumbnailService now as Profile isn't thread safe.
+      thumbnail_service_(ThumbnailServiceFactory::GetForProfile(profile)) {
 }
 
 ThumbnailSource::~ThumbnailSource() {
@@ -26,7 +28,7 @@ void ThumbnailSource::StartDataRequest(const std::string& path,
                                        bool is_incognito,
                                        int request_id) {
   scoped_refptr<base::RefCountedMemory> data;
-  if (top_sites_->GetPageThumbnail(GURL(path), &data)) {
+  if (thumbnail_service_->GetPageThumbnail(GURL(path), &data)) {
     // We have the thumbnail.
     SendResponse(request_id, data.get());
   } else {
@@ -43,7 +45,8 @@ std::string ThumbnailSource::GetMimeType(const std::string&) const {
 MessageLoop* ThumbnailSource::MessageLoopForRequestPath(
     const std::string& path) const {
   // TopSites can be accessed from the IO thread.
-  return top_sites_.get() ? NULL : DataSource::MessageLoopForRequestPath(path);
+  return thumbnail_service_.get() ?
+      NULL : DataSource::MessageLoopForRequestPath(path);
 }
 
 void ThumbnailSource::SendDefaultThumbnail(int request_id) {

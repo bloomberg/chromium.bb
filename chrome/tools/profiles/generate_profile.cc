@@ -185,7 +185,7 @@ void InsertURLBatch(Profile* profile,
       const SkBitmap& bitmap = (RandomInt(0, 2) == 0) ? *google_bitmap :
                                                         *weewar_bitmap;
       gfx::Image image(bitmap);
-      top_sites->SetPageThumbnail(url, &image, score);
+      top_sites->SetPageThumbnail(url, image, score);
     }
 
     previous_url = url;
