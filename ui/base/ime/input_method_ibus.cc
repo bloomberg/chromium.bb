@@ -122,7 +122,11 @@ class InputMethodIBus::PendingKeyEvent {
 
   // corresponding XEvent data of a key event. It's a plain struct so we can do
   // bitwise copy.
-  XKeyEvent x_event_;
+  // Since |x_event_| might be treated as XEvent whose size is bigger than
+  // XKeyEvent e.g. in CopyNativeEvent() in ui/base/events/event.cc, allocating
+  // |x_event_| as XKeyEvent and casting it to XEvent is unsafe.
+  // crbug.com/151884
+  XEvent x_event_;
 
   const uint32 ibus_keyval_;
 
@@ -139,7 +143,7 @@ InputMethodIBus::PendingKeyEvent::PendingKeyEvent(
 
   // TODO(yusukes): Support non-native event (from e.g. a virtual keyboard).
   DCHECK(native_event);
-  x_event_ = *GetKeyEvent(native_event);
+  x_event_ = *native_event;
 }
 
 InputMethodIBus::PendingKeyEvent::~PendingKeyEvent() {
@@ -152,9 +156,7 @@ void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
     return;
 
   if (x_event_.type == KeyPress || x_event_.type == KeyRelease) {
-    input_method_->ProcessKeyEventPostIME(reinterpret_cast<XEvent*>(&x_event_),
-                                          ibus_keyval_,
-                                          handled);
+    input_method_->ProcessKeyEventPostIME(&x_event_, ibus_keyval_, handled);
     return;
   }
 
