@@ -138,6 +138,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                scoped_ptr<gdata::DocumentEntry> entry,
                                const FilePath& file_content_path,
                                const base::Closure& callback) OVERRIDE;
+  virtual DriveFileSystemMetadata GetMetadata() const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -153,8 +154,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
   virtual void OnDocumentFeedFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
-
-  DriveResourceMetadata* ResourceMetadata() { return resource_metadata_.get(); }
 
   // Used in tests to load the root feed from the cache.
   void LoadRootFeedFromCacheForTesting();

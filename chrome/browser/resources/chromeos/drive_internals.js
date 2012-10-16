@@ -125,8 +125,10 @@ function updateAccountMetadata(accountMetadata) {
 
   $('account-quota-info').textContent =
       quotaUsedInMb + ' / ' + quotaTotalInMb + ' (MB)';
-  $('account-largest-changestamp').textContent =
-      accountMetadata['account-largest-changestamp'];
+  $('account-largest-changestamp-remote').textContent =
+      accountMetadata['account-largest-changestamp-remote'];
+  $('account-largest-changestamp-local').textContent =
+      accountMetadata['account-largest-changestamp-local'];
 
   var installedAppContainer = $('account-installed-apps');
   for (var i = 0; i < accountMetadata['installed-apps'].length; i++) {

@@ -21,6 +21,7 @@ namespace drive {
 
 class DriveEntryProto;
 class DriveFileSystemObserver;
+class DriveResourceMetadata;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
@@ -35,6 +36,14 @@ struct SearchResultInfo {
 
   FilePath path;
   bool is_directory;
+};
+
+// Metadata of DriveFileSystem. Used by DriveFileSystem::GetMetadata().
+struct DriveFileSystemMetadata {
+  DriveFileSystemMetadata() : largest_changestamp(0) {}
+  ~DriveFileSystemMetadata() {}
+
+  int64 largest_changestamp;
 };
 
 // Used to get files from the file system.
@@ -346,6 +355,9 @@ class DriveFileSystemInterface {
                                scoped_ptr<gdata::DocumentEntry> entry,
                                const FilePath& file_content_path,
                                const base::Closure& callback) = 0;
+
+  // Returns metadata of the file system.
+  virtual DriveFileSystemMetadata GetMetadata() const = 0;
 };
 
 }  // namespace drive

@@ -10,12 +10,12 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
-#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -237,9 +237,8 @@ void DriveInternalsWebUIHandler::OnGetAccountMetadata(
                                about_resource->quota_bytes_total());
     account_metadata.SetDouble("account-quota-used",
                                about_resource->quota_bytes_used());
-    account_metadata.SetString(
-        "account-largest-changestamp",
-        base::Int64ToString(about_resource->largest_change_id()));
+    account_metadata.SetDouble("account-largest-changestamp-remote",
+                               about_resource->largest_change_id());
 
     // TODO(haruki): Fill installed Drive apps for Drive API.
     // http://crbug.com/154241
@@ -251,9 +250,8 @@ void DriveInternalsWebUIHandler::OnGetAccountMetadata(
     account_metadata.SetDouble("account-quota-total",
                                feed->quota_bytes_total());
     account_metadata.SetDouble("account-quota-used", feed->quota_bytes_used());
-    account_metadata.SetString(
-        "account-largest-changestamp",
-        base::Int64ToString(feed->largest_changestamp()));
+    account_metadata.SetDouble("account-largest-changestamp-remote",
+                               feed->largest_changestamp());
 
     base::ListValue* installed_apps = new base::ListValue();
     for (size_t i = 0; i < feed->installed_apps().size(); ++i) {
@@ -268,6 +266,12 @@ void DriveInternalsWebUIHandler::OnGetAccountMetadata(
     }
     account_metadata.Set("installed-apps", installed_apps);
   }
+
+  // Add the local largest chargestamp.
+  const drive::DriveFileSystemMetadata metadata =
+      GetSystemService()->file_system()->GetMetadata();
+  account_metadata.SetDouble("account-largest-changestamp-local",
+                             metadata.largest_changestamp);
 
   web_ui()->CallJavascriptFunction("updateAccountMetadata", account_metadata);
 }

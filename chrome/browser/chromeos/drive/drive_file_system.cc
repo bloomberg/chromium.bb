@@ -2651,6 +2651,12 @@ void DriveFileSystem::UpdateCacheEntryOnUIThread(
                                      params.callback));
 }
 
+DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
+  DriveFileSystemMetadata metadata;
+  metadata.largest_changestamp = resource_metadata_->largest_changestamp();
+  return metadata;
+}
+
 void DriveFileSystem::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {

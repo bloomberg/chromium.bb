@@ -100,6 +100,7 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
                                scoped_ptr<gdata::DocumentEntry> entry,
                                const FilePath& file_content_path,
                                const base::Closure& callback) OVERRIDE {}
+  MOCK_CONST_METHOD0(GetMetadata, DriveFileSystemMetadata());
 };
 
 }  // namespace drive
