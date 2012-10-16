@@ -309,7 +309,7 @@ gyp-arm-build() {
   export GYP_DEFINES="target_arch=arm \
     sysroot=${toolchain_dir} \
     linux_use_tcmalloc=0 armv7=1 arm_thumb=1"
-  export GYP_GENERATOR=make
+  export GYP_GENERATORS=make
 
   # NOTE: this step is also run implicitly as part of
   #        gclient runhooks --force
