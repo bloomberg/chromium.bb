@@ -423,7 +423,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
   // TODO(jeremya): as above, this requires more extension functions.
 }
 
-// TODO(benwells): fix these tests for ChromeOS.
+// ChromeOS does not support passing arguments on the command line, so the tests
+// that rely on this functionality are disabled.
 #if !defined(OS_CHROMEOS)
 // Tests that command line parameters get passed through to platform apps
 // via launchData correctly when launching with a file.
