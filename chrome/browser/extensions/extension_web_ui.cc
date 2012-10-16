@@ -230,10 +230,9 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
 
   // Hack: A few things we specialize just for the bookmark manager.
   if (extension->id() == extension_misc::kBookmarkManagerId) {
-    TabContents* tab = TabContents::FromWebContents(web_ui->GetWebContents());
-    DCHECK(tab);
     bookmark_manager_extension_event_router_.reset(
-        new BookmarkManagerExtensionEventRouter(profile, tab));
+        new BookmarkManagerExtensionEventRouter(profile,
+                                                web_ui->GetWebContents()));
 
     web_ui->SetLinkTransitionType(content::PAGE_TRANSITION_AUTO_BOOKMARK);
   }

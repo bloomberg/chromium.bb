@@ -13,13 +13,17 @@
 
 struct BookmarkNodeData;
 class Profile;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // Class that handles the chrome.bookmarkManagerPrivate events.
 class BookmarkManagerExtensionEventRouter
     : public BookmarkTabHelper::BookmarkDrag {
  public:
-  BookmarkManagerExtensionEventRouter(Profile* profile, TabContents* tab);
+  BookmarkManagerExtensionEventRouter(Profile* profile,
+                                      content::WebContents* web_contents);
   virtual ~BookmarkManagerExtensionEventRouter();
 
   // BookmarkTabHelper::BookmarkDrag interface
@@ -43,7 +47,7 @@ class BookmarkManagerExtensionEventRouter
   void DispatchDragEvent(const BookmarkNodeData& data, const char* event_name);
 
   Profile* profile_;
-  TabContents* tab_;
+  content::WebContents* web_contents_;
   BookmarkNodeData bookmark_drag_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkManagerExtensionEventRouter);
