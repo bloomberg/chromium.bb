@@ -347,9 +347,9 @@ void WebPluginImpl::updateGeometry(
   }
 
   // Only UpdateGeometry if either the window or clip rects have changed.
-  if (first_geometry_update_ ||
+  if (delegate_ && (first_geometry_update_ ||
       new_geometry.window_rect != geometry_.window_rect ||
-      new_geometry.clip_rect != geometry_.clip_rect) {
+      new_geometry.clip_rect != geometry_.clip_rect)) {
     // Notify the plugin that its parameters have changed.
     delegate_->UpdateGeometry(new_geometry.window_rect, new_geometry.clip_rect);
   }
