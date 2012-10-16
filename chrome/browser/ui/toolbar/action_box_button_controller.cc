@@ -5,22 +5,44 @@
 #include "chrome/browser/ui/toolbar/action_box_button_controller.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/intents/web_intents_registry_factory.h"
+#include "chrome/browser/intents/web_intents_registry.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_intents_dispatcher.h"
+#include "grit/generated_resources.h"
+#include "webkit/glue/web_intent_data.h"
+#include "webkit/glue/webkit_glue.h"
 
 namespace {
 
-// Extensions get command IDs that are beyond the maximal valid command ID
+// Share intents get command IDs that are beyond the maximal valid command ID
 // (0xDFFF) so that they are not confused with actual commands that appear in
-// the menu. For more details see: chrome/app/chrome_command_ids.h
-const int kFirstExtensionCommandId = 0xE000;
+// the menu. Extensions get a reserved block of commands after share handlers.
+// For more details see: chrome/app/chrome_command_ids.h
+const int kMaxShareItemsToShow = 20;  // TODO(skare): Show extras in submenu.
+enum ActionBoxLocalCommandIds {
+  CWS_FIND_SHARE_INTENTS_COMMAND = 0xE000,
+  SHARE_COMMAND_FIRST,
+  SHARE_COMMAND_LAST =
+      SHARE_COMMAND_FIRST + kMaxShareItemsToShow - 1,
+  EXTENSION_COMMAND_FIRST
+};
+
+const char kShareIntentAction[] = "http://webintents.org/share";
+const char kShareIntentMimeType[] = "text/uri-list";
 
 }  // namespace
 
@@ -28,7 +50,7 @@ ActionBoxButtonController::ActionBoxButtonController(Browser* browser,
                                                      Delegate* delegate)
     : browser_(browser),
       delegate_(delegate),
-      next_extension_command_id_(kFirstExtensionCommandId) {
+      next_extension_command_id_(EXTENSION_COMMAND_FIRST) {
   DCHECK(browser_);
   DCHECK(delegate_);
   registrar_.Add(this,
@@ -39,15 +61,50 @@ ActionBoxButtonController::ActionBoxButtonController(Browser* browser,
 ActionBoxButtonController::~ActionBoxButtonController() {}
 
 void ActionBoxButtonController::OnButtonClicked() {
-  // Creating the action box menu will populate it with the bookmark star etc,
-  // but no extensions.
+  // Build a menu model and display the menu.
   scoped_ptr<ActionBoxMenuModel> menu_model(
       new ActionBoxMenuModel(browser_, this));
 
-  // Add the extensions.
+  // Add share intent triggers and a link to the web store.
+  // Web Intents are not currently supported in Incognito mode.
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser_->profile())->
           extension_service();
+  if (!browser_->profile()->IsOffTheRecord()) {
+    int next_share_intent_command_id = SHARE_COMMAND_FIRST;
+    share_intent_service_ids_.clear();
+    const ExtensionSet* extension_set = extension_service->extensions();
+    WebIntentsRegistry* intents_registry =
+        WebIntentsRegistryFactory::GetForProfile(browser_->profile());
+    for (ExtensionSet::const_iterator it = extension_set->begin();
+         it != extension_set->end(); ++it) {
+      const extensions::Extension* extension = *it;
+      WebIntentsRegistry::IntentServiceList services;
+      intents_registry->GetIntentServicesForExtensionFilter(
+          ASCIIToUTF16(kShareIntentAction),
+          ASCIIToUTF16(kShareIntentMimeType),
+          extension->id(),
+          &services);
+      if (!services.empty()) {
+        int command_id = next_share_intent_command_id++;
+        if (command_id > SHARE_COMMAND_LAST)
+          break;
+        // TODO(skare): If an intent supports multiple services, be able to
+        // disambiguate. Choosing the first matches the picker behavior; see
+        // TODO in WebIntentPickerController::DispatchToInstalledExtension.
+        share_intent_service_ids_[command_id] = services[0].service_url;
+        menu_model->AddItem(command_id, services[0].title);
+      }
+    }
+
+    // Add link to the Web Store to find additional share intents.
+    menu_model->AddItemWithStringId(CWS_FIND_SHARE_INTENTS_COMMAND,
+        IDS_FIND_SHARE_INTENTS);
+  }
+
+  // Add Extensions.
+  next_extension_command_id_ = EXTENSION_COMMAND_FIRST;
+  extension_command_ids_.clear();
   const extensions::ExtensionList& extensions =
       extension_service->toolbar_model()->action_box_menu_items();
   for (extensions::ExtensionList::const_iterator it = extensions.begin();
@@ -55,6 +112,7 @@ void ActionBoxButtonController::OnButtonClicked() {
     menu_model->AddExtension(**it, GetCommandIdForExtension(**it));
   }
 
+  // And show the menu.
   delegate_->ShowMenu(menu_model.Pass());
 }
 
@@ -73,7 +131,19 @@ bool ActionBoxButtonController::GetAcceleratorForCommandId(
 }
 
 void ActionBoxButtonController::ExecuteCommand(int command_id) {
-  // It might be a command associated with an extension.
+  // Handle explicit intent triggers for share intent commands.
+  if (share_intent_service_ids_.count(command_id) > 0) {
+    TriggerExplicitShareIntent(share_intent_service_ids_[command_id]);
+    return;
+  }
+
+  // Handle link to the CWS web store.
+  if (command_id == CWS_FIND_SHARE_INTENTS_COMMAND) {
+    NavigateToWebStoreShareIntentsList();
+    return;
+  }
+
+  // Handle commands associated with extensions.
   // Note that the extension might have been uninstalled or disabled while the
   // menu was open (sync perhaps?) but that will just fall through safely.
   const extensions::Extension* extension =
@@ -86,6 +156,7 @@ void ActionBoxButtonController::ExecuteCommand(int command_id) {
     return;
   }
 
+  // Otherwise, let the browser handle the command.
   chrome::ExecuteCommand(browser_, command_id);
 }
 
@@ -132,4 +203,26 @@ void ActionBoxButtonController::Observe(
   // TODO(kalman): if there's a menu open, remove it from that too.
   // We may also want to listen to EXTENSION_LOADED to do the opposite.
   extension_command_ids_.erase(extension->id());
+}
+
+void ActionBoxButtonController::TriggerExplicitShareIntent(
+    const GURL& share_service_url) {
+  const GURL& current_url = chrome::GetActiveWebContents(browser_)->GetURL();
+  webkit_glue::WebIntentData intent_data(
+      ASCIIToUTF16(kShareIntentAction),
+      ASCIIToUTF16(kShareIntentMimeType),
+      UTF8ToUTF16(current_url.spec()));
+  intent_data.service = share_service_url;
+  static_cast<content::WebContentsDelegate*>(browser_)->WebIntentDispatch(
+      NULL, content::WebIntentsDispatcher::Create(intent_data));
+}
+
+void ActionBoxButtonController::NavigateToWebStoreShareIntentsList() {
+  const GURL& query_url = extension_urls::GetWebstoreIntentQueryURL(
+      kShareIntentAction,
+      kShareIntentMimeType);
+  chrome::NavigateParams params(browser_->profile(), query_url,
+                                content::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
 }

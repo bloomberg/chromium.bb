@@ -6958,8 +6958,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CHROME_TO_MOBILE" desc="The text for chrome to mobile menu item">
         Send tab to device
       </message>
-      <message name="IDS_SHARE_PAGE" desc="The text for the Share Page action box menu item">
-        Share this page
+      <message name="IDS_FIND_SHARE_INTENTS" desc="The text for the 'Find places to share' action box menu item">
+        Find places to share
       </message>
 
       <!--Accessible name/action strings-->

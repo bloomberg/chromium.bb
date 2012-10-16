@@ -694,18 +694,6 @@ void ShowChromeToMobileBubble(Browser* browser) {
     browser->window()->ShowChromeToMobileBubble();
 }
 
-void ShareCurrentPage(Browser* browser) {
-  const GURL& current_url = chrome::GetActiveWebContents(browser)->GetURL();
-  webkit_glue::WebIntentData intent_data(
-      ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("text/uri-list"),
-      UTF8ToUTF16(current_url.spec()));
-  scoped_ptr<content::WebIntentsDispatcher> dispatcher(
-      content::WebIntentsDispatcher::Create(intent_data));
-  static_cast<content::WebContentsDelegate*>(browser)->
-      WebIntentDispatch(NULL, dispatcher.release());
-}
-
 void Print(Browser* browser) {
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(
