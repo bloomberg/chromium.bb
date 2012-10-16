@@ -107,7 +107,7 @@ void CCLayerImpl::clearChildList()
 void CCLayerImpl::createRenderSurface()
 {
     ASSERT(!m_renderSurface);
-    m_renderSurface = adoptPtr(new CCRenderSurface(this));
+    m_renderSurface = make_scoped_ptr(new CCRenderSurface(this));
     setRenderTarget(this);
 }
 

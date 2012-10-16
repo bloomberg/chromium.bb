@@ -11,7 +11,7 @@ namespace cc {
 
 class CCScrollbarAnimationControllerLinearFade : public CCScrollbarAnimationController {
 public:
-    static PassOwnPtr<CCScrollbarAnimationControllerLinearFade> create(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength);
+    static scoped_ptr<CCScrollbarAnimationControllerLinearFade> create(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength);
 
     virtual ~CCScrollbarAnimationControllerLinearFade();
 

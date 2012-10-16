@@ -16,16 +16,16 @@
 namespace cc {
 
 #if OS(ANDROID)
-PassOwnPtr<CCScrollbarAnimationController> CCScrollbarAnimationController::create(CCLayerImpl* scrollLayer)
+scoped_ptr<CCScrollbarAnimationController> CCScrollbarAnimationController::create(CCLayerImpl* scrollLayer)
 {
     static const double fadeoutDelay = 0.3;
     static const double fadeoutLength = 0.3;
-    return CCScrollbarAnimationControllerLinearFade::create(scrollLayer, fadeoutDelay, fadeoutLength);
+    return CCScrollbarAnimationControllerLinearFade::create(scrollLayer, fadeoutDelay, fadeoutLength).PassAs<CCScrollbarAnimationController>();
 }
 #else
-PassOwnPtr<CCScrollbarAnimationController> CCScrollbarAnimationController::create(CCLayerImpl* scrollLayer)
+scoped_ptr<CCScrollbarAnimationController> CCScrollbarAnimationController::create(CCLayerImpl* scrollLayer)
 {
-    return adoptPtr(new CCScrollbarAnimationController(scrollLayer));
+    return make_scoped_ptr(new CCScrollbarAnimationController(scrollLayer));
 }
 #endif
 

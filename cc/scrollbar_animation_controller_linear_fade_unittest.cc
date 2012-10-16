@@ -9,7 +9,6 @@
 #include "CCScrollbarLayerImpl.h"
 #include "CCSingleThreadProxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <wtf/OwnPtr.h>
 
 using namespace cc;
 
@@ -33,7 +32,7 @@ protected:
 
     DebugScopedSetImplThread implThread;
 
-    OwnPtr<CCScrollbarAnimationControllerLinearFade> m_scrollbarController;
+    scoped_ptr<CCScrollbarAnimationControllerLinearFade> m_scrollbarController;
     scoped_ptr<CCLayerImpl> m_scrollLayer;
     CCLayerImpl* m_contentLayer;
     scoped_ptr<CCScrollbarLayerImpl> m_scrollbarLayer;

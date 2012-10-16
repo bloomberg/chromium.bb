@@ -5,9 +5,9 @@
 #ifndef CCScrollbarAnimationController_h
 #define CCScrollbarAnimationController_h
 
+#include "base/memory/scoped_ptr.h"
 #include "FloatPoint.h"
 #include "IntSize.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -18,8 +18,7 @@ class CCScrollbarLayerImpl;
 // Individual platforms should subclass it to provide specialized implementation.
 class CCScrollbarAnimationController {
 public:
-    // Implemented by subclass.
-    static PassOwnPtr<CCScrollbarAnimationController> create(CCLayerImpl* scrollLayer);
+    static scoped_ptr<CCScrollbarAnimationController> create(CCLayerImpl* scrollLayer);
 
     virtual ~CCScrollbarAnimationController();
 

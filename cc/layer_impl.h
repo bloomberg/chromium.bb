@@ -20,7 +20,6 @@
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 #include <string>
-#include <wtf/OwnPtr.h>
 
 namespace cc {
 
@@ -153,7 +152,7 @@ public:
 
     CCRenderSurface* renderSurface() const { return m_renderSurface.get(); }
     void createRenderSurface();
-    void clearRenderSurface() { m_renderSurface.clear(); }
+    void clearRenderSurface() { m_renderSurface.reset(); }
 
     float drawOpacity() const { return m_drawOpacity; }
     void setDrawOpacity(float opacity) { m_drawOpacity = opacity; }
@@ -374,7 +373,7 @@ private:
 
     // Render surface associated with this layer. The layer and its descendants
     // will render to this surface.
-    OwnPtr<CCRenderSurface> m_renderSurface;
+    scoped_ptr<CCRenderSurface> m_renderSurface;
 
     // Hierarchical bounding rect containing the layer and its descendants.
     // Uses target surface's space.
@@ -389,7 +388,7 @@ private:
     scoped_ptr<CCLayerAnimationController> m_layerAnimationController;
 
     // Manages scrollbars for this layer
-    OwnPtr<CCScrollbarAnimationController> m_scrollbarAnimationController;
+    scoped_ptr<CCScrollbarAnimationController> m_scrollbarAnimationController;
 };
 
 void sortLayers(std::vector<CCLayerImpl*>::iterator first, std::vector<CCLayerImpl*>::iterator end, CCLayerSorter*);

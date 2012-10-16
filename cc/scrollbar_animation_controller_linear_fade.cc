@@ -10,9 +10,9 @@
 
 namespace cc {
 
-PassOwnPtr<CCScrollbarAnimationControllerLinearFade> CCScrollbarAnimationControllerLinearFade::create(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
+scoped_ptr<CCScrollbarAnimationControllerLinearFade> CCScrollbarAnimationControllerLinearFade::create(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
 {
-    return adoptPtr(new CCScrollbarAnimationControllerLinearFade(scrollLayer, fadeoutDelay, fadeoutLength));
+    return make_scoped_ptr(new CCScrollbarAnimationControllerLinearFade(scrollLayer, fadeoutDelay, fadeoutLength));
 }
 
 CCScrollbarAnimationControllerLinearFade::CCScrollbarAnimationControllerLinearFade(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
