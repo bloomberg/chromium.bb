@@ -65,23 +65,65 @@ enum PopupItemType {
   POPUP_ITEM_TYPE_ENABLED
 };
 
+namespace content {
+
 namespace {
 jfieldID g_native_content_view;
+
+const void* kContentViewUserDataKey = &kContentViewUserDataKey;
 }  // namespace
 
-namespace content {
+// Enables a callback when the underlying WebContents is destroyed, to enable
+// nulling the back-pointer.
+class ContentViewCoreImpl::ContentViewUserData
+    : public base::SupportsUserData::Data {
+ public:
+  explicit ContentViewUserData(ContentViewCoreImpl* content_view_core)
+      : content_view_core_(content_view_core) {
+  }
+
+  virtual ~ContentViewUserData() {
+    // TODO(joth): When chrome has finished removing the TabContents class (see
+    // crbug.com/107201) consider inverting relationship, so ContentViewCore
+    // would own WebContents. That effectively implies making the WebContents
+    // destructor private on Android.
+    delete content_view_core_;
+  }
+
+  ContentViewCoreImpl* get() const { return content_view_core_; }
+
+ private:
+  // Not using scoped_ptr as ContentViewCoreImpl destructor is private.
+  ContentViewCoreImpl* content_view_core_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ContentViewUserData);
+};
 
 struct ContentViewCoreImpl::JavaObject {
   ScopedJavaGlobalRef<jclass> rect_clazz;
   jmethodID rect_constructor;
 };
 
+// static
+ContentViewCoreImpl* ContentViewCoreImpl::FromWebContents(
+    content::WebContents* web_contents) {
+  ContentViewCoreImpl::ContentViewUserData* data =
+      reinterpret_cast<ContentViewCoreImpl::ContentViewUserData*>(
+          web_contents->GetUserData(kContentViewUserDataKey));
+  return data ? data->get() : NULL;
+}
+
+// static
+ContentViewCore* ContentViewCore::FromWebContents(
+    content::WebContents* web_contents) {
+  return ContentViewCoreImpl::FromWebContents(web_contents);
+}
+
 ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
                                                            jobject obj) {
   return reinterpret_cast<ContentViewCore*>(
       env->GetIntField(obj, g_native_content_view));
 }
-
 
 ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          bool hardware_accelerated,
@@ -119,31 +161,42 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       webkit_glue::BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
   web_contents->SetUserAgentOverride(spoofed_ua);
 
-  InitWebContents(web_contents);
+  InitWebContents();
 }
 
 ContentViewCoreImpl::~ContentViewCoreImpl() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  java_ref_.reset();
+  if (!j_obj.is_null()) {
+    Java_ContentViewCore_onNativeContentViewCoreDestroyed(
+        env, j_obj.obj(), reinterpret_cast<jint>(this));
+  }
   // Make sure nobody calls back into this object while we are tearing things
   // down.
   notification_registrar_.RemoveAll();
 
   delete java_object_;
   java_object_ = NULL;
+}
+
+void ContentViewCoreImpl::OnJavaContentViewCoreDestroyed(JNIEnv* env,
+                                                         jobject obj) {
+  DCHECK(env->IsSameObject(java_ref_.get(env).obj(), obj));
   java_ref_.reset();
 }
 
-void ContentViewCoreImpl::Destroy(JNIEnv* env, jobject obj) {
-  delete this;
-}
-
-void ContentViewCoreImpl::InitWebContents(WebContents* web_contents) {
-  web_contents_ = static_cast<WebContentsImpl*>(web_contents);
+void ContentViewCoreImpl::InitWebContents() {
+  DCHECK(web_contents_);
   notification_registrar_.Add(this,
       NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       Source<NavigationController>(&web_contents_->GetController()));
 
   static_cast<WebContentsViewAndroid*>(web_contents_->GetView())->
       SetContentViewCore(this);
+  DCHECK(!web_contents_->GetUserData(kContentViewUserDataKey));
+  web_contents_->SetUserData(kContentViewUserDataKey,
+                             new ContentViewUserData(this));
 }
 
 void ContentViewCoreImpl::Observe(int type,

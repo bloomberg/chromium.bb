@@ -35,6 +35,7 @@ class RenderWidgetHostViewAndroid;
 class ContentViewCoreImpl : public ContentViewCore,
                             public NotificationObserver {
  public:
+  static ContentViewCoreImpl* FromWebContents(WebContents* web_contents);
   ContentViewCoreImpl(JNIEnv* env,
                       jobject obj,
                       bool hardware_accelerated,
@@ -42,7 +43,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                       ui::WindowAndroid* window_android);
 
   // ContentViewCore implementation.
-  virtual void Destroy(JNIEnv* env, jobject obj) OVERRIDE;
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() OVERRIDE;
   virtual WebContents* GetWebContents() const OVERRIDE;
   virtual ui::WindowAndroid* GetWindowAndroid() OVERRIDE;
@@ -54,6 +54,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
   // --------------------------------------------------------------------------
+
+  void OnJavaContentViewCoreDestroyed(JNIEnv* env, jobject obj);
 
   // Notifies the ContentViewCore that items were selected in the currently
   // showing select popup.
@@ -211,15 +213,14 @@ class ContentViewCoreImpl : public ContentViewCore,
   gfx::Rect GetBounds() const;
 
  private:
+  class ContentViewUserData;
+  friend class ContentViewUserData;
+  virtual ~ContentViewCoreImpl();
+
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
-
-  // --------------------------------------------------------------------------
-  // Private methods that call to Java via JNI
-  // --------------------------------------------------------------------------
-  virtual ~ContentViewCoreImpl();
 
   // --------------------------------------------------------------------------
   // Other private methods and data
@@ -227,7 +228,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void InitJNI(JNIEnv* env, jobject obj);
 
-  void InitWebContents(content::WebContents* web_contents);
+  void InitWebContents();
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 

@@ -40,7 +40,6 @@ import org.chromium.base.WeakContext;
 import org.chromium.content.app.AppResource;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
-import org.chromium.content.common.CleanupReference;
 import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
 
@@ -131,19 +130,6 @@ public class ContentViewCore implements MotionEventDelegate {
          */
         boolean super_awakenScrollBars(int startDelay, boolean invalidate);
     }
-
-    private static final class DestroyRunnable implements Runnable {
-        private final int mNativeContentViewCore;
-        private DestroyRunnable(int nativeContentViewCore) {
-            mNativeContentViewCore = nativeContentViewCore;
-        }
-        @Override
-        public void run() {
-            nativeDestroy(mNativeContentViewCore);
-        }
-    }
-
-    private CleanupReference mCleanupReference;
 
     private final Context mContext;
     private ViewGroup mContainerView;
@@ -450,8 +436,6 @@ public class ContentViewCore implements MotionEventDelegate {
         mContainerView = containerView;
         mNativeContentViewCore = nativeInit(mHardwareAccelerated, nativeWebContents,
                 nativeWindow.getNativePointer());
-        mCleanupReference = new CleanupReference(
-                this, new DestroyRunnable(mNativeContentViewCore));
         mContentSettings = new ContentSettings(
                 this, mNativeContentViewCore, isAccessFromFileURLsGrantedByDefault);
         initializeContainerView(internalDispatcher);
@@ -476,6 +460,12 @@ public class ContentViewCore implements MotionEventDelegate {
                 hidePopupDialog();
             }
         };
+    }
+
+    @CalledByNative
+    void onNativeContentViewCoreDestroyed(int nativeContentViewCore) {
+        assert nativeContentViewCore == mNativeContentViewCore;
+        mNativeContentViewCore = 0;
     }
 
     /**
@@ -566,7 +556,9 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     public void destroy() {
         hidePopupDialog();
-        mCleanupReference.cleanupNow();
+        if (mNativeContentViewCore != 0) {
+            nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
+        }
         mNativeContentViewCore = 0;
         // Do not propagate the destroy() to settings, as the client may still hold a reference to
         // that and could still be using it.
@@ -2082,7 +2074,7 @@ public class ContentViewCore implements MotionEventDelegate {
     private native int nativeInit(boolean hardwareAccelerated, int webContentsPtr,
             int windowAndroidPtr);
 
-    private static native void nativeDestroy(int nativeContentViewCore);
+    private native void nativeOnJavaContentViewCoreDestroyed(int nativeContentViewCoreImpl);
 
     private native void nativeLoadUrl(
             int nativeContentViewCoreImpl,
