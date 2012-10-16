@@ -12,6 +12,8 @@ import android.view.MotionEvent;
 import android.util.Log;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.android_webview.test.util.TestWebServer;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -31,10 +33,11 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the WebViewClient.shouldOverrideUrlLoading() method.
  */
-public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
+public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     private final static String ABOUT_BLANK_URL = "about:blank";
     private final static String DATA_URL = "data:text/html,<div/>";
     private final static String REDIRECT_TARGET_PATH = "/redirect_target.html";
+    private final static String TITLE = "TITLE";
 
     private static final long TEST_TIMEOUT = 20000L;
     private static final int CHECK_INTERVAL = 100;
@@ -85,7 +88,6 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         private ShouldIgnoreNavigationHelper mShouldIgnoreNavigationHelper;
 
         public TestAwContentsClient() {
-            super();
             mShouldIgnoreNavigationHelper = new ShouldIgnoreNavigationHelper();
         }
 
@@ -97,32 +99,8 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     private void clickOnLinkUsingJs(final AwContents awContents,
             final TestAwContentsClient contentsClient) throws Throwable {
         enableJavaScriptOnUiThread(awContents);
-
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    String linkIsNotNull = executeJavaScriptAndWaitForResult(awContents,
-                        contentsClient, "document.getElementById('link') != null");
-                    return linkIsNotNull.equals("true");
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                    fail("Failed to check if DOM is loaded: " + t.toString());
-                    return false;
-                }
-            }
-        }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
-
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                awContents.getContentViewCore().evaluateJavaScript(
-                    "var evObj = document.createEvent('Events'); " +
-                    "evObj.initEvent('click', true, false); " +
-                    "document.getElementById('link').dispatchEvent(evObj);" +
-                    "console.log('element with id link clicked');");
-            }
-        });
+        JSUtils.clickOnLinkUsingJs(this, awContents,
+                contentsClient.getOnEvaluateJavaScriptResultHelper(), "link");
     }
 
     // Since this value is read on the UI thread, it's simpler to set it there too.
@@ -138,21 +116,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
     }
 
     private String makeHtmlPageFrom(String headers, String body) {
-        return "<html>" +
-                    "<head>" +
-                        "<title>Title</title>" +
-                        "<style type=\"text/css\">" +
-                            // Make the image take up all of the page so that we don't have to do
-                            // any fancy hit target calculations when synthesizing the touch event
-                            // to click it.
-                            "img.big { width:100%; height:100%; background-color:blue; }" +
-                        "</style>" +
-                        headers +
-                    "</head>" +
-                    "<body>" +
-                        body +
-                    "</body>" +
-                "</html>";
+        return CommonResources.makeHtmlPageFrom("<title>" + TITLE + "</title> " + headers, body);
     }
 
     private String getHtmlForPageWithSimpleLinkTo(String destination) {
@@ -241,7 +205,7 @@ public class AwShouldIgnoreNavigationTest extends AndroidWebViewTestBase {
         loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 getHtmlForPageWithSimpleLinkTo(DATA_URL), "text/html", false);
 
-        assertEquals("Title", getTitleOnUiThread(awContents));
+        assertEquals(TITLE, getTitleOnUiThread(awContents));
     }
 
     /**

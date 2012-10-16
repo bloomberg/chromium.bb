@@ -38,6 +38,10 @@ class NullContentsClient extends AwContentsClient {
     }
 
     @Override
+    public void onLoadResource(String url) {
+    }
+
+    @Override
     public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
         return false;
     }

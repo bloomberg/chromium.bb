@@ -5,12 +5,14 @@
 package org.chromium.android_webview;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
 
 import java.io.InputStream;
 
 /**
  * The response information that is to be returned for a particular resource fetch.
  */
+@JNINamespace("android_webview")
 public class InterceptedRequestData {
     private String mMimeType;
     private String mCharset;

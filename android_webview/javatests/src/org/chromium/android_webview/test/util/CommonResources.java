@@ -85,4 +85,21 @@ public class CommonResources {
         "    This is the Google!" +
         "  </body>" +
         "</html>";
+
+    public static String makeHtmlPageFrom(String headers, String body) {
+        return "<html>" +
+                 "<head>" +
+                     "<style type=\"text/css\">" +
+                         // Make the image take up all of the page so that we don't have to do
+                         // any fancy hit target calculations when synthesizing the touch event
+                         // to click it.
+                         "img.big { width:100%; height:100%; background-color:blue; }" +
+                     "</style>" +
+                     headers +
+                 "</head>" +
+                 "<body>" +
+                     body +
+                 "</body>" +
+             "</html>";
+    }
 }

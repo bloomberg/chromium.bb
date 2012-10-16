@@ -10,7 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
 
-class InterceptedRequestData;
+class GURL;
 
 namespace content {
 class WebContents;
@@ -21,6 +21,8 @@ class URLRequest;
 }
 
 namespace android_webview {
+
+class InterceptedRequestData;
 
 class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
  public:
@@ -35,6 +37,7 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
 
   // Implementation of AwContentsIoThreadClient.
   virtual scoped_ptr<InterceptedRequestData> ShouldInterceptRequest(
+      const GURL& location,
       const net::URLRequest* request) OVERRIDE;
   virtual bool ShouldBlockContentUrls() const OVERRIDE;
   virtual bool ShouldBlockFileUrls() const OVERRIDE;

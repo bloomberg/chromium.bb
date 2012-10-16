@@ -6,6 +6,7 @@
 
 // TODO(joth): Componentize or remove chrome/... dependencies.
 #include "android_webview/browser/net/aw_network_delegate.h"
+#include "android_webview/browser/aw_request_interceptor.h"
 #include "android_webview/native/android_protocol_handler.h"
 #include "android_webview/native/aw_contents_container.h"
 #include "base/bind.h"
@@ -59,10 +60,10 @@ void AwBrowserDependencyFactoryImpl::InstallInstance() {
   SetInstance(g_lazy_instance.Pointer());
 }
 
-// Initializing the Network Delegate here is only a temporary solution until we
-// build an Android WebView specific BrowserContext that can handle building
-// this internally.
-void AwBrowserDependencyFactoryImpl::InitializeNetworkDelegateOnIOThread(
+// Initializing the Network Delegate here is only a temporary solution until
+// an Android WebView specific BrowserContext (which can then handle building
+// this internally is) available.
+void AwBrowserDependencyFactoryImpl::InitOnIOThreadWithBrowserContext(
     net::URLRequestContextGetter* normal_context,
     net::URLRequestContextGetter* incognito_context) {
   network_delegate_.reset(new AwNetworkDelegate());
@@ -70,6 +71,9 @@ void AwBrowserDependencyFactoryImpl::InitializeNetworkDelegateOnIOThread(
       network_delegate_.get());
   incognito_context->GetURLRequestContext()->set_network_delegate(
       network_delegate_.get());
+
+  AwRequestInterceptor::RegisterInterceptorOnIOThread(normal_context);
+  AwRequestInterceptor::RegisterInterceptorOnIOThread(incognito_context);
 }
 
 void AwBrowserDependencyFactoryImpl::EnsureContextDependentHooksInitialized()
@@ -81,7 +85,7 @@ void AwBrowserDependencyFactoryImpl::EnsureContextDependentHooksInitialized()
   profile->GetRequestContext()->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(
-          &AwBrowserDependencyFactoryImpl::InitializeNetworkDelegateOnIOThread,
+          &AwBrowserDependencyFactoryImpl::InitOnIOThreadWithBrowserContext,
           base::Unretained(this),
           make_scoped_refptr(profile->GetRequestContext()),
           make_scoped_refptr(

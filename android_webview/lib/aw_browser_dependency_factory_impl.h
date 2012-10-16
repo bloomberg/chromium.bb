@@ -33,7 +33,7 @@ class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
       content::WebContents* contents) OVERRIDE;
 
  private:
-  void InitializeNetworkDelegateOnIOThread(
+  void InitOnIOThreadWithBrowserContext(
       net::URLRequestContextGetter* normal_context,
       net::URLRequestContextGetter* incognito_context);
   void EnsureContextDependentHooksInitialized();

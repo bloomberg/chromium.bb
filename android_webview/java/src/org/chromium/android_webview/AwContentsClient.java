@@ -142,6 +142,8 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract InterceptedRequestData shouldInterceptRequest(String url);
 
+    public abstract void onLoadResource(String url);
+
     public abstract boolean shouldIgnoreNavigation(String url);
 
     public abstract void onUnhandledKeyEvent(KeyEvent event);

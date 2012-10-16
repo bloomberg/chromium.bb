@@ -7,7 +7,7 @@
 #include <map>
 #include <utility>
 
-#include "android_webview/native/intercepted_request_data.h"
+#include "android_webview/native/intercepted_request_data_impl.h"
 #include "base/android/jni_helper.h"
 #include "base/android/jni_string.h"
 #include "base/lazy_instance.h"
@@ -15,10 +15,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
 #include "jni/AwContentsIoThreadClient_jni.h"
@@ -177,6 +178,7 @@ AwContentsIoThreadClientImpl::~AwContentsIoThreadClientImpl() {
 
 scoped_ptr<InterceptedRequestData>
 AwContentsIoThreadClientImpl::ShouldInterceptRequest(
+    const GURL& location,
     const net::URLRequest* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (java_object_.is_null())
@@ -184,14 +186,14 @@ AwContentsIoThreadClientImpl::ShouldInterceptRequest(
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jstring_url =
-      ConvertUTF8ToJavaString(env, request->url().spec());
+      ConvertUTF8ToJavaString(env, location.spec());
   ScopedJavaLocalRef<jobject> ret =
       Java_AwContentsIoThreadClient_shouldInterceptRequest(
           env, java_object_.obj(), jstring_url.obj());
   if (ret.is_null())
     return scoped_ptr<InterceptedRequestData>();
   return scoped_ptr<InterceptedRequestData>(
-      new InterceptedRequestData(ret));
+      new InterceptedRequestDataImpl(ret));
 }
 
 bool AwContentsIoThreadClientImpl::ShouldBlockContentUrls() const {

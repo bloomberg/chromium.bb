@@ -13,6 +13,7 @@ import junit.framework.Assert;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
@@ -233,19 +234,8 @@ public class AndroidWebViewTestBase
      */
     protected String executeJavaScriptAndWaitForResult(final AwContents awContents,
             TestAwContentsClient viewClient, final String code) throws Throwable {
-        final AtomicInteger requestId = new AtomicInteger();
-        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper
-                onEvaluateJavaScriptResultHelper = viewClient.getOnEvaluateJavaScriptResultHelper();
-        int currentCallCount = onEvaluateJavaScriptResultHelper.getCallCount();
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                requestId.set(awContents.getContentViewCore().evaluateJavaScript(code));
-            }
-        });
-        onEvaluateJavaScriptResultHelper.waitForCallback(currentCallCount);
-        Assert.assertEquals("Response ID mismatch when evaluating JavaScript.",
-                requestId.get(), onEvaluateJavaScriptResultHelper.getId());
-        return onEvaluateJavaScriptResultHelper.getJsonResult();
+        return JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+                viewClient.getOnEvaluateJavaScriptResultHelper(),
+                code);
     }
 }

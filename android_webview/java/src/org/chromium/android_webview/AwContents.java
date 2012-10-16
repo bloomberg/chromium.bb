@@ -7,6 +7,8 @@ package org.chromium.android_webview;
 import android.graphics.Bitmap;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -46,6 +48,7 @@ public class AwContents {
 
     private static final String WEB_ARCHIVE_EXTENSION = ".mht";
 
+
     private int mNativeAwContents;
     private ContentViewCore mContentViewCore;
     private AwContentsClient mContentsClient;
@@ -53,6 +56,7 @@ public class AwContents {
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
+    private final IoThreadClientHandler mIoThreadClientHandler;
 
     private static final class DestroyRunnable implements Runnable {
         private int mNativeAwContents;
@@ -67,11 +71,33 @@ public class AwContents {
 
     private CleanupReference mCleanupReference;
 
+    private class IoThreadClientHandler extends Handler {
+        public static final int MSG_SHOULD_INTERCEPT_REQUEST = 1;
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch(msg.what) {
+                case MSG_SHOULD_INTERCEPT_REQUEST:
+                    final String url = (String)msg.obj;
+                    AwContents.this.mContentsClient.onLoadResource(url);
+                    break;
+            }
+        }
+    }
+
     private class IoThreadClientImpl implements AwContentsIoThreadClient {
         // Called on the IO thread.
         @Override
-        public InterceptedRequestData shouldInterceptRequest(String url) {
-            return AwContents.this.mContentsClient.shouldInterceptRequest(url);
+        public InterceptedRequestData shouldInterceptRequest(final String url) {
+            InterceptedRequestData interceptedRequestData =
+                AwContents.this.mContentsClient.shouldInterceptRequest(url);
+            if (interceptedRequestData == null) {
+                mIoThreadClientHandler.sendMessage(
+                        mIoThreadClientHandler.obtainMessage(
+                            IoThreadClientHandler.MSG_SHOULD_INTERCEPT_REQUEST,
+                            url));
+            }
+            return interceptedRequestData;
         }
 
         // Called on the IO thread.
@@ -132,6 +158,7 @@ public class AwContents {
         mContentViewCore = contentViewCore;
         mContentsClient = contentsClient;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
+        mIoThreadClientHandler = new IoThreadClientHandler();
 
         mContentViewCore.initialize(containerView, internalAccessAdapter,
                 nativeGetWebContents(mNativeAwContents), nativeWindow,
