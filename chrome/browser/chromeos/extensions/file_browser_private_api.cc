@@ -2591,8 +2591,8 @@ void TransferFileFunction::OnTransferCompleted(drive::DriveFileError error) {
   }
 }
 
-// Read Drive-related preferences.
-bool GetDrivePreferencesFunction::RunImpl() {
+// Read preferences.
+bool GetPreferencesFunction::RunImpl() {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
 
   const PrefService* service = profile_->GetPrefs();
@@ -2614,8 +2614,8 @@ bool GetDrivePreferencesFunction::RunImpl() {
   return true;
 }
 
-// Write Drive-related preferences.
-bool SetDrivePreferencesFunction::RunImpl() {
+// Write preferences.
+bool SetPreferencesFunction::RunImpl() {
   base::DictionaryValue* value = NULL;
 
   if (!args_->GetDictionary(0, &value) || !value)

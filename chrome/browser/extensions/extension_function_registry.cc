@@ -382,8 +382,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetFileTransfersFunction>();
   RegisterFunction<CancelFileTransfersFunction>();
   RegisterFunction<TransferFileFunction>();
-  RegisterFunction<GetDrivePreferencesFunction>();
-  RegisterFunction<SetDrivePreferencesFunction>();
+  RegisterFunction<GetPreferencesFunction>();
+  RegisterFunction<SetPreferencesFunction>();
   RegisterFunction<SearchDriveFunction>();
   RegisterFunction<ClearDriveCacheFunction>();
   RegisterFunction<GetNetworkConnectionStateFunction>();

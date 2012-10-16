@@ -37,8 +37,8 @@ const char kOnFileTransfersUpdated[] =
     "fileBrowserPrivate.onFileTransfersUpdated";
 const char kOnDocumentFeedFetched[] =
     "fileBrowserPrivate.onDocumentFeedFetched";
-const char kOnFileBrowserGDataPreferencesChanged[] =
-    "fileBrowserPrivate.onGDataPreferencesChanged";
+const char kOnFileBrowserPreferencesChanged[] =
+    "fileBrowserPrivate.onPreferencesChanged";
 const char kOnFileBrowserNetworkConnectionChanged[] =
     "fileBrowserPrivate.onNetworkConnectionChanged";
 

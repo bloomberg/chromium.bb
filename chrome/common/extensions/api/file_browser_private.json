@@ -905,8 +905,8 @@
         ]
       },
       {
-        "name": "getGDataPreferences",
-        "description": "Retrieves GData-related preferences .",
+        "name": "getPreferences",
+        "description": "Retrieves file manager preferences .",
         "parameters": [
           {
             "name": "callback",
@@ -926,8 +926,8 @@
         ]
       },
       {
-        "name": "setGDataPreferences",
-        "description": "Sets GData-related preferences.",
+        "name": "setPreferences",
+        "description": "Sets file manager preferences.",
         "parameters": [
           {
             "name": "changeInfo",
@@ -1076,9 +1076,9 @@
         ]
       },
       {
-        "name": "onGDataPreferencesChanged",
+        "name": "onPreferencesChanged",
         "type": "function",
-        "description": "Fired when GData-related preferences change. The preferences can be retrieved via 'getGDataPreferences'.",
+        "description": "Fired when file manager preferences change. The preferences can be retrieved via 'getPreferences'.",
         "parameters": []
       },
       {

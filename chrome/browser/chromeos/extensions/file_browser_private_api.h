@@ -672,23 +672,23 @@ class TransferFileFunction : public FileBrowserFunction {
 };
 
 // Read setting value.
-class GetDrivePreferencesFunction : public SyncExtensionFunction {
+class GetPreferencesFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataPreferences");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getPreferences");
 
  protected:
-  virtual ~GetDrivePreferencesFunction() {}
+  virtual ~GetPreferencesFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Write setting value.
-class SetDrivePreferencesFunction : public SyncExtensionFunction {
+class SetPreferencesFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.setGDataPreferences");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.setPreferences");
 
  protected:
-  virtual ~SetDrivePreferencesFunction() {}
+  virtual ~SetPreferencesFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 };

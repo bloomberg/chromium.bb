@@ -364,7 +364,7 @@ FileManager.prototype = {
 
     // GDATA preferences should be initialized before creating DirectoryModel
     // to tot rebuild the roots list.
-    this.updateNetworkStateAndGDataPreferences_(function() {
+    this.updateNetworkStateAndPreferences_(function() {
       done();
     });
   };
@@ -441,8 +441,8 @@ FileManager.prototype = {
     this.setupCurrentDirectory_(true /* page loading */);
 
     var stateChangeHandler =
-        this.onNetworkStateOrGDataPreferencesChanged_.bind(this);
-    chrome.fileBrowserPrivate.onGDataPreferencesChanged.addListener(
+        this.onNetworkStateOrPreferencesChanged_.bind(this);
+    chrome.fileBrowserPrivate.onPreferencesChanged.addListener(
         stateChangeHandler);
     chrome.fileBrowserPrivate.onNetworkConnectionChanged.addListener(
         stateChangeHandler);
@@ -2458,7 +2458,7 @@ FileManager.prototype = {
     this.updateUIForSelection(this.selection);
   };
 
-  FileManager.prototype.updateNetworkStateAndGDataPreferences_ = function(
+  FileManager.prototype.updateNetworkStateAndPreferences_ = function(
       callback) {
     var self = this;
     var downcount = 2;
@@ -2467,8 +2467,8 @@ FileManager.prototype = {
         callback();
     }
 
-    chrome.fileBrowserPrivate.getGDataPreferences(function(prefs) {
-      self.gdataPreferences_ = prefs;
+    chrome.fileBrowserPrivate.getPreferences(function(prefs) {
+      self.preferences_ = prefs;
       done();
     });
 
@@ -2478,10 +2478,10 @@ FileManager.prototype = {
     });
   };
 
-  FileManager.prototype.onNetworkStateOrGDataPreferencesChanged_ = function() {
+  FileManager.prototype.onNetworkStateOrPreferencesChanged_ = function() {
     var self = this;
-    this.updateNetworkStateAndGDataPreferences_(function() {
-      var gdata = self.gdataPreferences_;
+    this.updateNetworkStateAndPreferences_(function() {
+      var gdata = self.preferences_;
       var network = self.networkState_;
 
       self.directoryModel_.setGDataEnabled(self.isGDataEnabled());
@@ -2514,7 +2514,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isOnMeteredConnection = function() {
-    return this.gdataPreferences_.cellularDisabled &&
+    return this.preferences_.cellularDisabled &&
            this.networkState_.online &&
            this.networkState_.type == 'cellular';
   };
@@ -2525,8 +2525,8 @@ FileManager.prototype = {
 
   FileManager.prototype.isGDataEnabled = function() {
     return !this.params_.disableGData &&
-        (!('driveEnabled' in this.gdataPreferences_) ||
-         this.gdataPreferences_.driveEnabled);
+        (!('driveEnabled' in this.preferences_) ||
+         this.preferences_.driveEnabled);
   };
 
   FileManager.prototype.isOnReadonlyDirectory = function() {
@@ -3721,7 +3721,7 @@ FileManager.prototype = {
 
     var changeInfo = {};
     changeInfo[pref] = inverted ? !newValue : newValue;
-    chrome.fileBrowserPrivate.setGDataPreferences(changeInfo);
+    chrome.fileBrowserPrivate.setPreferences(changeInfo);
   };
 
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {

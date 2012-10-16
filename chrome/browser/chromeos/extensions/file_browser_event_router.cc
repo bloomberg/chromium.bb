@@ -407,7 +407,7 @@ void FileBrowserEventRouter::Observe(
         *pref_name == prefs::kDisableGDataHostedFiles ||
         *pref_name == prefs::kDisableGData) {
       profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-          extensions::event_names::kOnFileBrowserGDataPreferencesChanged,
+          extensions::event_names::kOnFileBrowserPreferencesChanged,
           scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
     }
   }
