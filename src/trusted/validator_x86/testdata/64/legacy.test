@@ -5,44 +5,6 @@
   37
   # aad
   D5 0A
-  90 90 90 90 90
-  # aam
-  D4 0A
-  90 90 90 90 90
-  # aas
-  3F
-  # bound %eax, (%eax)
-  62 00
-  90 90 90 90 90
-  # daa
-  27
-  # das
-  2F
-  # pusha
-  60
-  
-  # Some undocumented instructions
-  # icebp
-  F1
-  # salc
-  D6
-  
-  # Instruction below could be valid in 64-bit code and could be not valid
-  # depending on CPUID return values.
-  # lahf
-  9F
-  # sahf
-  9E
-  
-  # Legacy instructions which are valid in 64-bit mode
-  # xlat (%ebx,%al)
-  D7
-  
-  # Nop padding for the next instruction not to cross bundle boundary.
-  90
-  
-  # xlat (%rbx,%al)
-  48 D7
 @rval:
   VALIDATOR: 0000000000000000: 37                                           invalid
   VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
@@ -52,55 +14,9 @@
   VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
   VALIDATOR: 0000000000000001: d5                                           invalid
   VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000002: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  VALIDATOR: ERROR: Invalid base register in memory offset
-  VALIDATOR: 0000000000000008: d4                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000008: d4                                           invalid
+  VALIDATOR: 0000000000000002: 0a                                           invalid
   VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000009: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  VALIDATOR: ERROR: Invalid base register in memory offset
-  VALIDATOR: 000000000000000f: 3f                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000000f: 3f                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000010: 62                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000010: 62                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000011: 00 90 90 90 90 90                            add [%rax-0x6f6f6f70], %dl
-  VALIDATOR: ERROR: Invalid base register in memory offset
-  VALIDATOR: 0000000000000017: 27                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000017: 27                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000018: 2f                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000018: 2f                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000019: 60                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000019: 60                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 000000000000001a: f1                                           int1
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001b: d6                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001b: d6                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 000000000000001c: 9f                                           lahf
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001d: 9e                                           sahf
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001e: d7                                           xlat
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001e: d7                                           xlat
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: 0000000000000020: 48 d7                                        xlat
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000020: 48 d7                                        xlat
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: Checking jump targets: 0 to 22
+  VALIDATOR: Checking jump targets: 0 to 3
   VALIDATOR: Checking that basic blocks are aligned
   *** <input> IS UNSAFE ***
 @rvald:
@@ -112,55 +28,9 @@
   VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
   VALIDATOR: 0000000000000001: d5                                           invalid
   VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000002: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  VALIDATOR: ERROR: Invalid base register in memory offset
-  VALIDATOR: 0000000000000008: d4                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000008: d4                                           invalid
+  VALIDATOR: 0000000000000002: 0a                                           invalid
   VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000009: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  VALIDATOR: ERROR: Invalid base register in memory offset
-  VALIDATOR: 000000000000000f: 3f                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000000f: 3f                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000010: 62                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000010: 62                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000011: 00 90 90 90 90 90                            add [%rax-0x6f6f6f70], %dl
-  VALIDATOR: ERROR: Invalid base register in memory offset
-  VALIDATOR: 0000000000000017: 27                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000017: 27                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000018: 2f                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000018: 2f                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000019: 60                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000019: 60                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 000000000000001a: f1                                           int1
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001b: d6                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001b: d6                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 000000000000001c: 9f                                           lahf
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001d: 9e                                           sahf
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001e: d7                                           xlat
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001e: d7                                           xlat
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: 0000000000000020: 48 d7                                        xlat
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000020: 48 d7                                        xlat
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: Checking block alignment and jump targets: 0 to 22
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
   *** <input> IS UNSAFE ***
 @vd-rval:
   VALIDATOR: 0000000000000000: 37                                           invalid
@@ -171,88 +41,334 @@
   VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
   VALIDATOR: 0000000000000001: d5                                           invalid
   VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000002: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  VALIDATOR: ERROR: Invalid base register in memory offset
-  VALIDATOR: 0000000000000008: d4                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000008: d4                                           invalid
+  VALIDATOR: 0000000000000002: 0a                                           invalid
   VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000009: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  VALIDATOR: ERROR: Invalid base register in memory offset
-  VALIDATOR: 000000000000000f: 3f                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000000f: 3f                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000010: 62                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000010: 62                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000011: 00 90 90 90 90 90                            add [%rax-0x6f6f6f70], %dl
-  VALIDATOR: ERROR: Invalid base register in memory offset
-  VALIDATOR: 0000000000000017: 27                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000017: 27                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000018: 2f                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000018: 2f                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 0000000000000019: 60                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000019: 60                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 000000000000001a: f1                                           [P] dontcare(illegal)
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001b: d6                                           invalid
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001b: d6                                           invalid
-  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-  VALIDATOR: 000000000000001c: 9f                                           [P] dontcare(illegal)
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001d: 9e                                           [P] dontcare(illegal)
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 000000000000001e: d7                                           [P] dontcare(illegal)
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: 0000000000000020: 48 d7                                        [P] dontcare(illegal)
-  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-  VALIDATOR: Checking jump targets: 0 to 22
+  VALIDATOR: Checking jump targets: 0 to 3
   VALIDATOR: Checking that basic blocks are aligned
   *** <input> IS UNSAFE ***
 @dis:
   0000000000000000: 37                                           invalid
   0000000000000001: d5                                           invalid
-  0000000000000002: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  0000000000000008: d4                                           invalid
-  0000000000000009: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  000000000000000f: 3f                                           invalid
-  0000000000000010: 62                                           invalid
-  0000000000000011: 00 90 90 90 90 90                            add [%rax-0x6f6f6f70], %dl
-  0000000000000017: 27                                           invalid
-  0000000000000018: 2f                                           invalid
-  0000000000000019: 60                                           invalid
-  000000000000001a: f1                                           int1
-  000000000000001b: d6                                           invalid
-  000000000000001c: 9f                                           lahf
-  000000000000001d: 9e                                           sahf
-  000000000000001e: d7                                           xlat
-  000000000000001f: 90                                           nop
-  0000000000000020: 48 d7                                        xlat
+  0000000000000002: 0a                                           invalid
 @vdis:
   0000000000000000: 37                                           invalid
   0000000000000001: d5                                           invalid
-  0000000000000002: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  0000000000000008: d4                                           invalid
-  0000000000000009: 0a 90 90 90 90 90                            or %dl, [%rax-0x6f6f6f70]
-  000000000000000f: 3f                                           invalid
-  0000000000000010: 62                                           invalid
-  0000000000000011: 00 90 90 90 90 90                            add [%rax-0x6f6f6f70], %dl
-  0000000000000017: 27                                           invalid
-  0000000000000018: 2f                                           invalid
-  0000000000000019: 60                                           invalid
-  000000000000001a: f1                                           [P] dontcare(illegal)
-  000000000000001b: d6                                           invalid
-  000000000000001c: 9f                                           [P] dontcare(illegal)
-  000000000000001d: 9e                                           [P] dontcare(illegal)
-  000000000000001e: d7                                           [P] dontcare(illegal)
-  000000000000001f: 90                                           [P] dontcare
-  0000000000000020: 48 d7                                        [P] dontcare(illegal)
+  0000000000000002: 0a                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  errors reported by old validator but not by rdfa one:
+    0x2 - because of error recovery
+----------------------------------------------------------------------
+@hex:
+  # aam
+  D4 0A
+@rval:
+  VALIDATOR: 0000000000000000: d4                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: d4                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000001: 0a                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: d4                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: d4                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000001: 0a                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking block alignment and jump targets: 0 to 2
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: d4                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: d4                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000001: 0a                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: d4                                           invalid
+  0000000000000001: 0a                                           invalid
+@vdis:
+  0000000000000000: d4                                           invalid
+  0000000000000001: 0a                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  errors reported by old validator but not by rdfa one:
+    0x1 - because of error recovery
+----------------------------------------------------------------------
+@hex:
+  # aas
+  3F
+  # bound %eax, (%eax)
+  62 00
+@rval:
+  VALIDATOR: 0000000000000000: 3f                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 3f                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000001: 62                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 62                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000002: 00                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 3f                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 3f                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000001: 62                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 62                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000002: 00                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 3f                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 3f                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000001: 62                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 62                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000002: 00                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 3f                                           invalid
+  0000000000000001: 62                                           invalid
+  0000000000000002: 00                                           invalid
+@vdis:
+  0000000000000000: 3f                                           invalid
+  0000000000000001: 62                                           invalid
+  0000000000000002: 00                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  errors reported by old validator but not by rdfa one:
+    0x2 - because of error recovery
+----------------------------------------------------------------------
+@hex:
+  # daa
+  27
+  # das
+  2F
+  # pusha
+  60
+@rval:
+  VALIDATOR: 0000000000000000: 27                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 27                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000001: 2f                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 2f                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000002: 60                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000002: 60                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 27                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 27                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000001: 2f                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 2f                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000002: 60                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000002: 60                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 27                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: 27                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000001: 2f                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 2f                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: 0000000000000002: 60                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000002: 60                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 27                                           invalid
+  0000000000000001: 2f                                           invalid
+  0000000000000002: 60                                           invalid
+@vdis:
+  0000000000000000: 27                                           invalid
+  0000000000000001: 2f                                           invalid
+  0000000000000002: 60                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  2: [2] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Some undocumented instructions
+  # icebp
+  F1
+  # salc
+  D6
+@rval:
+  VALIDATOR: 0000000000000000: f1                                           int1
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: d6                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: d6                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: f1                                           int1
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: d6                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: d6                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking block alignment and jump targets: 0 to 2
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: f1                                           [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: d6                                           invalid
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: d6                                           invalid
+  VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: f1                                           int1
+  0000000000000001: d6                                           invalid
+@vdis:
+  0000000000000000: f1                                           [P] dontcare(illegal)
+  0000000000000001: d6                                           invalid
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Instruction below could be valid in 64-bit code and could be not valid
+  # depending on CPUID return values.
+  # lahf
+  9F
+  # sahf
+  9E
+@rval:
+  VALIDATOR: 0000000000000000: 9f                                           lahf
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 9e                                           sahf
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 9f                                           lahf
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 9e                                           sahf
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking block alignment and jump targets: 0 to 2
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 9f                                           [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 9e                                           [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 2
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 9f                                           lahf
+  0000000000000001: 9e                                           sahf
+@vdis:
+  0000000000000000: 9f                                           [P] dontcare(illegal)
+  0000000000000001: 9e                                           [P] dontcare(illegal)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Legacy instructions which are valid in 64-bit mode
+  # xlat (%ebx,%al)
+  D7
+  
+  # xlat (%rbx,%al)
+  48 D7
+@rval:
+  VALIDATOR: 0000000000000000: d7                                           xlat
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: d7                                           xlat
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000001: 48 d7                                        xlat
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 48 d7                                        xlat
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: d7                                           xlat
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000000: d7                                           xlat
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000001: 48 d7                                        xlat
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 48 d7                                        xlat
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: Checking block alignment and jump targets: 0 to 3
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: d7                                           [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: 0000000000000001: 48 d7                                        [P] dontcare(illegal)
+  VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+  VALIDATOR: Checking jump targets: 0 to 3
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: d7                                           xlat
+  0000000000000001: 48 d7                                        xlat
+@vdis:
+  0000000000000000: d7                                           [P] dontcare(illegal)
+  0000000000000001: 48 d7                                        [P] dontcare(illegal)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  1: [1] unrecognized instruction
+  return code: 1

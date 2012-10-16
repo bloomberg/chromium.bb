@@ -20,7 +20,57 @@
   # Branch prediction prefixes. (for jz).
   2e 74 02
   3e 74 02
-  
+@rval:
+  VALIDATOR: 000000000000001d: 3e 74 02                                     jz 0x22
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking jump targets: 0 to 20
+  VALIDATOR: ERROR: 1f: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 000000000000001d: 3e 74 02                                     jz 0x22
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking block alignment and jump targets: 0 to 20
+  VALIDATOR: 000000000000001a: 2e 74 02                                     jz 0x1f
+  VALIDATOR: ERROR: Doesn't jump to instruction address
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 000000000000001d: 3e 74 02                                     [P] dontcarecondjump %rip (s), 0x22 (u)
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking jump targets: 0 to 20
+  VALIDATOR: ERROR: 1f: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: f0 01 04 24                                  add [%rsp], %eax
+  0000000000000004: 89 ff                                        mov %edi, %edi
+  0000000000000006: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000a: f3 ab                                        stosd [%rdi]
+  000000000000000c: 89 ff                                        mov %edi, %edi
+  000000000000000e: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000012: f2 ae                                        scasb [%rdi]
+  0000000000000014: 66 89 c0                                     mov %ax, %ax
+  0000000000000017: 40 eb fd                                     jmp 0x17
+  000000000000001a: 2e 74 02                                     jz 0x1f
+  000000000000001d: 3e 74 02                                     jz 0x22
+@vdis:
+  0000000000000000: f0 01 04 24                                  add [%rsp], %eax
+  0000000000000004: 89 ff                                        mov %edi, %edi
+  0000000000000006: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000a: f3 ab                                        [P] dontcare [%rdi] (s), %eax (u)
+  000000000000000c: 89 ff                                        mov %edi, %edi
+  000000000000000e: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000012: f2 ae                                        [P] dontcare %al (u), [%rdi] (u)
+  0000000000000014: 66 89 c0                                     mov %ax, %ax
+  0000000000000017: 40 eb fd                                     [P] dontcarejump %rip (s), 0x17 (u)
+  000000000000001a: 2e 74 02                                     [P] dontcarecondjump %rip (s), 0x1f (u)
+  000000000000001d: 3e 74 02                                     [P] dontcarecondjump %rip (s), 0x22 (u)
+@rdfa_output:
+  1d: [0] direct jump out of range
+  1f: [0] bad jump to here
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # Forbidden prefixes.
   # rep push %eax
   F3 50
@@ -30,10 +80,84 @@
   89 FF
   49 8D 3C 3F
   F2 AB
+@rval:
+  VALIDATOR: 0000000000000000: f3 50                                        push %rax
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000008: f2 ab                                        stosd [%rdi]
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: f3 50                                        push %rax
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000008: f2 ab                                        stosd [%rdi]
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: Checking block alignment and jump targets: 0 to a
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: f3 50                                        push %rax
+  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000008: f2 ab                                        [P] dontcare [%rdi] (s), %eax (u)
+  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to a
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: f3 50                                        push %rax
+  0000000000000002: 89 ff                                        mov %edi, %edi
+  0000000000000004: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000008: f2 ab                                        stosd [%rdi]
+@vdis:
+  0000000000000000: f3 50                                        push %rax
+  0000000000000002: 89 ff                                        mov %edi, %edi
+  0000000000000004: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000008: f2 ab                                        [P] dontcare [%rdi] (s), %eax (u)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  8: [1] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # fs mov %eax,%eax
   64 89 C0
   # gs mov %eax,%eax
   65 89 C0
+@rval:
+  VALIDATOR: 0000000000000000: 64 89 c0                                     mov %eax, %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000003: 65 89 c0                                     mov %eax, %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 64 89 c0                                     mov %eax, %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000003: 65 89 c0                                     mov %eax, %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: Checking block alignment and jump targets: 0 to 6
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 64 89 c0                                     mov %eax, %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000003: 65 89 c0                                     mov %eax, %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 64 89 c0                                     mov %eax, %eax
+  0000000000000003: 65 89 c0                                     mov %eax, %eax
+@vdis:
+  0000000000000000: 64 89 c0                                     mov %eax, %eax
+  0000000000000003: 65 89 c0                                     mov %eax, %eax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  3: [1] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # mov %eax,%cs:(%rsp)
   2E 89 04 24
   # mov %eax,%ss:(%rsp)
@@ -48,6 +172,104 @@
   65 89 04 24
   # mov %eax,(%esp)
   67 89 04 24
+@rval:
+  VALIDATOR: 0000000000000000: 2e 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000004: 36 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000008: 3e 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000000c: 26 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000010: 64 89 04 24                                  mov %fs:[%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000010: 64 89 04 24                                  mov %fs:[%rsp], %eax
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000014: 65 89 04 24                                  mov %gs:[%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000014: 65 89 04 24                                  mov %gs:[%rsp], %eax
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000018: 67 89 04 24                                  mov [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000018: 67 89 04 24                                  mov [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: Checking jump targets: 0 to 1c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 2e 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000004: 36 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000008: 3e 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000000c: 26 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000010: 64 89 04 24                                  mov %fs:[%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000010: 64 89 04 24                                  mov %fs:[%rsp], %eax
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000014: 65 89 04 24                                  mov %gs:[%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000014: 65 89 04 24                                  mov %gs:[%rsp], %eax
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000018: 67 89 04 24                                  mov [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000018: 67 89 04 24                                  mov [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: Checking block alignment and jump targets: 0 to 1c
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 2e 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000004: 36 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000008: 3e 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000000c: 26 89 04 24                                  mov [%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000010: 64 89 04 24                                  mov %fs:[%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000010: 64 89 04 24                                  mov %fs:[%rsp], %eax
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000014: 65 89 04 24                                  mov %gs:[%rsp], %eax
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000014: 65 89 04 24                                  mov %gs:[%rsp], %eax
+  VALIDATOR: ERROR: Segment memory reference not allowed
+  VALIDATOR: 0000000000000018: 67 89 04 24                                  mov [%esp], %eax
+  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+  VALIDATOR: 0000000000000018: 67 89 04 24                                  mov [%esp], %eax
+  VALIDATOR: ERROR: Assignment to non-64 bit memory address
+  VALIDATOR: Checking jump targets: 0 to 1c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 2e 89 04 24                                  mov [%rsp], %eax
+  0000000000000004: 36 89 04 24                                  mov [%rsp], %eax
+  0000000000000008: 3e 89 04 24                                  mov [%rsp], %eax
+  000000000000000c: 26 89 04 24                                  mov [%rsp], %eax
+  0000000000000010: 64 89 04 24                                  mov %fs:[%rsp], %eax
+  0000000000000014: 65 89 04 24                                  mov %gs:[%rsp], %eax
+  0000000000000018: 67 89 04 24                                  mov [%esp], %eax
+@vdis:
+  0000000000000000: 2e 89 04 24                                  mov [%rsp], %eax
+  0000000000000004: 36 89 04 24                                  mov [%rsp], %eax
+  0000000000000008: 3e 89 04 24                                  mov [%rsp], %eax
+  000000000000000c: 26 89 04 24                                  mov [%rsp], %eax
+  0000000000000010: 64 89 04 24                                  mov %fs:[%rsp], %eax
+  0000000000000014: 65 89 04 24                                  mov %gs:[%rsp], %eax
+  0000000000000018: 67 89 04 24                                  mov [%esp], %eax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  4: [1] unrecognized instruction
+  8: [2] unrecognized instruction
+  c: [3] unrecognized instruction
+  10: [4] unrecognized instruction
+  14: [5] unrecognized instruction
+  18: [6] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # cs jmp $
   2E EB FD
   # ss jmp $
@@ -68,9 +290,152 @@
   64 74 02
   # gs jz $
   65 74 02
+  
+  # nops for bundle alignment
+  90 90
+  
   # es jz $
   26 74 02
-  
+@rval:
+  VALIDATOR: 0000000000000000: 2e eb fd                                     jmp 0x0
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000003: 36 eb fd                                     jmp 0x3
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000006: 3e eb fd                                     jmp 0x6
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000009: 26 eb fd                                     jmp 0x9
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000000c: 64 eb fd                                     jmp 0xc
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000000f: 65 eb fd                                     jmp 0xf
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000012: 66 eb fd                                     jmp 0x12
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000015: 36 74 02                                     jz 0x1a
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000018: 64 74 02                                     jz 0x1d
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000001b: 65 74 02                                     jz 0x20
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000020: 26 74 02                                     jz 0x25
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000020: 26 74 02                                     jz 0x25
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking jump targets: 0 to 23
+  VALIDATOR: ERROR: 1a: Bad jump target
+  VALIDATOR: ERROR: 1d: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@rvald:
+  VALIDATOR: 0000000000000000: 2e eb fd                                     jmp 0x0
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000003: 36 eb fd                                     jmp 0x3
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000006: 3e eb fd                                     jmp 0x6
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000009: 26 eb fd                                     jmp 0x9
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000000c: 64 eb fd                                     jmp 0xc
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000000f: 65 eb fd                                     jmp 0xf
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000012: 66 eb fd                                     jmp 0x12
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000015: 36 74 02                                     jz 0x1a
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000018: 64 74 02                                     jz 0x1d
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000001b: 65 74 02                                     jz 0x20
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000020: 26 74 02                                     jz 0x25
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000020: 26 74 02                                     jz 0x25
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking block alignment and jump targets: 0 to 23
+  VALIDATOR: 0000000000000015: 36 74 02                                     jz 0x1a
+  VALIDATOR: ERROR: Doesn't jump to instruction address
+  VALIDATOR: 0000000000000018: 64 74 02                                     jz 0x1d
+  VALIDATOR: ERROR: Doesn't jump to instruction address
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 2e eb fd                                     [P] dontcarejump %rip (s), 0x0 (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000003: 36 eb fd                                     [P] dontcarejump %rip (s), 0x3 (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000006: 3e eb fd                                     [P] dontcarejump %rip (s), 0x6 (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000009: 26 eb fd                                     [P] dontcarejump %rip (s), 0x9 (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000000c: 64 eb fd                                     [P] dontcarejump %rip (s), 0xc (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000000f: 65 eb fd                                     [P] dontcarejump %rip (s), 0xf (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000012: 66 eb fd                                     [P] dontcarejump %rip (s), 0x12 (u)
+  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+  VALIDATOR: 0000000000000015: 36 74 02                                     [P] dontcarecondjump %rip (s), 0x1a (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000018: 64 74 02                                     [P] dontcarecondjump %rip (s), 0x1d (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 000000000000001b: 65 74 02                                     [P] dontcarecondjump %rip (s), 0x20 (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000020: 26 74 02                                     [P] dontcarecondjump %rip (s), 0x25 (u)
+  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
+  VALIDATOR: 0000000000000020: 26 74 02                                     [P] dontcarecondjump %rip (s), 0x25 (u)
+  VALIDATOR: ERROR: Instruction jumps to bad address
+  VALIDATOR: Checking jump targets: 0 to 23
+  VALIDATOR: ERROR: 1a: Bad jump target
+  VALIDATOR: ERROR: 1d: Bad jump target
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 2e eb fd                                     jmp 0x0
+  0000000000000003: 36 eb fd                                     jmp 0x3
+  0000000000000006: 3e eb fd                                     jmp 0x6
+  0000000000000009: 26 eb fd                                     jmp 0x9
+  000000000000000c: 64 eb fd                                     jmp 0xc
+  000000000000000f: 65 eb fd                                     jmp 0xf
+  0000000000000012: 66 eb fd                                     jmp 0x12
+  0000000000000015: 36 74 02                                     jz 0x1a
+  0000000000000018: 64 74 02                                     jz 0x1d
+  000000000000001b: 65 74 02                                     jz 0x20
+  000000000000001e: 90                                           nop
+  000000000000001f: 90                                           nop
+  0000000000000020: 26 74 02                                     jz 0x25
+@vdis:
+  0000000000000000: 2e eb fd                                     [P] dontcarejump %rip (s), 0x0 (u)
+  0000000000000003: 36 eb fd                                     [P] dontcarejump %rip (s), 0x3 (u)
+  0000000000000006: 3e eb fd                                     [P] dontcarejump %rip (s), 0x6 (u)
+  0000000000000009: 26 eb fd                                     [P] dontcarejump %rip (s), 0x9 (u)
+  000000000000000c: 64 eb fd                                     [P] dontcarejump %rip (s), 0xc (u)
+  000000000000000f: 65 eb fd                                     [P] dontcarejump %rip (s), 0xf (u)
+  0000000000000012: 66 eb fd                                     [P] dontcarejump %rip (s), 0x12 (u)
+  0000000000000015: 36 74 02                                     [P] dontcarecondjump %rip (s), 0x1a (u)
+  0000000000000018: 64 74 02                                     [P] dontcarecondjump %rip (s), 0x1d (u)
+  000000000000001b: 65 74 02                                     [P] dontcarecondjump %rip (s), 0x20 (u)
+  000000000000001e: 90                                           [P] dontcare
+  000000000000001f: 90                                           [P] dontcare
+  0000000000000020: 26 74 02                                     [P] dontcarecondjump %rip (s), 0x25 (u)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  3: [1] unrecognized instruction
+  6: [2] unrecognized instruction
+  9: [3] unrecognized instruction
+  c: [4] unrecognized instruction
+  f: [5] unrecognized instruction
+  12: [6] unrecognized instruction
+  15: [7] unrecognized instruction
+  18: [8] unrecognized instruction
+  1b: [9] unrecognized instruction
+  20: [0] unrecognized instruction
+  return code: 1
+@validators_disagree:
+  errors reported by old validator but not by rdfa one:
+    0x1a
+    0x1d
+  These are bad jump targets. RDFA validator did not recognize these jumps with 
+  prefixes at all, so these offsets are nor reported.
+----------------------------------------------------------------------
+@hex:
   # Mandatory prefix.
   # phaddw %xmm0,%xmm1
   66 0f 38 01 c8
@@ -79,265 +444,23 @@
   # cmpeqss %xmm0,%xmm1
   f3 0f c2 c8 00
 @rval:
-  VALIDATOR: 0000000000000020: f3 50                                        push %rax
-  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
-  VALIDATOR: 0000000000000028: f2 ab                                        stosd [%rdi]
-  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
-  VALIDATOR: 000000000000002a: 64 89 c0                                     mov %eax, %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000002d: 65 89 c0                                     mov %eax, %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000030: 2e 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000034: 36 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000038: 3e 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000003c: 26 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000040: 64 89 04 24                                  mov %fs:[%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000040: 64 89 04 24                                  mov %fs:[%rsp], %eax
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: 0000000000000044: 65 89 04 24                                  mov %gs:[%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000044: 65 89 04 24                                  mov %gs:[%rsp], %eax
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: 0000000000000048: 67 89 04 24                                  mov [%esp], %eax
-  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
-  VALIDATOR: 0000000000000048: 67 89 04 24                                  mov [%esp], %eax
-  VALIDATOR: ERROR: Assignment to non-64 bit memory address
-  VALIDATOR: 000000000000004c: 2e eb fd                                     jmp 0x4c
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000004f: 36 eb fd                                     jmp 0x4f
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000052: 3e eb fd                                     jmp 0x52
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000055: 26 eb fd                                     jmp 0x55
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000058: 64 eb fd                                     jmp 0x58
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000005b: 65 eb fd                                     jmp 0x5b
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000005e: 66 eb fd                                     jmp 0x5e
-  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
-  VALIDATOR: 0000000000000061: 36 74 02                                     jz 0x66
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000064: 64 74 02                                     jz 0x69
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000067: 65 74 02                                     jz 0x6c
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000006a: 26 74 02                                     jz 0x6f
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: Checking jump targets: 0 to 7b
-  VALIDATOR: ERROR: 1f: Bad jump target
-  VALIDATOR: ERROR: 66: Bad jump target
-  VALIDATOR: ERROR: 69: Bad jump target
-  VALIDATOR: ERROR: 6c: Bad jump target
-  VALIDATOR: ERROR: 6f: Bad jump target
+  VALIDATOR: Checking jump targets: 0 to e
   VALIDATOR: Checking that basic blocks are aligned
-  VALIDATOR: ERROR: 60: Bad basic block alignment.
-  *** <input> IS UNSAFE ***
+  *** <input> is safe ***
 @rvald:
-  VALIDATOR: 0000000000000020: f3 50                                        push %rax
-  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
-  VALIDATOR: 0000000000000028: f2 ab                                        stosd [%rdi]
-  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
-  VALIDATOR: 000000000000002a: 64 89 c0                                     mov %eax, %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000002d: 65 89 c0                                     mov %eax, %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000030: 2e 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000034: 36 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000038: 3e 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000003c: 26 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000040: 64 89 04 24                                  mov %fs:[%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000040: 64 89 04 24                                  mov %fs:[%rsp], %eax
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: 0000000000000044: 65 89 04 24                                  mov %gs:[%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000044: 65 89 04 24                                  mov %gs:[%rsp], %eax
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: 0000000000000048: 67 89 04 24                                  mov [%esp], %eax
-  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
-  VALIDATOR: 0000000000000048: 67 89 04 24                                  mov [%esp], %eax
-  VALIDATOR: ERROR: Assignment to non-64 bit memory address
-  VALIDATOR: 000000000000004c: 2e eb fd                                     jmp 0x4c
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000004f: 36 eb fd                                     jmp 0x4f
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000052: 3e eb fd                                     jmp 0x52
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000055: 26 eb fd                                     jmp 0x55
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000058: 64 eb fd                                     jmp 0x58
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000005b: 65 eb fd                                     jmp 0x5b
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000005e: 66 eb fd                                     jmp 0x5e
-  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
-  VALIDATOR: 0000000000000061: 36 74 02                                     jz 0x66
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000064: 64 74 02                                     jz 0x69
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000067: 65 74 02                                     jz 0x6c
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000006a: 26 74 02                                     jz 0x6f
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: Checking block alignment and jump targets: 0 to 7b
-  VALIDATOR: 000000000000001a: 2e 74 02                                     jz 0x1f
-  VALIDATOR: ERROR: Doesn't jump to instruction address
-  VALIDATOR: 000000000000005e: 66 eb fd                                     jmp 0x5e
-  VALIDATOR: ERROR: Instruction crosses basic block alignment
-  VALIDATOR: 0000000000000061: 36 74 02                                     jz 0x66
-  VALIDATOR: ERROR: Doesn't jump to instruction address
-  VALIDATOR: 0000000000000064: 64 74 02                                     jz 0x69
-  VALIDATOR: ERROR: Doesn't jump to instruction address
-  VALIDATOR: 0000000000000067: 65 74 02                                     jz 0x6c
-  VALIDATOR: ERROR: Doesn't jump to instruction address
-  VALIDATOR: 000000000000006a: 26 74 02                                     jz 0x6f
-  VALIDATOR: ERROR: Doesn't jump to instruction address
-  *** <input> IS UNSAFE ***
+  VALIDATOR: Checking block alignment and jump targets: 0 to e
+  *** <input> is safe ***
 @vd-rval:
-  VALIDATOR: 0000000000000020: f3 50                                        push %rax
-  VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
-  VALIDATOR: 0000000000000028: f2 ab                                        [P] dontcare [%rdi] (s), %eax (u)
-  VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
-  VALIDATOR: 000000000000002a: 64 89 c0                                     mov %eax, %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000002d: 65 89 c0                                     mov %eax, %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000030: 2e 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000034: 36 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000038: 3e 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000003c: 26 89 04 24                                  mov [%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000040: 64 89 04 24                                  mov %fs:[%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000040: 64 89 04 24                                  mov %fs:[%rsp], %eax
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: 0000000000000044: 65 89 04 24                                  mov %gs:[%rsp], %eax
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000044: 65 89 04 24                                  mov %gs:[%rsp], %eax
-  VALIDATOR: ERROR: Segment memory reference not allowed
-  VALIDATOR: 0000000000000048: 67 89 04 24                                  mov [%esp], %eax
-  VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
-  VALIDATOR: 0000000000000048: 67 89 04 24                                  mov [%esp], %eax
-  VALIDATOR: ERROR: Assignment to non-64 bit memory address
-  VALIDATOR: 000000000000004c: 2e eb fd                                     [P] dontcarejump %rip (s), 0x4c (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000004f: 36 eb fd                                     [P] dontcarejump %rip (s), 0x4f (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000052: 3e eb fd                                     [P] dontcarejump %rip (s), 0x52 (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000055: 26 eb fd                                     [P] dontcarejump %rip (s), 0x55 (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000058: 64 eb fd                                     [P] dontcarejump %rip (s), 0x58 (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000005b: 65 eb fd                                     [P] dontcarejump %rip (s), 0x5b (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000005e: 66 eb fd                                     [P] dontcarejump %rip (s), 0x5e (u)
-  VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
-  VALIDATOR: 0000000000000061: 36 74 02                                     [P] dontcarecondjump %rip (s), 0x66 (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000064: 64 74 02                                     [P] dontcarecondjump %rip (s), 0x69 (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 0000000000000067: 65 74 02                                     [P] dontcarecondjump %rip (s), 0x6c (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: 000000000000006a: 26 74 02                                     [P] dontcarecondjump %rip (s), 0x6f (u)
-  VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-  VALIDATOR: Checking jump targets: 0 to 7b
-  VALIDATOR: ERROR: 1f: Bad jump target
-  VALIDATOR: ERROR: 66: Bad jump target
-  VALIDATOR: ERROR: 69: Bad jump target
-  VALIDATOR: ERROR: 6c: Bad jump target
-  VALIDATOR: ERROR: 6f: Bad jump target
+  VALIDATOR: Checking jump targets: 0 to e
   VALIDATOR: Checking that basic blocks are aligned
-  VALIDATOR: ERROR: 60: Bad basic block alignment.
-  *** <input> IS UNSAFE ***
+  *** <input> is safe ***
 @dis:
-  0000000000000000: f0 01 04 24                                  add [%rsp], %eax
-  0000000000000004: 89 ff                                        mov %edi, %edi
-  0000000000000006: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  000000000000000a: f3 ab                                        stosd [%rdi]
-  000000000000000c: 89 ff                                        mov %edi, %edi
-  000000000000000e: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000012: f2 ae                                        scasb [%rdi]
-  0000000000000014: 66 89 c0                                     mov %ax, %ax
-  0000000000000017: 40 eb fd                                     jmp 0x17
-  000000000000001a: 2e 74 02                                     jz 0x1f
-  000000000000001d: 3e 74 02                                     jz 0x22
-  0000000000000020: f3 50                                        push %rax
-  0000000000000022: 89 ff                                        mov %edi, %edi
-  0000000000000024: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000028: f2 ab                                        stosd [%rdi]
-  000000000000002a: 64 89 c0                                     mov %eax, %eax
-  000000000000002d: 65 89 c0                                     mov %eax, %eax
-  0000000000000030: 2e 89 04 24                                  mov [%rsp], %eax
-  0000000000000034: 36 89 04 24                                  mov [%rsp], %eax
-  0000000000000038: 3e 89 04 24                                  mov [%rsp], %eax
-  000000000000003c: 26 89 04 24                                  mov [%rsp], %eax
-  0000000000000040: 64 89 04 24                                  mov %fs:[%rsp], %eax
-  0000000000000044: 65 89 04 24                                  mov %gs:[%rsp], %eax
-  0000000000000048: 67 89 04 24                                  mov [%esp], %eax
-  000000000000004c: 2e eb fd                                     jmp 0x4c
-  000000000000004f: 36 eb fd                                     jmp 0x4f
-  0000000000000052: 3e eb fd                                     jmp 0x52
-  0000000000000055: 26 eb fd                                     jmp 0x55
-  0000000000000058: 64 eb fd                                     jmp 0x58
-  000000000000005b: 65 eb fd                                     jmp 0x5b
-  000000000000005e: 66 eb fd                                     jmp 0x5e
-  0000000000000061: 36 74 02                                     jz 0x66
-  0000000000000064: 64 74 02                                     jz 0x69
-  0000000000000067: 65 74 02                                     jz 0x6c
-  000000000000006a: 26 74 02                                     jz 0x6f
-  000000000000006d: 66 0f 38 01 c8                               phaddw %xmm1, %xmm0
-  0000000000000072: f2 0f 58 c8                                  addsd %xmm1, %xmm0
-  0000000000000076: f3 0f c2 c8 00                               cmpss %xmm1, %xmm0, 0x0
+  0000000000000000: 66 0f 38 01 c8                               phaddw %xmm1, %xmm0
+  0000000000000005: f2 0f 58 c8                                  addsd %xmm1, %xmm0
+  0000000000000009: f3 0f c2 c8 00                               cmpss %xmm1, %xmm0, 0x0
 @vdis:
-  0000000000000000: f0 01 04 24                                  add [%rsp], %eax
-  0000000000000004: 89 ff                                        mov %edi, %edi
-  0000000000000006: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  000000000000000a: f3 ab                                        [P] dontcare [%rdi] (s), %eax (u)
-  000000000000000c: 89 ff                                        mov %edi, %edi
-  000000000000000e: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000012: f2 ae                                        [P] dontcare %al (u), [%rdi] (u)
-  0000000000000014: 66 89 c0                                     mov %ax, %ax
-  0000000000000017: 40 eb fd                                     [P] dontcarejump %rip (s), 0x17 (u)
-  000000000000001a: 2e 74 02                                     [P] dontcarecondjump %rip (s), 0x1f (u)
-  000000000000001d: 3e 74 02                                     [P] dontcarecondjump %rip (s), 0x22 (u)
-  0000000000000020: f3 50                                        push %rax
-  0000000000000022: 89 ff                                        mov %edi, %edi
-  0000000000000024: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-  0000000000000028: f2 ab                                        [P] dontcare [%rdi] (s), %eax (u)
-  000000000000002a: 64 89 c0                                     mov %eax, %eax
-  000000000000002d: 65 89 c0                                     mov %eax, %eax
-  0000000000000030: 2e 89 04 24                                  mov [%rsp], %eax
-  0000000000000034: 36 89 04 24                                  mov [%rsp], %eax
-  0000000000000038: 3e 89 04 24                                  mov [%rsp], %eax
-  000000000000003c: 26 89 04 24                                  mov [%rsp], %eax
-  0000000000000040: 64 89 04 24                                  mov %fs:[%rsp], %eax
-  0000000000000044: 65 89 04 24                                  mov %gs:[%rsp], %eax
-  0000000000000048: 67 89 04 24                                  mov [%esp], %eax
-  000000000000004c: 2e eb fd                                     [P] dontcarejump %rip (s), 0x4c (u)
-  000000000000004f: 36 eb fd                                     [P] dontcarejump %rip (s), 0x4f (u)
-  0000000000000052: 3e eb fd                                     [P] dontcarejump %rip (s), 0x52 (u)
-  0000000000000055: 26 eb fd                                     [P] dontcarejump %rip (s), 0x55 (u)
-  0000000000000058: 64 eb fd                                     [P] dontcarejump %rip (s), 0x58 (u)
-  000000000000005b: 65 eb fd                                     [P] dontcarejump %rip (s), 0x5b (u)
-  000000000000005e: 66 eb fd                                     [P] dontcarejump %rip (s), 0x5e (u)
-  0000000000000061: 36 74 02                                     [P] dontcarecondjump %rip (s), 0x66 (u)
-  0000000000000064: 64 74 02                                     [P] dontcarecondjump %rip (s), 0x69 (u)
-  0000000000000067: 65 74 02                                     [P] dontcarecondjump %rip (s), 0x6c (u)
-  000000000000006a: 26 74 02                                     [P] dontcarecondjump %rip (s), 0x6f (u)
-  000000000000006d: 66 0f 38 01 c8                               [P] dontcare %xmm0 (u)
-  0000000000000072: f2 0f 58 c8                                  [P] dontcare %xmm0 (u)
-  0000000000000076: f3 0f c2 c8 00                               [P] dontcare %xmm0 (u), 0x0 (u)
+  0000000000000000: 66 0f 38 01 c8                               [P] dontcare %xmm0 (u)
+  0000000000000005: f2 0f 58 c8                                  [P] dontcare %xmm0 (u)
+  0000000000000009: f3 0f c2 c8 00                               [P] dontcare %xmm0 (u), 0x0 (u)
+@rdfa_output:
+  return code: 0
