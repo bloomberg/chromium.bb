@@ -67,6 +67,9 @@ int LineReader::GetLine(string* line_ptr) {
     if (c == kCR)
       break;  // handle the hard end-of-line case outside of loop
 
+    if (c == '\xFE' || c == '\xFF')  // not UTF-8
+      return -1;
+
     // To defend against pathological or malicious streams, we
     // cap the line length at some arbitrarily-large value:
     enum { kMaxLineLength = 10000 };  // arbitrary
@@ -467,7 +470,18 @@ int Parser::ParseTime(
   // We have parsed the hours, minutes, and seconds.
   // We must now parse the milliseconds.
 
-  if (line[idx] != '.') {  // no milliseconds
+  char c = line[idx];
+
+  // TODO(matthewjheaney): one option here is to slightly relax the
+  // syntax rules for WebVTT timestamps, to permit the comma character
+  // to also be used as the seconds/milliseconds separator.  This
+  // would handle streams that use localization conventions for
+  // countries in Western Europe.  For now we obey the rules specified
+  // in the WebVTT spec (allow "full stop" only).
+
+  const bool have_milliseconds = (c == '.');
+
+  if (!have_milliseconds) {
     t.milliseconds = 0;
   } else {
     ++idx;  // consume FULL STOP
@@ -491,7 +505,7 @@ int Parser::ParseTime(
   // We have parsed the time proper.  We must check for any
   // junk that immediately follows the time specifier.
 
-  const char c = line[idx];
+  c = line[idx];
 
   if (c != kNUL && c != kSPACE && c != kTAB)
     return -1;
@@ -587,19 +601,26 @@ int Parser::ParseNumber(
   if (!isdigit(line[idx]))
     return -1;
 
-  long long val = 0;  // NOLINT
+  int result = 0;
 
   while (isdigit(line[idx])) {
-    val *= 10;
-    val += static_cast<int>(line[idx] - '0');
+    const char c = line[idx];
+    const int i = c - '0';
 
-    if (val > INT_MAX)
+    if (result > INT_MAX / 10)
       return -1;
+
+    result *= 10;
+
+    if (result > INT_MAX - i)
+      return -1;
+
+    result += i;
 
     ++idx;
   }
 
-  return static_cast<int>(val);
+  return result;
 }
 
 bool Time::operator==(const Time& rhs) const {
