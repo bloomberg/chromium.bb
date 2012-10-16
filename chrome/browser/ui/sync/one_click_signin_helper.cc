@@ -22,6 +22,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -316,6 +317,21 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
           return false;
       }
     }
+
+    // If we're about to show a one-click infobar but the user has started
+    // a concurrent signin flow (perhaps via the promo), we may not have yet
+    // established an authenticated username but we still shouldn't move
+    // forward with two simultaneous signin processes.  This is a bit
+    // contentious as the one-click flow is a much smoother flow from the user
+    // perspective, but it's much more difficult to hijack the other flow from
+    // here as it is to bail.
+    ProfileSyncService* service =
+        ProfileSyncServiceFactory::GetForProfile(profile);
+    if (!service)
+      return false;
+
+    if (service->FirstSetupInProgress())
+      return false;
   }
 
   return true;
