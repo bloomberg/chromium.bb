@@ -28,6 +28,7 @@
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_screen_position_client.h"
 #include "ui/views/widget/x11_desktop_handler.h"
+#include "ui/views/widget/x11_desktop_window_move_client.h"
 #include "ui/views/widget/x11_window_event_filter.h"
 
 namespace views {
@@ -223,6 +224,11 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   x11_window_event_filter_->SetUseHostWindowBorders(false);
   root_window_event_filter_->AddFilter(x11_window_event_filter_.get());
 
+  x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
+  root_window_event_filter_->AddFilter(x11_window_move_client_.get());
+  aura::client::SetWindowMoveClient(root_window_,
+                                    x11_window_move_client_.get());
+
   return root_window_;
 }
 
@@ -300,6 +306,7 @@ void DesktopRootWindowHostLinux::Close() {
 void DesktopRootWindowHostLinux::CloseNow() {
   // Remove the event listeners we've installed. We need to remove these
   // because otherwise we get assert during ~RootWindow().
+  root_window_event_filter_->RemoveFilter(x11_window_move_client_.get());
   root_window_event_filter_->RemoveFilter(x11_window_event_filter_.get());
   root_window_event_filter_->RemoveFilter(input_method_filter_.get());
 
@@ -500,14 +507,17 @@ void DesktopRootWindowHostLinux::ClearNativeFocus() {
 
 Widget::MoveLoopResult DesktopRootWindowHostLinux::RunMoveLoop(
     const gfx::Point& drag_offset) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  SetCapture();
+
+  if (x11_window_move_client_->RunMoveLoop(content_window_, drag_offset) ==
+      aura::client::MOVE_SUCCESSFUL)
+    return Widget::MOVE_LOOP_SUCCESSFUL;
+
   return Widget::MOVE_LOOP_CANCELED;
 }
 
 void DesktopRootWindowHostLinux::EndMoveLoop() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  x11_window_move_client_->EndMoveLoop();
 }
 
 void DesktopRootWindowHostLinux::SetVisibilityChangedAnimationsEnabled(

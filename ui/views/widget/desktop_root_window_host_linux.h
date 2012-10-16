@@ -36,6 +36,7 @@ class InputMethodEventFilter;
 
 namespace views {
 class DesktopCaptureClient;
+class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
 
 class VIEWS_EXPORT DesktopRootWindowHostLinux
@@ -226,6 +227,7 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
+  scoped_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.
