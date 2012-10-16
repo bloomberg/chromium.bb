@@ -119,13 +119,14 @@ if test x$enable_android_compositor = xyes; then
   PKG_CHECK_MODULES(ANDROID_COMPOSITOR, [mtdev >= 1.1.0])
 fi
 
-
-AC_ARG_WITH(cairo-glesv2, AS_HELP_STRING([--with-cairo-glesv2],
-              [Use GLESv2 cairo instead of full GL]),
-              [cairo_modules="cairo-glesv2"],
-              [cairo_modules="cairo-gl"])
-if test x$cairo_modules = xcairo-glesv2; then
+AC_ARG_WITH(cairo-glesv2,
+            AS_HELP_STRING([--with-cairo-glesv2],
+                           [Use GLESv2 cairo instead of full GL]))
+if test "x$with_cairo_glesv2" = "xyes"; then
+  cairo_modules="cairo-glesv2"
   AC_DEFINE([USE_CAIRO_GLESV2], [1], [Use the GLESv2 GL cairo backend])
+else
+  cairo_modules="cairo-gl"
 fi
 
 PKG_CHECK_MODULES(PIXMAN, [pixman-1])
