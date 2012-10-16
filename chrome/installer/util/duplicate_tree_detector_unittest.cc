@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+#include <shellapi.h>
 
 #include <fstream>
 
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/duplicate_tree_detector.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +25,7 @@ class DuplicateTreeDetectorTest : public testing::Test {
 
   // Simple function to dump some text into a new file.
   void CreateTextFile(const std::string& filename,
-                      const std::wstring& contents) {
+                      const string16& contents) {
     std::wofstream file;
     file.open(filename.c_str());
     ASSERT_TRUE(file.is_open());
@@ -31,20 +33,11 @@ class DuplicateTreeDetectorTest : public testing::Test {
     file.close();
   }
 
-  // Simple function to read text from a file.
-  std::wstring ReadTextFile(const FilePath& path) {
-    WCHAR contents[64];
-    std::wifstream file;
-    file.open(WideToASCII(path.value()).c_str());
-    EXPECT_TRUE(file.is_open());
-    file.getline(contents, arraysize(contents));
-    file.close();
-    return std::wstring(contents);
-  }
-
-  // Creates a two level deep source dir with a file in each.
-  void CreateFileHierarchy(const FilePath& root) {
-    FilePath d1(root);
+  // Creates a two level deep source dir with a file in each in |first_root| and
+  // copy it (files properties will be identical) in |second_root|.
+  void CreateTwoIdenticalHierarchies(const FilePath& first_root,
+                                     const FilePath& second_root) {
+    FilePath d1(first_root);
     d1 = d1.AppendASCII("D1");
     file_util::CreateDirectory(d1);
     ASSERT_TRUE(file_util::PathExists(d1));
@@ -63,6 +56,28 @@ class DuplicateTreeDetectorTest : public testing::Test {
     f2 = f2.AppendASCII("F2");
     CreateTextFile(f2.MaybeAsASCII(), text_content_2_);
     ASSERT_TRUE(file_util::PathExists(f2));
+
+    CopyFileHierarchy(d1, second_root);
+  }
+
+  // Copies the hierarcy in |from| to |to|.
+  void CopyFileHierarchy(const FilePath& from, const FilePath& to) {
+    // In SHFILEOPSTRUCT below, |pFrom| and |pTo| have to be double-null
+    // terminated: http://msdn.microsoft.com/library/bb759795.aspx
+    string16 double_null_from(from.value());
+    double_null_from.push_back(L'\0');
+    string16 double_null_to(to.value());
+    double_null_to.push_back(L'\0');
+
+    SHFILEOPSTRUCT file_op = {};
+    file_op.wFunc = FO_COPY;
+    file_op.pFrom = double_null_from.c_str();
+    file_op.pTo = double_null_to.c_str();
+    file_op.fFlags = FOF_NO_UI;
+
+    ASSERT_EQ(0, SHFileOperation(&file_op));
+
+    ASSERT_FALSE(file_op.fAnyOperationsAborted);
   }
 
   ScopedTempDir temp_source_dir_;
@@ -85,9 +100,7 @@ const wchar_t DuplicateTreeDetectorTest::text_content_3_[] =
 // Test the DuplicateTreeChecker's definition of identity on two identical
 // directory structures.
 TEST_F(DuplicateTreeDetectorTest, TestIdenticalDirs) {
-  // Create two sets of identical file hierarchys:
-  CreateFileHierarchy(temp_source_dir_.path());
-  CreateFileHierarchy(temp_dest_dir_.path());
+  CreateTwoIdenticalHierarchies(temp_source_dir_.path(), temp_dest_dir_.path());
 
   EXPECT_TRUE(installer::IsIdenticalFileHierarchy(temp_source_dir_.path(),
                                                   temp_dest_dir_.path()));
@@ -96,9 +109,7 @@ TEST_F(DuplicateTreeDetectorTest, TestIdenticalDirs) {
 // Test when source entirely contains dest but contains other files as well.
 // IsIdenticalTo should return false in this case.
 TEST_F(DuplicateTreeDetectorTest, TestSourceContainsDest) {
-  // Create two sets of identical file hierarchys:
-  CreateFileHierarchy(temp_source_dir_.path());
-  CreateFileHierarchy(temp_dest_dir_.path());
+  CreateTwoIdenticalHierarchies(temp_source_dir_.path(), temp_dest_dir_.path());
 
   FilePath new_file(temp_source_dir_.path());
   new_file = new_file.AppendASCII("FNew");
@@ -106,15 +117,13 @@ TEST_F(DuplicateTreeDetectorTest, TestSourceContainsDest) {
   ASSERT_TRUE(file_util::PathExists(new_file));
 
   EXPECT_FALSE(installer::IsIdenticalFileHierarchy(temp_source_dir_.path(),
-                                                  temp_dest_dir_.path()));
+                                                   temp_dest_dir_.path()));
 }
 
 // Test when dest entirely contains source but contains other files as well.
 // IsIdenticalTo should return true in this case.
 TEST_F(DuplicateTreeDetectorTest, TestDestContainsSource) {
-  // Create two sets of identical file hierarchys:
-  CreateFileHierarchy(temp_source_dir_.path());
-  CreateFileHierarchy(temp_dest_dir_.path());
+  CreateTwoIdenticalHierarchies(temp_source_dir_.path(), temp_dest_dir_.path());
 
   FilePath new_file(temp_dest_dir_.path());
   new_file = new_file.AppendASCII("FNew");
@@ -127,9 +136,7 @@ TEST_F(DuplicateTreeDetectorTest, TestDestContainsSource) {
 
 // Test when the file hierarchies are the same but one of the files is changed.
 TEST_F(DuplicateTreeDetectorTest, TestIdenticalDirsDifferentFiles) {
-  // Create two sets of identical file hierarchys:
-  CreateFileHierarchy(temp_source_dir_.path());
-  CreateFileHierarchy(temp_dest_dir_.path());
+  CreateTwoIdenticalHierarchies(temp_source_dir_.path(), temp_dest_dir_.path());
 
   FilePath existing_file(temp_dest_dir_.path());
   existing_file = existing_file.AppendASCII("D1")
@@ -157,7 +164,7 @@ TEST_F(DuplicateTreeDetectorTest, TestSingleFiles) {
   // This file should be the same.
   FilePath dest_file(temp_dest_dir_.path());
   dest_file = dest_file.AppendASCII("F1");
-  CreateTextFile(dest_file.MaybeAsASCII(), text_content_1_);
+  CopyFileHierarchy(source_file, dest_file);
 
   // This file should be different.
   FilePath other_file(temp_dest_dir_.path());
@@ -167,4 +174,3 @@ TEST_F(DuplicateTreeDetectorTest, TestSingleFiles) {
   EXPECT_TRUE(installer::IsIdenticalFileHierarchy(source_file, dest_file));
   EXPECT_FALSE(installer::IsIdenticalFileHierarchy(source_file, other_file));
 }
-
