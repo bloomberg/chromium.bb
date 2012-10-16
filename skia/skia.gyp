@@ -242,9 +242,6 @@
         # Temporarily ignore fix to antialias coverage, until we can rebaseline
         'SK_USE_LEGACY_AA_COVERAGE',
 
-        # Temporarily disable opacity fix in extractSubset
-        'SK_DISABLE_EXTRACTSUBSET_OPAQUE_FIX',
-
         # Temporarily keep old int-srcrect behavior, until we determine if
         # the few failures are a bug or not.
         'SK_SUPPORT_INT_SRCRECT_DRAWBITMAPRECT',
