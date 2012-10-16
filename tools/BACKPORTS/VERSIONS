@@ -87,3 +87,7 @@ ppapi21	8715
   # newlib	36b9ea9c8437777c359602203ef84344fb316d77	NaClify ARM string functions
   # newlib	93a610df78521a13828917c78c0792a669db64ed	Fix newlib configury for all nacl hosts to use -DMISSING_SYSCALL_NAMES
   # newlib	d3186f98e4957d4c97981668e3832b70485f88b6	Provide sanity check that compiler defines __*_ENDIAN__
+ppapi22	9338
+ppapi23	9624
+  gcc		0622fce75c30b1cdce32dfa1a6fe96cb34e526ea	Fix potential out of bounds access.
+  glibc		51fe1ff9a701891460bc51b21ff723802fda33ee	Remove aliases to stat64, fstat64, fstatat64 and lstat64.
