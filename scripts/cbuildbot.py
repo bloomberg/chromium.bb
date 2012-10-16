@@ -10,6 +10,7 @@ Used by Chromium OS buildbot configuration for all Chromium OS builds including
 full and pre-flight-queue builds.
 """
 
+import collections
 import distutils.version
 import glob
 import logging
@@ -51,6 +52,7 @@ _DISTRIBUTED_TYPES = [constants.COMMIT_QUEUE_TYPE, constants.PFQ_TYPE,
                       constants.CANARY_TYPE, constants.CHROME_PFQ_TYPE,
                       constants.PALADIN_TYPE]
 _BUILDBOT_REQUIRED_BINARIES = ('pbzip2',)
+_API_VERSION_ATTR = 'api_version'
 
 
 def _PrintValidConfigs(display_all=False):
@@ -217,37 +219,33 @@ class Builder(object):
     if not self.options.resume:
       results_lib.WriteCheckpoint(self.options.buildroot)
 
-    _, minor = cros_build_lib.GetTargetChromiteApiVersion(
-        self.options.buildroot)
+    args = stages.BootstrapStage.FilterArgsForTargetCbuildbot(
+        self.options.buildroot, constants.PATH_TO_CBUILDBOT, self.options)
 
     # Re-write paths to use absolute paths.
     # Suppress any timeout options given from the commandline in the
     # invoked cbuildbot; our timeout will enforce it instead.
-    args_to_append = ['--resume', '--timeout', '0', '--notee', '--nocgroups',
-                      '--buildroot', os.path.abspath(self.options.buildroot)]
-
-    if minor >= 2:
-      args_to_append += ['--cache-dir', self.options.cache_dir]
+    args += ['--resume', '--timeout', '0', '--notee', '--nocgroups',
+             '--buildroot', os.path.abspath(self.options.buildroot)]
 
     if self.options.chrome_root:
-      args_to_append += ['--chrome_root',
-                         os.path.abspath(self.options.chrome_root)]
+      args += ['--chrome_root',
+               os.path.abspath(self.options.chrome_root)]
 
     if stages.ManifestVersionedSyncStage.manifest_manager:
       ver = stages.ManifestVersionedSyncStage.manifest_manager.current_version
-      args_to_append += ['--version', ver]
+      args += ['--version', ver]
 
     if isinstance(sync_instance, stages.CommitQueueSyncStage):
       vp_file = sync_instance.SaveValidationPool()
-      args_to_append += ['--validation_pool', vp_file]
+      args += ['--validation_pool', vp_file]
 
     # Re-run the command in the buildroot.
     # Finally, be generous and give the invoked cbuildbot 30s to shutdown
     # when something occurs.  It should exit quicker, but the sigterm may
     # hit while the system is particularly busy.
     return_obj = cros_build_lib.RunCommand(
-        [constants.PATH_TO_CBUILDBOT] + sys.argv[1:] + args_to_append,
-        cwd=self.options.buildroot, error_code_ok=True, kill_timeout=30)
+        args, cwd=self.options.buildroot, error_code_ok=True, kill_timeout=30)
     return return_obj.returncode == 0
 
   def _InitializeTrybotPatchPool(self):
@@ -665,19 +663,21 @@ class CustomGroup(optparse.OptionGroup):
                                            **kwargs)
 
 
-class CustomOption(commandline.Option):
-  """Subclass Option class to implement pass-through."""
+class CustomOption(commandline.FilteringOption):
+  """Subclass FilteringOption class to implement pass-through and api."""
 
-  ACTIONS = commandline.Option.ACTIONS + ('extend',)
-  STORE_ACTIONS = commandline.Option.STORE_ACTIONS + ('extend',)
-  TYPED_ACTIONS = commandline.Option.TYPED_ACTIONS + ('extend',)
-  ALWAYS_TYPED_ACTIONS = commandline.Option.ALWAYS_TYPED_ACTIONS + ('extend',)
+  ACTIONS = commandline.FilteringOption.ACTIONS + ('extend',)
+  STORE_ACTIONS = commandline.FilteringOption.STORE_ACTIONS + ('extend',)
+  TYPED_ACTIONS = commandline.FilteringOption.TYPED_ACTIONS + ('extend',)
+  ALWAYS_TYPED_ACTIONS = (commandline.FilteringOption.ALWAYS_TYPED_ACTIONS +
+                          ('extend',))
 
   def __init__(self, *args, **kwargs):
     # The remote_pass_through argument specifies whether we should directly
     # pass the argument (with its value) onto the remote trybot.
     self.pass_through = kwargs.pop('remote_pass_through', False)
-    commandline.Option.__init__(self, *args, **kwargs)
+    self.api_version = int(kwargs.pop('api', '0'))
+    commandline.FilteringOption.__init__(self, *args, **kwargs)
 
   def take_action(self, action, dest, opt, value, values, parser):
     if action == 'extend':
@@ -688,29 +688,18 @@ class CustomOption(commandline.Option):
       #  cbuildbot -p 'proj:branch  proj2:branch' ...
       lvalue = value.split()
       values.ensure_value(dest, []).extend(lvalue)
-    else:
-      optparse.Option.take_action(self, action, dest, opt, value, values,
-                                  parser)
 
-    if self.pass_through:
-      parser.values.pass_through_args.append(opt)
-      if self.nargs and self.nargs > 1:
-        # value is a tuple if nargs > 1
-        string_list = [str(val) for val in list(value)]
-        parser.values.pass_through_args.extend(string_list)
-      elif value:
-        parser.values.pass_through_args.append(str(value))
+    commandline.FilteringOption.take_action(
+        self, action, dest, opt, value, values, parser)
 
 
-class CustomParser(commandline.OptionParser):
+class CustomParser(commandline.FilteringParser):
 
   DEFAULT_OPTION_CLASS = CustomOption
 
   def add_remote_option(self, *args, **kwargs):
     """For arguments that are passed-through to remote trybot."""
-    return commandline.OptionParser.add_option(self, *args,
-                                               remote_pass_through=True,
-                                               **kwargs)
+    return self.add_option(*args, remote_pass_through=True, **kwargs)
 
 
 def _CreateParser():
@@ -1015,6 +1004,14 @@ def _FinishParsing(options, args):
     # 2. --remote invocations, because it needs to push changes to the tryjob
     #    repo.
     options.debug = not options.buildbot and not options.remote
+
+  # Populate options.pass_through_args.
+  accepted, _ = commandline.FilteringParser.FilterArgs(
+      options.parsed_args, lambda x: x.opt_inst.pass_through)
+  options.pass_through_args.extend(accepted)
+
+  # Record the configs targeted.
+  options.build_targets = args[:]
 
 
 # pylint: disable=W0613

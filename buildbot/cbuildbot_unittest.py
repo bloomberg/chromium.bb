@@ -48,8 +48,10 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
 
     # Use the cbuildbot parser to create properties and populate default values.
     self.parser = cbuildbot._CreateParser()
-    (self.options, _) = self.parser.parse_args(['-r', self.buildroot,
-                                                '--buildbot', '--debug'])
+
+    argv = ['-r', self.buildroot, '--buildbot', '--debug',
+            'x86-generic-paladin']
+    (self.options, _) = cbuildbot._ParseCommandLine(self.parser, argv)
     self.options.bootstrap = False
     self.options.clean = False
     self.options.resume = False

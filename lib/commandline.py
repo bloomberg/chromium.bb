@@ -9,6 +9,7 @@ This ranges from optparse, to a basic script wrapper setup (much like
 what is used for chromite.bin.* ).
 """
 
+import collections
 import logging
 import os
 import optparse
@@ -65,6 +66,20 @@ class Option(optparse.Option):
   TYPE_CHECKER["path"] = AbsolutePath
   TYPE_CHECKER["gs_path"] = ValidateGSPath
   TYPE_CHECKER["log_level"] = ValidateLogLevel
+
+
+class FilteringOption(Option):
+  """Subclass that supports Option filtering for FilteringOptionParser"""
+  def take_action(self, action, dest, opt, value, values, parser):
+    if action in FilteringOption.ACTIONS:
+      Option.take_action(self, action, dest, opt, value, values, parser)
+
+    if value is None:
+      value = []
+    elif not self.nargs or self.nargs <= 1:
+      value = [value]
+
+    parser.AddParsedArg(self, opt, [str(v) for v in value])
 
 
 class BaseParser(object):
@@ -222,6 +237,56 @@ class OptionParser(optparse.OptionParser, BaseParser):
     opts, remaining = optparse.OptionParser.parse_args(
         self, args=args, values=values)
     return self.DoPostParseSetup(opts, remaining)
+
+
+PassedOption = collections.namedtuple(
+        'PassedOption', ['opt_inst', 'opt_str', 'value_str'])
+
+
+class FilteringParser(OptionParser):
+
+  DEFAULT_OPTION_CLASS = FilteringOption
+
+  def parse_args(self, args=None, values=None):
+    if values is None:
+      values = self.get_default_values()
+    values.parsed_args = []
+
+    return OptionParser.parse_args(self, args=args, values=values)
+
+  def AddParsedArg(self, opt_inst, opt_str, value_str):
+    """Add a parsed argument with attributes.
+
+    Arguments:
+      opt_inst: An instance of a raw optparse.Option object that represents the
+                option.
+      opt_str: The option string.
+      value_str: A list of string-ified values dentified by OptParse.
+    """
+    self.values.parsed_args.append(PassedOption(opt_inst, opt_str, value_str))
+
+  @staticmethod
+  def FilterArgs(parsed_args, filter_fn):
+    """Filter the argument by passing it through a function.
+
+    Arguments:
+      parsed_args:  The list of parsed argument namedtuples to filter.  Tuples
+        are of the form (opt_inst, opt_str, value_str).
+      filter_fn: A function with signature f(PassedOption), and returns True if
+        the argument is to be passed through.  False if not.
+
+     Returns:
+       A tuple containing two lists - one of accepted arguments and one of
+       removed arguments.
+    """
+    removed = []
+    accepted = []
+    for arg in parsed_args:
+      target = accepted if filter_fn(arg) else removed
+      target.append(arg.opt_str)
+      target.extend(arg.value_str)
+
+    return accepted, removed
 
 
 # pylint: disable=R0901

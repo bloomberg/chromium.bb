@@ -29,6 +29,7 @@ from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import trybot_patch_pool
 from chromite.buildbot import validation_pool
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -327,6 +328,31 @@ class BootstrapStage(PatchChangesStage):
         manifest_include_dir=checkout_dir)
     return checkout_dir
 
+  @staticmethod
+  def _FilterArgsForApi(parsed_args, api_minor):
+    """Remove arguments that are introduced after an api version."""
+    def filter_fn(passed_arg):
+      return passed_arg.opt_inst.api_version <= api_minor
+
+    accepted, removed = commandline.FilteringParser.FilterArgs(
+        parsed_args, filter_fn)
+
+    if removed:
+      cros_build_lib.Warning('The following arguments were removed due to api: '
+                             "'%s'" % ' '.join(removed))
+    return accepted
+
+  @classmethod
+  def FilterArgsForTargetCbuildbot(cls, buildroot, cbuildbot_path, options):
+    _, minor = cros_build_lib.GetTargetChromiteApiVersion(buildroot)
+    args = [cbuildbot_path]
+    args.extend(options.build_targets)
+    args.extend(cls._FilterArgsForApi(options.parsed_args, minor))
+    if minor >= 2:
+      args += ['--cache-dir', options.cache_dir]
+
+    return args
+
   #pylint: disable=E1101
   @osutils.TempDirDecorator
   def _PerformStage(self):
@@ -356,12 +382,17 @@ class BootstrapStage(PatchChangesStage):
     if filtered_pool:
       self._ApplyPatchSeries(patch_series, filtered_pool)
 
+    cbuildbot_path = constants.PATH_TO_CBUILDBOT
+    if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):
+      cbuildbot_path = 'chromite/buildbot/cbuildbot'
+    cmd = self.FilterArgsForTargetCbuildbot(self.tempdir, cbuildbot_path,
+                                       self._options)
+
     extra_params = ['--sourceroot=%s' % self._options.sourceroot]
     extra_params.extend(self._options.bootstrap_args)
-    argv = sys.argv[1:]
-    if '--test-bootstrap' in argv:
+    if self._options.test_bootstrap:
       # We don't want re-executed instance to see this.
-      argv = [a for a in argv if a != '--test-bootstrap']
+      cmd = [a for a in cmd if a != '--test-bootstrap']
     else:
       # If we've already done the desired number of bootstraps, disable
       # bootstrapping for the next execution.  Also pass in the patched manifest
@@ -371,11 +402,7 @@ class BootstrapStage(PatchChangesStage):
         manifest_dir = self._ApplyManifestPatches(self.manifest_patch_pool)
         extra_params.extend(['--manifest-repo-url', manifest_dir])
 
-    cbuildbot_path = constants.PATH_TO_CBUILDBOT
-    if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):
-      cbuildbot_path = 'chromite/buildbot/cbuildbot'
-
-    cmd = [cbuildbot_path] + argv + extra_params
+    cmd += extra_params
     result_obj = cros_build_lib.RunCommand(
         cmd, cwd=self.tempdir, kill_timeout=30, error_code_ok=True)
     self.returncode = result_obj.returncode

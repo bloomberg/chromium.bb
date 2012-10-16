@@ -2205,4 +2205,3 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
         % (buildroot, major, constants.REEXEC_API_MAJOR))
 
   return major, minor
-
