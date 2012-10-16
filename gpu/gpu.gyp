@@ -149,6 +149,8 @@
         'command_buffer/client/client_test_helper.h',
         'command_buffer/client/cmd_buffer_helper_test.cc',
         'command_buffer/client/fenced_allocator_test.cc',
+        'command_buffer/client/gles2_interface_stub.cc',
+        'command_buffer/client/gles2_interface_stub.h',
         'command_buffer/client/gles2_implementation_unittest.cc',
         'command_buffer/client/mapped_memory_unittest.cc',
         'command_buffer/client/query_tracker_unittest.cc',

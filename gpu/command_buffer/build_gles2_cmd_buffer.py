@@ -2249,7 +2249,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     """Writes the GLES2 Implemention declaration."""
     impl_decl = func.GetInfo('impl_decl')
     if impl_decl == None or impl_decl == True:
-      file.Write("%s %s(%s);\n" %
+      file.Write("virtual %s %s(%s) OVERRIDE;\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       file.Write("\n")
@@ -2282,6 +2282,10 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Writes the GLES2 Implemention."""
+    self.WriteGLES2ImplementationDeclaration(func, file)
+
+  def WriteGLES2Implementation(self, func, file):
+    """Writes the GLES2 Implemention."""
     impl_func = func.GetInfo('impl_func')
     impl_decl = func.GetInfo('impl_decl')
     gen_cmd = func.GetInfo('gen_cmd')
@@ -2289,7 +2293,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
         (impl_func == None or impl_func == True) and
         (impl_decl == None or impl_decl == True) and
         (gen_cmd == None or gen_cmd == True)):
-      file.Write("%s %s(%s) {\n" %
+      file.Write("%s GLES2Implementation::%s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
@@ -2302,8 +2306,29 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       self.WriteClientGLReturnLog(func, file)
       file.Write("}\n")
       file.Write("\n")
-    else:
-      self.WriteGLES2ImplementationDeclaration(func, file)
+
+  def WriteGLES2InterfaceHeader(self, func, file):
+    """Writes the GLES2 Interface."""
+    file.Write("virtual %s %s(%s) = 0;\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+
+  def WriteGLES2InterfaceStub(self, func, file):
+    """Writes the GLES2 Interface stub declaration."""
+    file.Write("virtual %s %s(%s) OVERRIDE;\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+
+  def WriteGLES2InterfaceStubImpl(self, func, file):
+    """Writes the GLES2 Interface stub declaration."""
+    args = func.GetOriginalArgs()
+    arg_string = ", ".join(
+        ["%s /* %s */" % (arg.type, arg.name) for arg in args])
+    file.Write("%s GLES2InterfaceStub::%s(%s) {\n" %
+               (func.return_type, func.original_name, arg_string))
+    if func.return_type != "void":
+      file.Write("  return 0;\n")
+    file.Write("}\n")
 
   def WriteGLES2ImplementationUnitTest(self, func, file):
     """Writes the GLES2 Implemention unit test."""
@@ -2474,9 +2499,9 @@ class TodoHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     pass
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s) {\n" %
+    file.Write("%s GLES2Implementation::%s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     file.Write("  // TODO: for now this is a no-op\n")
@@ -2607,9 +2632,13 @@ class ManualHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     file.Write("// TODO(gman): Implement test for %s\n" % func.name)
 
+  def WriteGLES2Implementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
   def WriteGLES2ImplementationHeader(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s);\n" %
+    file.Write("virtual %s %s(%s) OVERRIDE;\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     file.Write("\n")
@@ -2822,7 +2851,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 """
     self.WriteInvalidUnitTest(func, file, invalid_test)
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Writes the GLES2 Implemention."""
 
     impl_func = func.GetInfo('impl_func')
@@ -2832,7 +2861,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
           (impl_func == None or impl_func == True) and
           (impl_decl == None or impl_decl == True)):
 
-      file.Write("%s %s(%s) {\n" %
+      file.Write("%s GLES2Implementation::%s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
@@ -2865,9 +2894,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
           'type': name_arg.resource_type,
           'lc_type': name_arg.resource_type.lower(),
         })
-
-    else:
-      self.WriteGLES2ImplementationDeclaration(func, file)
 
 
 class GENnHandler(TypeHandler):
@@ -2903,7 +2929,7 @@ class GENnHandler(TypeHandler):
                "  }\n" %
                (func.original_name, func.GetLastOriginalArg().name))
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
     log_code = ("""  GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
@@ -2919,7 +2945,9 @@ class GENnHandler(TypeHandler):
         'resource_types': func.GetInfo('resource_types'),
         'count_name': func.GetOriginalArgs()[0].name,
       }
-    file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
+    file.Write(
+        "%(return_type)s GLES2Implementation::%(name)s(%(typed_args)s) {\n" %
+        args)
     func.WriteDestinationInitalizationValidation(file)
     self.WriteClientGLCallLog(func, file)
     for arg in func.GetOriginalArgs():
@@ -3164,9 +3192,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("    return error::kInvalidArguments;\n")
     file.Write("  }\n")
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s) {\n" %
+    file.Write("%s GLES2Implementation::%s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
@@ -3196,9 +3224,9 @@ class DeleteHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     pass
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s) {\n" %
+    file.Write("%s GLES2Implementation::%s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
@@ -3328,7 +3356,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
     file.Write("  %sHelper(n, %s);\n" %
                (func.original_name, func.GetLastOriginalArg().name))
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
     impl_decl = func.GetInfo('impl_decl')
     if impl_decl == None or impl_decl == True:
@@ -3340,7 +3368,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
           'resource_type': func.GetInfo('resource_type').lower(),
           'count_name': func.GetOriginalArgs()[0].name,
         }
-      file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
+      file.Write(
+          "%(return_type)s GLES2Implementation::%(name)s(%(typed_args)s) {\n" %
+          args)
       file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
       func.WriteDestinationInitalizationValidation(file)
       self.WriteClientGLCallLog(func, file)
@@ -3507,11 +3537,11 @@ class GETnHandler(TypeHandler):
 """
     file.Write(code)
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
     impl_decl = func.GetInfo('impl_decl')
     if impl_decl == None or impl_decl == True:
-      file.Write("%s %s(%s) {\n" %
+      file.Write("%s GLES2Implementation::%s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
@@ -3741,9 +3771,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("    return error::kOutOfBounds;\n")
       file.Write("  }\n")
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s) {\n" %
+    file.Write("%s GLES2Implementation::%s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
@@ -4010,9 +4040,9 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       file.Write("    return error::kOutOfBounds;\n")
       file.Write("  }\n")
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("%s %s(%s) {\n" %
+    file.Write("%s GLES2Implementation::%s(%s) {\n" %
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
@@ -4493,12 +4523,12 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
     file.Write("}\n")
     file.Write("\n")
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
     impl_func = func.GetInfo('impl_func')
     if impl_func == None or impl_func == True:
       error_value = func.GetInfo("error_value") or "GL_FALSE"
-      file.Write("%s %s(%s) {\n" %
+      file.Write("%s GLES2Implementation::%s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
       file.Write("  GPU_CLIENT_SINGLE_THREAD_CHECK();\n")
@@ -4522,8 +4552,6 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       file.Write("  return *result;\n")
       file.Write("}\n")
       file.Write("\n")
-    else:
-      self.WriteGLES2ImplementationDeclaration(func, file)
 
   def WriteGLES2ImplementationUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -4571,9 +4599,9 @@ class STRnHandler(TypeHandler):
     # add on a bucket id.
     func.AddCmdArg(Argument('bucket_id', 'uint32'))
 
-  def WriteGLES2ImplementationHeader(self, func, file):
+  def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
-    code_1 = """%(return_type)s %(func_name)s(%(args)s) {
+    code_1 = """%(return_type)s GLES2Implementation::%(func_name)s(%(args)s) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
 """
     code_2 = """  GPU_CLIENT_LOG("[" << GetLogPrefix()
@@ -5505,9 +5533,25 @@ class Function(object):
     """Writes the GLES2 C Lib Implemention."""
     self.type_handler.WriteGLES2CLibImplementation(self, file)
 
+  def WriteGLES2InterfaceHeader(self, file):
+    """Writes the GLES2 Interface declaration."""
+    self.type_handler.WriteGLES2InterfaceHeader(self, file)
+
+  def WriteGLES2InterfaceStub(self, file):
+    """Writes the GLES2 Interface Stub declaration."""
+    self.type_handler.WriteGLES2InterfaceStub(self, file)
+
+  def WriteGLES2InterfaceStubImpl(self, file):
+    """Writes the GLES2 Interface Stub declaration."""
+    self.type_handler.WriteGLES2InterfaceStubImpl(self, file)
+
   def WriteGLES2ImplementationHeader(self, file):
     """Writes the GLES2 Implemention declaration."""
     self.type_handler.WriteGLES2ImplementationHeader(self, file)
+
+  def WriteGLES2Implementation(self, file):
+    """Writes the GLES2 Implemention definition."""
+    self.type_handler.WriteGLES2Implementation(self, file)
 
   def WriteGLES2ImplementationUnitTest(self, file):
     """Writes the GLES2 Implemention unit test."""
@@ -6023,14 +6067,52 @@ class GLGenerator(object):
 
     file.Close()
 
+  def WriteGLES2InterfaceHeader(self, filename):
+    """Writes the GLES2 interface header."""
+    file = CHeaderWriter(
+        filename,
+        "// This file is included by gles2_interface.h to declare the\n"
+        "// GL api functions.\n")
+    for func in self.original_functions:
+      func.WriteGLES2InterfaceHeader(file)
+    file.Close()
+
+  def WriteGLES2InterfaceStub(self, filename):
+    """Writes the GLES2 interface stub header."""
+    file = CHeaderWriter(
+        filename,
+        "// This file is included by gles2_interface_stub.h.\n")
+    for func in self.original_functions:
+      func.WriteGLES2InterfaceStub(file)
+    file.Close()
+
+  def WriteGLES2InterfaceStubImpl(self, filename):
+    """Writes the GLES2 interface header."""
+    file = CHeaderWriter(
+        filename,
+        "// This file is included by gles2_interface_stub.cc.\n")
+    for func in self.original_functions:
+      func.WriteGLES2InterfaceStubImpl(file)
+    file.Close()
+
   def WriteGLES2ImplementationHeader(self, filename):
-    """Writes the GLES2 helper header."""
+    """Writes the GLES2 Implementation header."""
     file = CHeaderWriter(
         filename,
         "// This file is included by gles2_implementation.h to declare the\n"
         "// GL api functions.\n")
     for func in self.original_functions:
       func.WriteGLES2ImplementationHeader(file)
+    file.Close()
+
+  def WriteGLES2Implementation(self, filename):
+    """Writes the GLES2 Implementation."""
+    file = CHeaderWriter(
+        filename,
+        "// This file is included by gles2_implementation.cc to define the\n"
+        "// GL api functions.\n")
+    for func in self.original_functions:
+      func.WriteGLES2Implementation(file)
     file.Close()
 
   def WriteGLES2ImplementationUnitTests(self, filename):
@@ -6407,7 +6489,12 @@ def main(argv):
     gen.WriteCommandIds("common/gles2_cmd_ids_autogen.h")
     gen.WriteFormat("common/gles2_cmd_format_autogen.h")
     gen.WriteFormatTest("common/gles2_cmd_format_test_autogen.h")
+    gen.WriteGLES2InterfaceHeader("client/gles2_interface_autogen.h")
+    gen.WriteGLES2InterfaceStub("client/gles2_interface_stub_autogen.h")
+    gen.WriteGLES2InterfaceStubImpl(
+        "client/gles2_interface_stub_impl_autogen.h")
     gen.WriteGLES2ImplementationHeader("client/gles2_implementation_autogen.h")
+    gen.WriteGLES2Implementation("client/gles2_implementation_impl_autogen.h")
     gen.WriteGLES2ImplementationUnitTests(
         "client/gles2_implementation_unittest_autogen.h")
     gen.WriteGLES2CLibImplementation("client/gles2_c_lib_autogen.h")

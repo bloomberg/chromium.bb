@@ -13,11 +13,13 @@
 #include <string>
 #include <vector>
 
+#include "../common/compiler_specific.h"
 #include "../common/debug_marker_manager.h"
 #include "../common/gles2_cmd_utils.h"
 #include "../common/scoped_ptr.h"
 #include "../client/ref_counted.h"
 #include "../client/gles2_cmd_helper.h"
+#include "../client/gles2_interface.h"
 #include "../client/query_tracker.h"
 #include "../client/ring_buffer.h"
 #include "../client/share_group.h"
@@ -98,7 +100,7 @@ class ClientSideBufferHelper;
 // be had by changing your code to use command buffers directly by using the
 // GLES2CmdHelper but that entails changing your code to use and deal with
 // shared memory and synchronization issues.
-class GLES2_IMPL_EXPORT GLES2Implementation {
+class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface {
  public:
   class ErrorMessageCallback {
    public:
@@ -180,7 +182,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
       bool share_resources,
       bool bind_generates_resource);
 
-  ~GLES2Implementation();
+  virtual ~GLES2Implementation();
 
   bool Initialize(
       unsigned int starting_transfer_buffer_size,
@@ -199,10 +201,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   // this file instead of having to edit some template or the code generator.
   #include "../client/gles2_implementation_autogen.h"
 
-  void DisableVertexAttribArray(GLuint index);
-  void EnableVertexAttribArray(GLuint index);
-  void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);
-  void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params);
+  virtual void DisableVertexAttribArray(GLuint index) OVERRIDE;
+  virtual void EnableVertexAttribArray(GLuint index) OVERRIDE;
+  virtual void GetVertexAttribfv(
+      GLuint index, GLenum pname, GLfloat* params) OVERRIDE;
+  virtual void GetVertexAttribiv(
+      GLuint index, GLenum pname, GLint* params) OVERRIDE;
 
   void GetProgramInfoCHROMIUMHelper(GLuint program, std::vector<int8>* result);
   GLint GetAttribLocationHelper(GLuint program, const char* name);
