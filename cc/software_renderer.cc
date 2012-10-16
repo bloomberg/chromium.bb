@@ -53,6 +53,15 @@ void toSkMatrix(SkMatrix* flattened, const WebTransformationMatrix& m)
     flattened->set(8, m.m44());
 }
 
+bool isScaleAndTranslate(const SkMatrix& matrix)
+{
+    return SkScalarNearlyZero(matrix[SkMatrix::kMSkewX]) &&
+           SkScalarNearlyZero(matrix[SkMatrix::kMSkewY]) &&
+           SkScalarNearlyZero(matrix[SkMatrix::kMPersp0]) &&
+           SkScalarNearlyZero(matrix[SkMatrix::kMPersp1]) &&
+           SkScalarNearlyZero(matrix[SkMatrix::kMPersp2] - 1.0f);
+}
+
 } // anonymous namespace
 
 PassOwnPtr<CCRendererSoftware> CCRendererSoftware::create(CCRendererClient* client, CCResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
@@ -178,6 +187,10 @@ void CCRendererSoftware::drawQuad(DrawingFrame& frame, const CCDrawQuad* quad)
     m_skCurrentCanvas->setMatrix(skDeviceMatrix);
 
     m_skCurrentPaint.reset();
+    if (!isScaleAndTranslate(skDeviceMatrix)) {
+      m_skCurrentPaint.setAntiAlias(true);
+      m_skCurrentPaint.setFilterBitmap(true);
+    }
     if (quad->needsBlending()) {
         m_skCurrentPaint.setAlpha(quad->opacity() * 255);
         m_skCurrentPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
