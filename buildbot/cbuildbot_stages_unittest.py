@@ -519,8 +519,8 @@ class BuildBoardTest(AbstractStageTest):
 
 class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
   """Tests SDK package and Manifest creation."""
-  fake_packages = [('cat1/package','1'), ('cat1/package','2'),
-                   ('cat2/package','3'), ('cat2/package','4')]
+  fake_packages = [('cat1/package', '1'), ('cat1/package', '2'),
+                   ('cat2/package', '3'), ('cat2/package', '4')]
   fake_json_data = {}
   fake_chroot = None
 
@@ -699,9 +699,8 @@ class HWTestStageTest(AbstractStageTest):
                                                        self.options.
                                                        remote_trybot)
 
-    build = 'trybot-%s/%s' % (self.bot_id,
-                              self.archive_stage_mock.GetVersion().
-                              AndReturn('ver'))
+    build = 'trybot-%s/%s' % (
+        self.bot_id, self.archive_stage_mock.GetVersion().AndReturn('ver'))
 
     commands.RunHWTestSuite(build,
                             self.suite,
@@ -726,8 +725,8 @@ class HWTestStageTest(AbstractStageTest):
                                                        self.options.
                                                        remote_trybot)
 
-    build = '%s/%s' % (self.bot_id,
-                       self.archive_stage_mock.GetVersion().AndReturn('ver'))
+    build = 'trybot-%s/%s' % (
+        self.bot_id, self.archive_stage_mock.GetVersion().AndReturn('ver'))
 
     commands.RunHWTestSuite(build,
                             self.suite,
@@ -1299,6 +1298,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
       pass
 
     self.options = Options()
+    self.options.archive_base = 'gs://dontcare'
     self.options.buildroot = self.build_root
     self.options.debug = False
     self.options.prebuilts = False

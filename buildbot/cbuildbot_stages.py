@@ -1230,12 +1230,10 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
     if not self._archive_stage.WaitForHWTestUploads():
       raise Exception('Missing uploads.')
 
+    build = '/'.join([self._bot_id, self._archive_stage.GetVersion()])
     if self._options.remote_trybot and self._options.hwtest:
-      build = 'trybot-%s/%s' % (self._bot_id,
-                                   self._archive_stage.GetVersion())
       debug = self._options.debug_forced
     else:
-      build = '%s/%s' % (self._bot_id, self._archive_stage.GetVersion())
       debug = self._options.debug
     try:
       with cros_build_lib.SubCommandTimeout(self._timeout):
@@ -1515,18 +1513,16 @@ class ArchiveStage(BoardSpecificBuilderStage):
       return self._GetArchivePath()
 
   def _GetGSUtilArchiveDir(self):
-    bot_id = self._bot_id
     if self._options.archive_base:
       gs_base = self._options.archive_base
     elif self._options.remote_trybot:
       gs_base = self._REMOTE_TRYBOT_ARCHIVE_URL
-      bot_id = 'trybot-' + self._bot_id
     elif self._build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
       gs_base = 'gs://chromeos-image-archive'
     else:
       return self._build_config['gs_path']
 
-    return '%s/%s' % (gs_base, bot_id)
+    return '%s/%s' % (gs_base, self._bot_id)
 
   def GetGSUploadLocation(self):
     """Get the Google Storage location where we should upload artifacts."""

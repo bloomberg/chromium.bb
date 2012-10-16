@@ -52,8 +52,11 @@ class BuilderStage(object):
     return cls.name_stage_re.match(cls.__name__).group(1)
 
   def __init__(self, options, build_config, suffix=None):
-    self._bot_id = build_config['name']
     self._options = options
+    self._bot_id = build_config['name']
+    if not self._options.archive_base and self._options.remote_trybot:
+      self._bot_id = 'trybot-' + self._bot_id
+
     self._build_config = build_config
     self.name = self.StageNamePrefix()
     if suffix:
