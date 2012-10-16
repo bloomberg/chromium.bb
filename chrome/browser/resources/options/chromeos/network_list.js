@@ -940,11 +940,11 @@ cr.define('options.network', function() {
     if (data.accessLocked) {
       $('network-locked-message').hidden = false;
       networkList.disabled = true;
-      $('use-shared-proxies').disabled = true;
+      $('use-shared-proxies').setDisabled('network-lock', true);
     } else {
       $('network-locked-message').hidden = true;
       networkList.disabled = false;
-      $('use-shared-proxies').disabled = false;
+      $('use-shared-proxies').setDisabled('network-lock', false);
     }
 
     // Only show Ethernet control if connected.
