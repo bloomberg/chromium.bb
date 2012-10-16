@@ -87,8 +87,8 @@ bool PepperInProcessRouter::SendToHost(IPC::Message* msg) {
 
 bool PepperInProcessRouter::SendToPlugin(IPC::Message* msg) {
   scoped_ptr<IPC::Message> message(msg);
-  if (msg->is_sync()) {
-    CHECK(IPC::SyncMessage::IsMessageReplyTo(*message, pending_message_id_));
+  CHECK(!msg->is_sync());
+  if (IPC::SyncMessage::IsMessageReplyTo(*message, pending_message_id_)) {
     if (!msg->is_reply_error())
       reply_result_ = reply_deserializer_->SerializeOutputParameters(*message);
   } else {
