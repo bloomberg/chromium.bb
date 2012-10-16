@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -36,7 +35,7 @@ class MenuButton;
 class MenuRunner;
 }
 
-// A balloon view is the UI component for a desktop notification toasts.
+// A balloon view is the UI component for a desktop notification toast.
 // It draws a border, and within the border an HTML renderer.
 class BalloonViewImpl : public BalloonView,
                         public views::MenuButtonListener,
@@ -71,6 +70,7 @@ class BalloonViewImpl : public BalloonView,
   // views::WidgetDelegate interface.
   virtual void OnDisplayChanged() OVERRIDE;
   virtual void OnWorkAreaChanged() OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
 
   // views::ButtonListener interface.
   virtual void ButtonPressed(views::Button* sender,
@@ -95,9 +95,6 @@ class BalloonViewImpl : public BalloonView,
 
   // Adjust the contents window size to be appropriate for the frame.
   void SizeContentsWindow();
-
-  // Do the delayed close work.
-  void DelayedClose(bool by_user);
 
   // The height of the balloon's shelf.
   // The shelf is where is close button is located.
@@ -137,9 +134,6 @@ class BalloonViewImpl : public BalloonView,
   // The renderer of the HTML contents.
   scoped_ptr<BalloonViewHost> html_contents_;
 
-  // The following factory is used to call methods at a later time.
-  base::WeakPtrFactory<BalloonViewImpl> method_factory_;
-
   // Pointer to sub-view is owned by the View sub-class.
   views::ImageButton* close_button_;
 
@@ -160,6 +154,9 @@ class BalloonViewImpl : public BalloonView,
 
   // Set to true if this is browser generate web UI.
   bool enable_web_ui_;
+
+  // Most recent value passed to Close().
+  bool closed_by_user_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };

@@ -93,14 +93,13 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       frame_container_(NULL),
       html_container_(NULL),
       html_contents_(NULL),
-      method_factory_(this),
       close_button_(NULL),
       animation_(NULL),
       options_menu_model_(NULL),
       options_menu_button_(NULL),
-      enable_web_ui_(false) {
-  // This object is not to be deleted by the views hierarchy,
-  // as it is owned by the balloon.
+      enable_web_ui_(false),
+      closed_by_user_(false) {
+  // We're owned by Balloon and don't want to be deleted by our parent View.
   set_owned_by_client();
 
   views::BubbleBorder* bubble_border =
@@ -122,12 +121,9 @@ void BalloonViewImpl::Close(bool by_user) {
   html_container_->Close();
   frame_container_->GetRootView()->RemoveAllChildViews(true);
   frame_container_->Close();
-  // Post the tast at the end to sure this this WidgetDelegate
-  // instance is avaiable when Widget::CloseNow gets called.
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   base::Bind(&BalloonViewImpl::DelayedClose,
-                                              method_factory_.GetWeakPtr(),
-                                              by_user));
+  closed_by_user_ = by_user;
+  // |frame_container_->::Close()| is async. When processed it'll call back to
+  // DeleteDelegate() and we'll cleanup.
 }
 
 gfx::Size BalloonViewImpl::GetSize() const {
@@ -169,15 +165,15 @@ void BalloonViewImpl::OnWorkAreaChanged() {
   collection_->DisplayChanged();
 }
 
+void BalloonViewImpl::DeleteDelegate() {
+  balloon_->OnClose(closed_by_user_);
+}
+
 void BalloonViewImpl::ButtonPressed(views::Button* sender,
                                     const ui::Event&) {
   // The only button currently is the close button.
   DCHECK(sender == close_button_);
   Close(true);
-}
-
-void BalloonViewImpl::DelayedClose(bool by_user) {
-  balloon_->OnClose(by_user);
 }
 
 gfx::Size BalloonViewImpl::GetPreferredSize() {

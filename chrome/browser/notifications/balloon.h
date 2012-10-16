@@ -22,7 +22,7 @@ class Profile;
 // Interface for a view that displays a balloon.
 class BalloonView {
  public:
-  virtual ~BalloonView() { }
+  virtual ~BalloonView() {}
 
   // Show the view on the screen.
   virtual void Show(Balloon* balloon) = 0;
