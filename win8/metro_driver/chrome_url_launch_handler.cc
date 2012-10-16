@@ -102,6 +102,10 @@ void ChromeUrlLaunchHandler::HandleProtocolLaunch(
 // are encoded in |launch_args| they are ignored.
 string16 ChromeUrlLaunchHandler::GetUrlFromLaunchArgs(
     const string16& launch_args) {
+  if (launch_args == L"opennewwindow") {
+    VLOG(1) << "Returning new tab url";
+    return L"chrome://newtab";
+  }
   string16 dummy_command_line(L"dummy.exe ");
   dummy_command_line.append(launch_args);
   CommandLine command_line = CommandLine::FromString(dummy_command_line);
@@ -178,6 +182,11 @@ void ChromeUrlLaunchHandler::InitiateNavigationOrSearchRequest(
 
   DVLOG(1) << (url ? url : L"NULL url");
   DVLOG(1) << (search_string ? search_string : L"NULL search string");
+
+  if (globals.host_windows.empty()) {
+    DVLOG(1) << "No chrome windows registered. Ignoring nav request";
+    return;
+  }
 
   // Custom registered message to navigate or search in chrome. WPARAM
   // points to the URL and LPARAM contains the search string. They are
