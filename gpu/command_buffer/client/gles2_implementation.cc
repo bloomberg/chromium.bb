@@ -3105,7 +3105,8 @@ void GLES2Implementation::PostSubBufferCHROMIUM(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] PostSubBufferCHROMIUM("
       << x << ", " << y << ", " << width << ", " << height << ")");
-  TRACE_EVENT0("gpu", "GLES2::PostSubBufferCHROMIUM");
+  TRACE_EVENT2("gpu", "GLES2::PostSubBufferCHROMIUM",
+               "width", width, "height", height);
 
   // Same flow control as GLES2Implementation::SwapBuffers (see comments there).
   swap_buffers_tokens_.push(helper_->InsertToken());
