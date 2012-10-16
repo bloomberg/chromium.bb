@@ -475,7 +475,7 @@ FcCacheFindByAddr (void *object)
 }
 
 static void
-FcCacheRemove (FcCache *cache)
+FcCacheRemoveUnlocked (FcCache *cache)
 {
     FcCacheSkip	    **update[FC_CACHE_MAX_LEVEL];
     FcCacheSkip	    *s, **next;
@@ -484,7 +484,6 @@ FcCacheRemove (FcCache *cache)
     /*
      * Find links along each chain
      */
-    lock_cache ();
     next = fcCacheChains;
     for (i = fcCacheMaxLevel; --i >= 0; )
     {
@@ -498,7 +497,6 @@ FcCacheRemove (FcCache *cache)
 	*update[i] = s->next[i];
     while (fcCacheMaxLevel > 0 && fcCacheChains[fcCacheMaxLevel - 1] == NULL)
 	fcCacheMaxLevel--;
-    unlock_cache ();
     free (s);
 }
 
@@ -522,8 +520,10 @@ FcCacheFindByStat (struct stat *cache_stat)
 }
 
 static void
-FcDirCacheDispose (FcCache *cache)
+FcDirCacheDisposeUnlocked (FcCache *cache)
 {
+    FcCacheRemoveUnlocked (cache);
+
     switch (cache->magic) {
     case FC_CACHE_MAGIC_ALLOC:
 	free (cache);
@@ -536,7 +536,6 @@ FcDirCacheDispose (FcCache *cache)
 #endif
 	break;
     }
-    FcCacheRemove (cache);
 }
 
 void
@@ -551,13 +550,16 @@ FcCacheObjectReference (void *object)
 void
 FcCacheObjectDereference (void *object)
 {
-    FcCacheSkip	*skip = FcCacheFindByAddr (object);
+    FcCacheSkip	*skip;
 
+    lock_cache ();
+    skip = FcCacheFindByAddrUnlocked (object);
     if (skip)
     {
 	if (FcRefDec (&skip->ref) <= 1)
-	    FcDirCacheDispose (skip->cache);
+	    FcDirCacheDisposeUnlocked (skip->cache);
     }
+    unlock_cache ();
 }
 
 void
