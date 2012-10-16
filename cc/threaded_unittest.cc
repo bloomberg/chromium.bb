@@ -30,7 +30,6 @@
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 #include <public/WebThread.h>
-#include <wtf/Locker.h>
 
 using namespace cc;
 using namespace WebKit;
