@@ -1088,6 +1088,73 @@ SafetyLevel VectorUnary2RegisterDup::safety(Instruction i) const {
   return VectorUnary2RegisterOpBase::safety(i);
 }
 
+// VectorBinary3RegisterSameLengthDQ
+SafetyLevel VectorBinary3RegisterSameLengthDQ::safety(Instruction i) const {
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i) || vm.IsEven(i))) {
+    return UNDEFINED;
+  }
+  return MAY_BE_SAFE;
+}
+
+// VectorBinary3RegisterSameLengthDQI8_16_32
+SafetyLevel VectorBinary3RegisterSameLengthDQI8_16_32::
+safety(Instruction i) const {
+  if (size.value(i) == 3) return UNDEFINED;
+  return VectorBinary3RegisterSameLengthDQ::safety(i);
+}
+
+// VectorBinary3RegisterSameLengthDQI8P
+SafetyLevel VectorBinary3RegisterSameLengthDQI8P::
+safety(Instruction i) const {
+  if (size.value(i) != 0) return UNDEFINED;
+  return VectorBinary3RegisterSameLengthDQ::safety(i);
+}
+
+// VectorBinary3RegisterSameLengthDQI16_32
+SafetyLevel VectorBinary3RegisterSameLengthDQI16_32::
+safety(Instruction i) const {
+  switch (size.value(i)) {
+    case 1:
+    case 2:
+      return VectorBinary3RegisterSameLengthDQ::safety(i);
+    default:
+      return UNDEFINED;
+  }
+}
+
+// VectorBinary3RegisterSameLength32P
+SafetyLevel VectorBinary3RegisterSameLength32P::safety(Instruction i) const {
+  if (q.IsDefined(i)) return UNDEFINED;
+  switch (size.value(i)) {
+    case 0:
+    case 2:
+      return VectorBinary3RegisterSameLength::safety(i);
+    default:
+      return UNDEFINED;
+  }
+}
+
+// VectorBinary3RegisterSameLength32_DQ
+SafetyLevel VectorBinary3RegisterSameLength32_DQ::safety(Instruction i) const {
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i) || vm.IsEven(i))) {
+    return UNDEFINED;
+  }
+  switch (size.value(i)) {
+    case 0:
+    case 2:
+      return VectorBinary3RegisterSameLength::safety(i);
+    default:
+      return UNDEFINED;
+  }
+}
+
+// VectorBinary3RegisterSameLengthDI
+SafetyLevel VectorBinary3RegisterSameLengthDI::safety(Instruction i) const {
+  if (size.value(i) == 3) return UNDEFINED;
+  if (q.IsDefined(i)) return UNDEFINED;
+  return MAY_BE_SAFE;
+}
+
 // VectorBinary3RegisterImmOp
 SafetyLevel VectorBinary3RegisterImmOp::safety(Instruction i) const {
   if (q.IsDefined(i)) {

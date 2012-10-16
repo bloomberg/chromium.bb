@@ -185,6 +185,20 @@ class Unary1RegisterImmediateOpDynCodeReplace : Unary1RegisterImmediateOp
 class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 class UndefinedCondDecoder : UnsafeCondDecoder
 class UnpredictableUncondDecoder : UnsafeUncondDecoder
+class VectorBinary3RegisterSameLengthDQ
+         : VectorBinary3RegisterSameLength
+class VectorBinary3RegisterSameLengthDQI16_32
+         : VectorBinary3RegisterSameLength
+class VectorBinary3RegisterSameLengthDQI8_16_32
+         : VectorBinary3RegisterSameLength
+class VectorBinary3RegisterSameLengthDQI8P
+         : VectorBinary3RegisterSameLength
+class VectorBinary3RegisterSameLength32P
+         : VectorBinary3RegisterSameLength
+class VectorBinary3RegisterSameLength32_DQ
+         : VectorBinary3RegisterSameLength
+class VectorBinary3RegisterSameLengthDI
+         : VectorBinary3RegisterSameLength
 
 ##############################################################
 # The following define decoder tables.
@@ -1764,58 +1778,227 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
 +--
 
 +-- simd_dp_3same (See Section A7.4.1)
-# This table is much larger than it needs to be, since we don't model these
-# ops (they work entirely in a separate register set, and cannot access memory).
-# Unfortunately there are some UNDEFINED holes here, so we have to be precise.
+*V3RSL VectorBinary3RegisterSameLength
+   { U(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(9),
+     N(7), Q(6), M(5), Vm(3:0) }
+   d := D:Vd; n := N:Vn; m := M:Vm;
+   defs := {};  # Doesn't affect general purpose registers.
+   uses := {};
+   arch := ASIMD;
+*V3RSL_DQ *V3RSL  # Uses Q registers if Q=1, D registers otherwise.
+   baseline := VectorBinary3RegisterSameLengthDQ;
+   regs := 1 if Q=0 else 2;
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED;
+*V3RSL_DQI *V3RSL_DQ
+   # Works on 8, 16, 32, and 64-bit integers;
+   unsigned := U=1;
+   esize := 8  << size; elements := 64 / esize;
+*V3RSL_DQI16_32 *V3RSL_DQI
+   # Works on 16 and 32-bit integers.
+   baseline := VectorBinary3RegisterSameLengthDQI16_32;
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+             (size=11 | size=00) => UNDEFINED;
+*V3RSL_DQI8_16_32 *V3RSL_DQI
+   # Only works on 8, 16, and 32-bit integers.
+   baseline := VectorBinary3RegisterSameLengthDQI8_16_32;
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+             size=11 => UNDEFINED;
+*V3RSL_DQI8P *V3RSL_DQI
+   baseline := VectorBinary3RegisterSameLengthDQI8P;
+   # Operates on 8-bit and polynomials.
+   unsigned := false;
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+             size=~00 => UNDEFINED;
+*V3RSL32 *V3RSL  # Operates on 32-bit values.
+   sz := size(0); op1_neg := size(1);
+   esize := 32; elements := 2;
+*V3RSL32P *V3RSL32  # Operates on pairs of 32-bit values.
+   baseline := VectorBinary3RegisterSameLength32P;
+   safety := sz=1 | Q=1 => UNDEFINED;
+*V3RSL32_DQ *V3RSL32  # Uses Q registers if Q=1, D registers otherwise.
+   baseline := VectorBinary3RegisterSameLength32_DQ;
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+             sz=1 =>UNDEFINED;
+*V3RSL_DI *V3RSL  # double word (D registers) 8, 16, and 32 integers
+   baseline := VectorBinary3RegisterSameLengthDI;
+   unsigned := U=1;
+   esize := 8  << size; elements := 64 / esize;
+   safety := size=11 => UNDEFINED & Q=1 => UNDEFINED;
++--
+# To further separate instruction selection, we have duplicated
+# some rows, filling in possible values for rows U and B and C.
 | A(11:8) B(4) U(24) C(21:20)
-| 0000    0    -     -        =EffectiveNoOp  # VHADD
-| "       1    -     -        =EffectiveNoOp  # VQADD
-| 0001    0    -     -        =EffectiveNoOp  # VRHADD
-| "       1    0     00       =EffectiveNoOp  # VAND(register)
-| "       "    "     01       =EffectiveNoOp  # VBIC(register)
-| "       "    "     10       =EffectiveNoOp  # VORR(register)
-| "       "    "     11       =EffectiveNoOp  # VORN(register)
-| "       1    1     00       =EffectiveNoOp  # VEOR(register)
-| "       "    "     01       =EffectiveNoOp  # VBSL
-| "       "    "     10       =EffectiveNoOp  # VBIT
-| "       "    "     11       =EffectiveNoOp  # VBIF
-| 0010    0    -     -        =EffectiveNoOp  # VHSUB
-| "       1    -     -        =EffectiveNoOp  # VQSUB
-| 0011    0    -     -        =EffectiveNoOp  # VCGT(register)
-| "       1    -     -        =EffectiveNoOp  # VCGE(register)
-| 0100    0    -     -        =EffectiveNoOp  # VSHL(register)
-| "       1    -     -        =EffectiveNoOp  # VQSHL(register)
-| 0101    0    -     -        =EffectiveNoOp  # VRSHL(register)
-| "       1    -     -        =EffectiveNoOp  # VQRSHL(register)
-| 0110    -    -     -        =EffectiveNoOp  # VMAX, VMIN (integer)
-| 0111    0    -     -        =EffectiveNoOp  # VABD, VABDL (integer)
-| "       1    -     -        =EffectiveNoOp  # VABA, VABAL
-| 1000    0    0     -        =EffectiveNoOp  # VADD(integer)
-| "       "    1     -        =EffectiveNoOp  # VSUB(integer)
-| "       1    0     -        =EffectiveNoOp  # VTST(integer)
-| "       "    1     -        =EffectiveNoOp  # VCEQ(integer)
-| 1001    0    -     -        =EffectiveNoOp  # VMLA, VMLAL, VMLS,
-                                              # VMLSL (integer)
-| "       1    -     -        =EffectiveNoOp  # VMUL, VMULL(integer/poly)
-| 1010    -    -     -        =EffectiveNoOp  # VPMAX, VPMIN(integer)
-| 1011    0    0     -        =EffectiveNoOp  # VQDMULH
-| "       "    1     -        =EffectiveNoOp  # VQRDMULH
-| "       1    0     -        =EffectiveNoOp  # VPADD(integer)
-| 1101    0    0     0x       =EffectiveNoOp  # VADD(float)
-| "       "    "     1x       =EffectiveNoOp  # VSUB(float)
-| "       "    1     0x       =EffectiveNoOp  # VPADD(float)
-| "       "    "     1x       =EffectiveNoOp  # VABD(float)
-| "       1    0     -        =EffectiveNoOp  # VMLA, VMLS(float)
-| "       "    1     0x       =EffectiveNoOp  # VMUL(float)
-| 1110    0    0     0x       =EffectiveNoOp  # VCEQ(register)
-| "       "    1     0x       =EffectiveNoOp  # VCGE(register)
-| "       "    "     1x       =EffectiveNoOp  # VCGT(register)
-| "       1    1     -        =EffectiveNoOp  # VACGE, VACGT, VACLE, VACLT
-| 1111    0    0     -        =EffectiveNoOp  # VMAX, VMIN(float)
-| "       "    1     -        =EffectiveNoOp  # VPMAX, VPMIN(float)
-| "       1    0     0x       =EffectiveNoOp  # VRECPS
-| "       "    0     1x       =EffectiveNoOp  # VRSQRTS
-| else:                       =Undefined  # Note on page A7-12
+| 0000    0    -     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd0000nqm0mmmm;
+                                rule := VHADD;
+| "       1    -     -        = *V3RSL_DQI
+                                pattern := 1111001u0dssnnnndddd0000nqm1mmmm;
+                                rule := VQADD;
+| 0001    0    -     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd0001nqm0mmmm;
+                                rule := VRHADD;
+| "       1    0     00       = *V3RSL_DQ
+                                pattern := 111100100d00nnnndddd0001nqm1mmmm;
+                                rule := VAND_register;
+| "       "    "     01       = *V3RSL_DQ
+                                pattern := 111100100d01nnnndddd0001nqm1mmmm;
+                                rule := VBIC_register;
+| "       "    "     10       = *V3RSL_DQ
+                                pattern := 111100100d10nnnndddd0001nqm1mmmm;
+                                rule := VORR_register_or_VMOV_register_A1;
+| "       "    "     11       = *V3RSL_DQ
+                                pattern := 111100100d11nnnndddd0001nqm1mmmm;
+                                rule := VORN_register;
+| "       1    1     00       = *V3RSL_DQ
+                                pattern := 111100110d00nnnndddd0001nqm1mmmm;
+                                rule := VEOR;
+| "       "    "     01       = *V3RSL_DQ
+                                pattern := 111100110d01nnnndddd0001nqm1mmmm;
+                                rule := VBSL;
+| "       "    "     10       = *V3RSL_DQ
+                                pattern := 111100110d10nnnndddd0001nqm1mmmm;
+                                rule := VBIT;
+| "       "    "     11       = *V3RSL_DQ
+                                pattern := 111100110d11nnnndddd0001nqm1mmmm;
+                                rule := VBIF;
+| 0010    0    -     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd0010nqm0mmmm;
+                                rule := VHSUB;
+| "       1    -     -        = *V3RSL_DQI
+                                pattern := 1111001u0dssnnnndddd0010nqm1mmmm;
+                                rule := VQSUB;
+| 0011    0    -     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd0011nqm0mmmm;
+                                rule := VCGT_register_A1;
+| "       1    -     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd0011nqm1mmmm;
+                                rule := VCGE_register_A1;
+| 0100    0    -     -        = *V3RSL_DQI
+                                pattern := 1111001u0dssnnnndddd0100nqm0mmmm;
+                                rule := VSHL_register;
+| "       1    -     -        = *V3RSL_DQI
+                                pattern := 1111001u0dssnnnndddd0100nqm1mmmm;
+                                rule := VQSHL_register;
+| 0101    0    -     -        = *V3RSL_DQI
+                                pattern := 1111001u0dssnnnndddd0101nqm0mmmm;
+                                rule := VRSHL;
+| "       1    -     -        = *V3RSL_DQI
+                                pattern := 1111001u0dssnnnndddd0101nqm1mmmm;
+                                rule := VQRSHL;
+| 0110    0    -     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd0110nqm0mmmm;
+                                rule := VMAX;
+| "       1    -     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd0110nqm1mmmm;
+                                rule := VMIN;
+| 0111    0    -     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd0111nqm0mmmm;
+                                rule := VABD;
+| "       1    -     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd0111nqm1mmmm;
+                                rule := VABA;
+| 1000    0    0     -        = *V3RSL_DQI
+                                pattern := 111100100dssnnnndddd1000nqm0mmmm;
+                                rule := VADD_integer;
+| "       "    1     -        = *V3RSL_DQI
+                                pattern := 111100110dssnnnndddd1000nqm0mmmm;
+                                rule := VSUB_integer;
+| "       1    0     -        = *V3RSL_DQI8_16_32
+                                pattern := 111100100dssnnnndddd1000nqm1mmmm;
+                                rule := VTST;
+| "       "    1     -        = *V3RSL_DQI8_16_32
+                                pattern := 111100110dssnnnndddd1000nqm1mmmm;
+                                rule := VCEQ_register_A1;
+| 1001    0    0     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd1001nqm0mmmm;
+                                rule := VMLA_integer_A1;
+| "       "    1     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd1001nqm0mmmm;
+                                rule := VMLS_integer_A1;
+| "       1    0     -        = *V3RSL_DQI8_16_32
+                                pattern := 1111001u0dssnnnndddd1001nqm1mmmm;
+                                rule := VMUL_integer_A1;
+| "       1    1     -        = *V3RSL_DQI8P
+                                pattern := 1111001u0dssnnnndddd1001nqm1mmmm;
+                                rule := VMUL_polynomial_A1;
+| 1010    0    -     -        = *V3RSL_DI
+                                pattern := 1111001u0dssnnnndddd1010n0m0mmmm;
+                                rule := VPMAX;
+| "       1    -     -        = *V3RSL_DI
+                                pattern := 1111001u0dssnnnndddd1010n0m1mmmm;
+                                rule := VPMIN;
+| 1011    0    0     -        = *V3RSL_DQI16_32
+                                pattern := 111100100dssnnnndddd1011nqm0mmmm;
+                                rule := VQDMULH_A1;
+| "       "    1     -        = *V3RSL_DQI16_32
+                                pattern := 111100110dssnnnndddd1011nqm0mmmm;
+                                rule := VQRDMULH_A1;
+| "       1    0     -        = *V3RSL_DI
+                                pattern := 111100100dssnnnndddd1011n0m1mmmm;
+                                rule := VPADD_integer;
+| 1100    1    0     0x       = *V3RSL32_DQ
+                                pattern := 111100100d00nnnndddd1100nqm1mmmm;
+                                rule := VFMA_A1;
+                                arch := ASIMDv2;
+| "       "    "     1x       = *V3RSL32_DQ
+                                pattern := 111100100d10nnnndddd1100nqm1mmmm;
+                                rule := VFMS_A1;
+                                arch := ASIMDv2;
+| 1101    0    0     0x       = *V3RSL32_DQ
+                                pattern := 111100100d0snnnndddd1101nqm0mmmm;
+                                rule := VADD_floating_point_A1;
+| "       "    "     1x       = *V3RSL32_DQ
+                                pattern := 111100100d1snnnndddd1101nqm0mmmm;
+                                rule := VSUB_floating_point_A1;
+| "       "    1     0x       = *V3RSL32P
+                                pattern := 111100110d0snnnndddd1101nqm0mmmm;
+                                rule := VPADD_floating_point;
+| "       "    "     1x       = *V3RSL32_DQ
+                                pattern := 111100110d1snnnndddd1101nqm0mmmm;
+                                rule := VABD_floating_point;
+| "       1    0     0x       = *V3RSL32_DQ
+                                pattern := 111100100dpsnnnndddd1101nqm1mmmm;
+                                rule := VMLA_floating_point_A1;
+| "       "    "     1x       = *V3RSL32_DQ
+                                pattern := 111100100dpsnnnndddd1101nqm1mmmm;
+                                rule := VMLS_floating_point_A1;
+| "       "    1     0x       = *V3RSL32_DQ
+                                pattern := 111100110d0snnnndddd1101nqm1mmmm;
+                                rule := VMUL_floating_point_A1;
+| 1110    0    0     0x       = *V3RSL32_DQ
+                                pattern := 111100100d0snnnndddd1110nqm0mmmm;
+                                rule := VCEQ_register_A2;
+| "       "    1     0x       = *V3RSL32_DQ
+                                pattern := 111100110d0snnnndddd1110nqm0mmmm;
+                                rule := VCGE_register_A2;
+| "       "    "     1x       = *V3RSL32_DQ
+                                pattern := 111100110d1snnnndddd1110nqm0mmmm;
+                                rule := VCGT_register_A2;
+| "       1    1     0x       = *V3RSL32_DQ
+                                pattern := 111100110dssnnnndddd1110nqm1mmmm;
+                                rule := VACGE;
+| "       "    "     1x       = *V3RSL32_DQ
+                                pattern := 111100110dssnnnndddd1110nqm1mmmm;
+                                rule := VACGT;
+| 1111    0    0     0x       = *V3RSL32_DQ
+                                pattern := 111100100dssnnnndddd1111nqm0mmmm;
+                                rule := VMAX_floating_point;
+| "       "    "     1x       = *V3RSL32_DQ
+                                pattern := 111100100dssnnnndddd1111nqm0mmmm;
+                                rule := VMIN_floating_point;
+| "       "    1     0x       = *V3RSL32P
+                                pattern := 111100110dssnnnndddd1111nqm0mmmm;
+                                rule := VPMAX; 
+| "       "    "     1x       = *V3RSL32P
+                                pattern := 111100110dssnnnndddd1111nqm0mmmm;
+                                rule := VPMIN;
+| "       1    0     0x       = *V3RSL32_DQ
+                                pattern := 111100100d0snnnndddd1111nqm1mmmm;
+                                rule := VRECPS;
+| "       "    "     1x       = *V3RSL32_DQ
+                                pattern := 111100100d1snnnndddd1111nqm1mmmm;
+                                rule := VRSQRTS;
+| else:                       = Undefined
 +--
 
 +-- simd_dp_3diff (See Section A7.4.2)

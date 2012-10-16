@@ -2189,6 +2189,23 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// VectorBinary3RegisterSameLengthTester
+bool VectorBinary3RegisterSameLengthTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(VectorBinary3RegisterOpBaseTester::
+             ApplySanityChecks(inst, decoder));
+
+  // Check additional fields not checked in base class.
+  EXPECT_EQ(expected_decoder_.q.IsDefined(inst), inst.Bit(6));
+  EXPECT_EQ(expected_decoder_.op.IsDefined(inst), inst.Bit(9));
+  EXPECT_EQ(expected_decoder_.size.value(inst), inst.Bits(21, 20));
+  EXPECT_EQ(expected_decoder_.u.IsDefined(inst), inst.Bit(24));
+
+  return true;
+}
+
 // VectorBinary3RegisterImmOpTester
 bool VectorBinary3RegisterImmOpTester::
 ApplySanityChecks(Instruction inst,

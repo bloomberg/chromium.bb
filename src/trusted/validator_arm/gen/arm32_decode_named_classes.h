@@ -1251,6 +1251,242 @@ class UnpredictableUncondDecoder_Unpredictable
     : public UnpredictableUncondDecoder {
 };
 
+class VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598
+    : public VectorBinary3RegisterImmOp {
+};
+
+class VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798
+    : public VectorBinary3RegisterLookupOp {
+};
+
+class VectorBinary3RegisterSameLength32P_VPADD_floating_point
+    : public VectorBinary3RegisterSameLength32P {
+};
+
+class VectorBinary3RegisterSameLength32P_VPMAX
+    : public VectorBinary3RegisterSameLength32P {
+};
+
+class VectorBinary3RegisterSameLength32P_VPMIN
+    : public VectorBinary3RegisterSameLength32P {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VABD_floating_point
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VACGE
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VACGT
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VADD_floating_point_A1
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VCEQ_register_A2
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VCGE_register_A2
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VCGT_register_A2
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VFMA_A1
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VFMS_A1
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VMAX_floating_point
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VMIN_floating_point
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VMLA_floating_point_A1
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VMLS_floating_point_A1
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VMUL_floating_point_A1
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VRECPS
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VRSQRTS
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLength32_DQ_VSUB_floating_point_A1
+    : public VectorBinary3RegisterSameLength32_DQ {
+};
+
+class VectorBinary3RegisterSameLengthDI_VPADD_integer
+    : public VectorBinary3RegisterSameLengthDI {
+};
+
+class VectorBinary3RegisterSameLengthDI_VPMAX
+    : public VectorBinary3RegisterSameLengthDI {
+};
+
+class VectorBinary3RegisterSameLengthDI_VPMIN
+    : public VectorBinary3RegisterSameLengthDI {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VADD_integer
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VAND_register
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VBIC_register
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VBIF
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VBIT
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VBSL
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VEOR
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VORN_register
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VORR_register_or_VMOV_register_A1
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VQADD
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VQRSHL
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VQSHL_register
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VQSUB
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VRSHL
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VSHL_register
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQ_VSUB_integer
+    : public VectorBinary3RegisterSameLengthDQ {
+};
+
+class VectorBinary3RegisterSameLengthDQI16_32_VQDMULH_A1
+    : public VectorBinary3RegisterSameLengthDQI16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI16_32_VQRDMULH_A1
+    : public VectorBinary3RegisterSameLengthDQI16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8P_VMUL_polynomial_A1
+    : public VectorBinary3RegisterSameLengthDQI8P {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VABA
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VABD
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VCEQ_register_A1
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VCGE_register_A1
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VCGT_register_A1
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VHADD
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VHSUB
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VMAX
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VMIN
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VMLA_integer_A1
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VMLS_integer_A1
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VMUL_integer_A1
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VRHADD
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorBinary3RegisterSameLengthDQI8_16_32_VTST
+    : public VectorBinary3RegisterSameLengthDQI8_16_32 {
+};
+
+class VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592
+    : public VectorUnary2RegisterDup {
+};
+
 class VfpMrsOp_Vmrs_Rule_335_A1_P658
     : public VfpMrsOp {
 };
@@ -6028,6 +6264,714 @@ class NamedUnpredictableUncondDecoder_Unpredictable
  private:
   nacl_arm_dec::UnpredictableUncondDecoder_Unpredictable decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnpredictableUncondDecoder_Unpredictable);
+};
+
+class NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterImmOp Vext_Rule_305_A1_P598")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598);
+};
+
+class NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterLookupOp Vtbl_Vtbx_Rule_406_A1_P798")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798);
+};
+
+class NamedVectorBinary3RegisterSameLength32P_VPADD_floating_point
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32P_VPADD_floating_point()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32P VPADD_floating_point")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32P_VPADD_floating_point decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32P_VPADD_floating_point);
+};
+
+class NamedVectorBinary3RegisterSameLength32P_VPMAX
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32P_VPMAX()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32P VPMAX")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32P_VPMAX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32P_VPMAX);
+};
+
+class NamedVectorBinary3RegisterSameLength32P_VPMIN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32P_VPMIN()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32P VPMIN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32P_VPMIN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32P_VPMIN);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VABD_floating_point
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VABD_floating_point()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VABD_floating_point")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VABD_floating_point decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VABD_floating_point);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VACGE
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VACGE()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VACGE")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VACGE decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VACGE);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VACGT
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VACGT()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VACGT")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VACGT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VACGT);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VADD_floating_point_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VADD_floating_point_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VADD_floating_point_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VADD_floating_point_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VADD_floating_point_A1);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VCEQ_register_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VCEQ_register_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VCEQ_register_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VCEQ_register_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VCEQ_register_A2);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VCGE_register_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VCGE_register_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VCGE_register_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VCGE_register_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VCGE_register_A2);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VCGT_register_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VCGT_register_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VCGT_register_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VCGT_register_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VCGT_register_A2);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VFMA_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VFMA_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VFMA_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VFMA_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VFMA_A1);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VFMS_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VFMS_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VFMS_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VFMS_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VFMS_A1);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VMAX_floating_point
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VMAX_floating_point()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VMAX_floating_point")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VMAX_floating_point decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VMAX_floating_point);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VMIN_floating_point
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VMIN_floating_point()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VMIN_floating_point")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VMIN_floating_point decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VMIN_floating_point);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VMLA_floating_point_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VMLA_floating_point_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VMLA_floating_point_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VMLA_floating_point_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VMLA_floating_point_A1);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VMLS_floating_point_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VMLS_floating_point_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VMLS_floating_point_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VMLS_floating_point_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VMLS_floating_point_A1);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VMUL_floating_point_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VMUL_floating_point_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VMUL_floating_point_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VMUL_floating_point_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VMUL_floating_point_A1);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VRECPS
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VRECPS()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VRECPS")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VRECPS decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VRECPS);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VRSQRTS
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VRSQRTS()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VRSQRTS")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VRSQRTS decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VRSQRTS);
+};
+
+class NamedVectorBinary3RegisterSameLength32_DQ_VSUB_floating_point_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLength32_DQ_VSUB_floating_point_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLength32_DQ VSUB_floating_point_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLength32_DQ_VSUB_floating_point_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLength32_DQ_VSUB_floating_point_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDI_VPADD_integer
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDI_VPADD_integer()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDI VPADD_integer")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDI_VPADD_integer decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDI_VPADD_integer);
+};
+
+class NamedVectorBinary3RegisterSameLengthDI_VPMAX
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDI_VPMAX()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDI VPMAX")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDI_VPMAX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDI_VPMAX);
+};
+
+class NamedVectorBinary3RegisterSameLengthDI_VPMIN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDI_VPMIN()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDI VPMIN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDI_VPMIN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDI_VPMIN);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VADD_integer
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VADD_integer()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VADD_integer")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VADD_integer decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VADD_integer);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VAND_register
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VAND_register()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VAND_register")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VAND_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VAND_register);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VBIC_register
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VBIC_register()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VBIC_register")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VBIC_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VBIC_register);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VBIF
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VBIF()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VBIF")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VBIF decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VBIF);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VBIT
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VBIT()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VBIT")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VBIT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VBIT);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VBSL
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VBSL()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VBSL")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VBSL decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VBSL);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VEOR
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VEOR()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VEOR")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VEOR decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VEOR);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VORN_register
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VORN_register()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VORN_register")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VORN_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VORN_register);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VORR_register_or_VMOV_register_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VORR_register_or_VMOV_register_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VORR_register_or_VMOV_register_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VORR_register_or_VMOV_register_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VORR_register_or_VMOV_register_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VQADD
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VQADD()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VQADD")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VQADD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VQADD);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VQRSHL
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VQRSHL()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VQRSHL")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VQRSHL decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VQRSHL);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VQSHL_register
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VQSHL_register()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VQSHL_register")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VQSHL_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VQSHL_register);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VQSUB
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VQSUB()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VQSUB")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VQSUB decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VQSUB);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VRSHL
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VRSHL()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VRSHL")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VRSHL decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VRSHL);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VSHL_register
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VSHL_register()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VSHL_register")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VSHL_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VSHL_register);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQ_VSUB_integer
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQ_VSUB_integer()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQ VSUB_integer")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQ_VSUB_integer decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQ_VSUB_integer);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI16_32_VQDMULH_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI16_32_VQDMULH_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI16_32 VQDMULH_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI16_32_VQDMULH_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI16_32_VQDMULH_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI16_32_VQRDMULH_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI16_32_VQRDMULH_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI16_32 VQRDMULH_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI16_32_VQRDMULH_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI16_32_VQRDMULH_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8P_VMUL_polynomial_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8P_VMUL_polynomial_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8P VMUL_polynomial_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8P_VMUL_polynomial_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8P_VMUL_polynomial_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VABA
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VABA()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VABA")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VABA decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VABA);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VABD
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VABD()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VABD")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VABD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VABD);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VCEQ_register_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VCEQ_register_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VCEQ_register_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VCEQ_register_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VCEQ_register_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VCGE_register_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VCGE_register_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VCGE_register_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VCGE_register_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VCGE_register_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VCGT_register_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VCGT_register_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VCGT_register_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VCGT_register_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VCGT_register_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VHADD
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VHADD()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VHADD")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VHADD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VHADD);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VHSUB
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VHSUB()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VHSUB")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VHSUB decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VHSUB);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMAX
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMAX()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VMAX")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VMAX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMAX);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMIN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMIN()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VMIN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VMIN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMIN);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMLA_integer_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMLA_integer_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VMLA_integer_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VMLA_integer_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMLA_integer_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMLS_integer_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMLS_integer_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VMLS_integer_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VMLS_integer_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMLS_integer_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMUL_integer_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMUL_integer_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VMUL_integer_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VMUL_integer_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VMUL_integer_A1);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VRHADD
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VRHADD()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VRHADD")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VRHADD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VRHADD);
+};
+
+class NamedVectorBinary3RegisterSameLengthDQI8_16_32_VTST
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterSameLengthDQI8_16_32_VTST()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterSameLengthDQI8_16_32 VTST")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterSameLengthDQI8_16_32_VTST decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterSameLengthDQI8_16_32_VTST);
+};
+
+class NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592
+    : public NamedClassDecoder {
+ public:
+  NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592()
+    : NamedClassDecoder(decoder_, "VectorUnary2RegisterDup Vdup_Rule_302_A1_P592")
+  {}
+
+ private:
+  nacl_arm_dec::VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592);
 };
 
 class NamedVfpMrsOp_Vmrs_Rule_335_A1_P658

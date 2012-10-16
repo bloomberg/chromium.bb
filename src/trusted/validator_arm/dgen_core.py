@@ -380,7 +380,7 @@ class ShiftOp(BitExpr):
   def __init__(self, op, arg1, arg2):
     if op not in ['<<', '>>']:
       raise Exception("Not shift op: %s" % op)
-    if not self.arg2.must_be_valid_shift_op():
+    if not arg2.must_be_valid_shift_op():
       raise Exception("Can't statically determine shift value.")
     self._op = op
     self._args = [arg1, arg2]
@@ -389,7 +389,6 @@ class ShiftOp(BitExpr):
     return list(self._args)
 
   def to_uint32(self, options={}):
-    shift_arg = self._args[1]
     return '(%s %s %s)' % (self._args[0].to_uint32(options),
                            self._op,
                            self._args[1].to_uint32(options))
@@ -434,7 +433,7 @@ class AddOp(BitExpr):
                          self._args[1].to_uint32(options))
 
   def to_uint32_constant(self):
-    args = [a.to_uint32_constant() | a in self._args]
+    args = [a.to_uint32_constant() for a in self._args]
     if None in args or len(args) != 2:
       return None
     return self._eval(args[0], self._op,  args[1])
@@ -454,7 +453,7 @@ class AddOp(BitExpr):
           # the range of the result.
           return self._args[1-i].must_be_in_range(
               self._eval(min_include, '-', c),
-              self._eval(max_include, '-', c))
+              self._eval(max_exclude, '-', c))
         elif i == 1:  # i.e. of form: _args[0] - c
           # Adjust the range by the constant c, and test if the
           # first argument is in that range. Note that the range
@@ -462,7 +461,7 @@ class AddOp(BitExpr):
           # range of the result.
           return self._args[0].must_be_in_range(
               self._eval(min_include, '+', c),
-              self._eval(max_include, '+', c))
+              self._eval(max_exclude, '+', c))
     # If reached, don't know how to prove.
     return False
 
@@ -471,7 +470,7 @@ class AddOp(BitExpr):
     if op == '+':
       return x + y
     elif op == '-':
-      return x - 1
+      return x - y
     else:
       raise Exception("Don't know how to apply: %s %s %s" %
                       (x, op, y))
@@ -804,10 +803,10 @@ class Literal(BitExpr):
     return repr(self._value)
 
   def must_be_in_range(self, min_include, max_exclude):
-    c = self._to_uint32()
+    c = self._to_uint32_constant()
     return min_include <= c and c < max_exclude
 
-  def to_uint32_constant(self):
+  def _to_uint32_constant(self):
     return int(self.to_uint32())
 
   def neutral_repr(self):
@@ -1078,9 +1077,9 @@ class SymbolTable(object):
 
   def sub_bit_exprs(self):
     exprs = set()
-    for (key, value) in self.dict:
-      _add_if_bitexpr(key)
-      _add_if_bitexpr(value)
+    for (key, value) in self._dict:
+      _add_if_bitexpr(key, exprs)
+      _add_if_bitexpr(value, exprs)
     return list(exprs)
 
   def __hash__(self):
@@ -1379,9 +1378,6 @@ class BitPattern(BitExpr):
         # No information is provided by the comment, so don't add!
         return 'true'
       return BitExpr.to_commented_bool(self, options)
-
-    def sub_bit_exprs(self):
-      return sub_bit_exprs([self.column])
 
     def bitstring(self):
       """Returns a string describing the bitstring of the pattern."""
@@ -1684,7 +1680,7 @@ class DecoderAction:
         # Check for special case symbol that copies the baseline if the
         # actual field is not defined.
         value = self.actual()
-      if name == 'actual-not-baseline':
+      elif name == 'actual-not-baseline':
         # Check for special case symbol that defines actual only if
         # the actual is different than the baseline.
         actual = self.actual()

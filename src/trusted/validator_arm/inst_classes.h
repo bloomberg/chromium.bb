@@ -204,6 +204,17 @@ class RegBits12To15Plus1Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(RegBits12To15Plus1Interface);
 };
 
+// Interface to pull out value in bits 20 and 21.
+class Imm2Bits20To21Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(21, 20);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits20To21Interface);
+};
+
 // Interface class to pull out a binary immediate value from bit 22.
 class Imm1Bit22Interface {
  public:
@@ -352,6 +363,17 @@ class Imm12Bits8To19Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm12Bits8To19Interface);
 };
 
+// Interface class to pull out value in bit 9
+class FlagBit9Interface {
+ public:
+  static bool IsDefined(const Instruction& i) {
+    return i.Bit(9);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit9Interface);
+};
+
 // Interface class to pull out an immediate value in bits 16 through 20.
 class Imm5Bits16To20Interface {
  public:
@@ -423,14 +445,14 @@ class UpdatesLinkRegisterBit5Interface {
 };
 
 // Interface class to pull out bit 6 as a flag.
-class Bit6FlagInterface {
+class FlagBit6Interface {
  public:
   static bool IsDefined(const Instruction& i) {
     return i.Bit(6);
   }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Bit6FlagInterface);
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit6Interface);
 };
 
 // Interface class to pull out S (update) bit 20, which
@@ -508,6 +530,16 @@ class AddOffsetBit23Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(AddOffsetBit23Interface);
+};
+
+class FlagBit24Interface {
+ public:
+  static bool IsDefined(const Instruction& i) {
+    return i.Bit(24);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit24Interface);
 };
 
 // Interace to pull out P (pre/post) increment bit 24 flag, used

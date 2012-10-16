@@ -14,8 +14,12 @@ and comment parsing):
 table_file ::= classdef* table+ eof ;
 
 action         ::= decoder_action | decoder_method | '"'
-action_arch    ::= 'arch' ':=' word
-action_option  ::= (action_rule |
+action_actual  := 'actual' ':=' id
+action_arch    ::= 'arch' ':=' id
+action_baseline::= 'actual' ':=' id
+action_option  ::= (action_actual |
+                    action_baseline |
+                    action_rule |
                     action_pattern |
                     action_safety |
                     action_arch |
@@ -163,7 +167,8 @@ class Parser(object):
     # Reserved words allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
     self._reserved = ['class', 'else', 'pattern', 'safety', 'rule',
-                      'arch', 'other', 'mod', 'if', 'not', 'in', 'bitset']
+                      'arch', 'other', 'mod', 'if', 'not', 'in', 'bitset',
+                      'actual', 'baseline']
     # Punctuation allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
     self._punctuation = ['=>', '->', '-', '+', '(', ')', '==', ':=', '"',
@@ -184,14 +189,25 @@ class Parser(object):
     else:
       self._unexpected("Row doesn't define an action")
 
+  def _action_actual(self, context):
+    """action_actual  := 'actual' ':=' id"""
+    self._read_token('actual')
+    self._read_token(':=')
+    self._define('actual', self._id(), context)
+
   def _action_arch(self, context):
-    """action_arch    ::= 'arch' ':=' arch
+    """action_arch    ::= 'arch' ':=' id
 
        Adds architecture to context."""
     self._read_token('arch')
     self._read_token(':=')
-    if not context.define('arch', self._read_token('word').value, False):
-      self._unexpected('arch: multiple definitions')
+    self._define('arch', self._id(), context)
+
+  def _action_baseline(self, context):
+    """action_baseline ::= 'actual' ':=' id"""
+    self._read_token('baseline')
+    self._read_token(':=')
+    self._define('baseline', self._id(), context)
 
   def _action_option(self, context):
     """action_option  ::= (action_rule | action_pattern |
@@ -199,7 +215,11 @@ class Parser(object):
 
        Returns the specified architecture, or None if other option.
        """
-    if self._next_token().kind == 'rule':
+    if self._next_token().kind == 'actual':
+      self._action_actual(context)
+    elif self._next_token().kind == 'baseline':
+      self._action_baseline(context)
+    elif self._next_token().kind == 'rule':
       self._action_rule(context)
     elif self._next_token().kind == 'pattern':
       self._action_pattern(context)
@@ -505,13 +525,10 @@ class Parser(object):
     if self._next_token().kind in ['{', '+'] or self._is_action_option():
       return decoder
 
-    baseline = self._id()
-    actual = baseline
+    self._define('baseline', self._id(), decoder)
     if self._next_token().kind == '=>':
       self._read_token('=>')
-      actual = self._id()
-    self._define('baseline', baseline, decoder)
-    self._define('actual', actual, decoder)
+      self._define('actual', self._id(), decoder)
     return decoder
 
   def _decoder_action_options(self, context):
@@ -828,7 +845,8 @@ class Parser(object):
        is sufficient.
        """
     matches = False
-    if self._next_token().kind in ['pattern', 'rule', 'safety', 'arch', 'word']:
+    if self._next_token().kind in ['pattern', 'rule', 'safety', 'arch', 'word',
+                                   'actual', 'baseline']:
       token = self._read_token()
       if self._next_token().kind == ':=':
         matches = True

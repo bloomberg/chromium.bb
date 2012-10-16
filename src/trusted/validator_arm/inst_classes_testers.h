@@ -1909,6 +1909,35 @@ class VectorBinary3RegisterOpBaseTester : public UncondDecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterOpBaseTester);
 };
 
+// Implements a decoder tester for VectorBinary3RegisterSameLength.
+// Op<c> Rd, Rn, Rm,...
+// +--------+-------+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// |31302928|27...23|22|2120|19181716|15141312|1110| 9| 8| 7| 6| 5| 4| 3 2 1 0|
+// +--------+-------+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// |  cond  |       | D|size|   Vn   |   Vd   |    |op|  | N| Q| M|  |   Vm   |
+// +--------+-------+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// Rd - The destination register.
+// Rn - The first operand.
+// Rm - The second operand.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+class VectorBinary3RegisterSameLengthTester
+    : public VectorBinary3RegisterOpBaseTester {
+ public:
+  explicit VectorBinary3RegisterSameLengthTester(
+      const NamedClassDecoder& decoder)
+      : VectorBinary3RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorBinary3RegisterSameLength expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthTester);
+};
+
 // Implements a decoder tester for VectorBinary3RegisterImmOp
 // Op<c> Rd, Rn, Rm, #<imm>
 // +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+

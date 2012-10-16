@@ -37,6 +37,9 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_ARMv7(
       const Instruction inst) const;
 
+  inline const ClassDecoder& decode_advanced_simd_data_processing_instructions(
+      const Instruction inst) const;
+
   inline const ClassDecoder& decode_branch_branch_with_link_and_block_data_transfer(
       const Instruction inst) const;
 
@@ -104,6 +107,9 @@ class Arm32DecoderState : DecoderState {
       const Instruction inst) const;
 
   inline const ClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
+      const Instruction inst) const;
+
+  inline const ClassDecoder& decode_simd_dp_3same(
       const Instruction inst) const;
 
   inline const ClassDecoder& decode_synchronization_primitives(
@@ -182,6 +188,16 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
+  const VectorBinary3RegisterImmOp VectorBinary3RegisterImmOp_instance_;
+  const VectorBinary3RegisterLookupOp VectorBinary3RegisterLookupOp_instance_;
+  const VectorBinary3RegisterSameLength32P VectorBinary3RegisterSameLength32P_instance_;
+  const VectorBinary3RegisterSameLength32_DQ VectorBinary3RegisterSameLength32_DQ_instance_;
+  const VectorBinary3RegisterSameLengthDI VectorBinary3RegisterSameLengthDI_instance_;
+  const VectorBinary3RegisterSameLengthDQ VectorBinary3RegisterSameLengthDQ_instance_;
+  const VectorBinary3RegisterSameLengthDQI16_32 VectorBinary3RegisterSameLengthDQI16_32_instance_;
+  const VectorBinary3RegisterSameLengthDQI8P VectorBinary3RegisterSameLengthDQI8P_instance_;
+  const VectorBinary3RegisterSameLengthDQI8_16_32 VectorBinary3RegisterSameLengthDQI8_16_32_instance_;
+  const VectorUnary2RegisterDup VectorUnary2RegisterDup_instance_;
   const VfpMrsOp VfpMrsOp_instance_;
   const VfpOp VfpOp_instance_;
   const NotImplemented not_implemented_;

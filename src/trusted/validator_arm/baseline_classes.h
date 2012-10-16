@@ -1953,7 +1953,7 @@ class VectorUnary2RegisterOpBase : public UncondDecoder {
 // are not modeled, other than their index.
 class VectorUnary2RegisterDup : public VectorUnary2RegisterOpBase {
  public:
-  static const Bit6FlagInterface q;
+  static const FlagBit6Interface q;
   static const Imm4Bits16To19Interface imm4;
 
   VectorUnary2RegisterDup() {}
@@ -1969,7 +1969,7 @@ class VectorUnary2RegisterDup : public VectorUnary2RegisterOpBase {
 // |31302928|2726252423|22|2120|19181716|15141312|1110 9 8| 7| 6| 5| 4| 3 2 1 0|
 // +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
 // |  cond  |          | D|    |   Vn   |   Vd   |        | N|  | M|  |   Vm   |
-// +--------+----------+--+----+--------+--------+----+---+--+--+--+--+--------+
+// +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
 // Rd - The destination register.
 // Rn - The first operand.
 // Rm - The second operand.
@@ -2005,6 +2005,131 @@ class VectorBinary3RegisterOpBase : public UncondDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterOpBase);
 };
 
+
+// Vector binary operator, 3 registers same length
+// Op<c> Rd, Rn, Rm,...
+// +--------+--+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// |31..28|27..|24|23|22|2120|19181716|15141312|1110| 9| 8| 7| 6| 5| 4| 3 2 1 0|
+// +------+----+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// | cond |    | U|  | D|size|   Vn   |   Vd   |    |op|  | N| Q| M|  |   Vm   |
+// +--------+--+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// Rd - The destination register.
+// Rn - The first operand.
+// Rm - The second operand.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class VectorBinary3RegisterSameLength
+    : public VectorBinary3RegisterOpBase {
+ public:
+  static const FlagBit6Interface q;
+  static const FlagBit9Interface op;
+  static const Imm2Bits20To21Interface size;
+  static const FlagBit24Interface u;
+
+  VectorBinary3RegisterSameLength() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLength);
+};
+
+// Same as VectorBinary3RegisterSameLength, with 32/64 bit results,
+// depending on the value of Q.
+//   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED;
+class VectorBinary3RegisterSameLengthDQ
+    : public VectorBinary3RegisterSameLength {
+ public:
+  VectorBinary3RegisterSameLengthDQ() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthDQ);
+};
+
+// Same as VectorBinary3RegisterSameLengthDQ, but works on 8, 16 and
+// 32-bit integers.
+//   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+//             size=11 => UNDEFINED;
+class VectorBinary3RegisterSameLengthDQI8_16_32
+    : public VectorBinary3RegisterSameLengthDQ {
+ public:
+  VectorBinary3RegisterSameLengthDQI8_16_32() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthDQI8_16_32);
+};
+
+// Same as VectorBinary3RegisterSameLengthDQI, but works on
+// 8-bit polynomials.
+//   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+//             size=~00 => UNDEFINED;
+class VectorBinary3RegisterSameLengthDQI8P
+    : public VectorBinary3RegisterSameLengthDQ {
+ public:
+  VectorBinary3RegisterSameLengthDQI8P() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthDQI8P);
+};
+
+// Same as VectorBinary3RegisterSameLengthDQ, but works on 16 and 32-bit
+// integers.
+//   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+//             (size=11 | size=00) => UNDEFINED;
+class VectorBinary3RegisterSameLengthDQI16_32
+    : public VectorBinary3RegisterSameLengthDQ {
+ public:
+  VectorBinary3RegisterSameLengthDQI16_32() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthDQI16_32);
+};
+
+// Same as VectorBinary3RegisterSameLength, but operates on pairs of 32-bit
+// values (sz = size(0)).
+//   safety := sz=1 | Q=1 => UNDEFINED;
+class VectorBinary3RegisterSameLength32P
+    : public VectorBinary3RegisterSameLength {
+ public:
+  VectorBinary3RegisterSameLength32P() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLength32P);
+};
+
+// Same as VectorBinary3RegisterSameLength, but uses 32 values,
+// with 32/64 bit results, depending on the value of Q (sz = size(0)).
+//   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+//             sz=1 =>UNDEFINED;
+class VectorBinary3RegisterSameLength32_DQ
+    : public VectorBinary3RegisterSameLength {
+ public:
+  VectorBinary3RegisterSameLength32_DQ() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLength32_DQ);
+};
+
+// Same as VectorBinary3RegisterSameLength, but works on D registers
+// as 8, 16, or 32-bit integers.
+//   safety := size=11 => UNDEFINED & Q=1 => UNDEFINED;
+class VectorBinary3RegisterSameLengthDI
+    : public VectorBinary3RegisterSameLength {
+ public:
+  VectorBinary3RegisterSameLengthDI() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthDI);
+};
+
 // Vector binary operator with imm4 value.
 // Op<c> Rd, Rn, Rm, #<imm>
 // +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
@@ -2024,7 +2149,7 @@ class VectorBinary3RegisterOpBase : public UncondDecoder {
 // if Q=0 && imm4<3>==1 then UNDEFINED:
 class VectorBinary3RegisterImmOp : public VectorBinary3RegisterOpBase {
  public:
-  static const Bit6FlagInterface q;
+  static const FlagBit6Interface q;
   static const Imm4Bits8To11Interface imm;
 
   VectorBinary3RegisterImmOp() {}
@@ -2052,7 +2177,7 @@ class VectorBinary3RegisterImmOp : public VectorBinary3RegisterOpBase {
 // are not modeled.
 class VectorBinary3RegisterLookupOp : public VectorBinary3RegisterOpBase {
  public:
-  static const Bit6FlagInterface op_flag;
+  static const FlagBit6Interface op_flag;
   static const Imm2Bits8To9Interface len;
 
   VectorBinary3RegisterLookupOp() {}
