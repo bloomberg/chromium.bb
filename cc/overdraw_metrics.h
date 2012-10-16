@@ -5,7 +5,7 @@
 #ifndef CCOverdrawMetrics_h
 #define CCOverdrawMetrics_h
 
-#include <wtf/PassOwnPtr.h>
+#include "base/memory/scoped_ptr.h"
 
 namespace WebKit {
 class WebTransformationMatrix;
@@ -19,7 +19,7 @@ class CCLayerTreeHostImpl;
 // FIXME: compute overdraw metrics only occasionally, not every frame.
 class CCOverdrawMetrics {
 public:
-    static PassOwnPtr<CCOverdrawMetrics> create(bool recordMetricsForFrame) { return adoptPtr(new CCOverdrawMetrics(recordMetricsForFrame)); }
+    static scoped_ptr<CCOverdrawMetrics> create(bool recordMetricsForFrame) { return make_scoped_ptr(new CCOverdrawMetrics(recordMetricsForFrame)); }
 
     // These methods are used for saving metrics during update/commit.
 

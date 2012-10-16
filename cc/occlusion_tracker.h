@@ -89,7 +89,7 @@ private:
     void markOccludedBehindLayer(const LayerType*);
 
     IntRect m_rootTargetRect;
-    OwnPtr<CCOverdrawMetrics> m_overdrawMetrics;
+    scoped_ptr<CCOverdrawMetrics> m_overdrawMetrics;
     IntSize m_minimumTrackingSize;
 
     // This is used for visualizing the occlusion tracking process.
