@@ -32,8 +32,11 @@ def load_isolates(items, default_oses):
   configs = Configs(default_oses, None)
   for item in items:
     logging.debug('loading %s' % item)
-    with open(item, 'r') as f:
-      content = f.read()
+    if item == '-':
+      content = sys.stdin.read()
+    else:
+      with open(item, 'r') as f:
+        content = f.read()
     new_config = load_isolate_as_config(
         eval_content(content), extract_comment(content), default_oses)
     logging.debug('has OSes: %s' % ','.join(k for k in new_config.per_os if k))

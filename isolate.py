@@ -1507,6 +1507,8 @@ class CompleteState(object):
   @property
   def root_dir(self):
     """isolate_file is always inside relative_cwd relative to root_dir."""
+    if not self.saved_state.isolate_file:
+      raise ExecutionError('Please specify --isolate')
     isolate_dir = os.path.dirname(self.saved_state.isolate_file)
     # Special case '.'.
     if self.isolated.relative_cwd == '.':
@@ -1862,37 +1864,53 @@ def CMDtrace(args):
   return result
 
 
+def add_variable_option(parser):
+  """Adds --result and --variable to an OptionParser."""
+  parser.add_option(
+      '-r', '--result',
+      metavar='FILE',
+      help='.isolated file to store the json manifest')
+  default_variables = [('OS', get_flavor())]
+  if sys.platform in ('win32', 'cygwin'):
+    default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
+  else:
+    default_variables.append(('EXECUTABLE_SUFFIX', ''))
+  parser.add_option(
+      '-V', '--variable',
+      nargs=2,
+      action='append',
+      default=default_variables,
+      dest='variables',
+      metavar='FOO BAR',
+      help='Variables to process in the .isolate file, default: %default. '
+            'Variables are persistent accross calls, they are saved inside '
+            '<results>.state')
+
+
+def parse_variable_option(parser, options, require_result):
+  """Processes --result and --variable."""
+  if options.result:
+    options.result = os.path.abspath(options.result.replace('/', os.path.sep))
+  if require_result and not options.result:
+    parser.error('--result is required.')
+  if options.result and not options.result.endswith('.isolated'):
+    parser.error('--result value must end with \'.isolated\'')
+  options.variables = dict(options.variables)
+
+
 class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
-  """Adds automatic --isolate, --result, --out and --variables handling."""
+  """Adds automatic --isolate, --result, --out and --variable handling."""
   def __init__(self, require_result=True, **kwargs):
     trace_inputs.OptionParserWithNiceDescription.__init__(
         self,
         verbose=int(os.environ.get('ISOLATE_DEBUG', 0)),
         **kwargs)
-    default_variables = [('OS', get_flavor())]
-    if sys.platform in ('win32', 'cygwin'):
-      default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
-    else:
-      default_variables.append(('EXECUTABLE_SUFFIX', ''))
     group = optparse.OptionGroup(self, "Common options")
-    group.add_option(
-        '-r', '--result',
-        metavar='FILE',
-        help='.isolated file to store the json manifest')
     group.add_option(
         '-i', '--isolate',
         metavar='FILE',
         help='.isolate file to load the dependency data from')
-    group.add_option(
-        '-V', '--variable',
-        nargs=2,
-        action='append',
-        default=default_variables,
-        dest='variables',
-        metavar='FOO BAR',
-        help='Variables to process in the .isolate file, default: %default. '
-             'Variables are persistent accross calls, they are saved inside '
-             '<results>.state')
+    add_variable_option(group)
     group.add_option(
         '-o', '--outdir', metavar='DIR',
         help='Directory used to recreate the tree or store the hash table. '
@@ -1913,15 +1931,7 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
     if not self.allow_interspersed_args and args:
       self.error('Unsupported argument: %s' % args)
 
-    options.variables = dict(options.variables)
-
-    if self.require_result and not options.result:
-      self.error('--result is required.')
-    if options.result and not options.result.endswith('.isolated'):
-      self.error('--result value must end with \'.isolated\'')
-
-    if options.result:
-      options.result = os.path.abspath(options.result.replace('/', os.path.sep))
+    parse_variable_option(self, options, self.require_result)
 
     if options.isolate:
       options.isolate = trace_inputs.get_native_path_case(
