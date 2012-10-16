@@ -24,12 +24,10 @@ void NaClInitSwitchToApp(struct NaClApp *nap) {
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    uint32_t             new_prog_ctr) {
-  struct NaClApp  *nap;
   struct NaClThreadContext  *context;
 
   natp->user.trusted_stack_ptr = (NaClGetStackPtr() & ~0xf) + 4;
 
-  nap = natp->nap;
   context = &natp->user;
   context->new_prog_ctr = new_prog_ctr;
 

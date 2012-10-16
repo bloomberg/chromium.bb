@@ -2362,26 +2362,26 @@ def SetupLinuxEnvMips(env):
       env.Replace(EMULATOR=jail + '/run_under_qemu_mips32')
   else:
     tc_dir = os.path.join(os.getcwd(), 'toolchain', 'linux_mips-trusted',
-                          'mips-release', 'bin')
-    if not which(os.path.join(tc_dir, 'mips-linux-gnu-gcc')):
+                          'bin')
+    if not which(os.path.join(tc_dir, 'mipsel-linux-gnu-gcc')):
       print ("\nERRROR: MIPS trusted TC is not installed - try running:\n"
              "tools/trusted_cross_toolchains/trusted-toolchain-creator"
              ".mipsel.squeeze.sh trusted_sdk")
       sys.exit(-1)
-    env.Replace(CC=os.path.join(tc_dir, 'mips-linux-gnu-gcc'),
-                CXX=os.path.join(tc_dir, 'mips-linux-gnu-g++'),
-                LD=os.path.join(tc_dir, 'mips-linux-gnu-ld'),
+    env.Replace(CC=os.path.join(tc_dir, 'mipsel-linux-gnu-gcc'),
+                CXX=os.path.join(tc_dir, 'mipsel-linux-gnu-g++'),
+                LD=os.path.join(tc_dir, 'mipsel-linux-gnu-ld'),
                 EMULATOR=os.path.join(jail,
                                       'run_under_qemu_mips32'),
                 ASFLAGS=[],
                 LIBPATH=['${LIB_DIR}',
-                         jail + '/mips-release/mips-linux-gnu/libc/el/usr/lib'],
-                LINKFLAGS=['-EL', '-T',
+                         jail + '/sysroot/usr/lib'],
+                LINKFLAGS=['-T',
                     os.path.join(jail, 'ld_script_mips_trusted')]
                 )
 
     env.Append(LIBS=['rt', 'dl', 'pthread'],
-                     CCFLAGS=['-EL', '-Wl, -EL', '-march=mips32r2'])
+                     CCFLAGS=['-march=mips32r2'])
 
 
 def MakeLinuxEnv():
