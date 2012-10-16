@@ -1,0 +1,14 @@
+# TODO(zhaoqin): File bugs for those failing browser tests.
+
+# Dr.Memory i#1052: http://code.google.com/p/drmemory/issues/detail?id=1052
+#
+# The list is too long for gtest_filter, so we exclude the whole
+# test case if any of its tests failed.
+
+# Timeout (400000 ms) Tests
+NaClBrowserTestGLibc.*
+OutOfProcessPPAPITest.*
+PPAPINaClGLibcTest.*
+PPAPINaClNewlibTest.*
+PPAPITest.*
+ReferrerPolicyTest.*
