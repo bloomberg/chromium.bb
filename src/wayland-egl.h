@@ -33,7 +33,6 @@ extern "C" {
 #define WL_EGL_PLATFORM 1
 
 struct wl_egl_window;
-struct wl_egl_pixmap;
 
 struct wl_egl_window *
 wl_egl_window_create(struct wl_surface *surface,
@@ -50,14 +49,6 @@ wl_egl_window_resize(struct wl_egl_window *egl_window,
 void
 wl_egl_window_get_attached_size(struct wl_egl_window *egl_window,
 				int *width, int *height);
-
-struct wl_egl_pixmap *
-wl_egl_pixmap_create(int width, int height, uint32_t flags);
-void
-wl_egl_pixmap_destroy(struct wl_egl_pixmap *egl_pixmap);
-
-struct wl_buffer *
-wl_egl_pixmap_create_buffer(struct wl_egl_pixmap *egl_pixmap);
 
 #ifdef  __cplusplus
 }
