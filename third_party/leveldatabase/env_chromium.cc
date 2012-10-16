@@ -19,6 +19,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "chromium_logger.h"
 #include "leveldb/env.h"
 #include "leveldb/slice.h"
 #include "port/port.h"
@@ -423,22 +424,15 @@ class ChromiumEnv : public Env {
     return Status::OK();
   }
 
-  class ChromiumLogger : public Logger {
-   public:
-    ChromiumLogger(const std::string& filename) : filename_(filename) {
-    }
-
-    virtual void Logv(const char* format, va_list ap) {
-      VLOG(5) << "LevelDB: " << filename_ << " " << base::StringPrintV(format, ap);
-    }
-
-   private:
-    std::string filename_;
-  };
-
   virtual Status NewLogger(const std::string& fname, Logger** result) {
-    *result = new ChromiumLogger(fname);
-    return Status::OK();
+    FILE* f = fopen_internal(fname.c_str(), "w");
+    if (f == NULL) {
+      *result = NULL;
+      return Status::IOError(fname, strerror(errno));
+    } else {
+      *result = new ChromiumLogger(f);
+      return Status::OK();
+    }
   }
 
   virtual uint64_t NowMicros() {

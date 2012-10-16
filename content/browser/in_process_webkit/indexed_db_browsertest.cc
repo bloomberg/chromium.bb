@@ -234,6 +234,26 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion0Schema, MigrationTest) {
   SimpleTest(GetTestUrl("indexeddb", "migration_test.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
+  // Any page that opens an IndexedDB will work here.
+  SimpleTest(GetTestUrl("indexeddb", "database_test.html"));
+  scoped_refptr<IndexedDBContext> context =
+      BrowserContext::GetDefaultStoragePartition(
+          shell()->web_contents()->GetBrowserContext())->
+              GetIndexedDBContext();
+  IndexedDBContextImpl* context_impl =
+      static_cast<IndexedDBContextImpl*>(context.get());
+  FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
+  FilePath log_file(FILE_PATH_LITERAL("LOG"));
+  FilePath log_file_path =
+      context_impl->data_path().Append(leveldb_dir).Append(log_file);
+  int64 size;
+  EXPECT_TRUE(file_util::GetFileSize(log_file_path, &size));
+  EXPECT_GT(size, 0);
+}
+
+// Complex multi-step (converted from pyauto) tests begin here.
+
 // Verify null key path persists after restarting browser.
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, PRE_NullKeyPathPersistence) {
   NavigateAndWaitForTitle(shell(), "bug_90635.html", "#part1",
