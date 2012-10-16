@@ -612,8 +612,15 @@ syncer::StringOrdinal ExtensionSorting::ResolveCollision(
   if (app_it == page.end())
     return app_launch_ordinal;
 
+  // Finds the next app launcher ordinal. This is done by the following loop
+  // because this function could be called before FixNTPOrdinalCollisions and
+  // thus |page| might contains multiple entries with the same app launch
+  // ordinal. See http://crbug.com/155603
+  while (app_it != page.end() && app_launch_ordinal.Equals(app_it->first))
+    ++app_it;
+
   // If there is no next after the collision, returns the next ordinal.
-  if (++app_it == page.end())
+  if (app_it == page.end())
     return app_launch_ordinal.CreateAfter();
 
   // Otherwise, returns the ordinal between the collision and the next ordinal.

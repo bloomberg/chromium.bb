@@ -937,10 +937,17 @@ class ExtensionSortingDefaultOrdinalNoCollision
     extension_sorting->SetPageOrdinal(other_app_->id(), default_page_ordinal_);
     extension_sorting->SetAppLaunchOrdinal(other_app_->id(),
                                            default_app_launch_ordinal_);
+
+    yet_another_app_ = prefs_.AddApp("yet_aother_app");
+    extension_sorting->SetPageOrdinal(yet_another_app_->id(),
+                                      default_page_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(yet_another_app_->id(),
+                                           default_app_launch_ordinal_);
   }
 
  private:
   scoped_refptr<Extension> other_app_;
+  scoped_refptr<Extension> yet_another_app_;
 };
 TEST_F(ExtensionSortingDefaultOrdinalNoCollision,
        ExtensionSortingDefaultOrdinalNoCollision) {}
