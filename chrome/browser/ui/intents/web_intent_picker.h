@@ -37,7 +37,7 @@ class WebIntentPicker {
   static const int kTitleLinkMaxWidth = 130;
 
   // The space in pixels between the top-level groups and the dialog border.
-  static const int kContentAreaBorder = 20;
+  static const int kContentAreaBorder = 10;
 
   // Vertical space above the separator.
   static const int kHeaderSeparatorPaddingTop = 16;
@@ -52,7 +52,7 @@ class WebIntentPicker {
   static const int kServiceIconHeight = 16;
 
   // Space between icon and text.
-  static const int kIconTextPadding = 10;
+  static const int kIconTextPadding = 6;
 
   // Space between star rating and select button.
   static const int kStarButtonPadding = 20;

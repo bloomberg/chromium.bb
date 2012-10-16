@@ -553,8 +553,9 @@ void WebIntentPickerController::DispatchToInstalledExtension(
   // services. For now, just choose the first.
   const webkit_glue::WebIntentServiceData& service_data = services[0];
 
-  picker_model_->RemoveSuggestedExtension(extension_id);
-  AddServiceToModel(service_data);
+  picker_model_->AddInstalledService(
+      service_data.title, service_data.service_url,
+      service_data.disposition);
   OnServiceChosen(service_data.service_url, service_data.disposition,
                   kEnableDefaults);
   AsyncOperationFinished();

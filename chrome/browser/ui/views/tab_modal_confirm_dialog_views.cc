@@ -68,9 +68,9 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
       message_box_view_(new views::MessageBoxView(
           CreateMessageBoxViewInitParams(delegate->GetMessage(),
                                          enable_chrome_style))) {
-  delegate_->set_window(new ConstrainedWindowViews(
-      tab_contents->web_contents(), this, enable_chrome_style,
-      ConstrainedWindowViews::DEFAULT_INSETS));
+  delegate_->set_window(new ConstrainedWindowViews(tab_contents->web_contents(),
+                                                   this,
+                                                   enable_chrome_style));
 }
 
 TabModalConfirmDialogViews::~TabModalConfirmDialogViews() {

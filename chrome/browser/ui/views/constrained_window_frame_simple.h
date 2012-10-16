@@ -6,13 +6,15 @@
 #define CHROME_BROWSER_UI_VIEWS_CONSTRAINED_WINDOW_FRAME_SIMPLE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
+
+class ConstrainedWindowViews;
 
 namespace views {
 class ImageButton;
 class Label;
+class LayoutManager;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -22,10 +24,23 @@ class Label;
 class ConstrainedWindowFrameSimple : public views::NonClientFrameView,
                                      public views::ButtonListener {
  public:
-  explicit ConstrainedWindowFrameSimple(
-      ConstrainedWindowViews* container,
-      ConstrainedWindowViews::ChromeStyleClientInsets client_insets);
+  // Contains references to relevant views in the header.  The header
+  // must be non-NULL.
+  struct HeaderViews {
+    HeaderViews(views::View* header,
+                views::Label* title_label,
+                views::Button* close_button);
+
+    views::View* header;
+    views::Label* title_label;
+    views::Button* close_button;
+  };
+
+  explicit ConstrainedWindowFrameSimple(ConstrainedWindowViews* container);
   virtual ~ConstrainedWindowFrameSimple();
+
+  // SetHeaderView assumes ownership of the passed parameter.
+  void SetHeaderView(HeaderViews* header_views);
 
  private:
   // Overridden from views::NonClientFrameView:
@@ -46,9 +61,15 @@ class ConstrainedWindowFrameSimple : public views::NonClientFrameView,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  HeaderViews* CreateDefaultHeaderView();
+
+  views::ImageButton* CreateCloseButton();
+
   ConstrainedWindowViews* container_;
-  views::Label* title_label_;
-  views::ImageButton* close_button_;
+
+  views::LayoutManager* layout_;
+
+  scoped_ptr<HeaderViews> header_views_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowFrameSimple);
 };

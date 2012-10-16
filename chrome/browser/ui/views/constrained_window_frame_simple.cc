@@ -4,118 +4,172 @@
 
 #include "chrome/browser/ui/views/constrained_window_frame_simple.h"
 
-#include "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/constrained_window.h"
+#include "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "grit/ui_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "grit/shared_resources.h"
 #include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/path.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/layout/layout_manager.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
+
+namespace {
+
+typedef ConstrainedWindowFrameSimple::HeaderViews HeaderViews;
+
+// A layout manager that lays out the header view with proper padding,
+// and sized to the widget's client view.
+class HeaderLayout : public views::LayoutManager {
+ public:
+  explicit HeaderLayout() {}
+  virtual ~HeaderLayout() {}
+
+  // Overridden from LayoutManager
+  virtual void Layout(views::View* host);
+  virtual gfx::Size GetPreferredSize(views::View* host);
+
+  DISALLOW_COPY_AND_ASSIGN(HeaderLayout);
+};
+
+void HeaderLayout::Layout(views::View* host) {
+  if (!host->has_children())
+    return;
+
+  int top_padding = ConstrainedWindowConstants::kCloseButtonPadding;
+  int left_padding = ConstrainedWindowConstants::kHorizontalPadding;
+  int right_padding = ConstrainedWindowConstants::kCloseButtonPadding;
+
+  views::View* header = host->child_at(0);
+  gfx::Size preferred_size = GetPreferredSize(host);
+  int width = preferred_size.width() - left_padding - right_padding;
+  int height = preferred_size.height() - top_padding;
+
+  header->SetBounds(left_padding, top_padding, width, height);
+}
+
+gfx::Size HeaderLayout::GetPreferredSize(views::View* host) {
+  int top_padding = ConstrainedWindowConstants::kCloseButtonPadding;
+  int left_padding = ConstrainedWindowConstants::kHorizontalPadding;
+  int right_padding = ConstrainedWindowConstants::kCloseButtonPadding;
+
+  views::View* header = host->child_at(0);
+  gfx::Size header_size = header ? header->GetPreferredSize() : gfx::Size();
+  int width = std::max(host->GetPreferredSize().width(),
+      left_padding + header_size.width() + right_padding);
+  int height = header_size.height() + top_padding;
+
+  return gfx::Size(width, height);
+}
+
+}  // namespace
+
+ConstrainedWindowFrameSimple::HeaderViews::HeaderViews(
+    views::View* header,
+    views::Label* title_label,
+    views::Button* close_button)
+    : header(header),
+      title_label(title_label),
+      close_button(close_button) {
+  DCHECK(header);
+}
 
 ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
-    ConstrainedWindowViews* container,
-    ConstrainedWindowViews::ChromeStyleClientInsets client_insets)
-    : container_(container),
-      title_label_(
-          new views::Label(container->widget_delegate()->GetWindowTitle())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_button_(
-          new views::ImageButton(this))) {
+    ConstrainedWindowViews* container)
+    : container_(container) {
   container_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
-  views::GridLayout* layout = new views::GridLayout(this);
-  const int kHeaderTopPadding = std::min(
-      ConstrainedWindowConstants::kCloseButtonPadding,
-      ConstrainedWindowConstants::kTitleTopPadding);
-  layout->SetInsets(kHeaderTopPadding,
-                    ConstrainedWindowConstants::kHorizontalPadding,
-                    0,
-                    ConstrainedWindowConstants::kCloseButtonPadding);
-  SetLayoutManager(layout);
-  views::ColumnSet* cs = layout->AddColumnSet(0);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
-                views::GridLayout::USE_PREF, 0, 0);  // Title.
-  cs->AddPaddingColumn(0, ConstrainedWindowConstants::kCloseButtonPadding);
-  cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING, 0,
-                views::GridLayout::USE_PREF, 0, 0);  // Close Button.
+  layout_ = new HeaderLayout();
+  SetLayoutManager(layout_);
 
-  layout->StartRow(0, 0);
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  title_label_->SetFont(rb.GetFont(
-      ConstrainedWindowConstants::kTitleFontStyle));
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_label_->SetEnabledColor(ConstrainedWindow::GetTextColor());
-  title_label_->set_border(views::Border::CreateEmptyBorder(
-      ConstrainedWindowConstants::kTitleTopPadding - kHeaderTopPadding,
-      0, 0, 0));
-  layout->AddView(title_label_);
-
-  close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X));
-  close_button_->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_PRESSED));
-  close_button_->set_border(views::Border::CreateEmptyBorder(
-      ConstrainedWindowConstants::kCloseButtonPadding - kHeaderTopPadding,
-      0, 0, 0));
-  layout->AddView(close_button_);
+  SetHeaderView(CreateDefaultHeaderView());
 
   set_background(views::Background::CreateSolidBackground(
       ConstrainedWindow::GetBackgroundColor()));
 
-  // Client insets have no relation to header insets:
-  // - The client insets are the distance from the window border to the client
-  //   view.
-  // - The header insets are the distance from the window border to the header
-  //   elements.
-  //
-  // The NO_ISNETS consumers draw atop the views above.
-  if (client_insets == ConstrainedWindowViews::DEFAULT_INSETS) {
-    const int kTitleBuiltinBottomPadding = 4;
-    set_border(views::Border::CreateEmptyBorder(
-        ConstrainedWindowConstants::kClientTopPadding + kHeaderTopPadding +
-            std::max(close_button_->GetPreferredSize().height(),
-                     title_label_->GetPreferredSize().height()) -
-            kTitleBuiltinBottomPadding,
-        ConstrainedWindowConstants::kHorizontalPadding,
-        ConstrainedWindowConstants::kClientBottomPadding,
-        ConstrainedWindowConstants::kHorizontalPadding));
-  }
+  set_border(views::Border::CreateEmptyBorder(
+      ConstrainedWindowConstants::kClientTopPadding,
+      ConstrainedWindowConstants::kHorizontalPadding,
+      ConstrainedWindowConstants::kClientBottomPadding,
+      ConstrainedWindowConstants::kHorizontalPadding));
 }
 
 ConstrainedWindowFrameSimple::~ConstrainedWindowFrameSimple() {
 }
 
+void ConstrainedWindowFrameSimple::SetHeaderView(HeaderViews* header_views)
+{
+  RemoveAllChildViews(true);
+
+  header_views_.reset(header_views);
+
+  AddChildView(header_views_->header);
+}
+
+HeaderViews* ConstrainedWindowFrameSimple::CreateDefaultHeaderView() {
+  const int kTitleTopPadding = ConstrainedWindowConstants::kTitleTopPadding -
+      ConstrainedWindowConstants::kCloseButtonPadding;
+  const int kTitleLeftPadding = 0;
+  const int kTitleBottomPadding = 0;
+  const int kTitleRightPadding = 0;
+
+  views::View* header_view = new views::View;
+
+  views::GridLayout* grid_layout = new views::GridLayout(header_view);
+  header_view->SetLayoutManager(grid_layout);
+
+  views::ColumnSet* header_cs = grid_layout->AddColumnSet(0);
+  header_cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
+                       views::GridLayout::USE_PREF, 0, 0);  // Title.
+  header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+  header_cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
+                       0, views::GridLayout::USE_PREF, 0, 0);  // Close Button.
+
+  // Header row.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  grid_layout->StartRow(0, 0);
+
+  views::Label* title_label = new views::Label();
+  title_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label->SetFont(rb.GetFont(ConstrainedWindowConstants::kTitleFontStyle));
+  title_label->SetEnabledColor(ConstrainedWindow::GetTextColor());
+  title_label->SetText(container_->widget_delegate()->GetWindowTitle());
+  title_label->set_border(views::Border::CreateEmptyBorder(kTitleTopPadding,
+      kTitleLeftPadding, kTitleBottomPadding, kTitleRightPadding));
+  grid_layout->AddView(title_label);
+
+  views::Button* close_button = CreateCloseButton();
+  grid_layout->AddView(close_button);
+
+  return new HeaderViews(header_view, title_label, close_button);
+}
+
 gfx::Rect ConstrainedWindowFrameSimple::GetBoundsForClientView() const {
-  return GetContentsBounds();
+  gfx::Rect bounds(GetContentsBounds());
+  if (header_views_->header)
+    bounds.Inset(0, header_views_->header->GetPreferredSize().height(), 0, 0);
+  return bounds;
 }
 
 gfx::Rect ConstrainedWindowFrameSimple::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   gfx::Rect bounds(client_bounds);
   bounds.Inset(-GetInsets());
-  bounds.set_width(std::max(
-       bounds.width(),
-       ConstrainedWindowConstants::kHorizontalPadding +
-           2 * ConstrainedWindowConstants::kCloseButtonPadding +
-           title_label_->GetPreferredSize().width() +
-           close_button_->GetPreferredSize().width()));
+  if (header_views_->header)
+    bounds.Inset(0, -header_views_->header->GetPreferredSize().height(), 0, 0);
   return bounds;
 }
 
@@ -151,16 +205,32 @@ void ConstrainedWindowFrameSimple::UpdateWindowIcon() {
 }
 
 void ConstrainedWindowFrameSimple::UpdateWindowTitle() {
-  title_label_->SetText(container_->widget_delegate()->GetWindowTitle());
+  if (!header_views_->title_label)
+    return;
+
+  string16 text = container_->widget_delegate()->GetWindowTitle();
+  header_views_->title_label->SetText(text);
 }
 
 gfx::Size ConstrainedWindowFrameSimple::GetPreferredSize() {
-  return GetWindowBoundsForClientBounds(
+  return container_->non_client_view()->GetWindowBoundsForClientBounds(
       gfx::Rect(container_->client_view()->GetPreferredSize())).size();
 }
 
 void ConstrainedWindowFrameSimple::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  if (sender == close_button_)
+  if (header_views_->close_button && sender == header_views_->close_button)
     sender->GetWidget()->Close();
+}
+
+views::ImageButton* ConstrainedWindowFrameSimple::CreateCloseButton() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  views::ImageButton* close_button = new views::ImageButton(this);
+  close_button->SetImage(views::CustomButton::BS_NORMAL,
+                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X));
+  close_button->SetImage(views::CustomButton::BS_HOT,
+                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
+  close_button->SetImage(views::CustomButton::BS_PUSHED,
+                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_PRESSED));
+  return close_button;
 }

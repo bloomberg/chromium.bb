@@ -184,8 +184,7 @@ ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowViews(container->web_contents(),
                                  constrained_delegate,
-                                 false,
-                                 ConstrainedWindowViews::DEFAULT_INSETS);
+                                 false);
   constrained_delegate->set_window(constrained_window);
   return constrained_delegate;
 }

@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_CONSTRAINED_WINDOW_CONSTANTS_H_
 #define CHROME_BROWSER_UI_CONSTRAINED_WINDOW_CONSTANTS_H_
 
-#include "ui/base/resource/resource_bundle.h"
-
 ///////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowConstants
 //
@@ -16,7 +14,7 @@ class ConstrainedWindowConstants {
  public:
   static const int kTitleTopPadding = 15; // Padding above the title.
   static const int kHorizontalPadding = 20; // Left and right padding.
-  static const int kClientTopPadding = 15; // Padding above the client view.
+  static const int kClientTopPadding = 18; // Padding above the client view.
   static const int kClientBottomPadding = 20; // Padding below the client view.
   static const int kCloseButtonPadding = 7; // Padding around the close button.
   static const int kBorderRadius = 2; // Border radius for dialog corners.
