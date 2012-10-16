@@ -5,9 +5,6 @@
 {
   'variables': {
     'chromium_code': 1,
-    # Enable threading for the untrusted side of the proxy.
-    # TODO(bbudge) remove when this is the default.
-    'enable_pepper_threading': '1',
   },
   'includes': [
     '../build/common_untrusted.gypi',
@@ -26,10 +23,13 @@
             'nlib_target': 'libppapi_shared_untrusted.a',
             'build_glibc': 0,
             'build_newlib': 1,
+            'defines': [
+              'NACL_PPAPI_IPC_PROXY',
+              # Enable threading for the untrusted side of the proxy.
+              # TODO(bbudge) remove when this is the default.
+              'ENABLE_PEPPER_THREADING',
+            ],
           },
-          'defines': [
-            'NACL_PPAPI_IPC_PROXY',
-          ],
           'include_dirs': [
             '..',
             '../third_party/khronos',
