@@ -319,9 +319,6 @@ const char kDisableExtensionsHttpThrottling[] =
 const char kDisableExtensionsResourceWhitelist[] =
     "disable-extensions-resource-whitelist";
 
-// Disables the sandbox for the built-in flash player.
-const char kDisableFlashSandbox[]           = "disable-flash-sandbox";
-
 // Disables improved SafeBrowsing download protection.
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
@@ -607,11 +604,6 @@ const char kEnablePasswordGeneration[]      = "enable-password-generation";
 // preferences.
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
-
-// Enables experimental features of better session restore (backing up
-// sessionStorage on disk). See also kDisableRestoreSessionState which disables
-// the less exprimental features which are on by default.
-const char kEnableRestoreSessionState[]     = "enable-restore-session-state";
 
 // Enables the installation and usage of Portable Native Client.
 const char kEnablePnacl[]                   = "enable-pnacl";
@@ -1005,15 +997,6 @@ const char kPlaybackMode[]                  = "playback-mode";
 // Overrides the path to the location that PNaCl is installed.
 const char kPnaclDir[]                      = "pnacl-dir";
 
-// Controls the PPAPI Flash field trial. Valid values are defined below. If an
-// unknown value is supplied on the command line, the switch is ignored.
-// TODO(yzshen): Remove this flag when the field trial is over.
-const char kPpapiFlashFieldTrial[]          = "ppapi-flash-field-trial";
-// Forces to disable PPAPI Flash when a new PPAPI Flash is downloaded.
-const char kPpapiFlashFieldTrialDisableByDefault[] = "disable-by-default";
-// Forces to enable PPAPI Flash when a new PPAPI Flash is downloaded.
-const char kPpapiFlashFieldTrialEnableByDefault[] = "enable-by-default";
-
 // Forces the PPAPI version of Flash (if it's being used) to run in the
 // renderer process rather than in a separate plugin process.
 const char kPpapiFlashInProcess[]           = "ppapi-flash-in-process";
@@ -1060,9 +1043,6 @@ const char kProductVersion[]                = "product-version";
 
 // Selects directory of profile to associate with the first browser launched.
 const char kProfileDirectory[]              = "profile-directory";
-
-// Enables the Windows profile desktop shortcuts feature.
-const char kProfileDesktopShortcuts[]     = "enable-profile-desktop-shortcuts";
 
 // Starts the sampling based profiler for the browser process at startup. This
 // will only work if chrome has been built with the gyp variable profiling=1.
@@ -1555,9 +1535,6 @@ const char kWaitForMutex[]                  = "wait-for-mutex";
 #endif
 
 #if defined(USE_AURA)
-// Use NativeTabContentsViewAura instead of the default implementation.
-const char kDisableTCVA[]                    = "disable-tcva";
-
 // Opens an Ash window on startup.
 extern const char kOpenAsh[]                 = "open-ash";
 #endif

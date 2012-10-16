@@ -93,7 +93,6 @@ extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensionsHttpThrottling[];
 extern const char kDisableExtensionsResourceWhitelist[];
 extern const char kDisableExtensions[];
-extern const char kDisableFlashSandbox[];
 extern const char kDisableImprovedDownloadProtection[];
 extern const char kDisableInfiniteCache[];
 extern const char kDisableInternalFlash[];
@@ -171,13 +170,11 @@ extern const char kEnablePasswordGeneration[];
 extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
 extern const char kEnableResourceContentSettings[];
-extern const char kEnableRestoreSessionState[];
 extern const char kScriptBadges[];
 extern const char kEnableSdch[];
 extern const char kEnableSettingsApp[];
 extern const char kEnableSpdy3[];
 extern const char kEnableSpdyCredentialFrames[];
-extern const char kEnableSpdyFlowControl[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableTabGroupsContextMenu[];
@@ -266,9 +263,6 @@ extern const char kPerformanceMonitorGathering[];
 extern const char kPerformCrashAnalysis[];
 extern const char kPlaybackMode[];
 extern const char kPnaclDir[];
-extern const char kPpapiFlashFieldTrial[];
-extern const char kPpapiFlashFieldTrialDisableByDefault[];
-extern const char kPpapiFlashFieldTrialEnableByDefault[];
 extern const char kPpapiFlashInProcess[];
 extern const char kPpapiFlashPath[];
 extern const char kPpapiFlashVersion[];
@@ -282,7 +276,6 @@ extern const char kPrerenderModeSwitchValueDisabled[];
 extern const char kPrerenderModeSwitchValueEnabled[];
 extern const char kPrerenderModeSwitchValuePrefetchOnly[];
 extern const char kProductVersion[];
-extern const char kProfileDesktopShortcuts[];
 extern const char kProfileDirectory[];
 extern const char kProfilingAtStart[];
 extern const char kProfilingFile[];
@@ -431,14 +424,12 @@ extern const char kDisableDesktopShortcuts[];
 extern const char kEnableSyncCredentialCaching[];
 extern const char kForceImmersive[];
 extern const char kForceDesktop[];
-extern const char kModeSwitch[];
 extern const char kPrintRaster[];
 extern const char kRelaunchShortcut[];
 extern const char kWaitForMutex[];
 #endif
 
 #if defined(USE_AURA)
-extern const char kDisableTCVA[];
 extern const char kOpenAsh[];
 #endif
 
