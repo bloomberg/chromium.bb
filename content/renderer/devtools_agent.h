@@ -50,6 +50,7 @@ class DevToolsAgent : public content::RenderViewObserver,
       createClientMessageLoop();
   virtual void clearBrowserCache();
   virtual void clearBrowserCookies();
+  virtual void visitAllocatedObjects(AllocatedObjectVisitor* visitor);
 
   void OnAttach();
   void OnReattach(const std::string& agent_state);

@@ -23,6 +23,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
+#endif
+
 using WebKit::WebConsoleMessage;
 using WebKit::WebDevToolsAgent;
 using WebKit::WebDevToolsAgentClient;
@@ -122,6 +126,20 @@ void DevToolsAgent::clearBrowserCache() {
 
 void DevToolsAgent::clearBrowserCookies() {
   Send(new DevToolsHostMsg_ClearBrowserCookies(routing_id()));
+}
+
+#if defined(USE_TCMALLOC) && !defined(OS_WIN)
+static void AllocationVisitor(void* data, const void* ptr) {
+    typedef WebKit::WebDevToolsAgentClient::AllocatedObjectVisitor Visitor;
+    Visitor* visitor = reinterpret_cast<Visitor*>(data);
+    visitor->visitObject(ptr);
+}
+#endif
+
+void DevToolsAgent::visitAllocatedObjects(AllocatedObjectVisitor* visitor) {
+#if defined(USE_TCMALLOC) && !defined(OS_WIN)
+  IterateAllocatedObjects(&AllocationVisitor, visitor);
+#endif
 }
 
 // static
