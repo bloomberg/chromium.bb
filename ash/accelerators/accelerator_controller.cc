@@ -359,12 +359,12 @@ void AcceleratorController::Init() {
     actions_allowed_at_lock_screen_.insert(
         kActionsAllowedAtLoginOrLockScreen[i]);
   }
-  for (size_t i = 0; i < kActionsAllowedAtLockScreenLength; ++i) {
+  for (size_t i = 0; i < kActionsAllowedAtLockScreenLength; ++i)
     actions_allowed_at_lock_screen_.insert(kActionsAllowedAtLockScreen[i]);
-  }
-  for (size_t i = 0; i < kReservedActionsLength; ++i) {
+  for (size_t i = 0; i < kActionsAllowedAtModalWindowLength; ++i)
+    actions_allowed_at_modal_window_.insert(kActionsAllowedAtModalWindow[i]);
+  for (size_t i = 0; i < kReservedActionsLength; ++i)
     reserved_actions_.insert(kReservedActions[i]);
-  }
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 
@@ -421,17 +421,24 @@ bool AcceleratorController::PerformAction(int action,
 #if defined(OS_CHROMEOS)
   at_login_screen = shell->delegate() && !shell->delegate()->IsSessionStarted();
 #endif
-  bool at_lock_screen = shell->IsScreenLocked();
-
   if (at_login_screen &&
       actions_allowed_at_login_screen_.find(action) ==
       actions_allowed_at_login_screen_.end()) {
     return false;
   }
-  if (at_lock_screen &&
+  if (shell->IsScreenLocked() &&
       actions_allowed_at_lock_screen_.find(action) ==
       actions_allowed_at_lock_screen_.end()) {
     return false;
+  }
+  if (shell->IsModalWindowOpen() &&
+      actions_allowed_at_modal_window_.find(action) ==
+      actions_allowed_at_modal_window_.end()) {
+    // Note: we return true. This indicates the shortcut is handled
+    // and will not be passed to the modal window. This is important
+    // for things like Alt+Tab that would cause an undesired effect
+    // in the modal window by cycling through its window elements.
+    return true;
   }
   const ui::KeyboardCode key_code = accelerator.key_code();
 
