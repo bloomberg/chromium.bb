@@ -71,7 +71,12 @@ void PanelHost::Init(const GURL& url) {
 }
 
 void PanelHost::DestroyWebContents() {
-  web_contents_.reset();
+  // Cannot do a web_contents_.reset() because web_contents_.get() will
+  // still return the pointer when we CHECK in WebContentsDestroyed (or if
+  // we get called back in the middle of web contents destruction, which
+  // WebView might do when it detects the web contents is destroyed).
+  content::WebContents* contents = web_contents_.release();
+  delete contents;
 }
 
 gfx::Image PanelHost::GetPageIcon() const {
@@ -80,6 +85,7 @@ gfx::Image PanelHost::GetPageIcon() const {
 
   FaviconTabHelper* favicon_tab_helper =
       FaviconTabHelper::FromWebContents(web_contents_.get());
+  CHECK(favicon_tab_helper);
   return favicon_tab_helper->GetFavicon();
 }
 
@@ -203,6 +209,9 @@ void PanelHost::RenderViewGone(base::TerminationStatus status) {
 }
 
 void PanelHost::WebContentsDestroyed(content::WebContents* web_contents) {
+  // Web contents should only be destroyed by us.
+  CHECK(!web_contents_.get());
+
   // Close the panel after we return to the message loop (not immediately,
   // otherwise, it may destroy this object before the stack has a chance
   // to cleanly unwind.)
