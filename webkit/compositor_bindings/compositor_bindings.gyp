@@ -4,7 +4,6 @@
 
 {
   'variables': {
-    'chromium_code': 0,
     'webkit_compositor_bindings_sources': [
       'CCThreadImpl.cpp',
       'CCThreadImpl.h',

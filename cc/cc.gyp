@@ -4,7 +4,6 @@
 
 {
   'variables': {
-    'chromium_code': 0,
     'cc_source_files': [
       'hash_pair.h',
       'scoped_ptr_hash_map.h',
