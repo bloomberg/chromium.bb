@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/ui/host_desktop.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
@@ -210,7 +211,8 @@ struct NavigateParams {
 void Navigate(NavigateParams* params);
 
 // Returns true if the url is allowed to open in incognito window.
-bool IsURLAllowedInIncognito(const GURL& url);
+bool IsURLAllowedInIncognito(const GURL& url,
+                             content::BrowserContext* browser_context);
 
 }  // namespace chrome
 

@@ -368,7 +368,7 @@ bool CreateWindowFunction::ShouldOpenIncognitoWindow(
   if (incognito && !Profile::IsGuestSession()) {
     std::string first_url_erased;
     for (size_t i = 0; i < urls->size();) {
-      if (chrome::IsURLAllowedInIncognito((*urls)[i])) {
+      if (chrome::IsURLAllowedInIncognito((*urls)[i], profile())) {
         i++;
       } else {
         if (first_url_erased.empty())

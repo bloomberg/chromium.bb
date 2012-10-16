@@ -68,7 +68,8 @@ Browser* GetOrCreateBrowser(Profile* profile,
 // an erroneous state, returns false.
 bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
   if (params->target_contents != NULL ||
-      chrome::IsURLAllowedInIncognito(params->url) ||
+      chrome::IsURLAllowedInIncognito(params->url,
+          params->initiating_profile) ||
       Profile::IsGuestSession()) {
     return true;
   }
@@ -561,18 +562,29 @@ void Navigate(NavigateParams* params) {
   }
 }
 
-bool IsURLAllowedInIncognito(const GURL& url) {
+bool IsURLAllowedInIncognito(const GURL& url,
+                             content::BrowserContext* browser_context) {
   // Most URLs are allowed in incognito; the following are exceptions.
   // chrome://extensions is on the list because it redirects to
   // chrome://settings.
-
-  return !(url.scheme() == chrome::kChromeUIScheme &&
+  if (url.scheme() == chrome::kChromeUIScheme &&
       (url.host() == chrome::kChromeUISettingsHost ||
        url.host() == chrome::kChromeUISettingsFrameHost ||
        url.host() == chrome::kChromeUIExtensionsHost ||
        url.host() == chrome::kChromeUIBookmarksHost ||
        url.host() == chrome::kChromeUISyncPromoHost ||
-       url.host() == chrome::kChromeUIUberHost));
+       url.host() == chrome::kChromeUIUberHost)) {
+    return false;
+  }
+
+  GURL rewritten_url = url;
+  bool reverse_on_redirect = false;
+  content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
+      &rewritten_url, browser_context, &reverse_on_redirect);
+
+  // Some URLs are mapped to uber subpages. Do not allow them in incognito.
+  return !(rewritten_url.scheme() == chrome::kChromeUIScheme &&
+           rewritten_url.host() == chrome::kChromeUIUberHost);
 }
 
 }  // namespace chrome
